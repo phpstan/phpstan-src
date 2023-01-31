@@ -38,7 +38,7 @@ class ReflectionMethodConstructorThrowTypeExtension implements DynamicStaticMeth
 		$propertyType = $scope->getType($methodCall->getArgs()[1]->value);
 		foreach (TypeUtils::flattenTypes($valueType) as $type) {
 			if ($type instanceof GenericClassStringType) {
-				$classes = $type->getReferencedClasses();
+				$classes = $type->getGenericType()->getObjectClassNames();
 			} elseif (
 				$type instanceof ConstantStringType
 				&& $this->reflectionProvider->hasClass($type->getValue())

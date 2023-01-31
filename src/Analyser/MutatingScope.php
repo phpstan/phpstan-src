@@ -1071,7 +1071,7 @@ class MutatingScope implements Scope
 				}
 
 				$resultType = $this->initializerExprTypeResolver->resolveConcatType($resultType, $partType);
-				if (! $resultType instanceof ConstantStringType && ! $resultType instanceof UnionType) {
+				if (count($resultType->getConstantStrings()) === 0) {
 					return $resultType;
 				}
 			}
@@ -1604,13 +1604,14 @@ class MutatingScope implements Scope
 			if ($node->if === null) {
 				$conditionType = $this->getType($node->cond);
 				$booleanConditionType = $conditionType->toBoolean();
-				if ($booleanConditionType instanceof ConstantBooleanType) {
-					if ($booleanConditionType->getValue()) {
-						return $this->filterByTruthyValue($node->cond)->getType($node->cond);
-					}
+				if ($booleanConditionType->isTrue()->yes()) {
+					return $this->filterByTruthyValue($node->cond)->getType($node->cond);
+				}
 
+				if ($booleanConditionType->isFalse()->yes()) {
 					return $this->filterByFalseyValue($node->cond)->getType($node->else);
 				}
+
 				return TypeCombinator::union(
 					TypeCombinator::removeFalsey($this->filterByTruthyValue($node->cond)->getType($node->cond)),
 					$this->filterByFalseyValue($node->cond)->getType($node->else),
@@ -1618,11 +1619,11 @@ class MutatingScope implements Scope
 			}
 
 			$booleanConditionType = $this->getType($node->cond)->toBoolean();
-			if ($booleanConditionType instanceof ConstantBooleanType) {
-				if ($booleanConditionType->getValue()) {
-					return $this->filterByTruthyValue($node->cond)->getType($node->if);
-				}
+			if ($booleanConditionType->isTrue()->yes()) {
+				return $this->filterByTruthyValue($node->cond)->getType($node->if);
+			}
 
+			if ($booleanConditionType->isFalse()->yes()) {
 				return $this->filterByFalseyValue($node->cond)->getType($node->else);
 			}
 
@@ -2681,7 +2682,10 @@ class MutatingScope implements Scope
 		);
 	}
 
-	public function enterClosureBind(?Type $thisType, ?Type $nativeThisType, string $scopeClass): self
+	/**
+	 * @param list<string> $scopeClasses
+	 */
+	public function enterClosureBind(?Type $thisType, ?Type $nativeThisType, array $scopeClasses): self
 	{
 		$expressionTypes = $this->expressionTypes;
 		if ($thisType !== null) {
@@ -2697,8 +2701,8 @@ class MutatingScope implements Scope
 			unset($nativeExpressionTypes['$this']);
 		}
 
-		if ($scopeClass === 'static' && $this->isInClass()) {
-			$scopeClass = $this->getClassReflection()->getName();
+		if ($scopeClasses === ['static'] && $this->isInClass()) {
+			$scopeClasses = [$this->getClassReflection()->getName()];
 		}
 
 		return $this->scopeFactory->create(
@@ -2709,7 +2713,7 @@ class MutatingScope implements Scope
 			$expressionTypes,
 			$nativeExpressionTypes,
 			$this->conditionalExpressions,
-			[$scopeClass],
+			$scopeClasses,
 			$this->anonymousFunctionReflection,
 		);
 	}
@@ -3354,7 +3358,7 @@ class MutatingScope implements Scope
 			}
 		}
 
-		if ($expr instanceof FuncCall && $expr->name instanceof Name && $type instanceof ConstantBooleanType && !$type->getValue()) {
+		if ($expr instanceof FuncCall && $expr->name instanceof Name && $type->isFalse()->yes()) {
 			$functionName = $this->reflectionProvider->resolveFunctionName($expr->name, $this);
 			if ($functionName !== null && in_array(strtolower($functionName), [
 				'is_dir',
@@ -4811,8 +4815,13 @@ class MutatingScope implements Scope
 			return TypeCombinator::intersect(...$types);
 		}
 
-		if ($type instanceof ConstantStringType) {
-			return new ObjectType($type->getValue());
+		if (count($type->getConstantStrings()) > 0) {
+			$types = [];
+			foreach ($type->getConstantStrings() as $constantString) {
+				$types[] = new ObjectType($constantString->getValue());
+			}
+
+			return TypeCombinator::union(...$types);
 		}
 
 		if ($type instanceof GenericClassStringType) {

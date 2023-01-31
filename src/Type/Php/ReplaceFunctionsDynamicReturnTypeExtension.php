@@ -8,7 +8,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -113,8 +112,13 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 		if ($compareSuperTypes === $isStringSuperType) {
 			return new StringType();
 		} elseif ($compareSuperTypes === $isArraySuperType) {
-			if ($subjectArgumentType instanceof ArrayType) {
-				return $subjectArgumentType->generalizeValues();
+			if (count($subjectArgumentType->getArrays()) > 0) {
+				$result = [];
+				foreach ($subjectArgumentType->getArrays() as $arrayType) {
+					$result[] = $arrayType->generalizeValues();
+				}
+
+				return TypeCombinator::union(...$result);
 			}
 			return $subjectArgumentType;
 		}

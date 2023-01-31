@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
@@ -40,7 +39,7 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 			$limit = $limitType instanceof ConstantIntegerType ? $limitType->getValue() : null;
 
 			$preserveKeysType = isset($functionCall->getArgs()[3]) ? $scope->getType($functionCall->getArgs()[3]->value) : null;
-			$preserveKeys = $preserveKeysType instanceof ConstantBooleanType ? $preserveKeysType->getValue() : false;
+			$preserveKeys = $preserveKeysType !== null && $preserveKeysType->isTrue()->yes();
 
 			$results = [];
 			foreach ($constantArrays as $constantArray) {

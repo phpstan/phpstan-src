@@ -6,14 +6,13 @@ use ArrayAccess;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
-use PhpParser\Node\Scalar\LNumber;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -88,11 +87,7 @@ class ArrayDestructuringRule implements Rule
 				$keyExpr = new Node\Scalar\LNumber($i);
 			} else {
 				$keyType = $scope->getType($item->key);
-				if ($keyType instanceof ConstantIntegerType) {
-					$keyExpr = new LNumber($keyType->getValue());
-				} elseif ($keyType instanceof ConstantStringType) {
-					$keyExpr = new Node\Scalar\String_($keyType->getValue());
-				}
+				$keyExpr = new TypeExpr($keyType);
 			}
 
 			$itemErrors = $this->nonexistentOffsetInArrayDimFetchCheck->check(
@@ -102,11 +97,6 @@ class ArrayDestructuringRule implements Rule
 				$keyType,
 			);
 			$errors = array_merge($errors, $itemErrors);
-
-			if ($keyExpr === null) {
-				$i++;
-				continue;
-			}
 
 			if (!$item->value instanceof Node\Expr\List_ && !$item->value instanceof Node\Expr\Array_) {
 				$i++;

@@ -6,7 +6,6 @@ use DateTime;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Type\Constant\ConstantStringType;
 use Throwable;
 use function count;
 use function in_array;
@@ -38,19 +37,20 @@ class DateTimeInstantiationRule implements Rule
 		}
 
 		$arg = $scope->getType($node->getArgs()[0]->value);
-		if (!($arg instanceof ConstantStringType)) {
-			return [];
-		}
-
 		$errors = [];
-		$dateString = $arg->getValue();
-		try {
-			new DateTime($dateString);
-		} catch (Throwable) {
-			// an exception is thrown for errors only but we want to catch warnings too
-		}
-		$lastErrors = DateTime::getLastErrors();
-		if ($lastErrors !== false) {
+
+		foreach ($arg->getConstantStrings() as $constantString) {
+			$dateString = $constantString->getValue();
+			try {
+				new DateTime($dateString);
+			} catch (Throwable) {
+				// an exception is thrown for errors only but we want to catch warnings too
+			}
+			$lastErrors = DateTime::getLastErrors();
+			if ($lastErrors === false) {
+				continue;
+			}
+
 			foreach ($lastErrors['errors'] as $error) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Instantiating %s with %s produces an error: %s',

@@ -9,7 +9,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Constant\ConstantStringType;
 use function in_array;
 use function sprintf;
 use function str_starts_with;
@@ -91,11 +90,9 @@ class RegularExpressionPatternRule implements Rule
 				], true)
 			) {
 				foreach ($constantArrayType->getValueTypes() as $arrayKeyType) {
-					if (!$arrayKeyType instanceof ConstantStringType) {
-						continue;
+					foreach ($arrayKeyType->getConstantStrings() as $constantString) {
+						$patternStrings[] = $constantString->getValue();
 					}
-
-					$patternStrings[] = $arrayKeyType->getValue();
 				}
 			}
 
@@ -104,11 +101,9 @@ class RegularExpressionPatternRule implements Rule
 			}
 
 			foreach ($constantArrayType->getKeyTypes() as $arrayKeyType) {
-				if (!$arrayKeyType instanceof ConstantStringType) {
-					continue;
+				foreach ($arrayKeyType->getConstantStrings() as $constantString) {
+					$patternStrings[] = $constantString->getValue();
 				}
-
-				$patternStrings[] = $arrayKeyType->getValue();
 			}
 		}
 

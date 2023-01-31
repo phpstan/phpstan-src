@@ -127,7 +127,6 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			}
 		}
 
-		$range = null;
 		$isNonEmpty = $argType->isNonEmptyString();
 		$numeric = TypeCombinator::union(new IntegerType(), new FloatType());
 		if (count($lengths) > 0) {

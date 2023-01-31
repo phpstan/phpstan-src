@@ -132,9 +132,9 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -1916,8 +1916,8 @@ class NodeScopeResolver
 					foreach ($callArgs as $callArg) {
 						$callArgType = $scope->getType($callArg->value);
 						if ($callArg->unpack) {
-							if ($callArgType instanceof ConstantArrayType) {
-								$iterableValueTypes = $callArgType->getValueTypes();
+							if (count($callArgType->getConstantArrays()) === 1) {
+								$iterableValueTypes = $callArgType->getConstantArrays()[0]->getValueTypes();
 							} else {
 								$iterableValueTypes = [$callArgType->getIterableValueType()];
 								$nonConstantArrayWasUnpacked = true;
@@ -1960,7 +1960,7 @@ class NodeScopeResolver
 							$valueTypes = $constantArray->getValueTypes();
 							foreach ($keyTypes as $k => $keyType) {
 								$arrayTypeBuilder->setOffsetValueType(
-									$keyType instanceof ConstantStringType ? $keyType : null,
+									count($keyType->getConstantStrings()) === 1 ? $keyType->getConstantStrings()[0] : null,
 									$valueTypes[$k],
 									$constantArray->isOptionalKey($k),
 								);
@@ -1969,10 +1969,11 @@ class NodeScopeResolver
 
 						$constantArray = $arrayTypeBuilder->getArray();
 
-						if ($constantArray instanceof ConstantArrayType && $nonConstantArrayWasUnpacked) {
+						if ($constantArray->isConstantArray()->yes() && $nonConstantArrayWasUnpacked) {
+							$array = new ArrayType($constantArray->generalize(GeneralizePrecision::lessSpecific())->getIterableKeyType(), $constantArray->getIterableValueType());
 							$constantArray = $constantArray->isIterableAtLeastOnce()->yes()
-								? TypeCombinator::intersect($constantArray->generalizeKeys(), new NonEmptyArrayType())
-								: $constantArray->generalizeKeys();
+								? TypeCombinator::intersect($array, new NonEmptyArrayType())
+								: $array;
 						}
 
 						$newArrayTypes[] = $constantArray;
@@ -2202,27 +2203,37 @@ class NodeScopeResolver
 									$nativeThisType = $nativeArgType;
 								}
 							}
-							$scopeClass = 'static';
+							$scopeClasses = ['static'];
 							if (isset($expr->getArgs()[2])) {
 								$argValue = $expr->getArgs()[2]->value;
 								$argValueType = $scope->getType($argValue);
 
+								$scopeClasses = [];
 								$directClassNames = $argValueType->getObjectClassNames();
-								if (count($directClassNames) === 1) {
-									$scopeClass = $directClassNames[0];
-									$thisType = new ObjectType($scopeClass);
-								} elseif ($argValueType instanceof ConstantStringType) {
-									$scopeClass = $argValueType->getValue();
-									$thisType = new ObjectType($scopeClass);
+								if (count($directClassNames) > 0) {
+									$scopeClasses = $directClassNames;
+									$thisTypes = [];
+									foreach ($directClassNames as $directClassName) {
+										$thisTypes[] = new ObjectType($directClassName);
+									}
+									$thisType = TypeCombinator::union(...$thisTypes);
+								} elseif (count($argValueType->getConstantStrings()) > 0) {
+									$thisTypes = [];
+									foreach ($argValueType->getConstantStrings() as $constantString) {
+										$scopeClasses[] = $constantString->getValue();
+										$thisTypes[] = new ObjectType($constantString->getValue());
+									}
+
+									$thisType = TypeCombinator::union(...$thisTypes);
 								} elseif ($argValueType instanceof GenericClassStringType) {
 									$genericClassNames = $argValueType->getGenericType()->getObjectClassNames();
-									if (count($genericClassNames) === 1) {
-										$scopeClass = $genericClassNames[0];
+									if (count($genericClassNames) > 0) {
+										$scopeClasses = $genericClassNames;
 										$thisType = $argValueType->getGenericType();
 									}
 								}
 							}
-							$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClass);
+							$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
 						}
 					} else {
 						$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);

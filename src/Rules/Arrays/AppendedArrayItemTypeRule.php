@@ -12,7 +12,6 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -62,7 +61,7 @@ class AppendedArrayItemTypeRule implements Rule
 		}
 
 		$assignedToType = $propertyReflection->getWritableType();
-		if (!($assignedToType instanceof ArrayType)) {
+		if (!$assignedToType->isArray()->yes()) {
 			return [];
 		}
 
@@ -72,7 +71,7 @@ class AppendedArrayItemTypeRule implements Rule
 			$assignedValueType = $scope->getType($node);
 		}
 
-		$itemType = $assignedToType->getItemType();
+		$itemType = $assignedToType->getIterableValueType();
 		$accepts = $this->ruleLevelHelper->acceptsWithReason($itemType, $assignedValueType, $scope->isDeclareStrictTypes());
 		if (!$accepts->result) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($itemType, $assignedValueType);

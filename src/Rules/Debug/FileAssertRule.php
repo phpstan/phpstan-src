@@ -10,7 +10,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function is_string;
@@ -67,20 +66,20 @@ class FileAssertRule implements Rule
 			return [];
 		}
 
-		$expectedTypeString = $scope->getType($args[0]->value);
-		if (!$expectedTypeString instanceof ConstantStringType) {
+		$expectedTypeStrings = $scope->getType($args[0]->value)->getConstantStrings();
+		if (count($expectedTypeStrings) !== 1) {
 			return [
 				RuleErrorBuilder::message('Expected type must be a literal string.')->nonIgnorable()->build(),
 			];
 		}
 
 		$expressionType = $scope->getType($args[1]->value)->describe(VerbosityLevel::precise());
-		if ($expectedTypeString->getValue() === $expressionType) {
+		if ($expectedTypeStrings[0]->getValue() === $expressionType) {
 			return [];
 		}
 
 		return [
-			RuleErrorBuilder::message(sprintf('Expected type %s, actual: %s', $expectedTypeString->getValue(), $expressionType))->nonIgnorable()->build(),
+			RuleErrorBuilder::message(sprintf('Expected type %s, actual: %s', $expectedTypeStrings[0]->getValue(), $expressionType))->nonIgnorable()->build(),
 		];
 	}
 
@@ -94,20 +93,20 @@ class FileAssertRule implements Rule
 			return [];
 		}
 
-		$expectedTypeString = $scope->getNativeType($args[0]->value);
-		if (!$expectedTypeString instanceof ConstantStringType) {
+		$expectedTypeStrings = $scope->getNativeType($args[0]->value)->getConstantStrings();
+		if (count($expectedTypeStrings) !== 1) {
 			return [
 				RuleErrorBuilder::message('Expected native type must be a literal string.')->nonIgnorable()->build(),
 			];
 		}
 
 		$expressionType = $scope->getNativeType($args[1]->value)->describe(VerbosityLevel::precise());
-		if ($expectedTypeString->getValue() === $expressionType) {
+		if ($expectedTypeStrings[0]->getValue() === $expressionType) {
 			return [];
 		}
 
 		return [
-			RuleErrorBuilder::message(sprintf('Expected native type %s, actual: %s', $expectedTypeString->getValue(), $expressionType))->nonIgnorable()->build(),
+			RuleErrorBuilder::message(sprintf('Expected native type %s, actual: %s', $expectedTypeStrings[0]->getValue(), $expressionType))->nonIgnorable()->build(),
 		];
 	}
 

@@ -175,6 +175,9 @@ class ArrayType implements Type
 		);
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public function generalizeKeys(): self
 	{
 		return new self($this->keyType->generalize(GeneralizePrecision::lessSpecific()), $this->itemType);

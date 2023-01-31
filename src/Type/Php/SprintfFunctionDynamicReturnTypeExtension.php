@@ -9,7 +9,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
@@ -45,14 +44,24 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$formatType = $scope->getType($args[0]->value);
-		if ($formatType instanceof ConstantStringType) {
-			// The printf format is %[argnum$][flags][width][.precision]
-			if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*[bdeEfFgGhHouxX]$/', $formatType->getValue(), $matches) === 1) {
-				// invalid positional argument
-				if (array_key_exists(1, $matches) && $matches[1] === '0$') {
-					return null;
+		if (count($formatType->getConstantStrings()) > 0) {
+			$skip = false;
+			foreach ($formatType->getConstantStrings() as $constantString) {
+				// The printf format is %[argnum$][flags][width][.precision]
+				if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*[bdeEfFgGhHouxX]$/', $constantString->getValue(), $matches) === 1) {
+					// invalid positional argument
+					if (array_key_exists(1, $matches) && $matches[1] === '0$') {
+						return null;
+					}
+
+					continue;
 				}
 
+				$skip = true;
+				break;
+			}
+
+			if (!$skip) {
 				return new IntersectionType([
 					new StringType(),
 					new AccessoryNumericStringType(),

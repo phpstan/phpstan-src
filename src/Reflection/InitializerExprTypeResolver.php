@@ -484,20 +484,21 @@ class InitializerExprTypeResolver
 
 			$valueType = $getTypeCallback($arrayItem->value);
 			if ($arrayItem->unpack) {
-				if ($valueType instanceof ConstantArrayType) {
+				if (count($valueType->getConstantArrays()) === 1) {
+					$constantArrayType = $valueType->getConstantArrays()[0];
 					$hasStringKey = false;
-					foreach ($valueType->getKeyTypes() as $keyType) {
-						if ($keyType instanceof ConstantStringType) {
+					foreach ($constantArrayType->getKeyTypes() as $keyType) {
+						if ($keyType->isString()->yes()) {
 							$hasStringKey = true;
 							break;
 						}
 					}
 
-					foreach ($valueType->getValueTypes() as $i => $innerValueType) {
+					foreach ($constantArrayType->getValueTypes() as $i => $innerValueType) {
 						if ($hasStringKey && $this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
-							$arrayBuilder->setOffsetValueType($valueType->getKeyTypes()[$i], $innerValueType, $valueType->isOptionalKey($i));
+							$arrayBuilder->setOffsetValueType($constantArrayType->getKeyTypes()[$i], $innerValueType, $constantArrayType->isOptionalKey($i));
 						} else {
-							$arrayBuilder->setOffsetValueType(null, $innerValueType, $valueType->isOptionalKey($i));
+							$arrayBuilder->setOffsetValueType(null, $innerValueType, $constantArrayType->isOptionalKey($i));
 						}
 					}
 				} else {
@@ -1493,9 +1494,9 @@ class InitializerExprTypeResolver
 
 		$types = TypeCombinator::union($leftType, $rightType);
 		if (
-			$leftType instanceof ArrayType
-			|| $rightType instanceof ArrayType
-			|| $types instanceof ArrayType
+			$leftType->isArray()->yes()
+			|| $rightType->isArray()->yes()
+			|| $types->isArray()->yes()
 		) {
 			return new ErrorType();
 		}

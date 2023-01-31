@@ -9,7 +9,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -84,7 +83,7 @@ class ApiInstanceofRule implements Rule
 		}
 
 		$instanceofType = $scope->getType($node);
-		if ($instanceofType instanceof ConstantBooleanType) {
+		if ($instanceofType->isTrue()->or($instanceofType->isFalse())->yes()) {
 			return [];
 		}
 

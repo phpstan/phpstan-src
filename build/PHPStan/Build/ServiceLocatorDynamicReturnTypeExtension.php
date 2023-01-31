@@ -36,7 +36,7 @@ class ServiceLocatorDynamicReturnTypeExtension implements \PHPStan\Type\DynamicM
 
 		if ($methodReflection->getName() === 'getByType' && count($methodCall->getArgs()) >= 2) {
 			$argType = $scope->getType($methodCall->getArgs()[1]->value);
-			if ($argType instanceof ConstantBooleanType && $argType->getValue()) {
+			if ($argType->isTrue()->yes()) {
 				$returnType = TypeCombinator::addNull($returnType);
 			}
 		}

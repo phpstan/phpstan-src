@@ -127,23 +127,28 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 	{
 		$falseyTypes = StaticTypeFactory::falsey();
 
-		if ($type instanceof ConstantArrayType) {
-			$keys = $type->getKeyTypes();
-			$values = $type->getValueTypes();
+		if (count($type->getConstantArrays()) > 0) {
+			$result = [];
+			foreach ($type->getConstantArrays() as $constantArray) {
+				$keys = $constantArray->getKeyTypes();
+				$values = $constantArray->getValueTypes();
 
-			$builder = ConstantArrayTypeBuilder::createEmpty();
+				$builder = ConstantArrayTypeBuilder::createEmpty();
 
-			foreach ($values as $offset => $value) {
-				$isFalsey = $falseyTypes->isSuperTypeOf($value);
+				foreach ($values as $offset => $value) {
+					$isFalsey = $falseyTypes->isSuperTypeOf($value);
 
-				if ($isFalsey->maybe()) {
-					$builder->setOffsetValueType($keys[$offset], TypeCombinator::remove($value, $falseyTypes), true);
-				} elseif ($isFalsey->no()) {
-					$builder->setOffsetValueType($keys[$offset], $value, $type->isOptionalKey($offset));
+					if ($isFalsey->maybe()) {
+						$builder->setOffsetValueType($keys[$offset], TypeCombinator::remove($value, $falseyTypes), true);
+					} elseif ($isFalsey->no()) {
+						$builder->setOffsetValueType($keys[$offset], $value, $constantArray->isOptionalKey($offset));
+					}
 				}
+
+				$result[] = $builder->getArray();
 			}
 
-			return $builder->getArray();
+			return TypeCombinator::union(...$result);
 		}
 
 		$keyType = $type->getIterableKeyType();

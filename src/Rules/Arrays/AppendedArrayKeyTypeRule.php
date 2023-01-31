@@ -9,7 +9,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -53,7 +52,7 @@ class AppendedArrayKeyTypeRule implements Rule
 		}
 
 		$arrayType = $propertyReflection->getReadableType();
-		if (!$arrayType instanceof ArrayType) {
+		if (!$arrayType->isArray()->yes()) {
 			return [];
 		}
 

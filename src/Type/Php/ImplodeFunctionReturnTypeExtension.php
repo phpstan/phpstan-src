@@ -57,10 +57,23 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 	private function implode(Type $arrayType, Type $separatorType): Type
 	{
-		if ($arrayType instanceof ConstantArrayType && $separatorType instanceof ConstantStringType) {
-			$constantType = $this->inferConstantType($arrayType, $separatorType);
-			if ($constantType !== null) {
-				return $constantType;
+		if (count($arrayType->getConstantArrays()) > 0 && count($separatorType->getConstantStrings()) > 0) {
+			$result = [];
+			foreach ($separatorType->getConstantStrings() as $separator) {
+				foreach ($arrayType->getConstantArrays() as $constantArray) {
+					$constantType = $this->inferConstantType($constantArray, $separator);
+					if ($constantType !== null) {
+						$result[] = $constantType;
+						continue;
+					}
+
+					$result = [];
+					break 2;
+				}
+			}
+
+			if (count($result) > 0) {
+				return TypeCombinator::union(...$result);
 			}
 		}
 

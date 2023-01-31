@@ -50,10 +50,11 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			return new NeverType();
 		}
 
-		if ($inputType instanceof ConstantStringType &&
-			$multiplierType instanceof ConstantIntegerType &&
+		if (
+			$inputType instanceof ConstantStringType
+			&& $multiplierType instanceof ConstantIntegerType
 			// don't generate type too big to avoid hitting memory limit
-			strlen($inputType->getValue()) * $multiplierType->getValue() < 100
+			&& strlen($inputType->getValue()) * $multiplierType->getValue() < 100
 		) {
 			return new ConstantStringType(str_repeat($inputType->getValue(), $multiplierType->getValue()));
 		}

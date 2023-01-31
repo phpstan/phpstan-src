@@ -73,14 +73,20 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		$urlType = $scope->getType($functionCall->getArgs()[0]->value);
-		if ($urlType instanceof ConstantStringType) {
-			try {
-				$result = @parse_url($urlType->getValue(), $componentType->getValue());
-			} catch (ValueError) {
-				return new ConstantBooleanType(false);
+		if (count($urlType->getConstantStrings()) > 0) {
+			$types = [];
+			foreach ($urlType->getConstantStrings() as $constantString) {
+				try {
+					$result = @parse_url($constantString->getValue(), $componentType->getValue());
+				} catch (ValueError) {
+					$types[] = new ConstantBooleanType(false);
+					continue;
+				}
+
+				$types[] = $scope->getTypeFromValue($result);
 			}
 
-			return $scope->getTypeFromValue($result);
+			return TypeCombinator::union(...$types);
 		}
 
 		if ($componentType->getValue() === -1) {

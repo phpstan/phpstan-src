@@ -5,23 +5,16 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClassStringType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use ReflectionClass;
 use function count;
 
 class ReflectionClassConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
-
-	public function __construct(private ReflectionProvider $reflectionProvider)
-	{
-	}
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
 	{
@@ -35,22 +28,15 @@ class ReflectionClassConstructorThrowTypeExtension implements DynamicStaticMetho
 		}
 
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
-		foreach (TypeUtils::flattenTypes($valueType) as $type) {
-			if ($type instanceof ClassStringType || $type instanceof ObjectWithoutClassType || $type instanceof ObjectType) {
-				continue;
-			}
-
-			if (
-				$type instanceof ConstantStringType
-				&& $this->reflectionProvider->hasClass($type->getValue())
-			) {
-				continue;
-			}
-
-			return $methodReflection->getThrowType();
+		$classOrString = new UnionType([
+			new ClassStringType(),
+			new ObjectWithoutClassType(),
+		]);
+		if ($classOrString->isSuperTypeOf($valueType)->yes()) {
+			return null;
 		}
 
-		return null;
+		return $methodReflection->getThrowType();
 	}
 
 }

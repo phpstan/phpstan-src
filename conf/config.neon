@@ -60,6 +60,7 @@ parameters:
 		varTagType: false
 		closureDefaultParameterTypeRule: false
 		newRuleLevelHelper: false
+		instanceofType: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -286,6 +287,7 @@ parametersSchema:
 		varTagType: bool()
 		closureDefaultParameterTypeRule: bool()
 		newRuleLevelHelper: bool()
+		instanceofType: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -443,6 +445,8 @@ conditionalTags:
 		phpstan.parser.richParserNodeVisitor: %featureToggles.nodeConnectingVisitorCompatibility%
 	PHPStan\Parser\CurlSetOptArgVisitor:
 		phpstan.parser.richParserNodeVisitor: %featureToggles.curlSetOptTypes%
+	PHPStan\Parser\TypeTraverserInstanceofVisitor:
+		phpstan.parser.richParserNodeVisitor: %featureToggles.instanceofType%
 
 services:
 	-
@@ -479,6 +483,9 @@ services:
 
 	-
 		class: PHPStan\Parser\CurlSetOptArgVisitor
+
+	-
+		class: PHPStan\Parser\TypeTraverserInstanceofVisitor
 
 	-
 		class: PHPStan\Parser\ArrowFunctionArgVisitor

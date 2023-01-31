@@ -30,3 +30,4 @@ parameters:
 		varTagType: true
 		closureDefaultParameterTypeRule: true
 		newRuleLevelHelper: true
+		instanceofType: true

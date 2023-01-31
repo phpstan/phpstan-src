@@ -76,6 +76,11 @@ trait LateResolvableTypeTrait
 		return $isSuperType;
 	}
 
+	public function isObject(): TrinaryLogic
+	{
+		return $this->resolve()->isObject();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return $this->resolve()->canAccessProperties();

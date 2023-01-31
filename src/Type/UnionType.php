@@ -356,6 +356,11 @@ class UnionType implements CompoundType
 		return $object;
 	}
 
+	public function isObject(): TrinaryLogic
+	{
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isObject());
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->canAccessProperties());

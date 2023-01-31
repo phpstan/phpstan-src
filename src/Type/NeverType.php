@@ -110,6 +110,11 @@ class NeverType implements CompoundType
 		return '*NEVER*';
 	}
 
+	public function isObject(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

@@ -185,6 +185,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return sprintf('static(%s)', $this->getStaticObjectType()->describe($level));
 	}
 
+	public function isObject(): TrinaryLogic
+	{
+		return $this->getStaticObjectType()->isObject();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->canAccessProperties();

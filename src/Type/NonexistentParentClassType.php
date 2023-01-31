@@ -39,6 +39,11 @@ class NonexistentParentClassType implements Type
 		return 'parent';
 	}
 
+	public function isObject(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

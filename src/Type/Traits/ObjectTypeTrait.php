@@ -29,6 +29,11 @@ trait ObjectTypeTrait
 	use NonArrayTypeTrait;
 	use TruthyBooleanTypeTrait;
 
+	public function isObject(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

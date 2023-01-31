@@ -175,6 +175,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		);
 	}
 
+	public function isObject(): TrinaryLogic
+	{
+		return $this->objectType->isObject();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return $this->objectType->canAccessProperties();

@@ -653,6 +653,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return new ConstantBooleanType(true);
 	}
 
+	public function isObject(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

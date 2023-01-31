@@ -97,6 +97,11 @@ class StrictMixedType implements CompoundType
 		return 'mixed';
 	}
 
+	public function isObject(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

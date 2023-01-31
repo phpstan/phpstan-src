@@ -388,6 +388,11 @@ class IntersectionType implements CompoundType
 		return implode('&', $describedTypes);
 	}
 
+	public function isObject(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isObject());
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->canAccessProperties());

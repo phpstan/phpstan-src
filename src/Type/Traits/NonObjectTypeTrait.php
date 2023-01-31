@@ -14,6 +14,11 @@ use PHPStan\TrinaryLogic;
 trait NonObjectTypeTrait
 {
 
+	public function isObject(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

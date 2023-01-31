@@ -29,6 +29,8 @@ interface Type
 	/** @return list<string> */
 	public function getObjectClassNames(): array;
 
+	public function isObject(): TrinaryLogic;
+
 	/** @return list<ArrayType> */
 	public function getArrays(): array;
 

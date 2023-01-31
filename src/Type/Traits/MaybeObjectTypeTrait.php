@@ -19,6 +19,11 @@ use PHPStan\Type\Type;
 trait MaybeObjectTypeTrait
 {
 
+	public function isObject(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

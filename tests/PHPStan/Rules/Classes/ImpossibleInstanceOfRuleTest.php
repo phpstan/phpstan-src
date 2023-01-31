@@ -375,4 +375,17 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3632.php'], []);
 	}
 
+	public function testTraitInstanceOf(): void
+	{
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = false;
+
+		$this->analyse([__DIR__ . '/../../Analyser/data/trait-instance-of.php'], [
+			[
+				'Instanceof between $this(TraitInstanceOf\ATrait1Class) and trait TraitInstanceOf\Trait2 will always evaluate to false.',
+				21,
+			],
+		]);
+	}
+
 }

@@ -4,38 +4,67 @@ namespace TraitInstanceOf;
 
 use function PHPStan\Testing\assertType;
 
-trait Foo {
+trait Trait1 {
 	public function test(): string {
-		assertType('$this(TraitInstanceOf\HelloWorld)', $this);
-		if ($this instanceof HelloWorld) {
-			$this->bar();
-
-			assertType('$this(TraitInstanceOf\HelloWorld)', $this);
+		assertType('$this(TraitInstanceOf\ATrait1Class)', $this);
+		if ($this instanceof WithoutFoo) {
+			assertType('$this(TraitInstanceOf\ATrait1Class)&TraitInstanceOf\WithoutFoo', $this);
 			return 'hello world';
 		}
-		assertType('$this(TraitInstanceOf\HelloWorld~$this(TraitInstanceOf\HelloWorld))', $this);
-		if ($this instanceof OtherClass) {
-			$this->doOther();
 
-			assertType('$this(TraitInstanceOf\HelloWorld~$this(TraitInstanceOf\HelloWorld))&$this(TraitInstanceOf\OtherClass~$this(TraitInstanceOf\HelloWorld))', $this);
-			return 'other class';
+		if ($this instanceof FinalOther) {
+			assertType('*NEVER*', $this);
+			return 'hello world';
 		}
-		assertType('$this(TraitInstanceOf\HelloWorld~$this(TraitInstanceOf\HelloWorld))', $this);
 
-		return 'no';
+		assertType('$this(TraitInstanceOf\ATrait1Class)', $this);
+		if ($this instanceof Trait2) {
+			assertType('*NEVER*', $this);
+			return 'hello world';
+		}
+
+		if ($this instanceof FinalTrait2Class) {
+			assertType('*NEVER*', $this);
+			return 'hello world';
+		}
+
+		assertType('$this(TraitInstanceOf\ATrait1Class)', $this);
+		throw new \Error();
 	}
 }
 
-class HelloWorld
-{
-	use Foo;
+trait Trait2 {
+	public function test(): string {
+		assertType('$this(TraitInstanceOf\FinalTrait2Class)', $this);
 
-	function bar(): string {
-		return $this->test();
+		if ($this instanceof FinalTrait2Class) {
+			assertType('$this(TraitInstanceOf\FinalTrait2Class)&TraitInstanceOf\FinalTrait2Class', $this);
+			return 'hello world';
+		}
+
+		if ($this instanceof ATrait1Class) {
+			assertType('*NEVER*', $this);
+			return 'hello world';
+		}
+
+		if ($this instanceof FinalOther) {
+			assertType('*NEVER*', $this);
+			return 'hello world';
+		}
+
+		return 'hello world';
 	}
 }
 
-class OtherClass {
-	public function doOther():void {
-	}
+final class FinalOther {
+}
+
+final class FinalTrait2Class {
+	use Trait2;
+}
+
+class WithoutFoo {}
+
+class ATrait1Class {
+	use Trait1;
 }

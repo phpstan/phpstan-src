@@ -65,6 +65,8 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
+
 use function array_keys;
 use function array_merge;
 use function assert;
@@ -1479,7 +1481,7 @@ class InitializerExprTypeResolver
 				return $union->toNumber();
 			}
 
-			return $this->integerRangeMath($leftType, $expr, $rightType);
+			return $this->integerRangeMath($leftNumberType, $expr, $rightNumberType);
 		}
 
 		$specifiedTypes = $this->callOperatorTypeSpecifyingExtensions($expr, $leftType, $rightType);
@@ -1532,7 +1534,6 @@ class InitializerExprTypeResolver
 	/**
 	 * @param ConstantIntegerType|IntegerRangeType $range
 	 * @param BinaryOp\Div|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Plus $node
-	 * @param IntegerRangeType|ConstantIntegerType|UnionType $operand
 	 */
 	private function integerRangeMath(Type $range, BinaryOp $node, Type $operand): Type
 	{
@@ -1549,8 +1550,9 @@ class InitializerExprTypeResolver
 			$unionParts = [];
 
 			foreach ($operand->getTypes() as $type) {
-				if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
-					$unionParts[] = $this->integerRangeMath($range, $node, $type);
+				$numberType = $type->toNumber();
+				if ($numberType instanceof IntegerRangeType || $numberType instanceof ConstantIntegerType) {
+					$unionParts[] = $this->integerRangeMath($range, $node, $numberType);
 				} else {
 					$unionParts[] = $type->toNumber();
 				}
@@ -1562,6 +1564,11 @@ class InitializerExprTypeResolver
 			}
 
 			return $union->toNumber();
+		}
+
+		$operand = $operand->toNumber();
+		if (!$operand instanceof IntegerRangeType && !$operand instanceof ConstantIntegerType) {
+			return $operand;
 		}
 
 		if ($operand instanceof IntegerRangeType) {

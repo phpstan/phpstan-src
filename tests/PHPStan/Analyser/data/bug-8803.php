@@ -11,10 +11,12 @@ class HelloWorld
 		$from = new \DateTimeImmutable('2023-01-30');
 		for ($offset = 1; $offset <= 14; $offset++) {
 			$value = $from->format('N') + $offset;
+			$value2 = $offset + $from->format('N');
 
 			assertType("'1'|'2'|'3'|'4'|'5'|'6'|'7'", $from->format('N'));
 			assertType('int<1, 14>', $offset);
 			assertType('int<2, 21>', $value);
+			assertType('int<2, 21>', $value2);
 		}
 	}
 

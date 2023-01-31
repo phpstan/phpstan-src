@@ -12,6 +12,7 @@ use DynamicProperties\FinalFoo;
 use Exception;
 use InvalidArgumentException;
 use Iterator;
+use NonExistantClass;
 use PHPStan\Fixture\FinalClass;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -2407,7 +2408,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ObjectType(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
 					$reflectionProvider->getClass(\TraitInstanceOf\Trait2::class), // phpcs:ignore
 				),
-				new ObjectType(\NonExistantClass::class), // phpcs:ignore // @phpstan-ignore-line
+				new ObjectType(NonExistantClass::class), // phpcs:ignore // @phpstan-ignore-line
 			],
 			UnionType::class,
 			'$this(TraitInstanceOf\FinalTrait2Class~TraitInstanceOf\FinalOther)|NonExistantClass',
@@ -3972,7 +3973,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ObjectType(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
 					$reflectionProvider->getClass(\TraitInstanceOf\Trait2::class), // phpcs:ignore
 				),
-				new ObjectType(\NonExistantClass::class), // phpcs:ignore // @phpstan-ignore-line
+				new ObjectType(NonExistantClass::class), // phpcs:ignore // @phpstan-ignore-line
 			],
 			IntersectionType::class,
 			'$this(TraitInstanceOf\FinalTrait2Class~TraitInstanceOf\FinalOther)&NonExistantClass',

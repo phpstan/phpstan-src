@@ -2424,18 +2424,18 @@ class MutatingScope implements Scope
 	public function enterClass(ClassReflection $classReflection): self
 	{
 		$thisHolder = ExpressionTypeHolder::createYes(new Variable('this'), new ThisType($classReflection));
+		$constantTypes = $this->getConstantTypes();
+		$constantTypes['$this'] = $thisHolder;
+		$nativeConstantTypes = $this->getNativeConstantTypes();
+		$nativeConstantTypes['$this'] = $thisHolder;
 
 		return $this->scopeFactory->create(
 			$this->context->enterClass($classReflection),
 			$this->isDeclareStrictTypes(),
 			null,
 			$this->getNamespace(),
-			array_merge($this->getConstantTypes(), [
-				'$this' => $thisHolder,
-			]),
-			array_merge($this->getNativeConstantTypes(), [
-				'$this' => $thisHolder,
-			]),
+			$constantTypes,
+			$nativeConstantTypes,
 			[],
 			null,
 			null,
@@ -2462,19 +2462,20 @@ class MutatingScope implements Scope
 		if ($classReflection === null) {
 			throw new ShouldNotHappenException();
 		}
+
 		$thisHolder = ExpressionTypeHolder::createYes(new Variable('this'), new ThisType($classReflection, null, $traitReflection));
+		$expressionTypes = $this->expressionTypes;
+		$expressionTypes['$this'] = $thisHolder;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		$nativeExpressionTypes['$this'] = $thisHolder;
 
 		return $this->scopeFactory->create(
 			$traitContext,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$namespace,
-			array_merge($this->expressionTypes, [
-				'$this' => $thisHolder,
-			]),
-			array_merge($this->nativeExpressionTypes, [
-				'$this' => $thisHolder,
-			]),
+			$expressionTypes,
+			$nativeExpressionTypes,
 			[],
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,

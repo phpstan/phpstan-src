@@ -65,8 +65,6 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
-use PHPStan\Type\VerbosityLevel;
-
 use function array_keys;
 use function array_merge;
 use function assert;
@@ -1451,11 +1449,8 @@ class InitializerExprTypeResolver
 		$leftNumberType = $leftType->toNumber();
 		$rightNumberType = $rightType->toNumber();
 
-		if (($leftNumberType instanceof IntegerRangeType || $leftNumberType instanceof ConstantIntegerType || $leftType instanceof UnionType) &&
-			($rightNumberType instanceof IntegerRangeType || $rightNumberType instanceof ConstantIntegerType || $rightType instanceof UnionType)
-		) {
-
-			if ($leftNumberType instanceof ConstantIntegerType) {
+		if ($rightNumberType instanceof IntegerRangeType || $rightNumberType instanceof ConstantIntegerType || $rightType instanceof UnionType) {
+			if ($leftNumberType instanceof IntegerRangeType || $leftNumberType instanceof ConstantIntegerType) {
 				return $this->integerRangeMath(
 					$leftNumberType,
 					$expr,
@@ -1480,8 +1475,6 @@ class InitializerExprTypeResolver
 
 				return $union->toNumber();
 			}
-
-			return $this->integerRangeMath($leftNumberType, $expr, $rightNumberType);
 		}
 
 		$specifiedTypes = $this->callOperatorTypeSpecifyingExtensions($expr, $leftType, $rightType);
@@ -1567,16 +1560,14 @@ class InitializerExprTypeResolver
 		}
 
 		$operand = $operand->toNumber();
-		if (!$operand instanceof IntegerRangeType && !$operand instanceof ConstantIntegerType) {
-			return $operand;
-		}
-
 		if ($operand instanceof IntegerRangeType) {
 			$operandMin = $operand->getMin();
 			$operandMax = $operand->getMax();
-		} else {
+		} elseif ($operand instanceof ConstantIntegerType) {
 			$operandMin = $operand->getValue();
 			$operandMax = $operand->getValue();
+		} else {
+			return $operand;
 		}
 
 		if ($node instanceof BinaryOp\Plus) {

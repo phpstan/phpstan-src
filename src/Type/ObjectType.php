@@ -302,6 +302,31 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createMaybe();
 		}
 
+		if ($type instanceof ThisType && $type->isInTrait()) {
+			if ($type->getSubtractedType() !== null) {
+				$isSuperType = $type->getSubtractedType()->isSuperTypeOf($this);
+				if ($isSuperType->yes()) {
+					return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createNo();
+				}
+			}
+
+			if ($this->getClassReflection() === null) {
+				return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createMaybe();
+			}
+
+			$thisClassReflection = $this->getClassReflection();
+			if ($thisClassReflection->isTrait()) {
+				return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createNo();
+			}
+
+			$traitReflection = $type->getTraitReflection();
+			if ($thisClassReflection->isFinal() && !$thisClassReflection->hasTraitUse($traitReflection->getName())) {
+				return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createNo();
+			}
+
+			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createMaybe();
+		}
+
 		$transformResult = static fn (TrinaryLogic $result) => $result;
 		if ($this->subtractedType !== null) {
 			$isSuperType = $this->subtractedType->isSuperTypeOf($type);

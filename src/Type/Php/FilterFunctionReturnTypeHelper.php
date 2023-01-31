@@ -23,6 +23,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_key_exists;
 use function array_merge;
 use function hexdec;
 use function is_int;
@@ -250,31 +251,41 @@ final class FilterFunctionReturnTypeHelper
 		$range = [];
 		if (isset($typeOptions['min_range'])) {
 			if ($typeOptions['min_range'] instanceof ConstantScalarType) {
-				$range['min'] = $typeOptions['min_range']->getValue();
+				$range['min'] = (int) $typeOptions['min_range']->getValue();
 			} elseif ($typeOptions['min_range'] instanceof IntegerRangeType) {
 				$range['min'] = $typeOptions['min_range']->getMin();
+			} else {
+				$range['min'] = null;
 			}
 		}
 		if (isset($typeOptions['max_range'])) {
 			if ($typeOptions['max_range'] instanceof ConstantScalarType) {
-				$range['max'] = $typeOptions['max_range']->getValue();
+				$range['max'] = (int) $typeOptions['max_range']->getValue();
 			} elseif ($typeOptions['max_range'] instanceof IntegerRangeType) {
 				$range['max'] = $typeOptions['max_range']->getMax();
+			} else {
+				$range['max'] = null;
 			}
 		}
 
-		if (isset($range['min']) || isset($range['max'])) {
-			$min = isset($range['min']) && is_int($range['min']) ? $range['min'] : null;
-			$max = isset($range['max']) && is_int($range['max']) ? $range['max'] : null;
+		if (array_key_exists('min', $range) || array_key_exists('max', $range)) {
+			$min = $range['min'] ?? null;
+			$max = $range['max'] ?? null;
 			$rangeType = IntegerRangeType::fromInterval($min, $max);
+			$rangeTypeIsSuperType = $rangeType->isSuperTypeOf($type);
 
-			if (!($type instanceof ConstantScalarType)) {
-				return $rangeType;
-			}
-
-			if ($rangeType->isSuperTypeOf($type)->no()) {
+			if ($rangeTypeIsSuperType->no()) {
+				// e.g. if 9 is filtered with a range of int<17, 19>
 				return $defaultType;
 			}
+
+			if ($rangeTypeIsSuperType->yes() && !$rangeType->equals($type)) {
+				// e.g. if 18 or int<18, 19> are filtered with a range of int<17, 19>
+				return $type;
+			}
+
+			// Open ranges on either side means that the input is potentially not part of the range
+			return $min === null || $max === null ? TypeCombinator::union($rangeType, $defaultType) : $rangeType;
 		}
 
 		return $type;

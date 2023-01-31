@@ -12,6 +12,7 @@ use DynamicProperties\FinalFoo;
 use Exception;
 use InvalidArgumentException;
 use Iterator;
+use NonExistantClass;
 use PHPStan\Fixture\FinalClass;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -2331,6 +2332,87 @@ class TypeCombinatorTest extends PHPStanTestCase
 			IntersectionType::class,
 			'array<int, string>&oversized-array',
 		];
+
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\ATrait1Class::class), // phpcs:ignore
+					null,
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait1::class), // phpcs:ignore
+				),
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
+					null,
+					null,
+				),
+			],
+			UnionType::class,
+			'$this(TraitInstanceOf\ATrait1Class)|$this(TraitInstanceOf\FinalOther)',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
+					null,
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait1::class), // phpcs:ignore
+				),
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\WithoutFoo::class), // phpcs:ignore
+					null,
+					null,
+				),
+			],
+			UnionType::class,
+			'$this(TraitInstanceOf\FinalOther)|$this(TraitInstanceOf\WithoutFoo)',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\FinalTrait2Class::class), // phpcs:ignore
+					null,
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait2::class), // phpcs:ignore
+				),
+				new ObjectType(\TraitInstanceOf\ATrait1Class::class), // phpcs:ignore
+			],
+			UnionType::class,
+			'$this(TraitInstanceOf\FinalTrait2Class)|TraitInstanceOf\ATrait1Class',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\FinalTrait2Class::class), // phpcs:ignore
+					null,
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait2::class), // phpcs:ignore
+				),
+				new ObjectType(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
+			],
+			UnionType::class,
+			'$this(TraitInstanceOf\FinalTrait2Class)|TraitInstanceOf\FinalOther',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\FinalTrait2Class::class), // phpcs:ignore
+					new ObjectType(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait2::class), // phpcs:ignore
+				),
+				new ObjectType(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
+			],
+			UnionType::class,
+			'$this(TraitInstanceOf\FinalTrait2Class~TraitInstanceOf\FinalOther)|TraitInstanceOf\FinalOther',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\FinalTrait2Class::class), // phpcs:ignore
+					new ObjectType(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait2::class), // phpcs:ignore
+				),
+				new ObjectType(NonExistantClass::class), // phpcs:ignore // @phpstan-ignore-line
+			],
+			UnionType::class,
+			'$this(TraitInstanceOf\FinalTrait2Class~TraitInstanceOf\FinalOther)|NonExistantClass',
+		];
 	}
 
 	/**
@@ -3782,6 +3864,119 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			IntersectionType::class,
 			'array<int, string>&oversized-array',
+		];
+
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\ATrait1Class::class), // phpcs:ignore
+					new ObjectType(\TraitInstanceOf\WithoutFoo::class), // phpcs:ignore
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait1::class), // phpcs:ignore
+				),
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\WithoutFoo::class), // phpcs:ignore
+					null,
+					null,
+				),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
+					new ObjectType(\TraitInstanceOf\WithoutFoo::class), // phpcs:ignore
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait1::class), // phpcs:ignore
+				),
+				new ObjectType(\TraitInstanceOf\WithoutFoo::class), // phpcs:ignore
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\ATrait1Class::class), // phpcs:ignore
+					null,
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait1::class), // phpcs:ignore
+				),
+				new ObjectType(\TraitInstanceOf\FinalTrait2Class::class), // phpcs:ignore
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\ATrait1Class::class), // phpcs:ignore
+					null,
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait1::class), // phpcs:ignore
+				),
+				new ObjectType(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
+					null,
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait1::class), // phpcs:ignore
+				),
+				new ObjectType(\TraitInstanceOf\WithoutFoo::class), // phpcs:ignore
+			],
+			IntersectionType::class,
+			'$this(TraitInstanceOf\FinalOther)&TraitInstanceOf\WithoutFoo',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\ATrait1Class::class), // phpcs:ignore
+					null,
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait1::class), // phpcs:ignore
+				),
+				new ObjectType(\TraitInstanceOf\Trait2::class), // phpcs:ignore
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\FinalTrait2Class::class), // phpcs:ignore
+					null,
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait2::class), // phpcs:ignore
+				),
+				new ObjectType(\TraitInstanceOf\ATrait1Class::class), // phpcs:ignore
+			],
+			IntersectionType::class,
+			'$this(TraitInstanceOf\FinalTrait2Class)&TraitInstanceOf\ATrait1Class',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\FinalTrait2Class::class), // phpcs:ignore
+					null,
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait2::class), // phpcs:ignore
+				),
+				new ObjectType(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\TraitInstanceOf\FinalTrait2Class::class), // phpcs:ignore
+					new ObjectType(\TraitInstanceOf\FinalOther::class), // phpcs:ignore
+					$reflectionProvider->getClass(\TraitInstanceOf\Trait2::class), // phpcs:ignore
+				),
+				new ObjectType(NonExistantClass::class), // phpcs:ignore // @phpstan-ignore-line
+			],
+			IntersectionType::class,
+			'$this(TraitInstanceOf\FinalTrait2Class~TraitInstanceOf\FinalOther)&NonExistantClass',
 		];
 	}
 

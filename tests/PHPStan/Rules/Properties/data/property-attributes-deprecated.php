@@ -14,10 +14,10 @@ final class DoSomethingTheOldWay
 final class SomeDTO
 {
 	#[DoSomethingTheOldWay]
-	public readonly string $property;
+	public $property;
 
 	#[DoSomethingTheOldWayWithDescription]
-	public readonly string $property2;
+	public $property2;
 }
 
 /**

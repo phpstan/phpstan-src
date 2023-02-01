@@ -945,6 +945,8 @@ services:
 
 	-
 		class: PHPStan\Rules\AttributesCheck
+		arguments:
+			deprecationRulesInstalled: %deprecationRulesInstalled%
 
 	-
 		class: PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchCheck

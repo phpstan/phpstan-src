@@ -38,6 +38,7 @@ class ParamAttributesRuleTest extends RuleTestCase
 					true,
 				),
 				new ClassCaseSensitivityCheck($reflectionProvider, false),
+				true,
 			),
 		);
 	}

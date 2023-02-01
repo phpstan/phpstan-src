@@ -40,6 +40,7 @@ class MethodAttributesRuleTest extends RuleTestCase
 					true,
 				),
 				new ClassCaseSensitivityCheck($reflectionProvider, false),
+				true,
 			),
 		);
 	}

@@ -21,6 +21,7 @@ class AttributesCheck
 		private ReflectionProvider $reflectionProvider,
 		private FunctionCallParametersCheck $functionCallParametersCheck,
 		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private bool $deprecationRulesInstalled,
 	)
 	{
 	}
@@ -82,6 +83,15 @@ class AttributesCheck
 					}
 
 					$alreadyPresent[$loweredName] = true;
+				}
+
+				if ($this->deprecationRulesInstalled && $attributeClass->isDeprecated()) {
+					if ($attributeClass->getDeprecatedDescription() !== null) {
+						$deprecatedError = sprintf('Attribute class %s is deprecated: %s', $name, $attributeClass->getDeprecatedDescription());
+					} else {
+						$deprecatedError = sprintf('Attribute class %s is deprecated.', $name);
+					}
+					$errors[] = RuleErrorBuilder::message($deprecatedError)->line($attribute->getLine())->build();
 				}
 
 				if (!$attributeClass->hasConstructor()) {

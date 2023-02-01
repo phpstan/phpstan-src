@@ -38,6 +38,7 @@ class FunctionAttributesRuleTest extends RuleTestCase
 					true,
 				),
 				new ClassCaseSensitivityCheck($reflectionProvider, false),
+				true,
 			),
 		);
 	}

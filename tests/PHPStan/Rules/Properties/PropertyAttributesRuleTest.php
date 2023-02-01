@@ -37,6 +37,7 @@ class PropertyAttributesRuleTest extends RuleTestCase
 					true,
 				),
 				new ClassCaseSensitivityCheck($reflectionProvider, false),
+				true,
 			),
 		);
 	}
@@ -47,6 +48,20 @@ class PropertyAttributesRuleTest extends RuleTestCase
 			[
 				'Attribute class PropertyAttributes\Foo does not have the property target.',
 				26,
+			],
+		]);
+	}
+
+	public function testDeprecatedAttribute(): void
+	{
+		$this->analyse([__DIR__ . '/data/property-attributes-deprecated.php'], [
+			[
+				'Attribute class DeprecatedPropertyAttribute\DoSomethingTheOldWay is deprecated.',
+				16,
+			],
+			[
+				'Attribute class DeprecatedPropertyAttribute\DoSomethingTheOldWayWithDescription is deprecated: Use something else please',
+				19,
 			],
 		]);
 	}

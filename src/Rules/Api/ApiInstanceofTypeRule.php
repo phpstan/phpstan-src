@@ -31,6 +31,7 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VoidType;
@@ -60,6 +61,7 @@ class ApiInstanceofTypeRule implements Rule
 		// ConstantBooleanType::class => 'Type::isTrue() or Type::isFalse()', skipped because not that valuable
 		CallableType::class => 'Type::isCallable() and Type::getCallableParametersAcceptors()',
 		IterableType::class => 'Type::isIterable()',
+		ObjectWithoutClassType::class => 'Type::isObject()',
 
 		// accessory types
 		NonEmptyArrayType::class => 'Type::isIterableAtLeastOnce()',

@@ -32,12 +32,12 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Analyser/MutatingScope.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 2
 			path: src/Analyser/MutatingScope.php
 
@@ -62,7 +62,7 @@ parameters:
 			path: src/Analyser/NodeScopeResolver.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 5
 			path: src/Analyser/TypeSpecifier.php
 
@@ -157,7 +157,7 @@ parameters:
 			path: src/DependencyInjection/ParametersSchemaExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Internal/ContainerDynamicReturnTypeExtension.php
 
@@ -235,22 +235,22 @@ parameters:
 			path: src/PhpDoc/Tag/VarTag.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/PhpDoc/TypeNodeResolver.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone and deprecated\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
 			count: 1
 			path: src/PhpDoc/TypeNodeResolver.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 1
 			path: src/PhpDoc/TypeNodeResolver.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 2
 			path: src/PhpDoc/TypeNodeResolver.php
 
@@ -376,12 +376,12 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 4
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 10
 			path: src/Reflection/InitializerExprTypeResolver.php
 
@@ -406,7 +406,7 @@ parameters:
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Api/NodeConnectingVisitorAttributesRule.php
 
@@ -419,22 +419,22 @@ parameters:
 			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 2
 			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 3
 			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/DeadCode/UnusedPrivateMethodRule.php
 
@@ -464,12 +464,12 @@ parameters:
 			path: src/Rules/DirectRegistry.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/FunctionReturnTypeCheck.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 2
 			path: src/Rules/Generators/YieldFromTypeRule.php
 
@@ -499,42 +499,42 @@ parameters:
 			path: src/Rules/LazyRegistry.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Methods/MethodParameterComparisonHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Methods/MethodParameterComparisonHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Missing/MissingReturnRule.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone and deprecated\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
 			count: 2
 			path: src/Rules/RuleLevelHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/RuleLevelHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/UnusedFunctionParametersCheck.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Variables/CompactVariablesRule.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Variables/CompactVariablesRule.php
 
@@ -544,67 +544,67 @@ parameters:
 			path: src/Testing/PHPStanTestCase.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Accessory/AccessoryNonEmptyStringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Accessory/AccessoryNumericStringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Accessory/HasOffsetValueType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/ArrayType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/ArrayType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/ArrayType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/BooleanType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone and deprecated\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
 			count: 4
 			path: src/Type/CallableType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantArrayType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 8
 			path: src/Type/Constant/ConstantArrayType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 7
 			path: src/Type/Constant/ConstantArrayType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone and deprecated\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantArrayType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Constant/ConstantArrayTypeBuilder.php
 
@@ -619,32 +619,32 @@ parameters:
 			path: src/Type/Constant/ConstantArrayTypeBuilder.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantBooleanType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\FloatType is error\\-prone\\. Use Type\\:\\:isFloat\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\FloatType is error\\-prone and deprecated\\. Use Type\\:\\:isFloat\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantFloatType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone and deprecated\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantIntegerType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ClassStringType is error\\-prone\\. Use Type\\:\\:isClassStringType\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantStringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 4
 			path: src/Type/Constant/ConstantStringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone and deprecated\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantStringType.php
 
@@ -654,42 +654,42 @@ parameters:
 			path: src/Type/Constant/ConstantStringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/OversizedArrayBuilder.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Enum\\\\EnumCaseObjectType is error\\-prone\\. Use Type\\:\\:getEnumCases\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Enum\\\\EnumCaseObjectType is error\\-prone and deprecated\\. Use Type\\:\\:getEnumCases\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Enum/EnumCaseObjectType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\FloatType is error\\-prone\\. Use Type\\:\\:isFloat\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\FloatType is error\\-prone and deprecated\\. Use Type\\:\\:isFloat\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/FloatType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ClassStringType is error\\-prone\\. Use Type\\:\\:isClassStringType\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/GenericClassStringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 4
 			path: src/Type/Generic/GenericClassStringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone and deprecated\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Generic/GenericClassStringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/GenericObjectType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/GenericObjectType.php
 
@@ -699,47 +699,47 @@ parameters:
 			path: src/Type/Generic/TemplateIntersectionType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\FloatType is error\\-prone\\. Use Type\\:\\:isFloat\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\FloatType is error\\-prone and deprecated\\. Use Type\\:\\:isFloat\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone and deprecated\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone and deprecated\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 
@@ -749,37 +749,37 @@ parameters:
 			path: src/Type/Generic/TemplateUnionType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone and deprecated\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/IntegerRangeType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone and deprecated\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/IntegerType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Accessory\\\\AccessoryType is error\\-prone\\. Use methods on PHPStan\\\\Type\\\\Type instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Accessory\\\\AccessoryType is error\\-prone and deprecated\\. Use methods on PHPStan\\\\Type\\\\Type instead\\.$#"
 			count: 2
 			path: src/Type/IntersectionType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/IntersectionType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone and deprecated\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/IntersectionType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/IterableType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone and deprecated\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/NullType.php
 
@@ -800,87 +800,87 @@ parameters:
 			path: src/Type/ObjectType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Enum\\\\EnumCaseObjectType is error\\-prone\\. Use Type\\:\\:getEnumCases\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Enum\\\\EnumCaseObjectType is error\\-prone and deprecated\\. Use Type\\:\\:getEnumCases\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/ObjectType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 6
 			path: src/Type/ObjectType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/ObjectType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
 			count: 4
 			path: src/Type/ObjectWithoutClassType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Php/ArrayCombineFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/ArrayCombineFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/ArrayKeyExistsFunctionTypeSpecifyingExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 4
 			path: src/Type/Php/ArrayMergeFunctionDynamicReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/ClassExistsFunctionTypeSpecifyingExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/CompactFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/CompactFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/DefineConstantTypeSpecifyingExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/DefinedConstantTypeSpecifyingExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/DsMapDynamicReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/FilterFunctionReturnTypeHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/FunctionExistsFunctionTypeSpecifyingExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/IsAFunctionTypeSpecifyingExtension.php
 
@@ -893,222 +893,222 @@ parameters:
 			path: src/Type/Php/JsonThrowOnErrorDynamicReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/JsonThrowOnErrorDynamicReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Php/LtrimFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/MbStrlenFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/MbSubstituteCharacterDynamicReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/MethodExistsTypeSpecifyingExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Php/MinMaxFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/NumberFormatFunctionDynamicReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Php/PropertyExistsTypeSpecifyingExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Php/RangeFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/ReflectionClassIsSubclassOfTypeSpecifyingExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/ReflectionGetAttributesMethodReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/SscanfFunctionDynamicReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/StrRepeatFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/StrlenFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/StaticType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/StaticType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/StringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone and deprecated\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/StringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Accessory\\\\AccessoryType is error\\-prone\\. Use methods on PHPStan\\\\Type\\\\Type instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Accessory\\\\AccessoryType is error\\-prone and deprecated\\. Use methods on PHPStan\\\\Type\\\\Type instead\\.$#"
 			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 5
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone and deprecated\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ClassStringType is error\\-prone\\. Use Type\\:\\:isClassStringType\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 12
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 4
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\FloatType is error\\-prone\\. Use Type\\:\\:isFloat\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\FloatType is error\\-prone and deprecated\\. Use Type\\:\\:isFloat\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone and deprecated\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 8
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone and deprecated\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone and deprecated\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/TypeUtils.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 5
 			path: src/Type/TypeUtils.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/TypeUtils.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/TypehintHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/TypehintHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone and deprecated\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/UnionType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/UnionType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Accessory\\\\AccessoryType is error\\-prone\\. Use methods on PHPStan\\\\Type\\\\Type instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Accessory\\\\AccessoryType is error\\-prone and deprecated\\. Use methods on PHPStan\\\\Type\\\\Type instead\\.$#"
 			count: 3
 			path: src/Type/UnionTypeHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/UnionTypeHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone and deprecated\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/UnionTypeHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone and deprecated\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/UnionTypeHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone and deprecated\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/VerbosityLevel.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\VoidType is error\\-prone\\. Use Type\\:\\:isVoid\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\VoidType is error\\-prone and deprecated\\. Use Type\\:\\:isVoid\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/VoidType.php
 

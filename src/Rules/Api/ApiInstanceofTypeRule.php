@@ -79,7 +79,11 @@ class ApiInstanceofTypeRule implements Rule
 		AccessoryType::class => 'methods on PHPStan\\Type\\Type',
 	];
 
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private bool $enabled,
+		private bool $deprecationRulesInstalled,
+	)
 	{
 	}
 
@@ -90,6 +94,10 @@ class ApiInstanceofTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$this->enabled && !$this->deprecationRulesInstalled) {
+			return [];
+		}
+
 		if (!$node->class instanceof Node\Name) {
 			return [];
 		}
@@ -120,7 +128,7 @@ class ApiInstanceofTypeRule implements Rule
 
 		return [
 			RuleErrorBuilder::message(sprintf(
-				'Doing instanceof %s is error-prone. Use %s instead.',
+				'Doing instanceof %s is error-prone and deprecated. Use %s instead.',
 				$className,
 				$lowerMap[$lowerClassName],
 			))->build(),

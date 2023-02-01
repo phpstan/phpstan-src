@@ -16,8 +16,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
 	PHPStan\Rules\Api\ApiInstanceofRule:
 		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
-	PHPStan\Rules\Api\ApiInstanceofTypeRule:
-		phpstan.rules.rule: %featureToggles.instanceofType%
 	PHPStan\Rules\Api\RuntimeReflectionFunctionRule:
 		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
 	PHPStan\Rules\Api\RuntimeReflectionInstantiationRule:
@@ -96,6 +94,11 @@ services:
 		class: PHPStan\Rules\Api\ApiInstanceofRule
 	-
 		class: PHPStan\Rules\Api\ApiInstanceofTypeRule
+		arguments:
+			enabled: %featureToggles.instanceofType%
+			deprecationRulesInstalled: %deprecationRulesInstalled%
+		tags:
+			- phpstan.rules.rule
 	-
 		class: PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule
 	-

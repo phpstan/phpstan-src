@@ -13,22 +13,22 @@ class ApiInstanceofTypeRuleTest extends RuleTestCase
 
 	public function getRule(): Rule
 	{
-		return new ApiInstanceofTypeRule($this->createReflectionProvider());
+		return new ApiInstanceofTypeRule($this->createReflectionProvider(), true, true);
 	}
 
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/instanceof-type.php'], [
 			[
-				'Doing instanceof PHPStan\Type\TypeWithClassName is error-prone. Use Type::getObjectClassNames() instead.',
+				'Doing instanceof PHPStan\Type\TypeWithClassName is error-prone and deprecated. Use Type::getObjectClassNames() instead.',
 				19,
 			],
 			[
-				'Doing instanceof phpstan\type\typewithclassname is error-prone. Use Type::getObjectClassNames() instead.',
+				'Doing instanceof phpstan\type\typewithclassname is error-prone and deprecated. Use Type::getObjectClassNames() instead.',
 				23,
 			],
 			[
-				'Doing instanceof PHPStan\Type\TypeWithClassName is error-prone. Use Type::getObjectClassNames() instead.',
+				'Doing instanceof PHPStan\Type\TypeWithClassName is error-prone and deprecated. Use Type::getObjectClassNames() instead.',
 				35,
 			],
 		]);

@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ObjectType;
 use function array_values;
 use function sprintf;
 
@@ -45,11 +44,11 @@ class AllowedSubTypesRule implements Rule
 			}
 
 			foreach ($allowedSubTypes as $allowedSubType) {
-				if (!$allowedSubType instanceof ObjectType) {
+				if (!$allowedSubType->isObject()->yes()) {
 					continue;
 				}
 
-				if ($className === $allowedSubType->getClassName()) {
+				if ($allowedSubType->getObjectClassNames() === [$className]) {
 					continue 2;
 				}
 			}

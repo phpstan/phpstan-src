@@ -99,7 +99,7 @@ class TypehintHelper
 			$types = [];
 			foreach ($reflectionType->getTypes() as $innerReflectionType) {
 				$innerType = self::decideTypeFromReflection($innerReflectionType, null, $selfClass, false);
-				if (!$innerType instanceof ObjectType) {
+				if (!$innerType->isObject()->yes()) {
 					return new NeverType();
 				}
 

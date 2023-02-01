@@ -250,6 +250,11 @@ parameters:
 			path: src/PhpDoc/TypeNodeResolver.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			count: 2
+			path: src/PhpDoc/TypeNodeResolver.php
+
+		-
 			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Identifier\\\\Exception\\\\InvalidIdentifierName is never thrown in the try block\\.$#"
 			count: 2
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
@@ -679,6 +684,11 @@ parameters:
 			path: src/Type/Generic/GenericClassStringType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Generic/GenericObjectType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/GenericObjectType.php
@@ -715,6 +725,11 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Generic/TemplateTypeFactory.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 
@@ -787,6 +802,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Enum\\\\EnumCaseObjectType is error\\-prone\\. Use Type\\:\\:getEnumCases\\(\\) instead\\.$#"
 			count: 1
+			path: src/Type/ObjectType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			count: 6
 			path: src/Type/ObjectType.php
 
 		-
@@ -946,6 +966,11 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/StrlenFunctionReturnTypeExtension.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			count: 3
+			path: src/Type/StaticType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"

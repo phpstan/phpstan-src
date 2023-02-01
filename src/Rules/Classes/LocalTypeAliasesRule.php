@@ -14,7 +14,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\CircularTypeAliasErrorType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
@@ -178,7 +177,7 @@ class LocalTypeAliasesRule implements Rule
 		}
 
 		$aliasNameResolvedType = $this->typeNodeResolver->resolve(new IdentifierTypeNode($aliasName), $nameScope->bypassTypeAliases());
-		return ($aliasNameResolvedType instanceof ObjectType && !in_array($aliasName, ['self', 'parent'], true))
+		return ($aliasNameResolvedType->isObject()->yes() && !in_array($aliasName, ['self', 'parent'], true))
 			|| $aliasNameResolvedType instanceof TemplateType; // aliases take precedence over type parameters, this is reported by other rules using TemplateTypeCheck
 	}
 

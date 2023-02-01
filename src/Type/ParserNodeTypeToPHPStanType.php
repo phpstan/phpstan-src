@@ -53,7 +53,7 @@ class ParserNodeTypeToPHPStanType
 			$types = [];
 			foreach ($type->types as $intersectionTypeType) {
 				$innerType = self::resolve($intersectionTypeType, $classReflection);
-				if (!$innerType instanceof ObjectType) {
+				if (!$innerType->isObject()->yes()) {
 					return new NeverType();
 				}
 

@@ -48,7 +48,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 
 	/**
 	 * @api
-	 * @param array<int, ParameterReflection> $parameters
+	 * @param array<int, ParameterReflection>|null $parameters
 	 */
 	public function __construct(
 		?array $parameters = null,

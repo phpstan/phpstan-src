@@ -19,7 +19,7 @@ final class ComposerHelper
 
 	private static ?string $phpstanVersion = null;
 
-	/** @return array<string, mixed> */
+	/** @return array<string, mixed>|null */
 	public static function getComposerConfig(string $root): ?array
 	{
 		$composerJsonPath = self::getComposerJsonPath($root);

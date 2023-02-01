@@ -592,7 +592,7 @@ class TypeNodeResolver
 		} elseif (in_array($mainTypeName, ['class-string', 'interface-string'], true)) {
 			if (count($genericTypes) === 1) {
 				$genericType = $genericTypes[0];
-				if ((new ObjectWithoutClassType())->isSuperTypeOf($genericType)->yes() || $genericType instanceof MixedType) {
+				if ($genericType->isObject()->yes() || $genericType instanceof MixedType) {
 					return new GenericClassStringType($genericType);
 				}
 			}

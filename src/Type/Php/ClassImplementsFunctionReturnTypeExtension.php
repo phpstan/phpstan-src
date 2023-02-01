@@ -43,7 +43,7 @@ class ClassImplementsFunctionReturnTypeExtension implements DynamicFunctionRetur
 			$autoload = $scope->getType($args[1]->value)->isTrue();
 		}
 
-		$isObject = (new ObjectWithoutClassType())->isSuperTypeOf($firstArgType);
+		$isObject = $firstArgType->isObject();
 		$variant = ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants());
 		if ($isObject->yes()) {
 			return TypeCombinator::remove($variant->getReturnType(), new ConstantBooleanType(false));

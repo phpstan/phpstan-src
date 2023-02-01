@@ -1850,7 +1850,7 @@ class InitializerExprTypeResolver
 							new GenericClassStringType($type),
 							new AccessoryLiteralStringType(),
 						);
-					} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
+					} elseif ($type->isObject()->yes()) {
 						return TypeCombinator::intersect(
 							new ClassStringType(),
 							new AccessoryLiteralStringType(),

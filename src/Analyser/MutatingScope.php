@@ -1372,7 +1372,7 @@ class MutatingScope implements Scope
 			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
 		} elseif ($node instanceof Object_) {
 			$castToObject = static function (Type $type): Type {
-				if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
+				if ($type->isObject()->yes()) {
 					return $type;
 				}
 
@@ -4841,7 +4841,7 @@ class MutatingScope implements Scope
 			return $type->getGenericType();
 		}
 
-		if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
+		if ($type->isObject()->yes()) {
 			return $type;
 		}
 

@@ -59,7 +59,7 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 		$objectType = $scope->getType($node->getArgs()[0]->value);
 		if ($objectType instanceof ConstantStringType) {
 			return new SpecifiedTypes([], []);
-		} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($objectType)->yes()) {
+		} elseif ($objectType->isObject()->yes()) {
 			$propertyNode = new PropertyFetch(
 				$node->getArgs()[0]->value,
 				new Identifier($propertyNameType->getValue()),

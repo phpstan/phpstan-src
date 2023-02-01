@@ -21,7 +21,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -158,7 +157,7 @@ class StaticMethodCallCheck
 
 		if ($classType instanceof GenericClassStringType) {
 			$classType = $classType->getGenericType();
-			if (!(new ObjectWithoutClassType())->isSuperTypeOf($classType)->yes()) {
+			if (!$classType->isObject()->yes()) {
 				return [[], null];
 			}
 		} elseif ($classType->isString()->yes()) {

@@ -1129,7 +1129,7 @@ class TypeSpecifier
 				);
 			}
 
-			if ((new ObjectWithoutClassType())->isSuperTypeOf($argType)->yes()) {
+			if ($argType->isObject()->yes()) {
 				return $this->create(
 					$exprNode->getArgs()[0]->value,
 					$objectType,

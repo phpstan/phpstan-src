@@ -30,7 +30,6 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -498,7 +497,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$type = new ObjectType($reflectionProvider->getClass($classOrObject->getValue())->getName());
 		} elseif ($classOrObject instanceof GenericClassStringType) {
 			$type = $classOrObject->getGenericType();
-		} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($classOrObject)->yes()) {
+		} elseif ($classOrObject->isObject()->yes()) {
 			$type = $classOrObject;
 		} else {
 			return ConstantArrayTypeAndMethod::createUnknown();
@@ -545,7 +544,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$type = new ObjectType($reflectionProvider->getClass($classOrObject->getValue())->getName());
 			} elseif ($classOrObject instanceof GenericClassStringType) {
 				$type = $classOrObject->getGenericType();
-			} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($classOrObject)->yes()) {
+			} elseif ($classOrObject->isObject()->yes()) {
 				$type = $classOrObject;
 			} else {
 				$typeAndMethods[] = ConstantArrayTypeAndMethod::createUnknown();

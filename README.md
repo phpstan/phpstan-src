@@ -17,7 +17,7 @@ Any contributions are welcome.
 composer install
 ```
 
-If you encounter dependency problem, try using `export COMPOSER_ROOT_VERSION=1.9.x-dev`
+If you encounter dependency problem, try using `export COMPOSER_ROOT_VERSION=1.10.x-dev`
 
 ### Building
 

@@ -78,7 +78,7 @@ trait LateResolvableTypeTrait
 
 	public function canAccessProperties(): TrinaryLogic
 	{
-		return $this->resolve()->canAccessConstants();
+		return $this->resolve()->canAccessProperties();
 	}
 
 	public function hasProperty(string $propertyName): TrinaryLogic

@@ -185,6 +185,7 @@ class TypeUtils
 	}
 
 	/**
+	 * @deprecated Use Type::getEnumCases()
 	 * @return EnumCaseObjectType[]
 	 */
 	public static function getEnumCaseObjects(Type $type): array

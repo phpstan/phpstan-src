@@ -7,22 +7,25 @@ class Foo
 	private $privateProperty;
 }
 
-(\Closure::bind(
-	function () {
-		$this->privateProperty = 123;
-	},
-	new Foo(),
-	Foo::class
-))();
-
 class Bar extends Foo
 {
 }
 
-(\Closure::bind(
-	function () {
-		$this->privateProperty = 123;
-	},
-	new Bar(),
-	Foo::class
-))();
+function test()
+{
+	(\Closure::bind(
+		function () {
+			$this->privateProperty = 123;
+		},
+		new Foo(),
+		Foo::class
+	))();
+
+	(\Closure::bind(
+		function () {
+			$this->privateProperty = 123;
+		},
+		new Bar(),
+		Foo::class
+	))();
+}

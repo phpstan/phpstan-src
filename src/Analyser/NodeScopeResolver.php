@@ -184,7 +184,7 @@ class NodeScopeResolver
 	private array $analysedFiles = [];
 
 	/** @var array<string, true> */
-	private array $earlyTerminatingMethodNames = [];
+	private array $earlyTerminatingMethodNames;
 
 	/**
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])

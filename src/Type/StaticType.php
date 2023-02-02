@@ -539,7 +539,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		return new BooleanType();
+		return $this->getStaticObjectType()->looseCompare($type, $phpVersion);
 	}
 
 	/**

@@ -22,6 +22,7 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -611,9 +612,15 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isScalar());
 	}
 
-	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	public function looseCompare(Type $type): BooleanType
 	{
-		return new BooleanType();
+		return $this->intersectResults(static function (Type $innerType) use ($type): TrinaryLogic {
+			$booleanType = $innerType->looseCompare($type);
+			if ($booleanType instanceof ConstantBooleanType) {
+				return TrinaryLogic::createFromBoolean($booleanType->getValue());
+			}
+			return TrinaryLogic::createMaybe();
+		})->toBooleanType();
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic

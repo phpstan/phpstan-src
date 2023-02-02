@@ -581,7 +581,13 @@ class UnionType implements CompoundType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		return new BooleanType();
+		return $this->unionResults(static function (Type $innerType) use ($type): TrinaryLogic {
+			$booleanType = $innerType->looseCompare($type);
+			if ($booleanType instanceof ConstantBooleanType) {
+				return TrinaryLogic::createFromBoolean($booleanType->getValue());
+			}
+			return TrinaryLogic::createMaybe();
+		})->toBooleanType();
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic

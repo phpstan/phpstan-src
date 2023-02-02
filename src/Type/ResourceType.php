@@ -91,6 +91,7 @@ class ResourceType implements Type
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		// TODO implement Type::isResource()
 		return new BooleanType();
 	}
 

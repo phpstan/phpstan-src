@@ -42,6 +42,11 @@ class ClassStringType extends StringType
 		return $type->isClassStringType();
 	}
 
+	public function looseCompare(Type $type): BooleanType
+	{
+		return $type->isClassStringType()->toBooleanType();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

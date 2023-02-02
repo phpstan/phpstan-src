@@ -356,6 +356,11 @@ class UnionType implements CompoundType
 		return $object;
 	}
 
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->getTemplateType($ancestorClassName, $templateTypeName));
+	}
+
 	public function isObject(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isObject());

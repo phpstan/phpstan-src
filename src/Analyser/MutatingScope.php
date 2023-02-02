@@ -87,7 +87,6 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -1426,25 +1425,16 @@ class MutatingScope implements Scope
 			}
 
 			$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-			if (!$returnType instanceof TypeWithClassName) {
-				return new MixedType();
-			}
-
-			$generatorSendType = GenericTypeVariableResolver::getType($returnType, Generator::class, 'TSend');
-			if ($generatorSendType === null) {
+			$generatorSendType = $returnType->getTemplateType(Generator::class, 'TSend');
+			if ($generatorSendType instanceof ErrorType) {
 				return new MixedType();
 			}
 
 			return $generatorSendType;
 		} elseif ($node instanceof Expr\YieldFrom) {
 			$yieldFromType = $this->getType($node->expr);
-
-			if (!$yieldFromType instanceof TypeWithClassName) {
-				return new MixedType();
-			}
-
-			$generatorReturnType = GenericTypeVariableResolver::getType($yieldFromType, Generator::class, 'TReturn');
-			if ($generatorReturnType === null) {
+			$generatorReturnType = $yieldFromType->getTemplateType(Generator::class, 'TReturn');
+			if ($generatorReturnType instanceof ErrorType) {
 				return new MixedType();
 			}
 

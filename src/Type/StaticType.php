@@ -185,6 +185,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return sprintf('static(%s)', $this->getStaticObjectType()->describe($level));
 	}
 
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
+	{
+		return $this->getStaticObjectType()->getTemplateType($ancestorClassName, $templateTypeName);
+	}
+
 	public function isObject(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isObject();

@@ -8,6 +8,9 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 class GenericTypeVariableResolver
 {
 
+	/**
+	 * @deprecated Use Type::getTemplateType() instead.
+	 */
 	public static function getType(
 		TypeWithClassName $type,
 		string $genericClassName,

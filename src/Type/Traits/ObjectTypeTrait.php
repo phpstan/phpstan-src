@@ -29,6 +29,11 @@ trait ObjectTypeTrait
 	use NonArrayTypeTrait;
 	use TruthyBooleanTypeTrait;
 
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
+	{
+		return new MixedType();
+	}
+
 	public function isObject(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

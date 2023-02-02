@@ -204,6 +204,24 @@ interface Type
 	public function getGreaterOrEqualType(): Type;
 
 	/**
+	 * Returns actual template type for a given object.
+	 *
+	 * Example:
+	 *
+	 * @-template T
+	 * class Foo {}
+	 *
+	 * // $fooType is Foo<int>
+	 * $t = $fooType->getTemplateType(Foo::class, 'T');
+	 * $t->isInteger(); // yes
+	 *
+	 * Returns ErrorType in case of a missing type.
+	 *
+	 * @param class-string $ancestorClassName
+	 */
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type;
+
+	/**
 	 * Infers template types
 	 *
 	 * Infers the real Type of the TemplateTypes found in $this, based on

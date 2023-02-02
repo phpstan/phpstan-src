@@ -14,10 +14,16 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 trait MaybeObjectTypeTrait
 {
+
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
+	{
+		return new MixedType();
+	}
 
 	public function isObject(): TrinaryLogic
 	{

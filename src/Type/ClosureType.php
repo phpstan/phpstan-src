@@ -180,6 +180,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return $this->objectType->isObject();
 	}
 
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
+	{
+		return $this->objectType->getTemplateType($ancestorClassName, $templateTypeName);
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return $this->objectType->canAccessProperties();

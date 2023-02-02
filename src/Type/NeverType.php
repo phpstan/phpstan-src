@@ -110,6 +110,11 @@ class NeverType implements CompoundType
 		return '*NEVER*';
 	}
 
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
+	{
+		return new NeverType();
+	}
+
 	public function isObject(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

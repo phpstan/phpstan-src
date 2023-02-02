@@ -11,13 +11,12 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateMixedType;
-use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use function sprintf;
@@ -74,13 +73,9 @@ class MissingReturnRule implements Rule
 		}
 
 		if ($statementResult->hasYield()) {
-			if ($returnType instanceof TypeWithClassName && $this->checkPhpDocMissingReturn) {
-				$generatorReturnType = GenericTypeVariableResolver::getType(
-					$returnType,
-					Generator::class,
-					'TReturn',
-				);
-				if ($generatorReturnType !== null) {
+			if ($this->checkPhpDocMissingReturn) {
+				$generatorReturnType = $returnType->getTemplateType(Generator::class, 'TReturn');
+				if (!$generatorReturnType instanceof ErrorType) {
 					$returnType = $generatorReturnType;
 					if ($returnType->isVoid()->yes()) {
 						return [];

@@ -39,6 +39,11 @@ class NonexistentParentClassType implements Type
 		return 'parent';
 	}
 
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
+	{
+		return new ErrorType();
+	}
+
 	public function isObject(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

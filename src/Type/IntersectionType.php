@@ -388,6 +388,11 @@ class IntersectionType implements CompoundType
 		return implode('&', $describedTypes);
 	}
 
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getTemplateType($ancestorClassName, $templateTypeName));
+	}
+
 	public function isObject(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isObject());

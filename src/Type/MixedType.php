@@ -315,6 +315,11 @@ class MixedType implements CompoundType, SubtractableType
 		return AcceptsResult::createYes();
 	}
 
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
+	{
+		return new self();
+	}
+
 	public function isObject(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {

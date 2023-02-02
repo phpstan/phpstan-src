@@ -76,6 +76,11 @@ trait LateResolvableTypeTrait
 		return $isSuperType;
 	}
 
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
+	{
+		return $this->resolve()->getTemplateType($ancestorClassName, $templateTypeName);
+	}
+
 	public function isObject(): TrinaryLogic
 	{
 		return $this->resolve()->isObject();

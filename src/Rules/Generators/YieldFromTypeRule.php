@@ -10,9 +10,8 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\GenericTypeVariableResolver;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -99,18 +98,10 @@ class YieldFromTypeRule implements Rule
 			return $messages;
 		}
 
-		if (!$exprType instanceof TypeWithClassName) {
-			return $messages;
-		}
-
 		$currentReturnType = ParametersAcceptorSelector::selectSingle($scopeFunction->getVariants())->getReturnType();
-		if (!$currentReturnType instanceof TypeWithClassName) {
-			return $messages;
-		}
-
-		$exprSendType = GenericTypeVariableResolver::getType($exprType, Generator::class, 'TSend');
-		$thisSendType = GenericTypeVariableResolver::getType($currentReturnType, Generator::class, 'TSend');
-		if ($exprSendType === null || $thisSendType === null) {
+		$exprSendType = $exprType->getTemplateType(Generator::class, 'TSend');
+		$thisSendType = $currentReturnType->getTemplateType(Generator::class, 'TSend');
+		if ($exprSendType instanceof ErrorType || $thisSendType instanceof ErrorType) {
 			return $messages;
 		}
 

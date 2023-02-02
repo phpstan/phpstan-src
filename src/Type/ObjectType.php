@@ -36,6 +36,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -769,6 +770,41 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $class->getConstant($constantName);
 	}
 
+	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
+	{
+		$classReflection = $this->getClassReflection();
+		if ($classReflection === null) {
+			return new ErrorType();
+		}
+
+		$ancestorClassReflection = $classReflection->getAncestorWithClassName($ancestorClassName);
+		if ($ancestorClassReflection === null) {
+			return new ErrorType();
+		}
+
+		$activeTemplateTypeMap = $ancestorClassReflection->getPossiblyIncompleteActiveTemplateTypeMap();
+		$type = $activeTemplateTypeMap->getType($templateTypeName);
+		if ($type === null) {
+			return new ErrorType();
+		}
+		if ($type instanceof ErrorType) {
+			$templateTypeMap = $ancestorClassReflection->getTemplateTypeMap();
+			$templateType = $templateTypeMap->getType($templateTypeName);
+			if ($templateType === null) {
+				return $type;
+			}
+
+			$bound = TemplateTypeHelper::resolveToBounds($templateType);
+			if ($bound instanceof MixedType && $bound->isExplicitMixed()) {
+				return new MixedType(false);
+			}
+
+			return $bound;
+		}
+
+		return $type;
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];
@@ -810,8 +846,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$extraOffsetAccessible = $this->isExtraOffsetAccessibleClass()->yes();
 		if ($this->isInstanceOf(Traversable::class)->yes() && !$extraOffsetAccessible) {
 			$isTraversable = true;
-			$tKey = GenericTypeVariableResolver::getType($this, Traversable::class, 'TKey');
-			if ($tKey !== null) {
+			$tKey = $this->getTemplateType(Traversable::class, 'TKey');
+			if (!$tKey instanceof ErrorType) {
 				if (!$tKey instanceof MixedType || $tKey->isExplicitMixed()) {
 					return $tKey;
 				}
@@ -861,8 +897,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$extraOffsetAccessible = $this->isExtraOffsetAccessibleClass()->yes();
 		if ($this->isInstanceOf(Traversable::class)->yes() && !$extraOffsetAccessible) {
 			$isTraversable = true;
-			$tValue = GenericTypeVariableResolver::getType($this, Traversable::class, 'TValue');
-			if ($tValue !== null) {
+			$tValue = $this->getTemplateType(Traversable::class, 'TValue');
+			if (!$tValue instanceof ErrorType) {
 				if (!$tValue instanceof MixedType || $tValue->isExplicitMixed()) {
 					return $tValue;
 				}

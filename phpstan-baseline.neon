@@ -37,11 +37,6 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
-			count: 2
-			path: src/Analyser/MutatingScope.php
-
-		-
 			message: "#^Only numeric types are allowed in pre\\-decrement, bool\\|float\\|int\\|string\\|null given\\.$#"
 			count: 1
 			path: src/Analyser/MutatingScope.php
@@ -464,16 +459,6 @@ parameters:
 			path: src/Rules/DirectRegistry.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
-			count: 1
-			path: src/Rules/FunctionReturnTypeCheck.php
-
-		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
-			count: 2
-			path: src/Rules/Generators/YieldFromTypeRule.php
-
-		-
 			message: "#^Function class_implements\\(\\) is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
 			count: 1
 			path: src/Rules/LazyRegistry.php
@@ -507,11 +492,6 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Methods/MethodParameterComparisonHelper.php
-
-		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
-			count: 1
-			path: src/Rules/Missing/MissingReturnRule.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone and deprecated\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"

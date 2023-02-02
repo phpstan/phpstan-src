@@ -6,11 +6,10 @@ use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
-use PHPStan\Type\GenericTypeVariableResolver;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use function sprintf;
@@ -48,16 +47,8 @@ class FunctionReturnTypeCheck
 		}
 
 		if ($isGenerator) {
-			if (!$returnType instanceof TypeWithClassName) {
-				return [];
-			}
-
-			$returnType = GenericTypeVariableResolver::getType(
-				$returnType,
-				Generator::class,
-				'TReturn',
-			);
-			if ($returnType === null) {
+			$returnType = $returnType->getTemplateType(Generator::class, 'TReturn');
+			if ($returnType instanceof ErrorType) {
 				return [];
 			}
 		}

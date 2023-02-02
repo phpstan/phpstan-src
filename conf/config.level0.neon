@@ -31,6 +31,7 @@ rules:
 	- PHPStan\Rules\Api\ApiMethodCallRule
 	- PHPStan\Rules\Api\ApiStaticCallRule
 	- PHPStan\Rules\Api\ApiTraitUseRule
+	- PHPStan\Rules\Api\GetTemplateTypeRule
 	- PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
 	- PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
 	- PHPStan\Rules\Arrays\EmptyArrayItemRule

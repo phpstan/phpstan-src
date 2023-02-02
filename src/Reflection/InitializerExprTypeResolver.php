@@ -1446,30 +1446,38 @@ class InitializerExprTypeResolver
 	 */
 	private function resolveCommonMath(Expr\BinaryOp $expr, Type $leftType, Type $rightType): Type
 	{
+		$types = TypeCombinator::union($leftType, $rightType);
 		$leftNumberType = $leftType->toNumber();
 		$rightNumberType = $rightType->toNumber();
 
-		if ($rightNumberType instanceof IntegerRangeType || $rightNumberType instanceof ConstantIntegerType || $rightType instanceof UnionType) {
+		if (
+			!$types instanceof MixedType
+			&& (
+				$rightNumberType instanceof IntegerRangeType
+				|| $rightNumberType instanceof ConstantIntegerType
+				|| $rightNumberType instanceof UnionType
+			)
+		) {
 			if ($leftNumberType instanceof IntegerRangeType || $leftNumberType instanceof ConstantIntegerType) {
 				return $this->integerRangeMath(
 					$leftNumberType,
 					$expr,
 					$rightNumberType,
 				);
-			} elseif ($leftType instanceof UnionType) {
+			} elseif ($leftNumberType instanceof UnionType) {
 				$unionParts = [];
 
-				foreach ($leftType->getTypes() as $type) {
+				foreach ($leftNumberType->getTypes() as $type) {
 					$numberType = $type->toNumber();
 					if ($numberType instanceof IntegerRangeType || $numberType instanceof ConstantIntegerType) {
 						$unionParts[] = $this->integerRangeMath($numberType, $expr, $rightNumberType);
 					} else {
-						$unionParts[] = $type;
+						$unionParts[] = $numberType;
 					}
 				}
 
 				$union = TypeCombinator::union(...$unionParts);
-				if ($leftType instanceof BenevolentUnionType) {
+				if ($leftNumberType instanceof BenevolentUnionType) {
 					return TypeUtils::toBenevolentUnion($union)->toNumber();
 				}
 
@@ -1482,7 +1490,6 @@ class InitializerExprTypeResolver
 			return $specifiedTypes;
 		}
 
-		$types = TypeCombinator::union($leftType, $rightType);
 		if (
 			$leftType->isArray()->yes()
 			|| $rightType->isArray()->yes()

@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use ArrayAccess;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\Dummy\DummyConstantReflection;
@@ -820,6 +821,11 @@ class MixedType implements CompoundType, SubtractableType
 		}
 
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function tryRemove(Type $typeToRemove): ?Type

@@ -2,8 +2,10 @@
 
 namespace PHPStan\Type\Accessory;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -257,6 +259,11 @@ class HasOffsetType implements CompoundType, AccessoryType
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function getKeysArray(): Type

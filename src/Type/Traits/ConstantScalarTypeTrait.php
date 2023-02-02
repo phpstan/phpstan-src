@@ -2,10 +2,15 @@
 
 namespace PHPStan\Type\Traits;
 
+use PHPStan\Php\PhpVersion;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\Type;
 
 trait ConstantScalarTypeTrait
@@ -44,6 +49,24 @@ trait ConstantScalarTypeTrait
 		}
 
 		return TrinaryLogic::createNo();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		if (!$this instanceof ConstantScalarType) {
+			throw new ShouldNotHappenException();
+		}
+
+		if ($type instanceof ConstantScalarType) {
+			return LooseComparisonHelper::compareConstantScalars($this, $type, $phpVersion);
+		}
+
+		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
+			// @phpstan-ignore-next-line
+			return new ConstantBooleanType($this->getValue() == []); // phpcs:ignore
+		}
+
+		return parent::looseCompare($type, $phpVersion);
 	}
 
 	public function equals(Type $type): bool

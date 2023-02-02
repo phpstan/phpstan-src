@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Traits;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -409,6 +410,11 @@ trait LateResolvableTypeTrait
 	public function isScalar(): TrinaryLogic
 	{
 		return $this->resolve()->isScalar();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function getSmallerType(): Type

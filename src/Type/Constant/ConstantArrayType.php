@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -393,6 +394,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return TrinaryLogic::createNo();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		if ($this->isIterableAtLeastOnce()->no() && $type instanceof ConstantScalarType) {
+			// @phpstan-ignore-next-line
+			return new ConstantBooleanType($type->getValue() == []); // phpcs:ignore
+		}
+
+		return new BooleanType();
 	}
 
 	public function equals(Type $type): bool

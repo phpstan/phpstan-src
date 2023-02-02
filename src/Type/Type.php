@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -194,6 +195,8 @@ interface Type
 	public function isVoid(): TrinaryLogic;
 
 	public function isScalar(): TrinaryLogic;
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType;
 
 	public function getSmallerType(): Type;
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -116,6 +117,11 @@ class BooleanType implements Type
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function tryRemove(Type $typeToRemove): ?Type

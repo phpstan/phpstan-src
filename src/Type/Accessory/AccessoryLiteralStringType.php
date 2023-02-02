@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Accessory;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
@@ -261,6 +262,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function traverse(callable $cb): Type

@@ -262,4 +262,9 @@ class CallCallablesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/static-call-in-functions.php'], []);
 	}
 
+	public function testBug5867(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5867.php'], []);
+	}
+
 }

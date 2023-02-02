@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -566,6 +567,11 @@ class UnionType implements CompoundType
 	public function isScalar(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isScalar());
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic

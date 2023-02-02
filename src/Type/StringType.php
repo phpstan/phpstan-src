@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -224,6 +225,11 @@ class StringType implements Type
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function hasMethod(string $methodName): TrinaryLogic

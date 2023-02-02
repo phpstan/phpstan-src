@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
@@ -182,6 +183,11 @@ class VoidType implements Type
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function traverse(callable $cb): Type

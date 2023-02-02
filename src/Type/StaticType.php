@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -524,6 +525,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 	public function isScalar(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isScalar();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	/**

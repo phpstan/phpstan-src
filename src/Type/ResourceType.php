@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -86,6 +87,11 @@ class ResourceType implements Type
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function exponentiate(Type $exponent): Type

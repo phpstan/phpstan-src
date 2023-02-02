@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -410,6 +411,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function getEnumCases(): array

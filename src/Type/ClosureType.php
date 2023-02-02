@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use Closure;
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -486,6 +487,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function exponentiate(Type $exponent): Type

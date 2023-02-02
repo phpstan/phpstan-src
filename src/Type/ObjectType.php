@@ -15,6 +15,7 @@ use IteratorAggregate;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Broker\Broker;
 use PHPStan\Broker\ClassNotFoundException;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -1000,6 +1001,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	private function isExtraOffsetAccessibleClass(): TrinaryLogic

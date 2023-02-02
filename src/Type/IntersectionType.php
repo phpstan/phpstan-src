@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -598,6 +599,11 @@ class IntersectionType implements CompoundType
 	public function isScalar(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isScalar());
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic

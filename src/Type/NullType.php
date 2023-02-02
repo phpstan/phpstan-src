@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -260,6 +261,20 @@ class NullType implements ConstantScalarType
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		if ($type instanceof ConstantScalarType) {
+			return LooseComparisonHelper::compareConstantScalars($this, $type, $phpVersion);
+		}
+
+		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
+			// @phpstan-ignore-next-line
+			return new ConstantBooleanType($this->getValue() == []); // phpcs:ignore
+		}
+
+		return new BooleanType();
 	}
 
 	public function getSmallerType(): Type

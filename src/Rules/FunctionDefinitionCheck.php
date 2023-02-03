@@ -373,7 +373,7 @@ class FunctionDefinitionCheck
 			}
 			$parameterName = $parameterNode->var->name;
 			if ($optionalParameter !== null && $parameterNode->default === null && !$parameterNode->variadic) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Deprecated in PHP 8.0: Required parameter $%s follows optional parameter $%s.', $parameterName, $optionalParameter))->line($parameterNode->getStartLine())->nonIgnorable()->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Deprecated in PHP 8.0: Required parameter $%s follows optional parameter $%s.', $parameterName, $optionalParameter))->line($parameterNode->getStartLine())->build();
 				continue;
 			}
 			if ($parameterNode->default === null) {

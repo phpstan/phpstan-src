@@ -61,6 +61,10 @@ trait ConstantScalarTypeTrait
 			return LooseComparisonHelper::compareConstantScalars($this, $type, $phpVersion);
 		}
 
+		if ($type->isObject()->yes()) {
+			return $type->looseCompare($this, $phpVersion);
+		}
+
 		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
 			// @phpstan-ignore-next-line
 			return new ConstantBooleanType($this->getValue() == []); // phpcs:ignore

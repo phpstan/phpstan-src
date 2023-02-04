@@ -34,6 +34,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -1015,6 +1016,33 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		$looseTrue = new UnionType([
+			new ConstantBooleanType(true),
+			new ConstantIntegerType(1),
+		]);
+
+		if ($looseTrue->isSuperTypeOf($type)->yes()) {
+			return new ConstantBooleanType(true);
+		}
+
+		if ($type instanceof ConstantScalarType) {
+			return new ConstantBooleanType(false);
+		}
+
+		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
+			return new ConstantBooleanType(false);
+		}
+
+		$looseFalse = new UnionType([
+			new StringType(),
+			new NullType(),
+			new FloatType(),
+		]);
+
+		if ($looseFalse->isSuperTypeOf($type)->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
 		return new BooleanType();
 	}
 

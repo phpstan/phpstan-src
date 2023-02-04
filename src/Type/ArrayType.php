@@ -369,7 +369,8 @@ class ArrayType implements Type
 			new ConstantBooleanType(false),
 			new StringType(),
 			new NullType(),
-			new IntegerType()
+			new IntegerType(),
+			new FloatType(),
 		]);
 
 		if ($looseFalse->isSuperTypeOf($type)->yes()) {

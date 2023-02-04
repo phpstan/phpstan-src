@@ -17,16 +17,13 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\IntegerType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -218,16 +215,18 @@ trait ObjectTypeTrait
 			return new ConstantBooleanType(true);
 		}
 
-		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no())
-		{
+		if ($type instanceof ConstantScalarType) {
+			return new ConstantBooleanType(false);
+		}
+
+		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
 			return new ConstantBooleanType(false);
 		}
 
 		$looseFalse = new UnionType([
-			new ConstantBooleanType(false),
 			new StringType(),
 			new NullType(),
-			new IntegerType()
+			new FloatType(),
 		]);
 
 		if ($looseFalse->isSuperTypeOf($type)->yes()) {

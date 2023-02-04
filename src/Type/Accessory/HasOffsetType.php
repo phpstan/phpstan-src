@@ -274,7 +274,8 @@ class HasOffsetType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		return new BooleanType();
+		return $type->isOffsetAccessible()
+			->and($type->hasOffsetValueType($this->offsetType))->toBooleanType();
 	}
 
 	public function getKeysArray(): Type

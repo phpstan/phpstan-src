@@ -17,10 +17,19 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 
 trait ObjectTypeTrait
 {
@@ -200,6 +209,31 @@ trait ObjectTypeTrait
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		$looseTrue = new UnionType([
+			new ConstantBooleanType(true),
+			new ConstantIntegerType(1),
+		]);
+
+		if ($looseTrue->isSuperTypeOf($type)->yes()) {
+			return new ConstantBooleanType(true);
+		}
+
+		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no())
+		{
+			return new ConstantBooleanType(false);
+		}
+
+		$looseFalse = new UnionType([
+			new ConstantBooleanType(false),
+			new StringType(),
+			new NullType(),
+			new IntegerType()
+		]);
+
+		if ($looseFalse->isSuperTypeOf($type)->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
 		return new BooleanType();
 	}
 

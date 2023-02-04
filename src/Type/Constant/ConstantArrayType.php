@@ -399,6 +399,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			// @phpstan-ignore-next-line
 			return new ConstantBooleanType($type->getValue() == []); // phpcs:ignore
 		}
+		
+		if ($type->isObject()->yes()) {
+			return new ConstantBooleanType(false);
+		}
 
 		return new BooleanType();
 	}

@@ -662,7 +662,7 @@ class NodeScopeResolver
 				throw new ShouldNotHappenException();
 			}
 
-			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
+			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback, $this->reflectionProvider);
 			$this->processAttributeGroups($stmt->attrGroups, $classScope, $classStatementsGatherer);
 
 			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer, $context);

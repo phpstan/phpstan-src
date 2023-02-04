@@ -272,4 +272,19 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8204.php'], []);
 	}
 
+	public function testBug8781(): void
+	{
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+
+		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
+		$this->analyse([__DIR__ . '/data/bug-8781.php'], [
+			[
+				'Property Bug8781\OnlyWritten::$stdOut is never read, only written.',
+				41,
+				$tip,
+			],
+		]);
+	}
+
 }

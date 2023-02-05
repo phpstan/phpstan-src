@@ -31,7 +31,6 @@ class LooseConstComparisonPhp8Test extends TypeInferenceTestCase
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [
-			__DIR__ . '/../../../conf/bleedingEdge.neon',
 			__DIR__ . '/looseConstComparisonPhp8.neon',
 		];
 	}

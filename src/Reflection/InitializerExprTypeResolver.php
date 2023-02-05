@@ -1346,8 +1346,7 @@ class InitializerExprTypeResolver
 		}
 
 		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
-			// @phpstan-ignore-next-line
-			return new ConstantBooleanType($leftType->getValue() == $rightType->getValue()); // phpcs:ignore
+			return $this->looseCompareConstantScalars($leftType, $rightType);
 		}
 
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
@@ -1355,6 +1354,24 @@ class InitializerExprTypeResolver
 		}
 
 		return new BooleanType();
+	}
+
+	private function looseCompareConstantScalars(ConstantScalarType $leftType, ConstantScalarType $rightType): BooleanType
+	{
+		$isNumber = new UnionType([
+			new IntegerType(),
+			new FloatType(),
+		]);
+
+		if ($leftType->isString()->yes() && $leftType->isNumericString()->no() && $isNumber->isSuperTypeOf($rightType)->yes()) {
+			return new ConstantBooleanType(!$this->phpVersion->castsNumbersToStringsOnLooseComparison());
+		}
+		if ($rightType->isString()->yes() && $rightType->isNumericString()->no() && $isNumber->isSuperTypeOf($leftType)->yes()) {
+			return new ConstantBooleanType(!$this->phpVersion->castsNumbersToStringsOnLooseComparison());
+		}
+
+		// @phpstan-ignore-next-line
+		return new ConstantBooleanType($leftType->getValue() == $rightType->getValue()); // phpcs:ignore
 	}
 
 	/**

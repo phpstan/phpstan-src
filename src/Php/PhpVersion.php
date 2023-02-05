@@ -216,4 +216,10 @@ class PhpVersion
 		return $this->versionId < 80000;
 	}
 
+	// see https://www.php.net/manual/en/migration80.incompatible.php#migration80.incompatible.core.string-number-comparision
+	public function castsNumbersToStringsOnLooseComparison(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 }

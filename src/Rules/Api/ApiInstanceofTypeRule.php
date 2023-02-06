@@ -25,6 +25,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\FloatType;
@@ -59,7 +60,7 @@ class ApiInstanceofTypeRule implements Rule
 		NullType::class => 'Type::isNull()',
 		VoidType::class => 'Type::isVoid()',
 		BooleanType::class => 'Type::isBoolean()',
-		// ConstantBooleanType::class => 'Type::isTrue() or Type::isFalse()', skipped because not that valuable
+		ConstantBooleanType::class => 'Type::isTrue() or Type::isFalse()',
 		CallableType::class => 'Type::isCallable() and Type::getCallableParametersAcceptors()',
 		IterableType::class => 'Type::isIterable()',
 		ObjectWithoutClassType::class => 'Type::isObject()',

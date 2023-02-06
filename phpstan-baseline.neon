@@ -32,6 +32,11 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 4
+			path: src/Analyser/MutatingScope.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Analyser/MutatingScope.php
@@ -47,6 +52,11 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 3
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
 			message: "#^Parameter \\#11 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum, object given\\.$#"
 			count: 1
 			path: src/Analyser/NodeScopeResolver.php
@@ -55,6 +65,11 @@ parameters:
 			message: "#^Parameter \\#2 \\$node of method PHPStan\\\\BetterReflection\\\\SourceLocator\\\\Ast\\\\Strategy\\\\NodeToReflection\\:\\:__invoke\\(\\) expects PhpParser\\\\Node\\\\Expr\\\\ArrowFunction\\|PhpParser\\\\Node\\\\Expr\\\\Closure\\|PhpParser\\\\Node\\\\Expr\\\\FuncCall\\|PhpParser\\\\Node\\\\Stmt\\\\Class_\\|PhpParser\\\\Node\\\\Stmt\\\\Const_\\|PhpParser\\\\Node\\\\Stmt\\\\Enum_\\|PhpParser\\\\Node\\\\Stmt\\\\Function_\\|PhpParser\\\\Node\\\\Stmt\\\\Interface_\\|PhpParser\\\\Node\\\\Stmt\\\\Trait_, PhpParser\\\\Node\\\\Stmt\\\\ClassLike given\\.$#"
 			count: 1
 			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 5
+			path: src/Analyser/TypeSpecifier.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
@@ -376,6 +391,11 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 3
+			path: src/Reflection/InitializerExprTypeResolver.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 10
 			path: src/Reflection/InitializerExprTypeResolver.php
@@ -406,6 +426,46 @@ parameters:
 			path: src/Rules/Api/NodeConnectingVisitorAttributesRule.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 2
+			path: src/Rules/Classes/ImpossibleInstanceOfRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 6
+			path: src/Rules/Comparison/BooleanAndConstantConditionRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 2
+			path: src/Rules/Comparison/BooleanNotConstantConditionRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 6
+			path: src/Rules/Comparison/BooleanOrConstantConditionRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/Comparison/ConstantLooseComparisonRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 2
+			path: src/Rules/Comparison/DoWhileLoopConstantConditionRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 2
+			path: src/Rules/Comparison/ElseIfConstantConditionRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 2
+			path: src/Rules/Comparison/IfConstantConditionRule.php
+
+		-
 			message: """
 				#^Call to deprecated method doNotTreatPhpDocTypesAsCertain\\(\\) of class PHPStan\\\\Analyser\\\\Scope\\:
 				Use getNativeType\\(\\)$#
@@ -419,6 +479,11 @@ parameters:
 			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 2
+			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 3
 			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
@@ -427,6 +492,46 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 3
+			path: src/Rules/Comparison/MatchExpressionRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 2
+			path: src/Rules/Comparison/NumberComparisonOperatorsConstantConditionRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/Comparison/StrictComparisonOfDifferentTypesRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 2
+			path: src/Rules/Comparison/TernaryOperatorConstantConditionRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/Comparison/UnreachableIfBranchesRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/Comparison/UnreachableTernaryElseBranchRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/Comparison/WhileLoopAlwaysFalseConditionRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/Comparison/WhileLoopAlwaysTrueConditionRule.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
@@ -504,6 +609,11 @@ parameters:
 			path: src/Rules/RuleLevelHelper.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/TooWideTypehints/TooWideMethodReturnTypehintRule.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/UnusedFunctionParametersCheck.php
@@ -559,6 +669,11 @@ parameters:
 			path: src/Type/BooleanType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/BooleanType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone and deprecated\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
 			count: 4
 			path: src/Type/CallableType.php
@@ -601,6 +716,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
 			count: 1
+			path: src/Type/Constant/ConstantBooleanType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 3
 			path: src/Type/Constant/ConstantBooleanType.php
 
 		-
@@ -800,6 +920,11 @@ parameters:
 			path: src/Type/ObjectWithoutClassType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Php/ArrayChunkFunctionReturnTypeExtension.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Php/ArrayCombineFunctionReturnTypeExtension.php
@@ -810,6 +935,11 @@ parameters:
 			path: src/Type/Php/ArrayCombineFunctionReturnTypeExtension.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Php/ArrayFilterFunctionReturnTypeReturnTypeExtension.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/ArrayKeyExistsFunctionTypeSpecifyingExtension.php
@@ -818,6 +948,11 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 4
 			path: src/Type/Php/ArrayMergeFunctionDynamicReturnTypeExtension.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Php/ArraySearchFunctionDynamicReturnTypeExtension.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
@@ -1058,6 +1193,11 @@ parameters:
 			path: src/Type/UnionType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/UnionType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/UnionType.php
@@ -1065,6 +1205,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Accessory\\\\AccessoryType is error\\-prone and deprecated\\. Use methods on PHPStan\\\\Type\\\\Type instead\\.$#"
 			count: 3
+			path: src/Type/UnionTypeHelper.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 2
 			path: src/Type/UnionTypeHelper.php
 
 		-

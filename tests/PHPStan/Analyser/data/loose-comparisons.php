@@ -595,6 +595,7 @@ class HelloWorld
 	) {
 		assertType('true', $obj == $true);
 		assertType('false', $obj == $false);
+		assertType('false', $obj == $zero);
 		assertType('true', $obj == $one);
 		assertType('false', $obj == 10);
 		assertType('false', $obj == $minusOne);
@@ -654,6 +655,7 @@ class HelloWorld
 	) {
 		assertType('true', $obj == $true);
 		assertType('false', $obj == $false);
+		assertType('false', $obj == $zero);
 		assertType('true', $obj == $one);
 		assertType('false', $obj == 10);
 		assertType('false', $obj == $minusOne);

@@ -1058,4 +1058,79 @@ class HelloWorld
 		assertType('false', $never == $unionNumbers);
 		assertType('false', $never == $unionStrings);
 	}
+
+	/**
+	 * @param never $never
+	 * @param true $true
+	 * @param false $false
+	 * @param 1 $one
+	 * @param 0 $zero
+	 * @param -1 $minusOne
+	 * @param '1' $oneStr
+	 * @param '0' $zeroStr
+	 * @param '-1' $minusOneStr
+	 * @param null $null
+	 * @param array{} $emptyArr
+	 * @param 'php' $phpStr
+	 * @param '' $emptyStr
+	 * @param array $arr
+	 * @param 'a'|'123'|'123.23' $unionMaybeNumeric
+	 * @param 1|2|3 $unionNumbers
+	 * @param 'a'|'b'|'c' $unionStrings
+	 * @param 'a'|'123'|123|array $unionMaybeArray
+	 *
+	 * https://3v4l.org/RHc0P
+	 */
+	public function looseArray(
+		$never,
+		$true,
+		$false,
+		$one,
+		$zero,
+		$minusOne,
+		$oneStr,
+		$zeroStr,
+		$minusOneStr,
+		$null,
+		$emptyArr,
+		$phpStr,
+		$emptyStr,
+		array $arr,
+		int $int,
+		float $float,
+		bool $bool,
+		string $string,
+		object $obj,
+		$unionMaybeNumeric,
+		$unionNumbers,
+		$unionStrings,
+		$unionMaybeArray
+	) {
+		assertType('true', $arr == $true);
+		assertType('false', $arr == $false);
+		assertType('false', $arr == $one);
+		assertType('false', $arr == $zero);
+		assertType('false', $arr == 10);
+		assertType('false', $arr == $minusOne);
+		assertType('false', $arr == $oneStr);
+		assertType('false', $arr == $zeroStr);
+		assertType('false', $arr == $minusOneStr);
+		assertType('false', $arr == $null);
+		assertType('bool', $arr == $emptyArr);
+		assertType('false', $arr == $phpStr);
+		assertType('false', $arr == $emptyStr);
+		assertType('false', $arr == $float);
+		assertType('bool', $arr == []);
+		assertType('true', $arr == $arr);
+		assertType('false', $arr == $int);
+		assertType('false', $arr == $float);
+		assertType('bool', $arr == $bool);
+		assertType('false', $arr == $string);
+		assertType('false', $arr == $obj);
+		assertType('false', $arr == new \stdClass());
+		assertType('false', $arr == $unionMaybeNumeric);
+		assertType('false', $arr == $unionNumbers);
+		assertType('false', $arr == $unionStrings);
+		assertType('bool', $arr == $unionMaybeArray);
+	}
 }

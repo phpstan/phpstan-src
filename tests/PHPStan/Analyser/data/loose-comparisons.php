@@ -1305,4 +1305,109 @@ class HelloWorld
 		assertType('bool', $unionMaybeArray == $unionNumbers);
 		assertType('bool', $unionMaybeArray == $unionStrings);
 	}
+
+	/**
+	 * @param non-empty-string $nonEmptyString
+	 * @param non-empty-array $nonEmptyArray
+	 * @param callable $callable
+	 * @param true $true
+	 * @param false $false
+	 * @param 1 $one
+	 * @param 0 $zero
+	 * @param -1 $minusOne
+	 * @param '1' $oneStr
+	 * @param '0' $zeroStr
+	 * @param '-1' $minusOneStr
+	 * @param null $null
+	 * @param array{} $emptyArr
+	 * @param 'php' $phpStr
+	 * @param '' $emptyStr
+	 * @param array $arr
+	 * @param 'a'|'123'|'123.23' $unionMaybeNumeric
+	 * @param 1|2|3 $unionNumbers
+	 * @param 'a'|'b'|'c' $unionStrings
+	 * @param 'a'|'123'|123|array $unionMaybeArray
+	 *
+	 * https://3v4l.org/RHc0P
+	 */
+	public function looseIntersection(
+		$nonEmptyString,
+		$nonEmptyArray,
+		$true,
+		$false,
+		$one,
+		$zero,
+		$minusOne,
+		$oneStr,
+		$zeroStr,
+		$minusOneStr,
+		$null,
+		$emptyArr,
+		$phpStr,
+		$emptyStr,
+		array $arr,
+		int $int,
+		float $float,
+		bool $bool,
+		string $string,
+		object $obj,
+		$unionMaybeNumeric,
+		$unionNumbers,
+		$unionStrings,
+		$unionMaybeArray
+	) {
+		assertType('bool', $nonEmptyString == $true);
+		assertType('bool', $nonEmptyString == $false);
+		assertType('bool', $nonEmptyString == $one);
+		assertType('bool', $nonEmptyString == $zero);
+		assertType('bool', $nonEmptyString == 10);
+		assertType('bool', $nonEmptyString == $minusOne);
+		assertType('bool', $nonEmptyString == $oneStr);
+		assertType('bool', $nonEmptyString == $zeroStr);
+		assertType('bool', $nonEmptyString == $minusOneStr);
+		assertType('false', $nonEmptyString == $null);
+		assertType('false', $nonEmptyString == $emptyArr);
+		assertType('bool', $nonEmptyString == $phpStr);
+		assertType('false', $nonEmptyString == $emptyStr);
+		assertType('bool', $nonEmptyString == $float);
+		assertType('false', $nonEmptyString == []);
+		assertType('false', $nonEmptyString == $arr);
+		assertType('bool', $nonEmptyString == $int);
+		assertType('bool', $nonEmptyString == $float);
+		assertType('bool', $nonEmptyString == $bool);
+		assertType('bool', $nonEmptyString == $string);
+		assertType('false', $nonEmptyString == $obj);
+		assertType('false', $nonEmptyString == new \stdClass());
+		assertType('bool', $nonEmptyString == $unionMaybeNumeric);
+		assertType('bool', $nonEmptyString == $unionNumbers);
+		assertType('bool', $nonEmptyString == $unionStrings);
+		assertType('bool', $nonEmptyString == $unionMaybeArray);
+
+		assertType('true', $nonEmptyArray == $true);
+		assertType('false', $nonEmptyArray == $false);
+		assertType('false', $nonEmptyArray == $one);
+		assertType('false', $nonEmptyArray == $zero);
+		assertType('false', $nonEmptyArray == 10);
+		assertType('false', $nonEmptyArray == $minusOne);
+		assertType('false', $nonEmptyArray == $oneStr);
+		assertType('false', $nonEmptyArray == $zeroStr);
+		assertType('false', $nonEmptyArray == $minusOneStr);
+		assertType('false', $nonEmptyArray == $null);
+		assertType('false', $nonEmptyArray == $emptyArr);
+		assertType('false', $nonEmptyArray == $phpStr);
+		assertType('false', $nonEmptyArray == $emptyStr);
+		assertType('false', $nonEmptyArray == $float);
+		assertType('false', $nonEmptyArray == []);
+		assertType('bool', $nonEmptyArray == $arr);
+		assertType('false', $nonEmptyArray == $int);
+		assertType('false', $nonEmptyArray == $float);
+		assertType('bool', $nonEmptyArray == $bool);
+		assertType('false', $nonEmptyArray == $string);
+		assertType('false', $nonEmptyArray == $obj);
+		assertType('false', $nonEmptyArray == new \stdClass());
+		assertType('false', $nonEmptyArray == $unionMaybeNumeric);
+		assertType('false', $nonEmptyArray == $unionNumbers);
+		assertType('false', $nonEmptyArray == $unionStrings);
+		assertType('bool', $nonEmptyArray == $unionMaybeArray);
+	}
 }

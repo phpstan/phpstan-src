@@ -4364,23 +4364,8 @@ class NodeScopeResolver
 		[$remainingThrowPoints, $matchingThrowPoints] = $this->extractMatchingAndRemainingThrowPoints($throwPoints, $uncaughtCatchType, $originalCatchType, $branchScopeResult);
 
 		$matchingThrowTypes = array_map(static fn (ThrowPoint $throwPoint): Type => $throwPoint->getType(), $matchingThrowPoints);
-		$unthrownCatchTypes = [];
-		foreach ($listedCatchTypes as $listedCatchType) {
-			$foundMatching = false;
-			foreach ($matchingThrowTypes as $matchingThrowType) {
-				if (!$listedCatchType->isSuperTypeOf($matchingThrowType)->no()) {
-					$foundMatching = true;
-					break;
-				}
-			}
 
-			if ($foundMatching !== false) {
-				continue;
-			}
-
-			$unthrownCatchTypes[] = $listedCatchType;
-		}
-
+		$unthrownCatchTypes = $this->extractUnthrownCatchTypes($listedCatchTypes, $matchingThrowTypes);
 		$unthrownCatchType = TypeCombinator::union(... $unthrownCatchTypes);
 
 		if (!$unthrownCatchType instanceof NeverType) {
@@ -4388,7 +4373,7 @@ class NodeScopeResolver
 			return null;
 		}
 
-		return [$matchingThrowPoints, $unthrownCatchType, $remainingThrowPoints];
+		return [$matchingThrowPoints, $uncaughtCatchType, $remainingThrowPoints];
 	}
 
 	/**
@@ -4476,6 +4461,34 @@ class NodeScopeResolver
 		}
 
 		return [$remainingThrowPoints, $matchingThrowPoints];
+	}
+
+	/**
+	 * @param Type[] $listedCatchTypes
+	 * @param Type[] $matchingThrowTypes
+	 *
+	 * @return Type[]
+	 */
+	private function extractUnthrownCatchTypes(array $listedCatchTypes, array $matchingThrowTypes)
+	{
+		$unthrownCatchTypes = [];
+		foreach ($listedCatchTypes as $listedCatchType) {
+			$foundMatching = false;
+			foreach ($matchingThrowTypes as $matchingThrowType) {
+				if (!$listedCatchType->isSuperTypeOf($matchingThrowType)->no()) {
+					$foundMatching = true;
+					break;
+				}
+			}
+
+			if ($foundMatching !== false) {
+				continue;
+			}
+
+			$unthrownCatchTypes[] = $listedCatchType;
+		}
+
+		return $unthrownCatchTypes;
 	}
 
 }

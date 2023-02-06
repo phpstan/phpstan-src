@@ -102,12 +102,83 @@ class TestMultiCatchContainingDeadExceptions
 		}
 	}
 
+	public function someThrowableTest(): void
+	{
+		try {
+			$this->throwIae();
+		} catch (\InvalidArgumentException | \Exception $e) {
+
+		} catch (\Throwable $e) {
+
+		}
+	}
+
+	public function someThrowableTest2(): void
+	{
+		try {
+			$this->throwIae();
+		} catch (\RuntimeException | \Throwable $e) {
+			// IAE is not runtime, dead
+		} catch (\Throwable $e) {
+
+		}
+	}
+
+	public function someThrowableTest3(): void
+	{
+		try {
+			$this->throwIae();
+		} catch (\Throwable $e) {
+
+		} catch (\Throwable) {
+
+		}
+	}
+
+
+	public function someThrowableTest4(): void
+	{
+		try {
+			$this->throwIae();
+		} catch (\Throwable $e) {
+
+		} catch (\InvalidArgumentException) {
+
+		}
+	}
+
+	public function someThrowableTest5(): void
+	{
+		try {
+			$this->throwIae();
+		} catch (\InvalidArgumentException $e) {
+
+		} catch (\InvalidArgumentException) {
+
+		}
+	}
+
+	public function someThrowableTest6(): void
+	{
+		try {
+			$this->throwIae();
+		} catch (\InvalidArgumentException | \Exception $e) {
+			// catch can be simplified, this is not reported
+		}
+	}
+
 	/**
 	 * @throws \RangeException
 	 * @throws \LogicException
 	 * @throws \JsonException
 	 */
 	private function throwLogicRangeJsonExceptions(): void
+	{
+
+	}
+
+	/** @throws \InvalidArgumentException */
+	public function throwIae(): void
 	{
 
 	}

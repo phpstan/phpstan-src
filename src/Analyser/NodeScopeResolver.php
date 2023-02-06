@@ -1283,6 +1283,9 @@ class NodeScopeResolver
 						$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
 					}
 				}
+				if ($catchScope === null) {
+					$catchScope = $branchScope;
+				}
 
 				$variableName = null;
 				if ($catchNode->var !== null) {
@@ -4321,7 +4324,7 @@ class NodeScopeResolver
 	 * @param Type[] $pastCatchTypes
 	 * @param ThrowPoint[] $throwPoints
 	 *
-	 * @return array{non-empty-array<ThrowPoint>, Type, ThrowPoint[]}|null
+	 * @return array{ThrowPoint[], Type, ThrowPoint[]}|null
 	 */
 	private function processSingleCatchNode(
 		Scope $scope,
@@ -4346,16 +4349,12 @@ class NodeScopeResolver
 			}
 		} else {
 			$matchingThrowTypes = array_map(static fn (ThrowPoint $throwPoint): Type => $throwPoint->getType(), $matchingThrowPoints);
-			$unthrownCatchTypes = $this->extractUnthrownCatchTypes($listedCatchTypes, $matchingThrowTypes);
+			$unthrownCatchTypes = $this->extractUnthrownCatchTypes($listedCatchTypes, $matchingThrowTypes, $pastCatchTypes);
 			$unthrownCatchType = TypeCombinator::union(... $unthrownCatchTypes);
 
-			if (!$unthrownCatchType instanceof NeverType) {
+			if (!$unthrownCatchType instanceof NeverType || count($matchingThrowPoints) === 0) {
 				$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $unthrownCatchType, $originalCatchType), $scope);
 				return null;
-			}
-
-			if ($matchingThrowPoints === []) {
-				throw new ShouldNotHappenException(); // empty $matchingThrowPoints should never result in $unthrownCatchType to be NeverType
 			}
 		}
 
@@ -4421,13 +4420,26 @@ class NodeScopeResolver
 	/**
 	 * @param Type[] $listedCatchTypes
 	 * @param Type[] $matchingThrowTypes
+	 * @param Type[] $pastCatchTypes
 	 *
 	 * @return Type[]
 	 */
-	private function extractUnthrownCatchTypes(array $listedCatchTypes, array $matchingThrowTypes): array
+	private function extractUnthrownCatchTypes(array $listedCatchTypes, array $matchingThrowTypes, array $pastCatchTypes): array
 	{
 		$unthrownCatchTypes = [];
 		foreach ($listedCatchTypes as $listedCatchType) {
+			$isAlreadyCatched = false;
+			foreach ($pastCatchTypes as $pastCatchType) {
+				if (!$listedCatchType->isSuperTypeOf($pastCatchType)->no()) {
+					$isAlreadyCatched = true;
+					break;
+				}
+			}
+
+			if ($isAlreadyCatched) {
+				continue;
+			}
+
 			$foundMatching = false;
 			foreach ($matchingThrowTypes as $matchingThrowType) {
 				if (!$listedCatchType->isSuperTypeOf($matchingThrowType)->no()) {

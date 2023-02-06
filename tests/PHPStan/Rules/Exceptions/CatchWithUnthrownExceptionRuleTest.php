@@ -137,13 +137,34 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				'Dead catch - JsonException is never thrown in the try block.',
 				58,
 			],
+			[
+				'Dead catch - RuntimeException is never thrown in the try block.',
+				120,
+			],
+			[
+				'Dead catch - InvalidArgumentException is already caught above.',
+				145,
+			],
+			[
+				'Dead catch - InvalidArgumentException is already caught above.',
+				156,
+			],
 		]);
 	}
 
 	public function testMultiCatchBackwardCompatible(): void
 	{
 		self::$detectDeadMultiCatch = false;
-		$this->analyse([__DIR__ . '/data/unthrown-exception-multi.php'], []);
+		$this->analyse([__DIR__ . '/data/unthrown-exception-multi.php'], [
+			[
+				'Dead catch - InvalidArgumentException is already caught above.',
+				145,
+			],
+			[
+				'Dead catch - InvalidArgumentException is already caught above.',
+				156,
+			],
+		]);
 	}
 
 	public function testBug4806(): void

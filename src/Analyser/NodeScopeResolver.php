@@ -4323,7 +4323,7 @@ class NodeScopeResolver
 	 * @param Type[] $pastCatchTypesArray
 	 * @param ThrowPoint[] $remainingThrowPoints
 	 *
-	 * @return array|null
+	 * @return array{ThrowPoint[], Type, ThrowPoint[]}|null
 	 */
 	private function getMatchingThrowPointsAndUncaughtCatchTypes(
 		Scope $scope,
@@ -4334,43 +4334,83 @@ class NodeScopeResolver
 		array $remainingThrowPoints,
 	): ?array
 	{
-		$pastCatchTypes = TypeCombinator::union(... $pastCatchTypesArray);
+//		if ($this->bleedingEdge) {
+//			return $this->getMatchingThrowPointsAndUncaughtCatchTypesNew($scope, $nodeCallback, $catchNode, $pastCatchTypesArray, $branchScopeResult, $remainingThrowPoints);
+//		}
 
-		$uncaughtCatchType = TypeCombinator::union(...array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types));
-		$originalCatchType = $uncaughtCatchType;
-		$isThrowable = TrinaryLogic::createNo()->lazyOr(
-			$originalCatchType->getObjectClassNames(),
-			static fn (string $objectClassName) => TrinaryLogic::createFromBoolean(strtolower($objectClassName) === 'throwable'),
-		);
-		$uncaughtCatchType = TypeCombinator::remove($uncaughtCatchType, $pastCatchTypes);
+		return $this->getMatchingThrowPointsAndUncaughtCatchTypesOld($scope, $nodeCallback, $catchNode, $pastCatchTypesArray, $branchScopeResult, $remainingThrowPoints);
+	}
 
-		$matchingThrowPoints = [];
-		$newThrowPoints = [];
-		foreach ($remainingThrowPoints as $throwPoint) {
-			if (!$throwPoint->isExplicit() && !$uncaughtCatchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
+	/**
+	 * @param Type[] $pastCatchTypesArray
+	 * @param ThrowPoint[] $remainingThrowPoints
+	 *
+	 * @return array{ThrowPoint[], Type, ThrowPoint[]}|null
+	 */
+	private function getMatchingThrowPointsAndUncaughtCatchTypesNew(
+		Scope $scope,
+		callable $nodeCallback,
+		Catch_ $catchNode,
+		array $pastCatchTypes,
+		StatementResult $branchScopeResult,
+		array $throwPoints,
+	): ?array
+	{
+		$listedCatchTypes = array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types);
+		$originalCatchType = TypeCombinator::union(... $listedCatchTypes);
+		$pastCatchType = TypeCombinator::union(... $pastCatchTypes);
+		$uncaughtCatchType = TypeCombinator::remove($originalCatchType, $pastCatchType);
+
+		[$remainingThrowPoints, $matchingThrowPoints] = $this->extractMatchingAndRemainingThrowPoints($throwPoints, $uncaughtCatchType, $originalCatchType);
+
+		$matchingThrowTypes = array_map(static fn (ThrowPoint $throwPoint): Type => $throwPoint->getType(), $matchingThrowPoints);
+		$unthrownCatchTypes = [];
+		foreach ($listedCatchTypes as $listedCatchType) {
+			$foundMatching = false;
+			foreach ($matchingThrowTypes as $matchingThrowType) {
+				if (!$listedCatchType->isSuperTypeOf($matchingThrowType)->no()) {
+					$foundMatching = true;
+					break;
+				}
+			}
+
+			if ($foundMatching !== false) {
 				continue;
 			}
-			$isSuperType = $uncaughtCatchType->isSuperTypeOf($throwPoint->getType());
-			if ($isSuperType->no()) {
-				continue;
-			}
-			$matchingThrowPoints[] = $throwPoint;
+
+			$unthrownCatchTypes[] = $listedCatchType;
 		}
-		$hasExplicit = count($matchingThrowPoints) > 0;
-		foreach ($remainingThrowPoints as $throwPoint) {
-			$isSuperType = $uncaughtCatchType->isSuperTypeOf($throwPoint->getType());
-			if (!$hasExplicit && !$isSuperType->no()) {
-				$matchingThrowPoints[] = $throwPoint;
-			}
-			if ($isSuperType->yes()) {
-				continue;
-			}
-			if ($isThrowable->yes()) {
-				continue;
-			}
-			$newThrowPoints[] = $throwPoint->subtractCatchType($uncaughtCatchType);
+
+		$unthrownCatchType = TypeCombinator::union(... $unthrownCatchTypes);
+
+		if (!$unthrownCatchType instanceof NeverType) {
+			$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $unthrownCatchType, $originalCatchType), $scope);
+			return null;
 		}
-		$remainingThrowPoints = $newThrowPoints;
+
+		return [$matchingThrowPoints, $unthrownCatchType, $remainingThrowPoints];
+	}
+
+	/**
+	 * @param Type[] $pastCatchTypes
+	 * @param ThrowPoint[] $remainingThrowPoints
+	 *
+	 * @return array{ThrowPoint[], Type, ThrowPoint[]}|null
+	 */
+	private function getMatchingThrowPointsAndUncaughtCatchTypesOld(
+		Scope $scope,
+		callable $nodeCallback,
+		Catch_ $catchNode,
+		array $pastCatchTypes,
+		StatementResult $branchScopeResult,
+		array $throwPoints,
+	): ?array
+	{
+		$originalCatchType = TypeCombinator::union(...array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types));
+		$pastCatchType = TypeCombinator::union(... $pastCatchTypes);
+		$uncaughtCatchType = TypeCombinator::remove($originalCatchType, $pastCatchType);
+
+		[$remainingThrowPoints, $matchingThrowPoints] = $this->extractMatchingAndRemainingThrowPoints($throwPoints, $uncaughtCatchType, $originalCatchType);
 
 		if (count($matchingThrowPoints) === 0) {
 			$throwableThrowPoints = [];
@@ -4393,6 +4433,52 @@ class NodeScopeResolver
 		}
 
 		return [$matchingThrowPoints, $uncaughtCatchType, $remainingThrowPoints];
+	}
+
+	/**
+	 * @param ThrowPoint[] $remainingThrowPoints
+	 * @param Type $uncaughtCatchType
+	 * @param Type $originalCatchType
+	 *
+	 * @return array
+	 */
+	private function extractMatchingAndRemainingThrowPoints(array $remainingThrowPoints, Type $uncaughtCatchType, Type $originalCatchType): array
+	{
+		$isThrowable = TrinaryLogic::createNo()->lazyOr(
+			$originalCatchType->getObjectClassNames(),
+			static fn (string $objectClassName) => TrinaryLogic::createFromBoolean(strtolower($objectClassName) === 'throwable'),
+		);
+
+		$matchingThrowPoints = [];
+		$newThrowPoints = [];
+		foreach ($remainingThrowPoints as $throwPoint) {
+			if (!$throwPoint->isExplicit() && !$uncaughtCatchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
+				continue;
+			}
+			$isSuperType = $uncaughtCatchType->isSuperTypeOf($throwPoint->getType());
+			if ($isSuperType->no()) {
+				continue;
+			}
+
+			$matchingThrowPoints[] = $throwPoint;
+		}
+		$hasExplicit = count($matchingThrowPoints) > 0;
+		foreach ($remainingThrowPoints as $throwPoint) {
+			$isSuperType = $uncaughtCatchType->isSuperTypeOf($throwPoint->getType());
+			if (!$hasExplicit && !$isSuperType->no()) {
+				$matchingThrowPoints[] = $throwPoint;
+			}
+			if ($isSuperType->yes()) {
+				continue;
+			}
+			if ($isThrowable->yes()) {
+				continue;
+			}
+			$newThrowPoints[] = $throwPoint->subtractCatchType($uncaughtCatchType);
+		}
+		$remainingThrowPoints = $newThrowPoints;
+
+		return [$remainingThrowPoints, $matchingThrowPoints];
 	}
 
 }

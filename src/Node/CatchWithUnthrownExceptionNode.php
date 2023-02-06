@@ -13,7 +13,6 @@ class CatchWithUnthrownExceptionNode extends NodeAbstract implements VirtualNode
 	public function __construct(
 		private Catch_ $originalNode,
 		private Type $caughtType,
-		private Type $unthrownType,
 		private Type $originalCaughtType,
 	)
 	{
@@ -28,11 +27,6 @@ class CatchWithUnthrownExceptionNode extends NodeAbstract implements VirtualNode
 	public function getCaughtType(): Type
 	{
 		return $this->caughtType;
-	}
-
-	public function getUnthrownType(): Type
-	{
-		return $this->unthrownType;
 	}
 
 	public function getOriginalCaughtType(): Type

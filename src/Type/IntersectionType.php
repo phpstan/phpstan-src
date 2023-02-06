@@ -612,7 +612,7 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isScalar());
 	}
 
-	public function looseCompare(Type $type): BooleanType
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		return $this->intersectResults(static function (Type $innerType) use ($type): TrinaryLogic {
 			$booleanType = $innerType->looseCompare($type);

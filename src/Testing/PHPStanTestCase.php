@@ -175,7 +175,7 @@ abstract class PHPStanTestCase extends TestCase
 					$container->getByType(PhpVersion::class),
 					$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
 					new OversizedArrayBuilder(),
-					$container->getParameter('usePathConstantsAsConstantString')
+					$container->getParameter('usePathConstantsAsConstantString'),
 				),
 				$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
 				$container->getByType(ExprPrinter::class),

@@ -14,4 +14,7 @@ function doFoo() {
 
 	assertType('false', 0.0 == "");
 	assertType('false', 42.0 == "42foo");
+	assertType('false', 42 == "42.0foo");
+	assertType('false', 42.1 == "42.0foo");
+	assertType('false', 42.0 == "42.0foo");
 }

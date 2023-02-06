@@ -61,6 +61,7 @@ parameters:
 		closureDefaultParameterTypeRule: false
 		newRuleLevelHelper: false
 		instanceofType: false
+		detectDeadTypeInMultiCatch: true
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -288,6 +289,7 @@ parametersSchema:
 		closureDefaultParameterTypeRule: bool()
 		newRuleLevelHelper: bool()
 		instanceofType: bool()
+		detectDeadTypeInMultiCatch: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -643,7 +645,7 @@ services:
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
 			implicitThrows: %exceptions.implicitThrows%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			bleedingEdge: %featureToggles.bleedingEdge%
+			detectDeadTypeInMultiCatch: %featureToggles.detectDeadTypeInMultiCatch%
 
 	-
 		class: PHPStan\Analyser\ConstantResolver

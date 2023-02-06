@@ -10,11 +10,7 @@ use PHPStan\Type\Type;
 class CatchWithUnthrownExceptionNode extends NodeAbstract implements VirtualNode
 {
 
-	public function __construct(
-		private Catch_ $originalNode,
-		private Type $unthrownType,
-		private Type $originalCaughtType,
-	)
+	public function __construct(private Catch_ $originalNode, private Type $unthrownType, private Type $originalCaughtType)
 	{
 		parent::__construct($originalNode->getAttributes());
 	}

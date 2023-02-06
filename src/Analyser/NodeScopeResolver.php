@@ -211,7 +211,7 @@ class NodeScopeResolver
 		private readonly array $earlyTerminatingFunctionCalls,
 		private readonly bool $implicitThrows,
 		private readonly bool $treatPhpDocTypesAsCertain,
-		private readonly bool $bleedingEdge,
+		private readonly bool $detectDeadTypeInMultiCatch,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -4339,7 +4339,7 @@ class NodeScopeResolver
 
 		[$remainingThrowPoints, $matchingThrowPoints] = $this->extractRemainingAndMatchingThrowPoints($throwPoints, $uncaughtCatchType, $originalCatchType, $branchScopeResult);
 
-		if (!$this->bleedingEdge) {
+		if (!$this->detectDeadTypeInMultiCatch) {
 			if (count($matchingThrowPoints) === 0) {
 				$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $uncaughtCatchType, $originalCatchType), $scope);
 				return null;

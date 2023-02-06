@@ -13,7 +13,7 @@ use const PHP_VERSION_ID;
 class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 {
 
-	private static bool $bleedingEdge = true;
+	private static bool $detectDeadMultiCatch = true;
 
 	protected function getRule(): Rule
 	{
@@ -24,7 +24,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 	{
 		return array_merge(
 			parent::getAdditionalConfigFiles(),
-			!self::$bleedingEdge ? [__DIR__ . '/disable-bleeding-edge.neon'] : [],
+			!self::$detectDeadMultiCatch ? [__DIR__ . '/disable-detect-multi-catch.neon'] : [],
 		);
 	}
 
@@ -142,7 +142,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 
 	public function testMultiCatchBackwardCompatible(): void
 	{
-		self::$bleedingEdge = false;
+		self::$detectDeadMultiCatch = false;
 		$this->analyse([__DIR__ . '/data/unthrown-exception-multi.php'], []);
 	}
 

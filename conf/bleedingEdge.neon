@@ -31,3 +31,4 @@ parameters:
 		closureDefaultParameterTypeRule: true
 		newRuleLevelHelper: true
 		instanceofType: true
+		detectDeadTypeInMultiCatch: true

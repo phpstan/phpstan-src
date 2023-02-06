@@ -62,7 +62,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$this->getEarlyTerminatingFunctionCalls(),
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
-			self::getContainer()->getParameter('featureToggles')['bleedingEdge'],
+			self::getContainer()->getParameter('featureToggles')['detectDeadTypeInMultiCatch'],
 		);
 		$resolver->setAnalysedFiles(array_map(static fn (string $file): string => $fileHelper->normalizePath($file), array_merge([$file], $this->getAdditionalAnalysedFiles())));
 

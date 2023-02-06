@@ -4320,34 +4320,13 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param Type[] $pastCatchTypesArray
-	 * @param ThrowPoint[] $remainingThrowPoints
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param Type[] $pastCatchTypes
+	 * @param ThrowPoint[] $throwPoints
 	 *
 	 * @return array{ThrowPoint[], Type, ThrowPoint[]}|null
 	 */
 	private function getMatchingThrowPointsAndUncaughtCatchTypes(
-		Scope $scope,
-		callable $nodeCallback,
-		Catch_ $catchNode,
-		array $pastCatchTypesArray,
-		StatementResult $branchScopeResult,
-		array $remainingThrowPoints,
-	): ?array
-	{
-		if ($this->bleedingEdge) {
-			return $this->getMatchingThrowPointsAndUncaughtCatchTypesNew($scope, $nodeCallback, $catchNode, $pastCatchTypesArray, $branchScopeResult, $remainingThrowPoints);
-		}
-
-		return $this->getMatchingThrowPointsAndUncaughtCatchTypesOld($scope, $nodeCallback, $catchNode, $pastCatchTypesArray, $branchScopeResult, $remainingThrowPoints);
-	}
-
-	/**
-	 * @param Type[] $pastCatchTypesArray
-	 * @param ThrowPoint[] $remainingThrowPoints
-	 *
-	 * @return array{ThrowPoint[], Type, ThrowPoint[]}|null
-	 */
-	private function getMatchingThrowPointsAndUncaughtCatchTypesNew(
 		Scope $scope,
 		callable $nodeCallback,
 		Catch_ $catchNode,
@@ -4361,45 +4340,22 @@ class NodeScopeResolver
 		$pastCatchType = TypeCombinator::union(... $pastCatchTypes);
 		$uncaughtCatchType = TypeCombinator::remove($originalCatchType, $pastCatchType);
 
-		[$remainingThrowPoints, $matchingThrowPoints] = $this->extractMatchingAndRemainingThrowPoints($throwPoints, $uncaughtCatchType, $originalCatchType, $branchScopeResult);
+		[$remainingThrowPoints, $matchingThrowPoints] = $this->extractRemainingAndMatchingThrowPoints($throwPoints, $uncaughtCatchType, $originalCatchType, $branchScopeResult);
 
-		$matchingThrowTypes = array_map(static fn (ThrowPoint $throwPoint): Type => $throwPoint->getType(), $matchingThrowPoints);
+		if (!$this->bleedingEdge) {
+			if (count($matchingThrowPoints) === 0) {
+				$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $uncaughtCatchType, $originalCatchType), $scope);
+				return null;
+			}
+		} else {
+			$matchingThrowTypes = array_map(static fn (ThrowPoint $throwPoint): Type => $throwPoint->getType(), $matchingThrowPoints);
+			$unthrownCatchTypes = $this->extractUnthrownCatchTypes($listedCatchTypes, $matchingThrowTypes);
+			$unthrownCatchType = TypeCombinator::union(... $unthrownCatchTypes);
 
-		$unthrownCatchTypes = $this->extractUnthrownCatchTypes($listedCatchTypes, $matchingThrowTypes);
-		$unthrownCatchType = TypeCombinator::union(... $unthrownCatchTypes);
-
-		if (!$unthrownCatchType instanceof NeverType) {
-			$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $unthrownCatchType, $originalCatchType), $scope);
-			return null;
-		}
-
-		return [$matchingThrowPoints, $uncaughtCatchType, $remainingThrowPoints];
-	}
-
-	/**
-	 * @param Type[] $pastCatchTypes
-	 * @param ThrowPoint[] $throwPoints
-	 *
-	 * @return array{ThrowPoint[], Type, ThrowPoint[]}|null
-	 */
-	private function getMatchingThrowPointsAndUncaughtCatchTypesOld(
-		Scope $scope,
-		callable $nodeCallback,
-		Catch_ $catchNode,
-		array $pastCatchTypes,
-		StatementResult $branchScopeResult,
-		array $throwPoints,
-	): ?array
-	{
-		$originalCatchType = TypeCombinator::union(...array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types));
-		$pastCatchType = TypeCombinator::union(... $pastCatchTypes);
-		$uncaughtCatchType = TypeCombinator::remove($originalCatchType, $pastCatchType);
-
-		[$remainingThrowPoints, $matchingThrowPoints] = $this->extractMatchingAndRemainingThrowPoints($throwPoints, $uncaughtCatchType, $originalCatchType, $branchScopeResult);
-
-		if (count($matchingThrowPoints) === 0) {
-			$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $uncaughtCatchType, $originalCatchType), $scope);
-			return null;
+			if (!$unthrownCatchType instanceof NeverType) {
+				$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $unthrownCatchType, $originalCatchType), $scope);
+				return null;
+			}
 		}
 
 		return [$matchingThrowPoints, $uncaughtCatchType, $remainingThrowPoints];
@@ -4407,12 +4363,10 @@ class NodeScopeResolver
 
 	/**
 	 * @param ThrowPoint[] $remainingThrowPoints
-	 * @param Type $uncaughtCatchType
-	 * @param Type $originalCatchType
 	 *
-	 * @return array
+	 * @return array{ThrowPoint[], ThrowPoint[]}
 	 */
-	private function extractMatchingAndRemainingThrowPoints(array $remainingThrowPoints, Type $uncaughtCatchType, Type $originalCatchType, StatementResult $branchScopeResult): array
+	private function extractRemainingAndMatchingThrowPoints(array $remainingThrowPoints, Type $uncaughtCatchType, Type $originalCatchType, StatementResult $branchScopeResult): array
 	{
 		$isThrowable = TrinaryLogic::createNo()->lazyOr(
 			$originalCatchType->getObjectClassNames(),
@@ -4469,7 +4423,7 @@ class NodeScopeResolver
 	 *
 	 * @return Type[]
 	 */
-	private function extractUnthrownCatchTypes(array $listedCatchTypes, array $matchingThrowTypes)
+	private function extractUnthrownCatchTypes(array $listedCatchTypes, array $matchingThrowTypes): array
 	{
 		$unthrownCatchTypes = [];
 		foreach ($listedCatchTypes as $listedCatchType) {

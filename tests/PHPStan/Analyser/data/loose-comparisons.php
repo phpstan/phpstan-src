@@ -744,6 +744,9 @@ class HelloWorld
 	 * @param 'php' $phpStr
 	 * @param '' $emptyStr
 	 * @param array $arr
+	 * @param 'a'|'123'|'123.23' $unionMaybeNumeric
+	 * @param 1|2|3 $unionNumbers
+	 * @param 'a'|'b'|'c' $unionStrings
 	 *
 	 * https://3v4l.org/CMCUB
 	 * https://3v4l.org/vT28m
@@ -766,7 +769,10 @@ class HelloWorld
 		float $float,
 		bool $bool,
 		string $string,
-		object $obj
+		object $obj,
+	    $unionMaybeNumeric,
+	    $unionNumbers,
+	    $unionStrings
 	) {
 		assertType('bool', $float == $true);
 		assertType('bool', $float == $false);
@@ -788,6 +794,9 @@ class HelloWorld
 		assertType('bool', $float == $string);
 		assertType('false', $float == $obj);
 		assertType('false', $float == new \stdClass());
+		assertType('bool', $float == $unionMaybeNumeric);
+		assertType('bool', $float == $unionNumbers);
+		assertType('false', $float == $unionStrings);
 	}
 
 	/**
@@ -862,6 +871,9 @@ class HelloWorld
 	 * @param 'php' $phpStr
 	 * @param '' $emptyStr
 	 * @param array $arr
+	 * @param 'a'|'123'|'123.23' $unionMaybeNumeric
+	 * @param 1|2|3 $unionNumbers
+	 * @param 'a'|'b'|'c' $unionStrings
 	 *
 	 * https://3v4l.org/RHc0P
 	 */
@@ -883,7 +895,10 @@ class HelloWorld
 		float $float,
 		bool $bool,
 		string $string,
-		object $obj
+		object $obj,
+		$unionMaybeNumeric,
+		$unionNumbers,
+		$unionStrings
 	) {
 		assertType('bool', $int == $true);
 		assertType('bool', $int == $false);
@@ -906,6 +921,9 @@ class HelloWorld
 		assertType('bool', $int == $string);
 		assertType('bool', $int == $obj);
 		assertType('bool', $int == new \stdClass());
+		assertType('bool', $int == $unionMaybeNumeric);
+		assertType('bool', $int == $unionNumbers);
+		assertType('false', $int == $unionStrings);
 	}
 
 	/**

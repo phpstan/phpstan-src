@@ -1336,20 +1336,6 @@ class InitializerExprTypeResolver
 			return $this->resolveIdenticalType($leftType, $rightType);
 		}
 
-		if ($leftType->isConstantArray()->yes() && $leftType->isIterableAtLeastOnce()->no() && $rightType instanceof ConstantScalarType) {
-			// @phpstan-ignore-next-line
-			return new ConstantBooleanType($rightType->getValue() == []); // phpcs:ignore
-		}
-		if ($rightType->isConstantArray()->yes() && $rightType->isIterableAtLeastOnce()->no() && $leftType instanceof ConstantScalarType) {
-			// @phpstan-ignore-next-line
-			return new ConstantBooleanType($leftType->getValue() == []); // phpcs:ignore
-		}
-
-		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
-			// @phpstan-ignore-next-line
-			return new ConstantBooleanType($leftType->getValue() == $rightType->getValue()); // phpcs:ignore
-		}
-
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
 			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveEqualType($leftValueType, $rightValueType));
 		}

@@ -132,10 +132,13 @@ class IntegerType implements Type
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		foreach ($type->getConstantStrings() as $stringType) {
-			if ($stringType->isNumericString()->yes()) {
-				continue;
+		if (count($type->getConstantStrings()) > 0) {
+			foreach ($type->getConstantStrings() as $stringType) {
+				if ($stringType->isNumericString()->yes()) {
+					return new BooleanType();
+				}
 			}
+
 			return new ConstantBooleanType(false);
 		}
 

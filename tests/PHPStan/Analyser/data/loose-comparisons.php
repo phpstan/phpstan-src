@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace LooseSemantics;
 
+use function PHPStan\dumpType;
 use function PHPStan\Testing\assertType;
 
 class HelloWorld
@@ -929,7 +930,6 @@ class HelloWorld
 	}
 
 	/**
-	 * @param never $never
 	 * @param true $true
 	 * @param false $false
 	 * @param 1 $one
@@ -950,7 +950,6 @@ class HelloWorld
 	 * https://3v4l.org/RHc0P
 	 */
 	public function looseNever(
-		$never,
 		$true,
 		$false,
 		$one,
@@ -973,6 +972,7 @@ class HelloWorld
 		$unionNumbers,
 		$unionStrings
 	) {
+		$never = $this->returnNever();
 		assertType('false', $never == $true);
 		assertType('false', $never == $false);
 		assertType('false', $never == $one);
@@ -1001,6 +1001,11 @@ class HelloWorld
 		assertType('false', $never == $unionStrings);
 	}
 
+	/** @return never */
+	function returnNever() {
+		exit();
+	}
+
 	/**
 	 * @param never $never
 	 * @param true $true
@@ -1024,7 +1029,6 @@ class HelloWorld
 	 * https://3v4l.org/RHc0P
 	 */
 	public function looseArray(
-		$never,
 		$true,
 		$false,
 		$one,
@@ -1048,7 +1052,6 @@ class HelloWorld
 		$unionStrings,
 		$unionMaybeArray
 	) {
-		assertType('false', $arr == $never);
 		assertType('true', $arr == $true);
 		assertType('false', $arr == $false);
 		assertType('false', $arr == $one);
@@ -1075,5 +1078,80 @@ class HelloWorld
 		assertType('false', $arr == $unionNumbers);
 		assertType('false', $arr == $unionStrings);
 		assertType('bool', $arr == $unionMaybeArray);
+	}
+
+	/**
+	 * @param callable $callable
+	 * @param true $true
+	 * @param false $false
+	 * @param 1 $one
+	 * @param 0 $zero
+	 * @param -1 $minusOne
+	 * @param '1' $oneStr
+	 * @param '0' $zeroStr
+	 * @param '-1' $minusOneStr
+	 * @param null $null
+	 * @param array{} $emptyArr
+	 * @param 'php' $phpStr
+	 * @param '' $emptyStr
+	 * @param array $arr
+	 * @param 'a'|'123'|'123.23' $unionMaybeNumeric
+	 * @param 1|2|3 $unionNumbers
+	 * @param 'a'|'b'|'c' $unionStrings
+	 * @param 'a'|'123'|123|array $unionMaybeArray
+	 *
+	 * https://3v4l.org/RHc0P
+	 */
+	public function looseCallable(
+		$callable,
+		$true,
+		$false,
+		$one,
+		$zero,
+		$minusOne,
+		$oneStr,
+		$zeroStr,
+		$minusOneStr,
+		$null,
+		$emptyArr,
+		$phpStr,
+		$emptyStr,
+		array $arr,
+		int $int,
+		float $float,
+		bool $bool,
+		string $string,
+		object $obj,
+		$unionMaybeNumeric,
+		$unionNumbers,
+		$unionStrings,
+		$unionMaybeArray
+	) {
+		assertType('true', $callable == $true);
+		assertType('false', $callable == $false);
+		assertType('true', $callable == $one);
+		assertType('false', $callable == $zero);
+		assertType('false', $callable == 10);
+		assertType('false', $callable == $minusOne);
+		assertType('false', $callable == $oneStr);
+		assertType('false', $callable == $zeroStr);
+		assertType('false', $callable == $minusOneStr);
+		assertType('false', $callable == $null);
+		assertType('false', $callable == $emptyArr);
+		assertType('bool', $callable == $phpStr);
+		assertType('false', $callable == $emptyStr);
+		assertType('false', $callable == $float);
+		assertType('false', $callable == []);
+		assertType('bool', $callable == $arr);
+		assertType('false', $callable == $int);
+		assertType('false', $callable == $float);
+		assertType('bool', $callable == $bool);
+		assertType('bool', $callable == $string);
+		assertType('false', $callable == $obj);
+		assertType('false', $callable == new \stdClass());
+		assertType('bool', $callable == $unionMaybeNumeric);
+		assertType('false', $callable == $unionNumbers);
+		assertType('bool', $callable == $unionStrings);
+		assertType('bool', $callable == $unionMaybeArray);
 	}
 }

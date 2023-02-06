@@ -10,7 +10,11 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -426,7 +430,29 @@ class CallableType implements CompoundType, ParametersAcceptor
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		if ($type->isObject()->yes()) {
+		$looseTrue = new UnionType([
+			new ConstantBooleanType(true),
+			new ConstantIntegerType(1),
+		]);
+
+		if ($looseTrue->isSuperTypeOf($type)->yes()) {
+			return new ConstantBooleanType(true);
+		}
+
+		$looseFalse = new UnionType([
+			new NullType(),
+			new ObjectWithoutClassType(),
+			new ConstantStringType(''),
+			new ConstantBooleanType(false),
+			new FloatType(),
+			new IntegerType(),
+			new NeverType(),
+		]);
+
+		if ($looseFalse->isSuperTypeOf($type)->yes()
+			|| $type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()
+			|| $type->isNumericString()->yes()
+		) {
 			return new ConstantBooleanType(false);
 		}
 

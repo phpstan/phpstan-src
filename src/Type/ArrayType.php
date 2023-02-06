@@ -371,6 +371,7 @@ class ArrayType implements Type
 			new NullType(),
 			new IntegerType(),
 			new FloatType(),
+			new NeverType()
 		]);
 
 		if ($looseFalse->isSuperTypeOf($type)->yes()) {

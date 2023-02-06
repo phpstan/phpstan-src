@@ -1263,11 +1263,11 @@ class NodeScopeResolver
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
 
-				$matchingThrowPointsAndUncaughtTypes = $this->getMatchingThrowPointsAndUncaughtCatchTypes($scope, $nodeCallback, $catchNode, $pastCatchTypes, $branchScopeResult, $throwPoints);
-				if ($matchingThrowPointsAndUncaughtTypes === null) {
+				$singleCatchResult = $this->processSingleCatchNode($scope, $nodeCallback, $catchNode, $pastCatchTypes, $branchScopeResult, $throwPoints);
+				if ($singleCatchResult === null) {
 					continue;
 				}
-				[$matchingThrowPoints, $catchType, $remainingThrowPoints] = $matchingThrowPointsAndUncaughtTypes;
+				[$matchingThrowPoints, $catchType, $remainingThrowPoints] = $singleCatchResult;
 
 				$throwPoints = $remainingThrowPoints;
 				$pastCatchTypes = array_merge(
@@ -1282,9 +1282,6 @@ class NodeScopeResolver
 					} else {
 						$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
 					}
-				}
-				if ($catchScope === null) {
-					$catchScope = $branchScope;
 				}
 
 				$variableName = null;
@@ -4324,9 +4321,9 @@ class NodeScopeResolver
 	 * @param Type[] $pastCatchTypes
 	 * @param ThrowPoint[] $throwPoints
 	 *
-	 * @return array{ThrowPoint[], Type, ThrowPoint[]}|null
+	 * @return array{non-empty-array<ThrowPoint>, Type, ThrowPoint[]}|null
 	 */
-	private function getMatchingThrowPointsAndUncaughtCatchTypes(
+	private function processSingleCatchNode(
 		Scope $scope,
 		callable $nodeCallback,
 		Catch_ $catchNode,
@@ -4355,6 +4352,10 @@ class NodeScopeResolver
 			if (!$unthrownCatchType instanceof NeverType) {
 				$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $unthrownCatchType, $originalCatchType), $scope);
 				return null;
+			}
+
+			if ($matchingThrowPoints === []) {
+				throw new ShouldNotHappenException(); // empty $matchingThrowPoints should never result in $unthrownCatchType to be NeverType
 			}
 		}
 
@@ -4435,7 +4436,7 @@ class NodeScopeResolver
 				}
 			}
 
-			if ($foundMatching !== false) {
+			if ($foundMatching === true) {
 				continue;
 			}
 

@@ -1156,4 +1156,153 @@ class HelloWorld
 		assertType('bool', $callable == $unionStrings);
 		assertType('bool', $callable == $unionMaybeArray);
 	}
+
+	/**
+	 * @param callable $callable
+	 * @param true $true
+	 * @param false $false
+	 * @param 1 $one
+	 * @param 0 $zero
+	 * @param -1 $minusOne
+	 * @param '1' $oneStr
+	 * @param '0' $zeroStr
+	 * @param '-1' $minusOneStr
+	 * @param null $null
+	 * @param array{} $emptyArr
+	 * @param 'php' $phpStr
+	 * @param '' $emptyStr
+	 * @param array $arr
+	 * @param 'a'|'123'|'123.23' $unionMaybeNumeric
+	 * @param 1|2|3 $unionNumbers
+	 * @param 'a'|'b'|'c' $unionStrings
+	 * @param 'a'|'123'|123|array $unionMaybeArray
+	 *
+	 * https://3v4l.org/RHc0P
+	 */
+	public function looseUnion(
+		$callable,
+		$true,
+		$false,
+		$one,
+		$zero,
+		$minusOne,
+		$oneStr,
+		$zeroStr,
+		$minusOneStr,
+		$null,
+		$emptyArr,
+		$phpStr,
+		$emptyStr,
+		array $arr,
+		int $int,
+		float $float,
+		bool $bool,
+		string $string,
+		object $obj,
+		$unionMaybeNumeric,
+		$unionNumbers,
+		$unionStrings,
+		$unionMaybeArray
+	) {
+		assertType('true', $unionMaybeNumeric == $true);
+		assertType('false', $unionMaybeNumeric == $false);
+		assertType('false', $unionMaybeNumeric == $one);
+		assertType('false', $unionMaybeNumeric == $zero);
+		assertType('false', $unionMaybeNumeric == 10);
+		assertType('false', $unionMaybeNumeric == $minusOne);
+		assertType('false', $unionMaybeNumeric == $oneStr);
+		assertType('false', $unionMaybeNumeric == $zeroStr);
+		assertType('false', $unionMaybeNumeric == $minusOneStr);
+		assertType('false', $unionMaybeNumeric == $null);
+		assertType('false', $unionMaybeNumeric == $emptyArr);
+		assertType('false', $unionMaybeNumeric == $phpStr);
+		assertType('false', $unionMaybeNumeric == $emptyStr);
+		assertType('false', $unionMaybeNumeric == []);
+		assertType('false', $unionMaybeNumeric == $arr);
+		assertType('bool', $unionMaybeNumeric == $int);
+		assertType('bool', $unionMaybeNumeric == $float);
+		assertType('bool', $unionMaybeNumeric == $bool);
+		assertType('bool', $unionMaybeNumeric == $string);
+		assertType('false', $unionMaybeNumeric == $obj);
+		assertType('false', $unionMaybeNumeric == new \stdClass());
+		assertType('bool', $unionMaybeNumeric == $unionNumbers);
+		assertType('bool', $unionMaybeNumeric == $unionStrings);
+		assertType('bool', $unionMaybeNumeric == $unionMaybeArray);
+
+		assertType('true', $unionNumbers == $true);
+		assertType('false', $unionNumbers == $false);
+		assertType('bool', $unionNumbers == $one);
+		assertType('false', $unionNumbers == $zero);
+		assertType('false', $unionNumbers == 10);
+		assertType('false', $unionNumbers == $minusOne);
+		assertType('bool', $unionNumbers == $oneStr);
+		assertType('false', $unionNumbers == $zeroStr);
+		assertType('false', $unionNumbers == $minusOneStr);
+		assertType('false', $unionNumbers == $null);
+		assertType('false', $unionNumbers == $emptyArr);
+		assertType('false', $unionNumbers == $phpStr);
+		assertType('false', $unionNumbers == $emptyStr);
+		assertType('false', $unionNumbers == []);
+		assertType('false', $unionNumbers == $arr);
+		assertType('bool', $unionNumbers == $int);
+		assertType('bool', $unionNumbers == $float);
+		assertType('bool', $unionNumbers == $bool);
+		assertType('bool', $unionNumbers == $string);
+		assertType('bool', $unionNumbers == $obj);
+		assertType('bool', $unionNumbers == new \stdClass());
+		assertType('bool', $unionNumbers == $unionMaybeNumeric);
+		assertType('false', $unionNumbers == $unionStrings);
+		assertType('bool', $unionNumbers == $unionMaybeArray);
+
+		assertType('true', $unionStrings == $true);
+		assertType('false', $unionStrings == $false);
+		assertType('false', $unionStrings == $one);
+		assertType('false', $unionStrings == $zero);
+		assertType('false', $unionStrings == 10);
+		assertType('false', $unionStrings == $minusOne);
+		assertType('false', $unionStrings == $oneStr);
+		assertType('false', $unionStrings == $zeroStr);
+		assertType('false', $unionStrings == $minusOneStr);
+		assertType('false', $unionStrings == $null);
+		assertType('false', $unionStrings == $emptyArr);
+		assertType('false', $unionStrings == $phpStr);
+		assertType('false', $unionStrings == $emptyStr);
+		assertType('false', $unionStrings == []);
+		assertType('false', $unionStrings == $arr);
+		assertType('bool', $unionStrings == $int);
+		assertType('bool', $unionStrings == $float);
+		assertType('bool', $unionStrings == $bool);
+		assertType('bool', $unionStrings == $string);
+		assertType('false', $unionStrings == $obj);
+		assertType('false', $unionStrings == new \stdClass());
+		assertType('bool', $unionStrings == $unionMaybeNumeric);
+		assertType('bool', $unionStrings == $unionNumbers);
+		assertType('bool', $unionStrings == $unionMaybeArray);
+
+		assertType('true', $unionMaybeArray == $true);
+		assertType('false', $unionMaybeArray == $false);
+		assertType('false', $unionMaybeArray == $one);
+		assertType('false', $unionMaybeArray == $zero);
+		assertType('false', $unionMaybeArray == 10);
+		assertType('false', $unionMaybeArray == $minusOne);
+		assertType('false', $unionMaybeArray == $oneStr);
+		assertType('false', $unionMaybeArray == $zeroStr);
+		assertType('false', $unionMaybeArray == $minusOneStr);
+		assertType('false', $unionMaybeArray == $null);
+		assertType('bool', $unionMaybeArray == $emptyArr);
+		assertType('false', $unionMaybeArray == $phpStr);
+		assertType('false', $unionMaybeArray == $emptyStr);
+		assertType('bool', $unionMaybeArray == $float);
+		assertType('bool', $unionMaybeArray == []);
+		assertType('bool', $unionMaybeArray == $arr);
+		assertType('bool', $unionMaybeArray == $int);
+		assertType('bool', $unionMaybeArray == $float);
+		assertType('bool', $unionMaybeArray == $bool);
+		assertType('bool', $unionMaybeArray == $string);
+		assertType('false', $unionMaybeArray == $obj);
+		assertType('false', $unionMaybeArray == new \stdClass());
+		assertType('bool', $unionMaybeArray == $unionMaybeNumeric);
+		assertType('bool', $unionMaybeArray == $unionNumbers);
+		assertType('bool', $unionMaybeArray == $unionStrings);
+	}
 }

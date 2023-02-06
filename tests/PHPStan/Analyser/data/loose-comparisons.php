@@ -985,4 +985,77 @@ class HelloWorld
 		assertType('false', $string == $obj);
 		assertType('false', $string == new \stdClass());
 	}
+
+	/**
+	 * @param never $never
+	 * @param true $true
+	 * @param false $false
+	 * @param 1 $one
+	 * @param 0 $zero
+	 * @param -1 $minusOne
+	 * @param '1' $oneStr
+	 * @param '0' $zeroStr
+	 * @param '-1' $minusOneStr
+	 * @param null $null
+	 * @param array{} $emptyArr
+	 * @param 'php' $phpStr
+	 * @param '' $emptyStr
+	 * @param array $arr
+	 * @param 'a'|'123'|'123.23' $unionMaybeNumeric
+	 * @param 1|2|3 $unionNumbers
+	 * @param 'a'|'b'|'c' $unionStrings
+	 *
+	 * https://3v4l.org/RHc0P
+	 */
+	public function looseNever(
+		$never,
+		$true,
+		$false,
+		$one,
+		$zero,
+		$minusOne,
+		$oneStr,
+		$zeroStr,
+		$minusOneStr,
+		$null,
+		$emptyArr,
+		$phpStr,
+		$emptyStr,
+		array $arr,
+		int $int,
+		float $float,
+		bool $bool,
+		string $string,
+		object $obj,
+		$unionMaybeNumeric,
+		$unionNumbers,
+		$unionStrings
+	) {
+		assertType('false', $never == $true);
+		assertType('false', $never == $false);
+		assertType('false', $never == $one);
+		assertType('false', $never == $zero);
+		assertType('false', $never == 10);
+		assertType('false', $never == $minusOne);
+		assertType('false', $never == $oneStr);
+		assertType('false', $never == $zeroStr);
+		assertType('false', $never == $minusOneStr);
+		assertType('false', $never == $null);
+		assertType('false', $never == $emptyArr);
+		assertType('false', $never == $phpStr);
+		assertType('false', $never == $emptyStr);
+		assertType('false', $never == $float);
+		assertType('false', $never == []);
+		assertType('false', $never == $arr);
+		assertType('true', $never == $never);
+		assertType('false', $never == $int);
+		assertType('false', $never == $float);
+		assertType('false', $never == $bool);
+		assertType('false', $never == $string);
+		assertType('false', $never == $obj);
+		assertType('false', $never == new \stdClass());
+		assertType('false', $never == $unionMaybeNumeric);
+		assertType('false', $never == $unionNumbers);
+		assertType('false', $never == $unionStrings);
+	}
 }

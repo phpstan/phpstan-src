@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function array_merge;
 use const PHP_VERSION_ID;
 
 /**
@@ -12,9 +13,19 @@ use const PHP_VERSION_ID;
 class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 {
 
+	private static bool $bleedingEdge = true;
+
 	protected function getRule(): Rule
 	{
 		return new CatchWithUnthrownExceptionRule();
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return array_merge(
+			parent::getAdditionalConfigFiles(),
+			!self::$bleedingEdge ? [__DIR__ . '/disable-bleeding-edge.neon'] : [],
+		);
 	}
 
 	public function testRule(): void
@@ -108,19 +119,31 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				'Dead catch - Exception is never thrown in the try block.',
 				532,
 			],
+		]);
+	}
+
+	public function testMultiCatch(): void
+	{
+		$this->analyse([__DIR__ . '/data/unthrown-exception-multi.php'], [
 			[
 				'Dead catch - LogicException is never thrown in the try block.',
-				556,
+				12,
 			],
 			[
 				'Dead catch - OverflowException is never thrown in the try block.',
-				580,
+				36,
 			],
 			[
 				'Dead catch - JsonException is never thrown in the try block.',
-				602,
+				58,
 			],
 		]);
+	}
+
+	public function testMultiCatchBackwardCompatible(): void
+	{
+		self::$bleedingEdge = false;
+		$this->analyse([__DIR__ . '/data/unthrown-exception-multi.php'], []);
 	}
 
 	public function testBug4806(): void

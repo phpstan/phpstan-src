@@ -642,6 +642,7 @@ class AnalyserTest extends PHPStanTestCase
 			[],
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
+			self::getContainer()->getParameter('featureToggles')['bleedingEdge'],
 		);
 		$lexer = new Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
 		$fileAnalyser = new FileAnalyser(

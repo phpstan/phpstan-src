@@ -210,6 +210,7 @@ class NodeScopeResolver
 		private readonly array $earlyTerminatingFunctionCalls,
 		private readonly bool $implicitThrows,
 		private readonly bool $treatPhpDocTypesAsCertain,
+		private readonly bool $bleedingEdge,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -1331,7 +1332,9 @@ class NodeScopeResolver
 					}
 
 					if (count($throwableThrowPoints) === 0) {
-						$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType, $unthrownCatchType, $originalCatchType), $scope);
+						if ($this->bleedingEdge || count($matchingThrowPoints) === 0) {
+							$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType, $unthrownCatchType, $originalCatchType), $scope);
+						}
 						continue;
 					}
 

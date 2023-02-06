@@ -643,6 +643,7 @@ services:
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
 			implicitThrows: %exceptions.implicitThrows%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			bleedingEdge: %featureToggles.bleedingEdge%
 
 	-
 		class: PHPStan\Analyser\ConstantResolver

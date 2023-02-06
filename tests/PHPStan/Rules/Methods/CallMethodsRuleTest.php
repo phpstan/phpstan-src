@@ -2812,6 +2812,19 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/callables-without-check-nullables.php'], $expectedErrors);
 	}
 
+	public function testBug8713(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-8713.php'], []);
+	}
+
 	public function testCannotCallOnGenericClassString(): void
 	{
 		$this->checkThisOnly = false;

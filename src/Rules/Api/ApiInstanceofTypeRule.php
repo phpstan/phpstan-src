@@ -51,7 +51,7 @@ class ApiInstanceofTypeRule implements Rule
 		TypeWithClassName::class => 'Type::getObjectClassNames()',
 		EnumCaseObjectType::class => 'Type::getEnumCases()',
 		ConstantArrayType::class => 'Type::getConstantArrays()',
-		ArrayType::class => 'Type::getArrays()',
+		ArrayType::class => 'Type::isArray() or Type::getArrays()',
 		ConstantStringType::class => 'Type::getConstantStrings()',
 		StringType::class => 'Type::isString()',
 		ClassStringType::class => 'Type::isClassStringType()',

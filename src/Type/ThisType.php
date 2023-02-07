@@ -30,7 +30,21 @@ class ThisType extends StaticType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return sprintf('$this(%s)', $this->getStaticObjectType()->describe($level));
+		$callback = fn () => sprintf('$this(%s)', $this->getStaticObjectType()->describe($level));
+		return $level->handle(
+			$callback,
+			$callback,
+			$callback,
+			function () use ($callback): string {
+				$base = $callback();
+				$trait = $this->getTraitReflection();
+				if ($trait === null) {
+					return $base;
+				}
+
+				return sprintf('%s-trait-%s', $base, $trait->getDisplayName());
+			},
+		);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

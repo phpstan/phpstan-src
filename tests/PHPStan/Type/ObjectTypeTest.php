@@ -34,6 +34,7 @@ use stdClass;
 use Throwable;
 use ThrowPoints\TryCatch\MyInvalidArgumentException;
 use Traversable;
+use UnusedMethodFalsePositiveWithTrait\LocalOnlineReservationTime;
 use function count;
 use function sprintf;
 use const PHP_VERSION_ID;
@@ -431,6 +432,11 @@ class ObjectTypeTest extends PHPStanTestCase
 				new ObjectType(ConstantNumericComparisonTypeTrait::class),
 				new ObjectType(DateTime::class),
 				TrinaryLogic::createNo(),
+			],
+			61 => [
+				new ObjectType(LocalOnlineReservationTime::class),
+				new ThisType($reflectionProvider->getClass(LocalOnlineReservationTime::class)),
+				TrinaryLogic::createYes(),
 			],
 		];
 	}

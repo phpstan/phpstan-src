@@ -245,7 +245,7 @@ parameters:
 			path: src/PhpDoc/Tag/VarTag.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/PhpDoc/TypeNodeResolver.php
 
@@ -589,7 +589,7 @@ parameters:
 			path: src/Rules/LazyRegistry.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Methods/MethodParameterComparisonHelper.php
 
@@ -649,7 +649,7 @@ parameters:
 			path: src/Type/Accessory/HasOffsetValueType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/ArrayType.php
 
@@ -679,7 +679,7 @@ parameters:
 			path: src/Type/CallableType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantArrayType.php
 
@@ -799,7 +799,7 @@ parameters:
 			path: src/Type/Generic/TemplateIntersectionType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 
@@ -1108,7 +1108,7 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 5
 			path: src/Type/TypeCombinator.php
 
@@ -1163,7 +1163,7 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/TypeUtils.php
 
@@ -1178,7 +1178,7 @@ parameters:
 			path: src/Type/TypeUtils.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getArrays\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/TypehintHelper.php
 

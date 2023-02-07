@@ -977,7 +977,7 @@ class ClassReflection
 	private function getTraitNames(): array
 	{
 		$class = $this->reflection;
-		$traitNames = $class->getTraitNames();
+		$traitNames = array_map(static fn (ReflectionClass $class) => $class->getName(), $this->collectTraits($class));
 		while ($class->getParentClass() !== false) {
 			$traitNames = array_values(array_unique(array_merge($traitNames, $class->getParentClass()->getTraitNames())));
 			$class = $class->getParentClass();

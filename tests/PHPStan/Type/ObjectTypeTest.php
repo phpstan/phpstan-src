@@ -4,6 +4,8 @@ namespace PHPStan\Type;
 
 use ArrayAccess;
 use ArrayObject;
+use Bug8850\UserHelperTrait;
+use Bug8850\UserInSessionInRoleEndpointExtension;
 use Closure;
 use Countable;
 use DateInterval;
@@ -431,6 +433,11 @@ class ObjectTypeTest extends PHPStanTestCase
 				new ObjectType(ConstantNumericComparisonTypeTrait::class),
 				new ObjectType(DateTime::class),
 				TrinaryLogic::createNo(),
+			],
+			61 => [
+				new ObjectType(UserInSessionInRoleEndpointExtension::class),
+				new ThisType($reflectionProvider->getClass(UserInSessionInRoleEndpointExtension::class), null, $reflectionProvider->getClass(UserHelperTrait::class)),
+				TrinaryLogic::createMaybe(),
 			],
 		];
 	}

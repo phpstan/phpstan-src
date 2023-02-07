@@ -9,10 +9,10 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use function array_keys;
 use function count;
 
-final class LooseComparisonHelper
+final class ComparisonHelper
 {
 
-	public static function compareConstantScalars(ConstantScalarType $leftType, ConstantScalarType $rightType, PhpVersion $phpVersion): BooleanType
+	public static function looseCompareConstantScalars(ConstantScalarType $leftType, ConstantScalarType $rightType, PhpVersion $phpVersion): BooleanType
 	{
 		if ($phpVersion->castsNumbersToStringsOnLooseComparison()) {
 			$isNumber = new UnionType([

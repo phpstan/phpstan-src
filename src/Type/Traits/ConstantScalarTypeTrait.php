@@ -7,10 +7,10 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ComparisonHelper;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\Type;
 
 trait ConstantScalarTypeTrait
@@ -58,7 +58,7 @@ trait ConstantScalarTypeTrait
 		}
 
 		if ($type instanceof ConstantScalarType) {
-			return LooseComparisonHelper::compareConstantScalars($this, $type, $phpVersion);
+			return ComparisonHelper::looseCompareConstantScalars($this, $type, $phpVersion);
 		}
 
 		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {

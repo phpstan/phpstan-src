@@ -1055,6 +1055,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		$leftTypeEnumCases = $this->getEnumCases();
+		$rightTypeEnumCases = $type->getEnumCases();
+		if (count($leftTypeEnumCases) === 1 && count($rightTypeEnumCases) === 1) {
+			return new ConstantBooleanType($leftTypeEnumCases[0]->equals($rightTypeEnumCases[0]));
+		}
+
 		return new BooleanType();
 	}
 

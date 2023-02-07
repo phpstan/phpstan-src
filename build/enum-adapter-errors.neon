@@ -111,11 +111,6 @@ parameters:
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Call to method getTraitNames\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Reflection/ClassReflection.php
-
-		-
 			message: "#^Call to method getTraits\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 2
 			path: ../src/Reflection/ClassReflection.php

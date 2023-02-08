@@ -132,7 +132,9 @@ class ApiInstanceofTypeRule implements Rule
 				'Doing instanceof %s is error-prone and deprecated. Use %s instead.',
 				$className,
 				$lowerMap[$lowerClassName],
-			))->build(),
+			))->tip(
+				'Learn more: <fg=cyan>https://phpstan.org/blog/why-is-instanceof-type-wrong-and-getting-deprecated</>',
+			)->build(),
 		];
 	}
 

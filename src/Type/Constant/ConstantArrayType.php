@@ -26,7 +26,6 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
@@ -401,7 +400,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		if ($type instanceof ConstantArrayType) {
-			return LooseComparisonHelper::compareConstantArrayType($this, $type, static fn ($leftValueType, $rightValueType): BooleanType => $leftValueType->looseCompare($rightValueType, $phpVersion));
+			return $this->looseCompareConstantArrayType($type, $phpVersion);
 		}
 
 		if ($this->isIterableAtLeastOnce()->no() && count($type->getConstantScalarValues()) === 1) {
@@ -410,6 +409,76 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return new BooleanType();
+	}
+
+	private function looseCompareConstantArrayType(ConstantArrayType $rightType, PhpVersion $phpVersion): BooleanType
+	{
+		$leftKeyTypes = $this->getKeyTypes();
+		$rightKeyTypes = $rightType->getKeyTypes();
+		$leftValueTypes = $this->getValueTypes();
+		$rightValueTypes = $rightType->getValueTypes();
+
+		$resultType = new ConstantBooleanType(true);
+
+		foreach ($leftKeyTypes as $i => $leftKeyType) {
+			$leftOptional = $this->isOptionalKey($i);
+			if ($leftOptional) {
+				$resultType = new BooleanType();
+			}
+
+			if (count($rightKeyTypes) === 0) {
+				if (!$leftOptional) {
+					return new ConstantBooleanType(false);
+				}
+				continue;
+			}
+
+			$found = false;
+			foreach ($rightKeyTypes as $j => $rightKeyType) {
+				unset($rightKeyTypes[$j]);
+
+				if ($leftKeyType->equals($rightKeyType)) {
+					$found = true;
+					break;
+				} elseif (!$rightType->isOptionalKey($j)) {
+					return new ConstantBooleanType(false);
+				}
+			}
+
+			if (!$found) {
+				if (!$leftOptional) {
+					return new ConstantBooleanType(false);
+				}
+				continue;
+			}
+
+			if (!isset($j)) {
+				throw new ShouldNotHappenException();
+			}
+
+			$rightOptional = $rightType->isOptionalKey($j);
+			if ($rightOptional) {
+				$resultType = new BooleanType();
+				if ($leftOptional) {
+					continue;
+				}
+			}
+
+			$leftIdenticalToRight = $leftValueTypes[$i]->looseCompare($rightValueTypes[$j], $phpVersion);
+			if ($leftIdenticalToRight->isFalse()->yes()) {
+				return new ConstantBooleanType(false);
+			}
+			$resultType = TypeCombinator::union($resultType, $leftIdenticalToRight);
+		}
+
+		foreach (array_keys($rightKeyTypes) as $j) {
+			if (!$rightType->isOptionalKey($j)) {
+				return new ConstantBooleanType(false);
+			}
+			$resultType = new BooleanType();
+		}
+
+		return $resultType->toBoolean();
 	}
 
 	public function equals(Type $type): bool

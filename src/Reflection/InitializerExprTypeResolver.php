@@ -51,7 +51,6 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -66,6 +65,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use function array_keys;
 use function array_merge;
 use function assert;
 use function ceil;
@@ -1320,7 +1320,7 @@ class InitializerExprTypeResolver
 		}
 
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
-			return LooseComparisonHelper::compareConstantArrayType($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveIdenticalType($leftValueType, $rightValueType));
+			return $this->resolveIdenticalConstantArrayType($leftType, $rightType);
 		}
 
 		return new BooleanType();
@@ -1329,6 +1329,76 @@ class InitializerExprTypeResolver
 	public function resolveEqualType(Type $leftType, Type $rightType): BooleanType
 	{
 		return $leftType->looseCompare($rightType, $this->phpVersion);
+	}
+
+	private function resolveIdenticalConstantArrayType(ConstantArrayType $leftType, ConstantArrayType $rightType): BooleanType
+	{
+		$leftKeyTypes = $leftType->getKeyTypes();
+		$rightKeyTypes = $rightType->getKeyTypes();
+		$leftValueTypes = $leftType->getValueTypes();
+		$rightValueTypes = $rightType->getValueTypes();
+
+		$resultType = new ConstantBooleanType(true);
+
+		foreach ($leftKeyTypes as $i => $leftKeyType) {
+			$leftOptional = $leftType->isOptionalKey($i);
+			if ($leftOptional) {
+				$resultType = new BooleanType();
+			}
+
+			if (count($rightKeyTypes) === 0) {
+				if (!$leftOptional) {
+					return new ConstantBooleanType(false);
+				}
+				continue;
+			}
+
+			$found = false;
+			foreach ($rightKeyTypes as $j => $rightKeyType) {
+				unset($rightKeyTypes[$j]);
+
+				if ($leftKeyType->equals($rightKeyType)) {
+					$found = true;
+					break;
+				} elseif (!$rightType->isOptionalKey($j)) {
+					return new ConstantBooleanType(false);
+				}
+			}
+
+			if (!$found) {
+				if (!$leftOptional) {
+					return new ConstantBooleanType(false);
+				}
+				continue;
+			}
+
+			if (!isset($j)) {
+				throw new ShouldNotHappenException();
+			}
+
+			$rightOptional = $rightType->isOptionalKey($j);
+			if ($rightOptional) {
+				$resultType = new BooleanType();
+				if ($leftOptional) {
+					continue;
+				}
+			}
+
+			$leftIdenticalToRight = $this->resolveIdenticalType($leftValueTypes[$i], $rightValueTypes[$j]);
+			if ($leftIdenticalToRight->isFalse()->yes()) {
+				return new ConstantBooleanType(false);
+			}
+			$resultType = TypeCombinator::union($resultType, $leftIdenticalToRight);
+		}
+
+		foreach (array_keys($rightKeyTypes) as $j) {
+			if (!$rightType->isOptionalKey($j)) {
+				return new ConstantBooleanType(false);
+			}
+			$resultType = new BooleanType();
+		}
+
+		return $resultType->toBoolean();
 	}
 
 	private function callOperatorTypeSpecifyingExtensions(Expr\BinaryOp $expr, Type $leftType, Type $rightType): ?Type

@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
+use function get_class;
 use function sprintf;
 
 /** @api */
@@ -23,9 +24,36 @@ class ThisType extends StaticType
 		parent::__construct($classReflection, $subtractedType);
 	}
 
+	public function equals(Type $type): bool
+	{
+		if (get_class($type) !== static::class) {
+			return false;
+		}
+
+		/** @var ThisType $type */
+		$type = $type;
+		$equals = $this->getStaticObjectType()->equals($type->getStaticObjectType());
+		if (!$equals) {
+			return false;
+		}
+
+		if ($this->getTraitReflection() === null) {
+			if ($type->getTraitReflection() === null) {
+				return true;
+			}
+
+			return false;
+		}
+		if ($type->getTraitReflection() === null) {
+			return false;
+		}
+
+		return $this->getTraitReflection()->getName() === $type->getTraitReflection()->getName();
+	}
+
 	public function changeBaseClass(ClassReflection $classReflection): StaticType
 	{
-		return new self($classReflection, $this->getSubtractedType());
+		return new self($classReflection, $this->getSubtractedType(), $this->traitReflection);
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -50,6 +78,10 @@ class ThisType extends StaticType
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof self) {
+			if ($this->equals($type)) {
+				return TrinaryLogic::createYes();
+			}
+
 			return $this->getStaticObjectType()->isSuperTypeOf($type);
 		}
 
@@ -66,7 +98,7 @@ class ThisType extends StaticType
 	{
 		$type = parent::changeSubtractedType($subtractedType);
 		if ($type instanceof parent) {
-			return new self($type->getClassReflection(), $subtractedType);
+			return new self($type->getClassReflection(), $subtractedType, $this->traitReflection);
 		}
 
 		return $type;
@@ -93,6 +125,7 @@ class ThisType extends StaticType
 			return new self(
 				$this->getClassReflection(),
 				$subtractedType,
+				$this->traitReflection,
 			);
 		}
 

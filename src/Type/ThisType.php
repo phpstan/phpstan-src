@@ -25,7 +25,7 @@ class ThisType extends StaticType
 
 	public function changeBaseClass(ClassReflection $classReflection): StaticType
 	{
-		return new self($classReflection, $this->getSubtractedType());
+		return new self($classReflection, $this->getSubtractedType(), $this->traitReflection);
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -66,7 +66,7 @@ class ThisType extends StaticType
 	{
 		$type = parent::changeSubtractedType($subtractedType);
 		if ($type instanceof parent) {
-			return new self($type->getClassReflection(), $subtractedType);
+			return new self($type->getClassReflection(), $subtractedType, $this->traitReflection);
 		}
 
 		return $type;
@@ -93,6 +93,7 @@ class ThisType extends StaticType
 			return new self(
 				$this->getClassReflection(),
 				$subtractedType,
+				$this->traitReflection,
 			);
 		}
 

@@ -15,7 +15,6 @@ use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
-use PHPStan\Type\ComparisonHelper;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
@@ -27,6 +26,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
@@ -401,7 +401,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		if ($type instanceof ConstantArrayType) {
-			return ComparisonHelper::compareConstantArrayType($this, $type, static fn ($leftValueType, $rightValueType): BooleanType => $leftValueType->looseCompare($rightValueType, $phpVersion));
+			return LooseComparisonHelper::compareConstantArrayType($this, $type, static fn ($leftValueType, $rightValueType): BooleanType => $leftValueType->looseCompare($rightValueType, $phpVersion));
 		}
 
 		if ($this->isIterableAtLeastOnce()->no() && count($type->getConstantScalarValues()) === 1) {

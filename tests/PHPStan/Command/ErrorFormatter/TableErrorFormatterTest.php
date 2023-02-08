@@ -8,6 +8,7 @@ use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function getenv;
 use function putenv;
 use function sprintf;
 use const PHP_VERSION_ID;

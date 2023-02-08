@@ -217,8 +217,8 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 	public function testEditorUrlWithRelativePath(): void
 	{
-		if ('JetBrains-JediTerm' === getenv('TERMINAL_EMULATOR')) {
-			$this->markTestSkipped('PHPStorm console does not support links in console.');
+		if (getenv('TERMINAL_EMULATOR') === 'JetBrains-JediTerm') {
+			$this->markTestSkipped('PhpStorm console does not support links in console.');
 		}
 
 		$formatter = $this->createErrorFormatter('editor://custom/path/%relFile%/%line%');

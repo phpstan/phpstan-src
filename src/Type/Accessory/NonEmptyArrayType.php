@@ -355,6 +355,14 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		if ($type->isTrue()->yes()) {
+			return new ConstantBooleanType(true);
+		}
+
+		if ($type->isFalse()->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
 		if ($type->isArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
 			return new ConstantBooleanType(false);
 		}

@@ -448,8 +448,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 		]);
 
 		if ($looseFalse->isSuperTypeOf($type)->yes()
-			|| $type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()
-			|| $type->isNumericString()->yes()
+			|| ($type->isArray()->yes() && $type->isIterableAtLeastOnce()->no())
 		) {
 			return new ConstantBooleanType(false);
 		}

@@ -1324,18 +1324,6 @@ class InitializerExprTypeResolver
 
 	public function resolveEqualType(Type $leftType, Type $rightType): BooleanType
 	{
-		$integerType = new IntegerType();
-		$floatType = new FloatType();
-
-		if (
-			(count($leftType->getEnumCases()) === 1 && count($rightType->getEnumCases()) === 1)
-			|| ($leftType->isString()->yes() && $rightType->isString()->yes())
-			|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
-			|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
-		) {
-			return $this->resolveIdenticalType($leftType, $rightType);
-		}
-
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
 			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveEqualType($leftValueType, $rightValueType));
 		}

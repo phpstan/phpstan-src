@@ -10,6 +10,8 @@ use function PHPStan\Testing\assertType;
 class HelloWorld
 {
 	/**
+	 * @param non-empty-string $nonEmptyString
+	 * @param non-empty-array $nonEmptyArray
 	 * @param true $true
 	 * @param false $false
 	 * @param 1 $one
@@ -22,8 +24,14 @@ class HelloWorld
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
 	 * @param '' $emptyStr
+	 * @param 'a'|'123'|'123.23' $unionMaybeNumeric
+	 * @param 1|2|3 $unionNumbers
+	 * @param 'a'|'b'|'c' $unionStrings
+	 * @param 'a'|'123'|123|array $unionMaybeArray
 	 */
 	public function sayTrue(
+		$nonEmptyString,
+		$nonEmptyArray,
 		$true,
 		$false,
 		$one,
@@ -35,9 +43,21 @@ class HelloWorld
 		$null,
 		$emptyArr,
 		$phpStr,
-		$emptyStr
+		$emptyStr,
+		array $arr,
+		int $int,
+		float $float,
+		bool $bool,
+		string $string,
+		object $obj,
+		$unionMaybeNumeric,
+		$unionNumbers,
+		$unionStrings,
+		$unionMaybeArray
 	): void
 	{
+		assertType('true', $true == $nonEmptyString);
+		assertType('true', $true == $nonEmptyArray);
 		assertType('true', $true == $true);
 		assertType('false', $true == $false);
 		assertType('true', $true == $one);
@@ -50,9 +70,22 @@ class HelloWorld
 		assertType('false', $true == $emptyArr);
 		assertType('true', $true == $phpStr);
 		assertType('false', $true == $emptyStr);
+		assertType('bool', $true == $arr);
+		assertType('bool', $true == $int);
+		assertType('bool', $true == $float);
+		assertType('bool', $true == $bool);
+		assertType('bool', $true == $string);
+		assertType('true', $true == $obj);
+		assertType('true', $true == new \stdClass());
+		assertType('true', $true == $unionMaybeNumeric);
+		assertType('true', $true == $unionNumbers);
+		assertType('true', $true == $unionStrings);
+		assertType('bool', $true == $unionMaybeArray);
 	}
 
 	/**
+	 * @param non-empty-string $nonEmptyString
+	 * @param non-empty-array $nonEmptyArray
 	 * @param true $true
 	 * @param false $false
 	 * @param 1 $one
@@ -65,8 +98,16 @@ class HelloWorld
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
 	 * @param '' $emptyStr
+	 * @param array $arr
+	 * @param 'a'|'123'|'123.23' $unionMaybeNumeric
+	 * @param 1|2|3 $unionNumbers
+	 * @param 'a'|'b'|'c' $unionStrings
+	 * @param 'a'|'123'|123|array $unionMaybeArray
 	 */
 	public function sayFalse(
+		$nonEmptyString,
+		$nonEmptyArray,
+		$callable,
 		$true,
 		$false,
 		$one,
@@ -78,9 +119,21 @@ class HelloWorld
 		$null,
 		$emptyArr,
 		$phpStr,
-		$emptyStr
+		$emptyStr,
+		array $arr,
+		int $int,
+		float $float,
+		bool $bool,
+		string $string,
+		object $obj,
+		$unionMaybeNumeric,
+		$unionNumbers,
+		$unionStrings,
+		$unionMaybeArray
 	): void
 	{
+		assertType('false', $false == $nonEmptyString);
+		assertType('false', $false == $nonEmptyArray);
 		assertType('false', $false == $true);
 		assertType('true', $false == $false);
 		assertType('false', $false == $one);
@@ -93,6 +146,17 @@ class HelloWorld
 		assertType('true', $false == $emptyArr);
 		assertType('false', $false == $phpStr);
 		assertType('true', $false == $emptyStr);
+		assertType('bool', $false == $arr);
+		assertType('bool', $false == $int);
+		assertType('bool', $false == $float);
+		assertType('bool', $false == $bool);
+		assertType('bool', $false == $string);
+		assertType('false', $false == $obj);
+		assertType('false', $false == new \stdClass());
+		assertType('false', $false == $unionMaybeNumeric);
+		assertType('false', $false == $unionNumbers);
+		assertType('false', $false == $unionStrings);
+		assertType('bool', $false == $unionMaybeArray);
 	}
 
 	/**
@@ -798,8 +862,8 @@ class HelloWorld
 		assertType('bool', $bool == $float);
 		assertType('true', $bool == $bool);
 		assertType('bool', $bool == $string);
-		assertType('true', $bool == $obj);
-		assertType('true', $bool == new \stdClass());
+		assertType('bool', $bool == $obj);
+		assertType('bool', $bool == new \stdClass());
 	}
 
 	/**
@@ -1054,8 +1118,8 @@ class HelloWorld
 		$unionStrings,
 		$unionMaybeArray
 	) {
-		assertType('true', $arr == $true);
-		assertType('false', $arr == $false);
+		assertType('bool', $arr == $true);
+		assertType('bool', $arr == $false);
 		assertType('false', $arr == $one);
 		assertType('false', $arr == $zero);
 		assertType('false', $arr == 10);
@@ -1129,15 +1193,16 @@ class HelloWorld
 		$unionStrings,
 		$unionMaybeArray
 	) {
+		assertType('bool', $callable == 'myFunction');
 		assertType('true', $callable == $true);
 		assertType('false', $callable == $false);
 		assertType('true', $callable == $one);
 		assertType('false', $callable == $zero);
 		assertType('false', $callable == 10);
 		assertType('false', $callable == $minusOne);
-		assertType('false', $callable == $oneStr);
-		assertType('false', $callable == $zeroStr);
-		assertType('false', $callable == $minusOneStr);
+		assertType('bool', $callable == $oneStr); // could be false, because invalid function name
+		assertType('bool', $callable == $zeroStr); // could be false, because invalid function name
+		assertType('bool', $callable == $minusOneStr); // could be false, because invalid function name
 		assertType('false', $callable == $null);
 		assertType('false', $callable == $emptyArr);
 		assertType('bool', $callable == $phpStr);
@@ -1225,7 +1290,7 @@ class HelloWorld
 		assertType('bool', $unionMaybeNumeric == $string);
 		assertType('false', $unionMaybeNumeric == $obj);
 		assertType('false', $unionMaybeNumeric == new \stdClass());
-		assertType('bool', $unionMaybeNumeric == $unionNumbers);
+		assertType('false', $unionMaybeNumeric == $unionNumbers);
 		assertType('bool', $unionMaybeNumeric == $unionStrings);
 		assertType('bool', $unionMaybeNumeric == $unionMaybeArray);
 
@@ -1250,7 +1315,7 @@ class HelloWorld
 		assertType('bool', $unionNumbers == $string);
 		assertType('bool', $unionNumbers == $obj);
 		assertType('bool', $unionNumbers == new \stdClass());
-		assertType('bool', $unionNumbers == $unionMaybeNumeric);
+		assertType('false', $unionNumbers == $unionMaybeNumeric);
 		assertType('false', $unionNumbers == $unionStrings);
 		assertType('bool', $unionNumbers == $unionMaybeArray);
 
@@ -1276,11 +1341,11 @@ class HelloWorld
 		assertType('false', $unionStrings == $obj);
 		assertType('false', $unionStrings == new \stdClass());
 		assertType('bool', $unionStrings == $unionMaybeNumeric);
-		assertType('bool', $unionStrings == $unionNumbers);
+		assertType('false', $unionStrings == $unionNumbers);
 		assertType('bool', $unionStrings == $unionMaybeArray);
 
-		assertType('true', $unionMaybeArray == $true);
-		assertType('false', $unionMaybeArray == $false);
+		assertType('bool', $unionMaybeArray == $true);
+		assertType('bool', $unionMaybeArray == $false);
 		assertType('false', $unionMaybeArray == $one);
 		assertType('false', $unionMaybeArray == $zero);
 		assertType('false', $unionMaybeArray == 10);
@@ -1302,7 +1367,7 @@ class HelloWorld
 		assertType('false', $unionMaybeArray == $obj);
 		assertType('false', $unionMaybeArray == new \stdClass());
 		assertType('bool', $unionMaybeArray == $unionMaybeNumeric);
-		assertType('bool', $unionMaybeArray == $unionNumbers);
+		assertType('false', $unionMaybeArray == $unionNumbers);
 		assertType('bool', $unionMaybeArray == $unionStrings);
 	}
 
@@ -1357,7 +1422,7 @@ class HelloWorld
 		$unionMaybeArray
 	) {
 		assertType('bool', $nonEmptyString == $true);
-		assertType('bool', $nonEmptyString == $false);
+		assertType('false', $nonEmptyString == $false);
 		assertType('bool', $nonEmptyString == $one);
 		assertType('bool', $nonEmptyString == $zero);
 		assertType('bool', $nonEmptyString == 10);
@@ -1411,3 +1476,5 @@ class HelloWorld
 		assertType('bool', $nonEmptyArray == $unionMaybeArray);
 	}
 }
+
+function myFunction() {}

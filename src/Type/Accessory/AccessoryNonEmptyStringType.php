@@ -275,7 +275,11 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		$looseFalse = new NullType();
+		$looseFalse = new UnionType([
+			new NullType(),
+			new ConstantStringType(''),
+			new ConstantBooleanType(false),
+		]);
 
 		if ($looseFalse->isSuperTypeOf($type)->yes()) {
 			return new ConstantBooleanType(false);

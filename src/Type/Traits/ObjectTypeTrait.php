@@ -219,7 +219,7 @@ trait ObjectTypeTrait
 			return new ConstantBooleanType(false);
 		}
 
-		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
+		if ($type->isArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
 			return new ConstantBooleanType(false);
 		}
 

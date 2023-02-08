@@ -12,6 +12,9 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
+use function count;
 
 trait ConstantScalarTypeTrait
 {
@@ -61,13 +64,36 @@ trait ConstantScalarTypeTrait
 			return LooseComparisonHelper::compareConstantScalars($this, $type, $phpVersion);
 		}
 
+		$constantScalars = TypeUtils::getConstantScalars($type);
+		if (count($constantScalars) > 0) {
+			$results = [];
+			foreach ($constantScalars as $scalarType) {
+				$results[] = $this->looseCompare($scalarType, $phpVersion);
+			}
+
+			return TypeCombinator::union(...$results);
+		}
+
 		if ($type->isObject()->yes()) {
 			return $type->looseCompare($this, $phpVersion);
 		}
 
-		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
+		if ($type->isArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
 			// @phpstan-ignore-next-line
 			return new ConstantBooleanType($this->getValue() == []); // phpcs:ignore
+		}
+		if ($type->isArray()->yes() && $type->isIterableAtLeastOnce()->yes()) {
+			// @phpstan-ignore-next-line
+			return new ConstantBooleanType($this->getValue() != []); // phpcs:ignore
+		}
+
+		if ($type->isString()->yes() && $type->isNonEmptyString()->no()) {
+			// @phpstan-ignore-next-line
+			return new ConstantBooleanType($this->getValue() == ''); // phpcs:ignore
+		}
+		if ($type->isNonEmptyString()->yes()) {
+			// @phpstan-ignore-next-line
+			return new ConstantBooleanType($this->getValue() != ''); // phpcs:ignore
 		}
 
 		return parent::looseCompare($type, $phpVersion);

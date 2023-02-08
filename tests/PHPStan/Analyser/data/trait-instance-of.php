@@ -43,7 +43,7 @@ trait Trait2 {
 		}
 
 		if ($this instanceof ATrait1Class) {
-			assertType('*NEVER*', $this);
+			assertType('$this(TraitInstanceOf\FinalTrait2Class~TraitInstanceOf\FinalTrait2Class)&TraitInstanceOf\ATrait1Class', $this);
 			return 'hello world';
 		}
 

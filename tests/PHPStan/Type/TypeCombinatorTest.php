@@ -47,6 +47,8 @@ use Test\ClassWithNullableProperty;
 use Test\ClassWithToString;
 use Test\FirstInterface;
 use Throwable;
+use TraitInstanceOf\ATrait1Class;
+use TraitInstanceOf\Trait1;
 use Traversable;
 use function array_map;
 use function array_reverse;
@@ -3977,6 +3979,15 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			IntersectionType::class,
 			'$this(TraitInstanceOf\FinalTrait2Class~TraitInstanceOf\FinalOther)&NonExistantClass',
+		];
+
+		yield [
+			[
+				new ThisType($reflectionProvider->getClass(ATrait1Class::class), null, $reflectionProvider->getClass(Trait1::class)),
+				new ThisType($reflectionProvider->getClass(ATrait1Class::class), null, $reflectionProvider->getClass(Trait1::class)),
+			],
+			ThisType::class,
+			'$this(TraitInstanceOf\ATrait1Class)',
 		];
 	}
 

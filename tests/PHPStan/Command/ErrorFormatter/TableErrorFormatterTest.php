@@ -8,6 +8,7 @@ use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function getenv;
 use function putenv;
 use function sprintf;
 use const PHP_VERSION_ID;
@@ -217,6 +218,10 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 	public function testEditorUrlWithRelativePath(): void
 	{
+		if (getenv('TERMINAL_EMULATOR') === 'JetBrains-JediTerm') {
+			$this->markTestSkipped('PhpStorm console does not support links in console.');
+		}
+
 		$formatter = $this->createErrorFormatter('editor://custom/path/%relFile%/%line%');
 		$error = new Error('Test', 'Foo.php', 12, true, self::DIRECTORY_PATH . '/rel/Foo.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0), $this->getOutput(true));

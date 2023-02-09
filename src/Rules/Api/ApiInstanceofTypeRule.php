@@ -67,7 +67,7 @@ class ApiInstanceofTypeRule implements Rule
 		IterableType::class => 'Type::isIterable()',
 		ObjectWithoutClassType::class => 'Type::isObject()',
 		ObjectType::class => 'Type::isObject() or Type::getObjectClassNames()',
-		GenericClassStringType::class => 'Type::getClassStringObjectType()',
+		GenericClassStringType::class => 'Type::isClassStringType() and Type::getClassStringObjectType()',
 		GenericObjectType::class => null,
 
 		// accessory types

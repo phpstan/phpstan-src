@@ -104,8 +104,6 @@ class ErrorsConsoleStyle extends SymfonyStyle
 				$columnRows[$k] = wordwrap(
 					$columnRow,
 					$terminalWidth - $maxHeaderWidth - 5,
-					"\n",
-					true,
 				);
 			}
 

@@ -6,12 +6,9 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
-use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use ReflectionAttribute;
 use function count;
@@ -43,14 +40,7 @@ class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodR
 			return null;
 		}
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
-
-		if ($argType instanceof ConstantStringType) {
-			$classType = new ObjectType($argType->getValue());
-		} elseif ($argType instanceof GenericClassStringType) {
-			$classType = $argType->getGenericType();
-		} else {
-			return null;
-		}
+		$classType = $argType->getClassStringObjectType();
 
 		return new ArrayType(new MixedType(), new GenericObjectType(ReflectionAttribute::class, [$classType]));
 	}

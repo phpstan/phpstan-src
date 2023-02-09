@@ -30,6 +30,17 @@ interface Type
 	/** @return list<string> */
 	public function getObjectClassNames(): array;
 
+	/**
+	 * Returns object type Foo for class-string<Foo> and 'Foo' (if Foo is a valid class).
+	 */
+	public function getClassStringObjectType(): Type;
+
+	/**
+	 * Returns object type Foo for class-string<Foo>, 'Foo' (if Foo is a valid class),
+	 * and object type Foo.
+	 */
+	public function getObjectTypeOrClassStringObjectType(): Type;
+
 	public function isObject(): TrinaryLogic;
 
 	/** @return list<ArrayType> */

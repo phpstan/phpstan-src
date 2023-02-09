@@ -29,6 +29,8 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\NullType;
@@ -65,6 +67,8 @@ class ApiInstanceofTypeRule implements Rule
 		IterableType::class => 'Type::isIterable()',
 		ObjectWithoutClassType::class => 'Type::isObject()',
 		ObjectType::class => 'Type::isObject() or Type::getObjectClassNames()',
+		GenericClassStringType::class => 'Type::getClassStringObjectType()',
+		GenericObjectType::class => null,
 
 		// accessory types
 		NonEmptyArrayType::class => 'Type::isIterableAtLeastOnce()',
@@ -127,14 +131,22 @@ class ApiInstanceofTypeRule implements Rule
 			}
 		}
 
+		$tip = 'Learn more: <fg=cyan>https://phpstan.org/blog/why-is-instanceof-type-wrong-and-getting-deprecated</>';
+		if ($lowerMap[$lowerClassName] === null) {
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'Doing instanceof %s is error-prone and deprecated.',
+					$className,
+				))->tip($tip)->build(),
+			];
+		}
+
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Doing instanceof %s is error-prone and deprecated. Use %s instead.',
 				$className,
 				$lowerMap[$lowerClassName],
-			))->tip(
-				'Learn more: <fg=cyan>https://phpstan.org/blog/why-is-instanceof-type-wrong-and-getting-deprecated</>',
-			)->build(),
+			))->tip($tip)->build(),
 		];
 	}
 

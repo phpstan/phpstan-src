@@ -10,7 +10,6 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -115,32 +114,34 @@ class UnusedPrivateMethodRule implements Rule
 				/** @var Node\Expr\Array_ $array */
 				$array = $arrayCall->getNode();
 				$arrayScope = $arrayCall->getScope();
-				$arrayType = $scope->getType($array);
-				if (!$arrayType instanceof ConstantArrayType) {
+				$arrayType = $arrayScope->getType($array);
+				if (!$arrayType->isCallable()->yes()) {
 					continue;
 				}
-				foreach ($arrayType->findTypeAndMethodNames() as $typeAndMethod) {
-					if ($typeAndMethod->isUnknown()) {
-						return [];
+				foreach ($arrayType->getConstantArrays() as $constantArray) {
+					foreach ($constantArray->findTypeAndMethodNames() as $typeAndMethod) {
+						if ($typeAndMethod->isUnknown()) {
+							return [];
+						}
+						if (!$typeAndMethod->getCertainty()->yes()) {
+							return [];
+						}
+						$calledOnType = $typeAndMethod->getType();
+						if ($classType->isSuperTypeOf($calledOnType)->no()) {
+							continue;
+						}
+						if ($calledOnType instanceof MixedType) {
+							continue;
+						}
+						$inMethod = $arrayScope->getFunction();
+						if (!$inMethod instanceof MethodReflection) {
+							continue;
+						}
+						if ($inMethod->getName() === $typeAndMethod->getMethod()) {
+							continue;
+						}
+						unset($methods[$typeAndMethod->getMethod()]);
 					}
-					if (!$typeAndMethod->getCertainty()->yes()) {
-						return [];
-					}
-					$calledOnType = $typeAndMethod->getType();
-					if ($classType->isSuperTypeOf($calledOnType)->no()) {
-						continue;
-					}
-					if ($calledOnType instanceof MixedType) {
-						continue;
-					}
-					$inMethod = $arrayScope->getFunction();
-					if (!$inMethod instanceof MethodReflection) {
-						continue;
-					}
-					if ($inMethod->getName() === $typeAndMethod->getMethod()) {
-						continue;
-					}
-					unset($methods[$typeAndMethod->getMethod()]);
 				}
 			}
 		}

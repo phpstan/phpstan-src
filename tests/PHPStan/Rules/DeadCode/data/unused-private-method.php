@@ -80,8 +80,10 @@ class Baz
 
 	public function doBar(string $name)
 	{
-		$cb = [$this, $name];
-		$cb();
+		if ($name === 'doFoo') {
+			$cb = [$this, $name];
+			$cb();
+		}
 	}
 
 }

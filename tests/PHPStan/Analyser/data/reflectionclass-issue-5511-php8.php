@@ -40,7 +40,7 @@ function testGetAttributes(
 	assertType('array<ReflectionAttribute<Issue5511\Abc>>', $classGCN);
 	assertType('array<ReflectionAttribute<object>>', $classCN);
 	assertType('array<ReflectionAttribute<object>>', $classStr);
-	assertType('array<ReflectionAttribute<some random string>>', $classNonsense);
+	assertType('array<ReflectionAttribute<*ERROR*>>', $classNonsense);
 
 	$methodAll = $reflectionMethod->getAttributes();
 	$methodAbc = $reflectionMethod->getAttributes(Abc::class);

@@ -801,6 +801,28 @@ class MixedType implements CompoundType, SubtractableType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getClassStringObjectType(): Type
+	{
+		if (!$this->isClassStringType()->no()) {
+			return new ObjectWithoutClassType();
+		}
+
+		return new ErrorType();
+	}
+
+	public function getObjectTypeOrClassStringObjectType(): Type
+	{
+		$objectOrClass = new UnionType([
+			new ObjectWithoutClassType(),
+			new ClassStringType(),
+		]);
+		if (!$this->isSuperTypeOf($objectOrClass)->no()) {
+			return new ObjectWithoutClassType();
+		}
+
+		return new ErrorType();
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {

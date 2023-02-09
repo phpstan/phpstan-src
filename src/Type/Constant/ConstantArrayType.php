@@ -6,7 +6,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -21,7 +20,6 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
-use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -30,7 +28,6 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -500,17 +497,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return ConstantArrayTypeAndMethod::createUnknown();
 		}
 
-		if ($classOrObject instanceof ConstantStringType) {
-			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-			if (!$reflectionProvider->hasClass($classOrObject->getValue())) {
-				return null;
-			}
-			$type = new ObjectType($reflectionProvider->getClass($classOrObject->getValue())->getName());
-		} elseif ($classOrObject instanceof GenericClassStringType) {
-			$type = $classOrObject->getGenericType();
-		} elseif ($classOrObject->isObject()->yes()) {
-			$type = $classOrObject;
-		} else {
+		$type = $classOrObject->getObjectTypeOrClassStringObjectType();
+		if (!$type->isObject()->yes()) {
 			return ConstantArrayTypeAndMethod::createUnknown();
 		}
 
@@ -541,44 +529,28 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return [];
 		}
 
-		[$classOrObjects, $methods] = $this->valueTypes;
-		$classOrObjects = TypeUtils::flattenTypes($classOrObjects);
-		$methods = TypeUtils::flattenTypes($methods);
+		[$classOrObject, $methods] = $this->valueTypes;
+		if (count($methods->getConstantStrings()) === 0) {
+			return [ConstantArrayTypeAndMethod::createUnknown()];
+		}
+
+		$type = $classOrObject->getObjectTypeOrClassStringObjectType();
+		if (!$type->isObject()->yes()) {
+			return [ConstantArrayTypeAndMethod::createUnknown()];
+		}
 
 		$typeAndMethods = [];
-		foreach ($classOrObjects as $classOrObject) {
-			if ($classOrObject instanceof ConstantStringType) {
-				$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-				if (!$reflectionProvider->hasClass($classOrObject->getValue())) {
-					continue;
-				}
-				$type = new ObjectType($reflectionProvider->getClass($classOrObject->getValue())->getName());
-			} elseif ($classOrObject instanceof GenericClassStringType) {
-				$type = $classOrObject->getGenericType();
-			} elseif ($classOrObject->isObject()->yes()) {
-				$type = $classOrObject;
-			} else {
-				$typeAndMethods[] = ConstantArrayTypeAndMethod::createUnknown();
+		foreach ($methods->getConstantStrings() as $method) {
+			$has = $type->hasMethod($method->getValue());
+			if ($has->no()) {
 				continue;
 			}
 
-			foreach ($methods as $method) {
-				if (!$method instanceof ConstantStringType) {
-					$typeAndMethods[] = ConstantArrayTypeAndMethod::createUnknown();
-					continue;
-				}
-
-				$has = $type->hasMethod($method->getValue());
-				if ($has->no()) {
-					continue;
-				}
-
-				if ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
-					$has = $has->and(TrinaryLogic::createMaybe());
-				}
-
-				$typeAndMethods[] = ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
+			if ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
+				$has = $has->and(TrinaryLogic::createMaybe());
 			}
+
+			$typeAndMethods[] = ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
 		}
 
 		return $typeAndMethods;

@@ -559,6 +559,16 @@ class UnionType implements CompoundType
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isClassStringType());
 	}
 
+	public function getClassStringObjectType(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->getClassStringObjectType());
+	}
+
+	public function getObjectTypeOrClassStringObjectType(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->getObjectTypeOrClassStringObjectType());
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isVoid());

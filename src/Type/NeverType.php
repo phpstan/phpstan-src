@@ -424,6 +424,16 @@ class NeverType implements CompoundType
 		return TrinaryLogic::createNo();
 	}
 
+	public function getClassStringObjectType(): Type
+	{
+		return new ErrorType();
+	}
+
+	public function getObjectTypeOrClassStringObjectType(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

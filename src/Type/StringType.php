@@ -222,6 +222,16 @@ class StringType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getClassStringObjectType(): Type
+	{
+		return new ObjectWithoutClassType();
+	}
+
+	public function getObjectTypeOrClassStringObjectType(): Type
+	{
+		return new ObjectWithoutClassType();
+	}
+
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

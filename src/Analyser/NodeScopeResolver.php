@@ -135,7 +135,6 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\GeneralizePrecision;
-use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
@@ -2217,20 +2216,9 @@ class NodeScopeResolver
 										$thisTypes[] = new ObjectType($directClassName);
 									}
 									$thisType = TypeCombinator::union(...$thisTypes);
-								} elseif (count($argValueType->getConstantStrings()) > 0) {
-									$thisTypes = [];
-									foreach ($argValueType->getConstantStrings() as $constantString) {
-										$scopeClasses[] = $constantString->getValue();
-										$thisTypes[] = new ObjectType($constantString->getValue());
-									}
-
-									$thisType = TypeCombinator::union(...$thisTypes);
-								} elseif ($argValueType instanceof GenericClassStringType) {
-									$genericClassNames = $argValueType->getGenericType()->getObjectClassNames();
-									if (count($genericClassNames) > 0) {
-										$scopeClasses = $genericClassNames;
-										$thisType = $argValueType->getGenericType();
-									}
+								} else {
+									$thisType = $argValueType->getClassStringObjectType();
+									$scopeClasses = $thisType->getObjectClassNames();
 								}
 							}
 							$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);

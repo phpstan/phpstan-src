@@ -95,7 +95,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
@@ -1353,7 +1352,7 @@ class MutatingScope implements Scope
 			}
 
 			$exprType = $this->getType($node->class);
-			return $this->getTypeToInstantiateForNew($exprType);
+			return $exprType->getObjectTypeOrClassStringObjectType();
 
 		} elseif ($node instanceof Array_) {
 			return $this->initializerExprTypeResolver->getArrayType($node, fn (Expr $expr): Type => $this->getType($expr));
@@ -1718,21 +1717,7 @@ class MutatingScope implements Scope
 				if ($node->class instanceof Name) {
 					$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
 				} else {
-					$staticMethodCalledOnType = TypeTraverser::map($this->getType($node->class), static function (Type $type, callable $traverse): Type {
-						if ($type instanceof UnionType) {
-							return $traverse($type);
-						}
-
-						if ($type instanceof GenericClassStringType) {
-							return $type->getGenericType();
-						}
-
-						if ($type instanceof ConstantStringType && $type->isClassStringType()->yes()) {
-							return new ObjectType($type->getValue());
-						}
-
-						return $type;
-					});
+					$staticMethodCalledOnType = $this->getType($node->class)->getObjectTypeOrClassStringObjectType();
 				}
 
 				$returnType = $this->methodCallReturnType(
@@ -1821,10 +1806,7 @@ class MutatingScope implements Scope
 				if ($node->class instanceof Name) {
 					$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);
 				} else {
-					$staticPropertyFetchedOnType = $this->getType($node->class);
-					if ($staticPropertyFetchedOnType instanceof GenericClassStringType) {
-						$staticPropertyFetchedOnType = $staticPropertyFetchedOnType->getGenericType();
-					}
+					$staticPropertyFetchedOnType = $this->getType($node->class)->getObjectTypeOrClassStringObjectType();
 				}
 
 				$returnType = $this->propertyFetchType(
@@ -4804,38 +4786,6 @@ class MutatingScope implements Scope
 			$resolvedClassName,
 			$list,
 		);
-	}
-
-	private function getTypeToInstantiateForNew(Type $type): Type
-	{
-		if ($type instanceof UnionType) {
-			$types = array_map(fn (Type $type) => $this->getTypeToInstantiateForNew($type), $type->getTypes());
-			return TypeCombinator::union(...$types);
-		}
-
-		if ($type instanceof IntersectionType) {
-			$types = array_map(fn (Type $type) => $this->getTypeToInstantiateForNew($type), $type->getTypes());
-			return TypeCombinator::intersect(...$types);
-		}
-
-		if (count($type->getConstantStrings()) > 0) {
-			$types = [];
-			foreach ($type->getConstantStrings() as $constantString) {
-				$types[] = new ObjectType($constantString->getValue());
-			}
-
-			return TypeCombinator::union(...$types);
-		}
-
-		if ($type instanceof GenericClassStringType) {
-			return $type->getGenericType();
-		}
-
-		if ($type->isObject()->yes()) {
-			return $type;
-		}
-
-		return new ObjectWithoutClassType();
 	}
 
 	/** @api */

@@ -22,17 +22,22 @@ class ApiInstanceofTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/instanceof-type.php'], [
 			[
 				'Doing instanceof PHPStan\Type\TypeWithClassName is error-prone and deprecated. Use Type::getObjectClassNames() instead.',
-				19,
+				20,
 				$tipText,
 			],
 			[
 				'Doing instanceof phpstan\type\typewithclassname is error-prone and deprecated. Use Type::getObjectClassNames() instead.',
-				23,
+				24,
 				$tipText,
 			],
 			[
 				'Doing instanceof PHPStan\Type\TypeWithClassName is error-prone and deprecated. Use Type::getObjectClassNames() instead.',
-				35,
+				36,
+				$tipText,
+			],
+			[
+				'Doing instanceof PHPStan\Type\Generic\GenericObjectType is error-prone and deprecated.',
+				40,
 				$tipText,
 			],
 		]);

@@ -402,6 +402,16 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isClassStringType();
 	}
 
+	public function getClassStringObjectType(): Type
+	{
+		return $this->resolve()->getClassStringObjectType();
+	}
+
+	public function getObjectTypeOrClassStringObjectType(): Type
+	{
+		return $this->resolve()->getObjectTypeOrClassStringObjectType();
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		return $this->resolve()->isVoid();

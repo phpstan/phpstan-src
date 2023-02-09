@@ -75,12 +75,25 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	{
 		if ($this->isClassString) {
 			return TrinaryLogic::createYes();
-
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
 		return TrinaryLogic::createFromBoolean($reflectionProvider->hasClass($this->value));
+	}
+
+	public function getClassStringObjectType(): Type
+	{
+		if ($this->isClassStringType()->yes()) {
+			return new ObjectType($this->value);
+		}
+
+		return new ErrorType();
+	}
+
+	public function getObjectTypeOrClassStringObjectType(): Type
+	{
+		return $this->getClassStringObjectType();
 	}
 
 	/**

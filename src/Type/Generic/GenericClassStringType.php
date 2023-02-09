@@ -42,6 +42,16 @@ class GenericClassStringType extends ClassStringType
 		return $this->type;
 	}
 
+	public function getClassStringObjectType(): Type
+	{
+		return $this->getGenericType();
+	}
+
+	public function getObjectTypeOrClassStringObjectType(): Type
+	{
+		return $this->getClassStringObjectType();
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return sprintf('%s<%s>', parent::describe($level), $this->type->describe($level));

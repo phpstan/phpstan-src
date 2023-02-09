@@ -72,6 +72,16 @@ class ClassStringType extends StringType
 		return TrinaryLogic::createYes();
 	}
 
+	public function getClassStringObjectType(): Type
+	{
+		return new ObjectWithoutClassType();
+	}
+
+	public function getObjectTypeOrClassStringObjectType(): Type
+	{
+		return new ObjectWithoutClassType();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

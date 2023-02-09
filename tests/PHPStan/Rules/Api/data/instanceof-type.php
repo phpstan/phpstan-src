@@ -2,6 +2,7 @@
 
 namespace ApiInstanceofType;
 
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeWithClassName;
@@ -33,6 +34,10 @@ class Foo
 		});
 
 		if ($a instanceof TypeWithClassName) {
+
+		}
+
+		if ($a instanceof GenericObjectType) {
 
 		}
 	}

@@ -591,6 +591,16 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isClassStringType());
 	}
 
+	public function getClassStringObjectType(): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getClassStringObjectType());
+	}
+
+	public function getObjectTypeOrClassStringObjectType(): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getObjectTypeOrClassStringObjectType());
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isVoid());

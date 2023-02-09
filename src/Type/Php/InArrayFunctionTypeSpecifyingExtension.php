@@ -53,11 +53,13 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 		if (
 			$context->true()
-			|| $context->false()
+			|| (
+				$context->false()
 				&& (
 					count(TypeUtils::getConstantScalars($arrayValueType)) > 0
 					|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
 				)
+			)
 		) {
 			$specifiedTypes = $this->typeSpecifier->create(
 				$node->getArgs()[0]->value,
@@ -70,11 +72,13 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 		if (
 			$context->true()
-			|| $context->false()
+			|| (
+				$context->false()
 				&& (
 					count(TypeUtils::getConstantScalars($needleType)) > 0
 					|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
 				)
+			)
 		) {
 			if ($context->true()) {
 				$arrayValueType = TypeCombinator::union($arrayValueType, $needleType);

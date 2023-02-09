@@ -35,7 +35,7 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 	): bool
 	{
 		return $functionReflection->getName() === 'method_exists'
-			&& $context->truthy()
+			&& $context->true()
 			&& count($node->getArgs()) >= 2;
 	}
 

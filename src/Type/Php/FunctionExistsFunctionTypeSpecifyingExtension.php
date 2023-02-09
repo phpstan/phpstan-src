@@ -29,7 +29,7 @@ class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		TypeSpecifierContext $context,
 	): bool
 	{
-		return $functionReflection->getName() === 'function_exists' && isset($node->getArgs()[0]) && $context->truthy();
+		return $functionReflection->getName() === 'function_exists' && isset($node->getArgs()[0]) && $context->true();
 	}
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes

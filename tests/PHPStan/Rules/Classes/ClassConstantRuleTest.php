@@ -373,6 +373,26 @@ class ClassConstantRuleTest extends RuleTestCase
 				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
 				48,
 			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				52,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				54,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				56,
+			],
+			[
+				'Access to undefined constant Foo::TEST.',
+				57,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				58,
+			],
 		]);
 	}
 

@@ -51,7 +51,7 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
 		return array_key_exists(strtolower($functionReflection->getName()), $this->strContainingFunctions)
-			&& $context->truthy();
+			&& $context->true();
 	}
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes

@@ -35,7 +35,7 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			'interface_exists',
 			'trait_exists',
 			'enum_exists',
-		], true) && isset($node->getArgs()[0]) && $context->truthy();
+		], true) && isset($node->getArgs()[0]) && $context->true();
 	}
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes

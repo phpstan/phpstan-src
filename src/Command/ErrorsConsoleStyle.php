@@ -104,8 +104,6 @@ class ErrorsConsoleStyle extends SymfonyStyle
 				$wrapped = wordwrap(
 					$columnRow,
 					$terminalWidth - $maxHeaderWidth - 5,
-					"\n",
-					true,
 				);
 				if (str_starts_with($columnRow, '💡 ')) {
 					$wrappedLines = explode("\n", $wrapped);

@@ -823,7 +823,12 @@ class TypeNodeResolver
 			$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional);
 		}
 
-		return $builder->getArray();
+		$arrayType = $builder->getArray();
+		if ($typeNode->kind === ArrayShapeNode::KIND_LIST) {
+			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+		}
+
+		return $arrayType;
 	}
 
 	private function resolveConstTypeNode(ConstTypeNode $typeNode, NameScope $nameScope): Type

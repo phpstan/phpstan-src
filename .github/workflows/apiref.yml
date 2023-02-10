@@ -95,6 +95,12 @@ jobs:
           repository: "phpstan/phpstan"
           event-type: check_website_links
 
+      - uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          repository: "phpstan/phpstan"
+          event-type: meilisearch_crawler
+
       - name: "Check for broken links"
         uses: ScholliYT/Broken-Links-Crawler-Action@v3
         with:

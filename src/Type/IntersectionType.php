@@ -348,22 +348,6 @@ class IntersectionType implements CompoundType
 				continue;
 			}
 
-			if (
-				substr($typeDescription, 0, strlen('array{')) === 'array{'
-					&& in_array('array', $skipTypeNames, true)
-			) {
-				$isList = false;
-				foreach ($typesToDescribe as $j => $typeToDescribe) {
-					if ($typeToDescribe instanceof AccessoryArrayListType) {
-						$isList = true;
-						unset($typesToDescribe[$j]);
-						break;
-					}
-				}
-				$describedTypes[$i] = 'list{' . substr($typeDescription, strlen('array{'));
-				continue;
-			}
-
 			if (in_array($typeDescription, $skipTypeNames, true)) {
 				continue;
 			}

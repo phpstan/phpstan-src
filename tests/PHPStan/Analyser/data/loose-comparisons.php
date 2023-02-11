@@ -1373,6 +1373,7 @@ class HelloWorld
 
 	/**
 	 * @param non-empty-string $nonEmptyString
+	 * @param non-falsy-string $nonFalsyString
 	 * @param non-empty-array $nonEmptyArray
 	 * @param callable $callable
 	 * @param true $true
@@ -1401,6 +1402,7 @@ class HelloWorld
 	 */
 	public function looseIntersection(
 		$nonEmptyString,
+		$nonFalsyString,
 		$nonEmptyArray,
 		$true,
 		$false,
@@ -1425,7 +1427,9 @@ class HelloWorld
 		$unionStrings,
 		$unionMaybeArray,
 		$list,
-		$stringList
+		$stringList,
+		$intList,
+		$boolList,
 	) {
 		assertType('bool', $nonEmptyString == $true);
 		assertType('false', $nonEmptyString == $false);
@@ -1453,6 +1457,35 @@ class HelloWorld
 		assertType('bool', $nonEmptyString == $unionNumbers);
 		assertType('bool', $nonEmptyString == $unionStrings);
 		assertType('bool', $nonEmptyString == $unionMaybeArray);
+		assertType('bool', $nonEmptyString == $nonFalsyString);
+
+		assertType('bool', $nonFalsyString == $true);
+		assertType('false', $nonFalsyString == $false);
+		assertType('bool', $nonFalsyString == $one);
+		assertType('bool', $nonFalsyString == $zero);
+		assertType('bool', $nonFalsyString == 10);
+		assertType('bool', $nonFalsyString == $minusOne);
+		assertType('bool', $nonFalsyString == $oneStr);
+		assertType('false', $nonFalsyString == $zeroStr);
+		assertType('bool', $nonFalsyString == $minusOneStr);
+		assertType('false', $nonFalsyString == $null);
+		assertType('false', $nonFalsyString == $emptyArr);
+		assertType('bool', $nonFalsyString == $phpStr);
+		assertType('false', $nonFalsyString == $emptyStr);
+		assertType('bool', $nonFalsyString == $float);
+		assertType('false', $nonFalsyString == []);
+		assertType('false', $nonFalsyString == $arr);
+		assertType('bool', $nonFalsyString == $int);
+		assertType('bool', $nonFalsyString == $float);
+		assertType('bool', $nonFalsyString == $bool);
+		assertType('bool', $nonFalsyString == $string);
+		assertType('false', $nonFalsyString == $obj);
+		assertType('false', $nonFalsyString == new \stdClass());
+		assertType('bool', $nonFalsyString == $unionMaybeNumeric);
+		assertType('bool', $nonFalsyString == $unionNumbers);
+		assertType('bool', $nonFalsyString == $unionStrings);
+		assertType('bool', $nonFalsyString == $unionMaybeArray);
+		assertType('bool', $nonFalsyString == $nonEmptyString);
 
 		assertType('true', $nonEmptyArray == $true);
 		assertType('false', $nonEmptyArray == $false);
@@ -1515,6 +1548,18 @@ class HelloWorld
 		assertType('false', $list == $unionStrings);
 		assertType('bool', $list == $unionMaybeArray);
 
+		assertType('bool', $list == $boolList);
+		assertType('bool', $list == $stringList);
+		assertType('bool', $list == $intList);
+		assertType('bool', $boolList == $list);
+		assertType('bool', $boolList == $stringList);
+		assertType('bool', $boolList == $intList);
+		assertType('bool', $stringList == $list);
+		assertType('bool', $stringList == $boolList);
+		assertType('bool', $stringList == $intList);
+		assertType('bool', $intList == $list);
+		assertType('bool', $intList == $stringList);
+		assertType('bool', $intList == $boolList);
 	}
 }
 

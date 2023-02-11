@@ -176,4 +176,14 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8880(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8880.php'], [
+			[
+				'Template type T is declared as covariant, but occurs in contravariant position in parameter items of method Bug8880\IProcessor::processItems().',
+				17,
+			],
+		]);
+	}
+
 }

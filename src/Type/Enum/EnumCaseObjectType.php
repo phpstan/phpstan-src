@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Enum;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\EnumPropertyReflection;
@@ -9,7 +10,9 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\ObjectType;
@@ -66,10 +69,7 @@ class EnumCaseObjectType extends ObjectType
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof self) {
-			return TrinaryLogic::createFromBoolean(
-				$this->getClassName() === $type->getClassName()
-				&& $this->enumCaseName === $type->enumCaseName,
-			);
+			return TrinaryLogic::createFromBoolean($this->equals($type));
 		}
 
 		if ($type instanceof CompoundType) {
@@ -149,6 +149,15 @@ class EnumCaseObjectType extends ObjectType
 	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		if ($type instanceof self) {
+			return new ConstantBooleanType($this->equals($type));
+		}
+
+		return new BooleanType();
 	}
 
 	public function getEnumCases(): array

@@ -847,6 +847,7 @@ class HelloWorld
 		assertType('bool', $bool == $false);
 		assertType('bool', $bool == $one);
 		assertType('bool', $bool == 10);
+		assertType('bool', $bool == $zero);
 		assertType('bool', $bool == $minusOne);
 		assertType('bool', $bool == $oneStr);
 		assertType('bool', $bool == $zeroStr);
@@ -913,6 +914,7 @@ class HelloWorld
 		assertType('bool', $int == $false);
 		assertType('bool', $int == $one);
 		assertType('bool', $int == 10);
+		assertType('bool', $int == $zero);
 		assertType('bool', $int == $minusOne);
 		assertType('bool', $int == $oneStr);
 		assertType('bool', $int == $zeroStr);
@@ -976,6 +978,7 @@ class HelloWorld
 		assertType('bool', $string == $false);
 		assertType('bool', $string == $one);
 		assertType('bool', $string == 10);
+		assertType('bool', $string == $zero);
 		assertType('bool', $string == $minusOne);
 		assertType('bool', $string == $oneStr);
 		assertType('bool', $string == $zeroStr);
@@ -1375,6 +1378,7 @@ class HelloWorld
 	 * @param non-empty-string $nonEmptyString
 	 * @param non-falsy-string $nonFalsyString
 	 * @param numeric-string $numericString
+	 * @param class-string $classString
 	 * @param non-empty-array $nonEmptyArray
 	 * @param callable $callable
 	 * @param true $true
@@ -1405,6 +1409,7 @@ class HelloWorld
 		$nonEmptyString,
 		$nonFalsyString,
 		$numericString,
+		$classString,
 		$nonEmptyArray,
 		$true,
 		$false,
@@ -1461,6 +1466,7 @@ class HelloWorld
 		assertType('bool', $nonEmptyString == $unionMaybeArray);
 		assertType('bool', $nonEmptyString == $nonFalsyString);
 		assertType('bool', $nonEmptyString == $numericString);
+		assertType('bool', $nonEmptyString == $classString);
 
 		assertType('bool', $nonFalsyString == $true);
 		assertType('false', $nonFalsyString == $false);
@@ -1490,6 +1496,7 @@ class HelloWorld
 		assertType('bool', $nonFalsyString == $unionMaybeArray);
 		assertType('bool', $nonFalsyString == $nonEmptyString);
 		assertType('bool', $nonFalsyString == $numericString);
+		assertType('bool', $nonFalsyString == $classString);
 
 		assertType('bool', $numericString == $true);
 		assertType('bool', $numericString == $false);
@@ -1519,6 +1526,37 @@ class HelloWorld
 		assertType('bool', $numericString == $unionMaybeArray);
 		assertType('bool', $numericString == $nonEmptyString);
 		assertType('bool', $numericString == $nonFalsyString);
+		assertType('bool', $numericString == $classString);
+
+		assertType('bool', $classString == $true);
+		assertType('false', $classString == $false);
+		assertType('bool', $classString == $one);
+		assertType('bool', $classString == $zero);
+		assertType('bool', $classString == 10);
+		assertType('bool', $classString == $minusOne);
+		assertType('bool', $classString == $oneStr);
+		assertType('false', $classString == $zeroStr);
+		assertType('bool', $classString == $minusOneStr);
+		assertType('false', $classString == $null);
+		assertType('false', $classString == $emptyArr);
+		assertType('bool', $classString == $phpStr);
+		assertType('false', $classString == $emptyStr);
+		assertType('bool', $classString == $float);
+		assertType('false', $classString == []);
+		assertType('false', $classString == $arr);
+		assertType('bool', $classString == $int);
+		assertType('bool', $classString == $float);
+		assertType('bool', $classString == $bool);
+		assertType('bool', $classString == $string);
+		assertType('false', $classString == $obj);
+		assertType('false', $classString == new \stdClass());
+		assertType('bool', $classString == $unionMaybeNumeric);
+		assertType('bool', $classString == $unionNumbers);
+		assertType('bool', $classString == $unionStrings);
+		assertType('bool', $classString == $unionMaybeArray);
+		assertType('bool', $classString == $nonEmptyString);
+		assertType('bool', $classString == $nonFalsyString);
+		assertType('bool', $classString == $numericString);
 
 		assertType('true', $nonEmptyArray == $true);
 		assertType('false', $nonEmptyArray == $false);

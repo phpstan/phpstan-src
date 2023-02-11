@@ -390,8 +390,8 @@ class IterableType implements CompoundType
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
 		return array_merge(
-			$this->getIterableKeyType()->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant()),
-			$this->getIterableValueType()->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant()),
+			$this->getIterableKeyType()->getReferencedTemplateTypes($positionVariance),
+			$this->getIterableValueType()->getReferencedTemplateTypes($positionVariance),
 		);
 	}
 

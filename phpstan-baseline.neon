@@ -594,7 +594,7 @@ parameters:
 			path: src/Rules/Methods/MethodParameterComparisonHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) and Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Methods/StaticMethodCallCheck.php
 
@@ -749,7 +749,7 @@ parameters:
 			path: src/Type/Constant/ConstantStringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) and Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantStringType.php
 
@@ -794,7 +794,7 @@ parameters:
 			path: src/Type/Generic/GenericClassStringType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) and Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
 			count: 4
 			path: src/Type/Generic/GenericClassStringType.php
 
@@ -1035,7 +1035,7 @@ parameters:
 			path: src/Type/Php/IsAFunctionTypeSpecifyingExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) and Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Php/IsSubclassOfFunctionTypeSpecifyingExtension.php
 
@@ -1103,7 +1103,7 @@ parameters:
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) and Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
 
@@ -1183,7 +1183,7 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) and Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/TypeCombinator.php
 
@@ -1243,7 +1243,7 @@ parameters:
 			path: src/Type/UnionType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) and Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/UnionType.php
 

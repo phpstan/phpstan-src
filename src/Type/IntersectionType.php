@@ -22,7 +22,6 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -616,8 +615,11 @@ class IntersectionType implements CompoundType
 	{
 		return $this->intersectResults(static function (Type $innerType) use ($type, $phpVersion): TrinaryLogic {
 			$booleanType = $innerType->looseCompare($type, $phpVersion);
-			if ($booleanType instanceof ConstantBooleanType) {
-				return TrinaryLogic::createFromBoolean($booleanType->getValue());
+			if ($booleanType->isTrue()->yes()) {
+				return TrinaryLogic::createYes();
+			}
+			if ($booleanType->isFalse()->yes()) {
+				return TrinaryLogic::createNo();
 			}
 			return TrinaryLogic::createMaybe();
 		})->toBooleanType();

@@ -583,8 +583,11 @@ class UnionType implements CompoundType
 	{
 		return $this->unionResults(static function (Type $innerType) use ($type, $phpVersion): TrinaryLogic {
 			$booleanType = $innerType->looseCompare($type, $phpVersion);
-			if ($booleanType instanceof ConstantBooleanType) {
-				return TrinaryLogic::createFromBoolean($booleanType->getValue());
+			if ($booleanType->isTrue()->yes()) {
+				return TrinaryLogic::createYes();
+			}
+			if ($booleanType->isFalse()->yes()) {
+				return TrinaryLogic::createNo();
 			}
 			return TrinaryLogic::createMaybe();
 		})->toBooleanType();

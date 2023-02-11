@@ -10,6 +10,7 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -444,12 +445,10 @@ class CallableType implements CompoundType, ParametersAcceptor
 			new ConstantBooleanType(false),
 			new FloatType(),
 			new IntegerType(),
-			new NeverType(),
+			new ConstantArrayType([], []),
 		]);
 
-		if ($looseFalse->isSuperTypeOf($type)->yes()
-			|| ($type->isArray()->yes() && $type->isIterableAtLeastOnce()->no())
-		) {
+		if ($looseFalse->isSuperTypeOf($type)->yes()) {
 			return new ConstantBooleanType(false);
 		}
 

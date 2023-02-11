@@ -233,7 +233,6 @@ class FloatType implements Type
 		}
 
 		$looseFalse = new UnionType([
-			new ObjectWithoutClassType(),
 			new ArrayType(new MixedType(), new MixedType()),
 			new ConstantStringType(''),
 		]);

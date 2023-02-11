@@ -623,6 +623,7 @@ class HelloWorld
 	/**
 	 * @param true $true
 	 * @param false $false
+	 * @param 1.0 $floatOne
 	 * @param 1 $one
 	 * @param 0 $zero
 	 * @param -1 $minusOne
@@ -640,6 +641,7 @@ class HelloWorld
 	public function looseObj(
 		$true,
 		$false,
+		$floatOne,
 		$one,
 		$zero,
 		$minusOne,
@@ -660,6 +662,7 @@ class HelloWorld
 		assertType('true', $obj == $true);
 		assertType('false', $obj == $false);
 		assertType('false', $obj == $zero);
+		assertType('true', $obj == $floatOne);
 		assertType('true', $obj == $one);
 		assertType('false', $obj == 10);
 		assertType('false', $obj == $minusOne);
@@ -672,7 +675,7 @@ class HelloWorld
 		assertType('false', $obj == $emptyStr);
 		assertType('bool', $obj == $arr);
 		assertType('bool', $obj == $int);
-		assertType('false', $obj == $float);
+		assertType('bool', $obj == $float);
 		assertType('bool', $obj == $bool);
 		assertType('false', $obj == $string);
 		assertType('true', $obj == $obj);
@@ -732,7 +735,7 @@ class HelloWorld
 		assertType('false', $obj == $emptyStr);
 		assertType('bool', $obj == $arr);
 		assertType('bool', $obj == $int);
-		assertType('false', $obj == $float);
+		assertType('bool', $obj == $float);
 		assertType('bool', $obj == $bool);
 		assertType('false', $obj == $string);
 		assertType('true', $obj == $obj);
@@ -785,6 +788,7 @@ class HelloWorld
 	) {
 		assertType('bool', $float == $true);
 		assertType('bool', $float == $false);
+		assertType('bool', $float == $zero);
 		assertType('bool', $float == $one);
 		assertType('bool', $float == 10);
 		assertType('bool', $float == $minusOne);
@@ -801,8 +805,8 @@ class HelloWorld
 		assertType('true', $float == $float);
 		assertType('bool', $float == $bool);
 		assertType('bool', $float == $string);
-		assertType('false', $float == $obj);
-		assertType('false', $float == new \stdClass());
+		assertType('bool', $float == $obj);
+		assertType('bool', $float == new \stdClass());
 		assertType('bool', $float == $unionMaybeNumeric);
 		assertType('bool', $float == $unionNumbers);
 		assertType('false', $float == $unionStrings);
@@ -1398,6 +1402,7 @@ class HelloWorld
 	 * @param 1|2|3 $unionNumbers
 	 * @param 'a'|'b'|'c' $unionStrings
 	 * @param 'a'|'123'|123|array $unionMaybeArray
+	 * @param null|false|array{} $unionFalsy
 	 * @param list<string> $stringList
 	 * @param list<int> $intList
 	 * @param list<bool> $boolList
@@ -1433,6 +1438,7 @@ class HelloWorld
 		$unionNumbers,
 		$unionStrings,
 		$unionMaybeArray,
+		$unionFalsy,
 		$list,
 		$stringList,
 		$intList,
@@ -1584,6 +1590,7 @@ class HelloWorld
 		assertType('false', $nonEmptyArray == $unionNumbers);
 		assertType('false', $nonEmptyArray == $unionStrings);
 		assertType('bool', $nonEmptyArray == $unionMaybeArray);
+		assertType('false', $nonEmptyArray == $unionFalsy);
 
 		assertType('true', [0=>'1'] == ['0'=>1]);
 		assertType('true',['1'] == [1]);

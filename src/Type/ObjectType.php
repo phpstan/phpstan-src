@@ -34,6 +34,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
@@ -1019,6 +1020,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$looseTrue = new UnionType([
 			new ConstantBooleanType(true),
 			new ConstantIntegerType(1),
+			new ConstantFloatType(1.0),
 		]);
 
 		if ($looseTrue->isSuperTypeOf($type)->yes()) {
@@ -1029,14 +1031,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return new ConstantBooleanType(false);
 		}
 
-		if ($type->isArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
-			return new ConstantBooleanType(false);
-		}
-
 		$looseFalse = new UnionType([
 			new StringType(),
 			new NullType(),
-			new FloatType(),
+			new ConstantArrayType([], []),
 		]);
 
 		if ($looseFalse->isSuperTypeOf($type)->yes()) {

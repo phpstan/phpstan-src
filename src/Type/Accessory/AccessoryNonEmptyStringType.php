@@ -278,7 +278,6 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		$looseFalse = new UnionType([
 			new NullType(),
 			new ConstantStringType(''),
-			new ConstantBooleanType(false),
 		]);
 
 		if ($looseFalse->isSuperTypeOf($type)->yes()) {

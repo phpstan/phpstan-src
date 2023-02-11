@@ -1341,8 +1341,6 @@ class HelloWorld
 		assertType('false', $unionStrings == $emptyStr);
 		assertType('false', $unionStrings == []);
 		assertType('false', $unionStrings == $arr);
-		assertType('bool', $unionStrings == $int);
-		assertType('bool', $unionStrings == $float);
 		assertType('bool', $unionStrings == $bool);
 		assertType('bool', $unionStrings == $string);
 		assertType('false', $unionStrings == $obj);
@@ -1445,7 +1443,7 @@ class HelloWorld
 		$boolList,
 	) {
 		assertType('bool', $nonEmptyString == $true);
-		assertType('false', $nonEmptyString == $false);
+		assertType('bool', $nonEmptyString == $false);
 		assertType('bool', $nonEmptyString == $one);
 		assertType('bool', $nonEmptyString == $zero);
 		assertType('bool', $nonEmptyString == 10);
@@ -1513,7 +1511,7 @@ class HelloWorld
 		assertType('bool', $numericString == $oneStr);
 		assertType('bool', $numericString == $zeroStr);
 		assertType('bool', $numericString == $minusOneStr);
-		assertType('bool', $numericString == $null);
+		assertType('false', $numericString == $null);
 		assertType('false', $numericString == $emptyArr);
 		assertType('false', $numericString == $phpStr);
 		assertType('false', $numericString == $emptyStr);

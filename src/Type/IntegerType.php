@@ -7,6 +7,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -17,7 +18,6 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
-use function count;
 
 /** @api */
 class IntegerType implements Type
@@ -133,14 +133,17 @@ class IntegerType implements Type
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		if (count($type->getConstantStrings()) > 0) {
-			foreach ($type->getConstantStrings() as $stringType) {
-				if ($stringType->isNumericString()->yes()) {
-					return new BooleanType();
+		if ($type->isString()->yes() && $type->isNumericString()->no()) {
+			$zero = new ConstantFloatType(0.0);
+			if ($zero->isSuperTypeOf($this)->yes()) {
+				if (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
+					return new ConstantBooleanType(true);
 				}
+				return new ConstantBooleanType(false);
 			}
-
-			return new ConstantBooleanType(false);
+			if ($phpVersion->castsNumbersToStringsOnLooseComparison()) {
+				return new ConstantBooleanType(false);
+			}
 		}
 
 		if ($type->isArray()->yes()) {

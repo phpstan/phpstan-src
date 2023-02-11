@@ -9,6 +9,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
@@ -247,6 +248,26 @@ class StringType implements Type
 
 		if ($looseFalse->isSuperTypeOf($type)->yes()) {
 			return new ConstantBooleanType(false);
+		}
+
+		$isNumber = new UnionType([
+			new IntegerType(),
+			new FloatType(),
+		]);
+		if ($this->isNumericString()->no() && $isNumber->isSuperTypeOf($type)->yes()) {
+			$zero = new UnionType([
+				new ConstantIntegerType(0),
+				new ConstantFloatType(0.0),
+			]);
+			if ($zero->isSuperTypeOf($type)->yes()) {
+				if (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
+					return new ConstantBooleanType(true);
+				}
+				return new ConstantBooleanType(false);
+			}
+			if ($phpVersion->castsNumbersToStringsOnLooseComparison()) {
+				return new ConstantBooleanType(false);
+			}
 		}
 
 		return new BooleanType();

@@ -17,6 +17,7 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -276,7 +277,13 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		if ($type->isString()->yes() && $type->isNumericString()->no()) {
+		$looseFalse = new UnionType([
+			new NullType(),
+			new ConstantStringType(''),
+		]);
+
+		if ($looseFalse->isSuperTypeOf($type)->yes()
+			|| $type->isString()->yes() && $type->isNumericString()->no()) {
 			return new ConstantBooleanType(false);
 		}
 

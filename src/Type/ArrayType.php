@@ -361,7 +361,6 @@ class ArrayType implements Type
 		$looseFalse = new UnionType([
 			new ObjectWithoutClassType(),
 			new StringType(),
-			new NullType(),
 			new IntegerType(),
 			new FloatType(),
 			new NeverType(),

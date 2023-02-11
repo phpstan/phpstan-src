@@ -1127,7 +1127,7 @@ class HelloWorld
 		assertType('false', $arr == $oneStr);
 		assertType('false', $arr == $zeroStr);
 		assertType('false', $arr == $minusOneStr);
-		assertType('false', $arr == $null);
+		assertType('bool', $arr == $null);
 		assertType('bool', $arr == $emptyArr);
 		assertType('false', $arr == $phpStr);
 		assertType('false', $arr == $emptyStr);
@@ -1353,7 +1353,7 @@ class HelloWorld
 		assertType('false', $unionMaybeArray == $oneStr);
 		assertType('false', $unionMaybeArray == $zeroStr);
 		assertType('false', $unionMaybeArray == $minusOneStr);
-		assertType('false', $unionMaybeArray == $null);
+		assertType('bool', $unionMaybeArray == $null);
 		assertType('bool', $unionMaybeArray == $emptyArr);
 		assertType('false', $unionMaybeArray == $phpStr);
 		assertType('false', $unionMaybeArray == $emptyStr);
@@ -1392,6 +1392,10 @@ class HelloWorld
 	 * @param 1|2|3 $unionNumbers
 	 * @param 'a'|'b'|'c' $unionStrings
 	 * @param 'a'|'123'|123|array $unionMaybeArray
+	 * @param list<string> $stringList
+	 * @param list<int> $intList
+	 * @param list<bool> $boolList
+	 * @param list $list
 	 *
 	 * https://3v4l.org/RHc0P
 	 */
@@ -1419,7 +1423,9 @@ class HelloWorld
 		$unionMaybeNumeric,
 		$unionNumbers,
 		$unionStrings,
-		$unionMaybeArray
+		$unionMaybeArray,
+		$list,
+		$stringList
 	) {
 		assertType('bool', $nonEmptyString == $true);
 		assertType('false', $nonEmptyString == $false);
@@ -1474,6 +1480,41 @@ class HelloWorld
 		assertType('false', $nonEmptyArray == $unionNumbers);
 		assertType('false', $nonEmptyArray == $unionStrings);
 		assertType('bool', $nonEmptyArray == $unionMaybeArray);
+
+		assertType('true', [0=>'1'] == ['0'=>1]);
+		assertType('true',['1'] == [1]);
+		assertType('false', ['1'] == [null]);
+		assertType('true',['1'] == [true]);
+		assertType('false',['1'] == [false]);
+		assertType('false',['1'] == ['10']);
+
+		assertType('bool', $list == $true);
+		assertType('bool', $list == $false);
+		assertType('false', $list == $one);
+		assertType('false', $list == $zero);
+		assertType('false', $list == 10);
+		assertType('false', $list == $minusOne);
+		assertType('false', $list == $oneStr);
+		assertType('false', $list == $zeroStr);
+		assertType('false', $list == $minusOneStr);
+		assertType('bool', $list == $null);
+		assertType('bool', $list == $emptyArr);
+		assertType('false', $list == $phpStr);
+		assertType('false', $list == $emptyStr);
+		assertType('false', $list == $float);
+		assertType('bool', $list == []);
+		assertType('bool', $list == $arr);
+		assertType('false', $list == $int);
+		assertType('false', $list == $float);
+		assertType('bool', $list == $bool);
+		assertType('false', $list == $string);
+		assertType('false', $list == $obj);
+		assertType('false', $list == new \stdClass());
+		assertType('false', $list == $unionMaybeNumeric);
+		assertType('false', $list == $unionNumbers);
+		assertType('false', $list == $unionStrings);
+		assertType('bool', $list == $unionMaybeArray);
+
 	}
 }
 

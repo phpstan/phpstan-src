@@ -359,7 +359,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 			return new ConstantBooleanType(true);
 		}
 
-		if ($type->isFalse()->yes()) {
+		if ($type->isFalse()->yes() || $type->isNull()->yes()) {
 			return new ConstantBooleanType(false);
 		}
 

@@ -59,7 +59,8 @@ class ClassStringType extends StringType
 			new ConstantBooleanType(false),
 		]);
 
-		if ($looseFalse->isSuperTypeOf($type)->yes()) {
+		if ($looseFalse->isSuperTypeOf($type)->yes()
+			|| ($type->isString()->yes() && $type->isClassStringType()->no())) {
 			return new ConstantBooleanType(false);
 		}
 

@@ -71,7 +71,11 @@ trait ConstantScalarTypeTrait
 				$results[] = $this->looseCompare($scalarType, $phpVersion);
 			}
 
-			return TypeCombinator::union(...$results);
+			$result = TypeCombinator::union(...$results);
+			if (!$result instanceof BooleanType) {
+				throw new ShouldNotHappenException();
+			}
+			return $result;
 		}
 
 		if ($type->isObject()->yes()) {

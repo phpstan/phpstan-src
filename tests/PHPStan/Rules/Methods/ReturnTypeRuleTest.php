@@ -1248,7 +1248,29 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug12739(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-12739.php'], []);
+		// @template TScalar is unknown in static methods
+		$this->analyse([__DIR__ . '/data/bug-12739.php'], [
+			[
+				"Method MyInt::getClassIdentify() should return class-string<ScalarType<TScalar>> but returns 'MyInt'.",
+				20,
+			],
+			[
+				"Method MyString::getClassIdentify() should return class-string<ScalarType<TScalar>> but returns 'MyString'.",
+				29,
+			],
+			[
+				"Method MyLowerString::getClassIdentify() should return class-string<ScalarType<TScalar>> but returns 'MyLowerString'.",
+				38,
+			],
+			[
+				"Method MyUpperString::getClassIdentify() should return class-string<ScalarType<TScalar>> but returns 'MyUpperString'.",
+				47,
+			],
+			[
+				"Method MyClassString::getClassIdentify() should return class-string<ScalarType<TScalar>> but returns 'MyClassString'.",
+				56,
+			],
+		]);
 	}
 
 	public function testBug12928(): void

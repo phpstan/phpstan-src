@@ -797,7 +797,6 @@ class HelloWorld
 		assertType('bool', $float == $minusOneStr);
 		assertType('bool', $float == $null);
 		assertType('false', $float == $emptyArr);
-		assertType('false', $float == $phpStr);
 		assertType('false', $float == $emptyStr);
 		assertType('false', $float == []);
 		assertType('false', $float == $arr);
@@ -809,7 +808,6 @@ class HelloWorld
 		assertType('bool', $float == new \stdClass());
 		assertType('bool', $float == $unionMaybeNumeric);
 		assertType('bool', $float == $unionNumbers);
-		assertType('false', $float == $unionStrings);
 	}
 
 	/**
@@ -925,8 +923,6 @@ class HelloWorld
 		assertType('bool', $int == $minusOneStr);
 		assertType('bool', $int == $null);
 		assertType('false', $int == $emptyArr);
-		assertType('false', $int == $phpStr);
-		assertType('false', $int == $emptyStr);
 		assertType('bool', $int == $float);
 		assertType('false', $int == []);
 		assertType('false', $int == $arr);
@@ -938,7 +934,6 @@ class HelloWorld
 		assertType('bool', $int == new \stdClass());
 		assertType('bool', $int == $unionMaybeNumeric);
 		assertType('bool', $int == $unionNumbers);
-		assertType('false', $int == $unionStrings);
 	}
 
 	/**
@@ -1279,7 +1274,6 @@ class HelloWorld
 		assertType('true', $unionMaybeNumeric == $true);
 		assertType('false', $unionMaybeNumeric == $false);
 		assertType('false', $unionMaybeNumeric == $one);
-		assertType('false', $unionMaybeNumeric == $zero);
 		assertType('false', $unionMaybeNumeric == 10);
 		assertType('false', $unionMaybeNumeric == $minusOne);
 		assertType('false', $unionMaybeNumeric == $oneStr);
@@ -1329,7 +1323,6 @@ class HelloWorld
 		assertType('true', $unionStrings == $true);
 		assertType('false', $unionStrings == $false);
 		assertType('false', $unionStrings == $one);
-		assertType('false', $unionStrings == $zero);
 		assertType('false', $unionStrings == 10);
 		assertType('false', $unionStrings == $minusOne);
 		assertType('false', $unionStrings == $oneStr);
@@ -1352,7 +1345,6 @@ class HelloWorld
 		assertType('bool', $unionMaybeArray == $true);
 		assertType('bool', $unionMaybeArray == $false);
 		assertType('false', $unionMaybeArray == $one);
-		assertType('false', $unionMaybeArray == $zero);
 		assertType('false', $unionMaybeArray == 10);
 		assertType('false', $unionMaybeArray == $minusOne);
 		assertType('false', $unionMaybeArray == $oneStr);

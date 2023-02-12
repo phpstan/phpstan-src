@@ -8,9 +8,21 @@ use function PHPStan\Testing\assertType;
  * @param int<1, 100> $nonZeroRange
  * @param 'abc' $nonNumericString
  * @param 'a'|'b'|'c' $unionStrings
+ * @param 'a'|'123'|'123.23' $unionMaybeNumeric
+ * @param 0 $zero
+ * @param 'a'|'123'|123|array $unionMaybeArray
  * @return void
  */
-function doFoo($nonZeroRange, int $i, float $f, string $nonNumericString, $unionStrings) {
+function doFoo(
+	$nonZeroRange,
+	int $i,
+	float $f,
+	string $nonNumericString,
+	$unionStrings,
+	$unionMaybeNumeric,
+	$zero,
+	$unionMaybeArray,
+) {
 	assertType('true', 0 == "0");
 	assertType('true', 0 == "0.0");
 	assertType('true', 0 == "foo");
@@ -52,4 +64,15 @@ function doFoo($nonZeroRange, int $i, float $f, string $nonNumericString, $union
 	assertType('bool', $unionStrings == $f);
 	assertType('bool', $f == $unionStrings);
 
+	assertType('bool', $i == '');
+	assertType('bool', '' == $i);
+
+	assertType('bool', $unionMaybeNumeric == $zero);
+	assertType('bool', $zero == $unionMaybeNumeric);
+
+	assertType('true', $unionStrings == $zero);
+	assertType('true', $zero == $unionStrings);
+
+	assertType('bool', $unionMaybeArray == $zero);
+	assertType('bool', $zero == $unionMaybeArray);
 }

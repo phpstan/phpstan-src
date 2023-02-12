@@ -470,7 +470,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		// discussion https://github.com/phpstan/phpstan/discussions/6249
 		$this->checkThisOnly = false;
 		$this->checkExplicitMixed = true;
-		$this->analyse([__DIR__ . '/data/bug-6249.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-6249.php'], [
+			[
+				'Parameter #1 $iterable of static method Bug6249N3\Cw<(int|string),mixed>::fromIterable() expects iterable<Bug6249N3\TKey, Bug6249N3\T>, Bug6249N2\Eii given.',
+				145,
+			],
+		]);
 	}
 
 	public function testBug5749(): void

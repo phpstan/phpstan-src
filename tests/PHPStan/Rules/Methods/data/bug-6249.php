@@ -106,6 +106,18 @@ final class Cw implements CollectionInterface
 		return new self($iterable);
 	}
 
+	/**
+	 * @template UKey of array-key
+	 * @template U
+	 * @param iterable<UKey, U> $iterable
+	 *
+	 * @return self<UKey, U>
+	 */
+	public static function fromIterableCorrect(iterable $iterable): self
+	{
+		return new self($iterable);
+	}
+
 	public function count(): int
 	{
 		if (is_array($this->iterable) || $this->iterable instanceof Countable) {
@@ -131,6 +143,7 @@ class Foo
 	public function doFoo()
 	{
 		\Bug6249N3\Cw::fromIterable(new \Bug6249N2\Eii([]));
+		\Bug6249N3\Cw::fromIterableCorrect(new \Bug6249N2\Eii([]));
 	}
 
 }

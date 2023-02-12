@@ -63,6 +63,7 @@ class FileTypeMapper
 		private PhpDocNodeResolver $phpDocNodeResolver,
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
 		private FileHelper $fileHelper,
+		private bool $disallowClassLevelTemplatesInStatic,
 	)
 	{
 	}
@@ -309,7 +310,11 @@ class FileTypeMapper
 							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 
 							// static methods exist in their own scope
-							if ($node instanceof Node\Stmt\ClassMethod && $node->isStatic()) {
+							if (
+								$this->disallowClassLevelTemplatesInStatic
+								&& $node instanceof Node\Stmt\ClassMethod
+								&& $node->isStatic()
+							) {
 								$typeMapCb = null;
 							}
 

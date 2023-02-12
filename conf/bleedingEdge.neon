@@ -31,3 +31,4 @@ parameters:
 		closureDefaultParameterTypeRule: true
 		newRuleLevelHelper: true
 		instanceofType: true
+		disallowClassLevelTemplatesInStatic: true

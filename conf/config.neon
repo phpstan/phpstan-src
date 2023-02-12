@@ -61,6 +61,7 @@ parameters:
 		closureDefaultParameterTypeRule: false
 		newRuleLevelHelper: false
 		instanceofType: false
+		disallowClassLevelTemplatesInStatic: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -288,6 +289,7 @@ parametersSchema:
 		closureDefaultParameterTypeRule: bool()
 		newRuleLevelHelper: bool()
 		instanceofType: bool()
+		disallowClassLevelTemplatesInStatic: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -1125,6 +1127,7 @@ services:
 		class: PHPStan\Type\FileTypeMapper
 		arguments:
 			phpParser: @defaultAnalysisParser
+			disallowClassLevelTemplatesInStatic: %featureToggles.disallowClassLevelTemplatesInStatic%
 
 	-
 		class: PHPStan\Type\TypeAliasResolver

@@ -390,7 +390,7 @@ class IterableType implements CompoundType
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
 		$variance = $positionVariance->compose(TemplateTypeVariance::createCovariant());
-		
+
 		return array_merge(
 			$this->getIterableKeyType()->getReferencedTemplateTypes($variance),
 			$this->getIterableValueType()->getReferencedTemplateTypes($variance),

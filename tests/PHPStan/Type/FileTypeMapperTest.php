@@ -303,6 +303,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 			$container->getByType(FileContentHasher::class),
 			2048,
 			128,
+			false,
 		);
 	}
 

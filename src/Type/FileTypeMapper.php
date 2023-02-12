@@ -91,6 +91,8 @@ final class FileTypeMapper
 		private int $resolvedPhpDocBlockCacheCountMax,
 		#[AutowiredParameter(ref: '%cache.nameScopeMapMemoryCacheCountMax%')]
 		int $nameScopeMapMemoryCacheCountMax,
+		#[AutowiredParameter(ref: '%featureToggles.disallowClassLevelTemplatesInStatic%')]
+		private bool $disallowClassLevelTemplatesInStatic,
 	)
 	{
 		// 0 kept one entry here rather than meaning "no limit" as it does for the other bounded
@@ -387,7 +389,12 @@ final class FileTypeMapper
 		// a map built from the simplified AST of a file outside the analysed paths lacks
 		// the name scopes of classes declared inside function bodies, so it must not be
 		// reused once the file gets analysed, nor the other way around
-		$cacheKey = sprintf('ftm-%s%s', $this->returnsSimplifiedAst($fileName) ? 'simplified-' : '', $fileName);
+		$cacheKey = sprintf(
+			'ftm-%s%s%s',
+			$this->returnsSimplifiedAst($fileName) ? 'simplified-' : '',
+			$this->disallowClassLevelTemplatesInStatic ? 'static-own-scope-' : '',
+			$fileName,
+		);
 		// v6: v5 entries may be poisoned by the turbo comment-loss bug
 		// (https://github.com/phpstan/phpstan/issues/15037) - a parse that
 		// silently dropped every comment cached PHPDoc-less name-scope maps,
@@ -556,7 +563,11 @@ final class FileTypeMapper
 					$parentNameScope = array_last($typeMapStack);
 
 					// static methods exist in their own scope
-					if ($node instanceof Node\Stmt\ClassMethod && $node->isStatic()) {
+					if (
+						$this->disallowClassLevelTemplatesInStatic
+						&& $node instanceof Node\Stmt\ClassMethod
+						&& $node->isStatic()
+					) {
 						$parentNameScope = null;
 					}
 

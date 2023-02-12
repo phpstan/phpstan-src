@@ -66,6 +66,7 @@ parameters:
 		unusedVariable: false
 		unusedParameters: false
 		reuseCollectedDataRuleErrors: false
+		disallowClassLevelTemplatesInStatic: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

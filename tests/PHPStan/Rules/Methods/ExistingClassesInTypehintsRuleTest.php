@@ -131,6 +131,10 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				'Template type U of method TestMethodTypehints\TemplateTypeMissingInParameter::doFoo() is not referenced in a parameter.',
 				130,
 			],
+			[
+				'Method TestMethodTypehints\TemplateInStaticMethod::doBar() has invalid return type TestMethodTypehints\T.',
+				163,
+			],
 		]);
 	}
 

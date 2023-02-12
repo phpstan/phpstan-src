@@ -142,3 +142,27 @@ class TemplateTypeMissingInParameter
 	}
 
 }
+
+/**
+ * @template T
+ */
+class TemplateInStaticMethod
+{
+
+	/**
+	 * @return T
+	 */
+	public function doFoo()
+	{
+
+	}
+
+	/**
+	 * @return T
+	 */
+	public static function doBar()
+	{
+
+	}
+
+}

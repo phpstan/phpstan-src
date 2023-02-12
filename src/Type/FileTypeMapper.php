@@ -553,12 +553,17 @@ final class FileTypeMapper
 				}
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_ || $node instanceof Node\PropertyHook) {
+					$parentNameScope = array_last($typeMapStack);
+
+					// static methods exist in their own scope
+					if ($node instanceof Node\Stmt\ClassMethod && $node->isStatic()) {
+						$parentNameScope = null;
+					}
+
 					if ($phpDocNode !== null) {
 						if ($node instanceof Node\Stmt\ClassLike) {
 							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNode);
 						}
-
-						$parentNameScope = array_last($typeMapStack);
 
 						$typeMapStack[] = new IntermediaryNameScope(
 							$namespaceUsesTracker->getNamespaceUses(),
@@ -572,7 +577,6 @@ final class FileTypeMapper
 					} elseif ($node instanceof Node\Stmt\ClassLike) {
 						$typeAliasStack[] = [];
 					} else {
-						$parentNameScope = array_last($typeMapStack);
 						$typeMapStack[] = new IntermediaryNameScope(
 							$namespaceUsesTracker->getNamespaceUses(),
 							$className,

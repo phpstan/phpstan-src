@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
-use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateType;
@@ -15,7 +15,7 @@ class VarianceCheck
 
 	/** @return RuleError[] */
 	public function checkParametersAcceptor(
-		ParametersAcceptor $parametersAcceptor,
+		ParametersAcceptorWithPhpDocs $parametersAcceptor,
 		string $parameterTypeMessage,
 		string $returnTypeMessage,
 		string $generalMessage,

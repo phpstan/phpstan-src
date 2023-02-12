@@ -1395,7 +1395,7 @@ class CarFactoryProcessor {
 	 */
 	public function process($class): void {
 		$car = $class::create();
-		assertType(Car::class, $car);
+		assertType(T::class, $car); // @template T is unknown in static method
 	}
 }
 

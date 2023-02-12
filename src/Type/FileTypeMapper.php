@@ -63,7 +63,7 @@ class FileTypeMapper
 		private PhpDocNodeResolver $phpDocNodeResolver,
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
 		private FileHelper $fileHelper,
-		private bool $disallowClassLevelTemplatesInStatic,
+		private bool $disallowClassLevelTemplatesInStaticMethods,
 	)
 	{
 	}
@@ -311,7 +311,7 @@ class FileTypeMapper
 
 							// static methods exist in their own scope
 							if (
-								$this->disallowClassLevelTemplatesInStatic
+								$this->disallowClassLevelTemplatesInStaticMethods
 								&& $node instanceof Node\Stmt\ClassMethod
 								&& $node->isStatic()
 							) {

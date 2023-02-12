@@ -7,7 +7,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -133,17 +132,9 @@ class IntegerType implements Type
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		if ($type->isString()->yes() && $type->isNumericString()->no()) {
-			$zero = new ConstantFloatType(0.0);
-			if ($zero->isSuperTypeOf($this)->yes()) {
-				if (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
-					return new ConstantBooleanType(true);
-				}
-				return new ConstantBooleanType(false);
-			}
-			if ($phpVersion->castsNumbersToStringsOnLooseComparison()) {
-				return new ConstantBooleanType(false);
-			}
+		$zeroBool = LooseComparisonHelper::compareZero($this, $type, $phpVersion);
+		if ($zeroBool !== null) {
+			return $zeroBool;
 		}
 
 		if ($type->isArray()->yes()) {

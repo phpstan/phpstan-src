@@ -1318,7 +1318,7 @@ class HelloWorld
 		assertType('bool', $unionNumbers == new \stdClass());
 		assertType('false', $unionNumbers == $unionMaybeNumeric);
 		assertType('false', $unionNumbers == $unionStrings);
-		assertType('bool', $unionNumbers == $unionMaybeArray);
+		assertType('false', $unionNumbers == $unionMaybeArray);
 
 		assertType('true', $unionStrings == $true);
 		assertType('false', $unionStrings == $false);

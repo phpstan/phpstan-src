@@ -78,8 +78,9 @@ trait ConstantScalarTypeTrait
 			return $result;
 		}
 
-		if ($type->isObject()->yes()) {
-			return $type->looseCompare($this, $phpVersion);
+		$zeroBool = LooseComparisonHelper::compareZero($this, $type, $phpVersion);
+		if ($zeroBool !== null) {
+			return $zeroBool;
 		}
 
 		if ($type->isArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
@@ -98,6 +99,13 @@ trait ConstantScalarTypeTrait
 		if ($type->isNonEmptyString()->yes()) {
 			// @phpstan-ignore-next-line
 			return new ConstantBooleanType($this->getValue() != ''); // phpcs:ignore
+		}
+
+		if ($type->isObject()->yes()) {
+			return $type->looseCompare($this, $phpVersion);
+		}
+		if ($type instanceof CompoundType) {
+			return $type->looseCompare($this, $phpVersion);
 		}
 
 		return parent::looseCompare($type, $phpVersion);

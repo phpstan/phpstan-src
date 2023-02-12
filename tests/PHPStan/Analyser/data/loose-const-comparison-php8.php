@@ -9,7 +9,9 @@ use function PHPStan\Testing\assertType;
  * @param 'abc' $nonNumericString
  * @param 'a'|'b'|'c' $unionStrings
  * @param 'a'|'123'|'123.23' $unionMaybeNumeric
+ * @param 0|1|2|3 $unionNumbers
  * @param 0 $zero
+ * @param 0.0 $floatZero
  * @param 'a'|'123'|123|array $unionMaybeArray
  * @return void
  */
@@ -20,7 +22,9 @@ function doFoo(
 	string $nonNumericString,
 	$unionStrings,
 	$unionMaybeNumeric,
+	$unionNumbers,
 	$zero,
+	$floatZero,
 	$unionMaybeArray,
 ) {
 	assertType('true', 0 == "0");
@@ -73,6 +77,9 @@ function doFoo(
 	assertType('false', $unionStrings == $zero);
 	assertType('false', $zero == $unionStrings);
 
-	assertType('false', $unionMaybeArray == $zero);
-	assertType('false', $zero == $unionMaybeArray);
+	assertType('false', $unionMaybeArray == $floatZero);
+	assertType('false', $floatZero == $unionMaybeArray);
+
+	assertType('false', $unionNumbers == $unionMaybeArray);
+	assertType('false', $unionMaybeArray == $unionNumbers);
 }

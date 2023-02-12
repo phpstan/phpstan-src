@@ -34,4 +34,4 @@ parameters:
 		unusedVariable: true
 		unusedParameters: true
 		reuseCollectedDataRuleErrors: true
-		disallowClassLevelTemplatesInStatic: true
+		disallowClassLevelTemplatesInStaticMethods: true

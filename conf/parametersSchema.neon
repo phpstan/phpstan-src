@@ -63,7 +63,7 @@ parametersSchema:
 		unusedVariable: bool()
 		unusedParameters: bool()
 		reuseCollectedDataRuleErrors: bool()
-		disallowClassLevelTemplatesInStatic: bool()
+		disallowClassLevelTemplatesInStaticMethods: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

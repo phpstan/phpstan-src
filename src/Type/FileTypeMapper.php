@@ -91,8 +91,8 @@ final class FileTypeMapper
 		private int $resolvedPhpDocBlockCacheCountMax,
 		#[AutowiredParameter(ref: '%cache.nameScopeMapMemoryCacheCountMax%')]
 		int $nameScopeMapMemoryCacheCountMax,
-		#[AutowiredParameter(ref: '%featureToggles.disallowClassLevelTemplatesInStatic%')]
-		private bool $disallowClassLevelTemplatesInStatic,
+		#[AutowiredParameter(ref: '%featureToggles.disallowClassLevelTemplatesInStaticMethods%')]
+		private bool $disallowClassLevelTemplatesInStaticMethods,
 	)
 	{
 		// 0 kept one entry here rather than meaning "no limit" as it does for the other bounded
@@ -392,7 +392,7 @@ final class FileTypeMapper
 		$cacheKey = sprintf(
 			'ftm-%s%s%s',
 			$this->returnsSimplifiedAst($fileName) ? 'simplified-' : '',
-			$this->disallowClassLevelTemplatesInStatic ? 'static-own-scope-' : '',
+			$this->disallowClassLevelTemplatesInStaticMethods ? 'static-own-scope-' : '',
 			$fileName,
 		);
 		// v6: v5 entries may be poisoned by the turbo comment-loss bug
@@ -564,7 +564,7 @@ final class FileTypeMapper
 
 					// static methods exist in their own scope
 					if (
-						$this->disallowClassLevelTemplatesInStatic
+						$this->disallowClassLevelTemplatesInStaticMethods
 						&& $node instanceof Node\Stmt\ClassMethod
 						&& $node->isStatic()
 					) {

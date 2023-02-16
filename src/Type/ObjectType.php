@@ -308,6 +308,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 				return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createNo();
 			}
 
+			$thisClassName = $this->className;
+			$thatClassName = $type->getClassName();
+
+			if ($thatClassName === $thisClassName) {
+				return TrinaryLogic::createYes();
+			}
+
 			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createMaybe();
 		}
 

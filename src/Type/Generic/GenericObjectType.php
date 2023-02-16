@@ -15,6 +15,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
@@ -119,6 +120,11 @@ class GenericObjectType extends ObjectType
 		$nakedSuperTypeOf = parent::isSuperTypeOf($type);
 		if ($nakedSuperTypeOf->no()) {
 			return $nakedSuperTypeOf;
+		}
+
+		if ($type instanceof ThisType && $type->getClassName() === $this->getClassName()) {
+			$type = $type->getStaticObjectType();
+			$nakedSuperTypeOf = TrinaryLogic::createYes();
 		}
 
 		if (!$type instanceof ObjectType) {

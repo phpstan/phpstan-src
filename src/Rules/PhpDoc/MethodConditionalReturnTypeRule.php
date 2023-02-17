@@ -31,7 +31,12 @@ class MethodConditionalReturnTypeRule implements Rule
 			return [];
 		}
 
-		return $this->helper->check($variants[0]);
+		$variant = $variants[0];
+		$templateTypeMap = $node->getClassReflection()->getTemplateTypeMap()->union(
+			$variant->getTemplateTypeMap(),
+		);
+
+		return $this->helper->check($variant, $templateTypeMap);
 	}
 
 }

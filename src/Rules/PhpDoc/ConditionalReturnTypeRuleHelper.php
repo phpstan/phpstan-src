@@ -8,6 +8,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -22,10 +23,11 @@ class ConditionalReturnTypeRuleHelper
 	/**
 	 * @return RuleError[]
 	 */
-	public function check(ParametersAcceptor $acceptor): array
+	public function check(
+		ParametersAcceptor $acceptor,
+		TemplateTypeMap $templateTypeMap,
+	): array
 	{
-		$templateTypeMap = $acceptor->getTemplateTypeMap();
-
 		$conditionalTypes = [];
 		$parametersByName = [];
 		foreach ($acceptor->getParameters() as $parameter) {

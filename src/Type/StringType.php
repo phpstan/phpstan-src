@@ -8,6 +8,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
@@ -239,6 +240,20 @@ class StringType implements Type
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		$looseFalse = new UnionType([
+			new ObjectWithoutClassType(),
+			new ArrayType(new MixedType(), new MixedType()),
+		]);
+
+		if ($looseFalse->isSuperTypeOf($type)->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
+		$zeroBool = LooseComparisonHelper::compareZero($this, $type, $phpVersion);
+		if ($zeroBool !== null) {
+			return $zeroBool;
+		}
+
 		return new BooleanType();
 	}
 

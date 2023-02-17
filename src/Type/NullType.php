@@ -284,7 +284,17 @@ class NullType implements ConstantScalarType
 			return new ConstantBooleanType($this->getValue() == []); // phpcs:ignore
 		}
 
-		return new BooleanType();
+		// All falsey types except '0'
+		$looseNulls = new UnionType([
+			new NullType(),
+			new ConstantBooleanType(false),
+			new ConstantIntegerType(0),
+			new ConstantFloatType(0.0),
+			new ConstantStringType(''),
+			new ConstantArrayType([], []),
+		]);
+
+		return $looseNulls->isSuperTypeOf($type)->toBooleanType();
 	}
 
 	public function getSmallerType(): Type

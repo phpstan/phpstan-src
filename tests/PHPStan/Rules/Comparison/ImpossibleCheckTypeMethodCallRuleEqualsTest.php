@@ -96,12 +96,36 @@ class ImpossibleCheckTypeMethodCallRuleEqualsTest extends RuleTestCase
 				122,
 			],
 			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with 1 and stdClass will always evaluate to true.',
+				126,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with 1 and stdClass will always evaluate to false.',
+				130,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with \'1\' and stdClass will always evaluate to false.',
+				133,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with \'1\' and stdClass will always evaluate to true.',
+				136,
+			],
+			[
 				'Call to method ImpossibleMethodCall\Foo::isSame() with array{\'a\', \'b\'} and array{1, 2} will always evaluate to false.',
 				139,
 			],
 			[
 				'Call to method ImpossibleMethodCall\Foo::isNotSame() with array{\'a\', \'b\'} and array{1, 2} will always evaluate to true.',
 				142,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with stdClass and \'1\' will always evaluate to false.',
+				145,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with stdClass and \'1\' will always evaluate to true.',
+				148,
 			],
 			[
 				'Call to method ImpossibleMethodCall\Foo::isSame() with \'\' and \'\' will always evaluate to true.',

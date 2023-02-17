@@ -7,12 +7,15 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -354,6 +357,19 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		if ($type->isTrue()->yes()) {
+			return new ConstantBooleanType(true);
+		}
+
+		$looseFalse = new UnionType([
+			new ConstantBooleanType(false),
+			new NullType(),
+			new ConstantArrayType([], []),
+		]);
+		if ($looseFalse->isSuperTypeOf($type)->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
 		return new BooleanType();
 	}
 

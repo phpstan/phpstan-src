@@ -424,7 +424,7 @@ trait LateResolvableTypeTrait
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		return new BooleanType();
+		return $this->resolve()->looseCompare($type, $phpVersion);
 	}
 
 	public function getSmallerType(): Type

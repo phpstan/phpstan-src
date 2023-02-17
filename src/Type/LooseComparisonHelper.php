@@ -4,6 +4,8 @@ namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 
 final class LooseComparisonHelper
 {
@@ -45,6 +47,51 @@ final class LooseComparisonHelper
 
 		// @phpstan-ignore-next-line
 		return new ConstantBooleanType($leftType->getValue() == $rightType->getValue()); // phpcs:ignore
+	}
+
+	public static function compareZero(Type $left, Type $right, PhpVersion $phpVersion): ?ConstantBooleanType
+	{
+		$zero = new UnionType([
+			new ConstantIntegerType(0),
+			new ConstantFloatType(0.0),
+		]);
+
+		$isNumber = new UnionType([
+			new IntegerType(),
+			new FloatType(),
+		]);
+
+		if (
+			$left->isString()->yes() && $left->isNumericString()->no()
+			&& $isNumber->isSuperTypeOf($right)->yes()
+		) {
+			if ($zero->isSuperTypeOf($right)->yes()) {
+				if (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
+					return new ConstantBooleanType(true);
+				}
+				return new ConstantBooleanType(false);
+			}
+			if ($phpVersion->castsNumbersToStringsOnLooseComparison()) {
+				return new ConstantBooleanType(false);
+			}
+		}
+
+		if (
+			$right->isString()->yes() && $right->isNumericString()->no()
+			&& $isNumber->isSuperTypeOf($left)->yes()
+		) {
+			if ($zero->isSuperTypeOf($left)->yes()) {
+				if (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
+					return new ConstantBooleanType(true);
+				}
+				return new ConstantBooleanType(false);
+			}
+			if ($phpVersion->castsNumbersToStringsOnLooseComparison()) {
+				return new ConstantBooleanType(false);
+			}
+		}
+
+		return null;
 	}
 
 }

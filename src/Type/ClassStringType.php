@@ -2,7 +2,10 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantStringType;
 
 /** @api */
 class ClassStringType extends StringType
@@ -45,6 +48,23 @@ class ClassStringType extends StringType
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		$looseFalse = new UnionType([
+			new NullType(),
+			new ConstantStringType(''),
+			new ConstantStringType('0'),
+			new ConstantBooleanType(false),
+		]);
+
+		if ($looseFalse->isSuperTypeOf($type)->yes()
+			|| ($type->isString()->yes() && $type->isClassStringType()->no())) {
+			return new ConstantBooleanType(false);
+		}
+
+		return parent::looseCompare($type, $phpVersion);
 	}
 
 	public function isNumericString(): TrinaryLogic

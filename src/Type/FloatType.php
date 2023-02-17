@@ -6,7 +6,9 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -219,6 +221,20 @@ class FloatType implements Type
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		$looseFalse = new UnionType([
+			new ArrayType(new MixedType(), new MixedType()),
+			new ConstantStringType(''),
+		]);
+
+		if ($looseFalse->isSuperTypeOf($type)->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
+		$zeroBool = LooseComparisonHelper::compareZero($this, $type, $phpVersion);
+		if ($zeroBool !== null) {
+			return $zeroBool;
+		}
+
 		return new BooleanType();
 	}
 

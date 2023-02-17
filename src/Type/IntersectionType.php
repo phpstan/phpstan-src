@@ -613,7 +613,16 @@ class IntersectionType implements CompoundType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		return new BooleanType();
+		return $this->intersectResults(static function (Type $innerType) use ($type, $phpVersion): TrinaryLogic {
+			$booleanType = $innerType->looseCompare($type, $phpVersion);
+			if ($booleanType->isTrue()->yes()) {
+				return TrinaryLogic::createYes();
+			}
+			if ($booleanType->isFalse()->yes()) {
+				return TrinaryLogic::createNo();
+			}
+			return TrinaryLogic::createMaybe();
+		})->toBooleanType();
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic

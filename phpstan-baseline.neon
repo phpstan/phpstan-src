@@ -720,7 +720,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
-			count: 1
+			count: 2
 			path: src/Type/Constant/ConstantBooleanType.php
 
 		-
@@ -729,14 +729,29 @@ parameters:
 			path: src/Type/Constant/ConstantBooleanType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Constant/ConstantFloatType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\FloatType is error\\-prone and deprecated\\. Use Type\\:\\:isFloat\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantFloatType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Constant/ConstantIntegerType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone and deprecated\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantIntegerType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Constant/ConstantStringType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) instead\\.$#"
@@ -770,7 +785,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Enum\\\\EnumCaseObjectType is error\\-prone and deprecated\\. Use Type\\:\\:getEnumCases\\(\\) instead\\.$#"
-			count: 2
+			count: 3
 			path: src/Type/Enum/EnumCaseObjectType.php
 
 		-

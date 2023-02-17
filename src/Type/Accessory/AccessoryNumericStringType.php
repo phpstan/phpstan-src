@@ -9,6 +9,7 @@ use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
@@ -16,6 +17,7 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -275,6 +277,16 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		$looseFalse = new UnionType([
+			new NullType(),
+			new ConstantStringType(''),
+		]);
+
+		if ($looseFalse->isSuperTypeOf($type)->yes()
+			|| $type->isString()->yes() && $type->isNumericString()->no()) {
+			return new ConstantBooleanType(false);
+		}
+
 		return new BooleanType();
 	}
 

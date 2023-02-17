@@ -358,6 +358,18 @@ class ArrayType implements Type
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		$looseFalse = new UnionType([
+			new ObjectWithoutClassType(),
+			new StringType(),
+			new IntegerType(),
+			new FloatType(),
+			new NeverType(),
+		]);
+
+		if ($looseFalse->isSuperTypeOf($type)->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
 		return new BooleanType();
 	}
 

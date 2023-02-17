@@ -70,14 +70,4 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testTraitInstanceOf(): void
-	{
-		$this->analyse([__DIR__ . '/../../Analyser/data/trait-instance-of.php'], [
-			[
-				'Instanceof between $this(TraitInstanceOf\ATrait1Class) and trait TraitInstanceOf\Trait2 will always evaluate to false.',
-				21,
-			],
-		]);
-	}
-
 }

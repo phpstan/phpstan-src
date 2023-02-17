@@ -368,11 +368,4 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug3632(): void
-	{
-		$this->checkAlwaysTrueInstanceOf = true;
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-3632.php'], []);
-	}
-
 }

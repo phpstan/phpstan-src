@@ -2456,26 +2456,13 @@ class MutatingScope implements Scope
 		if (count($traitNameParts) > 1) {
 			$namespace = implode('\\', array_slice($traitNameParts, 0, -1));
 		}
-
-		$traitContext = $this->context->enterTrait($traitReflection);
-		$classReflection = $traitContext->getClassReflection();
-		if ($classReflection === null) {
-			throw new ShouldNotHappenException();
-		}
-
-		$thisHolder = ExpressionTypeHolder::createYes(new Variable('this'), new ThisType($classReflection, null, $traitReflection));
-		$expressionTypes = $this->expressionTypes;
-		$expressionTypes['$this'] = $thisHolder;
-		$nativeExpressionTypes = $this->nativeExpressionTypes;
-		$nativeExpressionTypes['$this'] = $thisHolder;
-
 		return $this->scopeFactory->create(
-			$traitContext,
+			$this->context->enterTrait($traitReflection),
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$namespace,
-			$expressionTypes,
-			$nativeExpressionTypes,
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
 			[],
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,

@@ -4,7 +4,6 @@ namespace PHPStan\Type;
 
 use ArrayAccess;
 use ArrayObject;
-use Bug8850\UserHelperTrait;
 use Bug8850\UserInSessionInRoleEndpointExtension;
 use Closure;
 use Countable;
@@ -436,8 +435,8 @@ class ObjectTypeTest extends PHPStanTestCase
 			],
 			61 => [
 				new ObjectType(UserInSessionInRoleEndpointExtension::class),
-				new ThisType($reflectionProvider->getClass(UserInSessionInRoleEndpointExtension::class), null, $reflectionProvider->getClass(UserHelperTrait::class)),
-				TrinaryLogic::createMaybe(),
+				new ThisType($reflectionProvider->getClass(UserInSessionInRoleEndpointExtension::class)),
+				TrinaryLogic::createYes(),
 			],
 		];
 	}

@@ -1,0 +1,9 @@
+<?php
+
+/**
+ * @param resource                               $connection
+ * @param \DB2_AUTOCOMMIT_OFF|\DB2_AUTOCOMMIT_ON $value
+ *
+ * @return ($value is null ? \DB2_AUTOCOMMIT_OFF|\DB2_AUTOCOMMIT_ON : bool)
+ */
+function db2_autocommit($connection, int $value = null) {}

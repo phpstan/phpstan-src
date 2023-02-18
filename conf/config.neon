@@ -146,6 +146,7 @@ parameters:
 		- ../stubs/ImagickPixel.stub
 		- ../stubs/PDOStatement.stub
 		- ../stubs/date.stub
+		- ../stubs/ibm_db2.stub
 		- ../stubs/mysqli.stub
 		- ../stubs/zip.stub
 		- ../stubs/dom.stub

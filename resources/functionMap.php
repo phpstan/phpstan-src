@@ -1644,7 +1644,7 @@ return [
 'DateTimeZone::getTransitions' => ['list<array{ts: int, time: string, offset: int, isdst: bool, abbr: string}>', 'timestamp_begin='=>'int', 'timestamp_end='=>'int'],
 'DateTimeZone::listAbbreviations' => ['array<string, list<array{dst: bool, offset: int, timezone_id: string|null}>>'],
 'DateTimeZone::listIdentifiers' => ['list<string>', 'what='=>'int', 'country='=>'string'],
-'db2_autocommit' => ['mixed', 'connection'=>'resource', 'value='=>'int'],
+'db2_autocommit' => ['DB2_AUTOCOMMIT_OFF|DB2_AUTOCOMMIT_ON|bool', 'connection'=>'resource', 'value='=>'DB2_AUTOCOMMIT_OFF|DB2_AUTOCOMMIT_ON'],
 'db2_bind_param' => ['bool', 'stmt'=>'resource', 'parameter_number'=>'int', 'variable_name'=>'string', 'parameter_type='=>'int', 'data_type='=>'int', 'precision='=>'int', 'scale='=>'int'],
 'db2_client_info' => ['object|false', 'connection'=>'resource'],
 'db2_close' => ['bool', 'connection'=>'resource'],

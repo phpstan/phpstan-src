@@ -86,8 +86,6 @@ class ContainerFactory
 		string $usedLevel = CommandHelper::DEFAULT_LEVEL,
 		?string $generateBaselineFile = null,
 		?string $cliAutoloadFile = null,
-		?string $singleReflectionFile = null,
-		?string $singleReflectionInsteadOfFile = null,
 	): Container
 	{
 		$allConfigFiles = $this->detectDuplicateIncludedFiles(
@@ -123,8 +121,6 @@ class ContainerFactory
 			'fixerTmpDir' => sys_get_temp_dir() . '/phpstan-fixer',
 		]);
 		$configurator->addDynamicParameters([
-			'singleReflectionFile' => $singleReflectionFile,
-			'singleReflectionInsteadOfFile' => $singleReflectionInsteadOfFile,
 			'analysedPaths' => $analysedPaths,
 			'analysedPathsFromConfig' => $analysedPathsFromConfig,
 		]);

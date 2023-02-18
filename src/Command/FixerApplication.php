@@ -13,7 +13,6 @@ use Phar;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\IgnoredErrorHelper;
-use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileMonitor;
@@ -21,14 +20,8 @@ use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\Internal\ComposerHelper;
-use PHPStan\Parallel\Scheduler;
-use PHPStan\Process\CpuCoreCounter;
-use PHPStan\Process\ProcessCanceledException;
-use PHPStan\Process\ProcessCrashedException;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\ProcessPromise;
-use PHPStan\Process\Runnable\RunnableQueue;
-use PHPStan\Process\Runnable\RunnableQueueLogger;
 use PHPStan\ShouldNotHappenException;
 use Psr\Http\Message\ResponseInterface;
 use React\ChildProcess\Process;
@@ -61,7 +54,6 @@ use function is_dir;
 use function is_file;
 use function is_string;
 use function memory_get_peak_usage;
-use function min;
 use function mkdir;
 use function parse_url;
 use function React\Async\await;
@@ -80,22 +72,16 @@ class FixerApplication
 	/** @var (ExtendedPromiseInterface&CancellablePromiseInterface)|null */
 	private $processInProgress;
 
-	private ?string $fixerSuggestionId = null;
-
 	/**
 	 * @param string[] $analysedPaths
 	 */
 	public function __construct(
 		private FileMonitor $fileMonitor,
 		private ResultCacheManagerFactory $resultCacheManagerFactory,
-		private ResultCacheClearer $resultCacheClearer,
 		private IgnoredErrorHelper $ignoredErrorHelper,
-		private CpuCoreCounter $cpuCoreCounter,
-		private Scheduler $scheduler,
 		private array $analysedPaths,
 		private string $currentWorkingDirectory,
 		private string $fixerTmpDir,
-		private int $maximumNumberOfProcesses,
 	)
 	{
 	}
@@ -123,18 +109,7 @@ class FixerApplication
 		/** @var int<0, 65535> $serverPort */
 		$serverPort = parse_url($serverAddress, PHP_URL_PORT);
 
-		$reanalyseProcessQueue = new RunnableQueue(
-			new class () implements RunnableQueueLogger {
-
-				public function log(string $message): void
-				{
-				}
-
-			},
-			min($this->cpuCoreCounter->getNumberOfCpuCores(), $this->maximumNumberOfProcesses),
-		);
-
-		$server->on('connection', function (ConnectionInterface $connection) use ($loop, $projectConfigFile, $input, $output, $fileSpecificErrors, $notFileSpecificErrors, $mainScript, $filesCount, $reanalyseProcessQueue, $inceptionResult): void {
+		$server->on('connection', function (ConnectionInterface $connection) use ($loop, $projectConfigFile, $input, $output, $fileSpecificErrors, $notFileSpecificErrors, $mainScript, $filesCount, $inceptionResult): void {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
@@ -149,61 +124,18 @@ class FixerApplication
 				'filesCount' => $filesCount,
 				'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
 			]]);
-			$decoder->on('data', function (array $data) use (
-				$loop,
-				$encoder,
-				$projectConfigFile,
-				$input,
+			$decoder->on('data', static function (array $data) use (
 				$output,
-				$mainScript,
-				$reanalyseProcessQueue,
-				$inceptionResult,
 			): void {
 				if ($data['action'] === 'webPort') {
 					$output->writeln(sprintf('Open your web browser at: <fg=cyan>http://127.0.0.1:%d</>', $data['data']['port']));
 					$output->writeln('Press [Ctrl-C] to quit.');
 					return;
 				}
-				if ($data['action'] === 'restoreResultCache') {
-					$this->fixerSuggestionId = $data['data']['fixerSuggestionId'];
-				}
-				if ($data['action'] !== 'reanalyse') {
-					return;
-				}
-
-				$id = $data['id'];
-
-				$this->reanalyseWithTmpFile(
-					$loop,
-					$inceptionResult,
-					$mainScript,
-					$reanalyseProcessQueue,
-					$projectConfigFile,
-					$data['data']['tmpFile'],
-					$data['data']['insteadOfFile'],
-					$data['data']['fixerSuggestionId'],
-					$input,
-				)->done(static function (string $output) use ($encoder, $id): void {
-					$encoder->write(['id' => $id, 'response' => Json::decode($output, Json::FORCE_ARRAY)]);
-				}, static function (Throwable $e) use ($encoder, $id, $output): void {
-					if ($e instanceof ProcessCrashedException) {
-						$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
-						$encoder->write(['id' => $id, 'error' => $e->getMessage()]);
-						return;
-					}
-					if ($e instanceof ProcessCanceledException) {
-						$encoder->write(['id' => $id, 'error' => $e->getMessage()]);
-						return;
-					}
-
-					$output->writeln('<error>Unexpected error: ' . $e->getMessage() . '</error>');
-					$encoder->write(['id' => $id, 'error' => $e->getMessage()]);
-				});
 			});
 
 			$this->fileMonitor->initialize($this->analysedPaths);
-			$this->monitorFileChanges($loop, function (FileMonitorResult $changes) use ($loop, $mainScript, $projectConfigFile, $input, $encoder, $output, $reanalyseProcessQueue, $inceptionResult): void {
-				$reanalyseProcessQueue->cancelAll();
+			$this->monitorFileChanges($loop, function (FileMonitorResult $changes) use ($loop, $mainScript, $projectConfigFile, $input, $encoder, $output, $inceptionResult): void {
 				if ($this->processInProgress !== null) {
 					$this->processInProgress->cancel();
 					$this->processInProgress = null;
@@ -216,20 +148,16 @@ class FixerApplication
 					$inceptionResult,
 					$mainScript,
 					$projectConfigFile,
-					$this->fixerSuggestionId,
 					$input,
 				)->done(function (array $json) use ($encoder, $changes): void {
 					$this->processInProgress = null;
-					$this->fixerSuggestionId = null;
 					$encoder->write(['action' => 'analysisEnd', 'data' => [
 						'fileSpecificErrors' => $json['fileSpecificErrors'],
 						'notFileSpecificErrors' => $json['notFileSpecificErrors'],
 						'filesCount' => $changes->getTotalFilesCount(),
 					]]);
-					$this->resultCacheClearer->clearTemporaryCaches();
 				}, function (Throwable $e) use ($encoder, $output): void {
 					$this->processInProgress = null;
-					$this->fixerSuggestionId = null;
 					$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
 					$encoder->write(['action' => 'analysisCrash', 'data' => [
 						'error' => $e->getMessage(),
@@ -451,48 +379,11 @@ class FixerApplication
 		$loop->addTimer(1.0, $callback);
 	}
 
-	private function reanalyseWithTmpFile(
-		LoopInterface $loop,
-		InceptionResult $inceptionResult,
-		string $mainScript,
-		RunnableQueue $runnableQueue,
-		?string $projectConfigFile,
-		string $tmpFile,
-		string $insteadOfFile,
-		string $fixerSuggestionId,
-		InputInterface $input,
-	): PromiseInterface
-	{
-		$resultCacheManager = $this->resultCacheManagerFactory->create([$insteadOfFile => $tmpFile]);
-		[$inceptionFiles] = $inceptionResult->getFiles();
-		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $inceptionResult->getProjectConfigArray(), $inceptionResult->getErrorOutput());
-		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $resultCache->getFilesToAnalyse());
-
-		$process = new ProcessPromise($loop, $fixerSuggestionId, ProcessHelper::getWorkerCommand(
-			$mainScript,
-			'fixer:worker',
-			$projectConfigFile,
-			[
-				'--tmp-file',
-				escapeshellarg($tmpFile),
-				'--instead-of',
-				escapeshellarg($insteadOfFile),
-				'--save-result-cache',
-				escapeshellarg($fixerSuggestionId),
-				'--allow-parallel',
-			],
-			$input,
-		));
-
-		return $runnableQueue->queue($process, $schedule->getNumberOfProcesses());
-	}
-
 	private function reanalyseAfterFileChanges(
 		LoopInterface $loop,
 		InceptionResult $inceptionResult,
 		string $mainScript,
 		?string $projectConfigFile,
-		?string $fixerSuggestionId,
 		InputInterface $input,
 	): PromiseInterface
 	{
@@ -503,9 +394,9 @@ class FixerApplication
 
 		$projectConfigArray = $inceptionResult->getProjectConfigArray();
 
-		$resultCacheManager = $this->resultCacheManagerFactory->create([]);
+		$resultCacheManager = $this->resultCacheManagerFactory->create();
 		[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
-		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput(), $fixerSuggestionId);
+		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput());
 		if (count($resultCache->getFilesToAnalyse()) === 0) {
 			$result = $resultCacheManager->process(
 				new AnalyserResult([], [], [], [], [], false, memory_get_peak_usage(true)),
@@ -538,10 +429,6 @@ class FixerApplication
 		}
 
 		$options = ['--save-result-cache', '--allow-parallel'];
-		if ($fixerSuggestionId !== null) {
-			$options[] = '--restore-result-cache';
-			$options[] = $fixerSuggestionId;
-		}
 		$process = new ProcessPromise($loop, 'changedFileAnalysis', ProcessHelper::getWorkerCommand(
 			$mainScript,
 			'fixer:worker',

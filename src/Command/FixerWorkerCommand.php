@@ -3,7 +3,6 @@
 namespace PHPStan\Command;
 
 use Nette\Utils\Json;
-use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManager;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
@@ -44,10 +43,7 @@ class FixerWorkerCommand extends Command
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
 				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
-				new InputOption('tmp-file', null, InputOption::VALUE_REQUIRED),
-				new InputOption('instead-of', null, InputOption::VALUE_REQUIRED),
 				new InputOption('save-result-cache', null, InputOption::VALUE_OPTIONAL, '', false),
-				new InputOption('restore-result-cache', null, InputOption::VALUE_REQUIRED),
 				new InputOption('allow-parallel', null, InputOption::VALUE_NONE, 'Allow parallel analysis'),
 			]);
 	}
@@ -74,31 +70,8 @@ class FixerWorkerCommand extends Command
 			throw new ShouldNotHappenException();
 		}
 
-		/** @var string|null $tmpFile */
-		$tmpFile = $input->getOption('tmp-file');
-
-		/** @var string|null $insteadOfFile */
-		$insteadOfFile = $input->getOption('instead-of');
-
 		/** @var false|string|null $saveResultCache */
 		$saveResultCache = $input->getOption('save-result-cache');
-
-		/** @var string|null $restoreResultCache */
-		$restoreResultCache = $input->getOption('restore-result-cache');
-		if (is_string($tmpFile)) {
-			if (!is_string($insteadOfFile)) {
-				throw new ShouldNotHappenException();
-			}
-		} elseif (is_string($insteadOfFile)) {
-			throw new ShouldNotHappenException();
-		} elseif ($saveResultCache === false) {
-			throw new ShouldNotHappenException();
-		}
-
-		$singleReflectionFile = null;
-		if ($tmpFile !== null) {
-			$singleReflectionFile = $tmpFile;
-		}
 
 		try {
 			$inceptionResult = CommandHelper::begin(
@@ -113,8 +86,6 @@ class FixerWorkerCommand extends Command
 				$level,
 				$allowXdebug,
 				false,
-				$singleReflectionFile,
-				$insteadOfFile,
 				false,
 			);
 		} catch (InceptionNotSuccessfulException) {
@@ -133,15 +104,11 @@ class FixerWorkerCommand extends Command
 		/** @var AnalyserRunner $analyserRunner */
 		$analyserRunner = $container->getByType(AnalyserRunner::class);
 
-		$fileReplacements = [];
-		if ($insteadOfFile !== null && $tmpFile !== null) {
-			$fileReplacements = [$insteadOfFile => $tmpFile];
-		}
 		/** @var ResultCacheManager $resultCacheManager */
-		$resultCacheManager = $container->getByType(ResultCacheManagerFactory::class)->create($fileReplacements);
+		$resultCacheManager = $container->getByType(ResultCacheManagerFactory::class)->create();
 		$projectConfigArray = $inceptionResult->getProjectConfigArray();
 		[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
-		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput(), $restoreResultCache);
+		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput());
 
 		$intermediateAnalyserResult = $analyserRunner->runAnalyser(
 			$resultCache->getFilesToAnalyse(),
@@ -151,12 +118,10 @@ class FixerWorkerCommand extends Command
 			false,
 			$allowParallel,
 			$configuration,
-			$tmpFile,
-			$insteadOfFile,
 			$input,
 		);
 		$result = $resultCacheManager->process(
-			$this->switchTmpFileInAnalyserResult($intermediateAnalyserResult, $tmpFile, $insteadOfFile),
+			$intermediateAnalyserResult,
 			$resultCache,
 			$inceptionResult->getErrorOutput(),
 			false,
@@ -186,90 +151,6 @@ class FixerWorkerCommand extends Command
 		]), OutputInterface::OUTPUT_RAW);
 
 		return 0;
-	}
-
-	private function switchTmpFileInAnalyserResult(
-		AnalyserResult $analyserResult,
-		?string $insteadOfFile,
-		?string $tmpFile,
-	): AnalyserResult
-	{
-		$fileSpecificErrors = [];
-		foreach ($analyserResult->getErrors() as $error) {
-			if (
-				$tmpFile !== null
-				&& $insteadOfFile !== null
-			) {
-				if ($error->getFilePath() === $insteadOfFile) {
-					$error = $error->changeFilePath($tmpFile);
-				}
-				if ($error->getTraitFilePath() === $insteadOfFile) {
-					$error = $error->changeTraitFilePath($tmpFile);
-				}
-			}
-
-			$fileSpecificErrors[] = $error;
-		}
-
-		$collectedData = [];
-		foreach ($analyserResult->getCollectedData() as $data) {
-			if (
-				$tmpFile !== null
-				&& $insteadOfFile !== null
-			) {
-				if ($data->getFilePath() === $insteadOfFile) {
-					$data = $data->changeFilePath($tmpFile);
-				}
-			}
-
-			$collectedData[] = $data;
-		}
-
-		$dependencies = null;
-		if ($analyserResult->getDependencies() !== null) {
-			$dependencies = [];
-			foreach ($analyserResult->getDependencies() as $dependencyFile => $dependentFiles) {
-				$new = [];
-				foreach ($dependentFiles as $file) {
-					if ($file === $insteadOfFile && $tmpFile !== null) {
-						$new[] = $tmpFile;
-						continue;
-					}
-
-					$new[] = $file;
-				}
-
-				$key = $dependencyFile;
-				if ($key === $insteadOfFile && $tmpFile !== null) {
-					$key = $tmpFile;
-				}
-
-				$dependencies[$key] = $new;
-			}
-		}
-
-		$exportedNodes = [];
-		foreach ($analyserResult->getExportedNodes() as $file => $fileExportedNodes) {
-			if (
-				$tmpFile !== null
-				&& $insteadOfFile !== null
-				&& $file === $insteadOfFile
-			) {
-				$file = $tmpFile;
-			}
-
-			$exportedNodes[$file] = $fileExportedNodes;
-		}
-
-		return new AnalyserResult(
-			$fileSpecificErrors,
-			$analyserResult->getInternalErrors(),
-			$collectedData,
-			$dependencies,
-			$exportedNodes,
-			$analyserResult->hasReachedInternalErrorsCountLimit(),
-			$analyserResult->getPeakMemoryUsageBytes(),
-		);
 	}
 
 }

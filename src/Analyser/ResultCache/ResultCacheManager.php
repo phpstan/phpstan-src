@@ -58,7 +58,6 @@ class ResultCacheManager
 	 * @param string[] $bootstrapFiles
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
-	 * @param array<string, string> $fileReplacements
 	 */
 	public function __construct(
 		private ExportedNodeFetcher $exportedNodeFetcher,
@@ -66,7 +65,6 @@ class ResultCacheManager
 		private ReflectionProvider $reflectionProvider,
 		private StubFilesProvider $stubFilesProvider,
 		private string $cacheFilePath,
-		private string $tempResultCachePath,
 		private array $analysedPaths,
 		private array $composerAutoloaderProjectPaths,
 		private string $usedLevel,
@@ -74,7 +72,6 @@ class ResultCacheManager
 		private array $bootstrapFiles,
 		private array $scanFiles,
 		private array $scanDirectories,
-		private array $fileReplacements,
 		private bool $checkDependenciesOfProjectExtensionFiles,
 	)
 	{
@@ -84,7 +81,7 @@ class ResultCacheManager
 	 * @param string[] $allAnalysedFiles
 	 * @param mixed[]|null $projectConfigArray
 	 */
-	public function restore(array $allAnalysedFiles, bool $debug, bool $onlyFiles, ?array $projectConfigArray, Output $output, ?string $resultCacheName = null): ResultCache
+	public function restore(array $allAnalysedFiles, bool $debug, bool $onlyFiles, ?array $projectConfigArray, Output $output): ResultCache
 	{
 		if ($debug) {
 			if ($output->isDebug()) {
@@ -100,13 +97,6 @@ class ResultCacheManager
 		}
 
 		$cacheFilePath = $this->cacheFilePath;
-		if ($resultCacheName !== null) {
-			$tmpCacheFile = $this->tempResultCachePath . '/' . $resultCacheName . '.php';
-			if (is_file($tmpCacheFile)) {
-				$cacheFilePath = $tmpCacheFile;
-			}
-		}
-
 		if (!is_file($cacheFilePath)) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the cache file does not exist.');
@@ -286,9 +276,6 @@ class ResultCacheManager
 	 */
 	private function exportedNodesChanged(string $analysedFile, array $cachedFileExportedNodes): ?bool
 	{
-		if (array_key_exists($analysedFile, $this->fileReplacements)) {
-			$analysedFile = $this->fileReplacements[$analysedFile];
-		}
 		$fileExportedNodes = $this->exportedNodeFetcher->fetchNodes($analysedFile);
 
 		$cachedSymbols = [];
@@ -336,7 +323,7 @@ class ResultCacheManager
 		}
 
 		$meta = $resultCache->getMeta();
-		$doSave = function (array $errorsByFile, $collectedDataByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
+		$doSave = function (array $errorsByFile, $collectedDataByFile, ?array $dependencies, array $exportedNodes) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isDebug()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -371,7 +358,7 @@ class ResultCacheManager
 				}
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $resultCacheName, $errorsByFile, $collectedDataByFile, $dependencies, $exportedNodes, $meta);
+			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $collectedDataByFile, $dependencies, $exportedNodes, $meta);
 
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -383,7 +370,7 @@ class ResultCacheManager
 		if ($resultCache->isFullAnalysis()) {
 			$saved = false;
 			if ($save !== false) {
-				$saved = $doSave($freshErrorsByFile, $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes(), is_string($save) ? $save : null);
+				$saved = $doSave($freshErrorsByFile, $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes());
 			} else {
 				if ($output->isDebug()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
@@ -400,7 +387,7 @@ class ResultCacheManager
 
 		$saved = false;
 		if ($save !== false) {
-			$saved = $doSave($errorsByFile, $collectedDataByFile, $dependencies, $exportedNodes, is_string($save) ? $save : null);
+			$saved = $doSave($errorsByFile, $collectedDataByFile, $dependencies, $exportedNodes);
 		}
 
 		$flatErrors = [];
@@ -533,7 +520,6 @@ class ResultCacheManager
 	 */
 	private function save(
 		int $lastFullAnalysisTime,
-		?string $resultCacheName,
 		array $errors,
 		array $collectedData,
 		array $dependencies,
@@ -597,10 +583,6 @@ return [
 		ksort($exportedNodes);
 
 		$file = $this->cacheFilePath;
-		if ($resultCacheName !== null) {
-			$file = $this->tempResultCachePath . '/' . $resultCacheName . '.php';
-		}
-
 		$projectConfigArray = $meta['projectConfig'];
 		if ($projectConfigArray !== null) {
 			$meta['projectConfig'] = Neon::encode($projectConfigArray);
@@ -765,9 +747,6 @@ return [
 
 	private function getFileHash(string $path): string
 	{
-		if (array_key_exists($path, $this->fileReplacements)) {
-			$path = $this->fileReplacements[$path];
-		}
 		if (array_key_exists($path, $this->fileHashes)) {
 			return $this->fileHashes[$path];
 		}

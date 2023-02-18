@@ -92,9 +92,6 @@ class DumpParametersCommand extends Command
 		unset($parameters['productionMode']);
 		unset($parameters['tempDir']);
 		unset($parameters['__validate']);
-		// internal - static reflection
-		unset($parameters['singleReflectionFile']);
-		unset($parameters['singleReflectionInsteadOfFile']);
 
 		$output->writeln(Neon::encode($parameters, true));
 

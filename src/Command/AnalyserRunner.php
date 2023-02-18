@@ -9,8 +9,6 @@ use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
 use PHPStan\Process\CpuCoreCounter;
 use Symfony\Component\Console\Input\InputInterface;
-use function array_filter;
-use function array_values;
 use function count;
 use function function_exists;
 use function is_file;
@@ -42,8 +40,6 @@ class AnalyserRunner
 		bool $debug,
 		bool $allowParallel,
 		?string $projectConfigFile,
-		?string $tmpFile,
-		?string $insteadOfFile,
 		InputInterface $input,
 	): AnalyserResult
 	{
@@ -65,39 +61,16 @@ class AnalyserRunner
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 0
 		) {
-			return $this->parallelAnalyser->analyse($schedule, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input);
+			return $this->parallelAnalyser->analyse($schedule, $mainScript, $postFileCallback, $projectConfigFile, $input);
 		}
 
 		return $this->analyser->analyse(
-			$this->switchTmpFile($files, $insteadOfFile, $tmpFile),
+			$files,
 			$preFileCallback,
 			$postFileCallback,
 			$debug,
-			$this->switchTmpFile($allAnalysedFiles, $insteadOfFile, $tmpFile),
+			$allAnalysedFiles,
 		);
-	}
-
-	/**
-	 * @param string[] $analysedFiles
-	 * @return string[]
-	 */
-	private function switchTmpFile(
-		array $analysedFiles,
-		?string $insteadOfFile,
-		?string $tmpFile,
-	): array
-	{
-		$analysedFiles = array_values(array_filter($analysedFiles, static function (string $file) use ($insteadOfFile): bool {
-			if ($insteadOfFile === null) {
-				return true;
-			}
-			return $file !== $insteadOfFile;
-		}));
-		if ($tmpFile !== null) {
-			$analysedFiles[] = $tmpFile;
-		}
-
-		return $analysedFiles;
 	}
 
 }

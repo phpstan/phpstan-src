@@ -83,8 +83,6 @@ class CommandHelper
 		?string $level,
 		bool $allowXdebug,
 		bool $debugEnabled = false,
-		?string $singleReflectionFile = null,
-		?string $singleReflectionInsteadOfFile = null,
 		bool $cleanupContainerCache = true,
 	): InceptionResult
 	{
@@ -286,7 +284,7 @@ class CommandHelper
 		}
 
 		try {
-			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile, $singleReflectionFile, $singleReflectionInsteadOfFile);
+			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile);
 		} catch (InvalidConfigurationException | AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());

@@ -425,10 +425,6 @@ parametersSchema:
 	usedLevel: string()
 	cliAutoloadFile: schema(string(), nullable())
 
-	# internal - static reflection
-	singleReflectionFile: schema(string(), nullable())
-	singleReflectionInsteadOfFile: schema(string(), nullable())
-
 rules:
 	- PHPStan\Rules\Debug\DumpTypeRule
 	- PHPStan\Rules\Debug\FileAssertRule
@@ -657,7 +653,6 @@ services:
 		arguments:
 			scanFileFinder: @fileFinderScan
 			cacheFilePath: %resultCachePath%
-			tempResultCachePath: %tempResultCachePath%
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			usedLevel: %usedLevel%
@@ -671,7 +666,6 @@ services:
 		class: PHPStan\Analyser\ResultCache\ResultCacheClearer
 		arguments:
 			cacheFilePath: %resultCachePath%
-			tempResultCachePath: %tempResultCachePath%
 
 	-
 		class: PHPStan\Cache\Cache
@@ -699,7 +693,6 @@ services:
 			analysedPaths: %analysedPaths%
 			currentWorkingDirectory: %currentWorkingDirectory%
 			fixerTmpDir: %fixerTmpDir%
-			maximumNumberOfProcesses: %parallel.maximumNumberOfProcesses%
 
 	-
 		class: PHPStan\Dependency\DependencyResolver
@@ -738,8 +731,6 @@ services:
 			usedLevel: %usedLevel%
 			generateBaselineFile: %generateBaselineFile%
 			cliAutoloadFile: %cliAutoloadFile%
-			singleReflectionFile: %singleReflectionFile%
-			singleReflectionInsteadOfFile: %singleReflectionInsteadOfFile%
 
 	-
 		class: PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider
@@ -2016,7 +2007,6 @@ services:
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
-			singleReflectionFile: %singleReflectionFile%
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory
@@ -2059,7 +2049,6 @@ services:
 			currentPhpVersionRichParser: @currentPhpVersionRichParser
 			currentPhpVersionSimpleParser: @currentPhpVersionSimpleParser
 			php8Parser: @php8Parser
-			singleReflectionFile: %singleReflectionFile%
 		autowired: false
 
 	# Error formatters

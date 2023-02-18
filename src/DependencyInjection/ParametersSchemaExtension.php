@@ -37,8 +37,6 @@ class ParametersSchemaExtension extends CompilerExtension
 		$config = $this->config;
 		$config['analysedPaths'] = new Statement(DynamicParameter::class);
 		$config['analysedPathsFromConfig'] = new Statement(DynamicParameter::class);
-		$config['singleReflectionFile'] = new Statement(DynamicParameter::class);
-		$config['singleReflectionInsteadOfFile'] = new Statement(DynamicParameter::class);
 		$schema = $this->processArgument(
 			new Statement('schema', [
 				new Statement('structure', [$config]),

@@ -63,7 +63,7 @@ class AnalyseApplication
 		InputInterface $input,
 	): AnalysisResult
 	{
-		$resultCacheManager = $this->resultCacheManagerFactory->create([]);
+		$resultCacheManager = $this->resultCacheManagerFactory->create();
 
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
@@ -232,7 +232,7 @@ class AnalyseApplication
 			}
 		}
 
-		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, null, null, $input);
+		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, $input);
 
 		if (!$debug) {
 			$errorOutput->getStyle()->progressFinish();

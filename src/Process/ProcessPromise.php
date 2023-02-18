@@ -2,7 +2,6 @@
 
 namespace PHPStan\Process;
 
-use PHPStan\Process\Runnable\Runnable;
 use PHPStan\ShouldNotHappenException;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
@@ -14,7 +13,7 @@ use function rewind;
 use function stream_get_contents;
 use function tmpfile;
 
-class ProcessPromise implements Runnable
+class ProcessPromise
 {
 
 	private Deferred $deferred;

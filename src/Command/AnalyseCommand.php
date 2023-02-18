@@ -3,7 +3,6 @@
 namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
-use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
@@ -365,7 +364,6 @@ class AnalyseCommand extends Command
 
 				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 			}
-			$container->getByType(ResultCacheClearer::class)->clearTemporaryCaches();
 			$hasInternalErrors = $analysisResult->hasInternalErrors();
 			$nonIgnorableErrorsByException = [];
 			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {

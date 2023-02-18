@@ -129,7 +129,7 @@ jobs:
     needs: compiler-tests
     uses: phpstan/phpstan/.github/workflows/extension-tests.yml@1.10.x
     with:
-      ref: 1.1O.x
+      ref: 1.10.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   other-tests:

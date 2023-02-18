@@ -19,7 +19,7 @@ class TrinaryLogic
 	private const MAYBE = 0;
 	private const NO = -1;
 
-	/** @var self[] */
+	/** @var self[]  */
 	private static array $registry = [];
 
 	private function __construct(private int $value)

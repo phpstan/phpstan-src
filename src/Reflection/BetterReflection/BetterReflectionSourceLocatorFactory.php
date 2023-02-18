@@ -55,7 +55,6 @@ class BetterReflectionSourceLocatorFactory
 		private array $analysedPaths,
 		private array $composerAutoloaderProjectPaths,
 		private array $analysedPathsFromConfig,
-		private ?string $singleReflectionFile,
 	)
 	{
 	}
@@ -63,10 +62,6 @@ class BetterReflectionSourceLocatorFactory
 	public function create(): SourceLocator
 	{
 		$locators = [];
-
-		if ($this->singleReflectionFile !== null) {
-			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($this->singleReflectionFile);
-		}
 
 		$astLocator = new Locator($this->parser);
 		$locators[] = new AutoloadFunctionsSourceLocator(

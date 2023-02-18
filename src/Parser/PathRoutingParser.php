@@ -9,8 +9,6 @@ use function strpos;
 class PathRoutingParser implements Parser
 {
 
-	private ?string $singleReflectionFile;
-
 	/** @var bool[] filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
@@ -19,10 +17,8 @@ class PathRoutingParser implements Parser
 		private Parser $currentPhpVersionRichParser,
 		private Parser $currentPhpVersionSimpleParser,
 		private Parser $php8Parser,
-		?string $singleReflectionFile,
 	)
 	{
-		$this->singleReflectionFile = $singleReflectionFile !== null ? $fileHelper->normalizePath($singleReflectionFile) : null;
 	}
 
 	/**
@@ -44,7 +40,7 @@ class PathRoutingParser implements Parser
 		}
 
 		$file = $this->fileHelper->normalizePath($file);
-		if (!isset($this->analysedFiles[$file]) && $file !== $this->singleReflectionFile) {
+		if (!isset($this->analysedFiles[$file])) {
 			return $this->currentPhpVersionSimpleParser->parseFile($file);
 		}
 

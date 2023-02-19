@@ -50,6 +50,11 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 4
+			path: src/Analyser/MutatingScope.php
+
+		-
 			message: "#^Only numeric types are allowed in pre\\-decrement, bool\\|float\\|int\\|string\\|null given\\.$#"
 			count: 1
 			path: src/Analyser/MutatingScope.php
@@ -61,6 +66,11 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 3
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
 			count: 3
 			path: src/Analyser/NodeScopeResolver.php
 
@@ -404,6 +414,11 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 5
+			path: src/Reflection/InitializerExprTypeResolver.php
+
+		-
 			message: "#^PHPDoc tag @var with type float\\|int is not subtype of native type int\\.$#"
 			count: 1
 			path: src/Reflection/InitializerExprTypeResolver.php
@@ -419,9 +434,19 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Reflection/ParametersAcceptorSelector.php
+
+		-
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"
 			count: 1
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Rules/Api/ApiInstanceofRule.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
@@ -429,11 +454,21 @@ parameters:
 			path: src/Rules/Api/NodeConnectingVisitorAttributesRule.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Rules/Arrays/AppendedArrayKeyTypeRule.php
+
+		-
 			message: """
 				#^Call to deprecated method flattenTypes\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
 				Use specific methods on Type instead\\. See\\: https\\://phpstan\\.org/blog/why\\-is\\-instanceof\\-type\\-wrong\\-and\\-getting\\-deprecated$#
 			"""
 			count: 2
+			path: src/Rules/Arrays/NonexistentOffsetInArrayDimFetchCheck.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
 			path: src/Rules/Arrays/NonexistentOffsetInArrayDimFetchCheck.php
 
 		-
@@ -507,6 +542,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 3
+			path: src/Rules/Comparison/MatchExpressionRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
 			path: src/Rules/Comparison/MatchExpressionRule.php
 
 		-
@@ -612,6 +652,11 @@ parameters:
 			path: src/Rules/Generics/TemplateTypeCheck.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Rules/Generics/TemplateTypeCheck.php
+
+		-
 			message: "#^Function class_implements\\(\\) is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
 			count: 1
 			path: src/Rules/LazyRegistry.php
@@ -667,7 +712,32 @@ parameters:
 			path: src/Rules/RuleLevelHelper.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Rules/RuleLevelHelper.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Rules/TooWideTypehints/TooWideArrowFunctionReturnTypehintRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Rules/TooWideTypehints/TooWideClosureReturnTypehintRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Rules/TooWideTypehints/TooWideFunctionReturnTypehintRule.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/TooWideTypehints/TooWideMethodReturnTypehintRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Rules/TooWideTypehints/TooWideMethodReturnTypehintRule.php
 
@@ -697,7 +767,17 @@ parameters:
 			path: src/Type/Accessory/AccessoryArrayListType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryArrayListType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryLiteralStringType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/Accessory/AccessoryLiteralStringType.php
 
@@ -712,7 +792,17 @@ parameters:
 			path: src/Type/Accessory/AccessoryNonEmptyStringType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryNonEmptyStringType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryNonFalsyStringType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/Accessory/AccessoryNonFalsyStringType.php
 
@@ -727,12 +817,27 @@ parameters:
 			path: src/Type/Accessory/AccessoryNumericStringType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryNumericStringType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/Accessory/HasMethodType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/HasMethodType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/HasOffsetType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/Accessory/HasOffsetType.php
 
@@ -747,7 +852,17 @@ parameters:
 			path: src/Type/Accessory/HasOffsetValueType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/HasOffsetValueType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/HasPropertyType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/Accessory/HasPropertyType.php
 
@@ -757,7 +872,17 @@ parameters:
 			path: src/Type/Accessory/NonEmptyArrayType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/NonEmptyArrayType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/OversizedArrayType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/Accessory/OversizedArrayType.php
 
@@ -782,6 +907,16 @@ parameters:
 			path: src/Type/ArrayType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/ArrayType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/BitwiseFlagHelper.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/BooleanType.php
@@ -802,7 +937,17 @@ parameters:
 			path: src/Type/CallableType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/CallableType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/ClosureType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/ClosureType.php
 
@@ -828,6 +973,11 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone and deprecated\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Constant/ConstantArrayType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantArrayType.php
 
@@ -902,6 +1052,11 @@ parameters:
 			path: src/Type/Enum/EnumCaseObjectType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/ExponentiateHelper.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericObjectType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/FileTypeMapper.php
@@ -937,6 +1092,11 @@ parameters:
 			path: src/Type/Generic/GenericClassStringType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Generic/GenericClassStringType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericObjectType is error\\-prone and deprecated\\.$#"
 			count: 2
 			path: src/Type/Generic/GenericObjectType.php
@@ -957,8 +1117,18 @@ parameters:
 			path: src/Type/Generic/GenericObjectType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Generic/GenericObjectType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
+			path: src/Type/Generic/TemplateArrayType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
 			path: src/Type/Generic/TemplateArrayType.php
 
 		-
@@ -967,8 +1137,18 @@ parameters:
 			path: src/Type/Generic/TemplateBenevolentUnionType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/Generic/TemplateBenevolentUnionType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
+			path: src/Type/Generic/TemplateBooleanType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
 			path: src/Type/Generic/TemplateBooleanType.php
 
 		-
@@ -977,8 +1157,18 @@ parameters:
 			path: src/Type/Generic/TemplateConstantArrayType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/Generic/TemplateConstantArrayType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
+			path: src/Type/Generic/TemplateConstantIntegerType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
 			path: src/Type/Generic/TemplateConstantIntegerType.php
 
 		-
@@ -987,8 +1177,18 @@ parameters:
 			path: src/Type/Generic/TemplateConstantStringType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/Generic/TemplateConstantStringType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
+			path: src/Type/Generic/TemplateFloatType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
 			path: src/Type/Generic/TemplateFloatType.php
 
 		-
@@ -997,13 +1197,28 @@ parameters:
 			path: src/Type/Generic/TemplateGenericObjectType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/Generic/TemplateGenericObjectType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
 			path: src/Type/Generic/TemplateIntegerType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/Generic/TemplateIntegerType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
+			path: src/Type/Generic/TemplateIntersectionType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
 			path: src/Type/Generic/TemplateIntersectionType.php
 
 		-
@@ -1017,8 +1232,18 @@ parameters:
 			path: src/Type/Generic/TemplateKeyOfType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/Generic/TemplateKeyOfType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 2
+			path: src/Type/Generic/TemplateMixedType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
 			path: src/Type/Generic/TemplateMixedType.php
 
 		-
@@ -1027,8 +1252,18 @@ parameters:
 			path: src/Type/Generic/TemplateObjectType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/Generic/TemplateObjectType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
+			path: src/Type/Generic/TemplateObjectWithoutClassType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
 			path: src/Type/Generic/TemplateObjectWithoutClassType.php
 
 		-
@@ -1037,8 +1272,18 @@ parameters:
 			path: src/Type/Generic/TemplateStrictMixedType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Generic/TemplateStrictMixedType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
+			path: src/Type/Generic/TemplateStringType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
 			path: src/Type/Generic/TemplateStringType.php
 
 		-
@@ -1097,8 +1342,18 @@ parameters:
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Generic/TemplateTypeFactory.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
+			path: src/Type/Generic/TemplateUnionType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
 			path: src/Type/Generic/TemplateUnionType.php
 
 		-
@@ -1114,6 +1369,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 1
+			path: src/Type/IntegerRangeType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
 			path: src/Type/IntegerRangeType.php
 
 		-
@@ -1142,12 +1402,22 @@ parameters:
 			path: src/Type/IntersectionType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/IntersectionType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 2
 			path: src/Type/IterableType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
+			count: 2
+			path: src/Type/IterableType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
 			count: 2
 			path: src/Type/IterableType.php
 
@@ -1329,6 +1599,11 @@ parameters:
 			path: src/Type/Php/MinMaxFunctionReturnTypeExtension.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Php/MinMaxFunctionReturnTypeExtension.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/NumberFormatFunctionDynamicReturnTypeExtension.php
@@ -1337,6 +1612,11 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Php/PropertyExistsTypeSpecifyingExtension.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/Php/RandomIntFunctionReturnTypeExtension.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
@@ -1462,6 +1742,11 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 6
+			path: src/Type/TypeCombinator.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/TypeUtils.php
@@ -1482,6 +1767,11 @@ parameters:
 			path: src/Type/TypeUtils.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 9
+			path: src/Type/TypeUtils.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/TypehintHelper.php
@@ -1489,6 +1779,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 1
+			path: src/Type/TypehintHelper.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 2
 			path: src/Type/TypehintHelper.php
 
 		-
@@ -1514,6 +1809,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 1
+			path: src/Type/UnionType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\UnionType is error\\-prone and deprecated\\.$#"
+			count: 5
 			path: src/Type/UnionType.php
 
 		-

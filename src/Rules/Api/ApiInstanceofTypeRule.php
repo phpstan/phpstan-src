@@ -39,6 +39,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\TypeWithClassName;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 use function array_key_exists;
 use function sprintf;
@@ -71,6 +72,7 @@ class ApiInstanceofTypeRule implements Rule
 		GenericClassStringType::class => 'Type::isClassStringType() and Type::getClassStringObjectType()',
 		GenericObjectType::class => null,
 		IntersectionType::class => null,
+		UnionType::class => null,
 
 		// accessory types
 		NonEmptyArrayType::class => 'Type::isIterableAtLeastOnce()',

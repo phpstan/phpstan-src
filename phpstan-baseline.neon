@@ -17,6 +17,14 @@ parameters:
 
 		-
 			message: """
+				#^Call to deprecated method flattenTypes\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
+				Use specific methods on Type instead\\. See\\: https\\://phpstan\\.org/blog/why\\-is\\-instanceof\\-type\\-wrong\\-and\\-getting\\-deprecated$#
+			"""
+			count: 3
+			path: src/Analyser/MutatingScope.php
+
+		-
+			message: """
 				#^Call to deprecated method getAnyArrays\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
 				Use PHPStan\\\\Type\\\\Type\\:\\:getArrays\\(\\) instead\\.$#
 			"""
@@ -421,6 +429,14 @@ parameters:
 			path: src/Rules/Api/NodeConnectingVisitorAttributesRule.php
 
 		-
+			message: """
+				#^Call to deprecated method flattenTypes\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
+				Use specific methods on Type instead\\. See\\: https\\://phpstan\\.org/blog/why\\-is\\-instanceof\\-type\\-wrong\\-and\\-getting\\-deprecated$#
+			"""
+			count: 2
+			path: src/Rules/Arrays/NonexistentOffsetInArrayDimFetchCheck.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 2
 			path: src/Rules/Classes/ImpossibleInstanceOfRule.php
@@ -552,6 +568,38 @@ parameters:
 			message: "#^Property PHPStan\\\\Rules\\\\DirectRegistry\\:\\:\\$rules with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: src/Rules/DirectRegistry.php
+
+		-
+			message: """
+				#^Call to deprecated method flattenTypes\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
+				Use specific methods on Type instead\\. See\\: https\\://phpstan\\.org/blog/why\\-is\\-instanceof\\-type\\-wrong\\-and\\-getting\\-deprecated$#
+			"""
+			count: 1
+			path: src/Rules/Exceptions/MissingCheckedExceptionInThrowsCheck.php
+
+		-
+			message: """
+				#^Call to deprecated method flattenTypes\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
+				Use specific methods on Type instead\\. See\\: https\\://phpstan\\.org/blog/why\\-is\\-instanceof\\-type\\-wrong\\-and\\-getting\\-deprecated$#
+			"""
+			count: 1
+			path: src/Rules/Exceptions/ThrowsVoidFunctionWithExplicitThrowPointRule.php
+
+		-
+			message: """
+				#^Call to deprecated method flattenTypes\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
+				Use specific methods on Type instead\\. See\\: https\\://phpstan\\.org/blog/why\\-is\\-instanceof\\-type\\-wrong\\-and\\-getting\\-deprecated$#
+			"""
+			count: 1
+			path: src/Rules/Exceptions/ThrowsVoidMethodWithExplicitThrowPointRule.php
+
+		-
+			message: """
+				#^Call to deprecated method flattenTypes\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
+				Use specific methods on Type instead\\. See\\: https\\://phpstan\\.org/blog/why\\-is\\-instanceof\\-type\\-wrong\\-and\\-getting\\-deprecated$#
+			"""
+			count: 1
+			path: src/Rules/Exceptions/TooWideThrowTypeCheck.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericObjectType is error\\-prone and deprecated\\.$#"
@@ -915,6 +963,14 @@ parameters:
 
 		-
 			message: """
+				#^Call to deprecated method flattenTypes\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
+				Use specific methods on Type instead\\. See\\: https\\://phpstan\\.org/blog/why\\-is\\-instanceof\\-type\\-wrong\\-and\\-getting\\-deprecated$#
+			"""
+			count: 2
+			path: src/Type/ObjectType.php
+
+		-
+			message: """
 				#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
 				Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
 			"""
@@ -1098,12 +1154,10 @@ parameters:
 			path: src/Type/Php/ReflectionClassIsSubclassOfTypeSpecifyingExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
-			count: 1
-			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
-
-		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) and Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
+			message: """
+				#^Call to deprecated method flattenTypes\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
+				Use specific methods on Type instead\\. See\\: https\\://phpstan\\.org/blog/why\\-is\\-instanceof\\-type\\-wrong\\-and\\-getting\\-deprecated$#
+			"""
 			count: 1
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
 

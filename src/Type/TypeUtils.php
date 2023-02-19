@@ -273,8 +273,6 @@ class TypeUtils
 	}
 
 	/**
-	 * @deprecated Use specific methods on Type instead. See: https://phpstan.org/blog/why-is-instanceof-type-wrong-and-getting-deprecated
-	 *
 	 * @return Type[]
 	 */
 	public static function flattenTypes(Type $type): array

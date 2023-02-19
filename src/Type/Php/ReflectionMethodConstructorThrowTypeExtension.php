@@ -6,7 +6,9 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -35,8 +37,14 @@ class ReflectionMethodConstructorThrowTypeExtension implements DynamicStaticMeth
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
 		$propertyType = $scope->getType($methodCall->getArgs()[1]->value);
 		foreach (TypeUtils::flattenTypes($valueType) as $type) {
-			$classes = $type->getClassStringObjectType()->getObjectClassNames();
-			if (count($classes) === 0) {
+			if ($type instanceof GenericClassStringType) {
+				$classes = $type->getGenericType()->getObjectClassNames();
+			} elseif (
+				$type instanceof ConstantStringType
+				&& $this->reflectionProvider->hasClass($type->getValue())
+			) {
+				$classes = [$type->getValue()];
+			} else {
 				return $methodReflection->getThrowType();
 			}
 

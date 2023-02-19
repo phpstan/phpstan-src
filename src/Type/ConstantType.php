@@ -6,6 +6,4 @@ namespace PHPStan\Type;
 interface ConstantType extends Type
 {
 
-	public function generalize(GeneralizePrecision $precision): Type;
-
 }

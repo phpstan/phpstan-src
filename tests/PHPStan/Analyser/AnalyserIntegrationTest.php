@@ -1015,6 +1015,30 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(14, $errors[0]->getLine());
 	}
 
+	public function testBug5312(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5312.php');
+		$this->assertCount(3, $errors);
+		$this->assertSame('Parameter $object of method Bug5312\Updatable::update() has invalid type Bug5312\T.', $errors[0]->getMessage());
+		$this->assertSame(13, $errors[0]->getLine());
+		$this->assertSame('Type Bug5312\T in generic type Bug5312\Updatable<Bug5312\T> in PHPDoc tag @param for parameter $object is not subtype of template type T of Bug5312\Updatable<Bug5312\T> of interface Bug5312\Updatable.', $errors[1]->getMessage());
+		$this->assertSame(13, $errors[1]->getLine());
+		$this->assertSame('Type Bug5312\T in generic type Bug5312\Updatable<Bug5312\T> in PHPDoc tag @param for parameter $object is not subtype of template type T of Bug5312\Updatable<Bug5312\T> of interface Bug5312\Updatable.', $errors[2]->getMessage());
+		$this->assertSame(13, $errors[2]->getLine());
+	}
+
+	public function testBug5390(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5390.php');
+		$this->assertCount(3, $errors);
+		$this->assertSame('Property Bug5390\A::$b is never written, only read.', $errors[0]->getMessage());
+		$this->assertSame(9, $errors[0]->getLine());
+		$this->assertSame('Method Bug5390\A::infiniteRecursion() has no return type specified.', $errors[1]->getMessage());
+		$this->assertSame(11, $errors[1]->getLine());
+		$this->assertSame('Call to an undefined method Bug5390\B::someMethod().', $errors[2]->getMessage());
+		$this->assertSame(12, $errors[2]->getLine());
+	}
+
 	public function testBug7110(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7110.php');

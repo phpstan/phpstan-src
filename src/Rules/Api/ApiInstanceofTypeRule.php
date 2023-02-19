@@ -32,6 +32,7 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
@@ -69,6 +70,7 @@ class ApiInstanceofTypeRule implements Rule
 		ObjectType::class => 'Type::isObject() or Type::getObjectClassNames()',
 		GenericClassStringType::class => 'Type::isClassStringType() and Type::getClassStringObjectType()',
 		GenericObjectType::class => null,
+		IntersectionType::class => null,
 
 		// accessory types
 		NonEmptyArrayType::class => 'Type::isIterableAtLeastOnce()',

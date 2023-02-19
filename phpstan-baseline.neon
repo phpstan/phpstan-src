@@ -607,6 +607,11 @@ parameters:
 			path: src/Rules/Generics/GenericAncestorsCheck.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Rules/Generics/TemplateTypeCheck.php
+
+		-
 			message: "#^Function class_implements\\(\\) is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
 			count: 1
 			path: src/Rules/LazyRegistry.php
@@ -687,9 +692,29 @@ parameters:
 			path: src/Testing/PHPStanTestCase.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryArrayListType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryLiteralStringType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Accessory/AccessoryNonEmptyStringType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryNonEmptyStringType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryNonFalsyStringType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
@@ -697,9 +722,44 @@ parameters:
 			path: src/Type/Accessory/AccessoryNumericStringType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryNumericStringType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/HasMethodType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/HasOffsetType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Accessory/HasOffsetValueType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/HasOffsetValueType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/HasPropertyType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/NonEmptyArrayType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/OversizedArrayType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
@@ -714,6 +774,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
+			path: src/Type/ArrayType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
 			path: src/Type/ArrayType.php
 
 		-
@@ -732,6 +797,16 @@ parameters:
 			path: src/Type/CallableType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/CallableType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/ClosureType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantArrayType.php
@@ -744,6 +819,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 4
+			path: src/Type/Constant/ConstantArrayType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
 			path: src/Type/Constant/ConstantArrayType.php
 
 		-
@@ -847,6 +927,11 @@ parameters:
 			path: src/Type/Generic/GenericClassStringType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Generic/GenericClassStringType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone and deprecated\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Generic/GenericClassStringType.php
@@ -854,6 +939,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericObjectType is error\\-prone and deprecated\\.$#"
 			count: 2
+			path: src/Type/Generic/GenericObjectType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
 			path: src/Type/Generic/GenericObjectType.php
 
 		-
@@ -867,9 +957,89 @@ parameters:
 			path: src/Type/Generic/GenericObjectType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateArrayType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateBenevolentUnionType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateBooleanType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateConstantArrayType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateConstantIntegerType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateConstantStringType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateFloatType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateGenericObjectType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateIntegerType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateIntersectionType.php
+
+		-
 			message: "#^Instanceof between PHPStan\\\\Type\\\\Type and PHPStan\\\\Type\\\\IntersectionType will always evaluate to false\\.$#"
 			count: 2
 			path: src/Type/Generic/TemplateIntersectionType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateKeyOfType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/Generic/TemplateMixedType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateObjectType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateObjectWithoutClassType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/Generic/TemplateStrictMixedType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateStringType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
@@ -907,6 +1077,11 @@ parameters:
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Generic/TemplateTypeFactory.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
@@ -922,6 +1097,11 @@ parameters:
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/Generic/TemplateUnionType.php
+
+		-
 			message: "#^Instanceof between PHPStan\\\\Type\\\\Type and PHPStan\\\\Type\\\\UnionType will always evaluate to false\\.$#"
 			count: 2
 			path: src/Type/Generic/TemplateUnionType.php
@@ -929,6 +1109,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone and deprecated\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
 			count: 3
+			path: src/Type/IntegerRangeType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
 			path: src/Type/IntegerRangeType.php
 
 		-
@@ -950,6 +1135,16 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone and deprecated\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/IntersectionType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/IntersectionType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 2
+			path: src/Type/IterableType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
@@ -1247,6 +1442,11 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
+			path: src/Type/TypeCombinator.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 8
 			path: src/Type/TypeCombinator.php
@@ -1268,6 +1468,11 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
+			count: 5
+			path: src/Type/TypeUtils.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 5
 			path: src/Type/TypeUtils.php
 
@@ -1299,6 +1504,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) and Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
 			count: 1
+			path: src/Type/UnionType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 2
 			path: src/Type/UnionType.php
 
 		-

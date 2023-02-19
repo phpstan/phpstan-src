@@ -129,7 +129,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./tmp
-          key: "result-cache-v4-${{ matrix.php-version }}"
+          key: "result-cache-v6-${{ matrix.php-version }}"
 
       - name: "PHPStan with result cache"
         run: |

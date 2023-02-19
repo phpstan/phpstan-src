@@ -116,6 +116,9 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			if ($valueType === null) {
 				return null;
 			}
+			if ($valueType instanceof NeverType) {
+				continue;
+			}
 
 			if ($indexType !== null) {
 				$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, false);

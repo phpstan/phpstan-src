@@ -556,10 +556,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
 				13,
+				'Type string of parameter #1 $foo of passed callable needs to same or wider than parameter type string|null of accepting callable.',
 			],
 			[
 				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
 				22,
+				'Type string of parameter #1 $foo of passed callable needs to same or wider than parameter type string|null of accepting callable.',
 			],
 		]);
 	}
@@ -574,10 +576,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
 				11,
+				'Type string of parameter #1 $foo of passed callable needs to same or wider than parameter type string|null of accepting callable.',
 			],
 			[
 				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
 				18,
+				'Type string of parameter #1 $foo of passed callable needs to same or wider than parameter type string|null of accepting callable.',
 			],
 		]);
 	}
@@ -596,6 +600,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(int, string, int): \'\' given.',
 				23,
+				'Parameter #3 $extra of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
 			],
 		]);
 	}
@@ -614,6 +619,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(int, string, int): \'\' given.',
 				19,
+				'Parameter #3 $extra of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
 			],
 		]);
 	}
@@ -870,6 +876,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			$errors[] = [
 				'Parameter #2 $callback of function array_filter expects callable(mixed): mixed, Closure(int): true given.',
 				20,
+				'Type int of parameter #1 $i of passed callable needs to same or wider than parameter type mixed of accepting callable.',
 			];
 		}
 		$this->analyse([__DIR__ . '/data/array_filter_callback.php'], $errors);

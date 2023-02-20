@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use function sprintf;
 
 class CallableTypeHelper
 {
@@ -12,26 +13,48 @@ class CallableTypeHelper
 		ParametersAcceptor $ours,
 		ParametersAcceptor $theirs,
 		bool $treatMixedAsAny,
-	): TrinaryLogic
+	): AcceptsResult
 	{
 		$theirParameters = $theirs->getParameters();
 		$ourParameters = $ours->getParameters();
 
 		$result = null;
 		foreach ($theirParameters as $i => $theirParameter) {
+			$parameterDescription = $theirParameter->getName() === '' ? sprintf('#%d', $i + 1) : sprintf('#%d $%s', $i + 1, $theirParameter->getName());
 			if (!isset($ourParameters[$i])) {
 				if ($theirParameter->isOptional()) {
 					continue;
 				}
 
-				return TrinaryLogic::createNo();
+				$accepts = new AcceptsResult(TrinaryLogic::createNo(), [
+					sprintf(
+						'Parameter %s of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
+						$parameterDescription,
+					),
+				]);
+				if ($result === null) {
+					$result = $accepts;
+				} else {
+					$result = $result->and($accepts);
+				}
+				continue;
 			}
 
 			$ourParameter = $ourParameters[$i];
 			$ourParameterType = $ourParameter->getType();
 
 			if ($ourParameter->isOptional() && !$theirParameter->isOptional()) {
-				return TrinaryLogic::createNo();
+				$accepts = new AcceptsResult(TrinaryLogic::createNo(), [
+					sprintf(
+						'Parameter %s of passed callable is required but the parameter of accepting callable is optional. It might be called without it.',
+						$parameterDescription,
+					),
+				]);
+				if ($result === null) {
+					$result = $accepts;
+				} else {
+					$result = $result->and($accepts);
+				}
 			}
 
 			if ($treatMixedAsAny) {
@@ -39,6 +62,21 @@ class CallableTypeHelper
 			} else {
 				$isSuperType = $theirParameter->getType()->isSuperTypeOf($ourParameterType);
 			}
+
+			if ($isSuperType->maybe()) {
+				$verbosity = VerbosityLevel::getRecommendedLevelByType($theirParameter->getType(), $ourParameterType);
+				$isSuperType = new AcceptsResult($isSuperType, [
+					sprintf(
+						'Type %s of parameter %s of passed callable needs to same or wider than parameter type %s of accepting callable.',
+						$theirParameter->getType()->describe($verbosity),
+						$parameterDescription,
+						$ourParameterType->describe($verbosity),
+					),
+				]);
+			} else {
+				$isSuperType = new AcceptsResult($isSuperType, []);
+			}
+
 			if ($result === null) {
 				$result = $isSuperType;
 			} else {
@@ -52,6 +90,8 @@ class CallableTypeHelper
 		} else {
 			$isReturnTypeSuperType = $ours->getReturnType()->isSuperTypeOf($theirReturnType);
 		}
+
+		$isReturnTypeSuperType = new AcceptsResult($isReturnTypeSuperType, []);
 		if ($result === null) {
 			$result = $isReturnTypeSuperType;
 		} else {

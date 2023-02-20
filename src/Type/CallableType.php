@@ -101,7 +101,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($this->isSuperTypeOfInternal($type, true), []);
+		return $this->isSuperTypeOfInternal($type, true);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -110,12 +110,12 @@ class CallableType implements CompoundType, ParametersAcceptor
 			return $type->isSubTypeOf($this);
 		}
 
-		return $this->isSuperTypeOfInternal($type, false);
+		return $this->isSuperTypeOfInternal($type, false)->result;
 	}
 
-	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny): TrinaryLogic
+	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny): AcceptsResult
 	{
-		$isCallable = $type->isCallable();
+		$isCallable = new AcceptsResult($type->isCallable(), []);
 		if ($isCallable->no() || $this->isCommonCallable) {
 			return $isCallable;
 		}

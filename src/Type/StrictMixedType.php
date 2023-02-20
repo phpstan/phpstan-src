@@ -108,6 +108,11 @@ class StrictMixedType implements CompoundType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isEnum(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

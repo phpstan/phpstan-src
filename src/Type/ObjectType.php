@@ -635,6 +635,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isEnum(): TrinaryLogic
+	{
+		$classReflection = $this->getClassReflection();
+		if ($classReflection === null) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		return TrinaryLogic::createFromBoolean($classReflection->isEnum());
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

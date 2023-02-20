@@ -30,6 +30,11 @@ trait MaybeObjectTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isEnum(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

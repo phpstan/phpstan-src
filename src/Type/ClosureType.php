@@ -181,6 +181,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return $this->objectType->isObject();
 	}
 
+	public function isEnum(): TrinaryLogic
+	{
+		return $this->objectType->isEnum();
+	}
+
 	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type
 	{
 		return $this->objectType->getTemplateType($ancestorClassName, $templateTypeName);

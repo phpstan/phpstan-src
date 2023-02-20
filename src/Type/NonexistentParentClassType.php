@@ -50,6 +50,11 @@ class NonexistentParentClassType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function isEnum(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

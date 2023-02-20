@@ -43,6 +43,8 @@ interface Type
 
 	public function isObject(): TrinaryLogic;
 
+	public function isEnum(): TrinaryLogic;
+
 	/** @return list<ArrayType> */
 	public function getArrays(): array;
 

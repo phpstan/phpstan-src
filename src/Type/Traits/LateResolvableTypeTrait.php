@@ -87,6 +87,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isObject();
 	}
 
+	public function isEnum(): TrinaryLogic
+	{
+		return $this->resolve()->isEnum();
+	}
+
 	public function canAccessProperties(): TrinaryLogic
 	{
 		return $this->resolve()->canAccessProperties();

@@ -12,6 +12,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\ConstantType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
@@ -157,7 +158,7 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 	{
 		$resultType = null;
 		foreach ($types as $type) {
-			if (!$type->isConstantValue()->yes()) {
+			if (!$type instanceof ConstantType) {
 				return TypeCombinator::union(...$types);
 			}
 

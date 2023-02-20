@@ -113,6 +113,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return [$this];
 	}
 
+	public function isConstantValue(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	/** @deprecated Use isIterableAtLeastOnce()->no() instead */
 	public function isEmpty(): bool
 	{

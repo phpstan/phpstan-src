@@ -100,4 +100,9 @@ trait ConstantScalarTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isConstantValue(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 }

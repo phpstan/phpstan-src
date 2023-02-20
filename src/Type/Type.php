@@ -187,6 +187,11 @@ interface Type
 
 	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic;
 
+	/**
+	 * Is Type of a known constant value? Includes literal strings, integers, floats, true, false, null, and array shapes.
+	 */
+	public function isConstantValue(): TrinaryLogic;
+
 	public function isNull(): TrinaryLogic;
 
 	public function isTrue(): TrinaryLogic;

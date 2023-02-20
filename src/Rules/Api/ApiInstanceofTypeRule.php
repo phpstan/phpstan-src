@@ -27,6 +27,7 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -71,6 +72,7 @@ class ApiInstanceofTypeRule implements Rule
 		GenericClassStringType::class => 'Type::isClassStringType() and Type::getClassStringObjectType()',
 		GenericObjectType::class => null,
 		IntersectionType::class => null,
+		ConstantType::class => 'Type::isConstantValue() or Type::generalize()',
 
 		// accessory types
 		NonEmptyArrayType::class => 'Type::isIterableAtLeastOnce()',

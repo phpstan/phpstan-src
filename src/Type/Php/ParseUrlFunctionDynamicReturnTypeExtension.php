@@ -11,7 +11,6 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ConstantType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\NullType;
@@ -59,14 +58,14 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		if (count($functionCall->getArgs()) > 1) {
 			$componentType = $scope->getType($functionCall->getArgs()[1]->value);
 
-			if (!$componentType instanceof ConstantType) {
+			if (!$componentType->isConstantValue()->yes()) {
 				return $this->createAllComponentsReturnType();
 			}
 
 			$componentType = $componentType->toInteger();
 
 			if (!$componentType instanceof ConstantIntegerType) {
-				throw new ShouldNotHappenException();
+				return $this->createAllComponentsReturnType();
 			}
 		} else {
 			$componentType = new ConstantIntegerType(-1);

@@ -357,6 +357,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isNull();
 	}
 
+	public function isConstantValue(): TrinaryLogic
+	{
+		return $this->resolve()->isConstantValue();
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return $this->resolve()->isTrue();

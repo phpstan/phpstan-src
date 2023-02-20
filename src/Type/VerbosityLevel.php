@@ -86,7 +86,7 @@ class VerbosityLevel
 				$moreVerbose = true;
 				return $type;
 			}
-			if ($type instanceof ConstantType && !$type instanceof NullType) {
+			if ($type->isConstantValue()->yes() && $type->isNull()->no()) {
 				$moreVerbose = true;
 				return $type;
 			}

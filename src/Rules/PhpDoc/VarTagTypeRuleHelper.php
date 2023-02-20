@@ -9,7 +9,6 @@ use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ConstantType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -108,7 +107,7 @@ class VarTagTypeRuleHelper
 
 	private function checkType(Type $type, Type $varTagType): bool
 	{
-		if ($type instanceof ConstantType) {
+		if ($type->isConstantValue()->yes()) {
 			return $type->isSuperTypeOf($varTagType)->no();
 		}
 

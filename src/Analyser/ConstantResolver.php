@@ -10,7 +10,6 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ConstantType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
@@ -293,7 +292,7 @@ class ConstantResolver
 
 	public function resolveConstantType(string $constantName, Type $constantType): Type
 	{
-		if ($constantType instanceof ConstantType && in_array($constantName, $this->dynamicConstantNames, true)) {
+		if ($constantType->isConstantValue()->yes() && in_array($constantName, $this->dynamicConstantNames, true)) {
 			return $constantType->generalize(GeneralizePrecision::lessSpecific());
 		}
 

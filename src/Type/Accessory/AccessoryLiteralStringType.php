@@ -200,6 +200,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isConstantValue(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

@@ -110,6 +110,7 @@ class TypeUtils
 	}
 
 	/**
+	 * @deprecated Use Type::isConstantValue() or Type::generalize()
 	 * @return ConstantType[]
 	 */
 	public static function getConstantTypes(Type $type): array
@@ -118,6 +119,7 @@ class TypeUtils
 	}
 
 	/**
+	 * @deprecated Use Type::isConstantValue() or Type::generalize()
 	 * @return ConstantType[]
 	 */
 	public static function getAnyConstantTypes(Type $type): array

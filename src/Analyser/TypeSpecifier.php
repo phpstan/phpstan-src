@@ -39,7 +39,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\ConstantType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -230,7 +229,7 @@ class TypeSpecifier
 			if (
 				$exprLeftType instanceof ConstantScalarType
 				|| count($exprLeftType->getEnumCases()) === 1
-				|| ($exprLeftType instanceof ConstantType && !$exprRightType->equals($exprLeftType) && $exprRightType->isSuperTypeOf($exprLeftType)->yes())
+				|| ($exprLeftType->isConstantValue()->yes() && !$exprRightType->equals($exprLeftType) && $exprRightType->isSuperTypeOf($exprLeftType)->yes())
 			) {
 				$types = $this->create(
 					$expr->right,
@@ -244,7 +243,7 @@ class TypeSpecifier
 			if (
 				$exprRightType instanceof ConstantScalarType
 				|| count($exprRightType->getEnumCases()) === 1
-				|| ($exprRightType instanceof ConstantType && !$exprLeftType->equals($exprRightType) && $exprLeftType->isSuperTypeOf($exprRightType)->yes())
+				|| ($exprRightType->isConstantValue()->yes() && !$exprLeftType->equals($exprRightType) && $exprLeftType->isSuperTypeOf($exprRightType)->yes())
 			) {
 				$leftType = $this->create(
 					$expr->left,

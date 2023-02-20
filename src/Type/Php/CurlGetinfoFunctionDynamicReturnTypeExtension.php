@@ -13,7 +13,6 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ConstantType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
@@ -51,7 +50,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 		}
 
 		$componentType = $scope->getType($functionCall->getArgs()[1]->value);
-		if ($componentType instanceof ConstantType === false || $componentType->equals(new NullType())) {
+		if (!$componentType->isNull()->no()) {
 			return $this->createAllComponentsReturnType();
 		}
 

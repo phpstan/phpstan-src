@@ -147,6 +147,11 @@ class FloatType implements Type
 		return TrinaryLogic::createNo();
 	}
 
+	public function isConstantValue(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

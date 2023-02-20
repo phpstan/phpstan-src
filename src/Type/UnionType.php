@@ -17,7 +17,6 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
@@ -288,8 +287,8 @@ class UnionType implements CompoundType
 			function () use ($joinTypes): string {
 				$types = TypeCombinator::union(...array_map(static function (Type $type): Type {
 					if (
-						$type instanceof ConstantType
-						&& !$type instanceof ConstantBooleanType
+						$type->isConstantValue()->yes()
+						&& $type->isTrue()->or($type->isFalse())->no()
 					) {
 						return $type->generalize(GeneralizePrecision::lessSpecific());
 					}
@@ -722,6 +721,11 @@ class UnionType implements CompoundType
 	public function isNull(): TrinaryLogic
 	{
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isNull());
+	}
+
+	public function isConstantValue(): TrinaryLogic
+	{
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isConstantValue());
 	}
 
 	public function isTrue(): TrinaryLogic

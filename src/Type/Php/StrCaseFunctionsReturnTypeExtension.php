@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -61,7 +60,7 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		$argType = $scope->getType($args[0]->value);
 		if (!is_callable($fnName)) {
-			throw new ShouldNotHappenException();
+			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
 		$modes = [];

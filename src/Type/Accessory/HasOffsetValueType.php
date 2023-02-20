@@ -146,7 +146,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		if ($offsetType instanceof ConstantScalarType && $offsetType->equals($this->offsetType)) {
+		if ($offsetType->isConstantScalarValue()->yes() && $offsetType->equals($this->offsetType)) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -155,7 +155,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		if ($offsetType instanceof ConstantScalarType && $offsetType->equals($this->offsetType)) {
+		if ($offsetType->isConstantScalarValue()->yes() && $offsetType->equals($this->offsetType)) {
 			return $this->valueType;
 		}
 
@@ -260,6 +260,21 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	public function isConstantValue(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function isConstantScalarValue(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function getConstantScalarTypes(): array
+	{
+		return [];
+	}
+
+	public function getConstantScalarValues(): array
+	{
+		return [];
 	}
 
 	public function isTrue(): TrinaryLogic

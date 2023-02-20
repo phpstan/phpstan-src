@@ -284,7 +284,22 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function isConstantValue(): TrinaryLogic
 	{
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isConstantScalarValue(): TrinaryLogic
+	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getConstantScalarTypes(): array
+	{
+		return [];
+	}
+
+	public function getConstantScalarValues(): array
+	{
+		return [];
 	}
 
 	public function isTrue(): TrinaryLogic

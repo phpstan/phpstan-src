@@ -764,6 +764,35 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isConstantValue());
 	}
 
+	public function isConstantScalarValue(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isConstantScalarValue());
+	}
+
+	public function getConstantScalarTypes(): array
+	{
+		$scalarTypes = [];
+		foreach ($this->types as $type) {
+			foreach ($type->getConstantScalarTypes() as $scalarType) {
+				$scalarTypes[] = $scalarType;
+			}
+		}
+
+		return $scalarTypes;
+	}
+
+	public function getConstantScalarValues(): array
+	{
+		$values = [];
+		foreach ($this->types as $type) {
+			foreach ($type->getConstantScalarValues() as $value) {
+				$values[] = $value;
+			}
+		}
+
+		return $values;
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isTrue());

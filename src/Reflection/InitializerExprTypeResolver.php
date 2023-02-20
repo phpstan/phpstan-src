@@ -542,8 +542,8 @@ class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = TypeUtils::getConstantScalars($leftType);
-		$rightTypes = TypeUtils::getConstantScalars($rightType);
+		$leftTypes = $leftType->getConstantScalarTypes();
+		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -609,8 +609,8 @@ class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = TypeUtils::getConstantScalars($leftType);
-		$rightTypes = TypeUtils::getConstantScalars($rightType);
+		$leftTypes = $leftType->getConstantScalarTypes();
+		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -666,8 +666,8 @@ class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = TypeUtils::getConstantScalars($leftType);
-		$rightTypes = TypeUtils::getConstantScalars($rightType);
+		$leftTypes = $leftType->getConstantScalarTypes();
+		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -723,8 +723,8 @@ class InitializerExprTypeResolver
 			return $this->getNeverType($callbackLeftType, $callbackRightType);
 		}
 
-		$leftTypes = TypeUtils::getConstantScalars($callbackLeftType);
-		$rightTypes = TypeUtils::getConstantScalars($callbackRightType);
+		$leftTypes = $callbackLeftType->getConstantScalarTypes();
+		$rightTypes = $callbackRightType->getConstantScalarTypes();
 
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
@@ -756,8 +756,8 @@ class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		$leftTypes = TypeUtils::getConstantScalars($leftType);
-		$rightTypes = TypeUtils::getConstantScalars($rightType);
+		$leftTypes = $leftType->getConstantScalarTypes();
+		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -790,13 +790,9 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		$rightScalarTypes = TypeUtils::getConstantScalars($rightType->toNumber());
-		foreach ($rightScalarTypes as $scalarType) {
-
-			if (
-				$scalarType->getValue() === 0
-				|| $scalarType->getValue() === 0.0
-			) {
+		$rightScalarValues = $rightType->toNumber()->getConstantScalarValues();
+		foreach ($rightScalarValues as $scalarValue) {
+			if ($scalarValue === 0 || $scalarValue === 0.0) {
 				return new ErrorType();
 			}
 		}
@@ -816,8 +812,8 @@ class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = TypeUtils::getConstantScalars($leftType);
-		$rightTypes = TypeUtils::getConstantScalars($rightType);
+		$leftTypes = $leftType->getConstantScalarTypes();
+		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -856,13 +852,10 @@ class InitializerExprTypeResolver
 			return new ConstantIntegerType(0);
 		}
 
-		$rightScalarTypes = TypeUtils::getConstantScalars($rightType->toNumber());
-		foreach ($rightScalarTypes as $scalarType) {
+		$rightScalarValues = $rightType->toNumber()->getConstantScalarValues();
+		foreach ($rightScalarValues as $scalarValue) {
 
-			if (
-				$scalarType->getValue() === 0
-				|| $scalarType->getValue() === 0.0
-			) {
+			if ($scalarValue === 0 || $scalarValue === 0.0) {
 				return new ErrorType();
 			}
 		}
@@ -917,8 +910,8 @@ class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = TypeUtils::getConstantScalars($leftType);
-		$rightTypes = TypeUtils::getConstantScalars($rightType);
+		$leftTypes = $leftType->getConstantScalarTypes();
+		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -1071,8 +1064,8 @@ class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		$leftTypes = TypeUtils::getConstantScalars($leftType);
-		$rightTypes = TypeUtils::getConstantScalars($rightType);
+		$leftTypes = $leftType->getConstantScalarTypes();
+		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -1113,8 +1106,8 @@ class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		$leftTypes = TypeUtils::getConstantScalars($leftType);
-		$rightTypes = TypeUtils::getConstantScalars($rightType);
+		$leftTypes = $leftType->getConstantScalarTypes();
+		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -1196,8 +1189,8 @@ class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = TypeUtils::getConstantScalars($leftType);
-		$rightTypes = TypeUtils::getConstantScalars($rightType);
+		$leftTypes = $leftType->getConstantScalarTypes();
+		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -1253,8 +1246,8 @@ class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = TypeUtils::getConstantScalars($leftType);
-		$rightTypes = TypeUtils::getConstantScalars($rightType);
+		$leftTypes = $leftType->getConstantScalarTypes();
+		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -1923,20 +1916,20 @@ class InitializerExprTypeResolver
 	public function getUnaryMinusType(Expr $expr, callable $getTypeCallback): Type
 	{
 		$type = $getTypeCallback($expr)->toNumber();
-		$scalarValues = TypeUtils::getConstantScalars($type);
+		$scalarValues = $type->getConstantScalarValues();
 
 		if (count($scalarValues) > 0) {
 			$newTypes = [];
 			foreach ($scalarValues as $scalarValue) {
-				if ($scalarValue instanceof ConstantIntegerType) {
+				if (is_int($scalarValue)) {
 					/** @var int|float $newValue */
-					$newValue = -$scalarValue->getValue();
+					$newValue = -$scalarValue;
 					if (!is_int($newValue)) {
 						return $type;
 					}
 					$newTypes[] = new ConstantIntegerType($newValue);
-				} elseif ($scalarValue instanceof ConstantFloatType) {
-					$newTypes[] = new ConstantFloatType(-$scalarValue->getValue());
+				} elseif (is_float($scalarValue)) {
+					$newTypes[] = new ConstantFloatType(-$scalarValue);
 				}
 			}
 

@@ -179,6 +179,7 @@ class TypeUtils
 	}
 
 	/**
+	 * @deprecated Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues()
 	 * @return ConstantScalarType[]
 	 */
 	public static function getConstantScalars(Type $type): array

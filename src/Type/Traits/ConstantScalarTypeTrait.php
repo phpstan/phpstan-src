@@ -105,4 +105,19 @@ trait ConstantScalarTypeTrait
 		return TrinaryLogic::createYes();
 	}
 
+	public function isConstantScalarValue(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
+	public function getConstantScalarTypes(): array
+	{
+		return [$this];
+	}
+
+	public function getConstantScalarValues(): array
+	{
+		return [$this->getValue()];
+	}
+
 }

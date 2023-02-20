@@ -31,7 +31,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
@@ -400,9 +399,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		if ($this->isIterableAtLeastOnce()->no() && $type instanceof ConstantScalarType) {
+		if ($this->isIterableAtLeastOnce()->no() && count($type->getConstantScalarValues()) === 1) {
 			// @phpstan-ignore-next-line
-			return new ConstantBooleanType($type->getValue() == []); // phpcs:ignore
+			return new ConstantBooleanType($type->getConstantScalarValues()[0] == []); // phpcs:ignore
 		}
 
 		return new BooleanType();
@@ -668,7 +667,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
-		$constantScalars = TypeUtils::getConstantScalars($offsetType);
+		$constantScalars = $offsetType->getConstantScalarTypes();
 		if (count($constantScalars) > 0) {
 			$optionalKeys = $this->optionalKeys;
 

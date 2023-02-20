@@ -192,6 +192,21 @@ interface Type
 	 */
 	public function isConstantValue(): TrinaryLogic;
 
+	/**
+	 * Is Type of a known constant scalar value? Includes literal strings, integers, floats, true, false, and null.
+	 */
+	public function isConstantScalarValue(): TrinaryLogic;
+
+	/**
+	 * @return list<ConstantScalarType>
+	 */
+	public function getConstantScalarTypes(): array;
+
+	/**
+	 * @return list<int|float|string|bool|null>
+	 */
+	public function getConstantScalarValues(): array;
+
 	public function isNull(): TrinaryLogic;
 
 	public function isTrue(): TrinaryLogic;

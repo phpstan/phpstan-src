@@ -99,8 +99,8 @@ class ImpossibleCheckTypeHelper
 					$needleArg = $node->getArgs()[0]->value;
 					$needleType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($needleArg) : $scope->getNativeType($needleArg));
 					$valueType = $haystackType->getIterableValueType();
-					$constantNeedleTypesCount = count(TypeUtils::getConstantScalars($needleType));
-					$constantHaystackTypesCount = count(TypeUtils::getConstantScalars($valueType));
+					$constantNeedleTypesCount = count($needleType->getConstantScalarValues());
+					$constantHaystackTypesCount = count($valueType->getConstantScalarValues());
 					$isNeedleSupertype = $needleType->isSuperTypeOf($valueType);
 					if ($haystackType->isConstantArray()->no()) {
 						if ($haystackType->isIterableAtLeastOnce()->yes()) {
@@ -130,14 +130,14 @@ class ImpossibleCheckTypeHelper
 											continue;
 										}
 
-										foreach (TypeUtils::getConstantScalars($haystackArrayValueType) as $constantScalarType) {
+										foreach ($haystackArrayValueType->getConstantScalarTypes() as $constantScalarType) {
 											if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
 												continue 3;
 											}
 										}
 									}
 								} else {
-									foreach (TypeUtils::getConstantScalars($haystackArrayType->getIterableValueType()) as $constantScalarType) {
+									foreach ($haystackArrayType->getIterableValueType()->getConstantScalarTypes() as $constantScalarType) {
 										if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
 											continue 2;
 										}

@@ -728,6 +728,21 @@ class UnionType implements CompoundType
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isConstantValue());
 	}
 
+	public function isConstantScalarValue(): TrinaryLogic
+	{
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isConstantScalarValue());
+	}
+
+	public function getConstantScalarTypes(): array
+	{
+		return $this->pickFromTypes(static fn (Type $type) => $type->getConstantScalarTypes());
+	}
+
+	public function getConstantScalarValues(): array
+	{
+		return $this->pickFromTypes(static fn (Type $type) => $type->getConstantScalarValues());
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isTrue());

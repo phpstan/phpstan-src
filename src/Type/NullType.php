@@ -208,6 +208,21 @@ class NullType implements ConstantScalarType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isConstantScalarValue(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
+	public function getConstantScalarTypes(): array
+	{
+		return [$this];
+	}
+
+	public function getConstantScalarValues(): array
+	{
+		return [$this->getValue()];
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

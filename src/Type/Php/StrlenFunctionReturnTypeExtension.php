@@ -16,7 +16,6 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 use function strlen;
 
@@ -42,13 +41,13 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		$argType = $scope->getType($args[0]->value);
 
 		if ($argType->isSuperTypeOf(new BooleanType())->yes()) {
-			$constantScalars = TypeUtils::getConstantScalars(TypeCombinator::remove($argType, new BooleanType()));
+			$constantScalars = TypeCombinator::remove($argType, new BooleanType())->getConstantScalarTypes();
 			if (count($constantScalars) > 0) {
 				$constantScalars[] = new ConstantBooleanType(true);
 				$constantScalars[] = new ConstantBooleanType(false);
 			}
 		} else {
-			$constantScalars = TypeUtils::getConstantScalars($argType);
+			$constantScalars = $argType->getConstantScalarTypes();
 		}
 
 		$min = null;

@@ -62,6 +62,11 @@ parameters:
 			path: src/Analyser/NodeScopeResolver.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 2
+			path: src/Analyser/TypeSpecifier.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 5
 			path: src/Analyser/TypeSpecifier.php
@@ -381,6 +386,11 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 22
+			path: src/Reflection/InitializerExprTypeResolver.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 4
 			path: src/Reflection/InitializerExprTypeResolver.php
@@ -419,6 +429,11 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Api/NodeConnectingVisitorAttributesRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/Arrays/DuplicateKeysInLiteralArraysRule.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
@@ -689,6 +704,11 @@ parameters:
 			path: src/Type/Accessory/HasOffsetType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 2
+			path: src/Type/Accessory/HasOffsetValueType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Accessory/HasOffsetValueType.php
@@ -764,6 +784,11 @@ parameters:
 			path: src/Type/Constant/ConstantArrayType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 2
+			path: src/Type/Constant/ConstantArrayType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 8
 			path: src/Type/Constant/ConstantArrayType.php
@@ -804,14 +829,29 @@ parameters:
 			path: src/Type/Constant/ConstantBooleanType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 4
+			path: src/Type/Constant/ConstantBooleanType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/Constant/ConstantBooleanType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 4
+			path: src/Type/Constant/ConstantFloatType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\FloatType is error\\-prone and deprecated\\. Use Type\\:\\:isFloat\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantFloatType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 4
+			path: src/Type/Constant/ConstantIntegerType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone and deprecated\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
@@ -821,6 +861,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) instead\\.$#"
 			count: 1
+			path: src/Type/Constant/ConstantStringType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 4
 			path: src/Type/Constant/ConstantStringType.php
 
 		-
@@ -852,6 +897,11 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Enum\\\\EnumCaseObjectType is error\\-prone and deprecated\\. Use Type\\:\\:getEnumCases\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Enum/EnumCaseObjectType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 2
+			path: src/Type/ExponentiateHelper.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericObjectType is error\\-prone and deprecated\\.$#"
@@ -1059,6 +1109,11 @@ parameters:
 			path: src/Type/Generic/TemplateUnionType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/IntegerRangeType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntegerType is error\\-prone and deprecated\\. Use Type\\:\\:isInteger\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/IntegerRangeType.php
@@ -1102,6 +1157,11 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/IterableType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 3
+			path: src/Type/NullType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone and deprecated\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
@@ -1185,6 +1245,11 @@ parameters:
 			path: src/Type/Php/ArraySearchFunctionDynamicReturnTypeExtension.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 16
+			path: src/Type/Php/BcMathStringOrNullReturnTypeExtension.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/ClassExistsFunctionTypeSpecifyingExtension.php
@@ -1215,6 +1280,11 @@ parameters:
 			path: src/Type/Php/DsMapDynamicReturnTypeExtension.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 2
+			path: src/Type/Php/FilterFunctionReturnTypeHelper.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/FilterFunctionReturnTypeHelper.php
@@ -1223,6 +1293,19 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/FunctionExistsFunctionTypeSpecifyingExtension.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Php/ImplodeFunctionReturnTypeExtension.php
+
+		-
+			message: """
+				#^Call to deprecated method getConstantScalars\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
+				Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\)$#
+			"""
+			count: 2
+			path: src/Type/Php/InArrayFunctionTypeSpecifyingExtension.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
@@ -1239,6 +1322,11 @@ parameters:
 				#^Call to deprecated method getTypeFromValue\\(\\) of class PHPStan\\\\Type\\\\ConstantTypeHelper\\:
 				Use PHPStan\\\\Reflection\\\\InitializerExprTypeResolver$#
 			"""
+			count: 1
+			path: src/Type/Php/JsonThrowOnErrorDynamicReturnTypeExtension.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/JsonThrowOnErrorDynamicReturnTypeExtension.php
 
@@ -1268,9 +1356,19 @@ parameters:
 			path: src/Type/Php/MethodExistsTypeSpecifyingExtension.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 4
+			path: src/Type/Php/MinMaxFunctionReturnTypeExtension.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Php/MinMaxFunctionReturnTypeExtension.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Php/NumberFormatFunctionDynamicReturnTypeExtension.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
@@ -1303,6 +1401,11 @@ parameters:
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Php/SprintfFunctionDynamicReturnTypeExtension.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/SscanfFunctionDynamicReturnTypeExtension.php
@@ -1316,6 +1419,11 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/StrlenFunctionReturnTypeExtension.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/Php/TriggerErrorDynamicReturnTypeExtension.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
@@ -1359,6 +1467,11 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/TypeCombinator.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/TypeCombinator.php
 
@@ -1460,6 +1573,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Accessory\\\\AccessoryType is error\\-prone and deprecated\\. Use methods on PHPStan\\\\Type\\\\Type instead\\.$#"
 			count: 3
+			path: src/Type/UnionTypeHelper.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 4
 			path: src/Type/UnionTypeHelper.php
 
 		-

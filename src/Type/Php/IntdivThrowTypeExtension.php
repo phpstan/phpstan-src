@@ -12,7 +12,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 use const PHP_INT_MIN;
 
@@ -32,7 +31,7 @@ class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 
 		$containsMin = false;
 		$valueType = $scope->getType($funcCall->getArgs()[0]->value);
-		foreach (TypeUtils::getConstantScalars($valueType) as $constantScalarType) {
+		foreach ($valueType->getConstantScalarTypes() as $constantScalarType) {
 			if ($constantScalarType->getValue() === PHP_INT_MIN) {
 				$containsMin = true;
 			}
@@ -46,7 +45,7 @@ class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 
 		$divisionByZero = false;
 		$divisorType = $scope->getType($funcCall->getArgs()[1]->value);
-		foreach (TypeUtils::getConstantScalars($divisorType) as $constantScalarType) {
+		foreach ($divisorType->getConstantScalarTypes() as $constantScalarType) {
 			if ($containsMin && $constantScalarType->getValue() === -1) {
 				return new ObjectType(ArithmeticError::class);
 			}

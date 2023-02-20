@@ -191,7 +191,7 @@ class ConstantArrayTypeBuilder
 
 			$this->isList = false;
 
-			$scalarTypes = TypeUtils::getConstantScalars($offsetType);
+			$scalarTypes = $offsetType->getConstantScalarTypes();
 			if (count($scalarTypes) === 0) {
 				$integerRanges = TypeUtils::getIntegerRanges($offsetType);
 				if (count($integerRanges) > 0) {

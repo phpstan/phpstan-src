@@ -362,6 +362,21 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isConstantValue();
 	}
 
+	public function isConstantScalarValue(): TrinaryLogic
+	{
+		return $this->resolve()->isConstantScalarValue();
+	}
+
+	public function getConstantScalarTypes(): array
+	{
+		return $this->resolve()->getConstantScalarTypes();
+	}
+
+	public function getConstantScalarValues(): array
+	{
+		return $this->resolve()->getConstantScalarValues();
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return $this->resolve()->isTrue();

@@ -22,7 +22,6 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
 use function range;
@@ -49,19 +48,19 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 
 		$constantReturnTypes = [];
 
-		$startConstants = TypeUtils::getConstantScalars($startType);
+		$startConstants = $startType->getConstantScalarTypes();
 		foreach ($startConstants as $startConstant) {
 			if (!$startConstant instanceof ConstantIntegerType && !$startConstant instanceof ConstantFloatType && !$startConstant instanceof ConstantStringType) {
 				continue;
 			}
 
-			$endConstants = TypeUtils::getConstantScalars($endType);
+			$endConstants = $endType->getConstantScalarTypes();
 			foreach ($endConstants as $endConstant) {
 				if (!$endConstant instanceof ConstantIntegerType && !$endConstant instanceof ConstantFloatType && !$endConstant instanceof ConstantStringType) {
 					continue;
 				}
 
-				$stepConstants = TypeUtils::getConstantScalars($stepType);
+				$stepConstants = $stepType->getConstantScalarTypes();
 				foreach ($stepConstants as $stepConstant) {
 					if (!$stepConstant instanceof ConstantIntegerType && !$stepConstant instanceof ConstantFloatType) {
 						continue;

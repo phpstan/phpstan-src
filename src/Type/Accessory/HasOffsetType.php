@@ -9,7 +9,6 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -139,7 +138,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		if ($offsetType instanceof ConstantScalarType && $offsetType->equals($this->offsetType)) {
+		if ($offsetType->isConstantScalarValue()->yes() && $offsetType->equals($this->offsetType)) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -205,6 +204,21 @@ class HasOffsetType implements CompoundType, AccessoryType
 	public function isConstantValue(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function isConstantScalarValue(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function getConstantScalarTypes(): array
+	{
+		return [];
+	}
+
+	public function getConstantScalarValues(): array
+	{
+		return [];
 	}
 
 	public function isTrue(): TrinaryLogic

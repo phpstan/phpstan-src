@@ -1389,13 +1389,12 @@ class MutatingScope implements Scope
 			return $this->getType($node->var);
 		} elseif ($node instanceof Expr\PreInc || $node instanceof Expr\PreDec) {
 			$varType = $this->getType($node->var);
-			$varScalars = TypeUtils::getConstantScalars($varType);
+			$varScalars = $varType->getConstantScalarValues();
 			$stringType = new StringType();
 			if (count($varScalars) > 0) {
 				$newTypes = [];
 
-				foreach ($varScalars as $scalar) {
-					$varValue = $scalar->getValue();
+				foreach ($varScalars as $varValue) {
 					if ($node instanceof Expr\PreInc) {
 						++$varValue;
 					} else {

@@ -13,6 +13,8 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $reportAlwaysTrueInLastCondition = false;
+
 	protected function getRule(): Rule
 	{
 		return new ElseIfConstantConditionRule(
@@ -28,6 +30,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 				true,
 			),
 			$this->treatPhpDocTypesAsCertain,
+			$this->reportAlwaysTrueInLastCondition,
 		);
 	}
 
@@ -36,15 +39,57 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 		return $this->treatPhpDocTypesAsCertain;
 	}
 
-	public function testRule(): void
+	public function dataRule(): iterable
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/elseif-condition.php'], [
+		yield [false, [
+			[
+				'Elseif condition is always true.',
+				56,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				'Elseif condition is always false.',
+				73,
+			],
+			[
+				'Elseif condition is always false.',
+				77,
+			],
+		]];
+
+		yield [true, [
+			[
+				'Elseif condition is always true.',
+				18,
+			],
+			[
+				'Elseif condition is always true.',
+				52,
+			],
 			[
 				'Elseif condition is always true.',
 				56,
 			],
-		]);
+			[
+				'Elseif condition is always false.',
+				73,
+			],
+			[
+				'Elseif condition is always false.',
+				77,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataRule
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testRule(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
+		$this->analyse([__DIR__ . '/data/elseif-condition.php'], $expectedErrors);
 	}
 
 	public function testDoNotReportPhpDoc(): void
@@ -54,6 +99,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 			[
 				'Elseif condition is always true.',
 				46,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -65,11 +111,12 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 			[
 				'Elseif condition is always true.',
 				46,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Elseif condition is always true.',
 				56,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}

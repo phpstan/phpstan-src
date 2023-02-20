@@ -59,3 +59,24 @@ class ConditionalAlwaysTrue
 	}
 
 }
+
+class ConditionalAlwaysFalse
+{
+	/**
+	 * @param int $i
+	 * @param \stdClass $std
+	 */
+	public function doFoo(int $i)
+	{
+		$zero = 0;
+		if ($i) {
+		} elseif ($zero) {
+		}
+
+		if ($i) {
+		} elseif ($zero) {
+		} elseif (rand(0,1)) {
+		}
+	}
+
+}

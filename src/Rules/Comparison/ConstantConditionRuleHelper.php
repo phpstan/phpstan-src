@@ -6,7 +6,6 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Type\BooleanType;
 
 class ConstantConditionRuleHelper
@@ -57,11 +56,6 @@ class ConstantConditionRuleHelper
 			|| $expr instanceof Expr\BinaryOp\SmallerOrEqual
 		) {
 			// already checked by different rules
-			return true;
-		}
-
-		if ($expr->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true) {
-			// always-true should not be reported because last condition
 			return true;
 		}
 

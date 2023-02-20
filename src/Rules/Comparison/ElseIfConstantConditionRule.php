@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -18,6 +19,7 @@ class ElseIfConstantConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $reportAlwaysTrueInLastCondition,
 	)
 	{
 	}
@@ -46,8 +48,10 @@ class ElseIfConstantConditionRule implements Rule
 
 				return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
 			};
-			return [
-				$addTip(RuleErrorBuilder::message(sprintf(
+
+			$isLast = $node->cond->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+			if (!$exprType->getValue() || $isLast !== true || $this->reportAlwaysTrueInLastCondition) {
+				$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 					'Elseif condition is always %s.',
 					$exprType->getValue() ? 'true' : 'false',
 				)))->line($node->cond->getLine())
@@ -56,9 +60,14 @@ class ElseIfConstantConditionRule implements Rule
 						'depth' => $node->getAttribute('statementDepth'),
 						'order' => $node->getAttribute('statementOrder'),
 						'value' => $exprType->getValue(),
-					])
-					->build(),
-			];
+					]);
+
+				if ($exprType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+				}
+
+				return [$errorBuilder->build()];
+			}
 		}
 
 		return [];

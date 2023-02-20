@@ -414,6 +414,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				'Method Bug3117\SimpleTemporal::adjustInto() should return T of Bug3117\Temporal but returns $this(Bug3117\SimpleTemporal).',
 				35,
+				'Type $this(Bug3117\SimpleTemporal) is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
 			],
 		]);
 	}
@@ -779,6 +780,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 				// there should be no errors
 				'Method Bug8071\Inheritance::inherit() should return array<TKey of (int|string), TValues of bool|float|int|string|null> but returns array<string>.',
 				17,
+				'Type string is not always the same as TValues. It breaks the contract for some argument types, typically subtypes.',
 			],
 		]);
 	}

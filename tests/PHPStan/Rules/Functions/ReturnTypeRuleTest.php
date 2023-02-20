@@ -185,4 +185,17 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/return-list-nullables.php'], []);
 	}
 
+	public function testBug6787(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkNullables = true;
+		$this->analyse([__DIR__ . '/data/bug-6787.php'], [
+			[
+				'Function Bug6787\f() should return T of DateTimeInterface but returns DateTime.',
+				11,
+				'Type DateTime is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+		]);
+	}
+
 }

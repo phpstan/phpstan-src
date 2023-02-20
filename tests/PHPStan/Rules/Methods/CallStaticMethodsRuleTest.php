@@ -562,4 +562,17 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6147.php'], []);
 	}
 
+	public function testBug5781(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-5781.php'], [
+			[
+				'Parameter #1 $param of static method Bug5781\Foo::bar() expects array{a: bool, b: bool, c: bool, d: bool, e: bool, f: bool, g: bool, h: bool, ...}, array{} given.',
+				17,
+				"Array does not have offset 'a'.",
+			],
+		]);
+	}
+
 }

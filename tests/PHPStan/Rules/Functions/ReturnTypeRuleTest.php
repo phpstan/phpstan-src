@@ -198,4 +198,30 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6568(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkNullables = true;
+		$this->analyse([__DIR__ . '/data/bug-6568.php'], [
+			[
+				'Function Bug6568\test() should return T of array but returns array<mixed, mixed>.',
+				12,
+				'Type array<mixed, mixed> is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+		]);
+	}
+
+	public function testBug7766(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkNullables = true;
+		$this->analyse([__DIR__ . '/data/bug-7766.php'], [
+			[
+				"Function Bug7766\problem() should return array<array{id: int, created: DateTimeInterface, updated: DateTimeInterface, valid_from: DateTimeInterface, valid_till: DateTimeInterface, string: string, other_string: string, another_string: string, ...}> but returns array{array{id: 1, created: DateTimeImmutable, updated: DateTimeImmutable, valid_from: DateTimeImmutable, valid_till: DateTimeImmutable, string: 'string', other_string: 'string', another_string: 'string', ...}}.",
+				20,
+				"Offset 'count' (int<0, max>) does not accept type '4'.",
+			],
+		]);
+	}
+
 }

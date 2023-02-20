@@ -1240,4 +1240,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5288.php'], []);
 	}
 
+	public function testBug5986(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5986.php'], [
+			[
+				'Parameter #1 $data of function Bug5986\test2 expects array{mov?: int, appliesTo?: string, expireDate?: string|null, effectiveFrom?: int, merchantId?: int, link?: string, channel?: string, voucherExternalId?: int}, array{mov?: int, appliesTo?: string, expireDate?: string|null, effectiveFrom?: string, merchantId?: int, link?: string, channel?: string, voucherExternalId?: int} given.',
+				18,
+				"Offset 'effectiveFrom' (int) does not accept type string.",
+			],
+		]);
+	}
+
 }

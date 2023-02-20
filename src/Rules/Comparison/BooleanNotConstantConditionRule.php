@@ -19,6 +19,7 @@ class BooleanNotConstantConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $reportAlwaysTrueInLastCondition,
 	)
 	{
 	}
@@ -48,12 +49,18 @@ class BooleanNotConstantConditionRule implements Rule
 				return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
 			};
 
-			if ($exprType->getValue() === true || $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) !== true) {
+			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+			if ($exprType->getValue() || $isLast !== true || $this->reportAlwaysTrueInLastCondition) {
+				$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
+					'Negated boolean expression is always %s.',
+					$exprType->getValue() ? 'false' : 'true',
+				)))->line($node->expr->getLine());
+				if (!$exprType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+				}
+
 				return [
-					$addTip(RuleErrorBuilder::message(sprintf(
-						'Negated boolean expression is always %s.',
-						$exprType->getValue() ? 'false' : 'true',
-					)))->line($node->expr->getLine())->build(),
+					$errorBuilder->build(),
 				];
 			}
 		}

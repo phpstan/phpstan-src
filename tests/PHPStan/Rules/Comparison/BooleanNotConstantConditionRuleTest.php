@@ -14,6 +14,8 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $reportAlwaysTrueInLastCondition = false;
+
 	protected function getRule(): Rule
 	{
 		return new BooleanNotConstantConditionRule(
@@ -29,6 +31,7 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 				true,
 			),
 			$this->treatPhpDocTypesAsCertain,
+			$this->reportAlwaysTrueInLastCondition,
 		);
 	}
 
@@ -68,6 +71,7 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 			[
 				'Negated boolean expression is always true.',
 				67,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -146,6 +150,54 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-8797.php'], []);
+	}
+
+	public function dataReportAlwaysTrueInLastCondition(): iterable
+	{
+		yield [false, [
+			[
+				'Negated boolean expression is always true.',
+				23,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				'Negated boolean expression is always false.',
+				40,
+			],
+			[
+				'Negated boolean expression is always false.',
+				50,
+			],
+		]];
+		yield [true, [
+			[
+				'Negated boolean expression is always true.',
+				13,
+			],
+			[
+				'Negated boolean expression is always true.',
+				23,
+			],
+			[
+				'Negated boolean expression is always false.',
+				40,
+			],
+			[
+				'Negated boolean expression is always false.',
+				50,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataReportAlwaysTrueInLastCondition
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
+		$this->analyse([__DIR__ . '/data/boolean-not-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
 }

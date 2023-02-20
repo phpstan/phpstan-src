@@ -62,6 +62,11 @@ class NeverType implements CompoundType
 		return [];
 	}
 
+	public function getObjectClassReflections(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

@@ -48,6 +48,11 @@ class VoidType implements Type
 		return [];
 	}
 
+	public function getObjectClassReflections(): array
+	{
+		return [];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		return $this->acceptsWithReason($type, $strictTypes)->result;

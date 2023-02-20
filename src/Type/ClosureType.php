@@ -100,7 +100,12 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	public function getObjectClassNames(): array
 	{
-		return [$this->objectType->getClassName()];
+		return $this->objectType->getObjectClassNames();
+	}
+
+	public function getObjectClassReflections(): array
+	{
+		return $this->objectType->getObjectClassReflections();
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic

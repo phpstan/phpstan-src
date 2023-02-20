@@ -236,6 +236,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return [$this->className];
 	}
 
+	public function getObjectClassReflections(): array
+	{
+		$classReflection = $this->getClassReflection();
+		if ($classReflection === null) {
+			return [];
+		}
+
+		return [$classReflection];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		return $this->acceptsWithReason($type, $strictTypes)->result;

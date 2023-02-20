@@ -49,6 +49,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function getObjectClassReflections(): array
+	{
+		return [];
+	}
+
 	public function getArrays(): array
 	{
 		return [];

@@ -77,6 +77,11 @@ class ArrayType implements Type
 		return [];
 	}
 
+	public function getObjectClassReflections(): array
+	{
+		return [];
+	}
+
 	public function getArrays(): array
 	{
 		return [$this];

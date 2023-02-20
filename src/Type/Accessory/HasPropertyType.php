@@ -46,6 +46,11 @@ class HasPropertyType implements AccessoryType, CompoundType
 		return [];
 	}
 
+	public function getObjectClassReflections(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

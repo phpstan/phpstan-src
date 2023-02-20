@@ -35,6 +35,11 @@ final class OffsetAccessType implements CompoundType, LateResolvableType
 		return [];
 	}
 
+	public function getObjectClassReflections(): array
+	{
+		return [];
+	}
+
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
 		return array_merge(

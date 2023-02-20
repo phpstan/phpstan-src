@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -29,6 +30,11 @@ interface Type
 
 	/** @return list<string> */
 	public function getObjectClassNames(): array;
+
+	/**
+	 * @return list<ClassReflection>
+	 */
+	public function getObjectClassReflections(): array;
 
 	/**
 	 * Returns object type Foo for class-string<Foo> and 'Foo' (if Foo is a valid class).

@@ -51,7 +51,7 @@ class ApiInstanceofTypeRule implements Rule
 {
 
 	private const MAP = [
-		TypeWithClassName::class => 'Type::getObjectClassNames()',
+		TypeWithClassName::class => 'Type::getObjectClassNames() or Type::getObjectClassReflections()',
 		EnumCaseObjectType::class => 'Type::getEnumCases()',
 		ConstantArrayType::class => 'Type::getConstantArrays()',
 		ArrayType::class => 'Type::isArray() or Type::getArrays()',

@@ -66,6 +66,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function getObjectClassReflections(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

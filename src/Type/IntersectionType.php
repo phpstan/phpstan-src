@@ -122,6 +122,18 @@ class IntersectionType implements CompoundType
 		return array_values(array_unique($objectClassNames));
 	}
 
+	public function getObjectClassReflections(): array
+	{
+		$reflections = [];
+		foreach ($this->types as $type) {
+			foreach ($type->getObjectClassReflections() as $reflection) {
+				$reflections[] = $reflection;
+			}
+		}
+
+		return $reflections;
+	}
+
 	public function getArrays(): array
 	{
 		$arrays = [];

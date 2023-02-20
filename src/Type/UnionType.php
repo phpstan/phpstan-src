@@ -120,6 +120,11 @@ class UnionType implements CompoundType
 		return array_values(array_unique($this->pickFromTypes(static fn (Type $type) => $type->getObjectClassNames())));
 	}
 
+	public function getObjectClassReflections(): array
+	{
+		return $this->pickFromTypes(static fn (Type $type) => $type->getObjectClassReflections());
+	}
+
 	public function getArrays(): array
 	{
 		return $this->pickFromTypes(static fn (Type $type) => $type->getArrays());

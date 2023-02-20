@@ -484,7 +484,7 @@ parameters:
 			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) or Type\\:\\:getObjectClassReflections\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
 
@@ -904,7 +904,7 @@ parameters:
 			path: src/Type/Generic/GenericObjectType.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) or Type\\:\\:getObjectClassReflections\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/GenericObjectType.php
 
@@ -1210,7 +1210,7 @@ parameters:
 			path: src/Type/Php/DefinedConstantTypeSpecifyingExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) or Type\\:\\:getObjectClassReflections\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/DsMapDynamicReturnTypeExtension.php
 
@@ -1423,7 +1423,7 @@ parameters:
 			path: src/Type/TypeUtils.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) or Type\\:\\:getObjectClassReflections\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/TypeUtils.php
 

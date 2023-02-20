@@ -13,10 +13,17 @@ use function sprintf;
 class VarianceCheck
 {
 
+	public function __construct(
+		private bool $checkParamOutVariance,
+	)
+	{
+	}
+
 	/** @return RuleError[] */
 	public function checkParametersAcceptor(
 		ParametersAcceptorWithPhpDocs $parametersAcceptor,
 		string $parameterTypeMessage,
+		string $parameterOutTypeMessage,
 		string $returnTypeMessage,
 		string $generalMessage,
 		bool $isStatic,
@@ -44,20 +51,35 @@ class VarianceCheck
 			return $errors;
 		}
 
+		$covariant = TemplateTypeVariance::createCovariant();
+		$parameterVariance = $isStatic
+			? TemplateTypeVariance::createStatic()
+			: TemplateTypeVariance::createContravariant();
+
 		foreach ($parametersAcceptor->getParameters() as $parameterReflection) {
-			$variance = $isStatic
-				? TemplateTypeVariance::createStatic()
-				: TemplateTypeVariance::createContravariant();
 			$type = $parameterReflection->getType();
 			$message = sprintf($parameterTypeMessage, $parameterReflection->getName());
-			foreach ($this->check($variance, $type, $message) as $error) {
+			foreach ($this->check($parameterVariance, $type, $message) as $error) {
+				$errors[] = $error;
+			}
+
+			if (!$this->checkParamOutVariance) {
+				continue;
+			}
+
+			$paramOutType = $parameterReflection->getOutType();
+			if ($paramOutType === null) {
+				continue;
+			}
+
+			$outMessage = sprintf($parameterOutTypeMessage, $parameterReflection->getName());
+			foreach ($this->check($covariant, $paramOutType, $outMessage) as $error) {
 				$errors[] = $error;
 			}
 		}
 
-		$variance = TemplateTypeVariance::createCovariant();
 		$type = $parametersAcceptor->getReturnType();
-		foreach ($this->check($variance, $type, $returnTypeMessage) as $error) {
+		foreach ($this->check($covariant, $type, $returnTypeMessage) as $error) {
 			$errors[] = $error;
 		}
 

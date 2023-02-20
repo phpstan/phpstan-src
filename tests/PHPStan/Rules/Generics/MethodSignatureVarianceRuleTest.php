@@ -173,6 +173,10 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				'Template type X is declared as contravariant, but occurs in invariant position in return type of method MethodSignatureVariance\Contravariant\C::m().',
 				71,
 			],
+			[
+				'Template type X is declared as contravariant, but occurs in covariant position in param-out type of parameter a of method MethodSignatureVariance\Contravariant\C::paramOut().',
+				79,
+			],
 		]);
 	}
 

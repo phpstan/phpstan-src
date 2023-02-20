@@ -32,6 +32,7 @@ class MethodSignatureVarianceRule implements Rule
 		return $this->varianceCheck->checkParametersAcceptor(
 			ParametersAcceptorSelector::selectSingle($method->getVariants()),
 			sprintf('in parameter %%s of method %s::%s()', SprintfHelper::escapeFormatString($method->getDeclaringClass()->getDisplayName()), SprintfHelper::escapeFormatString($method->getName())),
+			sprintf('in param-out type of parameter %%s of method %s::%s()', SprintfHelper::escapeFormatString($method->getDeclaringClass()->getDisplayName()), SprintfHelper::escapeFormatString($method->getName())),
 			sprintf('in return type of method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
 			sprintf('in method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
 			$method->getName() === '__construct' || $method->isStatic(),

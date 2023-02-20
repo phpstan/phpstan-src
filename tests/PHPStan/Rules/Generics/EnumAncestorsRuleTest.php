@@ -18,7 +18,7 @@ class EnumAncestorsRuleTest extends RuleTestCase
 			new GenericAncestorsCheck(
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
-				new VarianceCheck(),
+				new VarianceCheck(true),
 				true,
 				[],
 			),

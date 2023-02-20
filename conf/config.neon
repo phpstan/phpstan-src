@@ -61,6 +61,7 @@ parameters:
 		closureDefaultParameterTypeRule: false
 		newRuleLevelHelper: false
 		instanceofType: false
+		paramOutVariance: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -289,6 +290,7 @@ parametersSchema:
 		closureDefaultParameterTypeRule: bool()
 		newRuleLevelHelper: bool()
 		instanceofType: bool()
+		paramOutVariance: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -1031,6 +1033,8 @@ services:
 
 	-
 		class: PHPStan\Rules\Generics\VarianceCheck
+		arguments:
+			checkParamOutVariance: %featureToggles.paramOutVariance%
 
 	-
 		class: PHPStan\Rules\IssetCheck

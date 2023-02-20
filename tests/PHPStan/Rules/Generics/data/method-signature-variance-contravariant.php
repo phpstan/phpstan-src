@@ -72,4 +72,12 @@ class C {
 
 	/** @return X */
 	private function n() {}
+
+	/**
+	 * @param-out X $a
+	 */
+	public function paramOut(&$a)
+	{
+
+	}
 }

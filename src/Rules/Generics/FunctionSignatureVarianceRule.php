@@ -33,6 +33,7 @@ class FunctionSignatureVarianceRule implements Rule
 		return $this->varianceCheck->checkParametersAcceptor(
 			ParametersAcceptorSelector::selectSingle($functionReflection->getVariants()),
 			sprintf('in parameter %%s of function %s()', SprintfHelper::escapeFormatString($functionName)),
+			sprintf('in param-out type of parameter %%s of function %s()', SprintfHelper::escapeFormatString($functionName)),
 			sprintf('in return type of function %s()', $functionName),
 			sprintf('in function %s()', $functionName),
 			false,

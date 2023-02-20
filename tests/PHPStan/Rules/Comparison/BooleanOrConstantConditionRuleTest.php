@@ -16,6 +16,8 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 
 	private bool $bleedingEdge = false;
 
+	private bool $reportAlwaysTrueInLastCondition = false;
+
 	protected function getRule(): Rule
 	{
 		return new BooleanOrConstantConditionRule(
@@ -32,6 +34,7 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 			),
 			$this->treatPhpDocTypesAsCertain,
 			$this->bleedingEdge,
+			$this->reportAlwaysTrueInLastCondition,
 		);
 	}
 
@@ -114,10 +117,12 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 			[
 				'Left side of || is always true.',
 				101,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Right side of || is always true.',
 				110,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -364,6 +369,66 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$this->analyse([__DIR__ . '/data/bug-7881.php'], []);
+	}
+
+	public function dataReportAlwaysTrueInLastCondition(): iterable
+	{
+		yield [false, [
+			[
+				'Left side of || is always true.',
+				23,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				'Right side of || is always true.',
+				50,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				'Result of || is always true.',
+				81,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]];
+		yield [true, [
+			[
+				'Left side of || is always true.',
+				13,
+			],
+			[
+				'Left side of || is always true.',
+				23,
+			],
+			[
+				'Right side of || is always true.',
+				40,
+			],
+			[
+				'Right side of || is always true.',
+				50,
+			],
+			[
+				'Result of || is always true.',
+				69,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Result of || is always true.',
+				81,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataReportAlwaysTrueInLastCondition
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
+		$this->analyse([__DIR__ . '/data/boolean-or-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
 }

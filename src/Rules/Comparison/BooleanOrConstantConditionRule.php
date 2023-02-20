@@ -22,6 +22,7 @@ class BooleanOrConstantConditionRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $bleedingEdge,
+		private bool $reportAlwaysTrueInLastCondition,
 	)
 	{
 	}
@@ -55,12 +56,17 @@ class BooleanOrConstantConditionRule implements Rule
 				return $ruleErrorBuilder->tip($tipText);
 			};
 
-			if ($leftType->getValue() === false || $originalNode->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) !== true) {
-				$messages[] = $addTipLeft(RuleErrorBuilder::message(sprintf(
+			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+			if (!$leftType->getValue() || $isLast !== true || $this->reportAlwaysTrueInLastCondition) {
+				$errorBuilder = $addTipLeft(RuleErrorBuilder::message(sprintf(
 					'Left side of %s is always %s.',
 					$nodeText,
 					$leftType->getValue() ? 'true' : 'false',
-				)))->line($originalNode->left->getLine())->build();
+				)))->line($originalNode->left->getLine());
+				if ($leftType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+				}
+				$messages[] = $errorBuilder->build();
 			}
 		}
 
@@ -86,12 +92,17 @@ class BooleanOrConstantConditionRule implements Rule
 				return $ruleErrorBuilder->tip($tipText);
 			};
 
-			if ($rightType->getValue() === false || $originalNode->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) !== true) {
-				$messages[] = $addTipRight(RuleErrorBuilder::message(sprintf(
+			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+			if (!$rightType->getValue() || $isLast !== true || $this->reportAlwaysTrueInLastCondition) {
+				$errorBuilder = $addTipRight(RuleErrorBuilder::message(sprintf(
 					'Right side of %s is always %s.',
 					$nodeText,
 					$rightType->getValue() ? 'true' : 'false',
-				)))->line($originalNode->right->getLine())->build();
+				)))->line($originalNode->right->getLine());
+				if ($rightType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+				}
+				$messages[] = $errorBuilder->build();
 			}
 		}
 
@@ -111,12 +122,18 @@ class BooleanOrConstantConditionRule implements Rule
 					return $ruleErrorBuilder->tip($tipText);
 				};
 
-				if ($nodeType->getValue() === false || $originalNode->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) !== true) {
-					$messages[] = $addTip(RuleErrorBuilder::message(sprintf(
+				$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+				if (!$nodeType->getValue() || $isLast !== true || $this->reportAlwaysTrueInLastCondition) {
+					$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 						'Result of %s is always %s.',
 						$nodeText,
 						$nodeType->getValue() ? 'true' : 'false',
-					)))->build();
+					)));
+					if ($nodeType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+						$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+					}
+
+					$messages[] = $errorBuilder->build();
 				}
 			}
 		}

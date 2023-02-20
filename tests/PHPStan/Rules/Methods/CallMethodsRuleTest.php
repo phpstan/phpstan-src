@@ -1529,7 +1529,7 @@ class CallMethodsRuleTest extends RuleTestCase
 					[
 						'Parameter #1 $cb of method CheckExplicitMixedMethodCall\CallableMixed::doFoo() expects callable(mixed): void, Closure(int): void given.',
 						133,
-						'Type int of parameter #1 $i of passed callable needs to same or wider than parameter type mixed of accepting callable.',
+						'Type int of parameter #1 $i of passed callable needs to be same or wider than parameter type mixed of accepting callable.',
 					],
 					[
 						'Parameter #1 $cb of method CheckExplicitMixedMethodCall\CallableMixed::doBar2() expects callable(): int, Closure(): mixed given.',
@@ -2775,12 +2775,12 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar() expects callable(float|null): float|null, Closure(float): float given.',
 				25,
-				'Type float of parameter #1 $f of passed callable needs to same or wider than parameter type float|null of accepting callable.',
+				'Type float of parameter #1 $f of passed callable needs to be same or wider than parameter type float|null of accepting callable.',
 			],
 			[
 				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz() expects Closure(float|null): float|null, Closure(float): float given.',
 				28,
-				'Type float of parameter #1 $f of passed callable needs to same or wider than parameter type float|null of accepting callable.',
+				'Type float of parameter #1 $f of passed callable needs to be same or wider than parameter type float|null of accepting callable.',
 			],
 			[
 				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar2() expects callable(float|null): float, Closure(float|null): float|null given.',
@@ -2793,12 +2793,12 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar2() expects callable(float|null): float, Closure(float): float given.',
 				45,
-				'Type float of parameter #1 $f of passed callable needs to same or wider than parameter type float|null of accepting callable.',
+				'Type float of parameter #1 $f of passed callable needs to be same or wider than parameter type float|null of accepting callable.',
 			],
 			[
 				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz2() expects Closure(float|null): float, Closure(float): float given.',
 				48,
-				'Type float of parameter #1 $f of passed callable needs to same or wider than parameter type float|null of accepting callable.',
+				'Type float of parameter #1 $f of passed callable needs to be same or wider than parameter type float|null of accepting callable.',
 			],
 		];
 		yield [false, true, $errors];
@@ -2884,7 +2884,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $cb of method TrickyCallables\Foo::doBar() expects callable(string|null): void, callable(string): void given.',
 				13,
-				'Type string of parameter #1 of passed callable needs to same or wider than parameter type string|null of accepting callable.',
+				'Type string of parameter #1 of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 			[
 				'Parameter #1 $cb of method TrickyCallables\Bar::doBar() expects callable(string=): void, callable(string): void given.',
@@ -2900,7 +2900,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $filter of method TrickyCallables\TwoErrorsAtOnce::run() expects callable(int|string=): bool, Closure(int): true given.',
 				83,
 				'• Parameter #1 $key of passed callable is required but the parameter of accepting callable is optional. It might be called without it.
-• Type int of parameter #1 $key of passed callable needs to same or wider than parameter type int|string of accepting callable.',
+• Type int of parameter #1 $key of passed callable needs to be same or wider than parameter type int|string of accepting callable.',
 			],
 		]);
 	}

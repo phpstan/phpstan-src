@@ -68,7 +68,7 @@ class CallableTypeHelper
 				$verbosity = VerbosityLevel::getRecommendedLevelByType($theirParameter->getType(), $ourParameterType);
 				$isSuperType = new AcceptsResult($isSuperType->result, array_merge($isSuperType->reasons, [
 					sprintf(
-						'Type %s of parameter %s of passed callable needs to same or wider than parameter type %s of accepting callable.',
+						'Type %s of parameter %s of passed callable needs to be same or wider than parameter type %s of accepting callable.',
 						$theirParameter->getType()->describe($verbosity),
 						$parameterDescription,
 						$ourParameterType->describe($verbosity),

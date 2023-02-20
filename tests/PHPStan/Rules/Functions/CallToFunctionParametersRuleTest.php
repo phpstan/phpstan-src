@@ -556,12 +556,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
 				13,
-				'Type string of parameter #1 $foo of passed callable needs to same or wider than parameter type string|null of accepting callable.',
+				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 			[
 				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
 				22,
-				'Type string of parameter #1 $foo of passed callable needs to same or wider than parameter type string|null of accepting callable.',
+				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 		]);
 	}
@@ -576,12 +576,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
 				11,
-				'Type string of parameter #1 $foo of passed callable needs to same or wider than parameter type string|null of accepting callable.',
+				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 			[
 				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
 				18,
-				'Type string of parameter #1 $foo of passed callable needs to same or wider than parameter type string|null of accepting callable.',
+				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 		]);
 	}
@@ -876,7 +876,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			$errors[] = [
 				'Parameter #2 $callback of function array_filter expects callable(mixed): mixed, Closure(int): true given.',
 				20,
-				'Type int of parameter #1 $i of passed callable needs to same or wider than parameter type mixed of accepting callable.',
+				'Type int of parameter #1 $i of passed callable needs to be same or wider than parameter type mixed of accepting callable.',
 			];
 		}
 		$this->analyse([__DIR__ . '/data/array_filter_callback.php'], $errors);

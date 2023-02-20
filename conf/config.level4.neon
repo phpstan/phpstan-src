@@ -45,6 +45,7 @@ services:
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			bleedingEdge: %featureToggles.bleedingEdge%
+			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 		tags:
 			- phpstan.rules.rule
 

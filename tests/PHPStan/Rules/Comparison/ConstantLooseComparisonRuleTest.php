@@ -14,9 +14,11 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 
 	private bool $checkAlwaysTrueStrictComparison;
 
+	private bool $reportAlwaysTrueInLastCondition = false;
+
 	protected function getRule(): Rule
 	{
-		return new ConstantLooseComparisonRule($this->checkAlwaysTrueStrictComparison);
+		return new ConstantLooseComparisonRule($this->checkAlwaysTrueStrictComparison, $this->reportAlwaysTrueInLastCondition);
 	}
 
 	public function testRule(): void
@@ -61,6 +63,7 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 			[
 				"Loose comparison using == between 0 and '0' will always evaluate to true.",
 				35,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -94,6 +97,38 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 				43,
 			],
 		]);
+	}
+
+	public function dataReportAlwaysTrueInLastCondition(): iterable
+	{
+		yield [false, [
+			[
+				'Loose comparison using == between 1 and 1 will always evaluate to true.',
+				21,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]];
+		yield [true, [
+			[
+				'Loose comparison using == between 1 and 1 will always evaluate to true.',
+				12,
+			],
+			[
+				'Loose comparison using == between 1 and 1 will always evaluate to true.',
+				21,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataReportAlwaysTrueInLastCondition
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
+		$this->analyse([__DIR__ . '/data/loose-comparison-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
 }

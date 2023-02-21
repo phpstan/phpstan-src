@@ -150,6 +150,7 @@ services:
 		class: PHPStan\Rules\Comparison\ConstantLooseComparisonRule
 		arguments:
 			checkAlwaysTrueLooseComparison: %checkAlwaysTrueLooseComparison%
+			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 
 	-
 		class: PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule

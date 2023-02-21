@@ -17,7 +17,10 @@ use function sprintf;
 class ConstantLooseComparisonRule implements Rule
 {
 
-	public function __construct(private bool $checkAlwaysTrueLooseComparison)
+	public function __construct(
+		private bool $checkAlwaysTrueLooseComparison,
+		private bool $reportAlwaysTrueInLastCondition,
+	)
 	{
 	}
 
@@ -47,18 +50,22 @@ class ConstantLooseComparisonRule implements Rule
 				))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueLooseComparison) {
-			if ($node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true) {
+			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+			if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
 				return [];
 			}
 
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'Loose comparison using %s between %s and %s will always evaluate to true.',
-					$node instanceof Node\Expr\BinaryOp\Equal ? '==' : '!=',
-					$scope->getType($node->left)->describe(VerbosityLevel::value()),
-					$scope->getType($node->right)->describe(VerbosityLevel::value()),
-				))->build(),
-			];
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
+				'Loose comparison using %s between %s and %s will always evaluate to true.',
+				$node instanceof Node\Expr\BinaryOp\Equal ? '==' : '!=',
+				$scope->getType($node->left)->describe(VerbosityLevel::value()),
+				$scope->getType($node->right)->describe(VerbosityLevel::value()),
+			));
+			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+				$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+			}
+
+			return [$errorBuilder->build()];
 		}
 
 		return [];

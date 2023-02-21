@@ -102,6 +102,7 @@ services:
 		arguments:
 			checkAlwaysTrueCheckTypeFunctionCall: %checkAlwaysTrueCheckTypeFunctionCall%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 		tags:
 			- phpstan.rules.rule
 

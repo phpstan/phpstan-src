@@ -17,6 +17,8 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $reportAlwaysTrueInLastCondition = false;
+
 	protected function getRule(): Rule
 	{
 		return new ImpossibleCheckTypeFunctionCallRule(
@@ -29,6 +31,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			),
 			$this->checkAlwaysTrueCheckTypeFunctionCall,
 			$this->treatPhpDocTypesAsCertain,
+			$this->reportAlwaysTrueInLastCondition,
 		);
 	}
 
@@ -247,6 +250,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				[
 					'Call to function is_int() with int will always evaluate to true.',
 					889,
+					'Remove remaining cases below this one and this error will disappear too.',
 				],
 			],
 		);
@@ -747,6 +751,39 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			],
 
 		]);
+	}
+
+	public function dataReportAlwaysTrueInLastCondition(): iterable
+	{
+		yield [false, [
+			[
+				'Call to function is_int() with int will always evaluate to true.',
+				21,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]];
+		yield [true, [
+			[
+				'Call to function is_int() with int will always evaluate to true.',
+				12,
+			],
+			[
+				'Call to function is_int() with int will always evaluate to true.',
+				21,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataReportAlwaysTrueInLastCondition
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
+		$this->analyse([__DIR__ . '/data/impossible-function-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
 }

@@ -20,6 +20,7 @@ class ImpossibleCheckTypeFunctionCallRule implements Rule
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 		private bool $checkAlwaysTrueCheckTypeFunctionCall,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $reportAlwaysTrueInLastCondition,
 	)
 	{
 	}
@@ -66,17 +67,21 @@ class ImpossibleCheckTypeFunctionCallRule implements Rule
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
-			if ($node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true) {
+			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+			if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
 				return [];
 			}
 
-			return [
-				$addTip(RuleErrorBuilder::message(sprintf(
-					'Call to function %s()%s will always evaluate to true.',
-					$functionName,
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
-				)))->build(),
-			];
+			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
+				'Call to function %s()%s will always evaluate to true.',
+				$functionName,
+				$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
+			)));
+			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+				$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+			}
+
+			return [$errorBuilder->build()];
 		}
 
 		return [];

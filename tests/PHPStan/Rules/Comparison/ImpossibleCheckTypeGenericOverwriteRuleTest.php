@@ -23,6 +23,7 @@ class ImpossibleCheckTypeGenericOverwriteRuleTest extends RuleTestCase
 			),
 			true,
 			true,
+			false,
 		);
 	}
 

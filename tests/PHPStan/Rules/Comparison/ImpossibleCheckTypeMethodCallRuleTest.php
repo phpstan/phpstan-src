@@ -13,6 +13,8 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $reportAlwaysTrueInLastCondition = false;
+
 	public function getRule(): Rule
 	{
 		return new ImpossibleCheckTypeMethodCallRule(
@@ -25,6 +27,7 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 			),
 			true,
 			$this->treatPhpDocTypesAsCertain,
+			$this->reportAlwaysTrueInLastCondition,
 		);
 	}
 
@@ -154,6 +157,7 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 			[
 				'Call to method ImpossibleMethodCall\ConditionalAlwaysTrue::isInt() with int will always evaluate to true.',
 				208,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -210,6 +214,38 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 				33,
 			],
 		]);
+	}
+
+	public function dataReportAlwaysTrueInLastCondition(): iterable
+	{
+		yield [false, [
+			[
+				'Call to method PHPStan\Tests\AssertionClass::assertString() with string will always evaluate to true.',
+				25,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]];
+		yield [true, [
+			[
+				'Call to method PHPStan\Tests\AssertionClass::assertString() with string will always evaluate to true.',
+				15,
+			],
+			[
+				'Call to method PHPStan\Tests\AssertionClass::assertString() with string will always evaluate to true.',
+				25,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataReportAlwaysTrueInLastCondition
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
+		$this->analyse([__DIR__ . '/data/impossible-method-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
 	public static function getAdditionalConfigFiles(): array

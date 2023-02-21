@@ -23,6 +23,7 @@ class ImpossibleCheckTypeMethodCallRuleEqualsTest extends RuleTestCase
 			),
 			true,
 			true,
+			false,
 		);
 	}
 
@@ -122,6 +123,7 @@ class ImpossibleCheckTypeMethodCallRuleEqualsTest extends RuleTestCase
 			[
 				'Call to method ImpossibleMethodCall\ConditionalAlwaysTrue::isInt() with int will always evaluate to true.',
 				208,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}

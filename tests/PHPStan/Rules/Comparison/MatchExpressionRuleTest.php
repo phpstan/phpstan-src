@@ -35,6 +35,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 			true,
 			$this->disableUnreachable,
 			$this->reportAlwaysTrueInLastCondition,
+			$this->treatPhpDocTypesAsCertain,
 		);
 	}
 
@@ -439,6 +440,16 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
 		$this->disableUnreachable = $disableUnreachable;
 		$this->analyse([__DIR__ . '/data/match-always-true-last-arm.php'], $expectedErrors);
+	}
+
+	public function testBug8932(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-8932.php'], []);
 	}
 
 }

@@ -16,9 +16,11 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $reportAlwaysTrueInLastCondition = false;
+
 	protected function getRule(): Rule
 	{
-		return new ImpossibleInstanceOfRule($this->checkAlwaysTrueInstanceOf, $this->treatPhpDocTypesAsCertain);
+		return new ImpossibleInstanceOfRule($this->checkAlwaysTrueInstanceOf, $this->treatPhpDocTypesAsCertain, $this->reportAlwaysTrueInLastCondition);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -378,10 +380,12 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between Bug8042\B and Bug8042\B will always evaluate to true.',
 				18,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Instanceof between Bug8042\B and Bug8042\B will always evaluate to true.',
 				26,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -417,6 +421,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between stdClass and stdClass will always evaluate to true.',
 				37,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -433,10 +438,12 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
 				26,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
 				36,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -454,10 +461,12 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
 				26,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
 				36,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
@@ -467,10 +476,12 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
 				52,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
 				62,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -539,6 +550,39 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-4689.php'], []);
+	}
+
+	public function dataReportAlwaysTrueInLastCondition(): iterable
+	{
+		yield [false, [
+			[
+				'Instanceof between Exception and Exception will always evaluate to true.',
+				21,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]];
+		yield [true, [
+			[
+				'Instanceof between Exception and Exception will always evaluate to true.',
+				12,
+			],
+			[
+				'Instanceof between Exception and Exception will always evaluate to true.',
+				21,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataReportAlwaysTrueInLastCondition
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
+	{
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
+		$this->analyse([__DIR__ . '/data/impossible-instanceof-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
 }

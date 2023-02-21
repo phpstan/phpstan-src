@@ -24,6 +24,7 @@ class ImpossibleInstanceOfRule implements Rule
 	public function __construct(
 		private bool $checkAlwaysTrueInstanceof,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $reportAlwaysTrueInLastCondition,
 	)
 	{
 	}
@@ -84,19 +85,22 @@ class ImpossibleInstanceOfRule implements Rule
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueInstanceof) {
-			if ($node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true) {
+			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+			if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
 				return [];
 			}
 
 			$exprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->expr) : $scope->getNativeType($node->expr);
+			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
+				'Instanceof between %s and %s will always evaluate to true.',
+				$exprType->describe(VerbosityLevel::typeOnly()),
+				$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
+			)));
+			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+				$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+			}
 
-			return [
-				$addTip(RuleErrorBuilder::message(sprintf(
-					'Instanceof between %s and %s will always evaluate to true.',
-					$exprType->describe(VerbosityLevel::typeOnly()),
-					$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
-				)))->build(),
-			];
+			return [$errorBuilder->build()];
 		}
 
 		return [];

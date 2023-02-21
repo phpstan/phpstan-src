@@ -37,6 +37,7 @@ services:
 		arguments:
 			checkAlwaysTrueInstanceof: %checkAlwaysTrueInstanceof%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 		tags:
 			- phpstan.rules.rule
 

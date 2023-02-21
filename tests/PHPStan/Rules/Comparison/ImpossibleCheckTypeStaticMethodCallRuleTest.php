@@ -13,6 +13,8 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $reportAlwaysTrueInLastCondition = false;
+
 	public function getRule(): Rule
 	{
 		return new ImpossibleCheckTypeStaticMethodCallRule(
@@ -25,6 +27,7 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 			),
 			true,
 			$this->treatPhpDocTypesAsCertain,
+			$this->reportAlwaysTrueInLastCondition,
 		);
 	}
 
@@ -64,6 +67,7 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 			[
 				'Call to static method ImpossibleStaticMethodCall\ConditionalAlwaysTrue::isInt() with int will always evaluate to true.',
 				66,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -107,6 +111,38 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/assert-unresolved-generic.php'], []);
+	}
+
+	public function dataReportAlwaysTrueInLastCondition(): iterable
+	{
+		yield [false, [
+			[
+				'Call to static method PHPStan\Tests\AssertionClass::assertInt() with int will always evaluate to true.',
+				23,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]];
+		yield [true, [
+			[
+				'Call to static method PHPStan\Tests\AssertionClass::assertInt() with int will always evaluate to true.',
+				14,
+			],
+			[
+				'Call to static method PHPStan\Tests\AssertionClass::assertInt() with int will always evaluate to true.',
+				23,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataReportAlwaysTrueInLastCondition
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
+		$this->analyse([__DIR__ . '/data/impossible-static-method-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
 	public static function getAdditionalConfigFiles(): array

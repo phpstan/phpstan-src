@@ -64,4 +64,21 @@ class Foo
 		};
 	}
 
+	public function doMoreConditionsInLastArm(): void
+	{
+		$a = 'aaa';
+		if (rand(0, 1)) {
+			$a = 'bbb';
+		}
+
+		match (true) {
+			$a === 'aaa', $a === 'bbb' => 1,
+		};
+
+		match (true) {
+			$a === 'aaa', $a === 'bbb' => 1,
+			default => new \Exception(),
+		};
+	}
+
 }

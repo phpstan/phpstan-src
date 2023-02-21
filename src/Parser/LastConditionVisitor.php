@@ -31,7 +31,7 @@ class LastConditionVisitor extends NodeVisitorAbstract
 				}
 
 				$isLast = $i === $lastArm;
-				$arm->conds[0]->setAttribute(self::ATTRIBUTE_NAME, $isLast);
+				$arm->conds[count($arm->conds) - 1]->setAttribute(self::ATTRIBUTE_NAME, $isLast);
 			}
 		}
 

@@ -813,6 +813,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				62,
 				'Remove remaining cases below this one and this error will disappear too.',
 			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				79,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
 		]];
 		yield [true, [
 			[
@@ -838,6 +843,14 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
 				62,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				75,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				79,
 			],
 		]];
 	}

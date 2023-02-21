@@ -358,6 +358,15 @@ class MatchExpressionRuleTest extends RuleTestCase
 				'Match arm is unreachable because previous comparison is always true.',
 				24,
 			],
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				49,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				'Match arm is unreachable because previous comparison is always true.',
+				50,
+			],
 		]];
 		yield [true, false, [
 			[
@@ -372,11 +381,28 @@ class MatchExpressionRuleTest extends RuleTestCase
 				'Match arm is unreachable because previous comparison is always true.',
 				24,
 			],
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				45,
+			],
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				49,
+			],
+			[
+				'Match arm is unreachable because previous comparison is always true.',
+				50,
+			],
 		]];
 		yield [false, true, [
 			[
 				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
 				23,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				49,
 				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]];
@@ -388,6 +414,14 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
 				23,
+			],
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				45,
+			],
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				49,
 			],
 		]];
 	}

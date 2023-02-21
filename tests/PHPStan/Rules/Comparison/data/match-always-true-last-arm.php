@@ -39,4 +39,16 @@ enum Foo
 		};
 	}
 
+	public function doMoreConditionsInLastArm(): void
+	{
+		match ($this) {
+			self::FOO, self::BAR => 1,
+		};
+
+		match ($this) {
+			self::FOO, self::BAR => 1,
+			default => 2,
+		};
+	}
+
 }

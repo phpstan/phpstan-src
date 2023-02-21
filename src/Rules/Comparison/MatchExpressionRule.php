@@ -30,6 +30,7 @@ class MatchExpressionRule implements Rule
 		private bool $checkAlwaysTrueStrictComparison,
 		private bool $disableUnreachable,
 		private bool $reportAlwaysTrueInLastCondition,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
 	}
@@ -64,7 +65,7 @@ class MatchExpressionRule implements Rule
 					$matchCondition,
 					$armCondition->getCondition(),
 				);
-				$armConditionResult = $armConditionScope->getType($armConditionExpr);
+				$armConditionResult = ($this->treatPhpDocTypesAsCertain ? $armConditionScope->getType($armConditionExpr) : $armConditionScope->getNativeType($armConditionExpr));
 				if (!$armConditionResult instanceof ConstantBooleanType) {
 					continue;
 				}

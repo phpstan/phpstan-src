@@ -131,6 +131,7 @@ services:
 			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
 			disableUnreachable: %featureToggles.disableUnreachableBranchesRules%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
 

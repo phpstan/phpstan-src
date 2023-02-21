@@ -4774,8 +4774,7 @@ class MutatingScope implements Scope
 		);
 	}
 
-	/** @api */
-	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?ExtendedMethodReflection
+	private function filterTypeWithMethod(Type $typeWithMethod, string $methodName): ?Type
 	{
 		if ($typeWithMethod instanceof UnionType) {
 			$newTypes = [];
@@ -4796,7 +4795,18 @@ class MutatingScope implements Scope
 			return null;
 		}
 
-		return $typeWithMethod->getMethod($methodName, $this);
+		return $typeWithMethod;
+	}
+
+	/** @api */
+	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?ExtendedMethodReflection
+	{
+		$type = $this->filterTypeWithMethod($typeWithMethod, $methodName);
+		if ($type === null) {
+			return null;
+		}
+
+		return $type->getMethod($methodName, $this);
 	}
 
 	/**
@@ -4804,11 +4814,12 @@ class MutatingScope implements Scope
 	 */
 	private function methodCallReturnType(Type $typeWithMethod, string $methodName, Expr $methodCall): ?Type
 	{
-		$methodReflection = $this->getMethodReflection($typeWithMethod, $methodName);
-		if ($methodReflection === null) {
+		$typeWithMethod = $this->filterTypeWithMethod($typeWithMethod, $methodName);
+		if ($typeWithMethod === null) {
 			return null;
 		}
 
+		$methodReflection = $typeWithMethod->getMethod($methodName, $this);
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$this,
 			$methodCall->getArgs(),

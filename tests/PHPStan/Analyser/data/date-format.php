@@ -43,3 +43,7 @@ function (\DateTimeImmutable $dt, string $s): void {
 	assertType('numeric-string', $dt->format('Y'));
 	assertType('numeric-string', $dt->format('Ghi'));
 };
+
+function (?\DateTimeImmutable $d): void {
+	assertType('DateTimeImmutable|null', $d->modify('+1 day'));
+};

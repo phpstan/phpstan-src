@@ -2,6 +2,7 @@
 
 namespace EnumTypeAssertions;
 
+use function in_array;
 use function PHPStan\Testing\assertType;
 
 enum Foo
@@ -263,6 +264,23 @@ enum EnumWithTypeAliases
 	public function doBar()
 	{
 		assertType('array{foo: int, bar: string}', $this->doFoo());
+	}
+
+}
+
+class InArrayEnum
+{
+
+	/** @var list<Foo> */
+	private $list;
+
+	public function doFoo(Foo $foo): void
+	{
+		if (in_array($foo, $this->list, true)) {
+			return;
+		}
+
+		assertType(Foo::class, $foo);
 	}
 
 }

@@ -44,12 +44,13 @@ class MatchExpressionRule implements Rule
 	{
 		$matchCondition = $node->getCondition();
 		$matchConditionType = $scope->getType($matchCondition);
-		$nextArmIsDead = false;
+		$nextArmIsDeadForType = false;
+		$nextArmIsDeadForNativeType = false;
 		$errors = [];
 		$armsCount = count($node->getArms());
 		$hasDefault = false;
 		foreach ($node->getArms() as $i => $arm) {
-			if ($nextArmIsDead) {
+			if ($nextArmIsDeadForNativeType || $nextArmIsDeadForType && $this->treatPhpDocTypesAsCertain) {
 				if (!$this->disableUnreachable) {
 					$errors[] = RuleErrorBuilder::message('Match arm is unreachable because previous comparison is always true.')->line($arm->getLine())->build();
 				}
@@ -65,13 +66,23 @@ class MatchExpressionRule implements Rule
 					$matchCondition,
 					$armCondition->getCondition(),
 				);
-				$armConditionResult = ($this->treatPhpDocTypesAsCertain ? $armConditionScope->getType($armConditionExpr) : $armConditionScope->getNativeType($armConditionExpr));
+
+				$armConditionResult = $armConditionScope->getType($armConditionExpr);
 				if (!$armConditionResult instanceof ConstantBooleanType) {
 					continue;
 				}
-
 				if ($armConditionResult->getValue()) {
-					$nextArmIsDead = true;
+					$nextArmIsDeadForType = true;
+				}
+
+				if (!$this->treatPhpDocTypesAsCertain) {
+					$armConditionNativeResult = $armConditionScope->getNativeType($armConditionExpr);
+					if (!$armConditionNativeResult instanceof ConstantBooleanType) {
+						continue;
+					}
+					if ($armConditionNativeResult->getValue()) {
+						$nextArmIsDeadForNativeType = true;
+					}
 				}
 
 				if ($matchConditionType instanceof ConstantBooleanType) {
@@ -107,7 +118,7 @@ class MatchExpressionRule implements Rule
 			}
 		}
 
-		if (!$hasDefault && !$nextArmIsDead) {
+		if (!$hasDefault && !$nextArmIsDeadForType) {
 			$remainingType = $node->getEndScope()->getType($matchCondition);
 			$cases = $remainingType->getEnumCases();
 			$casesCount = count($cases);

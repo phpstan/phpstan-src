@@ -62,6 +62,9 @@ phpstan-result-cache:
 phpstan-generate-baseline:
 	php -d memory_limit=448M bin/phpstan --generate-baseline
 
+phpstan-generate-baseline-php:
+	php -d memory_limit=448M bin/phpstan analyse --generate-baseline phpstan-baseline.php
+
 phpstan-pro:
 	php -d memory_limit=448M bin/phpstan --pro
 

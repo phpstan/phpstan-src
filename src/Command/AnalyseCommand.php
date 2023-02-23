@@ -4,6 +4,7 @@ namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
+use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
@@ -28,6 +29,7 @@ use function dirname;
 use function fopen;
 use function get_class;
 use function implode;
+use function in_array;
 use function is_array;
 use function is_bool;
 use function is_dir;
@@ -202,8 +204,8 @@ class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1, null);
 			}
 
-			if ($baselineExtension !== 'neon') {
-				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('Baseline filename extension must be .neon, .%s was used instead.', $baselineExtension));
+			if (!in_array($baselineExtension, ['neon', 'php'], true)) {
+				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('Baseline filename extension must be .neon or .php, .%s was used instead.', $baselineExtension));
 
 				return $inceptionResult->handleReturn(1, null);
 			}
@@ -292,15 +294,20 @@ class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 			}
 
-			$baselineFileDirectory = dirname($generateBaselineFile);
-			$baselineErrorFormatter = new BaselineNeonErrorFormatter(new ParentDirectoryRelativePathHelper($baselineFileDirectory));
-
-			$existingBaselineContent = is_file($generateBaselineFile) ? FileReader::read($generateBaselineFile) : '';
-
 			$streamOutput = $this->createStreamOutput();
 			$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $streamOutput);
 			$baselineOutput = new SymfonyOutput($streamOutput, new SymfonyStyle($errorConsoleStyle));
-			$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput, $existingBaselineContent);
+			$baselineFileDirectory = dirname($generateBaselineFile);
+			$baselinePathHelper = new ParentDirectoryRelativePathHelper($baselineFileDirectory);
+
+			if ($baselineExtension === 'php') {
+				$baselineErrorFormatter = new BaselinePhpErrorFormatter($baselinePathHelper);
+				$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput);
+			} else {
+				$baselineErrorFormatter = new BaselineNeonErrorFormatter($baselinePathHelper);
+				$existingBaselineContent = is_file($generateBaselineFile) ? FileReader::read($generateBaselineFile) : '';
+				$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput, $existingBaselineContent);
+			}
 
 			$stream = $streamOutput->getStream();
 			rewind($stream);

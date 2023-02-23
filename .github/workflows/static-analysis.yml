@@ -173,3 +173,29 @@ jobs:
           cp phpstan-baseline.neon phpstan-baseline-orig.neon && \
           make phpstan-generate-baseline && \
           diff phpstan-baseline.neon phpstan-baseline-orig.neon
+
+  generate-baseline-php:
+    name: "Generate PHP baseline"
+
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+          ini-file: development
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Generate baseline"
+        run: |
+          > phpstan-baseline.neon && \
+          make phpstan-generate-baseline-php && \
+          make phpstan-result-cache

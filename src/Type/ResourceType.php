@@ -38,8 +38,25 @@ class ResourceType implements Type
 	{
 	}
 
+	/** @see https://www.php.net/manual/en/resource.php */
+	private ?string $resourceType;
+
+	public function __construct(?string $resourceType = null)
+	{
+		$this->resourceType = $resourceType;
+	}
+
+	public function getResourceType(): ?string
+	{
+		return $this->resourceType;
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
+		if (null !== $this->resourceType) {
+			return sprintf('resource<%s>', $this->resourceType);
+		}
+
 		return 'resource';
 	}
 

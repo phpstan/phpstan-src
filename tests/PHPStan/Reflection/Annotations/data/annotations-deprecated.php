@@ -215,3 +215,26 @@ class DeprecatedBar implements BarInterface
 	}
 
 }
+
+interface BazInterface
+{
+	/**
+	 * @deprecated Use the SubBazInterface instead.
+	 */
+	public function superDeprecated();
+}
+
+interface SubBazInterface extends BazInterface
+{
+	/**
+	 * @not-deprecated
+	 */
+	public function superDeprecated();
+}
+
+class Baz implements SubBazInterface
+{
+	public function superDeprecated()
+	{
+	}
+}

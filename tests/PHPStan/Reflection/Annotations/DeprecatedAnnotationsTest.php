@@ -2,11 +2,14 @@
 
 namespace PHPStan\Reflection\Annotations;
 
+use DeprecatedAnnotations\Baz;
+use DeprecatedAnnotations\BazInterface;
 use DeprecatedAnnotations\DeprecatedBar;
 use DeprecatedAnnotations\DeprecatedFoo;
 use DeprecatedAnnotations\DeprecatedWithMultipleTags;
 use DeprecatedAnnotations\Foo;
 use DeprecatedAnnotations\FooInterface;
+use DeprecatedAnnotations\SubBazInterface;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
@@ -139,6 +142,15 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(DeprecatedBar::class);
 		$this->assertTrue($class->getNativeMethod('superDeprecated')->isDeprecated()->yes());
+	}
+
+	public function testNotDeprecatedChildMethods(): void
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+
+		$this->assertTrue($reflectionProvider->getClass(BazInterface::class)->getNativeMethod('superDeprecated')->isDeprecated()->yes());
+		$this->assertTrue($reflectionProvider->getClass(SubBazInterface::class)->getNativeMethod('superDeprecated')->isDeprecated()->no());
+		$this->assertTrue($reflectionProvider->getClass(Baz::class)->getNativeMethod('superDeprecated')->isDeprecated()->no());
 	}
 
 }

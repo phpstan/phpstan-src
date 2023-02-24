@@ -517,6 +517,13 @@ class PhpDocNodeResolver
 		return count($deprecatedTags) > 0;
 	}
 
+	public function resolveIsNotDeprecated(PhpDocNode $phpDocNode): bool
+	{
+		$notDeprecatedTags = $phpDocNode->getTagsByName('@not-deprecated');
+
+		return count($notDeprecatedTags) > 0;
+	}
+
 	public function resolveIsInternal(PhpDocNode $phpDocNode): bool
 	{
 		$internalTags = $phpDocNode->getTagsByName('@internal');

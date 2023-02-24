@@ -22,6 +22,7 @@
 return [
 	'new' => [
 		'str_split' => ['list<string>', 'str'=>'string', 'split_length='=>'positive-int'],
+        'iterator_to_array' => ['array', 'iterator'=>'iterable', 'use_keys='=>'bool'],
 	],
 	'old' => [
 

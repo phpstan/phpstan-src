@@ -70,6 +70,7 @@ class BaselinePhpErrorFormatter
 
 		$php .= "\n";
 		$php .= 'return [\'parameters\' => [\'ignoreErrors\' => $ignoreErrors]];';
+		$php .= "\n";
 
 		$output->writeRaw($php);
 

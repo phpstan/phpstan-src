@@ -103,6 +103,8 @@ class ResolvedPhpDocBlock
 
 	private ?bool $isDeprecated = null;
 
+	private ?bool $isNotDeprecated = null;
+
 	private ?bool $isInternal = null;
 
 	private ?bool $isFinal = null;
@@ -177,6 +179,7 @@ class ResolvedPhpDocBlock
 		$self->selfOutTypeTag = null;
 		$self->deprecatedTag = null;
 		$self->isDeprecated = false;
+		$self->isNotDeprecated = false;
 		$self->isInternal = false;
 		$self->isFinal = false;
 		$self->isPure = null;
@@ -229,8 +232,9 @@ class ResolvedPhpDocBlock
 		$result->typeAliasImportTags = $this->getTypeAliasImportTags();
 		$result->assertTags = self::mergeAssertTags($this->getAssertTags(), $parents, $parentPhpDocBlocks);
 		$result->selfOutTypeTag = self::mergeSelfOutTypeTags($this->getSelfOutTag(), $parents);
-		$result->deprecatedTag = self::mergeDeprecatedTags($this->getDeprecatedTag(), $parents);
+		$result->deprecatedTag = self::mergeDeprecatedTags($this->getDeprecatedTag(), $this->isNotDeprecated(), $parents);
 		$result->isDeprecated = $result->deprecatedTag !== null;
+		$result->isNotDeprecated = $this->isNotDeprecated();
 		$result->isInternal = $this->isInternal();
 		$result->isFinal = $this->isFinal();
 		$result->isPure = $this->isPure();
@@ -324,6 +328,7 @@ class ResolvedPhpDocBlock
 		$self->selfOutTypeTag = $this->selfOutTypeTag;
 		$self->deprecatedTag = $this->deprecatedTag;
 		$self->isDeprecated = $this->isDeprecated;
+		$self->isNotDeprecated = $this->isNotDeprecated;
 		$self->isInternal = $this->isInternal;
 		$self->isFinal = $this->isFinal;
 		$self->isPure = $this->isPure;
@@ -599,6 +604,19 @@ class ResolvedPhpDocBlock
 		return $this->isDeprecated;
 	}
 
+	/**
+	 * @internal
+	 */
+	public function isNotDeprecated(): bool
+	{
+		if ($this->isNotDeprecated === null) {
+			$this->isNotDeprecated = $this->phpDocNodeResolver->resolveIsNotDeprecated(
+				$this->phpDocNode,
+			);
+		}
+		return $this->isNotDeprecated;
+	}
+
 	public function isInternal(): bool
 	{
 		if ($this->isInternal === null) {
@@ -871,14 +889,19 @@ class ResolvedPhpDocBlock
 	/**
 	 * @param array<int, self> $parents
 	 */
-	private static function mergeDeprecatedTags(?DeprecatedTag $deprecatedTag, array $parents): ?DeprecatedTag
+	private static function mergeDeprecatedTags(?DeprecatedTag $deprecatedTag, bool $hasNotDeprecatedTag, array $parents): ?DeprecatedTag
 	{
 		if ($deprecatedTag !== null) {
 			return $deprecatedTag;
 		}
+
+		if ($hasNotDeprecatedTag) {
+			return null;
+		}
+
 		foreach ($parents as $parent) {
 			$result = $parent->getDeprecatedTag();
-			if ($result === null) {
+			if ($result === null && !$parent->isNotDeprecated()) {
 				continue;
 			}
 			return $result;

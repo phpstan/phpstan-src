@@ -143,9 +143,9 @@ function superGlobalVariables(): void
 	], false));
 
 	// filter flag with add_empty=default
-	assertType('array<string, int|false|null>', filter_var_array($_POST, FILTER_VALIDATE_INT));
+	assertType('array<string, int|false>', filter_var_array($_POST, FILTER_VALIDATE_INT));
 	// filter flag with add_empty=true
-	assertType('array<string, int|false|null>', filter_var_array($_POST, FILTER_VALIDATE_INT, true));
+	assertType('array<string, int|false>', filter_var_array($_POST, FILTER_VALIDATE_INT, true));
 	// filter flag with add_empty=false
 	assertType('array<string, int|false>', filter_var_array($_POST, FILTER_VALIDATE_INT, false));
 
@@ -175,6 +175,43 @@ function superGlobalVariables(): void
 		'invalid' => $filter,
 		'missing' => $filter,
 	], false));
+}
+
+/**
+ * @param list<int> $input
+ */
+function typedList($input): void
+{
+	$filter = [
+		'filter' => FILTER_VALIDATE_INT,
+		'flag' => FILTER_REQUIRE_SCALAR,
+		'options' => ['min_range' => 1],
+	];
+
+	// filter array with add_empty=default
+	assertType('array{int: int|null, positive_int: int<1, max>|false|null}', filter_var_array($input, [
+		'int' => FILTER_VALIDATE_INT,
+		'positive_int' => $filter,
+	]));
+
+	// filter array with add_empty=true
+	assertType('array{int: int|null, positive_int: int<1, max>|false|null}', filter_var_array($input, [
+		'int' => FILTER_VALIDATE_INT,
+		'positive_int' => $filter,
+	], true));
+
+	// filter array with add_empty=false
+	assertType('array{int?: int, positive_int?: int<1, max>|false}', filter_var_array($input, [
+		'int' => FILTER_VALIDATE_INT,
+		'positive_int' => $filter,
+	], false));
+
+	// filter flag with add_empty=default
+	assertType('list<int>', filter_var_array($input, FILTER_VALIDATE_INT));
+	// filter flag with add_empty=true
+	assertType('list<int>', filter_var_array($input, FILTER_VALIDATE_INT, true));
+	// filter flag with add_empty=false
+	assertType('list<int>', filter_var_array($input, FILTER_VALIDATE_INT, false));
 }
 
 /**

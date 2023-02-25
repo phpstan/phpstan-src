@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\MixedType;
@@ -17,7 +18,6 @@ use PHPStan\Type\TypeCombinator;
 use function array_combine;
 use function array_fill_keys;
 use function array_map;
-use function array_values;
 use function count;
 use function in_array;
 use function strtolower;
@@ -51,6 +51,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 		$addEmptyType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
 		$addEmpty = $addEmptyType === null || $addEmptyType->isTrue()->yes();
 
+		$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
 		$inputTypesMap = [];
 		$optionalKeys = [];
 
@@ -103,7 +104,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			return null;
 		} else {
 			$keysType = $filterConstantArrayType;
-			$filterKeyTypes = array_values($filterConstantArrayType->getKeyTypes());
+			$filterKeyTypes = $filterConstantArrayType->getKeyTypes();
 			$filterKeysList = array_map(static fn ($type) => $type->getValue(), $filterKeyTypes);
 			$filterTypesMap = array_combine($filterKeysList, $keysType->getValueTypes());
 
@@ -125,7 +126,53 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			}
 		}
 
-		return $this->filterFunctionReturnTypeHelper->buildTypeForArray($keysType, $inputTypesMap, $filterTypesMap, $addEmpty, $optionalKeys);
+		foreach ($keysType->getKeyTypes() as $keyType) {
+			$optional = false;
+			$key = $keyType->getValue();
+			$inputType = $inputTypesMap[$key] ?? null;
+			if ($inputType === null) {
+				if ($addEmpty) {
+					$valueTypesBuilder->setOffsetValueType($keyType, new NullType());
+				}
+
+				continue;
+			}
+
+			[$filterType, $flagsType] = $this->fetchFilter($filterTypesMap[$key] ?? new MixedType());
+			$valueType = $this->filterFunctionReturnTypeHelper->getTypeFromFunctionCall($inputType, $filterType, $flagsType);
+
+			if (in_array($key, $optionalKeys, true)) {
+				if ($addEmpty) {
+					$valueType = TypeCombinator::addNull($valueType);
+				} else {
+					$optional = true;
+				}
+			}
+
+			$valueTypesBuilder->setOffsetValueType($keyType, $valueType, $optional);
+		}
+
+		return $valueTypesBuilder->getArray();
+	}
+
+	/** @return array{?Type, ?Type} */
+	public function fetchFilter(Type $type): array
+	{
+		$constantType = $type->getConstantArrays()[0] ?? null;
+
+		if ($constantType === null) {
+			return [$type, null];
+		}
+
+		$filterType = null;
+		foreach ($constantType->getKeyTypes() as $keyType) {
+			if ($keyType->getValue() === 'filter') {
+				$filterType = $constantType->getOffsetValueType($keyType)->getConstantScalarTypes()[0] ?? null;
+				break;
+			}
+		}
+
+		return [$filterType, $constantType];
 	}
 
 }

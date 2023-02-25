@@ -1259,7 +1259,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		$array = $builder->getArray();
-
 		if (!$array instanceof ConstantArrayType) {
 			throw new ShouldNotHappenException();
 		}

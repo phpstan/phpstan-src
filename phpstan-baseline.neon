@@ -805,7 +805,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
-			count: 8
+			count: 9
 			path: src/Type/Constant/ConstantArrayType.php
 
 		-

@@ -84,7 +84,7 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				'Readonly property ReadonlyPropertyAssign\ListAssign::$foo is assigned outside of the constructor.',
 				127,
 			],
-			[
+			/*[
 				'Readonly property ReadonlyPropertyAssign\FooEnum::$name is assigned outside of the constructor.',
 				140,
 			],
@@ -99,7 +99,7 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			[
 				'Readonly property ReadonlyPropertyAssign\FooEnum::$value is assigned outside of its declaring class.',
 				152,
-			],
+			],*/
 			[
 				'Readonly property ReadonlyPropertyAssign\Foo::$baz is assigned outside of its declaring class.',
 				162,

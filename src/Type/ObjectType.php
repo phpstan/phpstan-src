@@ -28,6 +28,7 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CalledOnTypeUnresolvedPropertyPrototypeReflection;
+use PHPStan\Reflection\Type\UnionTypePropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
@@ -154,6 +155,29 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
+		$classReflection = $this->getClassReflection();
+		if ($classReflection !== null) {
+			if ($classReflection->isEnum()) {
+				if (
+					$propertyName === 'name'
+					|| ($propertyName === 'value' && $classReflection->isBackedEnum())
+				) {
+					$properties = [];
+					foreach ($this->getEnumCases() as $enumCase) {
+						$properties[] = $enumCase->getProperty($propertyName, $scope);
+					}
+
+					if (count($properties) > 0) {
+						if (count($properties) === 1) {
+							return $properties[0];
+						}
+
+						return new UnionTypePropertyReflection($properties);
+					}
+				}
+			}
+		}
+
 		return $this->getUnresolvedPropertyPrototype($propertyName, $scope)->getTransformedProperty();
 	}
 

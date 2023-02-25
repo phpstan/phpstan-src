@@ -3,17 +3,21 @@
 namespace PHPStan\Command;
 
 use Nette\Neon\Neon;
+use Nette\Utils\Json;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use function implode;
+use function in_array;
 use function is_string;
 
 class DumpParametersCommand extends Command
 {
 
 	private const NAME = 'dump-parameters';
+	private const FORMATS = ['json', 'neon'];
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
@@ -35,6 +39,7 @@ class DumpParametersCommand extends Command
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('debug', null, InputOption::VALUE_NONE, 'Show debug information - which file is analysed, do not catch internal errors'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for clearing result cache'),
+				new InputOption('format', null, InputOption::VALUE_REQUIRED, 'Format in which to print the result', 'neon'),
 			]);
 	}
 
@@ -93,7 +98,20 @@ class DumpParametersCommand extends Command
 		unset($parameters['tempDir']);
 		unset($parameters['__validate']);
 
-		$output->writeln(Neon::encode($parameters, true));
+		$format = $input->getOption('format');
+		if (!in_array($format, self::FORMATS, true)) {
+			$inceptionResult->getStdOutput()->getStyle()->error('Invalid format "' . $format . '", expected one of "' . implode('", "', self::FORMATS) . '".');
+
+			return 1;
+		}
+
+		if ($format === 'json') {
+			$result = Json::encode($parameters, Json::PRETTY);
+		} else {
+			$result = Neon::encode($parameters, true);
+		}
+
+		$output->writeln($result);
 
 		return 0;
 	}

@@ -127,19 +127,28 @@ function emptyArrayInput(): void
 
 function superGlobalVariables(): void
 {
+	$filter = [
+		'filter' => FILTER_VALIDATE_INT,
+		'flag' => FILTER_REQUIRE_SCALAR,
+		'options' => ['min_range' => 1],
+	];
+
 	// filter array with add_empty=default
-	assertType('array{int: int|false|null}', filter_var_array($_POST, [
+	assertType('array{int: int|false|null, positive_int: int<1, max>|false|null}', filter_var_array($_POST, [
 		'int' => FILTER_VALIDATE_INT,
+		'positive_int' => $filter,
 	]));
 
 	// filter array with add_empty=true
-	assertType('array{int: int|false|null}', filter_var_array($_POST, [
+	assertType('array{int: int|false|null, positive_int: int<1, max>|false|null}', filter_var_array($_POST, [
 		'int' => FILTER_VALIDATE_INT,
+		'positive_int' => $filter,
 	], true));
 
 	// filter array with add_empty=false
-	assertType('array{int?: int|false}', filter_var_array($_POST, [
+	assertType('array{int?: int|false, positive_int?: int<1, max>|false}', filter_var_array($_POST, [
 		'int' => FILTER_VALIDATE_INT,
+		'positive_int' => $filter,
 	], false));
 
 	// filter flag with add_empty=default
@@ -148,33 +157,6 @@ function superGlobalVariables(): void
 	assertType('array<string, int|false>', filter_var_array($_POST, FILTER_VALIDATE_INT, true));
 	// filter flag with add_empty=false
 	assertType('array<string, int|false>', filter_var_array($_POST, FILTER_VALIDATE_INT, false));
-
-	$filter = [
-		'filter' => FILTER_VALIDATE_INT,
-		'flag' => FILTER_REQUIRE_SCALAR,
-		'options' => ['min_range' => 1, 'max_range' => 10],
-	];
-
-	// filter array with add_empty=default
-	assertType('array{valid: int<1, 10>|false|null, invalid: int<1, 10>|false|null, missing: int<1, 10>|false|null}', filter_var_array($_POST, [
-		'valid' => $filter,
-		'invalid' => $filter,
-		'missing' => $filter,
-	]));
-
-	// filter array with add_empty=default
-	assertType('array{valid: int<1, 10>|false|null, invalid: int<1, 10>|false|null, missing: int<1, 10>|false|null}', filter_var_array($_POST, [
-		'valid' => $filter,
-		'invalid' => $filter,
-		'missing' => $filter,
-	], true));
-
-	// filter array with add_empty=default
-	assertType('array{valid?: int<1, 10>|false, invalid?: int<1, 10>|false, missing?: int<1, 10>|false}', filter_var_array($_POST, [
-		'valid' => $filter,
-		'invalid' => $filter,
-		'missing' => $filter,
-	], false));
 }
 
 /**

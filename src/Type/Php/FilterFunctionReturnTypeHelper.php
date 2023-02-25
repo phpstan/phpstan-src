@@ -51,7 +51,25 @@ final class FilterFunctionReturnTypeHelper
 		$this->flagsString = new ConstantStringType('flags');
 	}
 
-	public function getTypeFromFunctionCall(Type $inputType, ?Type $filterType, ?Type $flagsType): Type
+	public function getArrayOffsetValueType(Type $arrayType, Type $offsetType, ?Type $filterType, ?Type $flagsType): ?Type
+	{
+		$inexistentOffsetType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsType)
+			? new ConstantBooleanType(false)
+			: new NullType();
+
+		$arrayTypeHasOffsetValueType = $arrayType->hasOffsetValueType($offsetType);
+		if ($arrayTypeHasOffsetValueType->no()) {
+			return $inexistentOffsetType;
+		}
+
+		$filteredType = $this->getType($arrayType->getOffsetValueType($offsetType), $filterType, $flagsType);
+
+		return $arrayTypeHasOffsetValueType->maybe()
+			? TypeCombinator::union($filteredType, $inexistentOffsetType)
+			: $filteredType;
+	}
+
+	public function getType(Type $inputType, ?Type $filterType, ?Type $flagsType): Type
 	{
 		$mixedType = new MixedType();
 
@@ -120,11 +138,6 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		return $type;
-	}
-
-	public function hasConstantFlag(string $constant, ?Type $flagsType): bool
-	{
-		return $this->hasFlag($this->getConstant($constant), $flagsType);
 	}
 
 	/**

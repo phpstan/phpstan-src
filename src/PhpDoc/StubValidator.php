@@ -4,7 +4,6 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
-use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Broker\Broker;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\DependencyInjection\Container;
@@ -93,10 +92,6 @@ class StubValidator
 
 		/** @var FileAnalyser $fileAnalyser */
 		$fileAnalyser = $container->getByType(FileAnalyser::class);
-
-		/** @var NodeScopeResolver $nodeScopeResolver */
-		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
-		$nodeScopeResolver->setAnalysedFiles($stubFiles);
 
 		$pathRoutingParser = $container->getService('pathRoutingParser');
 		$pathRoutingParser->setAnalysedFiles($stubFiles);

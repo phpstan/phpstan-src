@@ -5,7 +5,6 @@ namespace PHPStan\Command;
 use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
 use PHPStan\Analyser\FileAnalyser;
-use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\PathNotFoundException;
@@ -134,10 +133,6 @@ class WorkerCommand extends Command
 			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
 			return 1;
 		}
-
-		/** @var NodeScopeResolver $nodeScopeResolver */
-		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
-		$nodeScopeResolver->setAnalysedFiles($analysedFiles);
 
 		$analysedFiles = array_fill_keys($analysedFiles, true);
 

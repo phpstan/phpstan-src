@@ -62,7 +62,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$this->getEarlyTerminatingFunctionCalls(),
 			true,
 		);
-		$resolver->setAnalysedFiles(array_map(static fn (string $file): string => $fileHelper->normalizePath($file), array_merge([$file], $this->getAdditionalAnalysedFiles())));
+		$analysedFiles = array_map(static fn (string $file): string => $fileHelper->normalizePath($file), array_merge([$file], $this->getAdditionalAnalysedFiles()));
 
 		$scopeFactory = $this->createScopeFactory($reflectionProvider, $typeSpecifier, $dynamicConstantNames);
 		$scope = $scopeFactory->create(ScopeContext::create($file));
@@ -71,6 +71,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$this->getParser()->parseFile($file),
 			$scope,
 			$callback,
+			$analysedFiles,
 		);
 	}
 

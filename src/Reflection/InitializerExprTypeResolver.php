@@ -7,6 +7,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\DNumber;
@@ -17,6 +18,7 @@ use PhpParser\Node\Scalar\MagicConst\File;
 use PhpParser\Node\Scalar\MagicConst\Line;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\ConstantResolver;
+use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Php\PhpVersion;
@@ -375,6 +377,15 @@ class InitializerExprTypeResolver
 			}
 
 			return new ConstantStringType($context->getTraitName(), true);
+		}
+
+		if ($expr instanceof PropertyFetch && $expr->name instanceof Identifier) {
+			$fetchedOnType = $this->getType($expr->var, $context);
+			if (!$fetchedOnType->hasProperty($expr->name->name)->yes()) {
+				return new ErrorType();
+			}
+
+			return $fetchedOnType->getProperty($expr->name->name, new OutOfClassScope())->getReadableType();
 		}
 
 		return new MixedType();

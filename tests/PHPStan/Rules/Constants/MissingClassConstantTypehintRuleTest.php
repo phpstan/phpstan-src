@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Constants;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MissingClassConstantTypehintRule>
@@ -35,6 +36,14 @@ class MissingClassConstantTypehintRuleTest extends RuleTestCase
 				20,
 			],
 		]);
+	}
+
+	public function testBug8957(): void
+	{
+		if (PHP_VERSION_ID < 80200) {
+			$this->markTestSkipped('This test needs PHP 8.2');
+		}
+		$this->analyse([__DIR__ . '/data/bug-8957.php'], []);
 	}
 
 }

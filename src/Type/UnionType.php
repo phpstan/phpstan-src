@@ -735,12 +735,12 @@ class UnionType implements CompoundType
 
 	public function getConstantScalarTypes(): array
 	{
-		return $this->pickFromTypes(static fn (Type $type) => $type->getConstantScalarTypes());
+		return $this->notBenevolentPickFromTypes(static fn (Type $type) => $type->getConstantScalarTypes());
 	}
 
 	public function getConstantScalarValues(): array
 	{
-		return $this->pickFromTypes(static fn (Type $type) => $type->getConstantScalarValues());
+		return $this->notBenevolentPickFromTypes(static fn (Type $type) => $type->getConstantScalarValues());
 	}
 
 	public function isTrue(): TrinaryLogic
@@ -992,6 +992,28 @@ class UnionType implements CompoundType
 	 * @return list<T>
 	 */
 	protected function pickFromTypes(callable $getValues): array
+	{
+		$values = [];
+		foreach ($this->types as $type) {
+			$innerValues = $getValues($type);
+			if ($innerValues === []) {
+				return [];
+			}
+
+			foreach ($innerValues as $innerType) {
+				$values[] = $innerType;
+			}
+		}
+
+		return $values;
+	}
+
+	/**
+	 * @template T
+	 * @param callable(Type $type): list<T> $getValues
+	 * @return list<T>
+	 */
+	private function notBenevolentPickFromTypes(callable $getValues): array
 	{
 		$values = [];
 		foreach ($this->types as $type) {

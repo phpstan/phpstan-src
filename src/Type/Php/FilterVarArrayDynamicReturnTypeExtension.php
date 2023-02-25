@@ -13,6 +13,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_combine;
@@ -31,7 +32,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return strtolower($functionReflection->getName()) === 'filter_var_array';
+		return in_array(strtolower($functionReflection->getName()), ['filter_var_array', 'filter_input_array'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
@@ -40,12 +41,21 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			return null;
 		}
 
+		$functionName = strtolower($functionReflection->getName());
 		$inputArgType = $scope->getType($functionCall->getArgs()[0]->value);
-		if ($inputArgType->isArray()->no()) {
-			return new NeverType();
+
+		$inputArrayType = $inputArgType;
+		$inputConstantArrayType = null;
+		if ($functionName === 'filter_var_array') {
+			if ($inputArgType->isArray()->no()) {
+				return new NeverType();
+			}
+
+			$inputConstantArrayType = $inputArgType->getConstantArrays()[0] ?? null;
+		} elseif ($functionName === 'filter_input_array') {
+			$inputArrayType = new ArrayType(new StringType(), new MixedType());
 		}
 
-		$inputConstantArrayType = $inputArgType->getConstantArrays()[0] ?? null;
 		$filterArgType = $scope->getType($functionCall->getArgs()[1]->value);
 		$filterConstantArrayType = $filterArgType->getConstantArrays()[0] ?? null;
 		$addEmptyType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
@@ -57,15 +67,15 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 
 		if ($filterArgType instanceof ConstantIntegerType) {
 			if ($inputConstantArrayType === null) {
-				$isList = $inputArgType->isList()->yes();
-				$inputArgType = $inputArgType->getArrays()[0] ?? null;
+				$isList = $inputArrayType->isList()->yes();
+				$inputArrayType = $inputArrayType->getArrays()[0] ?? null;
 				$valueType = $this->filterFunctionReturnTypeHelper->getTypeFromFunctionCall(
-					$inputArgType === null ? new MixedType() : $inputArgType->getItemType(),
+					$inputArrayType === null ? new MixedType() : $inputArrayType->getItemType(),
 					$filterArgType,
 					null,
 				);
 				$arrayType = new ArrayType(
-					$inputArgType !== null ? $inputArgType->getKeyType() : new MixedType(),
+					$inputArrayType !== null ? $inputArrayType->getKeyType() : new MixedType(),
 					$valueType,
 				);
 
@@ -89,12 +99,12 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			}
 		} elseif ($filterConstantArrayType === null) {
 			if ($inputConstantArrayType === null) {
-				$isList = $inputArgType->isList()->yes();
-				$inputArgType = $inputArgType->getArrays()[0] ?? null;
-				$valueType = $this->filterFunctionReturnTypeHelper->getTypeFromFunctionCall($inputArgType ?? new MixedType(), $filterArgType, null);
+				$isList = $inputArrayType->isList()->yes();
+				$inputArrayType = $inputArrayType->getArrays()[0] ?? null;
+				$valueType = $this->filterFunctionReturnTypeHelper->getTypeFromFunctionCall($inputArrayType ?? new MixedType(), $filterArgType, null);
 
 				$arrayType = new ArrayType(
-					$inputArgType !== null ? $inputArgType->getKeyType() : new MixedType(),
+					$inputArrayType !== null ? $inputArrayType->getKeyType() : new MixedType(),
 					$addEmpty ? TypeCombinator::addNull($valueType) : $valueType,
 				);
 
@@ -122,7 +132,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 				}
 			} else {
 				$optionalKeys = $filterKeysList;
-				$inputTypesMap = array_fill_keys($optionalKeys, $inputArgType->getArrays()[0]->getItemType());
+				$inputTypesMap = array_fill_keys($optionalKeys, $inputArrayType->getArrays()[0]->getItemType());
 			}
 		}
 

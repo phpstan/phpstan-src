@@ -11,6 +11,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -28,6 +29,7 @@ use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
 use function array_merge;
 use function hexdec;
+use function in_array;
 use function is_int;
 use function octdec;
 use function preg_match;
@@ -169,6 +171,50 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		return $type;
+	}
+
+	/**
+	 * @param array<Type> $inputTypesMap
+	 * @param array<Type> $filterTypesMap
+	 * @param list<array-key> $optionalKeys
+	 */
+	public function buildTypeForArray(
+		Type $keysType,
+		array $inputTypesMap,
+		array $filterTypesMap,
+		bool $addEmpty,
+		array $optionalKeys,
+	): Type {
+		$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
+		$keysType = $keysType->getConstantArrays()[0];
+
+		foreach ($keysType->getKeyTypes() as $keyType) {
+			$optional = false;
+			$key = $keyType->getValue();
+			$inputType = $inputTypesMap[$key] ?? null;
+			if ($inputType === null) {
+				if ($addEmpty) {
+					$valueTypesBuilder->setOffsetValueType($keyType, new NullType());
+				}
+
+				continue;
+			}
+
+			[$filterType, $flagsType] = $this->getFilterAndOptionsForArray($filterTypesMap[$key] ?? new MixedType());
+			$valueType = $this->getTypeFromFunctionCall($inputType, $filterType, $flagsType);
+
+			if (in_array($key, $optionalKeys, true)) {
+				if ($addEmpty) {
+					$valueType = TypeCombinator::addNull($valueType);
+				} else {
+					$optional = true;
+				}
+			}
+
+			$valueTypesBuilder->setOffsetValueType($keyType, $valueType, $optional);
+		}
+
+		return $valueTypesBuilder->getArray();
 	}
 
 	/**
@@ -442,6 +488,26 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		return true;
+	}
+
+	/** @return array{?Type, ?Type} */
+	private function getFilterAndOptionsForArray(Type $type): array
+	{
+		$constantType = $type->getConstantArrays()[0] ?? null;
+
+		if ($constantType === null) {
+			return [$type, null];
+		}
+
+		$filterType = null;
+		foreach ($constantType->getKeyTypes() as $keyType) {
+			if ($keyType->getValue() === 'filter') {
+				$filterType = $constantType->getOffsetValueType($keyType)->getConstantScalarTypes()[0] ?? null;
+				break;
+			}
+		}
+
+		return [$filterType, $constantType];
 	}
 
 }

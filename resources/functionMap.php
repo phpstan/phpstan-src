@@ -259,7 +259,7 @@ return [
 'AppendIterator::rewind' => ['void'],
 'AppendIterator::valid' => ['bool'],
 'array_change_key_case' => ['array', 'input'=>'array', 'case='=>'int'],
-'array_chunk' => ['list<array[]>', 'input'=>'array', 'size'=>'positive-int', 'preserve_keys='=>'bool'],
+'array_chunk' => ['list<array>', 'input'=>'array', 'size'=>'positive-int', 'preserve_keys='=>'bool'],
 'array_column' => ['array', 'array'=>'array', 'column_key'=>'mixed', 'index_key='=>'mixed'],
 'array_combine' => ['array|false', 'keys'=>'array', 'values'=>'array'],
 'array_count_values' => ['array<positive-int>', 'input'=>'array'],

@@ -59,20 +59,12 @@ class BaselinePhpErrorFormatter
 			ksort($fileErrorsCounts, SORT_STRING);
 
 			foreach ($fileErrorsCounts as $message => $count) {
-				$template = <<<'PHP'
-$ignoreErrors[] = [
-	'message' => %s,
-	'count' => %d,
-	'path' => __DIR__ . %s,
-];
-PHP;
 				$php .= sprintf(
-					$template,
+					"\$ignoreErrors[] = [\n\t'message' => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
 					var_export(Helpers::escape('#^' . preg_quote($message, '#') . '$#'), true),
 					var_export($count, true),
 					var_export(Helpers::escape($file), true),
 				);
-				$php .= "\n";
 			}
 		}
 

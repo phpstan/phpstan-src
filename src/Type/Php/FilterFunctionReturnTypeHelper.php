@@ -186,6 +186,10 @@ final class FilterFunctionReturnTypeHelper
 			if ($in->isBoolean()->yes()) {
 				return $in;
 			}
+
+			if ($in->isNull()->yes()) {
+				return $defaultType;
+			}
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT')) {
@@ -196,11 +200,27 @@ final class FilterFunctionReturnTypeHelper
 			if ($in->isInteger()->yes()) {
 				return $in->toFloat();
 			}
+
+			if ($in->isTrue()->yes()) {
+				return new ConstantFloatType(1);
+			}
+
+			if ($in->isFalse()->yes() || $in->isNull()->yes()) {
+				return $defaultType;
+			}
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_VALIDATE_INT')) {
 			if ($in->isInteger()->yes()) {
 				return $in;
+			}
+
+			if ($in->isTrue()->yes()) {
+				return new ConstantIntegerType(1);
+			}
+
+			if ($in->isFalse()->yes() || $in->isNull()->yes()) {
+				return $defaultType;
 			}
 
 			if ($in instanceof ConstantFloatType) {

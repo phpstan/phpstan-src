@@ -1,0 +1,1463 @@
+PHPStan\Rules\Api\ApiClassConstFetchRule
+- phpstanApi.classConstant
+
+PHPStan\Rules\Api\ApiClassExtendsRule
+- phpstanApi.class
+
+PHPStan\Rules\Api\ApiClassImplementsRule
+- phpstanApi.interface
+
+PHPStan\Rules\Api\ApiInstanceofRule
+- phpstanApi.class
+- phpstanApi.interface
+- phpstanApi.instanceofAssumption
+
+PHPStan\Rules\Api\ApiInstanceofTypeRule
+- phpstanApi.instanceofType
+
+PHPStan\Rules\Api\ApiInstantiationRule
+- phpstanApi.class
+- phpstanApi.constructor
+
+PHPStan\Rules\Api\ApiInterfaceExtendsRule
+- phpstanApi.interface
+
+PHPStan\Rules\Api\ApiMethodCallRule
+- phpstanApi.method
+
+PHPStan\Rules\Api\ApiStaticCallRule
+- phpstanApi.method
+
+PHPStan\Rules\Api\ApiTraitUseRule
+- phpstanApi.trait
+
+PHPStan\Rules\Api\GetTemplateTypeRule
+- phpstanApi.getTemplateType
+
+PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule
+- phpParser.nodeConnectingAttribute
+
+PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
+- phpstanApi.phpstanNamespace
+
+PHPStan\Rules\Api\RuntimeReflectionFunctionRule
+- phpstanApi.runtimeReflection
+
+PHPStan\Rules\Api\RuntimeReflectionInstantiationRule
+- phpstanApi.runtimeReflection
+
+Skip (deprecated): PHPStan\Rules\Arrays\AppendedArrayItemTypeRule
+
+Skip (deprecated): PHPStan\Rules\Arrays\AppendedArrayKeyTypeRule
+
+PHPStan\Rules\Arrays\ArrayDestructuringRule
+- offsetAccess.nonArray
+- offsetAccess.notFound (NonexistentOffsetInArrayDimFetchCheck)
+
+PHPStan\Rules\Arrays\ArrayUnpackingRule
+- arrayUnpacking.stringOffset
+
+PHPStan\Rules\Arrays\DeadForeachRule
+- foreach.emptyArray
+
+PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
+- array.duplicateKey
+
+PHPStan\Rules\Arrays\EmptyArrayItemRule
+- array.emptyItem
+
+PHPStan\Rules\Arrays\InvalidKeyInArrayDimFetchRule
+- offsetAccess.invalidOffset
+
+PHPStan\Rules\Arrays\InvalidKeyInArrayItemRule
+- array.invalidKey
+
+PHPStan\Rules\Arrays\IterableInForeachRule
+- class.notFound (RuleLevelHelper::findTypeToCheck())
+- foreach.nonIterable
+
+PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchRule
+- class.notFound (RuleLevelHelper::findTypeToCheck())
+- offsetAccess.nonOffsetAccessible
+- offsetAccess.nonexistent (NonexistentOffsetInArrayDimFetchCheck)
+
+PHPStan\Rules\Arrays\OffsetAccessAssignOpRule
+- offsetAssign.dimType
+
+PHPStan\Rules\Arrays\OffsetAccessAssignmentRule
+- offsetAssign.dimType
+
+PHPStan\Rules\Arrays\OffsetAccessValueAssignmentRule
+- offsetAssign.valueType
+
+PHPStan\Rules\Arrays\OffsetAccessWithoutDimForReadingRule
+- offsetAccess.noDim
+
+PHPStan\Rules\Arrays\UnpackIterableInArrayRule
+- arrayUnpacking.nonIterable
+
+PHPStan\Rules\Cast\EchoRule
+- echo.nonString
+
+PHPStan\Rules\Cast\InvalidCastRule
+- cast.int
+- cast.bool
+- cast.double
+- cast.string
+
+PHPStan\Rules\Cast\InvalidPartOfEncapsedStringRule
+- encapsedStringPart.nonString
+
+PHPStan\Rules\Cast\PrintRule
+- print.nonString
+
+PHPStan\Rules\Cast\UnsetCastRule
+- cast.unset
+
+PHPStan\Rules\Classes\AccessPrivateConstantThroughStaticRule
+- staticClassAccess.privateConstant
+
+PHPStan\Rules\Classes\AllowedSubTypesRule
+- interface.disallowedSubtype
+- class.disallowedSubtype
+
+PHPStan\Rules\Classes\ClassAttributesRule
+- attribute.notFound (AttributesCheck)
+- attribute.notAttribute (AttributesCheck)
+- attribute.abstract (AttributesCheck)
+- attribute.target (AttributesCheck)
+- attribute.nonRepeatable (AttributesCheck)
+- attribute.deprecated (AttributesCheck)
+- attribute.noConstructor (AttributesCheck)
+- attribute.constructorNotPublic (AttributesCheck)
+- class.nameCase (AttributesCheck)
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- attribute.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Classes\ClassConstantAttributesRule
+- attribute.notFound (AttributesCheck)
+- attribute.notAttribute (AttributesCheck)
+- attribute.abstract (AttributesCheck)
+- attribute.target (AttributesCheck)
+- attribute.nonRepeatable (AttributesCheck)
+- attribute.deprecated (AttributesCheck)
+- attribute.noConstructor (AttributesCheck)
+- attribute.constructorNotPublic (AttributesCheck)
+- class.nameCase (AttributesCheck)
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- attribute.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Classes\ClassConstantRule
+- outOfClass.self
+- outOfClass.static
+- outOfClass.parent
+- class.noParent
+- class.notFound
+- classConstant.notSupported
+- classConstant.dynamicString
+- classConstant.nonObject
+- classConstant.notFound
+- classConstant.private
+- classConstant.protected
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Classes\DuplicateClassDeclarationRule
+- class.duplicate
+
+PHPStan\Rules\Classes\DuplicateDeclarationRule
+- class.duplicateEnumCase
+- class.duplicateConstant
+- class.duplicateProperty
+- class.duplicateMethod
+
+PHPStan\Rules\Classes\EnumSanityRule
+- enum.abstractMethod
+- enum.constructor
+- enum.destructor
+- enum.magicMethod
+- enum.methodRedeclaration
+- enum.backingType
+- enum.serializable
+
+PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+- class.notFound
+- class.extendsInterface
+- class.extendsTrait
+- class.extendsEnum
+- class.extendsFinal
+- class.extendsFinalByPhpDoc
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Classes\ExistingClassInInstanceOfRule
+- outOfClass.self
+- outOfClass.static
+- outOfClass.parent
+- class.notFound
+- instanceof.trait
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Classes\ExistingClassInTraitUseRule
+- interface.traitUse
+- trait.notFound
+- traitUse.class
+- traitUse.interface
+- traitUse.enum
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
+- interface.notFound
+- class.implementsClass
+- class.implementsTrait
+- class.implementsEnum
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
+- interface.notFound
+- enum.implementsClass
+- enum.implementsTrait
+- enum.implementsEnum
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
+- interface.notFound
+- interface.extendsClass
+- interface.extendsTrait
+- interface.extendsEnum
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Classes\ImpossibleInstanceOfRule
+- instanceof.invalidExpr
+- instanceof.alwaysTrue
+- instanceof.alwaysFalse
+
+PHPStan\Rules\Classes\InstantiationCallableRule
+- callable.notSupported
+
+PHPStan\Rules\Classes\InstantiationRule
+- outOfClass.self
+- outOfClass.static
+- outOfClass.parent
+- class.noParent
+- class.notFound
+- new.enum
+- new.interface
+- new.abstract
+- new.noConstructor
+- new.privateConstructor
+- new.protectedConstructor
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- new.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
+- property.promotedNotSupported
+- property.invalidPromoted
+
+PHPStan\Rules\Classes\LocalTypeAliasesRule
+- class.notFound
+- typeAlias.notFound
+- typeAlias.duplicate
+- typeAlias.invalidName
+- typeAlias.circular
+- typeAlias.invalidType
+
+PHPStan\Rules\Classes\MixinRule
+- mixin.nonObject
+- mixin.unresolvableType
+- missingType.generics
+- class.notFound
+- mixin.trait
+- class.nameCase
+- interface.nameCase
+- enum.nameCase
+
+- generics.notGeneric (GenericObjectTypeCheck)
+- generics.lessTypes (GenericObjectTypeCheck)
+- generics.moreTypes (GenericObjectTypeCheck)
+- generics.notSubtype (GenericObjectTypeCheck)
+
+PHPStan\Rules\Classes\NewStaticRule
+- new.static
+
+PHPStan\Rules\Classes\NonClassAttributeClassRule
+- attribute.interface
+- attribute.enum
+- attribute.abstract
+- attribute.constructorNotPublic
+
+PHPStan\Rules\Classes\TraitAttributeClassRule
+- attribute.trait
+
+PHPStan\Rules\Classes\UnusedConstructorParametersRule
+- constructor.unusedParameter
+
+PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+- booleanAnd.leftAlwaysTrue
+- booleanAnd.leftAlwaysFalse
+- booleanAnd.rightAlwaysTrue
+- booleanAnd.rightAlwaysFalse
+- booleanAnd.alwaysTrue
+- booleanAnd.alwaysFalse
+- logicalAnd.leftAlwaysTrue
+- logicalAnd.leftAlwaysFalse
+- logicalAnd.rightAlwaysTrue
+- logicalAnd.rightAlwaysFalse
+- logicalAnd.alwaysTrue
+- logicalAnd.alwaysFalse
+
+PHPStan\Rules\Comparison\BooleanNotConstantConditionRule
+- booleanNot.alwaysTrue
+- booleanNot.alwaysFalse
+
+PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+- booleanOr.leftAlwaysTrue
+- booleanOr.leftAlwaysFalse
+- booleanOr.rightAlwaysTrue
+- booleanOr.rightAlwaysFalse
+- booleanOr.alwaysTrue
+- booleanOr.alwaysFalse
+- logicalOr.leftAlwaysTrue
+- logicalOr.leftAlwaysFalse
+- logicalOr.rightAlwaysTrue
+- logicalOr.rightAlwaysFalse
+- logicalOr.alwaysTrue
+- logicalOr.alwaysFalse
+
+PHPStan\Rules\Comparison\ConstantLooseComparisonRule
+- looseComparison.alwaysTrue
+- looseComparison.alwaysFalse
+
+PHPStan\Rules\Comparison\DoWhileLoopConstantConditionRule
+- doWhile.alwaysTrue
+- doWhile.alwaysFalse
+
+PHPStan\Rules\Comparison\ElseIfConstantConditionRule
+- elseif.alwaysTrue
+- elseif.alwaysFalse
+
+PHPStan\Rules\Comparison\IfConstantConditionRule
+- if.alwaysTrue
+- if.alwaysFalse
+
+PHPStan\Rules\Comparison\ImpossibleCheckTypeFunctionCallRule
+- function.alreadyNarrowedType
+- function.impossibleType
+
+PHPStan\Rules\Comparison\ImpossibleCheckTypeMethodCallRule
+- method.alreadyNarrowedType
+- method.impossibleType
+
+PHPStan\Rules\Comparison\ImpossibleCheckTypeStaticMethodCallRule
+- staticMethod.alreadyNarrowedType
+- staticMethod.impossibleType
+
+PHPStan\Rules\Comparison\MatchExpressionRule
+- match.alwaysTrue
+- match.alwaysFalse
+- match.unhandled
+
+PHPStan\Rules\Comparison\NumberComparisonOperatorsConstantConditionRule
+- comparison.alwaysTrue
+- comparison.alwaysFalse
+
+PHPStan\Rules\Comparison\StrictComparisonOfDifferentTypesRule
+- strictComparison.alwaysTrue
+- strictComparison.alwaysFalse
+
+PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule
+- ternary.alwaysTrue
+- ternary.alwaysFalse
+
+Skip (deprecated): PHPStan\Rules\Comparison\UnreachableIfBranchesRule
+
+Skip (deprecated): PHPStan\Rules\Comparison\UnreachableTernaryElseBranchRule
+
+PHPStan\Rules\Comparison\UsageOfVoidMatchExpressionRule
+- match.void
+
+PHPStan\Rules\Comparison\WhileLoopAlwaysFalseConditionRule
+- while.alwaysFalse
+
+PHPStan\Rules\Comparison\WhileLoopAlwaysTrueConditionRule
+- while.alwaysTrue
+
+PHPStan\Rules\Constants\ConstantRule
+- constant.notFound
+
+PHPStan\Rules\Constants\FinalConstantRule
+- classConstant.finalNotSupported
+
+PHPStan\Rules\Constants\MissingClassConstantTypehintRule
+- missingType.iterableValue
+- missingType.generics
+- missingType.callable
+
+PHPStan\Rules\Constants\OverridingConstantRule
+- classConstant.final
+- classConstant.visibility
+- classConstant.type
+
+PHPStan\Rules\DateTimeInstantiationRule
+- new.dateTime
+- new.dateTimeImmutable
+
+PHPStan\Rules\DeadCode\NoopRule
+- expr.resultUnused
+
+PHPStan\Rules\DeadCode\UnreachableStatementRule
+- deadCode.unreachable
+
+PHPStan\Rules\DeadCode\UnusedPrivateConstantRule
+- classConstant.unused
+
+PHPStan\Rules\DeadCode\UnusedPrivateMethodRule
+- method.unused
+
+PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule
+- property.unused
+
+PHPStan\Rules\Debug\DumpTypeRule
+- phpstan.dumpType
+
+PHPStan\Rules\Debug\FileAssertRule
+- phpstan.type
+- phpstan.nativeType
+- phpstan.variable
+
+PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- attribute.notFound (AttributesCheck)
+- attribute.notAttribute (AttributesCheck)
+- attribute.abstract (AttributesCheck)
+- attribute.target (AttributesCheck)
+- attribute.nonRepeatable (AttributesCheck)
+- attribute.deprecated (AttributesCheck)
+- attribute.noConstructor (AttributesCheck)
+- attribute.constructorNotPublic (AttributesCheck)
+- class.nameCase (AttributesCheck)
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- attribute.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
+- catch.alreadyCaught
+- catch.neverThrown
+
+PHPStan\Rules\Exceptions\CaughtExceptionExistenceRule
+- class.notFound
+- catch.notThrowable
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Exceptions\MissingCheckedExceptionInFunctionThrowsRule
+- missingType.checkedExceptionThrows (?)
+
+PHPStan\Rules\Exceptions\MissingCheckedExceptionInMethodThrowsRule
+- missingType.checkedExceptionThrows (?)
+
+PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
+- finally.exitPoint
+
+PHPStan\Rules\Exceptions\ThrowExpressionRule
+- throw.notSupported
+
+PHPStan\Rules\Exceptions\ThrowsVoidFunctionWithExplicitThrowPointRule
+- throws.void
+
+PHPStan\Rules\Exceptions\ThrowsVoidMethodWithExplicitThrowPointRule
+- throws.void
+
+PHPStan\Rules\Exceptions\TooWideFunctionThrowTypeRule
+- throws.unusedType
+
+PHPStan\Rules\Exceptions\TooWideMethodThrowTypeRule
+- throws.unusedType
+
+PHPStan\Rules\Functions\ArrayFilterRule
+- function.alreadyNarrowedType
+- function.impossibleType
+
+PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- attribute.notFound (AttributesCheck)
+- attribute.notAttribute (AttributesCheck)
+- attribute.abstract (AttributesCheck)
+- attribute.target (AttributesCheck)
+- attribute.nonRepeatable (AttributesCheck)
+- attribute.deprecated (AttributesCheck)
+- attribute.noConstructor (AttributesCheck)
+- attribute.constructorNotPublic (AttributesCheck)
+- class.nameCase (AttributesCheck)
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- attribute.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule
+- nullsafe.byRef
+
+PHPStan\Rules\Functions\ArrowFunctionReturnTypeRule
+- return.empty (FunctionReturnTypeCheck)
+- return.void (FunctionReturnTypeCheck)
+- return.type (FunctionReturnTypeCheck)
+- return.never (FunctionReturnTypeCheck)
+
+PHPStan\Rules\Functions\CallCallablesRule
+- class.notFound (RuleLevelHelper::findTypeToCheck())
+- callCallable.nonCallable
+- callCallable.inaccessibleMethod
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- callable.void (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- callable.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Functions\CallToFunctionParametersRule
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- function.void (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- function.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule
+- function.resultUnused
+
+PHPStan\Rules\Functions\CallToNonExistentFunctionRule
+- function.notFound
+- function.nameCase
+
+PHPStan\Rules\Functions\ClosureAttributesRule
+- attribute.notFound (AttributesCheck)
+- attribute.notAttribute (AttributesCheck)
+- attribute.abstract (AttributesCheck)
+- attribute.target (AttributesCheck)
+- attribute.nonRepeatable (AttributesCheck)
+- attribute.deprecated (AttributesCheck)
+- attribute.noConstructor (AttributesCheck)
+- attribute.constructorNotPublic (AttributesCheck)
+- class.nameCase (AttributesCheck)
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- attribute.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Functions\ClosureReturnTypeRule
+- return.empty (FunctionReturnTypeCheck)
+- return.void (FunctionReturnTypeCheck)
+- return.type (FunctionReturnTypeCheck)
+- return.never (FunctionReturnTypeCheck)
+
+PHPStan\Rules\Functions\DefineParametersRule
+- argument.unused
+
+PHPStan\Rules\Functions\DuplicateFunctionDeclarationRule
+- function.duplicate
+
+PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- parameter.requiredAfterOptional (FunctionDefinitionCheck)
+- parameter.unionTypeNotSupported (FunctionDefinitionCheck)
+- parameter.void (FunctionDefinitionCheck)
+- class.notFound (FunctionDefinitionCheck)
+- parameter.trait (FunctionDefinitionCheck)
+- return.trait (FunctionDefinitionCheck)
+- class.nameCase
+- interface.nameCase
+- enum.nameCase
+- parameter.unresolvableNativeType (FunctionDefinitionCheck)
+- return.unresolvableNativeType (FunctionDefinitionCheck)
+
+PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- parameter.requiredAfterOptional (FunctionDefinitionCheck)
+- parameter.unionTypeNotSupported (FunctionDefinitionCheck)
+- parameter.void (FunctionDefinitionCheck)
+- class.notFound (FunctionDefinitionCheck)
+- parameter.trait (FunctionDefinitionCheck)
+- return.trait (FunctionDefinitionCheck)
+- class.nameCase
+- interface.nameCase
+- enum.nameCase
+- parameter.unresolvableNativeType (FunctionDefinitionCheck)
+- return.unresolvableNativeType (FunctionDefinitionCheck)
+
+PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- parameter.requiredAfterOptional (FunctionDefinitionCheck)
+- parameter.unionTypeNotSupported (FunctionDefinitionCheck)
+- parameter.void (FunctionDefinitionCheck)
+- class.notFound (FunctionDefinitionCheck)
+- parameter.trait (FunctionDefinitionCheck)
+- return.trait (FunctionDefinitionCheck)
+- class.nameCase
+- interface.nameCase
+- enum.nameCase
+- parameter.unresolvableNativeType (FunctionDefinitionCheck)
+- return.unresolvableNativeType (FunctionDefinitionCheck)
+- function.templateTypeNotInParameter (FunctionDefinitionCheck)
+
+PHPStan\Rules\Functions\FunctionAttributesRule
+- attribute.notFound (AttributesCheck)
+- attribute.notAttribute (AttributesCheck)
+- attribute.abstract (AttributesCheck)
+- attribute.target (AttributesCheck)
+- attribute.nonRepeatable (AttributesCheck)
+- attribute.deprecated (AttributesCheck)
+- attribute.noConstructor (AttributesCheck)
+- attribute.constructorNotPublic (AttributesCheck)
+- class.nameCase (AttributesCheck)
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- attribute.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Functions\FunctionCallableRule
+- callable.notSupported
+- function.nameCase
+- function.notFound
+- class.notFound
+- callable.nonCallable
+
+PHPStan\Rules\Functions\ImplodeFunctionRule
+- argument.type
+
+PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule
+- parameter.defaultValue
+
+PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule
+- parameter.defaultValue
+
+PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
+- parameter.defaultValue
+
+PHPStan\Rules\Functions\InnerFunctionRule
+- function.inner
+
+PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule
+- missingType.parameter
+- missingType.iterableValue
+- missingType.generics
+- missingType.callable
+
+PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule
+- missingType.return
+- missingType.iterableValue
+- missingType.generics
+- missingType.callable
+
+PHPStan\Rules\Functions\ParamAttributesRule
+- attribute.notFound (AttributesCheck)
+- attribute.notAttribute (AttributesCheck)
+- attribute.abstract (AttributesCheck)
+- attribute.target (AttributesCheck)
+- attribute.nonRepeatable (AttributesCheck)
+- attribute.deprecated (AttributesCheck)
+- attribute.noConstructor (AttributesCheck)
+- attribute.constructorNotPublic (AttributesCheck)
+- class.nameCase (AttributesCheck)
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- attribute.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Functions\PrintfParametersRule
+- argument.printf
+
+PHPStan\Rules\Functions\RandomIntParametersRule
+- argument.type
+
+PHPStan\Rules\Functions\ReturnNullsafeByRefRule
+- nullsafe.byRef
+
+PHPStan\Rules\Functions\ReturnTypeRule
+- return.empty (FunctionReturnTypeCheck)
+- return.void (FunctionReturnTypeCheck)
+- return.type (FunctionReturnTypeCheck)
+- return.never (FunctionReturnTypeCheck)
+
+PHPStan\Rules\Functions\UnusedClosureUsesRule
+- closure.unusedUse
+
+PHPStan\Rules\Generators\YieldFromTypeRule
+- generator.keyType
+- generator.valueType
+- generator.sendType
+- generator.void
+
+PHPStan\Rules\Generators\YieldInGeneratorRule
+- generator.outOfFunction
+- generator.returnType
+
+PHPStan\Rules\Generators\YieldTypeRule
+- generator.keyType
+- generator.valueType
+- generator.void
+
+PHPStan\Rules\Generics\ClassAncestorsRule
+- generics.notCompatible (GenericAncestorsCheck)
+- generics.noParent (GenericAncestorsCheck)
+- generics.wrongParent (GenericAncestorsCheck)
+- class.notFound (GenericAncestorsCheck)
+- missingType.generics (GenericAncestorsCheck)
+- generics.notGeneric (GenericObjectTypeCheck)
+- generics.lessTypes (GenericObjectTypeCheck)
+- generics.moreTypes (GenericObjectTypeCheck)
+- generics.notSubtype (GenericObjectTypeCheck)
+- generics.interfaceConflict
+
+PHPStan\Rules\Generics\ClassTemplateTypeRule
+- generics.existingClass (TemplateTypeCheck)
+- generics.existingTypeAlias (TemplateTypeCheck)
+- class.notFound (TemplateTypeCheck)
+- generics.traitBound (TemplateTypeCheck)
+- generics.notSupportedBound (TemplateTypeCheck)
+
+PHPStan\Rules\Generics\EnumAncestorsRule
+- generics.notCompatible (GenericAncestorsCheck)
+- generics.noParent (GenericAncestorsCheck)
+- generics.wrongParent (GenericAncestorsCheck)
+- class.notFound (GenericAncestorsCheck)
+- missingType.generics (GenericAncestorsCheck)
+- generics.notGeneric (GenericObjectTypeCheck)
+- generics.lessTypes (GenericObjectTypeCheck)
+- generics.moreTypes (GenericObjectTypeCheck)
+- generics.notSubtype (GenericObjectTypeCheck)
+- generics.variance
+- generics.interfaceConflict
+
+PHPStan\Rules\Generics\EnumTemplateTypeRule
+- enum.generic
+
+PHPStan\Rules\Generics\FunctionSignatureVarianceRule
+- function.variance
+- generics.variance
+
+PHPStan\Rules\Generics\FunctionTemplateTypeRule
+- generics.existingClass (TemplateTypeCheck)
+- generics.existingTypeAlias (TemplateTypeCheck)
+- class.notFound (TemplateTypeCheck)
+- generics.traitBound (TemplateTypeCheck)
+- generics.notSupportedBound (TemplateTypeCheck)
+
+PHPStan\Rules\Generics\InterfaceAncestorsRule
+- generics.notCompatible (GenericAncestorsCheck)
+- generics.noParent (GenericAncestorsCheck)
+- generics.wrongParent (GenericAncestorsCheck)
+- class.notFound (GenericAncestorsCheck)
+- missingType.generics (GenericAncestorsCheck)
+- generics.notGeneric (GenericObjectTypeCheck)
+- generics.lessTypes (GenericObjectTypeCheck)
+- generics.moreTypes (GenericObjectTypeCheck)
+- generics.notSubtype (GenericObjectTypeCheck)
+- generics.variance
+- generics.interfaceConflict
+
+PHPStan\Rules\Generics\InterfaceTemplateTypeRule
+- generics.existingClass (TemplateTypeCheck)
+- generics.existingTypeAlias (TemplateTypeCheck)
+- class.notFound (TemplateTypeCheck)
+- generics.traitBound (TemplateTypeCheck)
+- generics.notSupportedBound (TemplateTypeCheck)
+
+PHPStan\Rules\Generics\MethodSignatureVarianceRule
+- method.variance
+- generics.variance
+
+PHPStan\Rules\Generics\MethodTemplateTypeRule
+- method.shadowTemplate
+- generics.existingClass (TemplateTypeCheck)
+- generics.existingTypeAlias (TemplateTypeCheck)
+- class.notFound (TemplateTypeCheck)
+- generics.traitBound (TemplateTypeCheck)
+- generics.notSupportedBound (TemplateTypeCheck)
+
+PHPStan\Rules\Generics\TraitTemplateTypeRule
+- generics.existingClass (TemplateTypeCheck)
+- generics.existingTypeAlias (TemplateTypeCheck)
+- class.notFound (TemplateTypeCheck)
+- generics.traitBound (TemplateTypeCheck)
+- generics.notSupportedBound (TemplateTypeCheck)
+
+PHPStan\Rules\Generics\UsedTraitsRule
+- generics.notCompatible (GenericAncestorsCheck)
+- generics.noParent (GenericAncestorsCheck)
+- generics.wrongParent (GenericAncestorsCheck)
+- class.notFound (GenericAncestorsCheck)
+- missingType.generics (GenericAncestorsCheck)
+- generics.notGeneric (GenericObjectTypeCheck)
+- generics.lessTypes (GenericObjectTypeCheck)
+- generics.moreTypes (GenericObjectTypeCheck)
+- generics.notSubtype (GenericObjectTypeCheck)
+- generics.variance
+
+PHPStan\Rules\Keywords\ContinueBreakInLoopRule
+- continue.outOfLoop
+- break.outOfLoop
+
+PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
+- method.abstract
+
+PHPStan\Rules\Methods\CallMethodsRule
+- class.notFound
+- method.nonObject
+- method.private
+- method.notFound
+- method.private
+- method.protected
+- method.nameCase
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- method.void (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- method.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Methods\CallPrivateMethodThroughStaticRule
+- staticClassAccess.privateMethod
+
+PHPStan\Rules\Methods\CallStaticMethodsRule
+- outOfClass.self
+- outOfClass.static
+- outOfClass.parent
+- class.noParent
+- class.notFound
+- staticMethod.nonObject
+- staticMethod.notFound
+- method.staticCall
+- staticMethod.private
+- staticMethod.protected
+- method.private
+- method.protected
+- staticMethod.callToAbstract
+- method.callToAbstract
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- staticMethod.void (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- staticMethod.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
+- new.resultUnused
+
+PHPStan\Rules\Methods\CallToMethodStatementWithoutSideEffectsRule
+- method.resultUnused
+
+PHPStan\Rules\Methods\CallToStaticMethodStatementWithoutSideEffectsRule
+- staticMethod.resultUnused
+
+PHPStan\Rules\Methods\ConsistentConstructorRule
+- parameter.missing (MethodParameterComparisonHelper)
+- parameter.notByRef (MethodParameterComparisonHelper)
+- parameter.byRef (MethodParameterComparisonHelper)
+- parameter.notOptional (MethodParameterComparisonHelper)
+- parameter.notVariadic (MethodParameterComparisonHelper)
+- parameter.variadic (MethodParameterComparisonHelper)
+- method.childReturnType
+- method.childParameterType
+
+PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+- parameter.requiredAfterOptional (FunctionDefinitionCheck)
+- parameter.unionTypeNotSupported (FunctionDefinitionCheck)
+- parameter.void (FunctionDefinitionCheck)
+- class.notFound (FunctionDefinitionCheck)
+- parameter.trait (FunctionDefinitionCheck)
+- return.trait (FunctionDefinitionCheck)
+- class.nameCase
+- interface.nameCase
+- enum.nameCase
+- parameter.unresolvableNativeType (FunctionDefinitionCheck)
+- return.unresolvableNativeType (FunctionDefinitionCheck)
+- method.templateTypeNotInParameter (FunctionDefinitionCheck)
+
+PHPStan\Rules\Methods\FinalPrivateMethodRule
+- method.finalPrivate
+
+PHPStan\Rules\Methods\IllegalConstructorMethodCallRule
+- constructor.call
+
+PHPStan\Rules\Methods\IllegalConstructorStaticCallRule
+- constructor.call
+
+PHPStan\Rules\Methods\IncompatibleDefaultParameterTypeRule
+- parameter.defaultValue
+
+PHPStan\Rules\Methods\MethodAttributesRule
+- attribute.notFound (AttributesCheck)
+- attribute.notAttribute (AttributesCheck)
+- attribute.abstract (AttributesCheck)
+- attribute.target (AttributesCheck)
+- attribute.nonRepeatable (AttributesCheck)
+- attribute.deprecated (AttributesCheck)
+- attribute.noConstructor (AttributesCheck)
+- attribute.constructorNotPublic (AttributesCheck)
+- class.nameCase (AttributesCheck)
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- attribute.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Methods\MethodCallableRule
+- callable.notSupported
+- callable.nonNativeMethod
+- class.notFound
+- method.nonObject
+- method.private
+- method.notFound
+- method.private
+- method.protected
+- method.nameCase
+
+PHPStan\Rules\Methods\MethodSignatureRule
+- method.childReturnType
+- method.childParameterType
+
+PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule
+- class.serializable
+
+PHPStan\Rules\Methods\MissingMethodImplementationRule
+- method.abstract
+
+PHPStan\Rules\Methods\MissingMethodParameterTypehintRule
+- missingType.parameter
+- missingType.iterableValue
+- missingType.generics
+- missingType.callable
+
+PHPStan\Rules\Methods\MissingMethodReturnTypehintRule
+- missingType.return
+- missingType.iterableValue
+- missingType.generics
+- missingType.callable
+
+PHPStan\Rules\Methods\NullsafeMethodCallRule
+- nullsafe.neverNull
+
+PHPStan\Rules\Methods\OverridingMethodRule
+- parameter.missing (MethodParameterComparisonHelper)
+- parameter.notByRef (MethodParameterComparisonHelper)
+- parameter.byRef (MethodParameterComparisonHelper)
+- parameter.notOptional (MethodParameterComparisonHelper)
+- parameter.notVariadic (MethodParameterComparisonHelper)
+- parameter.variadic (MethodParameterComparisonHelper)
+- method.childReturnType
+- method.childParameterType
+- method.parentMethodFinal
+- method.static
+- method.nonStatic
+- method.visibility
+- method.tentativeReturnType
+
+PHPStan\Rules\Methods\ReturnTypeRule
+- return.empty (FunctionReturnTypeCheck)
+- return.void (FunctionReturnTypeCheck)
+- return.type (FunctionReturnTypeCheck)
+- return.never (FunctionReturnTypeCheck)
+
+PHPStan\Rules\Methods\StaticMethodCallableRule
+- callable.notSupported
+- callable.nonNativeMethod
+- outOfClass.self
+- outOfClass.static
+- outOfClass.parent
+- class.noParent
+- class.notFound
+- staticMethod.nonObject
+- staticMethod.notFound
+- method.staticCall
+- staticMethod.private
+- staticMethod.protected
+- method.private
+- method.protected
+- staticMethod.callToAbstract
+- method.callToAbstract
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Missing\MissingReturnRule
+- return.missing
+- return.never
+
+PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule
+- constant.notFound
+- function.notFound
+- function.nameCase
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Namespaces\ExistingNamesInUseRule
+- constant.notFound
+- function.notFound
+- function.nameCase
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Operators\InvalidAssignVarRule
+- nullsafe.assign
+- nullsafe.byRef
+- assign.invalidExpr
+
+PHPStan\Rules\Operators\InvalidBinaryOperationRule
+- binaryOp.invalid
+- assignOp.invalid
+
+PHPStan\Rules\Operators\InvalidComparisonOperationRule
+- comparison.invalid
+
+PHPStan\Rules\Operators\InvalidIncDecOperationRule
+- inc.expr
+- inc.type
+- dec.expr
+- dec.type
+
+PHPStan\Rules\Operators\InvalidUnaryOperationRule
+- unaryOp.invalid
+
+PHPStan\Rules\PhpDoc\FunctionAssertRule
+- parameter.notFound
+- assert.impossibleType
+- assert.alreadyNarrowedType
+
+PHPStan\Rules\PhpDoc\FunctionConditionalReturnTypeRule
+- conditionalType.subjectNotFound
+- parameter.notFound
+- conditionalType.alwaysTrue
+- conditionalType.alwaysFalse
+
+PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
+- classConstant.unresolvableType
+- classConstant.phpDocType
+- generics.notGeneric (GenericObjectTypeCheck)
+- generics.lessTypes (GenericObjectTypeCheck)
+- generics.moreTypes (GenericObjectTypeCheck)
+- generics.notSubtype (GenericObjectTypeCheck)
+
+PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+- parameter.notFound
+- parameter.unresolvableType
+- parameter.phpDocType
+- parameter.byRef
+- return.unresolvableType
+- return.phpDocType
+- generics.notGeneric (GenericObjectTypeCheck)
+- generics.lessTypes (GenericObjectTypeCheck)
+- generics.moreTypes (GenericObjectTypeCheck)
+- generics.notSubtype (GenericObjectTypeCheck)
+
+PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
+- property.unresolvableType
+- property.phpDocType
+- generics.notGeneric (GenericObjectTypeCheck)
+- generics.lessTypes (GenericObjectTypeCheck)
+- generics.moreTypes (GenericObjectTypeCheck)
+- generics.notSubtype (GenericObjectTypeCheck)
+
+PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule
+- selfOut.type
+
+PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
+- phpDoc.phpstanTag
+
+PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
+- phpDoc.parseError
+
+PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+- varTag.unresolvableType
+- missingType.iterableValue
+- missingType.generics
+- varTag.trait
+- class.notFound
+- generics.notGeneric (GenericObjectTypeCheck)
+- generics.lessTypes (GenericObjectTypeCheck)
+- generics.moreTypes (GenericObjectTypeCheck)
+- generics.notSubtype (GenericObjectTypeCheck)
+
+PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule
+- throws.notThrowable
+
+PHPStan\Rules\PhpDoc\MethodAssertRule
+- parameter.notFound
+- assert.impossibleType
+- assert.alreadyNarrowedType
+
+PHPStan\Rules\PhpDoc\MethodConditionalReturnTypeRule
+- conditionalType.subjectNotFound
+- parameter.notFound
+- conditionalType.alwaysTrue
+- conditionalType.alwaysFalse
+
+PHPStan\Rules\PhpDoc\VarTagChangedExpressionTypeRule
+- varTag.nativeType
+- varTag.type
+
+PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+- varTag.onFunction
+- varTag.onInterface
+- varTag.onClass
+- varTag.onEnum
+- varTag.onMethod
+- varTag.multipleTags
+- varTag.noVariable
+- varTag.differentVariable
+- varTag.variableNotFound
+- varTag.nativeType
+- varTag.type
+
+PHPStan\Rules\Properties\AccessPrivatePropertyThroughStaticRule
+- staticClassAccess.privateProperty
+
+PHPStan\Rules\Properties\AccessPropertiesInAssignRule (same as AccessPropertiesRule)
+
+PHPStan\Rules\Properties\AccessPropertiesRule
+- class.notFound
+- property.nonObject
+- property.private
+- property.notFound
+- property.protected
+
+PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule (same as AccessStaticPropertiesRule)
+
+PHPStan\Rules\Properties\AccessStaticPropertiesRule
+- outOfClass.self
+- outOfClass.static
+- outOfClass.parent
+- class.noParent
+- class.notFound
+- staticProperty.nonObject
+- staticProperty.private
+- staticProperty.notFound
+- property.staticAccess
+- staticProperty.private
+- staticProperty.protectedConstructor
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Properties\DefaultValueTypesAssignedToPropertiesRule
+- property.defaultValue
+
+PHPStan\Rules\Properties\ExistingClassesInPropertiesRule
+- class.nameCase
+- interface.nameCase
+- trait.nameCase
+- enum.nameCase
+
+PHPStan\Rules\Properties\MissingPropertyTypehintRule
+- missingType.property
+- missingType.iterableValue
+- missingType.generics
+- missingType.callable
+
+PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule
+- property.uninitializedReadonlyByPhpDoc
+- assign.readOnlyPropertyByPhpDoc
+
+PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
+- property.uninitializedReadonly
+- assign.readOnlyProperty
+
+PHPStan\Rules\Properties\NullsafePropertyFetchRule
+- nullsafe.neverNull
+
+PHPStan\Rules\Properties\OverridingPropertyRule
+- property.static
+- property.nonStatic
+- property.readOnly
+- property.readWrite
+- property.missingNativeType
+- property.nativeType
+- property.phpDocType
+
+PHPStan\Rules\Properties\PropertyAttributesRule
+- attribute.notFound (AttributesCheck)
+- attribute.notAttribute (AttributesCheck)
+- attribute.abstract (AttributesCheck)
+- attribute.target (AttributesCheck)
+- attribute.nonRepeatable (AttributesCheck)
+- attribute.deprecated (AttributesCheck)
+- attribute.noConstructor (AttributesCheck)
+- attribute.constructorNotPublic (AttributesCheck)
+- class.nameCase (AttributesCheck)
+- argument.unpackAfterNamed (FunctionCallParametersCheck)
+- argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- argument.namedNotSupported (FunctionCallParametersCheck)
+- argument.unpackNonIterable (FunctionCallParametersCheck)
+- argument.byRef (FunctionCallParametersCheck)
+- argument.positionalAfterNamed (FunctionCallParametersCheck)
+- argument.duplicate (FunctionCallParametersCheck)
+- arguments.count (FunctionCallParametersCheck)
+- argument.type (FunctionCallParametersCheck)
+- argument.templateType (FunctionCallParametersCheck)
+- argument.missing (FunctionCallParametersCheck)
+- argument.unknown (FunctionCallParametersCheck)
+- attribute.unresolvableReturnType (FunctionCallParametersCheck)
+- argument.unresolvableType (FunctionCallParametersCheck)
+
+PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRefRule
+- property.readOnlyByPhpDocAssignByRef
+
+PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule
+- property.readOnlyByPhpDocAssignOutOfClass
+- property.readOnlyByPhpDocAssignNotOnThis
+- property.readOnlyByPhpDocAssignNotInConstructor
+
+PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyRule
+- property.readOnlyByPhpDocDefaultValue
+
+PHPStan\Rules\Properties\ReadOnlyPropertyAssignRefRule
+- property.readOnlyAssignByRef
+
+PHPStan\Rules\Properties\ReadOnlyPropertyAssignRule
+- property.readOnlyAssignOutOfClass
+- property.readOnlyAssignNotOnThis
+- property.readOnlyAssignNotInConstructor
+
+PHPStan\Rules\Properties\ReadOnlyPropertyRule
+- property.readOnlyNotSupported
+- property.readOnlyNoNativeType
+- property.readOnlyDefaultValue
+- property.readOnlyStatic
+
+PHPStan\Rules\Properties\ReadingWriteOnlyPropertiesRule
+- property.writeOnly
+
+PHPStan\Rules\Properties\TypesAssignedToPropertiesRule
+- assign.propertyType
+
+PHPStan\Rules\Properties\UninitializedPropertyRule
+- property.uninitialized
+
+PHPStan\Rules\Properties\WritingToReadOnlyPropertiesRule
+- assign.propertyReadOnly
+
+PHPStan\Rules\Regexp\RegularExpressionPatternRule
+- regexp.pattern
+
+PHPStan\Rules\TooWideTypehints\TooWideArrowFunctionReturnTypehintRule
+- return.unusedType
+
+PHPStan\Rules\TooWideTypehints\TooWideClosureReturnTypehintRule
+- return.unusedType
+
+PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
+- return.unusedType
+
+PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule
+- return.unusedType
+
+PHPStan\Rules\Traits\NotAnalysedTraitRule
+- trait.unused
+
+PHPStan\Rules\Variables\CompactVariablesRule
+- variable.undefined
+
+PHPStan\Rules\Variables\DefinedVariableRule
+- variable.undefined
+
+PHPStan\Rules\Variables\EmptyRule
+- empty.variable (IssetCheck)
+- empty.offset (IssetCheck)
+- empty.property (IssetCheck)
+- empty.expr (IssetCheck)
+- empty.nullsafe (IssetCheck)
+
+PHPStan\Rules\Variables\IssetRule
+- isset.variable (IssetCheck)
+- isset.offset (IssetCheck)
+- isset.property (IssetCheck)
+- isset.expr (IssetCheck)
+- isset.nullsafe (IssetCheck)
+
+PHPStan\Rules\Variables\NullCoalesceRule
+- nullCoalesce.variable (IssetCheck)
+- nullCoalesce.offset (IssetCheck)
+- nullCoalesce.property (IssetCheck)
+- nullCoalesce.expr (IssetCheck)
+- nullCoalesce.nullsafe (IssetCheck)
+
+PHPStan\Rules\Variables\ThrowTypeRule
+- class.notFound
+- throw.notThrowable
+
+PHPStan\Rules\Variables\UnsetRule
+- unset.variable
+- unset.offset
+
+PHPStan\Rules\Variables\VariableCloningRule
+- class.notFound
+- clone.nonObject
+
+PHPStan\Rules\Whitespace\FileWhitespaceRule
+- whitespace.bom
+- whitespace.fileEnd

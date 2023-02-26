@@ -1,0 +1,1851 @@
+Identifiers: 426
+Rules: 226
+
+argument.byRef (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.duplicate (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.missing (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.namedNotSupported (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.nonUnpackAfterUnpacked (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.positionalAfterNamed (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.printf
+- PHPStan\Rules\Functions\PrintfParametersRule
+
+argument.templateType (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.type
+- PHPStan\Rules\Functions\ImplodeFunctionRule
+- PHPStan\Rules\Functions\RandomIntParametersRule
+
+argument.type (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.unknown (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.unpackAfterNamed (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.unpackNonIterable (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.unresolvableType (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+argument.unused
+- PHPStan\Rules\Functions\DefineParametersRule
+
+arguments.count (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\CallCallablesRule
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+array.duplicateKey
+- PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
+
+array.emptyItem
+- PHPStan\Rules\Arrays\EmptyArrayItemRule
+
+array.invalidKey
+- PHPStan\Rules\Arrays\InvalidKeyInArrayItemRule
+
+arrayUnpacking.nonIterable
+- PHPStan\Rules\Arrays\UnpackIterableInArrayRule
+
+arrayUnpacking.stringOffset
+- PHPStan\Rules\Arrays\ArrayUnpackingRule
+
+assert.alreadyNarrowedType
+- PHPStan\Rules\PhpDoc\FunctionAssertRule
+- PHPStan\Rules\PhpDoc\MethodAssertRule
+
+assert.impossibleType
+- PHPStan\Rules\PhpDoc\FunctionAssertRule
+- PHPStan\Rules\PhpDoc\MethodAssertRule
+
+assign.invalidExpr
+- PHPStan\Rules\Operators\InvalidAssignVarRule
+
+assign.propertyReadOnly
+- PHPStan\Rules\Properties\WritingToReadOnlyPropertiesRule
+
+assign.propertyType
+- PHPStan\Rules\Properties\TypesAssignedToPropertiesRule
+
+assign.readOnlyProperty
+- PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
+
+assign.readOnlyPropertyByPhpDoc
+- PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule
+
+assignOp.invalid
+- PHPStan\Rules\Operators\InvalidBinaryOperationRule
+
+attribute.abstract
+- PHPStan\Rules\Classes\NonClassAttributeClassRule
+
+attribute.abstract (AttributesCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+attribute.constructorNotPublic
+- PHPStan\Rules\Classes\NonClassAttributeClassRule
+
+attribute.constructorNotPublic (AttributesCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+attribute.deprecated (AttributesCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+attribute.enum
+- PHPStan\Rules\Classes\NonClassAttributeClassRule
+
+attribute.interface
+- PHPStan\Rules\Classes\NonClassAttributeClassRule
+
+attribute.noConstructor (AttributesCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+attribute.nonRepeatable (AttributesCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+attribute.notAttribute (AttributesCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+attribute.notFound (AttributesCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+attribute.target (AttributesCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+attribute.trait
+- PHPStan\Rules\Classes\TraitAttributeClassRule
+
+attribute.unresolvableReturnType (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+binaryOp.invalid
+- PHPStan\Rules\Operators\InvalidBinaryOperationRule
+
+booleanAnd.alwaysFalse
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+booleanAnd.alwaysTrue
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+booleanAnd.leftAlwaysFalse
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+booleanAnd.leftAlwaysTrue
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+booleanAnd.rightAlwaysFalse
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+booleanAnd.rightAlwaysTrue
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+booleanNot.alwaysFalse
+- PHPStan\Rules\Comparison\BooleanNotConstantConditionRule
+
+booleanNot.alwaysTrue
+- PHPStan\Rules\Comparison\BooleanNotConstantConditionRule
+
+booleanOr.alwaysFalse
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+booleanOr.alwaysTrue
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+booleanOr.leftAlwaysFalse
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+booleanOr.leftAlwaysTrue
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+booleanOr.rightAlwaysFalse
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+booleanOr.rightAlwaysTrue
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+break.outOfLoop
+- PHPStan\Rules\Keywords\ContinueBreakInLoopRule
+
+callCallable.inaccessibleMethod
+- PHPStan\Rules\Functions\CallCallablesRule
+
+callCallable.nonCallable
+- PHPStan\Rules\Functions\CallCallablesRule
+
+callable.nonCallable
+- PHPStan\Rules\Functions\FunctionCallableRule
+
+callable.nonNativeMethod
+- PHPStan\Rules\Methods\MethodCallableRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+
+callable.notSupported
+- PHPStan\Rules\Classes\InstantiationCallableRule
+- PHPStan\Rules\Functions\FunctionCallableRule
+- PHPStan\Rules\Methods\MethodCallableRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+
+callable.unresolvableReturnType (FunctionCallParametersCheck)
+- PHPStan\Rules\Functions\CallCallablesRule
+
+callable.void (FunctionCallParametersCheck)
+- PHPStan\Rules\Functions\CallCallablesRule
+
+cast.bool
+- PHPStan\Rules\Cast\InvalidCastRule
+
+cast.double
+- PHPStan\Rules\Cast\InvalidCastRule
+
+cast.int
+- PHPStan\Rules\Cast\InvalidCastRule
+
+cast.string
+- PHPStan\Rules\Cast\InvalidCastRule
+
+cast.unset
+- PHPStan\Rules\Cast\UnsetCastRule
+
+catch.alreadyCaught
+- PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
+
+catch.neverThrown
+- PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
+
+catch.notThrowable
+- PHPStan\Rules\Exceptions\CaughtExceptionExistenceRule
+
+class.disallowedSubtype
+- PHPStan\Rules\Classes\AllowedSubTypesRule
+
+class.duplicate
+- PHPStan\Rules\Classes\DuplicateClassDeclarationRule
+
+class.duplicateConstant
+- PHPStan\Rules\Classes\DuplicateDeclarationRule
+
+class.duplicateEnumCase
+- PHPStan\Rules\Classes\DuplicateDeclarationRule
+
+class.duplicateMethod
+- PHPStan\Rules\Classes\DuplicateDeclarationRule
+
+class.duplicateProperty
+- PHPStan\Rules\Classes\DuplicateDeclarationRule
+
+class.extendsEnum
+- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+
+class.extendsFinal
+- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+
+class.extendsFinalByPhpDoc
+- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+
+class.extendsInterface
+- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+
+class.extendsTrait
+- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+
+class.implementsClass
+- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
+
+class.implementsEnum
+- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
+
+class.implementsTrait
+- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
+
+class.nameCase
+- PHPStan\Rules\Classes\ClassConstantRule
+- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+- PHPStan\Rules\Classes\ExistingClassInInstanceOfRule
+- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
+- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
+- PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
+- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\Classes\MixinRule
+- PHPStan\Rules\Exceptions\CaughtExceptionExistenceRule
+- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+- PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule
+- PHPStan\Rules\Namespaces\ExistingNamesInUseRule
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+- PHPStan\Rules\Properties\ExistingClassesInPropertiesRule
+
+class.nameCase (AttributesCheck)
+- PHPStan\Rules\Classes\ClassAttributesRule
+- PHPStan\Rules\Classes\ClassConstantAttributesRule
+- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
+- PHPStan\Rules\Functions\ClosureAttributesRule
+- PHPStan\Rules\Functions\FunctionAttributesRule
+- PHPStan\Rules\Functions\ParamAttributesRule
+- PHPStan\Rules\Methods\MethodAttributesRule
+- PHPStan\Rules\Properties\PropertyAttributesRule
+
+class.noParent
+- PHPStan\Rules\Classes\ClassConstantRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+
+class.notFound
+- PHPStan\Rules\Classes\ClassConstantRule
+- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+- PHPStan\Rules\Classes\ExistingClassInInstanceOfRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\Classes\LocalTypeAliasesRule
+- PHPStan\Rules\Classes\MixinRule
+- PHPStan\Rules\Exceptions\CaughtExceptionExistenceRule
+- PHPStan\Rules\Functions\FunctionCallableRule
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodCallableRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+- PHPStan\Rules\Properties\AccessPropertiesRule
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+- PHPStan\Rules\Variables\ThrowTypeRule
+- PHPStan\Rules\Variables\VariableCloningRule
+
+class.notFound (FunctionDefinitionCheck)
+- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+
+class.notFound (GenericAncestorsCheck)
+- PHPStan\Rules\Generics\ClassAncestorsRule
+- PHPStan\Rules\Generics\EnumAncestorsRule
+- PHPStan\Rules\Generics\InterfaceAncestorsRule
+- PHPStan\Rules\Generics\UsedTraitsRule
+
+class.notFound (RuleLevelHelper::findTypeToCheck())
+- PHPStan\Rules\Arrays\IterableInForeachRule
+- PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchRule
+- PHPStan\Rules\Functions\CallCallablesRule
+
+class.notFound (TemplateTypeCheck)
+- PHPStan\Rules\Generics\ClassTemplateTypeRule
+- PHPStan\Rules\Generics\FunctionTemplateTypeRule
+- PHPStan\Rules\Generics\InterfaceTemplateTypeRule
+- PHPStan\Rules\Generics\MethodTemplateTypeRule
+- PHPStan\Rules\Generics\TraitTemplateTypeRule
+
+class.serializable
+- PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule
+
+classConstant.dynamicString
+- PHPStan\Rules\Classes\ClassConstantRule
+
+classConstant.final
+- PHPStan\Rules\Constants\OverridingConstantRule
+
+classConstant.finalNotSupported
+- PHPStan\Rules\Constants\FinalConstantRule
+
+classConstant.nonObject
+- PHPStan\Rules\Classes\ClassConstantRule
+
+classConstant.notFound
+- PHPStan\Rules\Classes\ClassConstantRule
+
+classConstant.notSupported
+- PHPStan\Rules\Classes\ClassConstantRule
+
+classConstant.phpDocType
+- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
+
+classConstant.private
+- PHPStan\Rules\Classes\ClassConstantRule
+
+classConstant.protected
+- PHPStan\Rules\Classes\ClassConstantRule
+
+classConstant.type
+- PHPStan\Rules\Constants\OverridingConstantRule
+
+classConstant.unresolvableType
+- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
+
+classConstant.unused
+- PHPStan\Rules\DeadCode\UnusedPrivateConstantRule
+
+classConstant.visibility
+- PHPStan\Rules\Constants\OverridingConstantRule
+
+clone.nonObject
+- PHPStan\Rules\Variables\VariableCloningRule
+
+closure.unusedUse
+- PHPStan\Rules\Functions\UnusedClosureUsesRule
+
+comparison.alwaysFalse
+- PHPStan\Rules\Comparison\NumberComparisonOperatorsConstantConditionRule
+
+comparison.alwaysTrue
+- PHPStan\Rules\Comparison\NumberComparisonOperatorsConstantConditionRule
+
+comparison.invalid
+- PHPStan\Rules\Operators\InvalidComparisonOperationRule
+
+conditionalType.alwaysFalse
+- PHPStan\Rules\PhpDoc\FunctionConditionalReturnTypeRule
+- PHPStan\Rules\PhpDoc\MethodConditionalReturnTypeRule
+
+conditionalType.alwaysTrue
+- PHPStan\Rules\PhpDoc\FunctionConditionalReturnTypeRule
+- PHPStan\Rules\PhpDoc\MethodConditionalReturnTypeRule
+
+conditionalType.subjectNotFound
+- PHPStan\Rules\PhpDoc\FunctionConditionalReturnTypeRule
+- PHPStan\Rules\PhpDoc\MethodConditionalReturnTypeRule
+
+constant.notFound
+- PHPStan\Rules\Constants\ConstantRule
+- PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule
+- PHPStan\Rules\Namespaces\ExistingNamesInUseRule
+
+constructor.call
+- PHPStan\Rules\Methods\IllegalConstructorMethodCallRule
+- PHPStan\Rules\Methods\IllegalConstructorStaticCallRule
+
+constructor.unusedParameter
+- PHPStan\Rules\Classes\UnusedConstructorParametersRule
+
+continue.outOfLoop
+- PHPStan\Rules\Keywords\ContinueBreakInLoopRule
+
+deadCode.unreachable
+- PHPStan\Rules\DeadCode\UnreachableStatementRule
+
+dec.expr
+- PHPStan\Rules\Operators\InvalidIncDecOperationRule
+
+dec.type
+- PHPStan\Rules\Operators\InvalidIncDecOperationRule
+
+doWhile.alwaysFalse
+- PHPStan\Rules\Comparison\DoWhileLoopConstantConditionRule
+
+doWhile.alwaysTrue
+- PHPStan\Rules\Comparison\DoWhileLoopConstantConditionRule
+
+echo.nonString
+- PHPStan\Rules\Cast\EchoRule
+
+elseif.alwaysFalse
+- PHPStan\Rules\Comparison\ElseIfConstantConditionRule
+
+elseif.alwaysTrue
+- PHPStan\Rules\Comparison\ElseIfConstantConditionRule
+
+empty.expr (IssetCheck)
+- PHPStan\Rules\Variables\EmptyRule
+
+empty.nullsafe (IssetCheck)
+- PHPStan\Rules\Variables\EmptyRule
+
+empty.offset (IssetCheck)
+- PHPStan\Rules\Variables\EmptyRule
+
+empty.property (IssetCheck)
+- PHPStan\Rules\Variables\EmptyRule
+
+empty.variable (IssetCheck)
+- PHPStan\Rules\Variables\EmptyRule
+
+encapsedStringPart.nonString
+- PHPStan\Rules\Cast\InvalidPartOfEncapsedStringRule
+
+enum.abstractMethod
+- PHPStan\Rules\Classes\EnumSanityRule
+
+enum.backingType
+- PHPStan\Rules\Classes\EnumSanityRule
+
+enum.constructor
+- PHPStan\Rules\Classes\EnumSanityRule
+
+enum.destructor
+- PHPStan\Rules\Classes\EnumSanityRule
+
+enum.generic
+- PHPStan\Rules\Generics\EnumTemplateTypeRule
+
+enum.implementsClass
+- PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
+
+enum.implementsEnum
+- PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
+
+enum.implementsTrait
+- PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
+
+enum.magicMethod
+- PHPStan\Rules\Classes\EnumSanityRule
+
+enum.methodRedeclaration
+- PHPStan\Rules\Classes\EnumSanityRule
+
+enum.nameCase
+- PHPStan\Rules\Classes\ClassConstantRule
+- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+- PHPStan\Rules\Classes\ExistingClassInInstanceOfRule
+- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
+- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
+- PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
+- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\Classes\MixinRule
+- PHPStan\Rules\Exceptions\CaughtExceptionExistenceRule
+- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+- PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule
+- PHPStan\Rules\Namespaces\ExistingNamesInUseRule
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+- PHPStan\Rules\Properties\ExistingClassesInPropertiesRule
+
+enum.serializable
+- PHPStan\Rules\Classes\EnumSanityRule
+
+expr.resultUnused
+- PHPStan\Rules\DeadCode\NoopRule
+
+finally.exitPoint
+- PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
+
+foreach.emptyArray
+- PHPStan\Rules\Arrays\DeadForeachRule
+
+foreach.nonIterable
+- PHPStan\Rules\Arrays\IterableInForeachRule
+
+function.alreadyNarrowedType
+- PHPStan\Rules\Comparison\ImpossibleCheckTypeFunctionCallRule
+- PHPStan\Rules\Functions\ArrayFilterRule
+
+function.duplicate
+- PHPStan\Rules\Functions\DuplicateFunctionDeclarationRule
+
+function.impossibleType
+- PHPStan\Rules\Comparison\ImpossibleCheckTypeFunctionCallRule
+- PHPStan\Rules\Functions\ArrayFilterRule
+
+function.inner
+- PHPStan\Rules\Functions\InnerFunctionRule
+
+function.nameCase
+- PHPStan\Rules\Functions\CallToNonExistentFunctionRule
+- PHPStan\Rules\Functions\FunctionCallableRule
+- PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule
+- PHPStan\Rules\Namespaces\ExistingNamesInUseRule
+
+function.notFound
+- PHPStan\Rules\Functions\CallToNonExistentFunctionRule
+- PHPStan\Rules\Functions\FunctionCallableRule
+- PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule
+- PHPStan\Rules\Namespaces\ExistingNamesInUseRule
+
+function.resultUnused
+- PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule
+
+function.templateTypeNotInParameter (FunctionDefinitionCheck)
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+
+function.unresolvableReturnType (FunctionCallParametersCheck)
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+
+function.variance
+- PHPStan\Rules\Generics\FunctionSignatureVarianceRule
+
+function.void (FunctionCallParametersCheck)
+- PHPStan\Rules\Functions\CallToFunctionParametersRule
+
+generator.keyType
+- PHPStan\Rules\Generators\YieldFromTypeRule
+- PHPStan\Rules\Generators\YieldTypeRule
+
+generator.outOfFunction
+- PHPStan\Rules\Generators\YieldInGeneratorRule
+
+generator.returnType
+- PHPStan\Rules\Generators\YieldInGeneratorRule
+
+generator.sendType
+- PHPStan\Rules\Generators\YieldFromTypeRule
+
+generator.valueType
+- PHPStan\Rules\Generators\YieldFromTypeRule
+- PHPStan\Rules\Generators\YieldTypeRule
+
+generator.void
+- PHPStan\Rules\Generators\YieldFromTypeRule
+- PHPStan\Rules\Generators\YieldTypeRule
+
+generics.existingClass (TemplateTypeCheck)
+- PHPStan\Rules\Generics\ClassTemplateTypeRule
+- PHPStan\Rules\Generics\FunctionTemplateTypeRule
+- PHPStan\Rules\Generics\InterfaceTemplateTypeRule
+- PHPStan\Rules\Generics\MethodTemplateTypeRule
+- PHPStan\Rules\Generics\TraitTemplateTypeRule
+
+generics.existingTypeAlias (TemplateTypeCheck)
+- PHPStan\Rules\Generics\ClassTemplateTypeRule
+- PHPStan\Rules\Generics\FunctionTemplateTypeRule
+- PHPStan\Rules\Generics\InterfaceTemplateTypeRule
+- PHPStan\Rules\Generics\MethodTemplateTypeRule
+- PHPStan\Rules\Generics\TraitTemplateTypeRule
+
+generics.interfaceConflict
+- PHPStan\Rules\Generics\ClassAncestorsRule
+- PHPStan\Rules\Generics\EnumAncestorsRule
+- PHPStan\Rules\Generics\InterfaceAncestorsRule
+
+generics.lessTypes (GenericObjectTypeCheck)
+- PHPStan\Rules\Classes\MixinRule
+- PHPStan\Rules\Generics\ClassAncestorsRule
+- PHPStan\Rules\Generics\EnumAncestorsRule
+- PHPStan\Rules\Generics\InterfaceAncestorsRule
+- PHPStan\Rules\Generics\UsedTraitsRule
+- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
+- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+
+generics.moreTypes (GenericObjectTypeCheck)
+- PHPStan\Rules\Classes\MixinRule
+- PHPStan\Rules\Generics\ClassAncestorsRule
+- PHPStan\Rules\Generics\EnumAncestorsRule
+- PHPStan\Rules\Generics\InterfaceAncestorsRule
+- PHPStan\Rules\Generics\UsedTraitsRule
+- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
+- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+
+generics.noParent (GenericAncestorsCheck)
+- PHPStan\Rules\Generics\ClassAncestorsRule
+- PHPStan\Rules\Generics\EnumAncestorsRule
+- PHPStan\Rules\Generics\InterfaceAncestorsRule
+- PHPStan\Rules\Generics\UsedTraitsRule
+
+generics.notCompatible (GenericAncestorsCheck)
+- PHPStan\Rules\Generics\ClassAncestorsRule
+- PHPStan\Rules\Generics\EnumAncestorsRule
+- PHPStan\Rules\Generics\InterfaceAncestorsRule
+- PHPStan\Rules\Generics\UsedTraitsRule
+
+generics.notGeneric (GenericObjectTypeCheck)
+- PHPStan\Rules\Classes\MixinRule
+- PHPStan\Rules\Generics\ClassAncestorsRule
+- PHPStan\Rules\Generics\EnumAncestorsRule
+- PHPStan\Rules\Generics\InterfaceAncestorsRule
+- PHPStan\Rules\Generics\UsedTraitsRule
+- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
+- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+
+generics.notSubtype (GenericObjectTypeCheck)
+- PHPStan\Rules\Classes\MixinRule
+- PHPStan\Rules\Generics\ClassAncestorsRule
+- PHPStan\Rules\Generics\EnumAncestorsRule
+- PHPStan\Rules\Generics\InterfaceAncestorsRule
+- PHPStan\Rules\Generics\UsedTraitsRule
+- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
+- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+
+generics.notSupportedBound (TemplateTypeCheck)
+- PHPStan\Rules\Generics\ClassTemplateTypeRule
+- PHPStan\Rules\Generics\FunctionTemplateTypeRule
+- PHPStan\Rules\Generics\InterfaceTemplateTypeRule
+- PHPStan\Rules\Generics\MethodTemplateTypeRule
+- PHPStan\Rules\Generics\TraitTemplateTypeRule
+
+generics.traitBound (TemplateTypeCheck)
+- PHPStan\Rules\Generics\ClassTemplateTypeRule
+- PHPStan\Rules\Generics\FunctionTemplateTypeRule
+- PHPStan\Rules\Generics\InterfaceTemplateTypeRule
+- PHPStan\Rules\Generics\MethodTemplateTypeRule
+- PHPStan\Rules\Generics\TraitTemplateTypeRule
+
+generics.variance
+- PHPStan\Rules\Generics\EnumAncestorsRule
+- PHPStan\Rules\Generics\FunctionSignatureVarianceRule
+- PHPStan\Rules\Generics\InterfaceAncestorsRule
+- PHPStan\Rules\Generics\MethodSignatureVarianceRule
+- PHPStan\Rules\Generics\UsedTraitsRule
+
+generics.wrongParent (GenericAncestorsCheck)
+- PHPStan\Rules\Generics\ClassAncestorsRule
+- PHPStan\Rules\Generics\EnumAncestorsRule
+- PHPStan\Rules\Generics\InterfaceAncestorsRule
+- PHPStan\Rules\Generics\UsedTraitsRule
+
+if.alwaysFalse
+- PHPStan\Rules\Comparison\IfConstantConditionRule
+
+if.alwaysTrue
+- PHPStan\Rules\Comparison\IfConstantConditionRule
+
+inc.expr
+- PHPStan\Rules\Operators\InvalidIncDecOperationRule
+
+inc.type
+- PHPStan\Rules\Operators\InvalidIncDecOperationRule
+
+instanceof.alwaysFalse
+- PHPStan\Rules\Classes\ImpossibleInstanceOfRule
+
+instanceof.alwaysTrue
+- PHPStan\Rules\Classes\ImpossibleInstanceOfRule
+
+instanceof.invalidExpr
+- PHPStan\Rules\Classes\ImpossibleInstanceOfRule
+
+instanceof.trait
+- PHPStan\Rules\Classes\ExistingClassInInstanceOfRule
+
+interface.disallowedSubtype
+- PHPStan\Rules\Classes\AllowedSubTypesRule
+
+interface.extendsClass
+- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
+
+interface.extendsEnum
+- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
+
+interface.extendsTrait
+- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
+
+interface.nameCase
+- PHPStan\Rules\Classes\ClassConstantRule
+- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+- PHPStan\Rules\Classes\ExistingClassInInstanceOfRule
+- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
+- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
+- PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
+- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\Classes\MixinRule
+- PHPStan\Rules\Exceptions\CaughtExceptionExistenceRule
+- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+- PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule
+- PHPStan\Rules\Namespaces\ExistingNamesInUseRule
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+- PHPStan\Rules\Properties\ExistingClassesInPropertiesRule
+
+interface.notFound
+- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
+- PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
+- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
+
+interface.traitUse
+- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
+
+isset.expr (IssetCheck)
+- PHPStan\Rules\Variables\IssetRule
+
+isset.nullsafe (IssetCheck)
+- PHPStan\Rules\Variables\IssetRule
+
+isset.offset (IssetCheck)
+- PHPStan\Rules\Variables\IssetRule
+
+isset.property (IssetCheck)
+- PHPStan\Rules\Variables\IssetRule
+
+isset.variable (IssetCheck)
+- PHPStan\Rules\Variables\IssetRule
+
+logicalAnd.alwaysFalse
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+logicalAnd.alwaysTrue
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+logicalAnd.leftAlwaysFalse
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+logicalAnd.leftAlwaysTrue
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+logicalAnd.rightAlwaysFalse
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+logicalAnd.rightAlwaysTrue
+- PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
+
+logicalOr.alwaysFalse
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+logicalOr.alwaysTrue
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+logicalOr.leftAlwaysFalse
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+logicalOr.leftAlwaysTrue
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+logicalOr.rightAlwaysFalse
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+logicalOr.rightAlwaysTrue
+- PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
+
+looseComparison.alwaysFalse
+- PHPStan\Rules\Comparison\ConstantLooseComparisonRule
+
+looseComparison.alwaysTrue
+- PHPStan\Rules\Comparison\ConstantLooseComparisonRule
+
+match.alwaysFalse
+- PHPStan\Rules\Comparison\MatchExpressionRule
+
+match.alwaysTrue
+- PHPStan\Rules\Comparison\MatchExpressionRule
+
+match.unhandled
+- PHPStan\Rules\Comparison\MatchExpressionRule
+
+match.void
+- PHPStan\Rules\Comparison\UsageOfVoidMatchExpressionRule
+
+method.abstract
+- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
+- PHPStan\Rules\Methods\MissingMethodImplementationRule
+
+method.alreadyNarrowedType
+- PHPStan\Rules\Comparison\ImpossibleCheckTypeMethodCallRule
+
+method.callToAbstract
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+
+method.childParameterType
+- PHPStan\Rules\Methods\ConsistentConstructorRule
+- PHPStan\Rules\Methods\MethodSignatureRule
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+method.childReturnType
+- PHPStan\Rules\Methods\ConsistentConstructorRule
+- PHPStan\Rules\Methods\MethodSignatureRule
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+method.finalPrivate
+- PHPStan\Rules\Methods\FinalPrivateMethodRule
+
+method.impossibleType
+- PHPStan\Rules\Comparison\ImpossibleCheckTypeMethodCallRule
+
+method.nameCase
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\MethodCallableRule
+
+method.nonObject
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\MethodCallableRule
+
+method.nonStatic
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+method.notFound
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\MethodCallableRule
+
+method.parentMethodFinal
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+method.private
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodCallableRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+
+method.protected
+- PHPStan\Rules\Methods\CallMethodsRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\MethodCallableRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+
+method.resultUnused
+- PHPStan\Rules\Methods\CallToMethodStatementWithoutSideEffectsRule
+
+method.shadowTemplate
+- PHPStan\Rules\Generics\MethodTemplateTypeRule
+
+method.static
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+method.staticCall
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+
+method.templateTypeNotInParameter (FunctionDefinitionCheck)
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+
+method.tentativeReturnType
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+method.unresolvableReturnType (FunctionCallParametersCheck)
+- PHPStan\Rules\Methods\CallMethodsRule
+
+method.unused
+- PHPStan\Rules\DeadCode\UnusedPrivateMethodRule
+
+method.variance
+- PHPStan\Rules\Generics\MethodSignatureVarianceRule
+
+method.visibility
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+method.void (FunctionCallParametersCheck)
+- PHPStan\Rules\Methods\CallMethodsRule
+
+missingType.callable
+- PHPStan\Rules\Constants\MissingClassConstantTypehintRule
+- PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule
+- PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule
+- PHPStan\Rules\Methods\MissingMethodParameterTypehintRule
+- PHPStan\Rules\Methods\MissingMethodReturnTypehintRule
+- PHPStan\Rules\Properties\MissingPropertyTypehintRule
+
+missingType.checkedExceptionThrows (?)
+- PHPStan\Rules\Exceptions\MissingCheckedExceptionInFunctionThrowsRule
+- PHPStan\Rules\Exceptions\MissingCheckedExceptionInMethodThrowsRule
+
+missingType.generics
+- PHPStan\Rules\Classes\MixinRule
+- PHPStan\Rules\Constants\MissingClassConstantTypehintRule
+- PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule
+- PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule
+- PHPStan\Rules\Methods\MissingMethodParameterTypehintRule
+- PHPStan\Rules\Methods\MissingMethodReturnTypehintRule
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+- PHPStan\Rules\Properties\MissingPropertyTypehintRule
+
+missingType.generics (GenericAncestorsCheck)
+- PHPStan\Rules\Generics\ClassAncestorsRule
+- PHPStan\Rules\Generics\EnumAncestorsRule
+- PHPStan\Rules\Generics\InterfaceAncestorsRule
+- PHPStan\Rules\Generics\UsedTraitsRule
+
+missingType.iterableValue
+- PHPStan\Rules\Constants\MissingClassConstantTypehintRule
+- PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule
+- PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule
+- PHPStan\Rules\Methods\MissingMethodParameterTypehintRule
+- PHPStan\Rules\Methods\MissingMethodReturnTypehintRule
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+- PHPStan\Rules\Properties\MissingPropertyTypehintRule
+
+missingType.parameter
+- PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule
+- PHPStan\Rules\Methods\MissingMethodParameterTypehintRule
+
+missingType.property
+- PHPStan\Rules\Properties\MissingPropertyTypehintRule
+
+missingType.return
+- PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule
+- PHPStan\Rules\Methods\MissingMethodReturnTypehintRule
+
+mixin.nonObject
+- PHPStan\Rules\Classes\MixinRule
+
+mixin.trait
+- PHPStan\Rules\Classes\MixinRule
+
+mixin.unresolvableType
+- PHPStan\Rules\Classes\MixinRule
+
+new.abstract
+- PHPStan\Rules\Classes\InstantiationRule
+
+new.dateTime
+- PHPStan\Rules\DateTimeInstantiationRule
+
+new.dateTimeImmutable
+- PHPStan\Rules\DateTimeInstantiationRule
+
+new.enum
+- PHPStan\Rules\Classes\InstantiationRule
+
+new.interface
+- PHPStan\Rules\Classes\InstantiationRule
+
+new.noConstructor
+- PHPStan\Rules\Classes\InstantiationRule
+
+new.privateConstructor
+- PHPStan\Rules\Classes\InstantiationRule
+
+new.protectedConstructor
+- PHPStan\Rules\Classes\InstantiationRule
+
+new.resultUnused
+- PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
+
+new.static
+- PHPStan\Rules\Classes\NewStaticRule
+
+new.unresolvableReturnType (FunctionCallParametersCheck)
+- PHPStan\Rules\Classes\InstantiationRule
+
+nullCoalesce.expr (IssetCheck)
+- PHPStan\Rules\Variables\NullCoalesceRule
+
+nullCoalesce.nullsafe (IssetCheck)
+- PHPStan\Rules\Variables\NullCoalesceRule
+
+nullCoalesce.offset (IssetCheck)
+- PHPStan\Rules\Variables\NullCoalesceRule
+
+nullCoalesce.property (IssetCheck)
+- PHPStan\Rules\Variables\NullCoalesceRule
+
+nullCoalesce.variable (IssetCheck)
+- PHPStan\Rules\Variables\NullCoalesceRule
+
+nullsafe.assign
+- PHPStan\Rules\Operators\InvalidAssignVarRule
+
+nullsafe.byRef
+- PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule
+- PHPStan\Rules\Functions\ReturnNullsafeByRefRule
+- PHPStan\Rules\Operators\InvalidAssignVarRule
+
+nullsafe.neverNull
+- PHPStan\Rules\Methods\NullsafeMethodCallRule
+- PHPStan\Rules\Properties\NullsafePropertyFetchRule
+
+offsetAccess.invalidOffset
+- PHPStan\Rules\Arrays\InvalidKeyInArrayDimFetchRule
+
+offsetAccess.noDim
+- PHPStan\Rules\Arrays\OffsetAccessWithoutDimForReadingRule
+
+offsetAccess.nonArray
+- PHPStan\Rules\Arrays\ArrayDestructuringRule
+
+offsetAccess.nonOffsetAccessible
+- PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchRule
+
+offsetAccess.nonexistent (NonexistentOffsetInArrayDimFetchCheck)
+- PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchRule
+
+offsetAccess.notFound (NonexistentOffsetInArrayDimFetchCheck)
+- PHPStan\Rules\Arrays\ArrayDestructuringRule
+
+offsetAssign.dimType
+- PHPStan\Rules\Arrays\OffsetAccessAssignOpRule
+- PHPStan\Rules\Arrays\OffsetAccessAssignmentRule
+
+offsetAssign.valueType
+- PHPStan\Rules\Arrays\OffsetAccessValueAssignmentRule
+
+outOfClass.parent
+- PHPStan\Rules\Classes\ClassConstantRule
+- PHPStan\Rules\Classes\ExistingClassInInstanceOfRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+
+outOfClass.self
+- PHPStan\Rules\Classes\ClassConstantRule
+- PHPStan\Rules\Classes\ExistingClassInInstanceOfRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+
+outOfClass.static
+- PHPStan\Rules\Classes\ClassConstantRule
+- PHPStan\Rules\Classes\ExistingClassInInstanceOfRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+
+parameter.byRef
+- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+
+parameter.byRef (MethodParameterComparisonHelper)
+- PHPStan\Rules\Methods\ConsistentConstructorRule
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+parameter.defaultValue
+- PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule
+- PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule
+- PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
+- PHPStan\Rules\Methods\IncompatibleDefaultParameterTypeRule
+
+parameter.missing (MethodParameterComparisonHelper)
+- PHPStan\Rules\Methods\ConsistentConstructorRule
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+parameter.notByRef (MethodParameterComparisonHelper)
+- PHPStan\Rules\Methods\ConsistentConstructorRule
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+parameter.notFound
+- PHPStan\Rules\PhpDoc\FunctionAssertRule
+- PHPStan\Rules\PhpDoc\FunctionConditionalReturnTypeRule
+- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+- PHPStan\Rules\PhpDoc\MethodAssertRule
+- PHPStan\Rules\PhpDoc\MethodConditionalReturnTypeRule
+
+parameter.notOptional (MethodParameterComparisonHelper)
+- PHPStan\Rules\Methods\ConsistentConstructorRule
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+parameter.notVariadic (MethodParameterComparisonHelper)
+- PHPStan\Rules\Methods\ConsistentConstructorRule
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+parameter.phpDocType
+- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+
+parameter.requiredAfterOptional (FunctionDefinitionCheck)
+- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+
+parameter.trait (FunctionDefinitionCheck)
+- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+
+parameter.unionTypeNotSupported (FunctionDefinitionCheck)
+- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+
+parameter.unresolvableNativeType (FunctionDefinitionCheck)
+- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+
+parameter.unresolvableType
+- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+
+parameter.variadic (MethodParameterComparisonHelper)
+- PHPStan\Rules\Methods\ConsistentConstructorRule
+- PHPStan\Rules\Methods\OverridingMethodRule
+
+parameter.void (FunctionDefinitionCheck)
+- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+
+phpDoc.parseError
+- PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
+
+phpDoc.phpstanTag
+- PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
+
+phpParser.nodeConnectingAttribute
+- PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule
+
+phpstan.dumpType
+- PHPStan\Rules\Debug\DumpTypeRule
+
+phpstan.nativeType
+- PHPStan\Rules\Debug\FileAssertRule
+
+phpstan.type
+- PHPStan\Rules\Debug\FileAssertRule
+
+phpstan.variable
+- PHPStan\Rules\Debug\FileAssertRule
+
+phpstanApi.class
+- PHPStan\Rules\Api\ApiClassExtendsRule
+- PHPStan\Rules\Api\ApiInstanceofRule
+- PHPStan\Rules\Api\ApiInstantiationRule
+
+phpstanApi.classConstant
+- PHPStan\Rules\Api\ApiClassConstFetchRule
+
+phpstanApi.constructor
+- PHPStan\Rules\Api\ApiInstantiationRule
+
+phpstanApi.getTemplateType
+- PHPStan\Rules\Api\GetTemplateTypeRule
+
+phpstanApi.instanceofAssumption
+- PHPStan\Rules\Api\ApiInstanceofRule
+
+phpstanApi.instanceofType
+- PHPStan\Rules\Api\ApiInstanceofTypeRule
+
+phpstanApi.interface
+- PHPStan\Rules\Api\ApiClassImplementsRule
+- PHPStan\Rules\Api\ApiInstanceofRule
+- PHPStan\Rules\Api\ApiInterfaceExtendsRule
+
+phpstanApi.method
+- PHPStan\Rules\Api\ApiMethodCallRule
+- PHPStan\Rules\Api\ApiStaticCallRule
+
+phpstanApi.phpstanNamespace
+- PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
+
+phpstanApi.runtimeReflection
+- PHPStan\Rules\Api\RuntimeReflectionFunctionRule
+- PHPStan\Rules\Api\RuntimeReflectionInstantiationRule
+
+phpstanApi.trait
+- PHPStan\Rules\Api\ApiTraitUseRule
+
+print.nonString
+- PHPStan\Rules\Cast\PrintRule
+
+property.defaultValue
+- PHPStan\Rules\Properties\DefaultValueTypesAssignedToPropertiesRule
+
+property.invalidPromoted
+- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
+
+property.missingNativeType
+- PHPStan\Rules\Properties\OverridingPropertyRule
+
+property.nativeType
+- PHPStan\Rules\Properties\OverridingPropertyRule
+
+property.nonObject
+- PHPStan\Rules\Properties\AccessPropertiesRule
+
+property.nonStatic
+- PHPStan\Rules\Properties\OverridingPropertyRule
+
+property.notFound
+- PHPStan\Rules\Properties\AccessPropertiesRule
+
+property.phpDocType
+- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
+- PHPStan\Rules\Properties\OverridingPropertyRule
+
+property.private
+- PHPStan\Rules\Properties\AccessPropertiesRule
+
+property.promotedNotSupported
+- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
+
+property.protected
+- PHPStan\Rules\Properties\AccessPropertiesRule
+
+property.readOnly
+- PHPStan\Rules\Properties\OverridingPropertyRule
+
+property.readOnlyAssignByRef
+- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRefRule
+
+property.readOnlyAssignNotInConstructor
+- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRule
+
+property.readOnlyAssignNotOnThis
+- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRule
+
+property.readOnlyAssignOutOfClass
+- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRule
+
+property.readOnlyByPhpDocAssignByRef
+- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRefRule
+
+property.readOnlyByPhpDocAssignNotInConstructor
+- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule
+
+property.readOnlyByPhpDocAssignNotOnThis
+- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule
+
+property.readOnlyByPhpDocAssignOutOfClass
+- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule
+
+property.readOnlyByPhpDocDefaultValue
+- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyRule
+
+property.readOnlyDefaultValue
+- PHPStan\Rules\Properties\ReadOnlyPropertyRule
+
+property.readOnlyNoNativeType
+- PHPStan\Rules\Properties\ReadOnlyPropertyRule
+
+property.readOnlyNotSupported
+- PHPStan\Rules\Properties\ReadOnlyPropertyRule
+
+property.readOnlyStatic
+- PHPStan\Rules\Properties\ReadOnlyPropertyRule
+
+property.readWrite
+- PHPStan\Rules\Properties\OverridingPropertyRule
+
+property.static
+- PHPStan\Rules\Properties\OverridingPropertyRule
+
+property.staticAccess
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+
+property.uninitialized
+- PHPStan\Rules\Properties\UninitializedPropertyRule
+
+property.uninitializedReadonly
+- PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
+
+property.uninitializedReadonlyByPhpDoc
+- PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule
+
+property.unresolvableType
+- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
+
+property.unused
+- PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule
+
+property.writeOnly
+- PHPStan\Rules\Properties\ReadingWriteOnlyPropertiesRule
+
+regexp.pattern
+- PHPStan\Rules\Regexp\RegularExpressionPatternRule
+
+return.empty (FunctionReturnTypeCheck)
+- PHPStan\Rules\Functions\ArrowFunctionReturnTypeRule
+- PHPStan\Rules\Functions\ClosureReturnTypeRule
+- PHPStan\Rules\Functions\ReturnTypeRule
+- PHPStan\Rules\Methods\ReturnTypeRule
+
+return.missing
+- PHPStan\Rules\Missing\MissingReturnRule
+
+return.never
+- PHPStan\Rules\Missing\MissingReturnRule
+
+return.never (FunctionReturnTypeCheck)
+- PHPStan\Rules\Functions\ArrowFunctionReturnTypeRule
+- PHPStan\Rules\Functions\ClosureReturnTypeRule
+- PHPStan\Rules\Functions\ReturnTypeRule
+- PHPStan\Rules\Methods\ReturnTypeRule
+
+return.phpDocType
+- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+
+return.trait (FunctionDefinitionCheck)
+- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+
+return.type (FunctionReturnTypeCheck)
+- PHPStan\Rules\Functions\ArrowFunctionReturnTypeRule
+- PHPStan\Rules\Functions\ClosureReturnTypeRule
+- PHPStan\Rules\Functions\ReturnTypeRule
+- PHPStan\Rules\Methods\ReturnTypeRule
+
+return.unresolvableNativeType (FunctionDefinitionCheck)
+- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
+- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
+- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+
+return.unresolvableType
+- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+
+return.unusedType
+- PHPStan\Rules\TooWideTypehints\TooWideArrowFunctionReturnTypehintRule
+- PHPStan\Rules\TooWideTypehints\TooWideClosureReturnTypehintRule
+- PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
+- PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule
+
+return.void (FunctionReturnTypeCheck)
+- PHPStan\Rules\Functions\ArrowFunctionReturnTypeRule
+- PHPStan\Rules\Functions\ClosureReturnTypeRule
+- PHPStan\Rules\Functions\ReturnTypeRule
+- PHPStan\Rules\Methods\ReturnTypeRule
+
+selfOut.type
+- PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule
+
+staticClassAccess.privateConstant
+- PHPStan\Rules\Classes\AccessPrivateConstantThroughStaticRule
+
+staticClassAccess.privateMethod
+- PHPStan\Rules\Methods\CallPrivateMethodThroughStaticRule
+
+staticClassAccess.privateProperty
+- PHPStan\Rules\Properties\AccessPrivatePropertyThroughStaticRule
+
+staticMethod.alreadyNarrowedType
+- PHPStan\Rules\Comparison\ImpossibleCheckTypeStaticMethodCallRule
+
+staticMethod.callToAbstract
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+
+staticMethod.impossibleType
+- PHPStan\Rules\Comparison\ImpossibleCheckTypeStaticMethodCallRule
+
+staticMethod.nonObject
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+
+staticMethod.notFound
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+
+staticMethod.private
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+
+staticMethod.protected
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+
+staticMethod.resultUnused
+- PHPStan\Rules\Methods\CallToStaticMethodStatementWithoutSideEffectsRule
+
+staticMethod.unresolvableReturnType (FunctionCallParametersCheck)
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+
+staticMethod.void (FunctionCallParametersCheck)
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+
+staticProperty.nonObject
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+
+staticProperty.notFound
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+
+staticProperty.private
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+
+staticProperty.protectedConstructor
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+
+strictComparison.alwaysFalse
+- PHPStan\Rules\Comparison\StrictComparisonOfDifferentTypesRule
+
+strictComparison.alwaysTrue
+- PHPStan\Rules\Comparison\StrictComparisonOfDifferentTypesRule
+
+ternary.alwaysFalse
+- PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule
+
+ternary.alwaysTrue
+- PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule
+
+throw.notSupported
+- PHPStan\Rules\Exceptions\ThrowExpressionRule
+
+throw.notThrowable
+- PHPStan\Rules\Variables\ThrowTypeRule
+
+throws.notThrowable
+- PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule
+
+throws.unusedType
+- PHPStan\Rules\Exceptions\TooWideFunctionThrowTypeRule
+- PHPStan\Rules\Exceptions\TooWideMethodThrowTypeRule
+
+throws.void
+- PHPStan\Rules\Exceptions\ThrowsVoidFunctionWithExplicitThrowPointRule
+- PHPStan\Rules\Exceptions\ThrowsVoidMethodWithExplicitThrowPointRule
+
+trait.nameCase
+- PHPStan\Rules\Classes\ClassConstantRule
+- PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
+- PHPStan\Rules\Classes\ExistingClassInInstanceOfRule
+- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
+- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
+- PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
+- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
+- PHPStan\Rules\Classes\InstantiationRule
+- PHPStan\Rules\Exceptions\CaughtExceptionExistenceRule
+- PHPStan\Rules\Methods\CallStaticMethodsRule
+- PHPStan\Rules\Methods\StaticMethodCallableRule
+- PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule
+- PHPStan\Rules\Namespaces\ExistingNamesInUseRule
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+- PHPStan\Rules\Properties\AccessStaticPropertiesRule
+- PHPStan\Rules\Properties\ExistingClassesInPropertiesRule
+
+trait.notFound
+- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
+
+trait.unused
+- PHPStan\Rules\Traits\NotAnalysedTraitRule
+
+traitUse.class
+- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
+
+traitUse.enum
+- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
+
+traitUse.interface
+- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
+
+typeAlias.circular
+- PHPStan\Rules\Classes\LocalTypeAliasesRule
+
+typeAlias.duplicate
+- PHPStan\Rules\Classes\LocalTypeAliasesRule
+
+typeAlias.invalidName
+- PHPStan\Rules\Classes\LocalTypeAliasesRule
+
+typeAlias.invalidType
+- PHPStan\Rules\Classes\LocalTypeAliasesRule
+
+typeAlias.notFound
+- PHPStan\Rules\Classes\LocalTypeAliasesRule
+
+unaryOp.invalid
+- PHPStan\Rules\Operators\InvalidUnaryOperationRule
+
+unset.offset
+- PHPStan\Rules\Variables\UnsetRule
+
+unset.variable
+- PHPStan\Rules\Variables\UnsetRule
+
+varTag.differentVariable
+- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+
+varTag.multipleTags
+- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+
+varTag.nativeType
+- PHPStan\Rules\PhpDoc\VarTagChangedExpressionTypeRule
+- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+
+varTag.noVariable
+- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+
+varTag.onClass
+- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+
+varTag.onEnum
+- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+
+varTag.onFunction
+- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+
+varTag.onInterface
+- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+
+varTag.onMethod
+- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+
+varTag.trait
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+
+varTag.type
+- PHPStan\Rules\PhpDoc\VarTagChangedExpressionTypeRule
+- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+
+varTag.unresolvableType
+- PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
+
+varTag.variableNotFound
+- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+
+variable.undefined
+- PHPStan\Rules\Variables\CompactVariablesRule
+- PHPStan\Rules\Variables\DefinedVariableRule
+
+while.alwaysFalse
+- PHPStan\Rules\Comparison\WhileLoopAlwaysFalseConditionRule
+
+while.alwaysTrue
+- PHPStan\Rules\Comparison\WhileLoopAlwaysTrueConditionRule
+
+whitespace.bom
+- PHPStan\Rules\Whitespace\FileWhitespaceRule
+
+whitespace.fileEnd
+- PHPStan\Rules\Whitespace\FileWhitespaceRule
+

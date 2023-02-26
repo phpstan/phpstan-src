@@ -151,4 +151,16 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6348.php'], []);
 	}
 
+
+	public function testBug8950(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8950.php'], [
+			[
+				'PHPDoc tag @var for variable $boo contains unknown class Bug8950\BooAlsoNotSubtype.',
+				13,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			]
+		]);
+	}
+
 }

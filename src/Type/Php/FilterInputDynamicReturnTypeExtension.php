@@ -44,7 +44,7 @@ class FilterInputDynamicReturnTypeExtension implements DynamicFunctionReturnType
 		// See https://github.com/phpstan/phpstan-src/pull/2012 for details
 		$inputType = new ArrayType(new StringType(), new MixedType());
 
-		return $this->filterFunctionReturnTypeHelper->getArrayOffsetValueType(
+		return $this->filterFunctionReturnTypeHelper->getOffsetValueType(
 			$inputType,
 			$scope->getType($functionCall->getArgs()[1]->value),
 			isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null,

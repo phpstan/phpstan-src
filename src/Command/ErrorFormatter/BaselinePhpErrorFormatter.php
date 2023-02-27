@@ -9,7 +9,10 @@ use PHPStan\File\RelativePathHelper;
 use function ksort;
 use function preg_quote;
 use function sprintf;
+use function str_replace;
+use function substr;
 use function var_export;
+use const PHP_EOL;
 use const SORT_STRING;
 
 class BaselinePhpErrorFormatter
@@ -61,7 +64,7 @@ class BaselinePhpErrorFormatter
 			foreach ($fileErrorsCounts as $message => $count) {
 				$php .= sprintf(
 					"\$ignoreErrors[] = [\n\t'message' => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
-					var_export(Helpers::escape('#^' . preg_quote($message, '#') . '$#'), true),
+					self::exportDoubleQuoted(Helpers::escape('#^' . preg_quote($message, '#') . '$#')),
 					var_export($count, true),
 					var_export(Helpers::escape($file), true),
 				);
@@ -75,6 +78,14 @@ class BaselinePhpErrorFormatter
 		$output->writeRaw($php);
 
 		return 1;
+	}
+
+	/**
+	 * Exports the input to a double-quoted string making sure newlines are converted to `\n`.
+	 */
+	public static function exportDoubleQuoted(string $input): string
+	{
+		return '"' . substr(str_replace([PHP_EOL, '$', '"'], ['\n', '\$', '\"'], var_export($input, true)), 1, -1) . '"';
 	}
 
 }

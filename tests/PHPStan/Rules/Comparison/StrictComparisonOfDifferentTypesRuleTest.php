@@ -885,11 +885,22 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	public function testBug5978(): void
 	{
 		if (PHP_VERSION_ID >= 80000) {
-			$this->markTestSkipped('Test does not run on PHP >= 8.0.');
+			$expectedErrors = [
+				[
+					'Strict comparison using === between string and false will always evaluate to false.',
+					7,
+				],
+				[
+					'Strict comparison using === between string and null will always evaluate to false.',
+					7,
+				],
+			];
+		} else {
+			$expectedErrors = [];
 		}
 
 		$this->checkAlwaysTrueStrictComparison = true;
-		$this->analyse([__DIR__ . '/data/bug-5978.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-5978.php'], $expectedErrors);
 	}
 
 }

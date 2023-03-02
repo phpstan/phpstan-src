@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules;
 
+/** @api */
 interface FileRuleError extends RuleError
 {
 

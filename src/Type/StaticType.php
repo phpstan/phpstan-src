@@ -12,7 +12,6 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
-use PHPStan\Reflection\Type\UnionTypePropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
@@ -21,7 +20,6 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
-use function count;
 use function get_class;
 use function sprintf;
 
@@ -220,27 +218,6 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
-		$classReflection = $this->getClassReflection();
-		if ($classReflection->isEnum()) {
-			if (
-				$propertyName === 'name'
-				|| ($propertyName === 'value' && $classReflection->isBackedEnum())
-			) {
-				$properties = [];
-				foreach ($this->getEnumCases() as $enumCase) {
-					$properties[] = $enumCase->getProperty($propertyName, $scope);
-				}
-
-				if (count($properties) > 0) {
-					if (count($properties) === 1) {
-						return $properties[0];
-					}
-
-					return new UnionTypePropertyReflection($properties);
-				}
-			}
-		}
-
 		return $this->getUnresolvedPropertyPrototype($propertyName, $scope)->getTransformedProperty();
 	}
 

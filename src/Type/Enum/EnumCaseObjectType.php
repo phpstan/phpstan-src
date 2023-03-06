@@ -5,7 +5,8 @@ namespace PHPStan\Type\Enum;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\EnumPropertyReflection;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\Php\EnumUnresolvedPropertyPrototypeReflection;
+use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
@@ -110,15 +111,17 @@ class EnumCaseObjectType extends ObjectType
 		return null;
 	}
 
-	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
+	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
 		$classReflection = $this->getClassReflection();
 		if ($classReflection === null) {
-			return parent::getProperty($propertyName, $scope);
+			return parent::getUnresolvedPropertyPrototype($propertyName, $scope);
 
 		}
 		if ($propertyName === 'name') {
-			return new EnumPropertyReflection($classReflection, new ConstantStringType($this->enumCaseName));
+			return new EnumUnresolvedPropertyPrototypeReflection(
+				new EnumPropertyReflection($classReflection, new ConstantStringType($this->enumCaseName)),
+			);
 		}
 
 		if ($classReflection->isBackedEnum() && $propertyName === 'value') {
@@ -129,11 +132,13 @@ class EnumCaseObjectType extends ObjectType
 					throw new ShouldNotHappenException();
 				}
 
-				return new EnumPropertyReflection($classReflection, $valueType);
+				return new EnumUnresolvedPropertyPrototypeReflection(
+					new EnumPropertyReflection($classReflection, $valueType),
+				);
 			}
 		}
 
-		return parent::getProperty($propertyName, $scope);
+		return parent::getUnresolvedPropertyPrototype($propertyName, $scope);
 	}
 
 	public function getBackingValueType(): ?Type

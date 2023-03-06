@@ -9,8 +9,6 @@ use function array_map;
 class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 
-	private string $propertyName;
-
 	private ?PropertyReflection $transformedProperty = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
@@ -19,11 +17,10 @@ class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedProper
 	 * @param UnresolvedPropertyPrototypeReflection[] $propertyPrototypes
 	 */
 	public function __construct(
-		string $propertyName,
+		private string $propertyName,
 		private array $propertyPrototypes,
 	)
 	{
-		$this->propertyName = $propertyName;
 	}
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection

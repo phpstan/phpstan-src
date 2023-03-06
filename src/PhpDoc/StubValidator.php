@@ -91,10 +91,8 @@ class StubValidator
 		$ruleRegistry = $this->getRuleRegistry($container);
 		$collectorRegistry = $this->getCollectorRegistry($container);
 
-		/** @var FileAnalyser $fileAnalyser */
 		$fileAnalyser = $container->getByType(FileAnalyser::class);
 
-		/** @var NodeScopeResolver $nodeScopeResolver */
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
 		$nodeScopeResolver->setAnalysedFiles($stubFiles);
 

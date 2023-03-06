@@ -164,7 +164,6 @@ class ContainerFactory
 			$container->getByType(PhpStormStubsSourceStubber::class),
 		);
 
-		/** @var Broker $broker */
 		$broker = $container->getByType(Broker::class);
 		Broker::registerInstance($broker);
 		ReflectionProviderStaticAccessor::registerInstance($container->getByType(ReflectionProvider::class));

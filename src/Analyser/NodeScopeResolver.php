@@ -1496,6 +1496,15 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$hasYield = false;
 			$throwPoints = $overridingThrowPoints ?? [];
+		} elseif ($stmt instanceof Node\Stmt\UseUse) {
+			$hasYield = false;
+			$throwPoints = [];
+		} elseif ($stmt instanceof Node\Stmt\GroupUse) {
+			$hasYield = false;
+			$throwPoints = [];
+			foreach ($stmt->uses as $use) {
+				$this->processStmtNode($use, $scope, $nodeCallback, $context);
+			}
 		} else {
 			$hasYield = false;
 			$throwPoints = $overridingThrowPoints ?? [];

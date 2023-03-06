@@ -628,32 +628,22 @@ class TypeNodeResolver
 			return new ErrorType();
 		} elseif ($mainTypeName === 'value-of') {
 			if (count($genericTypes) === 1) { // value-of<ValueType>
-				$genericTypeObjectClassNames = $genericTypes[0]->getObjectClassNames();
-				if (count($genericTypeObjectClassNames) > 1) {
-					throw new ShouldNotHappenException();
-				}
-
-				if ($genericTypeObjectClassNames !== []) {
-					if ($this->getReflectionProvider()->hasClass($genericTypeObjectClassNames[0])) {
-						$classReflection = $this->getReflectionProvider()->getClass($genericTypeObjectClassNames[0]);
-
-						if ($classReflection->isBackedEnum()) {
-							$cases = [];
-							foreach ($classReflection->getEnumCases() as $enumCaseReflection) {
-								$backingType = $enumCaseReflection->getBackingValueType();
-								if ($backingType === null) {
-									continue;
-								}
-
-								$cases[] = $backingType;
-							}
-
-							return TypeCombinator::union(...$cases);
+				$genericType = $genericTypes[0];
+				if ($genericType->isEnum()->yes()) {
+					$valueTypes = [];
+					foreach ($genericType->getEnumCases() as $enumCase) {
+						$valueType = $enumCase->getBackingValueType();
+						if ($valueType === null) {
+							continue;
 						}
+
+						$valueTypes[] = $valueType;
 					}
+
+					return TypeCombinator::union(...$valueTypes);
 				}
 
-				$type = new ValueOfType($genericTypes[0]);
+				$type = new ValueOfType($genericType);
 				return $type->isResolvable() ? $type->resolve() : $type;
 			}
 

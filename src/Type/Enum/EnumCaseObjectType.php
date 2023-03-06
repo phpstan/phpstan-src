@@ -136,6 +136,26 @@ class EnumCaseObjectType extends ObjectType
 		return parent::getProperty($propertyName, $scope);
 	}
 
+	public function getBackingValueType(): ?Type
+	{
+		$classReflection = $this->getClassReflection();
+		if ($classReflection === null) {
+			return null;
+		}
+
+		if (!$classReflection->isBackedEnum()) {
+			return null;
+		}
+
+		if ($classReflection->hasEnumCase($this->enumCaseName)) {
+			$enumCase = $classReflection->getEnumCase($this->enumCaseName);
+
+			return $enumCase->getBackingValueType();
+		}
+
+		return null;
+	}
+
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new parent($this->getClassName(), null, $this->getClassReflection());

@@ -73,4 +73,20 @@ class ExistingClassesInClassImplementsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8889(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8889.php'], [
+			[
+				'Class Bug8889\HelloWorld implements unknown interface iterable.',
+				5,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Class Bug8889\HelloWorld2 implements unknown interface Iterable.',
+				8,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 }

@@ -19,11 +19,11 @@ class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedProper
 	 * @param UnresolvedPropertyPrototypeReflection[] $propertyPrototypes
 	 */
 	public function __construct(
-		string $methodName,
+		string $propertyName,
 		private array $propertyPrototypes,
 	)
 	{
-		$this->propertyName = $methodName;
+		$this->propertyName = $propertyName;
 	}
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection

@@ -1486,6 +1486,13 @@ class NodeScopeResolver
 					$scope->getNativeType($const->value),
 				);
 			}
+		} elseif ($stmt instanceof Node\Stmt\EnumCase) {
+			$hasYield = false;
+			$throwPoints = [];
+			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
+			if ($stmt->expr !== null) {
+				$this->processExprNode($stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
+			}
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$hasYield = false;
 			$throwPoints = $overridingThrowPoints ?? [];

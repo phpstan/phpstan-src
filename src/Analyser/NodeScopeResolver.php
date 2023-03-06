@@ -2818,6 +2818,9 @@ class NodeScopeResolver
 				$hasYield = $classResult->hasYield();
 				$throwPoints = $classResult->getThrowPoints();
 			}
+		} elseif ($expr instanceof Node\Scalar) {
+			$hasYield = false;
+			$throwPoints = [];
 		} else {
 			$hasYield = false;
 			$throwPoints = [];

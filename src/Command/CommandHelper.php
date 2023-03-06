@@ -467,7 +467,6 @@ class CommandHelper
 
 		$pathRoutingParser = $container->getService('pathRoutingParser');
 
-		/** @var StubFilesProvider $stubFilesProvider */
 		$stubFilesProvider = $container->getByType(StubFilesProvider::class);
 
 		$filesCallback = static function () use ($currentWorkingDirectoryFileHelper, $stubFilesProvider, $fileFinder, $pathRoutingParser, $paths): array {

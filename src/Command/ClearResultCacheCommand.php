@@ -84,7 +84,6 @@ class ClearResultCacheCommand extends Command
 
 		$container = $inceptionResult->getContainer();
 
-		/** @var ResultCacheClearer $resultCacheClearer */
 		$resultCacheClearer = $container->getByType(ResultCacheClearer::class);
 		$path = $resultCacheClearer->clear();
 

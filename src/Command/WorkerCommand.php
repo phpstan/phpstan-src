@@ -117,7 +117,6 @@ class WorkerCommand extends Command
 			return 1;
 		}
 
-		/** @var NodeScopeResolver $nodeScopeResolver */
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
 		$nodeScopeResolver->setAnalysedFiles($analysedFiles);
 
@@ -169,11 +168,8 @@ class WorkerCommand extends Command
 			$out->end();
 		};
 		$out->on('error', $handleError);
-		/** @var FileAnalyser $fileAnalyser */
 		$fileAnalyser = $container->getByType(FileAnalyser::class);
-		/** @var RuleRegistry $ruleRegistry */
 		$ruleRegistry = $container->getByType(RuleRegistry::class);
-		/** @var CollectorRegistry $collectorRegistry */
 		$collectorRegistry = $container->getByType(CollectorRegistry::class);
 		$in->on('data', function (array $json) use ($fileAnalyser, $ruleRegistry, $collectorRegistry, $out, $analysedFiles, $output): void {
 			$action = $json['action'];

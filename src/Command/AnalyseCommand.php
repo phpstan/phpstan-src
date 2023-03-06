@@ -225,7 +225,6 @@ class AnalyseCommand extends Command
 			return $inceptionResult->handleReturn(0, null);
 		}
 
-		/** @var AnalyseApplication  $application */
 		$application = $container->getByType(AnalyseApplication::class);
 
 		$debug = $input->getOption('debug');
@@ -436,7 +435,6 @@ class AnalyseCommand extends Command
 
 			$inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes());
 
-			/** @var FixerApplication $fixerApplication */
 			$fixerApplication = $container->getByType(FixerApplication::class);
 
 			return $fixerApplication->run(

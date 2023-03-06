@@ -4,7 +4,6 @@ namespace PHPStan\Command;
 
 use Nette\Utils\Json;
 use PHPStan\Analyser\IgnoredErrorHelper;
-use PHPStan\Analyser\ResultCache\ResultCacheManager;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
@@ -94,17 +93,14 @@ class FixerWorkerCommand extends Command
 
 		$container = $inceptionResult->getContainer();
 
-		/** @var IgnoredErrorHelper $ignoredErrorHelper */
 		$ignoredErrorHelper = $container->getByType(IgnoredErrorHelper::class);
 		$ignoredErrorHelperResult = $ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			throw new ShouldNotHappenException();
 		}
 
-		/** @var AnalyserRunner $analyserRunner */
 		$analyserRunner = $container->getByType(AnalyserRunner::class);
 
-		/** @var ResultCacheManager $resultCacheManager */
 		$resultCacheManager = $container->getByType(ResultCacheManagerFactory::class)->create();
 		$projectConfigArray = $inceptionResult->getProjectConfigArray();
 		[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();

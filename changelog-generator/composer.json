@@ -13,5 +13,10 @@
 		"psr-4": {
 			"PHPStan\\ChangelogGenerator\\": "src"
 		}
+	},
+	"config": {
+		"allow-plugins": {
+			"php-http/discovery": true
+		}
 	}
 }

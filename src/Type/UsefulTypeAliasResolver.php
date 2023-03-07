@@ -69,7 +69,7 @@ class UsefulTypeAliasResolver implements TypeAliasResolver
 			return null;
 		}
 
-		$className = $nameScope->getClassName();
+		$className = $nameScope->getClassNameForTypeAlias();
 		if ($className === null) {
 			return null;
 		}

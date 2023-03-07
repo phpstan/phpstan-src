@@ -269,6 +269,8 @@ class FileTypeMapper
 						}
 
 						$traitFound = true;
+						$typeAliasStack[] = $this->getTypeAliasesMap($node->getDocComment());
+						$functionStack[] = null;
 					} else {
 						if ($node->name === null) {
 							if (!$node instanceof Node\Stmt\Class_) {
@@ -304,12 +306,12 @@ class FileTypeMapper
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					$phpDocString = GetLastDocComment::forNode($node);
 					if ($phpDocString !== null) {
-						$typeMapStack[] = function () use ($namespace, $uses, $className, $functionName, $phpDocString, $typeMapStack, $typeAliasStack, $constUses): TemplateTypeMap {
+						$typeMapStack[] = function () use ($namespace, $uses, $className, $lookForTrait, $functionName, $phpDocString, $typeMapStack, $typeAliasStack, $constUses): TemplateTypeMap {
 							$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
 							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 							$currentTypeMap = $typeMapCb !== null ? $typeMapCb() : null;
 							$typeAliasesMap = $typeAliasStack[count($typeAliasStack) - 1] ?? [];
-							$nameScope = new NameScope($namespace, $uses, $className, $functionName, $currentTypeMap, $typeAliasesMap, false, $constUses);
+							$nameScope = new NameScope($namespace, $uses, $className, $functionName, $currentTypeMap, $typeAliasesMap, false, $constUses, $lookForTrait);
 							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 							$templateTypeScope = $nameScope->getTemplateTypeScope();
 							if ($templateTypeScope === null) {
@@ -355,6 +357,7 @@ class FileTypeMapper
 						$typeAliasesMap,
 						false,
 						$constUses,
+						$lookForTrait,
 					);
 				}
 
@@ -492,8 +495,8 @@ class FileTypeMapper
 
 				return null;
 			},
-			static function (Node $node, $callbackResult) use ($lookForTrait, &$namespace, &$functionStack, &$classStack, &$typeAliasStack, &$uses, &$typeMapStack, &$constUses): void {
-				if ($node instanceof Node\Stmt\ClassLike && $lookForTrait === null) {
+			static function (Node $node, $callbackResult) use (&$namespace, &$functionStack, &$classStack, &$typeAliasStack, &$uses, &$typeMapStack, &$constUses): void {
+				if ($node instanceof Node\Stmt\ClassLike) {
 					if (count($classStack) === 0) {
 						throw new ShouldNotHappenException();
 					}

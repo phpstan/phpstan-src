@@ -28,7 +28,7 @@ class NameScope
 	 * @param array<string, string> $constUses alias(string) => fullName(string)
 	 * @param array<string, true> $typeAliasesMap
 	 */
-	public function __construct(private ?string $namespace, private array $uses, private ?string $className = null, private ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, private array $typeAliasesMap = [], private bool $bypassTypeAliases = false, private array $constUses = [])
+	public function __construct(private ?string $namespace, private array $uses, private ?string $className = null, private ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, private array $typeAliasesMap = [], private bool $bypassTypeAliases = false, private array $constUses = [], private ?string $typeAliasClassName = null)
 	{
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 	}
@@ -62,6 +62,11 @@ class NameScope
 	public function getClassName(): ?string
 	{
 		return $this->className;
+	}
+
+	public function getClassNameForTypeAlias(): ?string
+	{
+		return $this->typeAliasClassName ?? $this->className;
 	}
 
 	public function resolveStringName(string $name): string

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use Bug9006\TestInterface;
 use CheckTypeFunctionCall\FinalClassWithMethodExists;
 use CheckTypeFunctionCall\FinalClassWithPropertyExists;
 use Closure;
@@ -2331,6 +2332,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 			IntersectionType::class,
 			'array<int, string>&oversized-array',
 		];
+		yield [
+			[
+				new ObjectType(TestInterface::class),
+				new ClosureType([], new MixedType(), false),
+			],
+			UnionType::class,
+			'Bug9006\TestInterface|(Closure(): mixed)',
+		];
+		yield [
+			[
+				new ObjectType(TestInterface::class),
+				new ObjectType(Closure::class),
+			],
+			UnionType::class,
+			'Bug9006\TestInterface|Closure',
+		];
 	}
 
 	/**
@@ -3782,6 +3799,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			IntersectionType::class,
 			'array<int, string>&oversized-array',
+		];
+		yield [
+			[
+				new ObjectType(TestInterface::class),
+				new ClosureType([], new MixedType(), false),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ObjectType(TestInterface::class),
+				new ObjectType(Closure::class),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
 		];
 	}
 

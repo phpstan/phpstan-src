@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use ArrayAccess;
 use ArrayObject;
 use Bug8850\UserInSessionInRoleEndpointExtension;
+use Bug9006\TestInterface;
 use Closure;
 use Countable;
 use DateInterval;
@@ -438,6 +439,16 @@ class ObjectTypeTest extends PHPStanTestCase
 				new ThisType($reflectionProvider->getClass(UserInSessionInRoleEndpointExtension::class)),
 				TrinaryLogic::createYes(),
 			],
+			62 => [
+				new ObjectType(TestInterface::class),
+				new ClosureType([], new MixedType(), false),
+				TrinaryLogic::createNo(),
+			],
+			63 => [
+				new ObjectType(TestInterface::class),
+				new ObjectType(Closure::class),
+				TrinaryLogic::createNo(),
+			],
 		];
 	}
 
@@ -490,6 +501,16 @@ class ObjectTypeTest extends PHPStanTestCase
 					new ObjectType(DateTimeInterface::class),
 					TemplateTypeVariance::createInvariant(),
 				),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new ObjectType(TestInterface::class),
+				new ClosureType([], new MixedType(), false),
+				TrinaryLogic::createNo(),
+			],
+			63 => [
+				new ObjectType(TestInterface::class),
+				new ObjectType(Closure::class),
 				TrinaryLogic::createNo(),
 			],
 		];

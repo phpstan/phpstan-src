@@ -325,6 +325,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$superTypes[$thisDescription][$description] = $type->isSubTypeOf($this);
 		}
 
+		if ($type instanceof ClosureType) {
+			return self::$superTypes[$thisDescription][$description] = $this->isInstanceOf(Closure::class);
+		}
+
 		if ($type instanceof ObjectWithoutClassType) {
 			if ($type->getSubtractedType() !== null) {
 				$isSuperType = $type->getSubtractedType()->isSuperTypeOf($this);
@@ -1287,6 +1291,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($classReflection->isSubclassOf($className) || $classReflection->getName() === $className) {
 			return TrinaryLogic::createYes();
+		}
+
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		if ($reflectionProvider->hasClass($className)) {
+			$thatClassReflection = $reflectionProvider->getClass($className);
+			if ($thatClassReflection->isFinal()) {
+				return TrinaryLogic::createNo();
+			}
 		}
 
 		if ($classReflection->isInterface()) {

@@ -830,6 +830,7 @@ services:
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory
 		arguments:
 			fileFinder: @fileFinderScan
+			phpParser: @currentPhpVersionPhpParser
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository

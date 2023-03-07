@@ -3,6 +3,9 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PhpParser\Node;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor\NameResolver;
+use PhpParser\Parser;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
@@ -12,32 +15,28 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
+use Throwable;
+use function array_filter;
 use function array_key_exists;
+use function array_keys;
 use function array_values;
-use function count;
 use function current;
-use function ltrim;
 use function php_strip_whitespace;
-use function preg_match_all;
-use function preg_replace;
-use function sprintf;
 use function strtolower;
 
 class OptimizedDirectorySourceLocator implements SourceLocator
 {
 
-	private PhpFileCleaner $cleaner;
+	/** @var array<string, string|null> */
+	private array $classToFile = [];
 
-	private string $extraTypes;
+	/** @var array<string, string|null> */
+	private array $constantToFile = [];
 
-	/** @var array<string, string>|null */
-	private ?array $classToFile = null;
+	/** @var array<string, string|null> */
+	private array $functionToFiles = [];
 
-	/** @var array<string, string>|null */
-	private ?array $constantToFile = null;
-
-	/** @var array<string, array<int, string>>|null */
-	private ?array $functionToFiles = null;
+	private NodeTraverser $nodeTraverser;
 
 	/**
 	 * @param string[] $files
@@ -46,70 +45,92 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		private FileNodesFetcher $fileNodesFetcher,
 		private PhpVersion $phpVersion,
 		private array $files,
+		private Parser $phpParser,
+		private CachingVisitor $cachingVisitor,
 	)
 	{
-		$this->extraTypes = $this->phpVersion->supportsEnums() ? '|enum' : '';
-
-		$this->cleaner = new PhpFileCleaner();
+		$this->nodeTraverser = new NodeTraverser();
+		$this->nodeTraverser->addVisitor(new NameResolver());
+		$this->nodeTraverser->addVisitor($cachingVisitor);
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
 		if ($identifier->isClass()) {
 			$className = strtolower($identifier->getName());
-			$file = $this->findFileByClass($className);
+
+			if (!array_key_exists($className, $this->classToFile)) {
+				$found = $this->parse(fn () => array_key_exists($className, $this->classToFile));
+
+				if (!$found) {
+					// Don't try to search twice
+					$this->classToFile[$className] = null;
+				}
+			}
+
+			$file = $this->classToFile[$className];
+
 			if ($file === null) {
 				return null;
 			}
 
 			$fetchedClassNodes = $this->fileNodesFetcher->fetchNodes($file)->getClassNodes();
 
-			if (!array_key_exists($className, $fetchedClassNodes)) {
-				return null;
-			}
-
 			/** @var FetchedNode<Node\Stmt\ClassLike> $fetchedClassNode */
 			$fetchedClassNode = current($fetchedClassNodes[$className]);
+
+			if ($fetchedClassNode->getNode() instanceof Node\Stmt\Enum_ && !$this->phpVersion->supportsEnums()) {
+				return null;
+			}
 
 			return $this->nodeToReflection($reflector, $fetchedClassNode);
 		}
 
 		if ($identifier->isFunction()) {
 			$functionName = strtolower($identifier->getName());
-			$files = $this->findFilesByFunction($functionName);
 
-			$fetchedFunctionNode = null;
-			foreach ($files as $file) {
-				$fetchedFunctionNodes = $this->fileNodesFetcher->fetchNodes($file)->getFunctionNodes();
+			if (!array_key_exists($functionName, $this->functionToFiles)) {
+				$found = $this->parse(fn () => array_key_exists($functionName, $this->functionToFiles));
 
-				if (!array_key_exists($functionName, $fetchedFunctionNodes)) {
-					continue;
+				if (!$found) {
+					// Don't try to search twice
+					$this->functionToFiles[$functionName] = null;
 				}
-
-				/** @var FetchedNode<Node\Stmt\Function_> $fetchedFunctionNode */
-				$fetchedFunctionNode = current($fetchedFunctionNodes[$functionName]);
 			}
 
-			if ($fetchedFunctionNode === null) {
+			$file = $this->functionToFiles[$functionName];
+
+			if ($file === null) {
 				return null;
 			}
+
+			$fetchedFunctionNodes = $this->fileNodesFetcher->fetchNodes($file)->getFunctionNodes();
+
+			/** @var FetchedNode<Node\Stmt\Function_> $fetchedFunctionNode */
+			$fetchedFunctionNode = current($fetchedFunctionNodes[$functionName]);
 
 			return $this->nodeToReflection($reflector, $fetchedFunctionNode);
 		}
 
 		if ($identifier->isConstant()) {
 			$constantName = ConstantNameHelper::normalize($identifier->getName());
-			$file = $this->findFileByConstant($constantName);
+
+			if (!array_key_exists($constantName, $this->constantToFile)) {
+				$found = $this->parse(fn () => array_key_exists($constantName, $this->constantToFile));
+
+				if (!$found) {
+					// Don't try to search twice
+					$this->constantToFile[$constantName] = null;
+				}
+			}
+
+			$file = $this->constantToFile[$constantName];
 
 			if ($file === null) {
 				return null;
 			}
 
 			$fetchedConstantNodes = $this->fileNodesFetcher->fetchNodes($file)->getConstantNodes();
-
-			if (!array_key_exists($constantName, $fetchedConstantNodes)) {
-				return null;
-			}
 
 			/** @var FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall> $fetchedConstantNode */
 			$fetchedConstantNode = current($fetchedConstantNodes[$constantName]);
@@ -125,207 +146,37 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	}
 
 	/**
-	 * @param FetchedNode<Node\Stmt\ClassLike>|FetchedNode<Node\Stmt\Function_>|FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall> $fetchedNode
-	 */
-	private function nodeToReflection(Reflector $reflector, FetchedNode $fetchedNode, ?int $positionInNode = null): Reflection
-	{
-		$nodeToReflection = new NodeToReflection();
-		return $nodeToReflection->__invoke(
-			$reflector,
-			$fetchedNode->getNode(),
-			$fetchedNode->getLocatedSource(),
-			$fetchedNode->getNamespace(),
-			$positionInNode,
-		);
-	}
-
-	private function findFileByClass(string $className): ?string
-	{
-		if ($this->classToFile === null) {
-			$this->init();
-			if ($this->classToFile === null) {
-				throw new ShouldNotHappenException();
-			}
-		}
-
-		if (!array_key_exists($className, $this->classToFile)) {
-			return null;
-		}
-
-		return $this->classToFile[$className];
-	}
-
-	private function findFileByConstant(string $constantName): ?string
-	{
-		if ($this->constantToFile === null) {
-			$this->init();
-			if ($this->constantToFile === null) {
-				throw new ShouldNotHappenException();
-			}
-		}
-
-		if (!array_key_exists($constantName, $this->constantToFile)) {
-			return null;
-		}
-
-		return $this->constantToFile[$constantName];
-	}
-
-	/**
-	 * @return string[]
-	 */
-	private function findFilesByFunction(string $functionName): array
-	{
-		if ($this->functionToFiles === null) {
-			$this->init();
-			if ($this->functionToFiles === null) {
-				throw new ShouldNotHappenException();
-			}
-		}
-
-		if (!array_key_exists($functionName, $this->functionToFiles)) {
-			return [];
-		}
-
-		return $this->functionToFiles[$functionName];
-	}
-
-	private function init(): void
-	{
-		$classToFile = [];
-		$constantToFile = [];
-		$functionToFiles = [];
-		foreach ($this->files as $file) {
-			$symbols = $this->findSymbols($file);
-			foreach ($symbols['classes'] as $classInFile) {
-				$classToFile[$classInFile] = $file;
-			}
-			foreach ($symbols['constants'] as $constantInFile) {
-				$constantToFile[$constantInFile] = $file;
-			}
-			foreach ($symbols['functions'] as $functionInFile) {
-				if (!array_key_exists($functionInFile, $functionToFiles)) {
-					$functionToFiles[$functionInFile] = [];
-				}
-				$functionToFiles[$functionInFile][] = $file;
-			}
-		}
-
-		$this->classToFile = $classToFile;
-		$this->functionToFiles = $functionToFiles;
-		$this->constantToFile = $constantToFile;
-	}
-
-	/**
-	 * Inspired by Composer\Autoload\ClassMapGenerator::findClasses()
-	 * @link https://github.com/composer/composer/blob/45d3e133a4691eccb12e9cd6f9dfd76eddc1906d/src/Composer/Autoload/ClassMapGenerator.php#L216
-	 *
-	 * @return array{classes: string[], functions: string[], constants: string[]}
-	 */
-	private function findSymbols(string $file): array
-	{
-		$contents = @php_strip_whitespace($file);
-		if ($contents === '') {
-			return ['classes' => [], 'functions' => [], 'constants' => []];
-		}
-
-		$matchResults = (bool) preg_match_all(sprintf('{\b(?:(?:class|interface|trait|const|function%s)\s)|(?:define\s*\()}i', $this->extraTypes), $contents, $matches);
-		if (!$matchResults) {
-			return ['classes' => [], 'functions' => [], 'constants' => []];
-		}
-
-		$contents = $this->cleaner->clean($contents, count($matches[0]));
-
-		preg_match_all(sprintf('{
-			(?:
-				\b(?<![\$:>])(?:
-					(?: (?P<type>class|interface|trait%s) \s++ (?P<name>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) )
-					| (?: (?P<function>function) \s++ (?:&\s*)? (?P<fname>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) \s*+ [&\(] )
-					| (?: (?P<constant>const) \s++ (?P<cname>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) \s*+ [^;] )
-					| (?: (?:\\\)? (?P<define>define) \s*+ \( \s*+ [\'"] (?P<dname>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:[\\\\]{1,2}[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+) )
-					| (?: (?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;] )
-				)
-			)
-		}ix', $this->extraTypes), $contents, $matches);
-
-		$classes = [];
-		$functions = [];
-		$constants = [];
-		$namespace = '';
-
-		for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
-			if (isset($matches['ns'][$i]) && $matches['ns'][$i] !== '') {
-				$namespace = preg_replace('~\s+~', '', strtolower($matches['nsname'][$i])) . '\\';
-				continue;
-			}
-
-			if ($matches['function'][$i] !== '') {
-				$functions[] = strtolower(ltrim($namespace . $matches['fname'][$i], '\\'));
-				continue;
-			}
-
-			if ($matches['constant'][$i] !== '') {
-				$constants[] = ConstantNameHelper::normalize(ltrim($namespace . $matches['cname'][$i], '\\'));
-			}
-
-			if ($matches['define'][$i] !== '') {
-				$constants[] = ConstantNameHelper::normalize($matches['dname'][$i]);
-				continue;
-			}
-
-			$name = $matches['name'][$i];
-
-			// skip anon classes extending/implementing
-			if ($name === 'extends' || $name === 'implements') {
-				continue;
-			}
-
-			$classes[] = strtolower(ltrim($namespace . $name, '\\'));
-		}
-
-		return [
-			'classes' => $classes,
-			'functions' => $functions,
-			'constants' => $constants,
-		];
-	}
-
-	/**
 	 * @return list<Reflection>
 	 */
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
-		if ($this->classToFile === null || $this->functionToFiles === null || $this->constantToFile === null) {
-			$this->init();
-			if ($this->classToFile === null || $this->functionToFiles === null || $this->constantToFile === null) {
-				throw new ShouldNotHappenException();
-			}
-		}
+		$this->parse();
 
 		$reflections = [];
 		if ($identifierType->isClass()) {
-			foreach ($this->classToFile as $file) {
+			foreach (array_filter($this->classToFile) as $file) {
 				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
 				foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNodes) {
 					foreach ($fetchedClassNodes as $fetchedClassNode) {
+						if (!$this->phpVersion->supportsEnums() && $fetchedClassNode->getNode() instanceof Node\Stmt\Enum_) {
+							continue;
+						}
+
 						$reflections[$identifierName] = $this->nodeToReflection($reflector, $fetchedClassNode);
 					}
 				}
 			}
 		} elseif ($identifierType->isFunction()) {
-			foreach ($this->functionToFiles as $files) {
-				foreach ($files as $file) {
-					$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
-					foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNodes) {
-						foreach ($fetchedFunctionNodes as $fetchedFunctionNode) {
-							$reflections[$identifierName] = $this->nodeToReflection($reflector, $fetchedFunctionNode);
-							continue 2;
-						}
+			foreach (array_filter($this->functionToFiles) as $file) {
+				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
+				foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNodes) {
+					foreach ($fetchedFunctionNodes as $fetchedFunctionNode) {
+						$reflections[$identifierName] = $this->nodeToReflection($reflector, $fetchedFunctionNode);
 					}
 				}
 			}
 		} elseif ($identifierType->isConstant()) {
-			foreach ($this->constantToFile as $file) {
+			foreach (array_filter($this->constantToFile) as $file) {
 				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
 				foreach ($fetchedNodesResult->getConstantNodes() as $identifierName => $fetchedConstantNodes) {
 					foreach ($fetchedConstantNodes as $fetchedConstantNode) {
@@ -340,6 +191,76 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		}
 
 		return array_values($reflections);
+	}
+
+	/**
+	 * @param (callable(): bool) $isTypeFound
+	 */
+	private function parse(?callable $isTypeFound = null): bool
+	{
+		foreach ($this->files as $filesNo => $file) {
+			$fetchNodesResult = $this->parseFile($file);
+
+			foreach (array_keys($fetchNodesResult->getClassNodes()) as $className) {
+				$this->classToFile[$className] = $file;
+			}
+
+			foreach (array_keys($fetchNodesResult->getFunctionNodes()) as $functionName) {
+				$this->functionToFiles[$functionName] = $file;
+			}
+
+			foreach (array_keys($fetchNodesResult->getConstantNodes()) as $constantName) {
+				$this->constantToFile[$constantName] = $file;
+			}
+
+			unset($this->files[$filesNo]);
+
+			if ($isTypeFound !== null && $isTypeFound()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function parseFile(string $file): FetchedNodesResult
+	{
+		$contents = @php_strip_whitespace($file);
+
+		try {
+			/** @var Node[] $ast */
+			$ast = $this->phpParser->parse($contents);
+		} catch (Throwable) {
+			return new FetchedNodesResult([], [], []);
+		}
+
+		$this->cachingVisitor->prepare($file, $contents);
+		$this->nodeTraverser->traverse($ast);
+
+		$result = new FetchedNodesResult(
+			$this->cachingVisitor->getClassNodes(),
+			$this->cachingVisitor->getFunctionNodes(),
+			$this->cachingVisitor->getConstantNodes(),
+		);
+
+		$this->cachingVisitor->reset();
+
+		return $result;
+	}
+
+	/**
+	 * @param FetchedNode<Node\Stmt\ClassLike>|FetchedNode<Node\Stmt\Function_>|FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall> $fetchedNode
+	 */
+	private function nodeToReflection(Reflector $reflector, FetchedNode $fetchedNode, ?int $positionInNode = null): Reflection
+	{
+		$nodeToReflection = new NodeToReflection();
+		return $nodeToReflection->__invoke(
+			$reflector,
+			$fetchedNode->getNode(),
+			$fetchedNode->getLocatedSource(),
+			$fetchedNode->getNamespace(),
+			$positionInNode,
+		);
 	}
 
 	private function findConstantPositionInConstNode(Node\Stmt\Const_|Node\Expr\FuncCall $constantNode, string $constantName): ?int

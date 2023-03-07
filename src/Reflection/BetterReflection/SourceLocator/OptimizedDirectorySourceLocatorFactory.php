@@ -2,13 +2,20 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PhpParser\Parser;
 use PHPStan\File\FileFinder;
 use PHPStan\Php\PhpVersion;
 
 class OptimizedDirectorySourceLocatorFactory
 {
 
-	public function __construct(private FileNodesFetcher $fileNodesFetcher, private FileFinder $fileFinder, private PhpVersion $phpVersion)
+	public function __construct(
+		private FileNodesFetcher $fileNodesFetcher,
+		private FileFinder $fileFinder,
+		private PhpVersion $phpVersion,
+		private Parser $phpParser,
+		private CachingVisitor $cachingVisitor,
+	)
 	{
 	}
 
@@ -18,6 +25,8 @@ class OptimizedDirectorySourceLocatorFactory
 			$this->fileNodesFetcher,
 			$this->phpVersion,
 			$this->fileFinder->findFiles([$directory])->getFiles(),
+			$this->phpParser,
+			$this->cachingVisitor,
 		);
 	}
 
@@ -30,6 +39,8 @@ class OptimizedDirectorySourceLocatorFactory
 			$this->fileNodesFetcher,
 			$this->phpVersion,
 			$files,
+			$this->phpParser,
+			$this->cachingVisitor,
 		);
 	}
 

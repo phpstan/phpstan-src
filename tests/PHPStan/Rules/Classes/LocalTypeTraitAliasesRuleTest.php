@@ -5,30 +5,30 @@ namespace PHPStan\Rules\Classes;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
- * @extends RuleTestCase<LocalTypeAliasesRule>
+ * @extends RuleTestCase<LocalTypeTraitAliasesRule>
  */
-class LocalTypeAliasesRuleTest extends RuleTestCase
+class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new LocalTypeAliasesRule(
+		return new LocalTypeTraitAliasesRule(
 			new LocalTypeAliasesCheck(
 				['GlobalTypeAlias' => 'int|string'],
 				$this->createReflectionProvider(),
 				self::getContainer()->getByType(TypeNodeResolver::class),
 			),
+			$this->createReflectionProvider(),
 		);
 	}
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/local-type-aliases.php'], [
+		$this->analyse([__DIR__ . '/data/local-type-trait-aliases.php'], [
 			[
-				'Type alias ExistingClassAlias already exists as a class in scope of LocalTypeAliases\Bar.',
+				'Type alias ExistingClassAlias already exists as a class in scope of LocalTypeTraitAliases\Bar.',
 				23,
 			],
 			[
@@ -52,19 +52,19 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 				23,
 			],
 			[
-				'Cannot import type alias ImportedAliasFromNonClass: class LocalTypeAliases\int does not exist.',
+				'Cannot import type alias ImportedAliasFromNonClass: class LocalTypeTraitAliases\int does not exist.',
 				39,
 			],
 			[
-				'Cannot import type alias ImportedAliasFromUnknownClass: class LocalTypeAliases\UnknownClass does not exist.',
+				'Cannot import type alias ImportedAliasFromUnknownClass: class LocalTypeTraitAliases\UnknownClass does not exist.',
 				39,
 			],
 			[
-				'Cannot import type alias ImportedUnknownAlias: type alias does not exist in LocalTypeAliases\Foo.',
+				'Cannot import type alias ImportedUnknownAlias: type alias does not exist in LocalTypeTraitAliases\Foo.',
 				39,
 			],
 			[
-				'Type alias ExistingClassAlias already exists as a class in scope of LocalTypeAliases\Baz.',
+				'Type alias ExistingClassAlias already exists as a class in scope of LocalTypeTraitAliases\Baz.',
 				39,
 			],
 			[
@@ -90,20 +90,6 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 			[
 				'Invalid type definition detected in type alias InvalidTypeAlias.',
 				62,
-			],
-		]);
-	}
-
-	public function testEnums(): void
-	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
-		$this->analyse([__DIR__ . '/data/local-type-aliases-enums.php'], [
-			[
-				'Cannot import type alias Test: class LocalTypeAliasesEnums\NonexistentClass does not exist.',
-				8,
 			],
 		]);
 	}

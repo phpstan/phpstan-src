@@ -50,6 +50,8 @@ rules:
 	- PHPStan\Rules\Classes\InstantiationRule
 	- PHPStan\Rules\Classes\InstantiationCallableRule
 	- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
+	- PHPStan\Rules\Classes\LocalTypeAliasesRule
+	- PHPStan\Rules\Classes\LocalTypeTraitAliasesRule
 	- PHPStan\Rules\Classes\NewStaticRule
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
 	- PHPStan\Rules\Classes\TraitAttributeClassRule
@@ -255,13 +257,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Regexp\RegularExpressionPatternRule
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Classes\LocalTypeAliasesRule
-		arguments:
-			globalTypeAliases: %typeAliases%
 		tags:
 			- phpstan.rules.rule
 

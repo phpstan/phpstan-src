@@ -41,6 +41,7 @@ use PHPStan\Type\TypeAlias;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionException;
+use ReflectionProperty;
 use stdClass;
 use function array_diff;
 use function array_filter;
@@ -526,6 +527,17 @@ class ClassReflection
 			unset($this->methods[$name]);
 		}
 		$this->getPhpExtension()->evictPrivateSymbols($this->getCacheKey());
+	}
+
+	/**
+	 * @return array<string>
+	 */
+	public function getPropertyNames(): array
+	{
+		return array_map(
+			static fn (ReflectionProperty $property) => $property->getName(),
+			$this->getNativeReflection()->getProperties(),
+		);
 	}
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection

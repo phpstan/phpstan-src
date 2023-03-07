@@ -846,4 +846,19 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8879.php'], []);
 	}
 
+	public function testBug9011(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80000) {
+			$errors = [
+				[
+					'Method Bug9011\HelloWorld::getX() should return array<string> but returns false.',
+					16,
+				],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9011.php'], $errors);
+	}
+
 }

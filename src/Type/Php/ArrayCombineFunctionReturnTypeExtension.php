@@ -7,7 +7,6 @@ use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -36,10 +35,10 @@ class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		return $functionReflection->getName() === 'array_combine';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		if (count($functionCall->getArgs()) < 2) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$firstArg = $functionCall->getArgs()[0]->value;
@@ -56,6 +55,9 @@ class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			$valueTypes = $valuesParamType->getValueTypes();
 
 			if (count($keyTypes) !== count($valueTypes)) {
+				if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+					return null;
+				}
 				return new ConstantBooleanType(false);
 			}
 

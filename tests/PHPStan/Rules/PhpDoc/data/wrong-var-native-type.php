@@ -170,3 +170,56 @@ class Foo
 	}
 
 }
+
+class PHPStanType
+{
+
+	public function doFoo(): void
+	{
+		/** @var \PHPStan\Type\Type $a */
+		$a = $this->doBar(); // not narrowing - ok
+
+		/** @var \PHPStan\Type\Type|null $b */
+		$b = $this->doBar(); // not narrowing - ok
+
+		/** @var \stdClass $c */
+		$c = $this->doBar(); // not subtype - error
+
+		/** @var \PHPStan\Type\ObjectType|null $d */
+		$d = $this->doBar(); // narrowing Type - error
+
+		/** @var \PHPStan\Type\ObjectType $e */
+		$e = $this->doBar(); // narrowing Type - error
+
+		/** @var \PHPStan\Type\ObjectType $f */
+		$f = $this->doBaz(); // not narrowing - does not have to error but currently does
+
+		/** @var \PHPStan\Type\ObjectType|null $g */
+		$g = $this->doBaz(); // not narrowing - ok
+
+		/** @var \PHPStan\Type\Type|null $g */
+		$g = $this->doBaz(); // generalizing - not ok
+
+		/** @var \PHPStan\Type\ObjectType|null $h */
+		$h = $this->doBazPhpDoc(); // generalizing - not ok
+	}
+
+	public function doBar(): ?\PHPStan\Type\Type
+	{
+
+	}
+
+	public function doBaz(): ?\PHPStan\Type\ObjectType
+	{
+
+	}
+
+	/**
+	 * @return \PHPStan\Type\Generic\GenericObjectType|null
+	 */
+	public function doBazPhpDoc()
+	{
+
+	}
+
+}

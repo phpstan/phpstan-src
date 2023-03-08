@@ -814,6 +814,11 @@ parameters:
 			path: src/Type/Constant/ConstantArrayTypeBuilder.php
 
 		-
+			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Type is always PHPStan\\\\Type\\\\Constant\\\\ConstantIntegerType\\|PHPStan\\\\Type\\\\Constant\\\\ConstantStringType but it's error\\-prone and dangerous\\.$#"
+			count: 2
+			path: src/Type/Constant/ConstantArrayTypeBuilder.php
+
+		-
 			message: "#^PHPDoc tag @var with type float\\|int is not subtype of native type int\\.$#"
 			count: 2
 			path: src/Type/Constant/ConstantArrayTypeBuilder.php
@@ -1449,6 +1454,11 @@ parameters:
 			path: src/Type/StaticType.php
 
 		-
+			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Type is always PHPStan\\\\Type\\\\StaticType but it's error\\-prone and dangerous\\.$#"
+			count: 1
+			path: src/Type/StaticType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/StringType.php
@@ -1584,6 +1594,11 @@ parameters:
 			path: src/Type/UnionType.php
 
 		-
+			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Type is always PHPStan\\\\Type\\\\BooleanType but it's error\\-prone and dangerous\\.$#"
+			count: 1
+			path: src/Type/UnionType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Accessory\\\\AccessoryType is error\\-prone and deprecated\\. Use methods on PHPStan\\\\Type\\\\Type instead\\.$#"
 			count: 3
 			path: src/Type/UnionTypeHelper.php
@@ -1709,4 +1724,9 @@ parameters:
 			"""
 			count: 1
 			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
+
+		-
+			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Generic\\\\TemplateType is always PHPStan\\\\Type\\\\Generic\\\\TemplateMixedType but it's error\\-prone and dangerous\\.$#"
+			count: 1
+			path: tests/PHPStan/Type/IterableTypeTest.php
 

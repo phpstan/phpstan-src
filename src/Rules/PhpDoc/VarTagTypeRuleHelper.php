@@ -12,6 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function count;
@@ -72,6 +73,7 @@ class VarTagTypeRuleHelper
 	{
 		$errors = [];
 		$exprNativeType = $scope->getNativeType($expr);
+		$containsPhpStanType = $this->containsPhpStanType($varTagType);
 		if ($this->shouldVarTagTypeBeReported($expr, $exprNativeType, $varTagType)) {
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTagType);
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -79,9 +81,12 @@ class VarTagTypeRuleHelper
 				$varTagType->describe($verbosity),
 				$exprNativeType->describe($verbosity),
 			))->build();
-		} elseif ($this->checkTypeAgainstPhpDocType) {
+		} else {
 			$exprType = $scope->getType($expr);
-			if ($this->shouldVarTagTypeBeReported($expr, $exprType, $varTagType)) {
+			if (
+				$this->shouldVarTagTypeBeReported($expr, $exprType, $varTagType)
+				&& ($this->checkTypeAgainstPhpDocType || $containsPhpStanType)
+			) {
 				$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTagType);
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @var with type %s is not subtype of type %s.',
@@ -91,7 +96,33 @@ class VarTagTypeRuleHelper
 			}
 		}
 
+		if (count($errors) === 0 && $containsPhpStanType) {
+			$exprType = $scope->getType($expr);
+			if (!$exprType->equals($varTagType)) {
+				$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTagType);
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'PHPDoc tag @var assumes the expression with type %s is always %s but it\'s error-prone and dangerous.',
+					$exprType->describe($verbosity),
+					$varTagType->describe($verbosity),
+				))->build();
+			}
+		}
+
 		return $errors;
+	}
+
+	private function containsPhpStanType(Type $type): bool
+	{
+		$classReflections = TypeUtils::toBenevolentUnion($type)->getObjectClassReflections();
+		foreach ($classReflections as $classReflection) {
+			if (!$classReflection->isSubclassOf(Type::class)) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private function shouldVarTagTypeBeReported(Node\Expr $expr, Type $type, Type $varTagType): bool

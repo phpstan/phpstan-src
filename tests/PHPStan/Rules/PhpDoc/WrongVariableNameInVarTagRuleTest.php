@@ -226,6 +226,30 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @var with type int is not subtype of native type \'foo\'.',
 				148,
 			],
+			[
+				'PHPDoc tag @var with type stdClass is not subtype of native type PHPStan\Type\Type|null.',
+				186,
+			],
+			[
+				'PHPDoc tag @var assumes the expression with type PHPStan\Type\Type|null is always PHPStan\Type\ObjectType|null but it\'s error-prone and dangerous.',
+				189,
+			],
+			[
+				'PHPDoc tag @var assumes the expression with type PHPStan\Type\Type|null is always PHPStan\Type\ObjectType but it\'s error-prone and dangerous.',
+				192,
+			],
+			[
+				'PHPDoc tag @var assumes the expression with type PHPStan\Type\ObjectType|null is always PHPStan\Type\ObjectType but it\'s error-prone and dangerous.',
+				195,
+			],
+			[
+				'PHPDoc tag @var with type PHPStan\Type\Type|null is not subtype of native type PHPStan\Type\ObjectType|null.',
+				201,
+			],
+			[
+				'PHPDoc tag @var with type PHPStan\Type\ObjectType|null is not subtype of type PHPStan\Type\Generic\GenericObjectType|null.',
+				204,
+			],
 		]];
 		yield [false, true, []];
 		yield [true, true, [
@@ -293,6 +317,30 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var with type array<Traversable<mixed, string>> is not subtype of type array<list<string|null>>.',
 				163,
+			],
+			[
+				'PHPDoc tag @var with type stdClass is not subtype of native type PHPStan\Type\Type|null.',
+				186,
+			],
+			[
+				'PHPDoc tag @var assumes the expression with type PHPStan\Type\Type|null is always PHPStan\Type\ObjectType|null but it\'s error-prone and dangerous.',
+				189,
+			],
+			[
+				'PHPDoc tag @var assumes the expression with type PHPStan\Type\Type|null is always PHPStan\Type\ObjectType but it\'s error-prone and dangerous.',
+				192,
+			],
+			[
+				'PHPDoc tag @var assumes the expression with type PHPStan\Type\ObjectType|null is always PHPStan\Type\ObjectType but it\'s error-prone and dangerous.',
+				195,
+			],
+			[
+				'PHPDoc tag @var with type PHPStan\Type\Type|null is not subtype of native type PHPStan\Type\ObjectType|null.',
+				201,
+			],
+			[
+				'PHPDoc tag @var with type PHPStan\Type\ObjectType|null is not subtype of type PHPStan\Type\Generic\GenericObjectType|null.',
+				204,
 			],
 		]];
 	}

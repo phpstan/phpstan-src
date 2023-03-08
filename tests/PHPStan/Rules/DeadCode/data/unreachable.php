@@ -36,6 +36,28 @@ class Foo
 		// this is why...
 	}
 
+	public function doLorem2(string $foo)
+	{
+		return;
+		// this is why...
+
+		echo $foo;
+	}
+
+	public function doLorem3()
+	{
+		return;
+		;
+	}
+
+	public function doLorem4(string $foo)
+	{
+		return;
+		;
+
+		echo $foo;
+	}
+
 	/**
 	 * @param \stdClass[] $all
 	 */

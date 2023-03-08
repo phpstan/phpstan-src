@@ -21,10 +21,6 @@ class UnreachableStatementRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node->getOriginalStatement() instanceof Node\Stmt\Nop) {
-			return [];
-		}
-
 		return [
 			RuleErrorBuilder::message('Unreachable statement - code above always terminates.')
 				->identifier('deadCode.unreachableStatement')

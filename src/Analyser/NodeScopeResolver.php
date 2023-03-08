@@ -240,7 +240,6 @@ class NodeScopeResolver
 		callable $nodeCallback,
 	): void
 	{
-		$nodesCount = count($nodes);
 		foreach ($nodes as $i => $node) {
 			if (!$node instanceof Node\Stmt) {
 				continue;
@@ -252,14 +251,12 @@ class NodeScopeResolver
 				continue;
 			}
 
-			if ($i < $nodesCount - 1) {
-				$nextStmt = $nodes[$i + 1];
-				if (!$nextStmt instanceof Node\Stmt) {
-					continue;
-				}
-
-				$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
+			$nextStmt = $this->getFirstNonNopNode(array_slice($nodes, $i + 1));
+			if (!$nextStmt instanceof Node\Stmt) {
+				continue;
 			}
+
+			$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
 			break;
 		}
 	}
@@ -323,8 +320,8 @@ class NodeScopeResolver
 			}
 
 			$alreadyTerminated = true;
-			if ($i < $stmtCount - 1) {
-				$nextStmt = $stmts[$i + 1];
+			$nextStmt = $this->getFirstNonNopNode(array_slice($stmts, $i + 1));
+			if ($nextStmt !== null) {
 				$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
 			}
 			break;
@@ -4360,6 +4357,22 @@ class NodeScopeResolver
 
 		if ($nativeReturnType->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocReturnType))->yes()) {
 			return $phpDocReturnType;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @template T of Node
+	 * @param array<T> $nodes
+	 * @return T
+	 */
+	private function getFirstNonNopNode(array $nodes): ?Node
+	{
+		foreach ($nodes as $node) {
+			if (!$node instanceof Node\Stmt\Nop) {
+				return $node;
+			}
 		}
 
 		return null;

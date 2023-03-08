@@ -115,18 +115,19 @@ class DependencyResolver
 				}
 			}
 		} elseif ($node instanceof Closure || $node instanceof Node\Expr\ArrowFunction) {
-			/** @var ClosureType $closureType */
 			$closureType = $scope->getType($node);
-			foreach ($closureType->getParameters() as $parameter) {
-				$referencedClasses = $parameter->getType()->getReferencedClasses();
-				foreach ($referencedClasses as $referencedClass) {
+			if ($closureType instanceof ClosureType) {
+				foreach ($closureType->getParameters() as $parameter) {
+					$referencedClasses = $parameter->getType()->getReferencedClasses();
+					foreach ($referencedClasses as $referencedClass) {
+						$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+					}
+				}
+
+				$returnTypeReferencedClasses = $closureType->getReturnType()->getReferencedClasses();
+				foreach ($returnTypeReferencedClasses as $referencedClass) {
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 				}
-			}
-
-			$returnTypeReferencedClasses = $closureType->getReturnType()->getReferencedClasses();
-			foreach ($returnTypeReferencedClasses as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 			}
 		} elseif ($node instanceof Node\Expr\FuncCall) {
 			$functionName = $node->name;

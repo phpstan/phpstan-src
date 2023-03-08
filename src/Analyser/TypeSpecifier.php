@@ -182,9 +182,7 @@ class TypeSpecifier
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Identical) {
 			$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
 			if ($expressions !== null) {
-				/** @var Expr $exprNode */
 				$exprNode = $expressions[0];
-				/** @var ConstantScalarType $constantType */
 				$constantType = $expressions[1];
 
 				$specifiedType = $this->specifyTypesForConstantBinaryExpression($exprNode, $constantType, $context, $scope, $rootExpr);
@@ -291,9 +289,7 @@ class TypeSpecifier
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Equal) {
 			$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
 			if ($expressions !== null) {
-				/** @var Expr $exprNode */
 				$exprNode = $expressions[0];
-				/** @var ConstantScalarType $constantType */
 				$constantType = $expressions[1];
 				if (!$context->null() && ($constantType->getValue() === false || $constantType->getValue() === null)) {
 					return $this->specifyTypesInCondition(
@@ -1418,7 +1414,7 @@ class TypeSpecifier
 	}
 
 	/**
-	 * @return (Expr|ConstantScalarType)[]|null
+	 * @return array{Expr, ConstantScalarType}|null
 	 */
 	private function findTypeExpressionsFromBinaryOperation(Scope $scope, Node\Expr\BinaryOp $binaryOperation): ?array
 	{

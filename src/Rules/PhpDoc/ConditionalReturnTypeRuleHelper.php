@@ -8,7 +8,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateType;
-use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -24,10 +23,7 @@ class ConditionalReturnTypeRuleHelper
 	/**
 	 * @return RuleError[]
 	 */
-	public function check(
-		ParametersAcceptor $acceptor,
-		TemplateTypeMap $templateTypeMap,
-	): array
+	public function check(ParametersAcceptor $acceptor): array
 	{
 		$conditionalTypes = [];
 		$parametersByName = [];
@@ -71,14 +67,6 @@ class ConditionalReturnTypeRuleHelper
 				if (count($templateTypes) === 0) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type uses subject type %s which is not part of PHPDoc @template tags.', $subjectType->describe(VerbosityLevel::typeOnly())))->build();
 					continue;
-				}
-
-				foreach ($templateTypes as $templateType) {
-					if ($templateTypeMap->getType($templateType->getName()) !== null) {
-						continue;
-					}
-
-					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type uses subject type %s which is not part of PHPDoc @template tags.', $templateType->describe(VerbosityLevel::typeOnly())))->build();
 				}
 			} else {
 				$parameterName = substr($conditionalType->getParameterName(), 1);

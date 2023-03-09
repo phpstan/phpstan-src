@@ -11,6 +11,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Reflection\Native\NativeFunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
@@ -76,10 +77,26 @@ class ImpossibleCheckTypeHelper
 					'interface_exists',
 					'trait_exists',
 					'enum_exists',
-					'method_exists',
-					'function_exists',
 				], true)) {
 					return null;
+				}
+				if ($functionName === 'function_exists') {
+					$functionNameType = $scope->getType($node->getArgs()[0]->value);
+
+					foreach ($functionNameType->getConstantStrings() as $constantString) {
+						$function = new Node\Name($constantString->getValue());
+
+						if (!$this->reflectionProvider->hasFunction($function, $scope)) {
+							continue;
+						}
+
+						$functionReflection = $this->reflectionProvider->getFunction($function, $scope);
+						if ($functionReflection instanceof NativeFunctionReflection) {
+							// native functions existance depends php configuration,
+							// therefore don't judge them regarding will always exist or not
+							return null;
+						}
+					}
 				}
 				if (in_array($functionName, ['count', 'sizeof'], true)) {
 					return null;

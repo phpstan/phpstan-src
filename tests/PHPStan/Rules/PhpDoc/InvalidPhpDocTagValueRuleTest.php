@@ -6,6 +6,7 @@ use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function array_merge;
 
 /**
  * @extends RuleTestCase<InvalidPhpDocTagValueRule>
@@ -13,17 +14,20 @@ use PHPStan\Testing\RuleTestCase;
 class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 {
 
+	private bool $checkAllInvalidPhpDocs;
+
 	protected function getRule(): Rule
 	{
 		return new InvalidPhpDocTagValueRule(
 			self::getContainer()->getByType(Lexer::class),
 			self::getContainer()->getByType(PhpDocParser::class),
+			$this->checkAllInvalidPhpDocs,
 		);
 	}
 
-	public function testRule(): void
+	public function dataRule(): iterable
 	{
-		$this->analyse([__DIR__ . '/data/invalid-phpdoc.php'], [
+		$errors = [
 			[
 				'PHPDoc tag @param has invalid value (): Unexpected token "\n * ", expected type at offset 13',
 				25,
@@ -84,16 +88,44 @@ class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 				'PHPDoc tag @var has invalid value ((Foo|Bar): Unexpected token "*/", expected \')\' at offset 18',
 				81,
 			],
-		]);
+			[
+				'PHPDoc tag @var has invalid value ((Foo&): Unexpected token "*/", expected type at offset 15',
+				89,
+			],
+			[
+				'PHPDoc tag @var has invalid value ((Foo&): Unexpected token "*/", expected type at offset 15',
+				92,
+			],
+		];
+
+		yield [false, $errors];
+		yield [true, array_merge($errors, [
+			[
+				'PHPDoc tag @var has invalid value ((Foo&): Unexpected token "*/", expected type at offset 15',
+				102,
+			],
+		])];
+	}
+
+	/**
+	 * @dataProvider dataRule
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testRule(bool $checkAllInvalidPhpDocs, array $expectedErrors): void
+	{
+		$this->checkAllInvalidPhpDocs = $checkAllInvalidPhpDocs;
+		$this->analyse([__DIR__ . '/data/invalid-phpdoc.php'], $expectedErrors);
 	}
 
 	public function testBug4731(): void
 	{
+		$this->checkAllInvalidPhpDocs = true;
 		$this->analyse([__DIR__ . '/data/bug-4731.php'], []);
 	}
 
 	public function testBug4731WithoutFirstTag(): void
 	{
+		$this->checkAllInvalidPhpDocs = true;
 		$this->analyse([__DIR__ . '/data/bug-4731-no-first-tag.php'], []);
 	}
 

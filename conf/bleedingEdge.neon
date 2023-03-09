@@ -32,3 +32,4 @@ parameters:
 		newRuleLevelHelper: true
 		instanceofType: true
 		paramOutVariance: true
+		allInvalidPhpDocs: true

@@ -81,3 +81,25 @@ class ClassConstant
 	const FOO = 1;
 
 }
+
+class AboveProperty
+{
+
+	/** @var (Foo& */
+	private $foo;
+
+	/** @var (Foo& */
+	private const TEST = 1;
+
+}
+
+class AboveReturn
+{
+
+	public function doFoo(): string
+	{
+		/** @var (Foo& */
+		return doFoo();
+	}
+
+}

@@ -36,3 +36,25 @@ class Boo extends Baz
 
 	}
 }
+
+class AboveProperty
+{
+
+	/** @phpstan-varr 1 */
+	private $foo;
+
+	/** @phpstan-varr 1 */
+	private const TEST = 1;
+
+}
+
+class AboveReturn
+{
+
+	public function doFoo(): string
+	{
+		/** @phpstan-varr string */
+		return doFoo();
+	}
+
+}

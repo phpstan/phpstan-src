@@ -39,8 +39,6 @@ rules:
 	- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
-	- PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
-	- PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
 	- PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule
 	- PHPStan\Rules\Properties\AccessPrivatePropertyThroughStaticRule
 
@@ -78,10 +76,22 @@ services:
 	-
 		class: PHPStan\Rules\Methods\IllegalConstructorStaticCallRule
 	-
+		class: PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
+		arguments:
+			checkAllInvalidPhpDocs: %featureToggles.allInvalidPhpDocs%
+		tags:
+			- phpstan.rules.rule
+	-
 		class: PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkMissingVarTagTypehint: %checkMissingVarTagTypehint%
+		tags:
+			- phpstan.rules.rule
+	-
+		class: PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
+		arguments:
+			checkAllInvalidPhpDocs: %featureToggles.allInvalidPhpDocs%
 		tags:
 			- phpstan.rules.rule
 	-

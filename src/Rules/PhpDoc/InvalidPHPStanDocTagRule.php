@@ -4,6 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\VirtualNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
@@ -53,7 +54,11 @@ class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-readonly-allow-private-mutation',
 	];
 
-	public function __construct(private Lexer $phpDocLexer, private PhpDocParser $phpDocParser)
+	public function __construct(
+		private Lexer $phpDocLexer,
+		private PhpDocParser $phpDocParser,
+		private bool $checkAllInvalidPhpDocs,
+	)
 	{
 	}
 
@@ -64,15 +69,28 @@ class InvalidPHPStanDocTagRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (
-			!$node instanceof Node\Stmt\ClassLike
-			&& !$node instanceof Node\FunctionLike
-			&& !$node instanceof Node\Stmt\Foreach_
-			&& !$node instanceof Node\Stmt\Property
-			&& !$node instanceof Node\Expr\Assign
-			&& !$node instanceof Node\Expr\AssignRef
-		) {
-			return [];
+		if (!$this->checkAllInvalidPhpDocs) {
+			if (
+				!$node instanceof Node\Stmt\ClassLike
+				&& !$node instanceof Node\FunctionLike
+				&& !$node instanceof Node\Stmt\Foreach_
+				&& !$node instanceof Node\Stmt\Property
+				&& !$node instanceof Node\Expr\Assign
+				&& !$node instanceof Node\Expr\AssignRef
+			) {
+				return [];
+			}
+		} else {
+			// mirrored with InvalidPhpDocTagValueRule
+			if ($node instanceof VirtualNode) {
+				return [];
+			}
+			if ($node instanceof Node\Stmt\Expression) {
+				return [];
+			}
+			if ($node instanceof Node\Expr && !$node instanceof Node\Expr\Assign && !$node instanceof Node\Expr\AssignRef) {
+				return [];
+			}
 		}
 
 		$docComment = $node->getDocComment();

@@ -62,6 +62,7 @@ parameters:
 		newRuleLevelHelper: false
 		instanceofType: false
 		paramOutVariance: false
+		allInvalidPhpDocs: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -291,6 +292,7 @@ parametersSchema:
 		newRuleLevelHelper: bool()
 		instanceofType: bool()
 		paramOutVariance: bool()
+		allInvalidPhpDocs: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

@@ -14,6 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
+use function count;
 use function sprintf;
 use function substr;
 
@@ -57,9 +58,27 @@ class ConditionalReturnTypeRuleHelper
 				if ($subjectType instanceof StaticType) {
 					continue;
 				}
-				if (!$subjectType instanceof TemplateType || $templateTypeMap->getType($subjectType->getName()) === null) {
+				$templateTypes = [];
+				TypeTraverser::map($subjectType, static function (Type $type, callable $traverse) use (&$templateTypes): Type {
+					if ($type instanceof TemplateType) {
+						$templateTypes[] = $type;
+						return $type;
+					}
+
+					return $traverse($type);
+				});
+
+				if (count($templateTypes) === 0) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type uses subject type %s which is not part of PHPDoc @template tags.', $subjectType->describe(VerbosityLevel::typeOnly())))->build();
 					continue;
+				}
+
+				foreach ($templateTypes as $templateType) {
+					if ($templateTypeMap->getType($templateType->getName()) !== null) {
+						continue;
+					}
+
+					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type uses subject type %s which is not part of PHPDoc @template tags.', $templateType->describe(VerbosityLevel::typeOnly())))->build();
 				}
 			} else {
 				$parameterName = substr($conditionalType->getParameterName(), 1);

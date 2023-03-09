@@ -50,6 +50,7 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule;
+use PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule;
 use PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\ExistingClassesInPropertiesRule;
@@ -195,6 +196,14 @@ class StubValidator
 			$relativePathHelper = $container->getService('simpleRelativePathHelper');
 			$rules[] = new DuplicateClassDeclarationRule($reflector, $relativePathHelper);
 			$rules[] = new DuplicateFunctionDeclarationRule($reflector, $relativePathHelper);
+		}
+
+		if ((bool) $container->getParameter('featureToggles')['allInvalidPhpDocs']) {
+			$rules[] = new InvalidPHPStanDocTagRule(
+				$container->getByType(Lexer::class),
+				$container->getByType(PhpDocParser::class),
+				true,
+			);
 		}
 
 		return new DirectRuleRegistry($rules);

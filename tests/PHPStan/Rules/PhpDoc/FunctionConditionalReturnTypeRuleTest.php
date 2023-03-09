@@ -63,4 +63,9 @@ class FunctionConditionalReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8609(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8609-function.php'], []);
+	}
+
 }

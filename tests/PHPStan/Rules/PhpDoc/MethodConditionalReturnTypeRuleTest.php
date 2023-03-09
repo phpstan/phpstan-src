@@ -24,10 +24,6 @@ class MethodConditionalReturnTypeRuleTest extends RuleTestCase
 				48,
 			],
 			[
-				'Conditional return type uses subject type TAboveClass which is not part of PHPDoc @template tags.',
-				57,
-			],
-			[
 				'Conditional return type references unknown parameter $j.',
 				65,
 			],
@@ -78,6 +74,11 @@ class MethodConditionalReturnTypeRuleTest extends RuleTestCase
 				14,
 			],
 		]);
+	}
+
+	public function testBug8609(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8609.php'], []);
 	}
 
 }

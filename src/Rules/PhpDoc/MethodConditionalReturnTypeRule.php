@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Rule;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use function array_merge;
 use function count;
 
 /**
@@ -32,11 +34,12 @@ class MethodConditionalReturnTypeRule implements Rule
 		}
 
 		$variant = $variants[0];
-		$templateTypeMap = $node->getClassReflection()->getTemplateTypeMap()->union(
-			$variant->getTemplateTypeMap(),
-		);
+		$templateTypeMap = $node->getClassReflection()->getTemplateTypeMap();
 
-		return $this->helper->check($variant, $templateTypeMap);
+		return $this->helper->check($variant, new TemplateTypeMap(array_merge(
+			$templateTypeMap->getTypes(),
+			$variant->getTemplateTypeMap()->getTypes(),
+		)));
 	}
 
 }

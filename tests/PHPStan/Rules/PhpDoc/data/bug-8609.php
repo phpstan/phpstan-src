@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Generics\Bug8609;
+namespace PHPStan\Rules\PhpDoc\data;
 
 /**
  * @template T of int

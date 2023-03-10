@@ -18,3 +18,8 @@ parameters:
 			message: "#^PHPDoc tag @var for variable \\$value contains unknown class UnitEnum\\.$#"
 			count: 1
 			path: ../src/Type/ConstantTypeHelper.php
+
+		-
+			message: "#^Class BackedEnum not found\\.$#"
+			count: 1
+			path: ../src/Type/Php/BackedEnumFromMethodDynamicReturnTypeExtension.php

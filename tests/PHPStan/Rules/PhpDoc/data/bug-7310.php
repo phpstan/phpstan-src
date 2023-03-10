@@ -7,12 +7,16 @@ namespace Bug7310;
  */
 class ObjectWithMetadata {
 
+	/** @var M */
+	private $metadata;
+
 	/**
 	 * @param M $metadata
 	 */
 	public function __construct(
-		public array $metadata
+		array $metadata
 	) {
+		$this->metadata = $metadata;
 	}
 
 	/**

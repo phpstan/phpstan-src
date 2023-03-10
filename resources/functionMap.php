@@ -13087,7 +13087,7 @@ return [
 'XMLReader::setRelaxNGSchema' => ['bool', 'filename'=>'string'],
 'XMLReader::setRelaxNGSchemaSource' => ['bool', 'source'=>'string'],
 'XMLReader::setSchema' => ['bool', 'filename'=>'string'],
-'XMLReader::XML' => ['bool', 'source'=>'string', 'encoding='=>'?string', 'options='=>'int'],
+'XMLReader::XML' => ['bool|XMLReader', 'source'=>'string', 'encoding='=>'?string', 'options='=>'int'],
 'xmlrpc_decode' => ['?array', 'xml'=>'string', 'encoding='=>'string'],
 'xmlrpc_decode_request' => ['?array', 'xml'=>'string', '&w_method'=>'string', 'encoding='=>'string'],
 'xmlrpc_encode' => ['string', 'value'=>'mixed'],

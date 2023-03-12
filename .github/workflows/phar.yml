@@ -147,17 +147,23 @@ jobs:
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
     steps:
-      - name: "Configure GPG signing key"
-        run: echo "$GPG_SIGNING_KEY" | base64 --decode | gpg --import --no-tty --batch --yes
-        env:
-          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+      -
+        name: Import GPG key
+        id: import-gpg
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PHPSTANBOT_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PHPSTANBOT_KEY_PASSPHRASE }}
+          git_config_global: true
+          git_user_signingkey: true
+          git_commit_gpgsign: true
 
       - name: "Checkout phpstan-dist"
         uses: actions/checkout@v3
         with:
           repository: phpstan/phpstan
           path: phpstan-dist
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           ref: 1.10.x
 
       - name: "Get previous pushed dist commit"
@@ -215,17 +221,11 @@ jobs:
         working-directory: phpstan-dist
         run: rm phpstan.phar.asc && gpg --command-fd 0 --pinentry-mode loopback -u "$GPG_ID" --batch --detach-sign --armor --output phpstan.phar.asc phpstan.phar
         env:
-          GPG_ID: ${{ secrets.GPG_ID }}
+          GPG_ID: ${{ steps.import-gpg.outputs.fingerprint }}
 
       - name: "Verify PHAR"
         working-directory: phpstan-dist
         run: "gpg --verify phpstan.phar.asc"
-
-      - name: "Set Git signing key"
-        working-directory: phpstan-dist
-        run: git config user.signingkey "$GPG_ID"
-        env:
-          GPG_ID: ${{ secrets.GPG_ID }}
 
       - name: "Install lucky_commit"
         uses: baptiste0928/cargo-install@v1
@@ -239,10 +239,10 @@ jobs:
         env:
           INPUT_LOG: ${{ steps.git-log.outputs.log }}
         run: |
-          git config --global user.name "Ondrej Mirtes"
-          git config --global user.email "ondrej@mirtes.cz"
+          git config --global user.name "phpstan-bot"
+          git config --global user.email "ondrej+phpstanbot@mirtes.cz"
           git add .
-          git commit --gpg-sign -m "Updated PHPStan to commit ${{ github.event.after }}" -m "$INPUT_LOG" --author "Ondrej Mirtes <ondrej@mirtes.cz>"
+          git commit --gpg-sign -m "Updated PHPStan to commit ${{ github.event.after }}" -m "$INPUT_LOG" --author "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
           lucky_commit ${{ steps.short-src-sha.outputs.sha }}
           git push
 
@@ -250,9 +250,9 @@ jobs:
         if: "startsWith(github.ref, 'refs/tags/')"
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_user_name: "Ondrej Mirtes"
-          commit_user_email: "ondrej@mirtes.cz"
-          commit_author: "Ondrej Mirtes <ondrej@mirtes.cz>"
+          commit_user_name: "phpstan-bot"
+          commit_user_email: "ondrej+phpstanbot@mirtes.cz"
+          commit_author: "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
           commit_options: "--gpg-sign"
           repository: phpstan-dist
           commit_message: "PHPStan ${{github.ref_name}}"

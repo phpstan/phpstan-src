@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
 
       - name: 'Get Previous tag'
         id: previoustag

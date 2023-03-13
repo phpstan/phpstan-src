@@ -9,5 +9,10 @@
 		"psr-4": {
 			"PHPStan\\ApiGen\\": "src"
 		}
+	},
+	"config": {
+		"platform": {
+			"php": "8.1.99"
+		}
 	}
 }

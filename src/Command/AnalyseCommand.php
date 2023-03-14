@@ -122,7 +122,7 @@ class AnalyseCommand extends Command
 		if ($generateBaselineFile === false) {
 			$generateBaselineFile = null;
 		} elseif ($generateBaselineFile === null) {
-			$generateBaselineFile = 'phpstan-baseline.neon';
+			$generateBaselineFile = is_file('phpstan-baseline.php') ? 'phpstan-baseline.php' : 'phpstan-baseline.neon';
 		}
 
 		$allowEmptyBaseline = (bool) $input->getOption('allow-empty-baseline');

@@ -89,12 +89,60 @@ class AnalyseCommandTest extends PHPStanTestCase
 				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-dist-dot-neon' . DIRECTORY_SEPARATOR . 'phpstan.dist.neon',
 			],
 			[
+				__DIR__ . '/test-autodiscover-php',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-php' . DIRECTORY_SEPARATOR . 'phpstan.php',
+			],
+			[
+				__DIR__ . '/test-autodiscover-php-dist',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-php-dist' . DIRECTORY_SEPARATOR . 'phpstan.php.dist',
+			],
+			[
+				__DIR__ . '/test-autodiscover-dist-dot-php',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-dist-dot-php' . DIRECTORY_SEPARATOR . 'phpstan.dist.php',
+			],
+			[
+				__DIR__ . '/test-autodiscover-neon-php',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-neon-php' . DIRECTORY_SEPARATOR . 'phpstan.neon.php',
+			],
+			[
+				__DIR__ . '/test-autodiscover-neon-php-dist',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-neon-php-dist' . DIRECTORY_SEPARATOR . 'phpstan.neon.php.dist',
+			],
+			[
+				__DIR__ . '/test-autodiscover-dist-dot-neon-php',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-dist-dot-neon-php' . DIRECTORY_SEPARATOR . 'phpstan.dist.neon.php',
+			],
+			[
 				__DIR__ . '/test-autodiscover-priority',
 				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-priority' . DIRECTORY_SEPARATOR . 'phpstan.neon',
 			],
 			[
 				__DIR__ . '/test-autodiscover-priority-dist-dot-neon',
 				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-priority-dist-dot-neon' . DIRECTORY_SEPARATOR . 'phpstan.neon',
+			],
+			[
+				__DIR__ . '/test-autodiscover-priority-php',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-priority-php' . DIRECTORY_SEPARATOR . 'phpstan.php',
+			],
+			[
+				__DIR__ . '/test-autodiscover-priority-dist-dot-php',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-priority-dist-dot-php' . DIRECTORY_SEPARATOR . 'phpstan.php',
+			],
+			[
+				__DIR__ . '/test-autodiscover-priority-neon-php',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-priority-neon-php' . DIRECTORY_SEPARATOR . 'phpstan.neon.php',
+			],
+			[
+				__DIR__ . '/test-autodiscover-priority-dist-dot-neon-php',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-priority-dist-dot-neon-php' . DIRECTORY_SEPARATOR . 'phpstan.neon.php',
+			],
+			[
+				__DIR__ . '/test-autodiscover-extension-priority',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-extension-priority' . DIRECTORY_SEPARATOR . 'phpstan.neon',
+			],
+			[
+				__DIR__ . '/test-autodiscover-extension-priority-php',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-extension-priority-php' . DIRECTORY_SEPARATOR . 'phpstan.php',
 			],
 		];
 	}

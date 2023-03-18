@@ -124,6 +124,10 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 					continue;
 				}
 
+				if ($scope->isInClassExists($referencedClass)) {
+					continue;
+				}
+
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					sprintf('%s contains unknown class %%s.', $identifier),
 					$referencedClass,

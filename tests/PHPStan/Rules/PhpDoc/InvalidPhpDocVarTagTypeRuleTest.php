@@ -151,4 +151,15 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6348.php'], []);
 	}
 
+	public function testBug9055(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9055.php'], [
+			[
+				'PHPDoc tag @var for variable $x contains unknown class Bug9055\uncheckedNotExisting.',
+				16,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 }

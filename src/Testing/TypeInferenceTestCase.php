@@ -29,6 +29,16 @@ use function sprintf;
 abstract class TypeInferenceTestCase extends PHPStanTestCase
 {
 
+	/** @deprecated Use of setUp() is not supported because of the way TypeInferenceTestCase is implemented */
+	protected function setUp(): void
+	{
+	}
+
+	/** @deprecated Use of tearDown() is not supported because of the way TypeInferenceTestCase is implemented */
+	protected function tearDown(): void
+	{
+	}
+
 	/**
 	 * @param callable(Node , Scope ): void $callback
 	 * @param string[] $dynamicConstantNames

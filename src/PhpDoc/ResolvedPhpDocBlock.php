@@ -66,6 +66,12 @@ class ResolvedPhpDocBlock
 	/** @var array<string, PropertyTag>|false */
 	private array|false $propertyTags = false;
 
+	/** @var array<string, PropertyTag>|false */
+	private array|false $propertyReadTags = false;
+
+	/** @var array<string, PropertyTag>|false */
+	private array|false $propertyWriteTags = false;
+
 	/** @var array<string, ExtendsTag>|false */
 	private array|false $extendsTags = false;
 
@@ -165,6 +171,8 @@ class ResolvedPhpDocBlock
 		$self->varTags = [];
 		$self->methodTags = [];
 		$self->propertyTags = [];
+		$self->propertyReadTags = [];
+		$self->propertyWriteTags = [];
 		$self->extendsTags = [];
 		$self->implementsTags = [];
 		$self->usesTags = [];
@@ -220,6 +228,8 @@ class ResolvedPhpDocBlock
 		$result->varTags = self::mergeVarTags($this->getVarTags(), $parents, $parentPhpDocBlocks);
 		$result->methodTags = $this->getMethodTags();
 		$result->propertyTags = $this->getPropertyTags();
+		$result->propertyReadTags = $this->getPropertyReadTags();
+		$result->propertyWriteTags = $this->getPropertyWriteTags();
 		$result->extendsTags = $this->getExtendsTags();
 		$result->implementsTags = $this->getImplementsTags();
 		$result->usesTags = $this->getUsesTags();
@@ -314,6 +324,8 @@ class ResolvedPhpDocBlock
 		$self->varTags = $this->varTags;
 		$self->methodTags = $this->methodTags;
 		$self->propertyTags = $this->propertyTags;
+		$self->propertyReadTags = $this->propertyReadTags;
+		$self->propertyWriteTags = $this->propertyWriteTags;
 		$self->extendsTags = $this->extendsTags;
 		$self->implementsTags = $this->implementsTags;
 		$self->usesTags = $this->usesTags;
@@ -398,6 +410,7 @@ class ResolvedPhpDocBlock
 	}
 
 	/**
+	 * @deprecated Use getPropertyReadTags() or getPropertyWriteTags()
 	 * @return array<string, PropertyTag>
 	 */
 	public function getPropertyTags(): array
@@ -409,6 +422,40 @@ class ResolvedPhpDocBlock
 			);
 		}
 		return $this->propertyTags;
+	}
+
+	/**
+	 * @return array<string, PropertyTag>
+	 */
+	public function getPropertyReadTags(): array
+	{
+		if ($this->propertyReadTags === false) {
+			[
+				'read' => $this->propertyReadTags,
+				'write' => $this->propertyWriteTags,
+			] = $this->phpDocNodeResolver->resolvePropertyReadWriteTags(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+		return $this->propertyReadTags;
+	}
+
+	/**
+	 * @return array<string, PropertyTag>
+	 */
+	public function getPropertyWriteTags(): array
+	{
+		if ($this->propertyWriteTags === false) {
+			[
+				'read' => $this->propertyReadTags,
+				'write' => $this->propertyWriteTags,
+			] = $this->phpDocNodeResolver->resolvePropertyReadWriteTags(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+		return $this->propertyWriteTags;
 	}
 
 	/**

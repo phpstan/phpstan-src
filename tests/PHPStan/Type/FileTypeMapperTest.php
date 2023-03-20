@@ -8,6 +8,7 @@ use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use RuntimeException;
+use function array_key_exists;
 use function realpath;
 
 class FileTypeMapperTest extends PHPStanTestCase
@@ -21,6 +22,14 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$resolvedA = $fileTypeMapper->getResolvedPhpDoc(__DIR__ . '/data/annotations.php', 'Foo', null, null, '/**
  * @property int | float $numericBazBazProperty
  * @property X $singleLetterObjectName
+ * @property Default $propertyDefaultAndRead
+ * @property-read Read $propertyDefaultAndRead
+ * @property Default $propertyDefaultAndWrite
+ * @property-write Write $propertyDefaultAndWrite
+ * @property-read Read $propertyReadAndWrite
+ * @property-write Write $propertyReadAndWrite
+ * @property-read Read $propertyJustRead
+ * @property-write Write $propertyJustWrite
  *
  * @method void simpleMethod()
  * @method string returningMethod()
@@ -32,10 +41,22 @@ class FileTypeMapperTest extends PHPStanTestCase
  */');
 		$this->assertCount(0, $resolvedA->getVarTags());
 		$this->assertCount(0, $resolvedA->getParamTags());
-		$this->assertCount(2, $resolvedA->getPropertyTags());
+		$this->assertCount(7, $resolvedA->getPropertyTags());
+		$this->assertCount(6, $resolvedA->getPropertyReadTags());
+		$this->assertCount(6, $resolvedA->getPropertyWriteTags());
 		$this->assertNull($resolvedA->getReturnTag());
 		$this->assertSame('float|int', $resolvedA->getPropertyTags()['numericBazBazProperty']->getType()->describe(VerbosityLevel::precise()));
 		$this->assertSame('X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('Read', $resolvedA->getPropertyReadTags()['propertyDefaultAndRead']->getType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('Default', $resolvedA->getPropertyWriteTags()['propertyDefaultAndRead']->getType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('Default', $resolvedA->getPropertyReadTags()['propertyDefaultAndWrite']->getType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('Write', $resolvedA->getPropertyWriteTags()['propertyDefaultAndWrite']->getType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('Read', $resolvedA->getPropertyReadTags()['propertyReadAndWrite']->getType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('Write', $resolvedA->getPropertyWriteTags()['propertyReadAndWrite']->getType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('Read', $resolvedA->getPropertyReadTags()['propertyJustRead']->getType()->describe(VerbosityLevel::precise()));
+		$this->assertFalse(array_key_exists('propertyJustRead', $resolvedA->getPropertyWriteTags()));
+		$this->assertFalse(array_key_exists('propertyJustWrite', $resolvedA->getPropertyReadTags()));
+		$this->assertSame('Write', $resolvedA->getPropertyWriteTags()['propertyJustWrite']->getType()->describe(VerbosityLevel::precise()));
 
 		$this->assertCount(6, $resolvedA->getMethodTags());
 		$this->assertArrayNotHasKey('complicatedParameters', $resolvedA->getMethodTags()); // ambiguous parameter types

@@ -1,8 +1,23 @@
 <?php
 
+class mysqli
+{
+    /**
+     * @var int<-1,max>|numeric-string
+     */
+    public $affected_rows;
+}
+
+class mysqli_result
+{
+    /**
+     * @var int<0,max>|numeric-string
+     */
+    public $num_rows;
+}
+
 class mysqli_stmt
 {
-
     /**
      * @var int<-1,max>|numeric-string
      */

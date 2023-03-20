@@ -1461,6 +1461,7 @@ class ClassReflection
 	}
 
 	/**
+	 * @deprecated Use getPropertyReadTags() or getPropertyWriteTags()
 	 * @return array<PropertyTag>
 	 */
 	public function getPropertyTags(): array
@@ -1471,6 +1472,32 @@ class ClassReflection
 		}
 
 		return $resolvedPhpDoc->getPropertyTags();
+	}
+
+	/**
+	 * @return array<PropertyTag>
+	 */
+	public function getPropertyReadTags(): array
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		return $resolvedPhpDoc->getPropertyReadTags();
+	}
+
+	/**
+	 * @return array<PropertyTag>
+	 */
+	public function getPropertyWriteTags(): array
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		return $resolvedPhpDoc->getPropertyWriteTags();
 	}
 
 	/**

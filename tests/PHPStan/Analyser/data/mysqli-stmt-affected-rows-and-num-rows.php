@@ -1,6 +1,6 @@
 <?php
 
-namespace MySQLiStmt;
+namespace MySQLiStmtAffectedRowsAndNumRowsTypes;
 
 use mysqli;
 use function PHPStan\Testing\assertType;

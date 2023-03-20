@@ -1256,3 +1256,28 @@ class NeverReturn
 	}
 
 }
+
+interface MySQLiAffectedRowsReturnTypeInterface
+{
+    /**
+     * @return int|numeric-string
+     */
+    function exec(\mysqli $connection, string $sql);
+}
+
+final class MySQLiAffectedRowsReturnType implements MySQLiAffectedRowsReturnTypeInterface
+{
+	/**
+     * @return int<0, max>|numeric-string
+     */
+    function exec(\mysqli $mysqli, string $sql)
+    {
+	    $result = $mysqli->query($sql);
+
+	    if ($result === false || 0 > $mysqli->affected_rows) {
+		    throw new \RuntimeException();
+	    }
+
+		return $mysqli->affected_rows;
+    }
+}

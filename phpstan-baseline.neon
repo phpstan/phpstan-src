@@ -1731,6 +1731,14 @@ parameters:
 			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
 
 		-
+			message: """
+				#^Call to deprecated method getPropertyTags\\(\\) of class PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock\\:
+				Use getPropertyReadTags\\(\\) or getPropertyWriteTags\\(\\)$#
+			"""
+			count: 3
+			path: tests/PHPStan/Type/FileTypeMapperTest.php
+
+		-
 			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Generic\\\\TemplateType is always PHPStan\\\\Type\\\\Generic\\\\TemplateMixedType but it's error\\-prone and dangerous\\.$#"
 			count: 1
 			path: tests/PHPStan/Type/IterableTypeTest.php

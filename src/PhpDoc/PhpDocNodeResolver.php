@@ -90,22 +90,39 @@ class PhpDocNodeResolver
 	}
 
 	/**
+	 * @deprecated Use resolvePropertyReadWriteTags() instead
 	 * @return array<string, PropertyTag>
 	 */
 	public function resolvePropertyTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
-		$resolved = [];
+		[
+			'read' => $resolvedRead,
+			'write' => $resolvedWrite,
+		] = $this->resolvePropertyReadWriteTags($phpDocNode, $nameScope);
+
+		return array_merge($resolvedRead, $resolvedWrite);
+	}
+
+	/**
+	 * @return array{read: array<string, PropertyTag>, write: array<string, PropertyTag>}
+	 */
+	public function resolvePropertyReadWriteTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$resolvedRead = [];
+		$resolvedWrite = [];
 
 		foreach (['@property', '@phpstan-property'] as $tagName) {
 			foreach ($phpDocNode->getPropertyTagValues($tagName) as $tagValue) {
 				$propertyName = substr($tagValue->propertyName, 1);
 				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
-				$resolved[$propertyName] = new PropertyTag(
+				$propertyTag = new PropertyTag(
 					$propertyType,
 					true,
 					true,
 				);
+				$resolvedRead[$propertyName] = $propertyTag;
+				$resolvedWrite[$propertyName] = $propertyTag;
 			}
 		}
 
@@ -114,7 +131,7 @@ class PhpDocNodeResolver
 				$propertyName = substr($tagValue->propertyName, 1);
 				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
-				$resolved[$propertyName] = new PropertyTag(
+				$resolvedRead[$propertyName] = new PropertyTag(
 					$propertyType,
 					true,
 					false,
@@ -127,7 +144,7 @@ class PhpDocNodeResolver
 				$propertyName = substr($tagValue->propertyName, 1);
 				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
-				$resolved[$propertyName] = new PropertyTag(
+				$resolvedWrite[$propertyName] = new PropertyTag(
 					$propertyType,
 					false,
 					true,
@@ -135,7 +152,10 @@ class PhpDocNodeResolver
 			}
 		}
 
-		return $resolved;
+		return [
+			'read' => $resolvedRead,
+			'write' => $resolvedWrite,
+		];
 	}
 
 	/**

@@ -37,16 +37,25 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 		string $propertyName,
 	): ?PropertyReflection
 	{
-		$propertyTags = $classReflection->getPropertyTags();
-		if (isset($propertyTags[$propertyName])) {
+		$propertyReadTags = $classReflection->getPropertyReadTags();
+		$propertyWriteTags = $classReflection->getPropertyWriteTags();
+		if (isset($propertyReadTags[$propertyName]) || isset($propertyWriteTags[$propertyName])) {
+			$readableType = !isset($propertyReadTags[$propertyName]) ? null : TemplateTypeHelper::resolveTemplateTypes(
+				$propertyReadTags[$propertyName]->getType(),
+				$classReflection->getActiveTemplateTypeMap(),
+			);
+			$writableType = !isset($propertyWriteTags[$propertyName]) ? null : TemplateTypeHelper::resolveTemplateTypes(
+				$propertyWriteTags[$propertyName]->getType(),
+				$classReflection->getActiveTemplateTypeMap(),
+			);
+
 			return new AnnotationPropertyReflection(
 				$declaringClass,
-				TemplateTypeHelper::resolveTemplateTypes(
-					$propertyTags[$propertyName]->getType(),
-					$classReflection->getActiveTemplateTypeMap(),
-				),
-				$propertyTags[$propertyName]->isReadable(),
-				$propertyTags[$propertyName]->isWritable(),
+				$readableType ?? $writableType,
+				isset($propertyReadTags[$propertyName]) ? $propertyReadTags[$propertyName]->isReadable() : false,
+				isset($propertyWriteTags[$propertyName]) ? $propertyWriteTags[$propertyName]->isWritable() : false,
+				$readableType,
+				$writableType,
 			);
 		}
 

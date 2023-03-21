@@ -7,6 +7,8 @@ use AllowDynamicProperties;
 /**
  * @property-read int $readOnlyProperty
  * @property int $usualProperty
+ * @property-read int $asymmetricProperty
+ * @property-write int|string $asymmetricProperty
  * @property-write int $writeOnlyProperty
  */
 #[AllowDynamicProperties]
@@ -30,6 +32,9 @@ class Foo
 
 		$self->usualProperty = 1;
 		$self->usualProperty .= 1;
+
+		$self->asymmetricProperty = "1";
+		$self->asymmetricProperty = 1;
 
 		$self->writeOnlyProperty = 1;
 		$self->writeOnlyProperty .= 1;

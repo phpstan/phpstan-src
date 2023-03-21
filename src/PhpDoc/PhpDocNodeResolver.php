@@ -90,20 +90,6 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @deprecated Use resolvePropertyReadWriteTags() instead
-	 * @return array<string, PropertyTag>
-	 */
-	public function resolvePropertyTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
-	{
-		[
-			'read' => $resolvedRead,
-			'write' => $resolvedWrite,
-		] = $this->resolvePropertyReadWriteTags($phpDocNode, $nameScope);
-
-		return array_merge($resolvedRead, $resolvedWrite);
-	}
-
-	/**
 	 * @return array{read: array<string, PropertyTag>, write: array<string, PropertyTag>}
 	 */
 	public function resolvePropertyReadWriteTags(PhpDocNode $phpDocNode, NameScope $nameScope): array

@@ -29,6 +29,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
 use function array_map;
+use function array_merge;
 use function count;
 use function is_bool;
 use function substr;
@@ -170,7 +171,6 @@ class ResolvedPhpDocBlock
 		$self->templateTags = [];
 		$self->varTags = [];
 		$self->methodTags = [];
-		$self->propertyTags = [];
 		$self->propertyReadTags = [];
 		$self->propertyWriteTags = [];
 		$self->extendsTags = [];
@@ -227,7 +227,6 @@ class ResolvedPhpDocBlock
 		// skip $result->phpDocNodeResolver
 		$result->varTags = self::mergeVarTags($this->getVarTags(), $parents, $parentPhpDocBlocks);
 		$result->methodTags = $this->getMethodTags();
-		$result->propertyTags = $this->getPropertyTags();
 		$result->propertyReadTags = $this->getPropertyReadTags();
 		$result->propertyWriteTags = $this->getPropertyWriteTags();
 		$result->extendsTags = $this->getExtendsTags();
@@ -323,7 +322,6 @@ class ResolvedPhpDocBlock
 		$self->phpDocNodeResolver = $this->phpDocNodeResolver;
 		$self->varTags = $this->varTags;
 		$self->methodTags = $this->methodTags;
-		$self->propertyTags = $this->propertyTags;
 		$self->propertyReadTags = $this->propertyReadTags;
 		$self->propertyWriteTags = $this->propertyWriteTags;
 		$self->extendsTags = $this->extendsTags;
@@ -416,10 +414,15 @@ class ResolvedPhpDocBlock
 	public function getPropertyTags(): array
 	{
 		if ($this->propertyTags === false) {
-			$this->propertyTags = $this->phpDocNodeResolver->resolvePropertyTags(
+			[
+				'read' => $resolvedRead,
+				'write' => $resolvedWrite,
+			] = $this->phpDocNodeResolver->resolvePropertyReadWriteTags(
 				$this->phpDocNode,
 				$this->getNameScope(),
 			);
+
+			$this->propertyTags = array_merge($resolvedRead, $resolvedWrite);
 		}
 		return $this->propertyTags;
 	}

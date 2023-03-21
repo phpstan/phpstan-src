@@ -6,15 +6,13 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
+use PHPStan\Type\VoidType;
 
 class AnnotationPropertyReflection implements PropertyReflection
 {
 
 	public function __construct(
 		private ClassReflection $declaringClass,
-		private Type $type,
-		private bool $readable = true,
-		private bool $writable = true,
 		private ?Type $readableType = null,
 		private ?Type $writableType = null,
 	)
@@ -43,12 +41,12 @@ class AnnotationPropertyReflection implements PropertyReflection
 
 	public function getReadableType(): Type
 	{
-		return $this->readableType ?? $this->type;
+		return $this->readableType ?? new VoidType();
 	}
 
 	public function getWritableType(): Type
 	{
-		return $this->writableType ?? $this->type;
+		return $this->writableType ?? new VoidType();
 	}
 
 	public function canChangeTypeAfterAssignment(): bool
@@ -58,12 +56,12 @@ class AnnotationPropertyReflection implements PropertyReflection
 
 	public function isReadable(): bool
 	{
-		return $this->readable;
+		return $this->readableType !== null;
 	}
 
 	public function isWritable(): bool
 	{
-		return $this->writable;
+		return $this->writableType !== null;
 	}
 
 	public function isDeprecated(): TrinaryLogic

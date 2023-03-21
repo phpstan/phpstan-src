@@ -51,9 +51,6 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 
 			return new AnnotationPropertyReflection(
 				$declaringClass,
-				$readableType ?? $writableType,
-				isset($propertyReadTags[$propertyName]) ? $propertyReadTags[$propertyName]->isReadable() : false,
-				isset($propertyWriteTags[$propertyName]) ? $propertyWriteTags[$propertyName]->isWritable() : false,
 				$readableType,
 				$writableType,
 			);

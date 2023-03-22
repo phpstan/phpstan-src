@@ -546,4 +546,26 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8222.php'], []);
 	}
 
+	public function testWritingReadonlyProperty(): void
+	{
+		$this->analyse([__DIR__ . '/data/writing-to-read-only-properties.php'], [
+			[
+				'Property WritingToReadOnlyProperties\Foo::$usualProperty (int) does not accept string.',
+				24,
+			],
+			[
+				'Property WritingToReadOnlyProperties\Foo::$writeOnlyProperty (int) does not accept string.',
+				27,
+			],
+			[
+				'Property WritingToReadOnlyProperties\Foo::$usualProperty (int) does not accept string.',
+				34,
+			],
+			[
+				'Property WritingToReadOnlyProperties\Foo::$writeOnlyProperty (int) does not accept string.',
+				40,
+			],
+		]);
+	}
+
 }

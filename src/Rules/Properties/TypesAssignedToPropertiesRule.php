@@ -55,6 +55,11 @@ class TypesAssignedToPropertiesRule implements Rule
 		Node\Expr $assignedExpr,
 	): array
 	{
+		if (!$propertyReflection->isWritable()) {
+			// This will be caught by WritingToReadOnlyPropertiesRule.
+			return [];
+		}
+
 		$propertyType = $propertyReflection->getWritableType();
 		$scope = $propertyReflection->getScope();
 		$assignedValueType = $scope->getType($assignedExpr);

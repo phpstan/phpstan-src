@@ -52,3 +52,16 @@ if (rand(0, 1) === 0) {
 sprintf($variousPlaceholderCount, 'bar');
 sprintf($variousPlaceholderCount, 'bar', 'baz');
 sprintf($variousPlaceholderCount, 'bar', 'baz', 'lorem');
+
+sprintf('%lc', 1); // ok
+sprintf('%ld', 1); // ok
+sprintf('%le', 1); // ok
+sprintf('%lE', 1); // ok
+sprintf('%lf', 1); // ok
+sprintf('%lF', 1); // ok
+sprintf('%lg', 1); // ok
+sprintf('%lG', 1); // ok
+sprintf('%lo', 1); // ok
+sprintf('%lu', 1); // ok
+sprintf('%lx', 1); // ok
+sprintf('%lX', 1); // ok

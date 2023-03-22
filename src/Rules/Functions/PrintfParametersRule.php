@@ -108,7 +108,7 @@ class PrintfParametersRule implements Rule
 
 	private function getPlaceholdersCount(string $functionName, string $format): int
 	{
-		$specifiers = in_array($functionName, ['sprintf', 'printf'], true) ? '[bcdeEfFgGosuxX%s]' : '(?:[cdDeEfinosuxX%s]|\[[^\]]+\])';
+		$specifiers = in_array($functionName, ['sprintf', 'printf'], true) ? '(?:[bs%s]|l?[cdeEgfFGouxX])' : '(?:[cdDeEfinosuxX%s]|\[[^\]]+\])';
 		$addSpecifier = '';
 		if ($this->phpVersion->supportsHhPrintfSpecifier()) {
 			$addSpecifier .= 'hH';

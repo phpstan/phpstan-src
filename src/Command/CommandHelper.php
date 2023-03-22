@@ -93,17 +93,17 @@ class CommandHelper
 			return new SymfonyOutput($symfonyErrorOutput, new SymfonyStyle(new ErrorsConsoleStyle($input, $symfonyErrorOutput)));
 		})();
 
-		if ($allowXdebug && !XdebugHandler::isXdebugActive()) {
-			$errorOutput->getStyle()->note('You are running with "--xdebug" enabled, but the Xdebug PHP extension is not active. The process will not halt at breakpoints.');
-		} elseif (!$allowXdebug && XdebugHandler::isXdebugActive()) {
-			$errorOutput->getStyle()->note('The Xdebug PHP extension is active, but "--xdebug" is not used. This may slow down performance and the process will not halt at breakpoints.');
-		}
-
 		if (!$allowXdebug) {
 			$xdebug = new XdebugHandler('phpstan');
 			$xdebug->setPersistent();
 			$xdebug->check();
 			unset($xdebug);
+		}
+
+		if ($allowXdebug && !XdebugHandler::isXdebugActive()) {
+			$errorOutput->getStyle()->note('You are running with "--xdebug" enabled, but the Xdebug PHP extension is not active. The process will not halt at breakpoints.');
+		} elseif (!$allowXdebug && XdebugHandler::isXdebugActive()) {
+			$errorOutput->getStyle()->note('The Xdebug PHP extension is active, but "--xdebug" is not used. This may slow down performance and the process will not halt at breakpoints.');
 		}
 
 		if ($memoryLimit !== null) {

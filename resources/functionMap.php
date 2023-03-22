@@ -8575,7 +8575,7 @@ return [
 'pg_options' => ['string', 'connection='=>'resource'],
 'pg_parameter_status' => ['string|false', 'connection'=>'resource', 'param_name'=>'string'],
 'pg_parameter_status\'1' => ['string|false', 'param_name'=>'string'],
-'pg_pconnect' => ['resource|false', 'connection_string'=>'string', 'host='=>'string', 'port='=>'string|int', 'options='=>'string', 'tty='=>'string', 'database='=>'string'],
+'pg_pconnect' => ['resource|false', 'connection_string'=>'string', 'connect_type='=>'int'],
 'pg_ping' => ['bool', 'connection='=>'resource'],
 'pg_port' => ['int', 'connection='=>'resource'],
 'pg_prepare' => ['resource|false', 'connection'=>'resource', 'stmtname'=>'string', 'query'=>'string'],

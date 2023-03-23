@@ -110,4 +110,14 @@ class PrintfParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4717.php'], $errors);
 	}
 
+	public function testBug2342(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2342.php'], [
+			[
+				'Call to sprintf contains 1 placeholder, 0 values given.',
+				5,
+			],
+		]);
+	}
+
 }

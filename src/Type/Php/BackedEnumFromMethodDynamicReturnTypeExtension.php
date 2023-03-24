@@ -8,11 +8,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
+use function is_int;
+use function is_string;
 
 class BackedEnumFromMethodDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
@@ -49,11 +52,19 @@ class BackedEnumFromMethodDynamicReturnTypeExtension implements DynamicStaticMet
 			return null;
 		}
 
-		if (count($valueType->getConstantScalarValues()) === 0) {
+		$possibleConstantScalaValues = $valueType->getConstantScalarValues();
+
+		if (count($possibleConstantScalaValues) === 0) {
 			return null;
 		}
 
-		$resultEnumCases = [];
+		$backedEnumType = $methodReflection->getDeclaringClass()->getBackedEnumType();
+		if ($backedEnumType === null) {
+			return null;
+		}
+
+		$isIntEnum = (new IntegerType())->isSuperTypeOf($backedEnumType)->yes();
+		$enumValueMap = [];
 		foreach ($enumCases as $enumCase) {
 			if ($enumCase->getBackingValueType() === null) {
 				continue;
@@ -63,11 +74,25 @@ class BackedEnumFromMethodDynamicReturnTypeExtension implements DynamicStaticMet
 				continue;
 			}
 
-			foreach ($valueType->getConstantScalarValues() as $value) {
-				if ($value === $enumCaseValues[0]) {
-					$resultEnumCases[] = new EnumCaseObjectType($enumCase->getDeclaringEnum()->getName(), $enumCase->getName(), $enumCase->getDeclaringEnum());
-					break;
-				}
+			$enumValueMap[$enumCaseValues[0]] = $enumCase;
+		}
+
+		$resultEnumCases = [];
+		$isUnmatchedValuePossible = false;
+		foreach ($possibleConstantScalaValues as $value) {
+			// This assumes declare(strict_types=1);
+			if (($isIntEnum && ! is_int($value)) || (! $isIntEnum && ! is_string($value))) {
+				$isUnmatchedValuePossible = true;
+
+				continue;
+			}
+
+			$enumCase = $enumValueMap[$value] ?? null;
+
+			if ($enumCase === null) {
+				$isUnmatchedValuePossible = true;
+			} else {
+				$resultEnumCases[] = new EnumCaseObjectType($enumCase->getDeclaringEnum()->getName(), $enumCase->getName(), $enumCase->getDeclaringEnum());
 			}
 		}
 
@@ -77,6 +102,10 @@ class BackedEnumFromMethodDynamicReturnTypeExtension implements DynamicStaticMet
 			}
 
 			return null;
+		}
+
+		if ($isUnmatchedValuePossible && $methodReflection->getName() === 'tryFrom') {
+			$resultEnumCases[] = new NullType();
 		}
 
 		return TypeCombinator::union(...$resultEnumCases);

@@ -424,6 +424,7 @@ parametersSchema:
 	additionalConfigFiles: arrayOf(string())
 	generateBaselineFile: schema(string(), nullable())
 	analysedPaths: listOf(string())
+	allConfigFiles: listOf(string())
 	composerAutoloaderProjectPaths: listOf(string())
 	analysedPathsFromConfig: listOf(string())
 	usedLevel: string()

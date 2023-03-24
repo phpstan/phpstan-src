@@ -114,6 +114,7 @@ class ContainerFactory
 			'cliArgumentsVariablesRegistered' => ini_get('register_argc_argv') === '1',
 			'tmpDir' => $tempDirectory,
 			'additionalConfigFiles' => $additionalConfigFiles,
+			'allConfigFiles' => $allConfigFiles,
 			'composerAutoloaderProjectPaths' => $composerAutoloaderProjectPaths,
 			'generateBaselineFile' => $generateBaselineFile,
 			'usedLevel' => $usedLevel,

@@ -14,6 +14,8 @@ use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\File\PathNotFoundException;
+use PHPStan\File\RelativePathHelper;
+use PHPStan\Internal\BytesHelper;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -23,9 +25,11 @@ use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Throwable;
+use function array_intersect;
 use function array_map;
 use function count;
 use function dirname;
+use function filesize;
 use function fopen;
 use function get_class;
 use function implode;
@@ -223,6 +227,26 @@ class AnalyseCommand extends Command
 			$inceptionResult->getErrorOutput()->getStyle()->warning('This will cause a non-zero exit code in PHPStan 2.0.');
 
 			return $inceptionResult->handleReturn(0, null);
+		}
+
+		$analysedConfigFiles = array_intersect($files, $container->getParameter('allConfigFiles'));
+		foreach ($analysedConfigFiles as $analysedConfigFile) {
+			$fileSize = @filesize($analysedConfigFile);
+			if ($fileSize === false) {
+				continue;
+			}
+
+			if ($fileSize <= 512 * 1024) {
+				continue;
+			}
+
+			/** @var RelativePathHelper $relativePathHelper */
+			$relativePathHelper = $container->getService('relativePathHelper');
+			$inceptionResult->getErrorOutput()->getStyle()->warning(sprintf(
+				'Configuration file %s (%s) is too big and might slow down PHPStan. Consider adding it to excludePaths.',
+				$relativePathHelper->getRelativePath($analysedConfigFile),
+				BytesHelper::bytes($fileSize),
+			));
 		}
 
 		$application = $container->getByType(AnalyseApplication::class);

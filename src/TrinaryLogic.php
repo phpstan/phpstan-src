@@ -10,7 +10,7 @@ use function min;
 
 /**
  * @api
- * @see https://en.wikipedia.org/wiki/Three-valued_logic
+ * @see https://phpstan.org/developing-extensions/trinary-logic
  */
 class TrinaryLogic
 {

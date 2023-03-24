@@ -19,7 +19,10 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeReference;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
-/** @api */
+/**
+ * @api
+ * @see https://phpstan.org/developing-extensions/type-system
+ */
 interface Type
 {
 

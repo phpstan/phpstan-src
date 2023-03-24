@@ -6,6 +6,19 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
 /**
+ * This is the interface custom collectors implement. To register it in the configuration file
+ * use the `phpstan.collector` service tag:
+ *
+ * ```
+ * services:
+ * 	-
+ *		class: App\MyCollector
+ *		tags:
+ *			- phpstan.collector
+ * ```
+ *
+ * Learn more: https://phpstan.org/developing-extensions/collectors
+ *
  * @api
  * @phpstan-template-covariant TNodeType of Node
  * @phpstan-template-covariant TValue

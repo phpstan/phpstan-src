@@ -6,7 +6,23 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 
-/** @api */
+/**
+ * This is the interface dynamic return type extensions implement for static methods.
+ *
+ * To register it in the configuration file use the `phpstan.broker.dynamicStaticMethodReturnTypeExtension` service tag:
+ *
+ * ```
+ * services:
+ * 	-
+ *		class: App\PHPStan\MyExtension
+ *		tags:
+ *			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
+ * ```
+ *
+ * Learn more: https://phpstan.org/developing-extensions/dynamic-return-type-extensions
+ *
+ * @api
+ */
 interface DynamicStaticMethodReturnTypeExtension
 {
 

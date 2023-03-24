@@ -6,7 +6,23 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 
-/** @api */
+/**
+ * This is the interface dynamic throw type extensions implement for functions.
+ *
+ * To register it in the configuration file use the `phpstan.dynamicFunctionThrowTypeExtension` service tag:
+ *
+ * ```
+ * services:
+ * 	-
+ *		class: App\PHPStan\MyExtension
+ *		tags:
+ *			- phpstan.dynamicFunctionThrowTypeExtension
+ * ```
+ *
+ * Learn more: https://phpstan.org/developing-extensions/dynamic-throw-type-extensions
+ *
+ * @api
+ */
 interface DynamicFunctionThrowTypeExtension
 {
 

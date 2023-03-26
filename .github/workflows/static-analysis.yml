@@ -51,6 +51,10 @@ jobs:
           ini-file: development
           extensions: mbstring
 
+      - name: "Downgrade dependencies"
+        if: matrix.php-version == '7.2'
+        run: "composer require --dev vaimo/composer-patches:^4.22 --no-install --update-with-dependencies --ignore-platform-reqs"
+
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
@@ -89,10 +93,6 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           ini-file: development
           extensions: mbstring
-
-      - name: "Downgrade PHPUnit"
-        if: matrix.php-version == '7.2'
-        run: "composer require --dev phpunit/phpunit:^8.5.31 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "PHPStan"
         run: "make phpstan"

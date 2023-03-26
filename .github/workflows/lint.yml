@@ -45,6 +45,10 @@ jobs:
       - name: "Validate Composer"
         run: "composer validate"
 
+      - name: "Downgrade dependencies"
+        if: matrix.php-version == '7.2'
+        run: "composer require --dev vaimo/composer-patches:^4.22 --no-install --update-with-dependencies --ignore-platform-reqs"
+
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 

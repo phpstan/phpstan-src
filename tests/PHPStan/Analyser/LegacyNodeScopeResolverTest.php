@@ -4555,7 +4555,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_combine([1], [2])',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'false' : 'array',
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
 				'array_combine([1, 2], [3])',
 			],
 			[

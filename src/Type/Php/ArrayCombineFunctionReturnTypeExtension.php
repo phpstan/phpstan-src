@@ -56,7 +56,7 @@ class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 
 			if (count($keyTypes) !== count($valueTypes)) {
 				if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
-					return null;
+					return new NeverType();
 				}
 				return new ConstantBooleanType(false);
 			}

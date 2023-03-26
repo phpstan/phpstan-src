@@ -78,3 +78,8 @@ function withNonEmptyArray(array $a, array $b): void
 {
 	assertType("non-empty-array<'bar'|'baz'|'foo', 'apple'|'avocado'|'banana'>|false", array_combine($a, $b));
 }
+
+function withDifferentNumberOfElements(): void
+{
+	assertType('false', array_combine(['foo'], ['bar', 'baz']));
+}

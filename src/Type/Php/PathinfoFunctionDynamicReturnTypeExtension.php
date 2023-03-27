@@ -51,15 +51,15 @@ class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctionRetur
 
 		if ($argsCount === 1) {
 			return $arrayType;
-		} else {
-			$flagsType = $scope->getType($functionCall->getArgs()[1]->value);
-			if ($flagsType instanceof ConstantIntegerType) {
-				if ($flagsType->getValue() === $this->getConstant('PATHINFO_ALL')) {
-					return $arrayType;
-				}
+		}
 
-				return new StringType();
+		$flagsType = $scope->getType($functionCall->getArgs()[1]->value);
+		if ($flagsType instanceof ConstantIntegerType) {
+			if ($flagsType->getValue() === $this->getConstant('PATHINFO_ALL')) {
+				return $arrayType;
 			}
+
+			return new StringType();
 		}
 
 		return TypeCombinator::union($arrayType, new StringType());

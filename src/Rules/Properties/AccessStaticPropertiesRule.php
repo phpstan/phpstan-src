@@ -132,9 +132,9 @@ class AccessStaticPropertiesRule implements Rule
 							$class,
 						))->discoveringSymbolsTip()->build(),
 					];
-				} else {
-					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($class, $node->class)]);
 				}
+
+				$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($class, $node->class)]);
 
 				$classType = $scope->resolveTypeByName($node->class);
 			}

@@ -671,14 +671,14 @@ class ResolvedPhpDocBlock
 			if ($pure) {
 				$this->isPure = true;
 				return $this->isPure;
-			} else {
-				$impure = $this->phpDocNodeResolver->resolveIsImpure(
-					$this->phpDocNode,
-				);
-				if ($impure) {
-					$this->isPure = false;
-					return $this->isPure;
-				}
+			}
+
+			$impure = $this->phpDocNodeResolver->resolveIsImpure(
+				$this->phpDocNode,
+			);
+			if ($impure) {
+				$this->isPure = false;
+				return $this->isPure;
 			}
 
 			$this->isPure = null;

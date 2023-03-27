@@ -117,11 +117,11 @@ class InstantiationRule implements Rule
 				return [
 					RuleErrorBuilder::message(sprintf('Instantiated class %s not found.', $class))->discoveringSymbolsTip()->build(),
 				];
-			} else {
-				$messages = $this->classCaseSensitivityCheck->checkClassNames([
-					new ClassNameNodePair($class, $node->class),
-				]);
 			}
+
+			$messages = $this->classCaseSensitivityCheck->checkClassNames([
+				new ClassNameNodePair($class, $node->class),
+			]);
 
 			$classReflection = $this->reflectionProvider->getClass($class);
 		}

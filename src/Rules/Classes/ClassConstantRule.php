@@ -99,9 +99,9 @@ class ClassConstantRule implements Rule
 							sprintf('Access to constant %s on an unknown class %s.', $constantName, $className),
 						)->discoveringSymbolsTip()->build(),
 					];
-				} else {
-					$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 				}
+
+				$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 
 				$classType = $scope->resolveTypeByName($class);
 			}

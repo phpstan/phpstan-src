@@ -128,9 +128,9 @@ class StaticMethodCallCheck
 						],
 						null,
 					];
-				} else {
-					$errors = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 				}
+
+				$errors = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 
 				$classType = $scope->resolveTypeByName($class);
 			}

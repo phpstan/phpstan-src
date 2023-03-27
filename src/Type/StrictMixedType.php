@@ -100,7 +100,12 @@ class StrictMixedType implements CompoundType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return 'mixed';
+		return $level->handle(
+			static fn () => 'mixed',
+			static fn () => 'mixed',
+			static fn () => 'mixed',
+			static fn () => 'strict-mixed',
+		);
 	}
 
 	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type

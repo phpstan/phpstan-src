@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Generics;
 
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateType;
@@ -82,6 +83,40 @@ class VarianceCheck
 		$type = $parametersAcceptor->getReturnType();
 		foreach ($this->check($covariant, $type, $returnTypeMessage) as $error) {
 			$errors[] = $error;
+		}
+
+		return $errors;
+	}
+
+	public function checkProperty(
+		PropertyReflection $propertyReflection,
+		string $message,
+		bool $isReadOnly,
+	): array
+	{
+		$readableType = $propertyReflection->getReadableType();
+		$writableType = $propertyReflection->getWritableType();
+
+		if ($readableType->equals($writableType)) {
+			$variance = $isReadOnly
+				? TemplateTypeVariance::createCovariant()
+				: TemplateTypeVariance::createInvariant();
+
+			return $this->check($variance, $readableType, $message);
+		}
+
+		$errors = [];
+
+		if ($propertyReflection->isReadable()) {
+			foreach ($this->check(TemplateTypeVariance::createCovariant(), $readableType, $message) as $error) {
+				$errors[] = $error;
+			}
+		}
+
+		if ($propertyReflection->isWritable()) {
+			foreach ($this->check(TemplateTypeVariance::createContravariant(), $writableType, $message) as $error) {
+				$errors[] = $error;
+			}
 		}
 
 		return $errors;

@@ -53,6 +53,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.illegalConstructorMethodCall%
 	PHPStan\Rules\PhpDoc\VarTagChangedExpressionTypeRule:
 		phpstan.rules.rule: %featureToggles.varTagType%
+	PHPStan\Rules\Generics\PropertyVarianceRule:
+		phpstan.rules.rule: %featureToggles.propertyVariance%
 
 services:
 	-
@@ -102,3 +104,5 @@ services:
 			checkTypeAgainstNativeType: %featureToggles.varTagType%
 		tags:
 			- phpstan.rules.rule
+	-
+		class: PHPStan\Rules\Generics\PropertyVarianceRule

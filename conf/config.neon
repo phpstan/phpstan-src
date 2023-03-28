@@ -222,6 +222,9 @@ parameters:
 	editorUrlTitle: null
 	errorFormat: null
 	__validate: true
+	phpStormMeta:
+		metaPaths:
+			- '.phpstorm.meta.php'
 
 extensions:
 	rules: PHPStan\DependencyInjection\RulesExtension
@@ -413,6 +416,9 @@ parametersSchema:
 	editorUrl: schema(string(), nullable())
 	editorUrlTitle: schema(string(), nullable())
 	errorFormat: schema(string(), nullable())
+	phpStormMeta: structure([
+		metaPaths: listOf(string())
+	])
 
 	# irrelevant Nette parameters
 	debugMode: bool()
@@ -2072,6 +2078,23 @@ services:
 			currentPhpVersionSimpleParser: @currentPhpVersionSimpleParser
 			php8Parser: @php8Parser
 		autowired: false
+
+	# PhpStorm meta support
+	cachedParserForMeta:
+		class: PHPStan\Parser\CachedParser
+		arguments:
+			originalParser: @currentPhpVersionRichParser
+			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
+		autowired: false
+	-
+		class: PHPStan\PhpStormMeta\MetaFileParser
+		arguments:
+			parser: @cachedParserForMeta
+			metaPaths: %phpStormMeta.metaPaths%
+	-
+		class: PHPStan\PhpStormMeta\OverrideParser
+	-
+		class: PHPStan\PhpStormMeta\ReturnTypeExtensionGenerator
 
 	# Error formatters
 

@@ -626,7 +626,7 @@ class AnalyserTest extends PHPStanTestCase
 			$reflectionProvider,
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
-			$this->getClassReflectionExtensionRegistryProvider(),
+			self::getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
 			$fileTypeMapper,
 			self::getContainer()->getByType(StubPhpDocProvider::class),

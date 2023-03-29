@@ -106,7 +106,7 @@ abstract class PHPStanTestCase extends TestCase
 		return [];
 	}
 
-	public function getParser(): Parser
+	public static function getParser(): Parser
 	{
 		/** @var Parser $parser */
 		$parser = self::getContainer()->getService('defaultAnalysisParser');
@@ -123,7 +123,7 @@ abstract class PHPStanTestCase extends TestCase
 	}
 
 	/** @api */
-	public function createReflectionProvider(): ReflectionProvider
+	public static function createReflectionProvider(): ReflectionProvider
 	{
 		return self::getContainer()->getByType(ReflectionProvider::class);
 	}
@@ -146,7 +146,7 @@ abstract class PHPStanTestCase extends TestCase
 		];
 	}
 
-	public function getClassReflectionExtensionRegistryProvider(): ClassReflectionExtensionRegistryProvider
+	public static function getClassReflectionExtensionRegistryProvider(): ClassReflectionExtensionRegistryProvider
 	{
 		return self::getContainer()->getByType(ClassReflectionExtensionRegistryProvider::class);
 	}
@@ -154,7 +154,7 @@ abstract class PHPStanTestCase extends TestCase
 	/**
 	 * @param string[] $dynamicConstantNames
 	 */
-	public function createScopeFactory(ReflectionProvider $reflectionProvider, TypeSpecifier $typeSpecifier, array $dynamicConstantNames = []): ScopeFactory
+	public static function createScopeFactory(ReflectionProvider $reflectionProvider, TypeSpecifier $typeSpecifier, array $dynamicConstantNames = []): ScopeFactory
 	{
 		$container = self::getContainer();
 
@@ -181,7 +181,7 @@ abstract class PHPStanTestCase extends TestCase
 				$container->getByType(ExprPrinter::class),
 				$typeSpecifier,
 				new PropertyReflectionFinder(),
-				$this->getParser(),
+				self::getParser(),
 				$container->getByType(NodeScopeResolver::class),
 				$container->getByType(PhpVersion::class),
 				$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
@@ -194,7 +194,7 @@ abstract class PHPStanTestCase extends TestCase
 	/**
 	 * @param array<string, string> $globalTypeAliases
 	 */
-	public function createTypeAliasResolver(array $globalTypeAliases, ReflectionProvider $reflectionProvider): TypeAliasResolver
+	public static function createTypeAliasResolver(array $globalTypeAliases, ReflectionProvider $reflectionProvider): TypeAliasResolver
 	{
 		$container = self::getContainer();
 
@@ -211,7 +211,7 @@ abstract class PHPStanTestCase extends TestCase
 		return true;
 	}
 
-	public function getFileHelper(): FileHelper
+	public static function getFileHelper(): FileHelper
 	{
 		return self::getContainer()->getByType(FileHelper::class);
 	}

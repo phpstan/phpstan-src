@@ -33,21 +33,21 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	 * @param callable(Node , Scope ): void $callback
 	 * @param string[] $dynamicConstantNames
 	 */
-	public function processFile(
+	public static function processFile(
 		string $file,
 		callable $callback,
 		array $dynamicConstantNames = [],
 	): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		$resolver = new NodeScopeResolver(
 			$reflectionProvider,
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
-			$this->getClassReflectionExtensionRegistryProvider(),
-			$this->getParser(),
+			self::getClassReflectionExtensionRegistryProvider(),
+			self::getParser(),
 			self::getContainer()->getByType(FileTypeMapper::class),
 			self::getContainer()->getByType(StubPhpDocProvider::class),
 			self::getContainer()->getByType(PhpVersion::class),
@@ -58,18 +58,18 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
 			true,
 			true,
-			$this->getEarlyTerminatingMethodCalls(),
-			$this->getEarlyTerminatingFunctionCalls(),
+			static::getEarlyTerminatingMethodCalls(),
+			static::getEarlyTerminatingFunctionCalls(),
 			true,
-			$this->shouldTreatPhpDocTypesAsCertain(),
+			self::getContainer()->getParameter('treatPhpDocTypesAsCertain'),
 		);
-		$resolver->setAnalysedFiles(array_map(static fn (string $file): string => $fileHelper->normalizePath($file), array_merge([$file], $this->getAdditionalAnalysedFiles())));
+		$resolver->setAnalysedFiles(array_map(static fn (string $file): string => $fileHelper->normalizePath($file), array_merge([$file], static::getAdditionalAnalysedFiles())));
 
-		$scopeFactory = $this->createScopeFactory($reflectionProvider, $typeSpecifier, $dynamicConstantNames);
+		$scopeFactory = self::createScopeFactory($reflectionProvider, $typeSpecifier, $dynamicConstantNames);
 		$scope = $scopeFactory->create(ScopeContext::create($file));
 
 		$resolver->processNodes(
-			$this->getParser()->parseFile($file),
+			self::getParser()->parseFile($file),
 			$scope,
 			$callback,
 		);
@@ -111,10 +111,10 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	 * @api
 	 * @return array<string, mixed[]>
 	 */
-	public function gatherAssertTypes(string $file): array
+	public static function gatherAssertTypes(string $file): array
 	{
 		$asserts = [];
-		$this->processFile($file, function (Node $node, Scope $scope) use (&$asserts, $file): void {
+		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, $file): void {
 			if (!$node instanceof Node\Expr\FuncCall) {
 				return;
 			}
@@ -136,28 +136,28 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			} elseif ($functionName === 'PHPStan\\Testing\\assertVariableCertainty') {
 				$certainty = $node->getArgs()[0]->value;
 				if (!$certainty instanceof StaticCall) {
-					$this->fail(sprintf('First argument of %s() must be TrinaryLogic call', $functionName));
+					self::fail(sprintf('First argument of %s() must be TrinaryLogic call', $functionName));
 				}
 				if (!$certainty->class instanceof Node\Name) {
-					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
+					self::fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
 				}
 
 				if ($certainty->class->toString() !== 'PHPStan\\TrinaryLogic') {
-					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
+					self::fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
 				}
 
 				if (!$certainty->name instanceof Node\Identifier) {
-					$this->fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
+					self::fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
 				}
 
 				// @phpstan-ignore-next-line
 				$expectedertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
 				$variable = $node->getArgs()[1]->value;
 				if (!$variable instanceof Node\Expr\Variable) {
-					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
+					self::fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
 				}
 				if (!is_string($variable->name)) {
-					$this->fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
+					self::fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
 				}
 
 				$actualCertaintyValue = $scope->hasVariableType($variable->name);
@@ -167,7 +167,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			}
 
 			if (count($node->getArgs()) !== 2) {
-				$this->fail(sprintf(
+				self::fail(sprintf(
 					'ERROR: Wrong %s() call on line %d.',
 					$functionName,
 					$node->getLine(),
@@ -178,26 +178,26 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		});
 
 		if (count($asserts) === 0) {
-			$this->fail(sprintf('File %s does not contain any asserts', $file));
+			self::fail(sprintf('File %s does not contain any asserts', $file));
 		}
 
 		return $asserts;
 	}
 
 	/** @return string[] */
-	protected function getAdditionalAnalysedFiles(): array
+	protected static function getAdditionalAnalysedFiles(): array
 	{
 		return [];
 	}
 
 	/** @return string[][] */
-	protected function getEarlyTerminatingMethodCalls(): array
+	protected static function getEarlyTerminatingMethodCalls(): array
 	{
 		return [];
 	}
 
 	/** @return string[] */
-	protected function getEarlyTerminatingFunctionCalls(): array
+	protected static function getEarlyTerminatingFunctionCalls(): array
 	{
 		return [];
 	}

@@ -36,7 +36,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function testClassMethodScope(): void
 	{
-		$this->processFile(__DIR__ . '/data/class.php', function (Node $node, Scope $scope): void {
+		self::processFile(__DIR__ . '/data/class.php', function (Node $node, Scope $scope): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}
@@ -9519,24 +9519,25 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$assertType(self::$assertTypesCache[$file][$evaluatedPointExpression]);
 			return;
 		}
-			$this->processFile(
-				$file,
-				static function (Node $node, Scope $scope) use ($file, $evaluatedPointExpression, $assertType): void {
-					if ($node instanceof VirtualNode) {
-						return;
-					}
-					$printer = new Printer();
-					$printedNode = $printer->prettyPrint([$node]);
-					if ($printedNode !== $evaluatedPointExpression) {
-						return;
-					}
 
-					self::$assertTypesCache[$file][$evaluatedPointExpression] = $scope;
+		self::processFile(
+			$file,
+			static function (Node $node, Scope $scope) use ($file, $evaluatedPointExpression, $assertType): void {
+				if ($node instanceof VirtualNode) {
+					return;
+				}
+				$printer = new Printer();
+				$printedNode = $printer->prettyPrint([$node]);
+				if ($printedNode !== $evaluatedPointExpression) {
+					return;
+				}
 
-					$assertType($scope);
-				},
-				$dynamicConstantNames,
-			);
+				self::$assertTypesCache[$file][$evaluatedPointExpression] = $scope;
+
+				$assertType($scope);
+			},
+			$dynamicConstantNames,
+		);
 	}
 
 	public static function getAdditionalConfigFiles(): array
@@ -9570,7 +9571,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testDeclareStrictTypes(string $file, bool $result): void
 	{
-		$this->processFile($file, function (Node $node, Scope $scope) use ($result): void {
+		self::processFile($file, function (Node $node, Scope $scope) use ($result): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}
@@ -9581,7 +9582,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function testEarlyTermination(): void
 	{
-		$this->processFile(__DIR__ . '/data/early-termination.php', function (Node $node, Scope $scope): void {
+		self::processFile(__DIR__ . '/data/early-termination.php', function (Node $node, Scope $scope): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}
@@ -9592,7 +9593,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		});
 	}
 
-	protected function getEarlyTerminatingMethodCalls(): array
+	protected static function getEarlyTerminatingMethodCalls(): array
 	{
 		return [
 			\EarlyTermination\Foo::class => [
@@ -9602,7 +9603,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		];
 	}
 
-	protected function getEarlyTerminatingFunctionCalls(): array
+	protected static function getEarlyTerminatingFunctionCalls(): array
 	{
 		return ['baz'];
 	}
@@ -9622,7 +9623,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	}
 
 	/** @return string[] */
-	protected function getAdditionalAnalysedFiles(): array
+	protected static function getAdditionalAnalysedFiles(): array
 	{
 		return [
 			__DIR__ . '/data/methodPhpDocs-trait-defined.php',

@@ -19,6 +19,7 @@ class ConstantLooseComparisonRule implements Rule
 
 	public function __construct(
 		private bool $checkAlwaysTrueLooseComparison,
+		private bool $treatPhpDocTypesAsCertain,
 		private bool $reportAlwaysTrueInLastCondition,
 	)
 	{
@@ -35,7 +36,7 @@ class ConstantLooseComparisonRule implements Rule
 			return [];
 		}
 
-		$nodeType = $scope->getType($node);
+		$nodeType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
 		if (!$nodeType instanceof ConstantBooleanType) {
 			return [];
 		}

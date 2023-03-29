@@ -14,11 +14,13 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 
 	private bool $checkAlwaysTrueStrictComparison;
 
+	private bool $treatPhpDocTypesAsCertain = true;
+
 	private bool $reportAlwaysTrueInLastCondition = false;
 
 	protected function getRule(): Rule
 	{
-		return new ConstantLooseComparisonRule($this->checkAlwaysTrueStrictComparison, $this->reportAlwaysTrueInLastCondition);
+		return new ConstantLooseComparisonRule($this->checkAlwaysTrueStrictComparison, $this->treatPhpDocTypesAsCertain, $this->reportAlwaysTrueInLastCondition);
 	}
 
 	public function testRule(): void
@@ -129,6 +131,28 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
 		$this->analyse([__DIR__ . '/data/loose-comparison-report-always-true-last-condition.php'], $expectedErrors);
+	}
+
+	public function dataTreatPhpDocTypesAsCertain(): iterable
+	{
+		yield [false, []];
+		yield [true, [
+			[
+				'Loose comparison using == between 3 and 3 will always evaluate to true.',
+				14,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataTreatPhpDocTypesAsCertain
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testTreatPhpDocTypesAsCertain(bool $treatPhpDocTypesAsCertain, array $expectedErrors): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
+		$this->analyse([__DIR__ . '/data/loose-comparison-treat-phpdoc-types.php'], $expectedErrors);
 	}
 
 }

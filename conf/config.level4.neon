@@ -155,6 +155,7 @@ services:
 		class: PHPStan\Rules\Comparison\ConstantLooseComparisonRule
 		arguments:
 			checkAlwaysTrueLooseComparison: %checkAlwaysTrueLooseComparison%
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 
 	-

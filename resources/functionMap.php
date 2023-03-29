@@ -7801,7 +7801,7 @@ return [
 'NumberFormatter::getSymbol' => ['string', 'attr'=>'int'],
 'NumberFormatter::getTextAttribute' => ['string', 'attr'=>'int'],
 'NumberFormatter::parse' => ['float|false', 'str'=>'string', 'type='=>'int', '&rw_position='=>'int'],
-'NumberFormatter::parseCurrency' => ['float', 'str'=>'string', '&w_currency'=>'string', '&rw_position='=>'int'],
+'NumberFormatter::parseCurrency' => ['float|false', 'str'=>'string', '&w_currency'=>'string', '&rw_position='=>'int'],
 'NumberFormatter::setAttribute' => ['bool', 'attr'=>'int', 'value'=>''],
 'NumberFormatter::setPattern' => ['bool', 'pattern'=>'string'],
 'NumberFormatter::setSymbol' => ['bool', 'attr'=>'int', 'symbol'=>'string'],

@@ -41,14 +41,27 @@ class ConstantLooseComparisonRule implements Rule
 			return [];
 		}
 
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
+			if (!$this->treatPhpDocTypesAsCertain) {
+				return $ruleErrorBuilder;
+			}
+
+			$instanceofTypeWithoutPhpDocs = $scope->getNativeType($node);
+			if ($instanceofTypeWithoutPhpDocs instanceof ConstantBooleanType) {
+				return $ruleErrorBuilder;
+			}
+
+			return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+		};
+
 		if (!$nodeType->getValue()) {
 			return [
-				RuleErrorBuilder::message(sprintf(
+				$addTip(RuleErrorBuilder::message(sprintf(
 					'Loose comparison using %s between %s and %s will always evaluate to false.',
 					$node instanceof Node\Expr\BinaryOp\Equal ? '==' : '!=',
 					$scope->getType($node->left)->describe(VerbosityLevel::value()),
 					$scope->getType($node->right)->describe(VerbosityLevel::value()),
-				))->build(),
+				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueLooseComparison) {
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -56,12 +69,12 @@ class ConstantLooseComparisonRule implements Rule
 				return [];
 			}
 
-			$errorBuilder = RuleErrorBuilder::message(sprintf(
+			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 				'Loose comparison using %s between %s and %s will always evaluate to true.',
 				$node instanceof Node\Expr\BinaryOp\Equal ? '==' : '!=',
 				$scope->getType($node->left)->describe(VerbosityLevel::value()),
 				$scope->getType($node->right)->describe(VerbosityLevel::value()),
-			));
+			)));
 			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 				$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 			}

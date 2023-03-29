@@ -40,4 +40,14 @@ class Foo
 
 	}
 
+	/**
+	 * @param 3 $i
+	 */
+	public function doLiteralIntInPhpDoc(int $i)
+	{
+		if ($i != 3) {
+			throw new \LogicException();
+		}
+	}
+
 }

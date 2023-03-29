@@ -39,6 +39,11 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 				"Loose comparison using == between 0 and '1' will always evaluate to false.",
 				33,
 			],
+			[
+				'Loose comparison using != between 3 and 3 will always evaluate to false.',
+				48,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
 		]);
 	}
 
@@ -66,6 +71,11 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 				"Loose comparison using == between 0 and '0' will always evaluate to true.",
 				35,
 				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				'Loose comparison using != between 3 and 3 will always evaluate to false.',
+				48,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}
@@ -140,6 +150,7 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 			[
 				'Loose comparison using == between 3 and 3 will always evaluate to true.',
 				14,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]];
 	}

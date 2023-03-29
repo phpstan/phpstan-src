@@ -457,7 +457,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
-			count: 1
+			count: 2
 			path: src/Rules/Comparison/ConstantLooseComparisonRule.php
 
 		-
@@ -515,7 +515,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
-			count: 1
+			count: 2
 			path: src/Rules/Comparison/StrictComparisonOfDifferentTypesRule.php
 
 		-

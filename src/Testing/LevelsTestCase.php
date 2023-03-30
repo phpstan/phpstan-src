@@ -111,6 +111,7 @@ abstract class LevelsTestCase extends TestCase
 				}
 
 				unset($message['tip']);
+				unset($message['identifier']);
 
 				$messages[] = $message;
 			}

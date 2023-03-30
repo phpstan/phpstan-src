@@ -49,6 +49,10 @@ class JsonErrorFormatter implements ErrorFormatter
 				$message['tip'] = $tipFormatter->format($fileSpecificError->getTip());
 			}
 
+			if ($fileSpecificError->getIdentifier() !== null) {
+				$message['identifier'] = $fileSpecificError->getIdentifier();
+			}
+
 			$errorsArray['files'][$file]['messages'][] = $message;
 		}
 

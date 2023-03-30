@@ -71,7 +71,9 @@ class RunCommand extends Command
 	 */
 	private function analyseHash(OutputInterface $output, int $phpVersion, PlaygroundResult $result): array
 	{
-		$configFiles = [];
+		$configFiles = [
+			__DIR__ . '/../../playground.neon',
+		];
 		if ($result->isBleedingEdge()) {
 			$configFiles[] = __DIR__ . '/../../../conf/bleedingEdge.neon';
 		}
@@ -124,7 +126,7 @@ class RunCommand extends Command
 				if (strpos($messageText, 'Internal error') !== false) {
 					throw new Exception(sprintf('While analysing %s: %s', $hash, $messageText));
 				}
-				$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText);
+				$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText, $message['identifier'] ?? null);
 			}
 		}
 

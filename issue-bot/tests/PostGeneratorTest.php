@@ -31,10 +31,10 @@ class PostGeneratorTest extends TestCase
 		yield [
 			'abc-def',
 			[new PlaygroundResultTab('PHP 7.1', [
-				new PlaygroundError(1, 'abc'),
+				new PlaygroundError(1, 'abc', null),
 			])],
 			[new PlaygroundResultTab('PHP 7.1', [
-				new PlaygroundError(1, 'abc'),
+				new PlaygroundError(1, 'abc', null),
 			])],
 			[],
 			null,
@@ -44,10 +44,10 @@ class PostGeneratorTest extends TestCase
 		yield [
 			'abc-def',
 			[new PlaygroundResultTab('PHP 7.1', [
-				new PlaygroundError(1, 'abc'),
+				new PlaygroundError(1, 'abc', null),
 			])],
 			[new PlaygroundResultTab('PHP 7.1', [
-				new PlaygroundError(1, 'def'),
+				new PlaygroundError(1, 'def', null),
 			])],
 			[],
 			$diff,
@@ -57,10 +57,10 @@ class PostGeneratorTest extends TestCase
 		yield [
 			'abc-def',
 			[new PlaygroundResultTab('PHP 7.1', [
-				new PlaygroundError(1, 'abc'),
+				new PlaygroundError(1, 'abc', null),
 			])],
 			[new PlaygroundResultTab('PHP 7.1', [
-				new PlaygroundError(1, 'def'),
+				new PlaygroundError(1, 'def', null),
 			])],
 			[
 				new BotComment('<text>', new PlaygroundExample('', 'abc-def'), 'some diff'),
@@ -72,10 +72,10 @@ class PostGeneratorTest extends TestCase
 		yield [
 			'abc-def',
 			[new PlaygroundResultTab('PHP 7.1', [
-				new PlaygroundError(1, 'abc'),
+				new PlaygroundError(1, 'abc', null),
 			])],
 			[new PlaygroundResultTab('PHP 7.1', [
-				new PlaygroundError(1, 'def'),
+				new PlaygroundError(1, 'def', null),
 			])],
 			[
 				new BotComment('<text>', new PlaygroundExample('', 'abc-def'), $diff),
@@ -87,10 +87,10 @@ class PostGeneratorTest extends TestCase
 		yield [
 			'abc-def',
 			[new PlaygroundResultTab('PHP 7.1', [
-				new PlaygroundError(1, 'abc'),
+				new PlaygroundError(1, 'abc', null),
 			])],
 			[new PlaygroundResultTab('PHP 7.1', [
-				new PlaygroundError(1, 'Internal error'),
+				new PlaygroundError(1, 'Internal error', null),
 			])],
 			[],
 			null,

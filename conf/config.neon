@@ -221,6 +221,9 @@ parameters:
 	editorUrl: null
 	editorUrlTitle: null
 	errorFormat: null
+	pro:
+		dnsServers:
+			- '1.1.1.1'
 	__validate: true
 
 extensions:
@@ -413,6 +416,9 @@ parametersSchema:
 	editorUrl: schema(string(), nullable())
 	editorUrlTitle: schema(string(), nullable())
 	errorFormat: schema(string(), nullable())
+	pro: structure([
+		dnsServers: schema(listOf(string()), min(1)),
+	])
 
 	# irrelevant Nette parameters
 	debugMode: bool()
@@ -698,6 +704,7 @@ services:
 			analysedPaths: %analysedPaths%
 			currentWorkingDirectory: %currentWorkingDirectory%
 			fixerTmpDir: %fixerTmpDir%
+			dnsServers: %pro.dnsServers%
 
 	-
 		class: PHPStan\Dependency\DependencyResolver

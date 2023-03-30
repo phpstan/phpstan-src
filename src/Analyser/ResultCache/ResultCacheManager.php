@@ -726,6 +726,7 @@ return [
 			unset($projectConfigArray['parameters']['internalErrorsCountLimit']);
 			unset($projectConfigArray['parameters']['cache']);
 			unset($projectConfigArray['parameters']['memoryLimitFile']);
+			unset($projectConfigArray['parameters']['pro']);
 			unset($projectConfigArray['parametersSchema']);
 		}
 

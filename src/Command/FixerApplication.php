@@ -25,6 +25,7 @@ use PHPStan\Process\ProcessPromise;
 use PHPStan\ShouldNotHappenException;
 use Psr\Http\Message\ResponseInterface;
 use React\ChildProcess\Process;
+use React\Dns\Config\Config;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
@@ -74,6 +75,7 @@ class FixerApplication
 
 	/**
 	 * @param string[] $analysedPaths
+	 * @param list<string> $dnsServers
 	 */
 	public function __construct(
 		private FileMonitor $fileMonitor,
@@ -82,6 +84,7 @@ class FixerApplication
 		private array $analysedPaths,
 		private string $currentWorkingDirectory,
 		private string $fixerTmpDir,
+		private array $dnsServers,
 	)
 	{
 	}
@@ -207,8 +210,7 @@ class FixerApplication
 			$this->downloadPhar($output, $pharPath, $infoPath);
 		} catch (RuntimeException $e) {
 			if (!is_file($pharPath)) {
-				$output->writeln('<fg=red>Could not download the PHPStan Pro executable.</>');
-				$output->writeln($e->getMessage());
+				$this->printDownloadError($output, $e);
 
 				throw new FixerProcessException();
 			}
@@ -293,6 +295,9 @@ class FixerApplication
 			$output->writeln('<fg=green>Checking if there\'s a new PHPStan Pro release...</>');
 		}
 
+		$dnsConfig = new Config();
+		$dnsConfig->nameservers = $this->dnsServers;
+
 		$client = new Browser(
 			new Connector(
 				[
@@ -300,7 +305,7 @@ class FixerApplication
 					'tls' => [
 						'cafile' => CaBundle::getBundledCaBundlePath(),
 					],
-					'dns' => '1.1.1.1',
+					'dns' => $dnsConfig,
 				],
 			),
 		);
@@ -339,8 +344,8 @@ class FixerApplication
 				fwrite($pharPathResource, $chunk);
 				$progressBar->setProgress($bytes);
 			});
-		}, static function (Throwable $e) use ($output): void {
-			$output->writeln(sprintf('<fg=red>Could not download the PHPStan Pro executable:</> %s', $e->getMessage()));
+		}, function (Throwable $e) use ($output): void {
+			$this->printDownloadError($output, $e);
 		});
 
 		Loop::run();
@@ -352,6 +357,19 @@ class FixerApplication
 		$output->writeln('');
 
 		$this->writeInfoFile($infoPath, $latestInfo['version']);
+	}
+
+	private function printDownloadError(OutputInterface $output, Throwable $e): void
+	{
+		$output->writeln(sprintf('<fg=red>Could not download the PHPStan Pro executable:</> %s', $e->getMessage()));
+		$output->writeln('');
+		$output->writeln('Try different DNS servers in your configuration file:');
+		$output->writeln('');
+		$output->writeln('parameters:');
+		$output->writeln("\tpro:");
+		$output->writeln("\t\tdnsServers!:");
+		$output->writeln("\t\t\t- '8.8.8.8'");
+		$output->writeln('');
 	}
 
 	private function writeInfoFile(string $infoPath, string $version): void

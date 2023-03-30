@@ -5,7 +5,7 @@ namespace PHPStan\IssueBot\Playground;
 class PlaygroundError
 {
 
-	public function __construct(private int $line, private string $message)
+	public function __construct(private int $line, private string $message, private ?string $identifier)
 	{
 	}
 
@@ -17,6 +17,11 @@ class PlaygroundError
 	public function getMessage(): string
 	{
 		return $this->message;
+	}
+
+	public function getIdentifier(): ?string
+	{
+		return $this->identifier;
 	}
 
 }

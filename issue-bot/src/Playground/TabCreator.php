@@ -2,9 +2,12 @@
 
 namespace PHPStan\IssueBot\Playground;
 
+use function array_map;
 use function count;
 use function floor;
 use function ksort;
+use function sprintf;
+use function str_starts_with;
 use function usort;
 use const SORT_NUMERIC;
 
@@ -23,6 +26,21 @@ class TabCreator
 		$last = null;
 
 		foreach ($versionedErrors as $phpVersion => $errors) {
+			$errors = array_map(static function (PlaygroundError $error): PlaygroundError {
+				if ($error->getIdentifier() === null) {
+					return $error;
+				}
+
+				if (!str_starts_with($error->getIdentifier(), 'phpstanPlayground.')) {
+					return $error;
+				}
+
+				return new PlaygroundError(
+					$error->getLine(),
+					sprintf('Tip: %s', $error->getMessage()),
+					$error->getIdentifier(),
+				);
+			}, $errors);
 			$current = [
 				'versions' => [$phpVersion],
 				'errors' => $errors,

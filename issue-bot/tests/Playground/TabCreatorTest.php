@@ -30,53 +30,77 @@ class TabCreatorTest extends TestCase
 			[
 				[
 					70100 => [
-						new PlaygroundError(2, 'Foo'),
+						new PlaygroundError(2, 'Foo', null),
 					],
 					70200 => [
-						new PlaygroundError(2, 'Foo'),
+						new PlaygroundError(2, 'Foo', null),
 					],
 				],
 				[
 					new PlaygroundResultTab('PHP 7.1 – 7.2 (1 error)', [
-						new PlaygroundError(2, 'Foo'),
+						new PlaygroundError(2, 'Foo', null),
 					]),
 				],
 			],
 			[
 				[
 					70100 => [
-						new PlaygroundError(2, 'Foo'),
-						new PlaygroundError(3, 'Foo'),
+						new PlaygroundError(2, 'Foo', null),
+						new PlaygroundError(3, 'Foo', null),
 					],
 					70200 => [
-						new PlaygroundError(2, 'Foo'),
-						new PlaygroundError(3, 'Foo'),
+						new PlaygroundError(2, 'Foo', null),
+						new PlaygroundError(3, 'Foo', null),
 					],
 				],
 				[
 					new PlaygroundResultTab('PHP 7.1 – 7.2 (2 errors)', [
-						new PlaygroundError(2, 'Foo'),
-						new PlaygroundError(3, 'Foo'),
+						new PlaygroundError(2, 'Foo', null),
+						new PlaygroundError(3, 'Foo', null),
 					]),
 				],
 			],
 			[
 				[
 					70100 => [
-						new PlaygroundError(2, 'Foo'),
-						new PlaygroundError(3, 'Foo'),
+						new PlaygroundError(2, 'Foo', null),
+						new PlaygroundError(3, 'Foo', null),
 					],
 					70200 => [
-						new PlaygroundError(3, 'Foo'),
+						new PlaygroundError(3, 'Foo', null),
 					],
 				],
 				[
 					new PlaygroundResultTab('PHP 7.2 (1 error)', [
-						new PlaygroundError(3, 'Foo'),
+						new PlaygroundError(3, 'Foo', null),
 					]),
 					new PlaygroundResultTab('PHP 7.1 (2 errors)', [
-						new PlaygroundError(2, 'Foo'),
-						new PlaygroundError(3, 'Foo'),
+						new PlaygroundError(2, 'Foo', null),
+						new PlaygroundError(3, 'Foo', null),
+					]),
+				],
+			],
+			[
+				[
+					70100 => [
+						new PlaygroundError(2, 'Foo', 'attribute.notFound'),
+					],
+				],
+				[
+					new PlaygroundResultTab('PHP 7.1 (1 error)', [
+						new PlaygroundError(2, 'Foo', null),
+					]),
+				],
+			],
+			[
+				[
+					70100 => [
+						new PlaygroundError(2, 'Foo', 'phpstanPlayground.never'),
+					],
+				],
+				[
+					new PlaygroundResultTab('PHP 7.1 (1 error)', [
+						new PlaygroundError(2, 'Tip: Foo', null),
 					]),
 				],
 			],

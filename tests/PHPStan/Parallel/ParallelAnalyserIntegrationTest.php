@@ -80,11 +80,13 @@ class ParallelAnalyserIntegrationTest extends TestCase
 							'message' => 'Access to an undefined property ParallelAnalyserIntegrationTest\\Foo::$test.',
 							'line' => 10,
 							'ignorable' => true,
+							'tip' => 'Learn more: https://phpstan.org/blog/solving-phpstan-access-to-undefined-property',
 						],
 						[
 							'message' => 'Access to an undefined property ParallelAnalyserIntegrationTest\\Foo::$test.',
 							'line' => 15,
 							'ignorable' => true,
+							'tip' => 'Learn more: https://phpstan.org/blog/solving-phpstan-access-to-undefined-property',
 						],
 					],
 				],

@@ -178,6 +178,8 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				79,
 			],
 		]);
+
+		$this->analyse([__DIR__ . '/data/method-signature-variance-constructor.php'], []);
 	}
 
 	public function testBug8880(): void

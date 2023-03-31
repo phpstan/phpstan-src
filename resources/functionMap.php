@@ -4874,7 +4874,7 @@ return [
 'Imagick::posterizeImage' => ['bool', 'levels'=>'int', 'dither'=>'bool'],
 'Imagick::previewImages' => ['bool', 'preview'=>'int'],
 'Imagick::previousImage' => ['bool'],
-'Imagick::profileImage' => ['bool', 'name'=>'string', 'profile'=>'string'],
+'Imagick::profileImage' => ['bool', 'name'=>'string', 'profile'=>'?string'],
 'Imagick::quantizeImage' => ['bool', 'numbercolors'=>'int', 'colorspace'=>'int', 'treedepth'=>'int', 'dither'=>'bool', 'measureerror'=>'bool'],
 'Imagick::quantizeImages' => ['bool', 'numbercolors'=>'int', 'colorspace'=>'int', 'treedepth'=>'int', 'dither'=>'bool', 'measureerror'=>'bool'],
 'Imagick::queryFontMetrics' => ['array{characterWidth:float,characterHeight:float,ascender:float,descender:float,textWidth:float,textHeight:float,maxHorizontalAdvance:float,boundingBox:array{x1:float,x2:float,y1:float,y2:float},originX:float,originY:float}', 'properties'=>'imagickdraw', 'text'=>'string', 'multiline='=>'bool'],

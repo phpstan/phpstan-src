@@ -10,7 +10,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\NeverType;
 use function count;
 use function sprintf;
 
@@ -19,6 +18,10 @@ use function sprintf;
  */
 class MethodNeverRule implements Rule
 {
+
+	public function __construct(private NeverRuleHelper $helper)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -37,20 +40,8 @@ class MethodNeverRule implements Rule
 		}
 
 		$returnType = ParametersAcceptorSelector::selectSingle($method->getVariants())->getReturnType();
-		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
-			return [];
-		}
-
-		$other = [];
-		foreach ($node->getExecutionEnds() as $executionEnd) {
-			if ($executionEnd->getStatementResult()->isAlwaysTerminating()) {
-				if (!$executionEnd->getNode() instanceof Node\Stmt\Throw_) {
-					$other[] = $executionEnd->getNode();
-				}
-
-				continue;
-			}
-
+		$helperResult = $this->helper->shouldReturnNever($node, $returnType);
+		if ($helperResult === false) {
 			return [];
 		}
 
@@ -59,7 +50,7 @@ class MethodNeverRule implements Rule
 				'Method %s::%s() always %s, it should have return type "never".',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				count($other) === 0 ? 'throws an exception' : 'terminates script execution',
+				count($helperResult) === 0 ? 'throws an exception' : 'terminates script execution',
 			))->identifier('phpstanPlayground.never')->build(),
 		];
 	}

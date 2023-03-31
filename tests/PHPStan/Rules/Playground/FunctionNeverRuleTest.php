@@ -13,7 +13,7 @@ class FunctionNeverRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new FunctionNeverRule();
+		return new FunctionNeverRule(new NeverRuleHelper());
 	}
 
 	public function testRule(): void

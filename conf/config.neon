@@ -1110,6 +1110,9 @@ services:
 			checkTypeAgainstPhpDocType: %reportWrongPhpDocTypeInVarTag%
 
 	-
+		class: PHPStan\Rules\Playground\NeverRuleHelper
+
+	-
 		class: PHPStan\Rules\Properties\LazyReadWritePropertiesExtensionProvider
 
 	-

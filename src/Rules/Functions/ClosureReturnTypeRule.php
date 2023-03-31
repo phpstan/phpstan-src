@@ -9,7 +9,6 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function count;
 
 /**
  * @implements Rule<ClosureReturnStatementsNode>
@@ -53,7 +52,7 @@ class ClosureReturnTypeRule implements Rule
 				'Anonymous function with return type void returns %s but should not return anything.',
 				'Anonymous function should return %s but returns %s.',
 				'Anonymous function should never return but return statement found.',
-				count($node->getYieldStatements()) > 0,
+				$node->isGenerator(),
 			);
 
 			foreach ($returnMessages as $returnMessage) {

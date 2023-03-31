@@ -2,9 +2,12 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node\Expr\Yield_;
+use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementResult;
+use function count;
 
 /** @api */
 class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
@@ -12,11 +15,13 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 
 	/**
 	 * @param ReturnStatement[] $returnStatements
+	 * @param list<Yield_|YieldFrom> $yieldStatements
 	 * @param ExecutionEndNode[] $executionEnds
 	 */
 	public function __construct(
 		private Function_ $function,
 		private array $returnStatements,
+		private array $yieldStatements,
 		private StatementResult $statementResult,
 		private array $executionEnds,
 	)
@@ -53,6 +58,16 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 	public function hasNativeReturnTypehint(): bool
 	{
 		return $this->function->returnType !== null;
+	}
+
+	public function getYieldStatements(): array
+	{
+		return $this->yieldStatements;
+	}
+
+	public function isGenerator(): bool
+	{
+		return count($this->yieldStatements) > 0;
 	}
 
 	public function getType(): string

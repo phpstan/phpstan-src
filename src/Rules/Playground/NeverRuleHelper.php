@@ -19,6 +19,10 @@ class NeverRuleHelper
 			return false;
 		}
 
+		if ($node->isGenerator()) {
+			return false;
+		}
+
 		$other = [];
 		foreach ($node->getExecutionEnds() as $executionEnd) {
 			if ($executionEnd->getStatementResult()->isAlwaysTerminating()) {

@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementResult;
+use function count;
 
 /** @api */
 class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
@@ -48,12 +49,14 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 		return $this->returnStatements;
 	}
 
-	/**
-	 * @return array<int, Yield_|YieldFrom>
-	 */
 	public function getYieldStatements(): array
 	{
 		return $this->yieldStatements;
+	}
+
+	public function isGenerator(): bool
+	{
+		return count($this->yieldStatements) > 0;
 	}
 
 	public function getStatementResult(): StatementResult

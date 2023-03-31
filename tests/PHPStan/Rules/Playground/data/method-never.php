@@ -44,4 +44,14 @@ class Foo
 		throw new \Exception();
 	}
 
+	/**
+	 * @return \Generator<int, int, null, never>
+	 */
+	public function yields(): \Generator
+	{
+		while(true) {
+			yield 1;
+		}
+	}
+
 }

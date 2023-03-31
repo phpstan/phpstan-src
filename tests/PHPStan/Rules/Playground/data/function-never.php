@@ -40,3 +40,11 @@ function onlySometimes()
 
 	throw new \Exception();
 }
+
+/** @return \Generator<int> */
+function yields(): \Generator
+{
+	while (true) {
+		yield rand();
+	}
+}

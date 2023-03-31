@@ -447,8 +447,9 @@ class NodeScopeResolver
 			$nodeCallback(new InFunctionNode($functionReflection, $stmt), $functionScope);
 
 			$gatheredReturnStatements = [];
+			$gatheredYieldStatements = [];
 			$executionEnds = [];
-			$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $functionScope, static function (Node $node, Scope $scope) use ($nodeCallback, $functionScope, &$gatheredReturnStatements, &$executionEnds): void {
+			$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $functionScope, static function (Node $node, Scope $scope) use ($nodeCallback, $functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds): void {
 				$nodeCallback($node, $scope);
 				if ($scope->getFunction() !== $functionScope->getFunction()) {
 					return;
@@ -460,6 +461,9 @@ class NodeScopeResolver
 					$executionEnds[] = $node;
 					return;
 				}
+				if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+					$gatheredYieldStatements[] = $node;
+				}
 				if (!$node instanceof Return_) {
 					return;
 				}
@@ -470,6 +474,7 @@ class NodeScopeResolver
 			$nodeCallback(new FunctionReturnStatementsNode(
 				$stmt,
 				$gatheredReturnStatements,
+				$gatheredYieldStatements,
 				$statementResult,
 				$executionEnds,
 			), $functionScope);
@@ -549,8 +554,9 @@ class NodeScopeResolver
 
 			if ($stmt->stmts !== null) {
 				$gatheredReturnStatements = [];
+				$gatheredYieldStatements = [];
 				$executionEnds = [];
-				$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $methodScope, static function (Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements, &$executionEnds): void {
+				$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $methodScope, static function (Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds): void {
 					$nodeCallback($node, $scope);
 					if ($scope->getFunction() !== $methodScope->getFunction()) {
 						return;
@@ -562,6 +568,9 @@ class NodeScopeResolver
 						$executionEnds[] = $node;
 						return;
 					}
+					if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+						$gatheredYieldStatements[] = $node;
+					}
 					if (!$node instanceof Return_) {
 						return;
 					}
@@ -571,6 +580,7 @@ class NodeScopeResolver
 				$nodeCallback(new MethodReturnStatementsNode(
 					$stmt,
 					$gatheredReturnStatements,
+					$gatheredYieldStatements,
 					$statementResult,
 					$executionEnds,
 				), $methodScope);

@@ -3180,11 +3180,16 @@ class NodeScopeResolver
 
 		$nodeCallback(new InClosureNode($closureType, $expr), $closureScope);
 
+		$executionEnds = [];
 		$gatheredReturnStatements = [];
 		$gatheredYieldStatements = [];
-		$closureStmtsCallback = static function (Node $node, Scope $scope) use ($nodeCallback, &$gatheredReturnStatements, &$gatheredYieldStatements, &$closureScope): void {
+		$closureStmtsCallback = static function (Node $node, Scope $scope) use ($nodeCallback, &$executionEnds, &$gatheredReturnStatements, &$gatheredYieldStatements, &$closureScope): void {
 			$nodeCallback($node, $scope);
 			if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
+				return;
+			}
+			if ($node instanceof ExecutionEndNode) {
+				$executionEnds[] = $node;
 				return;
 			}
 			if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
@@ -3203,6 +3208,7 @@ class NodeScopeResolver
 				$gatheredReturnStatements,
 				$gatheredYieldStatements,
 				$statementResult,
+				$executionEnds,
 			), $closureScope);
 
 			return new ExpressionResult($scope, false, []);
@@ -3235,6 +3241,7 @@ class NodeScopeResolver
 			$gatheredReturnStatements,
 			$gatheredYieldStatements,
 			$statementResult,
+			$executionEnds,
 		), $closureScope);
 
 		return new ExpressionResult($scope->processClosureScope($closureScope, null, $byRefUses), false, []);

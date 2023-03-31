@@ -11,11 +11,16 @@ interface ReturnStatementsNode extends VirtualNode
 {
 
 	/**
-	 * @return ReturnStatement[]
+	 * @return list<ReturnStatement>
 	 */
 	public function getReturnStatements(): array;
 
 	public function getStatementResult(): StatementResult;
+
+	/**
+	 * @return list<ExecutionEndNode>
+	 */
+	public function getExecutionEnds(): array;
 
 	public function returnsByRef(): bool;
 

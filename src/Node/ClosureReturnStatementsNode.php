@@ -17,14 +17,16 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 	private Node\Expr\Closure $closureExpr;
 
 	/**
-	 * @param ReturnStatement[] $returnStatements
-	 * @param array<int, Yield_|YieldFrom> $yieldStatements
+	 * @param list<ReturnStatement> $returnStatements
+	 * @param list<Yield_|YieldFrom> $yieldStatements
+	 * @param list<ExecutionEndNode> $executionEnds
 	 */
 	public function __construct(
 		Closure $closureExpr,
 		private array $returnStatements,
 		private array $yieldStatements,
 		private StatementResult $statementResult,
+		private array $executionEnds,
 	)
 	{
 		parent::__construct($closureExpr->getAttributes());
@@ -41,12 +43,14 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 		return $this->closureExpr->returnType !== null;
 	}
 
-	/**
-	 * @return ReturnStatement[]
-	 */
 	public function getReturnStatements(): array
 	{
 		return $this->returnStatements;
+	}
+
+	public function getExecutionEnds(): array
+	{
+		return $this->executionEnds;
 	}
 
 	public function getYieldStatements(): array

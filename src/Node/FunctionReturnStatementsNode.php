@@ -14,9 +14,9 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 {
 
 	/**
-	 * @param ReturnStatement[] $returnStatements
+	 * @param list<ReturnStatement> $returnStatements
 	 * @param list<Yield_|YieldFrom> $yieldStatements
-	 * @param ExecutionEndNode[] $executionEnds
+	 * @param list<ExecutionEndNode> $executionEnds
 	 */
 	public function __construct(
 		private Function_ $function,
@@ -29,9 +29,6 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 		parent::__construct($function->getAttributes());
 	}
 
-	/**
-	 * @return ReturnStatement[]
-	 */
 	public function getReturnStatements(): array
 	{
 		return $this->returnStatements;
@@ -42,9 +39,6 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 		return $this->statementResult;
 	}
 
-	/**
-	 * @return ExecutionEndNode[]
-	 */
 	public function getExecutionEnds(): array
 	{
 		return $this->executionEnds;

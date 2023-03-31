@@ -16,9 +16,9 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 	private ClassMethod $classMethod;
 
 	/**
-	 * @param ReturnStatement[] $returnStatements
+	 * @param list<ReturnStatement> $returnStatements
 	 * @param list<Yield_|YieldFrom> $yieldStatements
-	 * @param ExecutionEndNode[] $executionEnds
+	 * @param list<ExecutionEndNode> $executionEnds
 	 */
 	public function __construct(
 		ClassMethod $method,
@@ -32,9 +32,6 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		$this->classMethod = $method;
 	}
 
-	/**
-	 * @return ReturnStatement[]
-	 */
 	public function getReturnStatements(): array
 	{
 		return $this->returnStatements;
@@ -45,9 +42,6 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		return $this->statementResult;
 	}
 
-	/**
-	 * @return ExecutionEndNode[]
-	 */
 	public function getExecutionEnds(): array
 	{
 		return $this->executionEnds;

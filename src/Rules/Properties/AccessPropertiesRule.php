@@ -143,6 +143,8 @@ class AccessPropertiesRule implements Rule
 			));
 			if ($typeResult->getTip() !== null) {
 				$ruleErrorBuilder->tip($typeResult->getTip());
+			} else {
+				$ruleErrorBuilder->tip('Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>');
 			}
 
 			return [

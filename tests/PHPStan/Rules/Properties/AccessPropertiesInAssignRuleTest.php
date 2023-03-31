@@ -23,14 +23,17 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse([__DIR__ . '/data/access-properties-assign.php'], [
 			[
 				'Access to an undefined property TestAccessPropertiesAssign\AccessPropertyWithDimFetch::$foo.',
 				10,
+				$tipText,
 			],
 			[
 				'Access to an undefined property TestAccessPropertiesAssign\AccessPropertyWithDimFetch::$foo.',
 				15,
+				$tipText,
 			],
 		]);
 	}
@@ -40,42 +43,52 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID < 70400) {
 			self::markTestSkipped('Test requires PHP 7.4.');
 		}
+
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse([__DIR__ . '/data/access-properties-assign-op.php'], [
 			[
 				'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
 				15,
+				$tipText,
 			],
 		]);
 	}
 
 	public function testRuleExpressionNames(): void
 	{
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse([__DIR__ . '/data/properties-from-variable-into-object.php'], [
 			[
 				'Access to an undefined property PropertiesFromVariableIntoObject\Foo::$noop.',
 				26,
+				$tipText,
 			],
 		]);
 	}
 
 	public function testRuleExpressionNames2(): void
 	{
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse([__DIR__ . '/data/properties-from-array-into-object.php'], [
 			[
 				'Access to an undefined property PropertiesFromArrayIntoObject\Foo::$noop.',
 				42,
+				$tipText,
 			],
 			[
 				'Access to an undefined property PropertiesFromArrayIntoObject\Foo::$noop.',
 				54,
+				$tipText,
 			],
 			[
 				'Access to an undefined property PropertiesFromArrayIntoObject\Foo::$noop.',
 				69,
+				$tipText,
 			],
 			[
 				'Access to an undefined property PropertiesFromArrayIntoObject\Foo::$noop.',
 				110,
+				$tipText,
 			],
 		]);
 	}

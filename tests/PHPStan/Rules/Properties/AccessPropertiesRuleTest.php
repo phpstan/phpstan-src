@@ -31,12 +31,15 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
+
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
 				[
 					'Access to an undefined property TestAccessProperties\BarAccessProperties::$loremipsum.',
 					24,
+					$tipText,
 				],
 				[
 					'Access to private property $foo of parent class TestAccessProperties\FooAccessProperties.',
@@ -57,10 +60,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$baz.',
 					50,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$nonexistent.',
 					53,
+					$tipText,
 				],
 				[
 					'Access to private property TestAccessProperties\FooAccessProperties::$foo.',
@@ -78,26 +83,32 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$emptyBaz.',
 					69,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$emptyNonexistent.',
 					71,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherNonexistent.',
 					77,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherNonexistent.',
 					78,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherEmptyNonexistent.',
 					81,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherEmptyNonexistent.',
 					84,
+					$tipText,
 				],
 				[
 					'Access to property $test on an unknown class TestAccessProperties\FirstUnknownClass.',
@@ -112,10 +123,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\WithFooAndBarProperty|TestAccessProperties\WithFooProperty::$bar.',
 					177,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\SomeInterface&TestAccessProperties\WithFooProperty::$bar.',
 					194,
+					$tipText,
 				],
 				[
 					'Cannot access property $ipsum on TestAccessProperties\FooAccessProperties|null.',
@@ -128,10 +141,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$lorem.',
 					248,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$dolor.',
 					251,
+					$tipText,
 				],
 				[
 					'Cannot access property $bar on TestAccessProperties\NullCoalesce|null.',
@@ -148,6 +163,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property class@anonymous/tests/PHPStan/Rules/Properties/data/access-properties.php:297::$barProperty.',
 					302,
+					$tipText,
 				],
 				[
 					'Cannot access property $selfOrNull on TestAccessProperties\RevertNonNullabilityForIsset|null.',
@@ -162,12 +178,15 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = false;
 		$this->checkDynamicProperties = false;
+
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
 				[
 					'Access to an undefined property TestAccessProperties\BarAccessProperties::$loremipsum.',
 					24,
+					$tipText,
 				],
 				[
 					'Access to private property $foo of parent class TestAccessProperties\FooAccessProperties.',
@@ -188,10 +207,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$baz.',
 					50,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$nonexistent.',
 					53,
+					$tipText,
 				],
 				[
 					'Access to private property TestAccessProperties\FooAccessProperties::$foo.',
@@ -209,26 +230,32 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$emptyBaz.',
 					69,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$emptyNonexistent.',
 					71,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherNonexistent.',
 					77,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherNonexistent.',
 					78,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherEmptyNonexistent.',
 					81,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherEmptyNonexistent.',
 					84,
+					$tipText,
 				],
 				[
 					'Access to property $test on an unknown class TestAccessProperties\FirstUnknownClass.',
@@ -243,6 +270,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\SomeInterface&TestAccessProperties\WithFooProperty::$bar.',
 					194,
+					$tipText,
 				],
 				[
 					'Cannot access property $foo on null.',
@@ -251,10 +279,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$lorem.',
 					248,
+					$tipText,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$dolor.',
 					251,
+					$tipText,
 				],
 				[
 					'Cannot access property $bar on TestAccessProperties\NullCoalesce|null.',
@@ -263,6 +293,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property class@anonymous/tests/PHPStan/Rules/Properties/data/access-properties.php:297::$barProperty.',
 					302,
+					$tipText,
 				],
 			],
 		);
@@ -276,10 +307,13 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
+
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse([__DIR__ . '/data/access-properties-assign-op.php'], [
 			[
 				'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
 				10,
+				$tipText,
 			],
 		]);
 	}
@@ -289,12 +323,15 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = true;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
+
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
 				[
 					'Access to an undefined property TestAccessProperties\BarAccessProperties::$loremipsum.',
 					24,
+					$tipText,
 				],
 				[
 					'Access to private property $foo of parent class TestAccessProperties\FooAccessProperties.',
@@ -309,6 +346,8 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
+
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse([__DIR__ . '/data/access-properties-after-isnull.php'], [
 			[
 				'Cannot access property $fooProperty on null.',
@@ -321,10 +360,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 			[
 				'Access to an undefined property AccessPropertiesAfterIsNull\Foo::$barProperty.',
 				28,
+				$tipText,
 			],
 			[
 				'Access to an undefined property AccessPropertiesAfterIsNull\Foo::$barProperty.',
 				31,
+				$tipText,
 			],
 			[
 				'Cannot access property $fooProperty on null.',
@@ -337,10 +378,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 			[
 				'Access to an undefined property AccessPropertiesAfterIsNull\Foo::$barProperty.',
 				47,
+				$tipText,
 			],
 			[
 				'Access to an undefined property AccessPropertiesAfterIsNull\Foo::$barProperty.',
 				50,
+				$tipText,
 			],
 		]);
 	}
@@ -350,10 +393,13 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
+
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse([__DIR__ . '/data/date-interval-child-properties.php'], [
 			[
 				'Access to an undefined property AccessPropertiesDateIntervalChild\DateIntervalChild::$nonexistent.',
 				14,
+				$tipText,
 			],
 		]);
 	}
@@ -393,10 +439,13 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
+
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse([__DIR__ . '/data/mixin.php'], [
 			[
 				'Access to an undefined property MixinProperties\GenericFoo<ReflectionClass>::$namee.',
 				55,
+				$tipText,
 			],
 		]);
 	}
@@ -415,10 +464,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
 
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse([__DIR__ . '/data/nullsafe-property-fetch.php'], [
 			[
 				'Access to an undefined property NullsafePropertyFetch\Foo::$baz.',
 				13,
+				$tipText,
 			],
 			[
 				'Cannot access property $bar on string.',
@@ -500,14 +551,18 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
+
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse([__DIR__ . '/data/bug-6385.php'], [
 			[
 				'Access to an undefined property UnitEnum::$value.',
 				43,
+				$tipText,
 			],
 			[
 				'Access to an undefined property Bug6385\ActualUnitEnum::$value.',
 				47,
+				$tipText,
 			],
 		]);
 	}
@@ -564,10 +619,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 	public function dataDynamicProperties(): array
 	{
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$errors = [
 			[
 				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
 				23,
+				$tipText,
 			],
 		];
 
@@ -575,26 +632,32 @@ class AccessPropertiesRuleTest extends RuleTestCase
 			[
 				'Access to an undefined property DynamicProperties\Foo::$dynamicProperty.',
 				9,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\Foo::$dynamicProperty.',
 				10,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\Foo::$dynamicProperty.',
 				11,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
 				14,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
 				15,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
 				16,
+				$tipText,
 			],
 		], $errors);
 
@@ -602,14 +665,17 @@ class AccessPropertiesRuleTest extends RuleTestCase
 			[
 				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
 				26,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
 				27,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
 				28,
+				$tipText,
 			],
 		]);
 
@@ -617,26 +683,32 @@ class AccessPropertiesRuleTest extends RuleTestCase
 			[
 				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
 				36,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
 				37,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
 				38,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
 				41,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
 				42,
+				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
 				43,
+				$tipText,
 			],
 		];
 
@@ -645,6 +717,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
 					23,
+					$tipText,
 				],
 			] : array_merge($errors, $otherErrors)],
 			[true, array_merge($errorsWithMore, $otherErrors)],
@@ -702,29 +775,35 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	public function testPhp82AndDynamicProperties(bool $b): void
 	{
 		$errors = [];
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		if (PHP_VERSION_ID >= 80200) {
 			$errors[] = [
 				'Access to an undefined property Php82DynamicProperties\ClassA::$properties.',
 				34,
+				$tipText,
 			];
 			if ($b) {
 				$errors[] = [
 					'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
 					71,
+					$tipText,
 				];
 			}
 			$errors[] = [
 				'Access to an undefined property Php82DynamicProperties\FinalHelloWorld::$world.',
 				105,
+				$tipText,
 			];
 		} elseif ($b) {
 			$errors[] = [
 				'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
 				71,
+				$tipText,
 			];
 			$errors[] = [
 				'Access to an undefined property Php82DynamicProperties\FinalHelloWorld::$world.',
 				105,
+				$tipText,
 			];
 		}
 		$this->checkThisOnly = false;
@@ -739,10 +818,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	public function testPhp82AndDynamicPropertiesAllow(bool $b): void
 	{
 		$errors = [];
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		if ($b) {
 			$errors[] = [
 				'Access to an undefined property Php82DynamicPropertiesAllow\HelloWorld::$world.',
 				75,
+				$tipText,
 			];
 		}
 		$this->checkThisOnly = false;

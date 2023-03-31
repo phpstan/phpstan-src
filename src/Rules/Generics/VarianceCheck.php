@@ -26,7 +26,6 @@ class VarianceCheck
 		string $parameterOutTypeMessage,
 		string $returnTypeMessage,
 		string $generalMessage,
-		bool $isStatic,
 		bool $isPrivate,
 	): array
 	{
@@ -52,9 +51,7 @@ class VarianceCheck
 		}
 
 		$covariant = TemplateTypeVariance::createCovariant();
-		$parameterVariance = $isStatic
-			? TemplateTypeVariance::createStatic()
-			: TemplateTypeVariance::createContravariant();
+		$parameterVariance = TemplateTypeVariance::createContravariant();
 
 		foreach ($parametersAcceptor->getParameters() as $parameterReflection) {
 			$type = $parameterReflection->getType();

@@ -37,7 +37,6 @@ class FunctionSignatureVarianceRule implements Rule
 			sprintf('in return type of function %s()', $functionName),
 			sprintf('in function %s()', $functionName),
 			false,
-			false,
 		);
 	}
 

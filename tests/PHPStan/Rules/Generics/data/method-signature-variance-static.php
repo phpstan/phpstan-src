@@ -1,6 +1,6 @@
 <?php
 
-namespace MethodSignatureVariance\Static;
+namespace MethodSignatureVariance\StaticMethod;
 
 /** @template-contravariant T */
 interface In {

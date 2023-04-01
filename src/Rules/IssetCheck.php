@@ -191,7 +191,7 @@ class IssetCheck
 			return null;
 		}
 
-		$error = $this->generateError($scope->getType($expr), sprintf('Expression %s', $operatorDescription), $typeMessageCallback);
+		$error = $this->generateError($this->treatPhpDocTypesAsCertain ? $scope->getType($expr) : $scope->getNativeType($expr), sprintf('Expression %s', $operatorDescription), $typeMessageCallback);
 		if ($error !== null) {
 			return $error;
 		}
@@ -223,8 +223,8 @@ class IssetCheck
 		}
 
 		if ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
-			$type = $scope->getType($expr->var);
-			$dimType = $scope->getType($expr->dim);
+			$type = $this->treatPhpDocTypesAsCertain ? $scope->getType($expr->var) : $scope->getNativeType($expr->var);
+			$dimType = $this->treatPhpDocTypesAsCertain ? $scope->getType($expr->dim) : $scope->getNativeType($expr->dim);
 			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 			if (!$type->isOffsetAccessible()->yes()) {
 				return $this->checkUndefined($expr->var, $scope, $operatorDescription);

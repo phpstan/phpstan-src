@@ -45,7 +45,7 @@ class IssetCheck
 					}
 
 					return $this->generateError(
-						$scope->getVariableType($expr->name),
+						$this->treatPhpDocTypesAsCertain ? $scope->getType($expr) : $scope->getNativeType($expr),
 						sprintf('Variable $%s %s always exists and', $expr->name, $operatorDescription),
 						$typeMessageCallback,
 					);

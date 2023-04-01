@@ -100,9 +100,13 @@ class CommandHelper
 			unset($xdebug);
 		}
 
-		if ($allowXdebug && !XdebugHandler::isXdebugActive()) {
-			$errorOutput->getStyle()->note('You are running with "--xdebug" enabled, but the Xdebug PHP extension is not active. The process will not halt at breakpoints.');
-		} elseif (!$allowXdebug && XdebugHandler::isXdebugActive()) {
+		if ($allowXdebug) {
+			if (!XdebugHandler::isXdebugActive()) {
+				$errorOutput->getStyle()->note('You are running with "--xdebug" enabled, but the Xdebug PHP extension is not active. The process will not halt at breakpoints.');
+			} else {
+				$errorOutput->getStyle()->note("You are running with \"--xdebug\" enabled, and the Xdebug PHP extension is active.\nThe process will halt at breakpoints, but PHPStan will run much slower.\nUse this only if you are debugging PHPStan itself or your custom extensions.");
+			}
+		} elseif (XdebugHandler::isXdebugActive()) {
 			$errorOutput->getStyle()->note('The Xdebug PHP extension is active, but "--xdebug" is not used. This may slow down performance and the process will not halt at breakpoints.');
 		}
 

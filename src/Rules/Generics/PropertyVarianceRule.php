@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
-use PHPParser\Node;
+use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\ClassPropertyNode;

@@ -88,6 +88,7 @@ class VarianceCheck
 		return $errors;
 	}
 
+	/** @return RuleError[] */
 	public function checkProperty(
 		PropertyReflection $propertyReflection,
 		string $message,

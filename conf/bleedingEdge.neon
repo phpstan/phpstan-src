@@ -33,3 +33,4 @@ parameters:
 		instanceofType: true
 		paramOutVariance: true
 		allInvalidPhpDocs: true
+		strictStaticMethodTemplateTypeVariance: true

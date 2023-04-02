@@ -15,6 +15,7 @@ class VarianceCheck
 
 	public function __construct(
 		private bool $checkParamOutVariance,
+		private bool $strictStaticVariance,
 	)
 	{
 	}
@@ -52,7 +53,7 @@ class VarianceCheck
 		}
 
 		$covariant = TemplateTypeVariance::createCovariant();
-		$parameterVariance = $isStatic
+		$parameterVariance = $isStatic && !$this->strictStaticVariance
 			? TemplateTypeVariance::createStatic()
 			: TemplateTypeVariance::createContravariant();
 

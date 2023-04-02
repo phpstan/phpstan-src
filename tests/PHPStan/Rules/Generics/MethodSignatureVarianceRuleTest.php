@@ -180,6 +180,33 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 		]);
 
 		$this->analyse([__DIR__ . '/data/method-signature-variance-constructor.php'], []);
+
+		$this->analyse([__DIR__ . '/data/method-signature-variance-static.php'], [
+			[
+				'Template type X is declared as covariant, but occurs in contravariant position in parameter a of method MethodSignatureVariance\StaticMethod\B::a().',
+				43,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in contravariant position in parameter c of method MethodSignatureVariance\StaticMethod\B::a().',
+				43,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in contravariant position in return type of method MethodSignatureVariance\StaticMethod\B::c().',
+				49,
+			],
+			[
+				'Template type X is declared as contravariant, but occurs in covariant position in parameter b of method MethodSignatureVariance\StaticMethod\C::a().',
+				62,
+			],
+			[
+				'Template type X is declared as contravariant, but occurs in covariant position in return type of method MethodSignatureVariance\StaticMethod\C::b().',
+				65,
+			],
+			[
+				'Template type X is declared as contravariant, but occurs in covariant position in return type of method MethodSignatureVariance\StaticMethod\C::d().',
+				71,
+			],
+		]);
 	}
 
 	public function testBug8880(): void

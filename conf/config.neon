@@ -63,6 +63,7 @@ parameters:
 		instanceofType: false
 		paramOutVariance: false
 		allInvalidPhpDocs: false
+		strictStaticMethodTemplateTypeVariance: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -296,6 +297,7 @@ parametersSchema:
 		instanceofType: bool()
 		paramOutVariance: bool()
 		allInvalidPhpDocs: bool()
+		strictStaticMethodTemplateTypeVariance: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -1050,6 +1052,7 @@ services:
 		class: PHPStan\Rules\Generics\VarianceCheck
 		arguments:
 			checkParamOutVariance: %featureToggles.paramOutVariance%
+			strictStaticVariance: %featureToggles.strictStaticMethodTemplateTypeVariance%
 
 	-
 		class: PHPStan\Rules\IssetCheck

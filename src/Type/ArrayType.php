@@ -28,6 +28,7 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_merge;
+use function count;
 use function sprintf;
 
 /** @api */
@@ -419,7 +420,31 @@ class ArrayType implements Type
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		if ($offsetType === null) {
-			$offsetType = new IntegerType();
+			$isKeyTypeInteger = $this->keyType->isInteger();
+			if ($isKeyTypeInteger->no()) {
+				$offsetType = new IntegerType();
+			} elseif ($isKeyTypeInteger->yes()) {
+				$offsetType = $this->keyType;
+			} else {
+				$integerTypes = [];
+				TypeTraverser::map($this->keyType, static function (Type $type, callable $traverse) use (&$integerTypes): Type {
+					if ($type instanceof UnionType) {
+						return $traverse($type);
+					}
+
+					$isInteger = $type->isInteger();
+					if ($isInteger->yes()) {
+						$integerTypes[] = $type;
+					}
+
+					return $type;
+				});
+				if (count($integerTypes) === 0) {
+					$offsetType = $this->keyType;
+				} else {
+					$offsetType = TypeCombinator::union(...$integerTypes);
+				}
+			}
 		} else {
 			$offsetType = $offsetType->toArrayKey();
 		}

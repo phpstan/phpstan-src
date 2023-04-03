@@ -26,6 +26,9 @@ class RuleErrorBuilder
 	/** @var mixed[] */
 	private array $properties;
 
+	/** @var list<string> */
+	private array $tips = [];
+
 	private function __construct(string $message)
 	{
 		$this->properties['message'] = $message;
@@ -106,7 +109,15 @@ class RuleErrorBuilder
 
 	public function tip(string $tip): self
 	{
-		$this->properties['tip'] = $tip;
+		$this->tips = [$tip];
+		$this->type |= self::TYPE_TIP;
+
+		return $this;
+	}
+
+	public function addTip(string $tip): self
+	{
+		$this->tips[] = $tip;
 		$this->type |= self::TYPE_TIP;
 
 		return $this;
@@ -122,15 +133,11 @@ class RuleErrorBuilder
 	 */
 	public function acceptsReasonsTip(array $reasons): self
 	{
-		if (count($reasons) === 0) {
-			return $this;
+		foreach ($reasons as $reason) {
+			$this->addTip($reason);
 		}
 
-		if (count($reasons) === 1) {
-			return $this->tip($reasons[0]);
-		}
-
-		return $this->tip(implode("\n", array_map(static fn (string $reason) => sprintf('• %s', $reason), $reasons)));
+		return $this;
 	}
 
 	public function identifier(string $identifier): self
@@ -170,6 +177,14 @@ class RuleErrorBuilder
 		$ruleError = new $className();
 		foreach ($this->properties as $propertyName => $value) {
 			$ruleError->{$propertyName} = $value;
+		}
+
+		if (count($this->tips) > 0) {
+			if (count($this->tips) === 1) {
+				$ruleError->tip = $this->tips[0];
+			} else {
+				$ruleError->tip = implode("\n", array_map(static fn (string $tip) => sprintf('• %s', $tip), $this->tips));
+			}
 		}
 
 		return $ruleError;

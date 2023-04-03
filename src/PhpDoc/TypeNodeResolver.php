@@ -63,6 +63,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Helper\GetTemplateTypeType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -670,6 +671,19 @@ class TypeNodeResolver
 			if (count($genericTypes) === 1) {
 				return TypeUtils::toBenevolentUnion($genericTypes[0]);
 			}
+			return new ErrorType();
+		} elseif ($mainTypeName === 'template-type') {
+			if (count($genericTypes) === 3) {
+				$result = [];
+				foreach ($genericTypes[1]->getObjectClassNames() as $ancestorClassName) {
+					foreach ($genericTypes[2]->getConstantStrings() as $templateTypeName) {
+						$result[] = new GetTemplateTypeType($genericTypes[0], $ancestorClassName, $templateTypeName->getValue());
+					}
+				}
+
+				return TypeCombinator::union(...$result);
+			}
+
 			return new ErrorType();
 		}
 

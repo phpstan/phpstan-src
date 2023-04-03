@@ -1176,6 +1176,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testDiscussion9053(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/discussion-9053.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

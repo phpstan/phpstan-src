@@ -19,6 +19,9 @@ final class GetTemplateTypeType implements CompoundType, LateResolvableType
 	use LateResolvableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
+	/**
+	 * @param class-string $ancestorClassName
+	 */
 	public function __construct(private Type $type, private string $ancestorClassName, private string $templateTypeName)
 	{
 	}

@@ -675,6 +675,7 @@ class TypeNodeResolver
 		} elseif ($mainTypeName === 'template-type') {
 			if (count($genericTypes) === 3) {
 				$result = [];
+				/** @var class-string $ancestorClassName */
 				foreach ($genericTypes[1]->getObjectClassNames() as $ancestorClassName) {
 					foreach ($genericTypes[2]->getConstantStrings() as $templateTypeName) {
 						$result[] = new GetTemplateTypeType($genericTypes[0], $ancestorClassName, $templateTypeName->getValue());

@@ -637,6 +637,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between Bug8485\E::c and Bug8485\E::c will always evaluate to true.',
 				19,
+				'Use match expression instead. PHPStan will report unhandled enum cases.',
 			],
 			[
 				'Strict comparison using === between Bug8485\F::c and Bug8485\E::c will always evaluate to false.',
@@ -657,12 +658,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between Bug8485\FooEnum::C and Bug8485\FooEnum::C will always evaluate to true.',
 				67,
-				'Remove remaining cases below this one and this error will disappear too.',
+				"• Remove remaining cases below this one and this error will disappear too.\n• Use match expression instead. PHPStan will report unhandled enum cases.",
 			],
 			[
 				'Strict comparison using === between Bug8485\FooEnum::C and Bug8485\FooEnum::C will always evaluate to true.',
 				74,
-				'Remove remaining cases below this one and this error will disappear too.',
+				"• Remove remaining cases below this one and this error will disappear too.\n• Use match expression instead. PHPStan will report unhandled enum cases.",
 			],
 		]);
 	}
@@ -932,6 +933,27 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				'Strict comparison using === between int<1, max> and 0 will always evaluate to false.',
 				12,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
+	public function testEnumTips(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/strict-comparison-enum-tips.php'], [
+			[
+				'Strict comparison using === between $this(StrictComparisonEnumTips\SomeEnum)&StrictComparisonEnumTips\SomeEnum::Two and StrictComparisonEnumTips\SomeEnum::Two will always evaluate to true.',
+				15,
+				"• Remove remaining cases below this one and this error will disappear too.\n• Use match expression instead. PHPStan will report unhandled enum cases.",
+			],
+			[
+				'Strict comparison using === between $this(StrictComparisonEnumTips\SomeEnum)&StrictComparisonEnumTips\SomeEnum::Two and StrictComparisonEnumTips\SomeEnum::Two will always evaluate to true.',
+				29,
+				'Use match expression instead. PHPStan will report unhandled enum cases.',
 			],
 		]);
 	}

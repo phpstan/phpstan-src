@@ -79,7 +79,11 @@ class NeverType implements CompoundType
 
 	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
 	{
-		return AcceptsResult::createYes();
+		if ($type instanceof self) {
+			return AcceptsResult::createYes();
+		}
+
+		return AcceptsResult::createNo();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

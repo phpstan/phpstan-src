@@ -2597,6 +2597,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #2 $v of method UnresolvableParameter\HelloWorld::foo() contains unresolvable type.',
 				19,
 			],
+			[
+				'Parameter #2 $v of method UnresolvableParameter\HelloWorld::foo() expects *NEVER*, 0 given.',
+				20,
+			],
 		]);
 	}
 

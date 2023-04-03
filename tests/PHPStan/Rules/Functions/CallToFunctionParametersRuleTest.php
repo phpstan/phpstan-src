@@ -1258,4 +1258,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9133(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9133.php'], [
+			[
+				'Parameter #1 $value of function Bug9133\assertNever expects *NEVER*, int given.',
+				28,
+			],
+		]);
+	}
+
 }

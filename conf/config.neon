@@ -64,6 +64,7 @@ parameters:
 		paramOutVariance: false
 		allInvalidPhpDocs: false
 		strictStaticMethodTemplateTypeVariance: false
+		propertyVariance: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -298,6 +299,7 @@ parametersSchema:
 		paramOutVariance: bool()
 		allInvalidPhpDocs: bool()
 		strictStaticMethodTemplateTypeVariance: bool()
+		propertyVariance: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

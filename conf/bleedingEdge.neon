@@ -34,3 +34,4 @@ parameters:
 		paramOutVariance: true
 		allInvalidPhpDocs: true
 		strictStaticMethodTemplateTypeVariance: true
+		propertyVariance: true

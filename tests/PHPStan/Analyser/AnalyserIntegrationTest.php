@@ -1178,6 +1178,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testDiscussion9053(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$errors = $this->runAnalyse(__DIR__ . '/data/discussion-9053.php');
 		$this->assertNoErrors($errors);
 	}

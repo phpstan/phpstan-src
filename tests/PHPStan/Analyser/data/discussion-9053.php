@@ -5,7 +5,7 @@ namespace Discussion9053;
 use function PHPStan\Testing\assertType;
 
 /**
- * @template-covariant TChild of ChildInterface
+ * @template TChild of ChildInterface
  */
 interface ModelInterface {
 	/**
@@ -31,7 +31,7 @@ class Model implements ModelInterface
 }
 
 /**
- * @template-covariant T of ModelInterface
+ * @template T of ModelInterface
  */
 interface ChildInterface {
 	/**
@@ -57,7 +57,7 @@ class Child implements ChildInterface
 }
 
 /**
- * @template-covariant T of ModelInterface
+ * @template T of ModelInterface
  */
 class Helper
 {

@@ -28,7 +28,7 @@ class FilterVar
 		assertType('array<string, int>|false', filter_var($stringMixedMap, FILTER_VALIDATE_INT, ['flags' => FILTER_REQUIRE_ARRAY]));
 		assertType('array<string, int>|null', filter_var($stringMixedMap, FILTER_VALIDATE_INT, ['flags' => FILTER_REQUIRE_ARRAY|FILTER_NULL_ON_FAILURE]));
 
-        assertType('array<17>', filter_var(17, FILTER_VALIDATE_INT, ['flags' => FILTER_FORCE_ARRAY]));
+		assertType('array<17>', filter_var(17, FILTER_VALIDATE_INT, ['flags' => FILTER_FORCE_ARRAY]));
 		assertType('array<17>', filter_var(17, FILTER_VALIDATE_INT, ['flags' => FILTER_FORCE_ARRAY|FILTER_NULL_ON_FAILURE]));
 		assertType('array<false>', filter_var('foo', FILTER_VALIDATE_INT, ['flags' => FILTER_FORCE_ARRAY]));
 		assertType('array<null>', filter_var('foo', FILTER_VALIDATE_INT, ['flags' => FILTER_FORCE_ARRAY|FILTER_NULL_ON_FAILURE]));

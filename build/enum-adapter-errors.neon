@@ -222,7 +222,7 @@ parameters:
 
 		-
 			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
+			count: 2
 			path: ../src/Reflection/Native/NativeMethodReflection.php
 
 		-
@@ -287,7 +287,7 @@ parameters:
 
 		-
 			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
+			count: 2
 			path: ../src/Reflection/Php/PhpMethodReflection.php
 
 		-

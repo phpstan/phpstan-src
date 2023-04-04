@@ -1,0 +1,9 @@
+<?php
+
+/**
+ * @param resource $stream
+ * @param-out closed-resource $stream
+ */
+function fclose(&$stream) : bool
+{
+}

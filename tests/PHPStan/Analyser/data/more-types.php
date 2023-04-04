@@ -30,7 +30,7 @@ class Foo
 	{
 		assertType('callable(): mixed', $pureCallable);
 		assertType('array&callable(): mixed', $callableArray);
-		assertType('resource', $closedResource);
+		assertType('closed-resource', $closedResource);
 		assertType('class-string', $enumString);
 		assertType('literal-string&non-empty-string', $nonEmptyLiteralString);
 		assertType('float|int<min, -1>|int<1, max>|non-falsy-string|true', $nonEmptyScalar);

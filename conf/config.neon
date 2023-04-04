@@ -143,6 +143,7 @@ parameters:
 		- ../stubs/ReflectionMethod.stub
 		- ../stubs/ReflectionParameter.stub
 		- ../stubs/ReflectionProperty.stub
+		- ../stubs/resources.stub
 		- ../stubs/iterable.stub
 		- ../stubs/ArrayObject.stub
 		- ../stubs/WeakReference.stub

@@ -1258,4 +1258,26 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClosedResource(): void
+	{
+		$this->analyse([__DIR__ . '/data/closed-resource.php'], [
+			[
+				'Parameter #1 $stream of function fread expects resource, closed-resource given.',
+				16,
+			],
+			[
+				'Parameter #1 $stream of function feof expects resource, closed-resource given.',
+				17,
+			],
+			[
+				'Parameter #1 $stream of function fwrite expects resource, closed-resource given.',
+				18,
+			],
+			[
+				'Parameter #1 $stream of function fclose expects resource, closed-resource given.',
+				19,
+			],
+		]);
+	}
+
 }

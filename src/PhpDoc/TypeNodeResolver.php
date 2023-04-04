@@ -50,6 +50,7 @@ use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
+use PHPStan\Type\ClosedResourceType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
@@ -340,7 +341,7 @@ class TypeNodeResolver
 				return new ResourceType();
 
 			case 'closed-resource':
-				return new ResourceType();
+				return new ClosedResourceType();
 
 			case 'mixed':
 				return new MixedType(true);

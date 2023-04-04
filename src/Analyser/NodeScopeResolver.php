@@ -142,6 +142,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
@@ -3407,6 +3408,10 @@ class NodeScopeResolver
 
 					if (isset($paramOutTypes[$parameters[$i]->getName()])) {
 						$byRefType = $paramOutTypes[$parameters[$i]->getName()];
+
+						if ($parameterType instanceof ResourceType) {
+							$assignByReference = true;
+						}
 					}
 				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
 					$lastParameter = $parameters[count($parameters) - 1];
@@ -3415,6 +3420,10 @@ class NodeScopeResolver
 
 					if (isset($paramOutTypes[$lastParameter->getName()])) {
 						$byRefType = $paramOutTypes[$lastParameter->getName()];
+
+						if ($parameterType instanceof ResourceType) {
+							$assignByReference = true;
+						}
 					}
 				}
 

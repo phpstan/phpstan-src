@@ -28,6 +28,7 @@ use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\InvalidTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
@@ -164,6 +165,8 @@ class TypeNodeResolver
 			return $this->resolveConstTypeNode($typeNode, $nameScope);
 		} elseif ($typeNode instanceof OffsetAccessTypeNode) {
 			return $this->resolveOffsetAccessNode($typeNode, $nameScope);
+		} elseif ($typeNode instanceof InvalidTypeNode) {
+			return new MixedType(true);
 		}
 
 		return new ErrorType();

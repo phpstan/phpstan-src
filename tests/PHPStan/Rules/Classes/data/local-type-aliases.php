@@ -62,3 +62,9 @@ class Generic
 class Invalid
 {
 }
+
+/** @psalm-type MyObject = what{} */
+class InvalidTypeDefinitionToIgnoreBecauseItsAParseErrorAlreadyReportedInInvalidPhpDocTagValueRule
+{
+
+}

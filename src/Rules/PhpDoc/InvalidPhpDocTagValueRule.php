@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\VirtualNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\TypeAliasTagValueNode;
+use PHPStan\PhpDocParser\Ast\Type\InvalidTypeNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
@@ -71,11 +73,24 @@ class InvalidPhpDocTagValueRule implements Rule
 
 		$errors = [];
 		foreach ($phpDocNode->getTags() as $phpDocTag) {
-			if (!($phpDocTag->value instanceof InvalidTagValueNode)) {
+			if (strpos($phpDocTag->name, '@psalm-') === 0) {
 				continue;
 			}
 
-			if (strpos($phpDocTag->name, '@psalm-') === 0) {
+			if ($phpDocTag->value instanceof TypeAliasTagValueNode) {
+				if (!$phpDocTag->value->type instanceof InvalidTypeNode) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'PHPDoc tag %s %s has invalid value: %s',
+					$phpDocTag->name,
+					$phpDocTag->value->alias,
+					$phpDocTag->value->type->getException()->getMessage(),
+				))->build();
+
+				continue;
+			} elseif (!($phpDocTag->value instanceof InvalidTagValueNode)) {
 				continue;
 			}
 

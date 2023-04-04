@@ -198,6 +198,7 @@ class TypeNodeResolver
 			case 'class-string':
 			case 'interface-string':
 			case 'trait-string':
+			case 'enum-string':
 				return new ClassStringType();
 
 			case 'callable-string':
@@ -214,6 +215,18 @@ class TypeNodeResolver
 				}
 
 				return new UnionType([new IntegerType(), new FloatType(), new StringType(), new BooleanType()]);
+
+			case 'empty-scalar':
+				return TypeCombinator::intersect(
+					new UnionType([new IntegerType(), new FloatType(), new StringType(), new BooleanType()]),
+					StaticTypeFactory::falsey(),
+				);
+
+			case 'non-empty-scalar':
+				return TypeCombinator::remove(
+					new UnionType([new IntegerType(), new FloatType(), new StringType(), new BooleanType()]),
+					StaticTypeFactory::falsey(),
+				);
 
 			case 'number':
 				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
@@ -258,6 +271,13 @@ class TypeNodeResolver
 				return new IntersectionType([
 					new StringType(),
 					new AccessoryNonFalsyStringType(),
+				]);
+
+			case 'non-empty-literal-string':
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+					new AccessoryLiteralStringType(),
 				]);
 
 			case 'bool':
@@ -307,6 +327,7 @@ class TypeNodeResolver
 				return new IterableType(new MixedType(), new MixedType());
 
 			case 'callable':
+			case 'pure-callable':
 				return new CallableType();
 
 			case 'resource':
@@ -318,8 +339,14 @@ class TypeNodeResolver
 
 				return new ResourceType();
 
+			case 'closed-resource':
+				return new ResourceType();
+
 			case 'mixed':
 				return new MixedType(true);
+
+			case 'non-empty-mixed':
+				return new MixedType(true, StaticTypeFactory::falsey());
 
 			case 'void':
 				return new VoidType();
@@ -329,6 +356,9 @@ class TypeNodeResolver
 
 			case 'callable-object':
 				return new IntersectionType([new ObjectWithoutClassType(), new CallableType()]);
+
+			case 'callable-array':
+				return new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new CallableType()]);
 
 			case 'never':
 			case 'noreturn':

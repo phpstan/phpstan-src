@@ -232,4 +232,9 @@ class ClassAncestorsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/scalar-class-name.php'], []);
 	}
 
+	public function testBug8473(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8473.php'], []);
+	}
+
 }

@@ -8,6 +8,8 @@ export TARGET_PHP_VERSION=$1
 
 php ./build/save-rector-hashes.php
 
+cp -r vendor/phpstan/phpdoc-parser/* vendor/rector/rector/vendor/phpstan/phpdoc-parser
+
 vendor/bin/rector process -c build/rector-downgrade.php --no-diffs
 
 php ./build/save-rector-cache.php

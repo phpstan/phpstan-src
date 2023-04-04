@@ -10,6 +10,7 @@ class LastConditionVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'isLastCondition';
+	public const ATTRIBUTE_IS_MATCH_NAME = 'isMatch';
 
 	public function enterNode(Node $node): ?Node
 	{
@@ -31,7 +32,9 @@ class LastConditionVisitor extends NodeVisitorAbstract
 				}
 
 				$isLast = $i === $lastArm;
-				$arm->conds[count($arm->conds) - 1]->setAttribute(self::ATTRIBUTE_NAME, $isLast);
+				$index = count($arm->conds) - 1;
+				$arm->conds[$index]->setAttribute(self::ATTRIBUTE_NAME, $isLast);
+				$arm->conds[$index]->setAttribute(self::ATTRIBUTE_IS_MATCH_NAME, true);
 			}
 		}
 

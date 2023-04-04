@@ -82,7 +82,11 @@ class StrictComparisonOfDifferentTypesRule implements Rule
 				$errorBuilder->addTip('Remove remaining cases below this one and this error will disappear too.');
 			}
 
-			if ($leftType->isEnum()->yes() && $rightType->isEnum()->yes()) {
+			if (
+				$leftType->isEnum()->yes()
+				&& $rightType->isEnum()->yes()
+				&& $node->getAttribute(LastConditionVisitor::ATTRIBUTE_IS_MATCH_NAME, false) !== true
+			) {
 				$errorBuilder->addTip('Use match expression instead. PHPStan will report unhandled enum cases.');
 			}
 

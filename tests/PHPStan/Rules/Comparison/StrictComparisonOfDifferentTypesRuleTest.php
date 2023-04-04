@@ -955,6 +955,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				29,
 				'Use match expression instead. PHPStan will report unhandled enum cases.',
 			],
+			[
+				'Strict comparison using === between StrictComparisonEnumTips\SomeEnum::Two and StrictComparisonEnumTips\SomeEnum::Two will always evaluate to true.',
+				50,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
 		]);
 	}
 

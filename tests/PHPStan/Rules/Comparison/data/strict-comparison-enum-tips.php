@@ -33,4 +33,23 @@ enum SomeEnum
 		throw new \LogicException('New case added, handling missing');
 	}
 
+	public function exhaustiveWithSafetyCheckInMatchAlready(): int
+	{
+		// not reported by this rule at all
+		return match ($this) {
+			self::One => -1,
+			self::Two => 0,
+			default => throw new \LogicException('New case added, handling missing'),
+		};
+	}
+
+	public function exhaustiveWithSafetyCheckInMatchAlready2(self $self): int
+	{
+		return match (true) {
+			$self === self::One => -1,
+			$self === self::Two => 0,
+			default => throw new \LogicException('New case added, handling missing'),
+		};
+	}
+
 }

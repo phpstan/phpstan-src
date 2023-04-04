@@ -1362,6 +1362,8 @@ return [
 	'octdec' => ['hasSideEffects' => false],
 	'ord' => ['hasSideEffects' => false],
 	'pack' => ['hasSideEffects' => false],
+	'pam_auth' => ['hasSideEffects' => false],
+	'pam_chpass' => ['hasSideEffects' => false],
 	'parse_ini_file' => ['hasSideEffects' => false],
 	'parse_ini_string' => ['hasSideEffects' => false],
 	'parse_url' => ['hasSideEffects' => false],

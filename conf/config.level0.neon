@@ -145,6 +145,7 @@ services:
 		class: PHPStan\Rules\Methods\OverridingMethodRule
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
+			genericPrototypeMessage: %featureToggles.genericPrototypeMessage%
 		tags:
 			- phpstan.rules.rule
 

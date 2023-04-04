@@ -29,6 +29,7 @@ class OverridingMethodRule implements Rule
 		private MethodSignatureRule $methodSignatureRule,
 		private bool $checkPhpDocMethodSignatures,
 		private MethodParameterComparisonHelper $methodParameterComparisonHelper,
+		private bool $genericPrototypeMessage,
 	)
 	{
 	}
@@ -53,7 +54,7 @@ class OverridingMethodRule implements Rule
 								'Method %s::%s() overrides final method %s::%s().',
 								$method->getDeclaringClass()->getDisplayName(),
 								$method->getName(),
-								$parent->getDisplayName(false),
+								$parent->getDisplayName($this->genericPrototypeMessage),
 								$parentConstructor->getName(),
 							))->nonIgnorable()->build(),
 						], $node, $scope);
@@ -74,7 +75,7 @@ class OverridingMethodRule implements Rule
 				'Method %s::%s() overrides final method %s::%s().',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototype->getDeclaringClass()->getDisplayName(false),
+				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
 			))->nonIgnorable()->build();
 		}
@@ -85,7 +86,7 @@ class OverridingMethodRule implements Rule
 					'Non-static method %s::%s() overrides static method %s::%s().',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototype->getDeclaringClass()->getDisplayName(false),
+					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				))->nonIgnorable()->build();
 			}
@@ -94,7 +95,7 @@ class OverridingMethodRule implements Rule
 				'Static method %s::%s() overrides non-static method %s::%s().',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototype->getDeclaringClass()->getDisplayName(false),
+				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
 			))->nonIgnorable()->build();
 		}
@@ -106,7 +107,7 @@ class OverridingMethodRule implements Rule
 					$method->isPrivate() ? 'Private' : 'Protected',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototype->getDeclaringClass()->getDisplayName(false),
+					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				))->nonIgnorable()->build();
 			}
@@ -115,7 +116,7 @@ class OverridingMethodRule implements Rule
 				'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototype->getDeclaringClass()->getDisplayName(false),
+				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
 			))->nonIgnorable()->build();
 		}
@@ -143,7 +144,7 @@ class OverridingMethodRule implements Rule
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$prototype->getTentativeReturnType()->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getDisplayName(false),
+					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				))->tip('Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.')->nonIgnorable()->build();
 			}
@@ -165,7 +166,7 @@ class OverridingMethodRule implements Rule
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getDisplayName(false),
+					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				))->nonIgnorable()->build();
 			} else {
@@ -175,7 +176,7 @@ class OverridingMethodRule implements Rule
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getDisplayName(false),
+					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				))->nonIgnorable()->build();
 			}

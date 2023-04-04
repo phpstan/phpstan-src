@@ -157,7 +157,7 @@ class StubValidator
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, $unresolvableTypeHelper, $phpVersion, true, false),
-			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true), true, new MethodParameterComparisonHelper($phpVersion)),
+			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true), true, new MethodParameterComparisonHelper($phpVersion, $container->getParameter('featureToggles')['genericPrototypeMessage']), $container->getParameter('featureToggles')['genericPrototypeMessage']),
 			new DuplicateDeclarationRule(),
 
 			// level 2

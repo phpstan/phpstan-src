@@ -25,7 +25,8 @@ class MethodSignatureRuleTest extends RuleTestCase
 			$phpVersion,
 			new MethodSignatureRule($this->reportMaybes, $this->reportStatic),
 			true,
-			new MethodParameterComparisonHelper($phpVersion),
+			new MethodParameterComparisonHelper($phpVersion, true),
+			true,
 		);
 	}
 
@@ -384,7 +385,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-7652.php'], [
 			[
-				'Return type mixed of method Bug7652\Options::offsetGet() is not covariant with tentative return type mixed of method ArrayAccess::offsetGet().',
+				'Return type mixed of method Bug7652\Options::offsetGet() is not covariant with tentative return type mixed of method ArrayAccess<key-of<TArray of array>,value-of<TArray of array>>::offsetGet().',
 				23,
 				'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
 			],

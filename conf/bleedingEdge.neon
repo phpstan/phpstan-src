@@ -35,3 +35,4 @@ parameters:
 		allInvalidPhpDocs: true
 		strictStaticMethodTemplateTypeVariance: true
 		propertyVariance: true
+		genericPrototypeMessage: true

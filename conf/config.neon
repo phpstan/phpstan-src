@@ -65,6 +65,7 @@ parameters:
 		allInvalidPhpDocs: false
 		strictStaticMethodTemplateTypeVariance: false
 		propertyVariance: false
+		genericPrototypeMessage: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -300,6 +301,7 @@ parametersSchema:
 		allInvalidPhpDocs: bool()
 		strictStaticMethodTemplateTypeVariance: bool()
 		propertyVariance: bool()
+		genericPrototypeMessage: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -1085,6 +1087,8 @@ services:
 
 	-
 		class: PHPStan\Rules\Methods\MethodParameterComparisonHelper
+		arguments:
+			genericPrototypeMessage: %featureToggles.genericPrototypeMessage%
 
 	-
 		class: PHPStan\Rules\MissingTypehintCheck

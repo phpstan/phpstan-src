@@ -84,7 +84,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 				115,
 			],
 			[
-				'Parameter #1 $size (int) of method OverridingFinalMethod\FixedArray::setSize() is not ' . $contravariantMessage . ' with parameter #1 $size (mixed) of method SplFixedArray<mixed>::setSize().',
+				'Parameter #1 $size (int) of method OverridingFinalMethod\FixedArray::setSize() is not ' . $contravariantMessage . ' with parameter #1 $size (mixed) of method SplFixedArray::setSize().',
 				125,
 			],
 			[
@@ -120,7 +120,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 				280,
 			],
 			[
-				'Parameter #1 $index (int) of method OverridingFinalMethod\FixedArrayOffsetExists::offsetExists() is not ' . $contravariantMessage . ' with parameter #1 $offset (mixed) of method ArrayAccess<int,mixed>::offsetExists().',
+				'Parameter #1 $index (int) of method OverridingFinalMethod\FixedArrayOffsetExists::offsetExists() is not ' . $contravariantMessage . ' with parameter #1 $offset (mixed) of method ArrayAccess::offsetExists().',
 				313,
 			],
 		];
@@ -472,37 +472,37 @@ class OverridingMethodRuleTest extends RuleTestCase
 				80100,
 				[
 					[
-						'Return type mixed of method TentativeReturnTypes\Foo::getIterator() is not covariant with tentative return type Traversable of method IteratorAggregate<mixed,mixed>::getIterator().',
+						'Return type mixed of method TentativeReturnTypes\Foo::getIterator() is not covariant with tentative return type Traversable of method IteratorAggregate::getIterator().',
 						8,
 						'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
 					],
 					[
-						'Return type string of method TentativeReturnTypes\Lorem::getIterator() is not covariant with tentative return type Traversable of method IteratorAggregate<mixed,mixed>::getIterator().',
+						'Return type string of method TentativeReturnTypes\Lorem::getIterator() is not covariant with tentative return type Traversable of method IteratorAggregate::getIterator().',
 						40,
 						'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
 					],
 					[
-						'Return type mixed of method TentativeReturnTypes\UntypedIterator::current() is not covariant with tentative return type mixed of method Iterator<mixed,mixed>::current().',
+						'Return type mixed of method TentativeReturnTypes\UntypedIterator::current() is not covariant with tentative return type mixed of method Iterator::current().',
 						75,
 						'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
 					],
 					[
-						'Return type mixed of method TentativeReturnTypes\UntypedIterator::next() is not covariant with tentative return type void of method Iterator<mixed,mixed>::next().',
+						'Return type mixed of method TentativeReturnTypes\UntypedIterator::next() is not covariant with tentative return type void of method Iterator::next().',
 						79,
 						'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
 					],
 					[
-						'Return type mixed of method TentativeReturnTypes\UntypedIterator::key() is not covariant with tentative return type mixed of method Iterator<mixed,mixed>::key().',
+						'Return type mixed of method TentativeReturnTypes\UntypedIterator::key() is not covariant with tentative return type mixed of method Iterator::key().',
 						83,
 						'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
 					],
 					[
-						'Return type mixed of method TentativeReturnTypes\UntypedIterator::valid() is not covariant with tentative return type bool of method Iterator<mixed,mixed>::valid().',
+						'Return type mixed of method TentativeReturnTypes\UntypedIterator::valid() is not covariant with tentative return type bool of method Iterator::valid().',
 						87,
 						'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
 					],
 					[
-						'Return type mixed of method TentativeReturnTypes\UntypedIterator::rewind() is not covariant with tentative return type void of method Iterator<mixed,mixed>::rewind().',
+						'Return type mixed of method TentativeReturnTypes\UntypedIterator::rewind() is not covariant with tentative return type void of method Iterator::rewind().',
 						91,
 						'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
 					],

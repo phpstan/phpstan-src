@@ -47,7 +47,7 @@ class MethodParameterComparisonHelper
 					'Method %s::%s() overrides method %s::%s() but misses parameter #%d $%s.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototype->getDeclaringClass()->getDisplayName(),
+					$prototype->getDeclaringClass()->getDisplayName(false),
 					$prototype->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
@@ -73,7 +73,7 @@ class MethodParameterComparisonHelper
 						$method->getName(),
 						$i + 1,
 						$prototypeParameter->getName(),
-						$prototype->getDeclaringClass()->getDisplayName(),
+						$prototype->getDeclaringClass()->getDisplayName(false),
 						$prototype->getName(),
 					));
 
@@ -92,7 +92,7 @@ class MethodParameterComparisonHelper
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototype->getDeclaringClass()->getDisplayName(),
+					$prototype->getDeclaringClass()->getDisplayName(false),
 					$prototype->getName(),
 				));
 
@@ -133,7 +133,7 @@ class MethodParameterComparisonHelper
 							$method->getName(),
 							$i + 1,
 							$prototypeParameter->getName(),
-							$prototype->getDeclaringClass()->getDisplayName(),
+							$prototype->getDeclaringClass()->getDisplayName(false),
 							$prototype->getName(),
 						));
 
@@ -181,7 +181,7 @@ class MethodParameterComparisonHelper
 							$i + $j + 1,
 							$remainingPrototypeParameter->getName(),
 							$remainingPrototypeParameter->getNativeType()->describe(VerbosityLevel::typeOnly()),
-							$prototype->getDeclaringClass()->getDisplayName(),
+							$prototype->getDeclaringClass()->getDisplayName(false),
 							$prototype->getName(),
 						));
 
@@ -201,7 +201,7 @@ class MethodParameterComparisonHelper
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototype->getDeclaringClass()->getDisplayName(),
+					$prototype->getDeclaringClass()->getDisplayName(false),
 					$prototype->getName(),
 				));
 
@@ -223,7 +223,7 @@ class MethodParameterComparisonHelper
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototype->getDeclaringClass()->getDisplayName(),
+					$prototype->getDeclaringClass()->getDisplayName(false),
 					$prototype->getName(),
 				));
 
@@ -253,7 +253,7 @@ class MethodParameterComparisonHelper
 						$i + 1,
 						$prototypeParameter->getName(),
 						$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-						$prototype->getDeclaringClass()->getDisplayName(),
+						$prototype->getDeclaringClass()->getDisplayName(false),
 						$prototype->getName(),
 					));
 
@@ -281,7 +281,7 @@ class MethodParameterComparisonHelper
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getDisplayName(),
+					$prototype->getDeclaringClass()->getDisplayName(false),
 					$prototype->getName(),
 				));
 
@@ -301,7 +301,7 @@ class MethodParameterComparisonHelper
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getDisplayName(),
+					$prototype->getDeclaringClass()->getDisplayName(false),
 					$prototype->getName(),
 				));
 

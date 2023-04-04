@@ -345,7 +345,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 			$this->returnType = TypehintHelper::decideTypeFromReflection(
 				$returnType,
 				$this->phpDocReturnType,
-				$this->declaringClass->getName(),
+				$this->declaringClass,
 			);
 		}
 
@@ -367,7 +367,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 			$this->nativeReturnType = TypehintHelper::decideTypeFromReflection(
 				$this->reflection->getReturnType(),
 				null,
-				$this->declaringClass->getName(),
+				$this->declaringClass,
 			);
 		}
 

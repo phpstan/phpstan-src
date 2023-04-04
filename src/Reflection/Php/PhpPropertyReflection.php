@@ -87,7 +87,7 @@ class PhpPropertyReflection implements PropertyReflection
 			$this->type = TypehintHelper::decideTypeFromReflection(
 				$this->nativeType,
 				$this->phpDocType,
-				$this->declaringClass->getName(),
+				$this->declaringClass,
 			);
 		}
 
@@ -134,7 +134,7 @@ class PhpPropertyReflection implements PropertyReflection
 			$this->finalNativeType = TypehintHelper::decideTypeFromReflection(
 				$this->nativeType,
 				null,
-				$this->declaringClass->getName(),
+				$this->declaringClass,
 			);
 		}
 

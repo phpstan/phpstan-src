@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -13,6 +14,7 @@ use ReflectionUnionType;
 use function array_map;
 use function count;
 use function get_class;
+use function is_string;
 use function sprintf;
 use function str_ends_with;
 use function strtolower;
@@ -20,7 +22,7 @@ use function strtolower;
 class TypehintHelper
 {
 
-	private static function getTypeObjectFromTypehint(string $typeString, ?string $selfClass): Type
+	private static function getTypeObjectFromTypehint(string $typeString, ClassReflection|string|null $selfClass): Type
 	{
 		switch (strtolower($typeString)) {
 			case 'int':
@@ -48,20 +50,36 @@ class TypehintHelper
 			case 'mixed':
 				return new MixedType(true);
 			case 'self':
+				if ($selfClass instanceof ClassReflection) {
+					$selfClass = $selfClass->getName();
+				}
 				return $selfClass !== null ? new ObjectType($selfClass) : new ErrorType();
 			case 'parent':
 				$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-				if ($selfClass !== null && $reflectionProvider->hasClass($selfClass)) {
-					$classReflection = $reflectionProvider->getClass($selfClass);
-					if ($classReflection->getParentClass() !== null) {
-						return new ObjectType($classReflection->getParentClass()->getName());
+				if (is_string($selfClass)) {
+					if ($reflectionProvider->hasClass($selfClass)) {
+						$selfClass = $reflectionProvider->getClass($selfClass);
+					} else {
+						$selfClass = null;
+					}
+				}
+				if ($selfClass !== null) {
+					if ($selfClass->getParentClass() !== null) {
+						return new ObjectType($selfClass->getParentClass()->getName());
 					}
 				}
 				return new NonexistentParentClassType();
 			case 'static':
 				$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-				if ($selfClass !== null && $reflectionProvider->hasClass($selfClass)) {
-					return new StaticType($reflectionProvider->getClass($selfClass));
+				if (is_string($selfClass)) {
+					if ($reflectionProvider->hasClass($selfClass)) {
+						 $selfClass = $reflectionProvider->getClass($selfClass);
+					} else {
+						$selfClass = null;
+					}
+				}
+				if ($selfClass !== null) {
+					return new StaticType($selfClass);
 				}
 
 				return new ErrorType();
@@ -78,7 +96,7 @@ class TypehintHelper
 	public static function decideTypeFromReflection(
 		?ReflectionType $reflectionType,
 		?Type $phpDocType = null,
-		?string $selfClass = null,
+		ClassReflection|string|null $selfClass = null,
 		bool $isVariadic = false,
 	): Type
 	{

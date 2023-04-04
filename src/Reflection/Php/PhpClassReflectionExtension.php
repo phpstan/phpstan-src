@@ -749,7 +749,7 @@ class PhpClassReflectionExtension
 		$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 			$methodReflection->getReturnType(),
 			null,
-			$declaringClass->getName(),
+			$declaringClass,
 		);
 		$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
 		$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;

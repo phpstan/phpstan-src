@@ -566,6 +566,7 @@ services:
 		class: PHPStan\PhpDocParser\Parser\PhpDocParser
 		arguments:
 			requireWhitespaceBeforeDescription: %featureToggles.phpDocParserRequireWhitespaceBeforeDescription%
+			preserveTypeAliasesWithInvalidTypes: true
 
 	-
 		class: PHPStan\PhpDoc\ConstExprParserFactory

@@ -963,4 +963,23 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9142(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/bug-9142.php'], [
+			[
+				'Strict comparison using === between $this(Bug9142\MyEnum) and Bug9142\MyEnum::Three will always evaluate to false.',
+				18,
+			],
+			[
+				'Strict comparison using === between Bug9142\MyEnum and Bug9142\MyEnum::Three will always evaluate to false.',
+				31,
+			],
+		]);
+	}
+
 }

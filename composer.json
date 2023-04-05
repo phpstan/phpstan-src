@@ -74,9 +74,6 @@
 	},
 	"extra": {
 		"patches": {
-			"brianium/paratest": [
-				"patches/paratest.patch"
-			],
 			"hoa/iterator": [
 				"patches/Buffer.patch",
 				"patches/Lookahead.patch"

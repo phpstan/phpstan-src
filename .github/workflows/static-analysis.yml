@@ -90,6 +90,10 @@ jobs:
           ini-file: development
           extensions: mbstring
 
+      - name: "Paratest patch"
+        if: matrix.php-version == '7.2'
+        run: composer config extra.patches.brianium/paratest --json --merge '["patches/paratest.patch"]'
+
       - name: "Downgrade PHPUnit"
         if: matrix.php-version == '7.2'
         run: "composer require --dev phpunit/phpunit:^8.5.31 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"

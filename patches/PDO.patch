@@ -1,6 +1,3 @@
-@package jetbrains/phpstorm-stubs
-@version dev-master
-
 --- PDO/PDO.php	2021-12-26 15:44:39.000000000 +0100
 +++ PDO/PDO.php	2022-01-03 22:54:21.000000000 +0100
 @@ -1415,7 +1415,7 @@

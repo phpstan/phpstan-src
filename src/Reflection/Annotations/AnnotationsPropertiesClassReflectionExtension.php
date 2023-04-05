@@ -5,8 +5,8 @@ namespace PHPStan\Reflection\Annotations;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\NeverType;
 
 class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
@@ -41,19 +41,15 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 		$propertyTags = $classReflection->getPropertyTags();
 		if (isset($propertyTags[$propertyName])) {
 			$propertyTag = $propertyTags[$propertyName];
-			$defaultType = $propertyTag->getReadableType() ?? $propertyTag->getWritableType();
-			if ($defaultType === null) {
-				throw new ShouldNotHappenException();
-			}
 
 			return new AnnotationPropertyReflection(
 				$declaringClass,
 				TemplateTypeHelper::resolveTemplateTypes(
-					$propertyTag->getReadableType() ?? $defaultType,
+					$propertyTag->getReadableType() ?? new NeverType(),
 					$classReflection->getActiveTemplateTypeMap(),
 				),
 				TemplateTypeHelper::resolveTemplateTypes(
-					$propertyTag->getWritableType() ?? $defaultType,
+					$propertyTag->getWritableType() ?? new NeverType(),
 					$classReflection->getActiveTemplateTypeMap(),
 				),
 				$propertyTags[$propertyName]->isReadable(),

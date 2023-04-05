@@ -2,6 +2,7 @@
 
 namespace AsymmetricProperties;
 
+use AllowDynamicProperties;
 use function PHPStan\Testing\assertType;
 
 /**

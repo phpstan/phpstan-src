@@ -230,7 +230,7 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 					],
 					'asymmetricPropertyRx' => [
 						'class' => Asymmetric::class,
-						'type' => 'int',
+						'type' => 'int|string',
 						'writable' => true,
 						'readable' => true,
 					],

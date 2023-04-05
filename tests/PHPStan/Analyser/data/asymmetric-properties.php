@@ -22,7 +22,7 @@ class Foo
 	{
 		assertType('int', $this->asymmetricPropertyRw);
 		assertType('int', $this->asymmetricPropertyXw);
-		assertType('int', $this->asymmetricPropertyRx);
+		assertType('int|string', $this->asymmetricPropertyRx);
 	}
 
 }

@@ -220,6 +220,7 @@ jobs:
 
       - name: "Paratest patch"
         run: composer config extra.patches.brianium/paratest --json --merge '["patches/paratest.patch"]'
+        shell: bash
 
       - name: "Downgrade PHPUnit"
         run: "composer require --dev phpunit/phpunit:^8.5.31 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"

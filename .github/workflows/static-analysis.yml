@@ -93,6 +93,7 @@ jobs:
       - name: "Paratest patch"
         if: matrix.php-version == '7.2'
         run: composer config extra.patches.brianium/paratest --json --merge '["patches/paratest.patch"]'
+        shell: bash
 
       - name: "Downgrade PHPUnit"
         if: matrix.php-version == '7.2'

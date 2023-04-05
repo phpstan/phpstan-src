@@ -39,7 +39,7 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 		}
 		$classType = $scope->getType($node->getArgs()[1]->value);
 
-		if (!$classType instanceof ConstantStringType && !$context->truthy()) {
+		if (!$classType instanceof ConstantStringType && !$context->true()) {
 			return new SpecifiedTypes([], []);
 		}
 

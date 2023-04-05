@@ -34,7 +34,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (!$context->truthy() || count($node->getArgs()) < 2) {
+		if (!$context->true() || count($node->getArgs()) < 2) {
 			return new SpecifiedTypes();
 		}
 

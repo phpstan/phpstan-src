@@ -52,9 +52,14 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		$specifiedTypes = new SpecifiedTypes();
 
 		if (
-			$context->truthy()
-			|| count(TypeUtils::getConstantScalars($arrayValueType)) > 0
-			|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
+			$context->true()
+			|| (
+				$context->false()
+				&& (
+					count(TypeUtils::getConstantScalars($arrayValueType)) > 0
+					|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
+				)
+			)
 		) {
 			$specifiedTypes = $this->typeSpecifier->create(
 				$node->getArgs()[0]->value,
@@ -66,11 +71,16 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		}
 
 		if (
-			$context->truthy()
-			|| count(TypeUtils::getConstantScalars($needleType)) > 0
-			|| count(TypeUtils::getEnumCaseObjects($needleType)) > 0
+			$context->true()
+			|| (
+				$context->false()
+				&& (
+					count(TypeUtils::getConstantScalars($needleType)) > 0
+					|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
+				)
+			)
 		) {
-			if ($context->truthy()) {
+			if ($context->true()) {
 				$arrayValueType = TypeCombinator::union($arrayValueType, $needleType);
 			} else {
 				$arrayValueType = TypeCombinator::remove($arrayValueType, $needleType);
@@ -85,7 +95,7 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			));
 		}
 
-		if ($context->truthy() && $arrayType->isArray()->yes()) {
+		if ($context->true() && $arrayType->isArray()->yes()) {
 			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
 				$node->getArgs()[1]->value,
 				TypeCombinator::intersect($arrayType, new NonEmptyArrayType()),

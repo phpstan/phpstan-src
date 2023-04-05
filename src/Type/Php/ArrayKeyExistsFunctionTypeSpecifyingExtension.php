@@ -61,7 +61,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		if (!$keyType instanceof ConstantIntegerType
 			&& !$keyType instanceof ConstantStringType
 			&& !$arrayType->isIterableAtLeastOnce()->no()) {
-			if ($context->truthy()) {
+			if ($context->true()) {
 				$arrayKeyType = $arrayType->getIterableKeyType();
 				if ($keyType->isString()->yes()) {
 					$arrayKeyType = $arrayKeyType->toString();
@@ -95,7 +95,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 			return new SpecifiedTypes();
 		}
 
-		if ($context->truthy()) {
+		if ($context->true()) {
 			$type = TypeCombinator::intersect(
 				new ArrayType(new MixedType(), new MixedType()),
 				new HasOffsetType($keyType),

@@ -99,4 +99,10 @@ class UnreachableTernaryElseBranchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-3019.php'], []);
 	}
 
+	public function testBug7686(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-7686.php'], []);
+	}
+
 }

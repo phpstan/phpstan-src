@@ -47,5 +47,15 @@ class HelloWorld
 			\Foo::TEST;
 			\ClassConstFetchDefined\Foo::TEST;
 		}
+
+		if (defined('Foo::TEST') === true) {
+			Foo::TEST;
+			\Foo::TEST;
+			\ClassConstFetchDefined\Foo::TEST;
+		} else {
+			Foo::TEST;
+			\Foo::TEST;
+			\ClassConstFetchDefined\Foo::TEST;
+		}
 	}
 }

@@ -35,7 +35,7 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 	{
 		return $functionReflection->getName() === 'defined'
 			&& count($node->getArgs()) >= 1
-			&& $context->truthy();
+			&& $context->true();
 	}
 
 	public function specifyTypes(

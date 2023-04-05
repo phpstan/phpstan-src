@@ -40,7 +40,7 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 	): bool
 	{
 		return $functionReflection->getName() === 'property_exists'
-			&& $context->truthy()
+			&& $context->true()
 			&& count($node->getArgs()) >= 2;
 	}
 

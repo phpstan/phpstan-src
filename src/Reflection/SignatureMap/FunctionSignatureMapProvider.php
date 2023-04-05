@@ -32,6 +32,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		private SignatureMapParser $parser,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private PhpVersion $phpVersion,
+		private bool $stricterFunctionMap,
 	)
 	{
 	}
@@ -177,6 +178,15 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 			}
 
 			$signatureMap = array_change_key_case($signatureMap, CASE_LOWER);
+
+			if ($this->stricterFunctionMap) {
+				$stricterFunctionMap = require __DIR__ . '/../../../resources/functionMap_bleedingEdge.php';
+				if (!is_array($stricterFunctionMap)) {
+					throw new ShouldNotHappenException('Signature map could not be loaded.');
+				}
+
+				$signatureMap = $this->computeSignatureMap($signatureMap, $stricterFunctionMap);
+			}
 
 			if ($this->phpVersion->getVersionId() >= 70400) {
 				$php74MapDelta = require __DIR__ . '/../../../resources/functionMap_php74delta.php';

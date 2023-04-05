@@ -36,3 +36,4 @@ parameters:
 		strictStaticMethodTemplateTypeVariance: true
 		propertyVariance: true
 		genericPrototypeMessage: true
+		stricterFunctionMap: true

@@ -66,6 +66,7 @@ parameters:
 		strictStaticMethodTemplateTypeVariance: false
 		propertyVariance: false
 		genericPrototypeMessage: false
+		stricterFunctionMap: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -302,6 +303,7 @@ parametersSchema:
 		strictStaticMethodTemplateTypeVariance: bool()
 		propertyVariance: bool()
 		genericPrototypeMessage: bool()
+		stricterFunctionMap: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -936,6 +938,8 @@ services:
 
 	-
 		class: PHPStan\Reflection\SignatureMap\FunctionSignatureMapProvider
+		arguments:
+			stricterFunctionMap: %featureToggles.stricterFunctionMap%
 		autowired:
 			- PHPStan\Reflection\SignatureMap\FunctionSignatureMapProvider
 

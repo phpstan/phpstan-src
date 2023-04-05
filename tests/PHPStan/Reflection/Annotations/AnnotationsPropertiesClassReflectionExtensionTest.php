@@ -32,7 +32,7 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 					'otherTestReadOnly' => [
 						'class' => Foo::class,
 						'readableType' => 'OtherNamespace\Ipsum',
-						'writableType' => 'OtherNamespace\Ipsum',
+						'writableType' => '*NEVER*',
 						'writable' => false,
 						'readable' => true,
 					],
@@ -86,7 +86,7 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 					'otherTestReadOnly' => [
 						'class' => Foo::class,
 						'readableType' => 'OtherNamespace\Ipsum',
-						'writableType' => 'OtherNamespace\Ipsum',
+						'writableType' => '*NEVER*',
 						'writable' => false,
 						'readable' => true,
 					],
@@ -140,7 +140,7 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 					'otherTestReadOnly' => [
 						'class' => Foo::class,
 						'readableType' => 'OtherNamespace\Ipsum',
-						'writableType' => 'OtherNamespace\Ipsum',
+						'writableType' => '*NEVER*',
 						'writable' => false,
 						'readable' => true,
 					],
@@ -174,7 +174,7 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 					],
 					'writeOnlyProperty' => [
 						'class' => Baz::class,
-						'readableType' => 'AnnotationsProperties\Lorem|null',
+						'readableType' => '*NEVER*',
 						'writableType' => 'AnnotationsProperties\Lorem|null',
 						'writable' => true,
 						'readable' => false,
@@ -194,7 +194,7 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 					'otherTestReadOnly' => [
 						'class' => Foo::class,
 						'readableType' => 'OtherNamespace\Ipsum',
-						'writableType' => 'OtherNamespace\Ipsum',
+						'writableType' => '*NEVER*',
 						'writable' => false,
 						'readable' => true,
 					],
@@ -228,7 +228,7 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 					],
 					'writeOnlyProperty' => [
 						'class' => Baz::class,
-						'readableType' => 'AnnotationsProperties\Lorem|null',
+						'readableType' => '*NEVER*',
 						'writableType' => 'AnnotationsProperties\Lorem|null',
 						'writable' => true,
 						'readable' => false,

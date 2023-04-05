@@ -52,7 +52,7 @@ class AnnotationPropertyReflection implements PropertyReflection
 
 	public function canChangeTypeAfterAssignment(): bool
 	{
-		return true;
+		return $this->readableType->equals($this->writableType);
 	}
 
 	public function isReadable(): bool

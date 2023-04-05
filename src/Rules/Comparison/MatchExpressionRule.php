@@ -50,7 +50,10 @@ class MatchExpressionRule implements Rule
 		$armsCount = count($node->getArms());
 		$hasDefault = false;
 		foreach ($node->getArms() as $i => $arm) {
-			if ($nextArmIsDeadForNativeType || $nextArmIsDeadForType && $this->treatPhpDocTypesAsCertain) {
+			if (
+				$nextArmIsDeadForNativeType
+				|| ($nextArmIsDeadForType && $this->treatPhpDocTypesAsCertain)
+			) {
 				if (!$this->disableUnreachable) {
 					$errors[] = RuleErrorBuilder::message('Match arm is unreachable because previous comparison is always true.')->line($arm->getLine())->build();
 				}

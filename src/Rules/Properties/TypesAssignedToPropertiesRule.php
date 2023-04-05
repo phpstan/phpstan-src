@@ -55,6 +55,10 @@ class TypesAssignedToPropertiesRule implements Rule
 		Node\Expr $assignedExpr,
 	): array
 	{
+		if (!$propertyReflection->isWritable()) {
+			return [];
+		}
+
 		$propertyType = $propertyReflection->getWritableType();
 		$scope = $propertyReflection->getScope();
 		$assignedValueType = $scope->getType($assignedExpr);

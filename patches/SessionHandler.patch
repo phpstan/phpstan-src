@@ -1,6 +1,3 @@
-@package jetbrains/phpstorm-stubs
-@version dev-master
-
 --- session/SessionHandler.php	2021-11-04 14:27:30.000000000 +0100
 +++ session/SessionHandler.php	2021-11-05 11:26:14.000000000 +0100
 @@ -147,7 +147,7 @@

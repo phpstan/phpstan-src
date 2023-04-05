@@ -1,8 +1,7 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Tests;
+namespace PHPStan\Testing;
 
-use PHPStan\Testing\TypeInferenceTestCase;
 use PHPUnit\Framework\AssertionFailedError;
 
 final class TypeInferenceTestCaseTest extends TypeInferenceTestCase

@@ -26,6 +26,7 @@ use function in_array;
 use function is_string;
 use function sprintf;
 use function stripos;
+use function strtolower;
 
 /** @api */
 abstract class TypeInferenceTestCase extends PHPStanTestCase
@@ -176,7 +177,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				$assertFunctions = [
 					'assertType' => 'PHPStan\\Testing\\assertType',
 					'assertNativeType' => 'PHPStan\\Testing\\assertNativeType',
-					'assertVariableCertainty' => 'PHPStan\\Testing\\assertVariableCertainty'
+					'assertVariableCertainty' => 'PHPStan\\Testing\\assertVariableCertainty',
 				];
 				foreach ($assertFunctions as $assertFn => $fqFunctionName) {
 					if (stripos($functionName, $assertFn) === false) {

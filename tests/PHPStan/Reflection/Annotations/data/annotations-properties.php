@@ -58,6 +58,22 @@ class BazBaz extends Baz
 }
 
 /**
+ * @property-read int $asymmetricPropertyRw
+ * @property-write int|string $asymmetricPropertyRw
+ *
+ * @property int $asymmetricPropertyXw
+ * @property-write int|string $asymmetricPropertyXw
+ *
+ * @property-read int $asymmetricPropertyRx
+ * @property int|string $asymmetricPropertyRx
+ */
+#[AllowDynamicProperties]
+class Asymmetric
+{
+
+}
+
+/**
  * @property FooInterface $interfaceProperty
  */
 interface FooInterface

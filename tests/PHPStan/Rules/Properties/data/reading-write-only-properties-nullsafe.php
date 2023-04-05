@@ -6,5 +6,6 @@ function (?Foo $foo): void
 {
 	echo $foo?->readOnlyProperty;
 	echo $foo?->usualProperty;
+	echo $foo?->asymmetricProperty;
 	echo $foo?->writeOnlyProperty;
 };

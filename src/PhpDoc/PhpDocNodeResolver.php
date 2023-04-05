@@ -32,6 +32,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function array_reverse;
@@ -103,21 +104,26 @@ class PhpDocNodeResolver
 
 				$resolved[$propertyName] = new PropertyTag(
 					$propertyType,
-					true,
-					true,
+					$propertyType,
+					$propertyType,
 				);
 			}
 		}
 
+		$readable = [];
 		foreach (['@property-read', '@phpstan-property-read'] as $tagName) {
 			foreach ($phpDocNode->getPropertyReadTagValues($tagName) as $tagValue) {
 				$propertyName = substr($tagValue->propertyName, 1);
 				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
-				$resolved[$propertyName] = new PropertyTag(
+				if (array_key_exists($propertyName, $resolved)) {
+					continue;
+				}
+
+				$readable[$propertyName] = new PropertyTag(
 					$propertyType,
-					true,
-					false,
+					$propertyType,
+					null,
 				);
 			}
 		}
@@ -127,12 +133,31 @@ class PhpDocNodeResolver
 				$propertyName = substr($tagValue->propertyName, 1);
 				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
+				if (array_key_exists($propertyName, $resolved)) {
+					continue;
+				}
+
+				if (array_key_exists($propertyName, $readable)) {
+					$readableProperty = $readable[$propertyName];
+					$resolved[$propertyName] = new PropertyTag(
+						$propertyType,
+						$readableProperty->getReadableType(),
+						$propertyType,
+					);
+					unset($readable[$propertyName]);
+					continue;
+				}
+
 				$resolved[$propertyName] = new PropertyTag(
 					$propertyType,
-					false,
-					true,
+					null,
+					$propertyType,
 				);
 			}
+		}
+
+		foreach ($readable as $propertyName => $tag) {
+			$resolved[$propertyName] = $tag;
 		}
 
 		return $resolved;

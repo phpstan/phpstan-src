@@ -34,8 +34,14 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertCount(0, $resolvedA->getParamTags());
 		$this->assertCount(2, $resolvedA->getPropertyTags());
 		$this->assertNull($resolvedA->getReturnTag());
-		$this->assertSame('float|int', $resolvedA->getPropertyTags()['numericBazBazProperty']->getType()->describe(VerbosityLevel::precise()));
-		$this->assertSame('X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getType()->describe(VerbosityLevel::precise()));
+		$this->assertNotNull($resolvedA->getPropertyTags()['numericBazBazProperty']->getReadableType());
+		$this->assertNotNull($resolvedA->getPropertyTags()['numericBazBazProperty']->getWritableType());
+		$this->assertSame('float|int', $resolvedA->getPropertyTags()['numericBazBazProperty']->getReadableType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('float|int', $resolvedA->getPropertyTags()['numericBazBazProperty']->getWritableType()->describe(VerbosityLevel::precise()));
+		$this->assertNotNull($resolvedA->getPropertyTags()['singleLetterObjectName']->getReadableType());
+		$this->assertNotNull($resolvedA->getPropertyTags()['singleLetterObjectName']->getWritableType());
+		$this->assertSame('X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getReadableType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getWritableType()->describe(VerbosityLevel::precise()));
 
 		$this->assertCount(6, $resolvedA->getMethodTags());
 		$this->assertArrayNotHasKey('complicatedParameters', $resolvedA->getMethodTags()); // ambiguous parameter types

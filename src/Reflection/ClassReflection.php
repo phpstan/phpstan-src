@@ -199,7 +199,6 @@ class ClassReflection
 				$extendedType = TemplateTypeHelper::resolveTemplateTypes(
 					$extendedType,
 					$this->getPossiblyIncompleteActiveTemplateTypeMap(),
-					true,
 				);
 			}
 
@@ -1266,7 +1265,7 @@ class ClassReflection
 		$map = [];
 		$i = 0;
 		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
-			$map[$tag->getName()] = $types[$i] ?? new ErrorType();
+			$map[$tag->getName()] = $types[$i] ?? $tag->getBound();
 			$i++;
 		}
 

@@ -29,3 +29,12 @@ class OtherGenericClass{}
 abstract class BaseModel{}
 
 class Model extends BaseModel{}
+
+/**
+ * @template T of Model
+ * @extends GenericClass<T>
+ */
+class ChildGenericGenericClass extends GenericClass
+{
+
+}

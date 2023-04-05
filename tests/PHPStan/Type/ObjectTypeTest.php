@@ -4,6 +4,10 @@ namespace PHPStan\Type;
 
 use ArrayAccess;
 use ArrayObject;
+use Bug4008\BaseModel;
+use Bug4008\ChildGenericGenericClass;
+use Bug4008\GenericClass;
+use Bug4008\Model;
 use Bug8850\UserInSessionInRoleEndpointExtension;
 use Bug9006\TestInterface;
 use Closure;
@@ -663,6 +667,28 @@ class ObjectTypeTest extends PHPStanTestCase
 			$expectedEnumCase = $expectedEnumCases[$i];
 			$this->assertTrue($expectedEnumCase->equals($enumCase), sprintf('%s->equals(%s)', $expectedEnumCase->describe(VerbosityLevel::precise()), $enumCase->describe(VerbosityLevel::precise())));
 		}
+	}
+
+	public function testClassReflectionWithTemplateBound(): void
+	{
+		$type = new ObjectType(GenericClass::class);
+		$classReflection = $type->getClassReflection();
+		$this->assertNotNull($classReflection);
+		$tModlel = $classReflection->getActiveTemplateTypeMap()->getType('TModlel');
+		$this->assertNotNull($tModlel);
+		$this->assertSame(BaseModel::class, $tModlel->describe(VerbosityLevel::precise()));
+	}
+
+	public function testClassReflectionParentWithTemplateBound(): void
+	{
+		$type = new ObjectType(ChildGenericGenericClass::class);
+		$classReflection = $type->getClassReflection();
+		$this->assertNotNull($classReflection);
+		$ancestor = $classReflection->getAncestorWithClassName(GenericClass::class);
+		$this->assertNotNull($ancestor);
+		$tModlel = $ancestor->getActiveTemplateTypeMap()->getType('TModlel');
+		$this->assertNotNull($tModlel);
+		$this->assertSame(Model::class, $tModlel->describe(VerbosityLevel::precise()));
 	}
 
 }

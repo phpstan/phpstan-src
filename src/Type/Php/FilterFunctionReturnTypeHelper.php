@@ -75,6 +75,18 @@ final class FilterFunctionReturnTypeHelper
 			? new NullType()
 			: new ConstantBooleanType(false));
 
+		$inputIsArray = $inputType->isArray();
+		$hasRequireArrayFlag = $this->hasFlag($this->getConstant('FILTER_REQUIRE_ARRAY'), $flagsType);
+		if ($inputIsArray->no() && $hasRequireArrayFlag) {
+			return $defaultType;
+		}
+
+		$hasForceArrayFlag = $this->hasFlag($this->getConstant('FILTER_FORCE_ARRAY'), $flagsType);
+		if ($inputIsArray->yes() && ($hasRequireArrayFlag || $hasForceArrayFlag)) {
+			$inputArrayKeyType = $inputType->getIterableKeyType();
+			$inputType = $inputType->getIterableValueType();
+		}
+
 		if ($inputType->isScalar()->no() && $inputType->isNull()->no()) {
 			return $defaultType;
 		}
@@ -93,14 +105,18 @@ final class FilterFunctionReturnTypeHelper
 			$type = TypeCombinator::intersect($type, $accessory);
 		}
 
+		if ($hasRequireArrayFlag) {
+			$type = new ArrayType($inputArrayKeyType ?? $mixedType, $type);
+		}
+
 		if ($exactType === null || $hasOptions->maybe() || (!$inputType->equals($type) && $inputType->isSuperTypeOf($type)->yes())) {
 			if ($defaultType->isSuperTypeOf($type)->no()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}
 		}
 
-		if ($this->hasFlag($this->getConstant('FILTER_FORCE_ARRAY'), $flagsType)) {
-			return new ArrayType(new MixedType(), $type);
+		if (!$hasRequireArrayFlag && $hasForceArrayFlag) {
+			return new ArrayType($inputArrayKeyType ?? $mixedType, $type);
 		}
 
 		return $type;

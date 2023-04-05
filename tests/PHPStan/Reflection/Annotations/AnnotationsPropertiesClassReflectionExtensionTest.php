@@ -255,13 +255,13 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 					'asymmetricPropertyXw' => [
 						'class' => Asymmetric::class,
 						'readableType' => 'int',
-						'writableType' => 'int',
+						'writableType' => 'int|string',
 						'writable' => true,
 						'readable' => true,
 					],
 					'asymmetricPropertyRx' => [
 						'class' => Asymmetric::class,
-						'readableType' => 'int|string',
+						'readableType' => 'int',
 						'writableType' => 'int|string',
 						'writable' => true,
 						'readable' => true,

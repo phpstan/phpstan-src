@@ -110,20 +110,20 @@ class PhpDocNodeResolver
 			}
 		}
 
-		$readable = [];
 		foreach (['@property-read', '@phpstan-property-read'] as $tagName) {
 			foreach ($phpDocNode->getPropertyReadTagValues($tagName) as $tagValue) {
 				$propertyName = substr($tagValue->propertyName, 1);
 				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
+				$writableType = null;
 				if (array_key_exists($propertyName, $resolved)) {
-					continue;
+					$writableType = $resolved[$propertyName]->getWritableType();
 				}
 
-				$readable[$propertyName] = new PropertyTag(
+				$resolved[$propertyName] = new PropertyTag(
 					$propertyType,
 					$propertyType,
-					null,
+					$writableType,
 				);
 			}
 		}
@@ -133,31 +133,17 @@ class PhpDocNodeResolver
 				$propertyName = substr($tagValue->propertyName, 1);
 				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
+				$readableType = null;
 				if (array_key_exists($propertyName, $resolved)) {
-					continue;
-				}
-
-				if (array_key_exists($propertyName, $readable)) {
-					$readableProperty = $readable[$propertyName];
-					$resolved[$propertyName] = new PropertyTag(
-						$propertyType,
-						$readableProperty->getReadableType(),
-						$propertyType,
-					);
-					unset($readable[$propertyName]);
-					continue;
+					$readableType = $resolved[$propertyName]->getReadableType();
 				}
 
 				$resolved[$propertyName] = new PropertyTag(
-					$propertyType,
-					null,
+					$readableType ?? $propertyType,
+					$readableType,
 					$propertyType,
 				);
 			}
-		}
-
-		foreach ($readable as $propertyName => $tag) {
-			$resolved[$propertyName] = $tag;
 		}
 
 		return $resolved;

@@ -25,6 +25,6 @@ class PhpstanProperties
 		assertType('string', $this->base);
 		assertType('int', $this->foo);
 		assertType('int', $this->bar);
-		assertType('int', $this->baz);
+		// assertType('int', $this->baz); write only
 	}
 }

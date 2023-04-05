@@ -486,7 +486,20 @@ class DependencyResolver
 			}
 
 			foreach ($classReflection->getPropertyTags() as $propertyTag) {
-				foreach ($propertyTag->getType()->getReferencedClasses() as $referencedClass) {
+				if ($propertyTag->isReadable()) {
+					foreach ($propertyTag->getReadableType()->getReferencedClasses() as $referencedClass) {
+						if (!$this->reflectionProvider->hasClass($referencedClass)) {
+							continue;
+						}
+						$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+					}
+				}
+
+				if (!$propertyTag->isWritable()) {
+					continue;
+				}
+
+				foreach ($propertyTag->getWritableType()->getReferencedClasses() as $referencedClass) {
 					if (!$this->reflectionProvider->hasClass($referencedClass)) {
 						continue;
 					}

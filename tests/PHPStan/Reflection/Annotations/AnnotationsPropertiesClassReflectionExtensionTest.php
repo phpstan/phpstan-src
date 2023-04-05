@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Annotations;
 
+use AnnotationsProperties\Asymmetric;
 use AnnotationsProperties\Bar;
 use AnnotationsProperties\Baz;
 use AnnotationsProperties\BazBaz;
@@ -207,6 +208,29 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 					'numericBazBazProperty' => [
 						'class' => BazBaz::class,
 						'type' => 'float|int',
+						'writable' => true,
+						'readable' => true,
+					],
+				],
+			],
+			[
+				Asymmetric::class,
+				[
+					'asymmetricPropertyRw' => [
+						'class' => Asymmetric::class,
+						'type' => 'int',
+						'writable' => true,
+						'readable' => true,
+					],
+					'asymmetricPropertyXw' => [
+						'class' => Asymmetric::class,
+						'type' => 'int',
+						'writable' => true,
+						'readable' => true,
+					],
+					'asymmetricPropertyRx' => [
+						'class' => Asymmetric::class,
+						'type' => 'int|string',
 						'writable' => true,
 						'readable' => true,
 					],

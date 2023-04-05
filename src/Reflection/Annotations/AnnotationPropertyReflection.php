@@ -12,7 +12,8 @@ class AnnotationPropertyReflection implements PropertyReflection
 
 	public function __construct(
 		private ClassReflection $declaringClass,
-		private Type $type,
+		private Type $readableType,
+		private Type $writableType,
 		private bool $readable = true,
 		private bool $writable = true,
 	)
@@ -41,17 +42,17 @@ class AnnotationPropertyReflection implements PropertyReflection
 
 	public function getReadableType(): Type
 	{
-		return $this->type;
+		return $this->readableType;
 	}
 
 	public function getWritableType(): Type
 	{
-		return $this->type;
+		return $this->writableType;
 	}
 
 	public function canChangeTypeAfterAssignment(): bool
 	{
-		return true;
+		return $this->readableType->equals($this->writableType);
 	}
 
 	public function isReadable(): bool

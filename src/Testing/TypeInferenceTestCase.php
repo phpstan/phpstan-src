@@ -127,9 +127,9 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			}
 
 			$functionName = $nameNode->toString();
-			if (in_array($functionName, ['assertType', 'assertNativeType', 'assertVariableCertainty'], true)) {
+			if (in_array(strtolower($functionName), ['asserttype', 'assertnativetype', 'assertvariablecertainty'], true)) {
 				self::fail(sprintf(
-					'ERROR: Missing import for %s() on line %d.',
+					'Missing use statement for %s() on line %d.',
 					$functionName,
 					$node->getLine(),
 				));
@@ -171,21 +171,28 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				$actualCertaintyValue = $scope->hasVariableType($variable->name);
 				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name, $node->getLine()];
 			} else {
-				$isAssertFn = false;
-				foreach (['assertType', 'assertNativeType', 'assertVariableCertainty'] as $assertFn) {
+				$correctFunction = null;
+
+				$assertFunctions = [
+					'assertType' => 'PHPStan\\Testing\\assertType',
+					'assertNativeType' => 'PHPStan\\Testing\\assertNativeType',
+					'assertVariableCertainty' => 'PHPStan\\Testing\\assertVariableCertainty'
+				];
+				foreach ($assertFunctions as $assertFn => $fqFunctionName) {
 					if (stripos($functionName, $assertFn) === false) {
 						continue;
 					}
 
-					$isAssertFn = true;
+					$correctFunction = $fqFunctionName;
 				}
 
-				if ($isAssertFn !== true) {
+				if ($correctFunction === null) {
 					return;
 				}
 
 				self::fail(sprintf(
-					'ERROR: Assert-Method %s imported with wrong namespace called from line %d.',
+					'Function %s imported with wrong namespace %s called on line %d.',
+					$correctFunction,
 					$functionName,
 					$node->getLine(),
 				));

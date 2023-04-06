@@ -56,4 +56,37 @@ class Foo
 		assertType('Exception', $this->generics($o));
 	}
 
+	/**
+	 * @return object{foo: static}
+	 */
+	public function returnObjectShapeWithStatic(): object
+	{
+
+	}
+
+	public function testObjectShapeWithStatic()
+	{
+		assertType('object{foo: static(ObjectShape\Foo)}', $this->returnObjectShapeWithStatic());
+	}
+
+}
+
+class FooChild extends Foo
+{
+
+}
+
+class Bar
+{
+
+	public function doFoo(Foo $foo)
+	{
+		assertType('object{foo: ObjectShape\Foo}', $foo->returnObjectShapeWithStatic());
+	}
+
+	public function doFoo2(FooChild $foo)
+	{
+		assertType('object{foo: ObjectShape\FooChild}', $foo->returnObjectShapeWithStatic());
+	}
+
 }

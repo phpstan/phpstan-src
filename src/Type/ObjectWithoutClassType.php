@@ -62,7 +62,7 @@ class ObjectWithoutClassType implements SubtractableType
 		}
 
 		return AcceptsResult::createFromBoolean(
-			$type instanceof self || $type->getObjectClassNames() !== [],
+			$type instanceof self || $type instanceof ObjectShapeType || $type->getObjectClassNames() !== [],
 		);
 	}
 
@@ -84,6 +84,10 @@ class ObjectWithoutClassType implements SubtractableType
 			}
 
 			return TrinaryLogic::createMaybe();
+		}
+
+		if ($type instanceof ObjectShapeType) {
+			return TrinaryLogic::createYes();
 		}
 
 		if ($type->getObjectClassNames() === []) {

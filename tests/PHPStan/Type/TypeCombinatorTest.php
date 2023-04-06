@@ -2348,6 +2348,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 			UnionType::class,
 			'Bug9006\TestInterface|Closure',
 		];
+		yield [
+			[
+				new ObjectShapeType([], []),
+				new ObjectWithoutClassType(),
+			],
+			ObjectWithoutClassType::class,
+			'object',
+		];
+		yield [
+			[
+				new ObjectShapeType([], []),
+				new ObjectType(stdClass::class),
+			],
+			UnionType::class,
+			'object{}|stdClass',
+		];
 	}
 
 	/**
@@ -3815,6 +3831,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			NeverType::class,
 			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ObjectShapeType([], []),
+				new ObjectWithoutClassType(),
+			],
+			ObjectShapeType::class,
+			'object{}',
+		];
+		yield [
+			[
+				new ObjectShapeType([], []),
+				new ObjectType(stdClass::class),
+			],
+			IntersectionType::class,
+			'object{}&stdClass',
 		];
 	}
 

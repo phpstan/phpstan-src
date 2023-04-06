@@ -3,9 +3,12 @@
 namespace PHPStan\Type;
 
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\Broker\Broker;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
+use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
@@ -199,9 +202,66 @@ class ObjectShapeType implements Type
 			return $type->isSubTypeOf($this);
 		}
 
-		// todo
+		if ($type instanceof ObjectWithoutClassType) {
+			return TrinaryLogic::createMaybe();
+		}
 
-		return TrinaryLogic::createNo();
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		foreach ($type->getObjectClassReflections() as $classReflection) {
+			if (!UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
+				$reflectionProvider,
+				Broker::getInstance()->getUniversalObjectCratesClasses(),
+				$classReflection,
+			)) {
+				continue;
+			}
+
+			return TrinaryLogic::createMaybe();
+		}
+
+		$result = TrinaryLogic::createYes();
+		$scope = new OutOfClassScope();
+		foreach ($this->properties as $propertyName => $propertyType) {
+			$hasProperty = $type->hasProperty($propertyName);
+			if ($hasProperty->no()) {
+				if (in_array($propertyName, $this->optionalProperties, true)) {
+					continue;
+				}
+				return $hasProperty;
+			}
+			if ($hasProperty->maybe() && in_array($propertyName, $this->optionalProperties, true)) {
+				$hasProperty = TrinaryLogic::createYes();
+			}
+
+			$result = $result->and($hasProperty);
+
+			try {
+				$otherProperty = $type->getProperty($propertyName, $scope);
+			} catch (MissingPropertyFromReflectionException) {
+				return TrinaryLogic::createNo();
+			}
+
+			if (!$otherProperty->isPublic()) {
+				return TrinaryLogic::createNo();
+			}
+
+			if ($otherProperty->isStatic()) {
+				return TrinaryLogic::createNo();
+			}
+
+			if (!$otherProperty->isReadable()) {
+				return TrinaryLogic::createNo();
+			}
+
+			$otherPropertyType = $otherProperty->getReadableType();
+			$isSuperType = $propertyType->isSuperTypeOf($otherPropertyType);
+			if ($isSuperType->no()) {
+				return $isSuperType;
+			}
+			$result = $result->and($isSuperType);
+		}
+
+		return $result->and($type->isObject());
 	}
 
 	public function equals(Type $type): bool

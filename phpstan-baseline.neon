@@ -505,7 +505,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
-			count: 3
+			count: 4
 			path: src/Rules/Comparison/MatchExpressionRule.php
 
 		-
@@ -1734,4 +1734,3 @@ parameters:
 			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Generic\\\\TemplateType is always PHPStan\\\\Type\\\\Generic\\\\TemplateMixedType but it's error\\-prone and dangerous\\.$#"
 			count: 1
 			path: tests/PHPStan/Type/IterableTypeTest.php
-

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -21,7 +22,6 @@ class TypesAssignedToPropertiesRule implements Rule
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
-		private PropertyDescriptor $propertyDescriptor,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 	)
 	{
@@ -65,7 +65,7 @@ class TypesAssignedToPropertiesRule implements Rule
 
 		$accepts = $this->ruleLevelHelper->acceptsWithReason($propertyType, $assignedValueType, $scope->isDeclareStrictTypes());
 		if (!$accepts->result) {
-			$propertyDescription = $this->propertyDescriptor->describePropertyByName($propertyReflection, $propertyReflection->getName());
+			$propertyDescription = $this->describePropertyByName($propertyReflection, $propertyReflection->getName());
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType, $assignedValueType);
 
 			return [
@@ -79,6 +79,15 @@ class TypesAssignedToPropertiesRule implements Rule
 		}
 
 		return [];
+	}
+
+	private function describePropertyByName(PropertyReflection $property, string $propertyName): string
+	{
+		if (!$property->isStatic()) {
+			return sprintf('Property %s::$%s', $property->getDeclaringClass()->getDisplayName(), $propertyName);
+		}
+
+		return sprintf('Static property %s::$%s', $property->getDeclaringClass()->getDisplayName(), $propertyName);
 	}
 
 }

@@ -9,15 +9,6 @@ use function sprintf;
 class PropertyDescriptor
 {
 
-	public function describePropertyByName(PropertyReflection $property, string $propertyName): string
-	{
-		if (!$property->isStatic()) {
-			return sprintf('Property %s::$%s', $property->getDeclaringClass()->getDisplayName(), $propertyName);
-		}
-
-		return sprintf('Static property %s::$%s', $property->getDeclaringClass()->getDisplayName(), $propertyName);
-	}
-
 	/**
 	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
 	 */

@@ -354,7 +354,7 @@ class ObjectShapeType implements Type
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
-		$variance = $positionVariance->compose(TemplateTypeVariance::createInvariant());
+		$variance = $positionVariance->compose(TemplateTypeVariance::createCovariant());
 		$references = [];
 		foreach ($this->properties as $propertyType) {
 			foreach ($propertyType->getReferencedTemplateTypes($variance) as $reference) {

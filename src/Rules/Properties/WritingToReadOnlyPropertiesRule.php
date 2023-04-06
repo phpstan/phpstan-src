@@ -4,13 +4,14 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Expr>
+ * @implements Rule<PropertyAssignNode>
  */
 class WritingToReadOnlyPropertiesRule implements Rule
 {
@@ -26,36 +27,20 @@ class WritingToReadOnlyPropertiesRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Expr::class;
+		return PropertyAssignNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		$propertyFetch = $node->getPropertyFetch();
 		if (
-			!$node instanceof Node\Expr\Assign
-			&& !$node instanceof Node\Expr\AssignOp
-			&& !$node instanceof Node\Expr\AssignRef
-		) {
-			return [];
-		}
-
-		if (
-			!($node->var instanceof Node\Expr\PropertyFetch)
-			&& !($node->var instanceof Node\Expr\StaticPropertyFetch)
-		) {
-			return [];
-		}
-
-		if (
-			$node->var instanceof Node\Expr\PropertyFetch
+			$propertyFetch instanceof Node\Expr\PropertyFetch
 			&& $this->checkThisOnly
-			&& !$this->ruleLevelHelper->isThis($node->var->var)
+			&& !$this->ruleLevelHelper->isThis($propertyFetch->var)
 		) {
 			return [];
 		}
 
-		/** @var Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch */
-		$propertyFetch = $node->var;
 		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyFetch, $scope);
 		if ($propertyReflection === null) {
 			return [];

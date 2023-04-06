@@ -2905,4 +2905,29 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testObjectShapes(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/object-shapes.php'], [
+			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, Exception given.',
+				14,
+				'Exception does not have property $foo.',
+			],
+			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, object{foo: string, bar: int} given.',
+				36,
+				'Property ($foo) type int does not accept type string.',
+			],
+			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, object{foo?: int, bar: string} given.',
+				37,
+				'object{foo?: int, bar: string} might not have property $foo.',
+			],
+		]);
+	}
+
 }

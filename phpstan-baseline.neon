@@ -1179,6 +1179,11 @@ parameters:
 			path: src/Type/NullType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/ObjectShapeType.php
+
+		-
 			message: """
 				#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
 				Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#

@@ -30,6 +30,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\InvalidTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -74,6 +75,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\OffsetAccessType;
@@ -161,6 +163,8 @@ class TypeNodeResolver
 
 		} elseif ($typeNode instanceof ArrayShapeNode) {
 			return $this->resolveArrayShapeNode($typeNode, $nameScope);
+		} elseif ($typeNode instanceof ObjectShapeNode) {
+			return $this->resolveObjectShapeNode($typeNode, $nameScope);
 		} elseif ($typeNode instanceof ConstTypeNode) {
 			return $this->resolveConstTypeNode($typeNode, $nameScope);
 		} elseif ($typeNode instanceof OffsetAccessTypeNode) {
@@ -876,6 +880,27 @@ class TypeNodeResolver
 		}
 
 		return $arrayType;
+	}
+
+	private function resolveObjectShapeNode(ObjectShapeNode $typeNode, NameScope $nameScope): Type
+	{
+		$properties = [];
+		$optionalProperties = [];
+		foreach ($typeNode->items as $itemNode) {
+			if ($itemNode->keyName instanceof IdentifierTypeNode) {
+				$propertyName = $itemNode->keyName->name;
+			} elseif ($itemNode->keyName instanceof ConstExprStringNode) {
+				$propertyName = $itemNode->keyName->value;
+			}
+
+			if ($itemNode->optional) {
+				$optionalProperties[] = $propertyName;
+			}
+
+			$properties[$propertyName] = $this->resolve($itemNode->valueType, $nameScope);
+		}
+
+		return new ObjectShapeType($properties, $optionalProperties);
 	}
 
 	private function resolveConstTypeNode(ConstTypeNode $typeNode, NameScope $nameScope): Type

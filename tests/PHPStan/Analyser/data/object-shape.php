@@ -38,4 +38,22 @@ class Foo
 		assertType('object{bar: 2, foo?: 1}&stdClass', (object) $a);
 	}
 
+	/**
+	 * @template T
+	 * @param object{foo: int, bar: T} $o
+	 * @return T
+	 */
+	public function generics(object $o)
+	{
+
+	}
+
+	public function testGenerics()
+	{
+		$o = (object) ['foo' => 1, 'bar' => new \Exception()];
+		assertType('object{foo: 1, bar: Exception}&stdClass', $o);
+
+		assertType('Exception', $this->generics($o));
+	}
+
 }

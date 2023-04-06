@@ -107,6 +107,19 @@ class ObjectShapeType implements Type
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		foreach ($type->getObjectClassReflections() as $classReflection) {
+			if (!UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
+				$reflectionProvider,
+				Broker::getInstance()->getUniversalObjectCratesClasses(),
+				$classReflection,
+			)) {
+				continue;
+			}
+
+			return AcceptsResult::createMaybe();
+		}
+
 		$result = AcceptsResult::createYes();
 		$scope = new OutOfClassScope();
 		foreach ($this->properties as $propertyName => $propertyType) {

@@ -23,4 +23,16 @@ class Foo
 		assertType('object{foo: ObjectShape\Foo, bar: int, baz?: string}', $o);
 	}
 
+	public function doBaz(): void
+	{
+		assertType('object{}&stdClass', (object) []);
+
+		$a = ['bar' => 2];
+		if (rand(0, 1)) {
+			$a['foo'] = 1;
+		}
+
+		assertType('object{bar: 2, foo?: 1}&stdClass', (object) $a);
+	}
+
 }

@@ -94,6 +94,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\StaticType;
@@ -108,6 +109,7 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use stdClass;
 use Throwable;
 use function abs;
 use function array_key_exists;
@@ -1370,6 +1372,29 @@ class MutatingScope implements Scope
 			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
 		} elseif ($node instanceof Object_) {
 			$castToObject = static function (Type $type): Type {
+				if (count($type->getConstantArrays()) > 0) {
+					$objects = [];
+					foreach ($type->getConstantArrays() as $constantArray) {
+						$properties = [];
+						$optionalProperties = [];
+						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+							if (!$keyType instanceof ConstantStringType) {
+								// an object with integer properties is >weird<
+								continue;
+							}
+							$valueType = $constantArray->getValueTypes()[$i];
+							$optional = $constantArray->isOptionalKey($i);
+							if ($optional) {
+								$optionalProperties[] = $keyType->getValue();
+							}
+							$properties[$keyType->getValue()] = $valueType;
+						}
+
+						$objects[] = TypeCombinator::intersect(new ObjectShapeType($properties, $optionalProperties), new ObjectType(stdClass::class));
+					}
+
+					return TypeCombinator::union(...$objects);
+				}
 				if ($type->isObject()->yes()) {
 					return $type;
 				}

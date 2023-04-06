@@ -2913,6 +2913,10 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/object-shapes.php'], [
 			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, stdClass given.',
+				13,
+			],
+			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, Exception given.',
 				14,
 				'Exception does not have property $foo.',
@@ -2930,6 +2934,21 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $std of method ObjectShapesAcceptance\Foo::requireStdClass() expects stdClass, object{foo: string, bar: int} given.',
 				40,
+			],
+			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, object{foo: string, bar: int}&stdClass given.',
+				43,
+				'Property ($foo) type int does not accept type string.',
+			],
+			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, object given.',
+				53,
+				'• object might not have property $foo.
+• object might not have property $bar.',
+			],
+			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, stdClass given.',
+				54,
 			],
 		]);
 	}

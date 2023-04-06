@@ -59,7 +59,7 @@ class ReadingWriteOnlyPropertiesRule implements Rule
 		}
 
 		if (!$propertyReflection->isReadable()) {
-			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $node);
+			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $scope, $node);
 
 			return [
 				RuleErrorBuilder::message(sprintf(

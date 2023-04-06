@@ -66,7 +66,7 @@ class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/properties-object-shapes.php'], [
 			[
-				'Property stdClass::$foo is not writable.',
+				'Property object{foo: int, bar?: string}::$foo is not writable.',
 				18,
 			],
 		]);

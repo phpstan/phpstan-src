@@ -147,7 +147,7 @@ class IssetCheck
 				}
 			}
 
-			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $expr);
+			$propertyDescription = $this->propertyDescriptor->describeProperty($propertyReflection, $scope, $expr);
 			$propertyType = $propertyReflection->getWritableType();
 			if ($error !== null) {
 				return $error;

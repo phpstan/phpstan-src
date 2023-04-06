@@ -41,6 +41,7 @@ class Foo
 		$this->requireStdClass((object) []);
 		$this->doBar((object) ['foo' => 1, 'bar' => 'bar']); // OK
 		$this->doBar((object) ['foo' => 'foo', 'bar' => 1]); // Error
+		$this->acceptsObject($o);
 	}
 
 	public function requireStdClass(stdClass $std): void

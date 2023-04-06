@@ -13,6 +13,9 @@ class Foo
 	public function doFoo($o): void
 	{
 		assertType('object{foo: ObjectShape\Foo, bar: int, baz?: string}', $o);
+		assertType(self::class, $o->foo);
+		assertType('int', $o->bar);
+		assertType('*ERROR*', $o->baz);
 	}
 
 	/**

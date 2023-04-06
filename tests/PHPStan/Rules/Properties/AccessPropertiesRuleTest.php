@@ -864,4 +864,25 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-393.php'], []);
 	}
 
+	public function testObjectShapes(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
+
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
+		$this->analyse([__DIR__ . '/data/properties-object-shapes.php'], [
+			[
+				'Access to an undefined property object{foo: int, bar?: string}::$bar.',
+				15,
+				$tipText,
+			],
+			[
+				'Access to an undefined property object{foo: int, bar?: string}::$baz.',
+				16,
+				$tipText,
+			],
+		]);
+	}
+
 }

@@ -61,4 +61,15 @@ class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testObjectShapes(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/properties-object-shapes.php'], [
+			[
+				'Property stdClass::$foo is not writable.',
+				18,
+			],
+		]);
+	}
+
 }

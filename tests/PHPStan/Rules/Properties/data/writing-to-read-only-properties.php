@@ -43,4 +43,9 @@ class Foo
 		$self->readOnlyProperty = &$s;
 	}
 
+	public function doObjectShape()
+	{
+
+	}
+
 }

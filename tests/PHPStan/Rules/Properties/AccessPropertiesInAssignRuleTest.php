@@ -98,4 +98,21 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4492.php'], []);
 	}
 
+	public function testObjectShapes(): void
+	{
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
+		$this->analyse([__DIR__ . '/data/properties-object-shapes.php'], [
+			[
+				'Access to an undefined property object{foo: int, bar?: string}::$bar.',
+				19,
+				$tipText,
+			],
+			[
+				'Access to an undefined property object{foo: int, bar?: string}::$baz.',
+				20,
+				$tipText,
+			],
+		]);
+	}
+
 }

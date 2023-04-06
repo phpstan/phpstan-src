@@ -2927,6 +2927,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				37,
 				'object{foo?: int, bar: string} might not have property $foo.',
 			],
+			[
+				'Parameter #1 $std of method ObjectShapesAcceptance\Foo::requireStdClass() expects stdClass, object{foo: string, bar: int} given.',
+				40,
+			],
 		]);
 	}
 

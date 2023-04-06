@@ -36,6 +36,13 @@ class Foo
 		$this->doBar($o);
 		$this->doBar($p);
 		$this->doBar($q);
+
+		$this->requireStdClass($o);
+	}
+
+	public function requireStdClass(stdClass $std): void
+	{
+
 	}
 
 }

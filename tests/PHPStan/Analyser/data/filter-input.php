@@ -24,6 +24,11 @@ class FilterInput
 		assertType('int|false|null', filter_input(INPUT_ENV, 'foo', FILTER_VALIDATE_INT));
 	}
 
+	public function inputTypeUnion(): void
+	{
+		assertType('int|false|null', filter_input(rand(0, 1) ? INPUT_GET : INPUT_POST, 'foo', FILTER_VALIDATE_INT));
+	}
+
 	public function doFoo(string $foo): void
 	{
 		assertType('int|false|null', filter_input(INPUT_GET, $foo, FILTER_VALIDATE_INT));

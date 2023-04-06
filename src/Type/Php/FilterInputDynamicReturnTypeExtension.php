@@ -2,22 +2,23 @@
 
 namespace PHPStan\Type\Php;
 
-use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function count;
-use function in_array;
 
 class FilterInputDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function __construct(private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper)
+	public function __construct(private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper, private ReflectionProvider $reflectionProvider)
 	{
 	}
 
@@ -32,11 +33,15 @@ class FilterInputDynamicReturnTypeExtension implements DynamicFunctionReturnType
 			return null;
 		}
 
-		$typeExpr = $functionCall->getArgs()[0]->value;
-		if (
-			!($typeExpr instanceof ConstFetch)
-			|| !in_array((string) $typeExpr->name, ['INPUT_GET', 'INPUT_POST', 'INPUT_COOKIE', 'INPUT_SERVER', 'INPUT_ENV'], true)
-		) {
+		$supportedTypes = TypeCombinator::union(
+			$this->reflectionProvider->getConstant(new Node\Name('INPUT_GET'), null)->getValueType(),
+			$this->reflectionProvider->getConstant(new Node\Name('INPUT_POST'), null)->getValueType(),
+			$this->reflectionProvider->getConstant(new Node\Name('INPUT_COOKIE'), null)->getValueType(),
+			$this->reflectionProvider->getConstant(new Node\Name('INPUT_SERVER'), null)->getValueType(),
+			$this->reflectionProvider->getConstant(new Node\Name('INPUT_ENV'), null)->getValueType(),
+		);
+		$typeType = $scope->getType($functionCall->getArgs()[0]->value);
+		if (!$typeType->isInteger()->yes() || $supportedTypes->isSuperTypeOf($typeType)->no()) {
 			return null;
 		}
 

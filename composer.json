@@ -73,6 +73,7 @@
 		}
 	},
 	"extra": {
+		"composer-exit-on-patch-failure": true,
 		"patches": {
 			"hoa/iterator": [
 				"patches/Buffer.patch",

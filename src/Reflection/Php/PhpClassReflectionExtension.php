@@ -244,7 +244,7 @@ class PhpClassReflectionExtension
 				throw new ShouldNotHappenException();
 			}
 
-			if ($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()] < $hierarchyDistances[$distanceDeclaringClass]) {
+			if ($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()] <= $hierarchyDistances[$distanceDeclaringClass]) {
 				return $annotationProperty;
 			}
 		}
@@ -468,7 +468,7 @@ class PhpClassReflectionExtension
 				throw new ShouldNotHappenException();
 			}
 
-			if ($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()] < $hierarchyDistances[$distanceDeclaringClass]) {
+			if ($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()] <= $hierarchyDistances[$distanceDeclaringClass]) {
 				return $annotationMethod;
 			}
 		}

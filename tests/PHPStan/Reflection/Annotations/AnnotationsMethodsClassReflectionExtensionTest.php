@@ -459,7 +459,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 				],
 				'conflictingMethod' => [
 					'class' => Bar::class,
-					'returnType' => Bar::class,
+					'returnType' => Foo::class,
 					'isStatic' => false,
 					'isVariadic' => false,
 					'parameters' => [],

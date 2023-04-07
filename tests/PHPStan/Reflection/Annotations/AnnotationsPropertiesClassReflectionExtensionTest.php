@@ -120,8 +120,8 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 					],
 					'conflictingAnnotationProperty' => [
 						'class' => Bar::class,
-						'readableType' => Bar::class,
-						'writableType' => Bar::class,
+						'readableType' => Foo::class,
+						'writableType' => Foo::class,
 						'writable' => true,
 						'readable' => true,
 					],

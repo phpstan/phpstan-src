@@ -32,7 +32,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$filterType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : null;
 		$flagsType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
 
-		return $this->filterFunctionReturnTypeHelper->getTypeFromFunctionCall($inputType, $filterType, $flagsType);
+		return $this->filterFunctionReturnTypeHelper->getType($inputType, $filterType, $flagsType);
 	}
 
 }

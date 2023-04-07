@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -19,6 +20,7 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -46,7 +48,9 @@ final class FilterFunctionReturnTypeHelper
 	/** @var array<int, list<string>>|null */
 	private ?array $filterTypeOptions = null;
 
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	private ?Type $supportedFilterInputTypes = null;
+
+	public function __construct(private ReflectionProvider $reflectionProvider, private PhpVersion $phpVersion)
 	{
 		$this->flagsString = new ConstantStringType('flags');
 	}
@@ -67,6 +71,33 @@ final class FilterFunctionReturnTypeHelper
 		return $hasOffsetValueType->maybe()
 			? TypeCombinator::union($filteredType, $inexistentOffsetType)
 			: $filteredType;
+	}
+
+	public function getInputType(Type $typeType, Type $varNameType, ?Type $filterType, ?Type $flagsType): ?Type
+	{
+		$this->supportedFilterInputTypes ??= TypeCombinator::union(
+			$this->reflectionProvider->getConstant(new Node\Name('INPUT_GET'), null)->getValueType(),
+			$this->reflectionProvider->getConstant(new Node\Name('INPUT_POST'), null)->getValueType(),
+			$this->reflectionProvider->getConstant(new Node\Name('INPUT_COOKIE'), null)->getValueType(),
+			$this->reflectionProvider->getConstant(new Node\Name('INPUT_SERVER'), null)->getValueType(),
+			$this->reflectionProvider->getConstant(new Node\Name('INPUT_ENV'), null)->getValueType(),
+		);
+
+		if (!$typeType->isInteger()->yes() || $this->supportedFilterInputTypes->isSuperTypeOf($typeType)->no()) {
+			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+				return new NeverType();
+			}
+
+			// Using a null as input mimics pre PHP 8 behaviour where filter_input
+			// would return the same as if the offset does not exist
+			$inputType = new NullType();
+		} else {
+			// Pragmatical solution since global expressions are not passed through the scope for performance reasons
+			// See https://github.com/phpstan/phpstan-src/pull/2012 for details
+			$inputType = new ArrayType(new StringType(), new MixedType());
+		}
+
+		return $this->getOffsetValueType($inputType, $varNameType, $filterType, $flagsType);
 	}
 
 	public function getType(Type $inputType, ?Type $filterType, ?Type $flagsType): Type

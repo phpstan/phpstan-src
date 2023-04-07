@@ -2,7 +2,6 @@
 
 /**
  * @template-covariant T of object
- * @property-read class-string<T> $name
  */
 class ReflectionClass
 {

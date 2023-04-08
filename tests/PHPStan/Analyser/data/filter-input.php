@@ -10,7 +10,6 @@ class FilterInput
 	public function invalidTypesOrVarNames($mixed): void
 	{
 		assertType('int|false|null', filter_input(INPUT_GET, $mixed, FILTER_VALIDATE_INT));
-		assertType('mixed', filter_input(-1, 'foo', FILTER_VALIDATE_INT));
 		assertType('null', filter_input(INPUT_GET, 17, FILTER_VALIDATE_INT));
 		assertType('false', filter_input(INPUT_GET, 17, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE));
 	}

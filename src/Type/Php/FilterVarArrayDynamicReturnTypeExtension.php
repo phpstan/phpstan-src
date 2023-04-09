@@ -2,9 +2,11 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -26,7 +28,7 @@ use function strtolower;
 class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function __construct(private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper)
+	public function __construct(private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper, private ReflectionProvider $reflectionProvider)
 	{
 	}
 
@@ -53,6 +55,20 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 
 			$inputConstantArrayType = $inputArgType->getConstantArrays()[0] ?? null;
 		} elseif ($functionName === 'filter_input_array') {
+			$supportedTypes = TypeCombinator::union(
+				$this->reflectionProvider->getConstant(new Node\Name('INPUT_GET'), null)->getValueType(),
+				$this->reflectionProvider->getConstant(new Node\Name('INPUT_POST'), null)->getValueType(),
+				$this->reflectionProvider->getConstant(new Node\Name('INPUT_COOKIE'), null)->getValueType(),
+				$this->reflectionProvider->getConstant(new Node\Name('INPUT_SERVER'), null)->getValueType(),
+				$this->reflectionProvider->getConstant(new Node\Name('INPUT_ENV'), null)->getValueType(),
+			);
+
+			if (!$inputArgType->isInteger()->yes() || $supportedTypes->isSuperTypeOf($inputArgType)->no()) {
+				return null;
+			}
+
+			// Pragmatical solution since global expressions are not passed through the scope for performance reasons
+			// See https://github.com/phpstan/phpstan-src/pull/2012 for details
 			$inputArrayType = new ArrayType(new StringType(), new MixedType());
 		}
 
@@ -69,7 +85,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			if ($inputConstantArrayType === null) {
 				$isList = $inputArrayType->isList()->yes();
 				$inputArrayType = $inputArrayType->getArrays()[0] ?? null;
-				$valueType = $this->filterFunctionReturnTypeHelper->getTypeFromFunctionCall(
+				$valueType = $this->filterFunctionReturnTypeHelper->getType(
 					$inputArrayType === null ? new MixedType() : $inputArrayType->getItemType(),
 					$filterArgType,
 					null,
@@ -101,7 +117,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			if ($inputConstantArrayType === null) {
 				$isList = $inputArrayType->isList()->yes();
 				$inputArrayType = $inputArrayType->getArrays()[0] ?? null;
-				$valueType = $this->filterFunctionReturnTypeHelper->getTypeFromFunctionCall($inputArrayType ?? new MixedType(), $filterArgType, null);
+				$valueType = $this->filterFunctionReturnTypeHelper->getType($inputArrayType ?? new MixedType(), $filterArgType, null);
 
 				$arrayType = new ArrayType(
 					$inputArrayType !== null ? $inputArrayType->getKeyType() : new MixedType(),
@@ -149,7 +165,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			}
 
 			[$filterType, $flagsType] = $this->fetchFilter($filterTypesMap[$key] ?? new MixedType());
-			$valueType = $this->filterFunctionReturnTypeHelper->getTypeFromFunctionCall($inputType, $filterType, $flagsType);
+			$valueType = $this->filterFunctionReturnTypeHelper->getType($inputType, $filterType, $flagsType);
 
 			if (in_array($key, $optionalKeys, true)) {
 				if ($addEmpty) {

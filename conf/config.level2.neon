@@ -106,3 +106,5 @@ services:
 			- phpstan.rules.rule
 	-
 		class: PHPStan\Rules\Generics\PropertyVarianceRule
+		arguments:
+			readOnlyByPhpDoc: %featureToggles.readOnlyByPhpDoc%

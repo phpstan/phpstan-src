@@ -8,6 +8,7 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use function sprintf;
 
 /**
@@ -16,7 +17,10 @@ use function sprintf;
 class PropertyVarianceRule implements Rule
 {
 
-	public function __construct(private VarianceCheck $varianceCheck)
+	public function __construct(
+		private VarianceCheck $varianceCheck,
+		private bool $readOnlyByPhpDoc,
+	)
 	{
 	}
 
@@ -42,10 +46,14 @@ class PropertyVarianceRule implements Rule
 			return [];
 		}
 
-		return $this->varianceCheck->checkProperty(
-			$propertyReflection,
+		$variance = $node->isReadOnly() || ($this->readOnlyByPhpDoc && $node->isReadOnlyByPhpDoc())
+			? TemplateTypeVariance::createCovariant()
+			: TemplateTypeVariance::createInvariant();
+
+		return $this->varianceCheck->check(
+			$variance,
+			$propertyReflection->getReadableType(),
 			sprintf('in property %s::$%s', SprintfHelper::escapeFormatString($classReflection->getDisplayName()), SprintfHelper::escapeFormatString($node->getName())),
-			$propertyReflection->isReadOnly(),
 		);
 	}
 

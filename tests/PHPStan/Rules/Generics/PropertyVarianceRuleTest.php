@@ -16,6 +16,7 @@ class PropertyVarianceRuleTest extends RuleTestCase
 	{
 		return new PropertyVarianceRule(
 			self::getContainer()->getByType(VarianceCheck::class),
+			true,
 		);
 	}
 
@@ -131,6 +132,11 @@ class PropertyVarianceRuleTest extends RuleTestCase
 				86,
 			],
 		]);
+	}
+
+	public function testBug9153(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9153.php'], []);
 	}
 
 }

@@ -11,6 +11,9 @@ class HelloWorld
 		$from = new \DateTimeImmutable('2023-01-30');
 		for ($offset = 1; $offset <= 14; $offset++) {
 			$value = $from->format('N') + $offset;
+			if ($value > 7) {
+			}
+
 			$value2 = $offset + $from->format('N');
 			$value3 = '1e3' + $offset;
 			$value4 = $offset + '1e3';

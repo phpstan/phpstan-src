@@ -22,8 +22,11 @@ use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
 use function count;
+use function in_array;
 use function is_string;
 use function sprintf;
+use function stripos;
+use function strtolower;
 
 /** @api */
 abstract class TypeInferenceTestCase extends PHPStanTestCase
@@ -125,7 +128,13 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			}
 
 			$functionName = $nameNode->toString();
-			if ($functionName === 'PHPStan\\Testing\\assertType') {
+			if (in_array(strtolower($functionName), ['asserttype', 'assertnativetype', 'assertvariablecertainty'], true)) {
+				self::fail(sprintf(
+					'Missing use statement for %s() on line %d.',
+					$functionName,
+					$node->getLine(),
+				));
+			} elseif ($functionName === 'PHPStan\\Testing\\assertType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
 				$actualType = $scope->getType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
@@ -163,7 +172,31 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				$actualCertaintyValue = $scope->hasVariableType($variable->name);
 				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name, $node->getLine()];
 			} else {
-				return;
+				$correctFunction = null;
+
+				$assertFunctions = [
+					'assertType' => 'PHPStan\\Testing\\assertType',
+					'assertNativeType' => 'PHPStan\\Testing\\assertNativeType',
+					'assertVariableCertainty' => 'PHPStan\\Testing\\assertVariableCertainty',
+				];
+				foreach ($assertFunctions as $assertFn => $fqFunctionName) {
+					if (stripos($functionName, $assertFn) === false) {
+						continue;
+					}
+
+					$correctFunction = $fqFunctionName;
+				}
+
+				if ($correctFunction === null) {
+					return;
+				}
+
+				self::fail(sprintf(
+					'Function %s imported with wrong namespace %s called on line %d.',
+					$correctFunction,
+					$functionName,
+					$node->getLine(),
+				));
 			}
 
 			if (count($node->getArgs()) !== 2) {

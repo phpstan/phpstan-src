@@ -2,6 +2,7 @@
 
 namespace ObjectShape;
 
+use function method_exists;
 use function PHPStan\Testing\assertType;
 use function property_exists;
 
@@ -128,6 +129,25 @@ class OptionalProperty
 		assertType('object{foo: string, bar?: int}', $o);
 		if (property_exists($o, 'bar')) {
 			assertType('object{foo: string, bar: int}', $o);
+		}
+
+		assertType('object{foo: string, bar?: int}', $o);
+	}
+
+}
+
+class MethodExistsCheck
+{
+
+	/**
+	 * @param object{foo: string, bar?: int} $o
+	 */
+	public function doFoo(object $o): void
+	{
+		if (method_exists($o, 'doFoo')) {
+			assertType('object{foo: string, bar?: int}&hasMethod(doFoo)', $o);
+		} else {
+			assertType('object{foo: string, bar?: int}', $o);
 		}
 
 		assertType('object{foo: string, bar?: int}', $o);

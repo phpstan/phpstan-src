@@ -56,3 +56,33 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	/** @var int */
+	public $a;
+
+	/**
+	 * @param object{a: int} $o
+	 */
+	public function doFoo(object $o): void
+	{
+		$this->requireBar($o);
+	}
+
+	public function requireBar(self $bar): void
+	{
+		$this->doFoo($bar);
+		$this->doBar($bar);
+	}
+
+	/**
+	 * @param object{a: string} $o
+	 */
+	public function doBar(object $o): void
+	{
+
+	}
+
+}

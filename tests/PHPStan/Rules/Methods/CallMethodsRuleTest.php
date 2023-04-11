@@ -2950,6 +2950,15 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, stdClass given.',
 				55,
 			],
+			[
+				'Parameter #1 $bar of method ObjectShapesAcceptance\Bar::requireBar() expects ObjectShapesAcceptance\Bar, object{a: int} given.',
+				71,
+			],
+			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\Bar::doBar() expects object{a: string}, ObjectShapesAcceptance\Bar given.',
+				77,
+				'Property ($a) type string does not accept type int.',
+			],
 		]);
 	}
 

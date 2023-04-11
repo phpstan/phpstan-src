@@ -3,8 +3,22 @@
 namespace PHPStan\Command;
 
 use Nette\Utils\Json;
+use PHPStan\AnalysedCodeException;
+use PHPStan\Analyser\Error;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\Analyser\RuleErrorTransformer;
+use PHPStan\Analyser\ScopeContext;
+use PHPStan\Analyser\ScopeFactory;
+use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
+use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
+use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
+use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
+use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\Collectors\CollectedData;
+use PHPStan\DependencyInjection\Container;
+use PHPStan\Node\CollectedDataNode;
+use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -15,6 +29,7 @@ use function count;
 use function is_array;
 use function is_bool;
 use function is_string;
+use function sprintf;
 
 class FixerWorkerCommand extends Command
 {
@@ -124,12 +139,19 @@ class FixerWorkerCommand extends Command
 			is_string($saveResultCache) ? $saveResultCache : $saveResultCache === null,
 		)->getAnalyserResult();
 
+		$hasInternalErrors = count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit();
 		$intermediateErrors = $ignoredErrorHelperResult->process(
 			$result->getErrors(),
 			$isOnlyFiles,
 			$inceptionFiles,
-			count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit(),
+			$hasInternalErrors,
 		);
+		if (!$hasInternalErrors) {
+			foreach ($this->getCollectedDataErrors($container, $result->getCollectedData()) as $error) {
+				$intermediateErrors[] = $error;
+			}
+		}
+
 		$finalFileSpecificErrors = [];
 		$finalNotFileSpecificErrors = [];
 		foreach ($intermediateErrors as $intermediateError) {
@@ -147,6 +169,42 @@ class FixerWorkerCommand extends Command
 		]), OutputInterface::OUTPUT_RAW);
 
 		return 0;
+	}
+
+	/**
+	 * @param CollectedData[] $collectedData
+	 * @return Error[]
+	 */
+	private function getCollectedDataErrors(Container $container, array $collectedData): array
+	{
+		$nodeType = CollectedDataNode::class;
+		$node = new CollectedDataNode($collectedData);
+		$file = 'N/A';
+		$scope = $container->getByType(ScopeFactory::class)->create(ScopeContext::create($file));
+		$ruleRegistry = $container->getByType(RuleRegistry::class);
+		$ruleErrorTransformer = $container->getByType(RuleErrorTransformer::class);
+
+		$errors = [];
+		foreach ($ruleRegistry->getRules($nodeType) as $rule) {
+			try {
+				$ruleErrors = $rule->processNode($node, $scope);
+			} catch (AnalysedCodeException $e) {
+				$errors[] = new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip());
+				continue;
+			} catch (IdentifierNotFound $e) {
+				$errors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
+				continue;
+			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
+				$errors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e);
+				continue;
+			}
+
+			foreach ($ruleErrors as $ruleError) {
+				$errors[] = $ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getLine());
+			}
+		}
+
+		return $errors;
 	}
 
 }

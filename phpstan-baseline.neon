@@ -1200,6 +1200,11 @@ parameters:
 			path: src/Type/ObjectShapeType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectShapeType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) and Type\\:\\:hasProperty\\(\\) instead\\.$#"
+			count: 2
+			path: src/Type/ObjectShapeType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/ObjectShapeType.php
@@ -1239,6 +1244,11 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
 			count: 3
 			path: src/Type/ObjectType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectShapeType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) and Type\\:\\:hasProperty\\(\\) instead\\.$#"
+			count: 2
+			path: src/Type/ObjectWithoutClassType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"

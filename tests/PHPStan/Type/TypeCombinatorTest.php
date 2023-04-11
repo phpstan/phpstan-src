@@ -2364,6 +2364,38 @@ class TypeCombinatorTest extends PHPStanTestCase
 			UnionType::class,
 			'object{}|stdClass',
 		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+			],
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => new ConstantIntegerType(1)], []),
+			],
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => new StringType()], []),
+			],
+			UnionType::class,
+			'object{foo: int}|object{foo: string}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['bar' => new StringType()], []),
+			],
+			UnionType::class,
+			'object{bar: string}|object{foo: int}',
+		];
 	}
 
 	/**
@@ -3868,6 +3900,38 @@ class TypeCombinatorTest extends PHPStanTestCase
 			[
 				new ObjectShapeType(['foo' => new IntegerType()], []),
 				new HasPropertyType('bar'),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+			],
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => new ConstantIntegerType(1)], []),
+			],
+			ObjectShapeType::class,
+			'object{foo: 1}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['foo' => new StringType()], []),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectShapeType(['bar' => new StringType()], []),
 			],
 			NeverType::class,
 			'*NEVER*=implicit',

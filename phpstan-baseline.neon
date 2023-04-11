@@ -1580,6 +1580,11 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectShapeType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) and Type\\:\\:hasProperty\\(\\) instead\\.$#"
+			count: 2
+			path: src/Type/TypeCombinator.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone and deprecated\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/TypeCombinator.php

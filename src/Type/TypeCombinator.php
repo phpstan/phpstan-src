@@ -7,6 +7,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
+use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -1046,6 +1047,20 @@ class TypeCombinator
 					}
 
 					if ($types[$j] instanceof OversizedArrayType && $types[$i] instanceof HasOffsetValueType) {
+						array_splice($types, $i--, 1);
+						$typesCount--;
+						continue 2;
+					}
+
+					if ($types[$i] instanceof ObjectShapeType && $types[$j] instanceof HasPropertyType) {
+						$types[$i] = $types[$i]->makePropertyRequired($types[$j]->getPropertyName());
+						array_splice($types, $j--, 1);
+						$typesCount--;
+						continue;
+					}
+
+					if ($types[$j] instanceof ObjectShapeType && $types[$i] instanceof HasPropertyType) {
+						$types[$j] = $types[$j]->makePropertyRequired($types[$i]->getPropertyName());
 						array_splice($types, $i--, 1);
 						$typesCount--;
 						continue 2;

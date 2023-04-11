@@ -3848,6 +3848,30 @@ class TypeCombinatorTest extends PHPStanTestCase
 			IntersectionType::class,
 			'object{}&stdClass',
 		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new HasPropertyType('foo'),
+			],
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
+				new HasPropertyType('foo'),
+			],
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new HasPropertyType('bar'),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
 	}
 
 	/**
@@ -4382,6 +4406,30 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ConstantBooleanType(false),
 				TemplateMixedType::class, // should be TemplateConstantBooleanType
 				'T (class Foo, parameter)', // should be T of true
+			],
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new HasPropertyType('foo'),
+				NeverType::class,
+				'*NEVER*=implicit',
+			],
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
+				new HasPropertyType('foo'),
+				ObjectShapeType::class,
+				'object{}',
+			],
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new HasPropertyType('bar'),
+				ObjectShapeType::class,
+				'object{foo: int}',
+			],
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], ['foo']),
+				new HasPropertyType('bar'),
+				ObjectShapeType::class,
+				'object{foo?: int}',
 			],
 		];
 	}

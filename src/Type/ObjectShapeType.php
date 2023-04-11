@@ -13,12 +13,15 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function array_filter;
 use function array_key_exists;
+use function array_values;
 use function count;
 use function implode;
 use function in_array;
@@ -314,7 +317,26 @@ class ObjectShapeType implements Type
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
+		if ($typeToRemove instanceof HasPropertyType) {
+			$properties = $this->properties;
+			unset($properties[$typeToRemove->getPropertyName()]);
+			$optionalProperties = array_values(array_filter($this->optionalProperties, static fn (string $propertyName) => $propertyName !== $typeToRemove->getPropertyName()));
+
+			return new self($properties, $optionalProperties);
+		}
+
 		return null;
+	}
+
+	public function makePropertyRequired(string $propertyName): self
+	{
+		if (array_key_exists($propertyName, $this->properties)) {
+			$optionalProperties = array_values(array_filter($this->optionalProperties, static fn (string $currentPropertyName) => $currentPropertyName !== $propertyName));
+
+			return new self($this->properties, $optionalProperties);
+		}
+
+		return $this;
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

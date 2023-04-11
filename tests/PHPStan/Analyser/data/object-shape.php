@@ -3,6 +3,7 @@
 namespace ObjectShape;
 
 use function PHPStan\Testing\assertType;
+use function property_exists;
 
 class Foo
 {
@@ -87,6 +88,49 @@ class Bar
 	public function doFoo2(FooChild $foo)
 	{
 		assertType('object{foo: ObjectShape\FooChild}', $foo->returnObjectShapeWithStatic());
+	}
+
+}
+
+class OptionalProperty
+{
+
+	/**
+	 * @param object{foo: string, bar?: int} $o
+	 * @return void
+	 */
+	public function doFoo(object $o): void
+	{
+		assertType('object{foo: string, bar?: int}', $o);
+		if (isset($o->foo)) {
+			assertType('object{foo: string, bar?: int}', $o);
+		}
+
+		assertType('object{foo: string, bar?: int}', $o);
+		if (isset($o->bar)) {
+			assertType('object{foo: string, bar: int}', $o);
+		}
+
+		assertType('object{foo: string, bar?: int}', $o);
+	}
+
+	/**
+	 * @param object{foo: string, bar?: int} $o
+	 * @return void
+	 */
+	public function doBar(object $o): void
+	{
+		assertType('object{foo: string, bar?: int}', $o);
+		if (property_exists($o, 'foo')) {
+			assertType('object{foo: string, bar?: int}', $o);
+		}
+
+		assertType('object{foo: string, bar?: int}', $o);
+		if (property_exists($o, 'bar')) {
+			assertType('object{foo: string, bar: int}', $o);
+		}
+
+		assertType('object{foo: string, bar?: int}', $o);
 	}
 
 }

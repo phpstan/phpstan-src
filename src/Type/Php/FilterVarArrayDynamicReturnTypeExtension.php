@@ -73,10 +73,10 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 		}
 
 		if ($inputArrayType === null) {
-			if (!$inputArgType instanceof MixedType) {
+			$inputArrayType = new ArrayType(new MixedType(), new MixedType());
+			if ($inputArgType->isSuperTypeOf($inputArrayType)->no()) {
 				return null;
 			}
-			$inputArrayType = new ArrayType(new MixedType(), new MixedType());
 		}
 
 		$filterArgType = $scope->getType($functionCall->getArgs()[1]->value);

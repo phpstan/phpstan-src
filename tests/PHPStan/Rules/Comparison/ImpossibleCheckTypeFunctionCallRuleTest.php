@@ -800,4 +800,17 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/impossible-function-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
+	public function testObjectShapes(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/property-exists-object-shapes.php'], [
+			[
+				'Call to function property_exists() with object{foo: int, bar?: string} and \'baz\' will always evaluate to false.',
+				24,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 }

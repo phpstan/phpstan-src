@@ -67,7 +67,7 @@ function constantValues(): void
 	], false));
 }
 
-function constantValuesWithMixedInput(mixed $input): void
+function mixedInput(mixed $input): void
 {
 	// filter array with add_empty=default
 	assertType('array{id: int|false|null}', filter_var_array($input, [

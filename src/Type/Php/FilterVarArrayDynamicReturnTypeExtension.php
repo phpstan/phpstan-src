@@ -72,6 +72,13 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			$inputArrayType = new ArrayType(new StringType(), new MixedType());
 		}
 
+		if ($inputArrayType === null) {
+			if (!$inputArgType instanceof MixedType) {
+				return null;
+			}
+			$inputArrayType = new ArrayType(new MixedType(), new MixedType());
+		}
+
 		$filterArgType = $scope->getType($functionCall->getArgs()[1]->value);
 		$filterConstantArrayType = $filterArgType->getConstantArrays()[0] ?? null;
 		$addEmptyType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
@@ -83,14 +90,11 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			if ($inputConstantArrayType === null) {
 				$isList = $inputArgType->isList()->yes();
 				$valueType = $this->filterFunctionReturnTypeHelper->getType(
-					$inputArrayType === null ? new MixedType() : $inputArrayType->getItemType(),
+					$inputArrayType->getItemType(),
 					$filterArgType,
 					null,
 				);
-				$arrayType = new ArrayType(
-					$inputArrayType !== null ? $inputArrayType->getKeyType() : new MixedType(),
-					$valueType,
-				);
+				$arrayType = new ArrayType($inputArrayType->getKeyType(), $valueType);
 
 				return $isList ? AccessoryArrayListType::intersectWith($arrayType) : $arrayType;
 			}
@@ -144,10 +148,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 				}
 			} else {
 				$optionalKeys = $filterKeysList;
-				$inputTypesMap = array_fill_keys(
-					$optionalKeys,
-					$inputArrayType === null ? new MixedType() : $inputArrayType->getItemType()
-				);
+				$inputTypesMap = array_fill_keys($optionalKeys, $inputArrayType->getItemType());
 			}
 		}
 

@@ -44,6 +44,22 @@ class ObjectShapeType implements Type
 	{
 	}
 
+	/**
+	 * @return array<string, Type>
+	 */
+	public function getProperties(): array
+	{
+		return $this->properties;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public function getOptionalProperties(): array
+	{
+		return $this->optionalProperties;
+	}
+
 	public function getReferencedClasses(): array
 	{
 		$classes = [];

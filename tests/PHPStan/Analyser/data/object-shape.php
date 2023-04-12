@@ -178,3 +178,27 @@ class ObjectWithProperty
 	}
 
 }
+
+class TestTemplate
+{
+
+	/**
+	 * @template T of object{foo: int}
+	 * @param T $o
+	 * @return T
+	 */
+	public function doBar(object $o): object
+	{
+		return $o;
+	}
+
+	/**
+	 * @param object{foo: positive-int} $o
+	 * @return void
+	 */
+	public function doFoo(object $o): void
+	{
+		assertType('object{foo: int<1, max>}', $this->doBar($o));
+	}
+
+}

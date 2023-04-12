@@ -14,6 +14,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\KeyOfType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
@@ -51,6 +52,10 @@ final class TemplateTypeFactory
 
 		if ($bound instanceof ConstantArrayType && ($boundClass === ConstantArrayType::class || $bound instanceof TemplateType)) {
 			return new TemplateConstantArrayType($scope, $strategy, $variance, $name, $bound);
+		}
+
+		if ($bound instanceof ObjectShapeType && ($boundClass === ObjectShapeType::class || $bound instanceof TemplateType)) {
+			return new TemplateObjectShapeType($scope, $strategy, $variance, $name, $bound);
 		}
 
 		if ($bound instanceof StringType && ($boundClass === StringType::class || $bound instanceof TemplateType)) {

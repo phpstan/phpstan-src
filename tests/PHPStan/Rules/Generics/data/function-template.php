@@ -75,3 +75,9 @@ function nullableUnionSupported()
 {
 
 }
+
+/** @template T of object{foo: int} */
+function objectShapes()
+{
+
+}

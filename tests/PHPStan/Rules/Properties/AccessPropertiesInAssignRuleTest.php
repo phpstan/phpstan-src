@@ -115,4 +115,9 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testConflictingAnnotationProperty(): void
+	{
+		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], []);
+	}
+
 }

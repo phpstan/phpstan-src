@@ -42,6 +42,14 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 		if (isset($propertyTags[$propertyName])) {
 			$propertyTag = $propertyTags[$propertyName];
 
+			$isReadable = $propertyTags[$propertyName]->isReadable();
+			$isWritable = $propertyTags[$propertyName]->isWritable();
+			if ($classReflection->hasNativeProperty($propertyName)) {
+				$nativeProperty = $classReflection->getNativeProperty($propertyName);
+				$isReadable = $isReadable || $nativeProperty->isReadable();
+				$isWritable = $isWritable || $nativeProperty->isWritable();
+			}
+
 			return new AnnotationPropertyReflection(
 				$declaringClass,
 				TemplateTypeHelper::resolveTemplateTypes(
@@ -52,8 +60,8 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 					$propertyTag->getWritableType() ?? new NeverType(),
 					$classReflection->getActiveTemplateTypeMap(),
 				),
-				$propertyTags[$propertyName]->isReadable(),
-				$propertyTags[$propertyName]->isWritable(),
+				$isReadable,
+				$isWritable,
 			);
 		}
 

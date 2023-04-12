@@ -76,4 +76,15 @@ class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testConflictingAnnotationProperty(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], [
+			/*[
+				'Property ConflictingAnnotationProperty\PropertyWithAnnotation::$test is not writable.',
+				27,
+			],*/
+		]);
+	}
+
 }

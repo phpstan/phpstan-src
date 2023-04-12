@@ -885,4 +885,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testConflictingAnnotationProperty(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
+		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], []);
+	}
+
 }

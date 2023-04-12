@@ -14,8 +14,8 @@ class AnnotationPropertyReflection implements PropertyReflection
 		private ClassReflection $declaringClass,
 		private Type $readableType,
 		private Type $writableType,
-		private bool $readable = true,
-		private bool $writable = true,
+		private bool $readable,
+		private bool $writable,
 	)
 	{
 	}

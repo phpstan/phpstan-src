@@ -11,6 +11,7 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -45,8 +46,6 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 
 		$functionName = strtolower($functionReflection->getName());
 		$inputArgType = $scope->getType($functionCall->getArgs()[0]->value);
-
-		$inputArrayType = $inputArgType->getArrays()[0] ?? null;
 		$inputConstantArrayType = null;
 		if ($functionName === 'filter_var_array') {
 			if ($inputArgType->isArray()->no()) {
@@ -69,14 +68,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 
 			// Pragmatical solution since global expressions are not passed through the scope for performance reasons
 			// See https://github.com/phpstan/phpstan-src/pull/2012 for details
-			$inputArrayType = new ArrayType(new StringType(), new MixedType());
-		}
-
-		if ($inputArrayType === null) {
-			$inputArrayType = new ArrayType(new MixedType(), new MixedType());
-			if ($inputArgType->isSuperTypeOf($inputArrayType)->no()) {
-				return null;
-			}
+			$inputArgType = new ArrayType(new StringType(), new MixedType());
 		}
 
 		$filterArgType = $scope->getType($functionCall->getArgs()[1]->value);
@@ -90,11 +82,11 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			if ($inputConstantArrayType === null) {
 				$isList = $inputArgType->isList()->yes();
 				$valueType = $this->filterFunctionReturnTypeHelper->getType(
-					$inputArrayType->getItemType(),
+					$inputArgType->getIterableValueType(),
 					$filterArgType,
 					null,
 				);
-				$arrayType = new ArrayType($inputArrayType->getKeyType(), $valueType);
+				$arrayType = new ArrayType($inputArgType->getIterableKeyType(), $valueType);
 
 				return $isList ? AccessoryArrayListType::intersectWith($arrayType) : $arrayType;
 			}
@@ -116,11 +108,11 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			}
 		} elseif ($filterConstantArrayType === null) {
 			if ($inputConstantArrayType === null) {
-				$isList = $inputArrayType->isList()->yes();
-				$valueType = $this->filterFunctionReturnTypeHelper->getType($inputArrayType, $filterArgType, null);
+				$isList = $inputArgType->isList()->yes();
+				$valueType = $this->filterFunctionReturnTypeHelper->getType($inputArgType, $filterArgType, null);
 
 				$arrayType = new ArrayType(
-					$inputArrayType->getKeyType(),
+					$inputArgType->getIterableKeyType(),
 					$addEmpty ? TypeCombinator::addNull($valueType) : $valueType,
 				);
 
@@ -148,7 +140,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 				}
 			} else {
 				$optionalKeys = $filterKeysList;
-				$inputTypesMap = array_fill_keys($optionalKeys, $inputArrayType->getItemType());
+				$inputTypesMap = array_fill_keys($optionalKeys, $inputArgType->getIterableValueType());
 			}
 		}
 
@@ -184,21 +176,23 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 	/** @return array{?Type, ?Type} */
 	public function fetchFilter(Type $type): array
 	{
-		$constantType = $type->getConstantArrays()[0] ?? null;
-
-		if ($constantType === null) {
+		if (!$type->isArray()->yes()) {
 			return [$type, null];
 		}
 
-		$filterType = null;
-		foreach ($constantType->getKeyTypes() as $keyType) {
-			if ($keyType->getValue() === 'filter') {
-				$filterType = $constantType->getOffsetValueType($keyType)->getConstantScalarTypes()[0] ?? null;
-				break;
-			}
+		$filterKey = new ConstantStringType('filter');
+		if (!$type->hasOffsetValueType($filterKey)->yes()) {
+			return [$type, null];
 		}
 
-		return [$filterType, $constantType];
+		$filterOffsetType = $type->getOffsetValueType($filterKey);
+		$filterType = null;
+
+		if (count($filterOffsetType->getConstantScalarTypes()) > 0) {
+			$filterType = TypeCombinator::union(...$filterOffsetType->getConstantScalarTypes());
+		}
+
+		return [$filterType, $type];
 	}
 
 }

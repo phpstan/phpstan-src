@@ -143,3 +143,33 @@ class Baz
 	}
 
 }
+
+class OptionalProperty
+{
+
+	/**
+	 * @param object{foo?: string} $o
+	 */
+	public function doFoo(object $o): void
+	{
+		$this->doBar($o);
+		$this->doBaz($o);
+	}
+
+	/**
+	 * @param object{foo?: int} $o
+	 */
+	public function doBar(object $o): void
+	{
+
+	}
+
+	/**
+	 * @param object{foo: int} $o
+	 */
+	public function doBaz(object $o): void
+	{
+
+	}
+
+}

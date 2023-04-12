@@ -2979,6 +2979,16 @@ class CallMethodsRuleTest extends RuleTestCase
 				107,
 				'Property ($d) type array{foo: string} does not accept type array{foo: int}: Offset \'foo\' (string) does not accept type int.',
 			],
+			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\OptionalProperty::doBar() expects object{foo?: int}, object{foo?: string} given.',
+				155,
+				'Property ($foo) type int does not accept type string.',
+			],
+			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\OptionalProperty::doBaz() expects object{foo: int}, object{foo?: string} given.',
+				156,
+				'Property ($foo) type int does not accept type string.',
+			],
 		]);
 	}
 

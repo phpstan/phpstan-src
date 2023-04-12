@@ -2961,32 +2961,32 @@ class CallMethodsRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Baz::doBar() expects object{a: int}, $this(ObjectShapesAcceptance\Baz) given.',
-				104,
+				105,
 				'Property ObjectShapesAcceptance\Baz::$a is not public.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Baz::doBaz() expects object{b: int}, $this(ObjectShapesAcceptance\Baz) given.',
-				105,
+				106,
 				'Property ObjectShapesAcceptance\Baz::$b is static.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Baz::doLorem() expects object{c: int}, $this(ObjectShapesAcceptance\Baz) given.',
-				106,
+				107,
 				'Property ObjectShapesAcceptance\Baz::$c is not readable.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Baz::doIpsum() expects object{d: array{foo: string}}, $this(ObjectShapesAcceptance\Baz) given.',
-				107,
+				108,
 				'Property ($d) type array{foo: string} does not accept type array{foo: int}: Offset \'foo\' (string) does not accept type int.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\OptionalProperty::doBar() expects object{foo?: int}, object{foo?: string} given.',
-				155,
+				156,
 				'Property ($foo) type int does not accept type string.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\OptionalProperty::doBaz() expects object{foo: int}, object{foo?: string} given.',
-				156,
+				157,
 				'Property ($foo) type int does not accept type string.',
 			],
 		]);

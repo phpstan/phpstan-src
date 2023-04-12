@@ -90,6 +90,7 @@ class Bar
 /**
  * @property-write int $c
  */
+#[\AllowDynamicProperties]
 class Baz
 {
 

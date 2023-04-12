@@ -117,10 +117,10 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 		} elseif ($filterConstantArrayType === null) {
 			if ($inputConstantArrayType === null) {
 				$isList = $inputArrayType->isList()->yes();
-				$valueType = $this->filterFunctionReturnTypeHelper->getType($inputArrayType ?? new MixedType(), $filterArgType, null);
+				$valueType = $this->filterFunctionReturnTypeHelper->getType($inputArrayType, $filterArgType, null);
 
 				$arrayType = new ArrayType(
-					$inputArrayType !== null ? $inputArrayType->getKeyType() : new MixedType(),
+					$inputArrayType->getKeyType(),
 					$addEmpty ? TypeCombinator::addNull($valueType) : $valueType,
 				);
 

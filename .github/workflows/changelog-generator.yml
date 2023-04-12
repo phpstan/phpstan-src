@@ -9,13 +9,13 @@ on:
       - '.github/workflows/changelog-generator.yml'
   push:
     branches:
-      - "1.10.x"
+      - "1.11.x"
     paths:
       - 'changelog-generator/**'
       - '.github/workflows/changelog-generator.yml'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.10.x-dev"
+  COMPOSER_ROOT_VERSION: "1.11.x-dev"
 
 concurrency:
   group: changelog-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches

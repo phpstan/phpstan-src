@@ -54,6 +54,8 @@ class Foo
 	{
 		$o = (object) ['foo' => 1, 'bar' => new \Exception()];
 		assertType('object{foo: 1, bar: Exception}&stdClass', $o);
+		assertType('1', $o->foo);
+		assertType('Exception', $o->bar);
 
 		assertType('Exception', $this->generics($o));
 	}

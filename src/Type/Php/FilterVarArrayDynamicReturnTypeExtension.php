@@ -46,7 +46,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 		$functionName = strtolower($functionReflection->getName());
 		$inputArgType = $scope->getType($functionCall->getArgs()[0]->value);
 
-		$inputArrayType = $inputArgType;
+		$inputArrayType = $inputArgType->getArrays()[0] ?? null;
 		$inputConstantArrayType = null;
 		if ($functionName === 'filter_var_array') {
 			if ($inputArgType->isArray()->no()) {
@@ -72,28 +72,29 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			$inputArrayType = new ArrayType(new StringType(), new MixedType());
 		}
 
+		if ($inputArrayType === null) {
+			$inputArrayType = new ArrayType(new MixedType(), new MixedType());
+			if ($inputArgType->isSuperTypeOf($inputArrayType)->no()) {
+				return null;
+			}
+		}
+
 		$filterArgType = $scope->getType($functionCall->getArgs()[1]->value);
 		$filterConstantArrayType = $filterArgType->getConstantArrays()[0] ?? null;
 		$addEmptyType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
 		$addEmpty = $addEmptyType === null || $addEmptyType->isTrue()->yes();
 
 		$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
-		$inputTypesMap = [];
-		$optionalKeys = [];
 
 		if ($filterArgType instanceof ConstantIntegerType) {
 			if ($inputConstantArrayType === null) {
-				$isList = $inputArrayType->isList()->yes();
-				$inputArrayType = $inputArrayType->getArrays()[0] ?? null;
+				$isList = $inputArgType->isList()->yes();
 				$valueType = $this->filterFunctionReturnTypeHelper->getType(
-					$inputArrayType === null ? new MixedType() : $inputArrayType->getItemType(),
+					$inputArrayType->getItemType(),
 					$filterArgType,
 					null,
 				);
-				$arrayType = new ArrayType(
-					$inputArrayType !== null ? $inputArrayType->getKeyType() : new MixedType(),
-					$valueType,
-				);
+				$arrayType = new ArrayType($inputArrayType->getKeyType(), $valueType);
 
 				return $isList ? AccessoryArrayListType::intersectWith($arrayType) : $arrayType;
 			}
@@ -116,11 +117,10 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 		} elseif ($filterConstantArrayType === null) {
 			if ($inputConstantArrayType === null) {
 				$isList = $inputArrayType->isList()->yes();
-				$inputArrayType = $inputArrayType->getArrays()[0] ?? null;
-				$valueType = $this->filterFunctionReturnTypeHelper->getType($inputArrayType ?? new MixedType(), $filterArgType, null);
+				$valueType = $this->filterFunctionReturnTypeHelper->getType($inputArrayType, $filterArgType, null);
 
 				$arrayType = new ArrayType(
-					$inputArrayType !== null ? $inputArrayType->getKeyType() : new MixedType(),
+					$inputArrayType->getKeyType(),
 					$addEmpty ? TypeCombinator::addNull($valueType) : $valueType,
 				);
 
@@ -148,7 +148,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 				}
 			} else {
 				$optionalKeys = $filterKeysList;
-				$inputTypesMap = array_fill_keys($optionalKeys, $inputArrayType->getArrays()[0]->getItemType());
+				$inputTypesMap = array_fill_keys($optionalKeys, $inputArrayType->getItemType());
 			}
 		}
 

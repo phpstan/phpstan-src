@@ -46,7 +46,7 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 		$functionName = strtolower($functionReflection->getName());
 		$inputArgType = $scope->getType($functionCall->getArgs()[0]->value);
 
-		$inputArrayType = $inputArgType;
+		$inputArrayType = $inputArgType->getArrays()[0] ?? null;
 		$inputConstantArrayType = null;
 		if ($functionName === 'filter_var_array') {
 			if ($inputArgType->isArray()->no()) {
@@ -78,13 +78,10 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 		$addEmpty = $addEmptyType === null || $addEmptyType->isTrue()->yes();
 
 		$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
-		$inputTypesMap = [];
-		$optionalKeys = [];
 
 		if ($filterArgType instanceof ConstantIntegerType) {
 			if ($inputConstantArrayType === null) {
-				$isList = $inputArrayType->isList()->yes();
-				$inputArrayType = $inputArrayType->getArrays()[0] ?? null;
+				$isList = $inputArgType->isList()->yes();
 				$valueType = $this->filterFunctionReturnTypeHelper->getType(
 					$inputArrayType === null ? new MixedType() : $inputArrayType->getItemType(),
 					$filterArgType,
@@ -116,7 +113,6 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 		} elseif ($filterConstantArrayType === null) {
 			if ($inputConstantArrayType === null) {
 				$isList = $inputArrayType->isList()->yes();
-				$inputArrayType = $inputArrayType->getArrays()[0] ?? null;
 				$valueType = $this->filterFunctionReturnTypeHelper->getType($inputArrayType ?? new MixedType(), $filterArgType, null);
 
 				$arrayType = new ArrayType(
@@ -148,7 +144,10 @@ class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnT
 				}
 			} else {
 				$optionalKeys = $filterKeysList;
-				$inputTypesMap = array_fill_keys($optionalKeys, $inputArrayType->getArrays()[0]->getItemType());
+				$inputTypesMap = array_fill_keys(
+					$optionalKeys,
+					$inputArrayType === null ? new MixedType() : $inputArrayType->getItemType()
+				);
 			}
 		}
 

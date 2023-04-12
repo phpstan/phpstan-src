@@ -28,35 +28,17 @@ class IntersectionTypePropertyReflection implements PropertyReflection
 
 	public function isStatic(): bool
 	{
-		foreach ($this->properties as $property) {
-			if ($property->isStatic()) {
-				return true;
-			}
-		}
-
-		return false;
+		return $this->computeResult(static fn (PropertyReflection $property) => $property->isStatic());
 	}
 
 	public function isPrivate(): bool
 	{
-		foreach ($this->properties as $property) {
-			if (!$property->isPrivate()) {
-				return false;
-			}
-		}
-
-		return true;
+		return $this->computeResult(static fn (PropertyReflection $property) => $property->isPrivate());
 	}
 
 	public function isPublic(): bool
 	{
-		foreach ($this->properties as $property) {
-			if ($property->isPublic()) {
-				return true;
-			}
-		}
-
-		return false;
+		return $this->computeResult(static fn (PropertyReflection $property) => $property->isPublic());
 	}
 
 	public function isDeprecated(): TrinaryLogic
@@ -108,35 +90,30 @@ class IntersectionTypePropertyReflection implements PropertyReflection
 
 	public function canChangeTypeAfterAssignment(): bool
 	{
-		foreach ($this->properties as $property) {
-			if (!$property->canChangeTypeAfterAssignment()) {
-				return false;
-			}
-		}
-
-		return true;
+		return $this->computeResult(static fn (PropertyReflection $property) => $property->canChangeTypeAfterAssignment());
 	}
 
 	public function isReadable(): bool
 	{
-		foreach ($this->properties as $property) {
-			if (!$property->isReadable()) {
-				return false;
-			}
-		}
-
-		return true;
+		return $this->computeResult(static fn (PropertyReflection $property) => $property->isReadable());
 	}
 
 	public function isWritable(): bool
 	{
+		return $this->computeResult(static fn (PropertyReflection $property) => $property->isWritable());
+	}
+
+	/**
+	 * @param callable(PropertyReflection): bool $cb
+	 */
+	private function computeResult(callable $cb): bool
+	{
+		$result = false;
 		foreach ($this->properties as $property) {
-			if (!$property->isWritable()) {
-				return false;
-			}
+			$result = $result || $cb($property);
 		}
 
-		return true;
+		return $result;
 	}
 
 }

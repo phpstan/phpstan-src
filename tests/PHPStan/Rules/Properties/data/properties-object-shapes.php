@@ -20,4 +20,26 @@ class Foo
 		$o->baz = 3;
 	}
 
+	/**
+	 * @param object{foo: int}&\stdClass $o
+	 * @return void
+	 */
+	public function doIntersection(object $o): void
+	{
+		echo $o->foo;
+
+		$o->foo = 1;
+	}
+
+	/**
+	 * @param object{foo: int}|\stdClass $o
+	 * @return void
+	 */
+	public function doUnion(object $o): void
+	{
+		echo $o->foo;
+
+		$o->foo = 1;
+	}
+
 }

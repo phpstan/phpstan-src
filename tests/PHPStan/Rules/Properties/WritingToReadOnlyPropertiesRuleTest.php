@@ -69,6 +69,10 @@ class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 				'Property object{foo: int, bar?: string}::$foo is not writable.',
 				18,
 			],
+			[
+				'Property object{foo: int}|stdClass::$foo is not writable.',
+				42,
+			],
 		]);
 	}
 

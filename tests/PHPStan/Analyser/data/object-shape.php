@@ -154,3 +154,25 @@ class MethodExistsCheck
 	}
 
 }
+
+class ObjectWithProperty
+{
+
+	public function doFoo(object $o): void
+	{
+		if (property_exists($o, 'foo')) {
+			assertType('object&hasProperty(foo)', $o);
+		} else {
+			assertType('object', $o);
+		}
+		assertType('object', $o);
+
+		if (isset($o->foo)) {
+			assertType('object&hasProperty(foo)', $o);
+		} else {
+			assertType('object', $o);
+		}
+		assertType('object', $o);
+	}
+
+}

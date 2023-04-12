@@ -86,3 +86,60 @@ class Bar
 	}
 
 }
+
+/**
+ * @property-write int $c
+ */
+class Baz
+{
+
+	/** @var int */
+	protected $a;
+
+	/** @var array{foo: int} */
+	public $d;
+
+	public function doFoo(): void
+	{
+		$this->doBar($this);
+		$this->doBaz($this);
+		$this->doLorem($this);
+		$this->doIpsum($this);
+	}
+
+	/**
+	 * @param object{a: int} $o
+	 */
+	public function doBar(object $o): void
+	{
+
+	}
+
+	/** @var int */
+	public static $b;
+
+	/**
+	 * @param object{b: int} $o
+	 */
+	public function doBaz(object $o): void
+	{
+
+	}
+
+	/**
+	 * @param object{c: int} $o
+	 */
+	public function doLorem(object $o): void
+	{
+
+	}
+
+	/**
+	 * @param object{d: array{foo: string}} $o
+	 */
+	public function doIpsum(object $o): void
+	{
+
+	}
+
+}

@@ -7,6 +7,7 @@
 
 This repository (`phpstan/phpstan-src`) is for PHPStan's development only. Head to [`phpstan/phpstan`](https://github.com/phpstan/phpstan) for the main README, or to [create an issue](https://github.com/phpstan/phpstan/issues/new/choose).
 
+
 ## Contributing
 
 Any contributions are welcome.

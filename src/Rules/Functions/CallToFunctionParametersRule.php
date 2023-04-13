@@ -64,6 +64,7 @@ class CallToFunctionParametersRule implements Rule
 				'Return type of call to function ' . $functionName . ' contains unresolvable type.',
 				'Parameter %s of function ' . $functionName . ' contains unresolvable type.',
 			],
+			'function',
 		);
 	}
 

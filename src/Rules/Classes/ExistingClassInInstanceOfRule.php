@@ -52,7 +52,10 @@ class ExistingClassInInstanceOfRule implements Rule
 		], true)) {
 			if (!$scope->isInClass()) {
 				return [
-					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $lowercaseName))->line($class->getLine())->build(),
+					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $lowercaseName))
+						->identifier(sprintf('outOfClass.%s', $lowercaseName))
+						->line($class->getLine())
+						->build(),
 				];
 			}
 
@@ -67,7 +70,11 @@ class ExistingClassInInstanceOfRule implements Rule
 			}
 
 			return [
-				RuleErrorBuilder::message(sprintf('Class %s not found.', $name))->line($class->getLine())->discoveringSymbolsTip()->build(),
+				RuleErrorBuilder::message(sprintf('Class %s not found.', $name))
+					->identifier('class.notFound')
+					->line($class->getLine())
+					->discoveringSymbolsTip()
+					->build(),
 			];
 		} elseif ($this->checkClassCaseSensitivity) {
 			$errors = array_merge(
@@ -85,7 +92,7 @@ class ExistingClassInInstanceOfRule implements Rule
 				'Instanceof between %s and trait %s will always evaluate to false.',
 				$expressionType->describe(VerbosityLevel::typeOnly()),
 				$name,
-			))->build();
+			))->identifier('instanceof.trait')->build();
 		}
 
 		return $errors;

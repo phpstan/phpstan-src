@@ -205,6 +205,7 @@ class InstantiationRule implements Rule
 				'Return type of call to ' . $classDisplayName . ' constructor contains unresolvable type.',
 				'Parameter %s of class ' . $classDisplayName . ' constructor contains unresolvable type.',
 			],
+			'new',
 		));
 	}
 

@@ -36,15 +36,15 @@ class InvalidCastRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$castTypeCallback = static function (Type $type) use ($node): ?Type {
+		$castTypeCallback = static function (Type $type) use ($node): ?array {
 			if ($node instanceof Node\Expr\Cast\Int_) {
-				return $type->toInteger();
+				return [$type->toInteger(), 'int'];
 			} elseif ($node instanceof Node\Expr\Cast\Bool_) {
-				return $type->toBoolean();
+				return [$type->toBoolean(), 'bool'];
 			} elseif ($node instanceof Node\Expr\Cast\Double) {
-				return $type->toFloat();
+				return [$type->toFloat(), 'double'];
 			} elseif ($node instanceof Node\Expr\Cast\String_) {
-				return $type->toString();
+				return [$type->toString(), 'string'];
 			}
 
 			return null;
@@ -55,10 +55,12 @@ class InvalidCastRule implements Rule
 			$node->expr,
 			'',
 			static function (Type $type) use ($castTypeCallback): bool {
-				$castType = $castTypeCallback($type);
-				if ($castType === null) {
+				$castResult = $castTypeCallback($type);
+				if ($castResult === null) {
 					return true;
 				}
+
+				[$castType] = $castResult;
 
 				return !$castType instanceof ErrorType;
 			},
@@ -68,7 +70,13 @@ class InvalidCastRule implements Rule
 			return [];
 		}
 
-		$castType = $castTypeCallback($type);
+		$castResult = $castTypeCallback($type);
+		if ($castResult === null) {
+			return [];
+		}
+
+		[$castType, $castIdentifier] = $castResult;
+
 		if ($castType instanceof ErrorType) {
 			$classReflection = $this->reflectionProvider->getClass(get_class($node));
 			$shortName = $classReflection->getNativeReflection()->getShortName();
@@ -84,7 +92,7 @@ class InvalidCastRule implements Rule
 					'Cannot cast %s to %s.',
 					$scope->getType($node->expr)->describe(VerbosityLevel::value()),
 					$shortName,
-				))->line($node->getLine())->build(),
+				))->identifier(sprintf('cast.%s', $castIdentifier))->line($node->getLine())->build(),
 			];
 		}
 

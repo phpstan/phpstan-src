@@ -82,7 +82,7 @@ class OffsetAccessAssignmentRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot assign new offset to %s.',
 					$varType->describe(VerbosityLevel::typeOnly()),
-				))->build(),
+				))->identifier('offsetAssign.dimType')->build(),
 			];
 		}
 
@@ -91,7 +91,7 @@ class OffsetAccessAssignmentRule implements Rule
 				'Cannot assign offset %s to %s.',
 				$dimType->describe(VerbosityLevel::value()),
 				$varType->describe(VerbosityLevel::typeOnly()),
-			))->build(),
+			))->identifier('offsetAssign.dimType')->build(),
 		];
 	}
 

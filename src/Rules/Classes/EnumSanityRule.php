@@ -52,7 +52,11 @@ class EnumSanityRule implements Rule
 					'Enum %s contains abstract method %s().',
 					$node->namespacedName->toString(),
 					$methodNode->name->name,
-				))->line($methodNode->getLine())->nonIgnorable()->build();
+				))
+					->identifier('enum.abstractMethod')
+					->line($methodNode->getLine())
+					->nonIgnorable()
+					->build();
 			}
 
 			$lowercasedMethodName = $methodNode->name->toLowerString();
@@ -62,18 +66,30 @@ class EnumSanityRule implements Rule
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s contains constructor.',
 						$node->namespacedName->toString(),
-					))->line($methodNode->getLine())->nonIgnorable()->build();
+					))
+						->identifier('enum.constructor')
+						->line($methodNode->getLine())
+						->nonIgnorable()
+						->build();
 				} elseif ($lowercasedMethodName === '__destruct') {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s contains destructor.',
 						$node->namespacedName->toString(),
-					))->line($methodNode->getLine())->nonIgnorable()->build();
+					))
+						->identifier('enum.destructor')
+						->line($methodNode->getLine())
+						->nonIgnorable()
+						->build();
 				} elseif (!array_key_exists($lowercasedMethodName, self::ALLOWED_MAGIC_METHODS)) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s contains magic method %s().',
 						$node->namespacedName->toString(),
 						$methodNode->name->name,
-					))->line($methodNode->getLine())->nonIgnorable()->build();
+					))
+						->identifier('enum.magicMethod')
+						->line($methodNode->getLine())
+						->nonIgnorable()
+						->build();
 				}
 			}
 
@@ -82,7 +98,11 @@ class EnumSanityRule implements Rule
 					'Enum %s cannot redeclare native method %s().',
 					$node->namespacedName->toString(),
 					$methodNode->name->name,
-				))->line($methodNode->getLine())->nonIgnorable()->build();
+				))
+					->identifier('enum.methodRedeclaration')
+					->line($methodNode->getLine())
+					->nonIgnorable()
+					->build();
 			}
 
 			if ($node->scalarType === null) {
@@ -97,7 +117,11 @@ class EnumSanityRule implements Rule
 				'Enum %s cannot redeclare native method %s().',
 				$node->namespacedName->toString(),
 				$methodNode->name->name,
-			))->line($methodNode->getLine())->nonIgnorable()->build();
+			))
+				->identifier('enum.methodRedeclaration')
+				->line($methodNode->getLine())
+				->nonIgnorable()
+				->build();
 		}
 
 		if (
@@ -108,7 +132,11 @@ class EnumSanityRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Backed enum %s can have only "int" or "string" type.',
 				$node->namespacedName->toString(),
-			))->line($node->scalarType->getLine())->nonIgnorable()->build();
+			))
+				->identifier('enum.backingType')
+				->line($node->scalarType->getLine())
+				->nonIgnorable()
+				->build();
 		}
 
 		if ($this->reflectionProvider->hasClass($node->namespacedName->toString())) {
@@ -118,7 +146,11 @@ class EnumSanityRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Enum %s cannot implement the Serializable interface.',
 					$node->namespacedName->toString(),
-				))->line($node->getLine())->nonIgnorable()->build();
+				))
+					->identifier('enum.serializable')
+					->line($node->getLine())
+					->nonIgnorable()
+					->build();
 			}
 		}
 

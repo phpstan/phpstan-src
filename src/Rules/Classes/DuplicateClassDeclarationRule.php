@@ -51,12 +51,19 @@ class DuplicateClassDeclarationRule implements Rule
 
 		$filteredClasses = array_filter($filteredClasses, static fn (ReflectionClass $class) => $class->getStartLine() !== $thisClass->getNativeReflection()->getStartLine());
 
+		$identifierType = 'class';
+		if ($thisClass->isInterface()) {
+			$identifierType = 'interface';
+		} elseif ($thisClass->isEnum()) {
+			$identifierType = 'enum';
+		}
+
 		return [
 			RuleErrorBuilder::message(sprintf(
 				"Class %s declared multiple times:\n%s",
 				$thisClass->getDisplayName(),
 				implode("\n", array_map(fn (ReflectionClass $class) => sprintf('- %s:%d', $this->relativePathHelper->getRelativePath($class->getFileName() ?? 'unknown'), $class->getStartLine()), $filteredClasses)),
-			))->build(),
+			))->identifier(sprintf('%s.duplicate', $identifierType))->build(),
 		];
 	}
 

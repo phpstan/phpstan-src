@@ -29,7 +29,10 @@ class OffsetAccessWithoutDimForReadingRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message('Cannot use [] for reading.')->nonIgnorable()->build(),
+			RuleErrorBuilder::message('Cannot use [] for reading.')
+				->identifier('offsetAccess.noDim')
+				->nonIgnorable()
+				->build(),
 		];
 	}
 

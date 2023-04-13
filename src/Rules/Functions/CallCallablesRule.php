@@ -127,6 +127,7 @@ class CallCallablesRule implements Rule
 					'Return type of call to ' . $callableDescription . ' contains unresolvable type.',
 					'Parameter %s of ' . $callableDescription . ' contains unresolvable type.',
 				],
+				'callable',
 			),
 		);
 	}

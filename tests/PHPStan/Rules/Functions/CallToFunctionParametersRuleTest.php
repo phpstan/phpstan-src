@@ -1301,4 +1301,32 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testFilterInputType(): void
+	{
+		$errors = [
+			[
+				'Parameter #1 $type of function filter_input expects 0|1|2|4|5, -1 given.',
+				16,
+			],
+			[
+				'Parameter #1 $type of function filter_input expects 0|1|2|4|5, int given.',
+				17,
+			],
+			[
+				'Parameter #1 $type of function filter_input_array expects 0|1|2|4|5, -1 given.',
+				28,
+			],
+			[
+				'Parameter #1 $type of function filter_input_array expects 0|1|2|4|5, int given.',
+				29,
+			],
+		];
+
+		if (PHP_VERSION_ID < 80000) {
+			$errors = [];
+		}
+
+		$this->analyse([__DIR__ . '/data/filter-input-type.php'], $errors);
+	}
+
 }

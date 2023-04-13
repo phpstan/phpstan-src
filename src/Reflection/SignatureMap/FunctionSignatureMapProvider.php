@@ -186,6 +186,15 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 				}
 
 				$signatureMap = $this->computeSignatureMap($signatureMap, $stricterFunctionMap);
+
+				if ($this->phpVersion->getVersionId() >= 80000) {
+					$php80StricterFunctionMapDelta = require __DIR__ . '/../../../resources/functionMap_php80delta_bleedingEdge.php';
+					if (!is_array($php80StricterFunctionMapDelta)) {
+						throw new ShouldNotHappenException('Signature map could not be loaded.');
+					}
+
+					$signatureMap = $this->computeSignatureMap($signatureMap, $php80StricterFunctionMapDelta);
+				}
 			}
 
 			if ($this->phpVersion->getVersionId() >= 70400) {

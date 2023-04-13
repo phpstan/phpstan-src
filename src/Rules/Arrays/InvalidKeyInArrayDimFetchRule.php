@@ -61,7 +61,7 @@ class InvalidKeyInArrayDimFetchRule implements Rule
 		return [
 			RuleErrorBuilder::message(
 				sprintf('%s array key type %s.', $isSuperType->no() ? 'Invalid' : 'Possibly invalid', $dimensionType->describe(VerbosityLevel::typeOnly())),
-			)->build(),
+			)->identifier('offsetAccess.invalidOffset')->build(),
 		];
 	}
 

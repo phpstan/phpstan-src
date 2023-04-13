@@ -30,7 +30,9 @@ class DeadForeachRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message('Empty array passed to foreach.')->build(),
+			RuleErrorBuilder::message('Empty array passed to foreach.')
+				->identifier('foreach.emptyArray')
+				->build(),
 		];
 	}
 

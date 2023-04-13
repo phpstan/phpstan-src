@@ -10,7 +10,7 @@ class FoundTypeResult
 
 	/**
 	 * @param string[] $referencedClasses
-	 * @param RuleError[] $unknownClassErrors
+	 * @param list<IdentifierRuleError> $unknownClassErrors
 	 */
 	public function __construct(
 		private Type $type,
@@ -35,7 +35,7 @@ class FoundTypeResult
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function getUnknownClassErrors(): array
 	{

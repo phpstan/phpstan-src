@@ -20,7 +20,7 @@ class RuleErrorBuilderTest extends TestCase
 		$ruleError = $builder->build();
 		$this->assertSame('Foo', $ruleError->getMessage());
 
-		$this->assertInstanceOf(LineRuleError::class, $ruleError);
+		$this->assertInstanceOf(LineRuleError::class, $ruleError); // @phpstan-ignore-line
 		$this->assertSame(25, $ruleError->getLine());
 	}
 
@@ -30,7 +30,7 @@ class RuleErrorBuilderTest extends TestCase
 		$ruleError = $builder->build();
 		$this->assertSame('Foo', $ruleError->getMessage());
 
-		$this->assertInstanceOf(FileRuleError::class, $ruleError);
+		$this->assertInstanceOf(FileRuleError::class, $ruleError); // @phpstan-ignore-line
 		$this->assertSame('Bar.php', $ruleError->getFile());
 	}
 
@@ -40,8 +40,8 @@ class RuleErrorBuilderTest extends TestCase
 		$ruleError = $builder->build();
 		$this->assertSame('Foo', $ruleError->getMessage());
 
-		$this->assertInstanceOf(LineRuleError::class, $ruleError);
-		$this->assertInstanceOf(FileRuleError::class, $ruleError);
+		$this->assertInstanceOf(LineRuleError::class, $ruleError); // @phpstan-ignore-line
+		$this->assertInstanceOf(FileRuleError::class, $ruleError);  // @phpstan-ignore-line
 		$this->assertSame(25, $ruleError->getLine());
 		$this->assertSame('Bar.php', $ruleError->getFile());
 	}

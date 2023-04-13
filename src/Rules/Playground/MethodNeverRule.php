@@ -51,7 +51,7 @@ class MethodNeverRule implements Rule
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 				count($helperResult) === 0 ? 'throws an exception' : 'terminates script execution',
-			))->build(),
+			))->identifier('phpstanPlayground.never')->build(),
 		];
 	}
 

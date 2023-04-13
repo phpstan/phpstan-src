@@ -175,13 +175,6 @@ class UnusedPrivatePropertyRule implements Rule
 				if (!$data['written']) {
 					$errors[] = RuleErrorBuilder::message(sprintf('%s is unused.', $propertyName))
 						->line($propertyNode->getStartLine())
-						->identifier('deadCode.unusedProperty')
-						->metadata([
-							'classOrder' => $node->getClass()->getAttribute('statementOrder'),
-							'classDepth' => $node->getClass()->getAttribute('statementDepth'),
-							'classStartLine' => $node->getClass()->getStartLine(),
-							'propertyName' => $name,
-						])
 						->tip($tip)
 						->build();
 				} else {

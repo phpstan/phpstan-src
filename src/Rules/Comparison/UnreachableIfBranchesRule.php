@@ -53,15 +53,7 @@ class UnreachableIfBranchesRule implements Rule
 
 		foreach ($node->elseifs as $elseif) {
 			if ($nextBranchIsDead) {
-				$errors[] = $addTip(RuleErrorBuilder::message('Elseif branch is unreachable because previous condition is always true.')->line($elseif->getLine()))
-					->identifier('deadCode.unreachableElseif')
-					->metadata([
-						'ifDepth' => $node->getAttribute('statementDepth'),
-						'ifOrder' => $node->getAttribute('statementOrder'),
-						'depth' => $elseif->getAttribute('statementDepth'),
-						'order' => $elseif->getAttribute('statementOrder'),
-					])
-					->build();
+				$errors[] = $addTip(RuleErrorBuilder::message('Elseif branch is unreachable because previous condition is always true.')->line($elseif->getLine()))->build();
 				continue;
 			}
 
@@ -72,13 +64,7 @@ class UnreachableIfBranchesRule implements Rule
 		}
 
 		if ($node->else !== null && $nextBranchIsDead) {
-			$errors[] = $addTip(RuleErrorBuilder::message('Else branch is unreachable because previous condition is always true.'))->line($node->else->getLine())
-				->identifier('deadCode.unreachableElse')
-				->metadata([
-					'ifDepth' => $node->getAttribute('statementDepth'),
-					'ifOrder' => $node->getAttribute('statementOrder'),
-				])
-				->build();
+			$errors[] = $addTip(RuleErrorBuilder::message('Else branch is unreachable because previous condition is always true.'))->line($node->else->getLine())->build();
 		}
 
 		return $errors;

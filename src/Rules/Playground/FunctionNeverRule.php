@@ -50,7 +50,7 @@ class FunctionNeverRule implements Rule
 				'Function %s() always %s, it should have return type "never".',
 				$function->getName(),
 				count($helperResult) === 0 ? 'throws an exception' : 'terminates script execution',
-			))->identifier('phpstanPlayground.never')->build(),
+			))->build(),
 		];
 	}
 

@@ -78,7 +78,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 						'PHPDoc tag %s references unknown parameter: $%s',
 						$tagName,
 						$parameterName,
-					))->identifier('phpDoc.unknownParameter')->metadata(['parameterName' => $parameterName])->build();
+					))->build();
 
 				} elseif (
 					$this->unresolvableTypeHelper->containsUnresolvableType($phpDocParamType)

@@ -52,16 +52,6 @@ class DefinedVariableRule implements Rule
 		if ($scope->hasVariableType($node->name)->no()) {
 			return [
 				RuleErrorBuilder::message(sprintf('Undefined variable: $%s', $node->name))
-					->identifier('variable.undefined')
-					->metadata([
-						'variableName' => $node->name,
-						'statementDepth' => $node->getAttribute('statementDepth'),
-						'statementOrder' => $node->getAttribute('statementOrder'),
-						'depth' => $node->getAttribute('expressionDepth'),
-						'order' => $node->getAttribute('expressionOrder'),
-						'variables' => $scope->getDefinedVariables(),
-						'parentVariables' => $this->getParentVariables($scope),
-					])
 					->build(),
 			];
 		} elseif (
@@ -69,37 +59,11 @@ class DefinedVariableRule implements Rule
 			&& !$scope->hasVariableType($node->name)->yes()
 		) {
 			return [
-				RuleErrorBuilder::message(sprintf('Variable $%s might not be defined.', $node->name))
-					->identifier('variable.maybeUndefined')
-					->metadata([
-						'variableName' => $node->name,
-						'statementDepth' => $node->getAttribute('statementDepth'),
-						'statementOrder' => $node->getAttribute('statementOrder'),
-						'depth' => $node->getAttribute('expressionDepth'),
-						'order' => $node->getAttribute('expressionOrder'),
-						'variables' => $scope->getDefinedVariables(),
-						'parentVariables' => $this->getParentVariables($scope),
-					])
-					->build(),
+				RuleErrorBuilder::message(sprintf('Variable $%s might not be defined.', $node->name))->build(),
 			];
 		}
 
 		return [];
-	}
-
-	/**
-	 * @return array<int, array<int, string>>
-	 */
-	private function getParentVariables(Scope $scope): array
-	{
-		$variables = [];
-		$parent = $scope->getParentScope();
-		while ($parent !== null) {
-			$variables[] = $parent->getDefinedVariables();
-			$parent = $parent->getParentScope();
-		}
-
-		return $variables;
 	}
 
 }

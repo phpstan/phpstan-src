@@ -154,13 +154,6 @@ class UnusedPrivateMethodRule implements Rule
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf('%s %s::%s() is unused.', $methodType, $classReflection->getDisplayName(), $methodName))
 				->line($method->getNode()->getLine())
-				->identifier('deadCode.unusedMethod')
-				->metadata([
-					'classOrder' => $node->getClass()->getAttribute('statementOrder'),
-					'classDepth' => $node->getClass()->getAttribute('statementDepth'),
-					'classStartLine' => $node->getClass()->getStartLine(),
-					'methodName' => $methodName,
-				])
 				->build();
 		}
 

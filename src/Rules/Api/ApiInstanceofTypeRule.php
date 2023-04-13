@@ -145,7 +145,7 @@ class ApiInstanceofTypeRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Doing instanceof %s is error-prone and deprecated.',
 					$className,
-				))->tip($tip)->build(),
+				))->identifier('phpstanApi.instanceofType')->tip($tip)->build(),
 			];
 		}
 
@@ -154,7 +154,7 @@ class ApiInstanceofTypeRule implements Rule
 				'Doing instanceof %s is error-prone and deprecated. Use %s instead.',
 				$className,
 				$lowerMap[$lowerClassName],
-			))->tip($tip)->build(),
+			))->identifier('phpstanApi.instanceofType')->tip($tip)->build(),
 		];
 	}
 

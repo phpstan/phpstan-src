@@ -88,7 +88,7 @@ class RuntimeReflectionInstantiationRule implements Rule
 		return [
 			RuleErrorBuilder::message(
 				sprintf('Creating new %s is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.', $classReflection->getName()),
-			)->build(),
+			)->identifier('phpstanApi.runtimeReflection')->build(),
 		];
 	}
 

@@ -90,6 +90,7 @@ class NodeConnectingVisitorAttributesRule implements Rule
 
 		return [
 			RuleErrorBuilder::message(sprintf('Node attribute \'%s\' is no longer available.', $argType->getValue()))
+				->identifier('phpParser.nodeConnectingAttribute')
 				->tip('See: https://phpstan.org/blog/preprocessing-ast-for-custom-rules')
 				->build(),
 		];

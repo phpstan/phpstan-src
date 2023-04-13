@@ -48,7 +48,7 @@ class ApiTraitUseRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Using %s is not covered by backward compatibility promise. The trait might change in a minor PHPStan version.',
 				$traitReflection->getDisplayName(),
-			))->tip($tip)->build();
+			))->identifier('phpstanApi.trait')->tip($tip)->build();
 		}
 
 		return $errors;

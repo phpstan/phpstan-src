@@ -72,7 +72,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 							'Cannot access offset %s on %s.',
 							$dimType->describe(VerbosityLevel::value()),
 							$isOffsetAccessibleType->describe(VerbosityLevel::value()),
-						))->build(),
+						))->identifier('offsetAccess.nonOffsetAccessible')->build(),
 					];
 				}
 
@@ -80,7 +80,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 					RuleErrorBuilder::message(sprintf(
 						'Cannot access an offset on %s.',
 						$isOffsetAccessibleType->describe(VerbosityLevel::typeOnly()),
-					))->build(),
+					))->identifier('offsetAccess.nonOffsetAccessible')->build(),
 				];
 			}
 

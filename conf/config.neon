@@ -820,11 +820,6 @@ services:
 			fileFinder: @fileFinderAnalyse
 
 	-
-		class: PHPStan\NodeVisitor\StatementOrderVisitor
-		tags:
-			- phpstan.parser.richParserNodeVisitor
-
-	-
 		class: PHPStan\Parallel\ParallelAnalyser
 		arguments:
 			internalErrorsCountLimit: %internalErrorsCountLimit%

@@ -634,7 +634,7 @@ parameters:
 			path: src/Rules/PhpDoc/VarTagTypeRuleHelper.php
 
 		-
-			message: "#^Access to an undefined property PHPStan\\\\Rules\\\\RuleError\\:\\:\\$tip\\.$#"
+			message: "#^Access to an undefined property T of PHPStan\\\\Rules\\\\RuleError\\:\\:\\$tip\\.$#"
 			count: 2
 			path: src/Rules/RuleErrorBuilder.php
 

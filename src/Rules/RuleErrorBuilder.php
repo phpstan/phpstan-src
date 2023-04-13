@@ -9,7 +9,10 @@ use function count;
 use function implode;
 use function sprintf;
 
-/** @api */
+/**
+ * @api
+ * @template-covariant T of RuleError
+ */
 class RuleErrorBuilder
 {
 
@@ -86,11 +89,18 @@ class RuleErrorBuilder
 		];
 	}
 
+	/**
+	 * @return self<RuleError>
+	 */
 	public static function message(string $message): self
 	{
 		return new self($message);
 	}
 
+	/**
+	 * @phpstan-this-out self<T&LineRuleError>
+	 * @return self<T&LineRuleError>
+	 */
 	public function line(int $line): self
 	{
 		$this->properties['line'] = $line;
@@ -99,6 +109,10 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @phpstan-this-out self<T&FileRuleError>
+	 * @return self<T&FileRuleError>
+	 */
 	public function file(string $file): self
 	{
 		$this->properties['file'] = $file;
@@ -107,6 +121,10 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @phpstan-this-out self<T&TipRuleError>
+	 * @return self<T&TipRuleError>
+	 */
 	public function tip(string $tip): self
 	{
 		$this->tips = [$tip];
@@ -115,6 +133,10 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @phpstan-this-out self<T&TipRuleError>
+	 * @return self<T&TipRuleError>
+	 */
 	public function addTip(string $tip): self
 	{
 		$this->tips[] = $tip;
@@ -123,6 +145,10 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @phpstan-this-out self<T&TipRuleError>
+	 * @return self<T&TipRuleError>
+	 */
 	public function discoveringSymbolsTip(): self
 	{
 		return $this->tip('Learn more at https://phpstan.org/user-guide/discovering-symbols');
@@ -130,6 +156,8 @@ class RuleErrorBuilder
 
 	/**
 	 * @param list<string> $reasons
+	 * @phpstan-this-out self<T&TipRuleError>
+	 * @return self<T&TipRuleError>
 	 */
 	public function acceptsReasonsTip(array $reasons): self
 	{
@@ -140,6 +168,10 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @phpstan-this-out self<T&IdentifierRuleError>
+	 * @return self<T&IdentifierRuleError>
+	 */
 	public function identifier(string $identifier): self
 	{
 		$this->properties['identifier'] = $identifier;
@@ -150,6 +182,8 @@ class RuleErrorBuilder
 
 	/**
 	 * @param mixed[] $metadata
+	 * @phpstan-this-out self<T&MetadataRuleError>
+	 * @return self<T&MetadataRuleError>
 	 */
 	public function metadata(array $metadata): self
 	{
@@ -159,6 +193,10 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @phpstan-this-out self<T&NonIgnorableRuleError>
+	 * @return self<T&NonIgnorableRuleError>
+	 */
 	public function nonIgnorable(): self
 	{
 		$this->type |= self::TYPE_NON_IGNORABLE;
@@ -166,9 +204,12 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @return T
+	 */
 	public function build(): RuleError
 	{
-		/** @var class-string<RuleError> $className */
+		/** @var class-string<T> $className */
 		$className = sprintf('PHPStan\\Rules\\RuleErrors\\RuleError%d', $this->type);
 		if (!class_exists($className)) {
 			throw new ShouldNotHappenException(sprintf('Class %s does not exist.', $className));

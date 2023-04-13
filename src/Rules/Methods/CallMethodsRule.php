@@ -70,6 +70,7 @@ class CallMethodsRule implements Rule
 				'Return type of call to method ' . $messagesMethodName . ' contains unresolvable type.',
 				'Parameter %s of method ' . $messagesMethodName . ' contains unresolvable type.',
 			],
+			'method',
 		));
 	}
 

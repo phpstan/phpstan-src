@@ -82,7 +82,7 @@ class OffsetAccessValueAssignmentRule implements Rule
 				'%s does not accept %s.',
 				$originalArrayType->describe(VerbosityLevel::value()),
 				$assignedValueType->describe(VerbosityLevel::typeOnly()),
-			))->build(),
+			))->identifier('offsetAssign.valueType')->build(),
 		];
 	}
 

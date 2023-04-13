@@ -53,11 +53,18 @@ class AllowedSubTypesRule implements Rule
 				}
 			}
 
+			$identifierType = 'class';
+			if ($classReflection->isInterface()) {
+				$identifierType = 'interface';
+			} elseif ($classReflection->isEnum()) {
+				$identifierType = 'enum';
+			}
+
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Type %s is not allowed to be a subtype of %s.',
 				$className,
 				$parentReflection->getName(),
-			))->build();
+			))->identifier(sprintf('%s.disallowedSubtype', $identifierType))->build();
 		}
 
 		return $messages;

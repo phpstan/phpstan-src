@@ -16,7 +16,7 @@ class ClassCaseSensitivityCheck
 
 	/**
 	 * @param ClassNameNodePair[] $pairs
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function checkClassNames(array $pairs): array
 	{
@@ -38,17 +38,24 @@ class ClassCaseSensitivityCheck
 				continue;
 			}
 
+			$typeName = $this->getTypeName($classReflection);
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'%s %s referenced with incorrect case: %s.',
-				$this->getTypeName($classReflection),
+				$typeName,
 				$realClassName,
 				$className,
-			))->line($pair->getNode()->getLine())->build();
+			))
+				->identifier(sprintf('%s.nameCase', strtolower($typeName)))
+				->line($pair->getNode()->getLine())
+				->build();
 		}
 
 		return $errors;
 	}
 
+	/**
+	 * @return 'Interface'|'Trait'|'Enum'|'Class'
+	 */
 	private function getTypeName(ClassReflection $classReflection): string
 	{
 		if ($classReflection->isInterface()) {

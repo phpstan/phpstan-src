@@ -33,6 +33,13 @@ class DuplicateDeclarationRule implements Rule
 			throw new ShouldNotHappenException();
 		}
 
+		$identifierType = 'class';
+		if ($classReflection->isInterface()) {
+			$identifierType = 'interface';
+		} elseif ($classReflection->isEnum()) {
+			$identifierType = 'enum';
+		}
+
 		$errors = [];
 
 		$declaredClassConstantsOrEnumCases = [];
@@ -43,7 +50,10 @@ class DuplicateDeclarationRule implements Rule
 						'Cannot redeclare enum case %s::%s.',
 						$classReflection->getDisplayName(),
 						$stmtNode->name->name,
-					))->line($stmtNode->getLine())->nonIgnorable()->build();
+					))->identifier(sprintf('%s.duplicateEnumCase', $identifierType))
+						->line($stmtNode->getLine())
+						->nonIgnorable()
+						->build();
 				} else {
 					$declaredClassConstantsOrEnumCases[$stmtNode->name->name] = true;
 				}
@@ -54,7 +64,10 @@ class DuplicateDeclarationRule implements Rule
 							'Cannot redeclare constant %s::%s.',
 							$classReflection->getDisplayName(),
 							$classConstNode->name->name,
-						))->line($classConstNode->getLine())->nonIgnorable()->build();
+						))->identifier(sprintf('%s.duplicateConstant', $identifierType))
+							->line($classConstNode->getLine())
+							->nonIgnorable()
+							->build();
 					} else {
 						$declaredClassConstantsOrEnumCases[$classConstNode->name->name] = true;
 					}
@@ -70,7 +83,10 @@ class DuplicateDeclarationRule implements Rule
 						'Cannot redeclare property %s::$%s.',
 						$classReflection->getDisplayName(),
 						$property->name->name,
-					))->line($property->getLine())->nonIgnorable()->build();
+					))->identifier(sprintf('%s.duplicateProperty', $identifierType))
+						->line($property->getLine())
+						->nonIgnorable()
+						->build();
 				} else {
 					$declaredProperties[$property->name->name] = true;
 				}
@@ -96,7 +112,10 @@ class DuplicateDeclarationRule implements Rule
 							'Cannot redeclare property %s::$%s.',
 							$classReflection->getDisplayName(),
 							$propertyName,
-						))->line($param->getLine())->nonIgnorable()->build();
+						))->identifier(sprintf('%s.duplicateProperty', $identifierType))
+							->line($param->getLine())
+							->nonIgnorable()
+							->build();
 					} else {
 						$declaredProperties[$propertyName] = true;
 					}
@@ -107,7 +126,10 @@ class DuplicateDeclarationRule implements Rule
 					'Cannot redeclare method %s::%s().',
 					$classReflection->getDisplayName(),
 					$method->name->name,
-				))->line($method->getStartLine())->nonIgnorable()->build();
+				))->identifier(sprintf('%s.duplicateMethod', $identifierType))
+					->line($method->getStartLine())
+					->nonIgnorable()
+					->build();
 			} else {
 				$declaredFunctions[strtolower($method->name->name)] = true;
 			}

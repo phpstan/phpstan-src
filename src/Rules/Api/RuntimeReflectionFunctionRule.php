@@ -69,7 +69,7 @@ class RuntimeReflectionFunctionRule implements Rule
 		return [
 			RuleErrorBuilder::message(
 				sprintf('Function %s() is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.', $functionReflection->getName()),
-			)->build(),
+			)->identifier('phpstanApi.runtimeReflection')->build(),
 		];
 	}
 

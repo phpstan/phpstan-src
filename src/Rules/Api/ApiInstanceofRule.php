@@ -53,10 +53,12 @@ class ApiInstanceofRule implements Rule
 			'Asking about instanceof %s is not covered by backward compatibility promise. The %s might change in a minor PHPStan version.',
 			$classReflection->getDisplayName(),
 			$classReflection->isInterface() ? 'interface' : 'class',
-		))->tip(sprintf(
-			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
-			'https://github.com/phpstan/phpstan/discussions',
-		))->build();
+		))
+			->identifier(sprintf('phpstanApi.%s', $classReflection->isInterface() ? 'interface' : 'class'))
+			->tip(sprintf(
+				"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
+				'https://github.com/phpstan/phpstan/discussions',
+			))->build();
 
 		$docBlock = $classReflection->getResolvedPhpDoc();
 		if ($docBlock === null) {
@@ -102,7 +104,7 @@ class ApiInstanceofRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Although %s is covered by backward compatibility promise, this instanceof assumption might break because it\'s not guaranteed to always stay the same.',
 				$classReflection->getDisplayName(),
-			))->tip(sprintf(
+			))->identifier('phpstanApi.instanceofAssumption')->tip(sprintf(
 				"In case of questions how to solve this correctly, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
 				'https://github.com/phpstan/phpstan/discussions',
 			))->build(),

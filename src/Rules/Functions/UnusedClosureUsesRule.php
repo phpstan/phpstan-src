@@ -42,13 +42,6 @@ class UnusedClosureUsesRule implements Rule
 			}, $node->uses),
 			$node->stmts,
 			'Anonymous function has an unused use $%s.',
-			'anonymousFunction.unusedUse',
-			[
-				'statementDepth' => $node->getAttribute('statementDepth'),
-				'statementOrder' => $node->getAttribute('statementOrder'),
-				'depth' => $node->getAttribute('expressionDepth'),
-				'order' => $node->getAttribute('expressionOrder'),
-			],
 		);
 	}
 

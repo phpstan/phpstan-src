@@ -23,7 +23,6 @@ class UnusedFunctionParametersCheck
 	/**
 	 * @param string[] $parameterNames
 	 * @param Node[] $statements
-	 * @param mixed[] $additionalMetadata
 	 * @return RuleError[]
 	 */
 	public function getUnusedParameters(
@@ -31,8 +30,6 @@ class UnusedFunctionParametersCheck
 		array $parameterNames,
 		array $statements,
 		string $unusedParameterMessage,
-		string $identifier,
-		array $additionalMetadata,
 	): array
 	{
 		$unusedParameters = array_fill_keys($parameterNames, true);

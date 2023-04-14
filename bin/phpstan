@@ -60,6 +60,9 @@ use Symfony\Component\Console\Helper\ProgressBar;
 		// vendor/symfony/polyfill-php80/bootstrap.php
 		'a4a119a56e50fbb293281d9a48007e0e' => true,
 
+		// vendor/symfony/polyfill-php81/bootstrap.php
+		'23c18046f52bef3eea034657bafda50f' => true,
+
 		// vendor/symfony/polyfill-mbstring/bootstrap.php
 		'0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => true,
 

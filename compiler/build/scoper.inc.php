@@ -225,6 +225,7 @@ return [
 		'PhpParser',
 		'Hoa',
 		'Symfony\Polyfill\Php80',
+		'Symfony\Polyfill\Php81',
 		'Symfony\Polyfill\Mbstring',
 		'Symfony\Polyfill\Intl\Normalizer',
 		'Symfony\Polyfill\Php73',

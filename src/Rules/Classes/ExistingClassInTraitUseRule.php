@@ -45,7 +45,10 @@ class ExistingClassInTraitUseRule implements Rule
 		if ($classReflection->isInterface()) {
 			if (!$scope->isInTrait()) {
 				foreach ($node->traits as $trait) {
-					$messages[] = RuleErrorBuilder::message(sprintf('Interface %s uses trait %s.', $classReflection->getName(), (string) $trait))->nonIgnorable()->build();
+					$messages[] = RuleErrorBuilder::message(sprintf('Interface %s uses trait %s.', $classReflection->getName(), (string) $trait))
+						->identifier('interface.traitUse')
+						->nonIgnorable()
+						->build();
 				}
 			}
 		} else {
@@ -61,15 +64,28 @@ class ExistingClassInTraitUseRule implements Rule
 			foreach ($node->traits as $trait) {
 				$traitName = (string) $trait;
 				if (!$this->reflectionProvider->hasClass($traitName)) {
-					$messages[] = RuleErrorBuilder::message(sprintf('%s uses unknown trait %s.', $currentName, $traitName))->nonIgnorable()->discoveringSymbolsTip()->build();
+					$messages[] = RuleErrorBuilder::message(sprintf('%s uses unknown trait %s.', $currentName, $traitName))
+						->identifier('trait.notFound')
+						->nonIgnorable()
+						->discoveringSymbolsTip()
+						->build();
 				} else {
 					$reflection = $this->reflectionProvider->getClass($traitName);
 					if ($reflection->isClass()) {
-						$messages[] = RuleErrorBuilder::message(sprintf('%s uses class %s.', $currentName, $reflection->getDisplayName()))->nonIgnorable()->build();
+						$messages[] = RuleErrorBuilder::message(sprintf('%s uses class %s.', $currentName, $reflection->getDisplayName()))
+							->identifier('traitUse.class')
+							->nonIgnorable()
+							->build();
 					} elseif ($reflection->isInterface()) {
-						$messages[] = RuleErrorBuilder::message(sprintf('%s uses interface %s.', $currentName, $reflection->getDisplayName()))->nonIgnorable()->build();
+						$messages[] = RuleErrorBuilder::message(sprintf('%s uses interface %s.', $currentName, $reflection->getDisplayName()))
+							->identifier('traitUse.interface')
+							->nonIgnorable()
+							->build();
 					} elseif ($reflection->isEnum()) {
-						$messages[] = RuleErrorBuilder::message(sprintf('%s uses enum %s.', $currentName, $reflection->getDisplayName()))->nonIgnorable()->build();
+						$messages[] = RuleErrorBuilder::message(sprintf('%s uses enum %s.', $currentName, $reflection->getDisplayName()))
+							->identifier('traitUse.enum')
+							->nonIgnorable()
+							->build();
 					}
 				}
 			}

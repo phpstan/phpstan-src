@@ -51,12 +51,16 @@ class NonClassAttributeClassRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'%s cannot be an Attribute class.',
 					$classReflection->isInterface() ? 'Interface' : 'Enum',
-				))->build(),
+				))
+					->identifier(sprintf('attribute.%s', $classReflection->isInterface() ? 'interface' : 'enum'))
+					->build(),
 			];
 		}
 		if ($classReflection->isAbstract()) {
 			return [
-				RuleErrorBuilder::message(sprintf('Abstract class %s cannot be an Attribute class.', $classReflection->getDisplayName()))->build(),
+				RuleErrorBuilder::message(sprintf('Abstract class %s cannot be an Attribute class.', $classReflection->getDisplayName()))
+					->identifier('attribute.abstract')
+					->build(),
 			];
 		}
 
@@ -66,7 +70,9 @@ class NonClassAttributeClassRule implements Rule
 
 		if (!$classReflection->getConstructor()->isPublic()) {
 			return [
-				RuleErrorBuilder::message(sprintf('Attribute class %s constructor must be public.', $classReflection->getDisplayName()))->build(),
+				RuleErrorBuilder::message(sprintf('Attribute class %s constructor must be public.', $classReflection->getDisplayName()))
+					->identifier('attribute.constructorNotPublic')
+					->build(),
 			];
 		}
 

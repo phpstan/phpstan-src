@@ -63,7 +63,9 @@ class InstantiationRule implements Rule
 		if ($lowercasedClass === 'static') {
 			if (!$scope->isInClass()) {
 				return [
-					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $class))->build(),
+					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $class))
+						->identifier('outOfClass.static')
+						->build(),
 				];
 			}
 
@@ -87,14 +89,18 @@ class InstantiationRule implements Rule
 		} elseif ($lowercasedClass === 'self') {
 			if (!$scope->isInClass()) {
 				return [
-					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $class))->build(),
+					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $class))
+						->identifier('outOfClass.self')
+						->build(),
 				];
 			}
 			$classReflection = $scope->getClassReflection();
 		} elseif ($lowercasedClass === 'parent') {
 			if (!$scope->isInClass()) {
 				return [
-					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $class))->build(),
+					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $class))
+						->identifier('outOfClass.parent')
+						->build(),
 				];
 			}
 			if ($scope->getClassReflection()->getParentClass() === null) {
@@ -104,7 +110,7 @@ class InstantiationRule implements Rule
 						$scope->getClassReflection()->getDisplayName(),
 						$scope->getFunctionName(),
 						$scope->getClassReflection()->getDisplayName(),
-					))->build(),
+					))->identifier('class.noParent')->build(),
 				];
 			}
 			$classReflection = $scope->getClassReflection()->getParentClass();
@@ -115,7 +121,10 @@ class InstantiationRule implements Rule
 				}
 
 				return [
-					RuleErrorBuilder::message(sprintf('Instantiated class %s not found.', $class))->discoveringSymbolsTip()->build(),
+					RuleErrorBuilder::message(sprintf('Instantiated class %s not found.', $class))
+						->identifier('class.notFound')
+						->discoveringSymbolsTip()
+						->build(),
 				];
 			}
 
@@ -130,7 +139,7 @@ class InstantiationRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Cannot instantiate enum %s.', $classReflection->getDisplayName()),
-				)->build(),
+				)->identifier('new.enum')->build(),
 			];
 		}
 
@@ -138,7 +147,7 @@ class InstantiationRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Cannot instantiate interface %s.', $classReflection->getDisplayName()),
-				)->build(),
+				)->identifier('new.interface')->build(),
 			];
 		}
 
@@ -146,7 +155,7 @@ class InstantiationRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Instantiated class %s is abstract.', $classReflection->getDisplayName()),
-				)->build(),
+				)->identifier('new.abstract')->build(),
 			];
 		}
 
@@ -160,7 +169,7 @@ class InstantiationRule implements Rule
 					RuleErrorBuilder::message(sprintf(
 						'Class %s does not have a constructor and must be instantiated without any parameters.',
 						$classReflection->getDisplayName(),
-					))->build(),
+					))->identifier('new.noConstructor')->build(),
 				]);
 			}
 
@@ -175,7 +184,9 @@ class InstantiationRule implements Rule
 				$constructorReflection->isPrivate() ? 'private' : 'protected',
 				$constructorReflection->getDeclaringClass()->getDisplayName(),
 				$constructorReflection->getName(),
-			))->build();
+			))
+				->identifier(sprintf('new.%sConstructor', $constructorReflection->isPrivate() ? 'private' : 'protected'))
+				->build();
 		}
 
 		$classDisplayName = SprintfHelper::escapeFormatString($classReflection->getDisplayName());

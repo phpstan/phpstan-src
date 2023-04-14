@@ -51,14 +51,18 @@ class MixinRule implements Rule
 		foreach ($mixinTags as $mixinTag) {
 			$type = $mixinTag->getType();
 			if (!$type->canCallMethods()->yes() || !$type->canAccessProperties()->yes()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))
+					->identifier('mixin.nonObject')
+					->build();
 				continue;
 			}
 
 			if (
 				$this->unresolvableTypeHelper->containsUnresolvableType($type)
 			) {
-				$errors[] = RuleErrorBuilder::message('PHPDoc tag @mixin contains unresolvable type.')->build();
+				$errors[] = RuleErrorBuilder::message('PHPDoc tag @mixin contains unresolvable type.')
+					->identifier('mixin.unresolvableType')
+					->build();
 				continue;
 			}
 
@@ -75,14 +79,22 @@ class MixinRule implements Rule
 					'PHPDoc tag @mixin contains generic %s but does not specify its types: %s',
 					$innerName,
 					implode(', ', $genericTypeNames),
-				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+				))
+					->identifier('missingType.generics')
+					->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+					->build();
 			}
 
 			foreach ($type->getReferencedClasses() as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {
-					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains unknown class %s.', $class))->discoveringSymbolsTip()->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains unknown class %s.', $class))
+						->identifier('class.notFound')
+						->discoveringSymbolsTip()
+						->build();
 				} elseif ($this->reflectionProvider->getClass($class)->isTrait()) {
-					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains invalid type %s.', $class))->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains invalid type %s.', $class))
+						->identifier('mixin.trait')
+						->build();
 				} elseif ($this->checkClassCaseSensitivity) {
 					$errors = array_merge(
 						$errors,

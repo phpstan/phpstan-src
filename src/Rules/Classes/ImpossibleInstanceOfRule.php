@@ -56,7 +56,7 @@ class ImpossibleInstanceOfRule implements Rule
 						'Instanceof between %s and %s results in an error.',
 						$scope->getType($node->expr)->describe(VerbosityLevel::typeOnly()),
 						$classType->describe(VerbosityLevel::typeOnly()),
-					))->build(),
+					))->identifier('instanceof.invalidExprType')->build(),
 				];
 			}
 		}
@@ -82,7 +82,7 @@ class ImpossibleInstanceOfRule implements Rule
 					'Instanceof between %s and %s will always evaluate to false.',
 					$exprType->describe(VerbosityLevel::typeOnly()),
 					$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
-				)))->build(),
+				)))->identifier('instanceof.alwaysFalse')->build(),
 			];
 		} elseif ($this->checkAlwaysTrueInstanceof) {
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -99,6 +99,8 @@ class ImpossibleInstanceOfRule implements Rule
 			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 				$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 			}
+
+			$errorBuilder->identifier('instanceof.alwaysTrue');
 
 			return [$errorBuilder->build()];
 		}

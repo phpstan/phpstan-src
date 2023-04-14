@@ -41,6 +41,7 @@ class NewStaticRule implements Rule
 
 		$messages = [
 			RuleErrorBuilder::message('Unsafe usage of new static().')
+				->identifier('new.static')
 				->tip('See: https://phpstan.org/blog/solving-phpstan-error-unsafe-usage-of-new-static')
 				->build(),
 		];

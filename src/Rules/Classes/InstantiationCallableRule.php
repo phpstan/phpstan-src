@@ -22,7 +22,10 @@ class InstantiationCallableRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		return [
-			RuleErrorBuilder::message('Cannot create callable from the new operator.')->nonIgnorable()->build(),
+			RuleErrorBuilder::message('Cannot create callable from the new operator.')
+				->identifier('callable.notSupported')
+				->nonIgnorable()
+				->build(),
 		];
 	}
 

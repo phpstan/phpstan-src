@@ -41,6 +41,7 @@ class BooleanOrConstantConditionRule implements Rule
 		$nodeText = $this->bleedingEdge ? $originalNode->getOperatorSigil() : '||';
 		$messages = [];
 		$leftType = $this->helper->getBooleanType($scope, $originalNode->left);
+		$identifierType = $originalNode instanceof Node\Expr\BinaryOp\BooleanOr ? 'booleanOr' : 'logicalOr';
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		if ($leftType instanceof ConstantBooleanType) {
 			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode, $tipText): RuleErrorBuilder {
@@ -62,7 +63,9 @@ class BooleanOrConstantConditionRule implements Rule
 					'Left side of %s is always %s.',
 					$nodeText,
 					$leftType->getValue() ? 'true' : 'false',
-				)))->line($originalNode->left->getLine());
+				)))
+					->identifier(sprintf('%s.leftAlways%s', $identifierType, $leftType->getValue() ? 'True' : 'False'))
+					->line($originalNode->left->getLine());
 				if ($leftType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
@@ -98,7 +101,9 @@ class BooleanOrConstantConditionRule implements Rule
 					'Right side of %s is always %s.',
 					$nodeText,
 					$rightType->getValue() ? 'true' : 'false',
-				)))->line($originalNode->right->getLine());
+				)))
+					->identifier(sprintf('%s.rightAlways%s', $identifierType, $rightType->getValue() ? 'True' : 'False'))
+					->line($originalNode->right->getLine());
 				if ($rightType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
@@ -132,6 +137,8 @@ class BooleanOrConstantConditionRule implements Rule
 					if ($nodeType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 						$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 					}
+
+					$errorBuilder->identifier(sprintf('%s.always%s', $identifierType, $nodeType->getValue() ? 'True' : 'False'));
 
 					$messages[] = $errorBuilder->build();
 				}

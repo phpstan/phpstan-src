@@ -64,6 +64,7 @@ class UnusedConstructorParametersRule implements Rule
 			}, array_values(array_filter($originalNode->params, static fn (Param $parameter): bool => $parameter->flags === 0))),
 			$originalNode->stmts,
 			$message,
+			'constructor.unusedParameter',
 		);
 	}
 

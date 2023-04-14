@@ -54,21 +54,31 @@ class BackedEnumFromMethodDynamicReturnTypeExtension implements DynamicStaticMet
 		}
 
 		$resultEnumCases = [];
-		foreach ($enumCases as $enumCase) {
-			if ($enumCase->getBackingValueType() === null) {
-				continue;
-			}
-			$enumCaseValues = $enumCase->getBackingValueType()->getConstantScalarValues();
-			if (count($enumCaseValues) !== 1) {
-				continue;
-			}
+		$addNull = false;
+		foreach ($valueType->getConstantScalarValues() as $value) {
+			$hasMatching = false;
+			foreach ($enumCases as $enumCase) {
+				if ($enumCase->getBackingValueType() === null) {
+					continue;
+				}
 
-			foreach ($valueType->getConstantScalarValues() as $value) {
+				$enumCaseValues = $enumCase->getBackingValueType()->getConstantScalarValues();
+				if (count($enumCaseValues) !== 1) {
+					continue;
+				}
+
 				if ($value === $enumCaseValues[0]) {
 					$resultEnumCases[] = new EnumCaseObjectType($enumCase->getDeclaringEnum()->getName(), $enumCase->getName(), $enumCase->getDeclaringEnum());
+					$hasMatching = true;
 					break;
 				}
 			}
+
+			if ($hasMatching) {
+				continue;
+			}
+
+			$addNull = true;
 		}
 
 		if (count($resultEnumCases) === 0) {
@@ -79,7 +89,12 @@ class BackedEnumFromMethodDynamicReturnTypeExtension implements DynamicStaticMet
 			return null;
 		}
 
-		return TypeCombinator::union(...$resultEnumCases);
+		$result = TypeCombinator::union(...$resultEnumCases);
+		if ($addNull && $methodReflection->getName() === 'tryFrom') {
+			return TypeCombinator::addNull($result);
+		}
+
+		return $result;
 	}
 
 }

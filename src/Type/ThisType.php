@@ -71,6 +71,15 @@ class ThisType extends StaticType
 		return $this;
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if ($this->getSubtractedType() === null) {
+			return $this;
+		}
+
+		return new self($this->getClassReflection());
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

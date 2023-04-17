@@ -87,7 +87,23 @@ final class OffsetAccessType implements CompoundType, LateResolvableType
 			return $this;
 		}
 
-		return new OffsetAccessType($type, $offset);
+		return new self($type, $offset);
+	}
+
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if (!$right instanceof self) {
+			return $this;
+		}
+
+		$type = $cb($this->type, $right->type);
+		$offset = $cb($this->offset, $right->offset);
+
+		if ($this->type === $type && $this->offset === $offset) {
+			return $this;
+		}
+
+		return new self($type, $offset);
 	}
 
 	/**

@@ -230,6 +230,11 @@ class VoidType implements Type
 		return $this;
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		return $this;
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();

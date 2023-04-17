@@ -438,6 +438,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		return $this;
+	}
+
 	public static function __set_state(array $properties): Type
 	{
 		return new self();

@@ -434,6 +434,18 @@ class IterableType implements CompoundType
 		return $this;
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		$keyType = $cb($this->keyType, $right->getIterableKeyType());
+		$itemType = $cb($this->itemType, $right->getIterableValueType());
+
+		if ($keyType !== $this->keyType || $itemType !== $this->itemType) {
+			return new self($keyType, $itemType);
+		}
+
+		return $this;
+	}
+
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		$arrayType = new ArrayType(new MixedType(), new MixedType());

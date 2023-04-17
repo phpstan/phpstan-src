@@ -32,6 +32,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_map;
 use function array_merge;
+use function count;
 use function implode;
 use function sprintf;
 
@@ -426,6 +427,43 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			$this->isVariadic(),
 			$this->templateTypeMap,
 			$this->resolvedTemplateTypeMap,
+		);
+	}
+
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if (!$right instanceof self) {
+			return $this;
+		}
+
+		$rightParameters = $right->getParameters();
+		if (count($this->getParameters()) !== count($rightParameters)) {
+			return $this;
+		}
+
+		$parameters = [];
+		foreach ($this->getParameters() as $i => $leftParam) {
+			$rightParam = $rightParameters[$i];
+			$leftDefaultValue = $leftParam->getDefaultValue();
+			$rightDefaultValue = $rightParam->getDefaultValue();
+			$defaultValue = $leftDefaultValue;
+			if ($leftDefaultValue !== null && $rightDefaultValue !== null) {
+				$defaultValue = $cb($leftDefaultValue, $rightDefaultValue);
+			}
+			$parameters[] = new NativeParameterReflection(
+				$leftParam->getName(),
+				$leftParam->isOptional(),
+				$cb($leftParam->getType(), $rightParam->getType()),
+				$leftParam->passedByReference(),
+				$leftParam->isVariadic(),
+				$defaultValue,
+			);
+		}
+
+		return new self(
+			$parameters,
+			$cb($this->getReturnType(), $right->getReturnType()),
+			$this->isVariadic(),
 		);
 	}
 

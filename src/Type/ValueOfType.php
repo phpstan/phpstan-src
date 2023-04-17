@@ -60,7 +60,22 @@ final class ValueOfType implements CompoundType, LateResolvableType
 			return $this;
 		}
 
-		return new ValueOfType($type);
+		return new self($type);
+	}
+
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if (!$right instanceof self) {
+			return $this;
+		}
+
+		$type = $cb($this->type, $right->type);
+
+		if ($this->type === $type) {
+			return $this;
+		}
+
+		return new self($type);
 	}
 
 	/**

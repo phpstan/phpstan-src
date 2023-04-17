@@ -300,6 +300,41 @@ class GenericObjectType extends ObjectType
 		return $this;
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if (!$right instanceof TypeWithClassName) {
+			return $this;
+		}
+
+		$ancestor = $right->getAncestorWithClassName($this->getClassName());
+		if (!$ancestor instanceof self) {
+			return $this;
+		}
+
+		if (count($this->types) !== count($ancestor->types)) {
+			return $this;
+		}
+
+		$typesChanged = false;
+		$types = [];
+		foreach ($this->types as $i => $leftType) {
+			$rightType = $ancestor->types[$i];
+			$newType = $cb($leftType, $rightType);
+			$types[] = $newType;
+			if ($newType === $leftType) {
+				continue;
+			}
+
+			$typesChanged = true;
+		}
+
+		if ($typesChanged) {
+			return $this->recreate($this->getClassName(), $types, null);
+		}
+
+		return $this;
+	}
+
 	/**
 	 * @param Type[] $types
 	 */

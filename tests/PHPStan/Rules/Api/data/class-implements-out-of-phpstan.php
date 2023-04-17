@@ -307,6 +307,11 @@ class Baz implements Type
 		// TODO: Implement traverse() method.
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		// TODO: Implement traverseSimultaneously() method.
+	}
+
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		// TODO: Implement generalize() method.

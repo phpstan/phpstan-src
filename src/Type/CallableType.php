@@ -24,6 +24,7 @@ use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use function array_map;
 use function array_merge;
+use function count;
 use function implode;
 use function sprintf;
 
@@ -339,6 +340,52 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return new self(
 			$parameters,
 			$cb($this->getReturnType()),
+			$this->isVariadic(),
+		);
+	}
+
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if ($this->isCommonCallable) {
+			return $this;
+		}
+
+		if (!$right->isCallable()->yes()) {
+			return $this;
+		}
+
+		$rightAcceptors = $right->getCallableParametersAcceptors(new OutOfClassScope());
+		if (count($rightAcceptors) !== 1) {
+			return $this;
+		}
+
+		$rightParameters = $rightAcceptors[0]->getParameters();
+		if (count($this->getParameters()) !== count($rightParameters)) {
+			return $this;
+		}
+
+		$parameters = [];
+		foreach ($this->getParameters() as $i => $leftParam) {
+			$rightParam = $rightParameters[$i];
+			$leftDefaultValue = $leftParam->getDefaultValue();
+			$rightDefaultValue = $rightParam->getDefaultValue();
+			$defaultValue = $leftDefaultValue;
+			if ($leftDefaultValue !== null && $rightDefaultValue !== null) {
+				$defaultValue = $cb($leftDefaultValue, $rightDefaultValue);
+			}
+			$parameters[] = new NativeParameterReflection(
+				$leftParam->getName(),
+				$leftParam->isOptional(),
+				$cb($leftParam->getType(), $rightParam->getType()),
+				$leftParam->passedByReference(),
+				$leftParam->isVariadic(),
+				$defaultValue,
+			);
+		}
+
+		return new self(
+			$parameters,
+			$cb($this->getReturnType(), $rightAcceptors[0]->getReturnType()),
 			$this->isVariadic(),
 		);
 	}

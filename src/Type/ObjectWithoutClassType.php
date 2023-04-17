@@ -181,6 +181,15 @@ class ObjectWithoutClassType implements SubtractableType
 		return $this;
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if ($this->subtractedType === null) {
+			return $this;
+		}
+
+		return new self();
+	}
+
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($this->isSuperTypeOf($typeToRemove)->yes()) {

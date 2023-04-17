@@ -136,6 +136,24 @@ final class ConditionalType implements CompoundType, LateResolvableType
 		return new self($subject, $target, $if, $else, $this->negated);
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if (!$right instanceof self) {
+			return $this;
+		}
+
+		$subject = $cb($this->subject, $right->subject);
+		$target = $cb($this->target, $right->target);
+		$if = $cb($this->if, $right->if);
+		$else = $cb($this->else, $right->else);
+
+		if ($this->subject === $subject && $this->target === $target && $this->if === $if && $this->else === $else) {
+			return $this;
+		}
+
+		return new self($subject, $target, $if, $else, $this->negated);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

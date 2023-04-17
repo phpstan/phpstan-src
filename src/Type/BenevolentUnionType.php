@@ -137,6 +137,35 @@ class BenevolentUnionType extends UnionType
 		return $this;
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		$types = [];
+		$changed = false;
+
+		if (!$right instanceof UnionType) {
+			return $this;
+		}
+
+		if (count($this->getTypes()) !== count($right->getTypes())) {
+			return $this;
+		}
+
+		foreach ($this->getSortedTypes() as $i => $leftType) {
+			$rightType = $right->getSortedTypes()[$i];
+			$newType = $cb($leftType, $rightType);
+			if ($leftType !== $newType) {
+				$changed = true;
+			}
+			$types[] = $newType;
+		}
+
+		if ($changed) {
+			return TypeUtils::toBenevolentUnion(TypeCombinator::union(...$types));
+		}
+
+		return $this;
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

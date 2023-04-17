@@ -402,6 +402,16 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new self($this->offsetType, $newValueType);
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		$newValueType = $cb($this->valueType, $right->getOffsetValueType($this->offsetType));
+		if ($newValueType === $this->valueType) {
+			return $this;
+		}
+
+		return new self($this->offsetType, $newValueType);
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();

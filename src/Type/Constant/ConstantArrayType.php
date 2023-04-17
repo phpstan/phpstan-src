@@ -1399,6 +1399,32 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if (!$right->isArray()->yes()) {
+			return $this;
+		}
+
+		$valueTypes = [];
+
+		$stillOriginal = true;
+		foreach ($this->valueTypes as $i => $valueType) {
+			$keyType = $this->keyTypes[$i];
+			$transformedValueType = $cb($valueType, $right->getOffsetValueType($keyType));
+			if ($transformedValueType !== $valueType) {
+				$stillOriginal = false;
+			}
+
+			$valueTypes[] = $transformedValueType;
+		}
+
+		if ($stillOriginal) {
+			return $this;
+		}
+
+		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+	}
+
 	public function isKeysSupersetOf(self $otherArray): bool
 	{
 		$keyTypesCount = count($this->keyTypes);

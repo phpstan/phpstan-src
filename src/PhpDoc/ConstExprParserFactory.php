@@ -13,7 +13,7 @@ class ConstExprParserFactory
 
 	public function create(): ConstExprParser
 	{
-		return new ConstExprParser($this->unescapeStrings);
+		return new ConstExprParser($this->unescapeStrings, $this->unescapeStrings);
 	}
 
 }

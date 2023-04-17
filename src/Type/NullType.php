@@ -3,6 +3,8 @@
 namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -361,6 +363,11 @@ class NullType implements ConstantScalarType
 				new ConstantIntegerType(1),
 			],
 		);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode('null');
 	}
 
 	/**

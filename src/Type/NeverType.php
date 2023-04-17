@@ -3,6 +3,8 @@
 namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -492,6 +494,11 @@ class NeverType implements CompoundType
 	public function exponentiate(Type $exponent): Type
 	{
 		return $this;
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode('never');
 	}
 
 	/**

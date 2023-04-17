@@ -3,10 +3,12 @@
 namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\MaybeArrayTypeTrait;
@@ -188,9 +190,8 @@ class IterableType implements CompoundType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		$isMixedKeyType = $this->keyType instanceof MixedType && !$this->keyType instanceof TemplateType;
-		$isMixedItemType = $this->itemType instanceof MixedType && !$this->itemType instanceof TemplateType;
-
+		$isMixedKeyType = $this->keyType instanceof MixedType && $this->keyType->describe(VerbosityLevel::precise()) === 'mixed';
+		$isMixedItemType = $this->itemType instanceof MixedType && $this->itemType->describe(VerbosityLevel::precise()) === 'mixed';
 		if ($isMixedKeyType) {
 			if ($isMixedItemType) {
 				return 'iterable';
@@ -467,6 +468,33 @@ class IterableType implements CompoundType
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		$isMixedKeyType = $this->keyType instanceof MixedType && $this->keyType->describe(VerbosityLevel::precise()) === 'mixed';
+		$isMixedItemType = $this->itemType instanceof MixedType && $this->itemType->describe(VerbosityLevel::precise()) === 'mixed';
+
+		if ($isMixedKeyType) {
+			if ($isMixedItemType) {
+				return new IdentifierTypeNode('iterable');
+			}
+
+			return new GenericTypeNode(
+				new IdentifierTypeNode('iterable'),
+				[
+					$this->itemType->toPhpDocNode(),
+				],
+			);
+		}
+
+		return new GenericTypeNode(
+			new IdentifierTypeNode('iterable'),
+			[
+				$this->keyType->toPhpDocNode(),
+				$this->itemType->toPhpDocNode(),
+			],
+		);
 	}
 
 	/**

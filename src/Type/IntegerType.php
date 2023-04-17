@@ -3,6 +3,8 @@
 namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -158,6 +160,11 @@ class IntegerType implements Type
 	public function exponentiate(Type $exponent): Type
 	{
 		return ExponentiateHelper::exponentiate($this, $exponent);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode('int');
 	}
 
 }

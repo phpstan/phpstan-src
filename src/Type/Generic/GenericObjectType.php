@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -350,6 +353,16 @@ class GenericObjectType extends ObjectType
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
 		return new self($this->getClassName(), $this->types, $subtractedType);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		/** @var IdentifierTypeNode $parent */
+		$parent = parent::toPhpDocNode();
+		return new GenericTypeNode(
+			$parent,
+			array_map(static fn (Type $type) => $type->toPhpDocNode(), $this->types),
+		);
 	}
 
 	/**

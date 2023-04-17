@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 
 /** @api */
@@ -80,6 +82,11 @@ class ClassStringType extends StringType
 	public function getObjectTypeOrClassStringObjectType(): Type
 	{
 		return new ObjectWithoutClassType();
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode('class-string');
 	}
 
 	/**

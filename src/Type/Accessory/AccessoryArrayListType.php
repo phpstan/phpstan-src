@@ -3,6 +3,8 @@
 namespace PHPStan\Type\Accessory;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
@@ -470,6 +472,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode('list');
 	}
 
 }

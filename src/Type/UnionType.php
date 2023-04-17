@@ -6,6 +6,8 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -1035,6 +1037,11 @@ class UnionType implements CompoundType
 		}
 
 		return $values;
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new UnionTypeNode(array_map(static fn (Type $type) => $type->toPhpDocNode(), $this->getSortedTypes()));
 	}
 
 	/**

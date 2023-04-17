@@ -3,6 +3,8 @@
 namespace PHPStan\Type\Accessory;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
@@ -327,6 +329,11 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 			new FloatType(),
 			new IntegerType(),
 		]);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode('non-falsy-string');
 	}
 
 }

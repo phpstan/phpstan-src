@@ -16,6 +16,8 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Broker\Broker;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -1573,6 +1575,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return TypeCombinator::union($this, $exponent);
 		}
 		return new ErrorType();
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode($this->getClassName());
 	}
 
 }

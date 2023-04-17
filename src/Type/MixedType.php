@@ -4,6 +4,8 @@ namespace PHPStan\Type;
 
 use ArrayAccess;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\Dummy\DummyConstantReflection;
@@ -905,6 +907,11 @@ class MixedType implements CompoundType, SubtractableType
 			new FloatType(),
 			new IntegerType(),
 		]);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode('mixed');
 	}
 
 	/**

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -209,6 +211,11 @@ class ObjectWithoutClassType implements SubtractableType
 			new FloatType(),
 			new IntegerType(),
 		]);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode('object');
 	}
 
 	/**

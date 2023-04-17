@@ -3,6 +3,8 @@
 namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -696,6 +698,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 	public function exponentiate(Type $exponent): Type
 	{
 		return $this->getStaticObjectType()->exponentiate($exponent);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode('static');
 	}
 
 	/**

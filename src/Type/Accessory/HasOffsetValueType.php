@@ -3,6 +3,8 @@
 namespace PHPStan\Type\Accessory;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
@@ -420,6 +422,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	public static function __set_state(array $properties): Type
 	{
 		return new self($properties['offsetType'], $properties['valueType']);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode(''); // no PHPDoc representation
 	}
 
 }

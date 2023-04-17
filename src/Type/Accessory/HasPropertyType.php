@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Accessory;
 
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
@@ -153,6 +155,11 @@ class HasPropertyType implements AccessoryType, CompoundType
 	public static function __set_state(array $properties): Type
 	{
 		return new self($properties['propertyName']);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode(''); // no PHPDoc representation
 	}
 
 }

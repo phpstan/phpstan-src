@@ -5,6 +5,11 @@ namespace PHPStan\Type\Constant;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Node\Name;
+use PHPStan\PhpDocParser\Ast\ConstExpr\QuoteAwareConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\PhpDocParser\Parser\StringUnescaper;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\InaccessibleMethod;
@@ -485,6 +490,22 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	private function getObjectType(): ObjectType
 	{
 		return $this->objectType ??= new ObjectType($this->value);
+	}
+
+	/**
+	 * @return ConstTypeNode|IdentifierTypeNode
+	 */
+	public function toPhpDocNode(): TypeNode
+	{
+		$quoteAware = (new QuoteAwareConstExprStringNode($this->value, QuoteAwareConstExprStringNode::SINGLE_QUOTED));
+		$quoteAwareString = (string) $quoteAware;
+		$unescaped = StringUnescaper::unescapeString($quoteAwareString);
+
+		if (substr($quoteAwareString, 1, -1) === $unescaped) {
+			return new IdentifierTypeNode($this->value);
+		}
+
+		return new ConstTypeNode($quoteAware);
 	}
 
 	/**

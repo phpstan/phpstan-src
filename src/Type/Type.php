@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -308,6 +309,8 @@ interface Type
 	 * @param callable(Type $left, Type $right): Type $cb
 	 */
 	public function traverseSimultaneously(Type $right, callable $cb): Type;
+
+	public function toPhpDocNode(): TypeNode;
 
 	/**
 	 * Return the difference with another type, or null if it cannot be represented.

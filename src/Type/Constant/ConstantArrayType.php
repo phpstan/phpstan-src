@@ -3,6 +3,11 @@
 namespace PHPStan\Type\Constant;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -1546,6 +1551,26 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return $this;
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		$items = [];
+		foreach ($this->keyTypes as $i => $keyType) {
+			$valueType = $this->valueTypes[$i];
+			$keyNode = $keyType->toPhpDocNode();
+			if ($keyNode instanceof ConstTypeNode) {
+				/** @var ConstExprStringNode $keyNode */
+				$keyNode = $keyNode->constExpr;
+			}
+			$items[] = new ArrayShapeItemNode(
+				$keyNode,
+				$this->isOptionalKey($i),
+				$valueType->toPhpDocNode(),
+			);
+		}
+
+		return new ArrayShapeNode($items);
 	}
 
 	/**

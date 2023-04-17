@@ -561,6 +561,8 @@ services:
 
 	-
 		class: PHPStan\PhpDocParser\Parser\TypeParser
+		arguments:
+			quoteAwareConstExprString: %featureToggles.unescapeStrings%
 
 	-
 		class: PHPStan\PhpDocParser\Parser\ConstExprParser

@@ -994,6 +994,11 @@ parameters:
 			path: src/Type/Generic/TemplateConstantIntegerType.php
 
 		-
+			message: "#^Method PHPStan\\\\Type\\\\Generic\\\\TemplateConstantIntegerType\\:\\:toPhpDocNode\\(\\) should return PHPStan\\\\PhpDocParser\\\\Ast\\\\Type\\\\ConstTypeNode but returns PHPStan\\\\PhpDocParser\\\\Ast\\\\Type\\\\IdentifierTypeNode\\.$#"
+			count: 1
+			path: src/Type/Generic/TemplateConstantIntegerType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
 			path: src/Type/Generic/TemplateConstantStringType.php
@@ -1150,7 +1155,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Accessory\\\\AccessoryType is error\\-prone and deprecated\\. Use methods on PHPStan\\\\Type\\\\Type instead\\.$#"
-			count: 2
+			count: 3
 			path: src/Type/IntersectionType.php
 
 		-

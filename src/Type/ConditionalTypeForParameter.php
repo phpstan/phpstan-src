@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\PhpDocParser\Ast\Type\ConditionalTypeForParameterNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
@@ -160,6 +162,17 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 		}
 
 		return new self($this->parameterName, $target, $if, $else, $this->negated);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new ConditionalTypeForParameterNode(
+			$this->parameterName,
+			$this->target->toPhpDocNode(),
+			$this->if->toPhpDocNode(),
+			$this->else->toPhpDocNode(),
+			$this->negated,
+		);
 	}
 
 	/**

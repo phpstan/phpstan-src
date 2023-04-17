@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Accessory;
 
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -191,6 +193,11 @@ class HasMethodType implements AccessoryType, CompoundType
 	public static function __set_state(array $properties): Type
 	{
 		return new self($properties['methodName']);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode(''); // no PHPDoc representation
 	}
 
 }

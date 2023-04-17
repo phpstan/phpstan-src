@@ -3,6 +3,9 @@
 namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
@@ -668,6 +671,33 @@ class ArrayType implements Type
 		}
 
 		return $this;
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		$isMixedKeyType = $this->keyType instanceof MixedType && $this->keyType->describe(VerbosityLevel::precise()) === 'mixed';
+		$isMixedItemType = $this->itemType instanceof MixedType && $this->itemType->describe(VerbosityLevel::precise()) === 'mixed';
+
+		if ($isMixedKeyType) {
+			if ($isMixedItemType) {
+				return new IdentifierTypeNode('array');
+			}
+
+			return new GenericTypeNode(
+				new IdentifierTypeNode('array'),
+				[
+					$this->itemType->toPhpDocNode(),
+				],
+			);
+		}
+
+		return new GenericTypeNode(
+			new IdentifierTypeNode('array'),
+			[
+				$this->keyType->toPhpDocNode(),
+				$this->itemType->toPhpDocNode(),
+			],
+		);
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type

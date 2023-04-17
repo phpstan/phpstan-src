@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
@@ -86,6 +89,14 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new IntegerType();
+	}
+
+	/**
+	 * @return ConstTypeNode
+	 */
+	public function toPhpDocNode(): TypeNode
+	{
+		return new ConstTypeNode(new ConstExprIntegerNode((string) $this->value));
 	}
 
 	/**

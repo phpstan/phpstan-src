@@ -2,6 +2,11 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -608,6 +613,23 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		}
 
 		return parent::exponentiate($exponent);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		if ($this->min === null) {
+			$min = new IdentifierTypeNode('min');
+		} else {
+			$min = new ConstTypeNode(new ConstExprIntegerNode((string) $this->min));
+		}
+
+		if ($this->max === null) {
+			$max = new IdentifierTypeNode('max');
+		} else {
+			$max = new ConstTypeNode(new ConstExprIntegerNode((string) $this->max));
+		}
+
+		return new GenericTypeNode(new IdentifierTypeNode('int'), [$min, $max]);
 	}
 
 	/**

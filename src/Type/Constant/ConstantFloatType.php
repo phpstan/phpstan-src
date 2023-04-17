@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
@@ -93,6 +96,14 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new FloatType();
+	}
+
+	/**
+	 * @return ConstTypeNode
+	 */
+	public function toPhpDocNode(): TypeNode
+	{
+		return new ConstTypeNode(new ConstExprFloatNode((string) $this->value));
 	}
 
 	/**

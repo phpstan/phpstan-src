@@ -5,6 +5,10 @@ namespace PHPStan\Type;
 use Closure;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -575,6 +579,26 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		$parameters = [];
+		foreach ($this->parameters as $parameter) {
+			$parameters[] = new CallableTypeParameterNode(
+				$parameter->getType()->toPhpDocNode(),
+				!$parameter->passedByReference()->no(),
+				$parameter->isVariadic(),
+				$parameter->getName(),
+				$parameter->isOptional(),
+			);
+		}
+
+		return new CallableTypeNode(
+			new IdentifierTypeNode('Closure'),
+			$parameters,
+			$this->returnType->toPhpDocNode(),
+		);
 	}
 
 	/**

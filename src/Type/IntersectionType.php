@@ -3,6 +3,10 @@
 namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -29,6 +33,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_intersect_key;
 use function array_map;
+use function array_shift;
 use function array_unique;
 use function array_values;
 use function count;
@@ -1013,6 +1018,114 @@ class IntersectionType implements CompoundType
 	{
 		$operands = array_map($getType, $this->types);
 		return TypeCombinator::intersect(...$operands);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		$baseTypes = [];
+		$typesToDescribe = [];
+		$skipTypeNames = [];
+
+		$nonEmptyStr = false;
+		$nonFalsyStr = false;
+
+		foreach ($this->getSortedTypes() as $i => $type) {
+			if ($type instanceof AccessoryNonEmptyStringType
+				|| $type instanceof AccessoryLiteralStringType
+				|| $type instanceof AccessoryNumericStringType
+				|| $type instanceof AccessoryNonFalsyStringType
+			) {
+				if ($type instanceof AccessoryNonFalsyStringType) {
+					$nonFalsyStr = true;
+				}
+				if ($type instanceof AccessoryNonEmptyStringType) {
+					$nonEmptyStr = true;
+				}
+				if ($nonEmptyStr && $nonFalsyStr) {
+					// prevent redundant 'non-empty-string&non-falsy-string'
+					foreach ($typesToDescribe as $key => $typeToDescribe) {
+						if (!($typeToDescribe instanceof AccessoryNonEmptyStringType)) {
+							continue;
+						}
+
+						unset($typesToDescribe[$key]);
+					}
+				}
+
+				$typesToDescribe[$i] = $type;
+				$skipTypeNames[] = 'string';
+				continue;
+			}
+			if ($type instanceof NonEmptyArrayType || $type instanceof AccessoryArrayListType) {
+				$typesToDescribe[$i] = $type;
+				$skipTypeNames[] = 'array';
+				continue;
+			}
+			if (!$type instanceof AccessoryType) {
+				$baseTypes[$i] = $type;
+				continue;
+			}
+
+			$accessoryPhpDocNode = $type->toPhpDocNode();
+			if ($accessoryPhpDocNode instanceof IdentifierTypeNode && $accessoryPhpDocNode->name === '') {
+				continue;
+			}
+
+			$typesToDescribe[$i] = $type;
+		}
+
+		$describedTypes = [];
+		foreach ($baseTypes as $i => $type) {
+			$typeNode = $type->toPhpDocNode();
+			if ($typeNode instanceof GenericTypeNode && $typeNode->type->name === 'array') {
+				$nonEmpty = false;
+				$typeName = 'array';
+				foreach ($typesToDescribe as $j => $typeToDescribe) {
+					if ($typeToDescribe instanceof AccessoryArrayListType) {
+						$typeName = 'list';
+						if (count($typeNode->genericTypes) > 1) {
+							array_shift($typeNode->genericTypes);
+						}
+					} elseif ($typeToDescribe instanceof NonEmptyArrayType) {
+						$nonEmpty = true;
+					} else {
+						continue;
+					}
+
+					unset($typesToDescribe[$j]);
+				}
+
+				if ($nonEmpty) {
+					$typeName = 'non-empty-' . $typeName;
+				}
+
+				$describedTypes[$i] = new GenericTypeNode(
+					new IdentifierTypeNode($typeName),
+					$typeNode->genericTypes,
+				);
+				continue;
+			}
+
+			if ($typeNode instanceof IdentifierTypeNode && in_array($typeNode->name, $skipTypeNames, true)) {
+				continue;
+			}
+
+			$describedTypes[$i] = $typeNode;
+		}
+
+		foreach ($typesToDescribe as $i => $typeToDescribe) {
+			$describedTypes[$i] = $typeToDescribe->toPhpDocNode();
+		}
+
+		ksort($describedTypes);
+
+		$describedTypes = array_values($describedTypes);
+
+		if (count($describedTypes) === 1) {
+			return $describedTypes[0];
+		}
+
+		return new IntersectionTypeNode($describedTypes);
 	}
 
 }

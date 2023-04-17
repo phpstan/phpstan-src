@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConstantScalarType;
@@ -110,6 +112,11 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new BooleanType();
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new IdentifierTypeNode($this->value ? 'true' : 'false');
 	}
 
 	/**

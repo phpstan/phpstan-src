@@ -4,6 +4,11 @@ namespace PHPStan\Type;
 
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Broker\Broker;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
+use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
@@ -14,6 +19,7 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasPropertyType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -484,6 +490,25 @@ class ObjectShapeType implements Type
 			new FloatType(),
 			new IntegerType(),
 		]);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		$items = [];
+		foreach ($this->properties as $name => $type) {
+			$keyNode = (new ConstantStringType($name))->toPhpDocNode();
+			if ($keyNode instanceof ConstTypeNode) {
+				/** @var ConstExprStringNode $keyNode */
+				$keyNode = $keyNode->constExpr;
+			}
+			$items[] = new ObjectShapeItemNode(
+				$keyNode,
+				in_array($name, $this->optionalProperties, true),
+				$type->toPhpDocNode(),
+			);
+		}
+
+		return new ObjectShapeNode($items);
 	}
 
 	/**

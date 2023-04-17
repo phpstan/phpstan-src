@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type\Enum;
 
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\EnumPropertyReflection;
@@ -179,6 +182,16 @@ class EnumCaseObjectType extends ObjectType
 	public function getEnumCases(): array
 	{
 		return [$this];
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new ConstTypeNode(
+			new ConstFetchNode(
+				$this->getClassName(),
+				$this->getEnumCaseName(),
+			),
+		);
 	}
 
 	/**

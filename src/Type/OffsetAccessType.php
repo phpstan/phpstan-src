@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -104,6 +106,14 @@ final class OffsetAccessType implements CompoundType, LateResolvableType
 		}
 
 		return new self($type, $offset);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new OffsetAccessTypeNode(
+			$this->type->toPhpDocNode(),
+			$this->offset->toPhpDocNode(),
+		);
 	}
 
 	/**

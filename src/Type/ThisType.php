@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
@@ -78,6 +80,11 @@ class ThisType extends StaticType
 		}
 
 		return new self($this->getClassReflection());
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new ThisTypeNode();
 	}
 
 	/**

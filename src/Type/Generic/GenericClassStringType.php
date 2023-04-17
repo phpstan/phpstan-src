@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
@@ -198,6 +201,16 @@ class GenericClassStringType extends ClassStringType
 	public static function __set_state(array $properties): Type
 	{
 		return new self($properties['type']);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new GenericTypeNode(
+			new IdentifierTypeNode('class-string'),
+			[
+				$this->type->toPhpDocNode(),
+			],
+		);
 	}
 
 	public function tryRemove(Type $typeToRemove): ?Type

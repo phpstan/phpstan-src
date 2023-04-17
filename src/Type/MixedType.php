@@ -614,6 +614,11 @@ class MixedType implements CompoundType, SubtractableType
 		return $this;
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		return $this;
+	}
+
 	public function isArray(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {

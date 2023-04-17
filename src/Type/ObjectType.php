@@ -1406,6 +1406,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this;
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if ($this->subtractedType === null) {
+			return $this;
+		}
+
+		return new self($this->className);
+	}
+
 	public function getNakedClassReflection(): ?ClassReflection
 	{
 		if ($this->classReflection !== null) {

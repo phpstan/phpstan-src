@@ -670,6 +670,22 @@ class ArrayType implements Type
 		return $this;
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		$keyType = $cb($this->keyType, $right->getIterableKeyType());
+		$itemType = $cb($this->itemType, $right->getIterableValueType());
+
+		if ($keyType !== $this->keyType || $itemType !== $this->itemType) {
+			if ($keyType instanceof NeverType && $itemType instanceof NeverType) {
+				return new ConstantArrayType([], []);
+			}
+
+			return new self($keyType, $itemType);
+		}
+
+		return $this;
+	}
+
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($typeToRemove->isConstantArray()->yes() && $typeToRemove->isIterableAtLeastOnce()->no()) {

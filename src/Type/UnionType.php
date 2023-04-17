@@ -87,7 +87,7 @@ class UnionType implements CompoundType
 	/**
 	 * @return Type[]
 	 */
-	private function getSortedTypes(): array
+	protected function getSortedTypes(): array
 	{
 		if ($this->sortedTypes) {
 			return $this->types;
@@ -920,6 +920,35 @@ class UnionType implements CompoundType
 		foreach ($this->types as $type) {
 			$newType = $cb($type);
 			if ($type !== $newType) {
+				$changed = true;
+			}
+			$types[] = $newType;
+		}
+
+		if ($changed) {
+			return TypeCombinator::union(...$types);
+		}
+
+		return $this;
+	}
+
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		$types = [];
+		$changed = false;
+
+		if (!$right instanceof self) {
+			return $this;
+		}
+
+		if (count($this->getTypes()) !== count($right->getTypes())) {
+			return $this;
+		}
+
+		foreach ($this->getSortedTypes() as $i => $leftType) {
+			$rightType = $right->getSortedTypes()[$i];
+			$newType = $cb($leftType, $rightType);
+			if ($leftType !== $newType) {
 				$changed = true;
 			}
 			$types[] = $newType;

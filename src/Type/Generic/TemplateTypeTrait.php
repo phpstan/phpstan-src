@@ -308,6 +308,26 @@ trait TemplateTypeTrait
 		);
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if (!$right instanceof TemplateType) {
+			return $this;
+		}
+
+		$bound = $cb($this->getBound(), $right->getBound());
+		if ($this->getBound() === $bound) {
+			return $this;
+		}
+
+		return TemplateTypeFactory::create(
+			$this->getScope(),
+			$this->getName(),
+			$bound,
+			$this->getVariance(),
+			$this->getStrategy(),
+		);
+	}
+
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($this->getBound()->isSuperTypeOf($typeToRemove)->yes()) {

@@ -134,6 +134,16 @@ class GenericClassStringType extends ClassStringType
 		return new self($newType);
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		$newType = $cb($this->type, $right->getClassStringObjectType());
+		if ($newType === $this->type) {
+			return $this;
+		}
+
+		return new self($newType);
+	}
+
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {

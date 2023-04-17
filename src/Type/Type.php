@@ -303,6 +303,13 @@ interface Type
 	public function traverse(callable $cb): Type;
 
 	/**
+	 * Traverses inner types while keeping the same context in another type.
+	 *
+	 * @param callable(Type $left, Type $right): Type $cb
+	 */
+	public function traverseSimultaneously(Type $right, callable $cb): Type;
+
+	/**
 	 * Return the difference with another type, or null if it cannot be represented.
 	 *
 	 * @see TypeCombinator::remove()

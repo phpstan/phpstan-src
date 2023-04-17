@@ -445,6 +445,35 @@ class ObjectShapeType implements Type
 		return new self($properties, $this->optionalProperties);
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if (!$right->isObject()->yes()) {
+			return $this;
+		}
+
+		$properties = [];
+		$stillOriginal = true;
+
+		$scope = new OutOfClassScope();
+		foreach ($this->properties as $name => $propertyType) {
+			if (!$right->hasProperty($name)->yes()) {
+				return $this;
+			}
+			$transformed = $cb($propertyType, $right->getProperty($name, $scope)->getReadableType());
+			if ($transformed !== $propertyType) {
+				$stillOriginal = false;
+			}
+
+			$properties[$name] = $transformed;
+		}
+
+		if ($stillOriginal) {
+			return $this;
+		}
+
+		return new self($properties, $this->optionalProperties);
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		if (!$exponent instanceof NeverType && !$this->isSuperTypeOf($exponent)->no()) {

@@ -71,6 +71,21 @@ final class GetTemplateTypeType implements CompoundType, LateResolvableType
 		return new self($type, $this->ancestorClassName, $this->templateTypeName);
 	}
 
+	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		if (!$right instanceof self) {
+			return $this;
+		}
+
+		$type = $cb($this->type, $right->type);
+
+		if ($this->type === $type) {
+			return $this;
+		}
+
+		return new self($type, $this->ancestorClassName, $this->templateTypeName);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

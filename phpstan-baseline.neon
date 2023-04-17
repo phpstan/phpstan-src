@@ -950,7 +950,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericObjectType is error\\-prone and deprecated\\.$#"
-			count: 2
+			count: 3
 			path: src/Type/Generic/GenericObjectType.php
 
 		-
@@ -965,7 +965,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) or Type\\:\\:getObjectClassReflections\\(\\) instead\\.$#"
-			count: 1
+			count: 2
 			path: src/Type/Generic/GenericObjectType.php
 
 		-
@@ -1165,7 +1165,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
-			count: 3
+			count: 4
 			path: src/Type/IntersectionType.php
 
 		-

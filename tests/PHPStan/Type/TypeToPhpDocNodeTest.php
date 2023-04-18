@@ -54,12 +54,30 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				new ConstantStringType('foo'),
 				new ConstantStringType('bar'),
 				new ConstantStringType('baz'),
+				new ConstantStringType('$ref'),
 			], [
 				new ConstantIntegerType(1),
 				new ConstantIntegerType(2),
 				new ConstantIntegerType(3),
+				new ConstantIntegerType(4),
 			], [0], [2]),
-			'array{foo: 1, bar: 2, baz?: 3}',
+			'array{foo: 1, bar: 2, baz?: 3, \'$ref\': 4}',
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('1100-RB'),
+			], [
+				new ConstantIntegerType(1),
+			], [0]),
+			"array{'1100-RB': 1}",
+		];
+
+		yield [
+			new ObjectShapeType([
+				'1100-RB' => new ConstantIntegerType(1),
+			], []),
+			"object{'1100-RB': 1}",
 		];
 
 		yield [

@@ -73,6 +73,7 @@ use function count;
 use function dirname;
 use function floor;
 use function in_array;
+use function is_finite;
 use function is_float;
 use function is_int;
 use function max;
@@ -1642,10 +1643,10 @@ class InitializerExprTypeResolver
 			$min = min($min1, $min2, $max1, $max2);
 			$max = max($min1, $min2, $max1, $max2);
 
-			if ($min === -INF) {
+			if (!is_finite($min)) {
 				$min = null;
 			}
-			if ($max === INF) {
+			if (!is_finite($max)) {
 				$max = null;
 			}
 		} else {

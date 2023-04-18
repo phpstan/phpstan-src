@@ -39,7 +39,6 @@
 		"symfony/polyfill-intl-grapheme": "^1.23",
 		"symfony/polyfill-intl-normalizer": "^1.23",
 		"symfony/polyfill-mbstring": "^1.23",
-		"symfony/polyfill-php72": "^1.23",
 		"symfony/polyfill-php73": "^1.23",
 		"symfony/polyfill-php74": "^1.23",
 		"symfony/polyfill-php80": "^1.23",

@@ -277,6 +277,21 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			new ConstantStringType("foo\nbar\nbaz"),
 			'(literal-string & non-falsy-string)',
 		];
+
+		yield [
+			new ConstantFloatType(9223372036854775807),
+			'9223372036854775808',
+		];
+
+		yield [
+			new ConstantFloatType(-9223372036854775808),
+			'-9223372036854775808',
+		];
+
+		yield [
+			new ConstantFloatType(2.35),
+			'2.35000000000000008882',
+		];
 	}
 
 	/**
@@ -288,6 +303,9 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 
 		$typeString = (string) $phpDocNode;
 		$this->assertSame($expected, $typeString);
+
+		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
+		$typeStringResolver->resolve($typeString);
 	}
 
 	public function dataFromTypeStringToPhpDocNode(): iterable

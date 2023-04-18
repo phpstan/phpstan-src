@@ -16,6 +16,8 @@ use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function abs;
 use function is_finite;
+use function rtrim;
+use function sprintf;
 use function strpos;
 use const PHP_FLOAT_EPSILON;
 
@@ -108,7 +110,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	 */
 	public function toPhpDocNode(): TypeNode
 	{
-		return new ConstTypeNode(new ConstExprFloatNode((string) $this->value));
+		return new ConstTypeNode(new ConstExprFloatNode(rtrim(sprintf('%.20f', $this->value), '0.')));
 	}
 
 	/**

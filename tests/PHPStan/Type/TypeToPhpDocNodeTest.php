@@ -74,6 +74,15 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		];
 
 		yield [
+			new ConstantArrayType([
+				new ConstantStringType('Karlovy Vary'),
+			], [
+				new ConstantIntegerType(1),
+			], [0]),
+			"array{'Karlovy Vary': 1}",
+		];
+
+		yield [
 			new ObjectShapeType([
 				'1100-RB' => new ConstantIntegerType(1),
 			], []),

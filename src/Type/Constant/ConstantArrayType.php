@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use Nette\Utils\Strings;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
@@ -9,7 +10,6 @@ use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\PhpDocParser\Parser\StringUnescaper;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -60,7 +60,6 @@ use function pow;
 use function sort;
 use function sprintf;
 use function strpos;
-use function substr;
 
 /**
  * @api
@@ -1565,11 +1564,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			/** @var ConstExprStringNode|ConstExprIntegerNode $keyNode */
 			$keyNode = $keyType->toPhpDocNode()->constExpr;
 			if ($keyNode instanceof ConstExprStringNode) {
-				$quoteAwareString = (string) $keyNode;
-				$unescaped = StringUnescaper::unescapeString($quoteAwareString);
-
-				if (substr($quoteAwareString, 1, -1) === $unescaped) {
-					$keyNode = new IdentifierTypeNode($keyNode->value);
+				$value = $keyNode->value;
+				if (self::isValidIdentifier($value)) {
+					$keyNode = new IdentifierTypeNode($value);
 				}
 			}
 			$items[] = new ArrayShapeItemNode(
@@ -1580,6 +1577,13 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return new ArrayShapeNode($items);
+	}
+
+	public static function isValidIdentifier(string $value): bool
+	{
+		$result = Strings::match($value, '~(?:[\\\\]?+[a-z_\\x80-\\xFF][0-9a-z_\\x80-\\xFF-]*+)++~Asi');
+
+		return $result !== null;
 	}
 
 	/**

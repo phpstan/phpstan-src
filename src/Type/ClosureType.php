@@ -589,7 +589,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 				$parameter->getType()->toPhpDocNode(),
 				!$parameter->passedByReference()->no(),
 				$parameter->isVariadic(),
-				$parameter->getName(),
+				$parameter->getName() === '' ? '' : '$' . $parameter->getName(),
 				$parameter->isOptional(),
 			);
 		}

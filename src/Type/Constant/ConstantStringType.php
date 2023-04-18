@@ -44,6 +44,7 @@ use function is_numeric;
 use function key;
 use function strlen;
 use function substr;
+use function substr_count;
 
 /** @api */
 class ConstantStringType extends StringType implements ConstantScalarType
@@ -490,11 +491,12 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return $this->objectType ??= new ObjectType($this->value);
 	}
 
-	/**
-	 * @return ConstTypeNode
-	 */
 	public function toPhpDocNode(): TypeNode
 	{
+		if (substr_count($this->value, "\n") > 0) {
+			return $this->generalize(GeneralizePrecision::moreSpecific())->toPhpDocNode();
+		}
+
 		return new ConstTypeNode(new QuoteAwareConstExprStringNode($this->value, QuoteAwareConstExprStringNode::SINGLE_QUOTED));
 	}
 

@@ -262,6 +262,25 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		$this->assertTrue($type->equals($parsedType), sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $parsedType->describe(VerbosityLevel::precise())));
 	}
 
+	public function dataToPhpDocNodeWithoutCheckingEquals(): iterable
+	{
+		yield [
+			new ConstantStringType("foo\nbar\nbaz"),
+			'(literal-string & non-falsy-string)',
+		];
+	}
+
+	/**
+	 * @dataProvider dataToPhpDocNodeWithoutCheckingEquals
+	 */
+	public function testToPhpDocNodeWithoutCheckingEquals(Type $type, string $expected): void
+	{
+		$phpDocNode = $type->toPhpDocNode();
+
+		$typeString = (string) $phpDocNode;
+		$this->assertSame($expected, $typeString);
+	}
+
 	public function dataFromTypeStringToPhpDocNode(): iterable
 	{
 		foreach ($this->dataToPhpDocNode() as [, $typeString]) {
@@ -272,6 +291,10 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		yield ['callable(Foo): Bar'];
 		yield ['callable(Foo=, Bar=): Bar'];
 		yield ['Closure(Foo=, Bar=): Bar'];
+
+		yield ['callable(Foo $foo): Bar'];
+		yield ['callable(Foo $foo=, Bar $bar=): Bar'];
+		yield ['Closure(Foo $foo=, Bar $bar=): Bar'];
 	}
 
 	/**

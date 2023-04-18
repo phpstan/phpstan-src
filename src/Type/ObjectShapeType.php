@@ -4,7 +4,8 @@ namespace PHPStan\Type;
 
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Broker\Broker;
-use PHPStan\PhpDocParser\Ast\ConstExpr\QuoteAwareConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
@@ -20,6 +21,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -499,7 +501,13 @@ class ObjectShapeType implements Type
 			if (ConstantArrayType::isValidIdentifier($name)) {
 				$keyNode = new IdentifierTypeNode($name);
 			} else {
-				$keyNode = new QuoteAwareConstExprStringNode($name, QuoteAwareConstExprStringNode::SINGLE_QUOTED);
+				$keyPhpDocNode = (new ConstantStringType($name))->toPhpDocNode();
+				if (!$keyPhpDocNode instanceof ConstTypeNode) {
+					continue;
+				}
+
+				/** @var ConstExprStringNode $keyNode */
+				$keyNode = $keyPhpDocNode->constExpr;
 			}
 			$items[] = new ObjectShapeItemNode(
 				$keyNode,

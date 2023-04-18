@@ -1004,11 +1004,6 @@ parameters:
 			path: src/Type/Generic/TemplateConstantStringType.php
 
 		-
-			message: "#^Method PHPStan\\\\Type\\\\Generic\\\\TemplateConstantStringType\\:\\:toPhpDocNode\\(\\) should return PHPStan\\\\PhpDocParser\\\\Ast\\\\Type\\\\ConstTypeNode but returns PHPStan\\\\PhpDocParser\\\\Ast\\\\Type\\\\IdentifierTypeNode\\.$#"
-			count: 1
-			path: src/Type/Generic/TemplateConstantStringType.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
 			path: src/Type/Generic/TemplateFloatType.php

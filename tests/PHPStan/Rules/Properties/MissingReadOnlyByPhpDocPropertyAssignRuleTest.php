@@ -18,9 +18,12 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new MissingReadOnlyByPhpDocPropertyAssignRule(
-			new ConstructorsHelper([
-				'MissingReadOnlyPropertyAssignPhpDoc\\TestCase::setUp',
-			]),
+			new ConstructorsHelper(
+				self::getContainer(),
+				[
+					'MissingReadOnlyPropertyAssignPhpDoc\\TestCase::setUp',
+				],
+			),
 		);
 	}
 

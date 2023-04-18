@@ -18,6 +18,7 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		return new ReadOnlyByPhpDocPropertyAssignRule(
 			new PropertyReflectionFinder(),
 			new ConstructorsHelper(
+				self::getContainer(),
 				[
 					'ReadonlyPropertyAssignPhpDoc\\TestCase::setUp',
 				],

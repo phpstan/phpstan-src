@@ -38,6 +38,11 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 		return $this->value;
 	}
 
+	public function equals(Type $type): bool
+	{
+		return $type instanceof self && abs($this->value - $type->value) < PHP_FLOAT_EPSILON;
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(

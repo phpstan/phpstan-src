@@ -8,6 +8,7 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
@@ -1559,10 +1560,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	{
 		$items = [];
 		foreach ($this->keyTypes as $i => $keyType) {
+			$keyPhpDocNode = $keyType->toPhpDocNode();
+			if (!$keyPhpDocNode instanceof ConstTypeNode) {
+				continue;
+			}
 			$valueType = $this->valueTypes[$i];
 
 			/** @var ConstExprStringNode|ConstExprIntegerNode $keyNode */
-			$keyNode = $keyType->toPhpDocNode()->constExpr;
+			$keyNode = $keyPhpDocNode->constExpr;
 			if ($keyNode instanceof ConstExprStringNode) {
 				$value = $keyNode->value;
 				if (self::isValidIdentifier($value)) {

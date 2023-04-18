@@ -295,6 +295,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		yield ['callable(Foo $foo): Bar'];
 		yield ['callable(Foo $foo=, Bar $bar=): Bar'];
 		yield ['Closure(Foo $foo=, Bar $bar=): Bar'];
+		yield ['Closure(Foo $foo=, Bar $bar=): (Closure(Foo): Bar)'];
 	}
 
 	/**
@@ -305,6 +306,9 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
 		$type = $typeStringResolver->resolve($typeString);
 		$this->assertSame($typeString, (string) $type->toPhpDocNode());
+
+		$typeAgain = $typeStringResolver->resolve((string) $type->toPhpDocNode());
+		$this->assertTrue($type->equals($typeAgain));
 	}
 
 	public static function getAdditionalConfigFiles(): array

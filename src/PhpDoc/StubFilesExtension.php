@@ -16,8 +16,6 @@ namespace PHPStan\PhpDoc;
  *			- phpstan.stubFilesExtension
  * ```
  *
- * Learn more: https://phpstan.org/developing-extensions/allowed-subtypes
- *
  * @api
  */
 interface StubFilesExtension

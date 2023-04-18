@@ -63,6 +63,19 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		];
 
 		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(1),
+				new ConstantIntegerType(2),
+				new ConstantIntegerType(3),
+			], [
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+				new ConstantStringType('baz'),
+			], [0], [2]),
+			'array{1: \'foo\', 2: \'bar\', 3?: \'baz\'}',
+		];
+
+		yield [
 			new ConstantIntegerType(42),
 			'42',
 		];
@@ -80,6 +93,11 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		yield [
 			new ConstantBooleanType(false),
 			'false',
+		];
+
+		yield [
+			new ConstantStringType('foo'),
+			"'foo'",
 		];
 
 		yield [

@@ -5,10 +5,11 @@ namespace PHPStan\Type;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Broker\Broker;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
-use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\PhpDocParser\Parser\StringUnescaper;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
@@ -32,6 +33,7 @@ use function count;
 use function implode;
 use function in_array;
 use function sprintf;
+use function substr;
 
 /** @api */
 class ObjectShapeType implements Type
@@ -496,10 +498,13 @@ class ObjectShapeType implements Type
 	{
 		$items = [];
 		foreach ($this->properties as $name => $type) {
-			$keyNode = (new ConstantStringType($name))->toPhpDocNode();
-			if ($keyNode instanceof ConstTypeNode) {
-				/** @var ConstExprStringNode $keyNode */
-				$keyNode = $keyNode->constExpr;
+			/** @var ConstExprStringNode $keyNode */
+			$keyNode = (new ConstantStringType($name))->toPhpDocNode()->constExpr;
+			$quoteAwareString = (string) $keyNode;
+			$unescaped = StringUnescaper::unescapeString($quoteAwareString);
+
+			if (substr($quoteAwareString, 1, -1) === $unescaped) {
+				$keyNode = new IdentifierTypeNode($keyNode->value);
 			}
 			$items[] = new ObjectShapeItemNode(
 				$keyNode,

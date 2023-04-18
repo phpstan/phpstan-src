@@ -3,11 +3,13 @@
 namespace PHPStan\Type\Constant;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
-use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\PhpDocParser\Parser\StringUnescaper;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -58,6 +60,7 @@ use function pow;
 use function sort;
 use function sprintf;
 use function strpos;
+use function substr;
 
 /**
  * @api
@@ -1558,10 +1561,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$items = [];
 		foreach ($this->keyTypes as $i => $keyType) {
 			$valueType = $this->valueTypes[$i];
-			$keyNode = $keyType->toPhpDocNode();
-			if ($keyNode instanceof ConstTypeNode) {
-				/** @var ConstExprStringNode $keyNode */
-				$keyNode = $keyNode->constExpr;
+
+			/** @var ConstExprStringNode|ConstExprIntegerNode $keyNode */
+			$keyNode = $keyType->toPhpDocNode()->constExpr;
+			if ($keyNode instanceof ConstExprStringNode) {
+				$quoteAwareString = (string) $keyNode;
+				$unescaped = StringUnescaper::unescapeString($quoteAwareString);
+
+				if (substr($quoteAwareString, 1, -1) === $unescaped) {
+					$keyNode = new IdentifierTypeNode($keyNode->value);
+				}
 			}
 			$items[] = new ArrayShapeItemNode(
 				$keyNode,

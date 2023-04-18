@@ -1,0 +1,5 @@
+services:
+    -
+        class: PHPStan\Rules\Properties\TestInitializedProperty
+        tags:
+            - phpstan.additionalConstructorsExtension

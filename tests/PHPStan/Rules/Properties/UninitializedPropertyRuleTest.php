@@ -17,6 +17,7 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 	{
 		return new UninitializedPropertyRule(
 			new ConstructorsHelper(
+				self::getContainer(),
 				[
 					'UninitializedProperty\\TestCase::setUp',
 				],
@@ -45,6 +46,13 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				}
 
 			},
+		];
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return [
+			__DIR__ . '/uninitialized-property-rule.neon',
 		];
 	}
 
@@ -109,6 +117,20 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 			[
 				'Class Bug7219\Foo has an uninitialized property $email. Give it default value or assign it in the constructor.',
 				15,
+			],
+		]);
+	}
+
+	public function testAdditionalConstructorsExtension(): void
+	{
+		$this->analyse([__DIR__ . '/data/uninitialized-property-additional-constructors.php'], [
+			[
+				'Class TestInitializedProperty\TestAdditionalConstructor has an uninitialized property $one. Give it default value or assign it in the constructor.',
+				07,
+			],
+			[
+				'Class TestInitializedProperty\TestAdditionalConstructor has an uninitialized property $three. Give it default value or assign it in the constructor.',
+				11,
 			],
 		]);
 	}

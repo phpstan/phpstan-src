@@ -18,6 +18,7 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		return new ReadOnlyPropertyAssignRule(
 			new PropertyReflectionFinder(),
 			new ConstructorsHelper(
+				self::getContainer(),
 				[
 					'ReadonlyPropertyAssign\\TestCase::setUp',
 				],

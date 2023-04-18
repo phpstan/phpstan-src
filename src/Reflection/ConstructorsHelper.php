@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\DependencyInjection\Container;
 use ReflectionException;
 use function array_key_exists;
 use function explode;
@@ -16,6 +17,7 @@ final class ConstructorsHelper
 	 * @param list<string> $additionalConstructors
 	 */
 	public function __construct(
+		private Container $container,
 		private array $additionalConstructors,
 	)
 	{
@@ -32,6 +34,15 @@ final class ConstructorsHelper
 		$constructors = [];
 		if ($classReflection->hasConstructor()) {
 			$constructors[] = $classReflection->getConstructor()->getName();
+		}
+
+		/** @var AdditionalConstructorsExtension[] $extensions */
+		$extensions = $this->container->getServicesByTag(AdditionalConstructorsExtension::EXTENSION_TAG);
+		foreach ($extensions as $extension) {
+			$extensionConstructors = $extension->getAdditionalConstructors($classReflection);
+			foreach ($extensionConstructors as $extensionConstructor) {
+				$constructors[] = $extensionConstructor;
+			}
 		}
 
 		$nativeReflection = $classReflection->getNativeReflection();

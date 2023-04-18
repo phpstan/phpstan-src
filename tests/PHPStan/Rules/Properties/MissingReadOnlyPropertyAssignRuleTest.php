@@ -18,9 +18,12 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new MissingReadOnlyPropertyAssignRule(
-			new ConstructorsHelper([
-				'MissingReadOnlyPropertyAssign\\TestCase::setUp',
-			]),
+			new ConstructorsHelper(
+				self::getContainer(),
+				[
+					'MissingReadOnlyPropertyAssign\\TestCase::setUp',
+				],
+			),
 		);
 	}
 

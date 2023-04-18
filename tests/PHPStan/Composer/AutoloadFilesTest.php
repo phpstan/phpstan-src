@@ -70,7 +70,6 @@ class AutoloadFilesTest extends TestCase
 			'symfony/polyfill-intl-grapheme/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-intl-normalizer/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-mbstring/bootstrap.php', // afaik polyfills aren't necessary
-			'symfony/polyfill-php72/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-php73/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-php74/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-php80/bootstrap.php', // afaik polyfills aren't necessary

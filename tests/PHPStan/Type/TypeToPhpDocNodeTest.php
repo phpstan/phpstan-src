@@ -272,6 +272,10 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		yield ['callable(Foo): Bar'];
 		yield ['callable(Foo=, Bar=): Bar'];
 		yield ['Closure(Foo=, Bar=): Bar'];
+
+		yield ['callable(Foo $foo): Bar'];
+		yield ['callable(Foo $foo=, Bar $bar=): Bar'];
+		yield ['Closure(Foo $foo=, Bar $bar=): Bar'];
 	}
 
 	/**

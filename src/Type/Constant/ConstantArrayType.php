@@ -1586,7 +1586,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public static function isValidIdentifier(string $value): bool
 	{
-		$result = Strings::match($value, '~(?:[\\\\]?+[a-z_\\x80-\\xFF][0-9a-z_\\x80-\\xFF-]*+)++~Asi');
+		$result = Strings::match($value, '~^(?:[\\\\]?+[a-z_\\x80-\\xFF][0-9a-z_\\x80-\\xFF-]*+)++$~si');
 
 		return $result !== null;
 	}

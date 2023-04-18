@@ -74,6 +74,15 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		];
 
 		yield [
+			new ConstantArrayType([
+				new ConstantStringType('Karlovy Vary'),
+			], [
+				new ConstantIntegerType(1),
+			], [0]),
+			"array{'Karlovy Vary': 1}",
+		];
+
+		yield [
 			new ObjectShapeType([
 				'1100-RB' => new ConstantIntegerType(1),
 			], []),
@@ -295,6 +304,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		yield ['callable(Foo $foo): Bar'];
 		yield ['callable(Foo $foo=, Bar $bar=): Bar'];
 		yield ['Closure(Foo $foo=, Bar $bar=): Bar'];
+		yield ['Closure(Foo $foo=, Bar $bar=): (Closure(Foo): Bar)'];
 	}
 
 	/**
@@ -305,6 +315,9 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
 		$type = $typeStringResolver->resolve($typeString);
 		$this->assertSame($typeString, (string) $type->toPhpDocNode());
+
+		$typeAgain = $typeStringResolver->resolve((string) $type->toPhpDocNode());
+		$this->assertTrue($type->equals($typeAgain));
 	}
 
 	public static function getAdditionalConfigFiles(): array

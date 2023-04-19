@@ -82,7 +82,15 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 			]);
 		}
 
-		return $this->findParentClassType($this->reflectionProvider->getClass($className));
+		$classReflection = $this->reflectionProvider->getClass($className);
+		if ($classReflection->isInterface()) {
+			return new UnionType([
+				new ClassStringType(),
+				new ConstantBooleanType(false),
+			]);
+		}
+
+		return $this->findParentClassType($classReflection);
 	}
 
 	private function findParentClassType(

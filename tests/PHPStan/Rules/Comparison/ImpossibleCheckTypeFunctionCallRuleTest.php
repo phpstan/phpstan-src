@@ -1035,5 +1035,12 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$issues = array_values(array_filter($issues, static fn (array $i) => count($i) === 2));
 		$this->analyse([__DIR__ . '/data/loose-comparison-against-enums.php'], $issues);
 	}
+	
+	public function testBug4890b(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-4890b.php'], []);
+	}
 
 }

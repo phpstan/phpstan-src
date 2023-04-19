@@ -7,6 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\FloatType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use function count;
@@ -44,12 +47,14 @@ class StrvalFamilyFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			case 'strval':
 				return $argType->toString();
 			case 'intval':
-				return $argType->toInteger();
+				$type = $argType->toInteger();
+				return $type instanceof ErrorType ? new IntegerType() : $type;
 			case 'boolval':
 				return $argType->toBoolean();
 			case 'floatval':
 			case 'doubleval':
-				return $argType->toFloat();
+				$type = $argType->toFloat();
+				return $type instanceof ErrorType ? new FloatType() : $type;
 			default:
 				throw new ShouldNotHappenException();
 		}

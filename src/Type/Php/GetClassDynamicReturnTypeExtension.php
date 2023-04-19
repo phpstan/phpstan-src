@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -84,6 +85,8 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 				} elseif ($objectClassNames !== []) {
 					return new GenericClassStringType($type);
 				} elseif ($type instanceof ObjectWithoutClassType) {
+					return new ClassStringType();
+				} elseif ($type instanceof HasMethodType) {
 					return new ClassStringType();
 				}
 

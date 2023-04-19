@@ -12,10 +12,10 @@ class HelloWorld
 	{
 		assertType('class-string', get_class($entity));
 		assert(method_exists($entity, 'getId'));
-		assertType('', get_class($entity));
+		assertType('class-string', get_class($entity));
 
 		if ($entity instanceof Proxy) {
-			assertType('', get_class($entity));
+			assertType('class-string<Bug4890\Proxy>', get_class($entity));
 		}
 
 		$class = $entity instanceof Proxy

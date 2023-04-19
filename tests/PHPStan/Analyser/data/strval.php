@@ -40,6 +40,7 @@ function intvalTest(string $string): void
 	assertType('int', intval(rand() * 0.1));
 	assertType('0', intval([]));
 	assertType('1', intval([null]));
+	assertType('int', intval(new \stdClass()));
 }
 
 function floatvalTest(string $string): void
@@ -57,6 +58,7 @@ function floatvalTest(string $string): void
 	assertType('float', floatval(rand() * 0.1));
 	assertType('0.0', floatval([]));
 	assertType('1.0', floatval([null]));
+	assertType('float', floatval(new \stdClass()));
 }
 
 function boolvalTest(string $string): void

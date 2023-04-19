@@ -61,7 +61,7 @@ function (): void {
 	/** @var object $object */
 	$object = doFoo();
 	$objectClass = get_class($object);
-	assertType('class-string', $objectClass);
+	assertType('class-string<object>', $objectClass);
 	$proxy = createProxy($objectClass, function(AParent $o):void {});
 	assertType('object', $proxy);
 };

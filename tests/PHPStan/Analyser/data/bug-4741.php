@@ -9,7 +9,7 @@ class Foo
 
 	public function isAnObject($object): void {
 		$class = get_class($object);
-		assertType('class-string|false', $class);
+		assertType('class-string<object>|false', $class);
 	}
 
 }

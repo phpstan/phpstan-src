@@ -292,6 +292,11 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			new ConstantFloatType(2.35),
 			'2.35000000000000008882',
 		];
+
+		yield [
+			new ConstantFloatType(100),
+			'100',
+		];
 	}
 
 	/**

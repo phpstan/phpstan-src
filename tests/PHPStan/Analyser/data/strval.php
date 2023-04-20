@@ -46,7 +46,6 @@ function intvalTest(string $string): void
 	assertType('int', intval(new \stdClass()));
 	assertType('int', intval(function() {}));
 	assertType('int', intval(fopen('php://memory', 'r')));
-
 }
 
 function floatvalTest(string $string): void

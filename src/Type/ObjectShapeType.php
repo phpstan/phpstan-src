@@ -178,11 +178,12 @@ class ObjectShapeType implements Type
 				$otherProperty = $type->getProperty($propertyName, $scope);
 			} catch (MissingPropertyFromReflectionException) {
 				return new AcceptsResult(
-					TrinaryLogic::createNo(),
+					$result->result,
 					[
 						sprintf(
-							'%s does not have property $%s.',
+							'%s %s not have property $%s.',
 							$type->describe(VerbosityLevel::typeOnly()),
+							$result->no() ? 'does' : 'might',
 							$propertyName,
 						),
 					],
@@ -278,7 +279,7 @@ class ObjectShapeType implements Type
 			try {
 				$otherProperty = $type->getProperty($propertyName, $scope);
 			} catch (MissingPropertyFromReflectionException) {
-				return TrinaryLogic::createNo();
+				return $result;
 			}
 
 			if (!$otherProperty->isPublic()) {

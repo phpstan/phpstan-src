@@ -13,6 +13,7 @@ use DynamicProperties\FinalFoo;
 use Exception;
 use InvalidArgumentException;
 use Iterator;
+use ObjectShapesAcceptance\ClassWithFooIntProperty;
 use PHPStan\Fixture\FinalClass;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -2396,6 +2397,39 @@ class TypeCombinatorTest extends PHPStanTestCase
 			UnionType::class,
 			'object{bar: string}|object{foo: int}',
 		];
+
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectType(Traversable::class),
+			],
+			UnionType::class,
+			'object{foo: int}|Traversable',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectType(\ObjectShape\Foo::class),
+			],
+			UnionType::class,
+			'ObjectShape\Foo|object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectType(ClassWithFooIntProperty::class),
+			],
+			ObjectShapeType::class,
+			'object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectType(\ObjectShapesAcceptance\FinalClass::class),
+			],
+			UnionType::class,
+			'ObjectShapesAcceptance\FinalClass|object{foo: int}',
+		];
 	}
 
 	/**
@@ -3935,6 +3969,38 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			NeverType::class,
 			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectType(Traversable::class),
+			],
+			IntersectionType::class,
+			'object{foo: int}&Traversable',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectType(\ObjectShapesAcceptance\Foo::class),
+			],
+			IntersectionType::class,
+			'ObjectShapesAcceptance\Foo&object{foo: int}',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectType(ClassWithFooIntProperty::class),
+			],
+			ObjectType::class,
+			'ObjectShapesAcceptance\ClassWithFooIntProperty',
+		];
+		yield [
+			[
+				new ObjectShapeType(['foo' => new IntegerType()], []),
+				new ObjectType(\ObjectShapesAcceptance\FinalClass::class),
+			],
+			PHP_VERSION_ID < 80200 ? IntersectionType::class : NeverType::class,
+			PHP_VERSION_ID < 80200 ? 'ObjectShapesAcceptance\FinalClass&object{foo: int}' : '*NEVER*=implicit',
 		];
 	}
 

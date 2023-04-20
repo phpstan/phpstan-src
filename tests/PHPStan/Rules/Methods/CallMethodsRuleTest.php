@@ -2919,7 +2919,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, Exception given.',
 				14,
-				'Exception does not have property $foo.',
+				'Exception might not have property $foo.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, object{foo: string, bar: int} given.',
@@ -2988,6 +2988,16 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $o of method ObjectShapesAcceptance\OptionalProperty::doBaz() expects object{foo: int}, object{foo?: string} given.',
 				157,
 				'Property ($foo) type int does not accept type string.',
+			],
+			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\TestAcceptance::doFoo() expects object{foo: int}, Traversable given.',
+				209,
+				'Traversable might not have property $foo.',
+			],
+			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\TestAcceptance::doFoo() expects object{foo: int}, ObjectShapesAcceptance\FinalClass given.',
+				210,
+				PHP_VERSION_ID < 80200 ? 'ObjectShapesAcceptance\FinalClass might not have property $foo.' : 'ObjectShapesAcceptance\FinalClass does not have property $foo.',
 			],
 		]);
 	}

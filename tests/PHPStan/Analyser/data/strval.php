@@ -23,6 +23,9 @@ function strvalTest(string $string, string $class): void
 	assertType('class-string<stdClass>', strval($class));
 	assertType('string', strval(new \Exception()));
 	assertType('*ERROR*', strval(new \stdClass()));
+	assertType('*ERROR*', strval([]));
+	assertType('*ERROR*', strval(function() {}));
+	assertType('string', strval(fopen('php://memory', 'r')));
 }
 
 function intvalTest(string $string): void
@@ -41,6 +44,9 @@ function intvalTest(string $string): void
 	assertType('0', intval([]));
 	assertType('1', intval([null]));
 	assertType('int', intval(new \stdClass()));
+	assertType('int', intval(function() {}));
+	assertType('int', intval(fopen('php://memory', 'r')));
+
 }
 
 function floatvalTest(string $string): void
@@ -59,6 +65,8 @@ function floatvalTest(string $string): void
 	assertType('0.0', floatval([]));
 	assertType('1.0', floatval([null]));
 	assertType('float', floatval(new \stdClass()));
+	assertType('float', floatval(function() {}));
+	assertType('float', floatval(fopen('php://memory', 'r')));
 }
 
 function boolvalTest(string $string): void
@@ -77,6 +85,8 @@ function boolvalTest(string $string): void
 	assertType('false', boolval([]));
 	assertType('true', boolval([null]));
 	assertType('true', boolval(new \stdClass()));
+	assertType('true', boolval(function() {}));
+	assertType('bool', boolval(fopen('php://memory', 'r')));
 }
 
 function arrayTest(array $a): void

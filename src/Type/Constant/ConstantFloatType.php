@@ -110,7 +110,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	 */
 	public function toPhpDocNode(): TypeNode
 	{
-		return new ConstTypeNode(new ConstExprFloatNode(rtrim(sprintf('%.20f', $this->value), '0.')));
+		return new ConstTypeNode(new ConstExprFloatNode(rtrim(rtrim(sprintf('%.20f', $this->value), '0'), '.')));
 	}
 
 	/**

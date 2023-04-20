@@ -174,3 +174,41 @@ class OptionalProperty
 	}
 
 }
+
+final class FinalClass
+{
+
+}
+
+class ClassWithFooIntProperty
+{
+
+	/** @var int */
+	public $foo;
+
+}
+
+class TestAcceptance
+{
+
+	/**
+	 * @param object{foo: int} $o
+	 * @return void
+	 */
+	public function doFoo(object $o): void
+	{
+
+	}
+
+	public function doBar(
+		\Traversable $traversable,
+		FinalClass $finalClass,
+		ClassWithFooIntProperty $classWithFooIntProperty
+	)
+	{
+		$this->doFoo($traversable);
+		$this->doFoo($finalClass);
+		$this->doFoo($classWithFooIntProperty);
+	}
+
+}

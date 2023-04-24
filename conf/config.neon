@@ -1498,6 +1498,11 @@ services:
 			- phpstan.dynamicFunctionThrowTypeExtension
 
 	-
+		class: PHPStan\Type\Php\IniGetReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\JsonThrowTypeExtension
 		tags:
 			- phpstan.dynamicFunctionThrowTypeExtension

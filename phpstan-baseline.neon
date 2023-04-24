@@ -142,11 +142,6 @@ parameters:
 			path: src/Command/FixerApplication.php
 
 		-
-			message: "#^Parameter \\#1 \\$arg of function escapeshellarg expects string, string\\|false given\\.$#"
-			count: 1
-			path: src/Command/FixerApplication.php
-
-		-
 			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\:\\:done\\(\\)\\.$#"
 			count: 1
 			path: src/Command/WorkerCommand.php

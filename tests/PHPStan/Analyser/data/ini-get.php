@@ -16,4 +16,12 @@ function doFoo() {
 		$x = ini_get("max_execution_time");
 	}
 	assertType('string', $x);
+
+	if (rand(1, 0)) {
+		$key = 'unknown';
+	} else {
+		$key = "max_execution_time";
+	}
+	assertType('string|false', ini_get($key));
+	assertType('string|false', ini_get('unknown'));
 }

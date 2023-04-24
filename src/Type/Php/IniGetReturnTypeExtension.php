@@ -47,7 +47,7 @@ class IniGetReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 		$results = [];
 		foreach ($argType->getConstantStrings() as $constantString) {
 			if (!array_key_exists($constantString->getValue(), $types)) {
-				continue;
+				return null;
 			}
 			$results[] = $types[$constantString->getValue()];
 		}

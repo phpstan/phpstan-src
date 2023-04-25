@@ -9,6 +9,8 @@ function doFoo() {
 	assertType('string', ini_get("memory_limit"));
 	assertType('numeric-string', ini_get("max_execution_time"));
 	assertType('numeric-string', ini_get("max_input_time"));
+	assertType('numeric-string', ini_get("default_socket_timeout"));
+	assertType('numeric-string', ini_get("precision"));
 
 	if (rand(1, 0)) {
 		$x = ini_get("date.timezone");

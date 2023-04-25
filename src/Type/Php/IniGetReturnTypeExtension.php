@@ -41,6 +41,8 @@ class IniGetReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 			'memory_limit' => new StringType(),
 			'max_execution_time' => $numericString,
 			'max_input_time' => $numericString,
+			'default_socket_timeout' => $numericString,
+			'precision' => $numericString,
 		];
 
 		$argType = $scope->getType($args[0]->value);

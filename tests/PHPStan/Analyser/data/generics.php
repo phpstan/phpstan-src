@@ -1309,10 +1309,8 @@ function getClassOnTemplateType($a, $b, $c, $d, $object, $mixed, $tObject)
 		get_class($b)
 	);
 	assertType(
-	'class-string<'.
-			'U of Exception (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)|'.
-		    'V of DateTimeInterface (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)'.
-		'>',
+		'class-string<U of Exception (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>|' .
+		'class-string<V of DateTimeInterface (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>',
 		get_class($c)
 	);
 	assertType('class-string<Iterator<mixed, DateTimeInterface>>', get_class($d));

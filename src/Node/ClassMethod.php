@@ -4,6 +4,7 @@ namespace PHPStan\Node;
 
 use PhpParser\Node\Stmt\ClassMethod as PhpParserClassMethod;
 
+/** @api */
 class ClassMethod extends PhpParserClassMethod
 {
 

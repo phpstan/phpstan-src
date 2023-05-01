@@ -55,4 +55,18 @@ class HelloWorld
 		curl_setopt($curl, CURLOPT_PROXY, '');
 		curl_setopt($curl, CURLOPT_PRIVATE, '');
 	}
+
+	public function bug9263() {
+		$curl = curl_init();
+
+		$header_dictionary = [
+			'Accept' => 'application/json',
+		];
+		curl_setopt($curl, CURLOPT_HTTPHEADER, $header_dictionary);
+
+		$header_list = [
+			'Accept: application/json',
+		];
+		curl_setopt($curl, CURLOPT_HTTPHEADER, $header_list);
+	}
 }

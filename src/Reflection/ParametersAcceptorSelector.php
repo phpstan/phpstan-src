@@ -785,10 +785,18 @@ class ParametersAcceptorSelector
 			}
 		}
 
+		$intArrayStringKeysConstants = [
+			'CURLOPT_HTTPHEADER',
+		];
+		foreach ($intArrayStringKeysConstants as $constName) {
+			if (defined($constName) && constant($constName) === $curlOpt) {
+				return new ArrayType(new IntegerType(), new StringType());
+			}
+		}
+
 		$arrayConstants = [
 			'CURLOPT_CONNECT_TO',
 			'CURLOPT_HTTP200ALIASES',
-			'CURLOPT_HTTPHEADER',
 			'CURLOPT_POSTQUOTE',
 			'CURLOPT_PROXYHEADER',
 			'CURLOPT_QUOTE',

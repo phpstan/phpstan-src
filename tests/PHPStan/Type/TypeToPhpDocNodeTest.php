@@ -16,6 +16,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use stdClass;
 use function sprintf;
 
@@ -138,6 +139,19 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				new ConstantIntegerType(2),
 			]),
 			'stdClass<1, 2>',
+		];
+
+		yield [
+			new GenericObjectType('stdClass', [
+				new StringType(),
+				new IntegerType(),
+				new MixedType(),
+			], null, null, [
+				TemplateTypeVariance::createInvariant(),
+				TemplateTypeVariance::createContravariant(),
+				TemplateTypeVariance::createBivariant(),
+			]),
+			'stdClass<string, contravariant int, *>',
 		];
 
 		yield [

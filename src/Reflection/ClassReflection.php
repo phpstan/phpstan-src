@@ -36,6 +36,9 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\Generic\TypeProjectionHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
 use PHPStan\Type\TypehintHelper;
@@ -94,6 +97,10 @@ class ClassReflection
 
 	private ?TemplateTypeMap $activeTemplateTypeMap = null;
 
+	private ?TemplateTypeVarianceMap $templateTypeVarianceMap = null;
+
+	private ?TemplateTypeVarianceMap $activeTemplateTypeVarianceMap = null;
+
 	/** @var array<string,ClassReflection>|null */
 	private ?array $ancestors = null;
 
@@ -140,6 +147,7 @@ class ClassReflection
 		private ?TemplateTypeMap $resolvedTemplateTypeMap,
 		private ?ResolvedPhpDocBlock $stubPhpDocBlock,
 		private ?string $extraCacheKey = null,
+		private ?TemplateTypeVarianceMap $resolvedTemplateTypeVarianceMap = null,
 	)
 	{
 	}
@@ -241,7 +249,11 @@ class ClassReflection
 			return $name;
 		}
 
-		return $name . '<' . implode(',', array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::typeOnly()), $this->getActiveTemplateTypeMap()->getTypes())) . '>';
+		return $name . '<' . implode(',', array_map(
+			static fn (Type $type, TemplateTypeVariance $variance): string => TypeProjectionHelper::describe($type, $variance, VerbosityLevel::typeOnly()),
+			$this->getActiveTemplateTypeMap()->getTypes(),
+			$this->getActiveTemplateTypeVarianceMap()->getVariances(),
+		)) . '>';
 	}
 
 	public function getCacheKey(): string
@@ -254,7 +266,11 @@ class ClassReflection
 		$cacheKey = $this->displayName;
 
 		if ($this->resolvedTemplateTypeMap !== null) {
-			$cacheKey .= '<' . implode(',', array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::cache()), $this->resolvedTemplateTypeMap->getTypes())) . '>';
+			$cacheKey .= '<' . implode(',', array_map(
+				static fn (Type $type, TemplateTypeVariance $variance): string => TypeProjectionHelper::describe($type, $variance, VerbosityLevel::cache()),
+				$this->getActiveTemplateTypeMap()->getTypes(),
+				$this->getActiveTemplateTypeVarianceMap()->getVariances(),
+			)) . '>';
 		}
 
 		if ($this->extraCacheKey !== null) {
@@ -1239,6 +1255,32 @@ class ClassReflection
 		return $this->resolvedTemplateTypeMap ?? $this->getTemplateTypeMap();
 	}
 
+	public function getTemplateTypeVarianceMap(): TemplateTypeVarianceMap
+	{
+		if ($this->templateTypeVarianceMap !== null) {
+			return $this->templateTypeVarianceMap;
+		}
+
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			$this->templateTypeVarianceMap = TemplateTypeVarianceMap::createEmpty();
+			return $this->templateTypeVarianceMap;
+		}
+
+		$map = [];
+		foreach ($this->getTemplateTags() as $templateTag) {
+			$map[$templateTag->getName()] = TemplateTypeVariance::createInvariant();
+		}
+
+		$this->templateTypeVarianceMap = new TemplateTypeVarianceMap($map);
+		return $this->templateTypeVarianceMap;
+	}
+
+	public function getActiveTemplateTypeVarianceMap(): TemplateTypeVarianceMap
+	{
+		return $this->activeTemplateTypeVarianceMap ??= $this->resolvedTemplateTypeVarianceMap ?? $this->getTemplateTypeVarianceMap();
+	}
+
 	public function isGeneric(): bool
 	{
 		if ($this->isGeneric === null) {
@@ -1272,6 +1314,26 @@ class ClassReflection
 		return new TemplateTypeMap($map);
 	}
 
+	/**
+	 * @param array<int, TemplateTypeVariance> $variances
+	 */
+	public function varianceMapFromList(array $variances): TemplateTypeVarianceMap
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return new TemplateTypeVarianceMap([]);
+		}
+
+		$map = [];
+		$i = 0;
+		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
+			$map[$tag->getName()] = $variances[$i] ?? TemplateTypeVariance::createInvariant();
+			$i++;
+		}
+
+		return new TemplateTypeVarianceMap($map);
+	}
+
 	/** @return array<int, Type> */
 	public function typeMapToList(TemplateTypeMap $typeMap): array
 	{
@@ -1283,6 +1345,22 @@ class ClassReflection
 		$list = [];
 		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
 			$list[] = $typeMap->getType($tag->getName()) ?? $tag->getBound();
+		}
+
+		return $list;
+	}
+
+	/** @return array<int, TemplateTypeVariance> */
+	public function varianceMapToList(TemplateTypeVarianceMap $varianceMap): array
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		$list = [];
+		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
+			$list[] = $varianceMap->getVariance($tag->getName()) ?? TemplateTypeVariance::createInvariant();
 		}
 
 		return $list;
@@ -1308,6 +1386,33 @@ class ClassReflection
 			$this->anonymousFilename,
 			$this->typeMapFromList($types),
 			$this->stubPhpDocBlock,
+			null,
+			$this->resolvedTemplateTypeVarianceMap,
+		);
+	}
+
+	/**
+	 * @param array<int, TemplateTypeVariance> $variances
+	 */
+	public function withVariances(array $variances): self
+	{
+		return new self(
+			$this->reflectionProvider,
+			$this->initializerExprTypeResolver,
+			$this->fileTypeMapper,
+			$this->stubPhpDocProvider,
+			$this->phpDocInheritanceResolver,
+			$this->phpVersion,
+			$this->propertiesClassReflectionExtensions,
+			$this->methodsClassReflectionExtensions,
+			$this->allowedSubTypesClassReflectionExtensions,
+			$this->displayName,
+			$this->reflection,
+			$this->anonymousFilename,
+			$this->resolvedTemplateTypeMap,
+			$this->stubPhpDocBlock,
+			null,
+			$this->varianceMapFromList($variances),
 		);
 	}
 

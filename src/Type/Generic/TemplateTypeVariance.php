@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
@@ -19,6 +20,7 @@ class TemplateTypeVariance
 	private const COVARIANT = 2;
 	private const CONTRAVARIANT = 3;
 	private const STATIC = 4;
+	private const BIVARIANT = 5;
 
 	/** @var self[] */
 	private static array $registry;
@@ -55,6 +57,11 @@ class TemplateTypeVariance
 		return self::create(self::STATIC);
 	}
 
+	public static function createBivariant(): self
+	{
+		return self::create(self::BIVARIANT);
+	}
+
 	public function invariant(): bool
 	{
 		return $this->value === self::INVARIANT;
@@ -75,6 +82,11 @@ class TemplateTypeVariance
 		return $this->value === self::STATIC;
 	}
 
+	public function bivariant(): bool
+	{
+		return $this->value === self::BIVARIANT;
+	}
+
 	public function compose(self $other): self
 	{
 		if ($this->contravariant()) {
@@ -83,6 +95,9 @@ class TemplateTypeVariance
 			}
 			if ($other->covariant()) {
 				return self::createContravariant();
+			}
+			if ($other->bivariant()) {
+				return self::createBivariant();
 			}
 			return self::createInvariant();
 		}
@@ -94,11 +109,18 @@ class TemplateTypeVariance
 			if ($other->covariant()) {
 				return self::createCovariant();
 			}
+			if ($other->bivariant()) {
+				return self::createBivariant();
+			}
 			return self::createInvariant();
 		}
 
 		if (self::$invarianceCompositionEnabled && $this->invariant()) {
 			return self::createInvariant();
+		}
+
+		if ($this->bivariant()) {
+			return self::createBivariant();
 		}
 
 		return $other;
@@ -163,6 +185,10 @@ class TemplateTypeVariance
 			return new AcceptsResult($b->isSuperTypeOf($a), []);
 		}
 
+		if ($this->bivariant()) {
+			return AcceptsResult::createYes();
+		}
+
 		throw new ShouldNotHappenException();
 	}
 
@@ -175,6 +201,7 @@ class TemplateTypeVariance
 	{
 		return $other->value === $this->value
 			|| $other->invariant()
+			|| $this->bivariant()
 			|| $this->static();
 	}
 
@@ -189,6 +216,27 @@ class TemplateTypeVariance
 				return 'contravariant';
 			case self::STATIC:
 				return 'static';
+			case self::BIVARIANT:
+				return 'bivariant';
+		}
+
+		throw new ShouldNotHappenException();
+	}
+
+	/**
+	 * @return GenericTypeNode::VARIANCE_*
+	 */
+	public function toPhpDocNodeVariance(): string
+	{
+		switch ($this->value) {
+			case self::INVARIANT:
+				return GenericTypeNode::VARIANCE_INVARIANT;
+			case self::COVARIANT:
+				return GenericTypeNode::VARIANCE_COVARIANT;
+			case self::CONTRAVARIANT:
+				return GenericTypeNode::VARIANCE_CONTRAVARIANT;
+			case self::BIVARIANT:
+				return GenericTypeNode::VARIANCE_BIVARIANT;
 		}
 
 		throw new ShouldNotHappenException();

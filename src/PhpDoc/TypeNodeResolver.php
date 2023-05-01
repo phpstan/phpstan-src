@@ -65,6 +65,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Helper\GetTemplateTypeType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -602,6 +603,15 @@ class TypeNodeResolver
 	{
 		$mainTypeName = strtolower($typeNode->type->name);
 		$genericTypes = $this->resolveMultiple($typeNode->genericTypes, $nameScope);
+		$variances = array_map(
+			static fn (string $variance): TemplateTypeVariance => match ($variance) {
+				GenericTypeNode::VARIANCE_INVARIANT => TemplateTypeVariance::createInvariant(),
+				GenericTypeNode::VARIANCE_COVARIANT => TemplateTypeVariance::createCovariant(),
+				GenericTypeNode::VARIANCE_CONTRAVARIANT => TemplateTypeVariance::createContravariant(),
+				GenericTypeNode::VARIANCE_BIVARIANT => TemplateTypeVariance::createBivariant(),
+			},
+			$typeNode->variances,
+		);
 
 		if ($mainTypeName === 'array' || $mainTypeName === 'non-empty-array') {
 			if (count($genericTypes) === 1) { // array<ValueType>
@@ -748,7 +758,7 @@ class TypeNodeResolver
 
 		if ($mainTypeClassName !== null) {
 			if (!$this->getReflectionProvider()->hasClass($mainTypeClassName)) {
-				return new GenericObjectType($mainTypeClassName, $genericTypes);
+				return new GenericObjectType($mainTypeClassName, $genericTypes, null, null, $variances);
 			}
 
 			$classReflection = $this->getReflectionProvider()->getClass($mainTypeClassName);
@@ -762,6 +772,9 @@ class TypeNodeResolver
 						return new GenericObjectType($mainTypeClassName, [
 							new MixedType(true),
 							$genericTypes[0],
+						], null, null, [
+							TemplateTypeVariance::createInvariant(),
+							$variances[0],
 						]);
 					}
 
@@ -769,6 +782,9 @@ class TypeNodeResolver
 						return new GenericObjectType($mainTypeClassName, [
 							$genericTypes[0],
 							$genericTypes[1],
+						], null, null, [
+							$variances[0],
+							$variances[1],
 						]);
 					}
 				}
@@ -780,6 +796,11 @@ class TypeNodeResolver
 							$genericTypes[0],
 							$mixed,
 							$mixed,
+						], null, null, [
+							TemplateTypeVariance::createInvariant(),
+							$variances[0],
+							TemplateTypeVariance::createInvariant(),
+							TemplateTypeVariance::createInvariant(),
 						]);
 					}
 
@@ -790,19 +811,24 @@ class TypeNodeResolver
 							$genericTypes[1],
 							$mixed,
 							$mixed,
+						], null, null, [
+							$variances[0],
+							$variances[1],
+							TemplateTypeVariance::createInvariant(),
+							TemplateTypeVariance::createInvariant(),
 						]);
 					}
 				}
 
 				if (!$mainType->isIterable()->yes()) {
-					return new GenericObjectType($mainTypeClassName, $genericTypes);
+					return new GenericObjectType($mainTypeClassName, $genericTypes, null, null, $variances);
 				}
 
 				if (
 					count($genericTypes) !== 1
 					|| $classReflection->getTemplateTypeMap()->count() === 1
 				) {
-					return new GenericObjectType($mainTypeClassName, $genericTypes);
+					return new GenericObjectType($mainTypeClassName, $genericTypes, null, null, $variances);
 				}
 			}
 		}
@@ -824,7 +850,7 @@ class TypeNodeResolver
 		}
 
 		if ($mainTypeClassName !== null) {
-			return new GenericObjectType($mainTypeClassName, $genericTypes);
+			return new GenericObjectType($mainTypeClassName, $genericTypes, null, null, $variances);
 		}
 
 		return new ErrorType();

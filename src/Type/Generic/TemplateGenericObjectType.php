@@ -21,7 +21,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 		GenericObjectType $bound,
 	)
 	{
-		parent::__construct($bound->getClassName(), $bound->getTypes());
+		parent::__construct($bound->getClassName(), $bound->getTypes(), null, null, $bound->getVariances());
 
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
@@ -30,7 +30,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 		$this->bound = $bound;
 	}
 
-	protected function recreate(string $className, array $types, ?Type $subtractedType): GenericObjectType
+	protected function recreate(string $className, array $types, ?Type $subtractedType, array $variances = []): GenericObjectType
 	{
 		return new self(
 			$this->scope,

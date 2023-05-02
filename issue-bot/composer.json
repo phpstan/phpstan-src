@@ -6,7 +6,7 @@
 		"knplabs/github-api": "^3.9",
 		"league/commonmark": "^2.3",
 		"nette/neon": "^3.3",
-		"nette/utils": "^3.2",
+		"nette/utils": "^4.0",
 		"phpstan/phpstan-strict-rules": "^1.4",
 		"symfony/console": "^6.1",
 		"symfony/finder": "^6.1"
@@ -25,6 +25,6 @@
 		}
 	},
 	"require-dev": {
-		"phpunit/phpunit": "^9.5"
+		"phpunit/phpunit": "^10.0"
 	}
 }

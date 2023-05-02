@@ -14,7 +14,6 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
-use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileMonitor;
 use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
@@ -61,7 +60,6 @@ use function React\Async\await;
 use function React\Promise\resolve;
 use function sprintf;
 use function strlen;
-use function strpos;
 use function unlink;
 use const PHP_BINARY;
 use const PHP_URL_PORT;
@@ -461,17 +459,7 @@ class FixerApplication
 
 	private function isDockerRunning(): bool
 	{
-		if (!is_file('/proc/1/cgroup')) {
-			return false;
-		}
-
-		try {
-			$contents = FileReader::read('/proc/1/cgroup');
-
-			return strpos($contents, 'docker') !== false;
-		} catch (CouldNotReadFileException) {
-			return false;
-		}
+		return is_file('/.dockerenv');
 	}
 
 }

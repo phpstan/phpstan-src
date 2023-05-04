@@ -18,12 +18,12 @@ class Ok {
 
 class WrongSignature {
 
-	public function __serialize(): string
+	public function __serialize()
 	{
 		return '';
 	}
 
-	public function __unserialize(string $data): string
+	public function __unserialize($data)
 	{
 		return '';
 	}

@@ -93,7 +93,7 @@ class EnumSanityRuleTest extends RuleTestCase
 				106,
 			],
 			[
-				'Enum EnumSanity\EnumWithValueNotBacked is not backed, but EnumSanity\EnumWithValueNotBacked::FOO has value 1',
+				'Enum EnumSanity\EnumWithValueButNotBacked is not backed, but EnumSanity\EnumWithValueButNotBacked::FOO has value 1',
 				110,
 			],
 		];

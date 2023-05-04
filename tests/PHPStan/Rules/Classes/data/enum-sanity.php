@@ -106,7 +106,7 @@ enum EnumInconsistentCaseType: int {
 	case BAR;
 }
 
-enum EnumWithValueNotBacked {
+enum EnumWithValueButNotBacked {
 	case FOO = 1;
 }
 

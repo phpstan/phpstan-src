@@ -125,7 +125,7 @@ class EnumSanityRule implements Rule
 			}
 		}
 
-			$enumCases = [];
+		$enumCases = [];
 		foreach ($node->stmts as $stmt) {
 			if (!$stmt instanceof Node\Stmt\EnumCase) {
 				continue;

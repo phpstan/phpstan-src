@@ -83,14 +83,6 @@ enum EnumWithSerialize {
 	}
 }
 
-enum EnumMayNotSerializable implements \Serializable {
-
-	public function serialize() {
-	}
-	public function unserialize($data) {
-	}
-}
-
 enum EnumDuplicateValue: int {
 	case A = 1;
 	case B = 2;
@@ -102,4 +94,12 @@ enum EnumDuplicateValue: int {
 enum EnumWithoutDuplicateValuesRemainsUntouched {
 	case A = 1;
 	case B = 2;
+}
+
+enum EnumMayNotSerializable implements \Serializable {
+
+	public function serialize() {
+	}
+	public function unserialize($data) {
+	}
 }

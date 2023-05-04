@@ -76,20 +76,20 @@ class EnumSanityRuleTest extends RuleTestCase
 				'Enum EnumSanity\EnumWithSerialize contains magic method __unserialize().',
 				81,
 			],
+			[
+				'Enum EnumSanity\EnumDuplicateValue has duplicated value 1 for keys A, E',
+				86,
+			],
+			[
+				'Enum EnumSanity\EnumDuplicateValue has duplicated value 2 for keys B, C',
+				86,
+			],
 		];
 
 		if (PHP_VERSION_ID >= 80100) {
 			$expected[] = [
 				'Enum EnumSanity\EnumMayNotSerializable cannot implement the Serializable interface.',
-				86,
-			];
-			$expected[] = [
-				'Enum EnumSanity\EnumDuplicateValue has duplicated value 1 for keys A, E',
-				94,
-			];
-			$expected[] = [
-				'Enum EnumSanity\EnumDuplicateValue has duplicated value 2 for keys B, C',
-				94,
+				99,
 			];
 		}
 

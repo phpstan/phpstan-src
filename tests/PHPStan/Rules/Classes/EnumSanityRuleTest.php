@@ -83,6 +83,14 @@ class EnumSanityRuleTest extends RuleTestCase
 				'Enum EnumSanity\EnumMayNotSerializable cannot implement the Serializable interface.',
 				86,
 			];
+			$expected[] = [
+				'Enum EnumSanity\EnumDuplicateValue has duplicated value 1 for keys A, E',
+				94,
+			];
+			$expected[] = [
+				'Enum EnumSanity\EnumDuplicateValue has duplicated value 2 for keys B, C',
+				94,
+			];
 		}
 
 		$this->analyse([__DIR__ . '/data/enum-sanity.php'], $expected);

@@ -10,6 +10,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use Serializable;
 use function array_key_exists;
+use function count;
+use function implode;
 use function sprintf;
 
 /**
@@ -120,6 +122,39 @@ class EnumSanityRule implements Rule
 					$node->namespacedName->toString(),
 				))->line($node->getLine())->nonIgnorable()->build();
 			}
+		}
+
+		$enumCases = [];
+		foreach ($node->stmts as $stmt) {
+			if (!($stmt instanceof Node\Stmt\EnumCase && ($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_))) {
+				continue;
+			}
+
+			$caseValue = $stmt->expr->value;
+			$caseName = $stmt->name->name;
+
+			if (!isset($enumCases[$caseValue])) {
+				$enumCases[$caseValue] = [];
+			}
+
+			$enumCases[$caseValue][] = $caseName;
+		}
+
+		foreach ($enumCases as $caseValue => $caseNames) {
+			if (count($caseNames) <= 1) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Enum %s has duplicated value %s for keys %s',
+				$node->namespacedName->toString(),
+				$caseValue,
+				implode(', ', $caseNames),
+			))
+				->identifier('enum.duplicatedValues')
+				->line($node->scalarType->getLine())
+				->nonIgnorable()
+				->build();
 		}
 
 		return $errors;

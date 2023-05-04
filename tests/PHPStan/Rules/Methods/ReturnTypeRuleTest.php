@@ -861,4 +861,18 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9011.php'], $errors);
 	}
 
+	public function testMagicSerialization(): void
+	{
+		$this->analyse([__DIR__ . '/data/magic-serialization.php'], [
+			[
+				'Method MagicSerialization\WrongSignature::__serialize() should return array but returns string.',
+				23,
+			],
+			[
+				'Method MagicSerialization\WrongSignature::__unserialize() with return type void returns string but should not return anything.',
+				28,
+			],
+		]);
+	}
+
 }

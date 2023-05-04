@@ -83,7 +83,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$realReturnType = new VoidType();
 		}
 		if ($name === '__serialize') {
-			$realReturnType = new ArrayType(new MixedType(), new MixedType());
+			$realReturnType = new ArrayType(new MixedType(true), new MixedType(true));
 		}
 
 		parent::__construct(

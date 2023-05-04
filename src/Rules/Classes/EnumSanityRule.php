@@ -139,7 +139,7 @@ class EnumSanityRule implements Rule
 					$caseName,
 					$stmt->expr->value,
 				))
-					->identifier('enum.caseTypeMismatch')
+					->identifier('enum.nonBackedEnumHasValue')
 					->line($stmt->getLine())
 					->nonIgnorable()
 					->build();

@@ -124,37 +124,40 @@ class EnumSanityRule implements Rule
 			}
 		}
 
-		$enumCases = [];
-		foreach ($node->stmts as $stmt) {
-			if (!($stmt instanceof Node\Stmt\EnumCase && ($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_))) {
-				continue;
+		if ($node->scalarType !== null) {
+
+			$enumCases = [];
+			foreach ($node->stmts as $stmt) {
+				if (!($stmt instanceof Node\Stmt\EnumCase && ($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_))) {
+					continue;
+				}
+
+				$caseValue = $stmt->expr->value;
+				$caseName = $stmt->name->name;
+
+				if (!isset($enumCases[$caseValue])) {
+					$enumCases[$caseValue] = [];
+				}
+
+				$enumCases[$caseValue][] = $caseName;
 			}
 
-			$caseValue = $stmt->expr->value;
-			$caseName = $stmt->name->name;
+			foreach ($enumCases as $caseValue => $caseNames) {
+				if (count($caseNames) <= 1) {
+					continue;
+				}
 
-			if (!isset($enumCases[$caseValue])) {
-				$enumCases[$caseValue] = [];
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Enum %s has duplicated value %s for keys %s',
+					$node->namespacedName->toString(),
+					$caseValue,
+					implode(', ', $caseNames),
+				))
+					->identifier('enum.duplicatedValues')
+					->line($node->scalarType->getLine())
+					->nonIgnorable()
+					->build();
 			}
-
-			$enumCases[$caseValue][] = $caseName;
-		}
-
-		foreach ($enumCases as $caseValue => $caseNames) {
-			if (count($caseNames) <= 1) {
-				continue;
-			}
-
-			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Enum %s has duplicated value %s for keys %s',
-				$node->namespacedName->toString(),
-				$caseValue,
-				implode(', ', $caseNames),
-			))
-				->identifier('enum.duplicatedValues')
-				->line($node->scalarType->getLine())
-				->nonIgnorable()
-				->build();
 		}
 
 		return $errors;

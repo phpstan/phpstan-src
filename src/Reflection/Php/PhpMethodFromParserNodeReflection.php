@@ -14,6 +14,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -76,6 +77,13 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		}
 		if ($name === '__set_state') {
 			$realReturnType = TypeCombinator::intersect(new ObjectWithoutClassType(), $realReturnType);
+		}
+
+		if ($name === '__unserialize') {
+			$realReturnType = new VoidType();
+		}
+		if ($name === '__serialize') {
+			$realReturnType = new ArrayType(new MixedType(), new MixedType());
 		}
 
 		parent::__construct(

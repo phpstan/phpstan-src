@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use Serializable;
@@ -131,35 +130,61 @@ class EnumSanityRule implements Rule
 				continue;
 			}
 			$caseName = $stmt->name->name;
-			if ($node->scalarType === null && ($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_)) {
+
+			if (($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_)) {
+				if ($node->scalarType === null) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Enum %s is not backed, but %s::%s has value %s',
+						$node->namespacedName->toString(),
+						$node->namespacedName->toString(),
+						$caseName,
+						$stmt->expr->value,
+					))
+						->identifier('enum.nonBackedEnumHasValue')
+						->line($stmt->getLine())
+						->nonIgnorable()
+						->build();
+				} else {
+					$caseValue = $stmt->expr->value;
+
+					if (!isset($enumCases[$caseValue])) {
+						$enumCases[$caseValue] = [];
+					}
+
+					$enumCases[$caseValue][] = $caseName;
+				}
+			}
+
+			if ($node->scalarType === null) {
+				continue;
+			}
+
+			if ($node->scalarType->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum %s is not backed, but %s::%s has value %s',
-					$node->namespacedName->toString(),
+					"Enum case %s::%s doesn't match the '%s' type",
 					$node->namespacedName->toString(),
 					$caseName,
-					$stmt->expr->value,
+					'int',
 				))
-					->identifier('enum.nonBackedEnumHasValue')
+					->identifier('enum.caseTypeMismatch')
 					->line($stmt->getLine())
 					->nonIgnorable()
 					->build();
 			}
-			if ($node->scalarType->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
-				$errors[] = $this->buildEnumCaseTypeMismatchError($node, $caseName, $stmt->getLine(), 'int');
-				continue;
-			}
+
+			// phpcs:ignore SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
 			if ($node->scalarType->name === 'string' && !($stmt->expr instanceof Node\Scalar\String_)) {
-				$errors[] = $this->buildEnumCaseTypeMismatchError($node, $caseName, $stmt->getLine(), 'string');
-				continue;
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					"Enum case %s::%s doesn't match the '%s' type",
+					$node->namespacedName->toString(),
+					$caseName,
+					'string',
+				))
+					->identifier('enum.caseTypeMismatch')
+					->line($stmt->getLine())
+					->nonIgnorable()
+					->build();
 			}
-
-			$caseValue = $stmt->expr->value;
-
-			if (!isset($enumCases[$caseValue])) {
-				$enumCases[$caseValue] = [];
-			}
-
-			$enumCases[$caseValue][] = $caseName;
 		}
 
 		foreach ($enumCases as $caseValue => $caseNames) {
@@ -180,20 +205,6 @@ class EnumSanityRule implements Rule
 		}
 
 		return $errors;
-	}
-
-	private function buildEnumCaseTypeMismatchError(Node\Stmt\ClassLike $node, string $caseName, int $line, string $type): RuleError
-	{
-		return RuleErrorBuilder::message(sprintf(
-			"Enum case %s::%s doesn't match the '%s' type",
-			$node->namespacedName->toString(),
-			$caseName,
-			$type,
-		))
-			->identifier('enum.caseTypeMismatch')
-			->line($line)
-			->nonIgnorable()
-			->build();
 	}
 
 }

@@ -84,12 +84,24 @@ class EnumSanityRuleTest extends RuleTestCase
 				'Enum EnumSanity\EnumDuplicateValue has duplicated value 2 for keys B, C',
 				86,
 			],
+			[
+				"Enum case EnumSanity\EnumInconsistentCaseType::FOO doesn't match the 'int' type",
+				105,
+			],
+			[
+				"Enum case EnumSanity\EnumInconsistentCaseType::BAR doesn't match the 'int' type",
+				106,
+			],
+			[
+				'Enum EnumSanity\EnumWithValueNotBacked is not backed, but EnumSanity\EnumWithValueNotBacked::FOO has value 1',
+				110,
+			],
 		];
 
 		if (PHP_VERSION_ID >= 80100) {
 			$expected[] = [
 				'Enum EnumSanity\EnumMayNotSerializable cannot implement the Serializable interface.',
-				99,
+				113,
 			];
 		}
 

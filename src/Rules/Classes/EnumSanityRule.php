@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use Serializable;
@@ -124,43 +125,75 @@ class EnumSanityRule implements Rule
 			}
 		}
 
-		if ($node->scalarType !== null) {
-
 			$enumCases = [];
-			foreach ($node->stmts as $stmt) {
-				if (!($stmt instanceof Node\Stmt\EnumCase && ($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_))) {
-					continue;
-				}
-
-				$caseValue = $stmt->expr->value;
-				$caseName = $stmt->name->name;
-
-				if (!isset($enumCases[$caseValue])) {
-					$enumCases[$caseValue] = [];
-				}
-
-				$enumCases[$caseValue][] = $caseName;
+		foreach ($node->stmts as $stmt) {
+			if (!$stmt instanceof Node\Stmt\EnumCase) {
+				continue;
 			}
-
-			foreach ($enumCases as $caseValue => $caseNames) {
-				if (count($caseNames) <= 1) {
-					continue;
-				}
-
+			$caseName = $stmt->name->name;
+			if ($node->scalarType === null && ($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum %s has duplicated value %s for keys %s',
+					'Enum %s is not backed, but %s::%s has value %s',
 					$node->namespacedName->toString(),
-					$caseValue,
-					implode(', ', $caseNames),
+					$node->namespacedName->toString(),
+					$caseName,
+					$stmt->expr->value,
 				))
-					->identifier('enum.duplicatedValues')
-					->line($node->scalarType->getLine())
+					->identifier('enum.caseTypeMismatch')
+					->line($stmt->getLine())
 					->nonIgnorable()
 					->build();
 			}
+			if ($node->scalarType->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
+				$errors[] = $this->buildEnumCaseTypeMismatchError($node, $caseName, $stmt->getLine(), 'int');
+				continue;
+			}
+			if ($node->scalarType->name === 'string' && !($stmt->expr instanceof Node\Scalar\String_)) {
+				$errors[] = $this->buildEnumCaseTypeMismatchError($node, $caseName, $stmt->getLine(), 'string');
+				continue;
+			}
+
+			$caseValue = $stmt->expr->value;
+
+			if (!isset($enumCases[$caseValue])) {
+				$enumCases[$caseValue] = [];
+			}
+
+			$enumCases[$caseValue][] = $caseName;
+		}
+
+		foreach ($enumCases as $caseValue => $caseNames) {
+			if (count($caseNames) <= 1) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Enum %s has duplicated value %s for keys %s',
+				$node->namespacedName->toString(),
+				$caseValue,
+				implode(', ', $caseNames),
+			))
+				->identifier('enum.duplicatedValues')
+				->line($node->getLine())
+				->nonIgnorable()
+				->build();
 		}
 
 		return $errors;
+	}
+
+	private function buildEnumCaseTypeMismatchError(Node\Stmt\ClassLike $node, string $caseName, int $line, string $type): RuleError
+	{
+		return RuleErrorBuilder::message(sprintf(
+			"Enum case %s::%s doesn't match the '%s' type",
+			$node->namespacedName->toString(),
+			$caseName,
+			$type,
+		))
+			->identifier('enum.caseTypeMismatch')
+			->line($line)
+			->nonIgnorable()
+			->build();
 	}
 
 }

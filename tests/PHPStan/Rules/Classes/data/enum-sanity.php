@@ -91,9 +91,23 @@ enum EnumDuplicateValue: int {
 	case E = 1;
 }
 
-enum EnumWithoutDuplicateValuesRemainsUntouched {
+enum ValidIntBackedEnum: int {
 	case A = 1;
 	case B = 2;
+}
+
+enum ValidStringBackedEnum: string {
+	case A = 'A';
+	case B = 'B';
+}
+
+enum EnumInconsistentCaseType: int {
+	case FOO = 'foo';
+	case BAR;
+}
+
+enum EnumWithValueNotBacked {
+	case FOO = 1;
 }
 
 enum EnumMayNotSerializable implements \Serializable {

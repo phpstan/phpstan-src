@@ -155,36 +155,31 @@ class EnumSanityRule implements Rule
 				}
 			}
 
-			if ($node->scalarType === null) {
+			if ($node->scalarType?->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					"Enum case %s::%s doesn't match the 'int' type",
+					$node->namespacedName->toString(),
+					$caseName,
+				))
+					->identifier('enum.caseTypeMismatch')
+					->line($stmt->getLine())
+					->nonIgnorable()
+					->build();
+			}
+
+			$isStringBackedWithoutStringCase = $node->scalarType?->name === 'string' && !($stmt->expr instanceof Node\Scalar\String_);
+			if (!$isStringBackedWithoutStringCase) {
 				continue;
 			}
-
-			if ($node->scalarType->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					"Enum case %s::%s doesn't match the '%s' type",
-					$node->namespacedName->toString(),
-					$caseName,
-					'int',
-				))
-					->identifier('enum.caseTypeMismatch')
-					->line($stmt->getLine())
-					->nonIgnorable()
-					->build();
-			}
-
-			// phpcs:ignore SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
-			if ($node->scalarType->name === 'string' && !($stmt->expr instanceof Node\Scalar\String_)) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					"Enum case %s::%s doesn't match the '%s' type",
-					$node->namespacedName->toString(),
-					$caseName,
-					'string',
-				))
-					->identifier('enum.caseTypeMismatch')
-					->line($stmt->getLine())
-					->nonIgnorable()
-					->build();
-			}
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				"Enum case %s::%s doesn't match the 'string' type",
+				$node->namespacedName->toString(),
+				$caseName,
+			))
+				->identifier('enum.caseTypeMismatch')
+				->line($stmt->getLine())
+				->nonIgnorable()
+				->build();
 		}
 
 		foreach ($enumCases as $caseValue => $caseNames) {

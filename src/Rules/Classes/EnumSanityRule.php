@@ -155,7 +155,11 @@ class EnumSanityRule implements Rule
 				}
 			}
 
-			if ($node->scalarType?->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
+			if ($node->scalarType === null) {
+				continue;
+			}
+
+			if ($node->scalarType->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					"Enum case %s::%s doesn't match the 'int' type",
 					$node->namespacedName->toString(),
@@ -167,7 +171,7 @@ class EnumSanityRule implements Rule
 					->build();
 			}
 
-			$isStringBackedWithoutStringCase = $node->scalarType?->name === 'string' && !($stmt->expr instanceof Node\Scalar\String_);
+			$isStringBackedWithoutStringCase = $node->scalarType->name === 'string' && !($stmt->expr instanceof Node\Scalar\String_);
 			if (!$isStringBackedWithoutStringCase) {
 				continue;
 			}

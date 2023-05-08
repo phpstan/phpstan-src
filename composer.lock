@@ -1398,22 +1398,22 @@
         },
         {
             "name": "nette/bootstrap",
-            "version": "v3.1.2",
+            "version": "v3.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/bootstrap.git",
-                "reference": "3ab4912a08af0c16d541c3709935c3478b5ee090"
+                "reference": "1a7965b4ee401ad0e3f673b9c016d2481afdc280"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/bootstrap/zipball/3ab4912a08af0c16d541c3709935c3478b5ee090",
-                "reference": "3ab4912a08af0c16d541c3709935c3478b5ee090",
+                "url": "https://api.github.com/repos/nette/bootstrap/zipball/1a7965b4ee401ad0e3f673b9c016d2481afdc280",
+                "reference": "1a7965b4ee401ad0e3f673b9c016d2481afdc280",
                 "shasum": ""
             },
             "require": {
                 "nette/di": "^3.0.5",
-                "nette/utils": "^3.2.1",
-                "php": ">=7.2 <8.2"
+                "nette/utils": "^3.2.1 || ^4.0",
+                "php": ">=7.2 <8.3"
             },
             "conflict": {
                 "tracy/tracy": "<2.6"
@@ -1473,9 +1473,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/bootstrap/issues",
-                "source": "https://github.com/nette/bootstrap/tree/v3.1.2"
+                "source": "https://github.com/nette/bootstrap/tree/v3.1.4"
             },
-            "time": "2021-11-24T16:51:46+00:00"
+            "time": "2022-12-14T15:23:02+00:00"
         },
         {
             "name": "nette/di",

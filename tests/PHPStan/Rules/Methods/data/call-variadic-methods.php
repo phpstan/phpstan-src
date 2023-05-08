@@ -90,3 +90,56 @@ class Bar
 	}
 
 }
+
+class ImpliedVariadicGh9280
+{
+	public function anyArgsWithNumAndGet(int $index): int
+	{
+		$argsCount = func_num_args();
+		$lastArg = func_get_arg($argsCount - 1);
+
+		return is_int($lastArg) ? $lastArg : $index;
+	}
+
+	public function anyArgsWithGetAll(int $index): int
+	{
+		$args = func_get_args();
+		$lastArg = end($args);
+
+		return is_int($lastArg) ? $lastArg : $index;
+	}
+
+	public function onlyOneArgA(int $index): int
+	{
+		return $index;
+	}
+
+	public function onlyOneArgB(int $index): int
+	{
+		$argsCount = func_num_args();
+		if ($argsCount > 1) {
+			throw new \Error('Too many args');
+		}
+
+		return $index;
+	}
+
+	public function doFoo()
+	{
+		$this->anyArgsWithNumAndGet();
+		$this->anyArgsWithNumAndGet(1);
+		$this->anyArgsWithNumAndGet(1, 2);
+
+		$this->anyArgsWithGetAll();
+		$this->anyArgsWithGetAll(1);
+		$this->anyArgsWithGetAll(1, 2);
+
+		$this->onlyOneArgA();
+		$this->onlyOneArgA(1);
+		$this->onlyOneArgA(1, 2);
+
+		$this->onlyOneArgB();
+		$this->onlyOneArgB(1);
+		$this->onlyOneArgB(1, 2);
+	}
+}

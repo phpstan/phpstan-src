@@ -1037,6 +1037,30 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #2 ...$strings of method CallVariadicMethods\Bar::anotherVariadicStrings() expects string, int given.',
 				88,
 			],
+			[
+				'Method CallVariadicMethods\ImpliedVariadicGh9280::anyArgsWithNumAndGet() invoked with 0 parameters, at least 1 required.',
+				129,
+			],
+			[
+				'Method CallVariadicMethods\ImpliedVariadicGh9280::anyArgsWithGetAll() invoked with 0 parameters, at least 1 required.',
+				133,
+			],
+			[
+				'Method CallVariadicMethods\ImpliedVariadicGh9280::onlyOneArgA() invoked with 0 parameters, 1 required.',
+				137,
+			],
+			[
+				'Method CallVariadicMethods\ImpliedVariadicGh9280::onlyOneArgA() invoked with 2 parameters, 1 required.',
+				139,
+			],
+			[
+				'Method CallVariadicMethods\ImpliedVariadicGh9280::onlyOneArgB() invoked with 0 parameters, 1 required.',
+				141,
+			],
+			[
+				'Method CallVariadicMethods\ImpliedVariadicGh9280::onlyOneArgB() invoked with 2 parameters, 1 required.',
+				143,
+			],
 		]);
 	}
 

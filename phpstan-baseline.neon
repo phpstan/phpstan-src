@@ -137,7 +137,7 @@ parameters:
 			path: src/Command/FixerApplication.php
 
 		-
-			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\<Psr\\\\Http\\\\Message\\\\ResponseInterface, Exception\\>\\:\\:done\\(\\)\\.$#"
+			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\<Psr\\\\Http\\\\Message\\\\ResponseInterface\\>\\:\\:done\\(\\)\\.$#"
 			count: 1
 			path: src/Command/FixerApplication.php
 

@@ -3,6 +3,7 @@
     "config:base",
     "schedule:weekly"
   ],
+  "dependencyDashboard": true,
   "rangeStrategy": "update-lockfile",
   "rebaseWhen": "conflicted",
   "baseBranches": ["1.11.x", "1.10.x"],

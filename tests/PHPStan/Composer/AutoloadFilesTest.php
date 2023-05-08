@@ -61,7 +61,6 @@ class AutoloadFilesTest extends TestCase
 			'jetbrains/phpstorm-stubs/PhpStormStubsMap.php', // added to phpstan-dist/bootstrap.php
 			'myclabs/deep-copy/src/DeepCopy/deep_copy.php', // dev dependency of PHPUnit
 			'react/async/src/functions_include.php', // added to phpstan-dist/bootstrap.php
-			'react/promise-stream/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'react/promise-timer/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'react/promise/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'ringcentral/psr7/src/functions_include.php', // added to phpstan-dist/bootstrap.php

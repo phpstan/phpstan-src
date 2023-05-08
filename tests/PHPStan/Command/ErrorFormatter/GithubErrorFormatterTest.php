@@ -18,6 +18,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			0,
 			'',
+			'error',
 		];
 
 		yield [
@@ -27,6 +28,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			'::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=4,col=0::Foo
 ',
+			'error',
 		];
 
 		yield [
@@ -36,6 +38,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			'::error ::first generic error
 ',
+			'error',
 		];
 
 		yield [
@@ -48,6 +51,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 ::error file=foo.php,line=1,col=0::Foo
 ::error file=foo.php,line=5,col=0::Bar%0ABar2
 ',
+			'error',
 		];
 
 		yield [
@@ -58,6 +62,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			'::error ::first generic error
 ::error ::second generic error
 ',
+			'error',
 		];
 
 		yield [
@@ -72,6 +77,17 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 ::error ::first generic error
 ::error ::second generic error
 ',
+			'error',
+		];
+
+		yield [
+			'One generic error as warning',
+			1,
+			0,
+			1,
+			'::warning ::first generic error
+',
+			'warning',
 		];
 	}
 
@@ -85,11 +101,13 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 		int $numFileErrors,
 		int $numGenericErrors,
 		string $expected,
+		string $errorLevel,
 	): void
 	{
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
 		$formatter = new GithubErrorFormatter(
 			$relativePathHelper,
+			$errorLevel,
 		);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(

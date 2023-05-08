@@ -2,11 +2,13 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use InvalidArgumentException;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
 use function array_walk;
 use function implode;
+use function in_array;
 use function sprintf;
 use function str_replace;
 
@@ -19,8 +21,12 @@ class GithubErrorFormatter implements ErrorFormatter
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
+		private string $errorLevel = 'error',
 	)
 	{
+		if (!in_array($errorLevel, ['notice', 'warning', 'error'], true)) {
+			throw new InvalidArgumentException(sprintf('Invalid error level "%s"', $errorLevel));
+		}
 	}
 
 	public function formatErrors(AnalysisResult $analysisResult, Output $output): int
@@ -40,7 +46,7 @@ class GithubErrorFormatter implements ErrorFormatter
 			// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
 			$message = str_replace("\n", '%0A', $message);
 
-			$line = sprintf('::error %s::%s', implode(',', $metas), $message);
+			$line = sprintf('::%s %s::%s', $this->errorLevel, implode(',', $metas), $message);
 
 			$output->writeRaw($line);
 			$output->writeLineFormatted('');
@@ -51,7 +57,7 @@ class GithubErrorFormatter implements ErrorFormatter
 			// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
 			$notFileSpecificError = str_replace("\n", '%0A', $notFileSpecificError);
 
-			$line = sprintf('::error ::%s', $notFileSpecificError);
+			$line = sprintf('::%s ::%s', $this->errorLevel, $notFileSpecificError);
 
 			$output->writeRaw($line);
 			$output->writeLineFormatted('');

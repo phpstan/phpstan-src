@@ -225,6 +225,7 @@ parameters:
 	editorUrl: null
 	editorUrlTitle: null
 	errorFormat: null
+	githubErrorLevel: 'error'
 	pro:
 		dnsServers:
 			- '1.1.1.1'
@@ -424,6 +425,7 @@ parametersSchema:
 	editorUrl: schema(string(), nullable())
 	editorUrlTitle: schema(string(), nullable())
 	errorFormat: schema(string(), nullable())
+	githubErrorLevel: string()
 	pro: structure([
 		dnsServers: schema(listOf(string()), min(1)),
 	])
@@ -2161,6 +2163,7 @@ services:
 		class: PHPStan\Command\ErrorFormatter\GithubErrorFormatter
 		arguments:
 			relativePathHelper: @simpleRelativePathHelper
+			errorLevel: %githubErrorLevel%
 
 	errorFormatter.teamcity:
 		class: PHPStan\Command\ErrorFormatter\TeamcityErrorFormatter

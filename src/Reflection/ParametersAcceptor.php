@@ -12,6 +12,7 @@ interface ParametersAcceptor
 	public const VARIADIC_FUNCTIONS = [
 		'func_get_args',
 		'func_get_arg',
+		'func_num_args',
 	];
 
 	public function getTemplateTypeMap(): TemplateTypeMap;

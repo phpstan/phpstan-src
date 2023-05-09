@@ -27,4 +27,11 @@ class Foo
 		$this->doBaz($selfOrNull?->test->test);
 	}
 
+	public function doNull(): void
+	{
+		$null = null;
+		$null->foo();
+		$null?->foo();
+	}
+
 }

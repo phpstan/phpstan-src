@@ -22,4 +22,11 @@ class Foo
 		echo $nullableString?->bar ?? 4;
 	}
 
+	public function doNull(): void
+	{
+		$null = null;
+		$null->foo;
+		$null?->foo;
+	}
+
 }

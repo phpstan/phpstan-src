@@ -83,6 +83,27 @@ class CallableTypeHelper
 			}
 		}
 
+		foreach ($ourParameters as $i => $ourParameter) {
+			$parameterDescription = $ourParameter->getName() === '' ? sprintf('#%d', $i + 1) : sprintf('#%d $%s', $i + 1, $ourParameter->getName());
+			if (!isset($theirParameters[$i])) {
+				if ($ourParameter->isOptional()) {
+					continue;
+				}
+
+				$accepts = new AcceptsResult(TrinaryLogic::createNo(), [
+					sprintf(
+						'Accepting callable has a required parameter %s but the passed callable does not have that parameter. This can trigger a fatal error for internal functions and methods which do not accept extra arguments.',
+						$parameterDescription,
+					),
+				]);
+				if ($result === null) {
+					$result = $accepts;
+				} else {
+					$result = $result->and($accepts);
+				}
+			}
+		}
+
 		$theirReturnType = $theirs->getReturnType();
 		if ($treatMixedAsAny) {
 			$isReturnTypeSuperType = $ours->getReturnType()->acceptsWithReason($theirReturnType, true);

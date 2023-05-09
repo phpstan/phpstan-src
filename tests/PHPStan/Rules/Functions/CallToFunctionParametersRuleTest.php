@@ -1329,4 +1329,17 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/filter-input-type.php'], $errors);
 	}
 
+	public function testBug9248(): void
+	{
+		$errors = [
+			[
+				'Parameter #2 $callback of function map expects callable(string, int): int, Closure(string): int<0, max> given.',
+				19,
+				'Accepting callable has a required parameter #2 but the passed callable does not have that parameter. This can trigger a fatal error for internal functions and methods which do not accept extra arguments.',
+			],
+		];
+
+		$this->analyse([__DIR__ . '/data/bug-9248.php'], $errors);
+	}
+
 }

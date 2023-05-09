@@ -1647,6 +1647,10 @@ class NodeScopeResolver
 	private function ensureShallowNonNullability(MutatingScope $scope, Scope $originalScope, Expr $exprToSpecify): EnsuredNonNullabilityResult
 	{
 		$exprType = $scope->getType($exprToSpecify);
+		$isNull = $exprType->isNull();
+		if ($isNull->yes()) {
+			return new EnsuredNonNullabilityResult($scope, []);
+		}
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
 		if ($exprType->equals($exprTypeWithoutNull)) {
 			$originalExprType = $originalScope->getType($exprToSpecify);

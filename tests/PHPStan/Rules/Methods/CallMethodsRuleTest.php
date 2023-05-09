@@ -1742,6 +1742,14 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $passedByRef of method NullsafeMethodCall\Foo::doBaz() is passed by reference, so it expects variables only.',
 				27,
 			],
+			[
+				'Cannot call method foo() on null.',
+				33,
+			],
+			[
+				'Cannot call method foo() on null.',
+				34,
+			],
 		]);
 	}
 

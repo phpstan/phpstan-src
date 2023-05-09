@@ -487,6 +487,14 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				'Cannot access property $bar on string.',
 				22,
 			],
+			[
+				'Cannot access property $foo on null.',
+				28,
+			],
+			[
+				'Cannot access property $foo on null.',
+				29,
+			],
 		]);
 	}
 

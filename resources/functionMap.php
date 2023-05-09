@@ -11807,7 +11807,7 @@ return [
 'strtoupper' => ['string', 'str'=>'string'],
 'strtr' => ['string', 'str'=>'string', 'from'=>'string', 'to'=>'string'],
 'strtr\'1' => ['string', 'str'=>'string', 'replace_pairs'=>'array'],
-'strval' => ['string', 'var'=>'scalar|resource|null'],
+'strval' => ['string', 'var'=>'__stringAndStringable|int|float|bool|resource|null'],
 'substr' => ['__benevolent<string|false>', 'string'=>'string', 'start'=>'int', 'length='=>'int'],
 'substr_compare' => ['int<-1, 1>|false', 'main_str'=>'string', 'str'=>'string', 'offset'=>'int', 'length='=>'int', 'case_sensitivity='=>'bool'],
 'substr_count' => ['0|positive-int', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int', 'length='=>'int'],

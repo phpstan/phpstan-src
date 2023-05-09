@@ -26,7 +26,7 @@ parameters:
 			path: PHP-Parser/lib/PhpParser/BuilderAbstract.php
 
 		-
-			message: "#^PHPDoc tag @param has invalid value \\(string\\|Node\\\\Name Name to alias\\)\\: Unexpected token \"Name\", expected variable at offset 88 on line 4$#"
+			message: "#^PHPDoc tag @param has invalid value \\(string\\|Node\\\\Name Name to alias\\)\\: Unexpected token \"Name\", expected variable at offset 88$#"
 			count: 1
 			path: PHP-Parser/lib/PhpParser/BuilderFactory.php
 

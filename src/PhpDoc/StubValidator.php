@@ -180,6 +180,7 @@ class StubValidator
 				$container->getByType(Lexer::class),
 				$container->getByType(PhpDocParser::class),
 				$container->getParameter('featureToggles')['allInvalidPhpDocs'],
+				$container->getParameter('featureToggles')['invalidPhpDocTagLine'],
 			),
 			new InvalidThrowsPhpDocValueRule($fileTypeMapper),
 

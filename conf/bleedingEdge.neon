@@ -37,3 +37,4 @@ parameters:
 		propertyVariance: true
 		genericPrototypeMessage: true
 		stricterFunctionMap: true
+		invalidPhpDocTagLine: true

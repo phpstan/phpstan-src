@@ -81,6 +81,7 @@ services:
 		class: PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
 		arguments:
 			checkAllInvalidPhpDocs: %featureToggles.allInvalidPhpDocs%
+			invalidPhpDocTagLine: %featureToggles.invalidPhpDocTagLine%
 		tags:
 			- phpstan.rules.rule
 	-

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use Nette\Utils\Strings;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\VirtualNode;
@@ -26,6 +27,7 @@ class InvalidPhpDocTagValueRule implements Rule
 		private Lexer $phpDocLexer,
 		private PhpDocParser $phpDocParser,
 		private bool $checkAllInvalidPhpDocs,
+		private bool $invalidPhpDocTagLine,
 	)
 	{
 	}
@@ -86,7 +88,7 @@ class InvalidPhpDocTagValueRule implements Rule
 					'PHPDoc tag %s %s has invalid value: %s',
 					$phpDocTag->name,
 					$phpDocTag->value->alias,
-					$phpDocTag->value->type->getException()->getMessage(),
+					$this->trimExceptionMessage($phpDocTag->value->type->getException()->getMessage()),
 				))->build();
 
 				continue;
@@ -98,11 +100,20 @@ class InvalidPhpDocTagValueRule implements Rule
 				'PHPDoc tag %s has invalid value (%s): %s',
 				$phpDocTag->name,
 				$phpDocTag->value->value,
-				$phpDocTag->value->exception->getMessage(),
+				$this->trimExceptionMessage($phpDocTag->value->exception->getMessage()),
 			))->build();
 		}
 
 		return $errors;
+	}
+
+	private function trimExceptionMessage(string $message): string
+	{
+		if ($this->invalidPhpDocTagLine) {
+			return $message;
+		}
+
+		return Strings::replace($message, '~( on line \d+)$~', '');
 	}
 
 }

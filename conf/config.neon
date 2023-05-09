@@ -67,6 +67,7 @@ parameters:
 		propertyVariance: false
 		genericPrototypeMessage: false
 		stricterFunctionMap: false
+		invalidPhpDocTagLine: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -304,6 +305,7 @@ parametersSchema:
 		propertyVariance: bool()
 		genericPrototypeMessage: bool()
 		stricterFunctionMap: bool()
+		invalidPhpDocTagLine: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

@@ -11,7 +11,7 @@ parameters:
 			path: UnixNewlines.php
 
 		-
-			message: "#^PHPDoc tag @param has invalid value \\(\\)\\: Unexpected token \"\\\\r\\\\n\\\\t \\* \", expected type at offset 110 on line 4$#"
+			message: "#^PHPDoc tag @param has invalid value \\(\\)\\: Unexpected token \"\\\\r\\\\n\\\\t \\* \", expected type at offset 110$#"
 			count: 1
 			path: UnixNewlines.php
 

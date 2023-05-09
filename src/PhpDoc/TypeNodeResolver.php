@@ -82,6 +82,7 @@ use PHPStan\Type\OffsetAccessType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
+use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -397,6 +398,8 @@ class TypeNodeResolver
 				}
 
 				return StaticTypeFactory::falsey();
+			case '__stringandstringable':
+				return new StringAlwaysAcceptingObjectWithToStringType();
 		}
 
 		if ($nameScope->getClassName() !== null) {

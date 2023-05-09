@@ -22,6 +22,7 @@ class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 			self::getContainer()->getByType(Lexer::class),
 			self::getContainer()->getByType(PhpDocParser::class),
 			$this->checkAllInvalidPhpDocs,
+			true,
 		);
 	}
 

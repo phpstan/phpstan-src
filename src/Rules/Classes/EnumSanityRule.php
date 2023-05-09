@@ -8,6 +8,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\VerbosityLevel;
 use Serializable;
 use function array_key_exists;
 use function count;
@@ -134,13 +135,12 @@ class EnumSanityRule implements Rule
 			if (($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_)) {
 				if ($node->scalarType === null) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
-						'Enum %s is not backed, but %s::%s has value %s',
-						$node->namespacedName->toString(),
+						'Enum %s is not backed, but case %s has value %s.',
 						$node->namespacedName->toString(),
 						$caseName,
 						$stmt->expr->value,
 					))
-						->identifier('enum.nonBackedEnumHasValue')
+						->identifier('enum.caseWithValue')
 						->line($stmt->getLine())
 						->nonIgnorable()
 						->build();
@@ -161,11 +161,12 @@ class EnumSanityRule implements Rule
 
 			if ($node->scalarType->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					"Enum case %s::%s doesn't match the 'int' type",
+					"Enum case %s::%s type %s doesn't match the 'int' type",
 					$node->namespacedName->toString(),
+					$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),
 					$caseName,
 				))
-					->identifier('enum.caseTypeMismatch')
+					->identifier('enum.caseType')
 					->line($stmt->getLine())
 					->nonIgnorable()
 					->build();
@@ -176,11 +177,12 @@ class EnumSanityRule implements Rule
 				continue;
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				"Enum case %s::%s doesn't match the 'string' type",
+				"Enum case %s::%s type %sdoesn't match the 'string' type",
 				$node->namespacedName->toString(),
+				$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),
 				$caseName,
 			))
-				->identifier('enum.caseTypeMismatch')
+				->identifier('enum.caseType')
 				->line($stmt->getLine())
 				->nonIgnorable()
 				->build();
@@ -192,12 +194,13 @@ class EnumSanityRule implements Rule
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Enum %s has duplicated value %s for keys %s',
+				'Enum %s has duplicate value %s for %s %s.',
 				$node->namespacedName->toString(),
 				$caseValue,
+				count($caseNames) === 1 ? 'case' : 'cases',
 				implode(', ', $caseNames),
 			))
-				->identifier('enum.duplicatedValues')
+				->identifier('enum.duplicateValue')
 				->line($node->getLine())
 				->nonIgnorable()
 				->build();

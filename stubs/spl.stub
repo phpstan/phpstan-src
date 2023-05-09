@@ -46,6 +46,12 @@ class SplDoublyLinkedList implements \Iterator, \ArrayAccess {
 	 * @return TValue
 	 */
 	public function bottom () {}
+
+	/**
+	 * @param int $offset
+	 * @return TValue
+	 */
+	public function offsetGet ($offset) {}
 }
 
 /**

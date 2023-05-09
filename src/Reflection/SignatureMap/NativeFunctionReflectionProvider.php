@@ -13,19 +13,11 @@ use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterWithPhpDocsReflection;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\BooleanType;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NullType;
-use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
-use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_map;
 use function strtolower;
@@ -98,7 +90,7 @@ class NativeFunctionReflectionProvider
 			$variants[] = new FunctionVariantWithPhpDocs(
 				TemplateTypeMap::createEmpty(),
 				null,
-				array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName, $phpDoc): NativeParameterWithPhpDocsReflection {
+				array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc): NativeParameterWithPhpDocsReflection {
 					$type = $parameterSignature->getType();
 
 					$phpDocType = null;
@@ -107,40 +99,6 @@ class NativeFunctionReflectionProvider
 						if ($phpDocParam !== null) {
 							$phpDocType = $phpDocParam->getType();
 						}
-					}
-					if (
-						$parameterSignature->getName() === 'values'
-						&& (
-							$lowerCasedFunctionName === 'printf'
-							|| $lowerCasedFunctionName === 'sprintf'
-						)
-					) {
-						$type = new UnionType([
-							new StringAlwaysAcceptingObjectWithToStringType(),
-							new IntegerType(),
-							new FloatType(),
-							new NullType(),
-							new BooleanType(),
-						]);
-					}
-
-					if (
-						$parameterSignature->getName() === 'fields'
-						&& $lowerCasedFunctionName === 'fputcsv'
-					) {
-						$type = new ArrayType(
-							new UnionType([
-								new StringType(),
-								new IntegerType(),
-							]),
-							new UnionType([
-								new StringAlwaysAcceptingObjectWithToStringType(),
-								new IntegerType(),
-								new FloatType(),
-								new NullType(),
-								new BooleanType(),
-							]),
-						);
 					}
 
 					return new NativeParameterWithPhpDocsReflection(

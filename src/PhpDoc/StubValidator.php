@@ -21,9 +21,6 @@ use PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule;
 use PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule;
 use PHPStan\Rules\Classes\ExistingClassInClassExtendsRule;
 use PHPStan\Rules\Classes\ExistingClassInTraitUseRule;
-use PHPStan\Rules\Classes\LocalTypeAliasesCheck;
-use PHPStan\Rules\Classes\LocalTypeAliasesRule;
-use PHPStan\Rules\Classes\LocalTypeTraitAliasesRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\Functions\DuplicateFunctionDeclarationRule;
@@ -150,7 +147,6 @@ class StubValidator
 		$unresolvableTypeHelper = $container->getByType(UnresolvableTypeHelper::class);
 		$crossCheckInterfacesHelper = $container->getByType(CrossCheckInterfacesHelper::class);
 		$phpVersion = $container->getByType(PhpVersion::class);
-		$localTypeAliasesCheck = $container->getByType(LocalTypeAliasesCheck::class);
 
 		$rules = [
 			// level 0
@@ -163,8 +159,6 @@ class StubValidator
 			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, $unresolvableTypeHelper, $phpVersion, true, false),
 			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true), true, new MethodParameterComparisonHelper($phpVersion, $container->getParameter('featureToggles')['genericPrototypeMessage']), $container->getParameter('featureToggles')['genericPrototypeMessage']),
 			new DuplicateDeclarationRule(),
-			new LocalTypeAliasesRule($localTypeAliasesCheck),
-			new LocalTypeTraitAliasesRule($localTypeAliasesCheck, $reflectionProvider),
 
 			// level 2
 			new ClassAncestorsRule($genericAncestorsCheck, $crossCheckInterfacesHelper),

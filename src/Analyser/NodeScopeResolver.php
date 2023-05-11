@@ -1267,61 +1267,63 @@ class NodeScopeResolver
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
 
-				$catchType = TypeCombinator::union(...array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types));
-				$originalCatchType = $catchType;
-				$isThrowable = TrinaryLogic::createNo()->lazyOr(
-					$originalCatchType->getObjectClassNames(),
-					static fn (string $objectClassName) => TrinaryLogic::createFromBoolean(strtolower($objectClassName) === 'throwable'),
-				);
-				$catchType = TypeCombinator::remove($catchType, $pastCatchTypes);
+				$originalCatchType = TypeCombinator::union(...array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types));
+				$isThrowable = $originalCatchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes();
+				$catchType = TypeCombinator::remove($originalCatchType, $pastCatchTypes);
 				$pastCatchTypes = TypeCombinator::union($pastCatchTypes, $originalCatchType);
-				$matchingThrowPoints = [];
-				$newThrowPoints = [];
-				foreach ($throwPoints as $throwPoint) {
-					if (!$throwPoint->isExplicit() && !$catchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
-						continue;
-					}
-					$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());
-					if ($isSuperType->no()) {
-						continue;
-					}
-					$matchingThrowPoints[] = $throwPoint;
-				}
-				$hasExplicit = count($matchingThrowPoints) > 0;
-				foreach ($throwPoints as $throwPoint) {
-					$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());
-					if (!$hasExplicit && !$isSuperType->no()) {
+				$matchingThrowPoints = $isThrowable ? $throwPoints : [];
+
+				// explicit only
+				if (count($matchingThrowPoints) === 0) {
+					foreach ($throwPoints as $throwPoint) {
+						if (!$throwPoint->isExplicit() || $catchType->isSuperTypeOf($throwPoint->getType())->no()) {
+							continue;
+						}
+
 						$matchingThrowPoints[] = $throwPoint;
 					}
-					if ($isSuperType->yes()) {
+				}
+
+				// implicit only
+				if (count($matchingThrowPoints) === 0) {
+					foreach ($throwPoints as $throwPoint) {
+						if ($throwPoint->isExplicit() || $catchType->isSuperTypeOf($throwPoint->getType())->no()) {
+							continue;
+						}
+
+						$matchingThrowPoints[] = $throwPoint;
+					}
+				}
+
+				// include previously removed throw points
+				if (count($matchingThrowPoints) === 0 && $isThrowable) {
+					foreach ($branchScopeResult->getThrowPoints() as $originalThrowPoint) {
+						if (!$originalThrowPoint->canContainAnyThrowable()) {
+							continue;
+						}
+
+						$matchingThrowPoints[] = $originalThrowPoint;
+					}
+				}
+
+				// emit error
+				if (count($matchingThrowPoints) === 0) {
+					$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType, $originalCatchType), $scope);
+					continue;
+				}
+
+				// recompute throw points
+				$newThrowPoints = [];
+				foreach ($throwPoints as $throwPoint) {
+					$newThrowPoint = $throwPoint->subtractCatchType($originalCatchType);
+
+					if ($newThrowPoint->getType() instanceof NeverType) {
 						continue;
 					}
-					if ($isThrowable->yes()) {
-						continue;
-					}
-					$newThrowPoints[] = $throwPoint->subtractCatchType($catchType);
+
+					$newThrowPoints[] = $newThrowPoint;
 				}
 				$throwPoints = $newThrowPoints;
-
-				if (count($matchingThrowPoints) === 0) {
-					$throwableThrowPoints = [];
-					if ($originalCatchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
-						foreach ($branchScopeResult->getThrowPoints() as $originalThrowPoint) {
-							if (!$originalThrowPoint->canContainAnyThrowable()) {
-								continue;
-							}
-
-							$throwableThrowPoints[] = $originalThrowPoint;
-						}
-					}
-
-					if (count($throwableThrowPoints) === 0) {
-						$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType, $originalCatchType), $scope);
-						continue;
-					}
-
-					$matchingThrowPoints = $throwableThrowPoints;
-				}
 
 				$catchScope = null;
 				foreach ($matchingThrowPoints as $matchingThrowPoint) {

@@ -38,3 +38,4 @@ parameters:
 		genericPrototypeMessage: true
 		stricterFunctionMap: true
 		invalidPhpDocTagLine: true
+		detectDeadTypeInMultiCatch: true

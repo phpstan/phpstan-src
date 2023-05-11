@@ -261,11 +261,21 @@ parameters:
 
 		-
 			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Identifier\\\\Exception\\\\InvalidIdentifierName is never thrown in the try block\\.$#"
-			count: 2
+			count: 3
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
 		-
-			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\NodeCompiler\\\\Exception\\\\UnableToCompileNode\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAClassReflection\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAnInterfaceReflection is never thrown in the try block\\.$#"
+			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\NodeCompiler\\\\Exception\\\\UnableToCompileNode is never thrown in the try block\\.$#"
+			count: 1
+			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
+
+		-
+			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAClassReflection is never thrown in the try block\\.$#"
+			count: 1
+			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
+
+		-
+			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAnInterfaceReflection is never thrown in the try block\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
@@ -414,6 +424,11 @@ parameters:
 			message: "#^PHPDoc tag @var with type float\\|int\\|null is not subtype of type int\\|null\\.$#"
 			count: 6
 			path: src/Reflection/InitializerExprTypeResolver.php
+
+		-
+			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Identifier\\\\Exception\\\\InvalidIdentifierName is never thrown in the try block\\.$#"
+			count: 1
+			path: src/Reflection/SignatureMap/NativeFunctionReflectionProvider.php
 
 		-
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"
@@ -1748,6 +1763,11 @@ parameters:
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"
 			count: 1
 			path: tests/PHPStan/Reflection/SignatureMap/Php8SignatureMapProviderTest.php
+
+		-
+			message: "#^Dead catch \\- OutOfBoundsException is never thrown in the try block\\.$#"
+			count: 1
+			path: tests/PHPStan/Reflection/SignatureMap/SignatureMapParserTest.php
 
 		-
 			message: """

@@ -111,6 +111,36 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testMultiCatch(): void
+	{
+		$this->analyse([__DIR__ . '/data/unthrown-exception-multi.php'], [
+			[
+				'Dead catch - LogicException is never thrown in the try block.',
+				12,
+			],
+			[
+				'Dead catch - OverflowException is never thrown in the try block.',
+				36,
+			],
+			[
+				'Dead catch - JsonException is never thrown in the try block.',
+				58,
+			],
+			[
+				'Dead catch - RuntimeException is never thrown in the try block.',
+				120,
+			],
+			[
+				'Dead catch - InvalidArgumentException is already caught above.',
+				145,
+			],
+			[
+				'Dead catch - InvalidArgumentException is already caught above.',
+				156,
+			],
+		]);
+	}
+
 	public function testBug4806(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4806.php'], [

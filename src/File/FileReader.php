@@ -8,6 +8,9 @@ use function stream_resolve_include_path;
 class FileReader
 {
 
+	/**
+	 * @throws CouldNotReadFileException
+	 */
 	public static function read(string $fileName): string
 	{
 		$path = $fileName;

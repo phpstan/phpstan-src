@@ -98,6 +98,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				[],
 				true,
 				$this->shouldTreatPhpDocTypesAsCertain(),
+				self::getContainer()->getParameter('featureToggles')['detectDeadTypeInMultiCatch'],
 			);
 			$fileAnalyser = new FileAnalyser(
 				$this->createScopeFactory($reflectionProvider, $typeSpecifier),

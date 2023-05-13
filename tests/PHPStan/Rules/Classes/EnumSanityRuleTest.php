@@ -77,23 +77,23 @@ class EnumSanityRuleTest extends RuleTestCase
 				81,
 			],
 			[
-				'Enum EnumSanity\EnumDuplicateValue has duplicated value 1 for keys A, E',
+				'Enum EnumSanity\EnumDuplicateValue has duplicate value 1 for cases A, E.',
 				86,
 			],
 			[
-				'Enum EnumSanity\EnumDuplicateValue has duplicated value 2 for keys B, C',
+				'Enum EnumSanity\EnumDuplicateValue has duplicate value 2 for cases B, C.',
 				86,
 			],
 			[
-				"Enum case EnumSanity\EnumInconsistentCaseType::FOO doesn't match the 'int' type",
+				'Enum case EnumSanity\EnumInconsistentCaseType::FOO type string doesn\'t match the "int" type.',
 				105,
 			],
 			[
-				"Enum case EnumSanity\EnumInconsistentCaseType::BAR doesn't match the 'int' type",
+				'Enum case EnumSanity\EnumInconsistentCaseType::BAR without type doesn\'t match the "int" type.',
 				106,
 			],
 			[
-				'Enum EnumSanity\EnumWithValueButNotBacked is not backed, but EnumSanity\EnumWithValueButNotBacked::FOO has value 1',
+				'Enum EnumSanity\EnumWithValueButNotBacked is not backed, but case FOO has value 1.',
 				110,
 			],
 		];

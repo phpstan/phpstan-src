@@ -159,12 +159,25 @@ class EnumSanityRule implements Rule
 				continue;
 			}
 
+			if ($stmt->expr === null) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Enum case %s::%s without type doesn\'t match the "int" type.',
+					$node->namespacedName->toString(),
+					$caseName,
+				))
+					->identifier('enum.missingCase')
+					->line($stmt->getLine())
+					->nonIgnorable()
+					->build();
+				continue;
+			}
+
 			if ($node->scalarType->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					"Enum case %s::%s type %s doesn't match the 'int' type",
+					'Enum case %s::%s type %s doesn\'t match the "int" type.',
 					$node->namespacedName->toString(),
-					$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),
 					$caseName,
+					$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),
 				))
 					->identifier('enum.caseType')
 					->line($stmt->getLine())
@@ -177,10 +190,10 @@ class EnumSanityRule implements Rule
 				continue;
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				"Enum case %s::%s type %sdoesn't match the 'string' type",
+				'Enum case %s::%s type %s doesn\'t match the "string" type.',
 				$node->namespacedName->toString(),
-				$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),
 				$caseName,
+				$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),
 			))
 				->identifier('enum.caseType')
 				->line($stmt->getLine())
@@ -194,10 +207,9 @@ class EnumSanityRule implements Rule
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Enum %s has duplicate value %s for %s %s.',
+				'Enum %s has duplicate value %s for cases %s.',
 				$node->namespacedName->toString(),
 				$caseValue,
-				count($caseNames) === 1 ? 'case' : 'cases',
 				implode(', ', $caseNames),
 			))
 				->identifier('enum.duplicateValue')

@@ -92,7 +92,7 @@ class AnalyseApplication
 			if ($resultCache->isFullAnalysis() && count($projectStubFiles) !== 0) {
 				$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);
 				$intermediateAnalyserResult = new AnalyserResult(
-					array_merge($intermediateAnalyserResult->getErrors(), $stubErrors),
+					array_merge($intermediateAnalyserResult->getUnorderedErrors(), $stubErrors),
 					$intermediateAnalyserResult->getInternalErrors(),
 					$intermediateAnalyserResult->getCollectedData(),
 					$intermediateAnalyserResult->getDependencies(),

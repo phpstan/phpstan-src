@@ -93,15 +93,19 @@ class EnumSanityRuleTest extends RuleTestCase
 				106,
 			],
 			[
-				'Enum EnumSanity\EnumWithValueButNotBacked is not backed, but case FOO has value 1.',
+				'Enum case EnumSanity\EnumInconsistentStringCaseType::BAR without type doesn\'t match the "string" type.',
 				110,
+			],
+			[
+				'Enum EnumSanity\EnumWithValueButNotBacked is not backed, but case FOO has value 1.',
+				114,
 			],
 		];
 
 		if (PHP_VERSION_ID >= 80100) {
 			$expected[] = [
 				'Enum EnumSanity\EnumMayNotSerializable cannot implement the Serializable interface.',
-				113,
+				117,
 			];
 		}
 

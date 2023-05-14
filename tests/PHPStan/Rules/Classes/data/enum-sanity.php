@@ -106,6 +106,10 @@ enum EnumInconsistentCaseType: int {
 	case BAR;
 }
 
+enum EnumInconsistentStringCaseType: string {
+	case BAR;
+}
+
 enum EnumWithValueButNotBacked {
 	case FOO = 1;
 }

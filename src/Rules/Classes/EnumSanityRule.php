@@ -161,9 +161,10 @@ class EnumSanityRule implements Rule
 
 			if ($stmt->expr === null) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum case %s::%s without type doesn\'t match the "int" type.',
+					'Enum case %s::%s without type doesn\'t match the "%s" type.',
 					$node->namespacedName->toString(),
 					$caseName,
+					$node->scalarType->name,
 				))
 					->identifier('enum.missingCase')
 					->line($stmt->getLine())

@@ -19,6 +19,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use function array_key_exists;
 use function array_keys;
@@ -166,7 +167,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($classType->isSuperTypeOf($fetchedOnType)->no()) {
 				continue;
 			}
-			if ($fetchedOnType instanceof MixedType) {
+			if ($fetchedOnType instanceof MixedType || $fetchedOnType instanceof NeverType) {
 				continue;
 			}
 

@@ -43,7 +43,7 @@ class CachedParser implements Parser
 
 		$sourceCode = FileReader::read($file);
 		if (!isset($this->cachedNodesByString[$sourceCode]) || isset($this->parsedByString[$sourceCode])) {
-			$this->cachedNodesByString[$sourceCode] = $this->originalParser->parseFile($file);
+			$this->cachedNodesByString[$sourceCode] = $this->originalParser->parseString($sourceCode);
 			$this->cachedNodesByStringCount++;
 			unset($this->parsedByString[$sourceCode]);
 		}

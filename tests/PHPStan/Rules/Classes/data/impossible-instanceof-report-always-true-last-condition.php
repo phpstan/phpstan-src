@@ -25,4 +25,17 @@ class Foo
 		}
 	}
 
+	public function cloneDateTime(\DateTimeInterface $dateTime): \DateTimeImmutable
+	{
+		if ($dateTime instanceof \DateTimeImmutable) {
+			return $dateTime;
+		}
+
+		if ($dateTime instanceof \DateTime) {
+			return \DateTimeImmutable::createFromMutable($dateTime);
+		}
+
+		throw new \LogicException('Unknown class of DateTimeInterface implementation.');
+	}
+
 }

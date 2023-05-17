@@ -131,7 +131,7 @@ function f($a, $b)
 {
 	$result = [];
 	assertType('array<A (function PHPStan\Generics\FunctionsAssertType\f(), argument)>', $a);
-	assertType('callable(A (function PHPStan\Generics\FunctionsAssertType\f(), argument)): B (function PHPStan\Generics\FunctionsAssertType\f(), argument)', $b);
+	assertType('callable(A): B', $b);
 	foreach ($a as $k => $v) {
 		assertType('A (function PHPStan\Generics\FunctionsAssertType\f(), argument)', $v);
 		$newV = $b($v);

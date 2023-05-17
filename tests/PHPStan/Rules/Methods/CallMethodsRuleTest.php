@@ -471,7 +471,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
-				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array{\'foo\'}|null given.',
+				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): (array{\'foo\'}|null) given.',
 				1533,
 			],
 			[
@@ -791,7 +791,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
-				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): array{\'foo\'}|null given.',
+				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): (array{\'foo\'}|null) given.',
 				1533,
 			],
 			[
@@ -2781,21 +2781,21 @@ class CallMethodsRuleTest extends RuleTestCase
 
 		$errors = [
 			[
-				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar() expects callable(float|null): float|null, Closure(float): float given.',
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar() expects callable(float|null): (float|null), Closure(float): float given.',
 				25,
 				'Type float of parameter #1 $f of passed callable needs to be same or wider than parameter type float|null of accepting callable.',
 			],
 			[
-				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz() expects Closure(float|null): float|null, Closure(float): float given.',
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz() expects Closure(float|null): (float|null), Closure(float): float given.',
 				28,
 				'Type float of parameter #1 $f of passed callable needs to be same or wider than parameter type float|null of accepting callable.',
 			],
 			[
-				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar2() expects callable(float|null): float, Closure(float|null): float|null given.',
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar2() expects callable(float|null): float, Closure(float|null): (float|null) given.',
 				32,
 			],
 			[
-				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz2() expects Closure(float|null): float, Closure(float|null): float|null given.',
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz2() expects Closure(float|null): float, Closure(float|null): (float|null) given.',
 				35,
 			],
 			[

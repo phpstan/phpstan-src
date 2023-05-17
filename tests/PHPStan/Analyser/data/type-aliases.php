@@ -90,7 +90,7 @@ namespace TypeAliasesDataset {
 		 */
 		public function localAlias($parameter)
 		{
-			assertType('callable(string): string|false', $parameter);
+			assertType('callable(string): (string|false)', $parameter);
 		}
 
 		/**
@@ -98,7 +98,7 @@ namespace TypeAliasesDataset {
 		 */
 		public function nestedLocalAlias($parameter)
 		{
-			assertType('array<callable(string): string|false>', $parameter);
+			assertType('array<callable(string): (string|false)>', $parameter);
 		}
 
 		/**
@@ -151,7 +151,7 @@ namespace TypeAliasesDataset {
 	}
 
 	assertType('int|string', (new Foo)->globalAliasProperty);
-	assertType('callable(string): string|false', (new Foo)->localAliasProperty);
+	assertType('callable(string): (string|false)', (new Foo)->localAliasProperty);
 	assertType('Countable&Traversable', (new Foo)->importedAliasProperty);
 	assertType('Countable&Traversable', (new Foo)->reexportedAliasProperty);
 	assertType('TypeAliasesDataset\SubScope\Foo', (new Foo)->scopedAliasProperty);

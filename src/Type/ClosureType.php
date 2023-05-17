@@ -9,6 +9,7 @@ use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -16,7 +17,9 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\ClosureCallUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
@@ -37,8 +40,6 @@ use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_map;
 use function array_merge;
 use function count;
-use function implode;
-use function sprintf;
 
 /** @api */
 class ClosureType implements TypeWithClassName, ParametersAcceptor
@@ -170,19 +171,25 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	{
 		return $level->handle(
 			static fn (): string => 'Closure',
-			fn (): string => sprintf(
-				'Closure(%s): %s',
-				implode(', ', array_map(
-					static fn (ParameterReflection $param): string => sprintf(
-						'%s%s%s',
-						$param->isVariadic() ? '...' : '',
-						$param->getType()->describe($level),
-						$param->isOptional() && !$param->isVariadic() ? '=' : '',
-					),
-					$this->parameters,
-				)),
-				$this->returnType->describe($level),
-			),
+			function (): string {
+				$printer = new Printer();
+				$selfWithoutParameterNames = new self(
+					array_map(static fn (ParameterReflection $p): ParameterReflection => new DummyParameter(
+						'',
+						$p->getType(),
+						$p->isOptional() && !$p->isVariadic(),
+						PassedByReference::createNo(),
+						$p->isVariadic(),
+						$p->getDefaultValue(),
+					), $this->parameters),
+					$this->returnType,
+					$this->variadic,
+					$this->templateTypeMap,
+					$this->resolvedTemplateTypeMap,
+				);
+
+				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
+			},
 		);
 	}
 

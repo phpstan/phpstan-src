@@ -554,12 +554,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				5,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): (string|null), Closure(string, int): non-empty-string given.',
 				13,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): (string|null), Closure(string, int): non-empty-string given.',
 				22,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
@@ -574,12 +574,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				5,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): (string|null), Closure(string, int): non-empty-string given.',
 				11,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): string|null, Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): (string|null), Closure(string, int): non-empty-string given.',
 				18,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
@@ -910,7 +910,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-2782.php'], [
 			[
-				'Parameter #2 $callback of function usort expects callable(stdClass, stdClass): int, Closure(int, int): -1|1 given.',
+				'Parameter #2 $callback of function usort expects callable(stdClass, stdClass): int, Closure(int, int): (-1|1) given.',
 				13,
 			],
 		]);

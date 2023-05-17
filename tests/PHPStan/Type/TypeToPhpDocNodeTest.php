@@ -254,6 +254,39 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			]),
 			'non-empty-list<mixed>',
 		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+			]),
+			"array{'foo', 'bar'}",
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(2),
+			], [
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+			]),
+			"array{0: 'foo', 2: 'bar'}",
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new ConstantStringType('foo'),
+				new ConstantStringType('bar'),
+			], [2], [1]),
+			"array{0: 'foo', 1?: 'bar'}",
+		];
 	}
 
 	/**

@@ -51,9 +51,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./issue-bot/tmp
-          key: "issue-bot-download-v5-${{ github.run_id }}"
+          key: "issue-bot-download-v6-${{ github.run_id }}"
           restore-keys: |
-            issue-bot-download-v5-
+            issue-bot-download-v6-
 
       - name: "Download data"
         working-directory: "issue-bot"

@@ -1559,7 +1559,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function toPhpDocNode(): TypeNode
 	{
 		$items = [];
+		$values = [];
+		$exportValuesOnly = true;
 		foreach ($this->keyTypes as $i => $keyType) {
+			if ($keyType->getValue() !== $i) {
+				$exportValuesOnly = false;
+			}
 			$keyPhpDocNode = $keyType->toPhpDocNode();
 			if (!$keyPhpDocNode instanceof ConstTypeNode) {
 				continue;
@@ -1574,14 +1579,24 @@ class ConstantArrayType extends ArrayType implements ConstantType
 					$keyNode = new IdentifierTypeNode($value);
 				}
 			}
+
+			$isOptional = $this->isOptionalKey($i);
+			if ($isOptional) {
+				$exportValuesOnly = false;
+			}
 			$items[] = new ArrayShapeItemNode(
 				$keyNode,
-				$this->isOptionalKey($i),
+				$isOptional,
+				$valueType->toPhpDocNode(),
+			);
+			$values[] = new ArrayShapeItemNode(
+				null,
+				$isOptional,
 				$valueType->toPhpDocNode(),
 			);
 		}
 
-		return new ArrayShapeNode($items);
+		return new ArrayShapeNode($exportValuesOnly ? $values : $items);
 	}
 
 	public static function isValidIdentifier(string $value): bool

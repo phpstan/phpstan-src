@@ -1412,11 +1412,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$callable',
 			],
 			[
-				'callable(int, ...string): void',
+				'callable(int, string ...): void',
 				'$callableWithTypes',
 			],
 			[
-				'Closure(int, ...string): void',
+				'Closure(int, string ...): void',
 				'$closureWithTypes',
 			],
 			[

@@ -8,10 +8,13 @@ use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\PassedByReference;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateType;
@@ -29,8 +32,6 @@ use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use function array_map;
 use function array_merge;
 use function count;
-use function implode;
-use function sprintf;
 
 /** @api */
 class CallableType implements CompoundType, ParametersAcceptor
@@ -176,19 +177,23 @@ class CallableType implements CompoundType, ParametersAcceptor
 	{
 		return $level->handle(
 			static fn (): string => 'callable',
-			fn (): string => sprintf(
-				'callable(%s): %s',
-				implode(', ', array_map(
-					static fn (ParameterReflection $param): string => sprintf(
-						'%s%s%s',
-						$param->isVariadic() ? '...' : '',
-						$param->getType()->describe($level),
-						$param->isOptional() && !$param->isVariadic() ? '=' : '',
-					),
-					$this->getParameters(),
-				)),
-				$this->returnType->describe($level),
-			),
+			function (): string {
+				$printer = new Printer();
+				$selfWithoutParameterNames = new self(
+					array_map(static fn (ParameterReflection $p): ParameterReflection => new DummyParameter(
+						'',
+						$p->getType(),
+						$p->isOptional() && !$p->isVariadic(),
+						PassedByReference::createNo(),
+						$p->isVariadic(),
+						$p->getDefaultValue(),
+					), $this->parameters),
+					$this->returnType,
+					$this->variadic,
+				);
+
+				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
+			},
 		);
 	}
 

@@ -4,11 +4,11 @@ namespace PHPStan\Type;
 
 use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_merge;
-use function sprintf;
 
 /** @api */
 final class OffsetAccessType implements CompoundType, LateResolvableType
@@ -59,11 +59,9 @@ final class OffsetAccessType implements CompoundType, LateResolvableType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return sprintf(
-			'%s[%s]',
-			$this->type->describe($level),
-			$this->offset->describe($level),
-		);
+		$printer = new Printer();
+
+		return $printer->print($this->toPhpDocNode());
 	}
 
 	public function isResolvable(): bool

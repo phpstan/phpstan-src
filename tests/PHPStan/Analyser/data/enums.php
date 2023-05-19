@@ -284,3 +284,34 @@ class InArrayEnum
 	}
 
 }
+
+class LooseComparisonWithEnums
+{
+	public function testEquality(Foo $foo, Bar $bar, Baz $baz, string $s, int $i): void
+	{
+		assertType('true', $foo == $foo);
+		assertType('false', $foo == $bar);
+		assertType('false', $bar == $s);
+		assertType('false', $s == $bar);
+		assertType('false', $baz == $i);
+		assertType('false', $i == $baz);
+		assertType('bool', (rand() ? $bar : null) == $s);
+		assertType('bool', $s == (rand() ? $bar : null));
+		assertType('bool', (rand() ? $baz : null) == $i);
+		assertType('bool', $i == (rand() ? $baz : null));
+	}
+
+	public function testNonEquality(Foo $foo, Bar $bar, Baz $baz, string $s, int $i): void
+	{
+		assertType('false', $foo != $foo);
+		assertType('true', $foo != $bar);
+		assertType('true', $bar != $s);
+		assertType('true', $s != $bar);
+		assertType('true', $baz != $i);
+		assertType('true', $i != $baz);
+		assertType('bool', (rand() ? $bar : null) != $s);
+		assertType('bool', $s != (rand() ? $bar : null));
+		assertType('bool', (rand() ? $baz : null) != $i);
+		assertType('bool', $i != (rand() ? $baz : null));
+	}
+}

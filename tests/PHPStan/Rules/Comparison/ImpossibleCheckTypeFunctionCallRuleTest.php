@@ -813,4 +813,56 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testLooseComparisonAgainstEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/loose-comparison-against-enums.php'], [
+			[
+				'Call to function in_array() with LooseComparisonAgainstEnums\\FooUnitEnum and array{\'A\'} will always evaluate to false.',
+				21,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\\FooUnitEnum, array{\'A\'} and false will always evaluate to false.',
+				24,
+			],
+			[
+				'Call to function in_array() with LooseComparisonAgainstEnums\\FooBackedEnum and array{\'A\'} will always evaluate to false.',
+				27,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\\FooBackedEnum, array{\'A\'} and false will always evaluate to false.',
+				30,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\\FooBackedEnum|LooseComparisonAgainstEnums\\FooUnitEnum, array{\'A\'} and false will always evaluate to false.',
+				33,
+			],
+			[
+				'Call to function in_array() with \'A\' and array{LooseComparisonAgainstEnums\\FooUnitEnum} will always evaluate to false.',
+				39,
+			],
+			[
+				'Call to function in_array() with arguments \'A\', array{LooseComparisonAgainstEnums\\FooUnitEnum} and false will always evaluate to false.',
+				42,
+			],
+			[
+				'Call to function in_array() with \'A\' and array{LooseComparisonAgainstEnums\\FooBackedEnum} will always evaluate to false.',
+				45,
+			],
+			[
+				'Call to function in_array() with arguments \'A\', array{LooseComparisonAgainstEnums\\FooBackedEnum} and false will always evaluate to false.',
+				48,
+			],
+			[
+				'Call to function in_array() with arguments \'A\', array{LooseComparisonAgainstEnums\\FooBackedEnum|LooseComparisonAgainstEnums\\FooUnitEnum} and false will always evaluate to false.',
+				51,
+			],
+		]);
+	}
+
 }

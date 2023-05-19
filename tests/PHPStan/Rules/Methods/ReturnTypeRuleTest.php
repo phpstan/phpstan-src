@@ -880,4 +880,42 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Classes/data/bug-7574.php'], []);
 	}
 
+	public function testMagicSignatures(): void
+	{
+		$this->analyse([__DIR__ . '/data/magic-signatures.php'], [
+			[
+				'Method MagicSignatures\WrongSignature::__isset() should return bool but returns string.',
+				39,
+			],
+			[
+				'Method MagicSignatures\WrongSignature::__clone() with return type void returns string but should not return anything.',
+				43,
+			],
+			[
+				'Method MagicSignatures\WrongSignature::__debugInfo() should return array|null but returns string.',
+				47,
+			],
+			[
+				'Method MagicSignatures\WrongSignature::__set() with return type void returns string but should not return anything.',
+				51,
+			],
+			[
+				'Method MagicSignatures\WrongSignature::__set_state() should return object but returns string.',
+				55,
+			],
+			[
+				'Method MagicSignatures\WrongSignature::__sleep() should return array<int, string> but returns string.',
+				59,
+			],
+			[
+				'Method MagicSignatures\WrongSignature::__unset() with return type void returns string but should not return anything.',
+				63,
+			],
+			[
+				'Method MagicSignatures\WrongSignature::__wakeup() with return type void returns string but should not return anything.',
+				67,
+			],
+		]);
+	}
+
 }

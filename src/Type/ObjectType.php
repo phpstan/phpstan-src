@@ -1057,7 +1057,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		return new BooleanType();
+		if ($type->isTrue()->yes()) {
+			return new ConstantBooleanType(true);
+		}
+
+		return $type->isFalse()->yes()
+			? new ConstantBooleanType(false)
+			: new BooleanType();
 	}
 
 	private function isExtraOffsetAccessibleClass(): TrinaryLogic

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
@@ -19,7 +20,9 @@ use PHPStan\Type\VerbosityLevel;
 class ConstantBooleanType extends BooleanType implements ConstantScalarType
 {
 
-	use ConstantScalarTypeTrait;
+	use ConstantScalarTypeTrait {
+		looseCompare as private scalarLooseCompare;
+	}
 
 	/** @api */
 	public function __construct(private bool $value)
@@ -125,6 +128,15 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 	public static function __set_state(array $properties): Type
 	{
 		return new self($properties['value']);
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		if ($type->isObject()->yes()) {
+			return $this;
+		}
+
+		return $this->scalarLooseCompare($type, $phpVersion);
 	}
 
 }

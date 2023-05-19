@@ -1333,8 +1333,8 @@ class InitializerExprTypeResolver
 		$floatType = new FloatType();
 
 		if (
-			$leftType->isEnum()->yes()
-			|| $rightType->isEnum()->yes()
+			($leftType->isEnum()->yes() && $rightType->isTrue()->no())
+			|| ($rightType->isEnum()->yes() && $leftType->isTrue()->no())
 			|| ($leftType->isString()->yes() && $rightType->isString()->yes())
 			|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
 			|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())

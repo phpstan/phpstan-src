@@ -862,6 +862,54 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				'Call to function in_array() with arguments \'A\', array{LooseComparisonAgainstEnums\\FooBackedEnum|LooseComparisonAgainstEnums\\FooUnitEnum} and false will always evaluate to false.',
 				51,
 			],
+			[
+				'Call to function in_array() with LooseComparisonAgainstEnums\FooUnitEnum and array{bool} will always evaluate to false.',
+				57,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\FooUnitEnum, array{bool} and false will always evaluate to false.',
+				60,
+			],
+			[
+				'Call to function in_array() with LooseComparisonAgainstEnums\FooBackedEnum and array{bool} will always evaluate to false.',
+				63,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\FooBackedEnum, array{bool} and false will always evaluate to false.',
+				66,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\FooBackedEnum|LooseComparisonAgainstEnums\FooUnitEnum, array{bool} and false will always evaluate to false.',
+				69,
+			],
+			[
+				'Call to function in_array() with bool and array{LooseComparisonAgainstEnums\FooUnitEnum} will always evaluate to false.',
+				75,
+			],
+			[
+				'Call to function in_array() with arguments bool, array{LooseComparisonAgainstEnums\FooUnitEnum} and false will always evaluate to false.',
+				78,
+			],
+			[
+				'Call to function in_array() with bool and array{LooseComparisonAgainstEnums\FooBackedEnum} will always evaluate to false.',
+				81,
+			],
+			[
+				'Call to function in_array() with arguments bool, array{LooseComparisonAgainstEnums\FooBackedEnum} and false will always evaluate to false.',
+				84,
+			],
+			[
+				'Call to function in_array() with arguments bool, array{LooseComparisonAgainstEnums\FooBackedEnum|LooseComparisonAgainstEnums\FooUnitEnum} and false will always evaluate to false.',
+				87,
+			],
+			[
+				'Call to function in_array() with LooseComparisonAgainstEnums\FooUnitEnum and array{null} will always evaluate to false.',
+				93,
+			],
+			[
+				'Call to function in_array() with null and array{LooseComparisonAgainstEnums\FooBackedEnum} will always evaluate to false.',
+				96,
+			],
 		]);
 	}
 

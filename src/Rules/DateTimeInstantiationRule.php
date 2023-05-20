@@ -61,7 +61,7 @@ class DateTimeInstantiationRule implements Rule
 					$lowerClassName === 'datetime' ? 'DateTime' : 'DateTimeImmutable',
 					$dateString,
 					$error,
-				))->build();
+				))->identifier(sprintf('new.%s', $lowerClassName === 'datetime' ? 'dateTime' : 'dateTimeImmutable'))->build();
 			}
 		}
 

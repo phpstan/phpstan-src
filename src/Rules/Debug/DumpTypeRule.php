@@ -56,7 +56,7 @@ class DumpTypeRule implements Rule
 					'Dumped type: %s',
 					$scope->getType($node->getArgs()[0]->value)->describe(VerbosityLevel::precise()),
 				),
-			)->nonIgnorable()->build(),
+			)->nonIgnorable()->identifier('phpstan.dumpType')->build(),
 		];
 	}
 

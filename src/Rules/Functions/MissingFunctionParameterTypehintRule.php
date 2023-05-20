@@ -61,7 +61,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 					'Function %s() has parameter $%s with no type specified.',
 					$functionReflection->getName(),
 					$parameterReflection->getName(),
-				))->build(),
+				))->identifier('missingType.parameter')->build(),
 			];
 		}
 

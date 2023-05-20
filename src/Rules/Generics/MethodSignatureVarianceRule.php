@@ -37,6 +37,7 @@ class MethodSignatureVarianceRule implements Rule
 			sprintf('in method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
 			$method->isStatic(),
 			$method->isPrivate() || $method->getName() === '__construct',
+			'method',
 		);
 	}
 

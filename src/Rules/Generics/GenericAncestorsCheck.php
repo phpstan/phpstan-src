@@ -7,7 +7,6 @@ use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -41,7 +40,7 @@ class GenericAncestorsCheck
 	/**
 	 * @param array<Node\Name> $nameNodes
 	 * @param array<Type> $ancestorTypes
-	 * @return list<RuleError&IdentifierRuleError>
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
 		array $nameNodes,
@@ -65,16 +64,22 @@ class GenericAncestorsCheck
 		$messages = [];
 		foreach ($ancestorTypes as $ancestorType) {
 			if (!$ancestorType instanceof GenericObjectType) {
-				$messages[] = RuleErrorBuilder::message(sprintf($incompatibleTypeMessage, $ancestorType->describe(VerbosityLevel::typeOnly())))->build();
+				$messages[] = RuleErrorBuilder::message(sprintf($incompatibleTypeMessage, $ancestorType->describe(VerbosityLevel::typeOnly())))
+					->identifier('generics.notCompatible')
+					->build();
 				continue;
 			}
 
 			$ancestorTypeClassName = $ancestorType->getClassName();
 			if (!isset($names[$ancestorTypeClassName])) {
 				if (count($names) === 0) {
-					$messages[] = RuleErrorBuilder::message($noNamesMessage)->build();
+					$messages[] = RuleErrorBuilder::message($noNamesMessage)
+						->identifier('generics.noParent')
+						->build();
 				} else {
-					$messages[] = RuleErrorBuilder::message(sprintf($noRelatedNameMessage, $ancestorTypeClassName, implode(', ', array_keys($names))))->build();
+					$messages[] = RuleErrorBuilder::message(sprintf($noRelatedNameMessage, $ancestorTypeClassName, implode(', ', array_keys($names))))
+						->identifier('generics.wrongParent')
+						->build();
 				}
 
 				continue;
@@ -96,7 +101,9 @@ class GenericAncestorsCheck
 					continue;
 				}
 
-				$messages[] = RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))->build();
+				$messages[] = RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))
+					->identifier('class.notFound')
+					->build();
 			}
 
 			$variance = TemplateTypeVariance::createStatic();

@@ -99,7 +99,7 @@ class PrintfParametersRule implements Rule
 					$name,
 					$placeHoldersCount,
 					$argsCount - 1,
-				))->build(),
+				))->identifier(sprintf('argument.%s', $name))->build(),
 			];
 		}
 

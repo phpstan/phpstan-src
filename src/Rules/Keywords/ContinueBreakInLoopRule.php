@@ -48,7 +48,10 @@ class ContinueBreakInLoopRule implements Rule
 					RuleErrorBuilder::message(sprintf(
 						'Keyword %s used outside of a loop or a switch statement.',
 						$node instanceof Stmt\Continue_ ? 'continue' : 'break',
-					))->nonIgnorable()->build(),
+					))
+						->nonIgnorable()
+						->identifier(sprintf('%s.outOfLoop', $node instanceof Stmt\Continue_ ? 'continue' : 'break'))
+						->build(),
 				];
 			}
 			if (

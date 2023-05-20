@@ -63,7 +63,7 @@ class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 					'Call to %s::%s() on a separate line has no effect.',
 					$classReflection->getDisplayName(),
 					$constructor->getName(),
-				))->build(),
+				))->identifier('new.resultUnused')->build(),
 			];
 		}
 

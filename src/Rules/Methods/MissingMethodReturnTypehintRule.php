@@ -40,7 +40,7 @@ final class MissingMethodReturnTypehintRule implements Rule
 					'Method %s::%s() has no return type specified.',
 					$methodReflection->getDeclaringClass()->getDisplayName(),
 					$methodReflection->getName(),
-				))->build(),
+				))->identifier('missingType.return')->build(),
 			];
 		}
 

@@ -41,7 +41,11 @@ class ReturnNullsafeByRefRule implements Rule
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message('Nullsafe cannot be returned by reference.')->line($returnNode->getLine())->nonIgnorable()->build();
+			$errors[] = RuleErrorBuilder::message('Nullsafe cannot be returned by reference.')
+				->line($returnNode->getLine())
+				->identifier('nullsafe.byRef')
+				->nonIgnorable()
+				->build();
 		}
 
 		return $errors;

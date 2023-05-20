@@ -71,7 +71,7 @@ class ImplodeFunctionRule implements Rule
 		return [
 			RuleErrorBuilder::message(
 				sprintf('Parameter #%d $array of function %s expects array<string>, %s given.', $paramNo, $functionName, $typeResult->getType()->describe(VerbosityLevel::typeOnly())),
-			)->build(),
+			)->identifier('argument.type')->build(),
 		];
 	}
 

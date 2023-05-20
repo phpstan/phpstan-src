@@ -29,7 +29,7 @@ class AttributesCheck
 	/**
 	 * @param AttributeGroup[] $attrGroups
 	 * @param Attribute::TARGET_* $requiredTarget
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
 		Scope $scope,

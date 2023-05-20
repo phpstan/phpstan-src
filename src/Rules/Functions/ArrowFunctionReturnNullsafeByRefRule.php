@@ -34,7 +34,10 @@ class ArrowFunctionReturnNullsafeByRefRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message('Nullsafe cannot be returned by reference.')->nonIgnorable()->build(),
+			RuleErrorBuilder::message('Nullsafe cannot be returned by reference.')
+				->nonIgnorable()
+				->identifier('nullsafe.byRef')
+				->build(),
 		];
 	}
 

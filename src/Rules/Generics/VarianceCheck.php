@@ -3,7 +3,7 @@
 namespace PHPStan\Rules\Generics;
 
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -20,7 +20,7 @@ class VarianceCheck
 	{
 	}
 
-	/** @return RuleError[] */
+	/** @return list<IdentifierRuleError> */
 	public function checkParametersAcceptor(
 		ParametersAcceptorWithPhpDocs $parametersAcceptor,
 		string $parameterTypeMessage,
@@ -29,6 +29,7 @@ class VarianceCheck
 		string $generalMessage,
 		bool $isStatic,
 		bool $isPrivate,
+		string $identifier,
 	): array
 	{
 		$errors = [];
@@ -45,7 +46,7 @@ class VarianceCheck
 				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type %s in %s.',
 				$templateType->getName(),
 				$generalMessage,
-			))->build();
+			))->identifier(sprintf('%s.variance', $identifier))->build();
 		}
 
 		if ($isPrivate) {
@@ -87,7 +88,7 @@ class VarianceCheck
 		return $errors;
 	}
 
-	/** @return RuleError[] */
+	/** @return list<IdentifierRuleError> */
 	public function check(TemplateTypeVariance $positionVariance, Type $type, string $messageContext): array
 	{
 		$errors = [];
@@ -105,7 +106,7 @@ class VarianceCheck
 				$referredType->getVariance()->describe(),
 				$reference->getPositionVariance()->describe(),
 				$messageContext,
-			))->build();
+			))->identifier('generics.variance')->build();
 		}
 
 		return $errors;

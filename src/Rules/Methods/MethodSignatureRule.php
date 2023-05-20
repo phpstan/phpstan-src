@@ -77,7 +77,7 @@ class MethodSignatureRule implements Rule
 					$parentReturnType->describe(VerbosityLevel::value()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
 					$parentMethod->getName(),
-				))->build();
+				))->identifier('method.childReturnType')->build();
 			}
 
 			$parameterResults = $this->checkParameterTypeCompatibility($declaringClass, $parameters->getParameters(), $parentParameters->getParameters());
@@ -102,7 +102,7 @@ class MethodSignatureRule implements Rule
 					$parentParameterType->describe(VerbosityLevel::value()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
 					$parentMethod->getName(),
-				))->build();
+				))->identifier('method.childParameterType')->build();
 			}
 		}
 

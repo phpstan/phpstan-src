@@ -41,7 +41,7 @@ class CallToNonExistentFunctionRule implements Rule
 			}
 
 			return [
-				RuleErrorBuilder::message(sprintf('Function %s not found.', (string) $node->name))->discoveringSymbolsTip()->build(),
+				RuleErrorBuilder::message(sprintf('Function %s not found.', (string) $node->name))->identifier('function.notFound')->discoveringSymbolsTip()->build(),
 			];
 		}
 
@@ -60,7 +60,7 @@ class CallToNonExistentFunctionRule implements Rule
 						'Call to function %s() with incorrect case: %s',
 						$function->getName(),
 						$name,
-					))->build(),
+					))->identifier('function.nameCase')->build(),
 				];
 			}
 		}

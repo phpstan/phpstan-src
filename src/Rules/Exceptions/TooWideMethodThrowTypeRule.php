@@ -65,7 +65,9 @@ class TooWideMethodThrowTypeRule implements Rule
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$throwClass,
-			))->build();
+			))
+				->identifier('throws.unusedType')
+				->build();
 		}
 
 		return $errors;

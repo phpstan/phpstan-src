@@ -60,7 +60,7 @@ final class MissingMethodParameterTypehintRule implements Rule
 					$methodReflection->getDeclaringClass()->getDisplayName(),
 					$methodReflection->getName(),
 					$parameterReflection->getName(),
-				))->build(),
+				))->identifier('missingType.parameter')->build(),
 			];
 		}
 

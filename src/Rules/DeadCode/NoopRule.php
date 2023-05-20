@@ -56,6 +56,7 @@ class NoopRule implements Rule
 				'Expression "%s" on a separate line does not do anything.',
 				$this->exprPrinter->printExpr($originalExpr),
 			))->line($expr->getLine())
+				->identifier('expr.resultUnused')
 				->build(),
 		];
 	}

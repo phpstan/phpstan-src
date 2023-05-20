@@ -41,7 +41,7 @@ final class MissingFunctionReturnTypehintRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Function %s() has no return type specified.',
 					$functionReflection->getName(),
-				))->build(),
+				))->identifier('missingType.return')->build(),
 			];
 		}
 

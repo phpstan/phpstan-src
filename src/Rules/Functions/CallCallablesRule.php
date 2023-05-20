@@ -65,14 +65,14 @@ class CallCallablesRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Trying to invoke %s but it\'s not a callable.', $type->describe(VerbosityLevel::value())),
-				)->build(),
+				)->identifier('callable.nonCallable')->build(),
 			];
 		}
 		if ($this->reportMaybes && $isCallable->maybe()) {
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Trying to invoke %s but it might not be a callable.', $type->describe(VerbosityLevel::value())),
-				)->build(),
+				)->identifier('callable.nonCallable')->build(),
 			];
 		}
 
@@ -89,7 +89,7 @@ class CallCallablesRule implements Rule
 				$method->isPrivate() ? 'private' : 'protected',
 				$method->getName(),
 				$method->getDeclaringClass()->getDisplayName(),
-			))->build();
+			))->identifier('callable.inaccessibleMethod')->build();
 		}
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(

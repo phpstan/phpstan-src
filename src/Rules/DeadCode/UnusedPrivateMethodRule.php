@@ -154,6 +154,7 @@ class UnusedPrivateMethodRule implements Rule
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf('%s %s::%s() is unused.', $methodType, $classReflection->getDisplayName(), $methodName))
 				->line($method->getNode()->getLine())
+				->identifier('method.unused')
 				->build();
 		}
 

@@ -43,11 +43,7 @@ class DumpTypeRule implements Rule
 		}
 
 		if (count($node->getArgs()) === 0) {
-			return [
-				RuleErrorBuilder::message(sprintf('Missing argument for %s() function call.', $functionName))
-					->nonIgnorable()
-					->build(),
-			];
+			return [];
 		}
 
 		return [

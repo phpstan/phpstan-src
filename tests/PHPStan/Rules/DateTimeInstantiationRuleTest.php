@@ -44,6 +44,14 @@ class DateTimeInstantiationRuleTest extends RuleTestCase
 					'Instantiating DateTime with 2020-04-31 produces a warning: The parsed date was invalid',
 					20,
 				],*/
+				[
+					'Instantiating DateTime with 2020.11.17 produces an error: Double time specification',
+					22,
+				],
+				[
+					'Instantiating DateTimeImmutable with 2020.11.17 produces an error: Double time specification',
+					23,
+				],
 			],
 		);
 	}

@@ -18,3 +18,6 @@ function foo(string $date, string $date2): void {
 }
 
 new \DateTime('2020-04-31');
+
+new \dateTime('2020.11.17');
+new \dateTimeImmutablE('2020.11.17');

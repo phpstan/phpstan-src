@@ -55,10 +55,13 @@ class InitializerExprContext implements NamespaceAnswerer
 
 	public static function fromClassReflection(ClassReflection $classReflection): self
 	{
-		$className = $classReflection->getName();
+		return self::fromClass($classReflection->getName(), $classReflection->getFileName());
+	}
 
+	public static function fromClass(string $className, ?string $fileName): self
+	{
 		return new self(
-			$classReflection->getFileName(),
+			$fileName,
 			self::parseNamespace($className),
 			$className,
 			null,

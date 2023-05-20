@@ -88,6 +88,7 @@ parameters:
 			count: 1
 			path: ../src/Command/CommandHelper.php
 		- '#^Parameter \#1 \$offsetType of class PHPStan\\Type\\Accessory\\HasOffsetType constructor expects PHPStan\\Type\\Constant\\ConstantIntegerType\|PHPStan\\Type\\Constant\\ConstantStringType#'
+		- '#^Short ternary operator is not allowed#'
 	reportStaticMethodSignatures: true
 	tmpDir: %rootDir%/tmp
 	stubFiles:

@@ -1876,10 +1876,23 @@ class InitializerExprTypeResolver
 				continue;
 			}
 
+			if (!$isObject) {
+				$reflectionConstant = $constantClassReflection->getNativeReflection()->getReflectionConstant($constantName);
+				if ($reflectionConstant === false) {
+					continue;
+				}
+				$reflectionConstantDeclaringClass = $reflectionConstant->getDeclaringClass();
+				$constantType = $this->getType($reflectionConstant->getValueExpression(), InitializerExprContext::fromClass($reflectionConstantDeclaringClass->getName(), $reflectionConstantDeclaringClass->getFileName() ?: null));
+				$types[] = $this->constantResolver->resolveConstantType(
+					sprintf('%s::%s', $constantClassReflection->getName(), $constantName),
+					$constantType,
+				);
+				continue;
+			}
+
 			$constantReflection = $constantClassReflection->getConstant($constantName);
 			if (
 				$constantReflection instanceof ClassConstantReflection
-				&& $isObject
 				&& !$constantClassReflection->isFinal()
 				&& !$constantReflection->hasPhpDocType()
 			) {
@@ -1887,11 +1900,8 @@ class InitializerExprTypeResolver
 			}
 
 			if (
-				$isObject
-				&& (
-					!$constantReflection instanceof ClassConstantReflection
-					|| !$constantClassReflection->isFinal()
-				)
+				!$constantReflection instanceof ClassConstantReflection
+				|| !$constantClassReflection->isFinal()
 			) {
 				$constantType = $constantReflection->getValueType();
 			} else {

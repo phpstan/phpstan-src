@@ -118,7 +118,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.1"
+          php-version: "8.2"
           tools: pecl
           extensions: ds,mbstring
           ini-file: development
@@ -143,7 +143,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.1"
+          php-version: "8.2"
           tools: pecl
           extensions: ds,mbstring
           ini-file: development
@@ -188,7 +188,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.1"
+          php-version: "8.2"
           extensions: mbstring, intl
 
       - name: "Rector downgrade cache key"

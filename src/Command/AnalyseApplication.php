@@ -213,20 +213,20 @@ class AnalyseApplication
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount - $filesCount);
 		} else {
 			$startTime = null;
-			$preFileCallback = static function (string $file) use ($stdOutput, &$startTime): void {
-				$stdOutput->writeLineFormatted($file);
+			$preFileCallback = static function (string $file) use ($stdOutput, $errorOutput, &$startTime): void {
+				$errorOutput->writeLineFormatted($file);
 				$startTime = microtime(true);
 			};
 			$postFileCallback = null;
 			if ($stdOutput->isDebug()) {
 				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = static function () use ($stdOutput, &$previousMemory, &$startTime): void {
+				$postFileCallback = static function () use ($stdOutput, $errorOutput, &$previousMemory, &$startTime): void {
 					if ($startTime === null) {
 						throw new ShouldNotHappenException();
 					}
 					$currentTotalMemory = memory_get_peak_usage(true);
 					$elapsedTime = microtime(true) - $startTime;
-					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $elapsedTime));
+					$errorOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $elapsedTime));
 					$previousMemory = $currentTotalMemory;
 				};
 			}

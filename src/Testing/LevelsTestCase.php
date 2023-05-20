@@ -63,14 +63,9 @@ abstract class LevelsTestCase extends TestCase
 
 		$exceptions = [];
 
-		exec(sprintf('%s %s clear-result-cache %s 2>&1', escapeshellarg(PHP_BINARY), $command, $configPath !== null ? '--configuration ' . escapeshellarg($configPath) : ''), $clearResultCacheOutputLines, $clearResultCacheExitCode);
-		if ($clearResultCacheExitCode !== 0) {
-			throw new ShouldNotHappenException('Could not clear result cache: ' . implode("\n", $clearResultCacheOutputLines));
-		}
-
 		foreach (range(0, 9) as $level) {
 			unset($outputLines);
-			exec(sprintf('%s %s analyse --no-progress --error-format=prettyJson --level=%d %s %s %s', escapeshellarg(PHP_BINARY), $command, $level, $configPath !== null ? '--configuration ' . escapeshellarg($configPath) : '', $this->shouldAutoloadAnalysedFile() ? sprintf('--autoload-file %s', escapeshellarg($file)) : '', escapeshellarg($file)), $outputLines);
+			exec(sprintf('%s %s analyse --debug --no-progress --error-format=prettyJson --level=%d %s %s %s', escapeshellarg(PHP_BINARY), $command, $level, $configPath !== null ? '--configuration ' . escapeshellarg($configPath) : '', $this->shouldAutoloadAnalysedFile() ? sprintf('--autoload-file %s', escapeshellarg($file)) : '', escapeshellarg($file)), $outputLines);
 
 			$output = implode("\n", $outputLines);
 

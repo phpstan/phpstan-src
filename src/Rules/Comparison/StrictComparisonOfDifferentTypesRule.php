@@ -61,10 +61,10 @@ class StrictComparisonOfDifferentTypesRule implements Rule
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Strict comparison using %s between %s and %s will always evaluate to false.',
-					$node instanceof Node\Expr\BinaryOp\Identical ? '===' : '!==',
+					$node->getOperatorSigil(),
 					$leftType->describe(VerbosityLevel::value()),
 					$rightType->describe(VerbosityLevel::value()),
-				)))->build(),
+				)))->identifier(sprintf('%s.alwaysFalse', $node instanceof Node\Expr\BinaryOp\Identical ? 'identical' : 'notIdentical'))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueStrictComparison) {
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -74,7 +74,7 @@ class StrictComparisonOfDifferentTypesRule implements Rule
 
 			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 				'Strict comparison using %s between %s and %s will always evaluate to true.',
-				$node instanceof Node\Expr\BinaryOp\Identical ? '===' : '!==',
+				$node->getOperatorSigil(),
 				$leftType->describe(VerbosityLevel::value()),
 				$rightType->describe(VerbosityLevel::value()),
 			)));
@@ -89,6 +89,8 @@ class StrictComparisonOfDifferentTypesRule implements Rule
 			) {
 				$errorBuilder->addTip('Use match expression instead. PHPStan will report unhandled enum cases.');
 			}
+
+			$errorBuilder->identifier(sprintf('%s.alwaysTrue', $node instanceof Node\Expr\BinaryOp\Identical ? 'identical' : 'notIdentical'));
 
 			return [
 				$errorBuilder->build(),

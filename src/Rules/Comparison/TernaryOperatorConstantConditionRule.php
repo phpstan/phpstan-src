@@ -50,7 +50,7 @@ class TernaryOperatorConstantConditionRule implements Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Ternary operator condition is always %s.',
 					$exprType->getValue() ? 'true' : 'false',
-				)))->build(),
+				)))->identifier(sprintf('ternary.always%s', $exprType->getValue() ? 'True' : 'False'))->build(),
 			];
 		}
 

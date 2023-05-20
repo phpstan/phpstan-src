@@ -51,7 +51,9 @@ class IfConstantConditionRule implements Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'If condition is always %s.',
 					$exprType->getValue() ? 'true' : 'false',
-				)))->line($node->cond->getLine())->build(),
+				)))
+					->identifier(sprintf('if.always%s', $exprType->getValue() ? 'True' : 'False'))
+					->line($node->cond->getLine())->build(),
 			];
 		}
 

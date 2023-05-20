@@ -60,6 +60,8 @@ class ElseIfConstantConditionRule implements Rule
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
 
+				$errorBuilder->identifier(sprintf('elseif.always%s', $exprType->getValue() ? 'True' : 'False'));
+
 				return [$errorBuilder->build()];
 			}
 		}

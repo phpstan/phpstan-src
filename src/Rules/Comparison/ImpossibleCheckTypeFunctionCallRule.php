@@ -64,7 +64,7 @@ class ImpossibleCheckTypeFunctionCallRule implements Rule
 					'Call to function %s()%s will always evaluate to false.',
 					$functionName,
 					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
-				)))->build(),
+				)))->identifier('function.impossibleType')->build(),
 			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -80,6 +80,8 @@ class ImpossibleCheckTypeFunctionCallRule implements Rule
 			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 				$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 			}
+
+			$errorBuilder->identifier('function.alreadyNarrowedType');
 
 			return [$errorBuilder->build()];
 		}

@@ -63,7 +63,10 @@ class DefaultValueTypesAssignedToPropertiesRule implements Rule
 				$node->getName(),
 				$propertyType->describe($verbosityLevel),
 				$defaultValueType->describe($verbosityLevel),
-			))->acceptsReasonsTip($accepts->reasons)->build(),
+			))
+				->identifier('property.defaultValue')
+				->acceptsReasonsTip($accepts->reasons)
+				->build(),
 		];
 	}
 

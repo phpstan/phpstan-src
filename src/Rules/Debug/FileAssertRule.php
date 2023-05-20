@@ -6,8 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\VerbosityLevel;
@@ -58,7 +58,7 @@ class FileAssertRule implements Rule
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processAssertType(array $args, Scope $scope): array
 	{
@@ -91,7 +91,7 @@ class FileAssertRule implements Rule
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processAssertNativeType(array $args, Scope $scope): array
 	{
@@ -124,7 +124,7 @@ class FileAssertRule implements Rule
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processAssertVariableCertainty(array $args, Scope $scope): array
 	{

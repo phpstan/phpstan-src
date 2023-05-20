@@ -52,6 +52,7 @@ class DefinedVariableRule implements Rule
 		if ($scope->hasVariableType($node->name)->no()) {
 			return [
 				RuleErrorBuilder::message(sprintf('Undefined variable: $%s', $node->name))
+					->identifier('variable.undefined')
 					->build(),
 			];
 		} elseif (
@@ -59,7 +60,9 @@ class DefinedVariableRule implements Rule
 			&& !$scope->hasVariableType($node->name)->yes()
 		) {
 			return [
-				RuleErrorBuilder::message(sprintf('Variable $%s might not be defined.', $node->name))->build(),
+				RuleErrorBuilder::message(sprintf('Variable $%s might not be defined.', $node->name))
+					->identifier('variable.undefined')
+					->build(),
 			];
 		}
 

@@ -45,7 +45,10 @@ class MissingReadOnlyPropertyAssignRule implements Rule
 				'Class %s has an uninitialized readonly property $%s. Assign it in the constructor.',
 				$classReflection->getDisplayName(),
 				$propertyName,
-			))->line($propertyNode->getLine())->build();
+			))
+				->line($propertyNode->getLine())
+				->identifier('property.uninitializedReadonly')
+				->build();
 		}
 
 		foreach ($prematureAccess as [$propertyName, $line, $propertyNode]) {
@@ -56,7 +59,10 @@ class MissingReadOnlyPropertyAssignRule implements Rule
 				'Access to an uninitialized readonly property %s::$%s.',
 				$classReflection->getDisplayName(),
 				$propertyName,
-			))->line($line)->build();
+			))
+				->line($line)
+				->identifier('property.uninitializedReadonly')
+				->build();
 		}
 
 		foreach ($additionalAssigns as [$propertyName, $line, $propertyNode]) {
@@ -67,7 +73,10 @@ class MissingReadOnlyPropertyAssignRule implements Rule
 				'Readonly property %s::$%s is already assigned.',
 				$classReflection->getDisplayName(),
 				$propertyName,
-			))->line($line)->build();
+			))
+				->line($line)
+				->identifier('assign.readOnlyProperty')
+				->build();
 		}
 
 		return $errors;

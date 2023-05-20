@@ -7,7 +7,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\PhpDoc\Tag\VarTag;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\ObjectType;
@@ -29,7 +29,7 @@ class VarTagTypeRuleHelper
 	/**
 	 * @param VarTag[] $varTags
 	 * @param string[] $assignedVariables
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function checkVarType(Scope $scope, Node\Expr $var, Node\Expr $expr, array $varTags, array $assignedVariables): array
 	{
@@ -67,7 +67,7 @@ class VarTagTypeRuleHelper
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function checkExprType(Scope $scope, Node\Expr $expr, Type $varTagType): array
 	{
@@ -80,7 +80,7 @@ class VarTagTypeRuleHelper
 				'PHPDoc tag @var with type %s is not subtype of native type %s.',
 				$varTagType->describe($verbosity),
 				$exprNativeType->describe($verbosity),
-			))->build();
+			))->identifier('varTag.nativeType')->build();
 		} else {
 			$exprType = $scope->getType($expr);
 			if (
@@ -92,7 +92,7 @@ class VarTagTypeRuleHelper
 					'PHPDoc tag @var with type %s is not subtype of type %s.',
 					$varTagType->describe($verbosity),
 					$exprType->describe($verbosity),
-				))->build();
+				))->identifier('varTag.type')->build();
 			}
 		}
 
@@ -104,7 +104,7 @@ class VarTagTypeRuleHelper
 					'PHPDoc tag @var assumes the expression with type %s is always %s but it\'s error-prone and dangerous.',
 					$exprType->describe($verbosity),
 					$varTagType->describe($verbosity),
-				))->build();
+				))->identifier('phpstanApi.varTagAssumption')->build();
 			}
 		}
 

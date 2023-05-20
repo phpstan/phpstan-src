@@ -9,8 +9,8 @@ use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -59,7 +59,7 @@ class AccessPropertiesRule implements Rule
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processSingleProperty(Scope $scope, PropertyFetch $node, string $name): array
 	{
@@ -84,7 +84,7 @@ class AccessPropertiesRule implements Rule
 					'Cannot access property $%s on %s.',
 					$name,
 					$type->describe(VerbosityLevel::typeOnly()),
-				))->build(),
+				))->identifier('property.nonObject')->build(),
 			];
 		}
 
@@ -128,7 +128,7 @@ class AccessPropertiesRule implements Rule
 								'Access to private property $%s of parent class %s.',
 								$name,
 								$parentClassReflection->getDisplayName(),
-							))->build(),
+							))->identifier('property.private')->build(),
 						];
 					}
 
@@ -140,7 +140,7 @@ class AccessPropertiesRule implements Rule
 				'Access to an undefined property %s::$%s.',
 				$type->describe(VerbosityLevel::typeOnly()),
 				$name,
-			));
+			))->identifier('property.notFound');
 			if ($typeResult->getTip() !== null) {
 				$ruleErrorBuilder->tip($typeResult->getTip());
 			} else {
@@ -160,7 +160,7 @@ class AccessPropertiesRule implements Rule
 					$propertyReflection->isPrivate() ? 'private' : 'protected',
 					$type->describe(VerbosityLevel::typeOnly()),
 					$name,
-				))->build(),
+				))->identifier(sprintf('property.%s', $propertyReflection->isPrivate() ? 'private' : 'protected'))->build(),
 			];
 		}
 

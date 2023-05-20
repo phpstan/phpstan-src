@@ -9,8 +9,8 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
@@ -214,8 +214,8 @@ class OverridingMethodRule implements Rule
 	}
 
 	/**
-	 * @param RuleError[] $errors
-	 * @return (string|RuleError)[]
+	 * @param list<IdentifierRuleError> $errors
+	 * @return list<IdentifierRuleError>
 	 */
 	private function addErrors(
 		array $errors,

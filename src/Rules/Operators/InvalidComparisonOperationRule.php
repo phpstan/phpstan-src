@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
@@ -16,6 +17,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function get_class;
 use function sprintf;
 
 /**
@@ -59,13 +61,42 @@ class InvalidComparisonOperationRule implements Rule
 				$this->isPossiblyNullableObjectType($scope, $node->left) || $this->isPossiblyNullableArrayType($scope, $node->left)
 			))
 		) {
+			switch (get_class($node)) {
+				case Node\Expr\BinaryOp\Equal::class:
+					$nodeType = 'equal';
+					break;
+				case Node\Expr\BinaryOp\NotEqual::class:
+					$nodeType = 'notEqual';
+					break;
+				case Node\Expr\BinaryOp\Greater::class:
+					$nodeType = 'greater';
+					break;
+				case Node\Expr\BinaryOp\GreaterOrEqual::class:
+					$nodeType = 'greaterOrEqual';
+					break;
+				case Node\Expr\BinaryOp\Smaller::class:
+					$nodeType = 'smaller';
+					break;
+				case Node\Expr\BinaryOp\SmallerOrEqual::class:
+					$nodeType = 'smallerOrEqual';
+					break;
+				case Node\Expr\BinaryOp\Spaceship::class:
+					$nodeType = 'spaceship';
+					break;
+				default:
+					throw new ShouldNotHappenException();
+			}
+
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Comparison operation "%s" between %s and %s results in an error.',
 					$node->getOperatorSigil(),
 					$scope->getType($node->left)->describe(VerbosityLevel::value()),
 					$scope->getType($node->right)->describe(VerbosityLevel::value()),
-				))->line($node->left->getLine())->build(),
+				))
+					->line($node->left->getLine())
+					->identifier(sprintf('%s.invalid', $nodeType))
+					->build(),
 			];
 		}
 

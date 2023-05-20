@@ -45,7 +45,10 @@ class InvalidUnaryOperationRule implements Rule
 					'Unary operation "%s" on %s results in an error.',
 					$operator,
 					$scope->getType($node->expr)->describe(VerbosityLevel::value()),
-				))->line($node->expr->getLine())->build(),
+				))
+					->line($node->expr->getLine())
+					->identifier('unaryOp.invalid')
+					->build(),
 			];
 		}
 

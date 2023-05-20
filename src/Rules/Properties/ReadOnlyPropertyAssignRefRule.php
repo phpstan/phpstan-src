@@ -46,7 +46,9 @@ class ReadOnlyPropertyAssignRefRule implements Rule
 			}
 
 			$declaringClass = $nativeReflection->getDeclaringClass();
-			$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned by reference.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
+			$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned by reference.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+				->identifier('property.readOnlyAssignByRef')
+				->build();
 		}
 
 		return $errors;

@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements Rule<Node\AttributeGroup>
@@ -19,13 +20,13 @@ class AttributeGroupRule implements Rule
 		return Node\AttributeGroup::class;
 	}
 
-	/**
-	 * @param Node\AttributeGroup $node
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
-		return [self::ERROR_MESSAGE];
+		return [
+			RuleErrorBuilder::message(self::ERROR_MESSAGE)
+				->identifier('tests.attributeGroup')
+				->build(),
+		];
 	}
 
 }

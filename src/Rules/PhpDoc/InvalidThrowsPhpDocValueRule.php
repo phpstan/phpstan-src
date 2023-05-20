@@ -70,7 +70,7 @@ class InvalidThrowsPhpDocValueRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag @throws with type %s is not subtype of Throwable',
 				$phpDocThrowsType->describe(VerbosityLevel::typeOnly()),
-			))->build(),
+			))->identifier('throws.notThrowable')->build(),
 		];
 	}
 

@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements Rule<Node\Arg>
@@ -19,13 +20,13 @@ class AttributeArgRule implements Rule
 		return Node\Arg::class;
 	}
 
-	/**
-	 * @param Node\Arg $node
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
-		return [self::ERROR_MESSAGE];
+		return [
+			RuleErrorBuilder::message(self::ERROR_MESSAGE)
+				->identifier('tests.attributeArg')
+				->build(),
+		];
 	}
 
 }

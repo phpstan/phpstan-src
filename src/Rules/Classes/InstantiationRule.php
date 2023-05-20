@@ -12,8 +12,8 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -53,7 +53,7 @@ class InstantiationRule implements Rule
 
 	/**
 	 * @param Node\Expr\New_ $node
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function checkClassName(string $class, bool $isName, Node $node, Scope $scope): array
 	{

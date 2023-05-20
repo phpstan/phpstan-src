@@ -49,6 +49,7 @@ class NotAnalysedTraitRule implements Rule
 			))
 				->file($file)
 				->line($line)
+				->identifier('trait.unused')
 				->tip('See: https://phpstan.org/blog/how-phpstan-analyses-traits')
 				->build();
 		}

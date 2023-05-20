@@ -7,7 +7,11 @@ use PhpParser\Node\Stmt\Class_;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 
+/**
+ * @implements Rule<Class_>
+ */
 class AnonymousClassNameRule implements Rule
 {
 
@@ -20,10 +24,6 @@ class AnonymousClassNameRule implements Rule
 		return Class_::class;
 	}
 
-	/**
-	 * @param Class_ $node
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$className = isset($node->namespacedName)
@@ -32,10 +32,18 @@ class AnonymousClassNameRule implements Rule
 		try {
 			$this->reflectionProvider->getClass($className);
 		} catch (ClassNotFoundException) {
-			return ['not found'];
+			return [
+				RuleErrorBuilder::message('not found')
+					->identifier('tests.anonymousClassName')
+					->build(),
+			];
 		}
 
-		return ['found'];
+		return [
+			RuleErrorBuilder::message('found')
+				->identifier('tests.anonymousClassName')
+				->build(),
+		];
 	}
 
 }

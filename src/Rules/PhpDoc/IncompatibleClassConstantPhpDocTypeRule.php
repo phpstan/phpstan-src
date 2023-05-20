@@ -10,8 +10,8 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\VerbosityLevel;
@@ -53,7 +53,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
 	{
@@ -76,7 +76,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 				'PHPDoc tag @var for constant %s::%s contains unresolvable type.',
 				$constantReflection->getDeclaringClass()->getName(),
 				$constantName,
-			))->build();
+			))->identifier('classConstant.unresolvableType')->build();
 		} else {
 			$nativeType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpr(), InitializerExprContext::fromClassReflection($constantReflection->getDeclaringClass()));
 			$isSuperType = $phpDocType->isSuperTypeOf($nativeType);
@@ -88,7 +88,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 					$constantName,
 					$phpDocType->describe($verbosity),
 					$nativeType->describe(VerbosityLevel::value()),
-				))->build();
+				))->identifier('classConstant.phpDocType')->build();
 
 			} elseif ($isSuperType->maybe()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
@@ -97,7 +97,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 					$constantName,
 					$phpDocType->describe($verbosity),
 					$nativeType->describe(VerbosityLevel::value()),
-				))->build();
+				))->identifier('classConstant.phpDocType')->build();
 			}
 		}
 

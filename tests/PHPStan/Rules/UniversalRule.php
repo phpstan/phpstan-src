@@ -15,12 +15,12 @@ class UniversalRule implements Rule
 	/** @phpstan-var class-string<TNodeType> */
 	private $nodeType;
 
-	/** @var (callable(TNodeType, Scope): array<string|RuleError>) */
+	/** @var (callable(TNodeType, Scope): list<IdentifierRuleError>) */
 	private $processNodeCallback;
 
 	/**
 	 * @param class-string<TNodeType> $nodeType
-	 * @param (callable(TNodeType, Scope): array<string|RuleError>) $processNodeCallback
+	 * @param (callable(TNodeType, Scope): list<IdentifierRuleError>) $processNodeCallback
 	 */
 	public function __construct(string $nodeType, callable $processNodeCallback)
 	{
@@ -35,7 +35,7 @@ class UniversalRule implements Rule
 
 	/**
 	 * @param TNodeType $node
-	 * @return array<string|RuleError>
+	 * @return list<IdentifierRuleError>
 	 */
 	public function processNode(Node $node, Scope $scope): array
 	{

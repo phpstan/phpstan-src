@@ -106,7 +106,7 @@ class TooWideMethodReturnTypehintRule implements Rule
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 				$type->describe(VerbosityLevel::getRecommendedLevelByType($type)),
-			))->build();
+			))->identifier('return.unusedType')->build();
 		}
 
 		return $messages;

@@ -1710,11 +1710,6 @@ parameters:
 			path: tests/PHPStan/Analyser/AnalyserTest.php
 
 		-
-			message: "#^Class PHPStan\\\\Analyser\\\\AnonymousClassNameRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
-			count: 1
-			path: tests/PHPStan/Analyser/AnonymousClassNameRule.php
-
-		-
 			message: "#^Class PHPStan\\\\Analyser\\\\AnonymousClassNameRuleTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"
 			count: 1
 			path: tests/PHPStan/Analyser/AnonymousClassNameRuleTest.php
@@ -1723,11 +1718,6 @@ parameters:
 			message: "#^Method PHPStan\\\\Analyser\\\\AnonymousClassNameRuleTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: tests/PHPStan/Analyser/AnonymousClassNameRuleTest.php
-
-		-
-			message: "#^Class PHPStan\\\\Analyser\\\\EvaluationOrderRule implements generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
-			count: 1
-			path: tests/PHPStan/Analyser/EvaluationOrderRule.php
 
 		-
 			message: "#^Class PHPStan\\\\Analyser\\\\EvaluationOrderTest extends generic class PHPStan\\\\Testing\\\\RuleTestCase but does not specify its types\\: TRule$#"

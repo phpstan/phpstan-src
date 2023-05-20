@@ -32,6 +32,7 @@ class StaticMethodCallableRule implements Rule
 			return [
 				RuleErrorBuilder::message('First-class callables are supported only on PHP 8.1 and later.')
 					->nonIgnorable()
+					->identifier('callable.notSupported')
 					->build(),
 			];
 		}
@@ -55,7 +56,9 @@ class StaticMethodCallableRule implements Rule
 
 		$messagesMethodName = SprintfHelper::escapeFormatString($declaringClass->getDisplayName() . '::' . $methodReflection->getName() . '()');
 
-		$errors[] = RuleErrorBuilder::message(sprintf('Creating callable from a non-native static method %s.', $messagesMethodName))->build();
+		$errors[] = RuleErrorBuilder::message(sprintf('Creating callable from a non-native static method %s.', $messagesMethodName))
+			->identifier('callable.nonNativeMethod')
+			->build();
 
 		return $errors;
 	}

@@ -14,7 +14,7 @@ use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
@@ -46,7 +46,7 @@ class StaticMethodCallCheck
 
 	/**
 	 * @param Name|Expr $class
-	 * @return array{list<RuleError>, MethodReflection|null}
+	 * @return array{list<IdentifierRuleError>, MethodReflection|null}
 	 */
 	public function check(
 		Scope $scope,

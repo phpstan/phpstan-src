@@ -79,7 +79,10 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 			if (
 				$this->unresolvableTypeHelper->containsUnresolvableType($varTagType)
 			) {
-				$errors[] = RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))->line($docComment->getStartLine())->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))
+					->line($docComment->getStartLine())
+					->identifier('varTag.unresolvableType')
+					->build();
 				continue;
 			}
 
@@ -125,7 +128,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							sprintf('%s has invalid type %%s.', $identifier),
 							$referencedClass,
-						))->build();
+						))->identifier('varTag.trait')->build();
 					}
 					continue;
 				}
@@ -137,7 +140,10 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					sprintf('%s contains unknown class %%s.', $identifier),
 					$referencedClass,
-				))->discoveringSymbolsTip()->build();
+				))
+					->identifier('class.notFound')
+					->discoveringSymbolsTip()
+					->build();
 			}
 
 			if (!$this->checkClassCaseSensitivity) {

@@ -55,7 +55,7 @@ class OverridingPropertyRule implements Rule
 					$node->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$node->getName(),
-				))->nonIgnorable()->build();
+				))->identifier('property.nonStatic')->nonIgnorable()->build();
 			}
 		} elseif ($node->isStatic()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -64,7 +64,7 @@ class OverridingPropertyRule implements Rule
 				$node->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-			))->nonIgnorable()->build();
+			))->identifier('property.static')->nonIgnorable()->build();
 		}
 
 		if ($prototype->isReadOnly()) {
@@ -75,7 +75,7 @@ class OverridingPropertyRule implements Rule
 					$node->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$node->getName(),
-				))->nonIgnorable()->build();
+				))->identifier('property.readWrite')->nonIgnorable()->build();
 			}
 		} elseif ($node->isReadOnly()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -84,7 +84,7 @@ class OverridingPropertyRule implements Rule
 				$node->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-			))->nonIgnorable()->build();
+			))->identifier('property.readOnly')->nonIgnorable()->build();
 		}
 
 		if ($prototype->isPublic()) {
@@ -96,7 +96,7 @@ class OverridingPropertyRule implements Rule
 					$node->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$node->getName(),
-				))->nonIgnorable()->build();
+				))->identifier('property.visibility')->nonIgnorable()->build();
 			}
 		} elseif ($node->isPrivate()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -105,7 +105,7 @@ class OverridingPropertyRule implements Rule
 				$node->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-			))->nonIgnorable()->build();
+			))->identifier('property.visibility')->nonIgnorable()->build();
 		}
 
 		$typeErrors = [];
@@ -119,7 +119,7 @@ class OverridingPropertyRule implements Rule
 					$node->getName(),
 					$prototype->getNativeType()->describe(VerbosityLevel::typeOnly()),
 					$prototype->getNativeType()->describe(VerbosityLevel::typeOnly()),
-				))->nonIgnorable()->build();
+				))->identifier('property.missingNativeType')->nonIgnorable()->build();
 			} else {
 				$nativeType = ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $scope->getClassReflection());
 				if (!$prototype->getNativeType()->equals($nativeType)) {
@@ -131,7 +131,7 @@ class OverridingPropertyRule implements Rule
 						$prototype->getNativeType()->describe(VerbosityLevel::typeOnly()),
 						$prototype->getDeclaringClass()->getDisplayName(),
 						$node->getName(),
-					))->nonIgnorable()->build();
+					))->identifier('property.nativeType')->nonIgnorable()->build();
 				}
 			}
 		} elseif ($node->getNativeType() !== null) {
@@ -142,7 +142,7 @@ class OverridingPropertyRule implements Rule
 				ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $scope->getClassReflection())->describe(VerbosityLevel::typeOnly()),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-			))->nonIgnorable()->build();
+			))->identifier('property.extraNativeType')->nonIgnorable()->build();
 		}
 
 		$errors = array_merge($errors, $typeErrors);
@@ -170,7 +170,7 @@ class OverridingPropertyRule implements Rule
 			$prototype->getReadableType()->describe($verbosity),
 			$prototype->getDeclaringClass()->getDisplayName(),
 			$node->getName(),
-		))->tip(sprintf(
+		))->identifier('property.phpDocType')->tip(sprintf(
 			"You can fix 3rd party PHPDoc types with stub files:\n   %s\n   This error can be turned off by setting\n   %s",
 			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>',
 			'<fg=cyan>reportMaybesInPropertyPhpDocTypes: false</> in your <fg=cyan>%configurationFile%</>.',
@@ -184,7 +184,7 @@ class OverridingPropertyRule implements Rule
 			$prototype->getReadableType()->describe($verbosity),
 			$prototype->getDeclaringClass()->getDisplayName(),
 			$node->getName(),
-		))->tip(sprintf(
+		))->identifier('property.phpDocType')->tip(sprintf(
 			"You can fix 3rd party PHPDoc types with stub files:\n   %s",
 			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>',
 		))->build();

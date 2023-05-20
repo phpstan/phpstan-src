@@ -49,7 +49,7 @@ final class MissingPropertyTypehintRule implements Rule
 					'Property %s::$%s has no type specified.',
 					$propertyReflection->getDeclaringClass()->getDisplayName(),
 					$node->getName(),
-				))->build(),
+				))->identifier('missingType.property')->build(),
 			];
 		}
 

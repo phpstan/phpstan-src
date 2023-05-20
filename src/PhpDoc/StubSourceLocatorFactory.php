@@ -40,6 +40,11 @@ class StubSourceLocatorFactory
 				'PHPStan\\' => [dirname(__DIR__) . '/'],
 			]),
 		);
+		$locators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
+			Psr4Mapping::fromArrayMappings([
+				'PhpParser\\' => [dirname(__DIR__, 2) . '/vendor/nikic/php-parser/lib/PhpParser/'],
+			]),
+		);
 
 		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, $this->phpStormStubsSourceStubber);
 

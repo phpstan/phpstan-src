@@ -80,8 +80,8 @@ class MixinRule implements Rule
 					$innerName,
 					implode(', ', $genericTypeNames),
 				))
-					->identifier('missingType.generics')
 					->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+					->identifier('missingType.generics')
 					->build();
 			}
 

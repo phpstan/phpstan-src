@@ -90,7 +90,10 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 						'%s has no value type specified in iterable type %s.',
 						$identifier,
 						$iterableTypeDescription,
-					))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+					))
+						->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+						->identifier('missingType.iterableValue')
+						->build();
 				}
 			}
 
@@ -109,7 +112,10 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 					$identifier,
 					$innerName,
 					implode(', ', $genericTypeNames),
-				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+				))
+					->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+					->identifier('missingType.generics')
+					->build();
 			}
 
 			$referencedClasses = $varTagType->getReferencedClasses();

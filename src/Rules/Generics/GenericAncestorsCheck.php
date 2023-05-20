@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Generics;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -40,7 +41,7 @@ class GenericAncestorsCheck
 	/**
 	 * @param array<Node\Name> $nameNodes
 	 * @param array<Type> $ancestorTypes
-	 * @return RuleError[]
+	 * @return list<RuleError&IdentifierRuleError>
 	 */
 	public function check(
 		array $nameNodes,
@@ -126,7 +127,10 @@ class GenericAncestorsCheck
 					$genericClassInNonGenericObjectType,
 					$unusedName,
 					implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes())),
-				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+				))
+					->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+					->identifier('missingType.generics')
+					->build();
 			}
 		}
 

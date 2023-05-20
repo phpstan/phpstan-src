@@ -61,7 +61,10 @@ final class MissingClassConstantTypehintRule implements Rule
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
 				$iterableTypeDescription,
-			))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+				->identifier('missingType.iterableValue')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($constantType) as [$name, $genericTypeNames]) {
@@ -71,7 +74,10 @@ final class MissingClassConstantTypehintRule implements Rule
 				$constantName,
 				$name,
 				implode(', ', $genericTypeNames),
-			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+				->identifier('missingType.generics')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($constantType) as $callableType) {
@@ -80,7 +86,7 @@ final class MissingClassConstantTypehintRule implements Rule
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
 				$callableType->describe(VerbosityLevel::typeOnly()),
-			))->build();
+			))->identifier('missingType.callable')->build();
 		}
 
 		return $errors;

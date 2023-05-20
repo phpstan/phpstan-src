@@ -73,7 +73,10 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
 				$iterableTypeDescription,
-			))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+				->identifier('missingType.iterableValue')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($parameterType) as [$name, $genericTypeNames]) {
@@ -83,7 +86,10 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				$parameterReflection->getName(),
 				$name,
 				implode(', ', $genericTypeNames),
-			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+				->identifier('missingType.generics')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($parameterType) as $callableType) {
@@ -92,7 +98,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
 				$callableType->describe(VerbosityLevel::typeOnly()),
-			))->build();
+			))->identifier('missingType.callable')->build();
 		}
 
 		return $messages;

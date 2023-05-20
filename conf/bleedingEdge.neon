@@ -39,3 +39,5 @@ parameters:
 		stricterFunctionMap: true
 		invalidPhpDocTagLine: true
 		detectDeadTypeInMultiCatch: true
+	stubFiles:
+		- ../stubs/bleedingEdge/Rule.stub

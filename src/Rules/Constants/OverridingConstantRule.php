@@ -70,7 +70,7 @@ class OverridingConstantRule implements Rule
 				$constantReflection->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName(),
-			))->nonIgnorable()->build();
+			))->identifier('classConstant.final')->nonIgnorable()->build();
 		}
 
 		if ($prototype->isPublic()) {
@@ -82,7 +82,7 @@ class OverridingConstantRule implements Rule
 					$constantReflection->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				))->identifier('classConstant.visibility')->nonIgnorable()->build();
 			}
 		} elseif ($constantReflection->isPrivate()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -91,7 +91,7 @@ class OverridingConstantRule implements Rule
 				$constantReflection->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName(),
-			))->nonIgnorable()->build();
+			))->identifier('classConstant.visibility')->nonIgnorable()->build();
 		}
 
 		if (!$this->checkPhpDocMethodSignatures) {
@@ -115,7 +115,7 @@ class OverridingConstantRule implements Rule
 				$prototype->getValueType()->describe(VerbosityLevel::value()),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName(),
-			))->build();
+			))->identifier('classConstant.type')->build();
 		}
 
 		return $errors;

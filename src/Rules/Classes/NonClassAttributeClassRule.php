@@ -10,6 +10,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<InClassNode>
@@ -50,9 +51,9 @@ class NonClassAttributeClassRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'%s cannot be an Attribute class.',
-					$classReflection->isInterface() ? 'Interface' : 'Enum',
+					$classReflection->getClassTypeDescription(),
 				))
-					->identifier(sprintf('attribute.%s', $classReflection->isInterface() ? 'interface' : 'enum'))
+					->identifier(sprintf('attribute.%s', strtolower($classReflection->getClassTypeDescription())))
 					->build(),
 			];
 		}

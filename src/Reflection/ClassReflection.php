@@ -595,6 +595,22 @@ class ClassReflection
 		return $this->reflection->isEnum();
 	}
 
+	/**
+	 * @return 'Interface'|'Trait'|'Enum'|'Class'
+	 */
+	public function getClassTypeDescription(): string
+	{
+		if ($this->isInterface()) {
+			return 'Interface';
+		} elseif ($this->isTrait()) {
+			return 'Trait';
+		} elseif ($this->isEnum()) {
+			return 'Enum';
+		}
+
+		return 'Class';
+	}
+
 	public function isReadOnly(): bool
 	{
 		return $this->reflection->isReadOnly();

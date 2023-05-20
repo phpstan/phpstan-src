@@ -14,6 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function count;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\Instanceof_>
@@ -52,9 +53,9 @@ class ApiInstanceofRule implements Rule
 		$ruleError = RuleErrorBuilder::message(sprintf(
 			'Asking about instanceof %s is not covered by backward compatibility promise. The %s might change in a minor PHPStan version.',
 			$classReflection->getDisplayName(),
-			$classReflection->isInterface() ? 'interface' : 'class',
+			strtolower($classReflection->getClassTypeDescription()),
 		))
-			->identifier(sprintf('phpstanApi.%s', $classReflection->isInterface() ? 'interface' : 'class'))
+			->identifier(sprintf('phpstanApi.%s', strtolower($classReflection->getClassTypeDescription())))
 			->tip(sprintf(
 				"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
 				'https://github.com/phpstan/phpstan/discussions',

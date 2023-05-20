@@ -16,6 +16,7 @@ use function array_values;
 use function count;
 use function implode;
 use function sprintf;
+use function strtolower;
 
 class GenericObjectTypeCheck
 {
@@ -39,14 +40,7 @@ class GenericObjectTypeCheck
 				continue;
 			}
 
-			$classLikeDescription = 'class';
-			if ($classReflection->isInterface()) {
-				$classLikeDescription = 'interface';
-			} elseif ($classReflection->isTrait()) {
-				$classLikeDescription = 'trait';
-			} elseif ($classReflection->isEnum()) {
-				$classLikeDescription = 'enum';
-			}
+			$classLikeDescription = strtolower($classReflection->getClassTypeDescription());
 			if (!$classReflection->isGeneric()) {
 				$messages[] = RuleErrorBuilder::message(sprintf($classNotGenericMessage, $genericType->describe(VerbosityLevel::typeOnly()), $classLikeDescription, $classReflection->getDisplayName()))
 					->identifier('generics.notGeneric')

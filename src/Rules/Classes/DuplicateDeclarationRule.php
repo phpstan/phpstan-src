@@ -33,12 +33,7 @@ class DuplicateDeclarationRule implements Rule
 			throw new ShouldNotHappenException();
 		}
 
-		$identifierType = 'class';
-		if ($classReflection->isInterface()) {
-			$identifierType = 'interface';
-		} elseif ($classReflection->isEnum()) {
-			$identifierType = 'enum';
-		}
+		$identifierType = strtolower($classReflection->getClassTypeDescription());
 
 		$errors = [];
 

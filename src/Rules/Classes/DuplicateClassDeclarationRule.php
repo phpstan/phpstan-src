@@ -15,6 +15,7 @@ use function array_map;
 use function count;
 use function implode;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<InClassNode>
@@ -51,12 +52,7 @@ class DuplicateClassDeclarationRule implements Rule
 
 		$filteredClasses = array_filter($filteredClasses, static fn (ReflectionClass $class) => $class->getStartLine() !== $thisClass->getNativeReflection()->getStartLine());
 
-		$identifierType = 'class';
-		if ($thisClass->isInterface()) {
-			$identifierType = 'interface';
-		} elseif ($thisClass->isEnum()) {
-			$identifierType = 'enum';
-		}
+		$identifierType = strtolower($thisClass->getClassTypeDescription());
 
 		return [
 			RuleErrorBuilder::message(sprintf(

@@ -2151,6 +2151,18 @@ class TypeCombinatorTest extends PHPStanTestCase
 
 		yield [
 			[
+				new ObjectType('PHPStan\Fixture\ManyCasesTestEnum', new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'B'),
+				])),
+				new ObjectType('PHPStan\Fixture\ManyCasesTestEnum', new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A')),
+			],
+			ObjectType::class,
+			'PHPStan\Fixture\ManyCasesTestEnum~PHPStan\Fixture\ManyCasesTestEnum::A',
+		];
+
+		yield [
+			[
 				new ThisType(
 					$reflectionProvider->getClass(\ThisSubtractable\Foo::class), // phpcs:ignore
 					new UnionType([new ObjectType(\ThisSubtractable\Bar::class), new ObjectType(\ThisSubtractable\Baz::class)]), // phpcs:ignore

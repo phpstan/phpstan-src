@@ -50,7 +50,6 @@ use Throwable;
 use Traversable;
 use function array_key_exists;
 use function array_map;
-use function array_merge;
 use function array_values;
 use function count;
 use function implode;
@@ -1339,10 +1338,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 				$subtractedSubTypes = [];
 
 				$subtractedTypesList = TypeUtils::flattenTypes($subtractedType);
-				if ($this->subtractedType !== null) {
-					$subtractedTypesList = array_merge($subtractedTypesList, TypeUtils::flattenTypes($this->subtractedType));
-				}
-
 				$subtractedTypes = [];
 				foreach ($subtractedTypesList as $type) {
 					$subtractedTypes[$type->describe(VerbosityLevel::precise())] = $type;

@@ -8,6 +8,8 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\VerbosityLevel;
 use Serializable;
 use function array_key_exists;
@@ -173,28 +175,18 @@ class EnumSanityRule implements Rule
 				continue;
 			}
 
-			if ($node->scalarType->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum case %s::%s type %s does not match the "int" type.',
-					$node->namespacedName->toString(),
-					$caseName,
-					$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),
-				))
-					->identifier('enum.caseType')
-					->line($stmt->getLine())
-					->nonIgnorable()
-					->build();
-			}
-
-			$isStringBackedWithoutStringCase = $node->scalarType->name === 'string' && !($stmt->expr instanceof Node\Scalar\String_);
-			if (!$isStringBackedWithoutStringCase) {
+			$exprType = $scope->getType($stmt->expr);
+			$scalarType = $node->scalarType->toLowerString() === 'int' ? new IntegerType() : new StringType();
+			if ($scalarType->isSuperTypeOf($exprType)->yes()) {
 				continue;
 			}
+
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Enum case %s::%s type %s does not match the "string" type.',
+				'Enum case %s::%s value %s does not match the "%s" type.',
 				$node->namespacedName->toString(),
 				$caseName,
-				$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),
+				$exprType->describe(VerbosityLevel::value()),
+				$scalarType->describe(VerbosityLevel::typeOnly()),
 			))
 				->identifier('enum.caseType')
 				->line($stmt->getLine())

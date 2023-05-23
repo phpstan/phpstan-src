@@ -446,4 +446,9 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9341(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-9341.php'], []);
+	}
+
 }

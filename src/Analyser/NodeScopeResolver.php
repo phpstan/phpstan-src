@@ -2108,7 +2108,40 @@ class NodeScopeResolver
 			}
 
 			if (isset($functionReflection) && $functionReflection->getName() === 'extract') {
-				$scope = $scope->afterExtractCall();
+				$extractedArg = $expr->getArgs()[0]->value;
+				$extractedType = $scope->getType($extractedArg);
+				if (count($extractedType->getConstantArrays()) > 0) {
+					$properties = [];
+					$optionalProperties = [];
+					$refCount = [];
+					foreach ($extractedType->getConstantArrays() as $constantArray) {
+						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+							if ($keyType->isString()->no()) {
+								// integers as variable names not allowed
+								continue;
+							}
+							$key = (string) $keyType->getValue();
+							$valueType = $constantArray->getValueTypes()[$i];
+							$optional = $constantArray->isOptionalKey($i);
+							if ($optional) {
+								$optionalProperties[] = $key;
+							}
+							if (isset($properties[$key])) {
+								$properties[$key] = TypeCombinator::union($properties[$key], $valueType);
+								$refCount[$key]++;
+							} else {
+								$properties[$key] = $valueType;
+								$refCount[$key] = 1;
+							}
+						}
+					}
+					foreach ($properties as $name => $type) {
+						$optional = in_array($name, $optionalProperties, true) || $refCount[$name] < count($extractedType->getConstantArrays());
+						$scope = $scope->assignVariable($name, $type, $type, $optional ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes());
+					}
+				} else {
+					$scope = $scope->afterExtractCall();
+				}
 			}
 
 			if (isset($functionReflection) && ($functionReflection->getName() === 'clearstatcache' || $functionReflection->getName() === 'unlink')) {

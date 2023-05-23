@@ -175,7 +175,7 @@ class EnumSanityRule implements Rule
 
 			if ($node->scalarType->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum case %s::%s type %s doesn\'t match the "int" type.',
+					'Enum case %s::%s type %s does not match the "int" type.',
 					$node->namespacedName->toString(),
 					$caseName,
 					$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),
@@ -191,7 +191,7 @@ class EnumSanityRule implements Rule
 				continue;
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Enum case %s::%s type %s doesn\'t match the "string" type.',
+				'Enum case %s::%s type %s does not match the "string" type.',
 				$node->namespacedName->toString(),
 				$caseName,
 				$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),

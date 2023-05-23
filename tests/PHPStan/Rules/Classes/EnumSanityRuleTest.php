@@ -85,7 +85,7 @@ class EnumSanityRuleTest extends RuleTestCase
 				86,
 			],
 			[
-				'Enum case EnumSanity\EnumInconsistentCaseType::FOO type string doesn\'t match the "int" type.',
+				'Enum case EnumSanity\EnumInconsistentCaseType::FOO type string does not match the "int" type.',
 				105,
 			],
 			[

@@ -83,6 +83,37 @@ enum EnumWithSerialize {
 	}
 }
 
+enum EnumDuplicateValue: int {
+	case A = 1;
+	case B = 2;
+	case C = 2;
+	case D = 3;
+	case E = 1;
+}
+
+enum ValidIntBackedEnum: int {
+	case A = 1;
+	case B = 2;
+}
+
+enum ValidStringBackedEnum: string {
+	case A = 'A';
+	case B = 'B';
+}
+
+enum EnumInconsistentCaseType: int {
+	case FOO = 'foo';
+	case BAR;
+}
+
+enum EnumInconsistentStringCaseType: string {
+	case BAR;
+}
+
+enum EnumWithValueButNotBacked {
+	case FOO = 1;
+}
+
 enum EnumMayNotSerializable implements \Serializable {
 
 	public function serialize() {

@@ -8,8 +8,11 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\VerbosityLevel;
 use Serializable;
 use function array_key_exists;
+use function count;
+use function implode;
 use function sprintf;
 
 /**
@@ -152,6 +155,100 @@ class EnumSanityRule implements Rule
 					->nonIgnorable()
 					->build();
 			}
+		}
+
+		$enumCases = [];
+		foreach ($node->stmts as $stmt) {
+			if (!$stmt instanceof Node\Stmt\EnumCase) {
+				continue;
+			}
+			$caseName = $stmt->name->name;
+
+			if (($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_)) {
+				if ($node->scalarType === null) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Enum %s is not backed, but case %s has value %s.',
+						$node->namespacedName->toString(),
+						$caseName,
+						$stmt->expr->value,
+					))
+						->identifier('enum.caseWithValue')
+						->line($stmt->getLine())
+						->nonIgnorable()
+						->build();
+				} else {
+					$caseValue = $stmt->expr->value;
+
+					if (!isset($enumCases[$caseValue])) {
+						$enumCases[$caseValue] = [];
+					}
+
+					$enumCases[$caseValue][] = $caseName;
+				}
+			}
+
+			if ($node->scalarType === null) {
+				continue;
+			}
+
+			if ($stmt->expr === null) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Enum case %s::%s without type doesn\'t match the "%s" type.',
+					$node->namespacedName->toString(),
+					$caseName,
+					$node->scalarType->name,
+				))
+					->identifier('enum.missingCase')
+					->line($stmt->getLine())
+					->nonIgnorable()
+					->build();
+				continue;
+			}
+
+			if ($node->scalarType->name === 'int' && !($stmt->expr instanceof Node\Scalar\LNumber)) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Enum case %s::%s type %s doesn\'t match the "int" type.',
+					$node->namespacedName->toString(),
+					$caseName,
+					$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),
+				))
+					->identifier('enum.caseType')
+					->line($stmt->getLine())
+					->nonIgnorable()
+					->build();
+			}
+
+			$isStringBackedWithoutStringCase = $node->scalarType->name === 'string' && !($stmt->expr instanceof Node\Scalar\String_);
+			if (!$isStringBackedWithoutStringCase) {
+				continue;
+			}
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Enum case %s::%s type %s doesn\'t match the "string" type.',
+				$node->namespacedName->toString(),
+				$caseName,
+				$scope->getType($stmt->expr)->describe(VerbosityLevel::typeOnly()),
+			))
+				->identifier('enum.caseType')
+				->line($stmt->getLine())
+				->nonIgnorable()
+				->build();
+		}
+
+		foreach ($enumCases as $caseValue => $caseNames) {
+			if (count($caseNames) <= 1) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Enum %s has duplicate value %s for cases %s.',
+				$node->namespacedName->toString(),
+				$caseValue,
+				implode(', ', $caseNames),
+			))
+				->identifier('enum.duplicateValue')
+				->line($node->getLine())
+				->nonIgnorable()
+				->build();
 		}
 
 		return $errors;

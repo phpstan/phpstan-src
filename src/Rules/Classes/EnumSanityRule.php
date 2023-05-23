@@ -161,7 +161,7 @@ class EnumSanityRule implements Rule
 
 			if ($stmt->expr === null) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum case %s::%s without type doesn\'t match the "%s" type.',
+					'Enum case %s::%s does not have a value but the enum is backed with the "%s" type.',
 					$node->namespacedName->toString(),
 					$caseName,
 					$node->scalarType->name,

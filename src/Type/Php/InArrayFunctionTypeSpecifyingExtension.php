@@ -80,8 +80,8 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			|| (
 				$context->false()
 				&& (
-					count(TypeUtils::getConstantScalars($needleType)) > 0
-					|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
+					count(TypeUtils::getConstantScalars($needleType)) === 1
+					|| count(TypeUtils::getEnumCaseObjects($needleType)) === 1
 				)
 			)
 		) {

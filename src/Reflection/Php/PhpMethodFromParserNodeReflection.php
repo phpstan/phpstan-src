@@ -78,6 +78,13 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		if ($name === '__set_state') {
 			$realReturnType = TypeCombinator::intersect(new ObjectWithoutClassType(), $realReturnType);
 		}
+		if ($name === '__set') {
+			$realReturnType = new VoidType();
+		}
+
+		if ($name === '__debuginfo') {
+			$realReturnType = TypeCombinator::addNull(new ArrayType(new MixedType(true), new MixedType(true)));
+		}
 
 		if ($name === '__unserialize') {
 			$realReturnType = new VoidType();

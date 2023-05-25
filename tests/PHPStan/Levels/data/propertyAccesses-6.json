@@ -20,11 +20,6 @@
         "ignorable": true
     },
     {
-        "message": "Method Levels\\PropertyAccesses\\ClassWithMagicMethod::__set() has no return type specified.",
-        "line": 83,
-        "ignorable": true
-    },
-    {
         "message": "Method Levels\\PropertyAccesses\\AnotherClassWithMagicMethod::doFoo() has no return type specified.",
         "line": 93,
         "ignorable": true

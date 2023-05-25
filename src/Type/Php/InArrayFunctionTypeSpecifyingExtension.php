@@ -37,17 +37,22 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (count($node->getArgs()) < 3) {
-			return new SpecifiedTypes();
-		}
-		$strictNodeType = $scope->getType($node->getArgs()[2]->value);
-		if (!(new ConstantBooleanType(true))->isSuperTypeOf($strictNodeType)->yes()) {
-			return new SpecifiedTypes();
+		$isStrictComparison = false;
+		if (count($node->getArgs()) >= 3) {
+			$strictNodeType = $scope->getType($node->getArgs()[2]->value);
+			$isStrictComparison = (new ConstantBooleanType(true))->isSuperTypeOf($strictNodeType)->yes();
 		}
 
 		$needleType = $scope->getType($node->getArgs()[0]->value);
 		$arrayType = $scope->getType($node->getArgs()[1]->value);
 		$arrayValueType = $arrayType->getIterableValueType();
+		$isStrictComparison = $isStrictComparison
+			|| $needleType->isEnum()->yes()
+			|| $arrayValueType->isEnum()->yes();
+
+		if (!$isStrictComparison) {
+			return new SpecifiedTypes();
+		}
 
 		$specifiedTypes = new SpecifiedTypes();
 
@@ -75,8 +80,8 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			|| (
 				$context->false()
 				&& (
-					count(TypeUtils::getConstantScalars($needleType)) > 0
-					|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
+					count(TypeUtils::getConstantScalars($needleType)) === 1
+					|| count(TypeUtils::getEnumCaseObjects($needleType)) === 1
 				)
 			)
 		) {

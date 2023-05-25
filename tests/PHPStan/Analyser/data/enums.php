@@ -284,3 +284,66 @@ class InArrayEnum
 	}
 
 }
+
+class LooseComparisonWithEnums
+{
+	public function testEquality(Foo $foo, Bar $bar, Baz $baz, string $s, int $i, bool $b): void
+	{
+		assertType('true', $foo == $foo);
+		assertType('false', $foo == $bar);
+		assertType('false', $bar == $s);
+		assertType('false', $s == $bar);
+		assertType('false', $baz == $i);
+		assertType('false', $i == $baz);
+
+		assertType('true', true == $foo);
+		assertType('true', $foo == true);
+		assertType('false', false == $baz);
+		assertType('false', $baz == false);
+		assertType('false', null == $baz);
+		assertType('false', $baz == null);
+
+		assertType('true', Foo::ONE == true);
+		assertType('true', true == Foo::ONE);
+		assertType('false', Foo::ONE == false);
+		assertType('false', false == Foo::ONE);
+		assertType('false', null == Foo::ONE);
+		assertType('false', Foo::ONE == null);
+
+		assertType('bool', (rand() ? $bar : null) == $s);
+		assertType('bool', $s == (rand() ? $bar : null));
+		assertType('bool', (rand() ? $baz : null) == $i);
+		assertType('bool', $i == (rand() ? $baz : null));
+		assertType('bool', $foo == $b);
+		assertType('bool', $b == $foo);
+	}
+
+	public function testNonEquality(Foo $foo, Bar $bar, Baz $baz, string $s, int $i, bool $b): void
+	{
+		assertType('false', $foo != $foo);
+		assertType('true', $foo != $bar);
+		assertType('true', $bar != $s);
+		assertType('true', $s != $bar);
+		assertType('true', $baz != $i);
+		assertType('true', $i != $baz);
+
+		assertType('false', true != $foo);
+		assertType('false', $foo != true);
+		assertType('true', false != $baz);
+		assertType('true', $baz != false);
+		assertType('true', null != $baz);
+		assertType('true', $baz != null);
+
+		assertType('false', Foo::ONE != true);
+		assertType('false', true != Foo::ONE);
+		assertType('true', Foo::ONE != false);
+		assertType('true', false != Foo::ONE);
+		assertType('true', null != Foo::ONE);
+		assertType('true', Foo::ONE != null);
+
+		assertType('bool', (rand() ? $bar : null) != $s);
+		assertType('bool', $s != (rand() ? $bar : null));
+		assertType('bool', (rand() ? $baz : null) != $i);
+		assertType('bool', $i != (rand() ? $baz : null));
+	}
+}

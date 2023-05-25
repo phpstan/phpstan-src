@@ -639,6 +639,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/enums.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/enums-import-alias.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7176.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/in-array-enum.php');
 		}
 
 		if (PHP_VERSION_ID >= 80000) {
@@ -989,6 +990,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/constant-array-intersect.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7153.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/in-array-non-empty.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/in-array-haystack-subtract.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4117.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7490.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/remember-possibly-impure-function-values.php');

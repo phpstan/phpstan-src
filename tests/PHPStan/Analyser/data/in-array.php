@@ -2,6 +2,8 @@
 
 namespace InArrayTypeSpecifyingExtension;
 
+use function PHPStan\Testing\assertType;
+
 class Foo
 {
 
@@ -41,7 +43,10 @@ class Foo
 			return;
 		}
 
-		die;
+		assertType('\'bar\'|\'foo\'', $s);
+		assertType('string', $mixed);
+		assertType('string', $r);
+		assertType('\'foo\'', $fooOrBarOrBaz);
 	}
 
 }

@@ -299,6 +299,10 @@ class CallMethodsRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #1 $str of method Test\CheckIsCallable::test() expects callable(): mixed, \'Test…\' given.',
+				659,
+			],
+			[
+				'Parameter #1 $str of method Test\CheckIsCallable::test() expects callable(): mixed, \'Test…\' given.',
 				660,
 			],
 			[
@@ -676,6 +680,10 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $str of method Test\CheckIsCallable::test() expects callable(): mixed, \'nonexistentFunction\' given.',
 				658,
+			],
+			[
+				'Parameter #1 $str of method Test\CheckIsCallable::test() expects callable(): mixed, \'Test…\' given.',
+				659,
 			],
 			[
 				'Parameter #1 $str of method Test\CheckIsCallable::test() expects callable(): mixed, \'Test…\' given.',

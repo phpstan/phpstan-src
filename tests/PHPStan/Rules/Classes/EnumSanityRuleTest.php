@@ -85,15 +85,15 @@ class EnumSanityRuleTest extends RuleTestCase
 				86,
 			],
 			[
-				'Enum case EnumSanity\EnumInconsistentCaseType::FOO type string doesn\'t match the "int" type.',
+				'Enum case EnumSanity\EnumInconsistentCaseType::FOO value \'foo\' does not match the "int" type.',
 				105,
 			],
 			[
-				'Enum case EnumSanity\EnumInconsistentCaseType::BAR without type doesn\'t match the "int" type.',
+				'Enum case EnumSanity\EnumInconsistentCaseType::BAR does not have a value but the enum is backed with the "int" type.',
 				106,
 			],
 			[
-				'Enum case EnumSanity\EnumInconsistentStringCaseType::BAR without type doesn\'t match the "string" type.',
+				'Enum case EnumSanity\EnumInconsistentStringCaseType::BAR does not have a value but the enum is backed with the "string" type.',
 				110,
 			],
 			[

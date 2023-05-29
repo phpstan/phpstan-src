@@ -25,7 +25,7 @@
 		"ondram/ci-detector": "^3.4.0",
 		"ondrejmirtes/better-reflection": "6.8.0.1",
 		"phpstan/php-8-stubs": "0.3.60",
-		"phpstan/phpdoc-parser": "1.21.1",
+		"phpstan/phpdoc-parser": "1.21.2",
 		"react/async": "^3",
 		"react/child-process": "^0.6.4",
 		"react/dns": "^1.10",

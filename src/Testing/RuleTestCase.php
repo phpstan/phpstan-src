@@ -25,6 +25,7 @@ use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
 use function count;
@@ -64,6 +65,27 @@ abstract class RuleTestCase extends PHPStanTestCase
 	protected function getTypeSpecifier(): TypeSpecifier
 	{
 		return self::getContainer()->getService('typeSpecifier');
+	}
+
+	final protected function getRuleLevelHelper(
+		bool $checkNullables = false,
+		bool $checkThisOnly = false,
+		bool $checkUnionTypes = false,
+		bool $checkExplicitMixed = false,
+		bool $checkImplicitMixed = false,
+		bool $newRuleLevelHelper = false,
+		bool $checkBenevolentUnionTypes = false,
+	): RuleLevelHelper {
+		return new RuleLevelHelper(
+			self::createReflectionProvider(),
+			$checkNullables,
+			$checkThisOnly,
+			$checkUnionTypes,
+			$checkExplicitMixed,
+			$checkImplicitMixed,
+			$newRuleLevelHelper,
+			$checkBenevolentUnionTypes,
+		);
 	}
 
 	private function getAnalyser(): Analyser

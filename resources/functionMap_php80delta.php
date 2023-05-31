@@ -40,7 +40,6 @@ return [
 		'date_timestamp_set' => ['DateTime', 'object'=>'DateTime', 'unixtimestamp'=>'int'],
 		'date_timezone_set' => ['DateTime', 'object'=>'DateTime', 'timezone'=>'DateTimeZone'],
 		'explode' => ['list<string>', 'separator'=>'non-empty-string', 'str'=>'string', 'limit='=>'int'],
-		'error_log' => ['bool', 'message'=>'string', 'message_type='=>'0|1|3|4', 'destination='=>'string', 'extra_headers='=>'string'],
 		'fdiv' => ['float', 'dividend'=>'float', 'divisor'=>'float'],
 		'forward_static_call_array' => ['mixed', 'function'=>'callable', 'parameters'=>'array<int|string,mixed>'],
 		'get_debug_type' => ['string', 'var'=>'mixed'],

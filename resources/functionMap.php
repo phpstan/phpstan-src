@@ -2335,7 +2335,7 @@ return [
 'Error::getTraceAsString' => ['string'],
 'error_clear_last' => ['void'],
 'error_get_last' => ['?array{type:int,message:string,file:string,line:int}'],
-'error_log' => ['bool', 'message'=>'string', 'message_type='=>'0|1|2|3|4', 'destination='=>'string', 'extra_headers='=>'string'],
+'error_log' => ['bool', 'message'=>'string', 'message_type='=>'int', 'destination='=>'string', 'extra_headers='=>'string'],
 'error_reporting' => ['int', 'new_error_level='=>'int'],
 'ErrorException::__clone' => ['void'],
 'ErrorException::__construct' => ['void', 'message='=>'string', 'code='=>'int', 'severity='=>'int', 'filename='=>'string', 'lineno='=>'int', 'previous='=>'(?Throwable)|(?ErrorException)'],

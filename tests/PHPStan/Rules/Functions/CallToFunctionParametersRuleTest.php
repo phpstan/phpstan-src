@@ -1342,4 +1342,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9283.php'], []);
 	}
 
+	public function testBug9380(): void
+	{
+		$errors = [
+			[
+				'Parameter #2 $message_type of function error_log expects 0|1|3|4, 2 given.',
+				7,
+			],
+		];
+
+		if (PHP_VERSION_ID < 80000) {
+			$errors = [];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9380.php'], $errors);
+	}
+
 }

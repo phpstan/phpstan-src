@@ -2,6 +2,7 @@
 
 return [
 	'new' => [
+		'error_log' => ['bool', 'message'=>'string', 'message_type='=>'0|1|2|3|4', 'destination='=>'string', 'extra_headers='=>'string'],
 		'Imagick::adaptiveBlurImage' => ['bool', 'radius'=>'float', 'sigma'=>'float', 'channel='=>'Imagick::CHANNEL_*'],
 		'Imagick::adaptiveSharpenImage' => ['bool', 'radius'=>'float', 'sigma'=>'float', 'channel='=>'Imagick::CHANNEL_*'],
 		'Imagick::addNoiseImage' => ['bool', 'noise_type'=>'Imagick::NOISE_*', 'channel='=>'Imagick::CHANNEL_*'],

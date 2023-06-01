@@ -132,22 +132,18 @@ class TypehintHelper
 		}
 
 		$reflectionTypeString = $reflectionType->getName();
-		if (str_ends_with(strtolower($reflectionTypeString), '\\object')) {
+		$loweredReflectionTypeString = strtolower($reflectionTypeString);
+		if (str_ends_with($loweredReflectionTypeString, '\\object')) {
 			$reflectionTypeString = 'object';
-		}
-		if (str_ends_with(strtolower($reflectionTypeString), '\\mixed')) {
+		} elseif (str_ends_with($loweredReflectionTypeString, '\\mixed')) {
 			$reflectionTypeString = 'mixed';
-		}
-		if (str_ends_with(strtolower($reflectionTypeString), '\\true')) {
+		} elseif (str_ends_with($loweredReflectionTypeString, '\\true')) {
 			$reflectionTypeString = 'true';
-		}
-		if (str_ends_with(strtolower($reflectionTypeString), '\\false')) {
+		} elseif (str_ends_with($loweredReflectionTypeString, '\\false')) {
 			$reflectionTypeString = 'false';
-		}
-		if (str_ends_with(strtolower($reflectionTypeString), '\\null')) {
+		} elseif (str_ends_with($loweredReflectionTypeString, '\\null')) {
 			$reflectionTypeString = 'null';
-		}
-		if (str_ends_with(strtolower($reflectionTypeString), '\\never')) {
+		} elseif (str_ends_with($loweredReflectionTypeString, '\\never')) {
 			$reflectionTypeString = 'never';
 		}
 

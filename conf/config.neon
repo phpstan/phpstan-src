@@ -562,8 +562,6 @@ services:
 
 	-
 		class: PHPStan\PhpDocParser\Lexer\Lexer
-		arguments:
-			parseDoctrineAnnotations: true
 
 	-
 		class: PHPStan\PhpDocParser\Parser\TypeParser
@@ -579,7 +577,6 @@ services:
 		arguments:
 			requireWhitespaceBeforeDescription: %featureToggles.phpDocParserRequireWhitespaceBeforeDescription%
 			preserveTypeAliasesWithInvalidTypes: true
-			parseDoctrineAnnotations: true
 
 	-
 		class: PHPStan\PhpDoc\ConstExprParserFactory

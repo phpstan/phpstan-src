@@ -6,6 +6,9 @@ use DateTime;
 use DateTimeImmutable;
 use Exception;
 use Iterator;
+use PHPStan\Fixture\AnotherTestEnum;
+use PHPStan\Fixture\ManyCasesTestEnum;
+use PHPStan\Fixture\TestEnum;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Testing\PHPStanTestCase;
@@ -21,6 +24,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -1182,6 +1186,63 @@ class UnionTypeTest extends PHPStanTestCase
 					),
 					new ObjectType('Countable'),
 				]),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new UnionType([
+					new EnumCaseObjectType(ManyCasesTestEnum::class, 'A'),
+					new EnumCaseObjectType(ManyCasesTestEnum::class, 'B'),
+					new EnumCaseObjectType(ManyCasesTestEnum::class, 'C'),
+					new EnumCaseObjectType(ManyCasesTestEnum::class, 'D'),
+				]),
+				new ObjectType(
+					ManyCasesTestEnum::class,
+					new UnionType([
+						new EnumCaseObjectType(ManyCasesTestEnum::class, 'E'),
+						new EnumCaseObjectType(ManyCasesTestEnum::class, 'F'),
+					]),
+				),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new UnionType([
+					new EnumCaseObjectType(ManyCasesTestEnum::class, 'A'),
+					new EnumCaseObjectType(ManyCasesTestEnum::class, 'B'),
+					new EnumCaseObjectType(ManyCasesTestEnum::class, 'C'),
+					new EnumCaseObjectType(ManyCasesTestEnum::class, 'D'),
+					new EnumCaseObjectType(ManyCasesTestEnum::class, 'E'),
+				]),
+				new ObjectType(
+					ManyCasesTestEnum::class,
+					new EnumCaseObjectType(ManyCasesTestEnum::class, 'F'),
+				),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new UnionType([
+					new EnumCaseObjectType(TestEnum::class, 'ONE'),
+					new EnumCaseObjectType(TestEnum::class, 'TWO'),
+				]),
+				new ObjectType(TestEnum::class),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new UnionType([
+					new EnumCaseObjectType(TestEnum::class, 'ONE'),
+					new EnumCaseObjectType(AnotherTestEnum::class, 'TWO'),
+				]),
+				new ObjectType(TestEnum::class),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new UnionType([
+					new EnumCaseObjectType(TestEnum::class, 'ONE'),
+					new NullType(),
+				]),
+				new ObjectType(
+					TestEnum::class,
+					new EnumCaseObjectType(TestEnum::class, 'TWO'),
+				),
 				TrinaryLogic::createYes(),
 			],
 

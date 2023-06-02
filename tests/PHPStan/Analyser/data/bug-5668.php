@@ -7,7 +7,6 @@ use function PHPStan\Testing\assertType;
 class Foo
 {
 
-
 	/**
 	 * @param array<int, 'test'|'bar'> $in
 	 */
@@ -27,9 +26,11 @@ class Foo
 	/**
 	 * @param non-empty-array<int, 'test'|'bar'> $in
 	 */
-	function has3(array $in): void
+	function has3(array $in, string $s): void
 	{
 		assertType('bool', in_array('test', $in, true));
+		assertType('bool', in_array(rand() ? 'test' : 'bar', $in, true));
+		assertType('bool', in_array($s, $in, true));
 	}
 
 
@@ -40,5 +41,13 @@ class Foo
 	{
 		assertType('true', in_array('test', $in, true));
 	}
+
+    /**
+     * @param non-empty-array<int, string> $in
+     */
+    function has5(array $in): void
+    {
+        assertType('bool', in_array('test', $in, true));
+    }
 
 }

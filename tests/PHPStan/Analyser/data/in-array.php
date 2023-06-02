@@ -49,4 +49,12 @@ class Foo
 		assertType('\'foo\'', $fooOrBarOrBaz);
 	}
 
+	/** @param array<string> $strings */
+	public function doBar(int $i, array $strings): void
+	{
+		assertType('bool', in_array($i, $strings));
+		assertType('bool', in_array($i, $strings, false));
+		assertType('false', in_array($i, $strings, true));
+	}
+
 }

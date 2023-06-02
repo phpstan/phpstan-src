@@ -5,6 +5,10 @@ namespace PHPStan\Rules\Comparison;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use stdClass;
+use function array_filter;
+use function array_map;
+use function array_values;
+use function count;
 use const PHP_VERSION_ID;
 
 /**
@@ -387,6 +391,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				19,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
+			[
+				'Call to function in_array() with arguments int, array<string> and true will always evaluate to false.',
+				27,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
 		]);
 	}
 
@@ -512,6 +521,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			[
 				'Call to function in_array() with arguments int, array{} and true will always evaluate to false.',
 				47,
+			],
+			[
+				'Call to function in_array() with arguments int, array<int, string> and true will always evaluate to false.',
+				61,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}
@@ -813,15 +827,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testLooseComparisonAgainstEnums(): void
+	/** @return list<array{0: string, 1: int, 2?: string}> */
+	private static function getLooseComparisonAgainsEnumsIssues(): array
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/loose-comparison-against-enums.php'], [
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+		return [
 			[
 				'Call to function in_array() with LooseComparisonAgainstEnums\\FooUnitEnum and array{\'A\'} will always evaluate to false.',
 				21,
@@ -910,7 +920,105 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				'Call to function in_array() with null and array{LooseComparisonAgainstEnums\FooBackedEnum} will always evaluate to false.',
 				96,
 			],
-		]);
+			[
+				'Call to function in_array() with LooseComparisonAgainstEnums\FooUnitEnum and array<string> will always evaluate to false.',
+				125,
+				$tipText,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\FooUnitEnum, array<string> and false will always evaluate to false.',
+				128,
+				$tipText,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\FooUnitEnum, array<string> and true will always evaluate to false.',
+				131,
+				$tipText,
+			],
+			[
+				'Call to function in_array() with string and array<LooseComparisonAgainstEnums\FooUnitEnum> will always evaluate to false.',
+				143,
+				$tipText,
+			],
+			[
+				'Call to function in_array() with arguments string, array<LooseComparisonAgainstEnums\FooUnitEnum> and false will always evaluate to false.',
+				146,
+				$tipText,
+			],
+			[
+				'Call to function in_array() with arguments string, array<LooseComparisonAgainstEnums\FooUnitEnum> and true will always evaluate to false.',
+				149,
+				$tipText,
+			],
+			[
+				'Call to function in_array() with LooseComparisonAgainstEnums\FooUnitEnum::B and non-empty-array<LooseComparisonAgainstEnums\FooUnitEnum::A> will always evaluate to false.',
+				159,
+				$tipText,
+			],
+			[
+				'Call to function in_array() with LooseComparisonAgainstEnums\FooUnitEnum::A and non-empty-array<LooseComparisonAgainstEnums\FooUnitEnum::A> will always evaluate to true.',
+				162,
+				$tipText,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\FooUnitEnum::A, non-empty-array<LooseComparisonAgainstEnums\FooUnitEnum::A> and false will always evaluate to true.',
+				165,
+				'BUG',
+				//$tipText,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\FooUnitEnum::A, non-empty-array<LooseComparisonAgainstEnums\FooUnitEnum::A> and true will always evaluate to true.',
+				168,
+				'BUG',
+				//$tipText,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\FooUnitEnum::B, non-empty-array<LooseComparisonAgainstEnums\FooUnitEnum::A> and false will always evaluate to false.',
+				171,
+				'BUG',
+				//$tipText,
+			],
+			[
+				'Call to function in_array() with arguments LooseComparisonAgainstEnums\FooUnitEnum::B, non-empty-array<LooseComparisonAgainstEnums\FooUnitEnum::A> and true will always evaluate to false.',
+				174,
+				'BUG',
+				//$tipText,
+			],
+		];
+	}
+
+	public function testLooseComparisonAgainstEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$issues = array_map(
+			static function (array $i): array {
+				if (($i[2] ?? null) === 'BUG') {
+					unset($i[2]);
+				}
+
+				return $i;
+			},
+			self::getLooseComparisonAgainsEnumsIssues(),
+		);
+		$this->analyse([__DIR__ . '/data/loose-comparison-against-enums.php'], $issues);
+	}
+
+	public function testLooseComparisonAgainstEnumsNoPhpdoc(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = false;
+		$issues = self::getLooseComparisonAgainsEnumsIssues();
+		$issues = array_values(array_filter($issues, static fn (array $i) => count($i) === 2));
+		$this->analyse([__DIR__ . '/data/loose-comparison-against-enums.php'], $issues);
 	}
 
 }

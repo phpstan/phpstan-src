@@ -55,6 +55,7 @@ class Foo
 		assertType('bool', in_array($i, $strings));
 		assertType('bool', in_array($i, $strings, false));
 		assertType('false', in_array($i, $strings, true));
+		assertType('false', in_array(1, $strings, true));
 	}
 
 }

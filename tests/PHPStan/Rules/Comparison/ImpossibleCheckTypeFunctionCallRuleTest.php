@@ -256,6 +256,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					889,
 					'Remove remaining cases below this one and this error will disappear too.',
 				],
+				[
+					'Call to function in_array() with arguments 1, array<string> and true will always evaluate to false.',
+					927,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				],
 			],
 		);
 	}
@@ -361,6 +366,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
 					694,
 				],
+				[
+					'Call to function in_array() with arguments 1, array<string> and true will always evaluate to false.',
+					927,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				],
 			],
 		);
 	}
@@ -394,6 +404,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			[
 				'Call to function in_array() with arguments int, array<string> and true will always evaluate to false.',
 				27,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Call to function in_array() with arguments 1, array<string> and true will always evaluate to false.',
+				30,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);

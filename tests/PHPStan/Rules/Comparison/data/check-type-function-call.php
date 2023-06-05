@@ -892,7 +892,7 @@ class ConditionalAlwaysTrue
 	}
 }
 
-class NonStrictInArray
+class InArray2
 {
     /**
      * @param non-empty-array<int> $nonEmptyInts
@@ -923,5 +923,8 @@ class NonStrictInArray
 
         if (in_array('5', $nonEmptyInts, false)) {
         }
+
+		if (in_array(1, $strings, true)) {
+		}
     }
 }

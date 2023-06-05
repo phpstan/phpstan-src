@@ -1001,6 +1001,74 @@ class UnionTypeTest extends PHPStanTestCase
 				new ClosureType([], new MixedType(), false),
 				TrinaryLogic::createYes(),
 			],
+
+		];
+
+		if (PHP_VERSION_ID >= 80100) {
+			yield [
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'B'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'C'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'D'),
+				]),
+				new ObjectType(
+					'PHPStan\Fixture\ManyCasesTestEnum',
+					new UnionType([
+						new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'E'),
+						new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'F'),
+					]),
+				),
+				TrinaryLogic::createYes(),
+			];
+
+			yield [
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'B'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'C'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'D'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'E'),
+				]),
+				new ObjectType(
+					'PHPStan\Fixture\ManyCasesTestEnum',
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'F'),
+				),
+				TrinaryLogic::createYes(),
+			];
+
+			yield [
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+				]),
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				TrinaryLogic::createYes(),
+			];
+
+			yield [
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+					new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'TWO'),
+				]),
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				TrinaryLogic::createMaybe(),
+			];
+
+			yield [
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+					new NullType(),
+				]),
+				new ObjectType(
+					'PHPStan\Fixture\TestEnum',
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+				),
+				TrinaryLogic::createYes(),
+			];
+		}
+
+		yield from [
 			'accepts template-of-union with same members' => [
 				new UnionType([
 					new IntegerType(),
@@ -1186,73 +1254,6 @@ class UnionTypeTest extends PHPStanTestCase
 				]),
 				TrinaryLogic::createYes(),
 			],
-
-		];
-
-		if (PHP_VERSION_ID < 80100) {
-			return;
-		}
-
-		yield [
-			new UnionType([
-				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
-				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'B'),
-				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'C'),
-				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'D'),
-			]),
-			new ObjectType(
-				'PHPStan\Fixture\ManyCasesTestEnum',
-				new UnionType([
-					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'E'),
-					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'F'),
-				]),
-			),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new UnionType([
-				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
-				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'B'),
-				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'C'),
-				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'D'),
-				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'E'),
-			]),
-			new ObjectType(
-				'PHPStan\Fixture\ManyCasesTestEnum',
-				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'F'),
-			),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new UnionType([
-				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
-				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
-			]),
-			new ObjectType('PHPStan\Fixture\TestEnum'),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new UnionType([
-				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
-				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'TWO'),
-			]),
-			new ObjectType('PHPStan\Fixture\TestEnum'),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new UnionType([
-				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
-				new NullType(),
-			]),
-			new ObjectType(
-				'PHPStan\Fixture\TestEnum',
-				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
-			),
-			TrinaryLogic::createYes(),
 		];
 	}
 

@@ -116,9 +116,10 @@ $csgDescribe = static function (mixed $value) use (&$csgDescribe, $csgKnown): mi
 };
 
 $csgGetters = ['getProperties', 'getMethods', 'getMethodCalls', 'getPropertyUsages', 'getConstants', 'getConstantFetches', 'getReturnStatementsNodes', 'getPropertyAssigns'];
-$csgRun = static function (string $gathererClass, \PHPStan\Reflection\ClassReflection $classReflection, array $pairs) use ($csgDescribe, $csgGetters): array {
+$csgFinder = $csgContainer->getByType(\PHPStan\PhpDoc\PhpDocPrivateClassConstFetchFinder::class);
+$csgRun = static function (string $gathererClass, \PHPStan\Reflection\ClassReflection $classReflection, array $pairs) use ($csgDescribe, $csgGetters, $csgFinder): array {
 	$forwarded = [];
-	$gatherer = new $gathererClass($classReflection, static function (\PhpParser\Node $node, \PHPStan\Analyser\Scope $scope) use (&$forwarded): void {
+	$gatherer = new $gathererClass($csgFinder, $classReflection, static function (\PhpParser\Node $node, \PHPStan\Analyser\Scope $scope) use (&$forwarded): void {
 		$forwarded[] = [spl_object_id($node), spl_object_id($scope)];
 	});
 	foreach ($pairs as [$node, $scope]) {
@@ -149,7 +150,7 @@ foreach ($csgClasses as $csgClassName => $csgClassReflection) {
 if ($csgOutside !== null) {
 	$csgThrown = [];
 	foreach (['php' => \PHPStan\Node\ClassStatementsGatherer::class, 'native' => \PHPStanTurbo\ClassStatementsGatherer::class] as $csgSide => $csgClass) {
-		$csgGatherer = new $csgClass(reset($csgClasses), static function (): void {
+		$csgGatherer = new $csgClass($csgFinder, reset($csgClasses), static function (): void {
 		});
 		try {
 			$csgGatherer($csgOutside[0], $csgOutside[1]);

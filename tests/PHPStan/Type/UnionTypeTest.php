@@ -1066,6 +1066,21 @@ class UnionTypeTest extends PHPStanTestCase
 				),
 				TrinaryLogic::createYes(),
 			];
+
+			yield [
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+					new NullType(),
+				]),
+				new UnionType([
+					new ObjectType(
+						'PHPStan\Fixture\TestEnum',
+						new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+					),
+					new NullType(),
+				]),
+				TrinaryLogic::createYes(),
+			];
 		}
 
 		yield from [

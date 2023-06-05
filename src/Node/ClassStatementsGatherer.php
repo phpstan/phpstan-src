@@ -15,6 +15,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
+use PHPStan\PhpDoc\PhpDocPrivateClassConstFetchFinder;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ThisType;
@@ -54,6 +55,7 @@ class ClassStatementsGatherer
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function __construct(
+		private PhpDocPrivateClassConstFetchFinder $phpDocPrivateClassConstFetchFinder,
 		private ClassReflection $classReflection,
 		callable $nodeCallback,
 	)
@@ -124,6 +126,11 @@ class ClassStatementsGatherer
 		if ($scope->getClassReflection()->getName() !== $this->classReflection->getName()) {
 			return;
 		}
+
+		if ($node->getDocComment() !== null) {
+			$this->gatherConstFetchesFromDocComment($node->getDocComment()->getText(), $scope);
+		}
+
 		if ($node instanceof ClassPropertyNode) {
 			$this->properties[] = $node;
 			if ($node->isPromoted()) {
@@ -232,6 +239,13 @@ class ClassStatementsGatherer
 				new PropertyFetch(new Expr\Variable('this'), new Identifier($property->getName())),
 				$scope,
 			);
+		}
+	}
+
+	private function gatherConstFetchesFromDocComment(string $phpDoc, Scope $scope): void
+	{
+		foreach ($this->phpDocPrivateClassConstFetchFinder->findClassConstFetches($phpDoc, $scope) as $constFetch) {
+			$this->constantFetches[] = $constFetch;
 		}
 	}
 

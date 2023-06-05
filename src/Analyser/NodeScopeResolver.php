@@ -105,6 +105,7 @@ use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
+use PHPStan\PhpDoc\PhpDocPrivateClassConstFetchFinder;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -204,6 +205,7 @@ class NodeScopeResolver
 		private readonly TypeSpecifier $typeSpecifier,
 		private readonly DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private readonly ReadWritePropertiesExtensionProvider $readWritePropertiesExtensionProvider,
+		private readonly PhpDocPrivateClassConstFetchFinder $phpDocPrivateClassConstFetchFinder,
 		private readonly bool $polluteScopeWithLoopInitialAssignments,
 		private readonly bool $polluteScopeWithAlwaysIterableForeach,
 		private readonly array $earlyTerminatingMethodCalls,
@@ -675,7 +677,7 @@ class NodeScopeResolver
 				throw new ShouldNotHappenException();
 			}
 
-			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
+			$classStatementsGatherer = new ClassStatementsGatherer($this->phpDocPrivateClassConstFetchFinder, $classReflection, $nodeCallback);
 			$this->processAttributeGroups($stmt->attrGroups, $classScope, $classStatementsGatherer);
 
 			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer, $context);

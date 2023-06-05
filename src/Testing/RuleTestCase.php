@@ -18,6 +18,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
+use PHPStan\PhpDoc\PhpDocPrivateClassConstFetchFinder;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
@@ -92,6 +93,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$typeSpecifier,
 				self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 				$readWritePropertiesExtensions !== [] ? new DirectReadWritePropertiesExtensionProvider($readWritePropertiesExtensions) : self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
+				self::getContainer()->getByType(PhpDocPrivateClassConstFetchFinder::class),
 				$this->shouldPolluteScopeWithLoopInitialAssignments(),
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 				[],

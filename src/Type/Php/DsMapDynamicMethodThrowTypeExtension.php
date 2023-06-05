@@ -16,7 +16,7 @@ final class DsMapDynamicMethodThrowTypeExtension implements DynamicMethodThrowTy
 	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
 		return $methodReflection->getDeclaringClass()->getName() === 'Ds\Map'
-			&& $methodReflection->getName() === 'get';
+			&& ($methodReflection->getName() === 'get' || $methodReflection->getName() === 'remove');
 	}
 
 	public function getThrowTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type|null

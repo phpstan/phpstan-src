@@ -83,7 +83,9 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		}
 
 		if ($name === '__debuginfo') {
-			$realReturnType = TypeCombinator::addNull(new ArrayType(new MixedType(true), new MixedType(true)));
+			$realReturnType = TypeCombinator::intersect(TypeCombinator::addNull(
+				new ArrayType(new MixedType(true), new MixedType(true)),
+			), $realReturnType);
 		}
 
 		if ($name === '__unserialize') {

@@ -18,6 +18,9 @@ function imageFoo(): void
 	assertType('int', $height);
 	assertType('int', $type);
 	assertType('string', $attr);
+	assertType('string', $imagesize['mime']);
+	assertType('int', $imagesize['channels']);
+	assertType('int', $imagesize['bits']);
 }
 
 function imagesizeFoo(string $s): void
@@ -32,6 +35,9 @@ function imagesizeFoo(string $s): void
 	assertType('int', $height);
 	assertType('int', $type);
 	assertType('string', $attr);
+	assertType('string', $imagesize['mime']);
+	assertType('int', $imagesize['channels']);
+	assertType('int', $imagesize['bits']);
 }
 
 

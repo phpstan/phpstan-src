@@ -67,6 +67,6 @@ function array_udiff(
 
 /**
  * @param array<array-key, mixed> $value
- * @return ($value is list ? true : false)
+ * @return ($value is __always-list ? true : false)
  */
 function array_is_list(array $value): bool {}

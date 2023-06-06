@@ -390,6 +390,11 @@ class TypeNodeResolver
 					new ArrayType(new IntegerType(), new MixedType()),
 					new NonEmptyArrayType(),
 				));
+			case '__always-list':
+				return TypeCombinator::intersect(
+					new ArrayType(new IntegerType(), new MixedType()),
+					new AccessoryArrayListType(),
+				);
 
 			case 'empty':
 				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);

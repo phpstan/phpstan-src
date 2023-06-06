@@ -202,7 +202,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9066.php'], [
 			[
 				'Dead catch - OutOfBoundsException is never thrown in the try block.',
-				19,
+				28,
 			],
 		]);
 	}

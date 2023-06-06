@@ -891,3 +891,40 @@ class ConditionalAlwaysTrue
 		}
 	}
 }
+
+class InArray2
+{
+    /**
+     * @param non-empty-array<int> $nonEmptyInts
+     * @param array<string> $strings
+     */
+    public function doFoo(int $i, string $s, array $nonEmptyInts, array $strings): void
+    {
+        if (in_array($i, $strings)) {
+        }
+
+        if (in_array($i, $strings, false)) {
+        }
+
+        if (in_array(5, $strings)) {
+        }
+
+        if (in_array(5, $strings, false)) {
+        }
+
+        if (in_array($s, $nonEmptyInts)) {
+        }
+
+        if (in_array($s, $nonEmptyInts, false)) {
+        }
+
+        if (in_array('5', $nonEmptyInts)) {
+        }
+
+        if (in_array('5', $nonEmptyInts, false)) {
+        }
+
+		if (in_array(1, $strings, true)) {
+		}
+    }
+}

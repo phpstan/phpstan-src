@@ -106,4 +106,72 @@ class InArrayTest
 		if (in_array($s, [$u])) {
 		}
 	}
+
+	/**
+	 * @param array<string> $strings
+	 * @param array<FooUnitEnum> $unitEnums
+	 */
+	public function dynamicValues(FooUnitEnum $u, string $s, array $strings, array $unitEnums): void
+	{
+		if (in_array($u, $unitEnums)) {
+		}
+
+		if (in_array($u, $unitEnums, false)) {
+		}
+
+		if (in_array($u, $unitEnums, true)) {
+		}
+
+		if (in_array($u, $strings)) {
+		}
+
+		if (in_array($u, $strings, false)) {
+		}
+
+		if (in_array($u, $strings, true)) {
+		}
+
+		if (in_array($s, $strings)) {
+		}
+
+		if (in_array($s, $strings, false)) {
+		}
+
+		if (in_array($s, $strings, true)) {
+		}
+
+		if (in_array($s, $unitEnums)) {
+		}
+
+		if (in_array($s, $unitEnums, false)) {
+		}
+
+		if (in_array($s, $unitEnums, true)) {
+		}
+	}
+
+    /**
+     * @param non-empty-array<FooUnitEnum::A> $nonEmptyA
+     * @return void
+     */
+    public function nonEmptyArray(array $nonEmptyA): void
+    {
+        if (in_array(FooUnitEnum::B, $nonEmptyA)) {
+        }
+
+        if (in_array(FooUnitEnum::A, $nonEmptyA)) {
+        }
+
+        if (in_array(FooUnitEnum::A, $nonEmptyA, false)) {
+        }
+
+        if (in_array(FooUnitEnum::A, $nonEmptyA, true)) {
+        }
+
+        if (in_array(FooUnitEnum::B, $nonEmptyA, false)) {
+        }
+
+        if (in_array(FooUnitEnum::B, $nonEmptyA, true)) {
+        }
+    }
 }

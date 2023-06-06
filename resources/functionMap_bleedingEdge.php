@@ -107,6 +107,8 @@ return [
 		'ImagickKernel::scale' => ['void', 'scale'=>'float', 'normalizeFlag'=>'Imagick::NORMALIZE_KERNEL_*'],
 		'max' => ['', '...arg1'=>'non-empty-array'],
 		'min' => ['', '...arg1'=>'non-empty-array'],
+		'getimagesize' => ['array{0:int, 1: int, 2: int, 3: string, mime: string, channels?: int, bits?: int}|false', 'imagefile'=>'string', '&w_info='=>'array'],
+		'getimagesizefromstring' => ['array{0:int, 1: int, 2: int, 3: string, mime: string, channels?: int, bits?: int}|false', 'data'=>'string', '&w_info='=>'array'],
 	],
 	'old' => [
 

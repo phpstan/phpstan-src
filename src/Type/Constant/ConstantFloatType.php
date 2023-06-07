@@ -15,9 +15,9 @@ use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function abs;
+use function ini_get;
+use function ini_set;
 use function is_finite;
-use function rtrim;
-use function sprintf;
 use function strpos;
 use const PHP_FLOAT_EPSILON;
 
@@ -45,18 +45,27 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 		return $type instanceof self && abs($this->value - $type->value) < PHP_FLOAT_EPSILON;
 	}
 
+	private function castFloatToString(float $value): string
+	{
+		$precisionBackup = ini_get('precision');
+		ini_set('precision', '-1');
+		try {
+			$valueStr = (string) $value;
+			if (is_finite($value) && strpos($valueStr, '.') === false) {
+				$valueStr .= '.0';
+			}
+
+			return $valueStr;
+		} finally {
+			ini_set('precision', $precisionBackup);
+		}
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
 			static fn (): string => 'float',
-			function (): string {
-				$formatted = (string) $this->value;
-				if (is_finite($this->value) && strpos($formatted, '.') === false) {
-					$formatted .= '.0';
-				}
-
-				return $formatted;
-			},
+			fn (): string => $this->castFloatToString($this->value),
 		);
 	}
 
@@ -110,7 +119,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	 */
 	public function toPhpDocNode(): TypeNode
 	{
-		return new ConstTypeNode(new ConstExprFloatNode(rtrim(rtrim(sprintf('%.20f', $this->value), '0'), '.')));
+		return new ConstTypeNode(new ConstExprFloatNode($this->castFloatToString($this->value)));
 	}
 
 	/**

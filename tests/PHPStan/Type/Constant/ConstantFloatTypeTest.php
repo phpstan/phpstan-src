@@ -24,6 +24,14 @@ class ConstantFloatTypeTest extends PHPStanTestCase
 				'1.2000000992884E-10',
 			],
 			[
+				new ConstantFloatType(-1.200000099288476E+10),
+				'-12000000992.88476',
+			],
+			[
+				new ConstantFloatType(-1.200000099288476E+20),
+				'-1.200000099288476E+20',
+			],
+			[
 				new ConstantFloatType(1.2 * 1.4),
 				'1.68',
 			],

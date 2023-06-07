@@ -11,8 +11,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\ObjectType;
 use function array_map;
 use function count;
 use function sprintf;
@@ -42,7 +40,6 @@ class UnusedPrivateMethodRule implements Rule
 		if ($classReflection->hasConstructor()) {
 			$constructor = $classReflection->getConstructor();
 		}
-		$classType = new ObjectType($classReflection->getName());
 
 		$methods = [];
 		foreach ($node->getMethods() as $method) {
@@ -90,18 +87,20 @@ class UnusedPrivateMethodRule implements Rule
 				}
 				$calledOnType = $scope->resolveTypeByName($methodCallNode->class);
 			}
-			if ($classType->isSuperTypeOf($calledOnType)->no()) {
-				continue;
-			}
-			if ($calledOnType instanceof MixedType) {
-				continue;
-			}
+
 			$inMethod = $callScope->getFunction();
 			if (!$inMethod instanceof MethodReflection) {
 				continue;
 			}
 
 			foreach ($methodNames as $methodName) {
+				$methodReflection = $callScope->getMethodReflection($calledOnType, $methodName);
+				if ($methodReflection === null) {
+					continue;
+				}
+				if ($methodReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
+					continue;
+				}
 				if ($inMethod->getName() === $methodName) {
 					continue;
 				}
@@ -126,13 +125,17 @@ class UnusedPrivateMethodRule implements Rule
 						if (!$typeAndMethod->getCertainty()->yes()) {
 							return [];
 						}
+
 						$calledOnType = $typeAndMethod->getType();
-						if ($classType->isSuperTypeOf($calledOnType)->no()) {
+						$methodReflection = $arrayScope->getMethodReflection($calledOnType, $typeAndMethod->getMethod());
+						if ($methodReflection === null) {
 							continue;
 						}
-						if ($calledOnType instanceof MixedType) {
+
+						if ($methodReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
 							continue;
 						}
+
 						$inMethod = $arrayScope->getFunction();
 						if (!$inMethod instanceof MethodReflection) {
 							continue;

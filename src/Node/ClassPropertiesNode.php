@@ -14,12 +14,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\Method\MethodCall;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\ObjectType;
 use function array_key_exists;
 use function array_keys;
 use function count;
@@ -133,8 +132,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		if ($constructors === []) {
 			return [$properties, [], []];
 		}
-		$classType = new ObjectType($scope->getClassReflection()->getName());
-		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classType, $this->methodCalls, $constructors);
+		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classReflection, $this->methodCalls, $constructors);
 		$prematureAccess = [];
 		$additionalAssigns = [];
 		$originalProperties = $properties;
@@ -163,10 +161,12 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 			$propertyName = $fetch->name->toString();
 			$fetchedOnType = $usageScope->getType($fetch->var);
-			if ($classType->isSuperTypeOf($fetchedOnType)->no()) {
+
+			$propertyReflection = $usageScope->getPropertyReflection($fetchedOnType, $propertyName);
+			if ($propertyReflection === null) {
 				continue;
 			}
-			if ($fetchedOnType instanceof MixedType) {
+			if ($propertyReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
 				continue;
 			}
 
@@ -202,7 +202,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	 * @return string[]
 	 */
 	private function getMethodsCalledFromConstructor(
-		ObjectType $classType,
+		ClassReflection $classReflection,
 		array $methodCalls,
 		array $methods,
 	): array
@@ -226,14 +226,16 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 
 				$calledOnType = $callScope->resolveTypeByName($methodCallNode->class);
 			}
-			if ($classType->isSuperTypeOf($calledOnType)->no()) {
-				continue;
-			}
-			if ($calledOnType instanceof MixedType) {
-				continue;
-			}
+
 			$methodName = $methodCallNode->name->toString();
 			if (in_array($methodName, $methods, true)) {
+				continue;
+			}
+			$methodReflection = $callScope->getMethodReflection($calledOnType, $methodName);
+			if ($methodReflection === null) {
+				continue;
+			}
+			if ($methodReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
 				continue;
 			}
 			$inMethod = $callScope->getFunction();
@@ -250,7 +252,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			return $methods;
 		}
 
-		return $this->getMethodsCalledFromConstructor($classType, $methodCalls, $methods);
+		return $this->getMethodsCalledFromConstructor($classReflection, $methodCalls, $methods);
 	}
 
 }

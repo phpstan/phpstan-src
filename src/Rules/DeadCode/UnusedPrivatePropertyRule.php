@@ -11,8 +11,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\ObjectType;
 use function array_key_exists;
 use function array_map;
 use function count;
@@ -52,8 +50,6 @@ class UnusedPrivatePropertyRule implements Rule
 			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
-		$classType = new ObjectType($classReflection->getName());
-
 		$properties = [];
 		foreach ($node->getProperties() as $property) {
 			if (!$property->isPrivate()) {
@@ -141,17 +137,18 @@ class UnusedPrivatePropertyRule implements Rule
 				$fetchedOnType = $usage->getScope()->resolveTypeByName($fetch->class);
 			}
 
-			if ($classType->isSuperTypeOf($fetchedOnType)->no()) {
-				continue;
-			}
-			if ($fetchedOnType instanceof MixedType) {
-				continue;
-			}
-
 			foreach ($propertyNames as $propertyName) {
 				if (!array_key_exists($propertyName, $properties)) {
 					continue;
 				}
+				$propertyReflection = $usage->getScope()->getPropertyReflection($fetchedOnType, $propertyName);
+				if ($propertyReflection === null) {
+					continue;
+				}
+				if ($propertyReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
+					continue;
+				}
+
 				if ($usage instanceof PropertyRead) {
 					$properties[$propertyName]['read'] = true;
 				} else {

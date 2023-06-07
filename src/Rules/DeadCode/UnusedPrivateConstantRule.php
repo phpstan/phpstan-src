@@ -9,7 +9,6 @@ use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\TrinaryLogic;
 use function sprintf;
 
 /**
@@ -64,21 +63,20 @@ class UnusedPrivateConstantRule implements Rule
 				continue;
 			}
 
+			$fetchScope = $fetch->getScope();
 			if ($fetchNode->class instanceof Node\Name) {
-				$fetchScope = $fetch->getScope();
-				$fetchedOnClass = $fetchScope->resolveName($fetchNode->class);
-				if ($fetchedOnClass !== $classReflection->getName()) {
-					continue;
-				}
+				$fetchedOnClass = $fetchScope->resolveTypeByName($fetchNode->class);
 			} else {
-				$classExprType = $fetch->getScope()->getType($fetchNode->class);
-				$isDifferentClass = TrinaryLogic::createNo()->lazyOr(
-					$classExprType->getObjectClassNames(),
-					static fn (string $objectClassName) => TrinaryLogic::createFromBoolean($objectClassName !== $classReflection->getName()),
-				);
-				if ($isDifferentClass->yes()) {
-					continue;
-				}
+				$fetchedOnClass = $fetchScope->getType($fetchNode->class);
+			}
+
+			$constantReflection = $fetchScope->getConstantReflection($fetchedOnClass, $fetchNode->name->toString());
+			if ($constantReflection === null) {
+				continue;
+			}
+
+			if ($constantReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
+				continue;
 			}
 
 			unset($constants[$fetchNode->name->toString()]);

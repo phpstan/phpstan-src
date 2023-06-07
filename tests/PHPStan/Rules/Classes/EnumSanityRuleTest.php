@@ -19,8 +19,8 @@ class EnumSanityRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
 		}
 
 		$expected = [
@@ -100,22 +100,19 @@ class EnumSanityRuleTest extends RuleTestCase
 				'Enum EnumSanity\EnumWithValueButNotBacked is not backed, but case FOO has value 1.',
 				114,
 			],
-		];
-
-		if (PHP_VERSION_ID >= 80100) {
-			$expected[] = [
+			[
 				'Enum EnumSanity\EnumMayNotSerializable cannot implement the Serializable interface.',
 				117,
-			];
-		}
+			],
+		];
 
 		$this->analyse([__DIR__ . '/data/enum-sanity.php'], $expected);
 	}
 
 	public function testBug9402(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-9402.php'], [

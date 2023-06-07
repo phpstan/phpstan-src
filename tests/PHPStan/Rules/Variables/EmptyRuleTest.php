@@ -96,14 +96,6 @@ class EmptyRuleTest extends RuleTestCase
 				'Variable $a in empty() always exists and is always falsy.',
 				12,
 			],
-			[
-				'Variable $a in empty() always exists and is always falsy.',
-				21,
-			],
-			[
-				'Variable $a in empty() always exists and is always falsy.',
-				30,
-			],
 		]);
 	}
 
@@ -219,6 +211,23 @@ class EmptyRuleTest extends RuleTestCase
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 
 		$this->analyse([__DIR__ . '/data/bug-9126.php'], []);
+	}
+
+	public function dataBug9403(): iterable
+	{
+		yield [true];
+		yield [false];
+	}
+
+	/**
+	 * @dataProvider dataBug9403
+	 */
+	public function testBug9403(bool $treatPhpDocTypesAsCertain): void
+	{
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
+
+		$this->analyse([__DIR__ . '/data/bug-9403.php'], []);
 	}
 
 }

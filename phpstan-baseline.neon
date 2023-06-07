@@ -52,6 +52,14 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			message: """
+				#^Call to deprecated method doNotTreatPhpDocTypesAsCertain\\(\\) of class PHPStan\\\\Analyser\\\\MutatingScope\\:
+				Use getNativeType\\(\\)$#
+			"""
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 3
 			path: src/Analyser/NodeScopeResolver.php

@@ -725,14 +725,7 @@ class MutatingScope implements Scope
 				}
 
 				if ($isNull->yes()) {
-					if ($isFalsey->yes()) {
-						return false;
-					}
-					if ($isFalsey->no()) {
-						return true;
-					}
-
-					return false;
+					return $isFalsey->no();
 				}
 
 				return !$isFalsey->yes();

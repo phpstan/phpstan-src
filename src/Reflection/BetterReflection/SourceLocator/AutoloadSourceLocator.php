@@ -131,7 +131,13 @@ class AutoloadSourceLocator implements SourceLocator
 				$startLine = $this->startLineByClass[$loweredClassName];
 			} else {
 				$reflection = $this->getReflectionClass($identifier->getName());
-				if ($reflection !== null && $reflection->getStartLine() !== false) {
+				if (
+					$reflection !== null
+					&& $reflection->getStartLine() !== false
+					&& is_string($reflection->getFileName())
+					&& is_file($reflection->getFileName())
+					&& $reflection->getFileName() === $this->presentSymbols['classes'][$loweredClassName]
+				) {
 					$startLine = $reflection->getStartLine();
 				}
 			}
@@ -283,18 +289,7 @@ class AutoloadSourceLocator implements SourceLocator
 	private function getReflectionClass(string $className): ?ReflectionClass
 	{
 		if (class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false)) {
-			$reflection = new ReflectionClass($className);
-			$filename = $reflection->getFileName();
-
-			if (!is_string($filename)) {
-				return null;
-			}
-
-			if (!is_file($filename)) {
-				return null;
-			}
-
-			return $reflection;
+			return new ReflectionClass($className);
 		}
 
 		return null;
@@ -321,6 +316,9 @@ class AutoloadSourceLocator implements SourceLocator
 		if ($reflection !== null) {
 			$filename = $reflection->getFileName();
 			if (!is_string($filename)) {
+				return null;
+			}
+			if (!is_file($filename)) {
 				return null;
 			}
 

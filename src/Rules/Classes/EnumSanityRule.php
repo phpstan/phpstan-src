@@ -4,10 +4,9 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\VerbosityLevel;
@@ -18,7 +17,7 @@ use function implode;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Stmt\Enum_>
+ * @implements Rule<InClassNode>
  */
 class EnumSanityRule implements Rule
 {
@@ -29,33 +28,28 @@ class EnumSanityRule implements Rule
 		'__invoke' => true,
 	];
 
-	public function __construct(
-		private ReflectionProvider $reflectionProvider,
-	)
-	{
-	}
-
 	public function getNodeType(): string
 	{
-		return Node\Stmt\Enum_::class;
+		return InClassNode::class;
 	}
 
-	/**
-	 * @param Node\Stmt\Enum_ $node
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$errors = [];
-
-		if ($node->namespacedName === null) {
-			throw new ShouldNotHappenException();
+		$classReflection = $node->getClassReflection();
+		if (!$classReflection->isEnum()) {
+			return [];
 		}
 
-		foreach ($node->getMethods() as $methodNode) {
+		/** @var Node\Stmt\Enum_ $enumNode */
+		$enumNode = $node->getOriginalNode();
+
+		$errors = [];
+
+		foreach ($enumNode->getMethods() as $methodNode) {
 			if ($methodNode->isAbstract()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Enum %s contains abstract method %s().',
-					$node->namespacedName->toString(),
+					$classReflection->getDisplayName(),
 					$methodNode->name->name,
 				))
 					->identifier('enum.abstractMethod')
@@ -70,7 +64,7 @@ class EnumSanityRule implements Rule
 				if ($lowercasedMethodName === '__construct') {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s contains constructor.',
-						$node->namespacedName->toString(),
+						$classReflection->getDisplayName(),
 					))
 						->identifier('enum.constructor')
 						->line($methodNode->getLine())
@@ -79,7 +73,7 @@ class EnumSanityRule implements Rule
 				} elseif ($lowercasedMethodName === '__destruct') {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s contains destructor.',
-						$node->namespacedName->toString(),
+						$classReflection->getDisplayName(),
 					))
 						->identifier('enum.destructor')
 						->line($methodNode->getLine())
@@ -88,7 +82,7 @@ class EnumSanityRule implements Rule
 				} elseif (!array_key_exists($lowercasedMethodName, self::ALLOWED_MAGIC_METHODS)) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s contains magic method %s().',
-						$node->namespacedName->toString(),
+						$classReflection->getDisplayName(),
 						$methodNode->name->name,
 					))
 						->identifier('enum.magicMethod')
@@ -101,7 +95,7 @@ class EnumSanityRule implements Rule
 			if ($lowercasedMethodName === 'cases') {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Enum %s cannot redeclare native method %s().',
-					$node->namespacedName->toString(),
+					$classReflection->getDisplayName(),
 					$methodNode->name->name,
 				))
 					->identifier('enum.methodRedeclaration')
@@ -110,7 +104,7 @@ class EnumSanityRule implements Rule
 					->build();
 			}
 
-			if ($node->scalarType === null) {
+			if ($enumNode->scalarType === null) {
 				continue;
 			}
 
@@ -120,7 +114,7 @@ class EnumSanityRule implements Rule
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Enum %s cannot redeclare native method %s().',
-				$node->namespacedName->toString(),
+				$classReflection->getDisplayName(),
 				$methodNode->name->name,
 			))
 				->identifier('enum.methodRedeclaration')
@@ -130,47 +124,43 @@ class EnumSanityRule implements Rule
 		}
 
 		if (
-			$node->scalarType !== null
-			&& $node->scalarType->name !== 'int'
-			&& $node->scalarType->name !== 'string'
+			$enumNode->scalarType !== null
+			&& $enumNode->scalarType->name !== 'int'
+			&& $enumNode->scalarType->name !== 'string'
 		) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Backed enum %s can have only "int" or "string" type.',
-				$node->namespacedName->toString(),
+				$classReflection->getDisplayName(),
 			))
 				->identifier('enum.backingType')
-				->line($node->scalarType->getLine())
+				->line($enumNode->scalarType->getLine())
 				->nonIgnorable()
 				->build();
 		}
 
-		if ($this->reflectionProvider->hasClass($node->namespacedName->toString())) {
-			$classReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());
-
-			if ($classReflection->implementsInterface(Serializable::class)) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum %s cannot implement the Serializable interface.',
-					$node->namespacedName->toString(),
-				))
-					->identifier('enum.serializable')
-					->line($node->getLine())
-					->nonIgnorable()
-					->build();
-			}
+		if ($classReflection->implementsInterface(Serializable::class)) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Enum %s cannot implement the Serializable interface.',
+				$classReflection->getDisplayName(),
+			))
+				->identifier('enum.serializable')
+				->line($enumNode->getLine())
+				->nonIgnorable()
+				->build();
 		}
 
 		$enumCases = [];
-		foreach ($node->stmts as $stmt) {
+		foreach ($enumNode->stmts as $stmt) {
 			if (!$stmt instanceof Node\Stmt\EnumCase) {
 				continue;
 			}
 			$caseName = $stmt->name->name;
 
 			if (($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_)) {
-				if ($node->scalarType === null) {
+				if ($enumNode->scalarType === null) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s is not backed, but case %s has value %s.',
-						$node->namespacedName->toString(),
+						$classReflection->getDisplayName(),
 						$caseName,
 						$stmt->expr->value,
 					))
@@ -189,16 +179,16 @@ class EnumSanityRule implements Rule
 				}
 			}
 
-			if ($node->scalarType === null) {
+			if ($enumNode->scalarType === null) {
 				continue;
 			}
 
 			if ($stmt->expr === null) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Enum case %s::%s does not have a value but the enum is backed with the "%s" type.',
-					$node->namespacedName->toString(),
+					$classReflection->getDisplayName(),
 					$caseName,
-					$node->scalarType->name,
+					$enumNode->scalarType->name,
 				))
 					->identifier('enum.missingCase')
 					->line($stmt->getLine())
@@ -208,14 +198,14 @@ class EnumSanityRule implements Rule
 			}
 
 			$exprType = $scope->getType($stmt->expr);
-			$scalarType = $node->scalarType->toLowerString() === 'int' ? new IntegerType() : new StringType();
+			$scalarType = $enumNode->scalarType->toLowerString() === 'int' ? new IntegerType() : new StringType();
 			if ($scalarType->isSuperTypeOf($exprType)->yes()) {
 				continue;
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Enum case %s::%s value %s does not match the "%s" type.',
-				$node->namespacedName->toString(),
+				$classReflection->getDisplayName(),
 				$caseName,
 				$exprType->describe(VerbosityLevel::value()),
 				$scalarType->describe(VerbosityLevel::typeOnly()),
@@ -233,12 +223,12 @@ class EnumSanityRule implements Rule
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Enum %s has duplicate value %s for cases %s.',
-				$node->namespacedName->toString(),
+				$classReflection->getDisplayName(),
 				$caseValue,
 				implode(', ', $caseNames),
 			))
 				->identifier('enum.duplicateValue')
-				->line($node->getLine())
+				->line($enumNode->getLine())
 				->nonIgnorable()
 				->build();
 		}

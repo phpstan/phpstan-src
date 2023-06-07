@@ -153,6 +153,8 @@ jobs:
       - name: "Evaluate results - pull request"
         working-directory: "issue-bot"
         if: github.event_name == 'pull_request'
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: echo "$(./console.php evaluate)" >> $GITHUB_STEP_SUMMARY
 
       - name: "Evaluate results - push"

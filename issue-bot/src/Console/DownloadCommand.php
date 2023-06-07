@@ -6,16 +6,13 @@ use DateTimeImmutable;
 use Exception;
 use Github\Client;
 use Nette\Utils\Json;
-use Nette\Utils\Strings;
 use PHPStan\IssueBot\Comment\BotComment;
-use PHPStan\IssueBot\Comment\BotCommentParser;
-use PHPStan\IssueBot\Comment\BotCommentParserException;
 use PHPStan\IssueBot\Comment\Comment;
+use PHPStan\IssueBot\Comment\IssueCommentDownloader;
 use PHPStan\IssueBot\Issue\Issue;
 use PHPStan\IssueBot\Issue\IssueCache;
 use PHPStan\IssueBot\Playground\PlaygroundCache;
 use PHPStan\IssueBot\Playground\PlaygroundClient;
-use PHPStan\IssueBot\Playground\PlaygroundExample;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -38,8 +35,8 @@ class DownloadCommand extends Command
 
 	public function __construct(
 		private Client $githubClient,
-		private BotCommentParser $botCommentParser,
 		private PlaygroundClient $playgroundClient,
+		private IssueCommentDownloader $issueCommentDownloader,
 		private string $issueCachePath,
 		private string $playgroundCachePath,
 	)
@@ -185,28 +182,13 @@ class DownloadCommand extends Command
 				continue;
 			}
 			$comments = [];
-			$issueExamples = $this->searchBody($issue['body'], $issue['user']['login']);
+			$issueExamples = $this->issueCommentDownloader->searchBody($issue['body']);
 			if (count($issueExamples) > 0) {
 				$comments[] = new Comment($issue['user']['login'], $issue['body'], $issueExamples);
 			}
 
-			foreach ($this->getComments($issue['number']) as $issueComment) {
-				$commentExamples = $this->searchBody($issueComment['body'], $issueComment['user']['login']);
-				if (count($commentExamples) === 0) {
-					continue;
-				}
-
-				if ($issueComment['user']['login'] === 'phpstan-bot') {
-					$parserResult = $this->botCommentParser->parse($issueComment['body']);
-					if (count($commentExamples) !== 1 || $commentExamples[0]->getHash() !== $parserResult->getHash()) {
-						throw new BotCommentParserException();
-					}
-
-					$comments[] = new BotComment($issueComment['body'], $commentExamples[0], $parserResult->getDiff());
-					continue;
-				}
-
-				$comments[] = new Comment($issueComment['user']['login'], $issueComment['body'], $commentExamples);
+			foreach ($this->issueCommentDownloader->getComments($issue['number']) as $issueComment) {
+				$comments[] = $issueComment;
 			}
 
 			$issueObjects[(int) $issue['number']] = new Issue(
@@ -262,48 +244,6 @@ class DownloadCommand extends Command
 		if ($result === false) {
 			throw new Exception('Write unsuccessful');
 		}
-	}
-
-	/**
-	 * @return list<PlaygroundExample>
-	 */
-	private function searchBody(string $text, string $user): array
-	{
-		$matches = Strings::matchAll($text, '/https:\/\/phpstan\.org\/r\/([0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12})/i');
-
-		$examples = [];
-
-		foreach ($matches as [$url, $hash]) {
-			$examples[] = new PlaygroundExample($url, $hash);
-		}
-
-		return $examples;
-	}
-
-	/**
-	 * @return mixed[]
-	 */
-	private function getComments(int $issueNumber): array
-	{
-		$page = 1;
-
-		/** @var \Github\Api\Issue $api */
-		$api = $this->githubClient->api('issue');
-
-		$comments = [];
-		while (true) {
-			$newComments = $api->comments()->all('phpstan', 'phpstan', $issueNumber, [
-				'page' => $page,
-				'per_page' => 100,
-			]);
-			$comments = array_merge($comments, $newComments);
-			if (count($newComments) < 100) {
-				break;
-			}
-			$page++;
-		}
-
-		return $comments;
 	}
 
 }

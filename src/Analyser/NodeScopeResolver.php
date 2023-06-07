@@ -1294,17 +1294,16 @@ class NodeScopeResolver
 				// explicit only
 				if (count($matchingThrowPoints) === 0) {
 					foreach ($throwPoints as $throwPointIndex => $throwPoint) {
-						if (!$throwPoint->isExplicit()) {
-							continue;
-						}
-
 						foreach ($catchTypes as $catchTypeIndex => $catchTypeItem) {
 							if ($catchTypeItem->isSuperTypeOf($throwPoint->getType())->no()) {
 								continue;
 							}
 
-							$matchingThrowPoints[$throwPointIndex] = $throwPoint;
 							$matchingCatchTypes[$catchTypeIndex] = true;
+							if (!$throwPoint->isExplicit()) {
+								continue;
+							}
+							$matchingThrowPoints[$throwPointIndex] = $throwPoint;
 						}
 					}
 				}
@@ -1322,7 +1321,6 @@ class NodeScopeResolver
 							}
 
 							$matchingThrowPoints[$throwPointIndex] = $throwPoint;
-							$matchingCatchTypes[$catchTypeIndex] = true;
 						}
 					}
 				}

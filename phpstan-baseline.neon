@@ -434,11 +434,6 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
-			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Identifier\\\\Exception\\\\InvalidIdentifierName is never thrown in the try block\\.$#"
-			count: 1
-			path: src/Reflection/SignatureMap/NativeFunctionReflectionProvider.php
-
-		-
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"
 			count: 1
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
@@ -1786,11 +1781,6 @@ parameters:
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"
 			count: 1
 			path: tests/PHPStan/Reflection/SignatureMap/Php8SignatureMapProviderTest.php
-
-		-
-			message: "#^Dead catch \\- OutOfBoundsException is never thrown in the try block\\.$#"
-			count: 1
-			path: tests/PHPStan/Reflection/SignatureMap/SignatureMapParserTest.php
 
 		-
 			message: """

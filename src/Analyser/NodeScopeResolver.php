@@ -1978,99 +1978,11 @@ class NodeScopeResolver
 				&& in_array($functionReflection->getName(), ['array_push', 'array_unshift'], true)
 				&& count($expr->getArgs()) >= 2
 			) {
+				$arrayType = $this->getArrayFunctionAppendingType($functionReflection, $scope, $expr);
+				$arrayNativeType = $this->getArrayFunctionAppendingType($functionReflection, $scope->doNotTreatPhpDocTypesAsCertain(), $expr);
+
 				$arrayArg = $expr->getArgs()[0]->value;
-				$arrayType = $scope->getType($arrayArg);
-				$callArgs = array_slice($expr->getArgs(), 1);
-
-				/**
-				 * @param Arg[] $callArgs
-				 * @param callable(?Type, Type, bool): void $setOffsetValueType
-				 */
-				$setOffsetValueTypes = static function (Scope $scope, array $callArgs, callable $setOffsetValueType, ?bool &$nonConstantArrayWasUnpacked = null): void {
-					foreach ($callArgs as $callArg) {
-						$callArgType = $scope->getType($callArg->value);
-						if ($callArg->unpack) {
-							if (count($callArgType->getConstantArrays()) === 1) {
-								$iterableValueTypes = $callArgType->getConstantArrays()[0]->getValueTypes();
-							} else {
-								$iterableValueTypes = [$callArgType->getIterableValueType()];
-								$nonConstantArrayWasUnpacked = true;
-							}
-
-							$isOptional = !$callArgType->isIterableAtLeastOnce()->yes();
-							foreach ($iterableValueTypes as $iterableValueType) {
-								if ($iterableValueType instanceof UnionType) {
-									foreach ($iterableValueType->getTypes() as $innerType) {
-										$setOffsetValueType(null, $innerType, $isOptional);
-									}
-								} else {
-									$setOffsetValueType(null, $iterableValueType, $isOptional);
-								}
-							}
-							continue;
-						}
-						$setOffsetValueType(null, $callArgType, false);
-					}
-				};
-
-				$constantArrays = $arrayType->getConstantArrays();
-				if (count($constantArrays) > 0) {
-					$newArrayTypes = [];
-					$prepend = $functionReflection->getName() === 'array_unshift';
-					foreach ($constantArrays as $constantArray) {
-						$arrayTypeBuilder = $prepend ? ConstantArrayTypeBuilder::createEmpty() : ConstantArrayTypeBuilder::createFromConstantArray($constantArray);
-
-						$setOffsetValueTypes(
-							$scope,
-							$callArgs,
-							static function (?Type $offsetType, Type $valueType, bool $optional) use (&$arrayTypeBuilder): void {
-								$arrayTypeBuilder->setOffsetValueType($offsetType, $valueType, $optional);
-							},
-							$nonConstantArrayWasUnpacked,
-						);
-
-						if ($prepend) {
-							$keyTypes = $constantArray->getKeyTypes();
-							$valueTypes = $constantArray->getValueTypes();
-							foreach ($keyTypes as $k => $keyType) {
-								$arrayTypeBuilder->setOffsetValueType(
-									count($keyType->getConstantStrings()) === 1 ? $keyType->getConstantStrings()[0] : null,
-									$valueTypes[$k],
-									$constantArray->isOptionalKey($k),
-								);
-							}
-						}
-
-						$constantArray = $arrayTypeBuilder->getArray();
-
-						if ($constantArray->isConstantArray()->yes() && $nonConstantArrayWasUnpacked) {
-							$array = new ArrayType($constantArray->generalize(GeneralizePrecision::lessSpecific())->getIterableKeyType(), $constantArray->getIterableValueType());
-							$constantArray = $constantArray->isIterableAtLeastOnce()->yes()
-								? TypeCombinator::intersect($array, new NonEmptyArrayType())
-								: $array;
-						}
-
-						$newArrayTypes[] = $constantArray;
-					}
-
-					$arrayType = TypeCombinator::union(...$newArrayTypes);
-				} else {
-					$setOffsetValueTypes(
-						$scope,
-						$callArgs,
-						static function (?Type $offsetType, Type $valueType, bool $optional) use (&$arrayType): void {
-							$isIterableAtLeastOnce = $arrayType->isIterableAtLeastOnce()->yes() || !$optional;
-							$arrayType = $arrayType->setOffsetValueType($offsetType, $valueType);
-							if ($isIterableAtLeastOnce) {
-								return;
-							}
-
-							$arrayType = new ArrayType($arrayType->getIterableKeyType(), $arrayType->getIterableValueType());
-						},
-					);
-				}
-
-				$scope = $scope->invalidateExpression($arrayArg)->assignExpression($arrayArg, $arrayType, $scope->getNativeType($arrayArg));
+				$scope = $scope->invalidateExpression($arrayArg)->assignExpression($arrayArg, $arrayType, $arrayNativeType);
 			}
 
 			if (
@@ -2925,6 +2837,103 @@ class NodeScopeResolver
 			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	private function getArrayFunctionAppendingType(FunctionReflection $functionReflection, Scope $scope, FuncCall $expr): Type
+	{
+		$arrayArg = $expr->getArgs()[0]->value;
+		$arrayType = $scope->getType($arrayArg);
+		$callArgs = array_slice($expr->getArgs(), 1);
+
+		/**
+		 * @param Arg[] $callArgs
+		 * @param callable(?Type, Type, bool): void $setOffsetValueType
+		 */
+		$setOffsetValueTypes = static function (Scope $scope, array $callArgs, callable $setOffsetValueType, ?bool &$nonConstantArrayWasUnpacked = null): void {
+			foreach ($callArgs as $callArg) {
+				$callArgType = $scope->getType($callArg->value);
+				if ($callArg->unpack) {
+					if (count($callArgType->getConstantArrays()) === 1) {
+						$iterableValueTypes = $callArgType->getConstantArrays()[0]->getValueTypes();
+					} else {
+						$iterableValueTypes = [$callArgType->getIterableValueType()];
+						$nonConstantArrayWasUnpacked = true;
+					}
+
+					$isOptional = !$callArgType->isIterableAtLeastOnce()->yes();
+					foreach ($iterableValueTypes as $iterableValueType) {
+						if ($iterableValueType instanceof UnionType) {
+							foreach ($iterableValueType->getTypes() as $innerType) {
+								$setOffsetValueType(null, $innerType, $isOptional);
+							}
+						} else {
+							$setOffsetValueType(null, $iterableValueType, $isOptional);
+						}
+					}
+					continue;
+				}
+				$setOffsetValueType(null, $callArgType, false);
+			}
+		};
+
+		$constantArrays = $arrayType->getConstantArrays();
+		if (count($constantArrays) > 0) {
+			$newArrayTypes = [];
+			$prepend = $functionReflection->getName() === 'array_unshift';
+			foreach ($constantArrays as $constantArray) {
+				$arrayTypeBuilder = $prepend ? ConstantArrayTypeBuilder::createEmpty() : ConstantArrayTypeBuilder::createFromConstantArray($constantArray);
+
+				$setOffsetValueTypes(
+					$scope,
+					$callArgs,
+					static function (?Type $offsetType, Type $valueType, bool $optional) use (&$arrayTypeBuilder): void {
+						$arrayTypeBuilder->setOffsetValueType($offsetType, $valueType, $optional);
+					},
+					$nonConstantArrayWasUnpacked,
+				);
+
+				if ($prepend) {
+					$keyTypes = $constantArray->getKeyTypes();
+					$valueTypes = $constantArray->getValueTypes();
+					foreach ($keyTypes as $k => $keyType) {
+						$arrayTypeBuilder->setOffsetValueType(
+							count($keyType->getConstantStrings()) === 1 ? $keyType->getConstantStrings()[0] : null,
+							$valueTypes[$k],
+							$constantArray->isOptionalKey($k),
+						);
+					}
+				}
+
+				$constantArray = $arrayTypeBuilder->getArray();
+
+				if ($constantArray->isConstantArray()->yes() && $nonConstantArrayWasUnpacked) {
+					$array = new ArrayType($constantArray->generalize(GeneralizePrecision::lessSpecific())->getIterableKeyType(), $constantArray->getIterableValueType());
+					$constantArray = $constantArray->isIterableAtLeastOnce()->yes()
+						? TypeCombinator::intersect($array, new NonEmptyArrayType())
+						: $array;
+				}
+
+				$newArrayTypes[] = $constantArray;
+			}
+
+			return TypeCombinator::union(...$newArrayTypes);
+		}
+
+		$setOffsetValueTypes(
+			$scope,
+			$callArgs,
+			static function (?Type $offsetType, Type $valueType, bool $optional) use (&$arrayType): void {
+				$isIterableAtLeastOnce = $arrayType->isIterableAtLeastOnce()->yes() || !$optional;
+				$arrayType = $arrayType->setOffsetValueType($offsetType, $valueType);
+				if ($isIterableAtLeastOnce) {
+					return;
+				}
+
+				$arrayType = new ArrayType($arrayType->getIterableKeyType(), $arrayType->getIterableValueType());
+			},
+		);
+
+		return $arrayType;
 	}
 
 	private function getFunctionThrowPoint(

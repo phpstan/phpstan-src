@@ -45,6 +45,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/intersection-types.php \
 		--exclude tests/PHPStan/Rules/Classes/data/first-class-instantiation-callable.php \
 		--exclude tests/PHPStan/Rules/Classes/data/instantiation-callable.php \
+		--exclude tests/PHPStan/Rules/Classes/data/bug-9402.php \
 		src tests
 
 cs:

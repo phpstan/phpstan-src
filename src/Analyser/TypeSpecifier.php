@@ -1099,7 +1099,9 @@ class TypeSpecifier
 			}
 
 			if ($type !== null) {
-				return $this->create($exprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
+				$callType = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
+				$argType = $this->create($exprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
+				return $callType->unionWith($argType);
 			}
 		}
 

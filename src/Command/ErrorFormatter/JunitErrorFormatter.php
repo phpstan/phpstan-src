@@ -83,12 +83,20 @@ class JunitErrorFormatter implements ErrorFormatter
 		);
 
 		if ($message !== null) {
-			$result .= sprintf(
-				'<failure type="%s" message="%s"><![CDATA[%s]]></failure>',
-				$this->escape($type),
-				$this->escape($message),
-				$this->fileGetLine($reference, $line),
-			);
+			if ($line === null) {
+				$result .= sprintf(
+					'<failure type="%s" message="%s />',
+					$this->escape($type),
+					$this->escape($message),
+				);
+			} else {
+				$result .= sprintf(
+					'<failure type="%s" message="%s"><![CDATA[%s]]></failure>',
+					$this->escape($type),
+					$this->escape($message),
+					$this->fileGetLine($reference, $line),
+				);
+			}
 		}
 
 		$result .= '</testcase>';
@@ -101,6 +109,7 @@ class JunitErrorFormatter implements ErrorFormatter
 		$file = new SplFileObject($fileName);
 		if (!$file->eof()) {
 			$file->seek($lineNumber);
+			// @phpstan-ignore-next-line
 			return $file->current(); // $contents would hold the data from line x
 		}
 		return null;

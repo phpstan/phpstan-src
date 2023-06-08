@@ -20,4 +20,9 @@ class TimecopRegression
 		return new self(new DateTimeImmutable());
 	}
 
+	public function getBar(): DateTimeImmutable
+	{
+		return $this->bar;
+	}
+
 }

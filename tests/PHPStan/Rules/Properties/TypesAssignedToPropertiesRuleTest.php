@@ -568,4 +568,11 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9384(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-9384.php'], []);
+	}
+
+
 }

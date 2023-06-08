@@ -1,6 +1,7 @@
 <?php declare(strict_types = 1);
 
 namespace Bug9384;
+
 class Deprecation
 {
 	private const TYPE_NONE               = 0;
@@ -13,6 +14,8 @@ class Deprecation
 	public static function enableTrackingDeprecations(): void
 	{
 		self::$type |= self::TYPE_TRACK_DEPRECATIONS;
+
+		self::$type = self::$type | 10; // invalid value
 	}
 
 	public static function enableWithTriggerError(): void

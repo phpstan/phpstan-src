@@ -130,11 +130,11 @@ class UnusedPrivatePropertyRule implements Rule
 			if ($fetch instanceof Node\Expr\PropertyFetch) {
 				$fetchedOnType = $usage->getScope()->getType($fetch->var);
 			} else {
-				if (!$fetch->class instanceof Node\Name) {
-					continue;
+				if ($fetch->class instanceof Node\Name) {
+					$fetchedOnType = $usage->getScope()->resolveTypeByName($fetch->class);
+				} else {
+					$fetchedOnType = $usage->getScope()->getType($fetch->class);
 				}
-
-				$fetchedOnType = $usage->getScope()->resolveTypeByName($fetch->class);
 			}
 
 			foreach ($propertyNames as $propertyName) {

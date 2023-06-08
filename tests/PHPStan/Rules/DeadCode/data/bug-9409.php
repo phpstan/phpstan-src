@@ -5,7 +5,7 @@ namespace Bug9409;
 class HelloWorld
 {
 	/** @var array<string,string|null> $tempDir */
-	private static array $tempDir = [];
+	private static $tempDir = [];
 
 	public function getTempDir(string $name): ?string
 	{

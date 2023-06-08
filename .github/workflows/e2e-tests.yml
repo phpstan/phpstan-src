@@ -144,12 +144,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/timecop.php tests/e2e/data/timecop.php"
+          - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/timecop.php -c tests/e2e/data/empty.neon tests/e2e/data/timecop.php"
             tools: "pecl"
             extensions: "timecop-beta"
-          - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/soap.php tests/e2e/data/soap.php"
+          - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/soap.php -c tests/e2e/data/empty.neon tests/e2e/data/soap.php"
             extensions: "soap"
-          - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/soap.php tests/e2e/data/soap.php"
+          - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/soap.php -c tests/e2e/data/empty.neon tests/e2e/data/soap.php"
             extensions: ""
           - script: "bin/phpstan analyse -l 8 tests/e2e/anon-class/Granularity.php"
             extensions: ""

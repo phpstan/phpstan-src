@@ -14,9 +14,9 @@ class MySoapClient2 extends \SoapClient
 
 	/**
 	 * @param string|null $wsdl
-	 * @param mixed[]|null $options
+	 * @param mixed[] $options
 	 */
-	public function __construct($wsdl, array $options = null)
+	public function __construct($wsdl, array $options = [])
 	{
 		parent::__construct($wsdl, $options);
 	}
@@ -46,7 +46,7 @@ class MySoapHeader extends \SoapHeader
 
 	public function __construct(string $username, string $password)
 	{
-		parent::SoapHeader($username, $password);
+		parent::__construct($username, $password);
 	}
 
 }

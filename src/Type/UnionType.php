@@ -174,6 +174,13 @@ class UnionType implements CompoundType
 			return $result->or($type->isAcceptedWithReasonBy($this, $strictTypes));
 		}
 
+		if ($type->isEnum()->yes() && !$this->isEnum()->no()) {
+			$enumCasesUnion = TypeCombinator::union(...$type->getEnumCases());
+			if (!$type->equals($enumCasesUnion)) {
+				return $this->acceptsWithReason($enumCasesUnion, $strictTypes);
+			}
+		}
+
 		return $result;
 	}
 

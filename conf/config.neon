@@ -69,6 +69,7 @@ parameters:
 		stricterFunctionMap: false
 		invalidPhpDocTagLine: false
 		detectDeadTypeInMultiCatch: false
+		zeroFiles: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -308,6 +309,7 @@ parametersSchema:
 		stricterFunctionMap: bool()
 		invalidPhpDocTagLine: bool()
 		detectDeadTypeInMultiCatch: bool()
+		zeroFiles: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

@@ -9262,7 +9262,7 @@ return [
 'Redis::client' => ['mixed', 'command'=>'string', 'arg='=>'string'],
 'Redis::close' => ['bool'],
 'Redis::config' => ['string', 'operation'=>'string', 'key'=>'string', 'value='=>'string'],
-'Redis::connect' => ['bool', 'host'=>'string', 'port='=>'int', 'timeout='=>'float', 'persistent_id='=>'?string', 'retry_interval='=>'?int', 'read_timeout='=>'float', 'context'=>'?array{auth?:array,stream?:array}'],
+'Redis::connect' => ['bool', 'host'=>'string', 'port='=>'int', 'timeout='=>'float', 'persistent_id='=>'?string', 'retry_interval='=>'?int', 'read_timeout='=>'float', 'context='=>'?array{auth?:array,stream?:array}'],
 'Redis::dbSize' => ['int'],
 'Redis::decr' => ['int', 'key'=>'string'],
 'Redis::decrBy' => ['int', 'key'=>'string', 'value'=>'int'],

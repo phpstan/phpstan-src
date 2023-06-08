@@ -223,10 +223,17 @@ class AnalyseCommand extends Command
 		}
 
 		if (count($files) === 0) {
-			$inceptionResult->getErrorOutput()->getStyle()->note('No files found to analyse.');
-			$inceptionResult->getErrorOutput()->getStyle()->warning('This will cause a non-zero exit code in PHPStan 2.0.');
+			$bleedingEdge = (bool) $container->getParameter('featureToggles')['zeroFiles'];
+			if (!$bleedingEdge) {
+				$inceptionResult->getErrorOutput()->getStyle()->note('No files found to analyse.');
+				$inceptionResult->getErrorOutput()->getStyle()->warning('This will cause a non-zero exit code in PHPStan 2.0.');
 
-			return $inceptionResult->handleReturn(0, null);
+				return $inceptionResult->handleReturn(0, null);
+			}
+
+			$inceptionResult->getErrorOutput()->getStyle()->error('No files found to analyse.');
+
+			return $inceptionResult->handleReturn(1, null);
 		}
 
 		$analysedConfigFiles = array_intersect($files, $container->getParameter('allConfigFiles'));

@@ -7,7 +7,7 @@ class HelloWorld
 	/** @var array<string,string|null> $tempDir */
 	private static array $tempDir = [];
 
-	public function getTempDir(string $name): string|null
+	public function getTempDir(string $name): ?string
 	{
 		if (isset($this::$tempDir[$name])) {
 			return $this::$tempDir[$name];

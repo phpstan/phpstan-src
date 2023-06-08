@@ -82,10 +82,11 @@ class UnusedPrivateMethodRule implements Rule
 			if ($methodCallNode instanceof Node\Expr\MethodCall) {
 				$calledOnType = $callScope->getType($methodCallNode->var);
 			} else {
-				if (!$methodCallNode->class instanceof Node\Name) {
-					continue;
+				if ($methodCallNode->class instanceof Node\Name) {
+					$calledOnType = $callScope->resolveTypeByName($methodCallNode->class);
+				} else {
+					$calledOnType = $callScope->getType($methodCallNode->class);
 				}
-				$calledOnType = $scope->resolveTypeByName($methodCallNode->class);
 			}
 
 			$inMethod = $callScope->getFunction();

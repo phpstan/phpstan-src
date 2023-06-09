@@ -198,11 +198,11 @@ function superGlobalVariables(): void
 	], false));
 
 	// filter flag with add_empty=default
-	assertType('array<int|string, int|false>', filter_var_array($_POST, FILTER_VALIDATE_INT));
+	assertType('array<int|false>', filter_var_array($_POST, FILTER_VALIDATE_INT));
 	// filter flag with add_empty=true
-	assertType('array<int|string, int|false>', filter_var_array($_POST, FILTER_VALIDATE_INT, true));
+	assertType('array<int|false>', filter_var_array($_POST, FILTER_VALIDATE_INT, true));
 	// filter flag with add_empty=false
-	assertType('array<int|string, int|false>', filter_var_array($_POST, FILTER_VALIDATE_INT, false));
+	assertType('array<int|false>', filter_var_array($_POST, FILTER_VALIDATE_INT, false));
 }
 
 /**

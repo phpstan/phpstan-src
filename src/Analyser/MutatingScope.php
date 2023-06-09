@@ -71,6 +71,7 @@ use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -507,7 +508,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($this->isGlobalVariable($variableName)) {
-			return new ArrayType(TypeCombinator::union(new IntegerType(), new StringType()), new MixedType($this->explicitMixedForGlobalVariables));
+			return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType($this->explicitMixedForGlobalVariables));
 		}
 
 		if ($this->hasVariableType($variableName)->no()) {

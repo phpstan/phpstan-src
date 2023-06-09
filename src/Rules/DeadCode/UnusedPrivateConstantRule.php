@@ -39,7 +39,7 @@ class UnusedPrivateConstantRule implements Rule
 
 		$constants = [];
 		foreach ($node->getConstants() as $constant) {
-			if (!$constant->isPrivate()) {
+			if (!$constant->isPrivate() && !($constant->isProtected() && $classReflection->isFinal())) {
 				continue;
 			}
 

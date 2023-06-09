@@ -286,4 +286,17 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9409.php'], []);
 	}
 
+	public function testProtectedFinal(): void
+	{
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+		$this->analyse([__DIR__ . '/data/protected-final-property.php'], [
+			[
+				'Property ProtectedFinalProperty\FinalClass::$field is never read, only written.',
+				7,
+				'See: https://phpstan.org/developing-extensions/always-read-written-properties',
+			],
+		]);
+	}
+
 }

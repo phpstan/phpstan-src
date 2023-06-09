@@ -52,7 +52,7 @@ class UnusedPrivatePropertyRule implements Rule
 		$classReflection = $scope->getClassReflection();
 		$properties = [];
 		foreach ($node->getProperties() as $property) {
-			if (!$property->isPrivate()) {
+			if (!$property->isPrivate() && !($property->isProtected() && $classReflection->isFinal())) {
 				continue;
 			}
 			if ($property->isDeclaredInTrait()) {

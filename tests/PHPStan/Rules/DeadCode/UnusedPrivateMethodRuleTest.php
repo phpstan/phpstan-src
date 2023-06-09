@@ -99,4 +99,14 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unused-method-false-positive-with-trait.php'], []);
 	}
 
+	public function testFinalProtectedMethod(): void
+	{
+		$this->analyse([__DIR__ . '/data/protected-final-method.php'], [
+			[
+				'Method ProtectedFinalMethod\FinalClass::unusedProtected() is unused.',
+				7,
+			],
+		]);
+	}
+
 }

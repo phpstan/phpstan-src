@@ -41,9 +41,12 @@ class UnusedPrivateMethodRule implements Rule
 			$constructor = $classReflection->getConstructor();
 		}
 
+		$classFinal = $classReflection->isFinal();
 		$methods = [];
 		foreach ($node->getMethods() as $method) {
-			if (!$method->getNode()->isPrivate()) {
+			$methodNode = $method->getNode();
+
+			if (!$methodNode->isPrivate() && !($methodNode->isProtected() && $classFinal)) {
 				continue;
 			}
 			if ($method->isDeclaredInTrait()) {

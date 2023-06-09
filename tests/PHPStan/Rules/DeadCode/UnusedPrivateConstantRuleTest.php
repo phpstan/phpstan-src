@@ -92,4 +92,15 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9005.php'], []);
 	}
 
+	public function testProtectedFinal(): void
+	{
+		$this->analyse([__DIR__ . '/data/protected-final-const.php'], [
+			[
+				'Constant ProtectedFinalConst\FinalClass::FIELD is unused.',
+				7,
+				'See: https://phpstan.org/developing-extensions/always-used-class-constants',
+			],
+		]);
+	}
+
 }

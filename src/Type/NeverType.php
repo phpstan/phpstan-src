@@ -278,7 +278,7 @@ class NeverType implements CompoundType
 		return new NeverType();
 	}
 
-	public function getKeysArray(): Type
+	public function getKeysArray(?Type $filterValueType = null): Type
 	{
 		return new NeverType();
 	}

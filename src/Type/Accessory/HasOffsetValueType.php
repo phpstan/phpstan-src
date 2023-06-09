@@ -189,8 +189,12 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return $this;
 	}
 
-	public function getKeysArray(): Type
+	public function getKeysArray(?Type $filterValueType = null): Type
 	{
+		if ($filterValueType !== null && !$filterValueType->isSuperTypeOf($this->valueType)->yes()) {
+			return new MixedType();
+		}
+
 		return new NonEmptyArrayType();
 	}
 

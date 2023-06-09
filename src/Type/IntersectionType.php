@@ -668,9 +668,9 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));
 	}
 
-	public function getKeysArray(): Type
+	public function getKeysArray(?Type $filterValueType = null): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getKeysArray());
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getKeysArray($filterValueType));
 	}
 
 	public function getValuesArray(): Type

@@ -659,8 +659,13 @@ class InitializerExprTypeResolver
 			return new StringType();
 		}
 
-		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber()) instanceof ErrorType) {
+		$unionType = TypeCombinator::union($leftType->toNumber(), $rightType->toNumber());
+		if ($unionType instanceof ErrorType) {
 			return new ErrorType();
+		}
+
+		if ($unionType->isInteger()->yes()) {
+			return $unionType;
 		}
 
 		return new IntegerType();

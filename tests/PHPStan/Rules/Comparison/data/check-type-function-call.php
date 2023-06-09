@@ -928,3 +928,42 @@ class InArray2
 		}
     }
 }
+
+function checkSuperGlobals(): void
+{
+	foreach ($GLOBALS as $k => $v) {
+		if (is_int($k)) {}
+	}
+
+	foreach ($_SERVER as $k => $v) {
+		if (is_int($k)) {}
+	}
+
+	foreach ($_GET as $k => $v) {
+		if (is_int($k)) {}
+	}
+
+	foreach ($_POST as $k => $v) {
+		if (is_int($k)) {}
+	}
+
+	foreach ($_FILES as $k => $v) {
+		if (is_int($k)) {}
+	}
+
+	foreach ($_COOKIE as $k => $v) {
+		if (is_int($k)) {}
+	}
+
+	foreach ($_SESSION as $k => $v) {
+		if (is_int($k)) {}
+	}
+
+	foreach ($_REQUEST as $k => $v) {
+		if (is_int($k)) {}
+	}
+
+	foreach ($_ENV as $k => $v) {
+		if (is_int($k)) {}
+	}
+}

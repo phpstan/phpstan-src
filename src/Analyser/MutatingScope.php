@@ -507,7 +507,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($this->isGlobalVariable($variableName)) {
-			return new ArrayType(new StringType(), new MixedType($this->explicitMixedForGlobalVariables));
+			return new ArrayType(TypeCombinator::union(new IntegerType(), new StringType()), new MixedType($this->explicitMixedForGlobalVariables));
 		}
 
 		if ($this->hasVariableType($variableName)->no()) {

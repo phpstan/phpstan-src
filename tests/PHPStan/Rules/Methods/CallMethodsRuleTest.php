@@ -2209,7 +2209,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				60,
 			],
 			[
-				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, array<string, mixed> given.',
+				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, array<int|string, mixed> given.',
 				65,
 			],
 			[

@@ -8,6 +8,9 @@ enum FooEnum
 	case B;
 }
 
-$a = [
-	FooEnum::A => 5,
-];
+function doFoo(): void
+{
+	$a = [
+		FooEnum::A => 5,
+	];
+}

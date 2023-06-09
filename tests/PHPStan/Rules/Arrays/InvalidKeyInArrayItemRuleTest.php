@@ -72,7 +72,7 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/invalid-key-array-item-enum.php'], [
 			[
 				'Invalid array key type InvalidKeyArrayItemEnum\FooEnum::A.',
-				12,
+				14,
 			],
 		]);
 	}

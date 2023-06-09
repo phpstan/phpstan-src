@@ -1,6 +1,6 @@
 <?php // lint >= 8.1
 
-namespace InvalidKeyArrayDimFetchEnum;
+namespace Bug6315;
 
 enum FooEnum
 {

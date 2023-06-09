@@ -61,35 +61,35 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testInvalidKeyEnum(): void
+	public function testBug6315(): void
 	{
 		if (PHP_VERSION_ID < 80100) {
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$this->analyse([__DIR__ . '/data/invalid-key-array-dim-fetch-enum.php'], [
+		$this->analyse([__DIR__ . '/data/bug-6315.php'], [
 			[
-				'Invalid array key type InvalidKeyArrayDimFetchEnum\FooEnum::A.',
+				'Invalid array key type Bug6315\FooEnum::A.',
 				18,
 			],
 			[
-				'Invalid array key type InvalidKeyArrayDimFetchEnum\FooEnum::A.',
+				'Invalid array key type Bug6315\FooEnum::A.',
 				19,
 			],
 			[
-				'Invalid array key type InvalidKeyArrayDimFetchEnum\FooEnum::A.',
+				'Invalid array key type Bug6315\FooEnum::A.',
 				20,
 			],
 			[
-				'Invalid array key type InvalidKeyArrayDimFetchEnum\FooEnum::B.',
+				'Invalid array key type Bug6315\FooEnum::B.',
 				21,
 			],
 			[
-				'Invalid array key type InvalidKeyArrayDimFetchEnum\FooEnum::A.',
+				'Invalid array key type Bug6315\FooEnum::A.',
 				21,
 			],
 			[
-				'Invalid array key type InvalidKeyArrayDimFetchEnum\FooEnum::A.',
+				'Invalid array key type Bug6315\FooEnum::A.',
 				22,
 			],
 		]);

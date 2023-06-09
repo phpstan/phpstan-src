@@ -1358,4 +1358,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9380.php'], $errors);
 	}
 
+	public function testBenevolentSuperglobalKeys(): void
+	{
+		$this->analyse([__DIR__ . '/data/benevolent-superglobal-keys.php'], []);
+	}
+
 }

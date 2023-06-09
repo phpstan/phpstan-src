@@ -711,4 +711,22 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testMultiDim(): void
+	{
+		$this->analyse([__DIR__ . '/data/nonexistent-offset-multi-dim.php'], [
+			[
+				"Cannot access offset 'invalidoffset' on X.",
+				8,
+			],
+			[
+				"Offset 'invalid' does not exist on array{a: array{b: array{5}}}.",
+				13,
+			],
+			[
+				"Offset 'invalid' does not exist on array{b: array{5}}.",
+				14,
+			],
+		]);
+	}
+
 }

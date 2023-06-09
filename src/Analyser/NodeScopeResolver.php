@@ -156,6 +156,7 @@ use UnhandledMatchError;
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
+use function array_key_last;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -3593,7 +3594,7 @@ class NodeScopeResolver
 				$scope = $scope->addConditionalExpressions($exprString, $holders);
 			}
 		} elseif ($var instanceof ArrayDimFetch) {
-			$dimExprStack = [];
+			$dimFetchStack = [];
 			$originalVar = $var;
 			$assignedPropertyExpr = $assignedExpr;
 			while ($var instanceof ArrayDimFetch) {
@@ -3606,7 +3607,7 @@ class NodeScopeResolver
 					$var->dim,
 					$assignedPropertyExpr,
 				);
-				$dimExprStack[] = $var->dim;
+				$dimFetchStack[] = $var;
 				$var = $var->var;
 			}
 
@@ -3625,7 +3626,16 @@ class NodeScopeResolver
 			// 2. eval dimensions
 			$offsetTypes = [];
 			$offsetNativeTypes = [];
-			foreach (array_reverse($dimExprStack) as $dimExpr) {
+			$dimFetchStack = array_reverse($dimFetchStack);
+			$lastDimKey = array_key_last($dimFetchStack);
+			foreach ($dimFetchStack as $key => $dimFetch) {
+				$dimExpr = $dimFetch->dim;
+
+				// Callback was already called for last dim at the beginning of the method.
+				if ($key !== $lastDimKey) {
+					$nodeCallback($dimFetch, $enterExpressionAssign ? $scope->enterExpressionAssign($dimFetch) : $scope);
+				}
+
 				if ($dimExpr === null) {
 					$offsetTypes[] = null;
 					$offsetNativeTypes[] = null;

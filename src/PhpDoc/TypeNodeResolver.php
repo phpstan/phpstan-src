@@ -199,7 +199,7 @@ class TypeNodeResolver
 			case 'non-zero-int':
 				return new UnionType([
 					IntegerRangeType::fromInterval(null, -1),
-					IntegerRangeType::fromInterval(1, null)
+					IntegerRangeType::fromInterval(1, null),
 				]);
 
 			case 'string':

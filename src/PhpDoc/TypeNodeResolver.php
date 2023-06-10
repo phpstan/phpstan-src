@@ -196,6 +196,12 @@ class TypeNodeResolver
 			case 'non-negative-int':
 				return IntegerRangeType::fromInterval(0, null);
 
+			case 'non-zero-int':
+				return new UnionType([
+					IntegerRangeType::fromInterval(null, -1),
+					IntegerRangeType::fromInterval(1, null)
+				]);
+
 			case 'string':
 			case 'lowercase-string':
 				return new StringType();

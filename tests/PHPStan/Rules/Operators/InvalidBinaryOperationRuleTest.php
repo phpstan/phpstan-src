@@ -546,4 +546,5 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 			],
 		]);
 	}
+
 }

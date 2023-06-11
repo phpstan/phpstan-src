@@ -54,7 +54,7 @@ class Foo
 		assertType('0', 0 % '1');
 		assertType('0', 1 % '1');
 		assertType('0', '1' % '1');
-		assertType('0', 1.24 % '1');
+		assertType('*ERROR*', 1.24 % '1');
 
 		assertType('0', $i % 1.0);
 		assertType('0', $f % 1.0);

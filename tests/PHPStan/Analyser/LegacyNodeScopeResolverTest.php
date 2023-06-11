@@ -2036,7 +2036,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'1.2 ** 1.4',
 			],
 			[
-				'1',
+				'*ERROR*',
 				'3.2 % 2.4',
 			],
 			[
@@ -2069,7 +2069,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'1 ** 1.4',
 			],
 			[
-				'1',
+				'*ERROR*',
 				'3 % 2.4',
 			],
 			[
@@ -2118,11 +2118,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$integer ** $integer',
 			],
 			[
-				'1',
+				'*ERROR*',
 				'3.2 % 2',
 			],
 			[
-				'int',
+				'*ERROR*',
 				'$float %= 2.4',
 			],
 			[
@@ -2444,11 +2444,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$string .= "str"',
 			],
 			[
-				'int',
+				'*ERROR*',
 				'$integer <<= 2.2',
 			],
 			[
-				'int',
+				'*ERROR*',
 				'$float >>= 2.2',
 			],
 			[

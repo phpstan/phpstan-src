@@ -324,8 +324,8 @@ class LooseComparisonWithEnums
 		assertType('true', $foo != $bar);
 		assertType('true', $bar != $s);
 		assertType('true', $s != $bar);
-		assertType('true', $baz != $i);
-		assertType('true', $i != $baz);
+		assertType('*ERROR*', $baz != $i);
+		assertType('*ERROR*', $i != $baz);
 
 		assertType('false', true != $foo);
 		assertType('false', $foo != true);

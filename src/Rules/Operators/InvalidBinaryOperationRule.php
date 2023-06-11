@@ -121,14 +121,28 @@ class InvalidBinaryOperationRule implements Rule
 						if (!($node instanceof Node\Expr\BinaryOp\Mod &&
 							($rightType instanceof ConstantIntegerType && $rightType->getValue() === 0))
 						) {
-							$nodeType = match (get_class($node)) {
-								Node\Expr\BinaryOp\BitwiseAnd::class => 'bitwiseAnd',
-								Node\Expr\BinaryOp\BitwiseOr::class => 'bitwiseOr',
-								Node\Expr\BinaryOp\BitwiseXor::class => 'bitwiseXor',
-								Node\Expr\BinaryOp\Mod::class => 'mod',
-								Node\Expr\BinaryOp\ShiftLeft::class => 'shiftLeft',
-								Node\Expr\BinaryOp\ShiftRight::class => 'shiftRight',
-							};
+							switch (get_class($node)) {
+								case Node\Expr\BinaryOp\BitwiseAnd::class:
+									$nodeType = 'bitwiseAnd';
+									break;
+								case Node\Expr\BinaryOp\BitwiseOr::class:
+									$nodeType = 'bitwiseOr';
+									break;
+								case Node\Expr\BinaryOp\BitwiseXor::class:
+									$nodeType = 'bitwiseXor';
+									break;
+								case Node\Expr\BinaryOp\Mod::class:
+									$nodeType = 'mod';
+									break;
+								case Node\Expr\BinaryOp\ShiftLeft::class:
+									$nodeType = 'shiftLeft';
+									break;
+								case Node\Expr\BinaryOp\ShiftRight::class:
+									$nodeType = 'shiftRight';
+									break;
+								default:
+									throw new ShouldNotHappenException();
+							}
 							return [
 								RuleErrorBuilder::message(sprintf(
 									'Deprecated in PHP 8.1: Implicit conversion from %s to %s loses precision.',

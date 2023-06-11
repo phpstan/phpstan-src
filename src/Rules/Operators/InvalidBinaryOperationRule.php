@@ -10,9 +10,11 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function get_class;
 use function sprintf;
 use function strlen;
 use function substr;
@@ -103,6 +105,43 @@ class InvalidBinaryOperationRule implements Rule
 
 			if (!$scope->getType($newNode) instanceof ErrorType) {
 				return [];
+			}
+
+			if ($node instanceof Node\Expr\BinaryOp) {
+				if ($node instanceof Node\Expr\BinaryOp\BitwiseAnd ||
+					$node instanceof Node\Expr\BinaryOp\BitwiseOr ||
+					$node instanceof Node\Expr\BinaryOp\BitwiseXor ||
+					$node instanceof Node\Expr\BinaryOp\Mod ||
+					$node instanceof Node\Expr\BinaryOp\ShiftLeft ||
+					$node instanceof Node\Expr\BinaryOp\ShiftRight
+				) {
+					$leftNumberType = $leftType->toNumber();
+					$rightNumberType = $rightType->toNumber();
+					if (!$leftNumberType instanceof ErrorType && !$rightNumberType instanceof ErrorType) {
+						if (!($node instanceof Node\Expr\BinaryOp\Mod &&
+							($rightType instanceof ConstantIntegerType && $rightType->getValue() === 0))
+						) {
+							$nodeType = match (get_class($node)) {
+								Node\Expr\BinaryOp\BitwiseAnd::class => 'bitwiseAnd',
+								Node\Expr\BinaryOp\BitwiseOr::class => 'bitwiseOr',
+								Node\Expr\BinaryOp\BitwiseXor::class => 'bitwiseXor',
+								Node\Expr\BinaryOp\Mod::class => 'mod',
+								Node\Expr\BinaryOp\ShiftLeft::class => 'shiftLeft',
+								Node\Expr\BinaryOp\ShiftRight::class => 'shiftRight',
+							};
+							return [
+								RuleErrorBuilder::message(sprintf(
+									'Deprecated in PHP 8.1: Implicit conversion from %s to %s loses precision.',
+									$leftType->describe(VerbosityLevel::value()),
+									$rightType->describe(VerbosityLevel::value()),
+								))
+									->line($left->getStartLine())
+									->identifier(sprintf('%s.implicitConversion', $nodeType))
+									->build(),
+							];
+						}
+					}
+				}
 			}
 
 			return [

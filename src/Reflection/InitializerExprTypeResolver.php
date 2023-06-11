@@ -307,19 +307,31 @@ class InitializerExprTypeResolver
 		}
 
 		if ($expr instanceof Expr\BinaryOp\Smaller) {
-			return $this->getType($expr->left, $context)->isSmallerThan($this->getType($expr->right, $context))->toBooleanType();
+			return $this->resolveSmallerType(
+				$this->getType($expr->left, $context),
+				$this->getType($expr->right, $context),
+			);
 		}
 
 		if ($expr instanceof Expr\BinaryOp\SmallerOrEqual) {
-			return $this->getType($expr->left, $context)->isSmallerThanOrEqual($this->getType($expr->right, $context))->toBooleanType();
+			return $this->resolveSmallerOrEqualType(
+				$this->getType($expr->left, $context),
+				$this->getType($expr->right, $context),
+			);
 		}
 
 		if ($expr instanceof Expr\BinaryOp\Greater) {
-			return $this->getType($expr->right, $context)->isSmallerThan($this->getType($expr->left, $context))->toBooleanType();
+			return $this->resolveGreaterType(
+				$this->getType($expr->left, $context),
+				$this->getType($expr->right, $context),
+			);
 		}
 
 		if ($expr instanceof Expr\BinaryOp\GreaterOrEqual) {
-			return $this->getType($expr->right, $context)->isSmallerThanOrEqual($this->getType($expr->left, $context))->toBooleanType();
+			return $this->resolveGreaterOrEqualType(
+				$this->getType($expr->left, $context),
+				$this->getType($expr->right, $context),
+			);
 		}
 
 		if ($expr instanceof Expr\BinaryOp\LogicalXor) {
@@ -561,11 +573,16 @@ class InitializerExprTypeResolver
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
 			$resultTypes = [];
 			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
+			$float = new FloatType();
 			foreach ($leftTypes as $leftTypeInner) {
 				foreach ($rightTypes as $rightTypeInner) {
 					if ($leftTypeInner instanceof ConstantStringType && $rightTypeInner instanceof ConstantStringType) {
 						$resultType = $this->getTypeFromValue($leftTypeInner->getValue() & $rightTypeInner->getValue());
 					} else {
+						if ($float->isSuperTypeOf($leftTypeInner)->yes() || $float->isSuperTypeOf($rightTypeInner)->yes()) {
+							return new ErrorType();
+						}
+
 						$leftNumberType = $leftTypeInner->toNumber();
 						$rightNumberType = $rightTypeInner->toNumber();
 
@@ -590,6 +607,19 @@ class InitializerExprTypeResolver
 
 		if ($leftType->isString()->yes() && $rightType->isString()->yes()) {
 			return new StringType();
+		}
+
+		$float = new FloatType();
+		if ($leftType instanceof UnionType && $leftType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
+		if ($rightType instanceof UnionType && $rightType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
+
+		$integer = new IntegerType();
+		if ($integer->isSuperTypeOf($leftType)->no() || $integer->isSuperTypeOf($rightType)->no()) {
+			return new ErrorType();
 		}
 
 		$leftNumberType = $leftType->toNumber();
@@ -628,11 +658,16 @@ class InitializerExprTypeResolver
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
 			$resultTypes = [];
 			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
+			$float = new FloatType();
 			foreach ($leftTypes as $leftTypeInner) {
 				foreach ($rightTypes as $rightTypeInner) {
 					if ($leftTypeInner instanceof ConstantStringType && $rightTypeInner instanceof ConstantStringType) {
 						$resultType = $this->getTypeFromValue($leftTypeInner->getValue() | $rightTypeInner->getValue());
 					} else {
+						if ($float->isSuperTypeOf($leftTypeInner)->yes() || $float->isSuperTypeOf($rightTypeInner)->yes()) {
+							return new ErrorType();
+						}
+
 						$leftNumberType = $leftTypeInner->toNumber();
 						$rightNumberType = $rightTypeInner->toNumber();
 
@@ -657,6 +692,19 @@ class InitializerExprTypeResolver
 
 		if ($leftType->isString()->yes() && $rightType->isString()->yes()) {
 			return new StringType();
+		}
+
+		$float = new FloatType();
+		if ($leftType instanceof UnionType && $leftType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
+		if ($rightType instanceof UnionType && $rightType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
+
+		$integer = new IntegerType();
+		if ($integer->isSuperTypeOf($leftType)->no() || $integer->isSuperTypeOf($rightType)->no()) {
+			return new ErrorType();
 		}
 
 		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber()) instanceof ErrorType) {
@@ -685,11 +733,16 @@ class InitializerExprTypeResolver
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
 			$resultTypes = [];
 			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
+			$float = new FloatType();
 			foreach ($leftTypes as $leftTypeInner) {
 				foreach ($rightTypes as $rightTypeInner) {
 					if ($leftTypeInner instanceof ConstantStringType && $rightTypeInner instanceof ConstantStringType) {
 						$resultType = $this->getTypeFromValue($leftTypeInner->getValue() ^ $rightTypeInner->getValue());
 					} else {
+						if ($float->isSuperTypeOf($leftTypeInner)->yes() || $float->isSuperTypeOf($rightTypeInner)->yes()) {
+							return new ErrorType();
+						}
+
 						$leftNumberType = $leftTypeInner->toNumber();
 						$rightNumberType = $rightTypeInner->toNumber();
 
@@ -716,6 +769,19 @@ class InitializerExprTypeResolver
 			return new StringType();
 		}
 
+		$float = new FloatType();
+		if ($leftType instanceof UnionType && $leftType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
+		if ($rightType instanceof UnionType && $rightType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
+
+		$integer = new IntegerType();
+		if ($integer->isSuperTypeOf($leftType)->no() || $integer->isSuperTypeOf($rightType)->no()) {
+			return new ErrorType();
+		}
+
 		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber()) instanceof ErrorType) {
 			return new ErrorType();
 		}
@@ -728,15 +794,22 @@ class InitializerExprTypeResolver
 	 */
 	public function getSpaceshipType(Expr $left, Expr $right, callable $getTypeCallback): Type
 	{
-		$callbackLeftType = $getTypeCallback($left);
-		$callbackRightType = $getTypeCallback($right);
+		$leftType = $getTypeCallback($left);
+		$rightType = $getTypeCallback($right);
 
-		if ($callbackLeftType instanceof NeverType || $callbackRightType instanceof NeverType) {
-			return $this->getNeverType($callbackLeftType, $callbackRightType);
+		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
+			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = $callbackLeftType->getConstantScalarTypes();
-		$rightTypes = $callbackRightType->getConstantScalarTypes();
+		$integerType = new IntegerType();
+		$floatType = new FloatType();
+		if ((($integerType->isSuperTypeOf($leftType)->yes() || $floatType->isSuperTypeOf($leftType)->yes()) && $rightType->isObject()->yes()) ||
+			(($integerType->isSuperTypeOf($rightType)->yes() || $floatType->isSuperTypeOf($rightType)->yes()) && $leftType->isObject()->yes())) {
+			return new ErrorType();
+		}
+
+		$leftTypes = $leftType->getConstantScalarTypes();
+		$rightTypes = $rightType->getConstantScalarTypes();
 
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
@@ -831,8 +904,13 @@ class InitializerExprTypeResolver
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
 			$resultTypes = [];
 			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
+			$float = new FloatType();
 			foreach ($leftTypes as $leftTypeInner) {
 				foreach ($rightTypes as $rightTypeInner) {
+					if ($float->isSuperTypeOf($leftTypeInner)->yes() || $float->isSuperTypeOf($rightTypeInner)->yes()) {
+						return new ErrorType();
+					}
+
 					$leftNumberType = $leftTypeInner->toNumber();
 					$rightNumberType = $rightTypeInner->toNumber();
 
@@ -872,7 +950,18 @@ class InitializerExprTypeResolver
 			}
 		}
 
+		$float = new FloatType();
+		if ($leftType instanceof UnionType && $leftType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
+		if ($rightType instanceof UnionType && $rightType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
+
 		$integer = new IntegerType();
+		if ($integer->isSuperTypeOf($leftType)->no() || $integer->isSuperTypeOf($rightType)->no()) {
+			return new ErrorType();
+		}
 		$positiveInt = IntegerRangeType::fromInterval(0, null);
 		if ($integer->isSuperTypeOf($rightType)->yes()) {
 			$rangeMin = null;
@@ -1176,6 +1265,12 @@ class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		$leftNumberType = $leftType->toNumber();
+		$rightNumberType = $rightType->toNumber();
+		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+			return new ErrorType();
+		}
+
 		$exponentiatedTyped = $leftType->exponentiate($rightType);
 		if (!$exponentiatedTyped instanceof ErrorType) {
 			return $exponentiatedTyped;
@@ -1208,8 +1303,13 @@ class InitializerExprTypeResolver
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
 			$resultTypes = [];
 			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
+			$float = new FloatType();
 			foreach ($leftTypes as $leftTypeInner) {
 				foreach ($rightTypes as $rightTypeInner) {
+					if ($float->isSuperTypeOf($leftTypeInner)->yes() || $float->isSuperTypeOf($rightTypeInner)->yes()) {
+						return new ErrorType();
+					}
+
 					$leftNumberType = $leftTypeInner->toNumber();
 					$rightNumberType = $rightTypeInner->toNumber();
 
@@ -1219,6 +1319,11 @@ class InitializerExprTypeResolver
 
 					if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
 						throw new ShouldNotHappenException();
+					}
+
+					$integer = new IntegerType();
+					if ($integer->isSuperTypeOf($leftType)->no() || $integer->isSuperTypeOf($rightType)->no()) {
+						return new ErrorType();
 					}
 
 					if ($rightNumberType->getValue() < 0) {
@@ -1236,10 +1341,16 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		$leftNumberType = $leftType->toNumber();
-		$rightNumberType = $rightType->toNumber();
+		$float = new FloatType();
+		if ($leftType instanceof UnionType && $leftType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
+		if ($rightType instanceof UnionType && $rightType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
 
-		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+		$integer = new IntegerType();
+		if ($integer->isSuperTypeOf($leftType)->no() || $integer->isSuperTypeOf($rightType)->no()) {
 			return new ErrorType();
 		}
 
@@ -1265,8 +1376,13 @@ class InitializerExprTypeResolver
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
 			$resultTypes = [];
 			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
+			$float = new FloatType();
 			foreach ($leftTypes as $leftTypeInner) {
 				foreach ($rightTypes as $rightTypeInner) {
+					if ($float->isSuperTypeOf($leftTypeInner)->yes() || $float->isSuperTypeOf($rightTypeInner)->yes()) {
+						return new ErrorType();
+					}
+
 					$leftNumberType = $leftTypeInner->toNumber();
 					$rightNumberType = $rightTypeInner->toNumber();
 
@@ -1293,10 +1409,16 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		$leftNumberType = $leftType->toNumber();
-		$rightNumberType = $rightType->toNumber();
+		$float = new FloatType();
+		if ($leftType instanceof UnionType && $leftType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
+		if ($rightType instanceof UnionType && $rightType->isSuperTypeOf($float)->yes()) {
+			return new ErrorType();
+		}
 
-		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+		$integer = new IntegerType();
+		if ($integer->isSuperTypeOf($leftType)->no() || $integer->isSuperTypeOf($rightType)->no()) {
 			return new ErrorType();
 		}
 
@@ -1327,7 +1449,7 @@ class InitializerExprTypeResolver
 		return new BooleanType();
 	}
 
-	public function resolveEqualType(Type $leftType, Type $rightType): BooleanType
+	public function resolveEqualType(Type $leftType, Type $rightType): Type
 	{
 		$integerType = new IntegerType();
 		$floatType = new FloatType();
@@ -1342,11 +1464,36 @@ class InitializerExprTypeResolver
 			return $this->resolveIdenticalType($leftType, $rightType);
 		}
 
+		if ((($integerType->isSuperTypeOf($leftType)->yes() || $floatType->isSuperTypeOf($leftType)->yes()) && $rightType->isObject()->yes()) ||
+			(($integerType->isSuperTypeOf($rightType)->yes() || $floatType->isSuperTypeOf($rightType)->yes()) && $leftType->isObject()->yes())) {
+			return new ErrorType();
+		}
+
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
 			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveEqualType($leftValueType, $rightValueType));
 		}
 
 		return $leftType->looseCompare($rightType, $this->phpVersion);
+	}
+
+	public function resolveSmallerType(Type $leftType, Type $rightType): BooleanType
+	{
+		return $leftType->isSmallerThan($rightType)->toBooleanType();
+	}
+
+	public function resolveSmallerOrEqualType(Type $leftType, Type $rightType): BooleanType
+	{
+		return $leftType->isSmallerThanOrEqual($rightType)->toBooleanType();
+	}
+
+	public function resolveGreaterType(Type $leftType, Type $rightType): BooleanType
+	{
+		return $rightType->isSmallerThan($leftType)->toBooleanType();
+	}
+
+	public function resolveGreaterOrEqualType(Type $leftType, Type $rightType): BooleanType
+	{
+		return $rightType->isSmallerThanOrEqual($leftType)->toBooleanType();
 	}
 
 	/**

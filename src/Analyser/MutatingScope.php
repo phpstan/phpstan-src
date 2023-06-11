@@ -82,6 +82,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -678,19 +679,59 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\Smaller) {
-			return $this->getType($node->left)->isSmallerThan($this->getType($node->right))->toBooleanType();
+			$leftType = $this->getType($node->left);
+			$rightType = $this->getType($node->right);
+
+			$integerType = new IntegerType();
+			$floatType = new FloatType();
+			if ((($integerType->isSuperTypeOf($leftType)->yes() || $floatType->isSuperTypeOf($leftType)->yes()) && $rightType->isObject()->yes()) ||
+				(($integerType->isSuperTypeOf($rightType)->yes() || $floatType->isSuperTypeOf($rightType)->yes()) && $leftType->isObject()->yes())) {
+				return new ErrorType();
+			}
+
+			return $this->initializerExprTypeResolver->resolveSmallerType($leftType, $rightType);
 		}
 
 		if ($node instanceof Expr\BinaryOp\SmallerOrEqual) {
-			return $this->getType($node->left)->isSmallerThanOrEqual($this->getType($node->right))->toBooleanType();
+			$leftType = $this->getType($node->left);
+			$rightType = $this->getType($node->right);
+
+			$integerType = new IntegerType();
+			$floatType = new FloatType();
+			if ((($integerType->isSuperTypeOf($leftType)->yes() || $floatType->isSuperTypeOf($leftType)->yes()) && $rightType->isObject()->yes()) ||
+				(($integerType->isSuperTypeOf($rightType)->yes() || $floatType->isSuperTypeOf($rightType)->yes()) && $leftType->isObject()->yes())) {
+				return new ErrorType();
+			}
+
+			return $this->initializerExprTypeResolver->resolveSmallerOrEqualType($leftType, $rightType);
 		}
 
 		if ($node instanceof Expr\BinaryOp\Greater) {
-			return $this->getType($node->right)->isSmallerThan($this->getType($node->left))->toBooleanType();
+			$leftType = $this->getType($node->left);
+			$rightType = $this->getType($node->right);
+
+			$integerType = new IntegerType();
+			$floatType = new FloatType();
+			if ((($integerType->isSuperTypeOf($leftType)->yes() || $floatType->isSuperTypeOf($leftType)->yes()) && $rightType->isObject()->yes()) ||
+				(($integerType->isSuperTypeOf($rightType)->yes() || $floatType->isSuperTypeOf($rightType)->yes()) && $leftType->isObject()->yes())) {
+				return new ErrorType();
+			}
+
+			return $this->initializerExprTypeResolver->resolveGreaterType($leftType, $rightType);
 		}
 
 		if ($node instanceof Expr\BinaryOp\GreaterOrEqual) {
-			return $this->getType($node->right)->isSmallerThanOrEqual($this->getType($node->left))->toBooleanType();
+			$leftType = $this->getType($node->left);
+			$rightType = $this->getType($node->right);
+
+			$integerType = new IntegerType();
+			$floatType = new FloatType();
+			if ((($integerType->isSuperTypeOf($leftType)->yes() || $floatType->isSuperTypeOf($leftType)->yes()) && $rightType->isObject()->yes()) ||
+				(($integerType->isSuperTypeOf($rightType)->yes() || $floatType->isSuperTypeOf($rightType)->yes()) && $leftType->isObject()->yes())) {
+				return new ErrorType();
+			}
+
+			return $this->initializerExprTypeResolver->resolveGreaterOrEqualType($leftType, $rightType);
 		}
 
 		if ($node instanceof Expr\BinaryOp\Equal) {
@@ -711,6 +752,16 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\NotEqual) {
+			$leftType = $this->getType($node->left);
+			$rightType = $this->getType($node->right);
+
+			$integerType = new IntegerType();
+			$floatType = new FloatType();
+			if ((($integerType->isSuperTypeOf($leftType)->yes() || $floatType->isSuperTypeOf($leftType)->yes()) && $rightType->isObject()->yes()) ||
+				(($integerType->isSuperTypeOf($rightType)->yes() || $floatType->isSuperTypeOf($rightType)->yes()) && $leftType->isObject()->yes())) {
+				return new ErrorType();
+			}
+
 			return $this->getType(new Expr\BooleanNot(new BinaryOp\Equal($node->left, $node->right)));
 		}
 

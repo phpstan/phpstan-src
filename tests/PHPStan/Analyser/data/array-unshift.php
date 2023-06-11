@@ -12,8 +12,9 @@ use function PHPStan\Testing\assertType;
  * @param int[] $b
  * @param non-empty-array<int> $c
  * @param array<int|string> $d
+ * @param list<string> $e
  */
-function arrayUnshift(array $a, array $b, array $c, array $d, array $arr): void
+function arrayUnshift(array $a, array $b, array $c, array $d, array $e, array $arr): void
 {
 	array_unshift($a, ...$b);
 	assertType('array<int|string>', $a);
@@ -32,6 +33,11 @@ function arrayUnshift(array $a, array $b, array $c, array $d, array $arr): void
 	$d1 = [];
 	array_unshift($d, ...$d1);
 	assertType('array<bool|int|string|null>', $d);
+
+	/** @var list<bool> $e1 */
+	$e1 = [];
+	array_unshift($e, ...$e1);
+	assertType('list<bool|string>', $e);
 }
 
 function arrayUnshiftConstantArray(): void

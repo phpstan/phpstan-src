@@ -2928,7 +2928,7 @@ class NodeScopeResolver
 					return;
 				}
 
-				$arrayType = new ArrayType($arrayType->getIterableKeyType(), $arrayType->getIterableValueType());
+				$arrayType = TypeCombinator::union($arrayType, new ConstantArrayType([], []));
 			},
 		);
 

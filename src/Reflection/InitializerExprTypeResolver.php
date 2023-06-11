@@ -816,10 +816,10 @@ class InitializerExprTypeResolver
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
 			$resultTypes = [];
 			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-			foreach ($leftTypes as $leftType) {
-				foreach ($rightTypes as $rightType) {
-					$leftValue = $leftType->getValue();
-					$rightValue = $rightType->getValue();
+			foreach ($leftTypes as $leftTypeInner) {
+				foreach ($rightTypes as $rightTypeInner) {
+					$leftValue = $leftTypeInner->getValue();
+					$rightValue = $rightTypeInner->getValue();
 					$resultType = $this->getTypeFromValue($leftValue <=> $rightValue);
 					if ($generalize) {
 						$resultType = $resultType->generalize(GeneralizePrecision::lessSpecific());
@@ -1470,7 +1470,7 @@ class InitializerExprTypeResolver
 		}
 
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
-			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveEqualType($leftValueType, $rightValueType));
+			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): Type => $this->resolveEqualType($leftValueType, $rightValueType));
 		}
 
 		return $leftType->looseCompare($rightType, $this->phpVersion);
@@ -1497,7 +1497,7 @@ class InitializerExprTypeResolver
 	}
 
 	/**
-	 * @param callable(Type, Type): BooleanType $valueComparisonCallback
+	 * @param callable(Type, Type): Type $valueComparisonCallback
 	 */
 	private function resolveConstantArrayTypeComparison(ConstantArrayType $leftType, ConstantArrayType $rightType, callable $valueComparisonCallback): BooleanType
 	{

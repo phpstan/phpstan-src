@@ -6,6 +6,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function is_float;
 use function is_int;
+use function is_numeric;
 
 final class ExponentiateHelper
 {
@@ -82,11 +83,14 @@ final class ExponentiateHelper
 		if ($exponent instanceof IntegerRangeType) {
 			$min = null;
 			$max = null;
-			if ($exponent->getMin() !== null) {
-				$min = $base->getValue() ** $exponent->getMin();
-			}
-			if ($exponent->getMax() !== null) {
-				$max = $base->getValue() ** $exponent->getMax();
+			$value = $base->getValue();
+			if (is_numeric($value)) {
+				if ($exponent->getMin() !== null) {
+					$min = $value ** $exponent->getMin();
+				}
+				if ($exponent->getMax() !== null) {
+					$max = $value ** $exponent->getMax();
+				}
 			}
 
 			if (!is_float($min) && !is_float($max)) {
@@ -95,11 +99,15 @@ final class ExponentiateHelper
 		}
 
 		if ($exponent instanceof ConstantScalarType) {
-			$result = $base->getValue() ** $exponent->getValue();
-			if (is_int($result)) {
-				return new ConstantIntegerType($result);
+			$baseValue = $base->getValue();
+			$exponentValue = $exponent->getValue();
+			if (is_numeric($baseValue) && is_numeric($exponentValue)) {
+				$result = $baseValue ** $exponentValue;
+				if (is_int($result)) {
+					return new ConstantIntegerType($result);
+				}
+				return new ConstantFloatType($result);
 			}
-			return new ConstantFloatType($result);
 		}
 
 		return null;

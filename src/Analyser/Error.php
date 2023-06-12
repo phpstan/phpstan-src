@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use Exception;
 use JsonSerializable;
+use Nette\Utils\Strings;
 use PhpParser\Node;
 use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
@@ -35,6 +36,9 @@ class Error implements JsonSerializable
 		private array $metadata = [],
 	)
 	{
+		if ($this->identifier !== null && !self::validateIdentifier($this->identifier)) {
+			throw new ShouldNotHappenException(sprintf('Invalid identifier: %s', $this->identifier));
+		}
 	}
 
 	public function getMessage(): string
@@ -263,6 +267,11 @@ class Error implements JsonSerializable
 			$properties['identifier'] ?? null,
 			$properties['metadata'] ?? [],
 		);
+	}
+
+	public static function validateIdentifier(string $identifier): bool
+	{
+		return Strings::match($identifier, '~^[a-zA-Z]([a-zA-Z\\.]*[a-zA-Z])?$~') !== null;
 	}
 
 }

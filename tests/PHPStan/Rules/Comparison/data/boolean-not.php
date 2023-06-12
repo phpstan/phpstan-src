@@ -1,6 +1,6 @@
 <?php
 
-namespace ConstantCondition;
+namespace ConstantCondition\Not;
 
 class BooleanNot
 {

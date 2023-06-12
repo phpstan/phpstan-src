@@ -2,7 +2,7 @@
 
 namespace ForeachWithComplexValueType;
 
-class Foo
+class Fooo
 {
 
 	/**

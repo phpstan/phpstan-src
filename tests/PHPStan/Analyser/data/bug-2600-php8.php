@@ -1,6 +1,6 @@
 <?php
 
-namespace Bug2600;
+namespace Bug2600\Php8;
 
 use function PHPStan\Testing\assertType;
 

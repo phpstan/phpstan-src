@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Bug5287;
+namespace Bug5287\Php81;
 
 use function PHPStan\Testing\assertType;
 
@@ -34,7 +34,7 @@ function foo3(array $arr): void
 /**
  * @param non-empty-array<string, int> $arr
  */
-function foo3(array $arr): void
+function foo5(array $arr): void
 {
 	$arrSpread = [...$arr];
 	assertType('non-empty-array<string, int>', $arrSpread);

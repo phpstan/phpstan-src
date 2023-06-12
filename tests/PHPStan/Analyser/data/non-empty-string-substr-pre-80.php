@@ -4,7 +4,7 @@ namespace NonEmptyStringSubstr;
 
 use function PHPStan\Testing\assertType;
 
-class Foo
+class FooPre80
 {
 
 	/**

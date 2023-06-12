@@ -1,6 +1,6 @@
 <?php // lint >= 7.4
 
-namespace Bug4188;
+namespace Bug4188\Methods;
 
 interface A {}
 interface B {}

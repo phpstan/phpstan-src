@@ -34,7 +34,7 @@ function foo3(array $arr): void
 /**
  * @param non-empty-array<string, int> $arr
  */
-function foo3(array $arr): void
+function foo5(array $arr): void
 {
 	$arrSpread = [...$arr];
 	assertType('non-empty-list<int>', $arrSpread);

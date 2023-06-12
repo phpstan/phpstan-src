@@ -1,6 +1,6 @@
 <?php // lint >= 7.4
 
-namespace Bug4902;
+namespace Bug4902\Php8;
 
 use function PHPStan\Testing\assertType;
 
@@ -44,10 +44,10 @@ class Wrapper {
 	 * @param Wrapper<T-all> ...$wrappers
 	 */
 	function unwrapAllAndWrapAgain(Wrapper ...$wrappers): void {
-		assertType('array<int|string, T-all (method Bug4902\Wrapper::unwrapAllAndWrapAgain(), argument)>', array_map(function (Wrapper $item) {
+		assertType('array<int|string, T-all (method Bug4902\Php8\Wrapper::unwrapAllAndWrapAgain(), argument)>', array_map(function (Wrapper $item) {
 			return $this->unwrap($item);
 		}, $wrappers));
-		assertType('array<int|string, T-all (method Bug4902\Wrapper::unwrapAllAndWrapAgain(), argument)>', array_map(fn (Wrapper $item) => $this->unwrap($item), $wrappers));
+		assertType('array<int|string, T-all (method Bug4902\Php8\Wrapper::unwrapAllAndWrapAgain(), argument)>', array_map(fn (Wrapper $item) => $this->unwrap($item), $wrappers));
 	}
 
 }

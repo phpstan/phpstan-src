@@ -1,8 +1,7 @@
 <?php
 
 namespace ForeachWithGenericsPhpDoc;
-
-class Foo
+class FooIterable
 {
 
 	/**

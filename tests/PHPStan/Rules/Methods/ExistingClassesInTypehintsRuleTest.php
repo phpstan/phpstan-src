@@ -246,19 +246,19 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				80100,
 				[
 					[
-						'Parameter $a of method MethodIntersectionTypes\Foo::doBar() has unresolvable native type.',
+						'Parameter $a of method MethodIntersectionTypes\Clazz::doBar() has unresolvable native type.',
 						33,
 					],
 					[
-						'Method MethodIntersectionTypes\Foo::doBar() has unresolvable native return type.',
+						'Method MethodIntersectionTypes\Clazz::doBar() has unresolvable native return type.',
 						33,
 					],
 					[
-						'Parameter $a of method MethodIntersectionTypes\Foo::doBaz() has unresolvable native type.',
+						'Parameter $a of method MethodIntersectionTypes\Clazz::doBaz() has unresolvable native type.',
 						38,
 					],
 					[
-						'Method MethodIntersectionTypes\Foo::doBaz() has unresolvable native return type.',
+						'Method MethodIntersectionTypes\Clazz::doBaz() has unresolvable native return type.',
 						38,
 					],
 				],

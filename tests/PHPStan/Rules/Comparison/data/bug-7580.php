@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Bug7580;
+namespace Bug7580\Comparison;
 
 print_r(mb_str_split('', 1));
 print_r(mb_str_split('', 1) ?: ['']);

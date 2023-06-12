@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\MethodCall;
+namespace PHPStan\StaticCall;
 
 use PHPStan\Command\CommandHelper;
 

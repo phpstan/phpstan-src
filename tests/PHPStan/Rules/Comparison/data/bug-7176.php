@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1); // lint >= 8.1
 
-namespace Bug7176;
+namespace Bug7176\Comparison;
 
 enum Suit
 {

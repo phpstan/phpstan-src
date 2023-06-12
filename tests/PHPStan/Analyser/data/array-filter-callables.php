@@ -1,6 +1,6 @@
 <?php
 
-namespace ArrayFilter;
+namespace ArrayFilter\Callables;
 
 use function PHPStan\Testing\assertType;
 

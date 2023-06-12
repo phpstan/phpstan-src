@@ -4,7 +4,7 @@ namespace NonEmptyStringSubstr;
 
 use function PHPStan\Testing\assertType;
 
-class Foo {
+class FooSpecifying {
 	public function nonEmptySubstr(string $s, int $offset, int $length): void
 	{
 		if (substr($s, 10) === 'hallo') {

@@ -1,6 +1,6 @@
 <?php
 
-namespace ConstantCondition;
+namespace ConstantCondition\Or;
 
 class BooleanOr
 {

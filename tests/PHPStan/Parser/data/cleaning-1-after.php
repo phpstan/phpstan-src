@@ -1,5 +1,5 @@
 <?php
-namespace Cleaning;
+namespace Cleaning\After;
 
 class Foo
 {

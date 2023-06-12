@@ -1,6 +1,6 @@
 <?php // lint >= 8.0
 
-namespace Bug4885;
+namespace Bug4885\Arrays;
 
 class Foo
 {

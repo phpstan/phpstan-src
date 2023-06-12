@@ -1,6 +1,6 @@
 <?php
 
-namespace StubsIntegrationTest;
+namespace StubsIntegrationTest\Functions;
 
 function foo($i)
 {

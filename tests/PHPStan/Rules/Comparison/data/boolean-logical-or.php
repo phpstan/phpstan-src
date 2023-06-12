@@ -2,7 +2,7 @@
 
 namespace ConstantCondition;
 
-class BooleanOr
+class BooleanOrLogical
 {
 
 	public function doFoo(int $i, bool $j, \stdClass $std, ?\stdClass $nullableStd)
@@ -69,7 +69,7 @@ class BooleanOr
 
 }
 
-class OrInIfCondition
+class OrInIfConditionLogical
 {
 	public function orInIfCondition($mixed, int $i): void
 	{

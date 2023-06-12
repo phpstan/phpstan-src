@@ -1513,11 +1513,6 @@ parameters:
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
-			count: 1
-			path: src/Type/Php/SprintfFunctionDynamicReturnTypeExtension.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/SscanfFunctionDynamicReturnTypeExtension.php

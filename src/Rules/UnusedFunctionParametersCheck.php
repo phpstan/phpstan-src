@@ -23,6 +23,7 @@ class UnusedFunctionParametersCheck
 	/**
 	 * @param string[] $parameterNames
 	 * @param Node[] $statements
+	 * @param 'constructor.unusedParameter'|'closure.unusedUse' $identifier
 	 * @return list<IdentifierRuleError>
 	 */
 	public function getUnusedParameters(

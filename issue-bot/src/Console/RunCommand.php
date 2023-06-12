@@ -78,7 +78,7 @@ class RunCommand extends Command
 			$configFiles[] = __DIR__ . '/../../../conf/bleedingEdge.neon';
 		}
 		if ($result->isStrictRules()) {
-			$configFiles[] = __DIR__ . '/../../vendor/phpstan/phpstan-strict-rules/rules.neon';
+			$configFiles[] = __DIR__ . '/../../../vendor/phpstan/phpstan-strict-rules/rules.neon';
 		}
 		$neon = Neon::encode([
 			'includes' => $configFiles,

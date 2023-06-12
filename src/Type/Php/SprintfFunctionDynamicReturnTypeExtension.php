@@ -5,15 +5,16 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
-use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use Throwable;
 use function array_key_exists;
 use function array_shift;
@@ -86,29 +87,58 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$values = [];
 		foreach ($args as $arg) {
 			$argType = $scope->getType($arg->value);
-			if (!$argType instanceof ConstantScalarType) {
+			if (count($argType->getConstantScalarValues()) === 0) {
 				return $returnType;
 			}
 
-			$values[] = $argType->getValue();
+			$values[] = $argType->getConstantScalarValues();
 		}
 
-		$format = array_shift($values);
-		if (!is_string($format)) {
-			return $returnType;
-		}
-
-		try {
-			if ($functionReflection->getName() === 'sprintf') {
-				$value = @sprintf($format, ...$values);
-			} else {
-				$value = @vsprintf($format, $values);
+		$combinations = $this->combinations($values);
+		$returnTypes = [];
+		foreach ($combinations as $combination) {
+			$format = array_shift($combination);
+			if (!is_string($format)) {
+				return $returnType;
 			}
-		} catch (Throwable) {
+
+			try {
+				if ($functionReflection->getName() === 'sprintf') {
+					$returnTypes[] = $scope->getTypeFromValue(@sprintf($format, ...$combination));
+				} else {
+					$returnTypes[] = $scope->getTypeFromValue(@vsprintf($format, $combination));
+				}
+			} catch (Throwable) {
+				return $returnType;
+			}
+		}
+
+		if (count($returnTypes) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
 			return $returnType;
 		}
 
-		return $scope->getTypeFromValue($value);
+		return TypeCombinator::union(...$returnTypes);
+	}
+
+	/**
+	 * @param array<mixed> $arrays
+	 * @return iterable<mixed>
+	 */
+	private function combinations(array $arrays): iterable
+	{
+		// from https://stackoverflow.com/a/70800936/565782 by Arnaud Le Blanc
+		if ($arrays === []) {
+			yield [];
+			return;
+		}
+
+		$head = array_shift($arrays);
+
+		foreach ($head as $elem) {
+			foreach ($this->combinations($arrays) as $combination) {
+				yield [$elem, ...$combination];
+			}
+		}
 	}
 
 }

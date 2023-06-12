@@ -155,13 +155,13 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4002.php'], []);
 	}
 
-	public function testBug4002_2(): void
+	public function testBug4002Two(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-4002-2.php'], []);
 	}
 
-	public function testBug4002_3(): void
+	public function testBug4002Three(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-4002-3.php'], [
@@ -172,7 +172,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug4002_4(): void
+	public function testBug4002Four(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-4002-4.php'], [

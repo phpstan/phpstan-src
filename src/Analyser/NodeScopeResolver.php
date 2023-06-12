@@ -254,7 +254,7 @@ class NodeScopeResolver
 				continue;
 			}
 
-			$nextStmt = $this->getFirstNonNopNode(array_slice($nodes, $i + 1));
+			$nextStmt = $this->getFirstUnreachableNode(array_slice($nodes, $i + 1), true);
 			if (!$nextStmt instanceof Node\Stmt) {
 				continue;
 			}
@@ -323,7 +323,7 @@ class NodeScopeResolver
 			}
 
 			$alreadyTerminated = true;
-			$nextStmt = $this->getFirstNonNopNode(array_slice($stmts, $i + 1));
+			$nextStmt = $this->getFirstUnreachableNode(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
 			if ($nextStmt !== null) {
 				$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
 			}
@@ -4484,16 +4484,19 @@ class NodeScopeResolver
 	/**
 	 * @template T of Node
 	 * @param array<T> $nodes
-	 * @return T
+	 * @return T|null
 	 */
-	private function getFirstNonNopNode(array $nodes): ?Node
+	private function getFirstUnreachableNode(array $nodes, bool $earlyBinding): ?Node
 	{
 		foreach ($nodes as $node) {
-			if (!$node instanceof Node\Stmt\Nop) {
-				return $node;
+			if ($node instanceof Node\Stmt\Nop) {
+				continue;
 			}
+			if ($earlyBinding && ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike)) {
+				continue;
+			}
+			return $node;
 		}
-
 		return null;
 	}
 

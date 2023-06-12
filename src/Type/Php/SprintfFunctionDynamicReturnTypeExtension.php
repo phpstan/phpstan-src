@@ -136,7 +136,11 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 		foreach ($head as $elem) {
 			foreach ($this->combinations($arrays) as $combination) {
-				yield [$elem, ...$combination];
+				$comb = [$elem];
+				foreach ($combination as $c) {
+					$comb[] = $c;
+				}
+				yield $comb;
 			}
 		}
 	}

@@ -9,6 +9,7 @@ use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use Throwable;
 use function is_bool;
+use function sprintf;
 
 /** @api */
 class Error implements JsonSerializable
@@ -153,6 +154,27 @@ class Error implements JsonSerializable
 			$this->tip,
 			$this->nodeLine,
 			$this->nodeType,
+		);
+	}
+
+	public function withIdentifier(string $identifier): self
+	{
+		if ($this->identifier !== null) {
+			throw new ShouldNotHappenException(sprintf('Error already has an identifier: %s', $this->identifier));
+		}
+
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath,
+			$this->traitFilePath,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$identifier,
+			$this->metadata,
 		);
 	}
 

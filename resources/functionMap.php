@@ -6800,7 +6800,7 @@ return [
 'MongoDB\Driver\ReadPreference::getMode' => ['int'],
 'MongoDB\Driver\ReadPreference::getTagSets' => ['array'],
 'MongoDB\Driver\Server::__construct' => ['void', 'host'=>'string', 'port'=>'string', 'options='=>'array', 'driverOptions='=>'array'],
-'MongoDB\Driver\Server::executeBulkWrite' => ['', 'namespace'=>'string', 'bulkWrite'=>'MongoDB\Driver\BulkWrite', 'options='=>'array|MongoDB\Driver\WriteConcern|nullarray|MongoDB\Driver\WriteConcern|null'],
+'MongoDB\Driver\Server::executeBulkWrite' => ['MongoDB\Driver\WriteResult', 'namespace'=>'string', 'bulkWrite'=>'MongoDB\Driver\BulkWrite', 'options='=>'array|MongoDB\Driver\WriteConcern|null'],
 'MongoDB\Driver\Server::executeCommand' => ['MongoDB\Driver\Cursor', 'db'=>'string', 'command'=>'MongoDB\Driver\Command', 'options='=>'array|MongoDB\Driver\ReadPreference|null'],
 'MongoDB\Driver\Server::executeQuery' => ['MongoDB\Driver\Cursor', 'namespace'=>'string', 'query'=>'MongoDB\Driver\Query', 'options='=>'array|MongoDB\Driver\ReadPreference|null'],
 'MongoDB\Driver\Server::getHost' => [''],

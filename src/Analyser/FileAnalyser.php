@@ -99,13 +99,13 @@ class FileAnalyser
 							}
 
 							$uniquedAnalysedCodeExceptionMessages[$e->getMessage()] = true;
-							$fileErrors[] = new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip());
+							$fileErrors[] = (new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
 							continue;
 						} catch (IdentifierNotFound $e) {
-							$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
+							$fileErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
 							continue;
 						} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
-							$fileErrors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e);
+							$fileErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e))->withIdentifier('phpstan.reflection');
 							continue;
 						}
 
@@ -135,13 +135,13 @@ class FileAnalyser
 							}
 
 							$uniquedAnalysedCodeExceptionMessages[$e->getMessage()] = true;
-							$fileErrors[] = new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip());
+							$fileErrors[] = (new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
 							continue;
 						} catch (IdentifierNotFound $e) {
-							$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
+							$fileErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
 							continue;
 						} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
-							$fileErrors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e);
+							$fileErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e))->withIdentifier('phpstan.reflection');
 							continue;
 						}
 
@@ -203,38 +203,33 @@ class FileAnalyser
 						}
 
 						foreach (array_keys($lines) as $line) {
-							$fileErrors[] = new Error(
+							$fileErrors[] = (new Error(
 								sprintf('No error to ignore is reported on line %d.', $line),
 								$scope->getFileDescription(),
 								$line,
 								false,
 								$scope->getFile(),
-								null,
-								null,
-								null,
-								null,
-								'ignoredError.unmatchedOnLine',
-							);
+							))->withIdentifier('ignore.unmatchedLine');
 						}
 					}
 				}
 			} catch (\PhpParser\Error $e) {
-				$fileErrors[] = new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, $e);
+				$fileErrors[] = (new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, $e))->withIdentifier('phpstan.parse');
 			} catch (ParserErrorsException $e) {
 				foreach ($e->getErrors() as $error) {
-					$fileErrors[] = new Error($error->getMessage(), $e->getParsedFile() ?? $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, $e);
+					$fileErrors[] = (new Error($error->getMessage(), $e->getParsedFile() ?? $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, $e))->withIdentifier('phpstan.parse');
 				}
 			} catch (AnalysedCodeException $e) {
-				$fileErrors[] = new Error($e->getMessage(), $file, null, $e, null, null, $e->getTip());
+				$fileErrors[] = (new Error($e->getMessage(), $file, null, $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
 			} catch (IdentifierNotFound $e) {
-				$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
+				$fileErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
 			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
-				$fileErrors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, null, $e);
+				$fileErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, null, $e))->withIdentifier('phpstan.reflection');
 			}
 		} elseif (is_dir($file)) {
-			$fileErrors[] = new Error(sprintf('File %s is a directory.', $file), $file, null, false);
+			$fileErrors[] = (new Error(sprintf('File %s is a directory.', $file), $file, null, false))->withIdentifier('phpstan.path');
 		} else {
-			$fileErrors[] = new Error(sprintf('File %s does not exist.', $file), $file, null, false);
+			$fileErrors[] = (new Error(sprintf('File %s does not exist.', $file), $file, null, false))->withIdentifier('phpstan.path');
 		}
 
 		$this->restoreCollectErrorsHandler();
@@ -332,7 +327,7 @@ class FileAnalyser
 				return true;
 			}
 
-			$this->collectedErrors[] = new Error($errstr, $errfile, $errline, true);
+			$this->collectedErrors[] = (new Error($errstr, $errfile, $errline, true))->withIdentifier('phpstan.php');
 
 			return true;
 		});

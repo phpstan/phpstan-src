@@ -1679,7 +1679,7 @@ return [
 'db2_lob_read' => ['string|false', 'stmt'=>'resource', 'colnum'=>'int', 'length'=>'int'],
 'db2_next_result' => ['resource|false', 'stmt'=>'resource'],
 'db2_num_fields' => ['0|positive-int|false', 'stmt'=>'resource'],
-'db2_num_rows' => ['0|positive-int', 'stmt'=>'resource'],
+'db2_num_rows' => ['0|positive-int|false', 'stmt'=>'resource'],
 'db2_pclose' => ['bool', 'resource'=>'resource'],
 'db2_pconnect' => ['resource|false', 'database'=>'string', 'username'=>'string', 'password'=>'string', 'options='=>'array'],
 'db2_prepare' => ['resource|false', 'connection'=>'resource', 'statement'=>'string', 'options='=>'array'],

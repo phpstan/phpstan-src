@@ -2,6 +2,8 @@
 
 namespace InArrayTypeSpecifyingExtension;
 
+use function PHPStan\Testing\assertType;
+
 class Foo
 {
 
@@ -41,7 +43,19 @@ class Foo
 			return;
 		}
 
-		die;
+		assertType('\'bar\'|\'foo\'', $s);
+		assertType('string', $mixed);
+		assertType('string', $r);
+		assertType('\'foo\'', $fooOrBarOrBaz);
+	}
+
+	/** @param array<string> $strings */
+	public function doBar(int $i, array $strings): void
+	{
+		assertType('bool', in_array($i, $strings));
+		assertType('bool', in_array($i, $strings, false));
+		assertType('false', in_array($i, $strings, true));
+		assertType('false', in_array(1, $strings, true));
 	}
 
 }

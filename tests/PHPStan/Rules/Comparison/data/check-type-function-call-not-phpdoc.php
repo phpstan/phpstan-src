@@ -21,4 +21,14 @@ class Foo
 		}
 	}
 
+	/** @param array<string> $strings */
+	public function checkInArray(int $i, array $strings): void
+	{
+		if (in_array($i, $strings, true)) {
+		}
+
+		if (in_array(1, $strings, true)) {
+		}
+	}
+
 }

@@ -52,6 +52,14 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			message: """
+				#^Call to deprecated method doNotTreatPhpDocTypesAsCertain\\(\\) of class PHPStan\\\\Analyser\\\\MutatingScope\\:
+				Use getNativeType\\(\\)$#
+			"""
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 3
 			path: src/Analyser/NodeScopeResolver.php
@@ -424,11 +432,6 @@ parameters:
 			message: "#^PHPDoc tag @var with type float\\|int\\|null is not subtype of type int\\|null\\.$#"
 			count: 6
 			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Identifier\\\\Exception\\\\InvalidIdentifierName is never thrown in the try block\\.$#"
-			count: 1
-			path: src/Reflection/SignatureMap/NativeFunctionReflectionProvider.php
 
 		-
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"
@@ -1485,11 +1488,6 @@ parameters:
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
-			count: 1
-			path: src/Type/Php/SprintfFunctionDynamicReturnTypeExtension.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/SscanfFunctionDynamicReturnTypeExtension.php
@@ -1763,11 +1761,6 @@ parameters:
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"
 			count: 1
 			path: tests/PHPStan/Reflection/SignatureMap/Php8SignatureMapProviderTest.php
-
-		-
-			message: "#^Dead catch \\- OutOfBoundsException is never thrown in the try block\\.$#"
-			count: 1
-			path: tests/PHPStan/Reflection/SignatureMap/SignatureMapParserTest.php
 
 		-
 			message: """

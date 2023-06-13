@@ -193,6 +193,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/count-type.php');
 
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-sprintf.php');
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2816.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2816-2.php');
@@ -989,6 +991,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7031.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/constant-array-intersect.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7153.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/in-array.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/in-array-non-empty.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/in-array-haystack-subtract.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4117.php');
@@ -1246,12 +1249,17 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalid-type-aliases.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/asymmetric-properties.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9062.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Variables/data/bug-9403.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/object-shape.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/memcache-get.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4302b.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/ini-get.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9274.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/extract.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/image-size.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/base64_decode.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9404.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/globals.php');
 	}
 
 	/**

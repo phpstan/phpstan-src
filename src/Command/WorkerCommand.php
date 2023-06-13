@@ -200,7 +200,7 @@ class WorkerCommand extends Command
 					$internalErrorsCount++;
 					$internalErrorMessage = sprintf('Internal error: %s in file %s', $t->getMessage(), $file);
 
-					$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md';
+					$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml';
 					if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
 						$internalErrorMessage .= sprintf('%sPost the following stack trace to %s: %s%s', "\n\n", $bugReportUrl, "\n", $t->getTraceAsString());
 					} else {

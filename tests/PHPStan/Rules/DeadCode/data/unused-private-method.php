@@ -156,3 +156,18 @@ class UsingFooTrait
 	}
 
 }
+
+class StaticMethod
+{
+
+	private static function doFoo(): void
+	{
+
+	}
+
+	public function doTest(): void
+	{
+		$this::doFoo();
+	}
+
+}

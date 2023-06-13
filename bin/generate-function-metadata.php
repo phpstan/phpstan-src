@@ -11,12 +11,13 @@ use PhpParser\ParserFactory;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\ShouldNotHappenException;
+use Symfony\Component\Finder\Finder;
 
 (function (): void {
 	require_once __DIR__ . '/../vendor/autoload.php';
 
 	$parser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7);
-	$finder = new Symfony\Component\Finder\Finder();
+	$finder = new Finder();
 	$finder->in(__DIR__ . '/../vendor/jetbrains/phpstorm-stubs')->files()->name('*.php');
 
 	$visitor = new class() extends NodeVisitorAbstract {

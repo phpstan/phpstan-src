@@ -39,3 +39,4 @@ parameters:
 		stricterFunctionMap: true
 		invalidPhpDocTagLine: true
 		detectDeadTypeInMultiCatch: true
+		zeroFiles: true

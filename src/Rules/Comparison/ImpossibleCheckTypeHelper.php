@@ -99,11 +99,14 @@ class ImpossibleCheckTypeHelper
 					$needleArg = $node->getArgs()[0]->value;
 					$needleType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($needleArg) : $scope->getNativeType($needleArg));
 					$valueType = $haystackType->getIterableValueType();
-					$constantNeedleTypesCount = count($needleType->getConstantScalarValues());
-					$constantHaystackTypesCount = count($valueType->getConstantScalarValues());
+					$constantNeedleTypesCount = count($needleType->getConstantScalarValues())
+						+ count($needleType->getEnumCases());
+					$constantHaystackTypesCount = count($valueType->getConstantScalarValues())
+						+ count($valueType->getEnumCases());
 					$isNeedleSupertype = $needleType->isSuperTypeOf($valueType);
 					if ($haystackType->isConstantArray()->no()) {
 						if ($haystackType->isIterableAtLeastOnce()->yes()) {
+							// In this case the generic implementation via typeSpecifier fails, because the argument types cannot be narrowed down.
 							if ($constantNeedleTypesCount === 1 && $constantHaystackTypesCount === 1) {
 								if ($isNeedleSupertype->yes()) {
 									return true;
@@ -112,8 +115,9 @@ class ImpossibleCheckTypeHelper
 									return false;
 								}
 							}
+
+							return null;
 						}
-						return null;
 					}
 
 					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {

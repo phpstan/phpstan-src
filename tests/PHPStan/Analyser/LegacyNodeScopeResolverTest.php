@@ -8540,43 +8540,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataInArray(): array
-	{
-		return [
-			[
-				'\'bar\'|\'foo\'',
-				'$s',
-			],
-			[
-				'string',
-				'$mixed',
-			],
-			[
-				'string',
-				'$r',
-			],
-			[
-				'\'foo\'',
-				'$fooOrBarOrBaz',
-			],
-		];
-	}
-
-	/**
-	 * @dataProvider dataInArray
-	 */
-	public function testInArray(
-		string $description,
-		string $expression,
-	): void
-	{
-		$this->assertTypes(
-			__DIR__ . '/data/in-array.php',
-			$description,
-			$expression,
-		);
-	}
-
 	public function dataGetParentClass(): array
 	{
 		return [

@@ -4,7 +4,6 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Generic\TemplateMixedType;
 use function array_merge;
 use function sprintf;
 
@@ -60,16 +59,7 @@ class CallableTypeHelper
 			}
 
 			if ($treatMixedAsAny) {
-				if (
-					$ourParameterType instanceof MixedType
-					&& !$ourParameterType instanceof TemplateMixedType
-				) {
-					$isSuperType = new AcceptsResult(TrinaryLogic::createYes(), []);
-				} elseif ($ourParameterType instanceof BenevolentUnionType) {
-					$isSuperType = $theirParameter->getType()->acceptsWithReason($ourParameterType, true);
-				} else {
-					$isSuperType = new AcceptsResult($theirParameter->getType()->isSuperTypeOf($ourParameterType), []);
-				}
+				$isSuperType = $theirParameter->getType()->acceptsWithReason($ourParameterType, true);
 			} else {
 				$isSuperType = new AcceptsResult($theirParameter->getType()->isSuperTypeOf($ourParameterType), []);
 			}

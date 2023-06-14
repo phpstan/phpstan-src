@@ -82,33 +82,3 @@ function (TwoErrorsAtOnce $t): void {
 	$filter = static fn (int $key): bool => true;
 	$t->run($filter);
 };
-
-class FooParent
-{
-
-}
-
-class FooChild extends FooParent
-{
-
-}
-
-class AcceptsFooParentCallable
-{
-
-	/**
-	 * @param callable(FooParent): void $cb
-	 */
-	public function sayHello(callable $cb): void
-	{
-		$cb(new FooParent());
-	}
-
-	public function doFoo(): void
-	{
-		$hw = new self();
-		$hw->sayHello(function (FooChild $bar): void {
-		});
-	}
-
-}

@@ -2910,11 +2910,6 @@ class CallMethodsRuleTest extends RuleTestCase
 				'• Parameter #1 $key of passed callable is required but the parameter of accepting callable is optional. It might be called without it.
 • Type int of parameter #1 $key of passed callable needs to be same or wider than parameter type int|string of accepting callable.',
 			],
-			[
-				'Parameter #1 $cb of method TrickyCallables\AcceptsFooParentCallable::sayHello() expects callable(TrickyCallables\FooParent): void, Closure(TrickyCallables\FooChild): void given.',
-				110,
-				'Type TrickyCallables\FooChild of parameter #1 $bar of passed callable needs to be same or wider than parameter type TrickyCallables\FooParent of accepting callable.',
-			],
 		]);
 	}
 

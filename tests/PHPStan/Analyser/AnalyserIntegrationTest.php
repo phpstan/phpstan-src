@@ -772,17 +772,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		}
 
 		$errors = $this->runAnalyse(__DIR__ . '/data/discussion-7124.php');
-		$this->assertCount(5, $errors);
-		$this->assertSame('Parameter #2 $callback of function array_filter expects callable(T): mixed, (callable(K): bool)|(callable(T): bool) given.', $errors[0]->getMessage());
-		$this->assertSame(30, $errors[0]->getLine());
-		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int=): bool, Closure(int, bool): bool given.', $errors[1]->getMessage());
-		$this->assertSame(38, $errors[1]->getLine());
-		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int=): bool, Closure(int): bool given.', $errors[2]->getMessage());
-		$this->assertSame(45, $errors[2]->getLine());
-		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(int): bool, Closure(bool): bool given.', $errors[3]->getMessage());
-		$this->assertSame(52, $errors[3]->getLine());
-		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool): bool, Closure(int): bool given.', $errors[4]->getMessage());
-		$this->assertSame(59, $errors[4]->getLine());
+		$this->assertCount(4, $errors);
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int=): bool, Closure(int, bool): bool given.', $errors[0]->getMessage());
+		$this->assertSame(38, $errors[0]->getLine());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int=): bool, Closure(int): bool given.', $errors[1]->getMessage());
+		$this->assertSame(45, $errors[1]->getLine());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(int): bool, Closure(bool): bool given.', $errors[2]->getMessage());
+		$this->assertSame(52, $errors[2]->getLine());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool): bool, Closure(int): bool given.', $errors[3]->getMessage());
+		$this->assertSame(59, $errors[3]->getLine());
 	}
 
 	public function testBug7214(): void

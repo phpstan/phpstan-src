@@ -7,8 +7,6 @@ use PhpParser\Node;
 use PHPStan\AnalysedCodeException;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
-use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
-use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
@@ -104,7 +102,7 @@ class FileAnalyser
 						} catch (IdentifierNotFound $e) {
 							$fileErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
 							continue;
-						} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
+						} catch (UnableToCompileNode | CircularReference $e) {
 							$fileErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e))->withIdentifier('phpstan.reflection');
 							continue;
 						}
@@ -140,7 +138,7 @@ class FileAnalyser
 						} catch (IdentifierNotFound $e) {
 							$fileErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
 							continue;
-						} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
+						} catch (UnableToCompileNode | CircularReference $e) {
 							$fileErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e))->withIdentifier('phpstan.reflection');
 							continue;
 						}
@@ -168,7 +166,7 @@ class FileAnalyser
 						// pass
 					} catch (IdentifierNotFound) {
 						// pass
-					} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection) {
+					} catch (UnableToCompileNode) {
 						// pass
 					}
 				};
@@ -223,7 +221,7 @@ class FileAnalyser
 				$fileErrors[] = (new Error($e->getMessage(), $file, null, $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
 			} catch (IdentifierNotFound $e) {
 				$fileErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
-			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
+			} catch (UnableToCompileNode | CircularReference $e) {
 				$fileErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, null, $e))->withIdentifier('phpstan.reflection');
 			}
 		} elseif (is_dir($file)) {

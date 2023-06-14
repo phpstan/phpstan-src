@@ -10,8 +10,6 @@ use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
-use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
-use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
 use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
@@ -364,7 +362,7 @@ class BetterReflectionProvider implements ReflectionProvider
 				return true;
 			} catch (IdentifierNotFound) {
 				// pass
-			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection) {
+			} catch (UnableToCompileNode) {
 				// pass
 			}
 			return false;

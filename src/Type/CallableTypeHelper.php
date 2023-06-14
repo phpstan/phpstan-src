@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Generic\TemplateMixedType;
 use function array_merge;
 use function sprintf;
 
@@ -59,7 +60,16 @@ class CallableTypeHelper
 			}
 
 			if ($treatMixedAsAny) {
-				$isSuperType = $theirParameter->getType()->acceptsWithReason($ourParameterType, true);
+				if (
+					$ourParameterType instanceof MixedType
+					&& !$ourParameterType instanceof TemplateMixedType
+				) {
+					$isSuperType = new AcceptsResult(TrinaryLogic::createYes(), []);
+				} elseif ($ourParameterType instanceof BenevolentUnionType) {
+					$isSuperType = $theirParameter->getType()->acceptsWithReason($ourParameterType, true);
+				} else {
+					$isSuperType = new AcceptsResult($theirParameter->getType()->isSuperTypeOf($ourParameterType), []);
+				}
 			} else {
 				$isSuperType = new AcceptsResult($theirParameter->getType()->isSuperTypeOf($ourParameterType), []);
 			}
@@ -85,7 +95,16 @@ class CallableTypeHelper
 
 		$theirReturnType = $theirs->getReturnType();
 		if ($treatMixedAsAny) {
-			$isReturnTypeSuperType = $ours->getReturnType()->acceptsWithReason($theirReturnType, true);
+			if (
+				$theirReturnType instanceof MixedType
+				&& !$theirReturnType instanceof TemplateMixedType
+			) {
+				$isReturnTypeSuperType = new AcceptsResult(TrinaryLogic::createYes(), []);
+			} elseif ($theirReturnType instanceof BenevolentUnionType) {
+				$isReturnTypeSuperType = $ours->getReturnType()->acceptsWithReason($theirReturnType, true);
+			} else {
+				$isReturnTypeSuperType = new AcceptsResult($ours->getReturnType()->isSuperTypeOf($theirReturnType), []);
+			}
 		} else {
 			$isReturnTypeSuperType = new AcceptsResult($ours->getReturnType()->isSuperTypeOf($theirReturnType), []);
 		}

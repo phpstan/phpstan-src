@@ -95,7 +95,16 @@ class CallableTypeHelper
 
 		$theirReturnType = $theirs->getReturnType();
 		if ($treatMixedAsAny) {
-			$isReturnTypeSuperType = $ours->getReturnType()->acceptsWithReason($theirReturnType, true);
+			if (
+				$theirReturnType instanceof MixedType
+				&& !$theirReturnType instanceof TemplateMixedType
+			) {
+				$isReturnTypeSuperType = new AcceptsResult(TrinaryLogic::createYes(), []);
+			} elseif ($theirReturnType instanceof BenevolentUnionType) {
+				$isReturnTypeSuperType = $ours->getReturnType()->acceptsWithReason($theirReturnType, true);
+			} else {
+				$isReturnTypeSuperType = new AcceptsResult($ours->getReturnType()->isSuperTypeOf($theirReturnType), []);
+			}
 		} else {
 			$isReturnTypeSuperType = new AcceptsResult($ours->getReturnType()->isSuperTypeOf($theirReturnType), []);
 		}

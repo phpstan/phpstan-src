@@ -86,6 +86,11 @@ class StringTypeTest extends PHPStanTestCase
 				new GenericClassStringType(new ObjectType(stdClass::class)),
 				TrinaryLogic::createMaybe(),
 			],
+			[
+				new StringAlwaysAcceptingObjectWithToStringType(),
+				new ObjectType(ClassWithToString::class),
+				TrinaryLogic::createYes(),
+			],
 		];
 	}
 

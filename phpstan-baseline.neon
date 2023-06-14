@@ -278,16 +278,6 @@ parameters:
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
 		-
-			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAClassReflection is never thrown in the try block\\.$#"
-			count: 1
-			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
-
-		-
-			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAnInterfaceReflection is never thrown in the try block\\.$#"
-			count: 1
-			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
-
-		-
 			message: """
 				#^Call to deprecated method getTypeFromValue\\(\\) of class PHPStan\\\\Type\\\\ConstantTypeHelper\\:
 				Use PHPStan\\\\Reflection\\\\InitializerExprTypeResolver$#

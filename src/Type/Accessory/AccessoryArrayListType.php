@@ -19,7 +19,7 @@ use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\NonRemovableTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;

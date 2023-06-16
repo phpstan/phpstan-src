@@ -17,7 +17,7 @@ use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\NonRemovableTypeTrait;
 
 /** @api */
 class NullType implements ConstantScalarType

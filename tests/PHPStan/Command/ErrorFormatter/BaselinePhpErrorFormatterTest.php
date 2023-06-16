@@ -30,22 +30,22 @@ class BaselinePhpErrorFormatterTest extends ErrorFormatterTestCase
 					5,
 				),
 			],
-			<<<'PHP'
+			<<<PHP
 <?php declare(strict_types = 1);
 
-$ignoreErrors = [];
-$ignoreErrors[] = [
+\$ignoreErrors = [];
+\$ignoreErrors[] = [
 	'message' => '#^Bar$#',
 	'count' => 1,
 	'path' => __DIR__ . '/../Foo.php',
 ];
-$ignoreErrors[] = [
+\$ignoreErrors[] = [
 	'message' => '#^Foo$#',
 	'count' => 2,
 	'path' => __DIR__ . '/Foo.php',
 ];
 
-return ['parameters' => ['ignoreErrors' => $ignoreErrors]];
+return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
 
 PHP,
 		];
@@ -73,23 +73,23 @@ PHP,
 					6,
 				))->withIdentifier('argument.type'),
 			],
-			<<<'PHP'
+			<<<PHP
 <?php declare(strict_types = 1);
 
-$ignoreErrors = [];
-$ignoreErrors[] = [
+\$ignoreErrors = [];
+\$ignoreErrors[] = [
 	'message' => '#^Foo$#',
 	'count' => 2,
 	'path' => __DIR__ . '/Foo.php',
 ];
-$ignoreErrors[] = [
+\$ignoreErrors[] = [
 	// identifier: argument.type
 	'message' => '#^Foo with identifier$#',
 	'count' => 2,
 	'path' => __DIR__ . '/Foo.php',
 ];
 
-return ['parameters' => ['ignoreErrors' => $ignoreErrors]];
+return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
 
 PHP,
 		];
@@ -122,29 +122,29 @@ PHP,
 					5,
 				))->withIdentifier('argument.type'),
 			],
-			<<<'PHP'
+			<<<PHP
 <?php declare(strict_types = 1);
 
-$ignoreErrors = [];
-$ignoreErrors[] = [
+\$ignoreErrors = [];
+\$ignoreErrors[] = [
 	'message' => '#^Foo$#',
 	'count' => 2,
 	'path' => __DIR__ . '/Foo.php',
 ];
-$ignoreErrors[] = [
+\$ignoreErrors[] = [
 	// identifier: argument.type
 	'message' => '#^Foo with another message$#',
 	'count' => 1,
 	'path' => __DIR__ . '/Foo.php',
 ];
-$ignoreErrors[] = [
+\$ignoreErrors[] = [
 	// identifiers: argument.byRef, argument.type
 	'message' => '#^Foo with same message, different identifier$#',
 	'count' => 2,
 	'path' => __DIR__ . '/Foo.php',
 ];
 
-return ['parameters' => ['ignoreErrors' => $ignoreErrors]];
+return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
 
 PHP,
 		];

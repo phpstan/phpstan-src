@@ -868,7 +868,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testCallTraitOverridenMethods(): void
+	public function testCallTraitOverriddenMethods(): void
 	{
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
@@ -1090,7 +1090,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/sibling-method-prototype.php'], []);
 	}
 
-	public function testOverridenMethodPrototype(): void
+	public function testOverriddenMethodPrototype(): void
 	{
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;

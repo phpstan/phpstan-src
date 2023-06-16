@@ -57,14 +57,14 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 						'writable' => true,
 						'readable' => true,
 					],
-					'overridenProperty' => [
+					'overriddenProperty' => [
 						'class' => Foo::class,
 						'readableType' => Foo::class,
 						'writableType' => Foo::class,
 						'writable' => true,
 						'readable' => true,
 					],
-					'overridenPropertyWithAnnotation' => [
+					'overriddenPropertyWithAnnotation' => [
 						'class' => Foo::class,
 						'readableType' => Foo::class,
 						'writableType' => Foo::class,
@@ -104,14 +104,14 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 						'writable' => true,
 						'readable' => true,
 					],
-					'overridenProperty' => [
+					'overriddenProperty' => [
 						'class' => Bar::class,
 						'readableType' => Bar::class,
 						'writableType' => Bar::class,
 						'writable' => true,
 						'readable' => true,
 					],
-					'overridenPropertyWithAnnotation' => [
+					'overriddenPropertyWithAnnotation' => [
 						'class' => Bar::class,
 						'readableType' => Bar::class,
 						'writableType' => Bar::class,
@@ -322,8 +322,8 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(Bar::class);
-		$this->assertTrue($class->hasNativeProperty('overridenPropertyWithAnnotation'));
-		$this->assertSame('AnnotationsProperties\Foo', $class->getNativeProperty('overridenPropertyWithAnnotation')->getReadableType()->describe(VerbosityLevel::precise()));
+		$this->assertTrue($class->hasNativeProperty('overriddenPropertyWithAnnotation'));
+		$this->assertSame('AnnotationsProperties\Foo', $class->getNativeProperty('overriddenPropertyWithAnnotation')->getReadableType()->describe(VerbosityLevel::precise()));
 	}
 
 }

@@ -34,7 +34,7 @@ class NonexistentParentClassType implements Type
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	public function describe(VerbosityLevel $level): string

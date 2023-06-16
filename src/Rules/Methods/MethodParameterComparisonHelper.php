@@ -161,7 +161,7 @@ class MethodParameterComparisonHelper
 					}
 				}
 			} elseif ($methodParameter->isVariadic()) {
-				if ($this->phpVersion->supportsLessOverridenParametersWithVariadic()) {
+				if ($this->phpVersion->supportsLessOverriddenParametersWithVariadic()) {
 					$remainingPrototypeParameters = array_slice($prototypeVariant->getParameters(), $i);
 					foreach ($remainingPrototypeParameters as $j => $remainingPrototypeParameter) {
 						if (!$remainingPrototypeParameter instanceof ParameterReflectionWithPhpDocs) {

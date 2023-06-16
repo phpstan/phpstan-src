@@ -59,7 +59,7 @@ namespace TypeAliasesDataset {
 	 * @phpstan-import-type ScopedAlias from SubScope\Bar
 	 * @phpstan-import-type ImportedAliasFromNonClass from int
 	 * @phpstan-import-type ImportedAliasFromUnknownClass from UnknownClass
-	 * @phpstan-import-type ImportedUknownAlias from SubScope\Bar
+	 * @phpstan-import-type ImportedUnknownAlias from SubScope\Bar
 	 * @phpstan-type Baz never
 	 * @phpstan-type GlobalTypeAlias never
 	 * @phpstan-type RecursiveTypeAlias RecursiveTypeAlias[]
@@ -120,7 +120,7 @@ namespace TypeAliasesDataset {
 		/**
 		 * @param ImportedAliasFromNonClass $parameter1
 		 * @param ImportedAliasFromUnknownClass $parameter2
-		 * @param ImportedUknownAlias $parameter3
+		 * @param ImportedUnknownAlias $parameter3
 		 */
 		public function invalidImports($parameter1, $parameter2, $parameter3)
 		{

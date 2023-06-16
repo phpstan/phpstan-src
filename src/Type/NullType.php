@@ -29,7 +29,7 @@ class NullType implements ConstantScalarType
 	use NonObjectTypeTrait;
 	use FalseyBooleanTypeTrait;
 	use NonGenericTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 
 	/** @api */
 	public function __construct()

@@ -8,9 +8,9 @@ class Foo
 	/**
 	 * @param array<string, string> $strings
 	 */
-	public function doFoo(int $intput, array $strings): void
+	public function doFoo(int $input, array $strings): void
 	{
-		if (isset($strings[(string) $intput])) {
+		if (isset($strings[(string) $input])) {
 		}
 	}
 

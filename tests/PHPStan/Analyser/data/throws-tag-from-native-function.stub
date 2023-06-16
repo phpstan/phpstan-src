@@ -5,4 +5,4 @@
  *
  * @throws void
  */
-function gzclose($strem): bool {}
+function gzclose($stream): bool {}

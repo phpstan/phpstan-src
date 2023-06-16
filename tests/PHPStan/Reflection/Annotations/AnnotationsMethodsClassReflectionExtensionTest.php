@@ -425,14 +425,14 @@ class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 					],
 				],
 			],
-			'overridenMethod' => [
+			'overriddenMethod' => [
 				'class' => Foo::class,
 				'returnType' => Foo::class,
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
-			'overridenMethodWithAnnotation' => [
+			'overriddenMethodWithAnnotation' => [
 				'class' => Foo::class,
 				'returnType' => Foo::class,
 				'isStatic' => false,
@@ -443,14 +443,14 @@ class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 		$barMethods = array_merge(
 			$fooMethods,
 			[
-				'overridenMethod' => [
+				'overriddenMethod' => [
 					'class' => Bar::class,
 					'returnType' => Bar::class,
 					'isStatic' => false,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
-				'overridenMethodWithAnnotation' => [
+				'overriddenMethodWithAnnotation' => [
 					'class' => Bar::class,
 					'returnType' => Bar::class,
 					'isStatic' => false,
@@ -1028,8 +1028,8 @@ class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(Bar::class);
-		$this->assertTrue($class->hasNativeMethod('overridenMethodWithAnnotation'));
-		$this->assertInstanceOf(PhpMethodReflection::class, $class->getNativeMethod('overridenMethodWithAnnotation'));
+		$this->assertTrue($class->hasNativeMethod('overriddenMethodWithAnnotation'));
+		$this->assertInstanceOf(PhpMethodReflection::class, $class->getNativeMethod('overriddenMethodWithAnnotation'));
 	}
 
 }

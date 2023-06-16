@@ -62,7 +62,7 @@ class Foo
 
 }
 
-class InvokableClass
+class InvocableClass
 {
 	public function __invoke(): string
 	{
@@ -132,4 +132,4 @@ assertType('GenericUnions\Foo|int', getWithDefaultCallable(3, function () {
 }));
 assertType('GenericUnions\Foo|int', getWithDefault(3, new Foo));
 assertType('GenericUnions\Foo|int', getWithDefaultCallable(3, new Foo));
-assertType('int|string', getWithDefaultCallable(3, new InvokableClass));
+assertType('int|string', getWithDefaultCallable(3, new InvocableClass));

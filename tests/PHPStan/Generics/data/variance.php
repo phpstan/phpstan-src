@@ -119,7 +119,7 @@ function returnInvariant() {
 }
 
 /** @template-covariant T of object */
-interface CovariantOfOBject {
+interface CovariantOfObject {
 	/** @param T $v */
 	function set($v): void;
 }

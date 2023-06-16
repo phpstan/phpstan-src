@@ -363,13 +363,13 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/memcache-pool-get.php'], []);
 	}
 
-	public function testOverridenMethodWithConditionalReturnType(): void
+	public function testOverriddenMethodWithConditionalReturnType(): void
 	{
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/overriden-method-with-conditional-return-type.php'], [
 			[
-				'Return type (($p is int ? stdClass : string)) of method OverridenMethodWithConditionalReturnType\Bar2::doFoo() should be compatible with return type (($p is int ? int : string)) of method OverridenMethodWithConditionalReturnType\Foo::doFoo()',
+				'Return type (($p is int ? stdClass : string)) of method OverriddenMethodWithConditionalReturnType\Bar2::doFoo() should be compatible with return type (($p is int ? int : string)) of method OverriddenMethodWithConditionalReturnType\Foo::doFoo()',
 				37,
 			],
 		]);

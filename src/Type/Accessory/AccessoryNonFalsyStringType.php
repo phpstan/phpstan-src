@@ -42,7 +42,7 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 	use TruthyBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 
 	/** @api */
 	public function __construct()

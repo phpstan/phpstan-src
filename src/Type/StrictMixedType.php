@@ -28,7 +28,7 @@ class StrictMixedType implements CompoundType
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonArrayTypeTrait;
 	use NonIterableTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	public function getReferencedClasses(): array

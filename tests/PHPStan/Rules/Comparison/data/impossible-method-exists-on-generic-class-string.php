@@ -9,7 +9,7 @@ class HelloWorld
 	 */
 	public function sayGenericHello(string $s): void
 	{
-		// no erros on non-final class
+		// no errors on non-final class
 		if (method_exists($s, 'nonExistent')) {
 			$s->nonExistent();
 			$s::nonExistent();

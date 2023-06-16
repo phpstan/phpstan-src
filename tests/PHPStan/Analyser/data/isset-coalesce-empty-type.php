@@ -294,9 +294,9 @@ class Bug4671
 	/**
 	 * @param array<string, string> $strings
 	 */
-	public function doFoo(int $intput, array $strings): void
+	public function doFoo(int $input, array $strings): void
 	{
-		assertType('false', isset($strings[(string) $intput]));
+		assertType('false', isset($strings[(string) $input]));
 	}
 
 }

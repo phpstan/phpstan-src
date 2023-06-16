@@ -403,7 +403,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsOffsetAccesible(): Iterator
+	public function dataIsOffsetAccessible(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -427,7 +427,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataIsOffsetAccesible */
+	/** @dataProvider dataIsOffsetAccessible */
 	public function testIsOffsetAccessible(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isOffsetAccessible();

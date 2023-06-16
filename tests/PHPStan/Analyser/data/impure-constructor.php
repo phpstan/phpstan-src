@@ -1,6 +1,6 @@
 <?php
 
-namespace ImpureConstuctor;
+namespace ImpureConstructor;
 
 use function PHPStan\Testing\assertType;
 

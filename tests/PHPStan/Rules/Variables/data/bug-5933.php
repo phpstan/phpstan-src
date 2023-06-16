@@ -20,7 +20,7 @@ class HelloWorld
 			var_dump($val['a'] ?? null);
 		}
 
-		// Suprisingly it doesn't have a problem with this
+		// Surprisingly it doesn't have a problem with this
 		for ($i = 0; $i < 100; $i++) {
 			var_dump($arr[$i]['a'] ?? null);
 		}

@@ -363,7 +363,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/overriding-variadics.php'], $errors);
 	}
 
-	public function dataLessOverridenParametersWithVariadic(): array
+	public function dataLessOverriddenParametersWithVariadic(): array
 	{
 		return [
 			[
@@ -420,10 +420,10 @@ class OverridingMethodRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataLessOverridenParametersWithVariadic
+	 * @dataProvider dataLessOverriddenParametersWithVariadic
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
-	public function testLessOverridenParametersWithVariadic(int $phpVersionId, array $errors): void
+	public function testLessOverriddenParametersWithVariadic(int $phpVersionId, array $errors): void
 	{
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/less-parameters-variadics.php'], $errors);

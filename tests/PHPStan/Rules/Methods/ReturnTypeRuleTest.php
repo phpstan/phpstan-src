@@ -305,9 +305,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testOverridenTypeFromIfConditionShouldNotBeMixedAfterBranch(): void
+	public function testOverriddenTypeFromIfConditionShouldNotBeMixedAfterBranch(): void
 	{
-		$this->analyse([__DIR__ . '/data/returnTypes-overridenTypeInIfCondition.php'], [
+		$this->analyse([__DIR__ . '/data/returnTypes-overriddenTypeInIfCondition.php'], [
 			[
 				'Method ReturnTypes\OverridenTypeInIfCondition::getAnotherAnotherStock() should return ReturnTypes\Stock but returns ReturnTypes\Stock|null.',
 				15,

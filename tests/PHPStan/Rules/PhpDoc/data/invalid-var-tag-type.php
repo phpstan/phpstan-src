@@ -16,7 +16,7 @@ class Foo
 		/** @var self&\stdClass */
 		$test = new self();
 
-		/** @var aray $test */
+		/** @var array $test */
 		$test = new self();
 
 		/** @var int&string $value */

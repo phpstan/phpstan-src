@@ -353,7 +353,7 @@ class TemplateTypeTest extends PHPStanTestCase
 				$templateType('T', new ObjectType(DateTimeInterface::class), 'b'),
 				['T' => 'T of DateTimeInterface (function a(), argument)'],
 			],
-			'foreign template type, imcompatible bound' => [
+			'foreign template type, incompatible bound' => [
 				TemplateTypeHelper::toArgument($templateType('T', new ObjectType(stdClass::class), 'a')),
 				$templateType('T', new ObjectType(DateTime::class), 'b'),
 				[],

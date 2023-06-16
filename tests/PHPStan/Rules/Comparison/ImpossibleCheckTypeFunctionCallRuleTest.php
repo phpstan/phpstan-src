@@ -843,7 +843,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	}
 
 	/** @return list<array{0: string, 1: int, 2?: string}> */
-	private static function getLooseComparisonAgainsEnumsIssues(): array
+	private static function getLooseComparisonAgainstEnumsIssues(): array
 	{
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		return [
@@ -1018,7 +1018,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 				return $i;
 			},
-			self::getLooseComparisonAgainsEnumsIssues(),
+			self::getLooseComparisonAgainstEnumsIssues(),
 		);
 		$this->analyse([__DIR__ . '/data/loose-comparison-against-enums.php'], $issues);
 	}
@@ -1031,7 +1031,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = false;
-		$issues = self::getLooseComparisonAgainsEnumsIssues();
+		$issues = self::getLooseComparisonAgainstEnumsIssues();
 		$issues = array_values(array_filter($issues, static fn (array $i) => count($i) === 2));
 		$this->analyse([__DIR__ . '/data/loose-comparison-against-enums.php'], $issues);
 	}

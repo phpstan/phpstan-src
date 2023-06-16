@@ -48,7 +48,7 @@ use function substr;
 class IntersectionType implements CompoundType
 {
 
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	private bool $sortedTypes = false;

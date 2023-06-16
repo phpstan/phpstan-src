@@ -43,7 +43,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	use MaybeOffsetAccessibleTypeTrait;
 	use TruthyBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	/** @var array<int, ParameterReflection> */

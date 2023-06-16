@@ -1147,13 +1147,13 @@ class AssertInIf
 			$arrayToPass[] = $item;
 		}
 
-		$this->requireChilds($arrayToPass);
+		$this->requireChildren($arrayToPass);
 	}
 
 	/**
 	 * @param Bar[] $bs
 	 */
-	public function requireChilds(array $bs)
+	public function requireChildren(array $bs)
 	{
 
 	}
@@ -1195,14 +1195,14 @@ class AssertInFor
 	 */
 	public function doFoo(array $objects)
 	{
-		$selfs = [];
+		$self = [];
 		for ($i = 1; $i <= 10; ++$i) {
 			$self = $objects[$i];
 			assert($self instanceof self);
-			$selfs[] = $self;
+			$self[] = $self;
 		}
 
-		foreach ($selfs as $self) {
+		foreach ($self as $self) {
 			$self->doFoo([]);
 			$self->doBar([]);
 		}

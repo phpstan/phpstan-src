@@ -37,7 +37,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 	use NonGenericTypeTrait;
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	private static bool $enabled = false;

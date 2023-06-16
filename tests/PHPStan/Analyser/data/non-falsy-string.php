@@ -117,16 +117,16 @@ class Foo {
 	/**
 	 * @param non-falsy-string $nonFalsey
 	 * @param positive-int $positiveInt
-	 * @param 1|2|3 $postiveRange
+	 * @param 1|2|3 $positiveRange
 	 * @param -1|-2|-3 $negativeRange
 	 */
-	public function doSubstr($nonFalsey, $positiveInt, $postiveRange, $negativeRange): void
+	public function doSubstr($nonFalsey, $positiveInt, $positiveRange, $negativeRange): void
 	{
 		assertType('non-falsy-string', substr($nonFalsey, -5));
 		assertType('non-falsy-string', substr($nonFalsey, $negativeRange));
 
 		assertType('non-falsy-string', substr($nonFalsey, 0, 5));
-		assertType('non-falsy-string', substr($nonFalsey, 0, $postiveRange));
+		assertType('non-falsy-string', substr($nonFalsey, 0, $positiveRange));
 
 		assertType('non-falsy-string', substr($nonFalsey, 0, $positiveInt));
 	}

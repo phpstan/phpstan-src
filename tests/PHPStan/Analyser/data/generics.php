@@ -415,8 +415,8 @@ class A
 	 */
 	public function get()
 	{
-		asserType('T (class PHPStan\Generics\FunctionsAssertType\A, argument)', $this->a);
-		asserType('T (class PHPStan\Generics\FunctionsAssertType\A, argument)', $this->b);
+		assertType('T (class PHPStan\Generics\FunctionsAssertType\A, argument)', $this->a);
+		assertType('T (class PHPStan\Generics\FunctionsAssertType\A, argument)', $this->b);
 		return $this->a;
 	}
 

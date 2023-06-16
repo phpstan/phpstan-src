@@ -22,7 +22,7 @@ use function PHPStan\Testing\assertType;
  *     default_icon: string,
  *     default_translation_domain: string,
  *     default_label_catalogue: string,
- *     dropdown_number_groups_per_colums: int,
+ *     dropdown_number_groups_per_columns: int,
  *     form_type: 'standard'|'horizontal',
  *     html5_validate: bool,
  *     js_debug: bool,

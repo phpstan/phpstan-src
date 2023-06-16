@@ -40,7 +40,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 	use NonIterableTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 
 	/** @api */
 	public function __construct()

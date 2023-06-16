@@ -50,7 +50,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	use NonIterableTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonOffsetAccessibleTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	private ObjectType $objectType;

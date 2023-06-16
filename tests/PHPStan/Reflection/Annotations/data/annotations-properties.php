@@ -11,26 +11,26 @@ use OtherNamespace\Ipsum;
  * @property-read Ipsum $otherTestReadOnly
  * @property self|Bar $fooOrBar
  * @property Ipsum $conflictingProperty
- * @property Foo $overridenProperty
+ * @property Foo $overriddenProperty
  */
 #[AllowDynamicProperties]
 class Foo implements FooInterface
 {
 
 	/** @var Foo */
-	public $overridenPropertyWithAnnotation;
+	public $overriddenPropertyWithAnnotation;
 
 }
 
 /**
- * @property Bar $overridenPropertyWithAnnotation
+ * @property Bar $overriddenPropertyWithAnnotation
  * @property Foo $conflictingAnnotationProperty
  */
 class Bar extends Foo
 {
 
 	/** @var Bar */
-	public $overridenProperty;
+	public $overriddenProperty;
 
 	/** @var Bar */
 	public $conflictingAnnotationProperty;

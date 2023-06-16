@@ -210,7 +210,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testAppendendArrayKey(): void
+	public function testAppendedArrayKey(): void
 	{
 		$this->analyse([__DIR__ . '/../Arrays/data/appended-array-key.php'], [
 			[

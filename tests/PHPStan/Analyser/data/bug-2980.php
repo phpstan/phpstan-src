@@ -23,7 +23,7 @@ class C
 		// 2. Direct test in IF (ternary)Correct
 		print_r(is_array($v) ? array_shift($v) : 'xyz');
 
-		// 3. Result of test stored into variable - PHPStan thows an eror
+		// 3. Result of test stored into variable - PHPStan thows an error
 		$isArray = is_array($v);
 		if ($isArray) {
 			assertType('array<string>', $v);

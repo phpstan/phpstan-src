@@ -180,11 +180,11 @@ class Foo extends FooParent implements FooInterface
 			return $selfListOrCollectionorAnotherCollection;
 		}
 
-		/** @var Bar[]|AnotherCollection $completelyDiffernetUnionIterable */
-		$completelyDiffernetUnionIterable = doFoo();
+		/** @var Bar[]|AnotherCollection $completelyDifferentUnionIterable */
+		$completelyDifferentUnionIterable = doFoo();
 
 		if (rand(0, 1)) {
-			return $completelyDiffernetUnionIterable;
+			return $completelyDifferentUnionIterable;
 		}
 
 		if (rand(0, 1)) {

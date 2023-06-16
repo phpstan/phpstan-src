@@ -172,7 +172,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsArray(): array
+	public function dataSubtractedIsArray(): array
 	{
 		return [
 			[
@@ -227,9 +227,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsArray
+	 * @dataProvider dataSubtractedIsArray
 	 */
-	public function testSubstractedIsArray(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsArray(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isArray();
@@ -241,7 +241,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsConstantArray(): array
+	public function dataSubtractedIsConstantArray(): array
 	{
 		return [
 			[
@@ -301,9 +301,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsConstantArray
+	 * @dataProvider dataSubtractedIsConstantArray
 	 */
-	public function testSubstractedIsConstantArray(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsConstantArray(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isConstantArray();
@@ -315,7 +315,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsString(): array
+	public function dataSubtractedIsString(): array
 	{
 		return [
 			[
@@ -353,9 +353,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsString
+	 * @dataProvider dataSubtractedIsString
 	 */
-	public function testSubstractedIsString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isString();
@@ -367,7 +367,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsNumericString(): array
+	public function dataSubtractedIsNumericString(): array
 	{
 		return [
 			[
@@ -405,9 +405,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsNumericString
+	 * @dataProvider dataSubtractedIsNumericString
 	 */
-	public function testSubstractedIsNumericString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsNumericString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isNumericString();
@@ -419,7 +419,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsNonEmptyString(): array
+	public function dataSubtractedIsNonEmptyString(): array
 	{
 		return [
 			[
@@ -465,9 +465,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsNonEmptyString
+	 * @dataProvider dataSubtractedIsNonEmptyString
 	 */
-	public function testSubstractedIsNonEmptyString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsNonEmptyString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isNonEmptyString();
@@ -479,7 +479,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsNonFalsyString(): array
+	public function dataSubtractedIsNonFalsyString(): array
 	{
 		return [
 			[
@@ -525,9 +525,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsNonFalsyString
+	 * @dataProvider dataSubtractedIsNonFalsyString
 	 */
-	public function testSubstractedIsNonFalsyString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsNonFalsyString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isNonFalsyString();
@@ -539,7 +539,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsLiteralString(): array
+	public function dataSubtractedIsLiteralString(): array
 	{
 		return [
 			[
@@ -593,9 +593,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsClassString
+	 * @dataProvider dataSubtractedIsClassString
 	 */
-	public function testSubstractedIsClassString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsClassString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isClassStringType();
@@ -607,7 +607,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsClassString(): array
+	public function dataSubtractedIsClassString(): array
 	{
 		return [
 			[
@@ -695,9 +695,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsLiteralString
+	 * @dataProvider dataSubtractedIsLiteralString
 	 */
-	public function testSubstractedIsLiteralString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsLiteralString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isLiteralString();
@@ -709,7 +709,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsIterable(): array
+	public function dataSubtractedIsIterable(): array
 	{
 		return [
 			[
@@ -749,9 +749,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsBoolean
+	 * @dataProvider dataSubtractedIsBoolean
 	 */
-	public function testSubstractedIsBoolean(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsBoolean(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isBoolean();
@@ -763,7 +763,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsBoolean(): array
+	public function dataSubtractedIsBoolean(): array
 	{
 		return [
 			[
@@ -790,9 +790,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsFalse
+	 * @dataProvider dataSubtractedIsFalse
 	 */
-	public function testSubstractedIsFalse(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsFalse(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isFalse();
@@ -804,7 +804,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsFalse(): array
+	public function dataSubtractedIsFalse(): array
 	{
 		return [
 			[
@@ -831,9 +831,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsNull
+	 * @dataProvider dataSubtractedIsNull
 	 */
-	public function testSubstractedIsNull(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsNull(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isNull();
@@ -845,7 +845,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsNull(): array
+	public function dataSubtractedIsNull(): array
 	{
 		return [
 			[
@@ -877,9 +877,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsTrue
+	 * @dataProvider dataSubtractedIsTrue
 	 */
-	public function testSubstractedIsTrue(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsTrue(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isTrue();
@@ -891,7 +891,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsTrue(): array
+	public function dataSubtractedIsTrue(): array
 	{
 		return [
 			[
@@ -918,9 +918,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsFloat
+	 * @dataProvider dataSubtractedIsFloat
 	 */
-	public function testSubstractedIsFloat(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsFloat(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isFloat();
@@ -932,7 +932,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsFloat(): array
+	public function dataSubtractedIsFloat(): array
 	{
 		return [
 			[
@@ -954,9 +954,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsInteger
+	 * @dataProvider dataSubtractedIsInteger
 	 */
-	public function testSubstractedIsInteger(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsInteger(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isInteger();
@@ -968,7 +968,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsInteger(): array
+	public function dataSubtractedIsInteger(): array
 	{
 		return [
 			[
@@ -990,9 +990,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsIterable
+	 * @dataProvider dataSubtractedIsIterable
 	 */
-	public function testSubstractedIsIterable(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsIterable(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isIterable();
@@ -1004,7 +1004,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsOffsetAccessible(): array
+	public function dataSubtractedIsOffsetAccessible(): array
 	{
 		return [
 			[
@@ -1045,9 +1045,9 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSubstractedIsOffsetAccessible
+	 * @dataProvider dataSubtractedIsOffsetAccessible
 	 */
-	public function testSubstractedIsOffsetAccessible(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	public function testSubtractedIsOffsetAccessible(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isOffsetAccessible();

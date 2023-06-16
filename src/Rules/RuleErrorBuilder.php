@@ -170,6 +170,10 @@ class RuleErrorBuilder
 	}
 
 	/**
+	 * Sets an error identifier.
+	 *
+	 * List of all current error identifiers in PHPStan: https://phpstan.org/error-identifiers
+	 *
 	 * @phpstan-this-out self<T&IdentifierRuleError>
 	 * @return self<T&IdentifierRuleError>
 	 */

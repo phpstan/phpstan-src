@@ -195,6 +195,11 @@ class Error implements JsonSerializable
 		return $this->nodeType;
 	}
 
+	/**
+	 * Error identifier set via `RuleErrorBuilder::identifier()`.
+	 *
+	 * List of all current error identifiers in PHPStan: https://phpstan.org/error-identifiers
+	 */
 	public function getIdentifier(): ?string
 	{
 		return $this->identifier;

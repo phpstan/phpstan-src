@@ -30,8 +30,7 @@ class BaselinePhpErrorFormatterTest extends ErrorFormatterTestCase
 					5,
 				),
 			],
-			<<<PHP
-<?php declare(strict_types = 1);
+			"<?php declare(strict_types = 1);
 
 \$ignoreErrors = [];
 \$ignoreErrors[] = [
@@ -46,8 +45,7 @@ class BaselinePhpErrorFormatterTest extends ErrorFormatterTestCase
 ];
 
 return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
-
-PHP,
+",
 		];
 
 		yield [
@@ -73,8 +71,7 @@ PHP,
 					6,
 				))->withIdentifier('argument.type'),
 			],
-			<<<PHP
-<?php declare(strict_types = 1);
+			"<?php declare(strict_types = 1);
 
 \$ignoreErrors = [];
 \$ignoreErrors[] = [
@@ -90,8 +87,7 @@ PHP,
 ];
 
 return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
-
-PHP,
+",
 		];
 
 		yield [
@@ -122,8 +118,7 @@ PHP,
 					5,
 				))->withIdentifier('argument.type'),
 			],
-			<<<PHP
-<?php declare(strict_types = 1);
+			"<?php declare(strict_types = 1);
 
 \$ignoreErrors = [];
 \$ignoreErrors[] = [
@@ -145,8 +140,7 @@ PHP,
 ];
 
 return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
-
-PHP,
+",
 		];
 	}
 

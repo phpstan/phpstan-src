@@ -17,13 +17,6 @@ class RemoveUnusedCodeByPhpVersionIdVisitor extends NodeVisitorAbstract
 
 	public function enterNode(Node $node): Node|int|null
 	{
-		if ($node instanceof Node\Stmt\ClassLike) {
-			return null;
-		}
-		if ($node instanceof Node\FunctionLike) {
-			return null;
-		}
-
 		if (!$node instanceof Node\Stmt\If_) {
 			return null;
 		}
@@ -53,8 +46,7 @@ class RemoveUnusedCodeByPhpVersionIdVisitor extends NodeVisitorAbstract
 		$operator = $cond->getOperatorSigil();
 		if ($operator === '===') {
 			$operator = '==';
-		}
-		if ($operator === '!==') {
+		} elseif ($operator === '!==') {
 			$operator = '!=';
 		}
 

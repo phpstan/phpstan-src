@@ -2010,7 +2010,8 @@ class NodeScopeResolver
 				$arrayArgType = $scope->getType($arrayArg);
 				$valueType = $arrayArgType->getIterableValueType();
 				if (count($expr->getArgs()) >= 4) {
-					$valueType = TypeCombinator::union($valueType, $scope->getType($expr->getArgs()[3]->value)->getIterableValueType());
+					$replacementType = $scope->getType($expr->getArgs()[3]->value)->toArray();
+					$valueType = TypeCombinator::union($valueType, $replacementType->getIterableValueType());
 				}
 				$scope = $scope->invalidateExpression($arrayArg)->assignExpression(
 					$arrayArg,

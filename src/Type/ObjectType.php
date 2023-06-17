@@ -1569,6 +1569,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return null;
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return $this->getEnumCases();
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		$object = new ObjectWithoutClassType();

@@ -728,6 +728,11 @@ class ArrayType implements Type
 		return new ErrorType();
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

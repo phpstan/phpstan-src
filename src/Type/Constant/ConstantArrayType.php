@@ -1368,7 +1368,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
-		$variance = $positionVariance->compose(TemplateTypeVariance::createInvariant());
+		$variance = $positionVariance->compose(TemplateTypeVariance::createCovariant());
 		$references = [];
 
 		foreach ($this->keyTypes as $type) {

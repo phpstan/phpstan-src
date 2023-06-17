@@ -16,7 +16,7 @@ use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\NonRemovableTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function get_class;
@@ -33,7 +33,7 @@ class FloatType implements Type
 	use UndecidedComparisonTypeTrait;
 	use NonGenericTypeTrait;
 	use NonOffsetAccessibleTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	/** @api */

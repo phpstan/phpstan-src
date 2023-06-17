@@ -35,7 +35,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\NonRemovableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_map;
 use function array_merge;
@@ -50,7 +50,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	use NonIterableTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonOffsetAccessibleTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	private ObjectType $objectType;

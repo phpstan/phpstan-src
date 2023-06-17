@@ -19,7 +19,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\NonRemovableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
 class StrictMixedType implements CompoundType
@@ -28,7 +28,7 @@ class StrictMixedType implements CompoundType
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonArrayTypeTrait;
 	use NonIterableTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	public function getReferencedClasses(): array

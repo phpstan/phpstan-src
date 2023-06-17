@@ -25,7 +25,7 @@ use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\NonRemovableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
@@ -42,7 +42,7 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 	use TruthyBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 
 	/** @api */
 	public function __construct()

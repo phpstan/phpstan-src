@@ -19,7 +19,7 @@ use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\NonRemovableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
@@ -35,7 +35,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	/** @api */

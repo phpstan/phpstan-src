@@ -30,7 +30,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\NonRemovableTypeTrait;
 use function array_intersect_key;
 use function array_map;
 use function array_shift;
@@ -48,7 +48,7 @@ use function substr;
 class IntersectionType implements CompoundType
 {
 
-	use NonRemoveableTypeTrait;
+	use NonRemovableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	private bool $sortedTypes = false;

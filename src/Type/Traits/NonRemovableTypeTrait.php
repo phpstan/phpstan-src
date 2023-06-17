@@ -4,7 +4,7 @@ namespace PHPStan\Type\Traits;
 
 use PHPStan\Type\Type;
 
-trait NonRemoveableTypeTrait
+trait NonRemovableTypeTrait
 {
 
 	public function tryRemove(Type $typeToRemove): ?Type

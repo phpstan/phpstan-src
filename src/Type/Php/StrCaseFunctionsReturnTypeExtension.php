@@ -26,7 +26,7 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 {
 
 	/**
-	 * [funtion name => minimun arity]
+	 * [function name => minimum arity]
 	 */
 	private const FUNCTIONS = [
 		'strtoupper' => 1,

@@ -219,4 +219,9 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9161(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9161.php'], []);
+	}
+
 }

@@ -230,7 +230,7 @@ parameters:
 	errorFormat: null
 	pro:
 		dnsServers:
-			- '1.1.1.1'
+			- '1.1.1.2'
 	__validate: true
 
 extensions:

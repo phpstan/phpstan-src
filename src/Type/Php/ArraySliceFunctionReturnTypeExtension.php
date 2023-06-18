@@ -5,8 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
@@ -52,14 +51,7 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 		}
 
 		if ($valueType->isIterableAtLeastOnce()->yes()) {
-			$valueType = $valueType->toArray();
-			if ((new NonEmptyArrayType())->isSuperTypeOf($valueType)->yes()) {
-				$arrays = $valueType->getArrays();
-				if (count($arrays) === 1) {
-					$newArrayType = $arrays[0];
-					return $valueType->isList()->yes() ? AccessoryArrayListType::intersectWith($newArrayType) : $newArrayType;
-				}
-			}
+			return TypeCombinator::union($valueType, new ConstantArrayType([], []));
 		}
 
 		return $valueType;

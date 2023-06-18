@@ -96,7 +96,12 @@ class EvaluateCommand extends Command
 					throw new Exception(sprintf('Hash %s does not exist in new results.', $hash));
 				}
 
-				$newTabs = $this->tabCreator->create($this->filterErrors($originalErrors, $newResults[$hash]));
+				$newResult = $newResults[$hash];
+				if (array_key_exists(70100, $originalErrors)) {
+					$newResult[70100] = $newResult[70200];
+				}
+
+				$newTabs = $this->tabCreator->create($this->filterErrors($originalErrors, $newResult));
 				$text = $this->postGenerator->createText($hash, $originalTabs, $newTabs, $botComments);
 				if ($text === null) {
 					continue;

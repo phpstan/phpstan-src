@@ -355,11 +355,6 @@ class NodeScopeResolver
 	): StatementResult
 	{
 		if (
-			$stmt instanceof Throw_
-			|| $stmt instanceof Return_
-		) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt, $stmt->expr, $nodeCallback);
-		} elseif (
 			!$stmt instanceof Static_
 			&& !$stmt instanceof Foreach_
 			&& !$stmt instanceof Node\Stmt\Global_
@@ -392,7 +387,12 @@ class NodeScopeResolver
 			}
 		}
 
-		$nodeCallback($stmt, $scope);
+		$stmtScope = $scope;
+		if ($stmt instanceof Throw_ || $stmt instanceof Return_) {
+			$stmtScope = $this->processStmtVarAnnotation($scope, $stmt, $stmt->expr, $nodeCallback);
+		}
+
+		$nodeCallback($stmt, $stmtScope);
 
 		$overridingThrowPoints = $this->getOverridingThrowPoints($stmt, $scope);
 

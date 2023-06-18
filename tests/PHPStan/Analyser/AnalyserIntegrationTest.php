@@ -1176,6 +1176,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug9459(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9459.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('PHPDoc tag @var with type callable(): array is not subtype of native type Closure(): array{}.', $errors[0]->getMessage());
+		$this->assertSame(10, $errors[0]->getLine());
+	}
+
 	public function testDiscussion9053(): void
 	{
 		if (PHP_VERSION_ID < 80000) {

@@ -99,12 +99,12 @@ class DownloadCommand extends Command
 		}
 
 		$matrix = [];
-		foreach ([70100, 70200, 70300, 70400, 80000, 80100, 80200] as $phpVersion) {
+		foreach ([70200, 70300, 70400, 80000, 80100, 80200] as $phpVersion) {
 			$phpVersionHashes = [];
 			foreach ($cachedResults as $hash => $result) {
 				$resultPhpVersions = array_keys($result->getVersionedErrors());
 				if ($resultPhpVersions === [70400]) {
-					$resultPhpVersions = [70100, 70200, 70300, 70400, 80000];
+					$resultPhpVersions = [70200, 70300, 70400, 80000];
 				}
 
 				if (!in_array(80100, $resultPhpVersions, true)) {

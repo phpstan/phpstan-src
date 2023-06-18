@@ -66,7 +66,7 @@ use function implode;
 	$application = new Application();
 	$application->add(new DownloadCommand($client, new PlaygroundClient(new \GuzzleHttp\Client()), $issueCommentDownloader, $issueCachePath, $playgroundCachePath));
 	$application->add(new RunCommand($playgroundCachePath, $tmpDir));
-	$application->add(new EvaluateCommand(new TabCreator(), $postGenerator, $client, $issueCommentDownloader, $issueCachePath, $playgroundCachePath, $tmpDir, $gitBranch, $phpstanSrcCommitBefore, $phpstanSrcCommitAfter));
+	$application->add(new EvaluateCommand(new TabCreator(), $postGenerator, $client, $issueCachePath, $playgroundCachePath, $tmpDir, $gitBranch, $phpstanSrcCommitBefore, $phpstanSrcCommitAfter));
 
 	$application->setCatchExceptions(false);
 	$application->run();

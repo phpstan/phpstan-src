@@ -9,10 +9,14 @@ class Foo
 
 	/**
 	 * @param non-empty-array $a
+	 * @param non-empty-list $b
+	 * @param non-empty-array<int>|non-empty-list<string> $c
 	 */
-	public function nonEmpty(array $a): void
+	public function nonEmpty(array $a, array $b, array $c): void
 	{
 		assertType('array', array_slice($a, 1));
+		assertType('list<mixed>', array_slice($b, 1));
+		assertType('array<int|string>', array_slice($c, 1));
 	}
 
 	/**

@@ -71,6 +71,15 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @template for anonymous class cannot have existing type alias TypeAlias as its name.',
 				78,
 			],
+			[
+				'Type projection covariant int in generic type ClassTemplateType\Consecteur<covariant int> in PHPDoc tag @template U is redundant, template type T of class ClassTemplateType\Consecteur has the same variance.',
+				113,
+				'You can safely remove the type projection.',
+			],
+			[
+				'Type projection contravariant int in generic type ClassTemplateType\Consecteur<contravariant int> in PHPDoc tag @template W is conflicting with variance of template type T of class ClassTemplateType\Consecteur.',
+				113,
+			],
 		]);
 	}
 

@@ -49,6 +49,15 @@ class TraitTemplateTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @template for trait TraitTemplateType\Ipsum cannot have existing type alias ImportedAlias as its name.',
 				45,
 			],
+			[
+				'Type projection covariant int in generic type TraitTemplateType\Dolor<covariant int> in PHPDoc tag @template U is redundant, template type T of class TraitTemplateType\Dolor has the same variance.',
+				64,
+				'You can safely remove the type projection.',
+			],
+			[
+				'Type projection contravariant int in generic type TraitTemplateType\Dolor<contravariant int> in PHPDoc tag @template W is conflicting with variance of template type T of class TraitTemplateType\Dolor.',
+				64,
+			],
 		]);
 	}
 

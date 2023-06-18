@@ -84,6 +84,15 @@ class MixinRuleTest extends RuleTestCase
 				'PHPDoc tag @mixin contains non-object type int.',
 				92,
 			],
+			[
+				'Type projection contravariant MixinRule\Foo in generic type MixinRule\Adipiscing<contravariant MixinRule\Foo> in PHPDoc tag @mixin is conflicting with variance of template type T of class MixinRule\Adipiscing.',
+				108,
+			],
+			[
+				'Type projection covariant MixinRule\Foo in generic type MixinRule\Adipiscing<covariant MixinRule\Foo> in PHPDoc tag @mixin is redundant, template type T of class MixinRule\Adipiscing has the same variance.',
+				116,
+				'You can safely remove the type projection.',
+			],
 		]);
 	}
 

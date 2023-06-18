@@ -61,3 +61,11 @@ class Ipsum
 	use NestedTrait;
 
 }
+
+class Dolor
+{
+
+	/** @use GenericTrait<covariant \Throwable> */
+	use GenericTrait;
+
+}

@@ -56,6 +56,7 @@ class EnumAncestorsRule implements Rule
 			'',
 			'',
 			'',
+			'',
 		);
 
 		$implementsErrors = $this->genericAncestorsCheck->check(
@@ -68,6 +69,7 @@ class EnumAncestorsRule implements Rule
 			'Generic type %s in PHPDoc tag @implements does not specify all template types of %s %s: %s',
 			'Generic type %s in PHPDoc tag @implements specifies %d template types, but %s %s supports only %d: %s',
 			'Type %s in generic type %s in PHPDoc tag @implements is not subtype of template type %s of %s %s.',
+			'Type projection %s in generic type %s in PHPDoc tag @implements is not allowed.',
 			'PHPDoc tag @implements has invalid type %s.',
 			sprintf('Enum %s implements generic interface %%s but does not specify its types: %%s', $escapedEnumName),
 			sprintf('in implemented type %%s of enum %s', $escapedEnumName),

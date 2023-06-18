@@ -284,3 +284,39 @@ function genericWrongBound(int $i)
 {
 
 }
+
+/**
+ * @param \InvalidPhpDocDefinitions\FooCovariantGeneric<int> $foo
+ * @return \InvalidPhpDocDefinitions\FooCovariantGeneric<int>
+ */
+function genericCompatibleInvariantType($foo)
+{
+
+}
+
+/**
+ * @param \InvalidPhpDocDefinitions\FooCovariantGeneric<covariant int> $foo
+ * @return \InvalidPhpDocDefinitions\FooCovariantGeneric<covariant int>
+ */
+function genericRedundantTypeProjection($foo)
+{
+
+}
+
+/**
+ * @param \InvalidPhpDocDefinitions\FooCovariantGeneric<*> $foo
+ * @return \InvalidPhpDocDefinitions\FooCovariantGeneric<*>
+ */
+function genericCompatibleStarProjection($foo)
+{
+
+}
+
+/**
+ * @param \InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int> $foo
+ * @return \InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int>
+ */
+function genericIncompatibleTypeProjection($foo)
+{
+
+}

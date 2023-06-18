@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
@@ -50,7 +51,7 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 		}
 
 		if ($valueType->isIterableAtLeastOnce()->yes()) {
-			return $valueType->toArray();
+			return TypeCombinator::union($valueType, new ConstantArrayType([], []));
 		}
 
 		return $valueType;

@@ -32,6 +32,11 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 2
+			path: src/Analyser/MutatingScope.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 4
 			path: src/Analyser/MutatingScope.php

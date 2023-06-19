@@ -29,6 +29,7 @@ use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
 use PHPStan\Node\ExecutionEndNode;
+use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
@@ -675,6 +676,10 @@ class MutatingScope implements Scope
 
 		if (!$node instanceof Variable && $this->hasExpressionType($node)->yes()) {
 			return $this->expressionTypes[$exprString]->getType();
+		}
+
+		if ($node instanceof AlwaysRememberedExpr) {
+			return $node->getExprType();
 		}
 
 		if ($node instanceof Expr\BinaryOp\Smaller) {
@@ -3087,6 +3092,20 @@ class MutatingScope implements Scope
 		}
 
 		return ParserNodeTypeToPHPStanType::resolve($type, $this->isInClass() ? $this->getClassReflection() : null);
+	}
+
+	public function enterMatch(Expr\Match_ $expr): self
+	{
+		if ($expr->cond instanceof Variable) {
+			return $this;
+		}
+
+		$type = $this->getType($expr->cond);
+		$nativeType = $this->getNativeType($expr->cond);
+		$condExpr = new AlwaysRememberedExpr($expr->cond, $type, $nativeType);
+		$expr->cond = $condExpr;
+
+		return $this->assignExpression($condExpr, $type, $nativeType);
 	}
 
 	public function enterForeach(Expr $iteratee, string $valueName, ?string $keyName): self

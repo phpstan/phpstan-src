@@ -18,6 +18,7 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
+use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -191,24 +192,33 @@ class TypeSpecifier
 				}
 			}
 
-			$rightType = $scope->getType($expr->right);
+			$rightExpr = $expr->right;
+			if ($rightExpr instanceof AlwaysRememberedExpr) {
+				$rightExpr = $rightExpr->getExpr();
+			}
+
+			$leftExpr = $expr->left;
+			if ($leftExpr instanceof AlwaysRememberedExpr) {
+				$leftExpr = $leftExpr->getExpr();
+			}
+			$rightType = $scope->getType($rightExpr);
 			if (
-				$expr->left instanceof ClassConstFetch &&
-				$expr->left->class instanceof Expr &&
-				$expr->left->name instanceof Node\Identifier &&
-				$expr->right instanceof ClassConstFetch &&
+				$leftExpr instanceof ClassConstFetch &&
+				$leftExpr->class instanceof Expr &&
+				$leftExpr->name instanceof Node\Identifier &&
+				$rightExpr instanceof ClassConstFetch &&
 				$rightType instanceof ConstantStringType &&
-				strtolower($expr->left->name->toString()) === 'class'
+				strtolower($leftExpr->name->toString()) === 'class'
 			) {
 				return $this->specifyTypesInCondition(
 					$scope,
 					new Instanceof_(
-						$expr->left->class,
+						$leftExpr->class,
 						new Name($rightType->getValue()),
 					),
 					$context,
 					$rootExpr,
-				);
+				)->unionWith($this->create($expr->left, $rightType, $context, false, $scope, $rootExpr));
 			}
 			if ($context->false()) {
 				$identicalType = $scope->getType($expr);
@@ -1420,16 +1430,27 @@ class TypeSpecifier
 	{
 		$leftType = $scope->getType($binaryOperation->left);
 		$rightType = $scope->getType($binaryOperation->right);
+
+		$rightExpr = $binaryOperation->right;
+		if ($rightExpr instanceof AlwaysRememberedExpr) {
+			$rightExpr = $rightExpr->getExpr();
+		}
+
+		$leftExpr = $binaryOperation->left;
+		if ($leftExpr instanceof AlwaysRememberedExpr) {
+			$leftExpr = $leftExpr->getExpr();
+		}
+
 		if (
 			$leftType instanceof ConstantScalarType
-			&& !$binaryOperation->right instanceof ConstFetch
-			&& !$binaryOperation->right instanceof ClassConstFetch
+			&& !$rightExpr instanceof ConstFetch
+			&& !$rightExpr instanceof ClassConstFetch
 		) {
 			return [$binaryOperation->right, $leftType];
 		} elseif (
 			$rightType instanceof ConstantScalarType
-			&& !$binaryOperation->left instanceof ConstFetch
-			&& !$binaryOperation->left instanceof ClassConstFetch
+			&& !$leftExpr instanceof ConstFetch
+			&& !$leftExpr instanceof ClassConstFetch
 		) {
 			return [$binaryOperation->left, $rightType];
 		}

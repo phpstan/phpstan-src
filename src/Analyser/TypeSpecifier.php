@@ -226,6 +226,9 @@ class TypeSpecifier
 				}
 
 				if ($types !== null) {
+					if ($leftExpr !== $unwrappedLeftExpr) {
+						$types = $types->unionWith($this->create($leftExpr, $rightType, $context, false, $scope, $rootExpr));
+					}
 					return $types;
 				}
 			}

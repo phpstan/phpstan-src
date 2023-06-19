@@ -184,8 +184,6 @@ class StaticType implements TypeWithClassName, SubtractableType
 			return false;
 		}
 
-		/** @var StaticType $type */
-		$type = $type;
 		return $this->getStaticObjectType()->equals($type->getStaticObjectType());
 	}
 

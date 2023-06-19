@@ -1513,11 +1513,6 @@ parameters:
 			path: src/Type/StaticType.php
 
 		-
-			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Type is always PHPStan\\\\Type\\\\StaticType but it's error\\-prone and dangerous\\.$#"
-			count: 1
-			path: src/Type/StaticType.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/StringType.php

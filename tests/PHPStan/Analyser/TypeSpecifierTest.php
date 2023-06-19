@@ -193,8 +193,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 					]),
 					new String_('Foo'),
 				),
-				['$foo' => 'Foo'],
-				['$foo' => '~Foo'],
+				['$foo' => 'Foo', 'get_class($foo)' => '\'Foo\''],
+				['get_class($foo)' => '~\'Foo\''],
 			],
 			[
 				new Equal(
@@ -203,8 +203,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 						new Arg(new Variable('foo')),
 					]),
 				),
-				['$foo' => 'Foo'],
-				['$foo' => '~Foo'],
+				['$foo' => 'Foo', 'get_class($foo)' => '\'Foo\''],
+				['get_class($foo)' => '~\'Foo\''],
 			],
 			[
 				new BooleanNot(

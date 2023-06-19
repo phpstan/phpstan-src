@@ -334,15 +334,7 @@ class TypeSpecifier
 					&& isset($exprNode->getArgs()[0])
 					&& $constantType instanceof ConstantStringType
 				) {
-					return $this->specifyTypesInCondition(
-						$scope,
-						new Instanceof_(
-							$exprNode->getArgs()[0]->value,
-							new Name($constantType->getValue()),
-						),
-						$context,
-						$rootExpr,
-					);
+					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 				}
 			}
 
@@ -1116,6 +1108,24 @@ class TypeSpecifier
 				$argType = $this->create($unwrappedExprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
 				return $callType->unionWith($argType);
 			}
+		}
+
+		if (
+			$context->true()
+			&& $unwrappedExprNode instanceof FuncCall
+			&& $unwrappedExprNode->name instanceof Name
+			&& strtolower($unwrappedExprNode->name->toString()) === 'get_class'
+			&& isset($unwrappedExprNode->getArgs()[0])
+		) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				new Instanceof_(
+					$unwrappedExprNode->getArgs()[0]->value,
+					new Name($constantType->getValue()),
+				),
+				$context,
+				$rootExpr,
+			)->unionWith($this->create($exprNode, $constantType, $context, false, $scope, $rootExpr));
 		}
 
 		if (

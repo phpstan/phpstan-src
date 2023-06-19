@@ -77,6 +77,17 @@ class Foo
 		};
 	}
 
+	public function doGettypeUnion(int|float|bool|string|object|array $value): void
+	{
+		$intOrString = 'integer';
+		if (rand(0, 1)) {
+			$intOrString = 'string';
+		}
+		match (gettype($value)) {
+			$intOrString => assertType('int|string', $value),
+		};
+	}
+
 }
 
 final class FinalFoo

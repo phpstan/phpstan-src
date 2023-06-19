@@ -181,6 +181,55 @@ class TypeSpecifier
 				return $this->create($exprNode, new ObjectWithoutClassType(), $context, false, $scope, $rootExpr);
 			}
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Identical) {
+			$leftExpr = $expr->left;
+			$rightExpr = $expr->right;
+			if ($rightExpr instanceof FuncCall && !$leftExpr instanceof FuncCall) {
+				[$leftExpr, $rightExpr] = [$rightExpr, $leftExpr];
+			}
+			$unwrappedLeftExpr = $leftExpr;
+			if ($leftExpr instanceof AlwaysRememberedExpr) {
+				$unwrappedLeftExpr = $leftExpr->getExpr();
+			}
+			$rightType = $scope->getType($rightExpr);
+			if (
+				$context->true()
+				&& $unwrappedLeftExpr instanceof FuncCall
+				&& $unwrappedLeftExpr->name instanceof Name
+				&& strtolower($unwrappedLeftExpr->name->toString()) === 'get_class'
+				&& isset($unwrappedLeftExpr->getArgs()[0])
+			) {
+				if ($rightType->getClassStringObjectType()->isObject()->yes()) {
+					return $this->create(
+						$unwrappedLeftExpr->getArgs()[0]->value,
+						$rightType->getClassStringObjectType(),
+						$context,
+						false,
+						$scope,
+						$rootExpr,
+					)->unionWith($this->create($leftExpr, $rightType, $context, false, $scope, $rootExpr));
+				}
+			}
+
+			if (count($rightType->getConstantStrings()) > 0) {
+				$types = null;
+				foreach ($rightType->getConstantStrings() as $constantString) {
+					$specifiedType = $this->specifyTypesForConstantStringBinaryExpression($unwrappedLeftExpr, $constantString, $context, $scope, $rootExpr);
+					if ($specifiedType === null) {
+						continue;
+					}
+					if ($types === null) {
+						$types = $specifiedType;
+						continue;
+					}
+
+					$types = $types->intersectWith($specifiedType);
+				}
+
+				if ($types !== null) {
+					return $types;
+				}
+			}
+
 			$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
 			if ($expressions !== null) {
 				$exprNode = $expressions[0];
@@ -192,16 +241,14 @@ class TypeSpecifier
 				}
 			}
 
-			$rightExpr = $expr->right;
 			if ($rightExpr instanceof AlwaysRememberedExpr) {
 				$rightExpr = $rightExpr->getExpr();
 			}
 
-			$leftExpr = $expr->left;
 			if ($leftExpr instanceof AlwaysRememberedExpr) {
 				$leftExpr = $leftExpr->getExpr();
 			}
-			$rightType = $scope->getType($rightExpr);
+
 			if (
 				$leftExpr instanceof ClassConstFetch &&
 				$leftExpr->class instanceof Expr &&
@@ -322,7 +369,7 @@ class TypeSpecifier
 					&& $exprNode->name instanceof Name
 					&& strtolower($exprNode->name->toString()) === 'gettype'
 					&& isset($exprNode->getArgs()[0])
-					&& $constantType instanceof ConstantStringType
+					&& $constantType->isString()->yes()
 				) {
 					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 				}
@@ -332,7 +379,7 @@ class TypeSpecifier
 					&& $exprNode->name instanceof Name
 					&& strtolower($exprNode->name->toString()) === 'get_class'
 					&& isset($exprNode->getArgs()[0])
-					&& $constantType instanceof ConstantStringType
+					&& $constantType->isString()->yes()
 				) {
 					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 				}
@@ -1020,10 +1067,6 @@ class TypeSpecifier
 
 		}
 
-		if ($constantType instanceof ConstantStringType) {
-			return $this->specifyTypesForConstantStringBinaryExpression($exprNode, $constantType, $context, $scope, $rootExpr);
-		}
-
 		return null;
 	}
 
@@ -1035,11 +1078,6 @@ class TypeSpecifier
 		?Expr $rootExpr,
 	): ?SpecifiedTypes
 	{
-		$unwrappedExprNode = $exprNode;
-		if ($exprNode instanceof AlwaysRememberedExpr) {
-			$unwrappedExprNode = $exprNode->getExpr();
-		}
-
 		if (
 			$context->truthy()
 			&& $exprNode instanceof FuncCall
@@ -1072,10 +1110,10 @@ class TypeSpecifier
 		}
 
 		if (
-			$unwrappedExprNode instanceof FuncCall
-			&& $unwrappedExprNode->name instanceof Name
-			&& strtolower($unwrappedExprNode->name->toString()) === 'gettype'
-			&& isset($unwrappedExprNode->getArgs()[0])
+			$exprNode instanceof FuncCall
+			&& $exprNode->name instanceof Name
+			&& strtolower($exprNode->name->toString()) === 'gettype'
+			&& isset($exprNode->getArgs()[0])
 		) {
 			$type = null;
 			if ($constantType->getValue() === 'string') {
@@ -1104,28 +1142,10 @@ class TypeSpecifier
 			}
 
 			if ($type !== null) {
-				$callType = $this->create($unwrappedExprNode, $constantType, $context, false, $scope, $rootExpr);
-				$argType = $this->create($unwrappedExprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
+				$callType = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
+				$argType = $this->create($exprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
 				return $callType->unionWith($argType);
 			}
-		}
-
-		if (
-			$context->true()
-			&& $unwrappedExprNode instanceof FuncCall
-			&& $unwrappedExprNode->name instanceof Name
-			&& strtolower($unwrappedExprNode->name->toString()) === 'get_class'
-			&& isset($unwrappedExprNode->getArgs()[0])
-		) {
-			return $this->specifyTypesInCondition(
-				$scope,
-				new Instanceof_(
-					$unwrappedExprNode->getArgs()[0]->value,
-					new Name($constantType->getValue()),
-				),
-				$context,
-				$rootExpr,
-			)->unionWith($this->create($exprNode, $constantType, $context, false, $scope, $rootExpr));
 		}
 
 		if (

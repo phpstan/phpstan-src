@@ -68,4 +68,12 @@ class Foo
 		};
 	}
 
+	public function doGettype(int|float|bool|string|object|array $value): void
+	{
+		match (gettype($value)) {
+			'integer' => assertType('int', $value),
+			'string' => assertType('string', $value),
+		};
+	}
+
 }

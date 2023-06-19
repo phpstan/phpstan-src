@@ -2705,7 +2705,7 @@ class NodeScopeResolver
 			$scope = $condResult->getScope();
 			$hasYield = $condResult->hasYield();
 			$throwPoints = $condResult->getThrowPoints();
-			$matchScope = $scope;
+			$matchScope = $scope->enterMatch($expr);
 			$armNodes = [];
 			$hasDefaultCond = false;
 			$hasAlwaysTrueCond = false;

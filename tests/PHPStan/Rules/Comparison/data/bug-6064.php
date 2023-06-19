@@ -9,3 +9,11 @@ function (): void {
 		1 => 'up'
 	};
 };
+
+function (): void {
+	$result = match(rand(1, 3)) {
+		1 => 'foo',
+		2 => 'bar',
+		3 => 'baz'
+	};
+};

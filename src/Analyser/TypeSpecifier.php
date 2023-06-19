@@ -1043,6 +1043,11 @@ class TypeSpecifier
 		?Expr $rootExpr,
 	): ?SpecifiedTypes
 	{
+		$unwrappedExprNode = $exprNode;
+		if ($exprNode instanceof AlwaysRememberedExpr) {
+			$unwrappedExprNode = $exprNode->getExpr();
+		}
+
 		if (
 			$context->truthy()
 			&& $exprNode instanceof FuncCall
@@ -1075,10 +1080,10 @@ class TypeSpecifier
 		}
 
 		if (
-			$exprNode instanceof FuncCall
-			&& $exprNode->name instanceof Name
-			&& strtolower($exprNode->name->toString()) === 'gettype'
-			&& isset($exprNode->getArgs()[0])
+			$unwrappedExprNode instanceof FuncCall
+			&& $unwrappedExprNode->name instanceof Name
+			&& strtolower($unwrappedExprNode->name->toString()) === 'gettype'
+			&& isset($unwrappedExprNode->getArgs()[0])
 		) {
 			$type = null;
 			if ($constantType->getValue() === 'string') {
@@ -1107,8 +1112,8 @@ class TypeSpecifier
 			}
 
 			if ($type !== null) {
-				$callType = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-				$argType = $this->create($exprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
+				$callType = $this->create($unwrappedExprNode, $constantType, $context, false, $scope, $rootExpr);
+				$argType = $this->create($unwrappedExprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
 				return $callType->unionWith($argType);
 			}
 		}

@@ -180,3 +180,26 @@ function (): string {
 		-1 => 'down',
 	};
 };
+
+final class FinalFoo
+{
+
+}
+
+final class FinalBar
+{
+
+}
+
+class TestGetClass
+{
+
+	public function doMatch(FinalFoo|FinalBar $class): void
+	{
+		match (get_class($class)) {
+			FinalFoo::class => 1,
+			FinalBar::class => 2,
+		};
+	}
+
+}

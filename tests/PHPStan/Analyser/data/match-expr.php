@@ -2,6 +2,7 @@
 
 namespace MatchExpr;
 
+use function get_class;
 use function PHPStan\Testing\assertType;
 
 class Foo
@@ -73,6 +74,29 @@ class Foo
 		match (gettype($value)) {
 			'integer' => assertType('int', $value),
 			'string' => assertType('string', $value),
+		};
+	}
+
+}
+
+final class FinalFoo
+{
+
+}
+
+final class FinalBar
+{
+
+}
+
+class TestGetClass
+{
+
+	public function doMatch(FinalFoo|FinalBar $class): void
+	{
+		match (get_class($class)) {
+			FinalFoo::class => assertType(FinalFoo::class, $class),
+			FinalBar::class => assertType(FinalBar::class, $class),
 		};
 	}
 

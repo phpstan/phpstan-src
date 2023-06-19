@@ -369,7 +369,7 @@ class TypeSpecifier
 					&& $exprNode->name instanceof Name
 					&& strtolower($exprNode->name->toString()) === 'gettype'
 					&& isset($exprNode->getArgs()[0])
-					&& $constantType instanceof ConstantStringType
+					&& $constantType->isString()->yes()
 				) {
 					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 				}
@@ -379,7 +379,7 @@ class TypeSpecifier
 					&& $exprNode->name instanceof Name
 					&& strtolower($exprNode->name->toString()) === 'get_class'
 					&& isset($exprNode->getArgs()[0])
-					&& $constantType instanceof ConstantStringType
+					&& $constantType->isString()->yes()
 				) {
 					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 				}

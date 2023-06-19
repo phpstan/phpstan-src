@@ -86,7 +86,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
-			count: 5
+			count: 2
 			path: src/Analyser/TypeSpecifier.php
 
 		-

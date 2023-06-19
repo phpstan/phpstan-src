@@ -269,6 +269,11 @@ class FloatType implements Type
 		return new IdentifierTypeNode('float');
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

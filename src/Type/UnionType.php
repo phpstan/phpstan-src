@@ -11,6 +11,7 @@ use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedMethodPrototypeReflection;
@@ -31,6 +32,7 @@ use function array_unique;
 use function array_values;
 use function count;
 use function implode;
+use function md5;
 use function sprintf;
 use function strpos;
 
@@ -978,6 +980,21 @@ class UnionType implements CompoundType
 	public function exponentiate(Type $exponent): Type
 	{
 		return $this->unionTypes(static fn (Type $type): Type => $type->exponentiate($exponent));
+	}
+
+	public function getFiniteTypes(): array
+	{
+		$types = $this->notBenevolentPickFromTypes(static fn (Type $type) => $type->getFiniteTypes());
+		$uniquedTypes = [];
+		foreach ($types as $type) {
+			$uniquedTypes[md5($type->describe(VerbosityLevel::cache()))] = $type;
+		}
+
+		if (count($uniquedTypes) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
+			return [];
+		}
+
+		return array_values($uniquedTypes);
 	}
 
 	/**

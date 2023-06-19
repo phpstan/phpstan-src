@@ -541,6 +541,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->exponentiate($exponent);
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return $this->resolve()->getFiniteTypes();
+	}
+
 	public function resolve(): Type
 	{
 		if ($this->result === null) {

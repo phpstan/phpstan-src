@@ -101,6 +101,11 @@ class ResourceType implements Type
 		return new ErrorType();
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('resource');

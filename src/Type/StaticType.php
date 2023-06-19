@@ -700,6 +700,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->exponentiate($exponent);
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return $this->getStaticObjectType()->getFiniteTypes();
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('static');

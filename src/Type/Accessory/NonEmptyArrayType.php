@@ -429,6 +429,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	public static function __set_state(array $properties): Type
 	{
 		return new self();

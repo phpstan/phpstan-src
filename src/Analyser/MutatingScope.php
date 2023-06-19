@@ -3659,7 +3659,7 @@ class MutatingScope implements Scope
 			}
 			$typeSpecifications[] = [
 				'sure' => true,
-				'exprString' => $exprString,
+				'exprString' => (string) $exprString,
 				'expr' => $expr,
 				'type' => $type,
 			];
@@ -3670,7 +3670,7 @@ class MutatingScope implements Scope
 			}
 			$typeSpecifications[] = [
 				'sure' => false,
-				'exprString' => $exprString,
+				'exprString' => (string) $exprString,
 				'expr' => $expr,
 				'type' => $type,
 			];

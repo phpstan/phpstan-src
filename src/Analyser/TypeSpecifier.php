@@ -225,8 +225,7 @@ class TypeSpecifier
 			$exprLeftType = $scope->getType($expr->left);
 			$exprRightType = $scope->getType($expr->right);
 			if (
-				count($exprLeftType->getConstantScalarValues()) === 1
-				|| count($exprLeftType->getEnumCases()) === 1
+				count($exprLeftType->getFiniteTypes()) === 1
 				|| ($exprLeftType->isConstantValue()->yes() && !$exprRightType->equals($exprLeftType) && $exprRightType->isSuperTypeOf($exprLeftType)->yes())
 			) {
 				$types = $this->create(
@@ -239,8 +238,7 @@ class TypeSpecifier
 				);
 			}
 			if (
-				count($exprRightType->getConstantScalarValues()) === 1
-				|| count($exprRightType->getEnumCases()) === 1
+				count($exprRightType->getFiniteTypes()) === 1
 				|| ($exprRightType->isConstantValue()->yes() && !$exprLeftType->equals($exprRightType) && $exprLeftType->isSuperTypeOf($exprRightType)->yes())
 			) {
 				$leftType = $this->create(

@@ -1309,10 +1309,10 @@ class InitializerExprTypeResolver
 			return new ConstantBooleanType($leftType->getValue() === $rightType->getValue());
 		}
 
-		$leftTypeEnumCases = $leftType->getEnumCases();
-		$rightTypeEnumCases = $rightType->getEnumCases();
-		if (count($leftTypeEnumCases) === 1 && count($rightTypeEnumCases) === 1) {
-			return new ConstantBooleanType($leftTypeEnumCases[0]->equals($rightTypeEnumCases[0]));
+		$leftTypeFiniteTypes = $leftType->getFiniteTypes();
+		$rightTypeFiniteType = $rightType->getFiniteTypes();
+		if (count($leftTypeFiniteTypes) === 1 && count($rightTypeFiniteType) === 1) {
+			return new ConstantBooleanType($leftTypeFiniteTypes[0]->equals($rightTypeFiniteType[0]));
 		}
 
 		$isSuperset = $leftType->isSuperTypeOf($rightType);

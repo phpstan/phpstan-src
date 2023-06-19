@@ -470,6 +470,11 @@ class IterableType implements CompoundType
 		return new ErrorType();
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		$isMixedKeyType = $this->keyType instanceof MixedType && $this->keyType->describe(VerbosityLevel::precise()) === 'mixed';

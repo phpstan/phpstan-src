@@ -909,6 +909,11 @@ class MixedType implements CompoundType, SubtractableType
 		]);
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('mixed');

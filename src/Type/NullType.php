@@ -355,6 +355,11 @@ class NullType implements ConstantScalarType
 		return new MixedType();
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [$this];
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return new UnionType(

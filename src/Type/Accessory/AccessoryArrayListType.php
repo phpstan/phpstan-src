@@ -474,6 +474,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('list');

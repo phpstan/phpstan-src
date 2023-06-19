@@ -588,6 +588,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return new ErrorType();
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		$parameters = [];

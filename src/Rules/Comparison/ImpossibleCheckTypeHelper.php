@@ -99,10 +99,8 @@ class ImpossibleCheckTypeHelper
 					$needleArg = $node->getArgs()[0]->value;
 					$needleType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($needleArg) : $scope->getNativeType($needleArg));
 					$valueType = $haystackType->getIterableValueType();
-					$constantNeedleTypesCount = count($needleType->getConstantScalarValues())
-						+ count($needleType->getEnumCases());
-					$constantHaystackTypesCount = count($valueType->getConstantScalarValues())
-						+ count($valueType->getEnumCases());
+					$constantNeedleTypesCount = count($needleType->getFiniteTypes());
+					$constantHaystackTypesCount = count($valueType->getFiniteTypes());
 					$isNeedleSupertype = $needleType->isSuperTypeOf($valueType);
 					if ($haystackType->isConstantArray()->no()) {
 						if ($haystackType->isIterableAtLeastOnce()->yes()) {

@@ -120,4 +120,9 @@ trait ConstantScalarTypeTrait
 		return [$this->getValue()];
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [$this];
+	}
+
 }

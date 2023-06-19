@@ -342,6 +342,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		]);
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('numeric-string');

@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -94,7 +95,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			$values[] = $argType->getConstantScalarValues();
 		}
 
-		$combinations = $this->combinations($values);
+		$combinations = CombinationsHelper::combinations($values);
 		$returnTypes = [];
 		foreach ($combinations as $combination) {
 			$format = array_shift($combination);
@@ -118,31 +119,6 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		return TypeCombinator::union(...$returnTypes);
-	}
-
-	/**
-	 * @param array<mixed> $arrays
-	 * @return iterable<mixed>
-	 */
-	private function combinations(array $arrays): iterable
-	{
-		// from https://stackoverflow.com/a/70800936/565782 by Arnaud Le Blanc
-		if ($arrays === []) {
-			yield [];
-			return;
-		}
-
-		$head = array_shift($arrays);
-
-		foreach ($head as $elem) {
-			foreach ($this->combinations($arrays) as $combination) {
-				$comb = [$elem];
-				foreach ($combination as $c) {
-					$comb[] = $c;
-				}
-				yield $comb;
-			}
-		}
 	}
 
 }

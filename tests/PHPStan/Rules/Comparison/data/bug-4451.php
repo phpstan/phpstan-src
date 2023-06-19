@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.1
 
 namespace Bug4451;
 

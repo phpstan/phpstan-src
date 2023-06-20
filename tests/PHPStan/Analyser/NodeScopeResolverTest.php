@@ -223,6 +223,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3915.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2378.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6294.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2580.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/match-expr.php');
 
@@ -1255,6 +1257,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/invalid-type-aliases.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/asymmetric-properties.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9062.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-8092.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Variables/data/bug-9403.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/object-shape.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/rule-error-builder.php');

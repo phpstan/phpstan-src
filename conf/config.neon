@@ -1364,6 +1364,14 @@ services:
 			checkMaybeUndefinedVariables: %checkMaybeUndefinedVariables%
 
 	-
+		class: PHPStan\Type\Php\ConstantFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+	    class: PHPStan\Type\Php\ConstantHelper
+
+	-
 		class: PHPStan\Type\Php\CountFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

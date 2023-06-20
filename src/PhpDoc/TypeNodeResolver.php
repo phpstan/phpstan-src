@@ -604,11 +604,17 @@ class TypeNodeResolver
 		$mainTypeName = strtolower($typeNode->type->name);
 		$genericTypes = $this->resolveMultiple($typeNode->genericTypes, $nameScope);
 		$variances = array_map(
-			static fn (string $variance): TemplateTypeVariance => match ($variance) {
-				GenericTypeNode::VARIANCE_INVARIANT => TemplateTypeVariance::createInvariant(),
-				GenericTypeNode::VARIANCE_COVARIANT => TemplateTypeVariance::createCovariant(),
-				GenericTypeNode::VARIANCE_CONTRAVARIANT => TemplateTypeVariance::createContravariant(),
-				GenericTypeNode::VARIANCE_BIVARIANT => TemplateTypeVariance::createBivariant(),
+			static function (string $variance): TemplateTypeVariance {
+				switch ($variance) {
+					case GenericTypeNode::VARIANCE_INVARIANT:
+						return TemplateTypeVariance::createInvariant();
+					case GenericTypeNode::VARIANCE_COVARIANT:
+						return TemplateTypeVariance::createCovariant();
+					case GenericTypeNode::VARIANCE_CONTRAVARIANT:
+						return TemplateTypeVariance::createContravariant();
+					case GenericTypeNode::VARIANCE_BIVARIANT:
+						return TemplateTypeVariance::createBivariant();
+				}
 			},
 			$typeNode->variances,
 		);

@@ -107,6 +107,7 @@ return [
 		'ImagickKernel::scale' => ['void', 'scale'=>'float', 'normalizeFlag'=>'Imagick::NORMALIZE_KERNEL_*'],
 		'max' => ['', '...arg1'=>'non-empty-array'],
 		'min' => ['', '...arg1'=>'non-empty-array'],
+		'file' => ['list<string>|false', 'filename'=>'string', 'flags='=>'FILE_USE_INCLUDE_PATH|FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES', 'context='=>'resource'],
 	],
 	'old' => [
 

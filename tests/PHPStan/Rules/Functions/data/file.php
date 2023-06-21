@@ -1,6 +1,6 @@
 <?php
 
-namespace PHPStan\Rules\Functions\data;
+namespace fileFlags;
 
 class Foo {
 	public function ok():void {

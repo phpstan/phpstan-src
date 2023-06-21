@@ -9,7 +9,7 @@ use PHPStan\Type\Type;
 class AlwaysRememberedExpr extends Expr implements VirtualNode
 {
 
-	public function __construct(private Expr $expr, private Type $type, private Type $nativeType)
+	public function __construct(public Expr $expr, private Type $type, private Type $nativeType)
 	{
 		parent::__construct([]);
 	}
@@ -39,7 +39,7 @@ class AlwaysRememberedExpr extends Expr implements VirtualNode
 	 */
 	public function getSubNodeNames(): array
 	{
-		return [];
+		return ['expr'];
 	}
 
 }

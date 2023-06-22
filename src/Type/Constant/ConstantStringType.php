@@ -6,6 +6,7 @@ use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\PhpDocParser\Ast\ConstExpr\QuoteAwareConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -212,7 +213,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			$classRef = $reflectionProvider->getClass($matches[1]);
 			if ($classRef->hasMethod($matches[2])) {
 				$method = $classRef->getMethod($matches[2], new OutOfClassScope());
-				if (!$phpVersion->supportsCallableInstanceMethods() && !$method->isStatic()) {
+				if (
+					BleedingEdgeToggle::isBleedingEdge()
+					&& !$phpVersion->supportsCallableInstanceMethods()
+					&& !$method->isStatic()
+				) {
 					return TrinaryLogic::createNo();
 				}
 

@@ -108,6 +108,7 @@ return [
 		'max' => ['', '...arg1'=>'non-empty-array'],
 		'min' => ['', '...arg1'=>'non-empty-array'],
 		'file' => ['list<string>|false', 'filename'=>'string', 'flags='=>'0|FILE_USE_INCLUDE_PATH|FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES', 'context='=>'resource'],
+		'flock' => ['bool', 'fp'=>'resource', 'operation'=>'int<1, 7>', '&w_wouldblock='=>'int'],
 	],
 	'old' => [
 

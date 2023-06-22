@@ -11,6 +11,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallStaticMethodsRule>
@@ -423,8 +424,35 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testBug1971(): void
 	{
+		if (PHP_VERSION_ID >= 80000) {
+			$this->markTestSkipped('Test requires PHP 7.x');
+		}
+
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-1971.php'], [
+			[
+				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{class-string<static(Bug1971\\HelloWorld)>, \'sayHello2\'} given.',
+				16,
+			],
+		]);
+	}
+
+	public function testBug1971Php8(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-1971.php'], [
+			[
+				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{\'Bug1971\\\HelloWorld\', \'sayHello\'} given.',
+				14,
+			],
+			[
+				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{class-string<static(Bug1971\\HelloWorld)>, \'sayHello\'} given.',
+				15,
+			],
 			[
 				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{class-string<static(Bug1971\\HelloWorld)>, \'sayHello2\'} given.',
 				16,

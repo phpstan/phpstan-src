@@ -4,6 +4,7 @@ namespace PHPStan\Type\Constant;
 
 use Nette\Utils\Strings;
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
@@ -563,7 +564,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				continue;
 			}
 
-			if ($has->yes() && !$phpVersion->supportsCallableInstanceMethods()) {
+			if (
+				BleedingEdgeToggle::isBleedingEdge()
+				&& $has->yes()
+				&& !$phpVersion->supportsCallableInstanceMethods()
+			) {
 				$methodReflection = $type->getMethod($method->getValue(), new OutOfClassScope());
 				if ($classOrObject->isString()->yes() && !$methodReflection->isStatic()) {
 					continue;

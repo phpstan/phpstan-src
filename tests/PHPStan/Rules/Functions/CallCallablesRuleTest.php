@@ -43,7 +43,7 @@ class CallCallablesRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/callables.php'], [
+		$errors = [
 			[
 				'Trying to invoke string but it might not be a callable.',
 				17,
@@ -145,11 +145,16 @@ class CallCallablesRuleTest extends RuleTestCase
 				'Trying to invoke array{\'CallCallables\\\ConstantArrayUnionCallables\', \'doBaz\'|\'doFoo\'} but it might not be a callable.',
 				212,
 			],
-			[
+		];
+
+		if (PHP_VERSION_ID >= 80000) {
+			$errors[] = [
 				'Trying to invoke array{\'CallCallables\\\ConstantArrayUnionCallables\'|\'CallCallables\\\ConstantArrayUnionCallablesTest\', \'doBar\'|\'doFoo\'} but it\'s not a callable.',
 				220,
-			],
-		]);
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/callables.php'], $errors);
 	}
 
 	public function testNamedArguments(): void

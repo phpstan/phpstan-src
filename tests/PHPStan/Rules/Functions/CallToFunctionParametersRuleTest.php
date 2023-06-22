@@ -1378,4 +1378,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testFlockParams(): void
+	{
+		$this->analyse([__DIR__ . '/data/flock.php'], [
+			[
+				'Parameter #2 $operation of function flock expects int<0, 7>, 8 given.',
+				45,
+			],
+		]);
+	}
+
 }

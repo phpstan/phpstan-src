@@ -385,10 +385,11 @@ class ClassReflection
 		if ($this->isEnum()) {
 			return $this->hasNativeProperty($propertyName);
 		}
+		$allowsDynamicPropertiesExtensions = $this->allowsDynamicPropertiesExtensions();
 
 		foreach ($this->propertiesClassReflectionExtensions as $i => $extension) {
-			if ($i > 0 && !$this->allowsDynamicPropertiesExtensions()) {
-				continue;
+			if ($i > 0 && !$allowsDynamicPropertiesExtensions) {
+				break;
 			}
 			if ($extension->hasProperty($this, $propertyName)) {
 				return true;
@@ -538,9 +539,11 @@ class ClassReflection
 			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
 		}
 		if (!isset($this->properties[$key])) {
+			$allowsDynamicPropertiesExtensions = $this->allowsDynamicPropertiesExtensions();
+
 			foreach ($this->propertiesClassReflectionExtensions as $i => $extension) {
-				if ($i > 0 && !$this->allowsDynamicPropertiesExtensions()) {
-					continue;
+				if ($i > 0 && !$allowsDynamicPropertiesExtensions) {
+					break;
 				}
 				if (!$extension->hasProperty($this, $propertyName)) {
 					continue;

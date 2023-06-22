@@ -18,6 +18,7 @@ use PHPStan\Broker\Broker;
 use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -168,6 +169,7 @@ class ContainerFactory
 		$broker = $container->getByType(Broker::class);
 		Broker::registerInstance($broker);
 		ReflectionProviderStaticAccessor::registerInstance($container->getByType(ReflectionProvider::class));
+		PhpVersionStaticAccessor::registerInstance($container->getByType(PhpVersion::class));
 		ObjectType::resetCaches();
 		$container->getService('typeSpecifier');
 

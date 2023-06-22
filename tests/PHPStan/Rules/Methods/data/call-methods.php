@@ -656,7 +656,7 @@ class CheckIsCallable
 	{
 		$this->test('date');
 		$this->test('nonexistentFunction');
-		$this->test('Test\CheckIsCallable::test');
+		// $this->test('Test\CheckIsCallable::test'); differs between php7/8; tested separately
 		$this->test('Test\CheckIsCallable::test2');
 	}
 

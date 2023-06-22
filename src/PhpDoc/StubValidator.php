@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\DerivativeContainerFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
+use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
@@ -88,6 +89,7 @@ class StubValidator
 
 		$originalBroker = Broker::getInstance();
 		$originalReflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		$originalPhpVerison = PhpVersionStaticAccessor::getInstance();
 		$container = $this->derivativeContainerFactory->create([
 			__DIR__ . '/../../conf/config.stubValidator.neon',
 		]);
@@ -131,6 +133,7 @@ class StubValidator
 
 		Broker::registerInstance($originalBroker);
 		ReflectionProviderStaticAccessor::registerInstance($originalReflectionProvider);
+		PhpVersionStaticAccessor::registerInstance($originalPhpVerison);
 		ObjectType::resetCaches();
 
 		return $errors;

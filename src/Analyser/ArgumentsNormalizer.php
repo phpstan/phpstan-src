@@ -3,13 +3,13 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Arg;
-use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
 use function array_key_exists;
@@ -23,12 +23,57 @@ final class ArgumentsNormalizer
 
 	public const ORIGINAL_ARG_ATTRIBUTE = 'originalArg';
 
+	public static function reorderCallUserFuncArguments(
+		FuncCall $callUserFuncCall,
+		Scope $scope,
+	): ?FuncCall
+	{
+		$args = $callUserFuncCall->getArgs();
+		if (count($args) < 1) {
+			return null;
+		}
+
+		$calledOnType = $scope->getType($args[0]->value);
+
+		$passThruArgs = [];
+		foreach ($args as $i => $arg) {
+			// skip call_user_func() first arg
+			if ($i === 0) {
+				continue;
+			}
+
+			if ($arg->hasAttribute(self::ORIGINAL_ARG_ATTRIBUTE)) {
+				$passThruArgs[] = $arg->getAttribute(self::ORIGINAL_ARG_ATTRIBUTE);
+			} else {
+				$passThruArgs[] = $arg;
+			}
+		}
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$passThruArgs,
+			$calledOnType->getCallableParametersAcceptors($scope),
+		);
+
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $passThruArgs);
+
+		if ($reorderedArgs === null) {
+			return null;
+		}
+
+		return new FuncCall(
+			$args[0]->value,
+			$reorderedArgs,
+			$callUserFuncCall->getAttributes(),
+		);
+	}
+
 	public static function reorderFuncArguments(
 		ParametersAcceptor $parametersAcceptor,
 		FuncCall $functionCall,
 	): ?FuncCall
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $functionCall);
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $functionCall->getArgs());
 
 		if ($reorderedArgs === null) {
 			return null;
@@ -46,7 +91,7 @@ final class ArgumentsNormalizer
 		MethodCall $methodCall,
 	): ?MethodCall
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $methodCall);
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $methodCall->getArgs());
 
 		if ($reorderedArgs === null) {
 			return null;
@@ -65,7 +110,7 @@ final class ArgumentsNormalizer
 		StaticCall $staticCall,
 	): ?StaticCall
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $staticCall);
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $staticCall->getArgs());
 
 		if ($reorderedArgs === null) {
 			return null;
@@ -84,7 +129,7 @@ final class ArgumentsNormalizer
 		New_ $new,
 	): ?New_
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $new);
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $new->getArgs());
 
 		if ($reorderedArgs === null) {
 			return null;
@@ -98,12 +143,13 @@ final class ArgumentsNormalizer
 	}
 
 	/**
+	 * @param Arg[] $callArgs
+	 *
 	 * @return ?array<int, Arg>
 	 */
-	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, CallLike $callLike): ?array
+	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, array $callArgs): ?array
 	{
 		$signatureParameters = $parametersAcceptor->getParameters();
-		$callArgs = $callLike->getArgs();
 
 		if (count($callArgs) === 0) {
 			return [];

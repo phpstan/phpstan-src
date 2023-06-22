@@ -1368,4 +1368,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/benevolent-superglobal-keys.php'], []);
 	}
 
+	public function testFileParams(): void
+	{
+		$this->analyse([__DIR__ . '/data/file.php'], [
+			[
+				'Parameter #2 $flags of function file expects 0|1|2|4, 8 given.',
+				16,
+			],
+		]);
+	}
+
 }

@@ -1382,7 +1382,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/flock.php'], [
 			[
-				'Parameter #2 $operation of function flock expects int<1, 7>, 8 given.',
+				'Parameter #2 $operation of function flock expects int<0, 7>, 8 given.',
 				45,
 			],
 		]);

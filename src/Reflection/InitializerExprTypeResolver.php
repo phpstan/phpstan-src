@@ -1446,37 +1446,43 @@ class InitializerExprTypeResolver
 	 */
 	private function resolveCommonMath(Expr\BinaryOp $expr, Type $leftType, Type $rightType): Type
 	{
-		if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType || $leftType instanceof UnionType) &&
-			($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType || $rightType instanceof UnionType)
+		$types = TypeCombinator::union($leftType, $rightType);
+		$leftNumberType = $leftType->toNumber();
+		$rightNumberType = $rightType->toNumber();
+
+		if (
+			!$types instanceof MixedType
+			&& (
+				$rightNumberType instanceof IntegerRangeType
+				|| $rightNumberType instanceof ConstantIntegerType
+				|| $rightNumberType instanceof UnionType
+			)
 		) {
-
-			if ($leftType instanceof ConstantIntegerType) {
+			if ($leftNumberType instanceof IntegerRangeType || $leftNumberType instanceof ConstantIntegerType) {
 				return $this->integerRangeMath(
-					$leftType,
+					$leftNumberType,
 					$expr,
-					$rightType,
+					$rightNumberType,
 				);
-			} elseif ($leftType instanceof UnionType) {
-
+			} elseif ($leftNumberType instanceof UnionType) {
 				$unionParts = [];
 
-				foreach ($leftType->getTypes() as $type) {
-					if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
-						$unionParts[] = $this->integerRangeMath($type, $expr, $rightType);
+				foreach ($leftNumberType->getTypes() as $type) {
+					$numberType = $type->toNumber();
+					if ($numberType instanceof IntegerRangeType || $numberType instanceof ConstantIntegerType) {
+						$unionParts[] = $this->integerRangeMath($numberType, $expr, $rightNumberType);
 					} else {
-						$unionParts[] = $type;
+						$unionParts[] = $numberType;
 					}
 				}
 
 				$union = TypeCombinator::union(...$unionParts);
-				if ($leftType instanceof BenevolentUnionType) {
+				if ($leftNumberType instanceof BenevolentUnionType) {
 					return TypeUtils::toBenevolentUnion($union)->toNumber();
 				}
 
 				return $union->toNumber();
 			}
-
-			return $this->integerRangeMath($leftType, $expr, $rightType);
 		}
 
 		$specifiedTypes = $this->callOperatorTypeSpecifyingExtensions($expr, $leftType, $rightType);
@@ -1484,7 +1490,6 @@ class InitializerExprTypeResolver
 			return $specifiedTypes;
 		}
 
-		$types = TypeCombinator::union($leftType, $rightType);
 		if (
 			$leftType->isArray()->yes()
 			|| $rightType->isArray()->yes()
@@ -1493,8 +1498,6 @@ class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		$leftNumberType = $leftType->toNumber();
-		$rightNumberType = $rightType->toNumber();
 		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
 			return new ErrorType();
 		}
@@ -1531,7 +1534,6 @@ class InitializerExprTypeResolver
 	/**
 	 * @param ConstantIntegerType|IntegerRangeType $range
 	 * @param BinaryOp\Div|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Plus $node
-	 * @param IntegerRangeType|ConstantIntegerType|UnionType $operand
 	 */
 	private function integerRangeMath(Type $range, BinaryOp $node, Type $operand): Type
 	{
@@ -1548,8 +1550,9 @@ class InitializerExprTypeResolver
 			$unionParts = [];
 
 			foreach ($operand->getTypes() as $type) {
-				if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
-					$unionParts[] = $this->integerRangeMath($range, $node, $type);
+				$numberType = $type->toNumber();
+				if ($numberType instanceof IntegerRangeType || $numberType instanceof ConstantIntegerType) {
+					$unionParts[] = $this->integerRangeMath($range, $node, $numberType);
 				} else {
 					$unionParts[] = $type->toNumber();
 				}
@@ -1563,12 +1566,15 @@ class InitializerExprTypeResolver
 			return $union->toNumber();
 		}
 
+		$operand = $operand->toNumber();
 		if ($operand instanceof IntegerRangeType) {
 			$operandMin = $operand->getMin();
 			$operandMax = $operand->getMax();
-		} else {
+		} elseif ($operand instanceof ConstantIntegerType) {
 			$operandMin = $operand->getValue();
 			$operandMax = $operand->getValue();
+		} else {
+			return $operand;
 		}
 
 		if ($node instanceof BinaryOp\Plus) {

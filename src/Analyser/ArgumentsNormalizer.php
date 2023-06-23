@@ -23,10 +23,13 @@ final class ArgumentsNormalizer
 
 	public const ORIGINAL_ARG_ATTRIBUTE = 'originalArg';
 
+	/**
+	 * @return array{ParametersAcceptor, FuncCall}|null
+	 */
 	public static function reorderCallUserFuncArguments(
 		FuncCall $callUserFuncCall,
 		Scope $scope,
-	): ?FuncCall
+	): ?array
 	{
 		$args = $callUserFuncCall->getArgs();
 		if (count($args) < 1) {
@@ -64,11 +67,11 @@ final class ArgumentsNormalizer
 			return null;
 		}
 
-		return new FuncCall(
+		return [$parametersAcceptor, new FuncCall(
 			$args[0]->value,
 			$reorderedArgs,
 			$callUserFuncCall->getAttributes(),
-		);
+		)];
 	}
 
 	public static function reorderFuncArguments(

@@ -26,15 +26,17 @@ class CallUserFuncDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 			return null;
 		}
 
-		$funcCall = ArgumentsNormalizer::reorderCallUserFuncArguments(
+		$result = ArgumentsNormalizer::reorderCallUserFuncArguments(
 			$functionCall,
 			$scope,
 		);
-		if ($funcCall !== null) {
-			return $scope->getType($funcCall);
+		if ($result === null) {
+			return null;
 		}
 
-		return null;
+		[, $funcCall] = $result;
+
+		return $scope->getType($funcCall);
 	}
 
 }

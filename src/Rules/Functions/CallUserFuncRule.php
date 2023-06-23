@@ -56,24 +56,24 @@ class CallUserFuncRule implements Rule
 		}
 
 		// done in MutatingScope.php:1882 before calling dynamic return type extension
-		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+		$normalizedNode = ArgumentsNormalizer::reorderFuncArguments(ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$node->getArgs(),
-			$callable->getCallableParametersAcceptors($scope),
-		);
-		$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+			$functionReflection->getVariants(),
+		), $node);
 		if ($normalizedNode === null) {
 			return [];
 		}
 
 		// done in CallUserFuncDynamicReturnTypeExtension
-		$funcCall = ArgumentsNormalizer::reorderCallUserFuncArguments(
+		$result = ArgumentsNormalizer::reorderCallUserFuncArguments(
 			$normalizedNode,
 			$scope,
 		);
-		if ($funcCall === null) {
+		if ($result === null) {
 			return [];
 		}
+		[$parametersAcceptor, $funcCall] = $result;
 
 		$callableDescription = 'callable passed to call_user_func()';
 

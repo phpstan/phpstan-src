@@ -218,10 +218,27 @@ class FooGeneric10 implements FooGeneric9
 
 }
 
+/** @implements FooIterator<int, object> */
+class FooIterator implements \Iterator
+{
+}
+
+/**
+ * @template T
+ * @implements \Iterator<int, T>
+ */
+interface AbstractFooCollection extends \Iterator
+{
+}
+
+/** @implements FooCollection<int> */
+class FooCollection implements AbstractFooCollection
+{
+}
+
 /**
  * @implements FooGeneric<covariant \Throwable, \InvalidArgumentException>
  */
 class FooTypeProjection implements FooGeneric
 {
-
 }

@@ -109,8 +109,26 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
+				'Class ClassAncestorsExtends\FooObjectStorage @extends tag contains incompatible type ClassAncestorsExtends\FooObjectStorage.',
+				226,
+			],
+			[
+				'Class ClassAncestorsExtends\FooObjectStorage extends generic class SplObjectStorage but does not specify its types: TObject, TData',
+				226,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Class ClassAncestorsExtends\FooCollection @extends tag contains incompatible type ClassAncestorsExtends\FooCollection&iterable<int>.',
+				239,
+			],
+			[
+				'Class ClassAncestorsExtends\FooCollection extends generic class ClassAncestorsExtends\AbstractFooCollection but does not specify its types: T',
+				239,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
 				'Call-site variance annotation of covariant Throwable in generic type ClassAncestorsExtends\FooGeneric<covariant Throwable, InvalidArgumentException> in PHPDoc tag @extends is not allowed.',
-				228,
+				246,
 			],
 		]);
 	}
@@ -199,8 +217,26 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				216,
 			],
 			[
+				'Class ClassAncestorsImplements\FooIterator @implements tag contains incompatible type ClassAncestorsImplements\FooIterator&iterable<int, object>.',
+				222,
+			],
+			[
+				'Class ClassAncestorsImplements\FooIterator implements generic interface Iterator but does not specify its types: TKey, TValue',
+				222,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Class ClassAncestorsImplements\FooCollection @implements tag contains incompatible type ClassAncestorsImplements\FooCollection&iterable<int>.',
+				235,
+			],
+			[
+				'Class ClassAncestorsImplements\FooCollection implements generic interface ClassAncestorsImplements\AbstractFooCollection but does not specify its types: T',
+				235,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
 				'Call-site variance annotation of covariant Throwable in generic type ClassAncestorsImplements\FooGeneric<covariant Throwable, InvalidArgumentException> in PHPDoc tag @implements is not allowed.',
-				224,
+				242,
 			],
 		]);
 	}

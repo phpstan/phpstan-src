@@ -1322,6 +1322,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\AssertThrowTypeExtension
+		tags:
+			- phpstan.dynamicFunctionThrowTypeExtension
+
+	-
 		class: PHPStan\Type\Php\BackedEnumFromMethodDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension

@@ -36,23 +36,28 @@ final class ArgumentsNormalizer
 			return null;
 		}
 
-		$calledOnType = $scope->getType($args[0]->value);
-		if (!$calledOnType->isCallable()->yes()) {
-			return null;
-		}
-
 		$passThruArgs = [];
-		foreach ($args as $i => $arg) {
-			// skip call_user_func() first arg
-			if ($i === 0) {
+		$callbackArg = null;
+		foreach ($args as $arg) {
+			if ($arg->name === "callback") {
+				$callbackArg = $arg;
 				continue;
 			}
 
-			if ($arg->hasAttribute(self::ORIGINAL_ARG_ATTRIBUTE)) {
-				$passThruArgs[] = $arg->getAttribute(self::ORIGINAL_ARG_ATTRIBUTE);
-			} else {
-				$passThruArgs[] = $arg;
+			$passThruArgs[] = $arg;
+		}
+		if ($callbackArg === null ) {
+			if (!isset($args[0])) {
+				return null;
 			}
+
+			$callbackArg = $args[0];
+			$passThruArgs = array_slice($passThruArgs, 1);
+		}
+
+		$calledOnType = $scope->getType($callbackArg->value);
+		if (!$calledOnType->isCallable()->yes()) {
+			return null;
 		}
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
@@ -68,7 +73,7 @@ final class ArgumentsNormalizer
 		}
 
 		return [$parametersAcceptor, new FuncCall(
-			$args[0]->value,
+			$callbackArg->value,
 			$reorderedArgs,
 			$callUserFuncCall->getAttributes(),
 		)];

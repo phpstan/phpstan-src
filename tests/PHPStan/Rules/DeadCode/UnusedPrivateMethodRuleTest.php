@@ -90,6 +90,11 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8346(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8346.php'], []);
+	}
+
 	public function testFalsePositiveWithTraitUse(): void
 	{
 		if (PHP_VERSION_ID < 80100) {

@@ -19,6 +19,7 @@ class GenericsIntegrationTest extends LevelsTestCase
 			['varyingAcceptor'],
 			['classes'],
 			['variance'],
+			['typeProjections'],
 			['bug2574'],
 			['bug2577'],
 			['bug2620'],

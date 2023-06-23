@@ -21,6 +21,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Traits\MaybeArrayTypeTrait;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
@@ -248,6 +249,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function getResolvedTemplateTypeMap(): TemplateTypeMap
 	{
 		return TemplateTypeMap::createEmpty();
+	}
+
+	public function getCallSiteVarianceMap(): TemplateTypeVarianceMap
+	{
+		return TemplateTypeVarianceMap::createEmpty();
 	}
 
 	/**

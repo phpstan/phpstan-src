@@ -369,7 +369,7 @@ class GenericObjectType extends ObjectType
 
 	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
 	{
-		$subtractedType = $this->getSubtractedType() !== null ? $cb($this->getSubtractedType()) : null;
+		$subtractedType = $this->getSubtractedType() !== null ? $cb($this->getSubtractedType(), $variance) : null;
 
 		$classReflection = $this->getClassReflection();
 		if ($classReflection !== null) {

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
@@ -26,6 +27,11 @@ class InaccessibleMethod implements ParametersAcceptor
 	public function getResolvedTemplateTypeMap(): TemplateTypeMap
 	{
 		return TemplateTypeMap::createEmpty();
+	}
+
+	public function getCallSiteVarianceMap(): TemplateTypeVarianceMap
+	{
+		return TemplateTypeVarianceMap::createEmpty();
 	}
 
 	/**

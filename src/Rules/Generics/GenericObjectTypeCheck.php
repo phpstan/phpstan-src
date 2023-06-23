@@ -9,6 +9,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Generic\TypeProjectionHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -129,7 +130,12 @@ class GenericObjectTypeCheck
 							continue;
 						}
 
-						$templateTypes[$j] = TemplateTypeHelper::resolveTemplateTypes($templateTypes[$j], $map);
+						$templateTypes[$j] = TemplateTypeHelper::resolveTemplateTypes(
+							$templateTypes[$j],
+							$map,
+							TemplateTypeVarianceMap::createEmpty(),
+							TemplateTypeVariance::createStatic(),
+						);
 					}
 					continue;
 				}

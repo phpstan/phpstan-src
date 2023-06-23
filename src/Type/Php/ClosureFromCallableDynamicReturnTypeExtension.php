@@ -50,6 +50,7 @@ class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStaticMeth
 				$variant->isVariadic(),
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),
+				$variant->getCallSiteVarianceMap(),
 			);
 		}
 

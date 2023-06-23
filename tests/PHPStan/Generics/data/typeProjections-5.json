@@ -1,0 +1,52 @@
+[
+	{
+		"message": "Parameter #1 $item of method PHPStan\\Generics\\TypeProjections\\Box<covariant PHPStan\\Generics\\TypeProjections\\B>::pack() expects never, PHPStan\\Generics\\TypeProjections\\B given.",
+		"line": 37,
+		"ignorable": true
+	},
+	{
+		"message": "Parameter #1 $item of method PHPStan\\Generics\\TypeProjections\\Box<contravariant PHPStan\\Generics\\TypeProjections\\B>::pack() expects PHPStan\\Generics\\TypeProjections\\B, PHPStan\\Generics\\TypeProjections\\A given.",
+		"line": 46,
+		"ignorable": true
+	},
+	{
+		"message": "Parameter #1 $item of method PHPStan\\Generics\\TypeProjections\\Box<*>::pack() expects never, PHPStan\\Generics\\TypeProjections\\A given.",
+		"line": 64,
+		"ignorable": true
+	},
+	{
+		"message": "Parameter #1 $mapper of method PHPStan\\Generics\\TypeProjections\\Mapped<covariant PHPStan\\Generics\\TypeProjections\\B>::mapOut() expects callable(): never, Closure(): PHPStan\\Generics\\TypeProjections\\A given.",
+		"line": 94,
+		"ignorable": true
+	},
+	{
+		"message": "Parameter #1 $mapper of method PHPStan\\Generics\\TypeProjections\\Mapped<covariant PHPStan\\Generics\\TypeProjections\\B>::mapOut() expects callable(): never, Closure(): PHPStan\\Generics\\TypeProjections\\B given.",
+		"line": 95,
+		"ignorable": true
+	},
+	{
+		"message": "Parameter #1 $mapper of method PHPStan\\Generics\\TypeProjections\\Mapped<covariant PHPStan\\Generics\\TypeProjections\\B>::mapOut() expects callable(): never, Closure(): PHPStan\\Generics\\TypeProjections\\C given.",
+		"line": 96,
+		"ignorable": true
+	},
+	{
+		"message": "Parameter #1 $mapper of method PHPStan\\Generics\\TypeProjections\\Mapped<contravariant PHPStan\\Generics\\TypeProjections\\B>::mapOut() expects callable(): PHPStan\\Generics\\TypeProjections\\B, Closure(): PHPStan\\Generics\\TypeProjections\\A given.",
+		"line": 108,
+		"ignorable": true
+	},
+	{
+		"message": "Parameter #1 $mapper of method PHPStan\\Generics\\TypeProjections\\Mapped<*>::mapOut() expects callable(): never, Closure(): PHPStan\\Generics\\TypeProjections\\A given.",
+		"line": 122,
+		"ignorable": true
+	},
+	{
+		"message": "Parameter #1 $mapper of method PHPStan\\Generics\\TypeProjections\\Mapped<*>::mapOut() expects callable(): never, Closure(): PHPStan\\Generics\\TypeProjections\\B given.",
+		"line": 123,
+		"ignorable": true
+	},
+	{
+		"message": "Parameter #1 $mapper of method PHPStan\\Generics\\TypeProjections\\Mapped<*>::mapOut() expects callable(): never, Closure(): PHPStan\\Generics\\TypeProjections\\C given.",
+		"line": 124,
+		"ignorable": true
+	}
+]

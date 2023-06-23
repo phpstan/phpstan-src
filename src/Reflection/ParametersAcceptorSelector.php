@@ -109,6 +109,7 @@ class ParametersAcceptorSelector
 						$parameters,
 						$acceptor->isVariadic(),
 						$acceptor->getReturnType(),
+						$acceptor->getCallSiteVarianceMap(),
 					),
 				];
 			}
@@ -138,6 +139,7 @@ class ParametersAcceptorSelector
 								$parameters,
 								$acceptor->isVariadic(),
 								$acceptor->getReturnType(),
+								$acceptor->getCallSiteVarianceMap(),
 							),
 						];
 					}
@@ -184,6 +186,7 @@ class ParametersAcceptorSelector
 						$parameters,
 						$acceptor->isVariadic(),
 						$acceptor->getReturnType(),
+						$acceptor->getCallSiteVarianceMap(),
 					),
 				];
 			}
@@ -214,6 +217,7 @@ class ParametersAcceptorSelector
 						$parameters,
 						$acceptor->isVariadic(),
 						$acceptor->getReturnType(),
+						$acceptor->getCallSiteVarianceMap(),
 					),
 				];
 			}
@@ -529,6 +533,7 @@ class ParametersAcceptorSelector
 			$acceptor->getReturnType(),
 			$acceptor->getReturnType(),
 			new MixedType(),
+			$acceptor->getCallSiteVarianceMap(),
 		);
 	}
 

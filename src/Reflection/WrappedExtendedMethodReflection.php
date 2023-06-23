@@ -77,6 +77,7 @@ class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 				$variant->getReturnType(),
 				$variant->getReturnType(),
 				new MixedType(),
+				$variant->getCallSiteVarianceMap(),
 			);
 		}
 

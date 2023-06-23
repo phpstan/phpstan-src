@@ -1478,15 +1478,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$valueTypes = $keyTypes = [];
 
 		$stillOriginal = true;
-		foreach ($this->keyTypes as $keyType) {
-			$transformedKeyType = $cb($keyType, $composedVariance);
-			if ($transformedKeyType !== $keyType) {
-				$stillOriginal = false;
-			}
-
-			$keyTypes[] = $transformedKeyType;
-		}
-
 		foreach ($this->valueTypes as $valueType) {
 			$transformedValueType = $cb($valueType, $composedVariance);
 			if ($transformedValueType !== $valueType) {
@@ -1500,7 +1491,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
-		return new self($keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 	}
 
 	public function isKeysSupersetOf(self $otherArray): bool

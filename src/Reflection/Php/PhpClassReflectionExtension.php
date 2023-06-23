@@ -43,6 +43,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -293,6 +294,8 @@ class PhpClassReflectionExtension
 			$phpDocType = $phpDocType !== null ? TemplateTypeHelper::resolveTemplateTypes(
 				$phpDocType,
 				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+				$phpDocBlockClassReflection->getCallSiteVarianceMap(),
+				TemplateTypeVariance::createInvariant(),
 			) : null;
 			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
@@ -525,11 +528,14 @@ class PhpClassReflectionExtension
 					if ($stubPhpDocPair !== null) {
 						[$stubPhpDoc, $stubDeclaringClass] = $stubPhpDocPair;
 						$templateTypeMap = $stubDeclaringClass->getActiveTemplateTypeMap();
+						$callSiteVarianceMap = $stubDeclaringClass->getCallSiteVarianceMap();
 						$returnTag = $stubPhpDoc->getReturnTag();
 						if ($returnTag !== null) {
 							$stubPhpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
 								$returnTag->getType(),
 								$templateTypeMap,
+								$callSiteVarianceMap,
+								TemplateTypeVariance::createCovariant(),
 							);
 						}
 
@@ -537,6 +543,8 @@ class PhpClassReflectionExtension
 							$stubPhpDocParameterTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
 								$paramTag->getType(),
 								$templateTypeMap,
+								$callSiteVarianceMap,
+								TemplateTypeVariance::createContravariant(),
 							);
 							$stubPhpDocParameterVariadicity[$name] = $paramTag->isVariadic();
 						}
@@ -557,6 +565,8 @@ class PhpClassReflectionExtension
 							$stubPhpParameterOutTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
 								$paramOutTag->getType(),
 								$templateTypeMap,
+								$callSiteVarianceMap,
+								TemplateTypeVariance::createCovariant(),
 							);
 						}
 
@@ -735,6 +745,8 @@ class PhpClassReflectionExtension
 			$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
 				$paramType,
 				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+				$phpDocBlockClassReflection->getCallSiteVarianceMap(),
+				TemplateTypeVariance::createContravariant(),
 			);
 		}
 
@@ -743,6 +755,8 @@ class PhpClassReflectionExtension
 			$phpDocParameterOutTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
 				$paramOutTag->getType(),
 				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+				$phpDocBlockClassReflection->getCallSiteVarianceMap(),
+				TemplateTypeVariance::createCovariant(),
 			);
 		}
 
@@ -1069,6 +1083,8 @@ class PhpClassReflectionExtension
 		$phpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
 			$phpDocReturnType,
 			$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+			$phpDocBlockClassReflection->getCallSiteVarianceMap(),
+			TemplateTypeVariance::createCovariant(),
 		);
 
 		if ($returnTag->isExplicit() || $nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {

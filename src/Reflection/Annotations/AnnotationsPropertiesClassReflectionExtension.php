@@ -6,6 +6,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\NeverType;
 
 class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
@@ -55,10 +56,14 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 				TemplateTypeHelper::resolveTemplateTypes(
 					$propertyTag->getReadableType() ?? new NeverType(),
 					$classReflection->getActiveTemplateTypeMap(),
+					$classReflection->getCallSiteVarianceMap(),
+					TemplateTypeVariance::createCovariant(),
 				),
 				TemplateTypeHelper::resolveTemplateTypes(
 					$propertyTag->getWritableType() ?? new NeverType(),
 					$classReflection->getActiveTemplateTypeMap(),
+					$classReflection->getCallSiteVarianceMap(),
+					TemplateTypeVariance::createContravariant(),
 				),
 				$isReadable,
 				$isWritable,

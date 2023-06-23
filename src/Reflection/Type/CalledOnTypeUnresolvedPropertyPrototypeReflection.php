@@ -51,10 +51,12 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 			return $this->transformedProperty;
 		}
 		$templateTypeMap = $this->resolvedDeclaringClass->getActiveTemplateTypeMap();
+		$callSiteVarianceMap = $this->resolvedDeclaringClass->getCallSiteVarianceMap();
 
 		return $this->transformedProperty = new ResolvedPropertyReflection(
 			$this->transformPropertyWithStaticType($this->resolvedDeclaringClass, $this->propertyReflection),
 			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap,
+			$callSiteVarianceMap,
 		);
 	}
 

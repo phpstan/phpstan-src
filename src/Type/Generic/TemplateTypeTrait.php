@@ -258,7 +258,12 @@ trait TemplateTypeTrait
 		}
 
 		$map = $this->getBound()->inferTemplateTypes($receivedType);
-		$resolvedBound = TypeUtils::resolveLateResolvableTypes(TemplateTypeHelper::resolveTemplateTypes($this->getBound(), $map));
+		$resolvedBound = TypeUtils::resolveLateResolvableTypes(TemplateTypeHelper::resolveTemplateTypes(
+			$this->getBound(),
+			$map,
+			TemplateTypeVarianceMap::createEmpty(),
+			TemplateTypeVariance::createStatic(),
+		));
 		if ($resolvedBound->isSuperTypeOf($receivedType)->yes()) {
 			if ($this->shouldGeneralizeInferredType()) {
 				$generalizedType = $receivedType->generalize(GeneralizePrecision::templateArgument());
@@ -330,7 +335,7 @@ trait TemplateTypeTrait
 		);
 	}
 
-	public function traverseWithVariance(TemplateTypeVariance $variance): Type
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
 	{
 		$bound = $cb($this->getBound(), $variance);
 		if ($this->getBound() === $bound) {

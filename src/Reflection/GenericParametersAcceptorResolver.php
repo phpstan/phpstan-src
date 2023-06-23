@@ -101,12 +101,14 @@ class GenericParametersAcceptorResolver
 				$parametersAcceptor->getReturnType(),
 				$parametersAcceptor->getReturnType(),
 				new MixedType(),
+				$parametersAcceptor->getCallSiteVarianceMap(),
 			);
 		}
 
 		return new ResolvedFunctionVariant(
 			$parametersAcceptor,
 			$resolvedTemplateTypeMap,
+			$parametersAcceptor->getCallSiteVarianceMap(),
 			$passedArgs,
 		);
 	}

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
 /** @api */
@@ -21,6 +22,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 		Type $returnType,
 		private Type $phpDocReturnType,
 		private Type $nativeReturnType,
+		?TemplateTypeVarianceMap $callSiteVarianceMap = null,
 	)
 	{
 		parent::__construct(
@@ -29,6 +31,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 			$parameters,
 			$isVariadic,
 			$returnType,
+			$callSiteVarianceMap,
 		);
 	}
 

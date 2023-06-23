@@ -34,6 +34,9 @@ final class ArgumentsNormalizer
 		}
 
 		$calledOnType = $scope->getType($args[0]->value);
+		if (!$calledOnType->isCallable()->yes()) {
+			return null;
+		}
 
 		$passThruArgs = [];
 		foreach ($args as $i => $arg) {

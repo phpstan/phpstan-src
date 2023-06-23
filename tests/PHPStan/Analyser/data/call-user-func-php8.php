@@ -45,6 +45,7 @@ class Foo {
 		assertType('array{int, int, int}', call_user_func('CallUserFuncPhp8\generic3', t: [1, 2, 3]));
 		assertType('string', call_user_func('CallUserFuncPhp8\generic3', b: 150));
 		assertType('string', call_user_func('CallUserFuncPhp8\generic3', c: 'lala'));
+		assertType('string', call_user_func(c: 'lala', callback: 'CallUserFuncPhp8\generic3'));
 
 		assertType('int', call_user_func('CallUserFuncPhp8\fun3', a: [1, 2, 3]));
 		assertType('int', call_user_func('CallUserFuncPhp8\fun3', b: [1, 2, 3]));

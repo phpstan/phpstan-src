@@ -367,6 +367,42 @@ class GenericObjectType extends ObjectType
 		return $this;
 	}
 
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
+	{
+		$subtractedType = $this->getSubtractedType() !== null ? $cb($this->getSubtractedType()) : null;
+
+		$classReflection = $this->getClassReflection();
+		if ($classReflection !== null) {
+			$typeList = $classReflection->typeMapToList($classReflection->getTemplateTypeMap());
+		} else {
+			$typeList = [];
+		}
+
+		$typesChanged = false;
+		$types = [];
+
+		foreach ($this->types as $i => $type) {
+			$effectiveVariance = $this->variances[$i] ?? TemplateTypeVariance::createInvariant();
+			if ($effectiveVariance->invariant() && isset($typeList[$i]) && $typeList[$i] instanceof TemplateType) {
+				$effectiveVariance = $typeList[$i]->getVariance();
+			}
+
+			$newType = $cb($type, $variance->compose($effectiveVariance));
+			$types[] = $newType;
+			if ($newType === $type) {
+				continue;
+			}
+
+			$typesChanged = true;
+		}
+
+		if ($subtractedType !== $this->getSubtractedType() || $typesChanged) {
+			return $this->recreate($this->getClassName(), $types, $subtractedType, $this->variances);
+		}
+
+		return $this;
+	}
+
 	/**
 	 * @param Type[] $types
 	 * @param TemplateTypeVariance[] $variances

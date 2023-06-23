@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
@@ -190,6 +191,17 @@ class ObjectWithoutClassType implements SubtractableType
 		}
 
 		return new self();
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
+	{
+		$subtractedType = $this->subtractedType !== null ? $cb($this->subtractedType, $variance) : null;
+
+		if ($subtractedType !== $this->subtractedType) {
+			return new self($subtractedType);
+		}
+
+		return $this;
 	}
 
 	public function tryRemove(Type $typeToRemove): ?Type

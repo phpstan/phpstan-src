@@ -14,6 +14,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -407,6 +408,16 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	public function traverseSimultaneously(Type $right, callable $cb): Type
 	{
 		$newValueType = $cb($this->valueType, $right->getOffsetValueType($this->offsetType));
+		if ($newValueType === $this->valueType) {
+			return $this;
+		}
+
+		return new self($this->offsetType, $newValueType);
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
+	{
+		$newValueType = $cb($this->valueType, $variance);
 		if ($newValueType === $this->valueType) {
 			return $this;
 		}

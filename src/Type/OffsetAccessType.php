@@ -106,6 +106,18 @@ final class OffsetAccessType implements CompoundType, LateResolvableType
 		return new self($type, $offset);
 	}
 
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
+	{
+		$type = $cb($this->type, $variance);
+		$offset = $cb($this->offset, $variance);
+
+		if ($this->type === $type && $this->offset === $offset) {
+			return $this;
+		}
+
+		return new self($type, $offset);
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new OffsetAccessTypeNode(

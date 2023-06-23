@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use function get_class;
 
 trait JustNullableTypeTrait
@@ -68,6 +69,11 @@ trait JustNullableTypeTrait
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		return $this;
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
 	{
 		return $this;
 	}

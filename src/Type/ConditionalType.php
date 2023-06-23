@@ -156,6 +156,20 @@ final class ConditionalType implements CompoundType, LateResolvableType
 		return new self($subject, $target, $if, $else, $this->negated);
 	}
 
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
+	{
+		$subject = $cb($this->subject, $variance);
+		$target = $cb($this->target, $variance);
+		$if = $cb($this->if, $variance);
+		$else = $cb($this->else, $variance);
+
+		if ($this->subject === $subject && $this->target === $target && $this->if === $if && $this->else === $else) {
+			return $this;
+		}
+
+		return new self($subject, $target, $if, $else, $this->negated);
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new ConditionalTypeNode(

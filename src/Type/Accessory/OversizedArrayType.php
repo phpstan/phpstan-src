@@ -12,6 +12,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -406,6 +407,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		return $this;
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
 	{
 		return $this;
 	}

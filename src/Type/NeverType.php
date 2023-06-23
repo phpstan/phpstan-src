@@ -15,6 +15,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
@@ -377,6 +378,11 @@ class NeverType implements CompoundType
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		return $this;
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
 	{
 		return $this;
 	}

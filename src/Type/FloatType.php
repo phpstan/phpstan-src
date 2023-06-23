@@ -9,6 +9,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -255,6 +256,11 @@ class FloatType implements Type
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
+	{
+		return $this;
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
 	{
 		return $this;
 	}

@@ -447,6 +447,20 @@ class IterableType implements CompoundType
 		return $this;
 	}
 
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
+	{
+		$composedVariance = $variance->compose(TemplateTypeVariance::createCovariant());
+
+		$keyType = $cb($this->keyType, $composedVariance);
+		$itemType = $cb($this->itemType, $composedVariance);
+
+		if ($keyType !== $this->keyType || $itemType !== $this->itemType) {
+			return new self($keyType, $itemType);
+		}
+
+		return $this;
+	}
+
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		$arrayType = new ArrayType(new MixedType(), new MixedType());

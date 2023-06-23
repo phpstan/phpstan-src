@@ -30,6 +30,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -475,6 +476,29 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			$parameters,
 			$cb($this->getReturnType(), $right->getReturnType()),
 			$this->isVariadic(),
+		);
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
+	{
+		$parameterVariance = $variance->compose(TemplateTypeVariance::createContravariant());
+
+		return new self(
+			array_map(static function (ParameterReflection $param) use ($cb, $parameterVariance): NativeParameterReflection {
+				$defaultValue = $param->getDefaultValue();
+				return new NativeParameterReflection(
+					$param->getName(),
+					$param->isOptional(),
+					$cb($param->getType(), $parameterVariance),
+					$param->passedByReference(),
+					$param->isVariadic(),
+					$defaultValue !== null ? $cb($defaultValue, $parameterVariance) : null,
+				);
+			}, $this->getParameters()),
+			$cb($this->getReturnType(), $variance->compose(TemplateTypeVariance::createCovariant())),
+			$this->isVariadic(),
+			$this->templateTypeMap,
+			$this->resolvedTemplateTypeMap,
 		);
 	}
 

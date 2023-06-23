@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use function count;
 
 /** @api */
@@ -154,6 +155,26 @@ class BenevolentUnionType extends UnionType
 			$rightType = $right->getSortedTypes()[$i];
 			$newType = $cb($leftType, $rightType);
 			if ($leftType !== $newType) {
+				$changed = true;
+			}
+			$types[] = $newType;
+		}
+
+		if ($changed) {
+			return TypeUtils::toBenevolentUnion(TypeCombinator::union(...$types));
+		}
+
+		return $this;
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
+	{
+		$types = [];
+		$changed = false;
+
+		foreach ($this->getTypes() as $type) {
+			$newType = $cb($type, $variance);
+			if ($type !== $newType) {
 				$changed = true;
 			}
 			$types[] = $newType;

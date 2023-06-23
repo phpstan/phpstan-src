@@ -126,7 +126,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$reflection->typeMapToList($reflection->getActiveTemplateTypeMap()),
 			null,
 			null,
-			$reflection->varianceMapToList($reflection->getActiveTemplateTypeVarianceMap()),
+			$reflection->varianceMapToList($reflection->getCallSiteVarianceMap()),
 		);
 	}
 

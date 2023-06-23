@@ -97,9 +97,9 @@ class ClassReflection
 
 	private ?TemplateTypeMap $activeTemplateTypeMap = null;
 
-	private ?TemplateTypeVarianceMap $templateTypeVarianceMap = null;
+	private ?TemplateTypeVarianceMap $defaultCallSiteVarianceMap = null;
 
-	private ?TemplateTypeVarianceMap $activeTemplateTypeVarianceMap = null;
+	private ?TemplateTypeVarianceMap $callSiteVarianceMap = null;
 
 	/** @var array<string,ClassReflection>|null */
 	private ?array $ancestors = null;
@@ -147,7 +147,7 @@ class ClassReflection
 		private ?TemplateTypeMap $resolvedTemplateTypeMap,
 		private ?ResolvedPhpDocBlock $stubPhpDocBlock,
 		private ?string $extraCacheKey = null,
-		private ?TemplateTypeVarianceMap $resolvedTemplateTypeVarianceMap = null,
+		private ?TemplateTypeVarianceMap $resolvedCallSiteVarianceMap = null,
 	)
 	{
 	}
@@ -252,7 +252,7 @@ class ClassReflection
 		return $name . '<' . implode(',', array_map(
 			static fn (Type $type, TemplateTypeVariance $variance): string => TypeProjectionHelper::describe($type, $variance, VerbosityLevel::typeOnly()),
 			$this->getActiveTemplateTypeMap()->getTypes(),
-			$this->getActiveTemplateTypeVarianceMap()->getVariances(),
+			$this->getCallSiteVarianceMap()->getVariances(),
 		)) . '>';
 	}
 
@@ -269,7 +269,7 @@ class ClassReflection
 			$cacheKey .= '<' . implode(',', array_map(
 				static fn (Type $type, TemplateTypeVariance $variance): string => TypeProjectionHelper::describe($type, $variance, VerbosityLevel::cache()),
 				$this->getActiveTemplateTypeMap()->getTypes(),
-				$this->getActiveTemplateTypeVarianceMap()->getVariances(),
+				$this->getCallSiteVarianceMap()->getVariances(),
 			)) . '>';
 		}
 
@@ -1255,16 +1255,16 @@ class ClassReflection
 		return $this->resolvedTemplateTypeMap ?? $this->getTemplateTypeMap();
 	}
 
-	public function getTemplateTypeVarianceMap(): TemplateTypeVarianceMap
+	private function getDefaultCallSiteVarianceMap(): TemplateTypeVarianceMap
 	{
-		if ($this->templateTypeVarianceMap !== null) {
-			return $this->templateTypeVarianceMap;
+		if ($this->defaultCallSiteVarianceMap !== null) {
+			return $this->defaultCallSiteVarianceMap;
 		}
 
 		$resolvedPhpDoc = $this->getResolvedPhpDoc();
 		if ($resolvedPhpDoc === null) {
-			$this->templateTypeVarianceMap = TemplateTypeVarianceMap::createEmpty();
-			return $this->templateTypeVarianceMap;
+			$this->defaultCallSiteVarianceMap = TemplateTypeVarianceMap::createEmpty();
+			return $this->defaultCallSiteVarianceMap;
 		}
 
 		$map = [];
@@ -1272,13 +1272,13 @@ class ClassReflection
 			$map[$templateTag->getName()] = TemplateTypeVariance::createInvariant();
 		}
 
-		$this->templateTypeVarianceMap = new TemplateTypeVarianceMap($map);
-		return $this->templateTypeVarianceMap;
+		$this->defaultCallSiteVarianceMap = new TemplateTypeVarianceMap($map);
+		return $this->defaultCallSiteVarianceMap;
 	}
 
-	public function getActiveTemplateTypeVarianceMap(): TemplateTypeVarianceMap
+	public function getCallSiteVarianceMap(): TemplateTypeVarianceMap
 	{
-		return $this->activeTemplateTypeVarianceMap ??= $this->resolvedTemplateTypeVarianceMap ?? $this->getTemplateTypeVarianceMap();
+		return $this->callSiteVarianceMap ??= $this->resolvedCallSiteVarianceMap ?? $this->getDefaultCallSiteVarianceMap();
 	}
 
 	public function isGeneric(): bool
@@ -1387,7 +1387,7 @@ class ClassReflection
 			$this->typeMapFromList($types),
 			$this->stubPhpDocBlock,
 			null,
-			$this->resolvedTemplateTypeVarianceMap,
+			$this->resolvedCallSiteVarianceMap,
 		);
 	}
 

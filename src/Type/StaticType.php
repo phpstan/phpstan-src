@@ -85,7 +85,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 		if ($this->staticObjectType === null) {
 			if ($this->classReflection->isGeneric()) {
 				$typeMap = $this->classReflection->getActiveTemplateTypeMap()->map(static fn (string $name, Type $type): Type => TemplateTypeHelper::toArgument($type));
-				$varianceMap = $this->classReflection->getActiveTemplateTypeVarianceMap();
+				$varianceMap = $this->classReflection->getCallSiteVarianceMap();
 				return $this->staticObjectType = new GenericObjectType(
 					$this->classReflection->getName(),
 					$this->classReflection->typeMapToList($typeMap),

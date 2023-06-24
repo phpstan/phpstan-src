@@ -24,7 +24,7 @@ class PhpVersionFactory
 			$parts = explode('.', $this->composerPhpVersion);
 			$tmp = (int) $parts[0] * 10000 + (int) ($parts[1] ?? 0) * 100 + (int) ($parts[2] ?? 0);
 			$tmp = max($tmp, 70100);
-			$versionId = min($tmp, 80299);
+			$versionId = min($tmp, 80399);
 		}
 
 		if ($versionId === null) {

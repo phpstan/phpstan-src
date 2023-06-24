@@ -1874,6 +1874,15 @@ class MutatingScope implements Scope
 				return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
 			}
 
+			if ($functionReflection->getName() === 'call_user_func') {
+				$result = ArgumentsNormalizer::reorderCallUserFuncArguments($node, $this);
+				if ($result !== null) {
+					[, $innerFuncCall] = $result;
+
+					return $this->getType($innerFuncCall);
+				}
+			}
+
 			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 				$this,
 				$node->getArgs(),

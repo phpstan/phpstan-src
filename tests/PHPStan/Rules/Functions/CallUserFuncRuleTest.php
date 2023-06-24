@@ -47,10 +47,6 @@ class CallUserFuncRuleTest extends RuleTestCase
 				'Parameter #1 $i of callable passed to call_user_func() expects int, string given.',
 				19,
 			],
-			[
-				'unknown parameter j...',
-				22,
-			],
 		]);
 	}
 

@@ -1406,4 +1406,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testCallToUserFunc(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/call-user-func.php'], [
+			[
+				'Unknown parameter $j in call to function call_user_func.',
+				22,
+			],
+		]);
+	}
+
 }

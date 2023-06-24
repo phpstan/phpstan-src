@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
@@ -37,6 +36,10 @@ class CallUserFuncRule implements Rule
 			return [];
 		}
 
+		if (count($node->getArgs()) === 0) {
+			return [];
+		}
+
 		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
 			return [];
 		}
@@ -46,28 +49,8 @@ class CallUserFuncRule implements Rule
 			return [];
 		}
 
-		if (count($node->getArgs()) === 0) {
-			return [];
-		}
-
-		$callable = $scope->getType($node->getArgs()[0]->value);
-		if (!$callable->isCallable()->yes()) {
-			return [];
-		}
-
-		// done in MutatingScope.php:1882 before calling dynamic return type extension
-		$normalizedNode = ArgumentsNormalizer::reorderFuncArguments(ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$node->getArgs(),
-			$functionReflection->getVariants(),
-		), $node);
-		if ($normalizedNode === null) {
-			return [];
-		}
-
-		// done in CallUserFuncDynamicReturnTypeExtension
 		$result = ArgumentsNormalizer::reorderCallUserFuncArguments(
-			$normalizedNode,
+			$node,
 			$scope,
 		);
 		if ($result === null) {

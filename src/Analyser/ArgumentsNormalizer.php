@@ -14,6 +14,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
 use function array_key_exists;
 use function array_keys;
+use function array_slice;
 use function count;
 use function ksort;
 use function max;
@@ -39,14 +40,14 @@ final class ArgumentsNormalizer
 		$passThruArgs = [];
 		$callbackArg = null;
 		foreach ($args as $arg) {
-			if ($arg->name === "callback") {
+			if ($arg->name !== null && $arg->name->toString() === 'callback') {
 				$callbackArg = $arg;
 				continue;
 			}
 
 			$passThruArgs[] = $arg;
 		}
-		if ($callbackArg === null ) {
+		if ($callbackArg === null) {
 			if (!isset($args[0])) {
 				return null;
 			}

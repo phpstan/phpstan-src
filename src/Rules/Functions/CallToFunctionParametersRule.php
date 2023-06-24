@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -37,6 +38,17 @@ class CallToFunctionParametersRule implements Rule
 		}
 
 		$function = $this->reflectionProvider->getFunction($node->name, $scope);
+		if ($function->getName() === 'call_user_func') {
+			$result = ArgumentsNormalizer::reorderCallUserFuncArguments(
+				$node,
+				$scope,
+			);
+			if ($result !== null) {
+				// params of a successfull call_user_func-call are validated by CallUserFuncRule.
+				return [];
+			}
+		}
+
 		$functionName = SprintfHelper::escapeFormatString($function->getName());
 
 		return $this->check->check(

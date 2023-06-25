@@ -1538,6 +1538,11 @@ services:
 			- phpstan.dynamicFunctionThrowTypeExtension
 
 	-
+		class: PHPStan\Type\Php\JsonValidateTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+
+	-
 		class: PHPStan\Type\Php\ReflectionClassConstructorThrowTypeExtension
 		tags:
 			- phpstan.dynamicStaticMethodThrowTypeExtension

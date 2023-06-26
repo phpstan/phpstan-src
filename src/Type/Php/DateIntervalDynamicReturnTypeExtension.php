@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use Throwable;
 use function count;
 use function in_array;
 
@@ -39,7 +40,13 @@ implements DynamicStaticMethodReturnTypeExtension
 
 		$possibleReturnTypes = [];
 		foreach ($strings as $string) {
-			$possibleReturnTypes[] = @DateInterval::createFromDateString($string->getValue()) instanceof DateInterval ? DateInterval::class : false;
+			try {
+				$result = @DateInterval::createFromDateString($string->getValue());
+			} catch (Throwable) {
+				$possibleReturnTypes[] = false;
+				continue;
+			}
+			$possibleReturnTypes[] = $result instanceof DateInterval ? DateInterval::class : false;
 		}
 
 		// the error case, when wrong types are passed

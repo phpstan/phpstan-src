@@ -54,6 +54,7 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 				$result = @(new DateTime())->modify($constantString->getValue());
 			} catch (Throwable) {
 				$hasFalse = true;
+				$valueType = TypeCombinator::remove($valueType, $constantString);
 				continue;
 			}
 

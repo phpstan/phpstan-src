@@ -5652,7 +5652,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'range(2, 5, 2)',
 			],
 			[
-				'array{2.0, 3.0, 4.0, 5.0}',
+				PHP_VERSION_ID < 80300 ? 'array{2.0, 3.0, 4.0, 5.0}' : 'array{2, 3, 4, 5}',
 				'range(2, 5, 1.0)',
 			],
 			[

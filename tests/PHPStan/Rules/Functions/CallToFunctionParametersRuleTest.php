@@ -1403,6 +1403,23 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #3 $flags of function json_validate expects 0|1048576, 2 given.',
 				7,
 			],
+}
+
+	public function testJsonEncodeDecodeParams(): void
+	{
+		$this->analyse([__DIR__ . '/data/json_encode_decode.php'], [
+			[
+				'Parameter #3 $depth of function json_decode expects int<1, max>, 0 given.',
+				6,
+			],
+			[
+				'Parameter #3 $depth of function json_decode expects int<1, max>, -10 given.',
+				7,
+			],
+			[
+				'Parameter #4 $flags of function json_decode expects 0|1|2|3|1048576|1048577|1048578|1048579|2097152|2097153|2097154|2097155|3145728|3145729|3145730|3145731|4194304|4194305|4194306|4194307|5242880|5242881|5242882|5242883|6291456|6291457|6291458|6291459|7340032|7340033|7340034|7340035, 8 given.',
+				8,
+			],
 		]);
 	}
 

@@ -79,16 +79,16 @@ class Foo
 		static $var;
 
 		/** @var int */
-		static $var;
+		static $var2;
 
 		/** @var int */
-		static $var, $bar;
+		static $var3, $bar;
 
 		/**
 		 * @var int
 		 * @var string
 		 */
-		static $var, $bar;
+		static $var4, $bar2;
 
 		/** @var int $foo */
 		static $test;

@@ -60,7 +60,6 @@ rules:
 	- PHPStan\Rules\Exceptions\ThrowExpressionRule
 	- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
 	- PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule
-	- PHPStan\Rules\Functions\CallToFunctionParametersRule
 	- PHPStan\Rules\Functions\ClosureAttributesRule
 	- PHPStan\Rules\Functions\DefineParametersRule
 	- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
@@ -133,6 +132,13 @@ services:
 			- phpstan.rules.rule
 		arguments:
 			checkFunctionNameCase: %checkFunctionNameCase%
+
+	-
+		class: PHPStan\Rules\Functions\CallToFunctionParametersRule
+		tags:
+			- phpstan.rules.rule
+		arguments:
+			separateCallUserFuncRule: %featureToggles.callUserFunc%
 
 	-
 		class: PHPStan\Rules\Constants\OverridingConstantRule

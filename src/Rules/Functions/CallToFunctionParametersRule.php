@@ -18,7 +18,11 @@ use PHPStan\Rules\Rule;
 class CallToFunctionParametersRule implements Rule
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider, private FunctionCallParametersCheck $check)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private FunctionCallParametersCheck $check,
+		private bool $separateCallUserFuncRule,
+	)
 	{
 	}
 
@@ -38,7 +42,7 @@ class CallToFunctionParametersRule implements Rule
 		}
 
 		$function = $this->reflectionProvider->getFunction($node->name, $scope);
-		if ($function->getName() === 'call_user_func') {
+		if ($this->separateCallUserFuncRule && $function->getName() === 'call_user_func') {
 			$result = ArgumentsNormalizer::reorderCallUserFuncArguments(
 				$node,
 				$scope,

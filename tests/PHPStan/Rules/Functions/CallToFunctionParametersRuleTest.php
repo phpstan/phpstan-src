@@ -1407,6 +1407,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testJsonEncodeDecodeParams(): void
 	{
+		// param name differs between PHP 7.x / 8.x, see https://3v4l.org/Uqanr
+		$paramName = '$flags';
+		if (PHP_VERSION_ID < 80000) {
+			$paramName = '$options';
+		}
+
 		$this->analyse([__DIR__ . '/data/json_encode_decode.php'], [
 			[
 				'Parameter #3 $depth of function json_decode expects int<1, max>, 0 given.',
@@ -1417,7 +1423,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				7,
 			],
 			[
-				'Parameter #4 $flags of function json_decode expects 0|1|2|3|1048576|1048577|1048578|1048579|2097152|2097153|2097154|2097155|3145728|3145729|3145730|3145731|4194304|4194305|4194306|4194307|5242880|5242881|5242882|5242883|6291456|6291457|6291458|6291459|7340032|7340033|7340034|7340035, 8 given.',
+				'Parameter #4 ' . $paramName . ' of function json_decode expects 0|1|2|3|1048576|1048577|1048578|1048579|2097152|2097153|2097154|2097155|3145728|3145729|3145730|3145731|4194304|4194305|4194306|4194307|5242880|5242881|5242882|5242883|6291456|6291457|6291458|6291459|7340032|7340033|7340034|7340035, 8 given.',
 				8,
 			],
 		]);

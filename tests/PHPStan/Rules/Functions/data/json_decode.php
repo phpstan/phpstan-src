@@ -1,6 +1,6 @@
 <?php
 
-namespace JsonEncodeDecodeParams;
+namespace JsonDecodeParams;
 
 function doFoo($m) {
 	json_decode($m, null, 0, JSON_BIGINT_AS_STRING);

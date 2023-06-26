@@ -4514,7 +4514,7 @@ return [
 'ifxus_write_slob' => ['int', 'bid'=>'int', 'content'=>'string'],
 'igbinary_serialize' => ['string|null', 'value'=>'mixed'],
 'igbinary_unserialize' => ['mixed', 'str'=>'string'],
-'ignore_user_abort' => ['int', 'value='=>'bool'],
+'ignore_user_abort' => ['0|1', 'value='=>'bool'],
 'iis_add_server' => ['int', 'path'=>'string', 'comment'=>'string', 'server_ip'=>'string', 'port'=>'int', 'host_name'=>'string', 'rights'=>'int', 'start_server'=>'int'],
 'iis_get_dir_security' => ['int', 'server_instance'=>'int', 'virtual_path'=>'string'],
 'iis_get_script_map' => ['string', 'server_instance'=>'int', 'virtual_path'=>'string', 'script_extension'=>'string'],

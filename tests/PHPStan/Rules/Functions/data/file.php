@@ -19,4 +19,8 @@ class Foo {
 	public function noContext():void {
 		$f = file(__FILE__, FILE_NO_DEFAULT_CONTEXT);
 	}
+
+	public function doFoo():void {
+		$fileLines = file(__FILE__, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+	}
 }

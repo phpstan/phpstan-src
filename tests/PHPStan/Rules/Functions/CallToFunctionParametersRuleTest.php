@@ -1372,7 +1372,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/file.php'], [
 			[
-				'Parameter #2 $flags of function file expects int<0, 7>, 8 given.',
+				'Parameter #2 $flags of function file expects 0|1|2|3|4|5|6|7|16|17|18|19|20|21|22|23, 8 given.',
 				16,
 			],
 		]);

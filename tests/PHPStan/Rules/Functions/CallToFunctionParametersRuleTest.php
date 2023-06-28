@@ -1397,8 +1397,8 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #3 $flags of function json_validate expects 0|1048576, 2 given.',
-				7
-			]
+				7,
+			],
 		]);
 	}
 

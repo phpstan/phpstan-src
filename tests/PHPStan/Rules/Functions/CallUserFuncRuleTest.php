@@ -47,6 +47,22 @@ class CallUserFuncRuleTest extends RuleTestCase
 				'Parameter #1 $i of callable passed to call_user_func() expects int, string given.',
 				19,
 			],
+			[
+				'Callable passed to call_user_func() invoked with 0 parameters, 2-4 required.',
+				30,
+			],
+			[
+				'Callable passed to call_user_func() invoked with 1 parameter, 2-4 required.',
+				31,
+			],
+			[
+				'Callable passed to call_user_func() invoked with 0 parameters, at least 2 required.',
+				40,
+			],
+			[
+				'Callable passed to call_user_func() invoked with 1 parameter, at least 2 required.',
+				41,
+			],
 		]);
 	}
 

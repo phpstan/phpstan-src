@@ -1390,6 +1390,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testJsonValidate(): void
 	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3');
+		}
+
 		$this->analyse([__DIR__ . '/data/json_validate.php'], [
 			[
 				'Parameter #2 $depth of function json_validate expects int<1, max>, 0 given.',

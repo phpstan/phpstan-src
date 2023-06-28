@@ -368,4 +368,17 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8084.php'], []);
 	}
 
+	public function testVoid(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = true;
+
+		$this->analyse([__DIR__ . '/data/null-coalesce-void.php'], [
+			[
+				'Expression on left side of ?? is always null.',
+				22,
+			],
+		]);
+	}
+
 }

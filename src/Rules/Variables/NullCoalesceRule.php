@@ -8,6 +8,7 @@ use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use PHPStan\Type\VoidType;
 
 /**
  * @implements Rule<Node\Expr>
@@ -27,12 +28,13 @@ class NullCoalesceRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$typeMessageCallback = static function (Type $type): ?string {
+			$isVoid = (new VoidType())->isSuperTypeOf($type);
 			$isNull = (new NullType())->isSuperTypeOf($type);
-			if ($isNull->maybe()) {
+			if ($isNull->maybe() || $isVoid->maybe()) {
 				return null;
 			}
 
-			if ($isNull->yes()) {
+			if ($isNull->yes() || $isVoid->yes()) {
 				return 'is always null';
 			}
 

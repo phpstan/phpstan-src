@@ -63,6 +63,10 @@ class CallUserFuncRuleTest extends RuleTestCase
 				'Callable passed to call_user_func() invoked with 1 parameter, at least 2 required.',
 				41,
 			],
+			[
+				'Result of callable passed to call_user_func() (void) is used.',
+				43,
+			],
 		]);
 	}
 

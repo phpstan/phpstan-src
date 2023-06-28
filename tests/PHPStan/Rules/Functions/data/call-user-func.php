@@ -40,5 +40,7 @@ class Foo
 		call_user_func($f);
 		call_user_func($f, 1);
 		call_user_func($f, 2, 'foo');
+		$result = call_user_func($f, 2, 'foo');
 	}
+
 }

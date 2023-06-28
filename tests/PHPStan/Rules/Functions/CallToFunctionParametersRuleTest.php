@@ -1388,4 +1388,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testJsonValidate(): void
+	{
+		$this->analyse([__DIR__ . '/data/json_validate.php'], [
+			[
+				'Parameter #2 $depth of function json_validate expects int<1, max>, 0 given.',
+				6,
+			],
+			[
+				'Parameter #3 $flags of function json_validate expects 0|1048576, 2 given.',
+				7
+			]
+		]);
+	}
+
 }

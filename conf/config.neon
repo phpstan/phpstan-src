@@ -165,6 +165,7 @@ parameters:
 		- ../stubs/arrayFunctions.stub
 		- ../stubs/core.stub
 		- ../stubs/typeCheckingFunctions.stub
+		- ../stubs/json.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit

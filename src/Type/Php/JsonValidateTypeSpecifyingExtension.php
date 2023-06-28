@@ -9,7 +9,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use function count;
 
@@ -31,7 +31,7 @@ class JsonValidateTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 			return new SpecifiedTypes([], []);
 		}
 
-		return $this->typeSpecifier->create($node->getArgs()[0]->value, new AccessoryNonFalsyStringType(), $context, false, $scope);
+		return $this->typeSpecifier->create($node->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

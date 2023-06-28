@@ -8,7 +8,7 @@ function doFoo($m): void {
 	assertType('bool', json_validate($m));
 
 	if (json_validate($m)) {
-		assertType('non-falsy-string', $m);
+		assertType('non-empty-string', $m);
 	} else {
 		assertType('mixed', $m);
 	}
@@ -20,7 +20,7 @@ function doFoo($m): void {
  */
 function doBar($nonES): void {
 	if (json_validate($nonES)) {
-		assertType('non-falsy-string', $nonES);
+		assertType('non-empty-string', $nonES);
 	} else {
 		assertType('non-empty-string', $nonES);
 	}

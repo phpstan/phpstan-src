@@ -8,6 +8,8 @@ parameters:
 conditionalTags:
 	PHPStan\Rules\Functions\ArrayFilterRule:
 		phpstan.rules.rule: %featureToggles.arrayFilter%
+	PHPStan\Rules\Functions\CallUserFuncRule:
+		phpstan.rules.rule: %featureToggles.callUserFunc%
 
 rules:
 	- PHPStan\Rules\DateTimeInstantiationRule
@@ -25,3 +27,6 @@ services:
 		class: PHPStan\Rules\Functions\ArrayFilterRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+
+	-
+		class: PHPStan\Rules\Functions\CallUserFuncRule

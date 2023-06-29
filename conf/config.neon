@@ -70,6 +70,7 @@ parameters:
 		invalidPhpDocTagLine: false
 		detectDeadTypeInMultiCatch: false
 		zeroFiles: false
+		callUserFunc: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -311,6 +312,7 @@ parametersSchema:
 		invalidPhpDocTagLine: bool()
 		detectDeadTypeInMultiCatch: bool()
 		zeroFiles: bool()
+		callUserFunc: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

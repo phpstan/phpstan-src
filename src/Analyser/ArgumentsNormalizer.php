@@ -14,7 +14,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
 use function array_key_exists;
 use function array_keys;
-use function array_slice;
 use function count;
 use function ksort;
 use function max;
@@ -39,21 +38,23 @@ final class ArgumentsNormalizer
 
 		$passThruArgs = [];
 		$callbackArg = null;
-		foreach ($args as $arg) {
-			if ($arg->name !== null && $arg->name->toString() === 'callback') {
-				$callbackArg = $arg;
-				continue;
+		foreach ($args as $i => $arg) {
+			if ($callbackArg === null) {
+				if ($arg->name === null && $i === 0) {
+					$callbackArg = $arg;
+					continue;
+				}
+				if ($arg->name !== null && $arg->name->toString() === 'callback') {
+					$callbackArg = $arg;
+					continue;
+				}
 			}
 
 			$passThruArgs[] = $arg;
 		}
-		if ($callbackArg === null) {
-			if (!isset($args[0])) {
-				return null;
-			}
 
-			$callbackArg = $args[0];
-			$passThruArgs = array_slice($passThruArgs, 1);
+		if ($callbackArg === null) {
+			return null;
 		}
 
 		$calledOnType = $scope->getType($callbackArg->value);

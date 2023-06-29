@@ -618,10 +618,10 @@ class MutatingScope implements Scope
 	public function getType(Expr $node): Type
 	{
 		if ($node instanceof GetIterableKeyTypeExpr) {
-			return $this->getType($node->getExpr())->getIterableKeyType();
+			return $this->getIterableKeyType($this->getType($node->getExpr()));
 		}
 		if ($node instanceof GetIterableValueTypeExpr) {
-			return $this->getType($node->getExpr())->getIterableValueType();
+			return $this->getIterableValueType($this->getType($node->getExpr()));
 		}
 		if ($node instanceof GetOffsetValueTypeExpr) {
 			return $this->getType($node->getVar())->getOffsetValueType($this->getType($node->getDim()));
@@ -1201,8 +1201,8 @@ class MutatingScope implements Scope
 						}
 					} else {
 						$yieldFromType = $arrowScope->getType($yieldNode->expr);
-						$keyType = $yieldFromType->getIterableKeyType();
-						$valueType = $yieldFromType->getIterableValueType();
+						$keyType = $arrowScope->getIterableKeyType($yieldFromType);
+						$valueType = $arrowScope->getIterableValueType($yieldFromType);
 					}
 
 					$returnType = new GenericObjectType(Generator::class, [
@@ -1305,8 +1305,8 @@ class MutatingScope implements Scope
 						}
 
 						$yieldFromType = $yieldScope->getType($yieldNode->expr);
-						$keyTypes[] = $yieldFromType->getIterableKeyType();
-						$valueTypes[] = $yieldFromType->getIterableValueType();
+						$keyTypes[] = $yieldScope->getIterableKeyType($yieldFromType);
+						$valueTypes[] = $yieldScope->getIterableValueType($yieldFromType);
 					}
 
 					$returnType = new GenericObjectType(Generator::class, [
@@ -3115,7 +3115,11 @@ class MutatingScope implements Scope
 	{
 		$iterateeType = $this->getType($iteratee);
 		$nativeIterateeType = $this->getNativeType($iteratee);
-		$scope = $this->assignVariable($valueName, $iterateeType->getIterableValueType(), $nativeIterateeType->getIterableValueType());
+		$scope = $this->assignVariable(
+			$valueName,
+			$this->getIterableValueType($iterateeType),
+			$this->getIterableValueType($nativeIterateeType),
+		);
 		if ($keyName !== null) {
 			$scope = $scope->enterForeachKey($iteratee, $keyName);
 		}
@@ -3127,13 +3131,17 @@ class MutatingScope implements Scope
 	{
 		$iterateeType = $this->getType($iteratee);
 		$nativeIterateeType = $this->getNativeType($iteratee);
-		$scope = $this->assignVariable($keyName, $iterateeType->getIterableKeyType(), $nativeIterateeType->getIterableKeyType());
+		$scope = $this->assignVariable(
+			$keyName,
+			$this->getIterableKeyType($iterateeType),
+			$this->getIterableKeyType($nativeIterateeType),
+		);
 
 		if ($iterateeType->isArray()->yes()) {
 			$scope = $scope->assignExpression(
 				new Expr\ArrayDimFetch($iteratee, new Variable($keyName)),
-				$iterateeType->getIterableValueType(),
-				$nativeIterateeType->getIterableValueType(),
+				$this->getIterableValueType($iterateeType),
+				$this->getIterableValueType($nativeIterateeType),
 			);
 		}
 
@@ -5011,6 +5019,46 @@ class MutatingScope implements Scope
 			$constantTypes[$exprString] = $typeHolder;
 		}
 		return $constantTypes;
+	}
+
+	public function getIterableKeyType(Type $iteratee): Type
+	{
+		if ($iteratee instanceof UnionType) {
+			$newTypes = [];
+			foreach ($iteratee->getTypes() as $innerType) {
+				if (!$innerType->isIterable()->yes()) {
+					continue;
+				}
+
+				$newTypes[] = $innerType;
+			}
+			if (count($newTypes) === 0) {
+				return $iteratee->getIterableKeyType();
+			}
+			$iteratee = TypeCombinator::union(...$newTypes);
+		}
+
+		return $iteratee->getIterableKeyType();
+	}
+
+	public function getIterableValueType(Type $iteratee): Type
+	{
+		if ($iteratee instanceof UnionType) {
+			$newTypes = [];
+			foreach ($iteratee->getTypes() as $innerType) {
+				if (!$innerType->isIterable()->yes()) {
+					continue;
+				}
+
+				$newTypes[] = $innerType;
+			}
+			if (count($newTypes) === 0) {
+				return $iteratee->getIterableValueType();
+			}
+			$iteratee = TypeCombinator::union(...$newTypes);
+		}
+
+		return $iteratee->getIterableValueType();
 	}
 
 }

@@ -404,12 +404,13 @@ class DependencyResolver
 		} elseif ($node instanceof Foreach_) {
 			$exprType = $scope->getType($node->expr);
 			if ($node->keyVar !== null) {
-				foreach ($exprType->getIterableKeyType()->getReferencedClasses() as $referencedClass) {
+
+				foreach ($scope->getIterableKeyType($exprType)->getReferencedClasses() as $referencedClass) {
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 				}
 			}
 
-			foreach ($exprType->getIterableValueType()->getReferencedClasses() as $referencedClass) {
+			foreach ($scope->getIterableValueType($exprType)->getReferencedClasses() as $referencedClass) {
 				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 			}
 		} elseif (

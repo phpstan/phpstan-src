@@ -70,4 +70,9 @@ class CallUserFuncRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7057(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7057.php'], []);
+	}
+
 }

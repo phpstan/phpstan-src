@@ -67,15 +67,9 @@ final class ArgumentsNormalizer
 			$calledOnType->getCallableParametersAcceptors($scope),
 		);
 
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $passThruArgs);
-
-		if ($reorderedArgs === null) {
-			return null;
-		}
-
 		return [$parametersAcceptor, new FuncCall(
 			$callbackArg->value,
-			$reorderedArgs,
+			$passThruArgs,
 			$callUserFuncCall->getAttributes(),
 		)];
 	}

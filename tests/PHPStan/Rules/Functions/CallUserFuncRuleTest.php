@@ -40,12 +40,20 @@ class CallUserFuncRuleTest extends RuleTestCase
 				17,
 			],
 			[
-				'Parameter #1 $i of callable passed to call_user_func() expects int, string given.',
+				'Parameter $i of callable passed to call_user_func() expects int, string given.',
 				18,
 			],
 			[
-				'Parameter #1 $i of callable passed to call_user_func() expects int, string given.',
+				'Parameter $i of callable passed to call_user_func() expects int, string given.',
 				19,
+			],
+			[
+				'Unknown parameter $j in call to callable passed to call_user_func().',
+				22,
+			],
+			[
+				'Missing parameter $i (int) in call to callable passed to call_user_func().',
+				22,
 			],
 			[
 				'Callable passed to call_user_func() invoked with 0 parameters, 2-4 required.',

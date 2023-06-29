@@ -1406,4 +1406,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4608(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4608.php'], []);
+	}
+
 }

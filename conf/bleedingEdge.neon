@@ -40,3 +40,4 @@ parameters:
 		invalidPhpDocTagLine: true
 		detectDeadTypeInMultiCatch: true
 		zeroFiles: true
+		callUserFunc: true

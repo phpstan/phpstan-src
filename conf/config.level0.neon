@@ -60,10 +60,10 @@ rules:
 	- PHPStan\Rules\Exceptions\ThrowExpressionRule
 	- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
 	- PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule
-	- PHPStan\Rules\Functions\CallToFunctionParametersRule
 	- PHPStan\Rules\Functions\ClosureAttributesRule
 	- PHPStan\Rules\Functions\DefineParametersRule
 	- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+	- PHPStan\Rules\Functions\CallToFunctionParametersRule
 	- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
 	- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Functions\FunctionAttributesRule

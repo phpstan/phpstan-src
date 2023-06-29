@@ -10,6 +10,7 @@ use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
 use function array_key_exists;
@@ -22,6 +23,58 @@ final class ArgumentsNormalizer
 {
 
 	public const ORIGINAL_ARG_ATTRIBUTE = 'originalArg';
+
+	/**
+	 * @return array{ParametersAcceptor, FuncCall}|null
+	 */
+	public static function reorderCallUserFuncArguments(
+		FuncCall $callUserFuncCall,
+		Scope $scope,
+	): ?array
+	{
+		$args = $callUserFuncCall->getArgs();
+		if (count($args) < 1) {
+			return null;
+		}
+
+		$passThruArgs = [];
+		$callbackArg = null;
+		foreach ($args as $i => $arg) {
+			if ($callbackArg === null) {
+				if ($arg->name === null && $i === 0) {
+					$callbackArg = $arg;
+					continue;
+				}
+				if ($arg->name !== null && $arg->name->toString() === 'callback') {
+					$callbackArg = $arg;
+					continue;
+				}
+			}
+
+			$passThruArgs[] = $arg;
+		}
+
+		if ($callbackArg === null) {
+			return null;
+		}
+
+		$calledOnType = $scope->getType($callbackArg->value);
+		if (!$calledOnType->isCallable()->yes()) {
+			return null;
+		}
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$passThruArgs,
+			$calledOnType->getCallableParametersAcceptors($scope),
+		);
+
+		return [$parametersAcceptor, new FuncCall(
+			$callbackArg->value,
+			$passThruArgs,
+			$callUserFuncCall->getAttributes(),
+		)];
+	}
 
 	public static function reorderFuncArguments(
 		ParametersAcceptor $parametersAcceptor,

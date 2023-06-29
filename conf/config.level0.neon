@@ -63,6 +63,7 @@ rules:
 	- PHPStan\Rules\Functions\ClosureAttributesRule
 	- PHPStan\Rules\Functions\DefineParametersRule
 	- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
+	- PHPStan\Rules\Functions\CallToFunctionParametersRule
 	- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
 	- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Functions\FunctionAttributesRule
@@ -132,13 +133,6 @@ services:
 			- phpstan.rules.rule
 		arguments:
 			checkFunctionNameCase: %checkFunctionNameCase%
-
-	-
-		class: PHPStan\Rules\Functions\CallToFunctionParametersRule
-		tags:
-			- phpstan.rules.rule
-		arguments:
-			separateCallUserFuncRule: %featureToggles.callUserFunc%
 
 	-
 		class: PHPStan\Rules\Constants\OverridingConstantRule

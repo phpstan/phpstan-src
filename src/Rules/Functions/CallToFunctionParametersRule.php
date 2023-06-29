@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
-use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -18,11 +17,7 @@ use PHPStan\Rules\Rule;
 class CallToFunctionParametersRule implements Rule
 {
 
-	public function __construct(
-		private ReflectionProvider $reflectionProvider,
-		private FunctionCallParametersCheck $check,
-		private bool $separateCallUserFuncRule,
-	)
+	public function __construct(private ReflectionProvider $reflectionProvider, private FunctionCallParametersCheck $check)
 	{
 	}
 
@@ -42,17 +37,6 @@ class CallToFunctionParametersRule implements Rule
 		}
 
 		$function = $this->reflectionProvider->getFunction($node->name, $scope);
-		if ($this->separateCallUserFuncRule && $function->getName() === 'call_user_func') {
-			$result = ArgumentsNormalizer::reorderCallUserFuncArguments(
-				$node,
-				$scope,
-			);
-			if ($result !== null) {
-				// params of a successfull call_user_func-call are validated by CallUserFuncRule.
-				return [];
-			}
-		}
-
 		$functionName = SprintfHelper::escapeFormatString($function->getName());
 
 		return $this->check->check(

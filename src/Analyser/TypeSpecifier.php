@@ -253,6 +253,7 @@ class TypeSpecifier
 			}
 
 			if (
+				$context->true() &&
 				$leftExpr instanceof ClassConstFetch &&
 				$leftExpr->class instanceof Expr &&
 				$leftExpr->name instanceof Node\Identifier &&
@@ -273,6 +274,7 @@ class TypeSpecifier
 
 			$leftType = $scope->getType($leftExpr);
 			if (
+				$context->true() &&
 				$rightExpr instanceof ClassConstFetch &&
 				$rightExpr->class instanceof Expr &&
 				$rightExpr->name instanceof Node\Identifier &&

@@ -33,7 +33,7 @@ class HelloWorld
 	public function testClass(TranslatableInterface $translatable): void
 	{
 		if ($translatable::class !== TranslatableMessage::class) {
-			assertType('Bug9542\TranslatableInterface~Bug9542\TranslatableMessage', $translatable);
+			assertType('Bug9542\TranslatableInterface', $translatable);
 			return;
 		}
 
@@ -44,7 +44,7 @@ class HelloWorld
 	public function testClassReverse(TranslatableInterface $translatable): void
 	{
 		if (TranslatableMessage::class !== $translatable::class) {
-			assertType('Bug9542\TranslatableInterface~Bug9542\TranslatableMessage', $translatable);
+			assertType('Bug9542\TranslatableInterface', $translatable);
 			return;
 		}
 

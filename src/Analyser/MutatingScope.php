@@ -760,18 +760,17 @@ class MutatingScope implements Scope
 			$node instanceof Node\Expr\BinaryOp\BooleanAnd
 			|| $node instanceof Node\Expr\BinaryOp\LogicalAnd
 		) {
+			$noopCallback = static function (): void {
+			};
+			$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
 			$leftBooleanType = $this->getType($node->left)->toBoolean();
-			if (
-				$leftBooleanType->isFalse()->yes()
-			) {
+			if ($leftBooleanType->isFalse()->yes()) {
 				return new ConstantBooleanType(false);
 			}
 
-			$rightBooleanType = $this->filterByTruthyValue($node->left)->getType($node->right)->toBoolean();
+			$rightBooleanType = $leftResult->getTruthyScope()->getType($node->right)->toBoolean();
 
-			if (
-				$rightBooleanType->isFalse()->yes()
-			) {
+			if ($rightBooleanType->isFalse()->yes()) {
 				return new ConstantBooleanType(false);
 			}
 
@@ -789,18 +788,17 @@ class MutatingScope implements Scope
 			$node instanceof Node\Expr\BinaryOp\BooleanOr
 			|| $node instanceof Node\Expr\BinaryOp\LogicalOr
 		) {
+			$noopCallback = static function (): void {
+			};
+			$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
 			$leftBooleanType = $this->getType($node->left)->toBoolean();
-			if (
-				$leftBooleanType->isTrue()->yes()
-			) {
+			if ($leftBooleanType->isTrue()->yes()) {
 				return new ConstantBooleanType(true);
 			}
 
-			$rightBooleanType = $this->filterByFalseyValue($node->left)->getType($node->right)->toBoolean();
+			$rightBooleanType = $leftResult->getFalseyScope()->getType($node->right)->toBoolean();
 
-			if (
-				$rightBooleanType->isTrue()->yes()
-			) {
+			if ($rightBooleanType->isTrue()->yes()) {
 				return new ConstantBooleanType(true);
 			}
 
@@ -1613,35 +1611,38 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\Ternary) {
+			$noopCallback = static function (): void {
+			};
+			$condResult = $this->nodeScopeResolver->processExprNode($node->cond, $this, $noopCallback, ExpressionContext::createDeep());
 			if ($node->if === null) {
 				$conditionType = $this->getType($node->cond);
 				$booleanConditionType = $conditionType->toBoolean();
 				if ($booleanConditionType->isTrue()->yes()) {
-					return $this->filterByTruthyValue($node->cond)->getType($node->cond);
+					return $condResult->getTruthyScope()->getType($node->cond);
 				}
 
 				if ($booleanConditionType->isFalse()->yes()) {
-					return $this->filterByFalseyValue($node->cond)->getType($node->else);
+					return $condResult->getFalseyScope()->getType($node->else);
 				}
 
 				return TypeCombinator::union(
-					TypeCombinator::removeFalsey($this->filterByTruthyValue($node->cond)->getType($node->cond)),
-					$this->filterByFalseyValue($node->cond)->getType($node->else),
+					TypeCombinator::removeFalsey($condResult->getTruthyScope()->getType($node->cond)),
+					$condResult->getFalseyScope()->getType($node->else),
 				);
 			}
 
 			$booleanConditionType = $this->getType($node->cond)->toBoolean();
 			if ($booleanConditionType->isTrue()->yes()) {
-				return $this->filterByTruthyValue($node->cond)->getType($node->if);
+				return $condResult->getTruthyScope()->getType($node->if);
 			}
 
 			if ($booleanConditionType->isFalse()->yes()) {
-				return $this->filterByFalseyValue($node->cond)->getType($node->else);
+				return $condResult->getFalseyScope()->getType($node->else);
 			}
 
 			return TypeCombinator::union(
-				$this->filterByTruthyValue($node->cond)->getType($node->if),
-				$this->filterByFalseyValue($node->cond)->getType($node->else),
+				$condResult->getTruthyScope()->getType($node->if),
+				$condResult->getFalseyScope()->getType($node->else),
 			);
 		}
 

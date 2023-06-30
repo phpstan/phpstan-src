@@ -1188,7 +1188,7 @@ class NodeScopeResolver
 					$scopeForBranches = $caseResult->getScope();
 					$hasYield = $hasYield || $caseResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $caseResult->getThrowPoints());
-					$branchScope = $scopeForBranches->filterByTruthyValue($condExpr);
+					$branchScope = $caseResult->getTruthyScope()->filterByTruthyValue($condExpr);
 				} else {
 					$hasDefaultCase = true;
 					$branchScope = $scopeForBranches;
@@ -1812,7 +1812,7 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processExprNode(Expr $expr, MutatingScope $scope, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExprNode(Expr $expr, MutatingScope $scope, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
 			if ($expr instanceof FuncCall) {

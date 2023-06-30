@@ -15,7 +15,7 @@ class Foo
 				assertType(\DateTime::class, $object);
 				break;
 			case \Throwable::class:
-				assertType('Throwable~DateTime', $object);
+				assertType('Throwable', $object);
 				break;
 		}
 	}
@@ -29,7 +29,7 @@ class Bar
 	{
 		match ($object::class) {
 			\DateTime::class => assertType(\DateTime::class, $object),
-			\Throwable::class => assertType('Throwable~DateTime', $object),
+			\Throwable::class => assertType('Throwable', $object),
 		};
 	}
 

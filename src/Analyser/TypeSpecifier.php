@@ -270,6 +270,27 @@ class TypeSpecifier
 					$rootExpr,
 				)->unionWith($this->create($expr->left, $rightType, $context, false, $scope, $rootExpr));
 			}
+
+			$leftType = $scope->getType($leftExpr);
+			if (
+				$rightExpr instanceof ClassConstFetch &&
+				$rightExpr->class instanceof Expr &&
+				$rightExpr->name instanceof Node\Identifier &&
+				$leftExpr instanceof ClassConstFetch &&
+				$leftType instanceof ConstantStringType &&
+				strtolower($rightExpr->name->toString()) === 'class'
+			) {
+				return $this->specifyTypesInCondition(
+					$scope,
+					new Instanceof_(
+						$rightExpr->class,
+						new Name($leftType->getValue()),
+					),
+					$context,
+					$rootExpr,
+				)->unionWith($this->create($expr->right, $leftType, $context, false, $scope, $rootExpr));
+			}
+
 			if ($context->false()) {
 				$identicalType = $scope->getType($expr);
 				if ($identicalType instanceof ConstantBooleanType) {

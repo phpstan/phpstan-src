@@ -1936,7 +1936,7 @@ class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 
-			if (isset($functionReflection)) {
+			if ($functionReflection !== null) {
 				$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $expr, $scope);
 				if ($functionThrowPoint !== null) {
 					$throwPoints[] = $functionThrowPoint;
@@ -1946,7 +1946,7 @@ class NodeScopeResolver
 			}
 
 			if (
-				isset($functionReflection)
+				$functionReflection !== null
 				&& in_array($functionReflection->getName(), ['json_encode', 'json_decode'], true)
 			) {
 				$scope = $scope->invalidateExpression(new FuncCall(new Name('json_last_error'), []))
@@ -1956,7 +1956,7 @@ class NodeScopeResolver
 			}
 
 			if (
-				isset($functionReflection)
+				$functionReflection !== null
 				&& in_array($functionReflection->getName(), ['array_pop', 'array_shift'], true)
 				&& count($expr->getArgs()) >= 1
 			) {
@@ -1974,7 +1974,7 @@ class NodeScopeResolver
 			}
 
 			if (
-				isset($functionReflection)
+				$functionReflection !== null
 				&& in_array($functionReflection->getName(), ['array_push', 'array_unshift'], true)
 				&& count($expr->getArgs()) >= 2
 			) {
@@ -1986,13 +1986,16 @@ class NodeScopeResolver
 			}
 
 			if (
-				isset($functionReflection)
+				$functionReflection !== null
 				&& in_array($functionReflection->getName(), ['fopen', 'file_get_contents'], true)
 			) {
 				$scope = $scope->assignVariable('http_response_header', new ArrayType(new IntegerType(), new StringType()), new ArrayType(new IntegerType(), new StringType()));
 			}
 
-			if (isset($functionReflection) && $functionReflection->getName() === 'shuffle') {
+			if (
+				$functionReflection !== null
+				&& $functionReflection->getName() === 'shuffle'
+			) {
 				$arrayArg = $expr->getArgs()[0]->value;
 				$scope = $scope->assignExpression(
 					$arrayArg,
@@ -2002,7 +2005,7 @@ class NodeScopeResolver
 			}
 
 			if (
-				isset($functionReflection)
+				$functionReflection !== null
 				&& $functionReflection->getName() === 'array_splice'
 				&& count($expr->getArgs()) >= 1
 			) {
@@ -2020,7 +2023,10 @@ class NodeScopeResolver
 				);
 			}
 
-			if (isset($functionReflection) && $functionReflection->getName() === 'extract') {
+			if (
+				$functionReflection !== null
+				&& $functionReflection->getName() === 'extract'
+			) {
 				$extractedArg = $expr->getArgs()[0]->value;
 				$extractedType = $scope->getType($extractedArg);
 				if (count($extractedType->getConstantArrays()) > 0) {
@@ -2057,15 +2063,24 @@ class NodeScopeResolver
 				}
 			}
 
-			if (isset($functionReflection) && ($functionReflection->getName() === 'clearstatcache' || $functionReflection->getName() === 'unlink')) {
+			if (
+				$functionReflection !== null
+				&& ($functionReflection->getName() === 'clearstatcache' || $functionReflection->getName() === 'unlink')
+			) {
 				$scope = $scope->afterClearstatcacheCall();
 			}
 
-			if (isset($functionReflection) && str_starts_with($functionReflection->getName(), 'openssl')) {
+			if (
+				$functionReflection !== null
+				&& str_starts_with($functionReflection->getName(), 'openssl')
+			) {
 				$scope = $scope->afterOpenSslCall($functionReflection->getName());
 			}
 
-			if (isset($functionReflection) && $functionReflection->hasSideEffects()->yes()) {
+			if (
+				$functionReflection !== null
+				&& $functionReflection->hasSideEffects()->yes()
+			) {
 				foreach ($expr->getArgs() as $arg) {
 					$scope = $scope->invalidateExpression($arg->value, true);
 				}

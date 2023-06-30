@@ -41,6 +41,7 @@ class RuntimeReflectionFunctionRule implements Rule
 		if (!in_array($functionReflection->getName(), [
 			'is_a',
 			'is_subclass_of',
+			'get_declared_classes',
 			'class_parents',
 			'class_implements',
 			'class_uses',

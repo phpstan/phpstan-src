@@ -1611,35 +1611,38 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\Ternary) {
+			$noopCallback = static function (): void {
+			};
+			$condResult = $this->nodeScopeResolver->processExprNode($node->cond, $this, $noopCallback, ExpressionContext::createDeep());
 			if ($node->if === null) {
 				$conditionType = $this->getType($node->cond);
 				$booleanConditionType = $conditionType->toBoolean();
 				if ($booleanConditionType->isTrue()->yes()) {
-					return $this->filterByTruthyValue($node->cond)->getType($node->cond);
+					return $condResult->getTruthyScope()->getType($node->cond);
 				}
 
 				if ($booleanConditionType->isFalse()->yes()) {
-					return $this->filterByFalseyValue($node->cond)->getType($node->else);
+					return $condResult->getFalseyScope()->getType($node->else);
 				}
 
 				return TypeCombinator::union(
-					TypeCombinator::removeFalsey($this->filterByTruthyValue($node->cond)->getType($node->cond)),
-					$this->filterByFalseyValue($node->cond)->getType($node->else),
+					TypeCombinator::removeFalsey($condResult->getTruthyScope()->getType($node->cond)),
+					$condResult->getFalseyScope()->getType($node->else),
 				);
 			}
 
 			$booleanConditionType = $this->getType($node->cond)->toBoolean();
 			if ($booleanConditionType->isTrue()->yes()) {
-				return $this->filterByTruthyValue($node->cond)->getType($node->if);
+				return $condResult->getTruthyScope()->getType($node->if);
 			}
 
 			if ($booleanConditionType->isFalse()->yes()) {
-				return $this->filterByFalseyValue($node->cond)->getType($node->else);
+				return $condResult->getFalseyScope()->getType($node->else);
 			}
 
 			return TypeCombinator::union(
-				$this->filterByTruthyValue($node->cond)->getType($node->if),
-				$this->filterByFalseyValue($node->cond)->getType($node->else),
+				$condResult->getTruthyScope()->getType($node->if),
+				$condResult->getFalseyScope()->getType($node->else),
 			);
 		}
 

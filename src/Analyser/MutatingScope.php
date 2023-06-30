@@ -3121,37 +3121,37 @@ class MutatingScope implements Scope
 		return $this->assignExpression($condExpr, $type, $nativeType);
 	}
 
-	public function enterForeach(Expr $iteratee, string $valueName, ?string $keyName): self
+	public function enterForeach(self $originalScope, Expr $iteratee, string $valueName, ?string $keyName): self
 	{
-		$iterateeType = $this->getType($iteratee);
-		$nativeIterateeType = $this->getNativeType($iteratee);
+		$iterateeType = $originalScope->getType($iteratee);
+		$nativeIterateeType = $originalScope->getNativeType($iteratee);
 		$scope = $this->assignVariable(
 			$valueName,
-			$this->getIterableValueType($iterateeType),
-			$this->getIterableValueType($nativeIterateeType),
+			$originalScope->getIterableValueType($iterateeType),
+			$originalScope->getIterableValueType($nativeIterateeType),
 		);
 		if ($keyName !== null) {
-			$scope = $scope->enterForeachKey($iteratee, $keyName);
+			$scope = $scope->enterForeachKey($originalScope, $iteratee, $keyName);
 		}
 
 		return $scope;
 	}
 
-	public function enterForeachKey(Expr $iteratee, string $keyName): self
+	public function enterForeachKey(self $originalScope, Expr $iteratee, string $keyName): self
 	{
-		$iterateeType = $this->getType($iteratee);
-		$nativeIterateeType = $this->getNativeType($iteratee);
+		$iterateeType = $originalScope->getType($iteratee);
+		$nativeIterateeType = $originalScope->getNativeType($iteratee);
 		$scope = $this->assignVariable(
 			$keyName,
-			$this->getIterableKeyType($iterateeType),
-			$this->getIterableKeyType($nativeIterateeType),
+			$originalScope->getIterableKeyType($iterateeType),
+			$originalScope->getIterableKeyType($nativeIterateeType),
 		);
 
 		if ($iterateeType->isArray()->yes()) {
 			$scope = $scope->assignExpression(
 				new Expr\ArrayDimFetch($iteratee, new Variable($keyName)),
-				$this->getIterableValueType($iterateeType),
-				$this->getIterableValueType($nativeIterateeType),
+				$originalScope->getIterableValueType($iterateeType),
+				$originalScope->getIterableValueType($nativeIterateeType),
 			);
 		}
 

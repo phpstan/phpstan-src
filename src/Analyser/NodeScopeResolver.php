@@ -835,20 +835,21 @@ class NodeScopeResolver
 				$stmt->expr,
 				new Array_([]),
 			);
-			$inForeachScope = $scope;
 			if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
-				$inForeachScope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
+				$scope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 			}
-			$nodeCallback(new InForeachNode($stmt), $inForeachScope);
+			$nodeCallback(new InForeachNode($stmt), $scope);
+			$originalScope = $scope;
 			$bodyScope = $scope;
 
 			if ($context->isTopLevel()) {
-				$bodyScope = $this->polluteScopeWithAlwaysIterableForeach ? $this->enterForeach($scope->filterByTruthyValue($arrayComparisonExpr), $stmt) : $this->enterForeach($scope, $stmt);
+				$originalScope = $this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
+				$bodyScope = $this->enterForeach($originalScope, $originalScope, $stmt);
 				$count = 0;
 				do {
 					$prevScope = $bodyScope;
 					$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
-					$bodyScope = $this->enterForeach($bodyScope, $stmt);
+					$bodyScope = $this->enterForeach($bodyScope, $originalScope, $stmt);
 					$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
 					}, $context->enterDeep())->filterOutLoopExitPoints();
 					$bodyScope = $bodyScopeResult->getScope();
@@ -867,7 +868,7 @@ class NodeScopeResolver
 			}
 
 			$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
-			$bodyScope = $this->enterForeach($bodyScope, $stmt);
+			$bodyScope = $this->enterForeach($bodyScope, $originalScope, $stmt);
 			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope();
 			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
@@ -4142,12 +4143,12 @@ class NodeScopeResolver
 		return $scope;
 	}
 
-	private function enterForeach(MutatingScope $scope, Foreach_ $stmt): MutatingScope
+	private function enterForeach(MutatingScope $scope, MutatingScope $originalScope, Foreach_ $stmt): MutatingScope
 	{
 		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
 			$scope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 		}
-		$iterateeType = $scope->getType($stmt->expr);
+		$iterateeType = $originalScope->getType($stmt->expr);
 		if (
 			($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name))
 			&& ($stmt->keyVar === null || ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)))
@@ -4157,6 +4158,7 @@ class NodeScopeResolver
 				$keyVarName = $stmt->keyVar->name;
 			}
 			$scope = $scope->enterForeach(
+				$originalScope,
 				$stmt->expr,
 				$stmt->valueVar->name,
 				$keyVarName,
@@ -4180,7 +4182,7 @@ class NodeScopeResolver
 			if (
 				$stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
 			) {
-				$scope = $scope->enterForeachKey($stmt->expr, $stmt->keyVar->name);
+				$scope = $scope->enterForeachKey($originalScope, $stmt->expr, $stmt->keyVar->name);
 				$vars[] = $stmt->keyVar->name;
 			} elseif ($stmt->keyVar !== null) {
 				$scope = $this->processAssignVar(

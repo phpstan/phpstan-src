@@ -1188,7 +1188,7 @@ class NodeScopeResolver
 					$scopeForBranches = $caseResult->getScope();
 					$hasYield = $hasYield || $caseResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $caseResult->getThrowPoints());
-					$branchScope = $scopeForBranches->filterByTruthyValue($condExpr);
+					$branchScope = $caseResult->getTruthyScope()->filterByTruthyValue($condExpr);
 				} else {
 					$hasDefaultCase = true;
 					$branchScope = $scopeForBranches;

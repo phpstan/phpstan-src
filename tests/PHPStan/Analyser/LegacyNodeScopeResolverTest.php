@@ -3983,7 +3983,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		$this->assertTypes(
 			__DIR__ . '/data/switch-instanceof-not.php',
-			'*ERROR*',
+			'*NEVER*',
 			'$foo',
 		);
 	}

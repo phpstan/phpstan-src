@@ -130,4 +130,10 @@ class UnreachableIfBranchesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8562.php'], []);
 	}
 
+	public function testBug7491(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-7491.php'], []);
+	}
+
 }

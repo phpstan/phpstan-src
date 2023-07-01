@@ -37,9 +37,12 @@ class FileFinder
 			} elseif (!file_exists($path)) {
 				throw new PathNotFoundException($path);
 			} else {
-				$finder = new Finder();
-				$finder->followLinks();
-				foreach ($finder->files()->name('*.{' . implode(',', $this->fileExtensions) . '}')->in($path) as $fileInfo) {
+				$finder = (new Finder())
+					->in($path)
+					->followLinks()
+					->files()
+					->name('*.{' . implode(',', $this->fileExtensions) . '}');
+				foreach ($finder as $fileInfo) {
 					$files[] = $this->fileHelper->normalizePath($fileInfo->getPathname());
 					$onlyFiles = false;
 				}

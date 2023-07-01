@@ -1951,7 +1951,7 @@ class NodeScopeResolver
 				$nameType = $scope->getType($expr->name);
 				if (
 					$nameType->isObject()->yes()
-					&& !$nameType instanceof ClosureType
+					&& $nameType->accepts(new ObjectType(Closure::class), true)->no()
 				) {
 					return $this->processExprNode(
 						new MethodCall($expr->name, '__invoke', $expr->getArgs(), $expr->getAttributes()),

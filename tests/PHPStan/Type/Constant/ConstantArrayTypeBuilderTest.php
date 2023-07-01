@@ -111,4 +111,21 @@ class ConstantArrayTypeBuilderTest extends TestCase
 		$this->assertSame('non-empty-array<string, string>', $array->describe(VerbosityLevel::precise()));
 	}
 
+	public function testIsList(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		$builder->setOffsetValueType(null, new ConstantIntegerType(0));
+		$this->assertTrue($builder->isList());
+
+		$builder->setOffsetValueType(new ConstantIntegerType(0), new NullType());
+		$this->assertTrue($builder->isList());
+
+		$builder->setOffsetValueType(new ConstantIntegerType(1), new NullType(), true);
+		$this->assertTrue($builder->isList());
+
+		$builder->setOffsetValueType(new ConstantIntegerType(2), new NullType(), true);
+		$this->assertFalse($builder->isList());
+	}
+
 }

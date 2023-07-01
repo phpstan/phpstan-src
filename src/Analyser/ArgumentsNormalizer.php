@@ -76,6 +76,64 @@ final class ArgumentsNormalizer
 		)];
 	}
 
+	/**
+	 * @return array{ParametersAcceptor, FuncCall}|null
+	 */
+	public static function reorderCallUserFuncArrayArguments(
+		FuncCall $callUserFuncCall,
+		Scope $scope,
+	): ?array
+	{
+		$args = $callUserFuncCall->getArgs();
+		if (count($args) < 1 || count($args) > 2) {
+			return null;
+		}
+
+		$callbackArg = null;
+		$passThruArgs = [];
+		foreach ($args as $i => $arg) {
+			if ($callbackArg === null) {
+				if ($arg->name === null && $i === 0) {
+					$callbackArg = $arg;
+					continue;
+				}
+				if ($arg->name !== null && $arg->name->toString() === 'callback') {
+					$callbackArg = $arg;
+					continue;
+				}
+			}
+
+			$passThruArgs[] = new Arg(
+				$arg->value,
+				$arg->byRef,
+				true,
+				$arg->getAttributes(),
+				$arg->name,
+			);
+		}
+
+		if ($callbackArg === null) {
+			return null;
+		}
+
+		$calledOnType = $scope->getType($callbackArg->value);
+		if (!$calledOnType->isCallable()->yes()) {
+			return null;
+		}
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$passThruArgs,
+			$calledOnType->getCallableParametersAcceptors($scope),
+		);
+
+		return [$parametersAcceptor, new FuncCall(
+			$callbackArg->value,
+			$passThruArgs,
+			$callUserFuncCall->getAttributes(),
+		)];
+	}
+
 	public static function reorderFuncArguments(
 		ParametersAcceptor $parametersAcceptor,
 		FuncCall $functionCall,

@@ -10,6 +10,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.arrayFilter%
 	PHPStan\Rules\Functions\CallUserFuncRule:
 		phpstan.rules.rule: %featureToggles.callUserFunc%
+	PHPStan\Rules\Functions\CallUserFuncArrayRule:
+			phpstan.rules.rule: %featureToggles.callUserFunc%
 
 rules:
 	- PHPStan\Rules\DateTimeInstantiationRule
@@ -30,3 +32,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Functions\CallUserFuncRule
+
+	-
+		class: PHPStan\Rules\Functions\CallUserFuncArrayRule

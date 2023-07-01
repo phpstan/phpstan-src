@@ -43,4 +43,9 @@ class TooWideMethodThrowTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6233(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6233.php'], []);
+	}
+
 }

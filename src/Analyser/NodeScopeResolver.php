@@ -1949,6 +1949,17 @@ class NodeScopeResolver
 			$throwPoints = [];
 			if ($expr->name instanceof Expr) {
 				$nameType = $scope->getType($expr->name);
+				if (
+					$nameType->isObject()->yes()
+					&& !$nameType instanceof ClosureType
+				) {
+					return $this->processExprNode(
+						new MethodCall($expr->name, '__invoke', $expr->getArgs(), $expr->getAttributes()),
+						$scope,
+						$nodeCallback,
+						$context->enterDeep(),
+					);
+				}
 				if ($nameType->isCallable()->yes()) {
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 						$scope,

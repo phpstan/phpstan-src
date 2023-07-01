@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use Bug9499\FooEnum;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\Equal;
@@ -18,6 +19,7 @@ use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\VarLikeIdentifier;
 use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
@@ -1210,6 +1212,36 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'(int) $float' => 'int',
 				],
 				[],
+			],
+			[
+				new Identical(
+					new PropertyFetch(new Variable('foo'), 'bar'),
+					new Expr\ClassConstFetch(new Name(FooEnum::class), 'A'),
+				),
+				[
+					'$foo->bar' => 'Bug9499\FooEnum::A',
+				],
+				[
+					'$foo->bar' => '~Bug9499\FooEnum::A',
+				],
+			],
+			[
+				new Identical(
+					new AlwaysRememberedExpr(
+						new PropertyFetch(new Variable('foo'), 'bar'),
+						new ObjectType(FooEnum::class),
+						new ObjectType(FooEnum::class),
+					),
+					new Expr\ClassConstFetch(new Name(FooEnum::class), 'A'),
+				),
+				[
+					'__phpstanRembered($foo->bar)' => 'Bug9499\FooEnum::A',
+					'$foo->bar' => 'Bug9499\FooEnum::A',
+				],
+				[
+					'__phpstanRembered($foo->bar)' => '~Bug9499\FooEnum::A',
+					'$foo->bar' => '~Bug9499\FooEnum::A',
+				],
 			],
 		];
 	}

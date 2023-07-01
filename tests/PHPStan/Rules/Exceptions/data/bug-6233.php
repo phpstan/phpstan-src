@@ -11,6 +11,15 @@ class TestClass {
 	}
 }
 
+class TestClass2 {
+	/**
+	 * @throws \Exception
+	 **/
+	public function __invoke() {
+		throw new \Exception();
+	}
+}
+
 class Container {
 	/**
 	 * @throws \Exception
@@ -21,7 +30,15 @@ class Container {
 	/**
 	 * @throws \Exception
 	 **/
-	public function test2() {
+	public function testNew() {
 		(new TestClass)();
+	}
+	/**
+	 * @param TestClass|TestClass2 $class
+	 *
+	 * @throws \Exception
+	 **/
+	public function testUnion(object $class) {
+		$class();
 	}
 }

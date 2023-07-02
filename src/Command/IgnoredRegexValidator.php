@@ -86,15 +86,17 @@ class IgnoredRegexValidator
 				continue;
 			}
 
-			if ($type->describe(VerbosityLevel::typeOnly()) !== $matches[1]) {
-				continue;
-			}
-
 			if ($type instanceof ObjectType) {
 				continue;
 			}
 
-			$types[$type->describe(VerbosityLevel::typeOnly())] = $text;
+			$typeDescription = $type->describe(VerbosityLevel::typeOnly());
+
+			if ($typeDescription !== $matches[1]) {
+				continue;
+			}
+
+			$types[$typeDescription] = $text;
 		}
 
 		return $types;

@@ -546,6 +546,7 @@ class NodeScopeResolver
 						$scope->getClassReflection()->isReadOnly(),
 						false,
 					), $methodScope);
+					$methodScope = $methodScope->assignExpression(new PropertyInitializationExpr($param->var->name), new MixedType(), new MixedType());
 				}
 			}
 

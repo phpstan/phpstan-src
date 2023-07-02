@@ -108,6 +108,10 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				'Readonly property MissingReadOnlyPropertyAssign\FooTraitClass::$doubleAssigned is already assigned.',
 				149,
 			],
+			[
+				'Readonly property MissingReadOnlyPropertyAssign\AdditionalAssignOfReadonlyPromotedProperty::$x is already assigned.',
+				188,
+			],
 		]);
 	}
 

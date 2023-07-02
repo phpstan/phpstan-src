@@ -99,6 +99,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$classReflection = $scope->getClassReflection();
 
 		$properties = [];
+		$originalProperties = [];
 		foreach ($this->getProperties() as $property) {
 			if ($property->isStatic()) {
 				continue;
@@ -109,6 +110,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($property->getDefault() !== null) {
 				continue;
 			}
+			$originalProperties[$property->getName()] = $property;
 			if ($property->isPromoted()) {
 				continue;
 			}
@@ -139,7 +141,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classReflection, $this->methodCalls, $constructors);
 		$prematureAccess = [];
 		$additionalAssigns = [];
-		$originalProperties = $properties;
 
 		foreach ($this->getPropertyUsages() as $usage) {
 			$fetch = $usage->getFetch();

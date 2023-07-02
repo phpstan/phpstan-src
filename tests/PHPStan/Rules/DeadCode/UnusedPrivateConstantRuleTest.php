@@ -92,4 +92,36 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9005.php'], []);
 	}
 
+	public function testBug6415(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6415.php'], []);
+	}
+
+	public function testBug7184(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7184.php'], []);
+	}
+
+	public function testBug9385(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9385.php'], []);
+	}
+
+	public function testPhpdocConstWildcard(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/phpdoc-const-wildcard.php'], []);
+	}
+
 }

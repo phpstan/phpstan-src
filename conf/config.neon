@@ -598,6 +598,9 @@ services:
 		class: PHPStan\PhpDoc\PhpDocStringResolver
 
 	-
+		class: PHPStan\PhpDoc\PhpDocPrivateClassConstFetchFinder
+
+	-
 		class: PHPStan\PhpDoc\ConstExprNodeResolver
 
 	-

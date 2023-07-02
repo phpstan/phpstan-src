@@ -156,4 +156,18 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8563.php'], []);
 	}
 
+	public function testBug6402(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6402.php'], [
+			[
+				'Access to an uninitialized readonly property Bug6402\SomeModel2::$views.',
+				28,
+			],
+		]);
+	}
+
 }

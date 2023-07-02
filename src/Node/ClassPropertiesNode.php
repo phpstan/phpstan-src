@@ -11,6 +11,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Method\MethodCall;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
@@ -108,6 +109,9 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($property->getDefault() !== null) {
 				continue;
 			}
+			if ($property->isPromoted()) {
+				continue;
+			}
 			$properties[$property->getName()] = $property;
 		}
 
@@ -136,6 +140,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$prematureAccess = [];
 		$additionalAssigns = [];
 		$originalProperties = $properties;
+
 		foreach ($this->getPropertyUsages() as $usage) {
 			$fetch = $usage->getFetch();
 			if (!$fetch instanceof PropertyFetch) {
@@ -173,19 +178,27 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($usage instanceof PropertyWrite) {
 				if (array_key_exists($propertyName, $properties)) {
 					unset($properties[$propertyName]);
-				} elseif (array_key_exists($propertyName, $originalProperties)) {
-					$additionalAssigns[] = [
+				}
+
+				if (array_key_exists($propertyName, $originalProperties)) {
+					$hasInitialization = $usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName));
+					if (!$hasInitialization->no()) {
+						$additionalAssigns[] = [
+							$propertyName,
+							$fetch->getLine(),
+							$originalProperties[$propertyName],
+						];
+					}
+				}
+			} elseif (array_key_exists($propertyName, $originalProperties)) {
+				$hasInitialization = $usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName));
+				if (!$hasInitialization->yes()) {
+					$prematureAccess[] = [
 						$propertyName,
 						$fetch->getLine(),
 						$originalProperties[$propertyName],
 					];
 				}
-			} elseif (array_key_exists($propertyName, $properties)) {
-				$prematureAccess[] = [
-					$propertyName,
-					$fetch->getLine(),
-					$properties[$propertyName],
-				];
 			}
 		}
 

@@ -77,6 +77,7 @@ use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\FunctionCallableNode;
@@ -3835,11 +3836,20 @@ class NodeScopeResolver
 					$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 				}
 				$declaringClass = $propertyReflection->getDeclaringClass();
-				if (
-					$declaringClass->hasNativeProperty($propertyName)
-					&& !$declaringClass->getNativeProperty($propertyName)->getNativeType()->accepts($assignedExprType, true)->yes()
-				) {
-					$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
+				if ($declaringClass->hasNativeProperty($propertyName)) {
+					$nativeProperty = $declaringClass->getNativeProperty($propertyName);
+					if (
+						!$nativeProperty->getNativeType()->accepts($assignedExprType, true)->yes()
+					) {
+						$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
+					}
+					if (
+						$enterExpressionAssign
+						&& $scope->isInClass()
+						&& $scope->getClassReflection()->getName() === $declaringClass->getName()
+					) {
+						$scope = $scope->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
+					}
 				}
 			} else {
 				// fallback

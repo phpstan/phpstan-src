@@ -179,3 +179,13 @@ class BarClass
 	use BarTrait;
 
 }
+
+class AdditionalAssignOfReadonlyPromotedProperty
+{
+
+	public function __construct(private readonly int $x)
+	{
+		$this->x = 2;
+	}
+
+}

@@ -62,6 +62,14 @@ class FileExcluder
 		}
 	}
 
+	/**
+	 * @return string[]
+	 */
+	public function getExcludedLiteralPaths(): array
+	{
+		return $this->literalAnalyseExcludes;
+	}
+
 	public function isExcludedFromAnalysing(string $file): bool
 	{
 		foreach ($this->literalAnalyseExcludes as $exclude) {

@@ -26,7 +26,7 @@ class FileFinderTest extends PHPStanTestCase
 
 	private static int $vfsNextIndex = 0;
 
-	/** @var array<string, Closure(string $path, 'list_dir'|'is_dir' $op): (list<string>|bool)> */
+	/** @var array<string, Closure(string $path, 'list_dir_open'|'list_dir_rewind'|'is_dir' $op): (list<string>|bool)> */
 	public static array $vfsProviders = [];
 
 	private string $vfsScheme;
@@ -62,11 +62,21 @@ class FileFinderTest extends PHPStanTestCase
 				return str_replace(DIRECTORY_SEPARATOR, '/', $urlArr['host'] . ($urlArr['path'] ?? ''));
 			}
 
-			public function dir_opendir(string $url, int $options): bool
+			public function processListDir(bool $fromRewind): bool
+			{
+				$providerFx = FileFinderTest::$vfsProviders[$this->scheme];
+				$data = $providerFx($this->dirPath, 'list_dir' . ($fromRewind ? '_rewind' : '_open'));
+				assert(is_array($data));
+				$this->dirData = $data;
+
+				return true;
+			}
+
+			public function dir_opendir(string $url): bool
 			{
 				$this->dirPath = $this->parsePathAndSetScheme($url);
 
-				return $this->dir_rewinddir();
+				return $this->processListDir(false);
 			}
 
 			public function dir_readdir(): string|false
@@ -84,12 +94,7 @@ class FileFinderTest extends PHPStanTestCase
 
 			public function dir_rewinddir(): bool
 			{
-				$providerFx = FileFinderTest::$vfsProviders[$this->scheme];
-				$data = $providerFx($this->dirPath, 'list_dir');
-				assert(is_array($data));
-				$this->dirData = $data;
-
-				return true;
+				return $this->processListDir(true);
 			}
 
 			/**
@@ -146,7 +151,7 @@ class FileFinderTest extends PHPStanTestCase
 				$fileEntry = $fileEntry[$name];
 			}
 
-			if ($op === 'list_dir') {
+			if ($op === 'list_dir_open' || $op === 'list_dir_rewind') {
 				/** @var list<string> $res */
 				$res = array_keys($fileEntry);
 			} elseif ($op === 'is_dir') {
@@ -198,15 +203,15 @@ class FileFinderTest extends PHPStanTestCase
 			['x/b.php', 'x/c.php', 'x/d/u.php'],
 			[
 				['x', 'is_dir', true],
-				['x', 'list_dir', ['a.txt', 'b.php', 'c.php', 'd']],
-				['x', 'list_dir', ['a.txt', 'b.php', 'c.php', 'd']], // directory should be listed once only, seems like Symfony Finder issue
-				['x', 'list_dir', ['a.txt', 'b.php', 'c.php', 'd']], // same Symfony Finder issue
+				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd']],
+				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd']], // directory should be opened once only, seems like Symfony Finder issue
+				['x', 'list_dir_rewind', ['a.txt', 'b.php', 'c.php', 'd']],
 				['x/a.txt', 'is_dir', false],
 				['x/b.php', 'is_dir', false],
 				['x/c.php', 'is_dir', false],
 				['x/d', 'is_dir', true],
-				['x/d', 'list_dir', ['u.php']],
-				['x/d', 'list_dir', ['u.php']], // same Symfony Finder issue
+				['x/d', 'list_dir_open', ['u.php']],
+				['x/d', 'list_dir_rewind', ['u.php']],
 				['x/d/u.php', 'is_dir', false],
 			],
 		];
@@ -240,16 +245,16 @@ class FileFinderTest extends PHPStanTestCase
 			['x/b.php', 'x/c.php'],
 			[
 				['x', 'is_dir', true],
-				['x', 'list_dir', ['a.txt', 'b.php', 'c.php', 'd', 'x']],
-				['x', 'list_dir', ['a.txt', 'b.php', 'c.php', 'd', 'x']],
-				['x', 'list_dir', ['a.txt', 'b.php', 'c.php', 'd', 'x']],
+				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd', 'x']],
+				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd', 'x']],
+				['x', 'list_dir_rewind', ['a.txt', 'b.php', 'c.php', 'd', 'x']],
 				['x/a.txt', 'is_dir', false],
 				['x/b.php', 'is_dir', false],
 				['x/c.php', 'is_dir', false],
 				['x/d', 'is_dir', true],
 				['x/x', 'is_dir', true],
-				['x/x', 'list_dir', ['d']],
-				['x/x', 'list_dir', ['d']],
+				['x/x', 'list_dir_open', ['d']],
+				['x/x', 'list_dir_rewind', ['d']],
 				['x/x/d', 'is_dir', true],
 			],
 		];

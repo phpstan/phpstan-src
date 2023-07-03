@@ -10,7 +10,7 @@ use PHPStan\Analyser\Scope;
 class PropertyWrite
 {
 
-	public function __construct(private PropertyFetch|StaticPropertyFetch $fetch, private Scope $scope)
+	public function __construct(private PropertyFetch|StaticPropertyFetch $fetch, private Scope $scope, private bool $promotedPropertyWrite)
 	{
 	}
 
@@ -25,6 +25,11 @@ class PropertyWrite
 	public function getScope(): Scope
 	{
 		return $this->scope;
+	}
+
+	public function isPromotedPropertyWrite(): bool
+	{
+		return $this->promotedPropertyWrite;
 	}
 
 }

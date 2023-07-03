@@ -112,6 +112,14 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				'Readonly property MissingReadOnlyPropertyAssign\AdditionalAssignOfReadonlyPromotedProperty::$x is already assigned.',
 				188,
 			],
+			[
+				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssign\MethodCalledFromConstructorBeforeAssign::$foo.',
+				226,
+			],
+			[
+				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssign\MethodCalledTwice::$foo.',
+				244,
+			],
 		]);
 	}
 
@@ -172,6 +180,15 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				28,
 			],
 		]);
+	}
+
+	public function testBug7198(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7198.php'], []);
 	}
 
 }

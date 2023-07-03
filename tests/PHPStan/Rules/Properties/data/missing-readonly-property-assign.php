@@ -189,3 +189,58 @@ class AdditionalAssignOfReadonlyPromotedProperty
 	}
 
 }
+
+class MethodCalledFromConstructorAfterAssign
+{
+
+
+	private readonly int $foo;
+
+	public function __construct()
+	{
+		$this->foo = 1;
+		$this->doFoo();
+	}
+
+	public function doFoo(): void
+	{
+		echo $this->foo;
+	}
+
+}
+
+class MethodCalledFromConstructorBeforeAssign
+{
+
+
+	private readonly int $foo;
+
+	public function __construct()
+	{
+		$this->doFoo();
+		$this->foo = 1;
+	}
+
+	public function doFoo(): void
+	{
+		echo $this->foo;
+	}
+
+}
+
+class MethodCalledTwice
+{
+	private readonly int $foo;
+
+	public function __construct()
+	{
+		$this->doFoo();
+		$this->foo = 1;
+		$this->doFoo();
+	}
+
+	public function doFoo(): void
+	{
+		echo $this->foo;
+	}
+}

@@ -176,3 +176,37 @@ class FooTraitClass
 	}
 
 }
+
+class ItemsCrate
+{
+
+	/**
+	 * @var int[]
+	 */
+	private array $items;
+
+	/**
+	 * @param int[] $items
+	 */
+	public function __construct(
+		array $items
+	)
+	{
+		$this->items = $items;
+		$this->sortItems();
+	}
+
+	private function sortItems(): void
+	{
+		usort($this->items, static function ($a, $b): int {
+			return $a <=> $b;
+		});
+	}
+
+	public function addItem(int $i): void
+	{
+		$this->items[] = $i;
+		$this->sortItems();
+	}
+
+}

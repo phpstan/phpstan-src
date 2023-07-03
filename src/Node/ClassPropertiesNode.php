@@ -20,9 +20,9 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use function array_key_exists;
 use function array_keys;
-use function count;
 use function in_array;
 
 /** @api */
@@ -100,6 +100,8 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 
 		$properties = [];
 		$originalProperties = [];
+		$initialInitializedProperties = [];
+		$initializedProperties = [];
 		foreach ($this->getProperties() as $property) {
 			if ($property->isStatic()) {
 				continue;
@@ -111,6 +113,11 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 			$originalProperties[$property->getName()] = $property;
+			$is = TrinaryLogic::createFromBoolean($property->isPromoted());
+			$initialInitializedProperties[$property->getName()] = $is;
+			foreach ($constructors as $constructor) {
+				$initializedProperties[$constructor][$property->getName()] = $is;
+			}
 			if ($property->isPromoted()) {
 				continue;
 			}
@@ -138,7 +145,8 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		if ($constructors === []) {
 			return [$properties, [], []];
 		}
-		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classReflection, $this->methodCalls, $constructors);
+
+		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classReflection, $this->methodCalls, $initialInitializedProperties, $initializedProperties, $constructors);
 		$prematureAccess = [];
 		$additionalAssigns = [];
 
@@ -158,9 +166,11 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($function->getDeclaringClass()->getName() !== $classReflection->getName()) {
 				continue;
 			}
-			if (!in_array($function->getName(), $methodsCalledFromConstructor, true)) {
+			if (!array_key_exists($function->getName(), $methodsCalledFromConstructor)) {
 				continue;
 			}
+
+			$initializedPropertiesMap = $methodsCalledFromConstructor[$function->getName()];
 
 			if (!$fetch->name instanceof Identifier) {
 				continue;
@@ -181,9 +191,9 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 					unset($properties[$propertyName]);
 				}
 
-				if (array_key_exists($propertyName, $originalProperties)) {
-					$hasInitialization = $usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName));
-					if (!$hasInitialization->no()) {
+				if (array_key_exists($propertyName, $initializedPropertiesMap)) {
+					$hasInitialization = $initializedPropertiesMap[$propertyName]->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
+					if (!$hasInitialization->no() && !$usage->isPromotedPropertyWrite()) {
 						$additionalAssigns[] = [
 							$propertyName,
 							$fetch->getLine(),
@@ -191,8 +201,8 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 						];
 					}
 				}
-			} elseif (array_key_exists($propertyName, $originalProperties)) {
-				$hasInitialization = $usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName));
+			} elseif (array_key_exists($propertyName, $initializedPropertiesMap)) {
+				$hasInitialization = $initializedPropertiesMap[$propertyName]->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
 				if (!$hasInitialization->yes()) {
 					$prematureAccess[] = [
 						$propertyName,
@@ -213,15 +223,20 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param MethodCall[] $methodCalls
 	 * @param string[] $methods
-	 * @return string[]
+	 * @param array<string, TrinaryLogic> $initialInitializedProperties
+	 * @param array<string, array<string, TrinaryLogic>> $initializedProperties
+	 * @return array<string, array<string, TrinaryLogic>>
 	 */
 	private function getMethodsCalledFromConstructor(
 		ClassReflection $classReflection,
 		array $methodCalls,
+		array $initialInitializedProperties,
+		array $initializedProperties,
 		array $methods,
 	): array
 	{
-		$originalCount = count($methods);
+		$originalMap = $initializedProperties;
+		$originalMethods = $methods;
 		foreach ($methodCalls as $methodCall) {
 			$methodCallNode = $methodCall->getNode();
 			if ($methodCallNode instanceof Array_) {
@@ -242,7 +257,10 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 
 			$methodName = $methodCallNode->name->toString();
-			if (in_array($methodName, $methods, true)) {
+			if (array_key_exists($methodName, $initializedProperties)) {
+				foreach ($this->getInitializedProperties($callScope, $initialInitializedProperties) as $propertyName => $isInitialized) {
+					$initializedProperties[$methodName][$propertyName] = $initializedProperties[$methodName][$propertyName]->and($isInitialized);
+				}
 				continue;
 			}
 			$methodReflection = $callScope->getMethodReflection($calledOnType, $methodName);
@@ -259,14 +277,28 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if (!in_array($inMethod->getName(), $methods, true)) {
 				continue;
 			}
+			$initializedProperties[$methodName] = $this->getInitializedProperties($callScope, $initialInitializedProperties);
 			$methods[] = $methodName;
 		}
 
-		if ($originalCount === count($methods)) {
-			return $methods;
+		if ($originalMap === $initializedProperties && $originalMethods === $methods) {
+			return $initializedProperties;
 		}
 
-		return $this->getMethodsCalledFromConstructor($classReflection, $methodCalls, $methods);
+		return $this->getMethodsCalledFromConstructor($classReflection, $methodCalls, $initialInitializedProperties, $initializedProperties, $methods);
+	}
+
+	/**
+	 * @param array<string, TrinaryLogic> $initialInitializedProperties
+	 * @return array<string, TrinaryLogic>
+	 */
+	private function getInitializedProperties(Scope $scope, array $initialInitializedProperties): array
+	{
+		foreach ($initialInitializedProperties as $propertyName => $isInitialized) {
+			$initialInitializedProperties[$propertyName] = $isInitialized->or($scope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
+		}
+
+		return $initialInitializedProperties;
 	}
 
 }

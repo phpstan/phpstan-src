@@ -4293,16 +4293,22 @@ class NodeScopeResolver
 		if ($node instanceof Node) {
 			if ($node instanceof Node\Stmt\Trait_ && $traitReflection->getName() === (string) $node->namespacedName && $traitReflection->getNativeReflection()->getStartLine() === $node->getStartLine()) {
 				$methodModifiers = [];
+				$methodNames = [];
 				foreach ($adaptations as $adaptation) {
 					if (!$adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
 						continue;
 					}
 
-					if ($adaptation->newModifier === null) {
+					$methodName = $adaptation->method->toLowerString();
+					if ($adaptation->newModifier !== null) {
+						$methodModifiers[$methodName] = $adaptation->newModifier;
+					}
+
+					if ($adaptation->newName === null) {
 						continue;
 					}
 
-					$methodModifiers[$adaptation->method->toLowerString()] = $adaptation->newModifier;
+					$methodNames[$methodName] = $adaptation->newName;
 				}
 
 				$stmts = $node->stmts;
@@ -4311,13 +4317,17 @@ class NodeScopeResolver
 						continue;
 					}
 					$methodName = $stmt->name->toLowerString();
-					if (!array_key_exists($methodName, $methodModifiers)) {
+					$methodAst = clone $stmt;
+					$stmts[$i] = $methodAst;
+					if (array_key_exists($methodName, $methodModifiers)) {
+						$methodAst->flags = ($methodAst->flags & ~ Node\Stmt\Class_::VISIBILITY_MODIFIER_MASK) | $methodModifiers[$methodName];
+					}
+
+					if (!array_key_exists($methodName, $methodNames)) {
 						continue;
 					}
 
-					$methodAst = clone $stmt;
-					$methodAst->flags = ($methodAst->flags & ~ Node\Stmt\Class_::VISIBILITY_MODIFIER_MASK) | $methodModifiers[$methodName];
-					$stmts[$i] = $methodAst;
+					$methodAst->name = $methodNames[$methodName];
 				}
 				$this->processStmtNodes($node, $stmts, $scope->enterTrait($traitReflection), $nodeCallback, StatementContext::createTopLevel());
 				return;

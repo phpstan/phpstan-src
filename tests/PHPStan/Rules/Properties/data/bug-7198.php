@@ -49,3 +49,40 @@ class TestCaller3 {
 		$this->callee->foo();
 	}
 }
+
+trait Identifiable
+{
+	public readonly int $id;
+
+	public function __construct()
+	{
+		$this->id = rand();
+	}
+}
+
+trait CreateAware
+{
+	public readonly \DateTimeImmutable $createdAt;
+
+	public function __construct()
+	{
+		$this->createdAt = new \DateTimeImmutable();
+	}
+}
+
+abstract class Entity
+{
+	use Identifiable {
+		Identifiable::__construct as private __identifiableConstruct;
+	}
+
+	use CreateAware {
+		CreateAware::__construct as private __createAwareConstruct;
+	}
+
+	public function __construct()
+	{
+		$this->__identifiableConstruct();
+		$this->__createAwareConstruct();
+	}
+}

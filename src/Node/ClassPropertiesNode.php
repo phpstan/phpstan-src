@@ -21,6 +21,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_keys;
 use function in_array;
@@ -146,7 +147,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			return [$properties, [], []];
 		}
 
-		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classReflection, $this->methodCalls, $initialInitializedProperties, $initializedProperties, $constructors);
+		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classReflection, $initialInitializedProperties, $initializedProperties, $constructors);
 		$prematureAccess = [];
 		$additionalAssigns = [];
 
@@ -177,6 +178,9 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 			$propertyName = $fetch->name->toString();
 			$fetchedOnType = $usageScope->getType($fetch->var);
+			if (TypeUtils::findThisType($fetchedOnType) === null) {
+				continue;
+			}
 
 			$propertyReflection = $usageScope->getPropertyReflection($fetchedOnType, $propertyName);
 			if ($propertyReflection === null) {
@@ -221,7 +225,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	}
 
 	/**
-	 * @param MethodCall[] $methodCalls
 	 * @param string[] $methods
 	 * @param array<string, TrinaryLogic> $initialInitializedProperties
 	 * @param array<string, array<string, TrinaryLogic>> $initializedProperties
@@ -229,7 +232,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	 */
 	private function getMethodsCalledFromConstructor(
 		ClassReflection $classReflection,
-		array $methodCalls,
 		array $initialInitializedProperties,
 		array $initializedProperties,
 		array $methods,
@@ -237,7 +239,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	{
 		$originalMap = $initializedProperties;
 		$originalMethods = $methods;
-		foreach ($methodCalls as $methodCall) {
+		foreach ($this->methodCalls as $methodCall) {
 			$methodCallNode = $methodCall->getNode();
 			if ($methodCallNode instanceof Array_) {
 				continue;
@@ -254,6 +256,10 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				}
 
 				$calledOnType = $callScope->resolveTypeByName($methodCallNode->class);
+			}
+
+			if (TypeUtils::findThisType($calledOnType) === null) {
+				continue;
 			}
 
 			$inMethod = $callScope->getFunction();
@@ -286,7 +292,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			return $initializedProperties;
 		}
 
-		return $this->getMethodsCalledFromConstructor($classReflection, $methodCalls, $initialInitializedProperties, $initializedProperties, $methods);
+		return $this->getMethodsCalledFromConstructor($classReflection, $initialInitializedProperties, $initializedProperties, $methods);
 	}
 
 	/**

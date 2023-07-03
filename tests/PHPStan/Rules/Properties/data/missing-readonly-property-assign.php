@@ -244,3 +244,46 @@ class MethodCalledTwice
 		echo $this->foo;
 	}
 }
+
+class PropertyAssignedOnDifferentObject
+{
+
+	private readonly int $foo;
+
+	public function __construct(self $self)
+	{
+		$self->foo = 1;
+		$this->foo = 2;
+	}
+
+}
+
+class PropertyAssignedOnDifferentObjectUninitialized
+{
+
+	private readonly int $foo;
+
+	public function __construct(self $self)
+	{
+		$self->foo = 1;
+	}
+
+}
+
+class AccessToPropertyOnDifferentObject
+{
+
+	private readonly int $foo;
+
+	public function __construct(self $self)
+	{
+		echo $self->getFoo();
+		$this->foo = 1;
+	}
+
+	public function getFoo(): int
+	{
+		return $this->foo;
+	}
+
+}

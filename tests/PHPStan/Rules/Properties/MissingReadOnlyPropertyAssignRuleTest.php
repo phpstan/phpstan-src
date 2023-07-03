@@ -120,6 +120,10 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssign\MethodCalledTwice::$foo.',
 				244,
 			],
+			[
+				'Class MissingReadOnlyPropertyAssign\PropertyAssignedOnDifferentObjectUninitialized has an uninitialized readonly property $foo. Assign it in the constructor.',
+				264,
+			],
 		]);
 	}
 

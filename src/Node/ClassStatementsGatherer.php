@@ -17,7 +17,7 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ThisType;
+use PHPStan\Type\TypeUtils;
 use function count;
 use function in_array;
 
@@ -220,7 +220,7 @@ class ClassStatementsGatherer
 		}
 
 		$firstArgValue = $args[0]->value;
-		if (!$scope->getType($firstArgValue) instanceof ThisType) {
+		if (TypeUtils::findThisType($scope->getType($firstArgValue)) === null) {
 			return;
 		}
 

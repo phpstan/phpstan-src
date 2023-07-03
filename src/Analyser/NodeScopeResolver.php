@@ -150,6 +150,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use Throwable;
 use Traversable;
@@ -3848,6 +3849,7 @@ class NodeScopeResolver
 						$enterExpressionAssign
 						&& $scope->isInClass()
 						&& $scope->getClassReflection()->getName() === $declaringClass->getName()
+						&& TypeUtils::findThisType($propertyHolderType) !== null
 					) {
 						$scope = $scope->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
 					}

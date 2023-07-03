@@ -10,7 +10,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ThisType;
+use PHPStan\Type\TypeUtils;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -80,7 +80,7 @@ class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 				in_array($scopeMethod->getName(), $this->constructorsHelper->getConstructors($scopeClassReflection), true)
 				|| strtolower($scopeMethod->getName()) === '__unserialize'
 			) {
-				if (!$scope->getType($propertyFetch->var) instanceof ThisType) {
+				if (TypeUtils::findThisType($scope->getType($propertyFetch->var)) === null) {
 					$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is not assigned on $this.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
 						->identifier('property.readOnlyByPhpDocAssignNotOnThis')
 						->build();

@@ -17,9 +17,9 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
-use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
 
@@ -49,7 +49,7 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 		$argType = $scope->getType($args[0]->value);
 
-		if ($scope->isInTrait() && $argType instanceof ThisType) {
+		if ($scope->isInTrait() && TypeUtils::findThisType($argType) !== null) {
 			return new ClassStringType();
 		}
 

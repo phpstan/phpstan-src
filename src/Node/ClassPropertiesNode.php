@@ -21,6 +21,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_keys;
 use function in_array;
@@ -177,6 +178,9 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 			$propertyName = $fetch->name->toString();
 			$fetchedOnType = $usageScope->getType($fetch->var);
+			if (TypeUtils::findThisType($fetchedOnType) === null) {
+				continue;
+			}
 
 			$propertyReflection = $usageScope->getPropertyReflection($fetchedOnType, $propertyName);
 			if ($propertyReflection === null) {

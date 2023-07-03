@@ -257,3 +257,15 @@ class PropertyAssignedOnDifferentObject
 	}
 
 }
+
+class PropertyAssignedOnDifferentObjectUninitialized
+{
+
+	private readonly int $foo;
+
+	public function __construct(self $self)
+	{
+		$self->foo = 1;
+	}
+
+}

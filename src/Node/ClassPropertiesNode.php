@@ -260,6 +260,10 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				$calledOnType = $callScope->resolveTypeByName($methodCallNode->class);
 			}
 
+			if (TypeUtils::findThisType($calledOnType) === null) {
+				continue;
+			}
+
 			$inMethod = $callScope->getFunction();
 			if (!$inMethod instanceof MethodReflection) {
 				continue;

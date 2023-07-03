@@ -269,3 +269,21 @@ class PropertyAssignedOnDifferentObjectUninitialized
 	}
 
 }
+
+class AccessToPropertyOnDifferentObject
+{
+
+	private readonly int $foo;
+
+	public function __construct(self $self)
+	{
+		echo $self->getFoo();
+		$this->foo = 1;
+	}
+
+	public function getFoo(): int
+	{
+		return $this->foo;
+	}
+
+}

@@ -147,7 +147,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			return [$properties, [], []];
 		}
 
-		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classReflection, $this->methodCalls, $initialInitializedProperties, $initializedProperties, $constructors);
+		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classReflection, $initialInitializedProperties, $initializedProperties, $constructors);
 		$prematureAccess = [];
 		$additionalAssigns = [];
 
@@ -225,7 +225,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	}
 
 	/**
-	 * @param MethodCall[] $methodCalls
 	 * @param string[] $methods
 	 * @param array<string, TrinaryLogic> $initialInitializedProperties
 	 * @param array<string, array<string, TrinaryLogic>> $initializedProperties
@@ -233,7 +232,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	 */
 	private function getMethodsCalledFromConstructor(
 		ClassReflection $classReflection,
-		array $methodCalls,
 		array $initialInitializedProperties,
 		array $initializedProperties,
 		array $methods,
@@ -241,7 +239,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	{
 		$originalMap = $initializedProperties;
 		$originalMethods = $methods;
-		foreach ($methodCalls as $methodCall) {
+		foreach ($this->methodCalls as $methodCall) {
 			$methodCallNode = $methodCall->getNode();
 			if ($methodCallNode instanceof Array_) {
 				continue;
@@ -294,7 +292,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			return $initializedProperties;
 		}
 
-		return $this->getMethodsCalledFromConstructor($classReflection, $methodCalls, $initialInitializedProperties, $initializedProperties, $methods);
+		return $this->getMethodsCalledFromConstructor($classReflection, $initialInitializedProperties, $initializedProperties, $methods);
 	}
 
 	/**

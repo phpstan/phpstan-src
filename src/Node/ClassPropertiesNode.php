@@ -260,6 +260,9 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if (!$inMethod instanceof MethodReflection) {
 				continue;
 			}
+			if (!in_array($inMethod->getName(), $methods, true)) {
+				continue;
+			}
 
 			$methodName = $methodCallNode->name->toString();
 			if (array_key_exists($methodName, $initializedProperties)) {
@@ -273,9 +276,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 			if ($methodReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
-				continue;
-			}
-			if (!in_array($inMethod->getName(), $methods, true)) {
 				continue;
 			}
 			$initializedProperties[$methodName] = $this->getInitializedProperties($callScope, $initializedProperties[$inMethod->getName()] ?? $initialInitializedProperties);

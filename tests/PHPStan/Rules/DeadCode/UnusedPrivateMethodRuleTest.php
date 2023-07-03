@@ -104,4 +104,9 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unused-method-false-positive-with-trait.php'], []);
 	}
 
+	public function testBug6039(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6039.php'], []);
+	}
+
 }

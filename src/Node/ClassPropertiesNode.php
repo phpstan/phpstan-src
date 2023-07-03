@@ -256,9 +256,14 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				$calledOnType = $callScope->resolveTypeByName($methodCallNode->class);
 			}
 
+			$inMethod = $callScope->getFunction();
+			if (!$inMethod instanceof MethodReflection) {
+				continue;
+			}
+
 			$methodName = $methodCallNode->name->toString();
 			if (array_key_exists($methodName, $initializedProperties)) {
-				foreach ($this->getInitializedProperties($callScope, $initialInitializedProperties) as $propertyName => $isInitialized) {
+				foreach ($this->getInitializedProperties($callScope, $initializedProperties[$inMethod->getName()] ?? $initialInitializedProperties) as $propertyName => $isInitialized) {
 					$initializedProperties[$methodName][$propertyName] = $initializedProperties[$methodName][$propertyName]->and($isInitialized);
 				}
 				continue;
@@ -270,14 +275,10 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($methodReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
 				continue;
 			}
-			$inMethod = $callScope->getFunction();
-			if (!$inMethod instanceof MethodReflection) {
-				continue;
-			}
 			if (!in_array($inMethod->getName(), $methods, true)) {
 				continue;
 			}
-			$initializedProperties[$methodName] = $this->getInitializedProperties($callScope, $initialInitializedProperties);
+			$initializedProperties[$methodName] = $this->getInitializedProperties($callScope, $initializedProperties[$inMethod->getName()] ?? $initialInitializedProperties);
 			$methods[] = $methodName;
 		}
 

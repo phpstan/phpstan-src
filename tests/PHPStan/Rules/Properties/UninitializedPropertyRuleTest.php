@@ -135,4 +135,9 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testEfabricaLatteBug(): void
+	{
+		$this->analyse([__DIR__ . '/data/efabrica-latte-bug.php'], []);
+	}
+
 }

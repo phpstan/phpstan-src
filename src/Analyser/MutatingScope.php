@@ -4025,6 +4025,29 @@ class MutatingScope implements Scope
 		return $intersectedVariableTypeHolders;
 	}
 
+	public function mergeInitializedProperties(self $calledMethodScope): self
+	{
+		$scope = $this;
+		foreach ($calledMethodScope->expressionTypes as $exprString => $typeHolder) {
+			$exprString = (string) $exprString;
+			if (!str_starts_with($exprString, '__phpstanPropertyInitialization(')) {
+				continue;
+			}
+			if (!array_key_exists($exprString, $scope->expressionTypes)) {
+				$scope->expressionTypes[$exprString] = $typeHolder;
+				continue;
+			}
+
+			$scope->expressionTypes[$exprString] = new ExpressionTypeHolder(
+				$typeHolder->getExpr(),
+				$typeHolder->getType(),
+				$typeHolder->getCertainty()->or($scope->expressionTypes[$exprString]->getCertainty()),
+			);
+		}
+
+		return $this;
+	}
+
 	public function processFinallyScope(self $finallyScope, self $originalFinallyScope): self
 	{
 		return $this->scopeFactory->create(

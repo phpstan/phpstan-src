@@ -210,3 +210,97 @@ class ItemsCrate
 	}
 
 }
+
+class InitializedInPrivateSetter
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	private function setFoo()
+	{
+		$this->foo = 1;
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}
+
+final class InitializedInPublicSetterFinalClass
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	public function setFoo()
+	{
+		$this->foo = 1;
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}
+
+class InitializedInPublicSetterNonFinalClass
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	public function setFoo()
+	{
+		$this->foo = 1;
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}
+
+class SometimesInitializedInPrivateSetter
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	private function setFoo()
+	{
+		if (rand(0, 1)) {
+			$this->foo = 1;
+		}
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}

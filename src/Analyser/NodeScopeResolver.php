@@ -2189,7 +2189,6 @@ class NodeScopeResolver
 							$calledMethodEndScope = $calledMethodEndScope->mergeWith($statementResult->getScope());
 						}
 
-
 						if ($calledMethodEndScope !== null) {
 							$scope = $scope->mergeInitializedProperties($calledMethodEndScope);
 						}

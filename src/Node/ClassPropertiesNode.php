@@ -21,10 +21,12 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_keys;
 use function in_array;
+use function strtolower;
 
 /** @api */
 class ClassPropertiesNode extends NodeAbstract implements VirtualNode
@@ -34,6 +36,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	 * @param ClassPropertyNode[] $properties
 	 * @param array<int, PropertyRead|PropertyWrite> $propertyUsages
 	 * @param array<int, MethodCall> $methodCalls
+	 * @param array<string, MethodReturnStatementsNode> $returnStatementNodes
 	 */
 	public function __construct(
 		private ClassLike $class,
@@ -41,6 +44,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		private array $properties,
 		private array $propertyUsages,
 		private array $methodCalls,
+		private array $returnStatementNodes,
 	)
 	{
 		parent::__construct($class->getAttributes());
@@ -191,10 +195,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 
 			if ($usage instanceof PropertyWrite) {
-				if (array_key_exists($propertyName, $uninitializedProperties)) {
-					unset($uninitializedProperties[$propertyName]);
-				}
-
 				if (array_key_exists($propertyName, $initializedPropertiesMap)) {
 					$hasInitialization = $initializedPropertiesMap[$propertyName]->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
 					if (!$hasInitialization->no() && !$usage->isPromotedPropertyWrite()) {
@@ -214,6 +214,57 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 						$originalProperties[$propertyName],
 					];
 				}
+			}
+		}
+
+		foreach (array_keys($methodsCalledFromConstructor) as $constructor) {
+			$lowerConstructorName = strtolower($constructor);
+			if (!array_key_exists($lowerConstructorName, $this->returnStatementNodes)) {
+				continue;
+			}
+
+			$returnStatementsNode = $this->returnStatementNodes[$lowerConstructorName];
+			$methodScope = null;
+			foreach ($returnStatementsNode->getExecutionEnds() as $executionEnd) {
+				$statementResult = $executionEnd->getStatementResult();
+				$endNode = $executionEnd->getNode();
+				if ($statementResult->isAlwaysTerminating()) {
+					if ($endNode instanceof Node\Stmt\Throw_) {
+						continue;
+					}
+					if ($endNode instanceof Node\Stmt\Expression) {
+						$exprType = $statementResult->getScope()->getType($endNode->expr);
+						if ($exprType instanceof NeverType && $exprType->isExplicit()) {
+							continue;
+						}
+					}
+				}
+				if ($methodScope === null) {
+					$methodScope = $statementResult->getScope();
+					continue;
+				}
+
+				$methodScope = $methodScope->mergeWith($statementResult->getScope());
+			}
+
+			foreach ($returnStatementsNode->getReturnStatements() as $returnStatement) {
+				if ($methodScope === null) {
+					$methodScope = $returnStatement->getScope();
+					continue;
+				}
+				$methodScope = $methodScope->mergeWith($returnStatement->getScope());
+			}
+
+			if ($methodScope === null) {
+				continue;
+			}
+
+			foreach (array_keys($uninitializedProperties) as $propertyName) {
+				if (!$methodScope->hasExpressionType(new PropertyInitializationExpr($propertyName))->yes()) {
+					continue;
+				}
+
+				unset($uninitializedProperties[$propertyName]);
 			}
 		}
 

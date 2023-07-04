@@ -92,8 +92,16 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				278,
 			],*/
 			[
+				'Class UninitializedProperty\SometimesInitializedInPrivateSetter has an uninitialized property $foo. Give it default value or assign it in the constructor.',
+				286,
+			],
+			[
 				'Access to an uninitialized property UninitializedProperty\SometimesInitializedInPrivateSetter::$foo.',
 				303,
+			],
+			[
+				'Class UninitializedProperty\EarlyReturn has an uninitialized property $foo. Give it default value or assign it in the constructor.',
+				372,
 			],
 		]);
 	}

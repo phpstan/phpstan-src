@@ -85,6 +85,10 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				53,
 			],
 			[
+				'Class MissingReadOnlyPropertyAssign\AssignOp has an uninitialized readonly property $foo. Assign it in the constructor.',
+				79,
+			],
+			[
 				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssign\AssignOp::$foo.',
 				85,
 			],
@@ -193,6 +197,20 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-7198.php'], []);
+	}
+
+	public function testBug7649(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7649.php'], [
+			[
+				'Class Bug7649\Foo has an uninitialized readonly property $bar. Assign it in the constructor.',
+				7,
+			],
+		]);
 	}
 
 }

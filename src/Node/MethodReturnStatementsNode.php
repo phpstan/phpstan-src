@@ -57,6 +57,11 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		return $this->classMethod->returnType !== null;
 	}
 
+	public function getMethodName(): string
+	{
+		return $this->classMethod->name->toString();
+	}
+
 	public function getYieldStatements(): array
 	{
 		return $this->yieldStatements;

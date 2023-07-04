@@ -4422,8 +4422,16 @@ class NodeScopeResolver
 		$parserNodes = $this->parser->parseFile($fileName);
 
 		$returnStatement = null;
-		$this->processNodesForCalledMethod($parserNodes, $fileName, $methodReflection, static function (Node $node) use (&$returnStatement): void {
+		$this->processNodesForCalledMethod($parserNodes, $fileName, $methodReflection, static function (Node $node, Scope $scope) use ($methodReflection, &$returnStatement): void {
 			if (!$node instanceof MethodReturnStatementsNode) {
+				return;
+			}
+
+			if (!$scope->isInClass()) {
+				return;
+			}
+
+			if ($scope->getClassReflection()->getName() !== $methodReflection->getDeclaringClass()->getName()) {
 				return;
 			}
 

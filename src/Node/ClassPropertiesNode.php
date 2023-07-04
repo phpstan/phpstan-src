@@ -99,7 +99,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		}
 		$classReflection = $scope->getClassReflection();
 
-		$properties = [];
+		$uninitializedProperties = [];
 		$originalProperties = [];
 		$initialInitializedProperties = [];
 		$initializedProperties = [];
@@ -122,14 +122,14 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($property->isPromoted()) {
 				continue;
 			}
-			$properties[$property->getName()] = $property;
+			$uninitializedProperties[$property->getName()] = $property;
 		}
 
 		if ($extensions === null) {
 			$extensions = $this->readWritePropertiesExtensionProvider->getExtensions();
 		}
 
-		foreach (array_keys($properties) as $name) {
+		foreach (array_keys($uninitializedProperties) as $name) {
 			foreach ($extensions as $extension) {
 				if (!$classReflection->hasNativeProperty($name)) {
 					continue;
@@ -138,13 +138,13 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				if (!$extension->isInitialized($propertyReflection, $name)) {
 					continue;
 				}
-				unset($properties[$name]);
+				unset($uninitializedProperties[$name]);
 				break;
 			}
 		}
 
 		if ($constructors === []) {
-			return [$properties, [], []];
+			return [$uninitializedProperties, [], []];
 		}
 
 		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classReflection, $initialInitializedProperties, $initializedProperties, $constructors);
@@ -191,8 +191,8 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 
 			if ($usage instanceof PropertyWrite) {
-				if (array_key_exists($propertyName, $properties)) {
-					unset($properties[$propertyName]);
+				if (array_key_exists($propertyName, $uninitializedProperties)) {
+					unset($uninitializedProperties[$propertyName]);
 				}
 
 				if (array_key_exists($propertyName, $initializedPropertiesMap)) {
@@ -218,7 +218,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		}
 
 		return [
-			$properties,
+			$uninitializedProperties,
 			$prematureAccess,
 			$additionalAssigns,
 		];

@@ -2,10 +2,10 @@
 
 namespace Bug2508;
 
-function connect(\mysqli $m): void
+function connect(\mysqli $mysqli): void
 {
 	mysqli_real_connect(
-		$m,
+		$mysqli,
 		null,
 		null,
 		null,
@@ -14,5 +14,17 @@ function connect(\mysqli $m): void
 		null,
 		\MYSQLI_CLIENT_SSL
 	);
+}
 
+function connectOop(\mysqli $mysqli): void
+{
+	$mysqli->real_connect(
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		\MYSQLI_CLIENT_SSL
+	);
 }

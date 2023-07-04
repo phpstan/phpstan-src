@@ -87,10 +87,10 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				'Class UninitializedProperty\FooTraitClass has an uninitialized property $baz. Give it default value or assign it in the constructor.',
 				159,
 			],
-			[
+			/*[
 				'Access to an uninitialized property UninitializedProperty\InitializedInPublicSetterNonFinalClass::$foo.',
 				278,
-			],
+			],*/
 			[
 				'Access to an uninitialized property UninitializedProperty\SometimesInitializedInPrivateSetter::$foo.',
 				303,

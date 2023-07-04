@@ -2168,11 +2168,12 @@ class NodeScopeResolver
 				if (
 					$scope->isInClass()
 					&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
-					&& (
+					/*&& (
+						// should not be allowed but in practice has to be
 						$scope->getClassReflection()->isFinal()
 						|| $methodReflection->isFinal()->yes()
 						|| $methodReflection->isPrivate()
-					)
+					)*/
 					&& TypeUtils::findThisType($calledOnType) !== null
 				) {
 					$methodReturnStatementsNode = $this->processCalledMethod($methodReflection);

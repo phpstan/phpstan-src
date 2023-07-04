@@ -34,6 +34,7 @@ use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -4033,19 +4034,24 @@ class MutatingScope implements Scope
 			if (!str_starts_with($exprString, '__phpstanPropertyInitialization(')) {
 				continue;
 			}
+			$propertyName = substr($exprString, strlen('__phpstanPropertyInitialization('), -1);
+			$propertyExpr = new PropertyInitializationExpr($propertyName);
 			if (!array_key_exists($exprString, $scope->expressionTypes)) {
+				$scope = $scope->assignExpression($propertyExpr, new MixedType(), new MixedType());
 				$scope->expressionTypes[$exprString] = $typeHolder;
 				continue;
 			}
 
+			$certainty = $scope->expressionTypes[$exprString]->getCertainty();
+			$scope = $scope->assignExpression($propertyExpr, new MixedType(), new MixedType());
 			$scope->expressionTypes[$exprString] = new ExpressionTypeHolder(
 				$typeHolder->getExpr(),
 				$typeHolder->getType(),
-				$typeHolder->getCertainty()->or($scope->expressionTypes[$exprString]->getCertainty()),
+				$typeHolder->getCertainty()->or($certainty),
 			);
 		}
 
-		return $this;
+		return $scope;
 	}
 
 	public function processFinallyScope(self $finallyScope, self $originalFinallyScope): self

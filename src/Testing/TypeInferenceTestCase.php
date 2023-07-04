@@ -59,6 +59,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$typeSpecifier,
 			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
+			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			true,
 			true,
 			static::getEarlyTerminatingMethodCalls(),

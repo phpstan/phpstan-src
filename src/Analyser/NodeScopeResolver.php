@@ -190,6 +190,12 @@ class NodeScopeResolver
 	/** @var array<string, true> */
 	private array $earlyTerminatingMethodNames;
 
+	/** @var array<string, true> */
+	private array $calledMethodStack = [];
+
+	/** @var array<string, MethodReturnStatementsNode|null> */
+	private array $calledMethodResults = [];
+
 	/**
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
@@ -208,6 +214,7 @@ class NodeScopeResolver
 		private readonly TypeSpecifier $typeSpecifier,
 		private readonly DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private readonly ReadWritePropertiesExtensionProvider $readWritePropertiesExtensionProvider,
+		private readonly ScopeFactory $scopeFactory,
 		private readonly bool $polluteScopeWithLoopInitialAssignments,
 		private readonly bool $polluteScopeWithAlwaysIterableForeach,
 		private readonly array $earlyTerminatingMethodCalls,
@@ -688,6 +695,7 @@ class NodeScopeResolver
 			$nodeCallback(new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls()), $classScope);
 			$nodeCallback(new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches()), $classScope);
 			$classReflection->evictPrivateSymbols();
+			$this->calledMethodResults = [];
 		} elseif ($stmt instanceof Node\Stmt\Property) {
 			$hasYield = false;
 			$throwPoints = [];
@@ -2113,12 +2121,12 @@ class NodeScopeResolver
 			}
 			$parametersAcceptor = null;
 			$methodReflection = null;
+			$calledOnType = $scope->getType($expr->var);
 			if ($expr->name instanceof Expr) {
 				$methodNameResult = $this->processExprNode($expr->name, $scope, $nodeCallback, $context->enterDeep());
 				$throwPoints = array_merge($throwPoints, $methodNameResult->getThrowPoints());
 				$scope = $methodNameResult->getScope();
 			} else {
-				$calledOnType = $scope->getType($expr->var);
 				$methodName = $expr->name->name;
 				$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
 				if ($methodReflection !== null) {
@@ -2154,6 +2162,37 @@ class NodeScopeResolver
 					$selfOutType = $methodReflection->getSelfOutType();
 					if ($selfOutType !== null) {
 						$scope = $scope->assignExpression($expr->var, TemplateTypeHelper::resolveTemplateTypes($selfOutType, $parametersAcceptor->getResolvedTemplateTypeMap()), $scope->getNativeType($expr->var));
+					}
+				}
+
+				if (
+					$scope->isInClass()
+					&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
+					&& (
+						$scope->getClassReflection()->isFinal()
+						|| $methodReflection->isFinal()->yes()
+						|| $methodReflection->isPrivate()
+					)
+					&& TypeUtils::findThisType($calledOnType) !== null
+				) {
+					$methodReturnStatementsNode = $this->processCalledMethod($methodReflection);
+					if ($methodReturnStatementsNode !== null) {
+						$executionEnds = $methodReturnStatementsNode->getExecutionEnds();
+						$calledMethodEndScope = null;
+						foreach ($executionEnds as $executionEnd) {
+							$statementResult = $executionEnd->getStatementResult();
+							if ($calledMethodEndScope === null) {
+								$calledMethodEndScope = $statementResult->getScope();
+								continue;
+							}
+
+							$calledMethodEndScope = $calledMethodEndScope->mergeWith($statementResult->getScope());
+						}
+
+
+						if ($calledMethodEndScope !== null) {
+							$scope = $scope->mergeInitializedProperties($calledMethodEndScope);
+						}
 					}
 				}
 			} else {
@@ -4347,6 +4386,108 @@ class NodeScopeResolver
 		} elseif (is_array($node)) {
 			foreach ($node as $subNode) {
 				$this->processNodesForTraitUse($subNode, $traitReflection, $scope, $adaptations, $nodeCallback);
+			}
+		}
+	}
+
+	private function processCalledMethod(MethodReflection $methodReflection): ?MethodReturnStatementsNode
+	{
+		$declaringClass = $methodReflection->getDeclaringClass();
+		if ($declaringClass->isAnonymous()) {
+			return null;
+		}
+		if ($declaringClass->getFileName() === null) {
+			return null;
+		}
+
+		$stackName = sprintf('%s::%s', $declaringClass->getName(), $methodReflection->getName());
+		if (array_key_exists($stackName, $this->calledMethodResults)) {
+			return $this->calledMethodResults[$stackName];
+		}
+
+		if (array_key_exists($stackName, $this->calledMethodStack)) {
+			return null;
+		}
+
+		if (count($this->calledMethodStack) > 0) {
+			return null;
+		}
+
+		$this->calledMethodStack[$stackName] = true;
+
+		$fileName = $this->fileHelper->normalizePath($declaringClass->getFileName());
+		if (!isset($this->analysedFiles[$fileName])) {
+			return null;
+		}
+		$parserNodes = $this->parser->parseFile($fileName);
+
+		$returnStatement = null;
+		$this->processNodesForCalledMethod($parserNodes, $fileName, $methodReflection, static function (Node $node) use (&$returnStatement): void {
+			if (!$node instanceof MethodReturnStatementsNode) {
+				return;
+			}
+
+			if ($returnStatement !== null) {
+				return;
+			}
+
+			$returnStatement = $node;
+		});
+
+		unset($this->calledMethodStack[$stackName]);
+
+		$this->calledMethodResults[$stackName] = $returnStatement;
+
+		return $returnStatement;
+	}
+
+	/**
+	 * @param Node[]|Node|scalar|null $node
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processNodesForCalledMethod($node, string $fileName, MethodReflection $methodReflection, callable $nodeCallback): void
+	{
+		if ($node instanceof Node) {
+			$declaringClass = $methodReflection->getDeclaringClass();
+			if (
+				$node instanceof Node\Stmt\Class_
+				&& $node->namespacedName !== null
+				&& $declaringClass->getName() === (string) $node->namespacedName
+				&& $declaringClass->getNativeReflection()->getStartLine() === $node->getStartLine()
+			) {
+
+				$stmts = $node->stmts;
+				foreach ($stmts as $stmt) {
+					if (!$stmt instanceof Node\Stmt\ClassMethod) {
+						continue;
+					}
+
+					if ($stmt->name->toString() !== $methodReflection->getName()) {
+						continue;
+					}
+
+					if ($stmt->getEndLine() - $stmt->getStartLine() > 25) {
+						continue;
+					}
+
+					$scope = $this->scopeFactory->create(ScopeContext::create($fileName))->enterClass($declaringClass);
+					$this->processStmtNode($stmt, $scope, $nodeCallback, StatementContext::createTopLevel());
+				}
+				return;
+			}
+			if ($node instanceof Node\Stmt\ClassLike) {
+				return;
+			}
+			if ($node instanceof Node\FunctionLike) {
+				return;
+			}
+			foreach ($node->getSubNodeNames() as $subNodeName) {
+				$subNode = $node->{$subNodeName};
+				$this->processNodesForCalledMethod($subNode, $fileName, $methodReflection, $nodeCallback);
+			}
+		} elseif (is_array($node)) {
+			foreach ($node as $subNode) {
+				$this->processNodesForCalledMethod($subNode, $fileName, $methodReflection, $nodeCallback);
 			}
 		}
 	}

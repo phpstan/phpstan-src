@@ -92,6 +92,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$typeSpecifier,
 				self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 				$readWritePropertiesExtensions !== [] ? new DirectReadWritePropertiesExtensionProvider($readWritePropertiesExtensions) : self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
+				self::createScopeFactory($reflectionProvider, $typeSpecifier),
 				$this->shouldPolluteScopeWithLoopInitialAssignments(),
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 				[],

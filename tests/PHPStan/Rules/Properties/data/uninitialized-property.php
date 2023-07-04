@@ -304,3 +304,31 @@ class SometimesInitializedInPrivateSetter
 	}
 
 }
+
+class ConfuseNodeScopeResolverWithAnonymousClass
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	private function setFoo()
+	{
+		$c = new class () {
+			public function setFoo()
+			{
+			}
+		};
+		$this->foo = 1;
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}

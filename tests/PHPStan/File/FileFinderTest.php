@@ -38,7 +38,7 @@ class FileFinderTest extends PHPStanTestCase
 	{
 		$this->vfsScheme = 'phpstan-file-finder-test-' . ++self::$vfsNextIndex;
 
-		$wrapperClass = get_class(new class() {
+		$vfsWrapperClass = get_class(new class() {
 
 			/** @var resource */
 			public $context;
@@ -120,7 +120,7 @@ class FileFinderTest extends PHPStanTestCase
 
 		});
 
-		stream_wrapper_register($this->vfsScheme, $wrapperClass);
+		stream_wrapper_register($this->vfsScheme, $vfsWrapperClass);
 	}
 
 	public function tearDown(): void
@@ -168,7 +168,7 @@ class FileFinderTest extends PHPStanTestCase
 		$prependSchemeFx = fn (string $v): string => $this->vfsScheme . '://' . $v;
 		$stripSchemeFx = fn (string $v): string => preg_replace('~^' . $this->vfsScheme . '://~', '', $v) ?? '';
 
-		$fileHelper = @$this->getFileHelper(); // @ is needed at least localy, TODO rmeove before merge
+		$fileHelper = $this->getFileHelper();
 		$fileExcluder = new FileExcluder($fileHelper, array_map($prependSchemeFx, $excludePaths));
 		$fileFinder = new FileFinder($fileExcluder, $fileHelper, ['php', 'p']);
 		$fileFinderResult = $fileFinder->findFiles(array_map($prependSchemeFx, $inPaths));
@@ -204,7 +204,7 @@ class FileFinderTest extends PHPStanTestCase
 			[
 				['x', 'is_dir', true],
 				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd']],
-				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd']], // directory should be opened once only, seems like Symfony Finder issue
+				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd']], // directory should be opened once only, remove once https://github.com/symfony/symfony/issues/50851 is fixed
 				['x', 'list_dir_rewind', ['a.txt', 'b.php', 'c.php', 'd']],
 				['x/a.txt', 'is_dir', false],
 				['x/b.php', 'is_dir', false],

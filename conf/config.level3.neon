@@ -8,6 +8,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
 	PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule:
 		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
+	PHPStan\Rules\Properties\VariablePropertyNameRule:
+		phpstan.rules.rule: %featureToggles.nonStringExpr%
 
 rules:
 	- PHPStan\Rules\Arrays\ArrayDestructuringRule
@@ -91,3 +93,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule
+
+	-
+		class: PHPStan\Rules\Properties\VariablePropertyNameRule

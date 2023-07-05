@@ -71,6 +71,7 @@ parameters:
 		detectDeadTypeInMultiCatch: false
 		zeroFiles: false
 		callUserFunc: false
+		nonStringExpr: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -312,6 +313,7 @@ parametersSchema:
 		detectDeadTypeInMultiCatch: bool()
 		zeroFiles: bool()
 		callUserFunc: bool()
+		nonStringExpr: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

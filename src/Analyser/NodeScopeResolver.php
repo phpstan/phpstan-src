@@ -4476,7 +4476,7 @@ class NodeScopeResolver
 						continue;
 					}
 
-					if ($stmt->getEndLine() - $stmt->getStartLine() > 25) {
+					if ($stmt->getEndLine() - $stmt->getStartLine() > 50) {
 						continue;
 					}
 

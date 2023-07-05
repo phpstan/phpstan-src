@@ -4369,6 +4369,7 @@ class NodeScopeResolver
 						continue;
 					}
 
+					$methodAst->setAttribute('originalTraitMethodName', $methodAst->name->toLowerString());
 					$methodAst->name = $methodNames[$methodName];
 				}
 				$this->processStmtNodes($node, $stmts, $scope->enterTrait($traitReflection), $nodeCallback, StatementContext::createTopLevel());

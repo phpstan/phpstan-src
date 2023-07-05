@@ -75,6 +75,7 @@ rules:
 	- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
 	- PHPStan\Rules\Methods\CallMethodsRule
 	- PHPStan\Rules\Methods\CallStaticMethodsRule
+	- PHPStan\Rules\Methods\ConstructorReturnTypeRule
 	- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Methods\FinalPrivateMethodRule
 	- PHPStan\Rules\Methods\MethodCallableRule

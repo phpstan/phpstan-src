@@ -527,7 +527,8 @@ class NodeScopeResolver
 				throw new ShouldNotHappenException();
 			}
 
-			if ($stmt->name->toLowerString() === '__construct') {
+			$isFromTrait = $stmt->getAttribute('originalTraitMethodName') === '__construct';
+			if ($stmt->name->toLowerString() === '__construct' || $isFromTrait) {
 				foreach ($stmt->params as $param) {
 					if ($param->flags === 0) {
 						continue;
@@ -548,6 +549,7 @@ class NodeScopeResolver
 						$phpDoc,
 						$phpDocParameterTypes[$param->var->name] ?? null,
 						true,
+						$isFromTrait,
 						$param,
 						false,
 						$scope->isInTrait(),
@@ -722,6 +724,7 @@ class NodeScopeResolver
 						$prop->default,
 						$docComment,
 						$phpDocType,
+						false,
 						false,
 						$prop,
 						$isReadOnly,

@@ -118,12 +118,12 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 			$originalProperties[$property->getName()] = $property;
-			$is = TrinaryLogic::createFromBoolean($property->isPromoted());
+			$is = TrinaryLogic::createFromBoolean($property->isPromoted() && !$property->isPromotedFromTrait());
 			$initialInitializedProperties[$property->getName()] = $is;
 			foreach ($constructors as $constructor) {
 				$initializedProperties[$constructor][$property->getName()] = $is;
 			}
-			if ($property->isPromoted()) {
+			if ($property->isPromoted() && !$property->isPromotedFromTrait()) {
 				continue;
 			}
 			$uninitializedProperties[$property->getName()] = $property;

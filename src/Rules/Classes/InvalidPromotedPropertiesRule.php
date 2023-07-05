@@ -61,7 +61,9 @@ class InvalidPromotedPropertiesRule implements Rule
 
 		if (
 			!$node instanceof Node\Stmt\ClassMethod
-			|| $node->name->toLowerString() !== '__construct'
+			|| (
+				$node->name->toLowerString() !== '__construct'
+				&& $node->getAttribute('originalTraitMethodName') !== '__construct')
 		) {
 			return [
 				RuleErrorBuilder::message(

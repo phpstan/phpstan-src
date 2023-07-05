@@ -406,3 +406,67 @@ class NeverInConstructor
 	}
 
 }
+
+class InitializedInPrivateSetterWithThrow
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	private function setFoo()
+	{
+		if (rand(0, 1)) {
+			$this->foo = 1;
+			return;
+		}
+
+		throw new \Exception();
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}
+
+class InitializedInPrivateSetterWithReturnNever
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	private function setFoo()
+	{
+		if (rand(0, 1)) {
+			$this->foo = 1;
+			return;
+		}
+
+		$this->returnNever();
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+	/**
+	 * @return never
+	 */
+	private function returnNever()
+	{
+		throw new \Exception();
+	}
+
+}

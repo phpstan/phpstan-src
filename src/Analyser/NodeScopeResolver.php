@@ -2185,12 +2185,30 @@ class NodeScopeResolver
 						$calledMethodEndScope = null;
 						foreach ($executionEnds as $executionEnd) {
 							$statementResult = $executionEnd->getStatementResult();
+							$endNode = $executionEnd->getNode();
+							if ($endNode instanceof Node\Stmt\Throw_) {
+								continue;
+							}
+							if ($endNode instanceof Node\Stmt\Expression) {
+								$exprType = $statementResult->getScope()->getType($endNode->expr);
+								if ($exprType instanceof NeverType && $exprType->isExplicit()) {
+									continue;
+								}
+							}
 							if ($calledMethodEndScope === null) {
 								$calledMethodEndScope = $statementResult->getScope();
 								continue;
 							}
 
 							$calledMethodEndScope = $calledMethodEndScope->mergeWith($statementResult->getScope());
+						}
+						foreach ($methodReturnStatementsNode->getReturnStatements() as $returnStatement) {
+							if ($calledMethodEndScope === null) {
+								$calledMethodEndScope = $returnStatement->getScope();
+								continue;
+							}
+
+							$calledMethodEndScope = $calledMethodEndScope->mergeWith($returnStatement->getScope());
 						}
 
 						if ($calledMethodEndScope !== null) {

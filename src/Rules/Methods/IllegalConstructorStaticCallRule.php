@@ -6,8 +6,10 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function array_key_exists;
 use function array_map;
 use function in_array;
+use function sprintf;
 use function strtolower;
 
 /**
@@ -37,14 +39,17 @@ class IllegalConstructorStaticCallRule implements Rule
 		];
 	}
 
-	private function isCollectCallingConstructor(Node $node, Scope $scope): bool
+	private function isCollectCallingConstructor(Node\Expr\StaticCall $node, Scope $scope): bool
 	{
-		if (!$node instanceof Node\Expr\StaticCall) {
-			return true;
-		}
 		// __construct should be called from inside constructor
-		if ($scope->getFunction() !== null && $scope->getFunction()->getName() !== '__construct') {
+		if ($scope->getFunction() === null) {
 			return false;
+		}
+
+		if ($scope->getFunction()->getName() !== '__construct') {
+			if (!$this->isInRenamedTraitConstructor($scope)) {
+				return false;
+			}
 		}
 
 		if (!$scope->isInClass()) {
@@ -58,6 +63,29 @@ class IllegalConstructorStaticCallRule implements Rule
 		$parentClasses = array_map(static fn (string $name) => strtolower($name), $scope->getClassReflection()->getParentClassesNames());
 
 		return in_array(strtolower($scope->resolveName($node->class)), $parentClasses, true);
+	}
+
+	private function isInRenamedTraitConstructor(Scope $scope): bool
+	{
+		if (!$scope->isInClass()) {
+			return false;
+		}
+
+		if (!$scope->isInTrait()) {
+			return false;
+		}
+
+		if ($scope->getFunction() === null) {
+			return false;
+		}
+
+		$traitAliases = $scope->getClassReflection()->getNativeReflection()->getTraitAliases();
+		$functionName = $scope->getFunction()->getName();
+		if (!array_key_exists($functionName, $traitAliases)) {
+			return false;
+		}
+
+		return $traitAliases[$functionName] === sprintf('%s::%s', $scope->getTraitReflection()->getName(), '__construct');
 	}
 
 }

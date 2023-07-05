@@ -3884,13 +3884,8 @@ class NodeScopeResolver
 					) {
 						$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
 					}
-					if (
-						$enterExpressionAssign
-						&& $scope->isInClass()
-						&& $scope->getClassReflection()->getName() === $declaringClass->getName()
-						&& TypeUtils::findThisType($propertyHolderType) !== null
-					) {
-						$scope = $scope->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
+					if ($enterExpressionAssign) {
+						$scope = $scope->assignInitializedProperty($propertyHolderType, $propertyName);
 					}
 				}
 			} else {

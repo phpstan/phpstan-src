@@ -93,4 +93,9 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9571.php'], []);
 	}
 
+	public function testBug9571PhpDocs(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9571-phpdocs.php'], []);
+	}
+
 }

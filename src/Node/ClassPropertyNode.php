@@ -22,6 +22,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		private ?string $phpDoc,
 		private ?Type $phpDocType,
 		private bool $isPromoted,
+		private bool $isPromotedFromTrait,
 		Node $originalNode,
 		private bool $isReadonlyByPhpDoc,
 		private bool $isDeclaredInTrait,
@@ -50,6 +51,11 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 	public function isPromoted(): bool
 	{
 		return $this->isPromoted;
+	}
+
+	public function isPromotedFromTrait(): bool
+	{
+		return $this->isPromotedFromTrait;
 	}
 
 	public function getPhpDoc(): ?string

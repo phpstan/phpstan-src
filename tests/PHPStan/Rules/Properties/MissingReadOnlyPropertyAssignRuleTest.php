@@ -213,4 +213,18 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9577(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/../Classes/data/bug-9577.php'], [
+			[
+				'Class Bug9577\SpecializedException2 has an uninitialized readonly property $message. Assign it in the constructor.',
+				8,
+			],
+		]);
+	}
+
 }

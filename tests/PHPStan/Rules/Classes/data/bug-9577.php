@@ -24,3 +24,17 @@ class SpecializedException
 		$this->__traitConstruct($message);
 	}
 }
+
+class SpecializedException2
+{
+	use StringableMessageTrait {
+		StringableMessageTrait::__construct as __traitConstruct;
+	}
+
+	public function __construct(
+		public int $code,
+		string $message,
+	) {
+		//$this->__traitConstruct($message);
+	}
+}

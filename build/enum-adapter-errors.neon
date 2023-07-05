@@ -306,6 +306,11 @@ parameters:
 			path: ../src/Rules/Cast/InvalidCastRule.php
 
 		-
+			message: "#^Call to method getTraitAliases\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Methods/IllegalConstructorStaticCallRule.php
+
+		-
 			message: "#^Call to method getMethods\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Rules/Methods/MissingMethodImplementationRule.php

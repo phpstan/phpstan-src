@@ -34,21 +34,39 @@ class AccessVariablePropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Comparison/data/bug-9475.php'], [
 			[
 				'Unsafe $this->{$foo} variable property access with a non-string value.',
-				16,
+				18,
 				'Did you mean `$this->foo`? The $ following -> is likely unnecessary.',
 			],
 			[
 				'Unsafe $this->{$array} variable property access with a non-string value.',
-				17,
+				19,
 			],
 			[
 				'Unsafe $this->{$this} variable property access with a non-string value.',
-				18,
+				20,
+			],
+			[
+				'Unsafe $this->bar->{$foo} variable property access with a non-string value.',
+				21,
+				'Did you mean `$this->bar->foo`? The $ following -> is likely unnecessary.',
+			],
+			[
+				'Unsafe $this->bar->{$this} variable property access with a non-string value.',
+				22,
+			],
+			[
+				'Unsafe $this->{$bar}->{$this} variable property access with a non-string value.',
+				23,
 			],
 			[
 				'Unsafe $this->{$foo} variable property access with a non-string value.',
-				30,
+				37,
 				'Did you mean `$this->foo`? The $ following -> is likely unnecessary.',
+			],
+			[
+				'Unsafe $this->bar->{$foo} variable property access with a non-string value.',
+				40,
+				'Did you mean `$this->bar->foo`? The $ following -> is likely unnecessary.',
 			],
 		]);
 	}

@@ -32,6 +32,13 @@ final class MissingMethodReturnTypehintRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$methodReflection = $node->getMethodReflection();
+		if ($scope->isInTrait()) {
+			$methodNode = $node->getOriginalNode();
+			$originalMethodName = $methodNode->getAttribute('originalTraitMethodName');
+			if ($originalMethodName === '__construct') {
+				return [];
+			}
+		}
 		$returnType = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
 
 		if ($returnType instanceof MixedType && !$returnType->isExplicitMixed()) {

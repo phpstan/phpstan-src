@@ -3470,6 +3470,31 @@ class MutatingScope implements Scope
 		return $scope->specifyExpressionType($expr, $type, $nativeType);
 	}
 
+	public function assignInitializedProperty(Type $fetchedOnType, string $propertyName): self
+	{
+		if (!$this->isInClass()) {
+			return $this;
+		}
+
+		if (TypeUtils::findThisType($fetchedOnType) === null) {
+			return $this;
+		}
+
+		$propertyReflection = $this->getPropertyReflection($fetchedOnType, $propertyName);
+		if ($propertyReflection === null) {
+			return $this;
+		}
+		$declaringClass = $propertyReflection->getDeclaringClass();
+		if ($this->getClassReflection()->getName() !== $declaringClass->getName()) {
+			return $this;
+		}
+		if (!$declaringClass->hasNativeProperty($propertyName)) {
+			return $this;
+		}
+
+		return $this->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
+	}
+
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self
 	{
 		$expressionTypes = $this->expressionTypes;

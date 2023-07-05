@@ -332,3 +332,77 @@ class ConfuseNodeScopeResolverWithAnonymousClass
 	}
 
 }
+
+class ThrowInConstructor1
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		if (rand(0, 1)) {
+			$this->foo = 1;
+			return;
+		}
+
+		throw new \Exception;
+	}
+
+}
+
+class ThrowInConstructor2
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		if (rand(0, 1)) {
+			throw new \Exception;
+		}
+
+		$this->foo = 1;
+	}
+
+}
+
+class EarlyReturn
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		if (rand(0, 1)) {
+			return;
+		}
+
+		$this->foo = 1;
+	}
+
+}
+
+class NeverInConstructor
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		if (rand(0, 1)) {
+			$this->foo = 1;
+			return;
+		}
+
+		$this->returnNever();
+	}
+
+	/**
+	 * @return never
+	 */
+	private function returnNever()
+	{
+		throw new \Exception();
+	}
+
+}

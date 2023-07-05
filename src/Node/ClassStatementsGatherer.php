@@ -20,6 +20,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
 use function count;
 use function in_array;
+use function strtolower;
 
 class ClassStatementsGatherer
 {
@@ -49,6 +50,9 @@ class ClassStatementsGatherer
 
 	/** @var ClassConstantFetch[] */
 	private array $constantFetches = [];
+
+	/** @var array<string, MethodReturnStatementsNode> */
+	private array $returnStatementNodes = [];
 
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
@@ -109,6 +113,14 @@ class ClassStatementsGatherer
 		return $this->constantFetches;
 	}
 
+	/**
+	 * @return array<string, MethodReturnStatementsNode>
+	 */
+	public function getReturnStatementsNodes(): array
+	{
+		return $this->returnStatementNodes;
+	}
+
 	public function __invoke(Node $node, Scope $scope): void
 	{
 		$nodeCallback = $this->nodeCallback;
@@ -149,6 +161,10 @@ class ClassStatementsGatherer
 		}
 		if ($node instanceof MethodCallableNode || $node instanceof StaticMethodCallableNode) {
 			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node->getOriginalNode(), $scope);
+			return;
+		}
+		if ($node instanceof MethodReturnStatementsNode) {
+			$this->returnStatementNodes[strtolower($node->getMethodName())] = $node;
 			return;
 		}
 		if (

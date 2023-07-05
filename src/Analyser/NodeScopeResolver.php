@@ -691,7 +691,7 @@ class NodeScopeResolver
 			$this->processAttributeGroups($stmt->attrGroups, $classScope, $classStatementsGatherer);
 
 			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer, $context);
-			$nodeCallback(new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensionProvider, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls()), $classScope);
+			$nodeCallback(new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensionProvider, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes()), $classScope);
 			$nodeCallback(new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls()), $classScope);
 			$nodeCallback(new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches()), $classScope);
 			$classReflection->evictPrivateSymbols();
@@ -3814,6 +3814,9 @@ class NodeScopeResolver
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 						$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
+						if ($var instanceof PropertyFetch && $var->name instanceof Node\Identifier && !$isAssignOp) {
+							$scope = $scope->assignInitializedProperty($scope->getType($var->var), $var->name->toString());
+						}
 					}
 					$scope = $scope->assignExpression(
 						$var,
@@ -3835,6 +3838,9 @@ class NodeScopeResolver
 			} else {
 				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 					$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
+					if ($var instanceof PropertyFetch && $var->name instanceof Node\Identifier && !$isAssignOp) {
+						$scope = $scope->assignInitializedProperty($scope->getType($var->var), $var->name->toString());
+					}
 				}
 			}
 
@@ -3884,13 +3890,8 @@ class NodeScopeResolver
 					) {
 						$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
 					}
-					if (
-						$enterExpressionAssign
-						&& $scope->isInClass()
-						&& $scope->getClassReflection()->getName() === $declaringClass->getName()
-						&& TypeUtils::findThisType($propertyHolderType) !== null
-					) {
-						$scope = $scope->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
+					if ($enterExpressionAssign) {
+						$scope = $scope->assignInitializedProperty($propertyHolderType, $propertyName);
 					}
 				}
 			} else {

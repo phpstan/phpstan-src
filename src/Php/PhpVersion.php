@@ -227,4 +227,9 @@ class PhpVersion
 		return $this->versionId < 80000;
 	}
 
+	public function supportsJsonValidate(): bool
+	{
+		return $this->versionId >= 80300;
+	}
+
 }

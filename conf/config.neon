@@ -166,7 +166,6 @@ parameters:
 		- ../stubs/arrayFunctions.stub
 		- ../stubs/core.stub
 		- ../stubs/typeCheckingFunctions.stub
-		- ../stubs/json.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit
@@ -629,6 +628,11 @@ services:
 			currentWorkingDirectory: %currentWorkingDirectory%
 		autowired:
 			- PHPStan\PhpDoc\StubFilesProvider
+
+	-
+		class: PHPStan\PhpDoc\JsonValidateStubFilesExtension
+		tags:
+			- phpstan.stubFilesExtension
 
 	-
 		class: PHPStan\Analyser\Analyser

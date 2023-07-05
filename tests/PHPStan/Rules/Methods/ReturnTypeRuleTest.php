@@ -934,4 +934,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6856(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6856.php'], []);
+	}
+
 }

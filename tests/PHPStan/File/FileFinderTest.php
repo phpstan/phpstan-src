@@ -189,6 +189,7 @@ class FileFinderTest extends PHPStanTestCase
 					'c.php' => '',
 					'd' => [
 						'u.php' => '',
+						'p.p' => '',
 					],
 				],
 				'y' => [
@@ -197,7 +198,7 @@ class FileFinderTest extends PHPStanTestCase
 			],
 			['x'],
 			[],
-			['x/b.php', 'x/c.php', 'x/d/u.php'],
+			['x/b.php', 'x/c.php', 'x/d/u.php', 'x/d/p.p'],
 			[
 				['x', 'is_dir', true],
 				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd']],
@@ -205,8 +206,9 @@ class FileFinderTest extends PHPStanTestCase
 				['x/b.php', 'is_dir', false],
 				['x/c.php', 'is_dir', false],
 				['x/d', 'is_dir', true],
-				['x/d', 'list_dir_open', ['u.php']],
+				['x/d', 'list_dir_open', ['u.php', 'p.p']],
 				['x/d/u.php', 'is_dir', false],
+				['x/d/p.p', 'is_dir', false],
 			],
 		];
 

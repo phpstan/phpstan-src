@@ -1194,6 +1194,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testProcessCalledMethodInfiniteLoop(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/process-called-method-infinite-loop.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

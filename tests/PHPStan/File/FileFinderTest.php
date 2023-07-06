@@ -15,7 +15,6 @@ use function is_array;
 use function is_bool;
 use function parse_url;
 use function preg_replace;
-use function sort;
 use function str_replace;
 use function stream_wrapper_register;
 use function stream_wrapper_unregister;
@@ -173,12 +172,10 @@ class FileFinderTest extends PHPStanTestCase
 		$fileFinder = new FileFinder($fileExcluder, $fileHelper, ['php', 'p']);
 		$fileFinderResult = $fileFinder->findFiles(array_map($prependSchemeFx, $inPaths));
 
-		$expected = str_replace('/', DIRECTORY_SEPARATOR, $expectedPaths);
-		$actual = array_map($stripSchemeFx, $fileFinderResult->getFiles());
-		sort($expected);
-		sort($actual);
-
-		$this->assertSame($expected, $actual);
+		$this->assertSame(
+			str_replace('/', DIRECTORY_SEPARATOR, $expectedPaths),
+			array_map($stripSchemeFx, $fileFinderResult->getFiles()),
+		);
 		$this->assertSame($expectedAccessLog, $this->vfsLog);
 	}
 

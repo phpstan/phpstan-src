@@ -204,14 +204,11 @@ class FileFinderTest extends PHPStanTestCase
 			[
 				['x', 'is_dir', true],
 				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd']],
-				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd']], // directory should be opened once only, remove once https://github.com/symfony/symfony/issues/50851 is fixed
-				['x', 'list_dir_rewind', ['a.txt', 'b.php', 'c.php', 'd']],
 				['x/a.txt', 'is_dir', false],
 				['x/b.php', 'is_dir', false],
 				['x/c.php', 'is_dir', false],
 				['x/d', 'is_dir', true],
 				['x/d', 'list_dir_open', ['u.php']],
-				['x/d', 'list_dir_rewind', ['u.php']],
 				['x/d/u.php', 'is_dir', false],
 			],
 		];
@@ -241,18 +238,14 @@ class FileFinderTest extends PHPStanTestCase
 			[
 				['x', 'is_dir', true],
 				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd', 'x']],
-				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd', 'x']],
-				['x', 'list_dir_rewind', ['a.txt', 'b.php', 'c.php', 'd', 'x']],
 				['x/a.txt', 'is_dir', false],
 				['x/b.php', 'is_dir', false],
 				['x/c.php', 'is_dir', false],
 				['x/d', 'is_dir', true],
 				['x/x', 'is_dir', true],
 				['x/x', 'list_dir_open', ['d']],
-				['x/x', 'list_dir_rewind', ['d']],
 				['x/x/d', 'is_dir', true],
 				['x/x/d', 'list_dir_open', ['u2.php']],
-				['x/x/d', 'list_dir_rewind', ['u2.php']],
 				['x/x/d/u2.php', 'is_dir', false],
 			],
 		];

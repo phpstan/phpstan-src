@@ -111,7 +111,29 @@ class FileFinderSymfonyBackport implements IteratorAggregate
 	#[ReturnTypeWillChange]
 	public function getIterator(): Iterator
 	{
-		$iterator = new RecursiveDirectoryIterator($this->in, RecursiveDirectoryIterator::SKIP_DOTS | RecursiveDirectoryIterator::FOLLOW_SYMLINKS);
+		$iterator = new class($this->in, RecursiveDirectoryIterator::SKIP_DOTS | RecursiveDirectoryIterator::FOLLOW_SYMLINKS) extends RecursiveDirectoryIterator {
+
+			private bool $ignoreFirstRewind = true;
+
+			public function next(): void
+			{
+				$this->ignoreFirstRewind = false;
+
+				parent::next();
+			}
+
+			public function rewind(): void
+			{
+				if ($this->ignoreFirstRewind) {
+					$this->ignoreFirstRewind = false;
+
+					return;
+				}
+
+				parent::rewind();
+			}
+
+		};
 		$iterator = new class($iterator, [$this->pruneFilter]) extends ExcludeDirectoryFilterIterator {
 
 			/** @var list<callable(SplFileInfo): bool> */

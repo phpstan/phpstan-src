@@ -237,12 +237,7 @@ class FileFinderTest extends PHPStanTestCase
 			],
 			['x'],
 			['x/d'],
-			// ['x/b.php', 'x/c.php' , 'x/x/d/u2.php'],
-			// x/d exclude should keep x/x/d, but that is currently not possible,
-			// as Symfony Finder impl. escapes all patterns in
-			// https://github.com/symfony/symfony/blob/v6.2.12/src/Symfony/Component/Finder/Iterator/ExcludeDirectoryFilterIterator.php#L45
-			// so the generated exclude pattern cannot start with "^"
-			['x/b.php', 'x/c.php'],
+			['x/b.php', 'x/c.php' , 'x/x/d/u2.php'],
 			[
 				['x', 'is_dir', true],
 				['x', 'list_dir_open', ['a.txt', 'b.php', 'c.php', 'd', 'x']],
@@ -256,6 +251,9 @@ class FileFinderTest extends PHPStanTestCase
 				['x/x', 'list_dir_open', ['d']],
 				['x/x', 'list_dir_rewind', ['d']],
 				['x/x/d', 'is_dir', true],
+				['x/x/d', 'list_dir_open', ['u2.php']],
+				['x/x/d', 'list_dir_rewind', ['u2.php']],
+				['x/x/d/u2.php', 'is_dir', false],
 			],
 		];
 	}

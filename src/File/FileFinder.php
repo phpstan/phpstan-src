@@ -2,16 +2,14 @@
 
 namespace PHPStan\File;
 
-use Symfony\Component\Finder\Finder;
+use SplFileInfo;
+// use Symfony\Component\Finder\Finder;
 use function array_filter;
 use function array_unique;
 use function array_values;
 use function file_exists;
 use function implode;
 use function is_file;
-use function str_starts_with;
-use function strlen;
-use function substr;
 
 class FileFinder
 {
@@ -25,44 +23,6 @@ class FileFinder
 		private array $fileExtensions,
 	)
 	{
-	}
-
-	/**
-	 * Make relative directory prune pattern for Symfony Finder.
-	 *
-	 * https://github.com/symfony/symfony/blob/v6.2.12/src/Symfony/Component/Finder/Iterator/ExcludeDirectoryFilterIterator.php#L51
-	 * https://github.com/symfony/symfony/blob/v6.2.12/src/Symfony/Component/Finder/Iterator/ExcludeDirectoryFilterIterator.php#L70
-	 */
-	private function tryToMakeFinderExcludePattern(string $excludePath, string $inPath): ?string
-	{
-		$excludePath = $this->fileHelper->normalizePath($excludePath, '/');
-		$inPath = $this->fileHelper->normalizePath($inPath, '/');
-
-		if ($excludePath === $inPath || str_starts_with($inPath . '/', $excludePath)) {
-			return '.+';
-		} if (str_starts_with($excludePath, $inPath . '/')) {
-			return substr($excludePath, strlen($inPath) + 1);
-		}
-
-		return null;
-	}
-
-	/**
-	 * @return list<string>
-	 */
-	private function makeFinderExcludePatterns(string $inPath): array
-	{
-		$res = [];
-		foreach ($this->fileExcluder->getExcludedLiteralPaths() as $excludePath) {
-			$excludePattern = $this->tryToMakeFinderExcludePattern($excludePath, $inPath);
-			if ($excludePattern === null) {
-				continue;
-			}
-
-			$res[] = $excludePattern;
-		}
-
-		return $res;
 	}
 
 	/**
@@ -81,10 +41,10 @@ class FileFinder
 				throw new PathNotFoundException($path);
 			}
 
-			$finder = (new Finder())
+			$finder = (new FileFinderSymfonyBackport())
 				->in($path)
-				->exclude($this->makeFinderExcludePatterns($path))
 				->followLinks()
+				->filter(fn (SplFileInfo $fileInfo) => !$this->fileExcluder->isExcludedFromAnalysing($fileInfo->getPathname()), true)
 				->files()
 				->name('*.{' . implode(',', $this->fileExtensions) . '}');
 

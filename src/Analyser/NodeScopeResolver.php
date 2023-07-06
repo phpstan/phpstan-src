@@ -193,7 +193,7 @@ class NodeScopeResolver
 	/** @var array<string, true> */
 	private array $calledMethodStack = [];
 
-	/** @var array<string, MethodReturnStatementsNode|null> */
+	/** @var array<string, MutatingScope|null> */
 	private array $calledMethodResults = [];
 
 	/**
@@ -2179,41 +2179,9 @@ class NodeScopeResolver
 					)*/
 					&& TypeUtils::findThisType($calledOnType) !== null
 				) {
-					$methodReturnStatementsNode = $this->processCalledMethod($methodReflection);
-					if ($methodReturnStatementsNode !== null) {
-						$executionEnds = $methodReturnStatementsNode->getExecutionEnds();
-						$calledMethodEndScope = null;
-						foreach ($executionEnds as $executionEnd) {
-							$statementResult = $executionEnd->getStatementResult();
-							$endNode = $executionEnd->getNode();
-							if ($endNode instanceof Node\Stmt\Throw_) {
-								continue;
-							}
-							if ($endNode instanceof Node\Stmt\Expression) {
-								$exprType = $statementResult->getScope()->getType($endNode->expr);
-								if ($exprType instanceof NeverType && $exprType->isExplicit()) {
-									continue;
-								}
-							}
-							if ($calledMethodEndScope === null) {
-								$calledMethodEndScope = $statementResult->getScope();
-								continue;
-							}
-
-							$calledMethodEndScope = $calledMethodEndScope->mergeWith($statementResult->getScope());
-						}
-						foreach ($methodReturnStatementsNode->getReturnStatements() as $returnStatement) {
-							if ($calledMethodEndScope === null) {
-								$calledMethodEndScope = $returnStatement->getScope();
-								continue;
-							}
-
-							$calledMethodEndScope = $calledMethodEndScope->mergeWith($returnStatement->getScope());
-						}
-
-						if ($calledMethodEndScope !== null) {
-							$scope = $scope->mergeInitializedProperties($calledMethodEndScope);
-						}
+					$calledMethodScope = $this->processCalledMethod($methodReflection);
+					if ($calledMethodScope !== null) {
+						$scope = $scope->mergeInitializedProperties($calledMethodScope);
 					}
 				}
 			} else {
@@ -4413,7 +4381,7 @@ class NodeScopeResolver
 		}
 	}
 
-	private function processCalledMethod(MethodReflection $methodReflection): ?MethodReturnStatementsNode
+	private function processCalledMethod(MethodReflection $methodReflection): ?MutatingScope
 	{
 		$declaringClass = $methodReflection->getDeclaringClass();
 		if ($declaringClass->isAnonymous()) {
@@ -4465,11 +4433,42 @@ class NodeScopeResolver
 			$returnStatement = $node;
 		});
 
+		$calledMethodEndScope = null;
+		if ($returnStatement !== null) {
+			foreach ($returnStatement->getExecutionEnds() as $executionEnd) {
+				$statementResult = $executionEnd->getStatementResult();
+				$endNode = $executionEnd->getNode();
+				if ($endNode instanceof Node\Stmt\Throw_) {
+					continue;
+				}
+				if ($endNode instanceof Node\Stmt\Expression) {
+					$exprType = $statementResult->getScope()->getType($endNode->expr);
+					if ($exprType instanceof NeverType && $exprType->isExplicit()) {
+						continue;
+					}
+				}
+				if ($calledMethodEndScope === null) {
+					$calledMethodEndScope = $statementResult->getScope();
+					continue;
+				}
+
+				$calledMethodEndScope = $calledMethodEndScope->mergeWith($statementResult->getScope());
+			}
+			foreach ($returnStatement->getReturnStatements() as $statement) {
+				if ($calledMethodEndScope === null) {
+					$calledMethodEndScope = $statement->getScope();
+					continue;
+				}
+
+				$calledMethodEndScope = $calledMethodEndScope->mergeWith($statement->getScope());
+			}
+		}
+
 		unset($this->calledMethodStack[$stackName]);
 
-		$this->calledMethodResults[$stackName] = $returnStatement;
+		$this->calledMethodResults[$stackName] = $calledMethodEndScope;
 
-		return $returnStatement;
+		return $calledMethodEndScope;
 	}
 
 	/**

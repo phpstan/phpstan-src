@@ -18,6 +18,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function sprintf;
@@ -744,6 +745,148 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			]),
 			TrinaryLogic::createYes(),
 		];
+	}
+
+	public function dataValuesArray(): iterable
+	{
+		yield 'empty' => [
+			new ConstantArrayType([], []),
+			new ConstantArrayType([], []),
+		];
+
+		yield 'non-optional' => [
+			new ConstantArrayType([
+				new ConstantIntegerType(10),
+				new ConstantIntegerType(11),
+			], [
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [20], [], false),
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			], [
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [2], [], true),
+		];
+
+		yield 'optional-1' => [
+			new ConstantArrayType([
+				new ConstantIntegerType(10),
+				new ConstantIntegerType(11),
+				new ConstantIntegerType(12),
+				new ConstantIntegerType(13),
+				new ConstantIntegerType(14),
+			], [
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+				new ConstantStringType('c'),
+				new ConstantStringType('d'),
+				new ConstantStringType('e'),
+			], [15], [1, 3], false),
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+				new ConstantIntegerType(2),
+				new ConstantIntegerType(3),
+				new ConstantIntegerType(4),
+			], [
+				new ConstantStringType('a'),
+				new UnionType([new ConstantStringType('b'), new ConstantStringType('c')]),
+				new UnionType([new ConstantStringType('c'), new ConstantStringType('d'), new ConstantStringType('e')]),
+				new UnionType([new ConstantStringType('d'), new ConstantStringType('e')]),
+				new ConstantStringType('e'),
+			], [3, 4, 5], [3, 4], true),
+		];
+
+		yield 'optional-2' => [
+			new ConstantArrayType([
+				new ConstantIntegerType(10),
+				new ConstantIntegerType(11),
+				new ConstantIntegerType(12),
+				new ConstantIntegerType(13),
+				new ConstantIntegerType(14),
+			], [
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+				new ConstantStringType('c'),
+				new ConstantStringType('d'),
+				new ConstantStringType('e'),
+			], [15], [0, 2, 4], false),
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+				new ConstantIntegerType(2),
+				new ConstantIntegerType(3),
+				new ConstantIntegerType(4),
+			], [
+				new UnionType([new ConstantStringType('a'), new ConstantStringType('b')]),
+				new UnionType([new ConstantStringType('b'), new ConstantStringType('c'), new ConstantStringType('d')]),
+				new UnionType([new ConstantStringType('c'), new ConstantStringType('d'), new ConstantStringType('e')]),
+				new UnionType([new ConstantStringType('d'), new ConstantStringType('e')]),
+				new ConstantStringType('e'),
+			], [2, 3, 4, 5], [2, 3, 4], true),
+		];
+
+		yield 'optional-at-end-and-list' => [
+			new ConstantArrayType([
+				new ConstantIntegerType(10),
+				new ConstantIntegerType(11),
+				new ConstantIntegerType(12),
+			], [
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+				new ConstantStringType('c'),
+			], [11, 12, 13], [1, 2], true),
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+				new ConstantIntegerType(2),
+			], [
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+				new ConstantStringType('c'),
+			], [1, 2, 3], [1, 2], true),
+		];
+
+		yield 'optional-at-end-but-not-list' => [
+			new ConstantArrayType([
+				new ConstantIntegerType(10),
+				new ConstantIntegerType(11),
+				new ConstantIntegerType(12),
+			], [
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+				new ConstantStringType('c'),
+			], [11, 12, 13], [1, 2], false),
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+				new ConstantIntegerType(2),
+			], [
+				new ConstantStringType('a'),
+				new UnionType([new ConstantStringType('b'), new ConstantStringType('c')]),
+				new ConstantStringType('c'),
+			], [1, 2, 3], [1, 2], true),
+		];
+	}
+
+	/**
+	 * @dataProvider dataValuesArray
+	 */
+	public function testValuesArray(ConstantArrayType $type, ConstantArrayType $expectedType): void
+	{
+		$actualType = $type->getValuesArray();
+		$message = sprintf(
+			'Values array of %s is %s, but should be %s',
+			$type->describe(VerbosityLevel::precise()),
+			$actualType->describe(VerbosityLevel::precise()),
+			$expectedType->describe(VerbosityLevel::precise()),
+		);
+		$this->assertTrue($expectedType->equals($actualType), $message);
+		$this->assertSame($expectedType->isList(), $actualType->isList());
+		$this->assertSame($expectedType->getNextAutoIndexes(), $actualType->getNextAutoIndexes());
 	}
 
 }

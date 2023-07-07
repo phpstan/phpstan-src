@@ -29,10 +29,7 @@ class ClassTemplateTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
-			return [];
-		}
-		$classReflection = $scope->getClassReflection();
+		$classReflection = $node->getClassReflection();
 		if (!$classReflection->isClass()) {
 			return [];
 		}

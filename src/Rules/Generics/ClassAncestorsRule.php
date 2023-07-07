@@ -38,10 +38,7 @@ class ClassAncestorsRule implements Rule
 		if (!$originalNode instanceof Node\Stmt\Class_) {
 			return [];
 		}
-		if (!$scope->isInClass()) {
-			return [];
-		}
-		$classReflection = $scope->getClassReflection();
+		$classReflection = $node->getClassReflection();
 		if ($classReflection->isAnonymous()) {
 			return [];
 		}

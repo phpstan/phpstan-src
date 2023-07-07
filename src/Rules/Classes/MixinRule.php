@@ -42,10 +42,7 @@ class MixinRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
-			return [];
-		}
-		$classReflection = $scope->getClassReflection();
+		$classReflection = $node->getClassReflection();
 		$mixinTags = $classReflection->getMixinTags();
 		$errors = [];
 		foreach ($mixinTags as $mixinTag) {

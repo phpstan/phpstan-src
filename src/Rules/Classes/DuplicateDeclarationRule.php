@@ -28,10 +28,7 @@ class DuplicateDeclarationRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$classReflection = $scope->getClassReflection();
-		if ($classReflection === null) {
-			throw new ShouldNotHappenException();
-		}
+		$classReflection = $node->getClassReflection();
 
 		$errors = [];
 

@@ -38,10 +38,7 @@ class InterfaceAncestorsRule implements Rule
 		if (!$originalNode instanceof Node\Stmt\Interface_) {
 			return [];
 		}
-		if (!$scope->isInClass()) {
-			return [];
-		}
-		$classReflection = $scope->getClassReflection();
+		$classReflection = $node->getClassReflection();
 
 		$interfaceName = $classReflection->getName();
 		$escapedInterfaceName = SprintfHelper::escapeFormatString($interfaceName);

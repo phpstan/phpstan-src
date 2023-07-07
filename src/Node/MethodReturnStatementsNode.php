@@ -7,6 +7,8 @@ use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementResult;
+use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\MethodReflection;
 use function count;
 
 /** @api */
@@ -26,6 +28,8 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		private array $yieldStatements,
 		private StatementResult $statementResult,
 		private array $executionEnds,
+		private ClassReflection $classReflection,
+		private MethodReflection $methodReflection,
 	)
 	{
 		parent::__construct($method->getAttributes());
@@ -65,6 +69,16 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 	public function getYieldStatements(): array
 	{
 		return $this->yieldStatements;
+	}
+
+	public function getClassReflection(): ClassReflection
+	{
+		return $this->classReflection;
+	}
+
+	public function getMethodReflection(): MethodReflection
+	{
+		return $this->methodReflection;
 	}
 
 	public function isGenerator(): bool

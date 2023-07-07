@@ -593,12 +593,22 @@ class NodeScopeResolver
 
 					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 				}, StatementContext::createTopLevel());
+
+				$classReflection = $scope->getClassReflection();
+
+				$methodReflection = $methodScope->getFunction();
+				if (!$methodReflection instanceof MethodReflection) {
+					throw new ShouldNotHappenException();
+				}
+
 				$nodeCallback(new MethodReturnStatementsNode(
 					$stmt,
 					$gatheredReturnStatements,
 					$gatheredYieldStatements,
 					$statementResult,
 					$executionEnds,
+					$classReflection,
+					$methodReflection,
 				), $methodScope);
 			}
 		} elseif ($stmt instanceof Echo_) {
@@ -4418,11 +4428,7 @@ class NodeScopeResolver
 				return;
 			}
 
-			if (!$scope->isInClass()) {
-				return;
-			}
-
-			if ($scope->getClassReflection()->getName() !== $methodReflection->getDeclaringClass()->getName()) {
+			if ($node->getClassReflection()->getName() !== $methodReflection->getDeclaringClass()->getName()) {
 				return;
 			}
 

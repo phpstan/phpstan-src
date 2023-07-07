@@ -5,11 +5,9 @@ namespace PHPStan\Rules\TooWideTypehints;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\MethodReturnStatementsNode;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -34,10 +32,7 @@ class TooWideMethodReturnTypehintRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$method = $scope->getFunction();
-		if (!$method instanceof MethodReflection) {
-			throw new ShouldNotHappenException();
-		}
+		$method = $node->getMethodReflection();
 		$isFirstDeclaration = $method->getPrototype()->getDeclaringClass() === $method->getDeclaringClass();
 		if (!$method->isPrivate()) {
 			if (!$this->checkProtectedAndPublicMethods) {

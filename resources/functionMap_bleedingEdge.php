@@ -118,6 +118,7 @@ return [
 		'ftp_nb_get' => ['int', 'stream'=>'resource', 'local_file'=>'string', 'remote_file'=>'string', 'mode'=>'FTP_ASCII|FTP_BINARY', 'resume_pos='=>'int'],
 		'ftp_nb_put' => ['int|false', 'stream'=>'resource', 'remote_file'=>'string', 'local_file'=>'string', 'mode'=>'FTP_ASCII|FTP_BINARY', 'startpos='=>'int'],
 		'ftp_put' => ['bool', 'stream'=>'resource', 'remote_file'=>'string', 'local_file'=>'string', 'mode'=>'FTP_ASCII|FTP_BINARY', 'startpos='=>'int'],
+		'scandir' => ['list<string>|false', 'dir'=>'string', 'sorting_order='=>'SCANDIR_SORT_ASCENDING|SCANDIR_SORT_DESCENDING| SCANDIR_SORT_NONE', 'context='=>'resource'],
 		'stream_socket_client' => ['resource|false', 'remoteaddress'=>'string', '&w_errcode='=>'int', '&w_errstring='=>'string', 'timeout='=>'float', 'flags='=>'int-mask<STREAM_CLIENT_CONNECT|STREAM_CLIENT_ASYNC_CONNECT|STREAM_CLIENT_PERSISTENT>', 'context='=>'resource'],
 	],
 	'old' => [

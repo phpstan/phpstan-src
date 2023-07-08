@@ -19,7 +19,6 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeUtils;
@@ -45,6 +44,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		private array $propertyUsages,
 		private array $methodCalls,
 		private array $returnStatementNodes,
+		private ClassReflection $classReflection,
 	)
 	{
 		parent::__construct($class->getAttributes());
@@ -84,6 +84,11 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		return [];
 	}
 
+	public function getClassReflection(): ClassReflection
+	{
+		return $this->classReflection;
+	}
+
 	/**
 	 * @param string[] $constructors
 	 * @param ReadWritePropertiesExtension[]|null $extensions
@@ -98,10 +103,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		if (!$this->getClass() instanceof Class_) {
 			return [[], [], []];
 		}
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-		$classReflection = $scope->getClassReflection();
+		$classReflection = $this->getClassReflection();
 
 		$uninitializedProperties = [];
 		$originalProperties = [];

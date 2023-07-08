@@ -8,7 +8,6 @@ use PHPStan\Node\ClassConstantsNode;
 use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use function sprintf;
 
 /**
@@ -31,11 +30,8 @@ class UnusedPrivateConstantRule implements Rule
 		if (!$node->getClass() instanceof Node\Stmt\Class_ && !$node->getClass() instanceof Node\Stmt\Enum_) {
 			return [];
 		}
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
 
-		$classReflection = $scope->getClassReflection();
+		$classReflection = $node->getClassReflection();
 
 		$constants = [];
 		foreach ($node->getConstants() as $constant) {

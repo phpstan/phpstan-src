@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeAbstract;
 use PHPStan\Node\Method\MethodCall;
+use PHPStan\Reflection\ClassReflection;
 
 /** @api */
 class ClassMethodsNode extends NodeAbstract implements VirtualNode
@@ -14,7 +15,7 @@ class ClassMethodsNode extends NodeAbstract implements VirtualNode
 	 * @param ClassMethod[] $methods
 	 * @param array<int, MethodCall> $methodCalls
 	 */
-	public function __construct(private ClassLike $class, private array $methods, private array $methodCalls)
+	public function __construct(private ClassLike $class, private array $methods, private array $methodCalls, private ClassReflection $classReflection)
 	{
 		parent::__construct($class->getAttributes());
 	}
@@ -51,6 +52,11 @@ class ClassMethodsNode extends NodeAbstract implements VirtualNode
 	public function getSubNodeNames(): array
 	{
 		return [];
+	}
+
+	public function getClassReflection(): ClassReflection
+	{
+		return $this->classReflection;
 	}
 
 }

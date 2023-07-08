@@ -494,4 +494,9 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9568(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9568.php'], []);
+	}
+
 }

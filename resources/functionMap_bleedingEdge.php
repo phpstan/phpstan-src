@@ -120,6 +120,7 @@ return [
 		'ftp_put' => ['bool', 'stream'=>'resource', 'remote_file'=>'string', 'local_file'=>'string', 'mode'=>'FTP_ASCII|FTP_BINARY', 'startpos='=>'int'],
 		'scandir' => ['list<string>|false', 'dir'=>'string', 'sorting_order='=>'SCANDIR_SORT_ASCENDING|SCANDIR_SORT_DESCENDING| SCANDIR_SORT_NONE', 'context='=>'resource'],
 		'stream_socket_client' => ['resource|false', 'remoteaddress'=>'string', '&w_errcode='=>'int', '&w_errstring='=>'string', 'timeout='=>'float', 'flags='=>'int-mask<STREAM_CLIENT_CONNECT|STREAM_CLIENT_ASYNC_CONNECT|STREAM_CLIENT_PERSISTENT>', 'context='=>'resource'],
+		'extract' => ['int', '&rw_var_array'=>'array', 'extract_type='=>'EXTR_OVERWRITE|EXTR_SKIP|EXTR_PREFIX_SAME|EXTR_PREFIX_ALL|EXTR_PREFIX_INVALID|EXTR_IF_EXISTS|EXTR_PREFIX_IF_EXISTS|EXTR_REFS', 'prefix='=>'string|null'],
 	],
 	'old' => [
 

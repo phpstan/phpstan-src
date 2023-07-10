@@ -20,6 +20,8 @@ class FileHelperTest extends PHPStanTestCase
 			['users', 'C:\abcd\users'],
 			['../lib', 'C:\abcd\../lib'],
 			['./lib', 'C:\abcd\./lib'],
+			['vFs-v1.0://a\b', 'vFs-v1.0://a\b'],
+			['./x://a\b', 'C:\abcd\./x://a\b'],
 		];
 	}
 
@@ -47,6 +49,8 @@ class FileHelperTest extends PHPStanTestCase
 			['../lib', '/abcd/../lib'],
 			['./lib', '/abcd/./lib'],
 			['phar:///home/users/', 'phar:///home/users/'],
+			['vFs-v1.0://a/b', 'vFs-v1.0://a/b'],
+			['./x://a/b', '/abcd/./x://a/b'],
 		];
 	}
 
@@ -73,6 +77,7 @@ class FileHelperTest extends PHPStanTestCase
 			['/home/users/./phpstan', '\home\users\phpstan'],
 			['/home/users/../../phpstan/', '\phpstan'],
 			['./phpstan/', 'phpstan'],
+			['vFs-v1.0://a/b', 'vfs-v1.0://a\b'],
 		];
 	}
 
@@ -98,6 +103,7 @@ class FileHelperTest extends PHPStanTestCase
 			['/home/users/./phpstan', '/home/users/phpstan'],
 			['/home/users/../../phpstan/', '/phpstan'],
 			['./phpstan/', 'phpstan'],
+			['vFs-v1.0://a/b', 'vfs-v1.0://a/b'],
 			['phar:///usr/local/bin/phpstan.phar/tmp/cache/../..', 'phar:///usr/local/bin/phpstan.phar'],
 			['phar:///usr/local/bin/phpstan.phar/tmp/cache/../../..', '/usr/local/bin'],
 		];

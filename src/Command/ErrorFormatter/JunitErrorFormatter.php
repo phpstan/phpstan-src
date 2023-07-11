@@ -7,6 +7,7 @@ use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
 use SplFileObject;
 use function array_filter;
+use function file_exists;
 use function htmlspecialchars;
 use function implode;
 use function is_null;

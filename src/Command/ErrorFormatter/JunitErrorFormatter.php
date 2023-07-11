@@ -75,7 +75,7 @@ class JunitErrorFormatter implements ErrorFormatter
 	{
 		$result = sprintf(
 			'<testcase name="%s" classname="%s">', // class="%s"  file="%s" line="%d",
-			$this->escape($identifier),
+			$this->escape(is_null($identifier) ? '' : $identifier),
 			//$this->escape($reference),
 			//$this->escape($reference),
 			$this->escape(sprintf('%s:%d', $reference, $line)),

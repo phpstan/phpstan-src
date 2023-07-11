@@ -111,12 +111,13 @@ class JunitErrorFormatter implements ErrorFormatter
 		}
 
 		$file = new SplFileObject($fileName);
-		if (!$file->eof()) {
-			$file->seek($lineNumber);
-			// @phpstan-ignore-next-line
-			return $file->current(); // $contents would hold the data from line x
+		if ($file->eof()) {
+			return null;
 		}
-		return null;
+
+		$file->seek($lineNumber);
+		// @phpstan-ignore-next-line
+		return $file->current(); // $contents would hold the data from line x
 	}
 
 	/**

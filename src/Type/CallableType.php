@@ -524,6 +524,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return new ErrorType();
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		if ($this->isCommonCallable) {

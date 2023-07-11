@@ -85,6 +85,10 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 				57,
 			],
 			[
+				'Class MissingReadOnlyPropertyAssignPhpDoc\AssignOp has an uninitialized @readonly property $foo. Assign it in the constructor.',
+				85,
+			],
+			[
 				'Access to an uninitialized @readonly property MissingReadOnlyPropertyAssignPhpDoc\AssignOp::$foo.',
 				92,
 			],

@@ -35,12 +35,14 @@ class GenericObjectType extends ObjectType
 	/**
 	 * @api
 	 * @param array<int, Type> $types
+	 * @param array<int, TemplateTypeVariance> $variances
 	 */
 	public function __construct(
 		string $mainType,
 		private array $types,
 		?Type $subtractedType = null,
 		private ?ClassReflection $classReflection = null,
+		private array $variances = [],
 	)
 	{
 		parent::__construct($mainType, $subtractedType, $classReflection);
@@ -51,7 +53,11 @@ class GenericObjectType extends ObjectType
 		return sprintf(
 			'%s<%s>',
 			parent::describe($level),
-			implode(', ', array_map(static fn (Type $type): string => $type->describe($level), $this->types)),
+			implode(', ', array_map(
+				static fn (Type $type, ?TemplateTypeVariance $variance = null): string => TypeProjectionHelper::describe($type, $variance, $level),
+				$this->types,
+				$this->variances,
+			)),
 		);
 	}
 
@@ -72,6 +78,12 @@ class GenericObjectType extends ObjectType
 		foreach ($this->types as $i => $genericType) {
 			$otherGenericType = $type->types[$i];
 			if (!$genericType->equals($otherGenericType)) {
+				return false;
+			}
+
+			$variance = $this->variances[$i] ?? TemplateTypeVariance::createInvariant();
+			$otherVariance = $type->variances[$i] ?? TemplateTypeVariance::createInvariant();
+			if (!$variance->equals($otherVariance)) {
 				return false;
 			}
 		}
@@ -98,6 +110,12 @@ class GenericObjectType extends ObjectType
 	public function getTypes(): array
 	{
 		return $this->types;
+	}
+
+	/** @return array<int, TemplateTypeVariance> */
+	public function getVariances(): array
+	{
+		return $this->variances;
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
@@ -171,7 +189,15 @@ class GenericObjectType extends ObjectType
 				throw new ShouldNotHappenException();
 			}
 
-			$results[] = $templateType->isValidVarianceWithReason($this->types[$i], $ancestor->types[$i]);
+			$thisVariance = $this->variances[$i] ?? TemplateTypeVariance::createInvariant();
+			$ancestorVariance = $ancestor->variances[$i] ?? TemplateTypeVariance::createInvariant();
+			if (!$thisVariance->invariant()) {
+				$results[] = $thisVariance->isValidVarianceWithReason($templateType, $this->types[$i], $ancestor->types[$i]);
+			} else {
+				$results[] = $templateType->isValidVarianceWithReason($this->types[$i], $ancestor->types[$i]);
+			}
+
+			$results[] = AcceptsResult::createFromBoolean($thisVariance->validPosition($ancestorVariance));
 		}
 
 		if (count($results) === 0) {
@@ -197,7 +223,9 @@ class GenericObjectType extends ObjectType
 			return null;
 		}
 
-		return $this->classReflection = $reflectionProvider->getClass($this->getClassName())->withTypes($this->types);
+		return $this->classReflection = $reflectionProvider->getClass($this->getClassName())
+			->withTypes($this->types)
+			->withVariances($this->variances);
 	}
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
@@ -267,11 +295,12 @@ class GenericObjectType extends ObjectType
 		$references = [];
 
 		foreach ($this->types as $i => $type) {
-			$variance = $positionVariance->compose(
-				isset($typeList[$i]) && $typeList[$i] instanceof TemplateType
-					? $typeList[$i]->getVariance()
-					: TemplateTypeVariance::createInvariant(),
-			);
+			$effectiveVariance = $this->variances[$i] ?? TemplateTypeVariance::createInvariant();
+			if ($effectiveVariance->invariant() && isset($typeList[$i]) && $typeList[$i] instanceof TemplateType) {
+				$effectiveVariance = $typeList[$i]->getVariance();
+			}
+
+			$variance = $positionVariance->compose($effectiveVariance);
 			foreach ($type->getReferencedTemplateTypes($variance) as $reference) {
 				$references[] = $reference;
 			}
@@ -297,7 +326,7 @@ class GenericObjectType extends ObjectType
 		}
 
 		if ($subtractedType !== $this->getSubtractedType() || $typesChanged) {
-			return $this->recreate($this->getClassName(), $types, $subtractedType);
+			return $this->recreate($this->getClassName(), $types, $subtractedType, $this->variances);
 		}
 
 		return $this;
@@ -340,19 +369,22 @@ class GenericObjectType extends ObjectType
 
 	/**
 	 * @param Type[] $types
+	 * @param TemplateTypeVariance[] $variances
 	 */
-	protected function recreate(string $className, array $types, ?Type $subtractedType): self
+	protected function recreate(string $className, array $types, ?Type $subtractedType, array $variances = []): self
 	{
 		return new self(
 			$className,
 			$types,
 			$subtractedType,
+			null,
+			$variances,
 		);
 	}
 
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
-		return new self($this->getClassName(), $this->types, $subtractedType);
+		return new self($this->getClassName(), $this->types, $subtractedType, null, $this->variances);
 	}
 
 	public function toPhpDocNode(): TypeNode
@@ -362,6 +394,7 @@ class GenericObjectType extends ObjectType
 		return new GenericTypeNode(
 			$parent,
 			array_map(static fn (Type $type) => $type->toPhpDocNode(), $this->types),
+			array_map(static fn (TemplateTypeVariance $variance) => $variance->toPhpDocNodeVariance(), $this->variances),
 		);
 	}
 
@@ -374,6 +407,8 @@ class GenericObjectType extends ObjectType
 			$properties['className'],
 			$properties['types'],
 			$properties['subtractedType'] ?? null,
+			null,
+			$properties['variances'] ?? [],
 		);
 	}
 

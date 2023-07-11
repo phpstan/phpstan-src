@@ -17,9 +17,10 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ThisType;
+use PHPStan\Type\TypeUtils;
 use function count;
 use function in_array;
+use function strtolower;
 
 class ClassStatementsGatherer
 {
@@ -49,6 +50,9 @@ class ClassStatementsGatherer
 
 	/** @var ClassConstantFetch[] */
 	private array $constantFetches = [];
+
+	/** @var array<string, MethodReturnStatementsNode> */
+	private array $returnStatementNodes = [];
 
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
@@ -109,6 +113,14 @@ class ClassStatementsGatherer
 		return $this->constantFetches;
 	}
 
+	/**
+	 * @return array<string, MethodReturnStatementsNode>
+	 */
+	public function getReturnStatementsNodes(): array
+	{
+		return $this->returnStatementNodes;
+	}
+
 	public function __invoke(Node $node, Scope $scope): void
 	{
 		$nodeCallback = $this->nodeCallback;
@@ -130,6 +142,7 @@ class ClassStatementsGatherer
 				$this->propertyUsages[] = new PropertyWrite(
 					new PropertyFetch(new Expr\Variable('this'), new Identifier($node->getName())),
 					$scope,
+					true,
 				);
 			}
 			return;
@@ -150,6 +163,10 @@ class ClassStatementsGatherer
 			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node->getOriginalNode(), $scope);
 			return;
 		}
+		if ($node instanceof MethodReturnStatementsNode) {
+			$this->returnStatementNodes[strtolower($node->getMethodName())] = $node;
+			return;
+		}
 		if (
 			$node instanceof Expr\FuncCall
 			&& $node->name instanceof Node\Name
@@ -167,7 +184,7 @@ class ClassStatementsGatherer
 			return;
 		}
 		if ($node instanceof PropertyAssignNode) {
-			$this->propertyUsages[] = new PropertyWrite($node->getPropertyFetch(), $scope);
+			$this->propertyUsages[] = new PropertyWrite($node->getPropertyFetch(), $scope, false);
 			return;
 		}
 		if (!$node instanceof Expr) {
@@ -184,7 +201,7 @@ class ClassStatementsGatherer
 			}
 
 			$this->propertyUsages[] = new PropertyRead($node->expr, $scope);
-			$this->propertyUsages[] = new PropertyWrite($node->expr, $scope);
+			$this->propertyUsages[] = new PropertyWrite($node->expr, $scope, false);
 			return;
 		}
 		if ($node instanceof Node\Scalar\EncapsedStringPart) {
@@ -219,7 +236,7 @@ class ClassStatementsGatherer
 		}
 
 		$firstArgValue = $args[0]->value;
-		if (!$scope->getType($firstArgValue) instanceof ThisType) {
+		if (TypeUtils::findThisType($scope->getType($firstArgValue)) === null) {
 			return;
 		}
 

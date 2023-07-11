@@ -107,6 +107,17 @@ return [
 		'ImagickKernel::scale' => ['void', 'scale'=>'float', 'normalizeFlag'=>'Imagick::NORMALIZE_KERNEL_*'],
 		'max' => ['', '...arg1'=>'non-empty-array'],
 		'min' => ['', '...arg1'=>'non-empty-array'],
+		'file' => ['list<string>|false', 'filename'=>'string', 'flags='=>'int-mask<FILE_USE_INCLUDE_PATH|FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES|FILE_NO_DEFAULT_CONTEXT>', 'context='=>'resource'],
+		'flock' => ['bool', 'fp'=>'resource', 'operation'=>'int-mask<LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB>', '&w_wouldblock='=>'int'],
+		'ftp_append' => ['bool', 'ftp'=>'resource', 'remote_file'=>'string', 'local_file'=>'string', 'mode='=>'FTP_ASCII|FTP_BINARY'],
+		'ftp_fget' => ['bool', 'stream'=>'resource', 'fp'=>'resource', 'remote_file'=>'string', 'mode='=>'FTP_ASCII|FTP_BINARY', 'resumepos='=>'int'],
+		'ftp_fput' => ['bool', 'stream'=>'resource', 'remote_file'=>'string', 'fp'=>'resource', 'mode='=>'FTP_ASCII|FTP_BINARY', 'startpos='=>'int'],
+		'ftp_get' => ['bool', 'stream'=>'resource', 'local_file'=>'string', 'remote_file'=>'string', 'mode='=>'FTP_ASCII|FTP_BINARY', 'resume_pos='=>'int'],
+		'ftp_nb_fget' => ['int', 'stream'=>'resource', 'fp'=>'resource', 'remote_file'=>'string', 'mode'=>'FTP_ASCII|FTP_BINARY', 'resumepos='=>'int'],
+		'ftp_nb_fput' => ['int', 'stream'=>'resource', 'remote_file'=>'string', 'fp'=>'resource', 'mode'=>'FTP_ASCII|FTP_BINARY', 'startpos='=>'int'],
+		'ftp_nb_get' => ['int', 'stream'=>'resource', 'local_file'=>'string', 'remote_file'=>'string', 'mode'=>'FTP_ASCII|FTP_BINARY', 'resume_pos='=>'int'],
+		'ftp_nb_put' => ['int|false', 'stream'=>'resource', 'remote_file'=>'string', 'local_file'=>'string', 'mode'=>'FTP_ASCII|FTP_BINARY', 'startpos='=>'int'],
+		'ftp_put' => ['bool', 'stream'=>'resource', 'remote_file'=>'string', 'local_file'=>'string', 'mode'=>'FTP_ASCII|FTP_BINARY', 'startpos='=>'int'],
 	],
 	'old' => [
 

@@ -124,6 +124,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return new GenericObjectType(
 			$reflection->getName(),
 			$reflection->typeMapToList($reflection->getActiveTemplateTypeMap()),
+			null,
+			null,
+			$reflection->varianceMapToList($reflection->getCallSiteVarianceMap()),
 		);
 	}
 
@@ -421,11 +424,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->subtractedType === null) {
-			if ($type->subtractedType === null) {
-				return true;
-			}
-
-			return false;
+			return $type->subtractedType === null;
 		}
 
 		if ($type->subtractedType === null) {
@@ -866,7 +865,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$extraOffsetAccessible = $this->isExtraOffsetAccessibleClass()->yes();
-		if ($this->isInstanceOf(Traversable::class)->yes() && !$extraOffsetAccessible) {
+		if (!$extraOffsetAccessible && $this->isInstanceOf(Traversable::class)->yes()) {
 			$isTraversable = true;
 			$tKey = $this->getTemplateType(Traversable::class, 'TKey');
 			if (!$tKey instanceof ErrorType) {
@@ -917,7 +916,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$extraOffsetAccessible = $this->isExtraOffsetAccessibleClass()->yes();
-		if ($this->isInstanceOf(Traversable::class)->yes() && !$extraOffsetAccessible) {
+		if (!$extraOffsetAccessible && $this->isInstanceOf(Traversable::class)->yes()) {
 			$isTraversable = true;
 			$tValue = $this->getTemplateType(Traversable::class, 'TValue');
 			if (!$tValue instanceof ErrorType) {
@@ -1296,7 +1295,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return TrinaryLogic::createMaybe();
 		}
 
-		if ($classReflection->isSubclassOf($className) || $classReflection->getName() === $className) {
+		if ($classReflection->getName() === $className || $classReflection->isSubclassOf($className)) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -1567,6 +1566,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		return null;
+	}
+
+	public function getFiniteTypes(): array
+	{
+		return $this->getEnumCases();
 	}
 
 	public function exponentiate(Type $exponent): Type

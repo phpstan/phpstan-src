@@ -20,7 +20,10 @@ class VarianceCheck
 	{
 	}
 
-	/** @return list<IdentifierRuleError> */
+	/**
+	 * @param 'function'|'method' $identifier
+	 * @return list<IdentifierRuleError>
+	 */
 	public function checkParametersAcceptor(
 		ParametersAcceptorWithPhpDocs $parametersAcceptor,
 		string $parameterTypeMessage,

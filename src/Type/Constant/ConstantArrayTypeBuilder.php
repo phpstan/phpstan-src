@@ -18,6 +18,7 @@ use function count;
 use function in_array;
 use function is_float;
 use function max;
+use function min;
 use function range;
 
 /** @api */
@@ -158,8 +159,9 @@ class ConstantArrayTypeBuilder
 				$this->valueTypes[] = $valueType;
 
 				if ($offsetType instanceof ConstantIntegerType) {
+					$min = min($this->nextAutoIndexes);
 					$max = max($this->nextAutoIndexes);
-					if ($offsetType->getValue() !== $max) {
+					if ($offsetType->getValue() > $min) {
 						$this->isList = false;
 					}
 					if ($offsetType->getValue() >= $max) {

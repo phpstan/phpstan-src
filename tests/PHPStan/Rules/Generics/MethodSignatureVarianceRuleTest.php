@@ -219,4 +219,19 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9161(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9161.php'], []);
+	}
+
+	public function testPr2465(): void
+	{
+		$this->analyse([__DIR__ . '/data/pr-2465.php'], [
+			[
+				'Template type T is declared as covariant, but occurs in invariant position in parameter thing of method Pr2465\UnitOfTest::foo().',
+				16,
+			],
+		]);
+	}
+
 }

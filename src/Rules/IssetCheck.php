@@ -13,6 +13,9 @@ use PHPStan\Type\VerbosityLevel;
 use function is_string;
 use function sprintf;
 
+/**
+ * @phpstan-type ErrorIdentifier = 'empty'|'isset'|'nullCoalesce'
+ */
 class IssetCheck
 {
 
@@ -27,6 +30,7 @@ class IssetCheck
 	}
 
 	/**
+	 * @param ErrorIdentifier $identifier
 	 * @param callable(Type): ?string $typeMessageCallback
 	 */
 	public function check(Expr $expr, Scope $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback, ?IdentifierRuleError $error = null): ?IdentifierRuleError
@@ -48,7 +52,8 @@ class IssetCheck
 						$this->treatPhpDocTypesAsCertain ? $scope->getType($expr) : $scope->getNativeType($expr),
 						sprintf('Variable $%s %s always exists and', $expr->name, $operatorDescription),
 						$typeMessageCallback,
-						sprintf('%s.variable', $identifier),
+						$identifier,
+						'variable',
 					);
 				}
 
@@ -97,7 +102,7 @@ class IssetCheck
 					$dimType->describe(VerbosityLevel::value()),
 					$type->describe(VerbosityLevel::value()),
 					$operatorDescription,
-				), $typeMessageCallback, sprintf('%s.offset', $identifier));
+				), $typeMessageCallback, $identifier, 'offset');
 
 				if ($error !== null) {
 					return $this->check($expr->var, $scope, $operatorDescription, $identifier, $typeMessageCallback, $error);
@@ -171,7 +176,8 @@ class IssetCheck
 				$propertyReflection->getWritableType(),
 				sprintf('%s (%s) %s', $propertyDescription, $propertyType->describe(VerbosityLevel::typeOnly()), $operatorDescription),
 				$typeMessageCallback,
-				sprintf('%s.property', $identifier),
+				$identifier,
+				'property',
 			);
 
 			if ($error !== null) {
@@ -199,7 +205,8 @@ class IssetCheck
 			$this->treatPhpDocTypesAsCertain ? $scope->getType($expr) : $scope->getNativeType($expr),
 			sprintf('Expression %s', $operatorDescription),
 			$typeMessageCallback,
-			sprintf('%s.expr', $identifier),
+			$identifier,
+			'expr',
 		);
 		if ($error !== null) {
 			return $error;
@@ -224,6 +231,9 @@ class IssetCheck
 		return null;
 	}
 
+	/**
+	 * @param ErrorIdentifier $identifier
+	 */
 	private function checkUndefined(Expr $expr, Scope $scope, string $operatorDescription, string $identifier): ?IdentifierRuleError
 	{
 		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
@@ -272,8 +282,10 @@ class IssetCheck
 
 	/**
 	 * @param callable(Type): ?string $typeMessageCallback
+	 * @param ErrorIdentifier $identifier
+	 * @param 'variable'|'offset'|'property'|'expr' $identifierSecondPart
 	 */
-	private function generateError(Type $type, string $message, callable $typeMessageCallback, string $identifier): ?IdentifierRuleError
+	private function generateError(Type $type, string $message, callable $typeMessageCallback, string $identifier, string $identifierSecondPart): ?IdentifierRuleError
 	{
 		$typeMessage = $typeMessageCallback($type);
 		if ($typeMessage === null) {
@@ -282,7 +294,7 @@ class IssetCheck
 
 		return RuleErrorBuilder::message(
 			sprintf('%s %s.', $message, $typeMessage),
-		)->identifier($identifier)->build();
+		)->identifier(sprintf('%s.%s', $identifier, $identifierSecondPart))->build();
 	}
 
 }

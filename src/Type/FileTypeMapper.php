@@ -398,15 +398,21 @@ class FileTypeMapper
 							continue;
 						}
 
-						if ($traitUseAdaptation->trait === null) {
-							continue;
-						}
-
 						if ($traitUseAdaptation->newName === null) {
 							continue;
 						}
 
-						$traitMethodAliases[$traitUseAdaptation->trait->toString()][$traitUseAdaptation->method->toString()] = $traitUseAdaptation->newName->toString();
+						$methodName = $traitUseAdaptation->method->toString();
+						$newTraitName = $traitUseAdaptation->newName->toString();
+
+						if ($traitUseAdaptation->trait === null) {
+							foreach ($node->traits as $traitName) {
+								$traitMethodAliases[$traitName->toString()][$methodName] = $newTraitName;
+							}
+							continue;
+						}
+
+						$traitMethodAliases[$traitUseAdaptation->trait->toString()][$methodName] = $newTraitName;
 					}
 
 					$useDocComment = null;

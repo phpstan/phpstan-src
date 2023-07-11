@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -613,6 +614,25 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		}
 
 		return parent::exponentiate($exponent);
+	}
+
+	public function getFiniteTypes(): array
+	{
+		if ($this->min === null || $this->max === null) {
+			return [];
+		}
+
+		$size = $this->max - $this->min;
+		if ($size > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
+			return [];
+		}
+
+		$types = [];
+		for ($i = $this->min; $i <= $this->max; $i++) {
+			$types[] = new ConstantIntegerType($i);
+		}
+
+		return $types;
 	}
 
 	public function toPhpDocNode(): TypeNode

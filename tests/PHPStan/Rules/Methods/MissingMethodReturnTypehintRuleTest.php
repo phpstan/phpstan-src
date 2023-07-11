@@ -83,4 +83,19 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5436.php'], []);
 	}
 
+	public function testBug4758(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4758.php'], []);
+	}
+
+	public function testBug9571(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9571.php'], []);
+	}
+
+	public function testBug9571PhpDocs(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9571-phpdocs.php'], []);
+	}
+
 }

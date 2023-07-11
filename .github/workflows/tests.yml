@@ -40,6 +40,7 @@ jobs:
           - "8.0"
           - "8.1"
           - "8.2"
+          - "8.3"
         operating-system: [ ubuntu-latest, windows-latest ]
 
     steps:
@@ -60,7 +61,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Install PHP for code transform"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
@@ -69,11 +70,11 @@ jobs:
 
       - name: "Rector downgrade cache key"
         id: rector-cache-key
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
         run: echo "sha=$(php build/rector-cache-files-hash.php)" >> $GITHUB_OUTPUT
 
       - name: "Rector downgrade cache"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
         uses: actions/cache@v3
         with:
           path: ./tmp/rectorCache.php
@@ -82,12 +83,12 @@ jobs:
             rector-v3-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
 
       - name: "Transform source code"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
         shell: bash
         run: "build/transform-source ${{ matrix.php-version }}"
 
       - name: "Reinstall matrix PHP version"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
@@ -193,7 +194,7 @@ jobs:
 
       - name: "Rector downgrade cache key"
         id: rector-cache-key
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
         run: echo "sha=$(php build/rector-cache-files-hash.php)" >> $GITHUB_OUTPUT
 
       - name: "Rector downgrade cache"

@@ -34,6 +34,8 @@ class CachingVisitor extends NodeVisitorAbstract
 	{
 		if ($node instanceof Namespace_) {
 			$this->currentNamespaceNode = $node;
+
+			return null;
 		}
 
 		if ($node instanceof Node\Stmt\ClassLike) {

@@ -7,11 +7,12 @@ use function array_pop;
 use function explode;
 use function implode;
 use function ltrim;
+use function preg_match;
 use function rtrim;
 use function str_replace;
-use function str_starts_with;
 use function strlen;
 use function strpos;
+use function strtolower;
 use function substr;
 use function trim;
 use const DIRECTORY_SEPARATOR;
@@ -43,7 +44,7 @@ class FileHelper
 				return $path;
 			}
 		}
-		if (str_starts_with($path, 'phar://')) {
+		if (preg_match('~^[a-z0-9+\-.]+://~i', $path) === 1) {
 			return $path;
 		}
 
@@ -64,11 +65,12 @@ class FileHelper
 
 		$matches = null;
 		if (!$isLocalPath) {
-			$matches = Strings::match($originalPath, '~^([a-z]+)\\:\\/\\/(.+)~');
+			$matches = Strings::match($originalPath, '~^([a-z0-9+\-.]+)://(.+)$~is');
 		}
 
 		if ($matches !== null) {
 			[, $scheme, $path] = $matches;
+			$scheme = strtolower($scheme);
 		} else {
 			$scheme = null;
 			$path = $originalPath;

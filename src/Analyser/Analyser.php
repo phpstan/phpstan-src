@@ -88,9 +88,9 @@ class Analyser
 					'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
 					"\n",
 					"\n",
-					'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md',
+					'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml',
 				);
-				$errors[] = new Error($internalErrorMessage, $file, null, $t);
+				$errors[] = (new Error($internalErrorMessage, $file, null, $t))->withIdentifier('phpstan.internal');
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
 					break;

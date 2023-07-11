@@ -74,7 +74,41 @@ class TypeCombinator
 			}
 		}
 
-		return $fromType->tryRemove($typeToRemove) ?? $fromType;
+		$removed = $fromType->tryRemove($typeToRemove);
+		if ($removed !== null) {
+			return $removed;
+		}
+
+		$fromFiniteTypes = $fromType->getFiniteTypes();
+		if (count($fromFiniteTypes) > 0) {
+			$finiteTypesToRemove = $typeToRemove->getFiniteTypes();
+			if (count($finiteTypesToRemove) === 1) {
+				$result = [];
+				foreach ($fromFiniteTypes as $finiteType) {
+					if ($finiteType->equals($finiteTypesToRemove[0])) {
+						continue;
+					}
+
+					$result[] = $finiteType;
+				}
+
+				if (count($result) === count($fromFiniteTypes)) {
+					return $fromType;
+				}
+
+				if (count($result) === 0) {
+					return new NeverType();
+				}
+
+				if (count($result) === 1) {
+					return $result[0];
+				}
+
+				return new UnionType($result);
+			}
+		}
+
+		return $fromType;
 	}
 
 	public static function removeNull(Type $type): Type

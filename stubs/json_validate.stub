@@ -1,0 +1,10 @@
+<?php
+
+/**
+ * @param positive-int $depth
+ * @param int-mask<JSON_INVALID_UTF8_IGNORE> $flags
+ * @phpstan-assert-if-true =non-empty-string $json
+ */
+function json_validate(string $json, int $depth = 512, int $flags = 0): bool
+{
+}

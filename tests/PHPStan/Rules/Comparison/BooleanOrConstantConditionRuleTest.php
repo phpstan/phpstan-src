@@ -431,4 +431,18 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/boolean-or-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
+	public function testBug6551(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = true;
+		$this->analyse([__DIR__ . '/data/bug-6551.php'], []);
+	}
+
+	public function testBug4004(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = true;
+		$this->analyse([__DIR__ . '/data/bug-4004.php'], []);
+	}
+
 }

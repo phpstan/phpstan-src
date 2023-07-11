@@ -87,6 +87,22 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				'Class UninitializedProperty\FooTraitClass has an uninitialized property $baz. Give it default value or assign it in the constructor.',
 				159,
 			],
+			/*[
+				'Access to an uninitialized property UninitializedProperty\InitializedInPublicSetterNonFinalClass::$foo.',
+				278,
+			],*/
+			[
+				'Class UninitializedProperty\SometimesInitializedInPrivateSetter has an uninitialized property $foo. Give it default value or assign it in the constructor.',
+				286,
+			],
+			[
+				'Access to an uninitialized property UninitializedProperty\SometimesInitializedInPrivateSetter::$foo.',
+				303,
+			],
+			[
+				'Class UninitializedProperty\EarlyReturn has an uninitialized property $foo. Give it default value or assign it in the constructor.',
+				372,
+			],
 		]);
 	}
 
@@ -133,6 +149,11 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				11,
 			],
 		]);
+	}
+
+	public function testEfabricaLatteBug(): void
+	{
+		$this->analyse([__DIR__ . '/data/efabrica-latte-bug.php'], []);
 	}
 
 }

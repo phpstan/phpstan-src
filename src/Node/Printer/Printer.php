@@ -3,10 +3,12 @@
 namespace PHPStan\Node\Printer;
 
 use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Type\VerbosityLevel;
@@ -43,6 +45,16 @@ class Printer extends Standard
 	protected function pPHPStan_Node_SetOffsetValueTypeExpr(SetOffsetValueTypeExpr $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanSetOffsetValueType(%s, %s, %s)', $this->p($expr->getVar()), $expr->getDim() !== null ? $this->p($expr->getDim()) : 'null', $this->p($expr->getValue()));
+	}
+
+	protected function pPHPStan_Node_AlwaysRememberedExpr(AlwaysRememberedExpr $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanRembered(%s)', $this->p($expr->getExpr()));
+	}
+
+	protected function pPHPStan_Node_PropertyInitializationExpr(PropertyInitializationExpr $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanPropertyInitialization(%s)', $expr->getPropertyName());
 	}
 
 }

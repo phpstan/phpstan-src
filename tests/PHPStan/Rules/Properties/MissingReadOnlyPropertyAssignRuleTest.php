@@ -85,6 +85,10 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				53,
 			],
 			[
+				'Class MissingReadOnlyPropertyAssign\AssignOp has an uninitialized readonly property $foo. Assign it in the constructor.',
+				79,
+			],
+			[
 				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssign\AssignOp::$foo.',
 				85,
 			],
@@ -107,6 +111,22 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			[
 				'Readonly property MissingReadOnlyPropertyAssign\FooTraitClass::$doubleAssigned is already assigned.',
 				149,
+			],
+			[
+				'Readonly property MissingReadOnlyPropertyAssign\AdditionalAssignOfReadonlyPromotedProperty::$x is already assigned.',
+				188,
+			],
+			[
+				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssign\MethodCalledFromConstructorBeforeAssign::$foo.',
+				226,
+			],
+			[
+				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssign\MethodCalledTwice::$foo.',
+				244,
+			],
+			[
+				'Class MissingReadOnlyPropertyAssign\PropertyAssignedOnDifferentObjectUninitialized has an uninitialized readonly property $foo. Assign it in the constructor.',
+				264,
 			],
 		]);
 	}
@@ -154,6 +174,57 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-8563.php'], []);
+	}
+
+	public function testBug6402(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6402.php'], [
+			[
+				'Access to an uninitialized readonly property Bug6402\SomeModel2::$views.',
+				28,
+			],
+		]);
+	}
+
+	public function testBug7198(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7198.php'], []);
+	}
+
+	public function testBug7649(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7649.php'], [
+			[
+				'Class Bug7649\Foo has an uninitialized readonly property $bar. Assign it in the constructor.',
+				7,
+			],
+		]);
+	}
+
+	public function testBug9577(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/../Classes/data/bug-9577.php'], [
+			[
+				'Class Bug9577\SpecializedException2 has an uninitialized readonly property $message. Assign it in the constructor.',
+				8,
+			],
+		]);
 	}
 
 }

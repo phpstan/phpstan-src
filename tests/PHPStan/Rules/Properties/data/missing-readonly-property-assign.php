@@ -179,3 +179,111 @@ class BarClass
 	use BarTrait;
 
 }
+
+class AdditionalAssignOfReadonlyPromotedProperty
+{
+
+	public function __construct(private readonly int $x)
+	{
+		$this->x = 2;
+	}
+
+}
+
+class MethodCalledFromConstructorAfterAssign
+{
+
+
+	private readonly int $foo;
+
+	public function __construct()
+	{
+		$this->foo = 1;
+		$this->doFoo();
+	}
+
+	public function doFoo(): void
+	{
+		echo $this->foo;
+	}
+
+}
+
+class MethodCalledFromConstructorBeforeAssign
+{
+
+
+	private readonly int $foo;
+
+	public function __construct()
+	{
+		$this->doFoo();
+		$this->foo = 1;
+	}
+
+	public function doFoo(): void
+	{
+		echo $this->foo;
+	}
+
+}
+
+class MethodCalledTwice
+{
+	private readonly int $foo;
+
+	public function __construct()
+	{
+		$this->doFoo();
+		$this->foo = 1;
+		$this->doFoo();
+	}
+
+	public function doFoo(): void
+	{
+		echo $this->foo;
+	}
+}
+
+class PropertyAssignedOnDifferentObject
+{
+
+	private readonly int $foo;
+
+	public function __construct(self $self)
+	{
+		$self->foo = 1;
+		$this->foo = 2;
+	}
+
+}
+
+class PropertyAssignedOnDifferentObjectUninitialized
+{
+
+	private readonly int $foo;
+
+	public function __construct(self $self)
+	{
+		$self->foo = 1;
+	}
+
+}
+
+class AccessToPropertyOnDifferentObject
+{
+
+	private readonly int $foo;
+
+	public function __construct(self $self)
+	{
+		echo $self->getFoo();
+		$this->foo = 1;
+	}
+
+	public function getFoo(): int
+	{
+		return $this->foo;
+	}
+
+}

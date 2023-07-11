@@ -14,7 +14,7 @@ class Foo
 			assertType('Bug4504TypeInference\A', $v);
 		}
 
-		assertType('array{}|Iterator<mixed, Bug4504TypeInference\A>', $models);
+		assertType('Iterator<mixed, Bug4504TypeInference\A>', $models);
 	}
 
 }

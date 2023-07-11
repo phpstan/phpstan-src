@@ -40,6 +40,35 @@ class CallMethodsRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testIsCallablePhp7(): void
+	{
+		if (PHP_VERSION_ID >= 80000) {
+			$this->markTestSkipped('Test requires PHP 7.0');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([ __DIR__ . '/data/call-methods-is-callable.php'], []);
+	}
+
+	public function testIsCallablePhp8(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([ __DIR__ . '/data/call-methods-is-callable.php'], [
+			[
+				'Parameter #1 $str of method TestMethodsIsCallable\CheckIsCallable::test() expects callable(): mixed, \'Test…\' given.',
+				10,
+			],
+		]);
+	}
+
 	public function testCallMethods(): void
 	{
 		$this->checkThisOnly = false;
@@ -2209,7 +2238,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				60,
 			],
 			[
-				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, array<string, mixed> given.',
+				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, array given.',
 				65,
 			],
 			[
@@ -2880,6 +2909,15 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-8888.php'], []);
+	}
+
+	public function testBug9542(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-9542.php'], []);
 	}
 
 	public function testTrickyCallables(): void

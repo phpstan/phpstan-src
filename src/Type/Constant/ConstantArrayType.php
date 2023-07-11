@@ -3,6 +3,9 @@
 namespace PHPStan\Type\Constant;
 
 use Nette\Utils\Strings;
+use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
+use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
@@ -13,7 +16,9 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -552,10 +557,22 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		$typeAndMethods = [];
+		$phpVersion = PhpVersionStaticAccessor::getInstance();
 		foreach ($methods->getConstantStrings() as $method) {
 			$has = $type->hasMethod($method->getValue());
 			if ($has->no()) {
 				continue;
+			}
+
+			if (
+				BleedingEdgeToggle::isBleedingEdge()
+				&& $has->yes()
+				&& !$phpVersion->supportsCallableInstanceMethods()
+			) {
+				$methodReflection = $type->getMethod($method->getValue(), new OutOfClassScope());
+				if ($classOrObject->isString()->yes() && !$methodReflection->isStatic()) {
+					continue;
+				}
 			}
 
 			if ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
@@ -1368,7 +1385,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
-		$variance = $positionVariance->compose(TemplateTypeVariance::createInvariant());
+		$variance = $positionVariance->compose(TemplateTypeVariance::createCovariant());
 		$references = [];
 
 		foreach ($this->keyTypes as $type) {
@@ -1604,6 +1621,44 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$result = Strings::match($value, '~^(?:[\\\\]?+[a-z_\\x80-\\xFF][0-9a-z_\\x80-\\xFF-]*+)++$~si');
 
 		return $result !== null;
+	}
+
+	public function getFiniteTypes(): array
+	{
+		$arraysArraysForCombinations = [];
+		$count = 0;
+		foreach ($this->getAllArrays() as $array) {
+			$values = $array->getValueTypes();
+			$arraysForCombinations = [];
+			$combinationCount = 1;
+			foreach ($values as $valueType) {
+				if ($valueType->getFiniteTypes() === []) {
+					return [];
+				}
+				$arraysForCombinations[] = $valueType->getFiniteTypes();
+				$combinationCount *= count($valueType->getFiniteTypes());
+			}
+			$arraysArraysForCombinations[] = $arraysForCombinations;
+			$count += $combinationCount;
+		}
+
+		if ($count > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
+			return [];
+		}
+
+		$finiteTypes = [];
+		foreach ($arraysArraysForCombinations as $arraysForCombinations) {
+			$combinations = CombinationsHelper::combinations($arraysForCombinations);
+			foreach ($combinations as $combination) {
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				foreach ($combination as $i => $v) {
+					$builder->setOffsetValueType($this->keyTypes[$i], $v);
+				}
+				$finiteTypes[] = $builder->getArray();
+			}
+		}
+
+		return $finiteTypes;
 	}
 
 	/**

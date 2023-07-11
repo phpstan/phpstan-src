@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Arrays;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<InvalidKeyInArrayDimFetchRule>
@@ -36,6 +37,60 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Invalid array key type DateTimeImmutable.',
 				31,
+			],
+			[
+				'Invalid array key type DateTimeImmutable.',
+				45,
+			],
+			[
+				'Invalid array key type DateTimeImmutable.',
+				46,
+			],
+			[
+				'Invalid array key type DateTimeImmutable.',
+				47,
+			],
+			[
+				'Invalid array key type stdClass.',
+				47,
+			],
+			[
+				'Invalid array key type DateTimeImmutable.',
+				48,
+			],
+		]);
+	}
+
+	public function testBug6315(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6315.php'], [
+			[
+				'Invalid array key type Bug6315\FooEnum::A.',
+				18,
+			],
+			[
+				'Invalid array key type Bug6315\FooEnum::A.',
+				19,
+			],
+			[
+				'Invalid array key type Bug6315\FooEnum::A.',
+				20,
+			],
+			[
+				'Invalid array key type Bug6315\FooEnum::B.',
+				21,
+			],
+			[
+				'Invalid array key type Bug6315\FooEnum::A.',
+				21,
+			],
+			[
+				'Invalid array key type Bug6315\FooEnum::A.',
+				22,
 			],
 		]);
 	}

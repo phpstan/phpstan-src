@@ -711,4 +711,22 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6605(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6605.php'], [
+			[
+				"Cannot access offset 'invalidoffset' on Bug6605\\X.",
+				11,
+			],
+			[
+				"Offset 'invalid' does not exist on array{a: array{b: array{5}}}.",
+				16,
+			],
+			[
+				"Offset 'invalid' does not exist on array{b: array{5}}.",
+				17,
+			],
+		]);
+	}
+
 }

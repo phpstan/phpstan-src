@@ -7,7 +7,7 @@ parameters:
 
 		-
 			message: "#^Call to method getStartLine\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 2
+			count: 3
 			path: ../src/Analyser/NodeScopeResolver.php
 
 		-
@@ -304,6 +304,11 @@ parameters:
 			message: "#^Call to method getShortName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Rules/Cast/InvalidCastRule.php
+
+		-
+			message: "#^Call to method getTraitAliases\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Methods/IllegalConstructorStaticCallRule.php
 
 		-
 			message: "#^Call to method getMethods\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"

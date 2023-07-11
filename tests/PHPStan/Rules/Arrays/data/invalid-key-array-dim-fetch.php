@@ -39,3 +39,10 @@ foreach ($array as $i => $val) {
 /** @var mixed $mixed */
 $mixed = null;
 $a[$mixed];
+
+/** @var array<int, array<int, int>> $array */
+$array = doFoo();
+$array[new \DateTimeImmutable()][5];
+$array[5][new \DateTimeImmutable()];
+$array[new \stdClass()][new \DateTimeImmutable()];
+$array[new \DateTimeImmutable()][] = 5;

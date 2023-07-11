@@ -32,6 +32,11 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 3
+			path: src/Analyser/MutatingScope.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 4
 			path: src/Analyser/MutatingScope.php
@@ -81,7 +86,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
-			count: 5
+			count: 3
 			path: src/Analyser/TypeSpecifier.php
 
 		-
@@ -274,16 +279,6 @@ parameters:
 
 		-
 			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\NodeCompiler\\\\Exception\\\\UnableToCompileNode is never thrown in the try block\\.$#"
-			count: 1
-			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
-
-		-
-			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAClassReflection is never thrown in the try block\\.$#"
-			count: 1
-			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
-
-		-
-			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAnInterfaceReflection is never thrown in the try block\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
@@ -878,7 +873,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
-			count: 2
+			count: 4
 			path: src/Type/Constant/ConstantBooleanType.php
 
 		-
@@ -1513,11 +1508,6 @@ parameters:
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
-			count: 1
-			path: src/Type/Php/SprintfFunctionDynamicReturnTypeExtension.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/SscanfFunctionDynamicReturnTypeExtension.php
@@ -1533,22 +1523,12 @@ parameters:
 			path: src/Type/Php/StrlenFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
-			count: 1
-			path: src/Type/Php/TriggerErrorDynamicReturnTypeExtension.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/StaticType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
-			count: 1
-			path: src/Type/StaticType.php
-
-		-
-			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Type is always PHPStan\\\\Type\\\\StaticType but it's error\\-prone and dangerous\\.$#"
 			count: 1
 			path: src/Type/StaticType.php
 

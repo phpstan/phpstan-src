@@ -406,7 +406,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function toArray(): Type
 	{
-		return new MixedType();
+		return $this;
 	}
 
 	public function toArrayKey(): Type
@@ -427,6 +427,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();
+	}
+
+	public function getFiniteTypes(): array
+	{
+		return [];
 	}
 
 	public static function __set_state(array $properties): Type

@@ -68,7 +68,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			]);
 		}
 
-		if ($callbackArg === null || ($callbackArg instanceof ConstFetch && strtolower($callbackArg->name->parts[0]) === 'null')) {
+		if ($callbackArg === null || ($callbackArg instanceof ConstFetch && strtolower($callbackArg->name->getParts()[0]) === 'null')) {
 			return TypeCombinator::union(
 				...array_map([$this, 'removeFalsey'], $arrayArgType->getArrays()),
 			);
@@ -89,7 +89,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			}
 		}
 
-		if ($flagArg instanceof ConstFetch && $flagArg->name->parts[0] === 'ARRAY_FILTER_USE_KEY') {
+		if ($flagArg instanceof ConstFetch && $flagArg->name->getParts()[0] === 'ARRAY_FILTER_USE_KEY') {
 			if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
 				$statement = $callbackArg->stmts[0];
 				if ($statement instanceof Return_ && $statement->expr !== null) {
@@ -104,7 +104,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			}
 		}
 
-		if ($flagArg instanceof ConstFetch && $flagArg->name->parts[0] === 'ARRAY_FILTER_USE_BOTH') {
+		if ($flagArg instanceof ConstFetch && $flagArg->name->getParts()[0] === 'ARRAY_FILTER_USE_BOTH') {
 			if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
 				$statement = $callbackArg->stmts[0];
 				if ($statement instanceof Return_ && $statement->expr !== null) {

@@ -10,6 +10,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
@@ -40,6 +41,7 @@ use function count;
 use function implode;
 use function in_array;
 use function ksort;
+use function md5;
 use function sprintf;
 use function strlen;
 use function substr;
@@ -719,7 +721,7 @@ class IntersectionType implements CompoundType
 		foreach ($this->types as $type) {
 			$oneType = [];
 			foreach ($type->getEnumCases() as $enumCase) {
-				$oneType[$enumCase->describe(VerbosityLevel::typeOnly())] = $enumCase;
+				$oneType[md5($enumCase->describe(VerbosityLevel::typeOnly()))] = $enumCase;
 			}
 			$compare[] = $oneType;
 		}
@@ -993,6 +995,26 @@ class IntersectionType implements CompoundType
 	public function exponentiate(Type $exponent): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->exponentiate($exponent));
+	}
+
+	public function getFiniteTypes(): array
+	{
+		$compare = [];
+		foreach ($this->types as $type) {
+			$oneType = [];
+			foreach ($type->getFiniteTypes() as $finiteType) {
+				$oneType[md5($finiteType->describe(VerbosityLevel::typeOnly()))] = $finiteType;
+			}
+			$compare[] = $oneType;
+		}
+
+		$result = array_values(array_intersect_key(...$compare));
+
+		if (count($result) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
+			return [];
+		}
+
+		return $result;
 	}
 
 	/**

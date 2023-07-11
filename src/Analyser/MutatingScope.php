@@ -29,10 +29,12 @@ use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
 use PHPStan\Node\ExecutionEndNode;
+use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -71,6 +73,7 @@ use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -507,7 +510,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($this->isGlobalVariable($variableName)) {
-			return new ArrayType(new StringType(), new MixedType($this->explicitMixedForGlobalVariables));
+			return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType($this->explicitMixedForGlobalVariables));
 		}
 
 		if ($this->hasVariableType($variableName)->no()) {
@@ -616,10 +619,10 @@ class MutatingScope implements Scope
 	public function getType(Expr $node): Type
 	{
 		if ($node instanceof GetIterableKeyTypeExpr) {
-			return $this->getType($node->getExpr())->getIterableKeyType();
+			return $this->getIterableKeyType($this->getType($node->getExpr()));
 		}
 		if ($node instanceof GetIterableValueTypeExpr) {
-			return $this->getType($node->getExpr())->getIterableValueType();
+			return $this->getIterableValueType($this->getType($node->getExpr()));
 		}
 		if ($node instanceof GetOffsetValueTypeExpr) {
 			return $this->getType($node->getVar())->getOffsetValueType($this->getType($node->getDim()));
@@ -674,6 +677,10 @@ class MutatingScope implements Scope
 
 		if (!$node instanceof Variable && $this->hasExpressionType($node)->yes()) {
 			return $this->expressionTypes[$exprString]->getType();
+		}
+
+		if ($node instanceof AlwaysRememberedExpr) {
+			return $node->getExprType();
 		}
 
 		if ($node instanceof Expr\BinaryOp\Smaller) {
@@ -754,18 +761,17 @@ class MutatingScope implements Scope
 			$node instanceof Node\Expr\BinaryOp\BooleanAnd
 			|| $node instanceof Node\Expr\BinaryOp\LogicalAnd
 		) {
+			$noopCallback = static function (): void {
+			};
+			$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
 			$leftBooleanType = $this->getType($node->left)->toBoolean();
-			if (
-				$leftBooleanType->isFalse()->yes()
-			) {
+			if ($leftBooleanType->isFalse()->yes()) {
 				return new ConstantBooleanType(false);
 			}
 
-			$rightBooleanType = $this->filterByTruthyValue($node->left)->getType($node->right)->toBoolean();
+			$rightBooleanType = $leftResult->getTruthyScope()->getType($node->right)->toBoolean();
 
-			if (
-				$rightBooleanType->isFalse()->yes()
-			) {
+			if ($rightBooleanType->isFalse()->yes()) {
 				return new ConstantBooleanType(false);
 			}
 
@@ -783,18 +789,17 @@ class MutatingScope implements Scope
 			$node instanceof Node\Expr\BinaryOp\BooleanOr
 			|| $node instanceof Node\Expr\BinaryOp\LogicalOr
 		) {
+			$noopCallback = static function (): void {
+			};
+			$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
 			$leftBooleanType = $this->getType($node->left)->toBoolean();
-			if (
-				$leftBooleanType->isTrue()->yes()
-			) {
+			if ($leftBooleanType->isTrue()->yes()) {
 				return new ConstantBooleanType(true);
 			}
 
-			$rightBooleanType = $this->filterByFalseyValue($node->left)->getType($node->right)->toBoolean();
+			$rightBooleanType = $leftResult->getFalseyScope()->getType($node->right)->toBoolean();
 
-			if (
-				$rightBooleanType->isTrue()->yes()
-			) {
+			if ($rightBooleanType->isTrue()->yes()) {
 				return new ConstantBooleanType(true);
 			}
 
@@ -1195,8 +1200,8 @@ class MutatingScope implements Scope
 						}
 					} else {
 						$yieldFromType = $arrowScope->getType($yieldNode->expr);
-						$keyType = $yieldFromType->getIterableKeyType();
-						$valueType = $yieldFromType->getIterableValueType();
+						$keyType = $arrowScope->getIterableKeyType($yieldFromType);
+						$valueType = $arrowScope->getIterableValueType($yieldFromType);
 					}
 
 					$returnType = new GenericObjectType(Generator::class, [
@@ -1299,8 +1304,8 @@ class MutatingScope implements Scope
 						}
 
 						$yieldFromType = $yieldScope->getType($yieldNode->expr);
-						$keyTypes[] = $yieldFromType->getIterableKeyType();
-						$valueTypes[] = $yieldFromType->getIterableValueType();
+						$keyTypes[] = $yieldScope->getIterableKeyType($yieldFromType);
+						$valueTypes[] = $yieldScope->getIterableValueType($yieldFromType);
 					}
 
 					$returnType = new GenericObjectType(Generator::class, [
@@ -1607,35 +1612,38 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\Ternary) {
+			$noopCallback = static function (): void {
+			};
+			$condResult = $this->nodeScopeResolver->processExprNode($node->cond, $this, $noopCallback, ExpressionContext::createDeep());
 			if ($node->if === null) {
 				$conditionType = $this->getType($node->cond);
 				$booleanConditionType = $conditionType->toBoolean();
 				if ($booleanConditionType->isTrue()->yes()) {
-					return $this->filterByTruthyValue($node->cond)->getType($node->cond);
+					return $condResult->getTruthyScope()->getType($node->cond);
 				}
 
 				if ($booleanConditionType->isFalse()->yes()) {
-					return $this->filterByFalseyValue($node->cond)->getType($node->else);
+					return $condResult->getFalseyScope()->getType($node->else);
 				}
 
 				return TypeCombinator::union(
-					TypeCombinator::removeFalsey($this->filterByTruthyValue($node->cond)->getType($node->cond)),
-					$this->filterByFalseyValue($node->cond)->getType($node->else),
+					TypeCombinator::removeFalsey($condResult->getTruthyScope()->getType($node->cond)),
+					$condResult->getFalseyScope()->getType($node->else),
 				);
 			}
 
 			$booleanConditionType = $this->getType($node->cond)->toBoolean();
 			if ($booleanConditionType->isTrue()->yes()) {
-				return $this->filterByTruthyValue($node->cond)->getType($node->if);
+				return $condResult->getTruthyScope()->getType($node->if);
 			}
 
 			if ($booleanConditionType->isFalse()->yes()) {
-				return $this->filterByFalseyValue($node->cond)->getType($node->else);
+				return $condResult->getFalseyScope()->getType($node->else);
 			}
 
 			return TypeCombinator::union(
-				$this->filterByTruthyValue($node->cond)->getType($node->if),
-				$this->filterByFalseyValue($node->cond)->getType($node->else),
+				$condResult->getTruthyScope()->getType($node->if),
+				$condResult->getFalseyScope()->getType($node->else),
 			);
 		}
 
@@ -1866,6 +1874,15 @@ class MutatingScope implements Scope
 			$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
 			if ($this->nativeTypesPromoted) {
 				return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
+			}
+
+			if ($functionReflection->getName() === 'call_user_func') {
+				$result = ArgumentsNormalizer::reorderCallUserFuncArguments($node, $this);
+				if ($result !== null) {
+					[, $innerFuncCall] = $result;
+
+					return $this->getType($innerFuncCall);
+				}
 			}
 
 			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
@@ -3088,29 +3105,54 @@ class MutatingScope implements Scope
 		return ParserNodeTypeToPHPStanType::resolve($type, $this->isInClass() ? $this->getClassReflection() : null);
 	}
 
-	public function enterForeach(Expr $iteratee, string $valueName, ?string $keyName): self
+	public function enterMatch(Expr\Match_ $expr): self
 	{
-		$iterateeType = $this->getType($iteratee);
-		$nativeIterateeType = $this->getNativeType($iteratee);
-		$scope = $this->assignVariable($valueName, $iterateeType->getIterableValueType(), $nativeIterateeType->getIterableValueType());
+		if ($expr->cond instanceof Variable) {
+			return $this;
+		}
+		if ($expr->cond instanceof AlwaysRememberedExpr) {
+			return $this;
+		}
+
+		$type = $this->getType($expr->cond);
+		$nativeType = $this->getNativeType($expr->cond);
+		$condExpr = new AlwaysRememberedExpr($expr->cond, $type, $nativeType);
+		$expr->cond = $condExpr;
+
+		return $this->assignExpression($condExpr, $type, $nativeType);
+	}
+
+	public function enterForeach(self $originalScope, Expr $iteratee, string $valueName, ?string $keyName): self
+	{
+		$iterateeType = $originalScope->getType($iteratee);
+		$nativeIterateeType = $originalScope->getNativeType($iteratee);
+		$scope = $this->assignVariable(
+			$valueName,
+			$originalScope->getIterableValueType($iterateeType),
+			$originalScope->getIterableValueType($nativeIterateeType),
+		);
 		if ($keyName !== null) {
-			$scope = $scope->enterForeachKey($iteratee, $keyName);
+			$scope = $scope->enterForeachKey($originalScope, $iteratee, $keyName);
 		}
 
 		return $scope;
 	}
 
-	public function enterForeachKey(Expr $iteratee, string $keyName): self
+	public function enterForeachKey(self $originalScope, Expr $iteratee, string $keyName): self
 	{
-		$iterateeType = $this->getType($iteratee);
-		$nativeIterateeType = $this->getNativeType($iteratee);
-		$scope = $this->assignVariable($keyName, $iterateeType->getIterableKeyType(), $nativeIterateeType->getIterableKeyType());
+		$iterateeType = $originalScope->getType($iteratee);
+		$nativeIterateeType = $originalScope->getNativeType($iteratee);
+		$scope = $this->assignVariable(
+			$keyName,
+			$originalScope->getIterableKeyType($iterateeType),
+			$originalScope->getIterableKeyType($nativeIterateeType),
+		);
 
 		if ($iterateeType->isArray()->yes()) {
 			$scope = $scope->assignExpression(
 				new Expr\ArrayDimFetch($iteratee, new Variable($keyName)),
-				$iterateeType->getIterableValueType(),
-				$nativeIterateeType->getIterableValueType(),
+				$originalScope->getIterableValueType($iterateeType),
+				$originalScope->getIterableValueType($nativeIterateeType),
 			);
 		}
 
@@ -3428,6 +3470,31 @@ class MutatingScope implements Scope
 		return $scope->specifyExpressionType($expr, $type, $nativeType);
 	}
 
+	public function assignInitializedProperty(Type $fetchedOnType, string $propertyName): self
+	{
+		if (!$this->isInClass()) {
+			return $this;
+		}
+
+		if (TypeUtils::findThisType($fetchedOnType) === null) {
+			return $this;
+		}
+
+		$propertyReflection = $this->getPropertyReflection($fetchedOnType, $propertyName);
+		if ($propertyReflection === null) {
+			return $this;
+		}
+		$declaringClass = $propertyReflection->getDeclaringClass();
+		if ($this->getClassReflection()->getName() !== $declaringClass->getName()) {
+			return $this;
+		}
+		if (!$declaringClass->hasNativeProperty($propertyName)) {
+			return $this;
+		}
+
+		return $this->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
+	}
+
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self
 	{
 		$expressionTypes = $this->expressionTypes;
@@ -3658,7 +3725,7 @@ class MutatingScope implements Scope
 			}
 			$typeSpecifications[] = [
 				'sure' => true,
-				'exprString' => $exprString,
+				'exprString' => (string) $exprString,
 				'expr' => $expr,
 				'type' => $type,
 			];
@@ -3669,7 +3736,7 @@ class MutatingScope implements Scope
 			}
 			$typeSpecifications[] = [
 				'sure' => false,
-				'exprString' => $exprString,
+				'exprString' => (string) $exprString,
 				'expr' => $expr,
 				'type' => $type,
 			];
@@ -3982,6 +4049,34 @@ class MutatingScope implements Scope
 		}
 
 		return $intersectedVariableTypeHolders;
+	}
+
+	public function mergeInitializedProperties(self $calledMethodScope): self
+	{
+		$scope = $this;
+		foreach ($calledMethodScope->expressionTypes as $exprString => $typeHolder) {
+			$exprString = (string) $exprString;
+			if (!str_starts_with($exprString, '__phpstanPropertyInitialization(')) {
+				continue;
+			}
+			$propertyName = substr($exprString, strlen('__phpstanPropertyInitialization('), -1);
+			$propertyExpr = new PropertyInitializationExpr($propertyName);
+			if (!array_key_exists($exprString, $scope->expressionTypes)) {
+				$scope = $scope->assignExpression($propertyExpr, new MixedType(), new MixedType());
+				$scope->expressionTypes[$exprString] = $typeHolder;
+				continue;
+			}
+
+			$certainty = $scope->expressionTypes[$exprString]->getCertainty();
+			$scope = $scope->assignExpression($propertyExpr, new MixedType(), new MixedType());
+			$scope->expressionTypes[$exprString] = new ExpressionTypeHolder(
+				$typeHolder->getExpr(),
+				$typeHolder->getType(),
+				$typeHolder->getCertainty()->or($certainty),
+			);
+		}
+
+		return $scope;
 	}
 
 	public function processFinallyScope(self $finallyScope, self $originalFinallyScope): self
@@ -4988,6 +5083,46 @@ class MutatingScope implements Scope
 			$constantTypes[$exprString] = $typeHolder;
 		}
 		return $constantTypes;
+	}
+
+	public function getIterableKeyType(Type $iteratee): Type
+	{
+		if ($iteratee instanceof UnionType) {
+			$newTypes = [];
+			foreach ($iteratee->getTypes() as $innerType) {
+				if (!$innerType->isIterable()->yes()) {
+					continue;
+				}
+
+				$newTypes[] = $innerType;
+			}
+			if (count($newTypes) === 0) {
+				return $iteratee->getIterableKeyType();
+			}
+			$iteratee = TypeCombinator::union(...$newTypes);
+		}
+
+		return $iteratee->getIterableKeyType();
+	}
+
+	public function getIterableValueType(Type $iteratee): Type
+	{
+		if ($iteratee instanceof UnionType) {
+			$newTypes = [];
+			foreach ($iteratee->getTypes() as $innerType) {
+				if (!$innerType->isIterable()->yes()) {
+					continue;
+				}
+
+				$newTypes[] = $innerType;
+			}
+			if (count($newTypes) === 0) {
+				return $iteratee->getIterableValueType();
+			}
+			$iteratee = TypeCombinator::union(...$newTypes);
+		}
+
+		return $iteratee->getIterableValueType();
 	}
 
 }

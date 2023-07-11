@@ -70,6 +70,7 @@ parameters:
 		invalidPhpDocTagLine: false
 		detectDeadTypeInMultiCatch: false
 		zeroFiles: false
+		callUserFunc: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -230,7 +231,7 @@ parameters:
 	errorFormat: null
 	pro:
 		dnsServers:
-			- '1.1.1.1'
+			- '1.1.1.2'
 	__validate: true
 
 extensions:
@@ -310,6 +311,7 @@ parametersSchema:
 		invalidPhpDocTagLine: bool()
 		detectDeadTypeInMultiCatch: bool()
 		zeroFiles: bool()
+		callUserFunc: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -358,7 +360,7 @@ parametersSchema:
 		minimumNumberOfJobsPerProcess: int(),
 		buffer: int()
 	])
-	phpVersion: schema(anyOf(schema(int(), min(70100), max(80299))), nullable())
+	phpVersion: schema(anyOf(schema(int(), min(70100), max(80399))), nullable())
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
 	propertyAlwaysWrittenTags: listOf(string())
@@ -626,6 +628,11 @@ services:
 			currentWorkingDirectory: %currentWorkingDirectory%
 		autowired:
 			- PHPStan\PhpDoc\StubFilesProvider
+
+	-
+		class: PHPStan\PhpDoc\JsonValidateStubFilesExtension
+		tags:
+			- phpstan.stubFilesExtension
 
 	-
 		class: PHPStan\Analyser\Analyser
@@ -1322,6 +1329,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\AssertThrowTypeExtension
+		tags:
+			- phpstan.dynamicFunctionThrowTypeExtension
+
+	-
 		class: PHPStan\Type\Php\BackedEnumFromMethodDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
@@ -1357,6 +1369,14 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 		arguments:
 			checkMaybeUndefinedVariables: %checkMaybeUndefinedVariables%
+
+	-
+		class: PHPStan\Type\Php\ConstantFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+	    class: PHPStan\Type\Php\ConstantHelper
 
 	-
 		class: PHPStan\Type\Php\CountFunctionReturnTypeExtension
@@ -1487,6 +1507,11 @@ services:
 
 	-
 		class: PHPStan\Type\Php\GetParentClassDynamicFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\GettypeFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 

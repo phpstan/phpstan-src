@@ -7,6 +7,7 @@ use PHPStan\Internal\ComposerHelper;
 use function array_filter;
 use function array_values;
 use function strpos;
+use function strtr;
 
 class DefaultStubFilesProvider implements StubFilesProvider
 {
@@ -57,9 +58,12 @@ class DefaultStubFilesProvider implements StubFilesProvider
 			return $this->getStubFiles();
 		}
 
+		$vendorDir = ComposerHelper::getVendorDirFromComposerConfig($this->currentWorkingDirectory, $composerConfig);
+		$vendorDir = strtr($vendorDir, '\\', '/');
+
 		return $this->cachedProjectFiles = array_values(array_filter(
 			$this->getStubFiles(),
-			fn (string $file): bool => strpos($file, ComposerHelper::getVendorDirFromComposerConfig($this->currentWorkingDirectory, $composerConfig)) === false
+			static fn (string $file): bool => strpos(strtr($file, '\\', '/'), $vendorDir) === false
 		));
 	}
 

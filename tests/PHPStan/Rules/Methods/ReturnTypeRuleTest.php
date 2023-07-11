@@ -918,4 +918,25 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testLists(): void
+	{
+		$this->analyse([__DIR__ . '/data/return-list.php'], [
+			[
+				"Method ReturnList\Foo::getList1() should return list<string> but returns array{0?: 'foo', 1?: 'bar'}.",
+				10,
+				"array{0?: 'foo', 1?: 'bar'} is not a list.",
+			],
+			[
+				"Method ReturnList\Foo::getList2() should return list<string> but returns array{0?: 'foo', 1?: 'bar'}.",
+				19,
+				"array{0?: 'foo', 1?: 'bar'} is not a list.",
+			],
+		]);
+	}
+
+	public function testBug6856(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6856.php'], []);
+	}
+
 }

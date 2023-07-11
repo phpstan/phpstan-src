@@ -4,11 +4,13 @@ namespace PHPStan\Analyser;
 
 use Exception;
 use JsonSerializable;
+use Nette\Utils\Strings;
 use PhpParser\Node;
 use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use Throwable;
 use function is_bool;
+use function sprintf;
 
 /** @api */
 class Error implements JsonSerializable
@@ -34,6 +36,9 @@ class Error implements JsonSerializable
 		private array $metadata = [],
 	)
 	{
+		if ($this->identifier !== null && !self::validateIdentifier($this->identifier)) {
+			throw new ShouldNotHappenException(sprintf('Invalid identifier: %s', $this->identifier));
+		}
 	}
 
 	public function getMessage(): string
@@ -156,6 +161,27 @@ class Error implements JsonSerializable
 		);
 	}
 
+	public function withIdentifier(string $identifier): self
+	{
+		if ($this->identifier !== null) {
+			throw new ShouldNotHappenException(sprintf('Error already has an identifier: %s', $this->identifier));
+		}
+
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath,
+			$this->traitFilePath,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$identifier,
+			$this->metadata,
+		);
+	}
+
 	public function getNodeLine(): ?int
 	{
 		return $this->nodeLine;
@@ -169,6 +195,11 @@ class Error implements JsonSerializable
 		return $this->nodeType;
 	}
 
+	/**
+	 * Error identifier set via `RuleErrorBuilder::identifier()`.
+	 *
+	 * List of all current error identifiers in PHPStan: https://phpstan.org/error-identifiers
+	 */
 	public function getIdentifier(): ?string
 	{
 		return $this->identifier;
@@ -241,6 +272,11 @@ class Error implements JsonSerializable
 			$properties['identifier'] ?? null,
 			$properties['metadata'] ?? [],
 		);
+	}
+
+	public static function validateIdentifier(string $identifier): bool
+	{
+		return Strings::match($identifier, '~^[a-zA-Z]([a-zA-Z\\.]*[a-zA-Z])?$~') !== null;
 	}
 
 }

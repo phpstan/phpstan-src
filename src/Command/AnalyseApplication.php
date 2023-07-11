@@ -12,8 +12,6 @@ use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
-use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
-use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Internal\BytesHelper;
@@ -92,7 +90,7 @@ class AnalyseApplication
 			if ($resultCache->isFullAnalysis() && count($projectStubFiles) !== 0) {
 				$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);
 				$intermediateAnalyserResult = new AnalyserResult(
-					array_merge($intermediateAnalyserResult->getErrors(), $stubErrors),
+					array_merge($intermediateAnalyserResult->getUnorderedErrors(), $stubErrors),
 					$intermediateAnalyserResult->getInternalErrors(),
 					$intermediateAnalyserResult->getCollectedData(),
 					$intermediateAnalyserResult->getDependencies(),
@@ -162,13 +160,13 @@ class AnalyseApplication
 			try {
 				$ruleErrors = $rule->processNode($node, $scope);
 			} catch (AnalysedCodeException $e) {
-				$errors[] = new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip());
+				$errors[] = (new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
 				continue;
 			} catch (IdentifierNotFound $e) {
-				$errors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
+				$errors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
 				continue;
-			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
-				$errors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e);
+			} catch (UnableToCompileNode | CircularReference $e) {
+				$errors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e))->withIdentifier('phpstan.reflection');
 				continue;
 			}
 

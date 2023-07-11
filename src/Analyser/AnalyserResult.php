@@ -9,18 +9,18 @@ use function usort;
 class AnalyserResult
 {
 
-	/** @var list<Error> */
-	private array $unorderedErrors;
+	/** @var list<Error>|null */
+	private ?array $errors = null;
 
 	/**
-	 * @param list<Error> $errors
+	 * @param list<Error> $unorderedErrors
 	 * @param list<CollectedData> $collectedData
 	 * @param list<string> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 */
 	public function __construct(
-		private array $errors,
+		private array $unorderedErrors,
 		private array $internalErrors,
 		private array $collectedData,
 		private ?array $dependencies,
@@ -29,20 +29,6 @@ class AnalyserResult
 		private int $peakMemoryUsageBytes,
 	)
 	{
-		$this->unorderedErrors = $errors;
-
-		usort(
-			$this->errors,
-			static fn (Error $a, Error $b): int => [
-				$a->getFile(),
-				$a->getLine(),
-				$a->getMessage(),
-			] <=> [
-				$b->getFile(),
-				$b->getLine(),
-				$b->getMessage(),
-			],
-		);
 	}
 
 	/**
@@ -58,6 +44,22 @@ class AnalyserResult
 	 */
 	public function getErrors(): array
 	{
+		if (!isset($this->errors)) {
+			$this->errors = $this->unorderedErrors;
+			usort(
+				$this->errors,
+				static fn (Error $a, Error $b): int => [
+					$a->getFile(),
+					$a->getLine(),
+					$a->getMessage(),
+				] <=> [
+					$b->getFile(),
+					$b->getLine(),
+					$b->getMessage(),
+				],
+			);
+		}
+
 		return $this->errors;
 	}
 

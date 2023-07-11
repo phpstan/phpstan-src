@@ -157,6 +157,11 @@ class IntegerType implements Type
 		return null;
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return ExponentiateHelper::exponentiate($this, $exponent);

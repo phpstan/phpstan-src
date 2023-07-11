@@ -162,6 +162,22 @@ interface Type
 	 */
 	public function getEnumCases(): array;
 
+	/**
+	 * Returns a list of finite values.
+	 *
+	 * Examples:
+	 *
+	 * - for bool: [true, false]
+	 * - for int<0, 3>: [0, 1, 2, 3]
+	 * - for enums: list of enum cases
+	 * - for scalars: the scalar itself
+	 *
+	 * For infinite types it returns an empty array.
+	 *
+	 * @return list<Type>
+	 */
+	public function getFiniteTypes(): array;
+
 	public function exponentiate(Type $exponent): Type;
 
 	public function isCallable(): TrinaryLogic;

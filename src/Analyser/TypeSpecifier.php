@@ -18,6 +18,7 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
+use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -180,104 +181,7 @@ class TypeSpecifier
 				return $this->create($exprNode, new ObjectWithoutClassType(), $context, false, $scope, $rootExpr);
 			}
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Identical) {
-			$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
-			if ($expressions !== null) {
-				$exprNode = $expressions[0];
-				$constantType = $expressions[1];
-
-				$specifiedType = $this->specifyTypesForConstantBinaryExpression($exprNode, $constantType, $context, $scope, $rootExpr);
-				if ($specifiedType !== null) {
-					return $specifiedType;
-				}
-			}
-
-			$rightType = $scope->getType($expr->right);
-			if (
-				$expr->left instanceof ClassConstFetch &&
-				$expr->left->class instanceof Expr &&
-				$expr->left->name instanceof Node\Identifier &&
-				$expr->right instanceof ClassConstFetch &&
-				$rightType instanceof ConstantStringType &&
-				strtolower($expr->left->name->toString()) === 'class'
-			) {
-				return $this->specifyTypesInCondition(
-					$scope,
-					new Instanceof_(
-						$expr->left->class,
-						new Name($rightType->getValue()),
-					),
-					$context,
-					$rootExpr,
-				);
-			}
-			if ($context->false()) {
-				$identicalType = $scope->getType($expr);
-				if ($identicalType instanceof ConstantBooleanType) {
-					$never = new NeverType();
-					$contextForTypes = $identicalType->getValue() ? $context->negate() : $context;
-					$leftTypes = $this->create($expr->left, $never, $contextForTypes, false, $scope, $rootExpr);
-					$rightTypes = $this->create($expr->right, $never, $contextForTypes, false, $scope, $rootExpr);
-					return $leftTypes->unionWith($rightTypes);
-				}
-			}
-
-			$types = null;
-			$exprLeftType = $scope->getType($expr->left);
-			$exprRightType = $scope->getType($expr->right);
-			if (
-				count($exprLeftType->getConstantScalarValues()) === 1
-				|| count($exprLeftType->getEnumCases()) === 1
-				|| ($exprLeftType->isConstantValue()->yes() && !$exprRightType->equals($exprLeftType) && $exprRightType->isSuperTypeOf($exprLeftType)->yes())
-			) {
-				$types = $this->create(
-					$expr->right,
-					$exprLeftType,
-					$context,
-					false,
-					$scope,
-					$rootExpr,
-				);
-			}
-			if (
-				count($exprRightType->getConstantScalarValues()) === 1
-				|| count($exprRightType->getEnumCases()) === 1
-				|| ($exprRightType->isConstantValue()->yes() && !$exprLeftType->equals($exprRightType) && $exprLeftType->isSuperTypeOf($exprRightType)->yes())
-			) {
-				$leftType = $this->create(
-					$expr->left,
-					$exprRightType,
-					$context,
-					false,
-					$scope,
-					$rootExpr,
-				);
-				if ($types !== null) {
-					$types = $types->unionWith($leftType);
-				} else {
-					$types = $leftType;
-				}
-			}
-
-			if ($types !== null) {
-				return $types;
-			}
-
-			$leftExprString = $this->exprPrinter->printExpr($expr->left);
-			$rightExprString = $this->exprPrinter->printExpr($expr->right);
-			if ($leftExprString === $rightExprString) {
-				if (!$expr->left instanceof Expr\Variable || !$expr->right instanceof Expr\Variable) {
-					return new SpecifiedTypes([], [], false, [], $rootExpr);
-				}
-			}
-
-			if ($context->true()) {
-				$leftTypes = $this->create($expr->left, $exprRightType, $context, false, $scope, $rootExpr);
-				$rightTypes = $this->create($expr->right, $exprLeftType, $context, false, $scope, $rootExpr);
-				return $leftTypes->unionWith($rightTypes);
-			} elseif ($context->false()) {
-				return $this->create($expr->left, $exprLeftType, $context, false, $scope, $rootExpr)->normalize($scope)
-					->intersectWith($this->create($expr->right, $exprRightType, $context, false, $scope, $rootExpr)->normalize($scope));
-			}
+			return $this->resolveIdentical($expr, $scope, $context, $rootExpr);
 
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotIdentical) {
 			return $this->specifyTypesInCondition(
@@ -314,7 +218,7 @@ class TypeSpecifier
 					&& $exprNode->name instanceof Name
 					&& strtolower($exprNode->name->toString()) === 'gettype'
 					&& isset($exprNode->getArgs()[0])
-					&& $constantType instanceof ConstantStringType
+					&& $constantType->isString()->yes()
 				) {
 					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 				}
@@ -324,17 +228,9 @@ class TypeSpecifier
 					&& $exprNode->name instanceof Name
 					&& strtolower($exprNode->name->toString()) === 'get_class'
 					&& isset($exprNode->getArgs()[0])
-					&& $constantType instanceof ConstantStringType
+					&& $constantType->isString()->yes()
 				) {
-					return $this->specifyTypesInCondition(
-						$scope,
-						new Instanceof_(
-							$exprNode->getArgs()[0]->value,
-							new Name($constantType->getValue()),
-						),
-						$context,
-						$rootExpr,
-					);
+					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 				}
 			}
 
@@ -1020,10 +916,6 @@ class TypeSpecifier
 
 		}
 
-		if ($constantType instanceof ConstantStringType) {
-			return $this->specifyTypesForConstantStringBinaryExpression($exprNode, $constantType, $context, $scope, $rootExpr);
-		}
-
 		return null;
 	}
 
@@ -1422,16 +1314,27 @@ class TypeSpecifier
 	{
 		$leftType = $scope->getType($binaryOperation->left);
 		$rightType = $scope->getType($binaryOperation->right);
+
+		$rightExpr = $binaryOperation->right;
+		if ($rightExpr instanceof AlwaysRememberedExpr) {
+			$rightExpr = $rightExpr->getExpr();
+		}
+
+		$leftExpr = $binaryOperation->left;
+		if ($leftExpr instanceof AlwaysRememberedExpr) {
+			$leftExpr = $leftExpr->getExpr();
+		}
+
 		if (
 			$leftType instanceof ConstantScalarType
-			&& !$binaryOperation->right instanceof ConstFetch
-			&& !$binaryOperation->right instanceof ClassConstFetch
+			&& !$rightExpr instanceof ConstFetch
+			&& !$rightExpr instanceof ClassConstFetch
 		) {
 			return [$binaryOperation->right, $leftType];
 		} elseif (
 			$rightType instanceof ConstantScalarType
-			&& !$binaryOperation->left instanceof ConstFetch
-			&& !$binaryOperation->left instanceof ClassConstFetch
+			&& !$leftExpr instanceof ConstFetch
+			&& !$leftExpr instanceof ClassConstFetch
 		) {
 			return [$binaryOperation->left, $rightType];
 		}
@@ -1729,6 +1632,229 @@ class TypeSpecifier
 		}
 
 		return array_merge(...$extensionsForClass);
+	}
+
+	public function resolveIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context, Expr $rootExpr): SpecifiedTypes
+	{
+		$leftExpr = $expr->left;
+		$rightExpr = $expr->right;
+		if ($rightExpr instanceof FuncCall && !$leftExpr instanceof FuncCall) {
+			[$leftExpr, $rightExpr] = [$rightExpr, $leftExpr];
+		}
+		$unwrappedLeftExpr = $leftExpr;
+		if ($leftExpr instanceof AlwaysRememberedExpr) {
+			$unwrappedLeftExpr = $leftExpr->getExpr();
+		}
+		$unwrappedRightExpr = $rightExpr;
+		if ($rightExpr instanceof AlwaysRememberedExpr) {
+			$unwrappedRightExpr = $rightExpr->getExpr();
+		}
+		$rightType = $scope->getType($rightExpr);
+		if (
+			$context->true()
+			&& $unwrappedLeftExpr instanceof FuncCall
+			&& $unwrappedLeftExpr->name instanceof Name
+			&& strtolower($unwrappedLeftExpr->name->toString()) === 'get_class'
+			&& isset($unwrappedLeftExpr->getArgs()[0])
+		) {
+			if ($rightType->getClassStringObjectType()->isObject()->yes()) {
+				return $this->create(
+					$unwrappedLeftExpr->getArgs()[0]->value,
+					$rightType->getClassStringObjectType(),
+					$context,
+					false,
+					$scope,
+					$rootExpr,
+				)->unionWith($this->create($leftExpr, $rightType, $context, false, $scope, $rootExpr));
+			}
+		}
+
+		if (count($rightType->getConstantStrings()) > 0) {
+			$types = null;
+			foreach ($rightType->getConstantStrings() as $constantString) {
+				$specifiedType = $this->specifyTypesForConstantStringBinaryExpression($unwrappedLeftExpr, $constantString, $context, $scope, $rootExpr);
+				if ($specifiedType === null) {
+					continue;
+				}
+				if ($types === null) {
+					$types = $specifiedType;
+					continue;
+				}
+
+				$types = $types->intersectWith($specifiedType);
+			}
+
+			if ($types !== null) {
+				if ($leftExpr !== $unwrappedLeftExpr) {
+					$types = $types->unionWith($this->create($leftExpr, $rightType, $context, false, $scope, $rootExpr));
+				}
+				return $types;
+			}
+		}
+
+		$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
+		if ($expressions !== null) {
+			$exprNode = $expressions[0];
+			$constantType = $expressions[1];
+
+			$specifiedType = $this->specifyTypesForConstantBinaryExpression($exprNode, $constantType, $context, $scope, $rootExpr);
+			if ($specifiedType !== null) {
+				if ($exprNode instanceof AlwaysRememberedExpr) {
+					$specifiedType->unionWith(
+						$this->create($exprNode->getExpr(), $constantType, $context, false, $scope, $rootExpr),
+					);
+				}
+				return $specifiedType;
+			}
+		}
+
+		if (
+			$context->true() &&
+			$unwrappedLeftExpr instanceof ClassConstFetch &&
+			$unwrappedLeftExpr->class instanceof Expr &&
+			$unwrappedLeftExpr->name instanceof Node\Identifier &&
+			$unwrappedRightExpr instanceof ClassConstFetch &&
+			$rightType instanceof ConstantStringType &&
+			strtolower($unwrappedLeftExpr->name->toString()) === 'class'
+		) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				new Instanceof_(
+					$unwrappedLeftExpr->class,
+					new Name($rightType->getValue()),
+				),
+				$context,
+				$rootExpr,
+			)->unionWith($this->create($leftExpr, $rightType, $context, false, $scope, $rootExpr));
+		}
+
+		$leftType = $scope->getType($leftExpr);
+		if (
+			$context->true() &&
+			$unwrappedRightExpr instanceof ClassConstFetch &&
+			$unwrappedRightExpr->class instanceof Expr &&
+			$unwrappedRightExpr->name instanceof Node\Identifier &&
+			$unwrappedLeftExpr instanceof ClassConstFetch &&
+			$leftType instanceof ConstantStringType &&
+			strtolower($unwrappedRightExpr->name->toString()) === 'class'
+		) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				new Instanceof_(
+					$unwrappedRightExpr->class,
+					new Name($leftType->getValue()),
+				),
+				$context,
+				$rootExpr,
+			)->unionWith($this->create($rightExpr, $leftType, $context, false, $scope, $rootExpr));
+		}
+
+		if ($context->false()) {
+			$identicalType = $scope->getType($expr);
+			if ($identicalType instanceof ConstantBooleanType) {
+				$never = new NeverType();
+				$contextForTypes = $identicalType->getValue() ? $context->negate() : $context;
+				$leftTypes = $this->create($leftExpr, $never, $contextForTypes, false, $scope, $rootExpr);
+				$rightTypes = $this->create($rightExpr, $never, $contextForTypes, false, $scope, $rootExpr);
+				if ($leftExpr instanceof AlwaysRememberedExpr) {
+					$leftTypes = $leftTypes->unionWith(
+						$this->create($unwrappedLeftExpr, $never, $contextForTypes, false, $scope, $rootExpr),
+					);
+				}
+				if ($rightExpr instanceof AlwaysRememberedExpr) {
+					$rightTypes = $rightTypes->unionWith(
+						$this->create($unwrappedRightExpr, $never, $contextForTypes, false, $scope, $rootExpr),
+					);
+				}
+				return $leftTypes->unionWith($rightTypes);
+			}
+		}
+
+		$types = null;
+		if (
+			count($leftType->getFiniteTypes()) === 1
+			|| ($leftType->isConstantValue()->yes() && !$rightType->equals($leftType) && $rightType->isSuperTypeOf($leftType)->yes())
+		) {
+			$types = $this->create(
+				$rightExpr,
+				$leftType,
+				$context,
+				false,
+				$scope,
+				$rootExpr,
+			);
+			if ($rightExpr instanceof AlwaysRememberedExpr) {
+				$types = $types->unionWith($this->create(
+					$unwrappedRightExpr,
+					$leftType,
+					$context,
+					false,
+					$scope,
+					$rootExpr,
+				));
+			}
+		}
+		if (
+			count($rightType->getFiniteTypes()) === 1
+			|| ($rightType->isConstantValue()->yes() && !$leftType->equals($rightType) && $leftType->isSuperTypeOf($rightType)->yes())
+		) {
+			$leftTypes = $this->create(
+				$leftExpr,
+				$rightType,
+				$context,
+				false,
+				$scope,
+				$rootExpr,
+			);
+			if ($leftExpr instanceof AlwaysRememberedExpr) {
+				$leftTypes = $leftTypes->unionWith($this->create(
+					$unwrappedLeftExpr,
+					$rightType,
+					$context,
+					false,
+					$scope,
+					$rootExpr,
+				));
+			}
+			if ($types !== null) {
+				$types = $types->unionWith($leftTypes);
+			} else {
+				$types = $leftTypes;
+			}
+		}
+
+		if ($types !== null) {
+			return $types;
+		}
+
+		$leftExprString = $this->exprPrinter->printExpr($unwrappedLeftExpr);
+		$rightExprString = $this->exprPrinter->printExpr($unwrappedRightExpr);
+		if ($leftExprString === $rightExprString) {
+			if (!$unwrappedLeftExpr instanceof Expr\Variable || !$unwrappedRightExpr instanceof Expr\Variable) {
+				return new SpecifiedTypes([], [], false, [], $rootExpr);
+			}
+		}
+
+		if ($context->true()) {
+			$leftTypes = $this->create($leftExpr, $rightType, $context, false, $scope, $rootExpr);
+			$rightTypes = $this->create($rightExpr, $leftType, $context, false, $scope, $rootExpr);
+			if ($leftExpr instanceof AlwaysRememberedExpr) {
+				$leftTypes = $leftTypes->unionWith(
+					$this->create($unwrappedLeftExpr, $rightType, $context, false, $scope, $rootExpr),
+				);
+			}
+			if ($rightExpr instanceof AlwaysRememberedExpr) {
+				$rightTypes = $rightTypes->unionWith(
+					$this->create($unwrappedRightExpr, $leftType, $context, false, $scope, $rootExpr),
+				);
+			}
+			return $leftTypes->unionWith($rightTypes);
+		} elseif ($context->false()) {
+			return $this->create($leftExpr, $leftType, $context, false, $scope, $rootExpr)->normalize($scope)
+				->intersectWith($this->create($rightExpr, $rightType, $context, false, $scope, $rootExpr)->normalize($scope));
+		}
+
+		return new SpecifiedTypes([], [], false, [], $rootExpr);
 	}
 
 }

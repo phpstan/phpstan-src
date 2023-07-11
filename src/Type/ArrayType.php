@@ -22,7 +22,6 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
@@ -636,24 +635,11 @@ class ArrayType implements Type
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
-		$keyVariance = $positionVariance;
-		$itemVariance = $positionVariance;
-
-		if (!$positionVariance->contravariant()) {
-			$keyType = $this->getKeyType();
-			if ($keyType instanceof TemplateType) {
-				$keyVariance = $keyType->getVariance();
-			}
-
-			$itemType = $this->getItemType();
-			if ($itemType instanceof TemplateType) {
-				$itemVariance = $itemType->getVariance();
-			}
-		}
+		$variance = $positionVariance->compose(TemplateTypeVariance::createCovariant());
 
 		return array_merge(
-			$this->getKeyType()->getReferencedTemplateTypes($keyVariance),
-			$this->getItemType()->getReferencedTemplateTypes($itemVariance),
+			$this->getKeyType()->getReferencedTemplateTypes($variance),
+			$this->getItemType()->getReferencedTemplateTypes($variance),
 		);
 	}
 
@@ -740,6 +726,11 @@ class ArrayType implements Type
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();
+	}
+
+	public function getFiniteTypes(): array
+	{
+		return [];
 	}
 
 	/**

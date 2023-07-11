@@ -2,6 +2,7 @@
 
 namespace MatchExpr;
 
+use function get_class;
 use function PHPStan\Testing\assertType;
 
 class Foo
@@ -65,6 +66,48 @@ class Foo
 			assertType('1|2|3|4', $i), 1, assertType('2|3|4', $i) => null,
 			assertType('2|3|4', $i) => null,
 			default => assertType('2|3|4', $i),
+		};
+	}
+
+	public function doGettype(int|float|bool|string|object|array $value): void
+	{
+		match (gettype($value)) {
+			'integer' => assertType('int', $value),
+			'string' => assertType('string', $value),
+		};
+	}
+
+	public function doGettypeUnion(int|float|bool|string|object|array $value): void
+	{
+		$intOrString = 'integer';
+		if (rand(0, 1)) {
+			$intOrString = 'string';
+		}
+		match (gettype($value)) {
+			$intOrString => assertType('int|string', $value),
+		};
+	}
+
+}
+
+final class FinalFoo
+{
+
+}
+
+final class FinalBar
+{
+
+}
+
+class TestGetClass
+{
+
+	public function doMatch(FinalFoo|FinalBar $class): void
+	{
+		match (get_class($class)) {
+			FinalFoo::class => assertType(FinalFoo::class, $class),
+			FinalBar::class => assertType(FinalBar::class, $class),
 		};
 	}
 

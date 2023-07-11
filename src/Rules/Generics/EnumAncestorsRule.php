@@ -38,10 +38,7 @@ class EnumAncestorsRule implements Rule
 		if (!$originalNode instanceof Node\Stmt\Enum_) {
 			return [];
 		}
-		if (!$scope->isInClass()) {
-			return [];
-		}
-		$classReflection = $scope->getClassReflection();
+		$classReflection = $node->getClassReflection();
 
 		$enumName = $classReflection->getName();
 		$escapedEnumName = SprintfHelper::escapeFormatString($enumName);

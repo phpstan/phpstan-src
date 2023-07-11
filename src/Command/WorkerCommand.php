@@ -122,8 +122,8 @@ class WorkerCommand extends Command
 
 		$analysedFiles = array_fill_keys($analysedFiles, true);
 
-		$tcpConector = new TcpConnector($loop);
-		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->done(function (ConnectionInterface $connection) use ($container, $identifier, $output, $analysedFiles): void {
+		$tcpConnector = new TcpConnector($loop);
+		$tcpConnector->connect(sprintf('127.0.0.1:%d', $port))->done(function (ConnectionInterface $connection) use ($container, $identifier, $output, $analysedFiles): void {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
@@ -200,7 +200,7 @@ class WorkerCommand extends Command
 					$internalErrorsCount++;
 					$internalErrorMessage = sprintf('Internal error: %s in file %s', $t->getMessage(), $file);
 
-					$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md';
+					$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml';
 					if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
 						$internalErrorMessage .= sprintf('%sPost the following stack trace to %s: %s%s', "\n\n", $bugReportUrl, "\n", $t->getTraceAsString());
 					} else {

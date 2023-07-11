@@ -18,6 +18,7 @@ use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\VarLikeIdentifier;
 use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
@@ -37,6 +38,7 @@ use function implode;
 use function sprintf;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
+use const PHP_VERSION_ID;
 
 class TypeSpecifierTest extends PHPStanTestCase
 {
@@ -91,9 +93,41 @@ class TypeSpecifierTest extends PHPStanTestCase
 		$this->assertSame($expectedNegatedResult, $actualResult, sprintf('if not (%s)', $this->printer->prettyPrintExpr($expr)));
 	}
 
-	public function dataCondition(): array
+	public function dataCondition(): iterable
 	{
-		return [
+		if (PHP_VERSION_ID >= 80100) {
+			yield [
+				new Identical(
+					new PropertyFetch(new Variable('foo'), 'bar'),
+					new Expr\ClassConstFetch(new Name('Bug9499\\FooEnum'), 'A'),
+				),
+				[
+					'$foo->bar' => 'Bug9499\FooEnum::A',
+				],
+				[
+					'$foo->bar' => '~Bug9499\FooEnum::A',
+				],
+			];
+			yield [
+				new Identical(
+					new AlwaysRememberedExpr(
+						new PropertyFetch(new Variable('foo'), 'bar'),
+						new ObjectType('Bug9499\\FooEnum'),
+						new ObjectType('Bug9499\\FooEnum'),
+					),
+					new Expr\ClassConstFetch(new Name('Bug9499\\FooEnum'), 'A'),
+				),
+				[
+					'__phpstanRembered($foo->bar)' => 'Bug9499\FooEnum::A',
+					'$foo->bar' => 'Bug9499\FooEnum::A',
+				],
+				[
+					'__phpstanRembered($foo->bar)' => '~Bug9499\FooEnum::A',
+					'$foo->bar' => '~Bug9499\FooEnum::A',
+				],
+			];
+		}
+		yield from [
 			[
 				$this->createFunctionCall('is_int'),
 				['$foo' => 'int'],
@@ -193,8 +227,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 					]),
 					new String_('Foo'),
 				),
-				['$foo' => 'Foo'],
-				['$foo' => '~Foo'],
+				['$foo' => 'Foo', 'get_class($foo)' => '\'Foo\''],
+				['get_class($foo)' => '~\'Foo\''],
 			],
 			[
 				new Equal(
@@ -203,8 +237,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 						new Arg(new Variable('foo')),
 					]),
 				),
-				['$foo' => 'Foo'],
-				['$foo' => '~Foo'],
+				['$foo' => 'Foo', 'get_class($foo)' => '\'Foo\''],
+				['get_class($foo)' => '~\'Foo\''],
 			],
 			[
 				new BooleanNot(

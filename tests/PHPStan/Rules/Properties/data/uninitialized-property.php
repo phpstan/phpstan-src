@@ -176,3 +176,297 @@ class FooTraitClass
 	}
 
 }
+
+class ItemsCrate
+{
+
+	/**
+	 * @var int[]
+	 */
+	private array $items;
+
+	/**
+	 * @param int[] $items
+	 */
+	public function __construct(
+		array $items
+	)
+	{
+		$this->items = $items;
+		$this->sortItems();
+	}
+
+	private function sortItems(): void
+	{
+		usort($this->items, static function ($a, $b): int {
+			return $a <=> $b;
+		});
+	}
+
+	public function addItem(int $i): void
+	{
+		$this->items[] = $i;
+		$this->sortItems();
+	}
+
+}
+
+class InitializedInPrivateSetter
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	private function setFoo()
+	{
+		$this->foo = 1;
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}
+
+final class InitializedInPublicSetterFinalClass
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	public function setFoo()
+	{
+		$this->foo = 1;
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}
+
+class InitializedInPublicSetterNonFinalClass
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	public function setFoo()
+	{
+		$this->foo = 1;
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}
+
+class SometimesInitializedInPrivateSetter
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	private function setFoo()
+	{
+		if (rand(0, 1)) {
+			$this->foo = 1;
+		}
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}
+
+class ConfuseNodeScopeResolverWithAnonymousClass
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	private function setFoo()
+	{
+		$c = new class () {
+			public function setFoo()
+			{
+			}
+		};
+		$this->foo = 1;
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}
+
+class ThrowInConstructor1
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		if (rand(0, 1)) {
+			$this->foo = 1;
+			return;
+		}
+
+		throw new \Exception;
+	}
+
+}
+
+class ThrowInConstructor2
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		if (rand(0, 1)) {
+			throw new \Exception;
+		}
+
+		$this->foo = 1;
+	}
+
+}
+
+class EarlyReturn
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		if (rand(0, 1)) {
+			return;
+		}
+
+		$this->foo = 1;
+	}
+
+}
+
+class NeverInConstructor
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		if (rand(0, 1)) {
+			$this->foo = 1;
+			return;
+		}
+
+		$this->returnNever();
+	}
+
+	/**
+	 * @return never
+	 */
+	private function returnNever()
+	{
+		throw new \Exception();
+	}
+
+}
+
+class InitializedInPrivateSetterWithThrow
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	private function setFoo()
+	{
+		if (rand(0, 1)) {
+			$this->foo = 1;
+			return;
+		}
+
+		throw new \Exception();
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+}
+
+class InitializedInPrivateSetterWithReturnNever
+{
+
+	private int $foo;
+
+	public function __construct()
+	{
+		$this->setFoo();
+		$this->doSomething();
+	}
+
+	private function setFoo()
+	{
+		if (rand(0, 1)) {
+			$this->foo = 1;
+			return;
+		}
+
+		$this->returnNever();
+	}
+
+	public function doSomething()
+	{
+		echo $this->foo;
+	}
+
+	/**
+	 * @return never
+	 */
+	private function returnNever()
+	{
+		throw new \Exception();
+	}
+
+}

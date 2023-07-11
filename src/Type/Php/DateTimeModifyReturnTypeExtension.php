@@ -12,6 +12,7 @@ use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use Throwable;
 use function count;
 
 class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtension
@@ -49,7 +50,15 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 		$hasDateTime = false;
 
 		foreach ($constantStrings as $constantString) {
-			if (@(new DateTime())->modify($constantString->getValue()) === false) {
+			try {
+				$result = @(new DateTime())->modify($constantString->getValue());
+			} catch (Throwable) {
+				$hasFalse = true;
+				$valueType = TypeCombinator::remove($valueType, $constantString);
+				continue;
+			}
+
+			if ($result === false) {
 				$hasFalse = true;
 			} else {
 				$hasDateTime = true;

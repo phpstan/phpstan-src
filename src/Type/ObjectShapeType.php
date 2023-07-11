@@ -495,6 +495,11 @@ class ObjectShapeType implements Type
 		]);
 	}
 
+	public function getFiniteTypes(): array
+	{
+		return [];
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		$items = [];

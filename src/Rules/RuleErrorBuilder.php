@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules;
 
+use PHPStan\Analyser\Error;
 use PHPStan\ShouldNotHappenException;
 use function array_map;
 use function class_exists;
@@ -169,11 +170,19 @@ class RuleErrorBuilder
 	}
 
 	/**
+	 * Sets an error identifier.
+	 *
+	 * List of all current error identifiers in PHPStan: https://phpstan.org/error-identifiers
+	 *
 	 * @phpstan-this-out self<T&IdentifierRuleError>
 	 * @return self<T&IdentifierRuleError>
 	 */
 	public function identifier(string $identifier): self
 	{
+		if (!Error::validateIdentifier($identifier)) {
+			throw new ShouldNotHappenException(sprintf('Invalid identifier: %s', $identifier));
+		}
+
 		$this->properties['identifier'] = $identifier;
 		$this->type |= self::TYPE_IDENTIFIER;
 

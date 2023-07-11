@@ -56,7 +56,7 @@ class UnusedPrivateMethodRule implements Rule
 			if (strtolower($methodName) === '__clone') {
 				continue;
 			}
-			$methods[$methodName] = $method;
+			$methods[strtolower($methodName)] = $method;
 		}
 
 		$arrayCalls = [];
@@ -105,7 +105,7 @@ class UnusedPrivateMethodRule implements Rule
 				if ($inMethod->getName() === $methodName) {
 					continue;
 				}
-				unset($methods[$methodName]);
+				unset($methods[strtolower($methodName)]);
 			}
 		}
 
@@ -144,19 +144,20 @@ class UnusedPrivateMethodRule implements Rule
 						if ($inMethod->getName() === $typeAndMethod->getMethod()) {
 							continue;
 						}
-						unset($methods[$typeAndMethod->getMethod()]);
+						unset($methods[strtolower($typeAndMethod->getMethod())]);
 					}
 				}
 			}
 		}
 
 		$errors = [];
-		foreach ($methods as $methodName => $method) {
+		foreach ($methods as $method) {
+			$originalMethodName = $method->getNode()->name->toString();
 			$methodType = 'Method';
 			if ($method->getNode()->isStatic()) {
 				$methodType = 'Static method';
 			}
-			$errors[] = RuleErrorBuilder::message(sprintf('%s %s::%s() is unused.', $methodType, $classReflection->getDisplayName(), $methodName))
+			$errors[] = RuleErrorBuilder::message(sprintf('%s %s::%s() is unused.', $methodType, $classReflection->getDisplayName(), $originalMethodName))
 				->line($method->getNode()->getLine())
 				->identifier('method.unused')
 				->build();

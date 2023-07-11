@@ -111,6 +111,10 @@ final class JunitErrorFormatter implements ErrorFormatter
 
 	private function fileGetLine(string $fileName, int $lineNumber): ?string
 	{
+		if (!file_exists()) {
+			return null;
+		}
+
 		$file = new SplFileObject($fileName);
 		if (!$file->eof()) {
 			$file->seek($lineNumber);

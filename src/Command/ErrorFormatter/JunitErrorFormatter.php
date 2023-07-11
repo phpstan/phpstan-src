@@ -9,6 +9,7 @@ use SplFileObject;
 use function array_filter;
 use function htmlspecialchars;
 use function implode;
+use function is_null;
 use function sprintf;
 use const ENT_COMPAT;
 use const ENT_XML1;

@@ -1988,7 +1988,7 @@ return [
 'DOMNode::isDefaultNamespace' => ['bool', 'namespaceuri'=>'string'],
 'DOMNode::isSameNode' => ['bool', 'node'=>'DOMNode'],
 'DOMNode::isSupported' => ['bool', 'feature'=>'string', 'version'=>'string'],
-'DOMNode::lookupNamespaceURI' => ['string', 'prefix'=>'string'],
+'DOMNode::lookupNamespaceURI' => ['?string', 'prefix'=>'?string'],
 'DOMNode::lookupPrefix' => ['string', 'namespaceuri'=>'string'],
 'DOMNode::normalize' => ['void'],
 'DOMNode::removeChild' => ['DOMNode', 'oldnode'=>'DOMNode'],

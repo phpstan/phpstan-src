@@ -77,7 +77,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
     <failure type="ERROR" message="Foo"/>
   </testcase>
   <testcase classname="foo.php:5" name="">
-    <failure type="ERROR" message="Bar Bar2"/>
+    <failure type="ERROR" message="Bar Bar2 a tip"/>
   </testcase>
 </testsuite>
 ',

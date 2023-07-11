@@ -9,7 +9,6 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
 use function array_key_exists;
 use function array_map;
@@ -46,10 +45,7 @@ class UnusedPrivatePropertyRule implements Rule
 		if (!$node->getClass() instanceof Node\Stmt\Class_) {
 			return [];
 		}
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-		$classReflection = $scope->getClassReflection();
+		$classReflection = $node->getClassReflection();
 		$properties = [];
 		foreach ($node->getProperties() as $property) {
 			if (!$property->isPrivate()) {
@@ -163,9 +159,9 @@ class UnusedPrivatePropertyRule implements Rule
 		foreach ($properties as $name => $data) {
 			$propertyNode = $data['node'];
 			if ($propertyNode->isStatic()) {
-				$propertyName = sprintf('Static property %s::$%s', $scope->getClassReflection()->getDisplayName(), $name);
+				$propertyName = sprintf('Static property %s::$%s', $classReflection->getDisplayName(), $name);
 			} else {
-				$propertyName = sprintf('Property %s::$%s', $scope->getClassReflection()->getDisplayName(), $name);
+				$propertyName = sprintf('Property %s::$%s', $classReflection->getDisplayName(), $name);
 			}
 			$tip = sprintf('See: %s', 'https://phpstan.org/developing-extensions/always-read-written-properties');
 			if (!$data['read']) {

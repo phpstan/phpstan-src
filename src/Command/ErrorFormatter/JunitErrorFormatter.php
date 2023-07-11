@@ -100,9 +100,7 @@ class JunitErrorFormatter implements ErrorFormatter
 			}
 		}
 
-		$result .= '</testcase>';
-
-		return $result;
+		return $result . '</testcase>';
 	}
 
 	private function fileGetLine(string $fileName, int $lineNumber): ?string

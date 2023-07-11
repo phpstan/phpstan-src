@@ -63,6 +63,7 @@ use function is_int;
 use function is_string;
 use function min;
 use function pow;
+use function range;
 use function sort;
 use function sprintf;
 use function strpos;
@@ -1258,24 +1259,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 */
 	public function getKeysArray(): Type
 	{
-		$keyTypes = [];
-		$valueTypes = [];
-		$optionalKeys = [];
-		$autoIndex = 0;
-
-		foreach ($this->keyTypes as $i => $keyType) {
-			$keyTypes[] = new ConstantIntegerType($i);
-			$valueTypes[] = $keyType;
-			$autoIndex++;
-
-			if (!$this->isOptionalKey($i)) {
-				continue;
-			}
-
-			$optionalKeys[] = $i;
-		}
-
-		return new self($keyTypes, $valueTypes, $autoIndex, $optionalKeys, true);
+		return $this->getKeysOrValuesArray($this->keyTypes);
 	}
 
 	/**
@@ -1283,24 +1267,54 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 */
 	public function getValuesArray(): Type
 	{
+		return $this->getKeysOrValuesArray($this->valueTypes);
+	}
+
+	/**
+	 * @param array<int, Type> $types
+	 */
+	private function getKeysOrValuesArray(array $types): self
+	{
+		$count = count($types);
+		$autoIndexes = range($count - count($this->optionalKeys), $count);
+		assert($autoIndexes !== []);
+
+		if ($this->isList) {
+			// Optimized version for lists: Assume that if a later key exists, then earlier keys also exist.
+			$keyTypes = array_map(
+				static fn (int $i): ConstantIntegerType => new ConstantIntegerType($i),
+				array_keys($types),
+			);
+			return new self($keyTypes, $types, $autoIndexes, $this->optionalKeys, true);
+		}
+
 		$keyTypes = [];
 		$valueTypes = [];
 		$optionalKeys = [];
-		$autoIndex = 0;
+		$maxIndex = 0;
 
-		foreach ($this->valueTypes as $i => $valueType) {
+		foreach ($types as $i => $type) {
 			$keyTypes[] = new ConstantIntegerType($i);
-			$valueTypes[] = $valueType;
-			$autoIndex++;
 
-			if (!$this->isOptionalKey($i)) {
-				continue;
+			if ($this->isOptionalKey($maxIndex)) {
+				// move $maxIndex to next non-optional key
+				do {
+					$maxIndex++;
+				} while ($maxIndex < $count && $this->isOptionalKey($maxIndex));
 			}
 
-			$optionalKeys[] = $i;
+			if ($i === $maxIndex) {
+				$valueTypes[] = $type;
+			} else {
+				$valueTypes[] = TypeCombinator::union(...array_slice($types, $i, $maxIndex - $i + 1));
+				if ($maxIndex >= $count) {
+					$optionalKeys[] = $i;
+				}
+			}
+			$maxIndex++;
 		}
 
-		return new self($keyTypes, $valueTypes, $autoIndex, $optionalKeys, true);
+		return new self($keyTypes, $valueTypes, $autoIndexes, $optionalKeys, true);
 	}
 
 	/** @deprecated Use getArraySize() instead */

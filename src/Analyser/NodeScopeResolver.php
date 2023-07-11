@@ -490,6 +490,7 @@ class NodeScopeResolver
 				$gatheredYieldStatements,
 				$statementResult,
 				$executionEnds,
+				$functionReflection,
 			), $functionScope);
 		} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
 			$hasYield = false;

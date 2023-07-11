@@ -5,10 +5,8 @@ namespace PHPStan\Rules\Exceptions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FunctionReturnStatementsNode;
-use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use function sprintf;
 
 /**
@@ -29,10 +27,7 @@ class TooWideFunctionThrowTypeRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$statementResult = $node->getStatementResult();
-		$functionReflection = $scope->getFunction();
-		if (!$functionReflection instanceof FunctionReflection) {
-			throw new ShouldNotHappenException();
-		}
+		$functionReflection = $node->getFunctionReflection();
 
 		$throwType = $functionReflection->getThrowType();
 		if ($throwType === null) {

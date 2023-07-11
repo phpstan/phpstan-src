@@ -5,11 +5,9 @@ namespace PHPStan\Rules\TooWideTypehints;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FunctionReturnStatementsNode;
-use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -29,10 +27,7 @@ class TooWideFunctionReturnTypehintRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$function = $scope->getFunction();
-		if (!$function instanceof FunctionReflection) {
-			throw new ShouldNotHappenException();
-		}
+		$function = $node->getFunctionReflection();
 
 		$functionReturnType = ParametersAcceptorSelector::selectSingle($function->getVariants())->getReturnType();
 		if (!$functionReturnType instanceof UnionType) {

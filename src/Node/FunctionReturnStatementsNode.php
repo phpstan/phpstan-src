@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementResult;
+use PHPStan\Reflection\FunctionReflection;
 use function count;
 
 /** @api */
@@ -24,6 +25,7 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 		private array $yieldStatements,
 		private StatementResult $statementResult,
 		private array $executionEnds,
+		private FunctionReflection $functionReflection,
 	)
 	{
 		parent::__construct($function->getAttributes());
@@ -75,6 +77,11 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 	public function getSubNodeNames(): array
 	{
 		return [];
+	}
+
+	public function getFunctionReflection(): FunctionReflection
+	{
+		return $this->functionReflection;
 	}
 
 }

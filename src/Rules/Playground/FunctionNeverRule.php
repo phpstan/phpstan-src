@@ -5,11 +5,9 @@ namespace PHPStan\Rules\Playground;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FunctionReturnStatementsNode;
-use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use function count;
 use function sprintf;
 
@@ -34,10 +32,7 @@ class FunctionNeverRule implements Rule
 			return [];
 		}
 
-		$function = $scope->getFunction();
-		if (!$function instanceof FunctionReflection) {
-			throw new ShouldNotHappenException();
-		}
+		$function = $node->getFunctionReflection();
 
 		$returnType = ParametersAcceptorSelector::selectSingle($function->getVariants())->getReturnType();
 		$helperResult = $this->helper->shouldReturnNever($node, $returnType);

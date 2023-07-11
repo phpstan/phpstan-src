@@ -5,10 +5,8 @@ namespace PHPStan\Rules\Exceptions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FunctionReturnStatementsNode;
-use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
@@ -35,10 +33,7 @@ class ThrowsVoidFunctionWithExplicitThrowPointRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$statementResult = $node->getStatementResult();
-		$functionReflection = $scope->getFunction();
-		if (!$functionReflection instanceof FunctionReflection) {
-			throw new ShouldNotHappenException();
-		}
+		$functionReflection = $node->getFunctionReflection();
 
 		if ($functionReflection->getThrowType() === null || !$functionReflection->getThrowType()->isVoid()->yes()) {
 			return [];

@@ -30,7 +30,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			'<?xml version="1.0" encoding="UTF-8"?>
 <testsuite failures="0" name="phpstan" tests="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.9.3/platform-tests/src/test/resources/jenkins-junit.xsd">
-  <testcase name="phpstan"/>
+  <testcase classname="phpstan:0" name=""/>
 </testsuite>
 ',
 		];

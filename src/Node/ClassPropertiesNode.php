@@ -109,6 +109,9 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$originalProperties = [];
 		$initialInitializedProperties = [];
 		$initializedProperties = [];
+		if ($extensions === null) {
+			$extensions = $this->readWritePropertiesExtensionProvider->getExtensions();
+		}
 		foreach ($this->getProperties() as $property) {
 			if ($property->isStatic()) {
 				continue;
@@ -121,32 +124,27 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 			$originalProperties[$property->getName()] = $property;
 			$is = TrinaryLogic::createFromBoolean($property->isPromoted() && !$property->isPromotedFromTrait());
+			if (!$is->yes()) {
+				foreach ($extensions as $extension) {
+					if (!$classReflection->hasNativeProperty($property->getName())) {
+						continue;
+					}
+					$propertyReflection = $classReflection->getNativeProperty($property->getName());
+					if (!$extension->isInitialized($propertyReflection, $property->getName())) {
+						continue;
+					}
+					$is = TrinaryLogic::createYes();
+					break;
+				}
+			}
 			$initialInitializedProperties[$property->getName()] = $is;
 			foreach ($constructors as $constructor) {
 				$initializedProperties[$constructor][$property->getName()] = $is;
 			}
-			if ($property->isPromoted() && !$property->isPromotedFromTrait()) {
+			if ($is->yes()) {
 				continue;
 			}
 			$uninitializedProperties[$property->getName()] = $property;
-		}
-
-		if ($extensions === null) {
-			$extensions = $this->readWritePropertiesExtensionProvider->getExtensions();
-		}
-
-		foreach (array_keys($uninitializedProperties) as $name) {
-			foreach ($extensions as $extension) {
-				if (!$classReflection->hasNativeProperty($name)) {
-					continue;
-				}
-				$propertyReflection = $classReflection->getNativeProperty($name);
-				if (!$extension->isInitialized($propertyReflection, $name)) {
-					continue;
-				}
-				unset($uninitializedProperties[$name]);
-				break;
-			}
 		}
 
 		if ($constructors === []) {

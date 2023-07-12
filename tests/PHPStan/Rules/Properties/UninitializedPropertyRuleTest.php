@@ -6,6 +6,7 @@ use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function strpos;
 
 /**
  * @extends RuleTestCase<UninitializedPropertyRule>
@@ -20,6 +21,7 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				self::getContainer(),
 				[
 					'UninitializedProperty\\TestCase::setUp',
+					'Bug9619\\AdminPresenter::startup',
 				],
 			),
 		);
@@ -43,6 +45,27 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				public function isInitialized(PropertyReflection $property, string $propertyName): bool
 				{
 					return $property->getDeclaringClass()->getName() === 'UninitializedProperty\\TestExtension' && $propertyName === 'inited';
+				}
+
+			},
+
+			// bug-9619
+			new class() implements ReadWritePropertiesExtension {
+
+				public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
+				{
+					return false;
+				}
+
+				public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
+				{
+					return $this->isInitialized($property, $propertyName);
+				}
+
+				public function isInitialized(PropertyReflection $property, string $propertyName): bool
+				{
+					return $property->isPublic() &&
+						strpos($property->getDocComment() ?? '', '@inject') !== false;
 				}
 
 			},
@@ -154,6 +177,11 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 	public function testEfabricaLatteBug(): void
 	{
 		$this->analyse([__DIR__ . '/data/efabrica-latte-bug.php'], []);
+	}
+
+	public function testBug9619(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9619.php'], []);
 	}
 
 }

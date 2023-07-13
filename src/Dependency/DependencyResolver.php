@@ -14,6 +14,7 @@ use PHPStan\Broker\FunctionNotFoundException;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\InClassMethodNode;
+use PHPStan\Node\InClassNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -43,6 +44,22 @@ class DependencyResolver
 	public function resolveDependencies(Node $node, Scope $scope): NodeDependencies
 	{
 		$dependenciesReflections = [];
+
+		if ($node instanceof InClassNode) {
+			$docComment = $node->getDocComment();
+			if ($docComment !== null) {
+				$phpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+					$scope->getFile(),
+					$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+					$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+					null,
+					$docComment->getText(),
+				);
+				foreach ($phpDoc->getTypeAliasImportTags() as $importTag) {
+					$this->addClassToDependencies($importTag->getImportedFrom(), $dependenciesReflections);
+				}
+			}
+		}
 
 		if ($node instanceof Node\Stmt\Class_) {
 			if ($node->namespacedName !== null) {

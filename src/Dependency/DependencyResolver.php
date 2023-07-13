@@ -16,6 +16,7 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InFunctionNode;
+use PHPStan\Node\InTraitNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
@@ -45,7 +46,7 @@ class DependencyResolver
 	{
 		$dependenciesReflections = [];
 
-		if ($node instanceof InClassNode) {
+		if ($node instanceof InClassNode || $node instanceof InTraitNode) {
 			$docComment = $node->getDocComment();
 			if ($docComment !== null) {
 				$phpDoc = $this->fileTypeMapper->getResolvedPhpDoc(

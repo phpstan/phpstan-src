@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Offset 'foo' does not exist on array\\{foo\\?\\: int\\}\\.$#"
+			count: 1
+			path: src/UsesBar.php

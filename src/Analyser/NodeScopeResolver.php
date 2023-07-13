@@ -89,6 +89,7 @@ use PHPStan\Node\InClosureNode;
 use PHPStan\Node\InForeachNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\InstantiationCallableNode;
+use PHPStan\Node\InTraitNode;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\MatchExpressionArm;
@@ -4362,7 +4363,10 @@ class NodeScopeResolver
 					$methodAst->setAttribute('originalTraitMethodName', $methodAst->name->toLowerString());
 					$methodAst->name = $methodNames[$methodName];
 				}
-				$this->processStmtNodes($node, $stmts, $scope->enterTrait($traitReflection), $nodeCallback, StatementContext::createTopLevel());
+
+				$traitScope = $scope->enterTrait($traitReflection);
+				$nodeCallback(new InTraitNode($node, $traitReflection), $traitScope);
+				$this->processStmtNodes($node, $stmts, $traitScope, $nodeCallback, StatementContext::createTopLevel());
 				return;
 			}
 			if ($node instanceof Node\Stmt\ClassLike) {

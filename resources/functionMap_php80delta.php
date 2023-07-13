@@ -22,6 +22,8 @@
 return [
 	'new' => [
 		'array_combine' => ['associative-array', 'keys'=>'string[]|int[]', 'values'=>'array'],
+		'base64_decode' => ['string', 'string'=>'string', 'strict='=>'false'],
+		'base64_decode\'1' => ['string|false', 'string'=>'string', 'strict='=>'true'],
 		'bcdiv' => ['string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcmod' => ['string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcpowmod' => ['string', 'base'=>'string', 'exponent'=>'string', 'modulus'=>'string', 'scale='=>'int'],

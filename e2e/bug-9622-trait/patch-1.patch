@@ -1,0 +1,11 @@
+--- src/Foo.php	2023-07-13 09:01:37
++++ src/Foo.php	2023-07-13 09:02:20
+@@ -3,7 +3,7 @@
+ namespace Bug9622Trait;
+
+ /**
+- * @phpstan-type AnArray array{foo: int}
++ * @phpstan-type AnArray array{foo?: int}
+  */
+ class Foo
+ {

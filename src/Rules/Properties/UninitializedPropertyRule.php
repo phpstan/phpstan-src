@@ -44,7 +44,7 @@ class UninitializedPropertyRule implements Rule
 			))->line($propertyNode->getLine())->build();
 		}
 
-		foreach ($prematureAccess as [$propertyName, $line, $propertyNode]) {
+		foreach ($prematureAccess as [$propertyName, $line, $propertyNode, $file]) {
 			if ($propertyNode->isReadOnly() || $propertyNode->isReadOnlyByPhpDoc()) {
 				continue;
 			}
@@ -52,7 +52,7 @@ class UninitializedPropertyRule implements Rule
 				'Access to an uninitialized property %s::$%s.',
 				$classReflection->getDisplayName(),
 				$propertyName,
-			))->line($line)->build();
+			))->line($line)->file($file)->build();
 		}
 
 		return $errors;

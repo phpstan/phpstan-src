@@ -5,7 +5,11 @@ namespace PHPStan\Analyser;
 use PHPStan\File\FileHelper;
 use PHPStan\Testing\PHPStanTestCase;
 use function array_map;
+use function array_merge;
+use function array_unique;
 use function sprintf;
+use function usort;
+use const PHP_VERSION_ID;
 
 class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 {
@@ -165,6 +169,36 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testUnititializedReadonlyPropertyAccessedInTrait(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped();
+		}
+
+		$errors = $this->runAnalyse([
+			__DIR__ . '/traits/uninitializedProperty/FooClass.php',
+			__DIR__ . '/traits/uninitializedProperty/FooTrait.php',
+		]);
+		$this->assertCount(3, $errors);
+		usort($errors, static fn (Error $a, Error $b) => $a->getLine() <=> $b->getLine());
+		$expectedFile = sprintf('%s (in context of class TraitsUnititializedProperty\FooClass)', $this->fileHelper->normalizePath(__DIR__ . '/traits/uninitializedProperty/FooTrait.php'));
+
+		$error = $errors[0];
+		$this->assertSame('Access to an uninitialized readonly property TraitsUnititializedProperty\FooClass::$x.', $error->getMessage());
+		$this->assertSame(15, $error->getLine());
+		$this->assertSame($expectedFile, $error->getFile());
+
+		$error = $errors[1];
+		$this->assertSame('Access to an uninitialized @readonly property TraitsUnititializedProperty\FooClass::$y.', $error->getMessage());
+		$this->assertSame(16, $error->getLine());
+		$this->assertSame($expectedFile, $error->getFile());
+
+		$error = $errors[2];
+		$this->assertSame('Access to an uninitialized property TraitsUnititializedProperty\FooClass::$z.', $error->getMessage());
+		$this->assertSame(17, $error->getLine());
+		$this->assertSame($expectedFile, $error->getFile());
+	}
+
 	/**
 	 * @param string[] $files
 	 * @return Error[]
@@ -176,6 +210,19 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 		$analyser = self::getContainer()->getByType(Analyser::class);
 
 		return $analyser->analyse($files)->getErrors();
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return array_unique(
+			array_merge(
+				parent::getAdditionalConfigFiles(),
+				[
+					__DIR__ . '/../../../conf/bleedingEdge.neon',
+					__DIR__ . '/traits-integration.neon',
+				],
+			),
+		);
 	}
 
 }

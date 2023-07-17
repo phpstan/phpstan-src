@@ -595,12 +595,22 @@ class NodeScopeResolver
 
 					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 				}, StatementContext::createTopLevel());
+
+				$classReflection = $scope->getClassReflection();
+
+				$methodReflection = $methodScope->getFunction();
+				if (!$methodReflection instanceof MethodReflection) {
+					throw new ShouldNotHappenException();
+				}
+
 				$nodeCallback(new MethodReturnStatementsNode(
 					$stmt,
 					$gatheredReturnStatements,
 					$gatheredYieldStatements,
 					$statementResult,
 					$executionEnds,
+					$classReflection,
+					$methodReflection,
 				), $methodScope);
 			}
 		} elseif ($stmt instanceof Echo_) {
@@ -696,8 +706,8 @@ class NodeScopeResolver
 
 			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer, $context);
 			$nodeCallback(new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensionProvider, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classReflection), $classScope);
-			$nodeCallback(new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls()), $classScope);
-			$nodeCallback(new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches()), $classScope);
+			$nodeCallback(new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope);
+			$nodeCallback(new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope);
 			$classReflection->evictPrivateSymbols();
 			$this->calledMethodResults = [];
 		} elseif ($stmt instanceof Node\Stmt\Property) {
@@ -4423,11 +4433,7 @@ class NodeScopeResolver
 				return;
 			}
 
-			if (!$scope->isInClass()) {
-				return;
-			}
-
-			if ($scope->getClassReflection()->getName() !== $methodReflection->getDeclaringClass()->getName()) {
+			if ($node->getClassReflection()->getName() !== $methodReflection->getDeclaringClass()->getName()) {
 				return;
 			}
 

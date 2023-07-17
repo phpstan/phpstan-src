@@ -5,10 +5,8 @@ namespace PHPStan\Rules\Exceptions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\MethodReturnStatementsNode;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use function sprintf;
 
@@ -29,21 +27,14 @@ class TooWideMethodThrowTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$statementResult = $node->getStatementResult();
-		$methodReflection = $scope->getFunction();
-		if (!$methodReflection instanceof MethodReflection) {
-			throw new ShouldNotHappenException();
-		}
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-
 		$docComment = $node->getDocComment();
 		if ($docComment === null) {
 			return [];
 		}
 
-		$classReflection = $scope->getClassReflection();
+		$statementResult = $node->getStatementResult();
+		$methodReflection = $node->getMethodReflection();
+		$classReflection = $node->getClassReflection();
 		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 			$scope->getFile(),
 			$classReflection->getName(),

@@ -5,10 +5,8 @@ namespace PHPStan\Rules\Exceptions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\MethodReturnStatementsNode;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use function sprintf;
 
 /**
@@ -29,10 +27,7 @@ class MissingCheckedExceptionInMethodThrowsRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$statementResult = $node->getStatementResult();
-		$methodReflection = $scope->getFunction();
-		if (!$methodReflection instanceof MethodReflection) {
-			throw new ShouldNotHappenException();
-		}
+		$methodReflection = $node->getMethodReflection();
 
 		$errors = [];
 		foreach ($this->check->check($methodReflection->getThrowType(), $statementResult->getThrowPoints()) as [$className, $throwPointNode]) {

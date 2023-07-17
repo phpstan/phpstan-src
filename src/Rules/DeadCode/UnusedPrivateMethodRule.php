@@ -9,7 +9,6 @@ use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
 use function array_map;
 use function count;
@@ -32,10 +31,7 @@ class UnusedPrivateMethodRule implements Rule
 		if (!$node->getClass() instanceof Node\Stmt\Class_ && !$node->getClass() instanceof Node\Stmt\Enum_) {
 			return [];
 		}
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-		$classReflection = $scope->getClassReflection();
+		$classReflection = $node->getClassReflection();
 		$constructor = null;
 		if ($classReflection->hasConstructor()) {
 			$constructor = $classReflection->getConstructor();

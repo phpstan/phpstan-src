@@ -5,11 +5,9 @@ namespace PHPStan\Rules\Playground;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\MethodReturnStatementsNode;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use function count;
 use function sprintf;
 
@@ -34,10 +32,7 @@ class MethodNeverRule implements Rule
 			return [];
 		}
 
-		$method = $scope->getFunction();
-		if (!$method instanceof MethodReflection) {
-			throw new ShouldNotHappenException();
-		}
+		$method = $node->getMethodReflection();
 
 		$returnType = ParametersAcceptorSelector::selectSingle($method->getVariants())->getReturnType();
 		$helperResult = $this->helper->shouldReturnNever($node, $returnType);

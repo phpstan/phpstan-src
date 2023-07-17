@@ -276,7 +276,7 @@ class Error implements JsonSerializable
 
 	public static function validateIdentifier(string $identifier): bool
 	{
-		return Strings::match($identifier, '~^[a-zA-Z]([a-zA-Z\\.]*[a-zA-Z])?$~') !== null;
+		return Strings::match($identifier, '~^[a-zA-Z0-9]([a-zA-Z0-9\\.]*[a-zA-Z0-9])?$~') !== null;
 	}
 
 }

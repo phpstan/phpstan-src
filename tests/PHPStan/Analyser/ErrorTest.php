@@ -24,6 +24,9 @@ class ErrorTest extends PHPStanTestCase
 		yield ['phpstan.alwaysFail'];
 		yield ['Phpstan.alwaysFail'];
 		yield ['phpstan.internal.foo'];
+		yield ['foo2.test'];
+		yield ['phpstan123'];
+		yield ['3m.blah'];
 	}
 
 	/**
@@ -38,7 +41,6 @@ class ErrorTest extends PHPStanTestCase
 	{
 		yield [''];
 		yield [' '];
-		yield ['phpstan123'];
 		yield ['phpstan '];
 		yield [' phpstan'];
 		yield ['.phpstan'];

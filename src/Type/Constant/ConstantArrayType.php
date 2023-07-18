@@ -59,6 +59,7 @@ use function assert;
 use function count;
 use function implode;
 use function in_array;
+use function is_bool;
 use function is_int;
 use function is_string;
 use function min;
@@ -75,6 +76,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 {
 
 	private const DESCRIBE_LIMIT = 8;
+
+	private TrinaryLogic $isList;
 
 	/** @var self[]|null */
 	private ?array $allArrays = null;
@@ -94,7 +97,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		private array $valueTypes,
 		int|array $nextAutoIndexes = [0],
 		private array $optionalKeys = [],
-		private bool $isList = false,
+		bool|TrinaryLogic $isList = false,
 	)
 	{
 		assert(count($keyTypes) === count($valueTypes));
@@ -108,12 +111,17 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$keyTypesCount = count($this->keyTypes);
 		if ($keyTypesCount === 0) {
 			$keyType = new NeverType(true);
-			$this->isList = true;
+			$isList = TrinaryLogic::createYes();
 		} elseif ($keyTypesCount === 1) {
 			$keyType = $this->keyTypes[0];
 		} else {
 			$keyType = new UnionType($this->keyTypes);
 		}
+
+		if (is_bool($isList)) {
+			$isList = TrinaryLogic::createFromBoolean($isList);
+		}
+		$this->isList = $isList;
 
 		parent::__construct(
 			$keyType,
@@ -192,7 +200,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$keys = array_merge($requiredKeys, $combination);
 			sort($keys);
 
-			if ($this->isList && array_keys($keys) !== array_values($keys)) {
+			if ($this->isList->yes() && array_keys($keys) !== array_values($keys)) {
 				continue;
 			}
 
@@ -841,7 +849,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		if ($isIterableAtLeastOnce->yes()) {
 			$generalizedArray = TypeCombinator::intersect($generalizedArray, new NonEmptyArrayType());
 		}
-		if ($valuesArray->isList) {
+		if ($valuesArray->isList->yes()) {
 			$generalizedArray = AccessoryArrayListType::intersectWith($generalizedArray);
 		}
 
@@ -933,7 +941,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isList(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->isList);
+		return $this->isList;
 	}
 
 	/** @deprecated Use popArray() instead */
@@ -1122,7 +1130,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$keyTypesReversedKeys = array_keys($keyTypesReversed);
 		$optionalKeys = array_map(static fn (int $optionalKey): int => $keyTypesReversedKeys[$optionalKey], $this->optionalKeys);
 
-		$reversed = new self($keyTypes, array_reverse($this->valueTypes), $this->nextAutoIndexes, $optionalKeys, false);
+		$reversed = new self($keyTypes, array_reverse($this->valueTypes), $this->nextAutoIndexes, $optionalKeys, TrinaryLogic::createNo());
 
 		return $preserveKeys ? $reversed : $reversed->reindex();
 	}
@@ -1161,7 +1169,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$autoIndex++;
 		}
 
-		return new self($keyTypes, $this->valueTypes, [$autoIndex], $this->optionalKeys, true);
+		return new self($keyTypes, $this->valueTypes, [$autoIndex], $this->optionalKeys, TrinaryLogic::createYes());
 	}
 
 	public function toBoolean(): BooleanType
@@ -1247,7 +1255,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		if ($isIterableAtLeastOnce->yes()) {
 			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		}
-		if ($this->isList) {
+		if ($this->isList->yes()) {
 			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
 		}
 
@@ -1279,13 +1287,13 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$autoIndexes = range($count - count($this->optionalKeys), $count);
 		assert($autoIndexes !== []);
 
-		if ($this->isList) {
+		if ($this->isList->yes()) {
 			// Optimized version for lists: Assume that if a later key exists, then earlier keys also exist.
 			$keyTypes = array_map(
 				static fn (int $i): ConstantIntegerType => new ConstantIntegerType($i),
 				array_keys($types),
 			);
-			return new self($keyTypes, $types, $autoIndexes, $this->optionalKeys, true);
+			return new self($keyTypes, $types, $autoIndexes, $this->optionalKeys, TrinaryLogic::createYes());
 		}
 
 		$keyTypes = [];
@@ -1314,7 +1322,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$maxIndex++;
 		}
 
-		return new self($keyTypes, $valueTypes, $autoIndexes, $optionalKeys, true);
+		return new self($keyTypes, $valueTypes, $autoIndexes, $optionalKeys, TrinaryLogic::createYes());
 	}
 
 	/** @deprecated Use getArraySize() instead */
@@ -1539,7 +1547,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$nextAutoIndexes = array_values(array_unique(array_merge($this->nextAutoIndexes, $otherArray->nextAutoIndexes)));
 		sort($nextAutoIndexes);
 
-		return new self($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $this->isList && $otherArray->isList);
+		return new self($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $this->isList->and($otherArray->isList));
 	}
 
 	/**
@@ -1680,7 +1688,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 */
 	public static function __set_state(array $properties): Type
 	{
-		return new self($properties['keyTypes'], $properties['valueTypes'], $properties['nextAutoIndexes'] ?? $properties['nextAutoIndex'], $properties['optionalKeys'] ?? []);
+		return new self($properties['keyTypes'], $properties['valueTypes'], $properties['nextAutoIndexes'] ?? $properties['nextAutoIndex'], $properties['optionalKeys'] ?? [], $properties['isList'] ?? TrinaryLogic::createNo());
 	}
 
 }

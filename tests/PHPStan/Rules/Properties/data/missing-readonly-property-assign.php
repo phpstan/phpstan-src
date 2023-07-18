@@ -287,3 +287,16 @@ class AccessToPropertyOnDifferentObject
 	}
 
 }
+
+class PropertyHasInitPhpDocButIsAlsoAssignedInConstructor
+{
+
+	/** @init */
+	public readonly int $foo;
+
+	public function __construct(int $foo)
+	{
+		$this->foo = $foo;
+	}
+
+}

@@ -112,6 +112,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		if ($extensions === null) {
 			$extensions = $this->readWritePropertiesExtensionProvider->getExtensions();
 		}
+		$initializedViaExtension = [];
 		foreach ($this->getProperties() as $property) {
 			if ($property->isStatic()) {
 				continue;
@@ -134,6 +135,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 						continue;
 					}
 					$is = TrinaryLogic::createYes();
+					$initializedViaExtension[$property->getName()] = true;
 					break;
 				}
 			}
@@ -197,7 +199,11 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($usage instanceof PropertyWrite) {
 				if (array_key_exists($propertyName, $initializedPropertiesMap)) {
 					$hasInitialization = $initializedPropertiesMap[$propertyName]->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
-					if (!$hasInitialization->no() && !$usage->isPromotedPropertyWrite()) {
+					if (
+						!$hasInitialization->no()
+						&& !$usage->isPromotedPropertyWrite()
+						&& !array_key_exists($propertyName, $initializedViaExtension)
+					) {
 						$additionalAssigns[] = [
 							$propertyName,
 							$fetch->getLine(),

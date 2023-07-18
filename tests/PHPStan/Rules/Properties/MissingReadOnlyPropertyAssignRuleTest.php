@@ -7,6 +7,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function in_array;
+use function strpos;
 use const PHP_VERSION_ID;
 
 /**
@@ -51,6 +52,25 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				{
 					return $property->getDeclaringClass()->getName() === 'MissingReadOnlyPropertyAssign\\Entity'
 						&& in_array($propertyName, ['id'], true);
+				}
+
+			},
+			new class() implements ReadWritePropertiesExtension {
+
+				public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
+				{
+					return false;
+				}
+
+				public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
+				{
+					return $this->isInitialized($property, $propertyName);
+				}
+
+				public function isInitialized(PropertyReflection $property, string $propertyName): bool
+				{
+					return $property->isPublic() &&
+						strpos($property->getDocComment() ?? '', '@init') !== false;
 				}
 
 			},

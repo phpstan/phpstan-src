@@ -87,7 +87,7 @@ class BooleanType implements Type
 			[$this],
 			[1],
 			[],
-			true,
+			TrinaryLogic::createYes(),
 		);
 	}
 

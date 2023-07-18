@@ -135,7 +135,7 @@ class FloatType implements Type
 			[$this],
 			[1],
 			[],
-			true,
+			TrinaryLogic::createYes(),
 		);
 	}
 

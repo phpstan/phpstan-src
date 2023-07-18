@@ -340,7 +340,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			[$this],
 			[1],
 			[],
-			true,
+			TrinaryLogic::createYes(),
 		);
 	}
 

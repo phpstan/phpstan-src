@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -26,7 +27,7 @@ class HrtimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$arrayType = new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new IntegerType(), new IntegerType()], [2]);
+		$arrayType = new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new IntegerType(), new IntegerType()], [2], [], TrinaryLogic::createYes());
 		$numberType = TypeUtils::toBenevolentUnion(TypeCombinator::union(new IntegerType(), new FloatType()));
 
 		if (count($functionCall->getArgs()) < 1) {

@@ -8,6 +8,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -20,6 +21,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_is_list;
 use function array_map;
 use function array_unique;
 use function count;
@@ -134,7 +136,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$i++;
 		}
 
-		return new ConstantArrayType($keyTypes, $valueTypes, $isList ? [$i] : [0]);
+		return new ConstantArrayType($keyTypes, $valueTypes, $isList ? [$i] : [0], [], TrinaryLogic::createFromBoolean(array_is_list($constantArray)));
 	}
 
 }

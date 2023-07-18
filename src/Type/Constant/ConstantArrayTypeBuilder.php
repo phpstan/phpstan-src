@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Constant;
 
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
@@ -42,14 +43,14 @@ class ConstantArrayTypeBuilder
 		private array $valueTypes,
 		private array $nextAutoIndexes,
 		private array $optionalKeys,
-		private bool $isList,
+		private TrinaryLogic $isList,
 	)
 	{
 	}
 
 	public static function createEmpty(): self
 	{
-		return new self([], [], [0], [], true);
+		return new self([], [], [0], [], TrinaryLogic::createYes());
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
@@ -59,7 +60,7 @@ class ConstantArrayTypeBuilder
 			$startArrayType->getValueTypes(),
 			$startArrayType->getNextAutoIndexes(),
 			$startArrayType->getOptionalKeys(),
-			$startArrayType->isList()->yes(),
+			$startArrayType->isList(),
 		);
 
 		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
@@ -162,7 +163,7 @@ class ConstantArrayTypeBuilder
 					$min = min($this->nextAutoIndexes);
 					$max = max($this->nextAutoIndexes);
 					if ($offsetType->getValue() > $min) {
-						$this->isList = false;
+						$this->isList = TrinaryLogic::createNo();
 					}
 					if ($offsetType->getValue() >= $max) {
 						/** @var int|float $newAutoIndex */
@@ -177,7 +178,7 @@ class ConstantArrayTypeBuilder
 						}
 					}
 				} else {
-					$this->isList = false;
+					$this->isList = TrinaryLogic::createNo();
 				}
 
 				if ($optional) {
@@ -191,7 +192,7 @@ class ConstantArrayTypeBuilder
 				return;
 			}
 
-			$this->isList = false;
+			$this->isList = TrinaryLogic::createNo();
 
 			$scalarTypes = $offsetType->getConstantScalarTypes();
 			if (count($scalarTypes) === 0) {
@@ -254,7 +255,7 @@ class ConstantArrayTypeBuilder
 		if ($offsetType === null) {
 			$offsetType = TypeCombinator::union(...array_map(static fn (int $index) => new ConstantIntegerType($index), $this->nextAutoIndexes));
 		} else {
-			$this->isList = false;
+			$this->isList = TrinaryLogic::createNo();
 		}
 
 		$this->keyTypes[] = $offsetType;
@@ -297,7 +298,7 @@ class ConstantArrayTypeBuilder
 			$array = TypeCombinator::intersect($array, new OversizedArrayType());
 		}
 
-		if ($this->isList) {
+		if ($this->isList->yes()) {
 			$array = AccessoryArrayListType::intersectWith($array);
 		}
 
@@ -306,7 +307,7 @@ class ConstantArrayTypeBuilder
 
 	public function isList(): bool
 	{
-		return $this->isList;
+		return $this->isList->yes();
 	}
 
 }

@@ -695,7 +695,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 					$k++;
 				}
 
-				return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, false);
+				return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, TrinaryLogic::createNo());
 			}
 
 			return $this;
@@ -724,7 +724,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				}
 			}
 
-			return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, false);
+			return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, TrinaryLogic::createNo());
 		}
 
 		$optionalKeys = $this->optionalKeys;
@@ -734,7 +734,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				continue;
 			}
 			$optionalKeys[] = $i;
-			$isList = false;
+			$isList = TrinaryLogic::createNo();
 		}
 		$optionalKeys = array_values(array_unique($optionalKeys));
 

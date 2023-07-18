@@ -188,7 +188,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			[$this],
 			[1],
 			[],
-			true,
+			TrinaryLogic::createYes(),
 		);
 	}
 

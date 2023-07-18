@@ -45,7 +45,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 
 		yield [
 			'random_int',
-			new ObjectType('Exception'),
+			new ObjectType('Random\RandomException'),
 		];
 	}
 

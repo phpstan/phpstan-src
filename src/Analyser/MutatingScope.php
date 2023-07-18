@@ -127,6 +127,7 @@ use function explode;
 use function get_class;
 use function implode;
 use function in_array;
+use function is_numeric;
 use function is_string;
 use function ltrim;
 use function sprintf;
@@ -1420,7 +1421,7 @@ class MutatingScope implements Scope
 				foreach ($varScalars as $varValue) {
 					if ($node instanceof Expr\PreInc) {
 						++$varValue;
-					} else {
+					} elseif (is_numeric($varValue)) {
 						--$varValue;
 					}
 

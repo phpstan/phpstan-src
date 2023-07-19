@@ -934,6 +934,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testConditionalListRule(): void
+	{
+		$this->analyse([__DIR__ . '/data/return-list-rule.php'], []);
+	}
+
 	public function testBug6856(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6856.php'], []);

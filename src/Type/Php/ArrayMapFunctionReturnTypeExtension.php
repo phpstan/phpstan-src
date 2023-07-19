@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -75,7 +76,11 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 							$constantArray->isOptionalKey($i),
 						);
 					}
-					$arrayTypes[] = $returnedArrayBuilder->getArray();
+					$returnedArray = $returnedArrayBuilder->getArray();
+					if ($constantArray->isList()->yes()) {
+						$returnedArray = AccessoryArrayListType::intersectWith($returnedArray);
+					}
+					$arrayTypes[] = $returnedArray;
 				}
 
 				$mappedArrayType = TypeCombinator::union(...$arrayTypes);

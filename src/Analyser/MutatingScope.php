@@ -1119,11 +1119,11 @@ class MutatingScope implements Scope
 					return new ObjectType(Closure::class);
 				}
 
-				$classType = $this->resolveTypeByName($node->class);
 				if (!$node->name instanceof Node\Identifier) {
 					return new ObjectType(Closure::class);
 				}
 
+				$classType = $this->resolveTypeByName($node->class);
 				$methodName = $node->name->toString();
 				if (!$classType->hasMethod($methodName)->yes()) {
 					return new ObjectType(Closure::class);
@@ -2080,11 +2080,12 @@ class MutatingScope implements Scope
 
 		if ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
 			$type = $this->getType($expr->var);
-			$dimType = $this->getType($expr->dim);
-			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 			if (!$type->isOffsetAccessible()->yes()) {
 				return $this->issetCheckUndefined($expr->var);
 			}
+
+			$dimType = $this->getType($expr->dim);
+			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 
 			if (!$hasOffsetValue->no()) {
 				return $this->issetCheckUndefined($expr->var);

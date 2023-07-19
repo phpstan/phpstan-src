@@ -163,7 +163,11 @@ class ConstantArrayTypeBuilder
 					$min = min($this->nextAutoIndexes);
 					$max = max($this->nextAutoIndexes);
 					if ($offsetType->getValue() > $min) {
-						$this->isList = TrinaryLogic::createNo();
+						if ($offsetType->getValue() <= $max) {
+							$this->isList = $this->isList->and(TrinaryLogic::createMaybe());
+						} else {
+							$this->isList = TrinaryLogic::createNo();
+						}
 					}
 					if ($offsetType->getValue() >= $max) {
 						/** @var int|float $newAutoIndex */

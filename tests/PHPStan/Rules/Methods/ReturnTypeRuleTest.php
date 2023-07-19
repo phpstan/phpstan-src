@@ -924,12 +924,12 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				"Method ReturnList\Foo::getList1() should return list<string> but returns array{0?: 'foo', 1?: 'bar'}.",
 				10,
-				"array{0?: 'foo', 1?: 'bar'} is not a list.",
+				"array{0?: 'foo', 1?: 'bar'} might not be a list.",
 			],
 			[
 				"Method ReturnList\Foo::getList2() should return list<string> but returns array{0?: 'foo', 1?: 'bar'}.",
 				19,
-				"array{0?: 'foo', 1?: 'bar'} is not a list.",
+				"array{0?: 'foo', 1?: 'bar'} might not be a list.",
 			],
 		]);
 	}

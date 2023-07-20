@@ -47,7 +47,7 @@ class MissingReadOnlyPropertyAssignRule implements Rule
 				->build();
 		}
 
-		foreach ($prematureAccess as [$propertyName, $line, $propertyNode]) {
+		foreach ($prematureAccess as [$propertyName, $line, $propertyNode, $file]) {
 			if (!$propertyNode->isReadOnly()) {
 				continue;
 			}
@@ -57,6 +57,7 @@ class MissingReadOnlyPropertyAssignRule implements Rule
 				$propertyName,
 			))
 				->line($line)
+				->file($file)
 				->identifier('property.uninitializedReadonly')
 				->build();
 		}

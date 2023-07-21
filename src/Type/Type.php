@@ -326,6 +326,13 @@ interface Type
 	 */
 	public function traverseSimultaneously(Type $right, callable $cb): Type;
 
+	/**
+	 * Traverses inner types while composing their positional variance.
+	 *
+	 * @param callable(Type $type, TemplateTypeVariance $variance): Type $cb
+	 */
+	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type;
+
 	public function toPhpDocNode(): TypeNode;
 
 	/**

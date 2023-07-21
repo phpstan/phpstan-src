@@ -31,7 +31,7 @@ parameters:
 			path: PHP-Parser/lib/PhpParser/BuilderFactory.php
 
 		-
-			message: "#^Expression \"@\\$undefinedVariable\" on a separate line does not do anything\\.$#"
+			message: "#^Expression \"@\\$undefinedVariable\" on a separate line does nothing\\.$#"
 			count: 1
 			path: PHP-Parser/lib/PhpParser/Lexer.php
 

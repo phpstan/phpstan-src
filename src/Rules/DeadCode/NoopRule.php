@@ -53,7 +53,7 @@ class NoopRule implements Rule
 
 		return [
 			RuleErrorBuilder::message(sprintf(
-				'Expression "%s" on a separate line does not do anything.',
+				'Expression "%s" on a separate line does nothing.',
 				$this->exprPrinter->printExpr($originalExpr),
 			))->line($expr->getLine())
 				->identifier('expr.resultUnused')

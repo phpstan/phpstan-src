@@ -199,7 +199,7 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 				215,
 			],
 			[
-				'Type projection covariant LogicException in generic type InterfaceAncestorsExtends\FooGeneric<int, covariant LogicException> in PHPDoc tag @extends is not allowed.',
+				'Call-site variance annotation of covariant LogicException in generic type InterfaceAncestorsExtends\FooGeneric<int, covariant LogicException> in PHPDoc tag @extends is not allowed.',
 				223,
 			],
 		]);

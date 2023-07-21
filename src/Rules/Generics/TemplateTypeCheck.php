@@ -129,8 +129,8 @@ class TemplateTypeCheck
 				sprintf('PHPDoc tag @template %s bound has type %%s which does not specify all template types of %%s %%s: %%s', $escapedTemplateTagName),
 				sprintf('PHPDoc tag @template %s bound has type %%s which specifies %%d template types, but %%s %%s supports only %%d: %%s', $escapedTemplateTagName),
 				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of %%s %%s.', $escapedTemplateTagName),
-				sprintf('Type projection %%s in generic type %%s in PHPDoc tag @template %s is conflicting with variance of template type %%s of %%s %%s.', $escapedTemplateTagName),
-				sprintf('Type projection %%s in generic type %%s in PHPDoc tag @template %s is redundant, template type %%s of %%s %%s has the same variance.', $escapedTemplateTagName),
+				sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag @template %s is in conflict with %%s template type %%s of %%s %%s.', $escapedTemplateTagName),
+				sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag @template %s is redundant, template type %%s of %%s %%s has the same variance.', $escapedTemplateTagName),
 			);
 			foreach ($genericObjectErrors as $genericObjectError) {
 				$messages[] = $genericObjectError;

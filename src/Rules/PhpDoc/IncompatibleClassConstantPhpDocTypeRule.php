@@ -127,12 +127,12 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 				$escapedConstantName,
 			),
 			sprintf(
-				'Type projection %%s in generic type %%s in PHPDoc tag @var for constant %s::%s is conflicting with variance of template type %%s of %%s %%s.',
+				'Call-site variance of %%s in generic type %%s in PHPDoc tag @var for constant %s::%s is in conflict with %%s template type %%s of %%s %%s.',
 				$className,
 				$escapedConstantName,
 			),
 			sprintf(
-				'Type projection %%s in generic type %%s in PHPDoc tag @var for constant %s::%s is redundant, template type %%s of %%s %%s has the same variance.',
+				'Call-site variance of %%s in generic type %%s in PHPDoc tag @var for constant %s::%s is redundant, template type %%s of %%s %%s has the same variance.',
 				$className,
 				$escapedConstantName,
 			),

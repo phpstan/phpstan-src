@@ -53,7 +53,7 @@ class InterfaceAncestorsRule implements Rule
 			'Generic type %s in PHPDoc tag @extends does not specify all template types of %s %s: %s',
 			'Generic type %s in PHPDoc tag @extends specifies %d template types, but %s %s supports only %d: %s',
 			'Type %s in generic type %s in PHPDoc tag @extends is not subtype of template type %s of %s %s.',
-			'Type projection %s in generic type %s in PHPDoc tag @extends is not allowed.',
+			'Call-site variance annotation of %s in generic type %s in PHPDoc tag @extends is not allowed.',
 			'PHPDoc tag @extends has invalid type %s.',
 			sprintf('Interface %s extends generic interface %%s but does not specify its types: %%s', $escapedInterfaceName),
 			sprintf('in extended type %%s of interface %s', $escapedInterfaceName),

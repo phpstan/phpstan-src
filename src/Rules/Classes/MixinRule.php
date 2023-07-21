@@ -65,8 +65,8 @@ class MixinRule implements Rule
 				'Generic type %s in PHPDoc tag @mixin does not specify all template types of %s %s: %s',
 				'Generic type %s in PHPDoc tag @mixin specifies %d template types, but %s %s supports only %d: %s',
 				'Type %s in generic type %s in PHPDoc tag @mixin is not subtype of template type %s of %s %s.',
-				'Type projection %s in generic type %s in PHPDoc tag @mixin is conflicting with variance of template type %s of %s %s.',
-				'Type projection %s in generic type %s in PHPDoc tag @mixin is redundant, template type %s of %s %s has the same variance.',
+				'Call-site variance of %s in generic type %s in PHPDoc tag @mixin is in conflict with %s template type %s of %s %s.',
+				'Call-site variance of %s in generic type %s in PHPDoc tag @mixin is redundant, template type %s of %s %s has the same variance.',
 			));
 
 			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($type) as [$innerName, $genericTypeNames]) {

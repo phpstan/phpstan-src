@@ -120,7 +120,7 @@ class GenericAncestorsCheck
 					$typeProjectionIsNotAllowedMessage,
 					TypeProjectionHelper::describe($ancestorType->getTypes()[$index], $typeVariance, VerbosityLevel::typeOnly()),
 					$ancestorType->describe(VerbosityLevel::typeOnly()),
-				))->identifier('generics.typeProjectionNotAllowed')->build();
+				))->identifier('generics.callSiteVarianceNotAllowed')->build();
 			}
 		}
 

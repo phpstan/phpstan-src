@@ -102,18 +102,19 @@ class GenericObjectTypeCheck
 							$classLikeDescription,
 							$classReflection->getDisplayName(false),
 						))
-							->identifier('generics.redundantTypeProjection')
-							->tip('You can safely remove the type projection.')
+							->identifier('generics.callSiteVarianceRedundant')
+							->tip('You can safely remove the call-site variance annotation.')
 							->build();
 					} elseif (!$genericTypeVariance->validPosition($templateType->getVariance())) {
 						$messages[] = RuleErrorBuilder::message(sprintf(
 							$typeProjectionHasConflictingVarianceMessage,
 							TypeProjectionHelper::describe($genericTypeType, $genericTypeVariance, VerbosityLevel::typeOnly()),
 							$genericType->describe(VerbosityLevel::typeOnly()),
+							$templateType->getVariance()->describe(),
 							$templateType->describe(VerbosityLevel::typeOnly()),
 							$classLikeDescription,
 							$classReflection->getDisplayName(false),
-						))->identifier('generics.conflictingTypeProjection')->build();
+						))->identifier('generics.callSiteVarianceConflict')->build();
 					}
 				}
 

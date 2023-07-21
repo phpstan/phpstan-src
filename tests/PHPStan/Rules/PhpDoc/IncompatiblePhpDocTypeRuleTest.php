@@ -155,21 +155,21 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				'Write @template TFoo of int to fix this.',
 			],
 			[
-				'Type projection covariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<covariant int> in PHPDoc tag @param for parameter $foo is redundant, template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric has the same variance.',
+				'Call-site variance of covariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<covariant int> in PHPDoc tag @param for parameter $foo is redundant, template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric has the same variance.',
 				301,
-				'You can safely remove the type projection.',
+				'You can safely remove the call-site variance annotation.',
 			],
 			[
-				'Type projection covariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<covariant int> in PHPDoc tag @return is redundant, template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric has the same variance.',
+				'Call-site variance of covariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<covariant int> in PHPDoc tag @return is redundant, template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric has the same variance.',
 				301,
-				'You can safely remove the type projection.',
+				'You can safely remove the call-site variance annotation.',
 			],
 			[
-				'Type projection contravariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int> in PHPDoc tag @param for parameter $foo is conflicting with variance of template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric.',
+				'Call-site variance of contravariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int> in PHPDoc tag @param for parameter $foo is in conflict with covariant template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric.',
 				319,
 			],
 			[
-				'Type projection contravariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int> in PHPDoc tag @return is conflicting with variance of template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric.',
+				'Call-site variance of contravariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int> in PHPDoc tag @return is in conflict with covariant template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric.',
 				319,
 			],
 		]);

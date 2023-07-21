@@ -127,12 +127,12 @@ class IncompatiblePhpDocTypeRule implements Rule
 							$escapedParameterName,
 						),
 						sprintf(
-							'Type projection %%s in generic type %%s in PHPDoc tag %s for parameter $%s is conflicting with variance of template type %%s of %%s %%s.',
+							'Call-site variance of %%s in generic type %%s in PHPDoc tag %s for parameter $%s is in conflict with %%s template type %%s of %%s %%s.',
 							$escapedTagName,
 							$escapedParameterName,
 						),
 						sprintf(
-							'Type projection %%s in generic type %%s in PHPDoc tag %s for parameter $%s is redundant, template type %%s of %%s %%s has the same variance.',
+							'Call-site variance of %%s in generic type %%s in PHPDoc tag %s for parameter $%s is redundant, template type %%s of %%s %%s has the same variance.',
 							$escapedTagName,
 							$escapedParameterName,
 						),
@@ -193,8 +193,8 @@ class IncompatiblePhpDocTypeRule implements Rule
 					'Generic type %s in PHPDoc tag @return does not specify all template types of %s %s: %s',
 					'Generic type %s in PHPDoc tag @return specifies %d template types, but %s %s supports only %d: %s',
 					'Type %s in generic type %s in PHPDoc tag @return is not subtype of template type %s of %s %s.',
-					'Type projection %s in generic type %s in PHPDoc tag @return is conflicting with variance of template type %s of %s %s.',
-					'Type projection %s in generic type %s in PHPDoc tag @return is redundant, template type %s of %s %s has the same variance.',
+					'Call-site variance of %s in generic type %s in PHPDoc tag @return is in conflict with %s template type %s of %s %s.',
+					'Call-site variance of %s in generic type %s in PHPDoc tag @return is redundant, template type %s of %s %s has the same variance.',
 				));
 				if ($isReturnSuperType->no()) {
 					$errors[] = RuleErrorBuilder::message(sprintf(

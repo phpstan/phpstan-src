@@ -56,7 +56,7 @@ class UsedTraitsRuleTest extends RuleTestCase
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
-				'Type projection covariant Throwable in generic type UsedTraits\GenericTrait<covariant Throwable> in PHPDoc tag @use is not allowed.',
+				'Call-site variance annotation of covariant Throwable in generic type UsedTraits\GenericTrait<covariant Throwable> in PHPDoc tag @use is not allowed.',
 				69,
 			],
 		]);

@@ -122,13 +122,13 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 				$escapedPropertyName,
 			),
 			sprintf(
-				'Type projection %%s in generic type %%s in %s for property %s::$%s is conflicting with variance of template type %%s of %%s %%s.',
+				'Call-site variance of %%s in generic type %%s in %s for property %s::$%s is in conflict with %%s template type %%s of %%s %%s.',
 				$description,
 				$className,
 				$escapedPropertyName,
 			),
 			sprintf(
-				'Type projection %%s in generic type %%s in %s for property %s::$%s is redundant, template type %%s of %%s %%s has the same variance.',
+				'Call-site variance of %%s in generic type %%s in %s for property %s::$%s is redundant, template type %%s of %%s %%s has the same variance.',
 				$description,
 				$className,
 				$escapedPropertyName,

@@ -109,7 +109,7 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
-				'Type projection covariant Throwable in generic type ClassAncestorsExtends\FooGeneric<covariant Throwable, InvalidArgumentException> in PHPDoc tag @extends is not allowed.',
+				'Call-site variance annotation of covariant Throwable in generic type ClassAncestorsExtends\FooGeneric<covariant Throwable, InvalidArgumentException> in PHPDoc tag @extends is not allowed.',
 				228,
 			],
 		]);
@@ -199,7 +199,7 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				216,
 			],
 			[
-				'Type projection covariant Throwable in generic type ClassAncestorsImplements\FooGeneric<covariant Throwable, InvalidArgumentException> in PHPDoc tag @implements is not allowed.',
+				'Call-site variance annotation of covariant Throwable in generic type ClassAncestorsImplements\FooGeneric<covariant Throwable, InvalidArgumentException> in PHPDoc tag @implements is not allowed.',
 				224,
 			],
 		]);

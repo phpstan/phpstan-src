@@ -55,7 +55,7 @@ class EnumAncestorsRuleTest extends RuleTestCase
 				64,
 			],
 			[
-				'Type projection covariant EnumGenericAncestors\NonGeneric in generic type EnumGenericAncestors\Generic<covariant EnumGenericAncestors\NonGeneric, int> in PHPDoc tag @implements is not allowed.',
+				'Call-site variance annotation of covariant EnumGenericAncestors\NonGeneric in generic type EnumGenericAncestors\Generic<covariant EnumGenericAncestors\NonGeneric, int> in PHPDoc tag @implements is not allowed.',
 				93,
 			],
 		]);

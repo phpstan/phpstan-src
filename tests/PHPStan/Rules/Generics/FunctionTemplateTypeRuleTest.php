@@ -48,12 +48,12 @@ class FunctionTemplateTypeRuleTest extends RuleTestCase
 				68,
 			],
 			[
-				'Type projection covariant int in generic type FunctionTemplateType\GenericCovariant<covariant int> in PHPDoc tag @template U is redundant, template type T of class FunctionTemplateType\GenericCovariant has the same variance.',
+				'Call-site variance of covariant int in generic type FunctionTemplateType\GenericCovariant<covariant int> in PHPDoc tag @template U is redundant, template type T of class FunctionTemplateType\GenericCovariant has the same variance.',
 				94,
-				'You can safely remove the type projection.',
+				'You can safely remove the call-site variance annotation.',
 			],
 			[
-				'Type projection contravariant int in generic type FunctionTemplateType\GenericCovariant<contravariant int> in PHPDoc tag @template W is conflicting with variance of template type T of class FunctionTemplateType\GenericCovariant.',
+				'Call-site variance of contravariant int in generic type FunctionTemplateType\GenericCovariant<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of class FunctionTemplateType\GenericCovariant.',
 				94,
 			],
 		]);

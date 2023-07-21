@@ -85,13 +85,13 @@ class MixinRuleTest extends RuleTestCase
 				92,
 			],
 			[
-				'Type projection contravariant MixinRule\Foo in generic type MixinRule\Adipiscing<contravariant MixinRule\Foo> in PHPDoc tag @mixin is conflicting with variance of template type T of class MixinRule\Adipiscing.',
+				'Call-site variance of contravariant MixinRule\Foo in generic type MixinRule\Adipiscing<contravariant MixinRule\Foo> in PHPDoc tag @mixin is in conflict with covariant template type T of class MixinRule\Adipiscing.',
 				108,
 			],
 			[
-				'Type projection covariant MixinRule\Foo in generic type MixinRule\Adipiscing<covariant MixinRule\Foo> in PHPDoc tag @mixin is redundant, template type T of class MixinRule\Adipiscing has the same variance.',
+				'Call-site variance of covariant MixinRule\Foo in generic type MixinRule\Adipiscing<covariant MixinRule\Foo> in PHPDoc tag @mixin is redundant, template type T of class MixinRule\Adipiscing has the same variance.',
 				116,
-				'You can safely remove the type projection.',
+				'You can safely remove the call-site variance annotation.',
 			],
 		]);
 	}

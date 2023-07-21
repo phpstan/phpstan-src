@@ -60,12 +60,12 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 				45,
 			],
 			[
-				'Type projection covariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<covariant int> in PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$genericRedundantTypeProjection is redundant, template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric has the same variance.',
+				'Call-site variance of covariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<covariant int> in PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$genericRedundantTypeProjection is redundant, template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric has the same variance.',
 				51,
-				'You can safely remove the type projection.',
+				'You can safely remove the call-site variance annotation.',
 			],
 			[
-				'Type projection contravariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int> in PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$genericIncompatibleTypeProjection is conflicting with variance of template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric.',
+				'Call-site variance of contravariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int> in PHPDoc tag @var for property InvalidPhpDoc\FooWithProperty::$genericIncompatibleTypeProjection is in conflict with covariant template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric.',
 				57,
 			],
 		]);

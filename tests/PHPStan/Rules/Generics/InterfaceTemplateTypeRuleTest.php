@@ -46,12 +46,12 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 				45,
 			],
 			[
-				'Type projection covariant int in generic type InterfaceTemplateType\Covariant<covariant int> in PHPDoc tag @template U is redundant, template type T of interface InterfaceTemplateType\Covariant has the same variance.',
+				'Call-site variance of covariant int in generic type InterfaceTemplateType\Covariant<covariant int> in PHPDoc tag @template U is redundant, template type T of interface InterfaceTemplateType\Covariant has the same variance.',
 				74,
-				'You can safely remove the type projection.',
+				'You can safely remove the call-site variance annotation.',
 			],
 			[
-				'Type projection contravariant int in generic type InterfaceTemplateType\Covariant<contravariant int> in PHPDoc tag @template W is conflicting with variance of template type T of interface InterfaceTemplateType\Covariant.',
+				'Call-site variance of contravariant int in generic type InterfaceTemplateType\Covariant<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of interface InterfaceTemplateType\Covariant.',
 				74,
 			],
 		]);

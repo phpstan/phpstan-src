@@ -1023,6 +1023,13 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/loose-comparison-against-enums.php'], $issues);
 	}
 
+	public function testNonStrictInArray(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-9662.php'], []);
+	}
+
 	public function testLooseComparisonAgainstEnumsNoPhpdoc(): void
 	{
 		if (PHP_VERSION_ID < 80100) {

@@ -53,6 +53,15 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @template for method MethodTemplateType\Ipsum::doFoo() cannot have existing type alias ImportedAlias as its name.',
 				85,
 			],
+			[
+				'Call-site variance of covariant int in generic type MethodTemplateType\Dolor<covariant int> in PHPDoc tag @template U is redundant, template type T of class MethodTemplateType\Dolor has the same variance.',
+				109,
+				'You can safely remove the call-site variance annotation.',
+			],
+			[
+				'Call-site variance of contravariant int in generic type MethodTemplateType\Dolor<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of class MethodTemplateType\Dolor.',
+				109,
+			],
 		]);
 	}
 

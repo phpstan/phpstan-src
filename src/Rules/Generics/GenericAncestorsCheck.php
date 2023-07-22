@@ -10,6 +10,7 @@ use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TypeProjectionHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_fill_keys;
@@ -52,6 +53,7 @@ class GenericAncestorsCheck
 		string $notEnoughTypesMessage,
 		string $extraTypesMessage,
 		string $typeIsNotSubtypeMessage,
+		string $typeProjectionIsNotAllowedMessage,
 		string $invalidTypeMessage,
 		string $genericClassInNonGenericObjectType,
 		string $invalidVarianceMessage,
@@ -87,6 +89,8 @@ class GenericAncestorsCheck
 				$notEnoughTypesMessage,
 				$extraTypesMessage,
 				$typeIsNotSubtypeMessage,
+				'',
+				'',
 			);
 			$messages = array_merge($messages, $genericObjectTypeCheckMessages);
 
@@ -105,6 +109,18 @@ class GenericAncestorsCheck
 			);
 			foreach ($this->varianceCheck->check($variance, $ancestorType, $messageContext) as $message) {
 				$messages[] = $message;
+			}
+
+			foreach ($ancestorType->getVariances() as $index => $typeVariance) {
+				if ($typeVariance->invariant()) {
+					continue;
+				}
+
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					$typeProjectionIsNotAllowedMessage,
+					TypeProjectionHelper::describe($ancestorType->getTypes()[$index], $typeVariance, VerbosityLevel::typeOnly()),
+					$ancestorType->describe(VerbosityLevel::typeOnly()),
+				))->identifier('generics.callSiteVarianceNotAllowed')->build();
 			}
 		}
 

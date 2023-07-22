@@ -71,6 +71,15 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @template for anonymous class cannot have existing type alias TypeAlias as its name.',
 				78,
 			],
+			[
+				'Call-site variance of covariant int in generic type ClassTemplateType\Consecteur<covariant int> in PHPDoc tag @template U is redundant, template type T of class ClassTemplateType\Consecteur has the same variance.',
+				113,
+				'You can safely remove the call-site variance annotation.',
+			],
+			[
+				'Call-site variance of contravariant int in generic type ClassTemplateType\Consecteur<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of class ClassTemplateType\Consecteur.',
+				113,
+			],
 		]);
 	}
 

@@ -54,6 +54,10 @@ class EnumAncestorsRuleTest extends RuleTestCase
 				'Enum EnumGenericAncestors\Foo7 has @extends tag, but cannot extend anything.',
 				64,
 			],
+			[
+				'Call-site variance annotation of covariant EnumGenericAncestors\NonGeneric in generic type EnumGenericAncestors\Generic<covariant EnumGenericAncestors\NonGeneric, int> in PHPDoc tag @implements is not allowed.',
+				93,
+			],
 		]);
 	}
 

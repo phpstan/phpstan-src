@@ -108,6 +108,10 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 				'Interface InterfaceAncestorsImplements\FooGenericGeneric8 has @implements tag, but can not implement any interface, must extend from it.',
 				182,
 			],
+			[
+				'Interface InterfaceAncestorsImplements\FooTypeProjection has @implements tag, but can not implement any interface, must extend from it.',
+				190,
+			],
 		]);
 	}
 
@@ -193,6 +197,10 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 			[
 				'Template type T is declared as covariant, but occurs in invariant position in extended type InterfaceAncestorsExtends\FooGeneric9<T, T> of interface InterfaceAncestorsExtends\FooGeneric10.',
 				215,
+			],
+			[
+				'Call-site variance annotation of covariant LogicException in generic type InterfaceAncestorsExtends\FooGeneric<int, covariant LogicException> in PHPDoc tag @extends is not allowed.',
+				223,
 			],
 		]);
 	}

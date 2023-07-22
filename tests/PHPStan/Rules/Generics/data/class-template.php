@@ -95,3 +95,22 @@ class Amet
 {
 
 }
+
+/**
+ * @template-covariant T
+ */
+class Consecteur
+{
+
+}
+
+/**
+ * @template T of Consecteur<int>
+ * @template U of Consecteur<covariant int>
+ * @template V of Consecteur<*>
+ * @template W of Consecteur<contravariant int>
+ */
+class Adipiscing
+{
+
+}

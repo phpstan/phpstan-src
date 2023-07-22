@@ -73,6 +73,7 @@ class UsedTraitsRule implements Rule
 			'Generic type %s in PHPDoc tag @use does not specify all template types of %s %s: %s',
 			'Generic type %s in PHPDoc tag @use specifies %d template types, but %s %s supports only %d: %s',
 			'Type %s in generic type %s in PHPDoc tag @use is not subtype of template type %s of %s %s.',
+			'Call-site variance annotation of %s in generic type %s in PHPDoc tag @use is not allowed.',
 			'PHPDoc tag @use has invalid type %s.',
 			sprintf('%s uses generic trait %%s but does not specify its types: %%s', ucfirst($description)),
 			sprintf('in used type %%s of %s', $description),

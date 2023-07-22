@@ -217,3 +217,11 @@ class FooGeneric10 implements FooGeneric9
 {
 
 }
+
+/**
+ * @implements FooGeneric<covariant \Throwable, \InvalidArgumentException>
+ */
+class FooTypeProjection implements FooGeneric
+{
+
+}

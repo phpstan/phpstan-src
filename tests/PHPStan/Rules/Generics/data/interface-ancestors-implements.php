@@ -183,3 +183,11 @@ interface FooGenericGeneric8
 {
 
 }
+
+/**
+ * @implements FooGeneric<int, covariant \LogicException>
+ */
+interface FooTypeProjection
+{
+
+}

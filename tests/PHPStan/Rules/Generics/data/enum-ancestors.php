@@ -86,3 +86,11 @@ enum Foo8 implements TraversableInt, \IteratorAggregate
 	}
 
 }
+
+/**
+ * @implements Generic<covariant NonGeneric, int>
+ */
+enum TypeProjection implements Generic
+{
+
+}

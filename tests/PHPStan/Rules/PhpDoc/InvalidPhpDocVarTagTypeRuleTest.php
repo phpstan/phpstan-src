@@ -94,8 +94,17 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
-				'PHPDoc tag @var for variable $foo contains unknown class InvalidVarTagType\Blabla.',
+				'Call-site variance of covariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<covariant int> in PHPDoc tag @var for variable $test is redundant, template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric has the same variance.',
 				67,
+				'You can safely remove the call-site variance annotation.',
+			],
+			[
+				'Call-site variance of contravariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int> in PHPDoc tag @var for variable $test is in conflict with covariant template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric.',
+				73,
+			],
+			[
+				'PHPDoc tag @var for variable $foo contains unknown class InvalidVarTagType\Blabla.',
+				79,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);

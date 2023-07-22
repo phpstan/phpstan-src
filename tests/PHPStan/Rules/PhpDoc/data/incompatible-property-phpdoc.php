@@ -44,4 +44,16 @@ class FooWithProperty
 	/** @var self::BLABLA */
 	private $unknownClassConstant2;
 
+	/** @var \InvalidPhpDocDefinitions\FooCovariantGeneric<int> */
+	private $genericCompatibleInvariantType;
+
+	/** @var \InvalidPhpDocDefinitions\FooCovariantGeneric<covariant int> */
+	private $genericRedundantTypeProjection;
+
+	/** @var \InvalidPhpDocDefinitions\FooCovariantGeneric<*> */
+	private $genericCompatibleStarProjection;
+
+	/** @var \InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int> */
+	private $genericIncompatibleTypeProjection;
+
 }

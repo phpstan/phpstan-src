@@ -216,3 +216,11 @@ interface FooGeneric10 extends FooGeneric9
 {
 
 }
+
+/**
+ * @extends FooGeneric<int, covariant \LogicException>
+ */
+interface FooTypeProjection extends FooGeneric
+{
+
+}

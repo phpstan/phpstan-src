@@ -221,3 +221,11 @@ class FilterIteratorChild extends \FilterIterator
 	}
 
 }
+
+/**
+ * @extends FooGeneric<covariant \Throwable, \InvalidArgumentException>
+ */
+class FooTypeProjection extends FooGeneric
+{
+
+}

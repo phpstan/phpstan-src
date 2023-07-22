@@ -93,3 +93,27 @@ interface InterfaceWithMixin
 {
 
 }
+
+/**
+ * @template-covariant T
+ */
+class Adipiscing
+{
+
+}
+
+/**
+ * @mixin Adipiscing<contravariant Foo>
+ */
+class Elit
+{
+
+}
+
+/**
+ * @mixin Adipiscing<covariant Foo>
+ */
+class Elit2
+{
+
+}

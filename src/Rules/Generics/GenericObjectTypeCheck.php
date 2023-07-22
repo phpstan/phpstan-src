@@ -8,6 +8,8 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TypeProjectionHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
@@ -30,6 +32,8 @@ class GenericObjectTypeCheck
 		string $notEnoughTypesMessage,
 		string $extraTypesMessage,
 		string $typeIsNotSubtypeMessage,
+		string $typeProjectionHasConflictingVarianceMessage,
+		string $typeProjectionIsRedundantMessage,
 	): array
 	{
 		$genericTypes = $this->getGenericTypes($phpDocType);
@@ -51,6 +55,7 @@ class GenericObjectTypeCheck
 			$templateTypes = array_values($classReflection->getTemplateTypeMap()->getTypes());
 
 			$genericTypeTypes = $genericType->getTypes();
+			$genericTypeVariances = $genericType->getVariances();
 			$templateTypesCount = count($templateTypes);
 			$genericTypeTypesCount = count($genericTypeTypes);
 			if ($templateTypesCount > $genericTypeTypesCount) {
@@ -80,8 +85,36 @@ class GenericObjectTypeCheck
 				}
 
 				$templateType = $templateTypes[$i];
-				$boundType = TemplateTypeHelper::resolveToBounds($templateType);
 				$genericTypeType = $genericTypeTypes[$i];
+
+				$genericTypeVariance = $genericTypeVariances[$i] ?? TemplateTypeVariance::createInvariant();
+				if ($templateType instanceof TemplateType && !$genericTypeVariance->invariant()) {
+					if ($genericTypeVariance->equals($templateType->getVariance())) {
+						$messages[] = RuleErrorBuilder::message(sprintf(
+							$typeProjectionIsRedundantMessage,
+							TypeProjectionHelper::describe($genericTypeType, $genericTypeVariance, VerbosityLevel::typeOnly()),
+							$genericType->describe(VerbosityLevel::typeOnly()),
+							$templateType->describe(VerbosityLevel::typeOnly()),
+							$classLikeDescription,
+							$classReflection->getDisplayName(false),
+						))
+							->identifier('generics.callSiteVarianceRedundant')
+							->tip('You can safely remove the call-site variance annotation.')
+							->build();
+					} elseif (!$genericTypeVariance->validPosition($templateType->getVariance())) {
+						$messages[] = RuleErrorBuilder::message(sprintf(
+							$typeProjectionHasConflictingVarianceMessage,
+							TypeProjectionHelper::describe($genericTypeType, $genericTypeVariance, VerbosityLevel::typeOnly()),
+							$genericType->describe(VerbosityLevel::typeOnly()),
+							$templateType->getVariance()->describe(),
+							$templateType->describe(VerbosityLevel::typeOnly()),
+							$classLikeDescription,
+							$classReflection->getDisplayName(false),
+						))->identifier('generics.callSiteVarianceConflict')->build();
+					}
+				}
+
+				$boundType = TemplateTypeHelper::resolveToBounds($templateType);
 				if ($boundType->isSuperTypeOf($genericTypeType)->yes()) {
 					if (!$templateType instanceof TemplateType) {
 						continue;

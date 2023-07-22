@@ -107,6 +107,8 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				sprintf('Generic type %%s in %s does not specify all template types of %%s %%s: %%s', $escapedIdentifier),
 				sprintf('Generic type %%s in %s specifies %%d template types, but %%s %%s supports only %%d: %%s', $escapedIdentifier),
 				sprintf('Type %%s in generic type %%s in %s is not subtype of template type %%s of %%s %%s.', $escapedIdentifier),
+				sprintf('Call-site variance of %%s in generic type %%s in %s is in conflict with %%s template type %%s of %%s %%s.', $escapedIdentifier),
+				sprintf('Call-site variance of %%s in generic type %%s in %s is redundant, template type %%s of %%s %%s has the same variance.', $escapedIdentifier),
 			));
 
 			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($varTagType) as [$innerName, $genericTypeNames]) {

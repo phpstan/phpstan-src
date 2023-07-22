@@ -81,3 +81,17 @@ function objectShapes()
 {
 
 }
+
+/** @template-covariant T */
+class GenericCovariant {}
+
+/**
+ * @template T of GenericCovariant<int>
+ * @template U of GenericCovariant<covariant int>
+ * @template V of GenericCovariant<*>
+ * @template W of GenericCovariant<contravariant int>
+ */
+function typeProjections()
+{
+
+}

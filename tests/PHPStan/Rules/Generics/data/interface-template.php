@@ -58,3 +58,20 @@ interface UnionBound
 {
 
 }
+
+/** @template-covariant T */
+interface Covariant
+{
+
+}
+
+/**
+ * @template T of Covariant<int>
+ * @template U of Covariant<covariant int>
+ * @template V of Covariant<*>
+ * @template W of Covariant<contravariant int>
+ */
+interface TypeProjections
+{
+
+}

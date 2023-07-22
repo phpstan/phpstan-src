@@ -88,3 +88,27 @@ class Ipsum
 	}
 
 }
+
+/**
+ * @template-covariant T
+ */
+class Dolor
+{
+
+}
+
+class Sit
+{
+
+	/**
+	 * @template T of Dolor<int>
+	 * @template U of Dolor<covariant int>
+	 * @template V of Dolor<*>
+	 * @template W of Dolor<contravariant int>
+	 */
+	public function doSit()
+	{
+
+	}
+
+}

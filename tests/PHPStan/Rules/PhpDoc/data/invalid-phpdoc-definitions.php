@@ -15,3 +15,11 @@ class FooGeneric
 {
 
 }
+
+/**
+ * @template-covariant T
+ */
+class FooCovariantGeneric
+{
+
+}

@@ -14,6 +14,10 @@ class NonAcceptingNeverType extends NeverType
 
 	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
 	{
+		if ($type instanceof NeverType) {
+			return AcceptsResult::createYes();
+		}
+
 		return AcceptsResult::createNo();
 	}
 

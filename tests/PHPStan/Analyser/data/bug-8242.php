@@ -15,7 +15,7 @@ namespace {
 		return new NoReturn;
 	}
 
-	\PHPStan\Testing\assertType('*NEVER*', f1());
+	\PHPStan\Testing\assertType('never', f1());
 	\PHPStan\Testing\assertType('NoReturn', f2());
 }
 
@@ -55,6 +55,6 @@ namespace NoReturnUndefined {
 		throw new \LogicException();
 	}
 
-	\PHPStan\Testing\assertType('*NEVER*', f1());
-	\PHPStan\Testing\assertType('*NEVER*', f2());
+	\PHPStan\Testing\assertType('never', f1());
+	\PHPStan\Testing\assertType('never', f2());
 }

@@ -16,6 +16,6 @@ class HelloWorld
 
 	public function test(): void
 	{
-		assertType('*NEVER*', $this->encode('foo'));
+		assertType('never', $this->encode('foo'));
 	}
 }

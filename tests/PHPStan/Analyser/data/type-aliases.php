@@ -134,7 +134,7 @@ namespace TypeAliasesDataset {
 		 */
 		public function conflictingAlias($parameter)
 		{
-			assertType('*NEVER*', $parameter);
+			assertType('never', $parameter);
 		}
 
 		public function __get(string $name)

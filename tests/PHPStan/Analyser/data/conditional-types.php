@@ -152,7 +152,7 @@ abstract class Test
 	public function testMaybeNever(): void
 	{
 		assertType('void', $this->maybeNever(0));
-		assertType('*NEVER*', $this->maybeNever(1));
+		assertType('never', $this->maybeNever(1));
 		assertType('void', $this->maybeNever(2));
 	}
 

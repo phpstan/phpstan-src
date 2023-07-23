@@ -79,7 +79,7 @@ function () {
 	$i->setData("test");
 	// IfThisIsMismatch - Class is not a<int> as required
 	assertType('SelfOut\\a<string>', $i);
-	assertType('*NEVER*', $i->test());
+	assertType('never', $i->test());
 };
 
 function () {

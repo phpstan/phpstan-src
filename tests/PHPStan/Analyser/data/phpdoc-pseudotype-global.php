@@ -25,6 +25,6 @@ function () {
 	assertType('float|int|numeric-string', $numeric);
 	assertType('bool', $boolean);
 	assertType('resource', $resource);
-	assertType('*NEVER*', $never);
+	assertType('never', $never);
 	assertType('float', $double);
 };

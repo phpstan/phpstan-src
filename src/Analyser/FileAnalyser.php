@@ -2,7 +2,6 @@
 
 namespace PHPStan\Analyser;
 
-use PhpParser\Comment;
 use PhpParser\Node;
 use PHPStan\AnalysedCodeException;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
@@ -12,6 +11,7 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Node\FileNode;
+use PHPStan\Node\InTraitNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Rules\Registry as RuleRegistry;
@@ -27,7 +27,6 @@ use function is_file;
 use function restore_error_handler;
 use function set_error_handler;
 use function sprintf;
-use function strpos;
 use const E_DEPRECATED;
 
 class FileAnalyser
@@ -71,17 +70,21 @@ class FileAnalyser
 			try {
 				$this->collectErrors($analysedFiles);
 				$parserNodes = $this->parser->parseFile($file);
-				$linesToIgnore = $this->getLinesToIgnoreFromTokens($file, $parserNodes);
+				$linesToIgnore = $unmatchedLineIgnores = [$file => $this->getLinesToIgnoreFromTokens($parserNodes)];
 				$temporaryFileErrors = [];
-				$nodeCallback = function (Node $node, Scope $scope) use (&$fileErrors, &$fileCollectedData, &$fileDependencies, &$exportedNodes, $file, $ruleRegistry, $collectorRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
+				$nodeCallback = function (Node $node, Scope $scope) use (&$fileErrors, &$fileCollectedData, &$fileDependencies, &$exportedNodes, $file, $ruleRegistry, $collectorRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$unmatchedLineIgnores, &$temporaryFileErrors): void {
 					if ($node instanceof Node\Stmt\Trait_) {
 						foreach (array_keys($linesToIgnore[$file] ?? []) as $lineToIgnore) {
 							if ($lineToIgnore < $node->getStartLine() || $lineToIgnore > $node->getEndLine()) {
 								continue;
 							}
 
-							unset($linesToIgnore[$file][$lineToIgnore]);
+							unset($unmatchedLineIgnores[$file][$lineToIgnore]);
 						}
+					}
+					if ($node instanceof InTraitNode) {
+						$traitNode = $node->getOriginalNode();
+						$linesToIgnore[$scope->getFileDescription()] = $this->getLinesToIgnoreFromTokens([$traitNode]);
 					}
 					if ($outerNodeCallback !== null) {
 						$outerNodeCallback($node, $scope);
@@ -109,18 +112,6 @@ class FileAnalyser
 
 						foreach ($ruleErrors as $ruleError) {
 							$temporaryFileErrors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getLine());
-						}
-					}
-
-					if ($scope->isInTrait()) {
-						$sameTraitFile = $file === $scope->getTraitReflection()->getFileName();
-						foreach ($this->getLinesToIgnore($node) as $lineToIgnore) {
-							$linesToIgnore[$scope->getFileDescription()][$lineToIgnore] = true;
-							if (!$sameTraitFile) {
-								continue;
-							}
-
-							unset($linesToIgnore[$file][$lineToIgnore]);
 						}
 					}
 
@@ -178,7 +169,6 @@ class FileAnalyser
 					$scope,
 					$nodeCallback,
 				);
-				$unmatchedLineIgnores = $linesToIgnore;
 				foreach ($temporaryFileErrors as $tmpFileError) {
 					$line = $tmpFileError->getLine();
 					if (
@@ -243,35 +233,10 @@ class FileAnalyser
 	}
 
 	/**
-	 * @return int[]
-	 */
-	private function getLinesToIgnore(Node $node): array
-	{
-		$lines = [];
-		if ($node->getDocComment() !== null) {
-			$line = $this->findLineToIgnoreComment($node->getDocComment());
-			if ($line !== null) {
-				$lines[] = $line;
-			}
-		}
-
-		foreach ($node->getComments() as $comment) {
-			$line = $this->findLineToIgnoreComment($comment);
-			if ($line === null) {
-				continue;
-			}
-
-			$lines[] = $line;
-		}
-
-		return $lines;
-	}
-
-	/**
 	 * @param Node[] $nodes
-	 * @return array<string, array<int, true>>
+	 * @return array<int, true>
 	 */
-	private function getLinesToIgnoreFromTokens(string $file, array $nodes): array
+	private function getLinesToIgnoreFromTokens(array $nodes): array
 	{
 		if (!isset($nodes[0])) {
 			return [];
@@ -281,33 +246,10 @@ class FileAnalyser
 		$tokenLines = $nodes[0]->getAttribute('linesToIgnore', []);
 		$lines = [];
 		foreach ($tokenLines as $tokenLine) {
-			$lines[$file][$tokenLine] = true;
+			$lines[$tokenLine] = true;
 		}
 
 		return $lines;
-	}
-
-	private function findLineToIgnoreComment(Comment $comment): ?int
-	{
-		$text = $comment->getText();
-		if ($comment instanceof Comment\Doc) {
-			$line = $comment->getEndLine();
-		} else {
-			if (strpos($text, "\n") === false || strpos($text, '//') === 0) {
-				$line = $comment->getStartLine();
-			} else {
-				$line = $comment->getEndLine();
-			}
-		}
-		if (strpos($text, '@phpstan-ignore-next-line') !== false) {
-			return $line + 1;
-		}
-
-		if (strpos($text, '@phpstan-ignore-line') !== false) {
-			return $line;
-		}
-
-		return null;
 	}
 
 	/**

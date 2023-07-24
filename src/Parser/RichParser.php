@@ -10,6 +10,8 @@ use PhpParser\NodeVisitor\NameResolver;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
+use function array_filter;
+use function array_values;
 use function is_string;
 use function strpos;
 use function substr_count;
@@ -61,14 +63,22 @@ class RichParser implements Parser
 		$nodeTraverser = new NodeTraverser();
 		$nodeTraverser->addVisitor($this->nameResolver);
 
+		$traitCollectingVisitor = new TraitCollectingVisitor();
+		$nodeTraverser->addVisitor($traitCollectingVisitor);
+
 		foreach ($this->container->getServicesByTag(self::VISITOR_SERVICE_TAG) as $visitor) {
 			$nodeTraverser->addVisitor($visitor);
 		}
 
 		/** @var array<Node\Stmt> */
 		$nodes = $nodeTraverser->traverse($nodes);
+		$linesToIgnore = $this->getLinesToIgnore($tokens);
 		if (isset($nodes[0])) {
-			$nodes[0]->setAttribute('linesToIgnore', $this->getLinesToIgnore($tokens));
+			$nodes[0]->setAttribute('linesToIgnore', $linesToIgnore);
+		}
+
+		foreach ($traitCollectingVisitor->traits as $trait) {
+			$trait->setAttribute('linesToIgnore', array_values(array_filter($linesToIgnore, static fn (int $line): bool => $line >= $trait->getStartLine() && $line <= $trait->getEndLine())));
 		}
 
 		return $nodes;

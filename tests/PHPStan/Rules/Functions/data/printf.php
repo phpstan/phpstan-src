@@ -69,3 +69,8 @@ sprintf('%lX', 1); // ok
 printf('%0*d', 5, 1); // ok
 printf("%'x*d", 5, 1); // ok
 printf("%0*d %'x*d", 5, 1, 4, 3); // ok
+
+printf('%6.*f', 2, 1); // ok
+printf('%0*.*f', 6, 2, 1); // ok
+printf('%*.*f', 6, 2, 1); // ok
+printf('%*.*f %*.*f', 6, 2, 1, 5, 3, 2); // ok

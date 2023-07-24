@@ -65,3 +65,7 @@ sprintf('%lo', 1); // ok
 sprintf('%lu', 1); // ok
 sprintf('%lx', 1); // ok
 sprintf('%lX', 1); // ok
+
+printf('%0*d', 5, 1); // ok
+printf("%'x*d", 5, 1); // ok
+printf("%0*d %'x*d", 5, 1, 4, 3); // ok

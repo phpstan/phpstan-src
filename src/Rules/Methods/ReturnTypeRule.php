@@ -21,6 +21,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectType;
 use function count;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<Node\Stmt\Return_>
@@ -87,7 +88,7 @@ class ReturnTypeRule implements Rule
 			&& !$errors[0] instanceof TipRuleError
 			&& $errors[0] instanceof LineRuleError
 			&& $method->getDeclaringClass()->isSubclassOf(Rule::class)
-			&& $method->getName() === 'processNode'
+			&& strtolower($method->getName()) === 'processnode'
 			&& $node->expr !== null
 		) {
 			$ruleErrorType = new ObjectType(RuleError::class);

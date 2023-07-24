@@ -415,4 +415,32 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleError(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/rule-error-signature.php'], [
+			[
+				'Return type (array<PHPStan\Rules\RuleError|string>) of method RuleErrorSignature\Baz::processNode() should be covariant with return type (list<PHPStan\Rules\IdentifierRuleError>) of method PHPStan\Rules\Rule<PhpParser\Node>::processNode()',
+				64,
+				'Rules can no longer return plain strings. See: https://phpstan.org/blog/using-rule-error-builder',
+			],
+			[
+				'Return type (array<string>) of method RuleErrorSignature\Lorem::processNode() should be compatible with return type (list<PHPStan\Rules\IdentifierRuleError>) of method PHPStan\Rules\Rule<PhpParser\Node>::processNode()',
+				85,
+				'Rules can no longer return plain strings. See: https://phpstan.org/blog/using-rule-error-builder',
+			],
+			[
+				'Return type (array<PHPStan\Rules\RuleError>) of method RuleErrorSignature\Ipsum::processNode() should be covariant with return type (list<PHPStan\Rules\IdentifierRuleError>) of method PHPStan\Rules\Rule<PhpParser\Node>::processNode()',
+				106,
+				'Errors are missing identifiers. See: https://phpstan.org/blog/using-rule-error-builder',
+			],
+			[
+				'Return type (array<PHPStan\Rules\IdentifierRuleError>) of method RuleErrorSignature\Dolor::processNode() should be covariant with return type (list<PHPStan\Rules\IdentifierRuleError>) of method PHPStan\Rules\Rule<PhpParser\Node>::processNode()',
+				127,
+				'Return type must be a list. See: https://phpstan.org/blog/using-rule-error-builder',
+			],
+		]);
+	}
+
 }

@@ -10,10 +10,16 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
@@ -24,6 +30,7 @@ use PHPStan\Type\VerbosityLevel;
 use function count;
 use function min;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<InClassMethodNode>
@@ -68,7 +75,7 @@ class MethodSignatureRule implements Rule
 			$parentParameters = ParametersAcceptorSelector::selectSingle($parentVariants);
 			[$returnTypeCompatibility, $returnType, $parentReturnType] = $this->checkReturnTypeCompatibility($declaringClass, $parameters, $parentParameters);
 			if ($returnTypeCompatibility->no() || (!$returnTypeCompatibility->yes() && $this->reportMaybes)) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
+				$builder = RuleErrorBuilder::message(sprintf(
 					'Return type (%s) of method %s::%s() should be %s with return type (%s) of method %s::%s()',
 					$returnType->describe(VerbosityLevel::value()),
 					$method->getDeclaringClass()->getDisplayName(),
@@ -77,7 +84,32 @@ class MethodSignatureRule implements Rule
 					$parentReturnType->describe(VerbosityLevel::value()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
 					$parentMethod->getName(),
-				))->identifier('method.childReturnType')->build();
+				))->identifier('method.childReturnType');
+				if (
+					$parentMethod->getDeclaringClass()->getName() === Rule::class
+					&& strtolower($methodName) === 'processnode'
+				) {
+					$ruleErrorType = new ObjectType(RuleError::class);
+					$identifierRuleErrorType = new ObjectType(IdentifierRuleError::class);
+					$listOfIdentifierRuleErrors = new IntersectionType([
+						new ArrayType(IntegerRangeType::fromInterval(0, null), $identifierRuleErrorType),
+						new AccessoryArrayListType(),
+					]);
+					if ($listOfIdentifierRuleErrors->isSuperTypeOf($parentReturnType)->yes()) {
+						$returnValueType = $returnType->getIterableValueType();
+						if (!$returnValueType->isString()->no()) {
+							$builder->tip('Rules can no longer return plain strings. See: https://phpstan.org/blog/using-rule-error-builder');
+						} elseif (
+							$ruleErrorType->isSuperTypeOf($returnValueType)->yes()
+							&& !$identifierRuleErrorType->isSuperTypeOf($returnValueType)->yes()
+						) {
+							$builder->tip('Errors are missing identifiers. See: https://phpstan.org/blog/using-rule-error-builder');
+						} elseif (!$returnType->isList()->yes()) {
+							$builder->tip('Return type must be a list. See: https://phpstan.org/blog/using-rule-error-builder');
+						}
+					}
+				}
+				$errors[] = $builder->build();
 			}
 
 			$parameterResults = $this->checkParameterTypeCompatibility($declaringClass, $parameters->getParameters(), $parentParameters->getParameters());

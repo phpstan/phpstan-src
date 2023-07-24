@@ -117,7 +117,7 @@ class PrintfParametersRule implements Rule
 
 		$specifiers = sprintf($specifiers, $addSpecifier);
 
-		$pattern = '~(?<before>%*)%(?:(?<position>\d+)\$)?[-+]?(?:[ 0]|(?:\'[^%]))?-?\d*(?:\.\d*)?' . $specifiers . '~';
+		$pattern = '~(?<before>%*)%(?:(?<position>\d+)\$)?[-+]?(?:(?:[ 0]|(?:\'[^%]))(?<width>\*)?)?-?\d*(?:\.\d*)?' . $specifiers . '~';
 
 		$matches = Strings::matchAll($format, $pattern, PREG_SET_ORDER);
 
@@ -134,6 +134,10 @@ class PrintfParametersRule implements Rule
 		$maxPositionedNumber = 0;
 		$maxOrdinaryNumber = 0;
 		foreach ($placeholders as $placeholder) {
+			if (isset($placeholder['width'])) {
+				$maxOrdinaryNumber++;
+			}
+
 			if (isset($placeholder['position']) && $placeholder['position'] !== '') {
 				$maxPositionedNumber = max((int) $placeholder['position'], $maxPositionedNumber);
 			} else {

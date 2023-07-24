@@ -8,7 +8,18 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionReturnTypeCheck;
+use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
+use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Rules\TipRuleError;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\ArrayType;
+use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
+use PHPStan\Type\ObjectType;
+use function count;
 use function sprintf;
 
 /**
@@ -41,9 +52,10 @@ class ReturnTypeRule implements Rule
 			return [];
 		}
 
-		return $this->returnTypeCheck->checkReturnType(
+		$returnType = ParametersAcceptorSelector::selectSingle($method->getVariants())->getReturnType();
+		$errors = $this->returnTypeCheck->checkReturnType(
 			$scope,
-			ParametersAcceptorSelector::selectSingle($method->getVariants())->getReturnType(),
+			$returnType,
 			$node->expr,
 			$node,
 			sprintf(
@@ -68,6 +80,43 @@ class ReturnTypeRule implements Rule
 			),
 			$method->isGenerator(),
 		);
+
+		if (
+			count($errors) === 1
+			&& $errors[0]->getIdentifier() === 'return.type'
+			&& !$errors[0] instanceof TipRuleError
+			&& $errors[0] instanceof LineRuleError
+			&& $method->getDeclaringClass()->isSubclassOf(Rule::class)
+			&& $method->getName() === 'processNode'
+			&& $node->expr !== null
+		) {
+			$ruleErrorType = new ObjectType(RuleError::class);
+			$identifierRuleErrorType = new ObjectType(IdentifierRuleError::class);
+			$listOfIdentifierRuleErrors = new IntersectionType([
+				new ArrayType(IntegerRangeType::fromInterval(0, null), $identifierRuleErrorType),
+				new AccessoryArrayListType(),
+			]);
+			if (!$listOfIdentifierRuleErrors->isSuperTypeOf($returnType)->yes()) {
+				return $errors;
+			}
+
+			$returnValueType = $scope->getType($node->expr)->getIterableValueType();
+			$builder = RuleErrorBuilder::message($errors[0]->getMessage())
+				->line($errors[0]->getLine())
+				->identifier($errors[0]->getIdentifier());
+			if (!$returnValueType->isString()->no()) {
+				$builder->tip('Rules can no longer return plain strings. See: https://phpstan.org/blog/using-rule-error-builder');
+			} elseif (
+				$ruleErrorType->isSuperTypeOf($returnValueType)->yes()
+				&& !$identifierRuleErrorType->isSuperTypeOf($returnValueType)->yes()
+			) {
+				$builder->tip('Error is missing an identifier. See: https://phpstan.org/blog/using-rule-error-builder');
+			}
+
+			$errors = [$builder->build()];
+		}
+
+		return $errors;
 	}
 
 }

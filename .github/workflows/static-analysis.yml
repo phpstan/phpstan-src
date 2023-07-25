@@ -82,6 +82,12 @@ jobs:
         shell: bash
         run: "build/transform-source ${{ matrix.php-version }}"
 
+      - name: "Upload transformed sources"
+        uses: actions/upload-artifact@v3
+        with:
+          name: transformed-src
+          path: src
+
       - name: "Reinstall matrix PHP version"
         if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
         uses: "shivammathur/setup-php@v2"

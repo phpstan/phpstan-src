@@ -7,12 +7,18 @@ use PhpParser\Lexer;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
+use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
+use function array_values;
+use function count;
+use function in_array;
 use function is_string;
+use function strlen;
 use function strpos;
+use function substr;
 use function substr_count;
 use const ARRAY_FILTER_USE_KEY;
 use const T_COMMENT;
@@ -29,6 +35,7 @@ class RichParser implements Parser
 		private Lexer $lexer,
 		private NameResolver $nameResolver,
 		private Container $container,
+		private IgnoreLexer $ignoreLexer,
 	)
 	{
 	}
@@ -106,11 +113,11 @@ class RichParser implements Parser
 			if ($type !== T_COMMENT && $type !== T_DOC_COMMENT) {
 				if ($type !== T_WHITESPACE) {
 					if ($pendingToken !== null) {
-						[, $pendingLine] = $pendingToken;
+						[$pendingText, $pendingIgnorePos, $pendingLine] = $pendingToken;
 						if ($line !== $pendingLine + 1) {
-							$lines[$pendingLine] = [];
+							$lines[$pendingLine] = $this->parseIdentifiers($pendingText, $pendingIgnorePos);
 						} else {
-							$lines[$line] = [];
+							$lines[$line] = $this->parseIdentifiers($pendingText, $pendingIgnorePos);
 						}
 						$pendingToken = null;
 					}
@@ -138,20 +145,49 @@ class RichParser implements Parser
 			}
 
 			if ($previousToken !== null && $previousToken[2] === $line) {
-				$lines[$line] = [];
+				$lines[$line] = $this->parseIdentifiers($text, $ignorePos);
 				continue;
 			}
 
 			$line += substr_count($token[1], "\n");
-			$pendingToken = [$ignorePos, $line];
+			$pendingToken = [$text, $ignorePos, $line];
 		}
 
 		if ($pendingToken !== null) {
-			[, $pendingLine] = $pendingToken;
-			$lines[$pendingLine] = [];
+			[$pendingText, $pendingIgnorePos, $pendingLine] = $pendingToken;
+			$lines[$pendingLine] = $this->parseIdentifiers($pendingText, $pendingIgnorePos);
 		}
 
 		return $lines;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private function parseIdentifiers(string $text, int $ignorePos): array
+	{
+		$text = substr($text, $ignorePos + strlen('@phpstan-ignore'));
+		$tokens = $this->ignoreLexer->tokenize($text);
+		$tokens = array_values(array_filter($tokens, static fn (array $token) => !in_array($token[IgnoreLexer::TYPE_OFFSET], [IgnoreLexer::TOKEN_WHITESPACE, IgnoreLexer::TOKEN_EOL], true)));
+		$c = count($tokens);
+
+		$identifiers = [];
+		for ($i = 0; $i < $c; $i++) {
+			[IgnoreLexer::VALUE_OFFSET => $content, IgnoreLexer::TYPE_OFFSET => $tokenType] = $tokens[$i];
+			if ($tokenType === IgnoreLexer::TOKEN_IDENTIFIER) {
+				$identifiers[] = $content;
+				if (isset($tokens[$i + 1])) {
+					if ($tokens[$i + 1][IgnoreLexer::TYPE_OFFSET] === IgnoreLexer::TOKEN_COMMA) {
+						$i++;
+					}
+				}
+				continue;
+			}
+
+			break;
+		}
+
+		return $identifiers;
 	}
 
 }

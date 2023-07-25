@@ -16,6 +16,8 @@ use function sprintf;
 class Error implements JsonSerializable
 {
 
+	public const PATTERN_IDENTIFIER = '[a-zA-Z0-9](?:[a-zA-Z0-9\\.]*[a-zA-Z0-9])?';
+
 	/**
 	 * Error constructor.
 	 *
@@ -276,7 +278,7 @@ class Error implements JsonSerializable
 
 	public static function validateIdentifier(string $identifier): bool
 	{
-		return Strings::match($identifier, '~^[a-zA-Z0-9]([a-zA-Z0-9\\.]*[a-zA-Z0-9])?$~') !== null;
+		return Strings::match($identifier, '~^' . self::PATTERN_IDENTIFIER . '$~') !== null;
 	}
 
 }

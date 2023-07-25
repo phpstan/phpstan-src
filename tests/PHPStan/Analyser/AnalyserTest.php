@@ -6,6 +6,7 @@ use PhpParser\Lexer;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
+use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
@@ -655,6 +656,7 @@ class AnalyserTest extends PHPStanTestCase
 				$lexer,
 				new NameResolver(),
 				self::getContainer(),
+				new IgnoreLexer(),
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new RuleErrorTransformer(),

@@ -55,6 +55,46 @@ class RichParserTest extends PHPStanTestCase
 
 		yield [
 			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore return.ref',
+			[
+				2 => ['return.ref'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore return.ref return.non',
+			[
+				2 => ['return.ref', 'return.non'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore return.ref, return.non',
+			[
+				2 => ['return.ref', 'return.non'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore return.ref, return.non (foo',
+			[
+				2 => ['return.ref', 'return.non'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore return.ref, return.non čičí',
+			[
+				2 => ['return.ref', 'return.non'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
 			'/* @phpstan-ignore */test();',
 			[
 				2 => [],
@@ -162,6 +202,18 @@ class RichParserTest extends PHPStanTestCase
 			'/** @phpstan-ignore */',
 			[
 				3 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			PHP_EOL .
+			'/**' . PHP_EOL .
+			' * @phpstan-ignore return.ref,' . PHP_EOL .
+			' *                 return.non,' . PHP_EOL .
+			' */',
+			[
+				6 => ['return.ref', 'return.non'],
 			],
 		];
 	}

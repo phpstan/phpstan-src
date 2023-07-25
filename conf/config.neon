@@ -655,6 +655,9 @@ services:
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
+		class: PHPStan\Analyser\Ignore\IgnoreLexer
+
+	-
 		class: PHPStan\Analyser\LazyInternalScopeFactory
 		arguments:
 			scopeClass: %scopeClass%

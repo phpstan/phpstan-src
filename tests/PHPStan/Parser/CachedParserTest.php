@@ -2,8 +2,6 @@
 
 namespace PHPStan\Parser;
 
-use PhpParser\Node;
-
 use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
@@ -62,7 +60,10 @@ class CachedParserTest extends PHPStanTestCase
 		];
 	}
 
-	private function getParserMock(): Parser&MockObject
+	/**
+	 * @return Parser&MockObject
+	 */
+	private function getParserMock(): Parser
 	{
 		$mock = $this->createMock(Parser::class);
 
@@ -72,7 +73,10 @@ class CachedParserTest extends PHPStanTestCase
 		return $mock;
 	}
 
-	private function getPhpParserNodeMock(): \PhpParser\Node&MockObject
+	/**
+	 * @return \PhpParser\Node&MockObject
+	 */
+	private function getPhpParserNodeMock(): \PhpParser\Node
 	{
 		return $this->createMock(\PhpParser\Node::class);
 	}

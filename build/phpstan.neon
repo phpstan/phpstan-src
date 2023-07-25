@@ -66,8 +66,7 @@ parameters:
 			- 'PHPStan\Type\CircularTypeAliasDefinitionException'
 			- 'PHPStan\Broker\ClassAutoloadingException'
 			- 'LogicException'
-			- 'TypeError'
-			- 'DivisionByZeroError'
+			- 'Error'
 		check:
 			missingCheckedExceptionInThrows: true
 			tooWideThrowType: true

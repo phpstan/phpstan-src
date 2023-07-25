@@ -17,6 +17,7 @@ use function substr_count;
 use const ARRAY_FILTER_USE_KEY;
 use const T_COMMENT;
 use const T_DOC_COMMENT;
+use const T_WHITESPACE;
 
 class RichParser implements Parser
 {
@@ -52,6 +53,8 @@ class RichParser implements Parser
 	{
 		$errorHandler = new Collecting();
 		$nodes = $this->parser->parse($sourceCode, $errorHandler);
+
+		/** @var list<string|array{0:int,1:string,2:int}> $tokens */
 		$tokens = $this->lexer->getTokens();
 		if ($errorHandler->hasErrors()) {
 			throw new ParserErrorsException($errorHandler->getErrors(), null);
@@ -85,33 +88,67 @@ class RichParser implements Parser
 	}
 
 	/**
-	 * @param mixed[] $tokens
+	 * @param list<string|array{0:int,1:string,2:int}> $tokens
 	 * @return array<int, list<string>|null>
 	 */
 	private function getLinesToIgnore(array $tokens): array
 	{
 		$lines = [];
+		$previousToken = null;
+		$pendingToken = null;
 		foreach ($tokens as $token) {
 			if (is_string($token)) {
 				continue;
 			}
 
 			$type = $token[0];
+			$line = $token[2];
 			if ($type !== T_COMMENT && $type !== T_DOC_COMMENT) {
+				if ($type !== T_WHITESPACE) {
+					if ($pendingToken !== null) {
+						[, $pendingLine] = $pendingToken;
+						if ($line !== $pendingLine + 1) {
+							$lines[$pendingLine] = [];
+						} else {
+							$lines[$line] = [];
+						}
+						$pendingToken = null;
+					}
+					$previousToken = $token;
+				}
 				continue;
 			}
 
 			$text = $token[1];
-			$line = $token[2];
-			if (strpos($text, '@phpstan-ignore-next-line') !== false) {
+			$isNextLine = strpos($text, '@phpstan-ignore-next-line') !== false;
+			$isCurrentLine = strpos($text, '@phpstan-ignore-line') !== false;
+			if ($isNextLine) {
 				$line++;
-			} elseif (strpos($text, '@phpstan-ignore-line') === false) {
+			}
+			if ($isNextLine || $isCurrentLine) {
+				$line += substr_count($token[1], "\n");
+
+				$lines[$line] = null;
+				continue;
+			}
+
+			$ignorePos = strpos($text, '@phpstan-ignore');
+			if ($ignorePos === false) {
+				continue;
+			}
+
+			if ($previousToken !== null && $previousToken[2] === $line) {
+				$lines[$line] = [];
 				continue;
 			}
 
 			$line += substr_count($token[1], "\n");
+			$pendingToken = [$ignorePos, $line];
+		}
 
-			$lines[$line] = null;
+		if ($pendingToken !== null) {
+			[, $pendingLine] = $pendingToken;
+			$lines[$pendingLine] = [];
 		}
 
 		return $lines;

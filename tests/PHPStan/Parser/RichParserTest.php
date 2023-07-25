@@ -44,6 +44,126 @@ class RichParserTest extends PHPStanTestCase
 				6 => null,
 			],
 		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore',
+			[
+				2 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'/* @phpstan-ignore */test();',
+			[
+				2 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'/** @phpstan-ignore */test();',
+			[
+				2 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'  /** @phpstan-ignore */test();',
+			[
+				2 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test();  /** @phpstan-ignore */test();',
+			[
+				2 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'// @phpstan-ignore' . PHP_EOL .
+			'test();',
+			[
+				3 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'   // @phpstan-ignore' . PHP_EOL .
+			'test();',
+			[
+				3 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			PHP_EOL .
+			'/**' . PHP_EOL .
+			' * @phpstan-ignore' . PHP_EOL .
+			' */' . PHP_EOL .
+			'test();',
+			[
+				6 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			PHP_EOL .
+			'/** @phpstan-ignore */' . PHP_EOL .
+			'test();',
+			[
+				4 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			PHP_EOL .
+			'/**' . PHP_EOL .
+			' * @phpstan-ignore' . PHP_EOL .
+			' */ test();',
+			[
+				5 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			PHP_EOL .
+			'test(); /**' . PHP_EOL .
+			' * @phpstan-ignore' . PHP_EOL .
+			' */',
+			[
+				3 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			PHP_EOL .
+			'/** @phpstan-ignore */' . PHP_EOL,
+			[
+				3 => [],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			PHP_EOL .
+			'/** @phpstan-ignore */',
+			[
+				3 => [],
+			],
+		];
 	}
 
 	/**

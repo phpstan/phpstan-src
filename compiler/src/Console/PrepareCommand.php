@@ -64,7 +64,7 @@ final class PrepareCommand extends Command
 
 		unset($json['replace']);
 		$json['name'] = 'phpstan/phpstan';
-		$json['require']['php'] = '^7.1';
+		$json['require']['php'] = '^7.2';
 
 		// simplify autoload (remove not packed build directory]
 		$json['autoload']['psr-4']['PHPStan\\'] = 'src/';
@@ -205,7 +205,7 @@ php;
 	private function transformSource(): void
 	{
 		chdir(__DIR__ . '/../../..');
-		exec(escapeshellarg(__DIR__ . '/../../../build/transform-source') . ' 7.1', $outputLines, $exitCode);
+		exec(escapeshellarg(__DIR__ . '/../../../build/transform-source') . ' 7.2', $outputLines, $exitCode);
 		if ($exitCode === 0) {
 			return;
 		}

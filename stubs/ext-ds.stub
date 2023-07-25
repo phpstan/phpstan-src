@@ -457,6 +457,7 @@ interface Sequence extends Collection, ArrayAccess
 	/**
 	 * @return TValue
 	 * @throws \UnderflowException
+	 * @phpstan-impure
 	 */
 	public function pop();
 
@@ -495,6 +496,7 @@ interface Sequence extends Collection, ArrayAccess
 	/**
 	 * @return TValue
 	 * @throws \UnderflowException
+	 * @phpstan-impure
 	 */
 	public function shift();
 
@@ -799,6 +801,7 @@ final class Stack implements Collection, ArrayAccess
 	/**
 	 * @return TValue
 	 * @throws UnderflowException
+	 * @phpstan-impure
 	 */
 	public function pop()
 	{
@@ -852,6 +855,7 @@ final class Queue implements Collection, ArrayAccess
 	/**
 	 * @return TValue
 	 * @throws UnderflowException
+	 * @phpstan-impure
 	 */
 	public function pop()
 	{
@@ -896,6 +900,7 @@ final class PriorityQueue implements Collection
 	/**
 	 * @return TValue
 	 * @throws UnderflowException
+	 * @phpstan-impure
 	 */
 	public function pop()
 	{

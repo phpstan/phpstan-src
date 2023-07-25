@@ -1917,7 +1917,7 @@ return [
 'DOMDocument::load' => ['mixed', 'filename'=>'string', 'options='=>'int'],
 'DOMDocument::loadHTML' => ['bool', 'source'=>'string', 'options='=>'int'],
 'DOMDocument::loadHTMLFile' => ['bool', 'filename'=>'string', 'options='=>'int'],
-'DOMDocument::loadXML' => ['mixed', 'source'=>'string', 'options='=>'int'],
+'DOMDocument::loadXML' => ['bool|DOMDocument', 'source'=>'string', 'options='=>'int'],
 'DOMDocument::normalizeDocument' => ['void'],
 'DOMDocument::registerNodeClass' => ['bool', 'baseclass'=>'string', 'extendedclass'=>'string'],
 'DOMDocument::relaxNGValidate' => ['bool', 'filename'=>'string'],

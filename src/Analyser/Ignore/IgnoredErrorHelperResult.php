@@ -1,7 +1,8 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Analyser;
+namespace PHPStan\Analyser\Ignore;
 
+use PHPStan\Analyser\Error;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_fill_keys;

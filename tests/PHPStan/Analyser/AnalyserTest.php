@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Lexer;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
+use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;

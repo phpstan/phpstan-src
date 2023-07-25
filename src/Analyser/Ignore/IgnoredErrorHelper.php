@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Analyser;
+namespace PHPStan\Analyser\Ignore;
 
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;

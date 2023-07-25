@@ -12,7 +12,7 @@ use Nette\Utils\Json;
 use Phar;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
-use PHPStan\Analyser\IgnoredErrorHelper;
+use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\File\FileMonitor;
 use PHPStan\File\FileMonitorResult;

@@ -1,8 +1,9 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Analyser;
+namespace PHPStan\Analyser\Ignore;
 
 use Nette\Utils\Strings;
+use PHPStan\Analyser\Error;
 use PHPStan\File\FileExcluder;
 use PHPStan\File\FileHelper;
 use function count;

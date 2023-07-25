@@ -5,7 +5,7 @@ namespace PHPStan\Command;
 use Nette\Utils\Json;
 use PHPStan\AnalysedCodeException;
 use PHPStan\Analyser\Error;
-use PHPStan\Analyser\IgnoredErrorHelper;
+use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Analyser\ScopeContext;

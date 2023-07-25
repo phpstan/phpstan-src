@@ -649,7 +649,7 @@ services:
 		class: PHPStan\Analyser\RuleErrorTransformer
 
 	-
-		class: PHPStan\Analyser\IgnoredErrorHelper
+		class: PHPStan\Analyser\Ignore\IgnoredErrorHelper
 		arguments:
 			ignoreErrors: %ignoreErrors%
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%

@@ -76,6 +76,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -2636,10 +2637,39 @@ class MutatingScope implements Scope
 		bool $preserveThis,
 	): self
 	{
+		$acceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
+		$parametersByName = [];
+
+		foreach ($acceptor->getParameters() as $parameter) {
+			$parametersByName[$parameter->getName()] = $parameter;
+		}
+
 		$expressionTypes = [];
 		$nativeExpressionTypes = [];
-		foreach (ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters() as $parameter) {
+		$conditionalTypes = [];
+		foreach ($acceptor->getParameters() as $parameter) {
 			$parameterType = $parameter->getType();
+
+			if ($parameterType instanceof ConditionalTypeForParameter) {
+				$targetParameterName = substr($parameterType->getParameterName(), 1);
+				if (array_key_exists($targetParameterName, $parametersByName)) {
+					$targetParameter = $parametersByName[$targetParameterName];
+
+					$ifType = $parameterType->isNegated() ? $parameterType->getElse() : $parameterType->getIf();
+					$elseType = $parameterType->isNegated() ? $parameterType->getIf() : $parameterType->getElse();
+
+					$holder = new ConditionalExpressionHolder([
+						$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), TypeCombinator::intersect($targetParameter->getType(), $parameterType->getTarget())),
+					], new ExpressionTypeHolder(new Variable($parameter->getName()), $ifType, TrinaryLogic::createYes()));
+					$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
+
+					$holder = new ConditionalExpressionHolder([
+						$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), TypeCombinator::remove($targetParameter->getType(), $parameterType->getTarget())),
+					], new ExpressionTypeHolder(new Variable($parameter->getName()), $elseType, TrinaryLogic::createYes()));
+					$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
+				}
+			}
+
 			$paramExprString = '$' . $parameter->getName();
 			if ($parameter->isVariadic()) {
 				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()) {
@@ -2676,6 +2706,7 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			array_merge($this->getConstantTypes(), $expressionTypes),
 			array_merge($this->getNativeConstantTypes(), $nativeExpressionTypes),
+			$conditionalTypes,
 		);
 	}
 

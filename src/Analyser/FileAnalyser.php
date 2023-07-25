@@ -237,10 +237,10 @@ class FileAnalyser
 			return [];
 		}
 
-		/** @var int[] $tokenLines */
+		/** @var array<int, list<string>|null> $tokenLines */
 		$tokenLines = $nodes[0]->getAttribute('linesToIgnore', []);
 		$lines = [];
-		foreach ($tokenLines as $tokenLine) {
+		foreach (array_keys($tokenLines) as $tokenLine) {
 			$lines[$tokenLine] = true;
 		}
 

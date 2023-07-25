@@ -11,10 +11,10 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
-use function array_values;
 use function is_string;
 use function strpos;
 use function substr_count;
+use const ARRAY_FILTER_USE_KEY;
 use const T_COMMENT;
 use const T_DOC_COMMENT;
 
@@ -78,7 +78,7 @@ class RichParser implements Parser
 		}
 
 		foreach ($traitCollectingVisitor->traits as $trait) {
-			$trait->setAttribute('linesToIgnore', array_values(array_filter($linesToIgnore, static fn (int $line): bool => $line >= $trait->getStartLine() && $line <= $trait->getEndLine())));
+			$trait->setAttribute('linesToIgnore', array_filter($linesToIgnore, static fn (int $line): bool => $line >= $trait->getStartLine() && $line <= $trait->getEndLine(), ARRAY_FILTER_USE_KEY));
 		}
 
 		return $nodes;
@@ -86,7 +86,7 @@ class RichParser implements Parser
 
 	/**
 	 * @param mixed[] $tokens
-	 * @return int[]
+	 * @return array<int, list<string>|null>
 	 */
 	private function getLinesToIgnore(array $tokens): array
 	{
@@ -111,7 +111,7 @@ class RichParser implements Parser
 
 			$line += substr_count($token[1], "\n");
 
-			$lines[] = $line;
+			$lines[$line] = null;
 		}
 
 		return $lines;

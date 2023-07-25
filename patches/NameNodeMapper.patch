@@ -1,6 +1,6 @@
---- packages/StaticTypeMapper/PhpParser/NameNodeMapper.php	2023-01-06 14:56:29.000000000 +0100
-+++ packages/StaticTypeMapper/PhpParser/NameNodeMapper.php	2023-01-06 14:57:51.000000000 +0100
-@@ -14,6 +14,7 @@
+--- packages/StaticTypeMapper/PhpParser/NameNodeMapper.php	2023-07-23 22:44:23
++++ packages/StaticTypeMapper/PhpParser/NameNodeMapper.php	2023-07-25 09:45:33
+@@ -13,6 +13,7 @@
  use PHPStan\Type\FloatType;
  use PHPStan\Type\IntegerType;
  use PHPStan\Type\MixedType;
@@ -8,7 +8,7 @@
  use PHPStan\Type\ObjectWithoutClassType;
  use PHPStan\Type\StaticType;
  use PHPStan\Type\StringType;
-@@ -102,7 +103,7 @@
+@@ -92,7 +93,7 @@
              return new StaticType($classReflection);
          }
          if ($reference === ObjectReference::SELF) {
@@ -17,7 +17,7 @@
          }
          if ($reference === ObjectReference::PARENT) {
              $parentClassReflection = $classReflection->getParentClass();
-@@ -111,7 +112,7 @@
+@@ -101,7 +102,7 @@
              }
              return new ParentObjectWithoutClassType();
          }

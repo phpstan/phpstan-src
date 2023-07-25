@@ -83,6 +83,7 @@ jobs:
         run: "build/transform-source ${{ matrix.php-version }}"
 
       - name: "Upload transformed sources"
+        if: matrix.php-version == '7.2'
         uses: actions/upload-artifact@v3
         with:
           name: transformed-src

@@ -71,6 +71,7 @@ rules:
 	- PHPStan\Rules\Functions\ParamAttributesRule
 	- PHPStan\Rules\Functions\PrintfParametersRule
 	- PHPStan\Rules\Functions\ReturnNullsafeByRefRule
+	- PHPStan\Rules\Ignore\IgnoreParseErrorRule
 	- PHPStan\Rules\Keywords\ContinueBreakInLoopRule
 	- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
 	- PHPStan\Rules\Methods\CallMethodsRule

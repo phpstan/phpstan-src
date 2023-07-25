@@ -18,61 +18,61 @@ class IgnoreLexerTest extends PHPStanTestCase
 		yield [
 			'return.ref return.ref',
 			[
-				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER],
-				[' ', IgnoreLexer::TOKEN_WHITESPACE],
-				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER],
+				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER, 1],
+				[' ', IgnoreLexer::TOKEN_WHITESPACE, 1],
+				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER, 1],
 			],
 		];
 
 		yield [
 			'return.ref, return.ref',
 			[
-				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER],
-				[',', IgnoreLexer::TOKEN_COMMA],
-				[' ', IgnoreLexer::TOKEN_WHITESPACE],
-				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER],
+				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER, 1],
+				[',', IgnoreLexer::TOKEN_COMMA, 1],
+				[' ', IgnoreLexer::TOKEN_WHITESPACE, 1],
+				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER, 1],
 			],
 		];
 
 		yield [
 			'return.ref čičí',
 			[
-				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER],
-				[' ', IgnoreLexer::TOKEN_WHITESPACE],
-				['čičí', IgnoreLexer::TOKEN_OTHER],
+				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER, 1],
+				[' ', IgnoreLexer::TOKEN_WHITESPACE, 1],
+				['čičí', IgnoreLexer::TOKEN_OTHER, 1],
 			],
 		];
 
 		yield [
 			'return.ref čičí ',
 			[
-				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER],
-				[' ', IgnoreLexer::TOKEN_WHITESPACE],
-				['čičí', IgnoreLexer::TOKEN_OTHER],
-				[' ', IgnoreLexer::TOKEN_WHITESPACE],
+				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER, 1],
+				[' ', IgnoreLexer::TOKEN_WHITESPACE, 1],
+				['čičí', IgnoreLexer::TOKEN_OTHER, 1],
+				[' ', IgnoreLexer::TOKEN_WHITESPACE, 1],
 			],
 		];
 
 		yield [
 			'return.ref (čičí)',
 			[
-				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER],
-				[' ', IgnoreLexer::TOKEN_WHITESPACE],
-				['(', IgnoreLexer::TOKEN_OPEN_PARENTHESIS],
-				['čičí', IgnoreLexer::TOKEN_OTHER],
-				[')', IgnoreLexer::TOKEN_CLOSE_PARENTHESIS],
+				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER, 1],
+				[' ', IgnoreLexer::TOKEN_WHITESPACE, 1],
+				['(', IgnoreLexer::TOKEN_OPEN_PARENTHESIS, 1],
+				['čičí', IgnoreLexer::TOKEN_OTHER, 1],
+				[')', IgnoreLexer::TOKEN_CLOSE_PARENTHESIS, 1],
 			],
 		];
 
 		yield [
 			'return.ref ' . PHP_EOL . ' (čičí)',
 			[
-				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER],
-				[' ', IgnoreLexer::TOKEN_WHITESPACE],
-				[PHP_EOL . ' ', IgnoreLexer::TOKEN_EOL],
-				['(', IgnoreLexer::TOKEN_OPEN_PARENTHESIS],
-				['čičí', IgnoreLexer::TOKEN_OTHER],
-				[')', IgnoreLexer::TOKEN_CLOSE_PARENTHESIS],
+				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER, 1],
+				[' ', IgnoreLexer::TOKEN_WHITESPACE, 1],
+				[PHP_EOL . ' ', IgnoreLexer::TOKEN_EOL, 1],
+				['(', IgnoreLexer::TOKEN_OPEN_PARENTHESIS, 2],
+				['čičí', IgnoreLexer::TOKEN_OTHER, 2],
+				[')', IgnoreLexer::TOKEN_CLOSE_PARENTHESIS, 2],
 			],
 		];
 	}

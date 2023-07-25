@@ -8,10 +8,12 @@ use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
+use PHPStan\Analyser\Ignore\IgnoreParseException;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
+use function array_pop;
 use function array_values;
 use function count;
 use function in_array;
@@ -82,9 +84,12 @@ class RichParser implements Parser
 
 		/** @var array<Node\Stmt> */
 		$nodes = $nodeTraverser->traverse($nodes);
-		$linesToIgnore = $this->getLinesToIgnore($tokens);
+		['lines' => $linesToIgnore, 'errors' => $ignoreParseErrors] = $this->getLinesToIgnore($tokens);
 		if (isset($nodes[0])) {
 			$nodes[0]->setAttribute('linesToIgnore', $linesToIgnore);
+			if (count($ignoreParseErrors) > 0) {
+				$nodes[0]->setAttribute('linesToIgnoreParseErrors', $ignoreParseErrors);
+			}
 		}
 
 		foreach ($traitCollectingVisitor->traits as $trait) {
@@ -96,13 +101,14 @@ class RichParser implements Parser
 
 	/**
 	 * @param list<string|array{0:int,1:string,2:int}> $tokens
-	 * @return array<int, list<string>|null>
+	 * @return array{lines: array<int, list<string>|null>, errors: array<int, non-empty-list<string>>}
 	 */
 	private function getLinesToIgnore(array $tokens): array
 	{
 		$lines = [];
 		$previousToken = null;
 		$pendingToken = null;
+		$errors = [];
 		foreach ($tokens as $token) {
 			if (is_string($token)) {
 				continue;
@@ -113,11 +119,20 @@ class RichParser implements Parser
 			if ($type !== T_COMMENT && $type !== T_DOC_COMMENT) {
 				if ($type !== T_WHITESPACE) {
 					if ($pendingToken !== null) {
-						[$pendingText, $pendingIgnorePos, $pendingLine] = $pendingToken;
+						[$pendingText, $pendingIgnorePos, $tokenLine, $pendingLine] = $pendingToken;
+
+						try {
+							$identifiers = $this->parseIdentifiers($pendingText, $pendingIgnorePos);
+						} catch (IgnoreParseException $e) {
+							$errors[] = [$tokenLine + $e->getPhpDocLine(), $e->getMessage()];
+							$pendingToken = null;
+							continue;
+						}
+
 						if ($line !== $pendingLine + 1) {
-							$lines[$pendingLine] = $this->parseIdentifiers($pendingText, $pendingIgnorePos);
+							$lines[$pendingLine] = $identifiers;
 						} else {
-							$lines[$line] = $this->parseIdentifiers($pendingText, $pendingIgnorePos);
+							$lines[$line] = $identifiers;
 						}
 						$pendingToken = null;
 					}
@@ -144,25 +159,46 @@ class RichParser implements Parser
 				continue;
 			}
 
+			$ignoreLine = substr_count(substr($text, 0, $ignorePos), "\n") - 1;
+
 			if ($previousToken !== null && $previousToken[2] === $line) {
-				$lines[$line] = $this->parseIdentifiers($text, $ignorePos);
+				try {
+					$lines[$line] = $this->parseIdentifiers($text, $ignorePos);
+				} catch (IgnoreParseException $e) {
+					$errors[] = [$token[2] + $e->getPhpDocLine() + $ignoreLine, $e->getMessage()];
+				}
+
 				continue;
 			}
 
 			$line += substr_count($token[1], "\n");
-			$pendingToken = [$text, $ignorePos, $line];
+			$pendingToken = [$text, $ignorePos, $token[2] + $ignoreLine, $line];
 		}
 
 		if ($pendingToken !== null) {
-			[$pendingText, $pendingIgnorePos, $pendingLine] = $pendingToken;
-			$lines[$pendingLine] = $this->parseIdentifiers($pendingText, $pendingIgnorePos);
+			[$pendingText, $pendingIgnorePos, $tokenLine, $pendingLine] = $pendingToken;
+
+			try {
+				$lines[$pendingLine] = $this->parseIdentifiers($pendingText, $pendingIgnorePos);
+			} catch (IgnoreParseException $e) {
+				$errors[] = [$tokenLine + $e->getPhpDocLine(), $e->getMessage()];
+			}
 		}
 
-		return $lines;
+		$processedErrors = [];
+		foreach ($errors as [$line, $message]) {
+			$processedErrors[$line][] = $message;
+		}
+
+		return [
+			'lines' => $lines,
+			'errors' => $processedErrors,
+		];
 	}
 
 	/**
 	 * @return list<string>
+	 * @throws IgnoreParseException
 	 */
 	private function parseIdentifiers(string $text, int $ignorePos): array
 	{
@@ -172,9 +208,11 @@ class RichParser implements Parser
 		$c = count($tokens);
 
 		$identifiers = [];
+		$depth = 0;
+		$parenthesisStack = [];
 		for ($i = 0; $i < $c; $i++) {
-			[IgnoreLexer::VALUE_OFFSET => $content, IgnoreLexer::TYPE_OFFSET => $tokenType] = $tokens[$i];
-			if ($tokenType === IgnoreLexer::TOKEN_IDENTIFIER) {
+			[IgnoreLexer::VALUE_OFFSET => $content, IgnoreLexer::TYPE_OFFSET => $tokenType, IgnoreLexer::LINE_OFFSET => $tokenLine] = $tokens[$i];
+			if ($tokenType === IgnoreLexer::TOKEN_IDENTIFIER && $depth === 0) {
 				$identifiers[] = $content;
 				if (isset($tokens[$i + 1])) {
 					if ($tokens[$i + 1][IgnoreLexer::TYPE_OFFSET] === IgnoreLexer::TOKEN_COMMA) {
@@ -183,8 +221,30 @@ class RichParser implements Parser
 				}
 				continue;
 			}
+			if ($tokenType === IgnoreLexer::TOKEN_COMMA) {
+				throw new IgnoreParseException('Unexpected comma (,)', $tokenLine);
+			}
+			if ($tokenType === IgnoreLexer::TOKEN_CLOSE_PARENTHESIS) {
+				if ($depth < 1) {
+					throw new IgnoreParseException('Closing parenthesis ")" before opening parenthesis "("', $tokenLine);
+				}
 
-			break;
+				$depth--;
+				array_pop($parenthesisStack);
+				if ($depth === 0) {
+					break;
+				}
+			}
+			if ($tokenType !== IgnoreLexer::TOKEN_OPEN_PARENTHESIS) {
+				continue;
+			}
+
+			$depth++;
+			$parenthesisStack[] = $tokenLine;
+		}
+
+		if (count($parenthesisStack) > 0) {
+			throw new IgnoreParseException('Unclosed opening parenthesis "(" without closing parenthesis ")"', $parenthesisStack[count($parenthesisStack) - 1]);
 		}
 
 		return $identifiers;

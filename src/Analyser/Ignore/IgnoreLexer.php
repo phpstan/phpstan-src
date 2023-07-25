@@ -30,11 +30,12 @@ final class IgnoreLexer
 
 	public const VALUE_OFFSET = 0;
 	public const TYPE_OFFSET = 1;
+	public const LINE_OFFSET = 2;
 
 	private ?string $regexp = null;
 
 	/**
-	 * @return list<array{string, self::TOKEN_*}>
+	 * @return list<array{string, self::TOKEN_*, int}>
 	 */
 	public function tokenize(string $input): array
 	{
@@ -45,10 +46,16 @@ final class IgnoreLexer
 		$matches = Strings::matchAll($input, $this->regexp, PREG_SET_ORDER);
 
 		$tokens = [];
+		$line = 1;
 		foreach ($matches as $match) {
 			/** @var self::TOKEN_* $type */
 			$type = (int) $match['MARK'];
-			$tokens[] = [$match[0], $type];
+			$tokens[] = [$match[0], $type, $line];
+			if ($type !== self::TOKEN_EOL) {
+				continue;
+			}
+
+			$line++;
 		}
 
 		return $tokens;

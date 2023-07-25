@@ -79,7 +79,7 @@ class RichParserTest extends PHPStanTestCase
 
 		yield [
 			'<?php' . PHP_EOL .
-			'test(); // @phpstan-ignore return.ref, return.non (foo',
+			'test(); // @phpstan-ignore return.ref, return.non (foo)',
 			[
 				2 => ['return.ref', 'return.non'],
 			],
@@ -229,6 +229,56 @@ class RichParserTest extends PHPStanTestCase
 		$ast = $parser->parseString($code);
 		$lines = $ast[0]->getAttribute('linesToIgnore');
 		$this->assertSame($expectedLines, $lines);
+		$this->assertNull($ast[0]->getAttribute('linesToIgnoreParseErrors'));
+	}
+
+	public function dataLinesToIgnoreParseErrors(): iterable
+	{
+		yield [
+			'<?php' . PHP_EOL .
+			PHP_EOL .
+			'/**' . PHP_EOL .
+			' * @phpstan-ignore return.ref,,' . PHP_EOL .
+			' *                 return.non,' . PHP_EOL .
+			' */',
+			[
+				4 => ['Unexpected comma (,)'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore return.ref, return.non )foo',
+			[
+				2 => ['Closing parenthesis ")" before opening parenthesis "("'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore return.ref, return.non (foo',
+			[
+				2 => ['Unclosed opening parenthesis "(" without closing parenthesis ")"'],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataLinesToIgnoreParseErrors
+	 * @param array<int, non-empty-list<string>> $expectedErrors
+	 */
+	public function testLinesToIgnoreParseErrors(string $code, array $expectedErrors): void
+	{
+		/** @var RichParser $parser */
+		$parser = self::getContainer()->getService('currentPhpVersionRichParser');
+		$ast = $parser->parseString($code);
+		$errors = $ast[0]->getAttribute('linesToIgnoreParseErrors');
+		$this->assertIsArray($errors);
+		$this->assertSame($expectedErrors, $errors);
+
+		$lines = $ast[0]->getAttribute('linesToIgnore');
+		$this->assertIsArray($lines);
+		$this->assertCount(0, $lines);
 	}
 
 }

@@ -32,6 +32,7 @@ class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-template-covariant',
 		'@phpstan-return',
 		'@phpstan-throws',
+		'@phpstan-ignore',
 		'@phpstan-ignore-next-line',
 		'@phpstan-ignore-line',
 		'@phpstan-method',

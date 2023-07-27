@@ -104,49 +104,29 @@ class PhpClassReflectionExtension
 
 	public function evictPrivateSymbols(string $classCacheKey): void
 	{
-		foreach ($this->propertiesIncludingAnnotations as $key => $properties) {
-			if ($key !== $classCacheKey) {
+		foreach ($this->propertiesIncludingAnnotations[$classCacheKey] ?? [] as $name => $property) {
+			if (!$property->isPrivate()) {
 				continue;
 			}
-			foreach ($properties as $name => $property) {
-				if (!$property->isPrivate()) {
-					continue;
-				}
-				unset($this->propertiesIncludingAnnotations[$key][$name]);
-			}
+			unset($this->propertiesIncludingAnnotations[$classCacheKey][$name]);
 		}
-		foreach ($this->nativeProperties as $key => $properties) {
-			if ($key !== $classCacheKey) {
+		foreach ($this->nativeProperties[$classCacheKey] ?? [] as $name => $property) {
+			if (!$property->isPrivate()) {
 				continue;
 			}
-			foreach ($properties as $name => $property) {
-				if (!$property->isPrivate()) {
-					continue;
-				}
-				unset($this->nativeProperties[$key][$name]);
-			}
+			unset($this->nativeProperties[$classCacheKey][$name]);
 		}
-		foreach ($this->methodsIncludingAnnotations as $key => $methods) {
-			if ($key !== $classCacheKey) {
+		foreach ($this->methodsIncludingAnnotations[$classCacheKey] ?? [] as $name => $method) {
+			if (!$method->isPrivate()) {
 				continue;
 			}
-			foreach ($methods as $name => $method) {
-				if (!$method->isPrivate()) {
-					continue;
-				}
-				unset($this->methodsIncludingAnnotations[$key][$name]);
-			}
+			unset($this->methodsIncludingAnnotations[$classCacheKey][$name]);
 		}
-		foreach ($this->nativeMethods as $key => $methods) {
-			if ($key !== $classCacheKey) {
+		foreach ($this->nativeMethods[$classCacheKey] ?? [] as $name => $method) {
+			if (!$method->isPrivate()) {
 				continue;
 			}
-			foreach ($methods as $name => $method) {
-				if (!$method->isPrivate()) {
-					continue;
-				}
-				unset($this->nativeMethods[$key][$name]);
-			}
+			unset($this->nativeMethods[$classCacheKey][$name]);
 		}
 	}
 

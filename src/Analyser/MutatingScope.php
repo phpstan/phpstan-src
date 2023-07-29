@@ -763,14 +763,14 @@ class MutatingScope implements Scope
 			$node instanceof Node\Expr\BinaryOp\BooleanAnd
 			|| $node instanceof Node\Expr\BinaryOp\LogicalAnd
 		) {
-			$noopCallback = static function (): void {
-			};
-			$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
 			$leftBooleanType = $this->getType($node->left)->toBoolean();
 			if ($leftBooleanType->isFalse()->yes()) {
 				return new ConstantBooleanType(false);
 			}
 
+			$noopCallback = static function (): void {
+			};
+			$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
 			$rightBooleanType = $leftResult->getTruthyScope()->getType($node->right)->toBoolean();
 
 			if ($rightBooleanType->isFalse()->yes()) {
@@ -791,14 +791,14 @@ class MutatingScope implements Scope
 			$node instanceof Node\Expr\BinaryOp\BooleanOr
 			|| $node instanceof Node\Expr\BinaryOp\LogicalOr
 		) {
-			$noopCallback = static function (): void {
-			};
-			$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
 			$leftBooleanType = $this->getType($node->left)->toBoolean();
 			if ($leftBooleanType->isTrue()->yes()) {
 				return new ConstantBooleanType(true);
 			}
 
+			$noopCallback = static function (): void {
+			};
+			$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
 			$rightBooleanType = $leftResult->getFalseyScope()->getType($node->right)->toBoolean();
 
 			if ($rightBooleanType->isTrue()->yes()) {

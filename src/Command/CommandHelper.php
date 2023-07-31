@@ -39,6 +39,7 @@ use function dirname;
 use function error_get_last;
 use function get_class;
 use function getcwd;
+use function getenv;
 use function gettype;
 use function implode;
 use function ini_get;
@@ -212,6 +213,7 @@ class CommandHelper
 			$defaultParameters = [
 				'rootDir' => $containerFactory->getRootDirectory(),
 				'currentWorkingDirectory' => $containerFactory->getCurrentWorkingDirectory(),
+				'env' => getenv(),
 			];
 
 			if (isset($projectConfig['parameters']['tmpDir'])) {

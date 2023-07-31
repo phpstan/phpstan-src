@@ -41,6 +41,7 @@ use function array_unique;
 use function count;
 use function dirname;
 use function extension_loaded;
+use function getenv;
 use function ini_get;
 use function is_array;
 use function is_dir;
@@ -105,6 +106,7 @@ class ContainerFactory
 			[
 				'rootDir' => $this->rootDirectory,
 				'currentWorkingDirectory' => $this->currentWorkingDirectory,
+				'env' => getenv(),
 			],
 		);
 
@@ -136,6 +138,7 @@ class ContainerFactory
 		$configurator->addDynamicParameters([
 			'analysedPaths' => $analysedPaths,
 			'analysedPathsFromConfig' => $analysedPathsFromConfig,
+			'env' => getenv(),
 		]);
 		$configurator->addConfig($this->configDirectory . '/config.neon');
 		foreach ($additionalConfigFiles as $additionalConfigFile) {

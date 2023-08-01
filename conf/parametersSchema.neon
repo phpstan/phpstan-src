@@ -1,0 +1,211 @@
+parametersSchema:
+	bootstrapFiles: listOf(string())
+	excludes_analyse: listOf(string())
+	excludePaths: schema(anyOf(
+		structure([
+			analyse: listOf(string()),
+		]),
+		structure([
+			analyseAndScan: listOf(string()),
+		])
+		structure([
+			analyse: listOf(string()),
+			analyseAndScan: listOf(string())
+		])
+	), nullable())
+	level: schema(anyOf(int(), string()), nullable())
+	paths: listOf(string())
+	exceptions: structure([
+		implicitThrows: bool(),
+		uncheckedExceptionRegexes: listOf(string()),
+		uncheckedExceptionClasses: listOf(string()),
+		checkedExceptionRegexes: listOf(string()),
+		checkedExceptionClasses: listOf(string()),
+		check: structure([
+			missingCheckedExceptionInThrows: bool(),
+			tooWideThrowType: bool()
+		])
+	])
+	featureToggles: structure([
+		bleedingEdge: bool(),
+		disableRuntimeReflectionProvider: bool(),
+		skipCheckGenericClasses: listOf(string()),
+		explicitMixedInUnknownGenericNew: bool(),
+		explicitMixedForGlobalVariables: bool(),
+		explicitMixedViaIsArray: bool(),
+		arrayFilter: bool(),
+		arrayUnpacking: bool(),
+		nodeConnectingVisitorCompatibility: bool(),
+		nodeConnectingVisitorRule: bool(),
+		illegalConstructorMethodCall: bool(),
+		disableCheckMissingIterableValueType: bool(),
+		strictUnnecessaryNullsafePropertyFetch: bool(),
+		looseComparison: bool(),
+		consistentConstructor: bool()
+		checkUnresolvableParameterTypes: bool()
+		readOnlyByPhpDoc: bool()
+		phpDocParserRequireWhitespaceBeforeDescription: bool()
+		runtimeReflectionRules: bool()
+		notAnalysedTrait: bool()
+		curlSetOptTypes: bool()
+		listType: bool()
+		missingMagicSerializationRule: bool()
+		nullContextForVoidReturningFunctions: bool()
+		unescapeStrings: bool()
+		duplicateStubs: bool()
+		invarianceComposition: bool()
+		alwaysTrueAlwaysReported: bool()
+		disableUnreachableBranchesRules: bool()
+		varTagType: bool()
+		closureDefaultParameterTypeRule: bool()
+		newRuleLevelHelper: bool()
+		instanceofType: bool()
+		paramOutVariance: bool()
+		allInvalidPhpDocs: bool()
+		strictStaticMethodTemplateTypeVariance: bool()
+		propertyVariance: bool()
+		genericPrototypeMessage: bool()
+		stricterFunctionMap: bool()
+		invalidPhpDocTagLine: bool()
+		detectDeadTypeInMultiCatch: bool()
+		zeroFiles: bool()
+		callUserFunc: bool()
+	])
+	fileExtensions: listOf(string())
+	checkAdvancedIsset: bool()
+	checkAlwaysTrueCheckTypeFunctionCall: bool()
+	checkAlwaysTrueInstanceof: bool()
+	checkAlwaysTrueStrictComparison: bool()
+	checkAlwaysTrueLooseComparison: bool()
+	reportAlwaysTrueInLastCondition: bool()
+	checkClassCaseSensitivity: bool()
+	checkExplicitMixed: bool()
+	checkImplicitMixed: bool()
+	checkFunctionArgumentTypes: bool()
+	checkFunctionNameCase: bool()
+	checkGenericClassInNonGenericObjectType: bool()
+	checkInternalClassCaseSensitivity: bool()
+	checkMissingIterableValueType: bool()
+	checkMissingCallableSignature: bool()
+	checkMissingVarTagTypehint: bool()
+	checkArgumentsPassedByReference: bool()
+	checkMaybeUndefinedVariables: bool()
+	checkNullables: bool()
+	checkThisOnly: bool()
+	checkUnionTypes: bool()
+	checkBenevolentUnionTypes: bool()
+	checkExplicitMixedMissingReturn: bool()
+	checkPhpDocMissingReturn: bool()
+	checkPhpDocMethodSignatures: bool()
+	checkExtraArguments: bool()
+	checkMissingTypehints: bool()
+	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
+	checkUninitializedProperties: bool()
+	checkDynamicProperties: bool()
+	deprecationRulesInstalled: bool()
+	inferPrivatePropertyTypeFromConstructor: bool()
+
+	tipsOfTheDay: bool()
+	reportMaybes: bool()
+	reportMaybesInMethodSignatures: bool()
+	reportMaybesInPropertyPhpDocTypes: bool()
+	reportStaticMethodSignatures: bool()
+	reportWrongPhpDocTypeInVarTag: bool()
+	parallel: structure([
+		jobSize: int(),
+		processTimeout: float(),
+		maximumNumberOfProcesses: int(),
+		minimumNumberOfJobsPerProcess: int(),
+		buffer: int()
+	])
+	phpVersion: schema(anyOf(schema(int(), min(70100), max(80399))), nullable())
+	polluteScopeWithLoopInitialAssignments: bool()
+	polluteScopeWithAlwaysIterableForeach: bool()
+	propertyAlwaysWrittenTags: listOf(string())
+	propertyAlwaysReadTags: listOf(string())
+	additionalConstructors: listOf(string())
+	treatPhpDocTypesAsCertain: bool()
+	usePathConstantsAsConstantString: bool()
+	rememberPossiblyImpureFunctionValues: bool()
+	reportMagicMethods: bool()
+	reportMagicProperties: bool()
+	ignoreErrors: listOf(
+		anyOf(
+			string(),
+			structure([
+				messages: listOf(string())
+				?path: string()
+				?reportUnmatched: bool()
+			]),
+			structure([
+				message: string()
+				?path: string()
+				?reportUnmatched: bool()
+			]),
+			structure([
+				message: string()
+				count: int()
+				path: string()
+				?reportUnmatched: bool()
+			]),
+			structure([
+				message: string()
+				paths: listOf(string())
+				?reportUnmatched: bool()
+			]),
+			structure([
+				messages: listOf(string())
+				paths: listOf(string())
+				?reportUnmatched: bool()
+			])
+		)
+	)
+	internalErrorsCountLimit: int()
+	cache: structure([
+		nodesByFileCountMax: int()
+		nodesByStringCountMax: int()
+	])
+	reportUnmatchedIgnoredErrors: bool()
+	scopeClass: string()
+	typeAliases: arrayOf(string())
+	universalObjectCratesClasses: listOf(string())
+	stubFiles: listOf(string())
+	earlyTerminatingMethodCalls: arrayOf(listOf(string()))
+	earlyTerminatingFunctionCalls: listOf(string())
+	memoryLimitFile: string()
+	tempResultCachePath: string()
+	resultCachePath: string()
+	resultCacheChecksProjectExtensionFilesDependencies: bool()
+	staticReflectionClassNamePatterns: listOf(string())
+	dynamicConstantNames: listOf(string())
+	customRulesetUsed: schema(bool(), nullable())
+	rootDir: string()
+	tmpDir: string()
+	currentWorkingDirectory: string()
+	cliArgumentsVariablesRegistered: bool()
+	mixinExcludeClasses: listOf(string())
+	scanFiles: listOf(string())
+	scanDirectories: listOf(string())
+	fixerTmpDir: string()
+	editorUrl: schema(string(), nullable())
+	editorUrlTitle: schema(string(), nullable())
+	errorFormat: schema(string(), nullable())
+	pro: structure([
+		dnsServers: schema(listOf(string()), min(1)),
+	])
+
+	# irrelevant Nette parameters
+	debugMode: bool()
+	productionMode: bool()
+	tempDir: string()
+	__validate: bool()
+
+	# internal parameters only for DerivativeContainerFactory
+	additionalConfigFiles: arrayOf(string())
+	generateBaselineFile: schema(string(), nullable())
+	analysedPaths: listOf(string())
+	allConfigFiles: listOf(string())
+	composerAutoloaderProjectPaths: listOf(string())
+	analysedPathsFromConfig: listOf(string())
+	usedLevel: string()
+	cliAutoloadFile: schema(string(), nullable())

@@ -36,3 +36,19 @@ function unpackingConstantArrays(): void
 	assertType('array{foo: \'bar\', bar: \'baz2\', 0: 17}', array_merge(['foo' => 'bar', 'bar' => 'baz1'], ['bar' => 'baz2', 17]));
 	assertType('array{foo: \'bar\', bar: \'baz2\', 0: 17}', array_merge(['foo' => 'bar', 'bar' => 'baz1'], ...[['bar' => 'baz2', 17]]));
 }
+
+/**
+ * @param list<string> $a
+ * @param list<string> $b
+ * @return void
+ */
+function listIsStillList(array $a, array $b): void
+{
+	assertType('list<string>', array_merge($a, $b));
+
+	$c = [];
+	foreach ($a as $v) {
+		$c = array_merge($a, $c);
+	}
+	assertType('list<string>', $c);
+}

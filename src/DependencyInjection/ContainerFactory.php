@@ -3,9 +3,17 @@
 namespace PHPStan\DependencyInjection;
 
 use Nette\DI\Config\Adapters\PhpAdapter;
+use Nette\DI\Definitions\Statement;
 use Nette\DI\Extensions\ExtensionsExtension;
 use Nette\DI\Extensions\PhpExtension;
 use Nette\DI\Helpers;
+use Nette\Schema\Context as SchemaContext;
+use Nette\Schema\Elements\AnyOf;
+use Nette\Schema\Elements\Structure;
+use Nette\Schema\Elements\Type;
+use Nette\Schema\Expect;
+use Nette\Schema\Processor;
+use Nette\Schema\Schema;
 use Nette\Utils\Strings;
 use Nette\Utils\Validators;
 use Phar;
@@ -21,6 +29,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\ObjectType;
@@ -33,12 +42,14 @@ use function count;
 use function dirname;
 use function extension_loaded;
 use function ini_get;
+use function is_array;
 use function is_dir;
 use function is_file;
 use function is_readable;
 use function spl_object_hash;
 use function sprintf;
 use function str_ends_with;
+use function substr;
 use function sys_get_temp_dir;
 use function time;
 use function unlink;
@@ -89,8 +100,8 @@ class ContainerFactory
 		?string $cliAutoloadFile = null,
 	): Container
 	{
-		$allConfigFiles = $this->detectDuplicateIncludedFiles(
-			$additionalConfigFiles,
+		[$allConfigFiles, $projectConfig] = $this->detectDuplicateIncludedFiles(
+			array_merge([__DIR__ . '/../../conf/parametersSchema.neon'], $additionalConfigFiles),
 			[
 				'rootDir' => $this->rootDirectory,
 				'currentWorkingDirectory' => $this->currentWorkingDirectory,
@@ -134,6 +145,7 @@ class ContainerFactory
 		$configurator->setAllConfigFiles($allConfigFiles);
 
 		$container = $configurator->createContainer()->getByType(Container::class);
+		$this->validateParameters($container->getParameters(), $projectConfig['parametersSchema']);
 		self::postInitializeContainer($container);
 
 		return $container;
@@ -231,8 +243,8 @@ class ContainerFactory
 
 	/**
 	 * @param string[] $configFiles
-	 * @param array<string, string> $loaderParameters
-	 * @return string[]
+	 * @param array<string, mixed> $loaderParameters
+	 * @return array{list<string>, array<mixed>}
 	 * @throws DuplicateIncludedFilesException
 	 */
 	private function detectDuplicateIncludedFiles(
@@ -243,19 +255,24 @@ class ContainerFactory
 		$neonAdapter = new NeonAdapter();
 		$phpAdapter = new PhpAdapter();
 		$allConfigFiles = [];
+		$configArray = [];
 		foreach ($configFiles as $configFile) {
-			$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($this->fileHelper, $neonAdapter, $phpAdapter, $configFile, $loaderParameters, null));
+			[$tmpConfigFiles, $tmpConfigArray] = self::getConfigFiles($this->fileHelper, $neonAdapter, $phpAdapter, $configFile, $loaderParameters, null);
+			$allConfigFiles = array_merge($allConfigFiles, $tmpConfigFiles);
+
+			/** @var array<mixed> $configArray */
+			$configArray = \Nette\Schema\Helpers::merge($tmpConfigArray, $configArray);
 		}
 
 		$normalized = array_map(fn (string $file): string => $this->fileHelper->normalizePath($file), $allConfigFiles);
 
 		$deduplicated = array_unique($normalized);
 		if (count($normalized) <= count($deduplicated)) {
-			return $normalized;
+			return [$normalized, $configArray];
 		}
 
 		if (!$this->checkDuplicateFiles) {
-			return $normalized;
+			return [$normalized, $configArray];
 		}
 
 		$duplicateFiles = array_unique(array_diff_key($normalized, $deduplicated));
@@ -265,7 +282,7 @@ class ContainerFactory
 
 	/**
 	 * @param array<string, string> $loaderParameters
-	 * @return string[]
+	 * @return array{list<string>, array<mixed>}
 	 */
 	private static function getConfigFiles(
 		FileHelper $fileHelper,
@@ -277,10 +294,10 @@ class ContainerFactory
 	): array
 	{
 		if ($generateBaselineFile === $fileHelper->normalizePath($configFile)) {
-			return [];
+			return [[], []];
 		}
 		if (!is_file($configFile) || !is_readable($configFile)) {
-			return [];
+			return [[], []];
 		}
 
 		if (str_ends_with($configFile, '.php')) {
@@ -294,11 +311,15 @@ class ContainerFactory
 			$includes = Helpers::expand($data['includes'], $loaderParameters);
 			foreach ($includes as $include) {
 				$include = self::expandIncludedFile($include, $configFile);
-				$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $include, $loaderParameters, $generateBaselineFile));
+				[$tmpConfigFiles, $tmpConfigArray] = self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $include, $loaderParameters, $generateBaselineFile);
+				$allConfigFiles = array_merge($allConfigFiles, $tmpConfigFiles);
+
+				/** @var array<mixed> $data */
+				$data = \Nette\Schema\Helpers::merge($tmpConfigArray, $data);
 			}
 		}
 
-		return $allConfigFiles;
+		return [$allConfigFiles, $data];
 	}
 
 	private static function expandIncludedFile(string $includedFile, string $mainFile): string
@@ -306,6 +327,94 @@ class ContainerFactory
 		return Strings::match($includedFile, '#([a-z]+:)?[/\\\\]#Ai') !== null // is absolute
 			? $includedFile
 			: dirname($mainFile) . '/' . $includedFile;
+	}
+
+	/**
+	 * @param array<mixed> $parameters
+	 * @param array<mixed> $parametersSchema
+	 */
+	private function validateParameters(array $parameters, array $parametersSchema): void
+	{
+		if (!(bool) $parameters['__validate']) {
+			return;
+		}
+
+		$schema = $this->processArgument(
+			new Statement('schema', [
+				new Statement('structure', [$parametersSchema]),
+			]),
+		);
+		$processor = new Processor();
+		$processor->onNewContext[] = static function (SchemaContext $context): void {
+			$context->path = ['parameters'];
+		};
+		$processor->process($schema, $parameters);
+	}
+
+	/**
+	 * @param Statement[] $statements
+	 */
+	private function processSchema(array $statements, bool $required = true): Schema
+	{
+		if (count($statements) === 0) {
+			throw new ShouldNotHappenException();
+		}
+
+		$parameterSchema = null;
+		foreach ($statements as $statement) {
+			$processedArguments = array_map(fn ($argument) => $this->processArgument($argument), $statement->arguments);
+			if ($parameterSchema === null) {
+				/** @var Type|AnyOf|Structure $parameterSchema */
+				$parameterSchema = Expect::{$statement->getEntity()}(...$processedArguments);
+			} else {
+				$parameterSchema->{$statement->getEntity()}(...$processedArguments);
+			}
+		}
+
+		if ($required) {
+			$parameterSchema->required();
+		}
+
+		return $parameterSchema;
+	}
+
+	/**
+	 * @param mixed $argument
+	 * @return mixed
+	 */
+	private function processArgument($argument, bool $required = true)
+	{
+		if ($argument instanceof Statement) {
+			if ($argument->entity === 'schema') {
+				$arguments = [];
+				foreach ($argument->arguments as $schemaArgument) {
+					if (!$schemaArgument instanceof Statement) {
+						throw new ShouldNotHappenException('schema() should contain another statement().');
+					}
+
+					$arguments[] = $schemaArgument;
+				}
+
+				if (count($arguments) === 0) {
+					throw new ShouldNotHappenException('schema() should have at least one argument.');
+				}
+
+				return $this->processSchema($arguments, $required);
+			}
+
+			return $this->processSchema([$argument], $required);
+		} elseif (is_array($argument)) {
+			$processedArray = [];
+			foreach ($argument as $key => $val) {
+				$required = $key[0] !== '?';
+				$key = $required ? $key : substr($key, 1);
+				$processedArray[$key] = $this->processArgument($val, $required);
+			}
+
+			return $processedArray;
+		}
+
+		return $argument;
 	}
 
 }

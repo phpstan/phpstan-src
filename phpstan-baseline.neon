@@ -155,19 +155,19 @@ parameters:
 			path: src/Command/WorkerCommand.php
 
 		-
-			message: "#^Fetching class constant PREVENT_MERGING of deprecated class Nette\\\\DI\\\\Config\\\\Helpers\\.$#"
-			count: 1
-			path: src/DependencyInjection/NeonAdapter.php
-
-		-
 			message: "#^Variable method call on Nette\\\\Schema\\\\Elements\\\\AnyOf\\|Nette\\\\Schema\\\\Elements\\\\Structure\\|Nette\\\\Schema\\\\Elements\\\\Type\\.$#"
 			count: 1
-			path: src/DependencyInjection/ParametersSchemaExtension.php
+			path: src/DependencyInjection/ContainerFactory.php
 
 		-
 			message: "#^Variable static method call on Nette\\\\Schema\\\\Expect\\.$#"
 			count: 1
-			path: src/DependencyInjection/ParametersSchemaExtension.php
+			path: src/DependencyInjection/ContainerFactory.php
+
+		-
+			message: "#^Fetching class constant PREVENT_MERGING of deprecated class Nette\\\\DI\\\\Config\\\\Helpers\\.$#"
+			count: 1
+			path: src/DependencyInjection/NeonAdapter.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"

@@ -13,6 +13,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use SimpleXMLElement;
+use function extension_loaded;
 
 class SimpleXMLElementXpathMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {

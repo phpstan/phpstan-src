@@ -11,13 +11,16 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use SimpleXMLElement;
 use function count;
+use function extension_loaded;
 
 class SimpleXMLElementConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return $methodReflection->getName() === '__construct' && $methodReflection->getDeclaringClass()->getName() === SimpleXMLElement::class;
+		return extension_loaded('simplexml')
+			&& $methodReflection->getName() === '__construct'
+			&& $methodReflection->getDeclaringClass()->getName() === SimpleXMLElement::class;
 	}
 
 	public function getThrowTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type

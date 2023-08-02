@@ -2,8 +2,6 @@
 
 namespace PHPStan\Rules\Regexp;
 
-use Nette\Utils\RegexpException;
-use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
@@ -20,6 +18,12 @@ use function strtolower;
 class RegularExpressionPatternRule implements Rule
 {
 
+	public function __construct(
+		private RegularExpressionHelper $regularExpressionHelper,
+	)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return FuncCall::class;
@@ -31,7 +35,7 @@ class RegularExpressionPatternRule implements Rule
 
 		$errors = [];
 		foreach ($patterns as $pattern) {
-			$errorMessage = $this->validatePattern($pattern);
+			$errorMessage = $this->regularExpressionHelper->validatePattern($pattern);
 			if ($errorMessage === null) {
 				continue;
 			}
@@ -108,17 +112,6 @@ class RegularExpressionPatternRule implements Rule
 		}
 
 		return $patternStrings;
-	}
-
-	private function validatePattern(string $pattern): ?string
-	{
-		try {
-			Strings::match('', $pattern);
-		} catch (RegexpException $e) {
-			return $e->getMessage();
-		}
-
-		return null;
 	}
 
 }

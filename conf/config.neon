@@ -1717,6 +1717,14 @@ services:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\PregGrepDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Rules\Regexp\RegularExpressionHelper
+
+	-
 		class: PHPStan\Type\ClosureTypeFactory
 		arguments:
 			parser: @currentPhpVersionPhpParser

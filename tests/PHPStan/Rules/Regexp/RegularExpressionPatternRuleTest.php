@@ -15,7 +15,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new RegularExpressionPatternRule();
+		return new RegularExpressionPatternRule(new RegularExpressionHelper());
 	}
 
 	public function testValidRegexPatternBefore73(): void

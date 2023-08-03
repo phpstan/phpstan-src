@@ -556,4 +556,23 @@ class TestCaseInsensitiveClassNames
 
 		}
 	}
+
+	public function doBar(): void
+	{
+		try {
+			new \SimpleXmlElement('foo');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBaz(string $string): void
+	{
+		try {
+			new \SimpleXmlElement($string);
+		} catch (\Exception $e) {
+
+		}
+	}
+
 }

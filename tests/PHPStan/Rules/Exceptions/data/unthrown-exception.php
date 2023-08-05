@@ -544,3 +544,35 @@ class ExceptionGetMessage
 	}
 
 }
+
+class TestCaseInsensitiveClassNames
+{
+
+	public function doFoo(): void
+	{
+		try {
+			new \SimpleXmlElement('<?xml version="1.0" encoding="UTF-8"?><root></root>');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBar(): void
+	{
+		try {
+			new \SimpleXmlElement('foo');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBaz(string $string): void
+	{
+		try {
+			new \SimpleXmlElement($string);
+		} catch (\Exception $e) {
+
+		}
+	}
+
+}

@@ -18,3 +18,6 @@ assertType('Closure(object): true', $staticallyBoundClosure);
 
 $returnType = $closure->call($newThis, new class {});
 assertType('true', $returnType);
+
+$staticallyBoundClosureCaseInsensitive = \closure::bind($closure, $newThis);
+assertType('Closure(object): true', $staticallyBoundClosureCaseInsensitive);

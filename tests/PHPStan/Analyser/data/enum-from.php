@@ -83,4 +83,10 @@ class Foo
 		assertType('EnumFrom\FooIntegerEnum::BAR', FooIntegerEnum::from($foo->value));
 	}
 
+	public function doCaseInsensitive(): void
+	{
+		assertType('1', FooInTeGerEnum::BAR->value);
+		assertType('null', FooInTeGerEnum::tryFrom(0));
+	}
+
 }

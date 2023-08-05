@@ -21,7 +21,7 @@ class Process
 
 	public \React\ChildProcess\Process $process;
 
-	private WritableStreamInterface $in;
+	private ?WritableStreamInterface $in = null;
 
 	/** @var resource */
 	private $stdOut;
@@ -106,6 +106,9 @@ class Process
 	public function request(array $data): void
 	{
 		$this->cancelTimer();
+		if ($this->in === null) {
+			throw new ShouldNotHappenException();
+		}
 		$this->in->write($data);
 		$this->timer = $this->loop->addTimer($this->timeoutSeconds, function (): void {
 			$onError = $this->onError;
@@ -122,6 +125,10 @@ class Process
 
 		foreach ($this->process->pipes as $pipe) {
 			$pipe->close();
+		}
+
+		if ($this->in === null) {
+			return;
 		}
 
 		$this->in->end();

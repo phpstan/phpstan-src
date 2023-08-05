@@ -13,6 +13,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use SimpleXMLElement;
+use function extension_loaded;
 
 class SimpleXMLElementXpathMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -24,7 +25,7 @@ class SimpleXMLElementXpathMethodReturnTypeExtension implements DynamicMethodRet
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return $methodReflection->getName() === 'xpath';
+		return extension_loaded('simplexml') && $methodReflection->getName() === 'xpath';
 	}
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type

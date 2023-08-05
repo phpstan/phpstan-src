@@ -19,10 +19,6 @@ parameters:
 			count: 1
 			path: ../src/Parallel/Process.php
 		-
-			message: "#^Class PHPStan\\\\Parallel\\\\Process has an uninitialized property \\$in\\. Give it default value or assign it in the constructor\\.$#"
-			count: 1
-			path: ../src/Parallel/Process.php
-		-
 			message: "#^Class PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock has an uninitialized property \\$phpDocNodes\\. Give it default value or assign it in the constructor\\.$#"
 			count: 1
 			path: ../src/PhpDoc/ResolvedPhpDocBlock.php

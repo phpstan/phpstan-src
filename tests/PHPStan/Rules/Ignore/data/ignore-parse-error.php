@@ -18,6 +18,13 @@ class Foo
 		 * @phpstan-ignore return.ref (return.non
 		 */
 		echo $foo;
+
+		/*
+		 * @phpstan-ignore čičí
+		 */
+		echo $foo;
+
+		echo $foo; // @phpstan-ignore
 	}
 
 }

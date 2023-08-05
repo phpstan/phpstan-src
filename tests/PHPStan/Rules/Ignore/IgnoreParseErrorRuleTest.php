@@ -31,6 +31,14 @@ class IgnoreParseErrorRuleTest extends RuleTestCase
 				'Parse error in @phpstan-ignore: Unclosed opening parenthesis "(" without closing parenthesis ")"',
 				18,
 			],
+			[
+				'Parse error in @phpstan-ignore: First token is not an identifier',
+				23,
+			],
+			[
+				'Parse error in @phpstan-ignore: Missing identifier',
+				27,
+			],
 		]);
 	}
 

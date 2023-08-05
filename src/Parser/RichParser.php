@@ -101,7 +101,7 @@ class RichParser implements Parser
 
 	/**
 	 * @param list<string|array{0:int,1:string,2:int}> $tokens
-	 * @return array{lines: array<int, list<string>|null>, errors: array<int, non-empty-list<string>>}
+	 * @return array{lines: array<int, non-empty-list<string>|null>, errors: array<int, non-empty-list<string>>}
 	 */
 	private function getLinesToIgnore(array $tokens): array
 	{
@@ -197,7 +197,7 @@ class RichParser implements Parser
 	}
 
 	/**
-	 * @return list<string>
+	 * @return non-empty-list<string>
 	 * @throws IgnoreParseException
 	 */
 	private function parseIdentifiers(string $text, int $ignorePos): array
@@ -220,6 +220,9 @@ class RichParser implements Parser
 					}
 				}
 				continue;
+			}
+			if ($i === 0) {
+				throw new IgnoreParseException('First token is not an identifier', $tokenLine);
 			}
 			if ($tokenType === IgnoreLexer::TOKEN_COMMA) {
 				throw new IgnoreParseException('Unexpected comma (,)', $tokenLine);
@@ -245,6 +248,10 @@ class RichParser implements Parser
 
 		if (count($parenthesisStack) > 0) {
 			throw new IgnoreParseException('Unclosed opening parenthesis "(" without closing parenthesis ")"', $parenthesisStack[count($parenthesisStack) - 1]);
+		}
+
+		if (count($identifiers) === 0) {
+			throw new IgnoreParseException('Missing identifier', 1);
 		}
 
 		return $identifiers;

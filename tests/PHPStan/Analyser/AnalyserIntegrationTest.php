@@ -347,6 +347,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug9711(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9711.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Function in_array invoked with 1 parameter, 2-3 required.', $errors[0]->getMessage());
+	}
+
 	public function testBug4713(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4713.php');

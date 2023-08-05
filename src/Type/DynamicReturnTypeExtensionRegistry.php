@@ -6,6 +6,7 @@ use PHPStan\Broker\Broker;
 use PHPStan\Reflection\BrokerAwareExtension;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_merge;
+use function strtolower;
 
 class DynamicReturnTypeExtensionRegistry
 {
@@ -46,7 +47,7 @@ class DynamicReturnTypeExtensionRegistry
 		if ($this->dynamicMethodReturnTypeExtensionsByClass === null) {
 			$byClass = [];
 			foreach ($this->dynamicMethodReturnTypeExtensions as $extension) {
-				$byClass[$extension->getClass()][] = $extension;
+				$byClass[strtolower($extension->getClass())][] = $extension;
 			}
 
 			$this->dynamicMethodReturnTypeExtensionsByClass = $byClass;
@@ -62,7 +63,7 @@ class DynamicReturnTypeExtensionRegistry
 		if ($this->dynamicStaticMethodReturnTypeExtensionsByClass === null) {
 			$byClass = [];
 			foreach ($this->dynamicStaticMethodReturnTypeExtensions as $extension) {
-				$byClass[$extension->getClass()][] = $extension;
+				$byClass[strtolower($extension->getClass())][] = $extension;
 			}
 
 			$this->dynamicStaticMethodReturnTypeExtensionsByClass = $byClass;
@@ -83,6 +84,7 @@ class DynamicReturnTypeExtensionRegistry
 		$extensionsForClass = [[]];
 		$class = $this->reflectionProvider->getClass($className);
 		foreach (array_merge([$className], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames()) as $extensionClassName) {
+			$extensionClassName = strtolower($extensionClassName);
 			if (!isset($extensions[$extensionClassName])) {
 				continue;
 			}

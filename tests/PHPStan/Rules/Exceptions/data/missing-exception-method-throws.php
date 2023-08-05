@@ -95,4 +95,9 @@ class Foo
 		new \DateTimeZone($tz);
 	}
 
+	public function dateTimeZoneDoesNotThrowCaseInsensitive(): void
+	{
+		new \DaTetImezOnE('UTC');
+	}
+
 }

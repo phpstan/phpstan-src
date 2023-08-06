@@ -186,6 +186,12 @@ class ClassReflection
 		return $this->getFileName();
 	}
 
+	/** @return class-string|null */
+	public function getParentClassName(): string|null
+	{
+		return $this->getParentClassName();
+	}
+
 	public function getParentClass(): ?ClassReflection
 	{
 		if (!is_bool($this->cachedParentClass)) {

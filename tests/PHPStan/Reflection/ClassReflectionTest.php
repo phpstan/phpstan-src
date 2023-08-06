@@ -7,6 +7,7 @@ use Attributes\IsAttribute;
 use Attributes\IsAttribute2;
 use Attributes\IsAttribute3;
 use Attributes\IsNotAttribute;
+use FunctionReflectionDocTest\ClassWithUnknownParent;
 use GenericInheritance\C;
 use HasTraitUse\Bar;
 use HasTraitUse\Baz;
@@ -320,6 +321,17 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertTrue($classReflection->is(PHPStanTestCase::class));
 		$this->assertTrue($classReflection->is(TestCase::class));
 		$this->assertFalse($classReflection->is(RuleTestCase::class));
+	}
+
+	public function testGetParentWithUnknownClassName(): void
+	{
+		$className = \FunctionReflectionDocTest\ClassWithUnknownParent::class;
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$classReflection = $reflectionProvider->getClass($className);
+
+		$this->assertSame('UnknownParentClass', $classReflection->getParentClassName());
+		$this->assertNull($classReflection->getParentClass());
 	}
 
 }

@@ -325,12 +325,12 @@ class ClassReflectionTest extends PHPStanTestCase
 
 	public function testGetParentWithUnknownClassName(): void
 	{
-		$className = \FunctionReflectionDocTest\ClassWithUnknownParent::class;
+		$className = ClassWithUnknownParent::class;
 
 		$reflectionProvider = $this->createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass($className);
 
-		$this->assertSame('UnknownParentClass', $classReflection->getParentClassName());
+		$this->assertSame('\FunctionReflectionDocTest\UnknownParentClass', $classReflection->getParentClassName());
 		$this->assertNull($classReflection->getParentClass());
 	}
 

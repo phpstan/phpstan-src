@@ -189,7 +189,11 @@ class ClassReflection
 	/** @return class-string|null */
 	public function getParentClassName(): string|null
 	{
-		return $this->getParentClassName();
+		if ($this->reflection instanceof ReflectionEnum) {
+			return null;
+		}
+
+		return $this->reflection->getParentClassName();
 	}
 
 	public function getParentClass(): ?ClassReflection

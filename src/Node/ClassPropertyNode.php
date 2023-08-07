@@ -8,6 +8,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeAbstract;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\Type;
 
 /** @api */
@@ -28,6 +29,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		private bool $isDeclaredInTrait,
 		private bool $isReadonlyClass,
 		private bool $isAllowedPrivateMutation,
+		private ClassReflection $classReflection,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
@@ -115,6 +117,11 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 	public function getNativeType()
 	{
 		return $this->type;
+	}
+
+	public function getClassReflection(): ClassReflection
+	{
+		return $this->classReflection;
 	}
 
 	public function getType(): string

@@ -557,6 +557,7 @@ class NodeScopeResolver
 						$scope->isInTrait(),
 						$scope->getClassReflection()->isReadOnly(),
 						false,
+						$scope->getClassReflection(),
 					), $methodScope);
 					$methodScope = $methodScope->assignExpression(new PropertyInitializationExpr($param->var->name), new MixedType(), new MixedType());
 				}
@@ -743,6 +744,7 @@ class NodeScopeResolver
 						$scope->isInTrait(),
 						$scope->getClassReflection()->isReadOnly(),
 						$isAllowedPrivateMutation,
+						$scope->getClassReflection(),
 					),
 					$scope,
 				);

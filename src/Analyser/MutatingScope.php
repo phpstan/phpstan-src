@@ -1702,6 +1702,9 @@ class MutatingScope implements Scope
 
 		if ($node instanceof Expr\NullsafeMethodCall) {
 			$varType = $this->getType($node->var);
+			if ($varType->isNull()->yes()) {
+				return new NullType();
+			}
 			if (!TypeCombinator::containsNull($varType)) {
 				return $this->getType(new MethodCall($node->var, $node->name, $node->args));
 			}
@@ -1797,6 +1800,9 @@ class MutatingScope implements Scope
 
 		if ($node instanceof Expr\NullsafePropertyFetch) {
 			$varType = $this->getType($node->var);
+			if ($varType->isNull()->yes()) {
+				return new NullType();
+			}
 			if (!TypeCombinator::containsNull($varType)) {
 				return $this->getType(new PropertyFetch($node->var, $node->name));
 			}

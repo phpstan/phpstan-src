@@ -106,8 +106,8 @@ class DependencyResolver
 			}
 		} elseif ($node instanceof ClassPropertyNode) {
 			$nativeTypeNode = $node->getNativeType();
-			if ($nativeTypeNode !== null && $scope->isInClass()) {
-				$nativeType = ParserNodeTypeToPHPStanType::resolve($nativeTypeNode, $scope->getClassReflection());
+			if ($nativeTypeNode !== null) {
+				$nativeType = ParserNodeTypeToPHPStanType::resolve($nativeTypeNode, $node->getClassReflection());
 				foreach ($nativeType->getReferencedClasses() as $referencedClass) {
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 				}

@@ -12,7 +12,6 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use function array_map;
 use function array_merge;
 use function sprintf;
@@ -41,11 +40,7 @@ class ExistingClassesInPropertiesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-
-		$propertyReflection = $scope->getClassReflection()->getNativeProperty($node->getName());
+		$propertyReflection = $node->getClassReflection()->getNativeProperty($node->getName());
 		if ($this->checkThisOnly) {
 			$referencedClasses = $propertyReflection->getNativeType()->getReferencedClasses();
 		} else {

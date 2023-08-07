@@ -99,4 +99,11 @@ class Foo
 		assertType('Nullsafe\Foo|null', $self?->nullableSelf);
 	}
 
+	public function doNull(): void
+	{
+		$null = null;
+		assertType('null', $null?->foo);
+		assertType('null', $null?->doFoo());
+	}
+
 }

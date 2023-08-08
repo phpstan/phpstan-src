@@ -35,7 +35,7 @@ class IgnoreParseErrorRule implements Rule
 			foreach ($lineParseErrors as $parseError) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Parse error in @phpstan-ignore: %s', $parseError))
 					->line($line)
-					->identifier('phpstan.ignore.parseError')
+					->identifier('ignore.parseError')
 					->nonIgnorable()
 					->build();
 			}

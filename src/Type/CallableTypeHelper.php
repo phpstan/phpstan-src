@@ -4,7 +4,9 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use function array_key_exists;
 use function array_merge;
+use function count;
 use function sprintf;
 
 class CallableTypeHelper
@@ -18,6 +20,23 @@ class CallableTypeHelper
 	{
 		$theirParameters = $theirs->getParameters();
 		$ourParameters = $ours->getParameters();
+
+		$lastParameter = null;
+		foreach ($theirParameters as $theirParameter) {
+			$lastParameter = $theirParameter;
+		}
+		if (
+			$lastParameter !== null
+			&& $lastParameter->isVariadic()
+			&& count($theirParameters) < count($ourParameters)
+		) {
+			foreach ($ourParameters as $i => $ourParameter) {
+				if (array_key_exists($i, $theirParameters)) {
+					continue;
+				}
+				$theirParameters[] = $lastParameter;
+			}
+		}
 
 		$result = null;
 		foreach ($theirParameters as $i => $theirParameter) {

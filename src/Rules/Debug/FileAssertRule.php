@@ -168,7 +168,7 @@ class FileAssertRule implements Rule
 			];
 		}
 
-		// @phpstan-ignore-next-line
+		// @phpstan-ignore staticMethod.dynamicName
 		$expectedCertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
 		$variable = $args[1]->value;
 		if (!$variable instanceof Node\Expr\Variable) {

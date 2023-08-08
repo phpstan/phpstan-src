@@ -8,7 +8,6 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -30,15 +29,12 @@ class DefaultValueTypesAssignedToPropertiesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-
-		$classReflection = $scope->getClassReflection();
 		$default = $node->getDefault();
 		if ($default === null) {
 			return [];
 		}
+
+		$classReflection = $node->getClassReflection();
 
 		$propertyReflection = $classReflection->getNativeProperty($node->getName());
 		$propertyType = $propertyReflection->getWritableType();

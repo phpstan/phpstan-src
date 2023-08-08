@@ -9,7 +9,6 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\VerbosityLevel;
@@ -36,20 +35,19 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-
-		$propertyName = $node->getName();
 		$phpDocType = $node->getPhpDocType();
 		if ($phpDocType === null) {
 			return [];
 		}
 
+		$propertyName = $node->getName();
+
 		$description = 'PHPDoc tag @var';
 		if ($node->isPromoted()) {
 			$description = 'PHPDoc type';
 		}
+
+		$classReflection = $node->getClassReflection();
 
 		$messages = [];
 		if (
@@ -58,18 +56,18 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'%s for property %s::$%s contains unresolvable type.',
 				$description,
-				$scope->getClassReflection()->getDisplayName(),
+				$classReflection->getDisplayName(),
 				$propertyName,
 			))->identifier('property.unresolvableType')->build();
 		}
 
-		$nativeType = ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $scope->getClassReflection());
+		$nativeType = ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $classReflection);
 		$isSuperType = $nativeType->isSuperTypeOf($phpDocType);
 		if ($isSuperType->no()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'%s for property %s::$%s with type %s is incompatible with native type %s.',
 				$description,
-				$scope->getClassReflection()->getDisplayName(),
+				$classReflection->getDisplayName(),
 				$propertyName,
 				$phpDocType->describe(VerbosityLevel::typeOnly()),
 				$nativeType->describe(VerbosityLevel::typeOnly()),
@@ -79,7 +77,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				'%s for property %s::$%s with type %s is not subtype of native type %s.',
 				$description,
-				$scope->getClassReflection()->getDisplayName(),
+				$classReflection->getDisplayName(),
 				$propertyName,
 				$phpDocType->describe(VerbosityLevel::typeOnly()),
 				$nativeType->describe(VerbosityLevel::typeOnly()),
@@ -92,7 +90,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 			$messages[] = $errorBuilder->build();
 		}
 
-		$className = SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName());
+		$className = SprintfHelper::escapeFormatString($classReflection->getDisplayName());
 		$escapedPropertyName = SprintfHelper::escapeFormatString($propertyName);
 
 		$messages = array_merge($messages, $this->genericObjectTypeCheck->check(

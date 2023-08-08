@@ -9,7 +9,6 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
@@ -36,11 +35,7 @@ class OverridingPropertyRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-
-		$classReflection = $scope->getClassReflection();
+		$classReflection = $node->getClassReflection();
 		$prototype = $this->findPrototype($classReflection, $node->getName());
 		if ($prototype === null) {
 			return [];
@@ -121,7 +116,7 @@ class OverridingPropertyRule implements Rule
 					$prototype->getNativeType()->describe(VerbosityLevel::typeOnly()),
 				))->identifier('property.missingNativeType')->nonIgnorable()->build();
 			} else {
-				$nativeType = ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $scope->getClassReflection());
+				$nativeType = ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $classReflection);
 				if (!$prototype->getNativeType()->equals($nativeType)) {
 					$typeErrors[] = RuleErrorBuilder::message(sprintf(
 						'Type %s of property %s::$%s is not the same as type %s of overridden property %s::$%s.',
@@ -139,7 +134,7 @@ class OverridingPropertyRule implements Rule
 				'Property %s::$%s (%s) overriding property %s::$%s should not have a native type.',
 				$classReflection->getDisplayName(),
 				$node->getName(),
-				ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $scope->getClassReflection())->describe(VerbosityLevel::typeOnly()),
+				ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $classReflection)->describe(VerbosityLevel::typeOnly()),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 			))->identifier('property.extraNativeType')->nonIgnorable()->build();

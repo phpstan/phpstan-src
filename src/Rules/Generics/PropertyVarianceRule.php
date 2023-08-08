@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\ClassPropertyNode;
-use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use function sprintf;
@@ -31,10 +30,7 @@ class PropertyVarianceRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$classReflection = $scope->getClassReflection();
-		if (!$classReflection instanceof ClassReflection) {
-			return [];
-		}
+		$classReflection = $node->getClassReflection();
 
 		if (!$classReflection->hasNativeProperty($node->getName())) {
 			return [];

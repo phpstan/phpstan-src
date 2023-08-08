@@ -8,7 +8,6 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 use function implode;
@@ -31,11 +30,7 @@ final class MissingPropertyTypehintRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-
-		$propertyReflection = $scope->getClassReflection()->getNativeProperty($node->getName());
+		$propertyReflection = $node->getClassReflection()->getNativeProperty($node->getName());
 
 		if ($propertyReflection->isPromoted()) {
 			return [];

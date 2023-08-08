@@ -136,6 +136,15 @@ class RichParserTest extends PHPStanTestCase
 
 		yield [
 			'<?php' . PHP_EOL .
+			'// @phpstan-ignore test' . PHP_EOL .
+			'test(); // @phpstan-ignore test',
+			[
+				3 => ['test', 'test'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
 			'   // @phpstan-ignore test' . PHP_EOL .
 			'test();',
 			[

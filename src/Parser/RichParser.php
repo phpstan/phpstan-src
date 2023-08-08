@@ -130,10 +130,15 @@ class RichParser implements Parser
 						}
 
 						if ($line !== $pendingLine + 1) {
-							$lines[$pendingLine] = $identifiers;
+							$lineToAdd = $pendingLine;
 						} else {
-							$lines[$line] = $identifiers;
+							$lineToAdd = $line;
 						}
+
+						foreach ($identifiers as $identifier) {
+							$lines[$lineToAdd][] = $identifier;
+						}
+
 						$pendingToken = null;
 					}
 					$previousToken = $token;
@@ -163,7 +168,9 @@ class RichParser implements Parser
 
 			if ($previousToken !== null && $previousToken[2] === $line) {
 				try {
-					$lines[$line] = $this->parseIdentifiers($text, $ignorePos);
+					foreach ($this->parseIdentifiers($text, $ignorePos) as $identifier) {
+						$lines[$line][] = $identifier;
+					}
 				} catch (IgnoreParseException $e) {
 					$errors[] = [$token[2] + $e->getPhpDocLine() + $ignoreLine, $e->getMessage()];
 				}
@@ -179,7 +186,9 @@ class RichParser implements Parser
 			[$pendingText, $pendingIgnorePos, $tokenLine, $pendingLine] = $pendingToken;
 
 			try {
-				$lines[$pendingLine] = $this->parseIdentifiers($pendingText, $pendingIgnorePos);
+				foreach ($this->parseIdentifiers($pendingText, $pendingIgnorePos) as $identifier) {
+					$lines[$pendingLine][] = $identifier;
+				}
 			} catch (IgnoreParseException $e) {
 				$errors[] = [$tokenLine + $e->getPhpDocLine(), $e->getMessage()];
 			}

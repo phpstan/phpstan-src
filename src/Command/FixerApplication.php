@@ -278,15 +278,20 @@ class FixerApplication
 	): void
 	{
 		$currentVersion = null;
+		$branch = 'master';
 		if (is_file($pharPath) && is_file($infoPath)) {
 			/** @var array{version: string, date: string} $currentInfo */
 			$currentInfo = Json::decode(FileReader::read($infoPath), Json::FORCE_ARRAY);
 			$currentVersion = $currentInfo['version'];
+			$currentBranch = $currentInfo['branch'] ?? 'master';
 			$currentDate = DateTime::createFromFormat(DateTime::ATOM, $currentInfo['date']);
 			if ($currentDate === false) {
 				throw new ShouldNotHappenException();
 			}
-			if ((new DateTimeImmutable('', new DateTimeZone('UTC'))) <= $currentDate->modify('+24 hours')) {
+			if (
+				$currentBranch === $branch
+				&& (new DateTimeImmutable('', new DateTimeZone('UTC'))) <= $currentDate->modify('+24 hours')
+			) {
 				return;
 			}
 
@@ -311,9 +316,9 @@ class FixerApplication
 		/**
 		 * @var array{url: string, version: string} $latestInfo
 		 */
-		$latestInfo = Json::decode((string) await($client->get(sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID]))))->getBody(), Json::FORCE_ARRAY);
+		$latestInfo = Json::decode((string) await($client->get(sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID, 'branch' => $branch]))))->getBody(), Json::FORCE_ARRAY);
 		if ($currentVersion !== null && $latestInfo['version'] === $currentVersion) {
-			$this->writeInfoFile($infoPath, $latestInfo['version']);
+			$this->writeInfoFile($infoPath, $latestInfo['version'], $branch);
 			$output->writeln('<fg=green>You\'re running the latest PHPStan Pro!</>');
 			return;
 		}
@@ -354,7 +359,7 @@ class FixerApplication
 		$output->writeln('');
 		$output->writeln('');
 
-		$this->writeInfoFile($infoPath, $latestInfo['version']);
+		$this->writeInfoFile($infoPath, $latestInfo['version'], $branch);
 	}
 
 	private function printDownloadError(OutputInterface $output, Throwable $e): void
@@ -370,10 +375,11 @@ class FixerApplication
 		$output->writeln('');
 	}
 
-	private function writeInfoFile(string $infoPath, string $version): void
+	private function writeInfoFile(string $infoPath, string $version, string $branch): void
 	{
 		FileWriter::write($infoPath, Json::encode([
 			'version' => $version,
+			'branch' => $branch,
 			'date' => (new DateTimeImmutable('', new DateTimeZone('UTC')))->format(DateTime::ATOM),
 		]));
 	}

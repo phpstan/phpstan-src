@@ -22,6 +22,9 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				[
 					'UninitializedProperty\\TestCase::setUp',
 					'Bug9619\\AdminPresenter::startup',
+					'Bug9619\\AdminPresenter2::startup',
+					'Bug9619\\AdminPresenter3::startup',
+					'Bug9619\\AdminPresenter3::startup2',
 				],
 			),
 		);
@@ -181,7 +184,12 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 
 	public function testBug9619(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-9619.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-9619.php'], [
+			[
+				'Access to an uninitialized property Bug9619\AdminPresenter3::$user.',
+				55,
+			],
+		]);
 	}
 
 }

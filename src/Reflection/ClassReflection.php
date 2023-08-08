@@ -186,6 +186,16 @@ class ClassReflection
 		return $this->getFileName();
 	}
 
+	/** @return class-string|null */
+	public function getParentClassName(): string|null
+	{
+		if ($this->reflection instanceof ReflectionEnum) {
+			return null;
+		}
+
+		return $this->reflection->getParentClassName();
+	}
+
 	public function getParentClass(): ?ClassReflection
 	{
 		if (!is_bool($this->cachedParentClass)) {
@@ -754,6 +764,12 @@ class ClassReflection
 		return $parents;
 	}
 
+	/** @return list<class-string> */
+	public function getInterfaceClassNames(): array
+	{
+		return $this->reflection->getInterfaceClassNames();
+	}
+
 	/**
 	 * @return ClassReflection[]
 	 */
@@ -984,6 +1000,12 @@ class ClassReflection
 	public function hasTraitUse(string $traitName): bool
 	{
 		return in_array($traitName, $this->getTraitNames(), true);
+	}
+
+	/** @return list<trait-string> */
+	public function getTraitClassNames(): array
+	{
+		return $this->reflection->getTraitClassNames();
 	}
 
 	/**

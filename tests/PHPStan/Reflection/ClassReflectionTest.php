@@ -31,7 +31,10 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\IntegerType;
 use PHPUnit\Framework\TestCase;
+use Reflection\data\ClassWithUnknownInterface;
+use Reflection\data\ClassWithUnknownTrait;
 use ReflectionClass;
+use UnknownSymbol\ClassWithUnknownParent;
 use WrongClassConstantFile\SecuredRouter;
 use function array_map;
 use function array_values;
@@ -320,6 +323,40 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertTrue($classReflection->is(PHPStanTestCase::class));
 		$this->assertTrue($classReflection->is(TestCase::class));
 		$this->assertFalse($classReflection->is(RuleTestCase::class));
+	}
+
+
+	public function testGetParentWithUnknownClassName(): void
+	{
+		$className = ClassWithUnknownParent::class;
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$classReflection = $reflectionProvider->getClass($className);
+
+		$this->assertSame('UnknownSymbol\UnknownParentClass', $classReflection->getParentClassName());
+		$this->assertNull($classReflection->getParentClass());
+	}
+
+	public function testGetTraitsWithUnknownTraitClassName(): void
+	{
+		$className = \UnknownSymbol\ClassWithUnknownTrait::class;
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$classReflection = $reflectionProvider->getClass($className);
+
+		$this->assertSame(['UnknownSymbol\UnknownTrait'], $classReflection->getTraitClassNames());
+		$this->assertSame([], $classReflection->getTraits());
+	}
+
+	public function testGetInterfacesWithUnknownClassName(): void
+	{
+		$className = \UnknownSymbol\ClassWithUnknownInterface::class;
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$classReflection = $reflectionProvider->getClass($className);
+
+		$this->assertSame(['UnknownSymbol\UnknownInterface'], $classReflection->getInterfaceClassNames());
+		$this->assertSame([], $classReflection->getInterfaces());
 	}
 
 }

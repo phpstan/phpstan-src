@@ -22,6 +22,7 @@ use function array_unique;
 use function array_values;
 use function error_reporting;
 use function get_class;
+use function is_array;
 use function is_dir;
 use function is_file;
 use function restore_error_handler;
@@ -177,8 +178,45 @@ class FileAnalyser
 						&& array_key_exists($tmpFileError->getFile(), $linesToIgnore)
 						&& array_key_exists($line, $linesToIgnore[$tmpFileError->getFile()])
 					) {
-						unset($unmatchedLineIgnores[$tmpFileError->getFile()][$line]);
-						continue;
+						$identifiers = $linesToIgnore[$tmpFileError->getFile()][$line];
+						if ($identifiers === null) {
+							unset($unmatchedLineIgnores[$tmpFileError->getFile()][$line]);
+							continue;
+						}
+
+						if ($tmpFileError->getIdentifier() === null) {
+							$fileErrors[] = $tmpFileError;
+							continue;
+						}
+
+						foreach ($identifiers as $i => $ignoredIdentifier) {
+							if ($ignoredIdentifier !== $tmpFileError->getIdentifier()) {
+								continue;
+							}
+
+							unset($identifiers[$i]);
+							$linesToIgnore[$tmpFileError->getFile()][$line] = array_values($identifiers);
+
+							if (
+								array_key_exists($tmpFileError->getFile(), $unmatchedLineIgnores)
+								&& array_key_exists($line, $unmatchedLineIgnores[$tmpFileError->getFile()])
+							) {
+								$unmatchedIgnoredIdentifiers = $unmatchedLineIgnores[$tmpFileError->getFile()][$line];
+								if (is_array($unmatchedIgnoredIdentifiers)) {
+									foreach ($unmatchedIgnoredIdentifiers as $j => $unmatchedIgnoredIdentifier) {
+										if ($ignoredIdentifier !== $unmatchedIgnoredIdentifier) {
+											continue;
+										}
+
+										unset($unmatchedIgnoredIdentifiers[$j]);
+										$unmatchedLineIgnores[$tmpFileError->getFile()][$line] = array_values($unmatchedIgnoredIdentifiers);
+										break;
+									}
+								}
+							}
+
+							continue 2;
+						}
 					}
 
 					$fileErrors[] = $tmpFileError;
@@ -190,14 +228,27 @@ class FileAnalyser
 							continue;
 						}
 
-						foreach (array_keys($lines) as $line) {
-							$fileErrors[] = (new Error(
-								sprintf('No error to ignore is reported on line %d.', $line),
-								$scope->getFileDescription(),
-								$line,
-								false,
-								$scope->getFile(),
-							))->withIdentifier('ignore.unmatchedLine');
+						foreach ($lines as $line => $identifiers) {
+							if ($identifiers === null) {
+								$fileErrors[] = (new Error(
+									sprintf('No error to ignore is reported on line %d.', $line),
+									$scope->getFileDescription(),
+									$line,
+									false,
+									$scope->getFile(),
+								))->withIdentifier('ignore.unmatchedLine');
+								continue;
+							}
+
+							foreach ($identifiers as $identifier) {
+								$fileErrors[] = (new Error(
+									sprintf('No error with identifier %s is reported on line %d.', $identifier, $line),
+									$scope->getFileDescription(),
+									$line,
+									false,
+									$scope->getFile(),
+								))->withIdentifier('ignore.unmatchedIdentifier');
+							}
 						}
 					}
 				}
@@ -229,7 +280,7 @@ class FileAnalyser
 
 	/**
 	 * @param Node[] $nodes
-	 * @return array<int, true>
+	 * @return array<int, non-empty-list<string>|null>
 	 */
 	private function getLinesToIgnoreFromTokens(array $nodes): array
 	{
@@ -237,14 +288,8 @@ class FileAnalyser
 			return [];
 		}
 
-		/** @var array<int, list<string>|null> $tokenLines */
-		$tokenLines = $nodes[0]->getAttribute('linesToIgnore', []);
-		$lines = [];
-		foreach (array_keys($tokenLines) as $tokenLine) {
-			$lines[$tokenLine] = true;
-		}
-
-		return $lines;
+		/** @var array<int, non-empty-list<string>|null> */
+		return $nodes[0]->getAttribute('linesToIgnore', []);
 	}
 
 	/**

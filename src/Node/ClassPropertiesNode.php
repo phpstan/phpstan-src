@@ -22,6 +22,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeUtils;
+use function array_diff_key;
 use function array_key_exists;
 use function array_keys;
 use function in_array;
@@ -157,6 +158,11 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$prematureAccess = [];
 		$additionalAssigns = [];
 
+		$initializedInConstructor = [];
+		if ($classReflection->hasConstructor()) {
+			$initializedInConstructor = array_diff_key($uninitializedProperties, $this->collectUninitializedProperties([$classReflection->getConstructor()->getName()], $uninitializedProperties));
+		}
+
 		foreach ($this->getPropertyUsages() as $usage) {
 			$fetch = $usage->getFetch();
 			if (!$fetch instanceof PropertyFetch) {
@@ -213,6 +219,13 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				}
 			} elseif (array_key_exists($propertyName, $initializedPropertiesMap)) {
 				$hasInitialization = $initializedPropertiesMap[$propertyName]->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
+				if (
+					strtolower($function->getName()) !== '__construct'
+					&& array_key_exists($propertyName, $initializedInConstructor)
+					&& in_array($function->getName(), $constructors, true)
+				) {
+					continue;
+				}
 				if (!$hasInitialization->yes()) {
 					$prematureAccess[] = [
 						$propertyName,
@@ -224,7 +237,21 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 		}
 
-		foreach (array_keys($methodsCalledFromConstructor) as $constructor) {
+		return [
+			$this->collectUninitializedProperties(array_keys($methodsCalledFromConstructor), $uninitializedProperties),
+			$prematureAccess,
+			$additionalAssigns,
+		];
+	}
+
+	/**
+	 * @param list<string> $constructors
+	 * @param array<string, ClassPropertyNode> $uninitializedProperties
+	 * @return array<string, ClassPropertyNode>
+	 */
+	private function collectUninitializedProperties(array $constructors, array $uninitializedProperties): array
+	{
+		foreach ($constructors as $constructor) {
 			$lowerConstructorName = strtolower($constructor);
 			if (!array_key_exists($lowerConstructorName, $this->returnStatementNodes)) {
 				continue;
@@ -275,11 +302,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 		}
 
-		return [
-			$uninitializedProperties,
-			$prematureAccess,
-			$additionalAssigns,
-		];
+		return $uninitializedProperties;
 	}
 
 	/**

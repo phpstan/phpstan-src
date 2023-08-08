@@ -143,6 +143,8 @@ use const PHP_INT_MIN;
 class MutatingScope implements Scope
 {
 
+	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
+
 	/** @var Type[] */
 	private array $resolvedTypes = [];
 
@@ -768,10 +770,14 @@ class MutatingScope implements Scope
 				return new ConstantBooleanType(false);
 			}
 
-			$noopCallback = static function (): void {
-			};
-			$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
-			$rightBooleanType = $leftResult->getTruthyScope()->getType($node->right)->toBoolean();
+			if ($this->getBooleanExpressionDepth($node->left) <= self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
+				$noopCallback = static function (): void {
+				};
+				$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
+				$rightBooleanType = $leftResult->getTruthyScope()->getType($node->right)->toBoolean();
+			} else {
+				$rightBooleanType = $this->filterByTruthyValue($node->left)->getType($node->right)->toBoolean();
+			}
 
 			if ($rightBooleanType->isFalse()->yes()) {
 				return new ConstantBooleanType(false);
@@ -796,10 +802,14 @@ class MutatingScope implements Scope
 				return new ConstantBooleanType(true);
 			}
 
-			$noopCallback = static function (): void {
-			};
-			$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
-			$rightBooleanType = $leftResult->getFalseyScope()->getType($node->right)->toBoolean();
+			if ($this->getBooleanExpressionDepth($node->left) <= self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
+				$noopCallback = static function (): void {
+				};
+				$leftResult = $this->nodeScopeResolver->processExprNode($node->left, $this, $noopCallback, ExpressionContext::createDeep());
+				$rightBooleanType = $leftResult->getFalseyScope()->getType($node->right)->toBoolean();
+			} else {
+				$rightBooleanType = $this->filterByFalseyValue($node->left)->getType($node->right)->toBoolean();
+			}
 
 			if ($rightBooleanType->isTrue()->yes()) {
 				return new ConstantBooleanType(true);
@@ -4705,6 +4715,20 @@ class MutatingScope implements Scope
 		}
 
 		return true;
+	}
+
+	private function getBooleanExpressionDepth(Expr $expr, int $depth = 0): int
+	{
+		while (
+			$expr instanceof BinaryOp\BooleanOr
+			|| $expr instanceof BinaryOp\LogicalOr
+			|| $expr instanceof BinaryOp\BooleanAnd
+			|| $expr instanceof BinaryOp\LogicalAnd
+		) {
+			return $this->getBooleanExpressionDepth($expr->left, $depth + 1);
+		}
+
+		return $depth;
 	}
 
 	/** @api */

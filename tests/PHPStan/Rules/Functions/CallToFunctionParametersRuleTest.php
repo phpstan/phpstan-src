@@ -1421,4 +1421,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6175.php'], []);
 	}
 
+	public function testBug9699(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9699.php'], [
+			[
+				'Parameter #1 $f of function Bug9699\int_int_int_string expects Closure(int, int, int, string): int, Closure(int, int, int ...): int given.',
+				19,
+			],
+		]);
+	}
+
 }

@@ -466,6 +466,7 @@ class AnalyseCommand extends Command
 
 			$inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes());
 
+			/** @var FixerApplication $fixerApplication */
 			$fixerApplication = $container->getByType(FixerApplication::class);
 
 			return $fixerApplication->run(

@@ -312,86 +312,7 @@ class AnalyseCommand extends Command
 		}
 
 		if ($generateBaselineFile !== null) {
-			if (!$allowEmptyBaseline && !$analysisResult->hasErrors()) {
-				$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
-				$inceptionResult->getStdOutput()->writeLineFormatted('To allow generating empty baselines, pass <fg=cyan>--allow-empty-baseline</> option.');
-
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-			}
-			if ($analysisResult->hasInternalErrors()) {
-				$inceptionResult->getStdOutput()->getStyle()->error('An internal error occurred. Baseline could not be generated. Re-run PHPStan without --generate-baseline to see what\'s going on.');
-
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-			}
-
-			$streamOutput = $this->createStreamOutput();
-			$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $streamOutput);
-			$baselineOutput = new SymfonyOutput($streamOutput, new SymfonyStyle($errorConsoleStyle));
-			$baselineFileDirectory = dirname($generateBaselineFile);
-			$baselinePathHelper = new ParentDirectoryRelativePathHelper($baselineFileDirectory);
-
-			if ($baselineExtension === 'php') {
-				$baselineErrorFormatter = new BaselinePhpErrorFormatter($baselinePathHelper);
-				$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput);
-			} else {
-				$baselineErrorFormatter = new BaselineNeonErrorFormatter($baselinePathHelper);
-				$existingBaselineContent = is_file($generateBaselineFile) ? FileReader::read($generateBaselineFile) : '';
-				$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput, $existingBaselineContent);
-			}
-
-			$stream = $streamOutput->getStream();
-			rewind($stream);
-			$baselineContents = stream_get_contents($stream);
-			if ($baselineContents === false) {
-				throw new ShouldNotHappenException();
-			}
-
-			if (!is_dir($baselineFileDirectory)) {
-				$mkdirResult = @mkdir($baselineFileDirectory, 0644, true);
-				if ($mkdirResult === false) {
-					$inceptionResult->getStdOutput()->writeLineFormatted(sprintf('Failed to create directory "%s".', $baselineFileDirectory));
-
-					return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-				}
-			}
-
-			try {
-				FileWriter::write($generateBaselineFile, $baselineContents);
-			} catch (CouldNotWriteFileException $e) {
-				$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
-
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-			}
-
-			$errorsCount = 0;
-			$unignorableCount = 0;
-			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-				if (!$fileSpecificError->canBeIgnored()) {
-					$unignorableCount++;
-					if ($output->isVeryVerbose()) {
-						$inceptionResult->getStdOutput()->writeLineFormatted('Unignorable could not be added to the baseline:');
-						$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getMessage());
-						$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getFile());
-						$inceptionResult->getStdOutput()->writeLineFormatted('');
-					}
-					continue;
-				}
-
-				$errorsCount++;
-			}
-
-			$message = sprintf('Baseline generated with %d %s.', $errorsCount, $errorsCount === 1 ? 'error' : 'errors');
-
-			if (
-				$unignorableCount === 0
-				&& count($analysisResult->getNotFileSpecificErrors()) === 0
-			) {
-				$inceptionResult->getStdOutput()->getStyle()->success($message);
-			} else {
-				$inceptionResult->getStdOutput()->getStyle()->warning($message . "\nSome errors could not be put into baseline. Re-run PHPStan and fix them.");
-			}
-
-			return $inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes());
+			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension);
 		}
 
 		if ($fix) {
@@ -497,6 +418,90 @@ class AnalyseCommand extends Command
 			throw new ShouldNotHappenException();
 		}
 		return new StreamOutput($resource);
+	}
+
+	private function generateBaseline(string $generateBaselineFile, InceptionResult $inceptionResult, AnalysisResult $analysisResult, OutputInterface $output, bool $allowEmptyBaseline, string $baselineExtension): int
+	{
+		if (!$allowEmptyBaseline && !$analysisResult->hasErrors()) {
+			$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
+			$inceptionResult->getStdOutput()->writeLineFormatted('To allow generating empty baselines, pass <fg=cyan>--allow-empty-baseline</> option.');
+
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+		}
+		if ($analysisResult->hasInternalErrors()) {
+			$inceptionResult->getStdOutput()->getStyle()->error('An internal error occurred. Baseline could not be generated. Re-run PHPStan without --generate-baseline to see what\'s going on.');
+
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+		}
+
+		$streamOutput = $this->createStreamOutput();
+		$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $streamOutput);
+		$baselineOutput = new SymfonyOutput($streamOutput, new SymfonyStyle($errorConsoleStyle));
+		$baselineFileDirectory = dirname($generateBaselineFile);
+		$baselinePathHelper = new ParentDirectoryRelativePathHelper($baselineFileDirectory);
+
+		if ($baselineExtension === 'php') {
+			$baselineErrorFormatter = new BaselinePhpErrorFormatter($baselinePathHelper);
+			$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput);
+		} else {
+			$baselineErrorFormatter = new BaselineNeonErrorFormatter($baselinePathHelper);
+			$existingBaselineContent = is_file($generateBaselineFile) ? FileReader::read($generateBaselineFile) : '';
+			$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput, $existingBaselineContent);
+		}
+
+		$stream = $streamOutput->getStream();
+		rewind($stream);
+		$baselineContents = stream_get_contents($stream);
+		if ($baselineContents === false) {
+			throw new ShouldNotHappenException();
+		}
+
+		if (!is_dir($baselineFileDirectory)) {
+			$mkdirResult = @mkdir($baselineFileDirectory, 0644, true);
+			if ($mkdirResult === false) {
+				$inceptionResult->getStdOutput()->writeLineFormatted(sprintf('Failed to create directory "%s".', $baselineFileDirectory));
+
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+			}
+		}
+
+		try {
+			FileWriter::write($generateBaselineFile, $baselineContents);
+		} catch (CouldNotWriteFileException $e) {
+			$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
+
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+		}
+
+		$errorsCount = 0;
+		$unignorableCount = 0;
+		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+			if (!$fileSpecificError->canBeIgnored()) {
+				$unignorableCount++;
+				if ($output->isVeryVerbose()) {
+					$inceptionResult->getStdOutput()->writeLineFormatted('Unignorable could not be added to the baseline:');
+					$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getMessage());
+					$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getFile());
+					$inceptionResult->getStdOutput()->writeLineFormatted('');
+				}
+				continue;
+			}
+
+			$errorsCount++;
+		}
+
+		$message = sprintf('Baseline generated with %d %s.', $errorsCount, $errorsCount === 1 ? 'error' : 'errors');
+
+		if (
+			$unignorableCount === 0
+			&& count($analysisResult->getNotFileSpecificErrors()) === 0
+		) {
+			$inceptionResult->getStdOutput()->getStyle()->success($message);
+		} else {
+			$inceptionResult->getStdOutput()->getStyle()->warning($message . "\nSome errors could not be put into baseline. Re-run PHPStan and fix them.");
+		}
+
+		return $inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes());
 	}
 
 }

@@ -490,7 +490,7 @@ parameters:
 
 		-
 			message: """
-				#^Call to deprecated method doNotTreatPhpDocTypesAsCertain\\(\\) of class PHPStan\\\\Analyser\\\\Scope\\:
+				#^Call to deprecated method doNotTreatPhpDocTypesAsCertain\\(\\) of interface PHPStan\\\\Analyser\\\\Scope\\:
 				Use getNativeType\\(\\)$#
 			"""
 			count: 1

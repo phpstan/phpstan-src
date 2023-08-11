@@ -44,7 +44,7 @@ class MissingReadOnlyPropertyAssignRule implements Rule
 			))->line($propertyNode->getLine())->build();
 		}
 
-		foreach ($prematureAccess as [$propertyName, $line, $propertyNode, $file]) {
+		foreach ($prematureAccess as [$propertyName, $line, $propertyNode, $fileDescription]) {
 			if (!$propertyNode->isReadOnly()) {
 				continue;
 			}
@@ -52,7 +52,7 @@ class MissingReadOnlyPropertyAssignRule implements Rule
 				'Access to an uninitialized readonly property %s::$%s.',
 				$classReflection->getDisplayName(),
 				$propertyName,
-			))->line($line)->file($file)->build();
+			))->line($line)->file($scope->getFile(), $fileDescription)->build();
 		}
 
 		foreach ($additionalAssigns as [$propertyName, $line, $propertyNode]) {

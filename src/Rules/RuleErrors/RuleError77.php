@@ -17,6 +17,8 @@ class RuleError77 implements RuleError, FileRuleError, TipRuleError, NonIgnorabl
 
 	public string $file;
 
+	public ?string $fileDescription;
+
 	public string $tip;
 
 	public function getMessage(): string
@@ -27,6 +29,11 @@ class RuleError77 implements RuleError, FileRuleError, TipRuleError, NonIgnorabl
 	public function getFile(): string
 	{
 		return $this->file;
+	}
+
+	public function getFileDescription(): ?string
+	{
+		return $this->fileDescription;
 	}
 
 	public function getTip(): string

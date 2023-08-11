@@ -18,6 +18,8 @@ class RuleError117 implements RuleError, FileRuleError, IdentifierRuleError, Met
 
 	public string $file;
 
+	public ?string $fileDescription;
+
 	public string $identifier;
 
 	/** @var mixed[] */
@@ -31,6 +33,11 @@ class RuleError117 implements RuleError, FileRuleError, IdentifierRuleError, Met
 	public function getFile(): string
 	{
 		return $this->file;
+	}
+
+	public function getFileDescription(): ?string
+	{
+		return $this->fileDescription;
 	}
 
 	public function getIdentifier(): string

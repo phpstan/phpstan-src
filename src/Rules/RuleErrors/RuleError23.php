@@ -19,6 +19,8 @@ class RuleError23 implements RuleError, LineRuleError, FileRuleError, Identifier
 
 	public string $file;
 
+	public ?string $fileDescription;
+
 	public string $identifier;
 
 	public function getMessage(): string
@@ -34,6 +36,11 @@ class RuleError23 implements RuleError, LineRuleError, FileRuleError, Identifier
 	public function getFile(): string
 	{
 		return $this->file;
+	}
+
+	public function getFileDescription(): ?string
+	{
+		return $this->fileDescription;
 	}
 
 	public function getIdentifier(): string

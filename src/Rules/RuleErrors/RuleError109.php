@@ -18,6 +18,8 @@ class RuleError109 implements RuleError, FileRuleError, TipRuleError, MetadataRu
 
 	public string $file;
 
+	public ?string $fileDescription;
+
 	public string $tip;
 
 	/** @var mixed[] */
@@ -31,6 +33,11 @@ class RuleError109 implements RuleError, FileRuleError, TipRuleError, MetadataRu
 	public function getFile(): string
 	{
 		return $this->file;
+	}
+
+	public function getFileDescription(): ?string
+	{
+		return $this->fileDescription;
 	}
 
 	public function getTip(): string

@@ -53,7 +53,7 @@ class RuleErrorTransformer
 				$ruleError instanceof FileRuleError
 				&& $ruleError->getFile() !== ''
 			) {
-				$fileName = $ruleError->getFile();
+				$fileName = $ruleError->getFileDescription() ?? $ruleError->getFile();
 				$filePath = $ruleError->getFile();
 				$traitFilePath = null;
 			}

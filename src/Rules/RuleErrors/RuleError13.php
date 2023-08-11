@@ -16,6 +16,8 @@ class RuleError13 implements RuleError, FileRuleError, TipRuleError
 
 	public string $file;
 
+	public ?string $fileDescription;
+
 	public string $tip;
 
 	public function getMessage(): string
@@ -26,6 +28,11 @@ class RuleError13 implements RuleError, FileRuleError, TipRuleError
 	public function getFile(): string
 	{
 		return $this->file;
+	}
+
+	public function getFileDescription(): ?string
+	{
+		return $this->fileDescription;
 	}
 
 	public function getTip(): string

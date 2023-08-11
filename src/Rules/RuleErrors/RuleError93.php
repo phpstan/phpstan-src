@@ -18,6 +18,8 @@ class RuleError93 implements RuleError, FileRuleError, TipRuleError, IdentifierR
 
 	public string $file;
 
+	public ?string $fileDescription;
+
 	public string $tip;
 
 	public string $identifier;
@@ -30,6 +32,11 @@ class RuleError93 implements RuleError, FileRuleError, TipRuleError, IdentifierR
 	public function getFile(): string
 	{
 		return $this->file;
+	}
+
+	public function getFileDescription(): ?string
+	{
+		return $this->fileDescription;
 	}
 
 	public function getTip(): string

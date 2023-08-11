@@ -33,17 +33,13 @@ php;
 		}
 		$properties = [];
 		$interfaces = [];
-		foreach ($ruleErrorTypes as $typeNumber => [$interface, $propertyName, $nativePropertyType, $phpDocPropertyType]) {
+		foreach ($ruleErrorTypes as $typeNumber => [$interface, $typeProperties]) {
 			if (!(($typeCombination & $typeNumber) === $typeNumber)) {
 				continue;
 			}
 
 			$interfaces[] = '\\' . $interface;
-			if ($propertyName === null || $nativePropertyType === null || $phpDocPropertyType === null) {
-				continue;
-			}
-
-			$properties[] = [$propertyName, $nativePropertyType, $phpDocPropertyType];
+			$properties = array_merge($properties, $typeProperties);
 		}
 
 		$phpClass = sprintf(

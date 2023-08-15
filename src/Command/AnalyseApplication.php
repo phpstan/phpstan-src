@@ -108,7 +108,7 @@ class AnalyseApplication
 			$memoryUsageBytes = $analyserResult->getPeakMemoryUsageBytes();
 
 			if (!$hasInternalErrors) {
-				foreach ($this->getCollectedDataErrors($analyserResult->getCollectedData()) as $error) {
+				foreach ($this->getCollectedDataErrors($analyserResult->getCollectedData(), $onlyFiles) as $error) {
 					$errors[] = $error;
 				}
 			}
@@ -149,10 +149,10 @@ class AnalyseApplication
 	 * @param CollectedData[] $collectedData
 	 * @return Error[]
 	 */
-	private function getCollectedDataErrors(array $collectedData): array
+	private function getCollectedDataErrors(array $collectedData, bool $onlyFiles): array
 	{
 		$nodeType = CollectedDataNode::class;
-		$node = new CollectedDataNode($collectedData);
+		$node = new CollectedDataNode($collectedData, $onlyFiles);
 		$file = 'N/A';
 		$scope = $this->scopeFactory->create(ScopeContext::create($file));
 		$errors = [];

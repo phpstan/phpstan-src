@@ -181,7 +181,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			]);
 
 			$nodeType = CollectedDataNode::class;
-			$node = new CollectedDataNode($analyserResult->getCollectedData());
+			$node = new CollectedDataNode($analyserResult->getCollectedData(), false);
 			$scopeFactory = $this->createScopeFactory($this->createReflectionProvider(), $this->getTypeSpecifier());
 			$scope = $scopeFactory->create(ScopeContext::create('irrelevant'));
 			foreach ($ruleRegistry->getRules($nodeType) as $rule) {

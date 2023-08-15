@@ -1,12 +1,14 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Rules\Traits;
+namespace PHPStan\Rules\Playground;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Rules\Traits\TraitDeclarationCollector;
+use PHPStan\Rules\Traits\TraitUseCollector;
 use function sprintf;
 use function strtolower;
 
@@ -23,10 +25,6 @@ class NotAnalysedTraitRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node->isOnlyFilesAnalysis()) {
-			return [];
-		}
-
 		$traitDeclarationData = $node->get(TraitDeclarationCollector::class);
 		$traitUseData = $node->get(TraitUseCollector::class);
 
@@ -51,9 +49,9 @@ class NotAnalysedTraitRule implements Rule
 				'Trait %s is used zero times and is not analysed.',
 				$name,
 			))
+				->identifier('phpstanPlayground.traitUnused')
 				->file($file)
 				->line($line)
-				->identifier('trait.unused')
 				->tip('See: https://phpstan.org/blog/how-phpstan-analyses-traits')
 				->build();
 		}

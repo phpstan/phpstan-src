@@ -8,10 +8,10 @@ class HelloWorld
 {
 	public function doFoo()
 	{
-		assertType('list<string>|false', preg_split('/-/', '1-2-3'));
-		assertType('list<string>|false', preg_split('/-/', '1-2-3', -1, PREG_SPLIT_NO_EMPTY));
-		assertType('list<array{string, int<0, max>}>|false', preg_split('/-/', '1-2-3', -1, PREG_SPLIT_OFFSET_CAPTURE));
-		assertType('list<array{string, int<0, max>}>|false', preg_split('/-/', '1-2-3', -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
+		assertType('list<string>', preg_split('/-/', '1-2-3'));
+		assertType('list<string>', preg_split('/-/', '1-2-3', -1, PREG_SPLIT_NO_EMPTY));
+		assertType('list<array{string, int<0, max>}>', preg_split('/-/', '1-2-3', -1, PREG_SPLIT_OFFSET_CAPTURE));
+		assertType('list<array{string, int<0, max>}>', preg_split('/-/', '1-2-3', -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
 	}
 
 	/**

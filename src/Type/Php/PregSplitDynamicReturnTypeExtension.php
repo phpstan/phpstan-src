@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Rules\Regexp\RegularExpressionHelper;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
@@ -19,6 +20,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function count;
 use function strtolower;
 
 class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -26,6 +28,7 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	public function __construct(
 		private BitwiseFlagHelper $bitwiseFlagAnalyser,
+		private RegularExpressionHelper $regularExpressionHelper,
 	)
 	{
 	}
@@ -44,10 +47,32 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 				new IntegerType(),
 				new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new StringType(), IntegerRangeType::fromInterval(0, null)], [2], [], TrinaryLogic::createYes()),
 			);
-			return TypeCombinator::union(AccessoryArrayListType::intersectWith($type), new ConstantBooleanType(false));
+			$returnType = TypeCombinator::union(AccessoryArrayListType::intersectWith($type), new ConstantBooleanType(false));
+		} else {
+			$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		$patternArg = $functionCall->getArgs()[0] ?? null;
+		if ($patternArg === null) {
+			return $returnType;
+		}
+
+		$patternType = $scope->getType($patternArg->value);
+		$constantStrings = $patternType->getConstantStrings();
+		if (count($constantStrings) === 0) {
+			return $returnType;
+		}
+
+		foreach ($constantStrings as $constantString) {
+			if ($this->regularExpressionHelper->validatePattern($constantString->getValue()) !== null) {
+				return $returnType;
+			}
+		}
+
+		return TypeCombinator::remove(
+			$returnType,
+			new ConstantBooleanType(false),
+		);
 	}
 
 }

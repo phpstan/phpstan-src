@@ -15,7 +15,6 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use function extension_loaded;
 use function restore_error_handler;
-use function sprintf;
 use const PHP_VERSION_ID;
 
 class AnalyserIntegrationTest extends PHPStanTestCase
@@ -835,13 +834,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testUnresolvableParameter(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/unresolvable-parameter.php');
-		$this->assertCount(3, $errors);
-		$this->assertSame('Parameter #2 $array of function array_map expects array, array<int, string>|false given.', $errors[0]->getMessage());
-		$this->assertSame(18, $errors[0]->getLine());
-		$this->assertSame('Method UnresolvableParameter\Collection::pipeInto() has parameter $class with no type specified.', $errors[1]->getMessage());
+		$this->assertCount(2, $errors);
+		$this->assertSame('Method UnresolvableParameter\Collection::pipeInto() has parameter $class with no type specified.', $errors[0]->getMessage());
+		$this->assertSame(30, $errors[0]->getLine());
+		$this->assertSame('PHPDoc tag @param for parameter $class contains unresolvable type.', $errors[1]->getMessage());
 		$this->assertSame(30, $errors[1]->getLine());
-		$this->assertSame('PHPDoc tag @param for parameter $class contains unresolvable type.', $errors[2]->getMessage());
-		$this->assertSame(30, $errors[2]->getLine());
 	}
 
 	public function testBug7248(): void
@@ -883,13 +880,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug7554(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7554.php');
-		$this->assertCount(2, $errors);
-
-		$this->assertSame(sprintf('Parameter #1 $%s of function count expects array|Countable, array<int, array<int, int|string>>|false given.', PHP_VERSION_ID < 80000 ? 'var' : 'value'), $errors[0]->getMessage());
-		$this->assertSame(26, $errors[0]->getLine());
-
-		$this->assertSame('Cannot access offset int<1, max> on list<array{string, int<0, max>}>|false.', $errors[1]->getMessage());
-		$this->assertSame(27, $errors[1]->getLine());
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug7637(): void

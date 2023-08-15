@@ -12,9 +12,10 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
+use function in_array;
 use function strtolower;
 
-class PregGrepDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+class PregMatchingDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(
@@ -25,7 +26,7 @@ class PregGrepDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return strtolower($functionReflection->getName()) === 'preg_grep';
+		return in_array(strtolower($functionReflection->getName()), ['preg_grep', 'preg_match', 'preg_match_all'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type

@@ -1717,7 +1717,7 @@ services:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: PHPStan\Type\Php\PregGrepDynamicReturnTypeExtension
+		class: PHPStan\Type\Php\PregMatchingDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 

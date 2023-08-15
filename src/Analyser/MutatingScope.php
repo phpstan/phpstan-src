@@ -1615,11 +1615,13 @@ class MutatingScope implements Scope
 			if ($this->hasExpressionType($node)->yes()) {
 				return $this->expressionTypes[$exprString]->getType();
 			}
+
 			return $this->initializerExprTypeResolver->getClassConstFetchTypeByReflection(
 				$node->class,
 				$node->name->name,
 				$this->isInClass() ? $this->getClassReflection() : null,
 				fn (Expr $expr): Type => $this->getType($expr),
+				InitializerExprContext::fromScope($this),
 			);
 		}
 

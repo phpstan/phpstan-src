@@ -145,7 +145,7 @@ class FixerWorkerCommand extends Command
 			$hasInternalErrors,
 		);
 		if (!$hasInternalErrors) {
-			foreach ($this->getCollectedDataErrors($container, $result->getCollectedData()) as $error) {
+			foreach ($this->getCollectedDataErrors($container, $result->getCollectedData(), $isOnlyFiles) as $error) {
 				$intermediateErrors[] = $error;
 			}
 		}
@@ -173,10 +173,10 @@ class FixerWorkerCommand extends Command
 	 * @param CollectedData[] $collectedData
 	 * @return Error[]
 	 */
-	private function getCollectedDataErrors(Container $container, array $collectedData): array
+	private function getCollectedDataErrors(Container $container, array $collectedData, bool $onlyFiles): array
 	{
 		$nodeType = CollectedDataNode::class;
-		$node = new CollectedDataNode($collectedData);
+		$node = new CollectedDataNode($collectedData, $onlyFiles);
 		$file = 'N/A';
 		$scope = $container->getByType(ScopeFactory::class)->create(ScopeContext::create($file));
 		$ruleRegistry = $container->getByType(RuleRegistry::class);

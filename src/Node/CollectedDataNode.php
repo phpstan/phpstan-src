@@ -15,7 +15,7 @@ class CollectedDataNode extends NodeAbstract
 	/**
 	 * @param CollectedData[] $collectedData
 	 */
-	public function __construct(private array $collectedData)
+	public function __construct(private array $collectedData, private bool $onlyFiles)
 	{
 		parent::__construct([]);
 	}
@@ -43,6 +43,16 @@ class CollectedDataNode extends NodeAbstract
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Indicates that only files were passed to the analyser, not directory paths.
+	 *
+	 * True being returned strongly suggests that it's a partial analysis, not full project analysis.
+	 */
+	public function isOnlyFilesAnalysis(): bool
+	{
+		return $this->onlyFiles;
 	}
 
 	public function getType(): string

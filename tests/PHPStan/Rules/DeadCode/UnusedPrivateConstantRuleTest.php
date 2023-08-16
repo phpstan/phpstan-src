@@ -92,4 +92,9 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9005.php'], []);
 	}
 
+	public function testBug9765(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9765.php'], []);
+	}
+
 }

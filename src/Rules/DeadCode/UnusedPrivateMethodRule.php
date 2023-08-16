@@ -10,6 +10,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ObjectType;
 use function array_map;
 use function count;
 use function sprintf;
@@ -32,6 +33,7 @@ class UnusedPrivateMethodRule implements Rule
 			return [];
 		}
 		$classReflection = $node->getClassReflection();
+		$classType = new ObjectType($classReflection->getName());
 		$constructor = null;
 		if ($classReflection->hasConstructor()) {
 			$constructor = $classReflection->getConstructor();
@@ -93,9 +95,15 @@ class UnusedPrivateMethodRule implements Rule
 			foreach ($methodNames as $methodName) {
 				$methodReflection = $callScope->getMethodReflection($calledOnType, $methodName);
 				if ($methodReflection === null) {
+					if (!$classType->isSuperTypeOf($calledOnType)->no()) {
+						unset($methods[strtolower($methodName)]);
+					}
 					continue;
 				}
 				if ($methodReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
+					if (!$classType->isSuperTypeOf($calledOnType)->no()) {
+						unset($methods[strtolower($methodName)]);
+					}
 					continue;
 				}
 				if ($inMethod->getName() === $methodName) {

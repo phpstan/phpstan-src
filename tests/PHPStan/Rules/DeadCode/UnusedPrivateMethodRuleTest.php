@@ -109,4 +109,9 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6039.php'], []);
 	}
 
+	public function testBug9765(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9765.php'], []);
+	}
+
 }

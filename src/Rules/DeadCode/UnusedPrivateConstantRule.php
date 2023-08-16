@@ -8,6 +8,7 @@ use PHPStan\Node\ClassConstantsNode;
 use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ObjectType;
 use function sprintf;
 
 /**
@@ -32,6 +33,7 @@ class UnusedPrivateConstantRule implements Rule
 		}
 
 		$classReflection = $node->getClassReflection();
+		$classType = new ObjectType($classReflection->getName());
 
 		$constants = [];
 		foreach ($node->getConstants() as $constant) {
@@ -68,10 +70,16 @@ class UnusedPrivateConstantRule implements Rule
 
 			$constantReflection = $fetchScope->getConstantReflection($fetchedOnClass, $fetchNode->name->toString());
 			if ($constantReflection === null) {
+				if (!$classType->isSuperTypeOf($fetchedOnClass)->no()) {
+					unset($constants[$fetchNode->name->toString()]);
+				}
 				continue;
 			}
 
 			if ($constantReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
+				if (!$classType->isSuperTypeOf($fetchedOnClass)->no()) {
+					unset($constants[$fetchNode->name->toString()]);
+				}
 				continue;
 			}
 

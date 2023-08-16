@@ -10,6 +10,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ObjectType;
 use function array_key_exists;
 use function array_map;
 use function count;
@@ -46,6 +47,7 @@ class UnusedPrivatePropertyRule implements Rule
 			return [];
 		}
 		$classReflection = $node->getClassReflection();
+		$classType = new ObjectType($classReflection->getName());
 		$properties = [];
 		foreach ($node->getProperties() as $property) {
 			if (!$property->isPrivate()) {
@@ -139,9 +141,23 @@ class UnusedPrivatePropertyRule implements Rule
 				}
 				$propertyReflection = $usage->getScope()->getPropertyReflection($fetchedOnType, $propertyName);
 				if ($propertyReflection === null) {
+					if (!$classType->isSuperTypeOf($fetchedOnType)->no()) {
+						if ($usage instanceof PropertyRead) {
+							$properties[$propertyName]['read'] = true;
+						} else {
+							$properties[$propertyName]['written'] = true;
+						}
+					}
 					continue;
 				}
 				if ($propertyReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
+					if (!$classType->isSuperTypeOf($fetchedOnType)->no()) {
+						if ($usage instanceof PropertyRead) {
+							$properties[$propertyName]['read'] = true;
+						} else {
+							$properties[$propertyName]['written'] = true;
+						}
+					}
 					continue;
 				}
 

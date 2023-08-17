@@ -8,6 +8,7 @@ use Nette\Schema\Expect;
 use PHPStan\Analyser\TypeSpecifierFactory;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\Collectors\RegistryFactory as CollectorRegistryFactory;
+use PHPStan\DependencyInjection\Type\LazyDynamicThrowTypeExtensionProvider;
 use PHPStan\Parser\RichParser;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
 use PHPStan\Rules\LazyRegistry;
@@ -37,6 +38,9 @@ class ConditionalTagsExtension extends CompilerExtension
 			TypeSpecifierFactory::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			RichParser::VISITOR_SERVICE_TAG => $bool,
 			CollectorRegistryFactory::COLLECTOR_TAG => $bool,
+			LazyDynamicThrowTypeExtensionProvider::FUNCTION_TAG => $bool,
+			LazyDynamicThrowTypeExtensionProvider::METHOD_TAG => $bool,
+			LazyDynamicThrowTypeExtensionProvider::STATIC_METHOD_TAG => $bool,
 		])->min(1));
 	}
 

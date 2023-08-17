@@ -10,8 +10,11 @@ use PHPStan\Broker\BrokerFactory;
 use PHPStan\Collectors\RegistryFactory as CollectorRegistryFactory;
 use PHPStan\DependencyInjection\Type\LazyDynamicThrowTypeExtensionProvider;
 use PHPStan\Parser\RichParser;
+use PHPStan\PhpDoc\StubFilesExtension;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
+use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\LazyRegistry;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use function array_reduce;
 use function count;
@@ -31,8 +34,12 @@ class ConditionalTagsExtension extends CompilerExtension
 			BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG => $bool,
 			BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG => $bool,
 			BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
+			BrokerFactory::ALLOWED_SUB_TYPES_CLASS_REFLECTION_EXTENSION_TAG => $bool,
 			LazyRegistry::RULE_TAG => $bool,
 			TypeNodeResolverExtension::EXTENSION_TAG => $bool,
+			StubFilesExtension::EXTENSION_TAG => $bool,
+			AlwaysUsedClassConstantsExtensionProvider::EXTENSION_TAG => $bool,
+			ReadWritePropertiesExtensionProvider::EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::METHOD_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG => $bool,

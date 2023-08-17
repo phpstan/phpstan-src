@@ -52,11 +52,20 @@ class CleaningVisitor extends NodeVisitorAbstract
 				return in_array($node->name->toLowerString(), ParametersAcceptor::VARIADIC_FUNCTIONS, true);
 			}
 
+			if ($node instanceof Node\Expr\Closure || $node instanceof Node\Expr\ArrowFunction) {
+				return true;
+			}
+
 			return false;
 		});
 		$newStmts = [];
 		foreach ($results as $result) {
-			if ($result instanceof Node\Expr\Yield_ || $result instanceof Node\Expr\YieldFrom) {
+			if (
+				$result instanceof Node\Expr\Yield_
+				|| $result instanceof Node\Expr\YieldFrom
+				|| $result instanceof Node\Expr\Closure
+				|| $result instanceof Node\Expr\ArrowFunction
+			) {
 				$newStmts[] = new Node\Stmt\Expression($result);
 				continue;
 			}

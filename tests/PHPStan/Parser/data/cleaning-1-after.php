@@ -39,3 +39,13 @@ class InlineVars
         \func_get_args();
     }
 }
+class ContainsClosure
+{
+    public function doFoo()
+    {
+        static function () {
+            yield;
+        };
+        yield;
+    }
+}

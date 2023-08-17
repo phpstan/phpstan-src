@@ -67,3 +67,19 @@ class InlineVars
 		}
 	}
 }
+
+class ContainsClosure
+{
+
+	public function doFoo()
+	{
+		return static function () {
+			if (doFoo()) {
+				echo 'foo';
+			}
+
+			yield;
+		};
+	}
+
+}

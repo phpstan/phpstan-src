@@ -47,6 +47,16 @@ class Foo
 		/** @var array{17: 'foo', 19: 'bar', 21: 'baz'}|array{foo: 17, bar: 19, baz: 21} $arr */
 		assertType('array{\'bar\', \'baz\'}|array{bar: 19, baz: 21}', array_slice($arr, 1, 2));
 		assertType('array{19: \'bar\', 21: \'baz\'}|array{bar: 19, baz: 21}', array_slice($arr, 1, 2, true));
+
+		/** @var int $offset */
+		/** @var array{17: 'foo', b: 'bar', 19: 'baz'} $arr */
+		assertType('array', array_slice($arr, $offset, 2));
+		assertType('array', array_slice($arr, $offset, 2, true));
+
+		/** @var int $limit */
+		/** @var array{17: 'foo', b: 'bar', 19: 'baz'} $arr */
+		assertType('array', array_slice($arr, 1, $limit));
+		assertType('array', array_slice($arr, 1, $limit, true));
 	}
 
 	public function constantArraysWithOptionalKeys(array $arr): void

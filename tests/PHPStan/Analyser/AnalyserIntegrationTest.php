@@ -1223,6 +1223,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testNullsafeVsScalar(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/nullsafe-vs-scalar.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

@@ -1395,7 +1395,7 @@ class TypeSpecifier
 	{
 		if ($scope !== null) {
 			if ($context->true()) {
-				$containsNull = TypeCombinator::containsNull($type) && TypeCombinator::containsNull($scope->getType($expr));
+				$containsNull = ! $type->isNull()->no() && ! $scope->getType($expr)->isNull()->no();
 			} elseif ($context->false()) {
 				$containsNull = !TypeCombinator::containsNull($type) && TypeCombinator::containsNull($scope->getType($expr));
 			}

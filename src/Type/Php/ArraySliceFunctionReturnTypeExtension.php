@@ -22,7 +22,7 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		if (count($functionCall->getArgs()) < 2) {
 			return null;
 		}
 

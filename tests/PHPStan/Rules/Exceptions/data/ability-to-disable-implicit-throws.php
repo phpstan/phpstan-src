@@ -8,13 +8,13 @@ class HelloWorld
 	{
 		try {
 			$c();
-		} catch (\Throwable) { // no error here
+		} catch (\Throwable $e) { // no error here
 
 		}
 
 		try {
 			$this->method();
-		} catch (\Throwable) { // Dead catch - Throwable is never thrown in the try block.
+		} catch (\Throwable $e) { // Dead catch - Throwable is never thrown in the try block.
 
 		}
 	}

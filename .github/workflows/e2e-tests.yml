@@ -179,6 +179,10 @@ jobs:
             extensions: ""
           - script: "bin/phpstan analyse e2e/only-files-not-analysed-trait/src/Foo.php e2e/only-files-not-analysed-trait/src/BarTrait.php -c e2e/only-files-not-analysed-trait/no-ignore.neon"
             extensions: ""
+          - script: |
+              cd e2e/baseline-uninit-prop-trait
+              ../../bin/phpstan analyse --debug --configuration test-no-baseline.neon --generate-baseline test-baseline.neon
+              ../../bin/phpstan analyse --debug --configuration test.neon
 
     steps:
       - name: "Checkout"

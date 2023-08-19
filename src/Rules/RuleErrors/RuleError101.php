@@ -17,7 +17,7 @@ class RuleError101 implements RuleError, FileRuleError, MetadataRuleError, NonIg
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	/** @var mixed[] */
 	public array $metadata;
@@ -32,7 +32,7 @@ class RuleError101 implements RuleError, FileRuleError, MetadataRuleError, NonIg
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

@@ -15,7 +15,7 @@ class RuleError5 implements RuleError, FileRuleError
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	public function getMessage(): string
 	{
@@ -27,7 +27,7 @@ class RuleError5 implements RuleError, FileRuleError
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

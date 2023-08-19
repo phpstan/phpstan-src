@@ -16,7 +16,7 @@ class RuleError69 implements RuleError, FileRuleError, NonIgnorableRuleError
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	public function getMessage(): string
 	{
@@ -28,7 +28,7 @@ class RuleError69 implements RuleError, FileRuleError, NonIgnorableRuleError
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

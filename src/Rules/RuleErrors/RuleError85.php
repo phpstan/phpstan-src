@@ -17,7 +17,7 @@ class RuleError85 implements RuleError, FileRuleError, IdentifierRuleError, NonI
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	public string $identifier;
 
@@ -31,7 +31,7 @@ class RuleError85 implements RuleError, FileRuleError, IdentifierRuleError, NonI
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

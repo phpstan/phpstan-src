@@ -16,7 +16,7 @@ class RuleError37 implements RuleError, FileRuleError, MetadataRuleError
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	/** @var mixed[] */
 	public array $metadata;
@@ -31,7 +31,7 @@ class RuleError37 implements RuleError, FileRuleError, MetadataRuleError
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

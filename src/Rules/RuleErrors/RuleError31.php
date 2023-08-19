@@ -20,7 +20,7 @@ class RuleError31 implements RuleError, LineRuleError, FileRuleError, TipRuleErr
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	public string $tip;
 
@@ -41,7 +41,7 @@ class RuleError31 implements RuleError, LineRuleError, FileRuleError, TipRuleErr
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

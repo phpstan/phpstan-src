@@ -17,7 +17,7 @@ class RuleError45 implements RuleError, FileRuleError, TipRuleError, MetadataRul
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	public string $tip;
 
@@ -34,7 +34,7 @@ class RuleError45 implements RuleError, FileRuleError, TipRuleError, MetadataRul
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

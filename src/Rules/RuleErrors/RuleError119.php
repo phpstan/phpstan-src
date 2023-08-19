@@ -21,7 +21,7 @@ class RuleError119 implements RuleError, LineRuleError, FileRuleError, Identifie
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	public string $identifier;
 
@@ -43,7 +43,7 @@ class RuleError119 implements RuleError, LineRuleError, FileRuleError, Identifie
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

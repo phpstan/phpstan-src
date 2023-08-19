@@ -19,6 +19,8 @@ class RuleError39 implements RuleError, LineRuleError, FileRuleError, MetadataRu
 
 	public string $file;
 
+	public string $fileDescription;
+
 	/** @var mixed[] */
 	public array $metadata;
 
@@ -35,6 +37,11 @@ class RuleError39 implements RuleError, LineRuleError, FileRuleError, MetadataRu
 	public function getFile(): string
 	{
 		return $this->file;
+	}
+
+	public function getFileDescription(): string
+	{
+		return $this->fileDescription;
 	}
 
 	/**

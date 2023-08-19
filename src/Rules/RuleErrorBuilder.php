@@ -40,52 +40,79 @@ class RuleErrorBuilder
 	}
 
 	/**
-	 * @return array<int, array{string, string|null, string|null, string|null}>
+	 * @return array<int, array{string, array<array{string|null, string|null, string|null}>}>
 	 */
 	public static function getRuleErrorTypes(): array
 	{
 		return [
 			self::TYPE_MESSAGE => [
 				RuleError::class,
-				'message',
-				'string',
-				'string',
+				[
+					[
+						'message',
+						'string',
+						'string',
+					],
+				],
 			],
 			self::TYPE_LINE => [
 				LineRuleError::class,
-				'line',
-				'int',
-				'int',
+				[
+					[
+						'line',
+						'int',
+						'int',
+					],
+				],
 			],
 			self::TYPE_FILE => [
 				FileRuleError::class,
-				'file',
-				'string',
-				'string',
+				[
+					[
+						'file',
+						'string',
+						'string',
+					],
+					[
+						'fileDescription',
+						'string',
+						'string',
+					],
+				],
 			],
 			self::TYPE_TIP => [
 				TipRuleError::class,
-				'tip',
-				'string',
-				'string',
+				[
+					[
+						'tip',
+						'string',
+						'string',
+					],
+				],
 			],
 			self::TYPE_IDENTIFIER => [
 				IdentifierRuleError::class,
-				'identifier',
-				'string',
-				'string',
+				[
+					[
+						'identifier',
+						'string',
+						'string',
+					],
+				],
 			],
 			self::TYPE_METADATA => [
 				MetadataRuleError::class,
-				'metadata',
-				'array',
-				'mixed[]',
+				[
+					[
+						'metadata',
+						'array',
+						'mixed[]',
+					],
+				],
 			],
 			self::TYPE_NON_IGNORABLE => [
 				NonIgnorableRuleError::class,
-				null,
-				null,
-				null,
+				[],
 			],
 		];
 	}
@@ -114,9 +141,10 @@ class RuleErrorBuilder
 	 * @phpstan-this-out self<T&FileRuleError>
 	 * @return self<T&FileRuleError>
 	 */
-	public function file(string $file): self
+	public function file(string $file, ?string $fileDescription = null): self
 	{
 		$this->properties['file'] = $file;
+		$this->properties['fileDescription'] = $fileDescription ?? $file;
 		$this->type |= self::TYPE_FILE;
 
 		return $this;

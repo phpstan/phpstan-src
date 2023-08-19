@@ -16,6 +16,8 @@ class RuleError21 implements RuleError, FileRuleError, IdentifierRuleError
 
 	public string $file;
 
+	public string $fileDescription;
+
 	public string $identifier;
 
 	public function getMessage(): string
@@ -26,6 +28,11 @@ class RuleError21 implements RuleError, FileRuleError, IdentifierRuleError
 	public function getFile(): string
 	{
 		return $this->file;
+	}
+
+	public function getFileDescription(): string
+	{
+		return $this->fileDescription;
 	}
 
 	public function getIdentifier(): string

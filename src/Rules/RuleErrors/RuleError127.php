@@ -22,6 +22,8 @@ class RuleError127 implements RuleError, LineRuleError, FileRuleError, TipRuleEr
 
 	public string $file;
 
+	public string $fileDescription;
+
 	public string $tip;
 
 	public string $identifier;
@@ -42,6 +44,11 @@ class RuleError127 implements RuleError, LineRuleError, FileRuleError, TipRuleEr
 	public function getFile(): string
 	{
 		return $this->file;
+	}
+
+	public function getFileDescription(): string
+	{
+		return $this->fileDescription;
 	}
 
 	public function getTip(): string

@@ -93,7 +93,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param string[] $constructors
 	 * @param ReadWritePropertiesExtension[]|null $extensions
-	 * @return array{array<string, ClassPropertyNode>, array<array{string, int, ClassPropertyNode, string}>, array<array{string, int, ClassPropertyNode}>}
+	 * @return array{array<string, ClassPropertyNode>, array<array{string, int, ClassPropertyNode, string, string}>, array<array{string, int, ClassPropertyNode}>}
 	 */
 	public function getUninitializedProperties(
 		Scope $scope,
@@ -231,6 +231,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 						$propertyName,
 						$fetch->getLine(),
 						$originalProperties[$propertyName],
+						$usageScope->getFile(),
 						$usageScope->getFileDescription(),
 					];
 				}

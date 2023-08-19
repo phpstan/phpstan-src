@@ -47,7 +47,7 @@ class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
 				->build();
 		}
 
-		foreach ($prematureAccess as [$propertyName, $line, $propertyNode, $file]) {
+		foreach ($prematureAccess as [$propertyName, $line, $propertyNode, $file, $fileDescription]) {
 			if (!$propertyNode->isReadOnlyByPhpDoc() || $propertyNode->isReadOnly()) {
 				continue;
 			}
@@ -58,7 +58,7 @@ class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
 			))
 				->identifier('property.uninitializedReadonlyByPhpDoc')
 				->line($line)
-				->file($file)
+				->file($file, $fileDescription)
 				->build();
 		}
 

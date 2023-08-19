@@ -20,6 +20,8 @@ class RuleError79 implements RuleError, LineRuleError, FileRuleError, TipRuleErr
 
 	public string $file;
 
+	public string $fileDescription;
+
 	public string $tip;
 
 	public function getMessage(): string
@@ -35,6 +37,11 @@ class RuleError79 implements RuleError, LineRuleError, FileRuleError, TipRuleErr
 	public function getFile(): string
 	{
 		return $this->file;
+	}
+
+	public function getFileDescription(): string
+	{
+		return $this->fileDescription;
 	}
 
 	public function getTip(): string

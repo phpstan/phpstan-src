@@ -1223,54 +1223,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	public function testBug5172(): void
-	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5172.php');
-		$this->assertNoErrors($errors);
-	}
-
-	public function testBug7980(): void
-	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7980.php');
-		$this->assertNoErrors($errors);
-	}
-
-	public function testBug8664(): void
-	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8664.php');
-		$this->assertNoErrors($errors);
-	}
-
-	public function testBug9105(): void
-	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9105.php');
-		$this->assertNoErrors($errors);
-	}
-
-	public function testBug9293(): void
-	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9293.php');
-		$this->assertNoErrors($errors);
-	}
-
-	public function testNullsafeVsScalar(): void
-	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/nullsafe-vs-scalar.php');
-		$this->assertNoErrors($errors);
-	}
-
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

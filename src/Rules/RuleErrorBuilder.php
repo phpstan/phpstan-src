@@ -8,6 +8,7 @@ use function array_map;
 use function class_exists;
 use function count;
 use function implode;
+use function is_file;
 use function sprintf;
 
 /**
@@ -143,6 +144,9 @@ class RuleErrorBuilder
 	 */
 	public function file(string $file, ?string $fileDescription = null): self
 	{
+		if (!is_file($file)) {
+			throw new ShouldNotHappenException(sprintf('File %s does not exist.', $file));
+		}
 		$this->properties['file'] = $file;
 		$this->properties['fileDescription'] = $fileDescription ?? $file;
 		$this->type |= self::TYPE_FILE;

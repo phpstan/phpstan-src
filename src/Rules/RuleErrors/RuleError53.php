@@ -17,7 +17,7 @@ class RuleError53 implements RuleError, FileRuleError, IdentifierRuleError, Meta
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	public string $identifier;
 
@@ -34,7 +34,7 @@ class RuleError53 implements RuleError, FileRuleError, IdentifierRuleError, Meta
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

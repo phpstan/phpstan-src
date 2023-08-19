@@ -18,7 +18,7 @@ class RuleError7 implements RuleError, LineRuleError, FileRuleError
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	public function getMessage(): string
 	{
@@ -35,7 +35,7 @@ class RuleError7 implements RuleError, LineRuleError, FileRuleError
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

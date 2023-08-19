@@ -19,7 +19,7 @@ class RuleError71 implements RuleError, LineRuleError, FileRuleError, NonIgnorab
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	public function getMessage(): string
 	{
@@ -36,7 +36,7 @@ class RuleError71 implements RuleError, LineRuleError, FileRuleError, NonIgnorab
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

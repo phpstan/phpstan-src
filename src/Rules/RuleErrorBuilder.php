@@ -71,8 +71,8 @@ class RuleErrorBuilder
 					],
 					[
 						'fileDescription',
-						'?string',
-						'?string',
+						'string',
+						'string',
 					],
 				],
 			],
@@ -129,7 +129,7 @@ class RuleErrorBuilder
 	public function file(string $file, ?string $fileDescription = null): self
 	{
 		$this->properties['file'] = $file;
-		$this->properties['fileDescription'] = $fileDescription;
+		$this->properties['fileDescription'] = $fileDescription ?? $file;
 		$this->type |= self::TYPE_FILE;
 
 		return $this;

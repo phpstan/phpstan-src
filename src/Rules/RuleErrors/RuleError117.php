@@ -18,7 +18,7 @@ class RuleError117 implements RuleError, FileRuleError, IdentifierRuleError, Met
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	public string $identifier;
 
@@ -35,7 +35,7 @@ class RuleError117 implements RuleError, FileRuleError, IdentifierRuleError, Met
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

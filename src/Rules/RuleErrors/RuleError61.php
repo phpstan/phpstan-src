@@ -18,7 +18,7 @@ class RuleError61 implements RuleError, FileRuleError, TipRuleError, IdentifierR
 
 	public string $file;
 
-	public ?string $fileDescription;
+	public string $fileDescription;
 
 	public string $tip;
 
@@ -37,7 +37,7 @@ class RuleError61 implements RuleError, FileRuleError, TipRuleError, IdentifierR
 		return $this->file;
 	}
 
-	public function getFileDescription(): ?string
+	public function getFileDescription(): string
 	{
 		return $this->fileDescription;
 	}

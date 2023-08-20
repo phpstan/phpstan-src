@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace TestAnnotations;
+
 /**
  * @property int | float $numericBazBazProperty
  * @property X $singleLetterObjectName

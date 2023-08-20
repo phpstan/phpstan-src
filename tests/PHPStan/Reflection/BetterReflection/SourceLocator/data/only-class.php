@@ -1,6 +1,6 @@
 <?php
 
-class SingleFileSourceLocatorTestClass
+class SingleFileSourceLocatorTestClassWithSomeOtherName
 {
 
 }

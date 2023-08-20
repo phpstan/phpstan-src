@@ -18,7 +18,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 		/** @var FileTypeMapper $fileTypeMapper */
 		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
 
-		$resolvedA = $fileTypeMapper->getResolvedPhpDoc(__DIR__ . '/data/annotations.php', 'Foo', null, null, '/**
+		$resolvedA = $fileTypeMapper->getResolvedPhpDoc(__DIR__ . '/data/annotations.php', 'TestAnnotations\\Foo', null, null, '/**
  * @property int | float $numericBazBazProperty
  * @property X $singleLetterObjectName
  *
@@ -40,8 +40,8 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertSame('float|int', $resolvedA->getPropertyTags()['numericBazBazProperty']->getWritableType()->describe(VerbosityLevel::precise()));
 		$this->assertNotNull($resolvedA->getPropertyTags()['singleLetterObjectName']->getReadableType());
 		$this->assertNotNull($resolvedA->getPropertyTags()['singleLetterObjectName']->getWritableType());
-		$this->assertSame('X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getReadableType()->describe(VerbosityLevel::precise()));
-		$this->assertSame('X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getWritableType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('TestAnnotations\\X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getReadableType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('TestAnnotations\\X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getWritableType()->describe(VerbosityLevel::precise()));
 
 		$this->assertCount(6, $resolvedA->getMethodTags());
 		$this->assertArrayNotHasKey('complicatedParameters', $resolvedA->getMethodTags()); // ambiguous parameter types
@@ -66,7 +66,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertCount(0, $returningNullableObject->getParameters());
 
 		$rotate = $resolvedA->getMethodTags()['rotate'];
-		$this->assertSame('Image', $rotate->getReturnType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('TestAnnotations\\Image', $rotate->getReturnType()->describe(VerbosityLevel::precise()));
 		$this->assertFalse($rotate->isStatic());
 		$this->assertCount(2, $rotate->getParameters());
 		$this->assertSame('float', $rotate->getParameters()['angle']->getType()->describe(VerbosityLevel::precise()));
@@ -86,7 +86,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertTrue($paramMultipleTypesWithExtraSpaces->getParameters()['string']->passedByReference()->no());
 		$this->assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['string']->isOptional());
 		$this->assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['string']->isVariadic());
-		$this->assertSame('stdClass|null', $paramMultipleTypesWithExtraSpaces->getParameters()['object']->getType()->describe(VerbosityLevel::precise()));
+		$this->assertSame('TestAnnotations\\stdClass|null', $paramMultipleTypesWithExtraSpaces->getParameters()['object']->getType()->describe(VerbosityLevel::precise()));
 		$this->assertTrue($paramMultipleTypesWithExtraSpaces->getParameters()['object']->passedByReference()->no());
 		$this->assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['object']->isOptional());
 		$this->assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['object']->isVariadic());

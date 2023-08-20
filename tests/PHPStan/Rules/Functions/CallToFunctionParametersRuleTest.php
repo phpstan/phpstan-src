@@ -1201,43 +1201,43 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/curl_setopt.php'], [
 			[
 				'Parameter #3 $value of function curl_setopt expects 0|2, bool given.',
-				8,
+				10,
 			],
 			[
 				'Parameter #3 $value of function curl_setopt expects non-empty-string, int given.',
-				14,
+				16,
 			],
 			[
 				'Parameter #3 $value of function curl_setopt expects array<int, string>, int given.',
-				15,
-			],
-			[
-				'Parameter #3 $value of function curl_setopt expects bool, int given.',
 				17,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects bool, string given.',
-				18,
+				'Parameter #3 $value of function curl_setopt expects bool, int given.',
+				19,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects int, string given.',
+				'Parameter #3 $value of function curl_setopt expects bool, string given.',
 				20,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects array, string given.',
+				'Parameter #3 $value of function curl_setopt expects int, string given.',
 				22,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects resource, string given.',
+				'Parameter #3 $value of function curl_setopt expects array, string given.',
 				24,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects array|string, int given.',
+				'Parameter #3 $value of function curl_setopt expects resource, string given.',
 				26,
 			],
 			[
+				'Parameter #3 $value of function curl_setopt expects array|string, int given.',
+				28,
+			],
+			[
 				'Parameter #3 $value of function curl_setopt expects array<int, string>, array<string, string> given.',
-				65,
+				67,
 			],
 		]);
 	}

@@ -5,7 +5,7 @@ namespace MethodPhpDocsNamespace;
 use SomeNamespace\Amet as Dolor;
 use SomeNamespace\Consecteur;
 
-class FooInheritDocChild extends Foo
+class FooInheritDocChildWithoutCurly extends Foo
 {
 
 	/**

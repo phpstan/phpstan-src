@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+namespace CurlSetOptCall;
+
 class HelloWorld
 {
 	public function bug7951(bool $verify): void

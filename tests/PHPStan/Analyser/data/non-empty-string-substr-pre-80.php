@@ -1,6 +1,6 @@
 <?php
 
-namespace NonEmptyStringSubstr;
+namespace NonEmptyStringSubstrPrePhp8;
 
 use function PHPStan\Testing\assertType;
 

@@ -22,7 +22,7 @@ class Ipsum
 
 }
 
-class Foo
+class FooClass
 {
 
 	public function doFoo(Foo&Bar $a): Foo&Bar

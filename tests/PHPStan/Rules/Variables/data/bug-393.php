@@ -1,6 +1,6 @@
 <?php
 
-namespace Bug393;
+namespace Bug393Variables;
 
 class Foo
 {

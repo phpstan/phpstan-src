@@ -892,7 +892,7 @@ class ConditionalAlwaysTrue
 	}
 }
 
-class InArray2
+class InArray3
 {
     /**
      * @param non-empty-array<int> $nonEmptyInts

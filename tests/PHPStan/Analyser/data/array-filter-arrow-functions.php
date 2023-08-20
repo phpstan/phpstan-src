@@ -1,6 +1,6 @@
 <?php // lint >= 7.4
 
-namespace ArrayFilter;
+namespace ArrayFilterArrowFunctions;
 
 use function PHPStan\Testing\assertType;
 

@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+namespace NonexistentOffsetIntersection;
+
 class Foo
 {
     /** @var \ArrayAccess<string, mixed> */

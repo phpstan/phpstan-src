@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+namespace Bug9428;
+
 class HelloWorld
 {
 	public function sayHello(): void

@@ -1,6 +1,6 @@
 <?php
 
-namespace ConstantCondition;
+namespace ConstantConditionBooleanAnd;
 
 class BooleanAnd
 {
@@ -179,4 +179,24 @@ class ConditionalAlwaysTrue
 		} elseif (rand(0,1)) {
 		}
 	}
+}
+
+class Foo
+{
+
+}
+
+class Bar
+{
+
+}
+
+interface Lorem
+{
+
+}
+
+interface Ipsum
+{
+
 }

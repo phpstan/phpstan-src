@@ -1,6 +1,6 @@
 <?php
 
-namespace PregMatch;
+namespace PregMatchPhp8;
 
 use function PHPStan\Testing\assertType;
 

@@ -4657,10 +4657,10 @@ class MutatingScope implements Scope
 			TypeUtils::getAccessoryTypes($a),
 		);
 
-		return TypeCombinator::intersect(
+		return TypeCombinator::union(TypeCombinator::intersect(
 			TypeCombinator::union(...$resultTypes, ...$otherTypes),
 			...$accessoryTypes,
-		);
+		), ...$otherTypes);
 	}
 
 	private static function getArrayDepth(Type $type): int

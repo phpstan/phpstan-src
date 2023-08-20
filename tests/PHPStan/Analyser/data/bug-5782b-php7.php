@@ -16,11 +16,11 @@ class X
 }
 
 function doFoo(): void {
-	assertType('true', is_callable(['Bug5782b\X', 'staticMethod']));
-	assertType('true', is_callable(['Bug5782b\X', 'classMethod'])); // should be true on php7, false on php8
+	assertType('true', is_callable(['Bug5782bPhp7\X', 'staticMethod']));
+	assertType('true', is_callable(['Bug5782bPhp7\X', 'classMethod'])); // should be true on php7, false on php8
 
-	assertType('true', is_callable('Bug5782b\X::staticMethod'));
-	assertType('true', is_callable('Bug5782b\X::classMethod')); // should be true on php7, false on php8
+	assertType('true', is_callable('Bug5782bPhp7\X::staticMethod'));
+	assertType('true', is_callable('Bug5782bPhp7\X::classMethod')); // should be true on php7, false on php8
 
 	assertType('true', is_callable([new X(), 'staticMethod']));
 	assertType('true', is_callable([new X(), 'classMethod']));

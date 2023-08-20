@@ -1,6 +1,6 @@
 <?php
 
-namespace ConstantCondition;
+namespace ConstantConditionLogicalAnd;
 
 class BooleanAnd
 {
@@ -163,4 +163,24 @@ function bug1924() {
 
 	if (isset($arr['a']) and isset($arr['b'])) {
 	}
+}
+
+class Foo
+{
+
+}
+
+class Bar
+{
+
+}
+
+interface Lorem
+{
+
+}
+
+interface Ipsum
+{
+
 }

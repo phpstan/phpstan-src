@@ -1,6 +1,6 @@
 <?php
 
-namespace InstanceOfNamespace;
+namespace InstanceOfNamespaceRule;
 
 if ($foo instanceof Foo) {
 

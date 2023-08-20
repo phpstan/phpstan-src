@@ -983,7 +983,7 @@ function () {
 	NAN !== NAN;
 };
 
-class ArrayWithLongStrings
+class ArrayWithLongStrings2
 {
 
 	public function doFoo()

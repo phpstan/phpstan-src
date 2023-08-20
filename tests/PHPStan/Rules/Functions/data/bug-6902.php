@@ -1,6 +1,6 @@
 <?php
 
-namespace Bug6902;
+namespace Bug6902Functions;
 
 function doFoo() {
 

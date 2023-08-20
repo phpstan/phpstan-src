@@ -1,6 +1,6 @@
 <?php
 
-namespace FunctionCallStatementNoSideEffects;
+namespace FunctionCallStatementNoSideEffectsPhp8;
 
 use PHPStan\TrinaryLogic;
 

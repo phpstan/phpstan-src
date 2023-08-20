@@ -1,6 +1,6 @@
 <?php
 
-namespace Bug5782b;
+namespace Bug5782bPhp8;
 
 use function PHPStan\Testing\assertType;
 
@@ -16,11 +16,11 @@ class X
 }
 
 function doFoo(): void {
-	assertType('true', is_callable(['Bug5782b\X', 'staticMethod']));
-	assertType('false', is_callable(['Bug5782b\X', 'classMethod'])); // should be true on php7, false on php8
+	assertType('true', is_callable(['Bug5782bPhp8\X', 'staticMethod']));
+	assertType('false', is_callable(['Bug5782bPhp8\X', 'classMethod'])); // should be true on php7, false on php8
 
-	assertType('true', is_callable('Bug5782b\X::staticMethod'));
-	assertType('false', is_callable('Bug5782b\X::classMethod')); // should be true on php7, false on php8
+	assertType('true', is_callable('Bug5782bPhp8\X::staticMethod'));
+	assertType('false', is_callable('Bug5782bPhp8\X::classMethod')); // should be true on php7, false on php8
 
 	assertType('true', is_callable([new X(), 'staticMethod']));
 	assertType('true', is_callable([new X(), 'classMethod']));

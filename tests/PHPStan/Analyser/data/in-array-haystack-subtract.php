@@ -1,5 +1,7 @@
 <?php
 
+namespace InArrayHaystackSubtract;
+
 use function PHPStan\Testing\assertType;
 
 class Foo

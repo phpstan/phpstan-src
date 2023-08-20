@@ -3865,11 +3865,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	): void
 	{
 		if ($replaceClass) {
-			$description = str_replace('$this(MethodPhpDocsNamespace\Foo)', '$this(MethodPhpDocsNamespace\FooInheritDocChild)', $description);
-			$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooInheritDocChild)', $description);
+			$description = str_replace('$this(MethodPhpDocsNamespace\Foo)', '$this(MethodPhpDocsNamespace\FooInheritDocChildWithoutCurly)', $description);
+			$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooInheritDocChildWithoutCurly)', $description);
 			$description = str_replace('MethodPhpDocsNamespace\FooParent', 'MethodPhpDocsNamespace\Foo', $description);
 			if ($expression === '$inlineSelf') {
-				$description = 'MethodPhpDocsNamespace\FooInheritDocChild';
+				$description = 'MethodPhpDocsNamespace\FooInheritDocChildWithoutCurly';
 			}
 		}
 		$this->assertTypes(
@@ -4359,7 +4359,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			],
 			[
 				__DIR__ . '/data/foreach/foreach-iterable-with-specified-key-type.php',
-				'ForeachWithGenericsPhpDoc\Bar|ForeachWithGenericsPhpDoc\Foo',
+				'ForeachWithGenericsPhpDocIterable\Bar|ForeachWithGenericsPhpDocIterable\Foo',
 				'$key',
 			],
 			[
@@ -4369,7 +4369,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			],
 			[
 				__DIR__ . '/data/foreach/foreach-iterable-with-complex-value-type.php',
-				'float|ForeachWithComplexValueType\Foo',
+				'float|ForeachIterableWithComplexValueType\Foo',
 				'$value',
 			],
 			[

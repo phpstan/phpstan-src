@@ -1,6 +1,6 @@
 <?php // lint >= 7.4
 
-namespace Bug4188;
+namespace Bug4188Types;
 
 interface A {}
 interface B {}
@@ -18,7 +18,7 @@ class Test
 				return $param instanceof B;
 			},
 		);
-		assertType('array<Bug4188\B>', $filtered);
+		assertType('array<Bug4188Types\B>', $filtered);
 
 		$this->onlyB($filtered);
 	}
@@ -30,7 +30,7 @@ class Test
 			$data,
 			fn($param): bool => $param instanceof B,
 		);
-		assertType('array<Bug4188\B>', $filtered);
+		assertType('array<Bug4188Types\B>', $filtered);
 
 		$this->onlyB($filtered);
 	}

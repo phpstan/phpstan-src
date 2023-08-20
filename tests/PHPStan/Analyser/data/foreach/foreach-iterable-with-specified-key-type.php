@@ -1,6 +1,6 @@
 <?php
 
-namespace ForeachWithGenericsPhpDoc;
+namespace ForeachWithGenericsPhpDocIterable;
 
 class Foo
 {

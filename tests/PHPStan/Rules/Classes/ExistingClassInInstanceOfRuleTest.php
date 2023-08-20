@@ -31,7 +31,7 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 			],
 			[
 				[
-					'Class InstanceOfNamespace\Bar not found.',
+					'Class InstanceOfNamespaceRule\Bar not found.',
 					7,
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
@@ -40,7 +40,7 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 					9,
 				],
 				[
-					'Class InstanceOfNamespace\Foo referenced with incorrect case: InstanceOfNamespace\FOO.',
+					'Class InstanceOfNamespaceRule\Foo referenced with incorrect case: InstanceOfNamespaceRule\FOO.',
 					13,
 				],
 				[

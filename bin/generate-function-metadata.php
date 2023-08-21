@@ -63,11 +63,11 @@ use Symfony\Component\Finder\Finder;
 
 		private function isHasSideEffectsAnnotated(Attribute $attr)
 		{
-			// Pure attribute by its own means that a function doesn't have side effects
 			if ($attr->name->toString() !== Pure::class) {
 				return false;
 			}
 
+			// Pure attribute by its own means that a function doesn't have side effects
 			if ($attr->args === []) {
 				return true;
 			}

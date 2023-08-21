@@ -72,7 +72,7 @@ use Symfony\Component\Finder\Finder;
 				return true;
 			}
 
-			// The 1st parameter means that the result of function execution can change depending on the state of the "system"
+			// The 1st parameter "true" means that the result of function execution can change depending on the state of the "system"
 			return $attr->args[0]->value instanceof Node\Expr\ConstFetch && $attr->args[0]->value->name->toLowerString() !== 'true';
 		}
 

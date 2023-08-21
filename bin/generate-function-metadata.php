@@ -3,6 +3,7 @@
 
 use JetBrains\PhpStorm\Pure;
 use PhpParser\Node;
+use PhpParser\Node\Attribute;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
@@ -33,7 +34,7 @@ use Symfony\Component\Finder\Finder;
 			if ($node instanceof Node\Stmt\Function_) {
 				foreach ($node->attrGroups as $attrGroup) {
 					foreach ($attrGroup->attrs as $attr) {
-						if ($attr->name->toString() === Pure::class) {
+						if ($this->isHasSideEffectsAnnotated($attr)) {
 							$this->functions[] = $node->namespacedName->toLowerString();
 							break 2;
 						}
@@ -49,7 +50,7 @@ use Symfony\Component\Finder\Finder;
 				$className = $class->namespacedName->toString();
 				foreach ($node->attrGroups as $attrGroup) {
 					foreach ($attrGroup->attrs as $attr) {
-						if ($attr->name->toString() === Pure::class) {
+						if ($this->isHasSideEffectsAnnotated($attr)) {
 							$this->methods[] = sprintf('%s::%s', $className, $node->name->toString());
 							break 2;
 						}
@@ -58,6 +59,21 @@ use Symfony\Component\Finder\Finder;
 			}
 
 			return null;
+		}
+
+		private function isHasSideEffectsAnnotated(Attribute $attr)
+		{
+			// Pure attribute by its own means that a function doesn't have side effects
+			if ($attr->name->toString() !== Pure::class) {
+				return false;
+			}
+
+			if ($attr->args === []) {
+				return true;
+			}
+
+			// The 1st parameter means that the result of function execution can change depending on the state of the "system"
+			return $attr->args[0]->value instanceof Node\Expr\ConstFetch && $attr->args[0]->value->name->toLowerString() !== 'true';
 		}
 
 	};

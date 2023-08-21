@@ -70,8 +70,6 @@ return [
 	'chown' => ['hasSideEffects' => true],
 	'copy' => ['hasSideEffects' => true],
 	'count' => ['hasSideEffects' => false],
-	'connection_aborted' => ['hasSideEffects' => true],
-	'connection_status' => ['hasSideEffects' => true],
 	'fclose' => ['hasSideEffects' => true],
 	'fflush' => ['hasSideEffects' => true],
 	'fgetc' => ['hasSideEffects' => true],

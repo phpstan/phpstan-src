@@ -30,7 +30,7 @@ class Foo
 				assertType('int<1, max>', $itemsCounter);
 			}
 
-			assertType('Generator&iterable', $associationData);
+			assertType('Generator', $associationData);
 
 			assertType('int<0, max>', $itemsCounter);
 		}

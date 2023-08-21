@@ -911,7 +911,15 @@ class NodeScopeResolver
 				$finalScope = $scope;
 			} elseif ($isIterableAtLeastOnce->maybe()) {
 				if ($this->polluteScopeWithAlwaysIterableForeach) {
-					$finalScope = $finalScope->mergeWith($scope->filterByFalseyValue($arrayComparisonExpr));
+					$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(
+						new BinaryOp\Identical(
+							$stmt->expr,
+							new Array_([]),
+						),
+						new FuncCall(new Name\FullyQualified('is_object'), [
+							new Arg($stmt->expr),
+						]),
+					)));
 				} else {
 					$finalScope = $finalScope->mergeWith($scope);
 				}

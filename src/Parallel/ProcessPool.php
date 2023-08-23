@@ -15,8 +15,15 @@ class ProcessPool
 	/** @var array<string, Process> */
 	private array $processes = [];
 
-	public function __construct(private TcpServer $server)
+	/** @var callable(): void */
+	private $onServerClose;
+
+	/**
+	 * @param callable(): void $onServerClose
+	 */
+	public function __construct(private TcpServer $server, callable $onServerClose)
 	{
+		$this->onServerClose = $onServerClose;
 	}
 
 	public function getProcess(string $identifier): Process
@@ -52,6 +59,8 @@ class ProcessPool
 		}
 
 		$this->server->close();
+		$callback = $this->onServerClose;
+		$callback();
 	}
 
 	public function quitAll(): void

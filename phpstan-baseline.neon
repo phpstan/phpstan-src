@@ -140,14 +140,14 @@ parameters:
 			path: src/Command/ErrorsConsoleStyle.php
 
 		-
-			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\:\\:done\\(\\)\\.$#"
+			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\<Psr\\\\Http\\\\Message\\\\ResponseInterface\\>\\:\\:done\\(\\)\\.$#"
 			count: 1
 			path: src/Command/FixerApplication.php
 
 		-
-			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\<Psr\\\\Http\\\\Message\\\\ResponseInterface\\>\\:\\:done\\(\\)\\.$#"
+			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\:\\:done\\(\\)\\.$#"
 			count: 1
-			path: src/Command/FixerApplication.php
+			path: src/Command/FixerWorkerCommand.php
 
 		-
 			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\:\\:done\\(\\)\\.$#"

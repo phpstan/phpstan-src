@@ -23,7 +23,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 use function array_fill_keys;
-use function count;
 use function defined;
 use function is_array;
 use function is_bool;
@@ -163,7 +162,7 @@ class WorkerCommand extends Command
 				'result' => [
 					'errors' => [$error->getMessage()],
 					'dependencies' => [],
-					'filesCount' => 0,
+					'files' => [],
 					'internalErrorsCount' => 1,
 				],
 			]);
@@ -221,7 +220,7 @@ class WorkerCommand extends Command
 					'memoryUsage' => memory_get_peak_usage(true),
 					'dependencies' => $dependencies,
 					'exportedNodes' => $exportedNodes,
-					'filesCount' => count($files),
+					'files' => $files,
 					'internalErrorsCount' => $internalErrorsCount,
 				]]);
 		});

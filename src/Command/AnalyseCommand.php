@@ -6,7 +6,6 @@ use OndraM\CiDetector\CiDetector;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
-use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\Container;
@@ -259,6 +258,10 @@ class AnalyseCommand extends Command
 			));
 		}
 
+		if ($fix) {
+			return $this->runFixer($inceptionResult, $container, $onlyFiles, $input, $output, $files);
+		}
+
 		$application = $container->getByType(AnalyseApplication::class);
 
 		$debug = $input->getOption('debug');
@@ -316,10 +319,6 @@ class AnalyseCommand extends Command
 
 		if ($generateBaselineFile !== null) {
 			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension);
-		}
-
-		if ($fix) {
-			return $this->runFixer($inceptionResult, $analysisResult, $container, $onlyFiles, $input, $output, $files);
 		}
 
 		/** @var ErrorFormatter $errorFormatter */
@@ -427,89 +426,22 @@ class AnalyseCommand extends Command
 	/**
 	 * @param string[] $files
 	 */
-	private function runFixer(InceptionResult $inceptionResult, AnalysisResult $analysisResult, Container $container, bool $onlyFiles, InputInterface $input, OutputInterface $output, array $files): int
+	private function runFixer(InceptionResult $inceptionResult, Container $container, bool $onlyFiles, InputInterface $input, OutputInterface $output, array $files): int
 	{
 		$ciDetector = new CiDetector();
 		if ($ciDetector->isCiDetected()) {
 			$inceptionResult->getStdOutput()->writeLineFormatted('PHPStan Pro can\'t run in CI environment yet. Stay tuned!');
 
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+			return $inceptionResult->handleReturn(1, null);
 		}
-		$hasInternalErrors = $analysisResult->hasInternalErrors();
-		$nonIgnorableErrorsByException = [];
-		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-			if (!$fileSpecificError->hasNonIgnorableException()) {
-				continue;
-			}
-
-			$nonIgnorableErrorsByException[] = $fileSpecificError;
-		}
-
-		if ($hasInternalErrors || count($nonIgnorableErrorsByException) > 0) {
-			$fixerAnalysisResult = new AnalysisResult(
-				$nonIgnorableErrorsByException,
-				$analysisResult->getInternalErrors(),
-				$analysisResult->getInternalErrors(),
-				[],
-				$analysisResult->getCollectedData(),
-				$analysisResult->isDefaultLevelUsed(),
-				$analysisResult->getProjectConfigFile(),
-				$analysisResult->isResultCacheSaved(),
-				$analysisResult->getPeakMemoryUsageBytes(),
-			);
-
-			$stdOutput = $inceptionResult->getStdOutput();
-			$stdOutput->getStyle()->error('PHPStan Pro can\'t be launched because of these errors:');
-
-			/** @var TableErrorFormatter $tableErrorFormatter */
-			$tableErrorFormatter = $container->getService('errorFormatter.table');
-			$tableErrorFormatter->formatErrors($fixerAnalysisResult, $stdOutput);
-
-			$stdOutput->writeLineFormatted('Please fix them first and then re-run PHPStan.');
-
-			if ($stdOutput->isDebug()) {
-				$stdOutput->writeLineFormatted(sprintf('hasInternalErrors: %s', $hasInternalErrors ? 'true' : 'false'));
-				$stdOutput->writeLineFormatted(sprintf('nonIgnorableErrorsByExceptionCount: %d', count($nonIgnorableErrorsByException)));
-			}
-
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-		}
-
-		if (!$analysisResult->isResultCacheSaved() && !$onlyFiles) {
-			// this can happen only if there are some regex-related errors in ignoreErrors configuration
-			$stdOutput = $inceptionResult->getStdOutput();
-			if (count($analysisResult->getFileSpecificErrors()) > 0) {
-				$stdOutput->getStyle()->error('Unknown error. Please report this as a bug.');
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-			}
-
-			$stdOutput->getStyle()->error('PHPStan Pro can\'t be launched because of these errors:');
-
-			/** @var TableErrorFormatter $tableErrorFormatter */
-			$tableErrorFormatter = $container->getService('errorFormatter.table');
-			$tableErrorFormatter->formatErrors($analysisResult, $stdOutput);
-
-			$stdOutput->writeLineFormatted('Please fix them first and then re-run PHPStan.');
-
-			if ($stdOutput->isDebug()) {
-				$stdOutput->writeLineFormatted('Result cache was not saved.');
-			}
-
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-		}
-
-		$inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes());
 
 		/** @var FixerApplication $fixerApplication */
 		$fixerApplication = $container->getByType(FixerApplication::class);
 
 		return $fixerApplication->run(
 			$inceptionResult->getProjectConfigFile(),
-			$inceptionResult,
 			$input,
 			$output,
-			$analysisResult->getFileSpecificErrors(),
-			$analysisResult->getNotFileSpecificErrors(),
 			count($files),
 			$_SERVER['argv'][0],
 		);

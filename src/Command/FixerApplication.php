@@ -457,12 +457,11 @@ class FixerApplication
 			]);
 		}
 
-		$options = ['--save-result-cache', '--allow-parallel'];
 		$process = new ProcessPromise($loop, 'changedFileAnalysis', ProcessHelper::getWorkerCommand(
 			$mainScript,
 			'fixer:worker',
 			$projectConfigFile,
-			$options,
+			[],
 			$input,
 		));
 		$this->processInProgress = $process->run();

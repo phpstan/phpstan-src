@@ -306,10 +306,7 @@ class ResultCacheManager
 		return null;
 	}
 
-	/**
-	 * @param bool|string $save
-	 */
-	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, $save): ResultCacheProcessResult
+	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, bool $save): ResultCacheProcessResult
 	{
 		$internalErrors = $analyserResult->getInternalErrors();
 		$freshErrorsByFile = [];
@@ -369,7 +366,7 @@ class ResultCacheManager
 
 		if ($resultCache->isFullAnalysis()) {
 			$saved = false;
-			if ($save !== false) {
+			if ($save) {
 				$saved = $doSave($freshErrorsByFile, $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes());
 			} else {
 				if ($output->isDebug()) {
@@ -386,7 +383,7 @@ class ResultCacheManager
 		$exportedNodes = $this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes());
 
 		$saved = false;
-		if ($save !== false) {
+		if ($save) {
 			$saved = $doSave($errorsByFile, $collectedDataByFile, $dependencies, $exportedNodes);
 		}
 

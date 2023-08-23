@@ -57,8 +57,6 @@ class FixerWorkerCommand extends Command
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
 				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
-				new InputOption('save-result-cache', null, InputOption::VALUE_OPTIONAL, '', false),
-				new InputOption('allow-parallel', null, InputOption::VALUE_NONE, 'Allow parallel analysis'),
 			]);
 	}
 
@@ -70,7 +68,6 @@ class FixerWorkerCommand extends Command
 		$configuration = $input->getOption('configuration');
 		$level = $input->getOption(AnalyseCommand::OPTION_LEVEL);
 		$allowXdebug = $input->getOption('xdebug');
-		$allowParallel = $input->getOption('allow-parallel');
 
 		if (
 			!is_array($paths)
@@ -79,13 +76,9 @@ class FixerWorkerCommand extends Command
 			|| (!is_string($configuration) && $configuration !== null)
 			|| (!is_string($level) && $level !== null)
 			|| (!is_bool($allowXdebug))
-			|| (!is_bool($allowParallel))
 		) {
 			throw new ShouldNotHappenException();
 		}
-
-		/** @var false|string|null $saveResultCache */
-		$saveResultCache = $input->getOption('save-result-cache');
 
 		try {
 			$inceptionResult = CommandHelper::begin(
@@ -136,7 +129,7 @@ class FixerWorkerCommand extends Command
 			null,
 			null,
 			false,
-			$allowParallel,
+			true,
 			$configuration,
 			$input,
 		);
@@ -145,7 +138,7 @@ class FixerWorkerCommand extends Command
 			$resultCache,
 			$inceptionResult->getErrorOutput(),
 			false,
-			is_string($saveResultCache) ? $saveResultCache : $saveResultCache === null,
+			true,
 		)->getAnalyserResult();
 
 		$hasInternalErrors = count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit();

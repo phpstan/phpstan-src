@@ -6,6 +6,7 @@ use Nette\Utils\Json;
 use PHPStan\AnalysedCodeException;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
+use PHPStan\Analyser\ResultCache\ResultCacheManager;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Analyser\ScopeContext;
@@ -107,14 +108,17 @@ class FixerWorkerCommand extends Command
 
 		$container = $inceptionResult->getContainer();
 
+		/** @var IgnoredErrorHelper $ignoredErrorHelper */
 		$ignoredErrorHelper = $container->getByType(IgnoredErrorHelper::class);
 		$ignoredErrorHelperResult = $ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			throw new ShouldNotHappenException();
 		}
 
+		/** @var AnalyserRunner $analyserRunner */
 		$analyserRunner = $container->getByType(AnalyserRunner::class);
 
+		/** @var ResultCacheManager $resultCacheManager */
 		$resultCacheManager = $container->getByType(ResultCacheManagerFactory::class)->create();
 		$projectConfigArray = $inceptionResult->getProjectConfigArray();
 

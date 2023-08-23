@@ -9,8 +9,17 @@ parameters:
 
 rules:
 	- PHPStan\Rules\Classes\UnusedConstructorParametersRule
-	- PHPStan\Rules\Constants\ConstantRule
 	- PHPStan\Rules\Functions\UnusedClosureUsesRule
 	- PHPStan\Rules\Variables\EmptyRule
 	- PHPStan\Rules\Variables\IssetRule
 	- PHPStan\Rules\Variables\NullCoalesceRule
+
+services:
+	-
+		class: PHPStan\Rules\Constants\ConstantRule
+		factory: @PHPStan\Rules\Constants\ConstantRuleFactory::create()
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Constants\ConstantRuleFactory

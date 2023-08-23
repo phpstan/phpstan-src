@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function in_array;
 use function sprintf;
 
 /**
@@ -13,6 +14,13 @@ use function sprintf;
  */
 class ConstantRule implements Rule
 {
+
+	/**
+	 * @param list<string> $dynamicConstantNames
+	 */
+	public function __construct(private readonly array $dynamicConstantNames)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -22,10 +30,16 @@ class ConstantRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->hasConstant($node->name)) {
+			$constName = (string) $node->name;
+
+			if (in_array($constName, $this->dynamicConstantNames, true)) {
+				return [];
+			}
+
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Constant %s not found.',
-					(string) $node->name,
+					$constName,
 				))->discoveringSymbolsTip()->build(),
 			];
 		}

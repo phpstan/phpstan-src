@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use PHPStan\DependencyInjection\Container;
+use PHPStan\File\PathNotFoundException;
 use PHPStan\Internal\BytesHelper;
 use function sprintf;
 
@@ -31,12 +32,15 @@ class InceptionResult
 	}
 
 	/**
+	 * @throws InceptionNotSuccessfulException
+	 * @throws PathNotFoundException
 	 * @return array{string[], bool}
 	 */
 	public function getFiles(): array
 	{
 		$callback = $this->filesCallback;
 
+		/** @throws InceptionNotSuccessfulException|PathNotFoundException */
 		return $callback();
 	}
 

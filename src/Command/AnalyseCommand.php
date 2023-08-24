@@ -221,6 +221,8 @@ class AnalyseCommand extends Command
 		} catch (PathNotFoundException $e) {
 			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
 			return 1;
+		} catch (InceptionNotSuccessfulException $e) {
+			return 1;
 		}
 
 		if (count($files) === 0) {

@@ -8,6 +8,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use function is_bool;
 use function is_string;
 
 class ClearResultCacheCommand extends Command
@@ -34,6 +35,7 @@ class ClearResultCacheCommand extends Command
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('debug', null, InputOption::VALUE_NONE, 'Show debug information - which file is analysed, do not catch internal errors'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for clearing result cache'),
+				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
 			]);
 	}
 
@@ -55,11 +57,13 @@ class ClearResultCacheCommand extends Command
 		$configuration = $input->getOption('configuration');
 		$memoryLimit = $input->getOption('memory-limit');
 		$debugEnabled = (bool) $input->getOption('debug');
+		$allowXdebug = $input->getOption('xdebug');
 
 		if (
 			(!is_string($autoloadFile) && $autoloadFile !== null)
 			|| (!is_string($configuration) && $configuration !== null)
 			|| (!is_string($memoryLimit) && $memoryLimit !== null)
+			|| (!is_bool($allowXdebug))
 		) {
 			throw new ShouldNotHappenException();
 		}
@@ -75,7 +79,7 @@ class ClearResultCacheCommand extends Command
 				$configuration,
 				null,
 				'0',
-				false,
+				$allowXdebug,
 				$debugEnabled,
 			);
 		} catch (InceptionNotSuccessfulException) {

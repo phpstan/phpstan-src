@@ -308,6 +308,11 @@ parameters:
 		-
 			message: "#^Parameter \\#2 \\$node of method PHPStan\\\\BetterReflection\\\\SourceLocator\\\\Ast\\\\Strategy\\\\NodeToReflection\\:\\:__invoke\\(\\) expects PhpParser\\\\Node\\\\Expr\\\\ArrowFunction\\|PhpParser\\\\Node\\\\Expr\\\\Closure\\|PhpParser\\\\Node\\\\Expr\\\\FuncCall\\|PhpParser\\\\Node\\\\Stmt\\\\Class_\\|PhpParser\\\\Node\\\\Stmt\\\\Const_\\|PhpParser\\\\Node\\\\Stmt\\\\Enum_\\|PhpParser\\\\Node\\\\Stmt\\\\Function_\\|PhpParser\\\\Node\\\\Stmt\\\\Interface_\\|PhpParser\\\\Node\\\\Stmt\\\\Trait_, PhpParser\\\\Node\\\\Expr\\\\FuncCall\\|PhpParser\\\\Node\\\\Stmt\\\\ClassLike\\|PhpParser\\\\Node\\\\Stmt\\\\Const_\\|PhpParser\\\\Node\\\\Stmt\\\\Function_ given\\.$#"
 			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/NewOptimizedDirectorySourceLocator.php
+
+		-
+			message: "#^Parameter \\#2 \\$node of method PHPStan\\\\BetterReflection\\\\SourceLocator\\\\Ast\\\\Strategy\\\\NodeToReflection\\:\\:__invoke\\(\\) expects PhpParser\\\\Node\\\\Expr\\\\ArrowFunction\\|PhpParser\\\\Node\\\\Expr\\\\Closure\\|PhpParser\\\\Node\\\\Expr\\\\FuncCall\\|PhpParser\\\\Node\\\\Stmt\\\\Class_\\|PhpParser\\\\Node\\\\Stmt\\\\Const_\\|PhpParser\\\\Node\\\\Stmt\\\\Enum_\\|PhpParser\\\\Node\\\\Stmt\\\\Function_\\|PhpParser\\\\Node\\\\Stmt\\\\Interface_\\|PhpParser\\\\Node\\\\Stmt\\\\Trait_, PhpParser\\\\Node\\\\Expr\\\\FuncCall\\|PhpParser\\\\Node\\\\Stmt\\\\ClassLike\\|PhpParser\\\\Node\\\\Stmt\\\\Const_\\|PhpParser\\\\Node\\\\Stmt\\\\Function_ given\\.$#"
+			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-

@@ -70,7 +70,7 @@ class DumpParametersCommand extends Command
 			$inceptionResult = CommandHelper::begin(
 				$input,
 				$output,
-				['.'],
+				[],
 				$memoryLimit,
 				$autoloadFile,
 				$this->composerAutoloaderProjectPaths,

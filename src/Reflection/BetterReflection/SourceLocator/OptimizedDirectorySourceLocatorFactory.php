@@ -46,6 +46,8 @@ class OptimizedDirectorySourceLocatorFactory
 
 		$cacheKey = sprintf('odsl-%s', $directory);
 		$variableCacheKey = 'v1';
+
+		/** @var array<string, array{string, string[], string[], string[]}>|null $cached */
 		$cached = $this->cache->load($cacheKey, $variableCacheKey);
 		if ($cached !== null) {
 			foreach ($cached as $file => [$hash, $classes, $functions, $constants]) {
@@ -62,6 +64,8 @@ class OptimizedDirectorySourceLocatorFactory
 				[$newClasses, $newFunctions, $newConstants] = $this->findSymbols($file);
 				$cached[$file] = [$newHash, $newClasses, $newFunctions, $newConstants];
 			}
+		} else {
+			$cached = [];
 		}
 
 		foreach ($fileHashes as $file => $newHash) {

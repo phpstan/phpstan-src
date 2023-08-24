@@ -84,7 +84,8 @@ class FileCacheStorage implements CacheStorage
 		FileWriter::write(
 			$tmpPath,
 			sprintf(
-				"<?php declare(strict_types = 1);\n\nreturn %s;",
+				"<?php declare(strict_types = 1);\n\n%s\nreturn %s;",
+				sprintf('// %s', $key),
 				$exported,
 			),
 		);

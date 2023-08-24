@@ -220,7 +220,7 @@ class AnalyseCommand extends Command
 		} catch (PathNotFoundException $e) {
 			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
 			return 1;
-		} catch (InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException) {
 			return 1;
 		}
 

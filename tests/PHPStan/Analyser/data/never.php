@@ -14,7 +14,7 @@ class Foo
 
 	public function doBar()
 	{
-		assertType('*NEVER*', $this->doFoo());
+		assertType('never', $this->doFoo());
 	}
 
 	public function doBaz(?int $i)

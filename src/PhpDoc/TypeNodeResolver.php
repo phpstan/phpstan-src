@@ -73,7 +73,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\KeyOfType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
+use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectShapeType;
@@ -383,12 +383,12 @@ class TypeNodeResolver
 					return $type;
 				}
 
-				return new NeverType(true);
+				return new NonAcceptingNeverType();
 
 			case 'never-return':
 			case 'never-returns':
 			case 'no-return':
-				return new NeverType(true);
+				return new NonAcceptingNeverType();
 
 			case 'list':
 				return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType()));

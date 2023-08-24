@@ -2442,6 +2442,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 			UnionType::class,
 			'ObjectShapesAcceptance\FinalClass|object{foo: int}',
 		];
+		yield [
+			[
+				new NeverType(),
+				new NonAcceptingNeverType(),
+			],
+			NeverType::class,
+			'*NEVER*',
+		];
 	}
 
 	/**
@@ -4013,6 +4021,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			PHP_VERSION_ID < 80200 ? IntersectionType::class : NeverType::class,
 			PHP_VERSION_ID < 80200 ? 'ObjectShapesAcceptance\FinalClass&object{foo: int}' : '*NEVER*=implicit',
+		];
+		yield [
+			[
+				new NeverType(true),
+				new NonAcceptingNeverType(),
+			],
+			NonAcceptingNeverType::class,
+			'never=explicit',
 		];
 	}
 

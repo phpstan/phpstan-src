@@ -276,4 +276,14 @@ class CallCallablesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5867.php'], []);
 	}
 
+	public function testBug6485(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6485.php'], [
+			[
+				'Parameter #1 $ of closure expects never, TBlockType of Bug6485\Block given.',
+				33,
+			],
+		]);
+	}
+
 }

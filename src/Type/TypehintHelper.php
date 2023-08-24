@@ -86,7 +86,7 @@ class TypehintHelper
 			case 'null':
 				return new NullType();
 			case 'never':
-				return new NeverType(true);
+				return new NonAcceptingNeverType();
 			default:
 				return new ObjectType($typeString);
 		}

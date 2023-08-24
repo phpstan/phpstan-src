@@ -72,7 +72,7 @@ class ClearResultCacheCommand extends Command
 			$inceptionResult = CommandHelper::begin(
 				$input,
 				$output,
-				['.'],
+				[],
 				$memoryLimit,
 				$autoloadFile,
 				$this->composerAutoloaderProjectPaths,

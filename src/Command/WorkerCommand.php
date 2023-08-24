@@ -115,6 +115,8 @@ class WorkerCommand extends Command
 		} catch (PathNotFoundException $e) {
 			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
 			return 1;
+		} catch (InceptionNotSuccessfulException) {
+			return 1;
 		}
 
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);

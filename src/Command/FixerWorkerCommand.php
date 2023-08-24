@@ -15,6 +15,7 @@ use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\File\PathNotFoundException;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\ShouldNotHappenException;
@@ -116,7 +117,13 @@ class FixerWorkerCommand extends Command
 
 		$resultCacheManager = $container->getByType(ResultCacheManagerFactory::class)->create();
 		$projectConfigArray = $inceptionResult->getProjectConfigArray();
-		[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
+
+		try {
+			[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
+		} catch (PathNotFoundException | InceptionNotSuccessfulException) {
+			return 1;
+		}
+
 		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput());
 
 		$intermediateAnalyserResult = $analyserRunner->runAnalyser(

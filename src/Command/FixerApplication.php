@@ -18,6 +18,7 @@ use PHPStan\File\FileMonitor;
 use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
+use PHPStan\File\PathNotFoundException;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\ProcessPromise;
@@ -417,7 +418,13 @@ class FixerApplication
 		$projectConfigArray = $inceptionResult->getProjectConfigArray();
 
 		$resultCacheManager = $this->resultCacheManagerFactory->create();
-		[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
+
+		try {
+			[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
+		} catch (InceptionNotSuccessfulException | PathNotFoundException) {
+			throw new ShouldNotHappenException();
+		}
+
 		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput());
 		if (count($resultCache->getFilesToAnalyse()) === 0) {
 			$result = $resultCacheManager->process(

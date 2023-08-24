@@ -356,11 +356,6 @@ class CommandHelper
 			$containerFactory->clearOldContainers($tmpDir);
 		}
 
-		if (count($paths) === 0) {
-			$errorOutput->writeLineFormatted('At least one path must be specified to analyse.');
-			throw new InceptionNotSuccessfulException();
-		}
-
 		/** @var bool|null $customRulesetUsed */
 		$customRulesetUsed = $container->getParameter('customRulesetUsed');
 		if ($customRulesetUsed === null) {
@@ -473,7 +468,11 @@ class CommandHelper
 
 		$stubFilesProvider = $container->getByType(StubFilesProvider::class);
 
-		$filesCallback = static function () use ($currentWorkingDirectoryFileHelper, $stubFilesProvider, $fileFinder, $pathRoutingParser, $paths): array {
+		$filesCallback = static function () use ($currentWorkingDirectoryFileHelper, $stubFilesProvider, $fileFinder, $pathRoutingParser, $paths, $errorOutput): array {
+			if (count($paths) === 0) {
+				$errorOutput->writeLineFormatted('At least one path must be specified to analyse.');
+				throw new InceptionNotSuccessfulException();
+			}
 			$fileFinderResult = $fileFinder->findFiles($paths);
 			$files = $fileFinderResult->getFiles();
 

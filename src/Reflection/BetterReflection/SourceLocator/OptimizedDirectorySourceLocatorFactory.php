@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\Cache\Cache;
+use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileReader;
 use PHPStan\Php\PhpVersion;
@@ -40,7 +41,11 @@ class OptimizedDirectorySourceLocatorFactory
 		$files = $this->fileFinder->findFiles([$directory])->getFiles();
 		$fileHashes = [];
 		foreach ($files as $file) {
-			$contents = FileReader::read($file);
+			try {
+				$contents = FileReader::read($file);
+			} catch (CouldNotReadFileException) {
+				continue;
+			}
 			$fileHashes[$file] = sha1($contents);
 		}
 

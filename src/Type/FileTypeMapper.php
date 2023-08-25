@@ -3,7 +3,6 @@
 namespace PHPStan\Type;
 
 use Closure;
-use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PHPStan\Analyser\NameScope;
 use PHPStan\BetterReflection\Util\GetLastDocComment;
@@ -435,7 +434,12 @@ class FileTypeMapper
 						}
 
 						$traitFound = true;
-						$typeAliasStack[] = $this->getTypeAliasesMap($node->getDocComment());
+						$traitNameScopeKey = $this->getNameScopeKey($originalClassFileName, $classStack[count($classStack) - 1] ?? null, $lookForTrait, null);
+						if (array_key_exists($traitNameScopeKey, $phpDocNodeMap)) {
+							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNodeMap[$traitNameScopeKey]);
+						} else {
+							$typeAliasStack[] = [];
+						}
 						$functionStack[] = null;
 					} else {
 						if ($node->name === null) {
@@ -453,7 +457,12 @@ class FileTypeMapper
 							$className = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
 						}
 						$classStack[] = $className;
-						$typeAliasStack[] = $this->getTypeAliasesMap($node->getDocComment());
+						$classNameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, null);
+						if (array_key_exists($classNameScopeKey, $phpDocNodeMap)) {
+							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNodeMap[$classNameScopeKey]);
+						} else {
+							$typeAliasStack[] = [];
+						}
 						$functionStack[] = null;
 					}
 				} elseif ($node instanceof Node\Stmt\ClassMethod) {
@@ -716,13 +725,8 @@ class FileTypeMapper
 	/**
 	 * @return array<string, true>
 	 */
-	private function getTypeAliasesMap(?Doc $docComment): array
+	private function getTypeAliasesMap(PhpDocNode $phpDocNode): array
 	{
-		if ($docComment === null) {
-			return [];
-		}
-
-		$phpDocNode = $this->phpDocStringResolver->resolve($docComment->getText());
 		$nameScope = new NameScope(null, []);
 
 		$aliasesMap = [];

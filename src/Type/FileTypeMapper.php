@@ -48,7 +48,7 @@ class FileTypeMapper
 
 	private int $memoryCacheCount = 0;
 
-	/** @var (false|callable(): NameScope|NameScope)[][] */
+	/** @var (true|callable(): NameScope|NameScope)[][] */
 	private array $inProcess = [];
 
 	/** @var array<string, ResolvedPhpDocBlock> */
@@ -112,13 +112,13 @@ class FileTypeMapper
 			return ResolvedPhpDocBlock::createEmpty();
 		}
 
-		if ($this->inProcess[$fileName][$nameScopeKey] === false) { // PHPDoc has cyclic dependency
+		if ($this->inProcess[$fileName][$nameScopeKey] === true) { // PHPDoc has cyclic dependency
 			return ResolvedPhpDocBlock::createEmpty();
 		}
 
 		if (is_callable($this->inProcess[$fileName][$nameScopeKey])) {
 			$resolveCallback = $this->inProcess[$fileName][$nameScopeKey];
-			$this->inProcess[$fileName][$nameScopeKey] = false;
+			$this->inProcess[$fileName][$nameScopeKey] = true;
 			$this->inProcess[$fileName][$nameScopeKey] = $resolveCallback();
 		}
 
@@ -201,7 +201,7 @@ class FileTypeMapper
 			$this->inProcess[$fileName] = $nameScopeMap;
 
 			foreach ($nameScopeMap as $nameScopeKey => $resolveCallback) {
-				$this->inProcess[$fileName][$nameScopeKey] = false;
+				$this->inProcess[$fileName][$nameScopeKey] = true;
 				$this->inProcess[$fileName][$nameScopeKey] = $data = $resolveCallback();
 				$resolvedNameScopeMap[$nameScopeKey] = $data;
 			}

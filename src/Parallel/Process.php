@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parallel;
 
+use BlackfireProbe;
 use Exception;
 use PHPStan\ShouldNotHappenException;
 use React\EventLoop\LoopInterface;
@@ -9,6 +10,7 @@ use React\EventLoop\TimerInterface;
 use React\Stream\ReadableStreamInterface;
 use React\Stream\WritableStreamInterface;
 use Throwable;
+use function class_exists;
 use function fclose;
 use function is_string;
 use function rewind;
@@ -60,9 +62,16 @@ class Process
 		if ($tmpStdErr === false) {
 			throw new ShouldNotHappenException('Failed creating temp file for stderr.');
 		}
+
+		$env = $_ENV;
+		if (class_exists('BlackfireProbe') && BlackfireProbe::isEnabled()) {
+			$probe = BlackfireProbe::getMainInstance();
+			$env['BLACKFIRE_QUERY'] = $probe->createSubProfileQuery();
+		}
+
 		$this->stdOut = $tmpStdOut;
 		$this->stdErr = $tmpStdErr;
-		$this->process = new \React\ChildProcess\Process($this->command, null, null, [
+		$this->process = new \React\ChildProcess\Process($this->command, null, $env, [
 			1 => $this->stdOut,
 			2 => $this->stdErr,
 		]);

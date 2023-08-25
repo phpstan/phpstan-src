@@ -84,21 +84,23 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 			return $methodWithDeclaringClass;
 		}
 
-		foreach ($classReflection->getParents() as $parentClass) {
+		$parentClass = $classReflection->getParentClass();
+		while ($parentClass !== null) {
 			$methodWithDeclaringClass = $this->findClassReflectionWithMethod($parentClass, $parentClass, $methodName);
-			if ($methodWithDeclaringClass === null) {
-				foreach ($parentClass->getTraits() as $traitClass) {
-					$parentTraitMethodWithDeclaringClass = $this->findClassReflectionWithMethod($traitClass, $parentClass, $methodName);
-					if ($parentTraitMethodWithDeclaringClass === null) {
-						continue;
-					}
-
-					return $parentTraitMethodWithDeclaringClass;
-				}
-				continue;
+			if ($methodWithDeclaringClass !== null) {
+				return $methodWithDeclaringClass;
 			}
 
-			return $methodWithDeclaringClass;
+			foreach ($parentClass->getTraits() as $traitClass) {
+				$parentTraitMethodWithDeclaringClass = $this->findClassReflectionWithMethod($traitClass, $parentClass, $methodName);
+				if ($parentTraitMethodWithDeclaringClass === null) {
+					continue;
+				}
+
+				return $parentTraitMethodWithDeclaringClass;
+			}
+
+			$parentClass = $parentClass->getParentClass();
 		}
 
 		foreach ($classReflection->getInterfaces() as $interfaceClass) {

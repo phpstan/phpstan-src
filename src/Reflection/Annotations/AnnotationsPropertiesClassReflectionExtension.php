@@ -74,7 +74,8 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 			return $methodWithDeclaringClass;
 		}
 
-		foreach ($classReflection->getParents() as $parentClass) {
+		$parentClass = $classReflection->getParentClass();
+		while ($parentClass !== null) {
 			$methodWithDeclaringClass = $this->findClassReflectionWithProperty($parentClass, $parentClass, $propertyName);
 			if ($methodWithDeclaringClass === null) {
 				foreach ($parentClass->getTraits() as $traitClass) {
@@ -85,6 +86,9 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 
 					return $parentTraitMethodWithDeclaringClass;
 				}
+
+				$parentClass = $parentClass->getParentClass();
+
 				continue;
 			}
 

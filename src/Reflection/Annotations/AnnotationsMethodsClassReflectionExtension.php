@@ -84,7 +84,8 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 			return $methodWithDeclaringClass;
 		}
 
-		foreach ($classReflection->getParents() as $parentClass) {
+		$parentClass = $classReflection->getParentClass();
+		while ($parentClass !== null) {
 			$methodWithDeclaringClass = $this->findClassReflectionWithMethod($parentClass, $parentClass, $methodName);
 			if ($methodWithDeclaringClass === null) {
 				foreach ($parentClass->getTraits() as $traitClass) {
@@ -95,6 +96,9 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 
 					return $parentTraitMethodWithDeclaringClass;
 				}
+
+				$parentClass = $parentClass->getParentClass();
+
 				continue;
 			}
 

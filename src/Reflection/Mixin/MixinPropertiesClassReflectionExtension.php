@@ -65,13 +65,14 @@ class MixinPropertiesClassReflectionExtension implements PropertiesClassReflecti
 			return $property;
 		}
 
-		foreach ($classReflection->getParents() as $parentClass) {
+		$parentClass = $classReflection->getParentClass();
+		while ($parentClass !== null) {
 			$property = $this->findProperty($parentClass, $propertyName);
-			if ($property === null) {
-				continue;
+			if ($property !== null) {
+				return $property;
 			}
 
-			return $property;
+			$parentClass = $parentClass->getParentClass();
 		}
 
 		return null;

@@ -43,7 +43,7 @@ class FileTypeMapper
 	private const SKIP_NODE = 1;
 	private const POP_TYPE_MAP_STACK = 2;
 
-	/** @var NameScope[][] */
+	/** @var array<string, array<string, callable(): NameScope>> */
 	private array $memoryCache = [];
 
 	private int $memoryCacheCount = 0;
@@ -98,24 +98,18 @@ class FileTypeMapper
 			return $this->createResolvedPhpDocBlock($phpDocKey, new NameScope(null, []), $docComment, null);
 		}
 
-		$nameScopeMap = [];
-
-		if (!isset($this->inProcess[$fileName])) {
+		if (!isset($this->inProcess[$fileName][$nameScopeKey])) {
 			$nameScopeMap = $this->getNameScopeMap($fileName);
-		}
+			if (!array_key_exists($nameScopeKey, $nameScopeMap)) {
+				return ResolvedPhpDocBlock::createEmpty();
+			}
 
-		if (isset($nameScopeMap[$nameScopeKey])) {
-			return $this->createResolvedPhpDocBlock($phpDocKey, $nameScopeMap[$nameScopeKey], $docComment, $fileName);
-		}
-
-		if (!isset($this->inProcess[$fileName][$nameScopeKey])) { // wrong $fileName due to traits
-			return ResolvedPhpDocBlock::createEmpty();
+			$this->inProcess[$fileName][$nameScopeKey] = $nameScopeMap[$nameScopeKey];
 		}
 
 		if ($this->inProcess[$fileName][$nameScopeKey] === true) { // PHPDoc has cyclic dependency
 			return ResolvedPhpDocBlock::createEmpty();
 		}
-
 		if (is_callable($this->inProcess[$fileName][$nameScopeKey])) {
 			$resolveCallback = $this->inProcess[$fileName][$nameScopeKey];
 			$this->inProcess[$fileName][$nameScopeKey] = true;
@@ -165,12 +159,13 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @return NameScope[]
+	 * @return array<string, callable(): NameScope>
 	 */
 	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$map = $this->createResolvedPhpDocMap($fileName);
+			$phpDocNodeMap = $this->createPhpDocNodeMap($fileName, null, $fileName, [], $fileName);
+			$map = $this->createNameScopeMap($fileName, null, null, [], $fileName, $phpDocNodeMap);
 			if ($this->memoryCacheCount >= 2048) {
 				$this->memoryCache = array_slice(
 					$this->memoryCache,
@@ -186,31 +181,6 @@ class FileTypeMapper
 		}
 
 		return $this->memoryCache[$fileName];
-	}
-
-	/**
-	 * @return NameScope[]
-	 */
-	private function createResolvedPhpDocMap(string $fileName): array
-	{
-		$phpDocNodeMap = $this->createPhpDocNodeMap($fileName, null, $fileName, [], $fileName);
-		$nameScopeMap = $this->createNameScopeMap($fileName, null, null, [], $fileName, $phpDocNodeMap);
-		$resolvedNameScopeMap = [];
-
-		try {
-			$this->inProcess[$fileName] = $nameScopeMap;
-
-			foreach ($nameScopeMap as $nameScopeKey => $resolveCallback) {
-				$this->inProcess[$fileName][$nameScopeKey] = true;
-				$this->inProcess[$fileName][$nameScopeKey] = $data = $resolveCallback();
-				$resolvedNameScopeMap[$nameScopeKey] = $data;
-			}
-
-		} finally {
-			unset($this->inProcess[$fileName]);
-		}
-
-		return $resolvedNameScopeMap;
 	}
 
 	/**
@@ -382,7 +352,7 @@ class FileTypeMapper
 
 	/**
 	 * @param array<string, string> $traitMethodAliases
-	 * @return (callable(): NameScope)[]
+	 * @return array<string, callable(): NameScope>
 	 */
 	private function createNameScopeMap(
 		string $fileName,
@@ -399,14 +369,14 @@ class FileTypeMapper
 		/** @var (callable(): TemplateTypeMap)[] $typeMapStack */
 		$typeMapStack = [];
 
-		/** @var array<int, array<string, true>> $typeAliasStack */
+		/** @var array<int, callable(): array<string, true>> $typeAliasStack */
 		$typeAliasStack = [];
 
 		/** @var string[] $classStack */
 		$classStack = [];
 		if ($lookForTrait !== null && $traitUseClass !== null) {
 			$classStack[] = $traitUseClass;
-			$typeAliasStack[] = [];
+			$typeAliasStack[] = static fn () => [];
 		}
 		$namespace = null;
 
@@ -435,9 +405,9 @@ class FileTypeMapper
 						$traitFound = true;
 						$traitNameScopeKey = $this->getNameScopeKey($originalClassFileName, $classStack[count($classStack) - 1] ?? null, $lookForTrait, null);
 						if ($phpDocNodeMap->has($traitNameScopeKey)) {
-							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNodeMap->get($traitNameScopeKey));
+							$typeAliasStack[] = fn () => $this->getTypeAliasesMap($phpDocNodeMap->get($traitNameScopeKey));
 						} else {
-							$typeAliasStack[] = [];
+							$typeAliasStack[] = static fn () => [];
 						}
 						$functionStack[] = null;
 					} else {
@@ -458,9 +428,9 @@ class FileTypeMapper
 						$classStack[] = $className;
 						$classNameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, null);
 						if ($phpDocNodeMap->has($classNameScopeKey)) {
-							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNodeMap->get($classNameScopeKey));
+							$typeAliasStack[] = fn () => $this->getTypeAliasesMap($phpDocNodeMap->get($classNameScopeKey));
 						} else {
-							$typeAliasStack[] = [];
+							$typeAliasStack[] = static fn () => [];
 						}
 						$functionStack[] = null;
 					}
@@ -480,12 +450,13 @@ class FileTypeMapper
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					if ($phpDocNodeMap->has($nameScopeKey)) {
-						$phpDocNode = $phpDocNodeMap->get($nameScopeKey);
-						$typeMapStack[] = function () use ($namespace, $uses, $className, $lookForTrait, $functionName, $phpDocNode, $typeMapStack, $typeAliasStack, $constUses): TemplateTypeMap {
+						$typeMapStack[] = function () use ($namespace, $uses, $className, $lookForTrait, $functionName, $phpDocNodeMap, $nameScopeKey, $typeMapStack, $typeAliasStack, $constUses): TemplateTypeMap {
 							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 							$currentTypeMap = $typeMapCb !== null ? $typeMapCb() : null;
-							$typeAliasesMap = $typeAliasStack[count($typeAliasStack) - 1] ?? [];
+							$typeAliasesMapCb = $typeAliasStack[count($typeAliasStack) - 1] ?? null;
+							$typeAliasesMap = $typeAliasesMapCb !== null ? $typeAliasesMapCb() : [];
 							$nameScope = new NameScope($namespace, $uses, $className, $functionName, $currentTypeMap, $typeAliasesMap, false, $constUses, $lookForTrait);
+							$phpDocNode = $phpDocNodeMap->get($nameScopeKey);
 							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 							$templateTypeScope = $nameScope->getTemplateTypeScope();
 							if ($templateTypeScope === null) {
@@ -505,7 +476,7 @@ class FileTypeMapper
 				}
 
 				$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
-				$typeAliasesMap = $typeAliasStack[count($typeAliasStack) - 1] ?? [];
+				$typeAliasesMapCb = $typeAliasStack[count($typeAliasStack) - 1] ?? null;
 
 				if (
 					$node instanceof Node\Stmt
@@ -527,7 +498,7 @@ class FileTypeMapper
 						$className,
 						$functionName,
 						($typeMapCb !== null ? $typeMapCb() : TemplateTypeMap::createEmpty()),
-						$typeAliasesMap,
+						($typeAliasesMapCb !== null ? $typeAliasesMapCb() : []),
 						false,
 						$constUses,
 						$lookForTrait,

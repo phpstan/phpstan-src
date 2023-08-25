@@ -77,22 +77,20 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 		$parentClass = $classReflection->getParentClass();
 		while ($parentClass !== null) {
 			$methodWithDeclaringClass = $this->findClassReflectionWithProperty($parentClass, $parentClass, $propertyName);
-			if ($methodWithDeclaringClass === null) {
-				foreach ($parentClass->getTraits() as $traitClass) {
-					$parentTraitMethodWithDeclaringClass = $this->findClassReflectionWithProperty($traitClass, $parentClass, $propertyName);
-					if ($parentTraitMethodWithDeclaringClass === null) {
-						continue;
-					}
-
-					return $parentTraitMethodWithDeclaringClass;
-				}
-
-				$parentClass = $parentClass->getParentClass();
-
-				continue;
+			if ($methodWithDeclaringClass !== null) {
+				return $methodWithDeclaringClass;
 			}
 
-			return $methodWithDeclaringClass;
+			foreach ($parentClass->getTraits() as $traitClass) {
+				$parentTraitMethodWithDeclaringClass = $this->findClassReflectionWithProperty($traitClass, $parentClass, $propertyName);
+				if ($parentTraitMethodWithDeclaringClass === null) {
+					continue;
+				}
+
+				return $parentTraitMethodWithDeclaringClass;
+			}
+
+			$parentClass = $parentClass->getParentClass();
 		}
 
 		foreach ($classReflection->getInterfaces() as $interfaceClass) {

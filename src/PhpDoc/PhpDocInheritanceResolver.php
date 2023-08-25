@@ -94,9 +94,9 @@ class PhpDocInheritanceResolver
 
 		foreach ($phpDocBlock->getParents() as $parentPhpDocBlock) {
 			if (
-				$parentPhpDocBlock->getClassReflection()->isBuiltin()
-				&& $functionName !== null
+				$functionName !== null
 				&& strtolower($functionName) === '__construct'
+				&& $parentPhpDocBlock->getClassReflection()->isBuiltin()
 			) {
 				continue;
 			}

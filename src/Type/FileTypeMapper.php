@@ -51,6 +51,8 @@ class FileTypeMapper
 	/** @var (true|callable(): NameScope|NameScope)[][] */
 	private array $inProcess = [];
 
+	private int $inProcessCount = 0;
+
 	/** @var array<string, ResolvedPhpDocBlock> */
 	private array $resolvedPhpDocBlockCache = [];
 
@@ -104,7 +106,22 @@ class FileTypeMapper
 				return ResolvedPhpDocBlock::createEmpty();
 			}
 
+			if ($this->inProcessCount >= 2048) {
+				foreach ($this->inProcess as $file => $nameScopes) {
+					foreach ($nameScopes as $key => $nameScope) {
+						if ($nameScope === true) {
+							continue;
+						}
+
+						unset($this->inProcess[$file][$key]);
+						$this->inProcessCount--;
+						break;
+					}
+				}
+			}
+
 			$this->inProcess[$fileName][$nameScopeKey] = $nameScopeMap[$nameScopeKey];
+			$this->inProcessCount++;
 		}
 
 		if ($this->inProcess[$fileName][$nameScopeKey] === true) { // PHPDoc has cyclic dependency

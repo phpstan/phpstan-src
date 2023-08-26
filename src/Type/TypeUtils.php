@@ -8,7 +8,9 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateUnionType;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -270,6 +272,28 @@ class TypeUtils
 
 		if ($type instanceof UnionType) {
 			return new BenevolentUnionType($type->getTypes());
+		}
+
+		return $type;
+	}
+
+	/**
+	 * @return ($type is UnionType ? UnionType : Type)
+	 */
+	public static function toStrictUnion(Type $type): Type
+	{
+		if ($type instanceof TemplateBenevolentUnionType) {
+			return new TemplateUnionType(
+				$type->getScope(),
+				$type->getStrategy(),
+				$type->getVariance(),
+				$type->getName(),
+				static::toStrictUnion($type->getBound()),
+			);
+		}
+
+		if ($type instanceof BenevolentUnionType) {
+			return new UnionType($type->getTypes());
 		}
 
 		return $type;

@@ -949,4 +949,10 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6175.php'], []);
 	}
 
+	public function testBug9766(): void
+	{
+		$this->checkBenevolentUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-9766.php'], []);
+	}
+
 }

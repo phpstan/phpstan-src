@@ -19,6 +19,7 @@ use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
@@ -119,7 +120,7 @@ class RuleLevelHelper
 			if ($this->checkBenevolentUnionTypes) {
 				if ($acceptedType instanceof BenevolentUnionType) {
 					$checkForUnion = true;
-					return $traverse(new UnionType($acceptedType->getTypes()));
+					return $traverse(TypeUtils::toStrictUnion($acceptedType));
 				}
 			}
 
@@ -149,7 +150,7 @@ class RuleLevelHelper
 			$traverse = static function (Type $type, callable $traverse) use (&$checkForUnion): Type {
 				if ($type instanceof BenevolentUnionType) {
 					$checkForUnion = true;
-					return new UnionType($type->getTypes());
+					return TypeUtils::toStrictUnion($type);
 				}
 
 				return $traverse($type);

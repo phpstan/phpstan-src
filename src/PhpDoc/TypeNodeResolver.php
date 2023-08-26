@@ -62,6 +62,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\FloatRangeType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -109,6 +110,7 @@ use function str_replace;
 use function strpos;
 use function strtolower;
 use function substr;
+use const PHP_FLOAT_MIN;
 
 class TypeNodeResolver
 {
@@ -318,6 +320,18 @@ class TypeNodeResolver
 
 			case 'float':
 				return new FloatType();
+
+			case 'positive-float':
+				return FloatRangeType::fromInterval(PHP_FLOAT_MIN, null);
+
+			case 'negative-float':
+				return FloatRangeType::fromInterval(null, -PHP_FLOAT_MIN);
+
+			case 'non-zero-float':
+				return new UnionType([
+					FloatRangeType::fromInterval(null, -PHP_FLOAT_MIN),
+					FloatRangeType::fromInterval(PHP_FLOAT_MIN, null),
+				]);
 
 			case 'double':
 				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);

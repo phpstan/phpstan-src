@@ -9,7 +9,6 @@ use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
-use PHPStan\PhpDoc\FileTypeMapperPhpDocNodeMap;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -215,10 +214,11 @@ class FileTypeMapper
 
 	/**
 	 * @param array<string, string> $traitMethodAliases
+	 * @return array<string, PhpDocNode>
 	 */
-	private function createPhpDocNodeMap(string $fileName, ?string $lookForTrait, ?string $traitUseClass, array $traitMethodAliases, string $originalClassFileName): FileTypeMapperPhpDocNodeMap
+	private function createPhpDocNodeMap(string $fileName, ?string $lookForTrait, ?string $traitUseClass, array $traitMethodAliases, string $originalClassFileName): array
 	{
-		/** @var array<string, callable(): PhpDocNode> $phpDocNodeMap */
+		/** @var array<string, PhpDocNode> $phpDocNodeMap */
 		$phpDocNodeMap = [];
 
 		/** @var string[] $classStack */
@@ -285,7 +285,7 @@ class FileTypeMapper
 					$docComment = GetLastDocComment::forNode($node);
 					if ($docComment !== null) {
 						$nameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, $functionName);
-						$phpDocNodeMap[$nameScopeKey] = fn (): PhpDocNode => $this->phpDocStringResolver->resolve($docComment);
+						$phpDocNodeMap[$nameScopeKey] = $this->phpDocStringResolver->resolve($docComment);
 					}
 
 					return null;
@@ -347,7 +347,7 @@ class FileTypeMapper
 							$className,
 							$traitMethodAliases[$traitName] ?? [],
 							$originalClassFileName,
-						)->getMap());
+						));
 					}
 				}
 
@@ -377,11 +377,12 @@ class FileTypeMapper
 			},
 		);
 
-		return new FileTypeMapperPhpDocNodeMap($phpDocNodeMap);
+		return $phpDocNodeMap;
 	}
 
 	/**
 	 * @param array<string, string> $traitMethodAliases
+	 * @param array<string, PhpDocNode> $phpDocNodeMap
 	 * @return (callable(): NameScope)[]
 	 */
 	private function createNameScopeMap(
@@ -390,7 +391,7 @@ class FileTypeMapper
 		?string $traitUseClass,
 		array $traitMethodAliases,
 		string $originalClassFileName,
-		FileTypeMapperPhpDocNodeMap $phpDocNodeMap,
+		array $phpDocNodeMap,
 	): array
 	{
 		/** @var (callable(): NameScope)[] $nameScopeMap */
@@ -434,8 +435,8 @@ class FileTypeMapper
 
 						$traitFound = true;
 						$traitNameScopeKey = $this->getNameScopeKey($originalClassFileName, $classStack[count($classStack) - 1] ?? null, $lookForTrait, null);
-						if ($phpDocNodeMap->has($traitNameScopeKey)) {
-							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNodeMap->get($traitNameScopeKey));
+						if (array_key_exists($traitNameScopeKey, $phpDocNodeMap)) {
+							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNodeMap[$traitNameScopeKey]);
 						} else {
 							$typeAliasStack[] = [];
 						}
@@ -457,8 +458,8 @@ class FileTypeMapper
 						}
 						$classStack[] = $className;
 						$classNameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, null);
-						if ($phpDocNodeMap->has($classNameScopeKey)) {
-							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNodeMap->get($classNameScopeKey));
+						if (array_key_exists($classNameScopeKey, $phpDocNodeMap)) {
+							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNodeMap[$classNameScopeKey]);
 						} else {
 							$typeAliasStack[] = [];
 						}
@@ -479,8 +480,8 @@ class FileTypeMapper
 				$nameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, $functionName);
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
-					if ($phpDocNodeMap->has($nameScopeKey)) {
-						$phpDocNode = $phpDocNodeMap->get($nameScopeKey);
+					if (array_key_exists($nameScopeKey, $phpDocNodeMap)) {
+						$phpDocNode = $phpDocNodeMap[$nameScopeKey];
 						$typeMapStack[] = function () use ($namespace, $uses, $className, $lookForTrait, $functionName, $phpDocNode, $typeMapStack, $typeAliasStack, $constUses): TemplateTypeMap {
 							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 							$currentTypeMap = $typeMapCb !== null ? $typeMapCb() : null;
@@ -535,7 +536,7 @@ class FileTypeMapper
 				}
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
-					if ($phpDocNodeMap->has($nameScopeKey)) {
+					if (array_key_exists($nameScopeKey, $phpDocNodeMap)) {
 						return self::POP_TYPE_MAP_STACK;
 					}
 

@@ -3,24 +3,21 @@
 namespace PHPStan\Type\Php;
 
 use PHPStan\Analyser\TypeSpecifierContext;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use function array_key_last;
 use function array_keys;
+use function in_array;
 use function is_string;
 use function preg_match;
 use function preg_replace;
-use function str_contains;
-use function strrpos;
-use function substr;
+use const PREG_OFFSET_CAPTURE;
 use const PREG_UNMATCHED_AS_NULL;
 
 final class RegexShapeMatcher
@@ -29,8 +26,11 @@ final class RegexShapeMatcher
 	public function matchType(string $regex, ?ConstantIntegerType $flagsType, TypeSpecifierContext $context): Type
 	{
 		$flags = PREG_UNMATCHED_AS_NULL;
-		if ($flagsType !== null) {
-			$flags = $flags | $flagsType->getValue();
+		if (
+			$flagsType !== null
+			&& in_array($flagsType->getValue(), [PREG_OFFSET_CAPTURE], true)
+		) {
+			$flags |= $flagsType->getValue();
 		}
 		// add one capturing group to the end so all capture group keys
 		// are present in the $matches
@@ -47,13 +47,13 @@ final class RegexShapeMatcher
 		unset($matches['phpstan_named_capture_group_last']);
 
 		$builder = ConstantArrayTypeBuilder::createEmpty();
-		foreach ($matches as $key => $value) {
+		foreach (array_keys($matches) as $key) {
 			// atm we can't differentiate optional from mandatory groups based on the pattern.
 			// So we assume all are optional
 			$optional = true;
 
 			$keyType = $this->getKeyType($key);
-			$valueType = $this->getValueType($value, $flags);
+			$valueType = $this->getValueType($flags);
 
 			if ($context->true() && $key === 0) {
 				$optional = false;
@@ -78,7 +78,8 @@ final class RegexShapeMatcher
 		return new ConstantIntegerType($key);
 	}
 
-	private function getValueType(mixed $value, int $flags): Type {
+	private function getValueType(int $flags): Type
+	{
 		if (($flags & PREG_OFFSET_CAPTURE) !== 0) {
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 
@@ -88,7 +89,7 @@ final class RegexShapeMatcher
 			);
 			$builder->setOffsetValueType(
 				new ConstantIntegerType(1),
-				IntegerRangeType::fromInterval(0, null)
+				IntegerRangeType::fromInterval(0, null),
 			);
 
 			return $builder->getArray();

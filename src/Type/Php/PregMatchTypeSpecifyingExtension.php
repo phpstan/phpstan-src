@@ -15,6 +15,8 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 use function strtolower;
+use const PREG_OFFSET_CAPTURE;
+use const PREG_UNMATCHED_AS_NULL;
 
 final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -62,7 +64,7 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 			if (
 				!$flagsType instanceof ConstantIntegerType
-				|| !in_array($flagsType->getValue(), [PREG_OFFSET_CAPTURE, PREG_UNMATCHED_AS_NULL, PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL], true)
+				|| !in_array($flagsType->getValue(), [PREG_OFFSET_CAPTURE, PREG_UNMATCHED_AS_NULL, PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL], true)
 			) {
 				return new SpecifiedTypes();
 			}

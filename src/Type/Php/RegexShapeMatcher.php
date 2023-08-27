@@ -14,7 +14,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_last;
 use function array_keys;
-use function in_array;
 use function is_string;
 use function preg_match;
 use function preg_replace;
@@ -25,7 +24,7 @@ final class RegexShapeMatcher
 {
 
 	/**
-	 * @param PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL|null $flags
+	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL>|null $flags
 	 */
 	public function matchType(string $regex, ?int $flags, TypeSpecifierContext $context): Type
 	{

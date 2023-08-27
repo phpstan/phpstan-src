@@ -8,6 +8,8 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -24,8 +26,12 @@ use const PREG_UNMATCHED_AS_NULL;
 final class RegexShapeMatcher
 {
 
-	public function matchType(string $regex, TypeSpecifierContext $context): Type
+	public function matchType(string $regex, ?ConstantIntegerType $flagsType, TypeSpecifierContext $context): Type
 	{
+		$flags = PREG_UNMATCHED_AS_NULL;
+		if ($flagsType !== null) {
+			$flags = $flags | $flagsType->getValue();
+		}
 		// add one capturing group to the end so all capture group keys
 		// are present in the $matches
 		// see https://3v4l.org/sOXbn, https://3v4l.org/3SdDM
@@ -33,7 +39,7 @@ final class RegexShapeMatcher
 
 		if (
 			$regex === null
-			|| @preg_match($regex, '', $matches, PREG_UNMATCHED_AS_NULL) === false
+			|| @preg_match($regex, '', $matches, $flags) === false
 		) {
 			return new ArrayType(new MixedType(), new StringType());
 		}
@@ -41,28 +47,21 @@ final class RegexShapeMatcher
 		unset($matches['phpstan_named_capture_group_last']);
 
 		$builder = ConstantArrayTypeBuilder::createEmpty();
-		foreach (array_keys($matches) as $key) {
+		foreach ($matches as $key => $value) {
 			// atm we can't differentiate optional from mandatory groups based on the pattern.
 			// So we assume all are optional
 			$optional = true;
 
-			if (is_string($key)) {
-				$builder->setOffsetValueType(
-					new ConstantStringType($key),
-					new StringType(),
-					$optional,
-				);
-
-				continue;
-			}
+			$keyType = $this->getKeyType($key);
+			$valueType = $this->getValueType($value, $flags);
 
 			if ($context->true() && $key === 0) {
 				$optional = false;
 			}
 
 			$builder->setOffsetValueType(
-				new ConstantIntegerType($key),
-				new StringType(),
+				$keyType,
+				$valueType,
 				$optional,
 			);
 		}
@@ -70,15 +69,32 @@ final class RegexShapeMatcher
 		return $builder->getArray();
 	}
 
-	private function getModifiers(string $regex): string
+	private function getKeyType(int|string $key): Type
 	{
-		$delimiter = substr($regex, 0, 1);
-		$endDelimiterPosition = strrpos($regex, $delimiter);
-		if ($endDelimiterPosition === false) {
-			throw new ShouldNotHappenException();
+		if (is_string($key)) {
+			return new ConstantStringType($key);
 		}
 
-		return substr($regex, $endDelimiterPosition + 1);
+		return new ConstantIntegerType($key);
+	}
+
+	private function getValueType(mixed $value, int $flags): Type {
+		if (($flags & PREG_OFFSET_CAPTURE) !== 0) {
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+
+			$builder->setOffsetValueType(
+				new ConstantIntegerType(0),
+				new StringType(),
+			);
+			$builder->setOffsetValueType(
+				new ConstantIntegerType(1),
+				IntegerRangeType::fromInterval(0, null)
+			);
+
+			return $builder->getArray();
+		}
+
+		return new StringType();
 	}
 
 }

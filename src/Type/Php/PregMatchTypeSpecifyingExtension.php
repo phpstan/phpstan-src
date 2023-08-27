@@ -9,6 +9,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\TypeCombinator;
 use function count;
@@ -43,6 +44,7 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 		$patternArg = $args[0] ?? null;
 		$matchesArg = $args[2] ?? null;
+		$flagsArg = $args[3] ?? null;
 
 		if ($patternArg === null || $matchesArg === null) {
 			return new SpecifiedTypes();
@@ -54,9 +56,17 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			return new SpecifiedTypes();
 		}
 
+		$flagsType = null;
+		if ($flagsArg !== null) {
+			$flagsType = $scope->getType($flagsArg->value);
+			if (!$flagsType instanceof ConstantIntegerType) {
+				return new SpecifiedTypes();
+			}
+		}
+
 		$matchedTypes = [];
 		foreach ($constantStrings as $constantString) {
-			$matchedTypes[] = $this->regexShapeMatcher->matchType($constantString->getValue(), $context);
+			$matchedTypes[] = $this->regexShapeMatcher->matchType($constantString->getValue(), $flagsType, $context);
 		}
 
 		return $this->typeSpecifier->create(

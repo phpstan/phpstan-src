@@ -42,3 +42,10 @@ function doOnlyNmedSubpattern(string $s): void {
 	}
 	assertType('array<string>', $matches);
 }
+
+function doOffsetCapture(string $s): void {
+	if (preg_match('/(foo)(bar)(baz)/', 'foobarbaz', $matches, PREG_OFFSET_CAPTURE)) {
+		assertType('array{0: array{string, int<0, max>}, 1?: array{string, int<0, max>}, 2?: array{string, int<0, max>}, 3?: array{string, int<0, max>}}', $matches);
+	}
+	assertType('array<array{string, int<-1, max>}>', $matches);
+}

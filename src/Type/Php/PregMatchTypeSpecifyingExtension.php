@@ -56,17 +56,23 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			return new SpecifiedTypes();
 		}
 
-		$flagsType = null;
+		$flags = null;
 		if ($flagsArg !== null) {
 			$flagsType = $scope->getType($flagsArg->value);
-			if (!$flagsType instanceof ConstantIntegerType) {
+
+			if (
+				!$flagsType instanceof ConstantIntegerType
+				|| !in_array($flagsType->getValue(), [PREG_OFFSET_CAPTURE, PREG_UNMATCHED_AS_NULL, PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL], true)
+			) {
 				return new SpecifiedTypes();
 			}
+
+			$flags = $flagsType->getValue();
 		}
 
 		$matchedTypes = [];
 		foreach ($constantStrings as $constantString) {
-			$matchedTypes[] = $this->regexShapeMatcher->matchType($constantString->getValue(), $flagsType, $context);
+			$matchedTypes[] = $this->regexShapeMatcher->matchType($constantString->getValue(), $flags, $context);
 		}
 
 		return $this->typeSpecifier->create(

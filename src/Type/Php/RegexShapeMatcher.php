@@ -11,6 +11,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_key_last;
 use function array_keys;
 use function in_array;
@@ -23,15 +24,17 @@ use const PREG_UNMATCHED_AS_NULL;
 final class RegexShapeMatcher
 {
 
-	public function matchType(string $regex, ?ConstantIntegerType $flagsType, TypeSpecifierContext $context): Type
+	/**
+	 * @param PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL|null $flags
+	 */
+	public function matchType(string $regex, ?int $flags, TypeSpecifierContext $context): Type
 	{
-		$flags = PREG_UNMATCHED_AS_NULL;
-		if (
-			$flagsType !== null
-			&& in_array($flagsType->getValue(), [PREG_OFFSET_CAPTURE], true)
-		) {
-			$flags |= $flagsType->getValue();
+		if ($flags !== null) {
+			$trickFlags = PREG_UNMATCHED_AS_NULL | $flags;
+		} else {
+			$trickFlags = PREG_UNMATCHED_AS_NULL;
 		}
+
 		// add one capturing group to the end so all capture group keys
 		// are present in the $matches
 		// see https://3v4l.org/sOXbn, https://3v4l.org/3SdDM
@@ -39,7 +42,7 @@ final class RegexShapeMatcher
 
 		if (
 			$regex === null
-			|| @preg_match($regex, '', $matches, $flags) === false
+			|| @preg_match($regex, '', $matches, $trickFlags) === false
 		) {
 			return new ArrayType(new MixedType(), new StringType());
 		}
@@ -53,7 +56,7 @@ final class RegexShapeMatcher
 			$optional = true;
 
 			$keyType = $this->getKeyType($key);
-			$valueType = $this->getValueType($flags);
+			$valueType = $this->getValueType($flags ?? 0);
 
 			if ($context->true() && $key === 0) {
 				$optional = false;
@@ -80,22 +83,30 @@ final class RegexShapeMatcher
 
 	private function getValueType(int $flags): Type
 	{
+		$valueType = new StringType();
+		$offsetType = IntegerRangeType::fromInterval(0, null);
+		if (($flags & PREG_UNMATCHED_AS_NULL) !== 0) {
+			$valueType = TypeCombinator::addNull($valueType);
+			// unmatched groups return -1 as offset
+			$offsetType = IntegerRangeType::fromInterval(-1, null);
+		}
+
 		if (($flags & PREG_OFFSET_CAPTURE) !== 0) {
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 
 			$builder->setOffsetValueType(
 				new ConstantIntegerType(0),
-				new StringType(),
+				$valueType,
 			);
 			$builder->setOffsetValueType(
 				new ConstantIntegerType(1),
-				IntegerRangeType::fromInterval(0, null),
+				$offsetType,
 			);
 
 			return $builder->getArray();
 		}
 
-		return new StringType();
+		return $valueType;
 	}
 
 }

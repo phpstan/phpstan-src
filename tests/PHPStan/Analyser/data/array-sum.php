@@ -215,3 +215,20 @@ function foo26($list)
 {
 	assertType('3.4|4.4', array_sum($list));
 }
+
+
+/**
+ * @param array{1}|array{2, 3} $list
+ */
+function foo27($list)
+{
+	assertType('1|5', array_sum($list));
+}
+
+/**
+ * @param array{1}|list<1>|array{float} $list
+ */
+function foo28($list)
+{
+	assertType('float|int<0, max>', array_sum($list));
+}

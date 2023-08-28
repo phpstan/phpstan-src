@@ -36,71 +36,86 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
-		$itemType = $arrayType->getIterableValueType();
+		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 
-		if ($arrayType->isIterableAtLeastOnce()->no()) {
-			return new ConstantIntegerType(0);
+		if ($argType instanceof UnionType) {
+			$arrayTypes = $argType->getTypes();
+		} else {
+			$arrayTypes = [$argType];
 		}
 
-		$constantArray = $arrayType->getConstantArrays()[0] ?? null;
+		$resultTypes = [];
 
-		if ($constantArray !== null) {
-			$node = new LNumber(0);
+		foreach ($arrayTypes as $arrayType) {
+			$itemType = $arrayType->getIterableValueType();
 
-			foreach ($constantArray->getValueTypes() as $type) {
-				$node = new Plus($node, new TypeExpr($type));
+			if ($arrayType->isIterableAtLeastOnce()->no()) {
+				return new ConstantIntegerType(0);
 			}
 
-			$newItemType = $scope->getType($node);
-		} else {
-			$newItemType = new NeverType();
+			$constantArray = $arrayType->getConstantArrays()[0] ?? null;
 
-			if ($itemType instanceof UnionType) {
-				$types = $itemType->getTypes();
+			if ($constantArray !== null) {
+				$node = new LNumber(0);
+
+				foreach ($constantArray->getValueTypes() as $type) {
+					$node = new Plus($node, new TypeExpr($type));
+				}
+
+				$newItemType = $scope->getType($node);
 			} else {
-				$types = [$itemType];
-			}
+				$newItemType = new NeverType();
 
-			$positive = false;
-			$negative = false;
+				if ($itemType instanceof UnionType) {
+					$types = $itemType->getTypes();
+				} else {
+					$types = [$itemType];
+				}
 
-			foreach ($types as $type) {
-				$constant = $type->getConstantScalarValues()[0] ?? null;
-				if ($constant !== null) {
-					if (is_float($constant)) {
-						$nextType = new FloatType();
-					} elseif (is_int($constant)) {
-						if ($constant > 0) {
-							$nextType = IntegerRangeType::fromInterval($negative ? 0 : 1, null);
-							$positive = true;
-						} elseif ($constant < 0) {
-							$nextType = IntegerRangeType::fromInterval(null, $positive ? 0 : -1);
-							$negative = true;
+				$positive = false;
+				$negative = false;
+
+				foreach ($types as $type) {
+					$constant = $type->getConstantScalarValues()[0] ?? null;
+					if ($constant !== null) {
+						if (is_float($constant)) {
+							$nextType = new FloatType();
+						} elseif (is_int($constant)) {
+							if ($constant > 0) {
+								$nextType = IntegerRangeType::fromInterval($negative ? 0 : 1, null);
+								$positive = true;
+							} elseif ($constant < 0) {
+								$nextType = IntegerRangeType::fromInterval(null, $positive ? 0 : -1);
+								$negative = true;
+							} else {
+								$nextType = new ConstantIntegerType(0);
+							}
 						} else {
-							$nextType = new ConstantIntegerType(0);
+							$nextType = $type;
 						}
 					} else {
 						$nextType = $type;
 					}
-				} else {
-					$nextType = $type;
+
+					$newItemType = TypeCombinator::union($newItemType, $nextType);
 				}
 
-				$newItemType = TypeCombinator::union($newItemType, $nextType);
+				$nonEmptyArrayType = new NonEmptyArrayType();
+
+				if (!$nonEmptyArrayType->isSuperTypeOf($arrayType)->yes()) {
+					$newItemType = TypeCombinator::union($newItemType, new ConstantIntegerType(0));
+				}
 			}
 
-			$nonEmptyArrayType = new NonEmptyArrayType();
-
-			if (!$nonEmptyArrayType->isSuperTypeOf($arrayType)->yes()) {
-				$newItemType = TypeCombinator::union($newItemType, new ConstantIntegerType(0));
-			}
+			$resultTypes[] = $newItemType;
 		}
+
+		$resultType = TypeCombinator::union(...$resultTypes);
 
 		$intUnionFloat = new UnionType([new IntegerType(), new FloatType()]);
 
-		if ($intUnionFloat->isSuperTypeOf($newItemType)->yes()) {
-			return $newItemType;
+		if ($intUnionFloat->isSuperTypeOf($resultType)->yes()) {
+			return $resultType;
 		}
 		return $intUnionFloat;
 	}

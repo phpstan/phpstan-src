@@ -197,7 +197,7 @@ function foo23($list)
  */
 function foo24($list)
 {
-	assertType('float|int', array_sum($list));
+	assertType('5|float', array_sum($list));
 }
 
 /**
@@ -205,7 +205,7 @@ function foo24($list)
  */
 function foo25($list)
 {
-	assertType('float|int', array_sum($list));
+	assertType('3|4.4', array_sum($list));
 }
 
 /**
@@ -213,5 +213,5 @@ function foo25($list)
  */
 function foo26($list)
 {
-	assertType('float', array_sum($list));
+	assertType('3.4|4.4', array_sum($list));
 }

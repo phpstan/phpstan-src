@@ -2,25 +2,23 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\BinaryOp\Plus;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Scalar\LNumber;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use function array_filter;
-use function array_sum;
-use function count;
 use function is_float;
 use function is_int;
 
@@ -48,32 +46,13 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		$constantArray = $arrayType->getConstantArrays()[0] ?? null;
 
 		if ($constantArray !== null) {
-			$nonScalarTypes = [];
-			$scalarValues = [];
+			$node = new LNumber(0);
 
-			$types = $constantArray->getValueTypes();
-
-			foreach ($types as $type) {
-				$scalar = $type->getConstantScalarValues();
-				if (count($scalar) === 1) {
-					$scalarValues[] = $scalar[0];
-				} else {
-					$nonScalarTypes[] = $type;
-				}
+			foreach ($constantArray->getValueTypes() as $type) {
+				$node = new Plus($node, new TypeExpr($type));
 			}
 
-			if (count($nonScalarTypes) === 0) {
-				$sum = array_sum($scalarValues);
-				if (is_int($sum)) {
-					$newItemType = new ConstantIntegerType($sum);
-				} else {
-					$newItemType = new ConstantFloatType($sum);
-				}
-			} else {
-				$newItemType = count(array_filter($types, static fn ($type) => $type->isFloat()->yes())) !== 0
-					? new FloatType()
-					: $itemType->generalize(GeneralizePrecision::lessSpecific());
-			}
+			$newItemType = $scope->getType($node);
 		} else {
 			$newItemType = new NeverType();
 

@@ -46,7 +46,7 @@ use function is_array;
 use function is_dir;
 use function is_file;
 use function is_readable;
-use function spl_object_hash;
+use function spl_object_id;
 use function sprintf;
 use function str_ends_with;
 use function substr;
@@ -64,7 +64,7 @@ class ContainerFactory
 
 	private string $configDirectory;
 
-	private static ?string $lastInitializedContainerId = null;
+	private static ?int $lastInitializedContainerId = null;
 
 	/** @api */
 	public function __construct(private string $currentWorkingDirectory, private bool $checkDuplicateFiles = false)
@@ -154,7 +154,7 @@ class ContainerFactory
 	/** @internal */
 	public static function postInitializeContainer(Container $container): void
 	{
-		$containerId = spl_object_hash($container);
+		$containerId = spl_object_id($container);
 		if ($containerId === self::$lastInitializedContainerId) {
 			return;
 		}

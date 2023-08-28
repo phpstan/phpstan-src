@@ -70,7 +70,7 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 					$newItemType = new ConstantFloatType($sum);
 				}
 			} else {
-				$newItemType = count(array_filter($types, static fn ($type) => $type instanceof FloatType)) !== 0
+				$newItemType = count(array_filter($types, static fn ($type) => $type->isFloat()->yes())) !== 0
 					? new FloatType()
 					: $itemType->generalize(GeneralizePrecision::lessSpecific());
 			}

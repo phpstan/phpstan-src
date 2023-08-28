@@ -207,3 +207,11 @@ function foo25($list)
 {
 	assertType('float|int', array_sum($list));
 }
+
+/**
+ * @param array{1, 2.4|3.4} $list
+ */
+function foo26($list)
+{
+	assertType('float', array_sum($list));
+}

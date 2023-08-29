@@ -37,7 +37,7 @@ function foo3($floatList)
 function foo4($list)
 {
 	$sum = array_sum($list);
-	assertType('float|int', $sum);
+	assertType('(float|int)', $sum);
 }
 
 /**

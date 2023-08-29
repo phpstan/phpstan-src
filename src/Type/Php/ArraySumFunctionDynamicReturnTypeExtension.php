@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\BinaryOp\Mul;
 use PhpParser\Node\Expr\BinaryOp\Plus;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Scalar\LNumber;
@@ -18,8 +19,6 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use function is_float;
-use function is_int;
 
 final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -68,47 +67,13 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			} else {
 				$itemType = $arrayType->getIterableValueType();
 
-				$newTypes = [];
+				$mulNode = new Mul(new TypeExpr($itemType), new TypeExpr(IntegerRangeType::fromInterval(0, null)));
 
-				if ($itemType instanceof UnionType) {
-					$types = $itemType->getTypes();
-				} else {
-					$types = [$itemType];
+				$newItemType = $scope->getType(new Plus(new TypeExpr($itemType), $mulNode));
+
+				if (!$arrayType->isIterableAtLeastOnce()->yes()) {
+					$newItemType = TypeCombinator::union($newItemType, new ConstantIntegerType(0));
 				}
-
-				$positive = false;
-				$negative = false;
-
-				foreach ($types as $type) {
-					$constant = $type->getConstantScalarValues()[0] ?? null;
-					if ($constant !== null) {
-						if (is_float($constant)) {
-							$nextType = new FloatType();
-						} elseif (is_int($constant)) {
-							if ($constant > 0) {
-								$nextType = IntegerRangeType::fromInterval(1, null);
-								$positive = true;
-							} elseif ($constant < 0) {
-								$nextType = IntegerRangeType::fromInterval(null, -1);
-								$negative = true;
-							} else {
-								$nextType = new ConstantIntegerType(0);
-							}
-						} else {
-							$nextType = $type;
-						}
-					} else {
-						$nextType = $type;
-					}
-
-					$newTypes[] = $nextType;
-				}
-
-				if (($positive && $negative) || !$arrayType->isIterableAtLeastOnce()->yes()) {
-					$newTypes[] = new ConstantIntegerType(0);
-				}
-
-				$newItemType = TypeCombinator::union(...$newTypes);
 			}
 
 			$resultTypes[] = $newItemType;

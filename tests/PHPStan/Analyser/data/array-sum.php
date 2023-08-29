@@ -232,3 +232,19 @@ function foo28($list)
 {
 	assertType('float|int<0, max>', array_sum($list));
 }
+
+/**
+ * @param non-empty-list<int<min, -1>|int<1, max>> $list
+ */
+function foo29($list)
+{
+	assertType('int', array_sum($list));
+}
+
+/**
+ * @param array{'133', 3} $list
+ */
+function foo30($list)
+{
+	assertType('136', array_sum($list));
+}

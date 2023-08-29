@@ -9,13 +9,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -47,10 +46,13 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		$resultTypes = [];
 
 		foreach ($arrayTypes as $arrayType) {
-			$itemType = $arrayType->getIterableValueType();
+			if (!$arrayType->isArray()->yes()) {
+				return new ErrorType();
+			}
 
 			if ($arrayType->isIterableAtLeastOnce()->no()) {
-				return new ConstantIntegerType(0);
+				$resultTypes[] = new ConstantIntegerType(0);
+				continue;
 			}
 
 			$constantArray = $arrayType->getConstantArrays()[0] ?? null;
@@ -64,7 +66,9 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 
 				$newItemType = $scope->getType($node);
 			} else {
-				$newItemType = new NeverType();
+				$itemType = $arrayType->getIterableValueType();
+
+				$newTypes = [];
 
 				if ($itemType instanceof UnionType) {
 					$types = $itemType->getTypes();
@@ -82,10 +86,10 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 							$nextType = new FloatType();
 						} elseif (is_int($constant)) {
 							if ($constant > 0) {
-								$nextType = IntegerRangeType::fromInterval($negative ? 0 : 1, null);
+								$nextType = IntegerRangeType::fromInterval(1, null);
 								$positive = true;
 							} elseif ($constant < 0) {
-								$nextType = IntegerRangeType::fromInterval(null, $positive ? 0 : -1);
+								$nextType = IntegerRangeType::fromInterval(null, -1);
 								$negative = true;
 							} else {
 								$nextType = new ConstantIntegerType(0);
@@ -97,14 +101,14 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 						$nextType = $type;
 					}
 
-					$newItemType = TypeCombinator::union($newItemType, $nextType);
+					$newTypes[] = $nextType;
 				}
 
-				$nonEmptyArrayType = new NonEmptyArrayType();
-
-				if (!$nonEmptyArrayType->isSuperTypeOf($arrayType)->yes()) {
-					$newItemType = TypeCombinator::union($newItemType, new ConstantIntegerType(0));
+				if (($positive && $negative) || !$arrayType->isIterableAtLeastOnce()->yes()) {
+					$newTypes[] = new ConstantIntegerType(0);
 				}
+
+				$newItemType = TypeCombinator::union(...$newTypes);
 			}
 
 			$resultTypes[] = $newItemType;

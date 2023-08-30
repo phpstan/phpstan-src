@@ -8,13 +8,13 @@ class ReturnThrowableNoImplicitThrows
 	{
 		try {
 			$this->returnVoid();
-		} catch (\Throwable $e) { // dead cache properly not reported (implicitThrows is enabled)
+		} catch (\Throwable $e) { // dead catch properly not reported (implicitThrows is enabled)
 
 		}
 
 		try {
 			$this->returnThrowable();
-		} catch (\Throwable $e) { // dead cache REPORTED
+		} catch (\Throwable $e) { // dead catch REPORTED
 
 		}
 	}

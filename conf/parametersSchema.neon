@@ -193,6 +193,7 @@ parametersSchema:
 	pro: structure([
 		dnsServers: schema(listOf(string()), min(1)),
 	])
+	env: arrayOf(string(), string())
 
 	# irrelevant Nette parameters
 	debugMode: bool()

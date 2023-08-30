@@ -4,6 +4,7 @@ namespace PHPStan\DependencyInjection;
 
 use Nette\DI\Config\Loader;
 use PHPStan\File\FileHelper;
+use function getenv;
 
 class LoaderFactory
 {
@@ -25,6 +26,7 @@ class LoaderFactory
 		$loader->setParameters([
 			'rootDir' => $this->rootDir,
 			'currentWorkingDirectory' => $this->currentWorkingDirectory,
+			'env' => getenv(),
 		]);
 
 		return $loader;

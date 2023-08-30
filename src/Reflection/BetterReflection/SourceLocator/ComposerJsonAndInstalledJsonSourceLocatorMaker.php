@@ -22,7 +22,6 @@ use function count;
 use function dirname;
 use function glob;
 use function is_dir;
-use function is_file;
 use function strpos;
 use const GLOB_ONLYDIR;
 
@@ -49,11 +48,6 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig($projectInstallationPath, $composer);
 
 		$installedJsonPath = $vendorDirectory . '/composer/installed.json';
-		if (!is_file($installedJsonPath)) {
-			return null;
-		}
-
-		$installedJsonDirectoryPath = dirname($installedJsonPath);
 
 		try {
 			$installedJsonContents = FileReader::read($installedJsonPath);
@@ -62,6 +56,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			return null;
 		}
 
+		$installedJsonDirectoryPath = dirname($installedJsonPath);
 		$installed = $installedJson['packages'] ?? $installedJson;
 		$dev = (bool) ($installedJson['dev'] ?? true);
 
@@ -112,18 +107,12 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		);
 
 		foreach ($classMapDirectories as $classMapDirectory) {
-			if (!is_dir($classMapDirectory)) {
-				continue;
-			}
 			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapDirectory);
 		}
 
 		$files = [];
 
 		foreach (array_merge($classMapFiles, $filePaths) as $file) {
-			if (!is_file($file)) {
-				continue;
-			}
 			$files[] = $file;
 		}
 

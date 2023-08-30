@@ -3,10 +3,15 @@
 namespace PHPStan\DependencyInjection;
 
 use Nette\DI\Config\Loader;
+use Nette\DI\Container as OriginalNetteContainer;
 use Nette\DI\ContainerLoader;
 use PHPStan\File\FileReader;
 use function array_keys;
+use function error_reporting;
+use function restore_error_handler;
+use function set_error_handler;
 use function sha1;
+use const E_USER_DEPRECATED;
 use const PHP_RELEASE_VERSION;
 use const PHP_VERSION_ID;
 
@@ -58,6 +63,26 @@ class Configurator extends \Nette\Bootstrap\Configurator
 			[$this, 'generateContainer'],
 			[$this->staticParameters, array_keys($this->dynamicParameters), $this->configs, PHP_VERSION_ID - PHP_RELEASE_VERSION, NeonAdapter::CACHE_KEY, $this->getAllConfigFilesHashes()],
 		);
+	}
+
+	public function createContainer(bool $initialize = true): OriginalNetteContainer
+	{
+		set_error_handler(static function (int $errno): bool {
+			if ((error_reporting() & $errno) === 0) {
+				// silence @ operator
+				return true;
+			}
+
+			return $errno === E_USER_DEPRECATED;
+		});
+
+		try {
+			$container = parent::createContainer($initialize);
+		} finally {
+			restore_error_handler();
+		}
+
+		return $container;
 	}
 
 	/**

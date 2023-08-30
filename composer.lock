@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5c48b63dadedcaaf4997c53aed4cde59",
+    "content-hash": "e7e36df79eec6a1b29f01f91b6274f09",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1479,16 +1479,16 @@
         },
         {
             "name": "nette/di",
-            "version": "v3.1.3",
+            "version": "v3.1.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/di.git",
-                "reference": "a58a11eb6c1acbeb878d36efa614b301c87fbb95"
+                "reference": "f80a9f71e47d50f696f583f6b4ef44856618b686"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/di/zipball/a58a11eb6c1acbeb878d36efa614b301c87fbb95",
-                "reference": "a58a11eb6c1acbeb878d36efa614b301c87fbb95",
+                "url": "https://api.github.com/repos/nette/di/zipball/f80a9f71e47d50f696f583f6b4ef44856618b686",
+                "reference": "f80a9f71e47d50f696f583f6b4ef44856618b686",
                 "shasum": ""
             },
             "require": {
@@ -1545,9 +1545,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/di/issues",
-                "source": "https://github.com/nette/di/tree/v3.1.3"
+                "source": "https://github.com/nette/di/tree/v3.1"
             },
-            "time": "2023-08-05T19:10:42+00:00"
+            "time": "2023-08-30T15:26:38+00:00"
         },
         {
             "name": "nette/finder",
@@ -6615,7 +6615,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20
+        "jetbrains/phpstorm-stubs": 20,
+        "nette/di": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

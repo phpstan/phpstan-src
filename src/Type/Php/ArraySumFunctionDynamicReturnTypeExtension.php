@@ -12,7 +12,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -35,27 +34,13 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
-
-		if ($argType instanceof UnionType) {
-			$arrayTypes = $argType->getTypes();
-		} else {
-			$arrayTypes = [$argType];
+		if ($argType->isIterableAtLeastOnce()->no()) {
+			return new ConstantIntegerType(0);
 		}
-
 		$resultTypes = [];
 
-		foreach ($arrayTypes as $arrayType) {
-			if (!$arrayType->isArray()->yes()) {
-				return new ErrorType();
-			}
-
-			if ($arrayType->isIterableAtLeastOnce()->no()) {
-				$resultTypes[] = new ConstantIntegerType(0);
-				continue;
-			}
-
+		foreach ($argType->getArrays() as $arrayType) {
 			$constantArray = $arrayType->getConstantArrays()[0] ?? null;
-
 			if ($constantArray !== null) {
 				$node = new LNumber(0);
 
@@ -70,13 +55,13 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 				$mulNode = new Mul(new TypeExpr($itemType), new TypeExpr(IntegerRangeType::fromInterval(0, null)));
 
 				$newItemType = $scope->getType(new Plus(new TypeExpr($itemType), $mulNode));
-
-				if (!$arrayType->isIterableAtLeastOnce()->yes()) {
-					$newItemType = TypeCombinator::union($newItemType, new ConstantIntegerType(0));
-				}
 			}
 
 			$resultTypes[] = $newItemType;
+		}
+
+		if (!$argType->isIterableAtLeastOnce()->yes()) {
+			$resultTypes[] = new ConstantIntegerType(0);
 		}
 
 		$resultType = TypeCombinator::union(...$resultTypes);

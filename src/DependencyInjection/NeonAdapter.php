@@ -28,7 +28,7 @@ use function substr;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v18-parameters-schema';
+	public const CACHE_KEY = 'v19-env';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 

@@ -248,3 +248,11 @@ function foo30($list)
 {
 	assertType('136', array_sum($list));
 }
+
+/**
+ * @param array{0: 1, 1?: 2, 2?: 3} $list
+ */
+function foo31($list)
+{
+	assertType('1|3|4|6', array_sum($list));
+}

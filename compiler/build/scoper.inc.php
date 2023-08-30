@@ -65,7 +65,7 @@ return [
 			return str_replace('|Nette\\\\DI\\\\Statement', sprintf('|\\\\%s\\\\Nette\\\\DI\\\\Statement', $prefix), $content);
 		},
 		function (string $filePath, string $prefix, string $content): string {
-			if ($filePath !== 'vendor/nette/di/src/DI/Config/DefinitionSchema.php') {
+			if ($filePath !== 'vendor/nette/di/src/DI/Extensions/DefinitionSchema.php') {
 				return $content;
 			}
 			$content = str_replace(

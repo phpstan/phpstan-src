@@ -8,7 +8,6 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use function count;
 use function end;
-use function is_file;
 use function is_string;
 
 class PhpVersionFactoryFactory
@@ -29,17 +28,15 @@ class PhpVersionFactoryFactory
 		$composerPhpVersion = null;
 		if (count($this->composerAutoloaderProjectPaths) > 0) {
 			$composerJsonPath = end($this->composerAutoloaderProjectPaths) . '/composer.json';
-			if (is_file($composerJsonPath)) {
-				try {
-					$composerJsonContents = FileReader::read($composerJsonPath);
-					$composer = Json::decode($composerJsonContents, Json::FORCE_ARRAY);
-					$platformVersion = $composer['config']['platform']['php'] ?? null;
-					if (is_string($platformVersion)) {
-						$composerPhpVersion = $platformVersion;
-					}
-				} catch (CouldNotReadFileException | JsonException) {
-					// pass
+			try {
+				$composerJsonContents = FileReader::read($composerJsonPath);
+				$composer = Json::decode($composerJsonContents, Json::FORCE_ARRAY);
+				$platformVersion = $composer['config']['platform']['php'] ?? null;
+				if (is_string($platformVersion)) {
+					$composerPhpVersion = $platformVersion;
 				}
+			} catch (CouldNotReadFileException | JsonException) {
+				// pass
 			}
 		}
 

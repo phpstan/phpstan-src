@@ -96,6 +96,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectShapeType;
@@ -676,7 +677,7 @@ class MutatingScope implements Scope
 	private function resolveType(string $exprString, Expr $node): Type
 	{
 		if ($node instanceof Expr\Exit_ || $node instanceof Expr\Throw_) {
-			return new NeverType(true);
+			return new NonAcceptingNeverType();
 		}
 
 		if (!$node instanceof Variable && $this->hasExpressionType($node)->yes()) {
@@ -1281,13 +1282,13 @@ class MutatingScope implements Scope
 
 				if (count($returnTypes) === 0) {
 					if (count($closureExecutionEnds) > 0 && !$hasNull) {
-						$returnType = new NeverType(true);
+						$returnType = new NonAcceptingNeverType();
 					} else {
 						$returnType = new VoidType();
 					}
 				} else {
 					if (count($closureExecutionEnds) > 0) {
-						$returnTypes[] = new NeverType(true);
+						$returnTypes[] = new NonAcceptingNeverType();
 					}
 					if ($hasNull) {
 						$returnTypes[] = new NullType();

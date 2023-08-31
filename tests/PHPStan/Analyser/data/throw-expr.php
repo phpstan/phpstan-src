@@ -15,7 +15,7 @@ class Foo
 
 	public function doBar(): void
 	{
-		assertType('*NEVER*', throw new \Exception());
+		assertType('never', throw new \Exception());
 	}
 
 }

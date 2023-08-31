@@ -111,12 +111,12 @@ class Foo
 		$f = function() {
 			$this->returnNever();
 		};
-		assertType('*NEVER*', $f());
+		assertType('never', $f());
 
 		$f = function(): void {
 			$this->returnNever();
 		};
-		assertType('*NEVER*', $f());
+		assertType('never', $f());
 
 		$f = function() {
 			if (rand(0, 1)) {
@@ -134,7 +134,7 @@ class Foo
 
 			$this->returnNever();
 		};
-		assertType('*NEVER*', $f([]));
+		assertType('never', $f([]));
 
 		$f = function(array $a) {
 			foreach ($a as $v) {
@@ -148,12 +148,12 @@ class Foo
 				$this->returnNever();
 			}
 		};
-		assertType('*NEVER*', $f());
+		assertType('never', $f());
 
 		$f = function (): \stdClass {
 			throw new \Exception();
 		};
-		assertType('*NEVER*', $f());
+		assertType('never', $f());
 	}
 
 }

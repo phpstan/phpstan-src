@@ -2,17 +2,20 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\BinaryOp\Mul;
+use PhpParser\Node\Expr\BinaryOp\Plus;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Scalar\LNumber;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\FloatType;
-use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
+use function count;
 
 final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -28,28 +31,36 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
-		$itemType = $arrayType->getIterableValueType();
+		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$resultTypes = [];
 
-		if ($arrayType->isIterableAtLeastOnce()->no()) {
-			return new ConstantIntegerType(0);
-		}
+		if (count($argType->getConstantArrays()) > 0) {
+			foreach ($argType->getConstantArrays() as $constantArray) {
+				$node = new LNumber(0);
 
-		$intUnionFloat = new UnionType([new IntegerType(), new FloatType()]);
+				foreach ($constantArray->getValueTypes() as $i => $type) {
+					if ($constantArray->isOptionalKey($i)) {
+						$node = new Plus($node, new TypeExpr(TypeCombinator::union($type, new ConstantIntegerType(0))));
+					} else {
+						$node = new Plus($node, new TypeExpr($type));
+					}
+				}
 
-		if ($arrayType->isIterableAtLeastOnce()->yes()) {
-			if ($intUnionFloat->isSuperTypeOf($itemType)->yes()) {
-				return $itemType;
+				$resultTypes[] = $scope->getType($node);
 			}
+		} else {
+			$itemType = $argType->getIterableValueType();
 
-			return $intUnionFloat;
+			$mulNode = new Mul(new TypeExpr($itemType), new TypeExpr(IntegerRangeType::fromInterval(0, null)));
+
+			$resultTypes[] = $scope->getType(new Plus(new TypeExpr($itemType), $mulNode));
 		}
 
-		if ($intUnionFloat->isSuperTypeOf($itemType)->yes()) {
-			return TypeCombinator::union(new ConstantIntegerType(0), $itemType);
+		if (!$argType->isIterableAtLeastOnce()->yes()) {
+			$resultTypes[] = new ConstantIntegerType(0);
 		}
 
-		return TypeCombinator::union(new ConstantIntegerType(0), $intUnionFloat);
+		return TypeCombinator::union(...$resultTypes)->toNumber();
 	}
 
 }

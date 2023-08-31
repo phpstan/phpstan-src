@@ -44,8 +44,12 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			if ($constantArray !== null) {
 				$node = new LNumber(0);
 
-				foreach ($constantArray->getValueTypes() as $type) {
-					$node = new Plus($node, new TypeExpr($type));
+				foreach ($constantArray->getValueTypes() as $i => $type) {
+					if ($constantArray->isOptionalKey($i)) {
+						$node = new Plus($node, new TypeExpr(TypeCombinator::union($type, new ConstantIntegerType(0))));
+					} else {
+						$node = new Plus($node, new TypeExpr($type));
+					}
 				}
 
 				$newItemType = $scope->getType($node);

@@ -256,3 +256,11 @@ function foo31($list)
 {
 	assertType('1|3|4|6', array_sum($list));
 }
+
+/**
+ * @param mixed $list
+ */
+function foo32($list)
+{
+	assertType('float|int', array_sum($list));
+}

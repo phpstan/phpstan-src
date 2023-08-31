@@ -15,6 +15,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -34,9 +35,13 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
-		if ($argType->isIterableAtLeastOnce()->no()) {
-			return new ConstantIntegerType(0);
+
+		$intUnionFloat = new UnionType([new IntegerType(), new FloatType()]);
+
+		if ($argType instanceof MixedType) {
+			return $intUnionFloat;
 		}
+
 		$resultTypes = [];
 
 		foreach ($argType->getArrays() as $arrayType) {
@@ -69,8 +74,6 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		$resultType = TypeCombinator::union(...$resultTypes);
-
-		$intUnionFloat = new UnionType([new IntegerType(), new FloatType()]);
 
 		if ($intUnionFloat->isSuperTypeOf($resultType)->yes()) {
 			return $resultType;

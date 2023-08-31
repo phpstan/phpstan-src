@@ -262,5 +262,5 @@ function foo31($list)
  */
 function foo32($list)
 {
-	assertType('float|int', array_sum($list));
+	assertType('(float|int)', array_sum($list));
 }

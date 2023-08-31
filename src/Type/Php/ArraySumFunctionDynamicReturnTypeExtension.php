@@ -12,13 +12,10 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
+use function count;
 
 final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -35,18 +32,10 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
-
-		$intUnionFloat = new UnionType([new IntegerType(), new FloatType()]);
-
-		if ($argType instanceof MixedType) {
-			return $intUnionFloat;
-		}
-
 		$resultTypes = [];
 
-		foreach ($argType->getArrays() as $arrayType) {
-			$constantArray = $arrayType->getConstantArrays()[0] ?? null;
-			if ($constantArray !== null) {
+		if (count($argType->getConstantArrays()) > 0) {
+			foreach ($argType->getConstantArrays() as $constantArray) {
 				$node = new LNumber(0);
 
 				foreach ($constantArray->getValueTypes() as $i => $type) {
@@ -57,28 +46,21 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 					}
 				}
 
-				$newItemType = $scope->getType($node);
-			} else {
-				$itemType = $arrayType->getIterableValueType();
-
-				$mulNode = new Mul(new TypeExpr($itemType), new TypeExpr(IntegerRangeType::fromInterval(0, null)));
-
-				$newItemType = $scope->getType(new Plus(new TypeExpr($itemType), $mulNode));
+				$resultTypes[] = $scope->getType($node);
 			}
+		} else {
+			$itemType = $argType->getIterableValueType();
 
-			$resultTypes[] = $newItemType;
+			$mulNode = new Mul(new TypeExpr($itemType), new TypeExpr(IntegerRangeType::fromInterval(0, null)));
+
+			$resultTypes[] = $scope->getType(new Plus(new TypeExpr($itemType), $mulNode));
 		}
 
 		if (!$argType->isIterableAtLeastOnce()->yes()) {
 			$resultTypes[] = new ConstantIntegerType(0);
 		}
 
-		$resultType = TypeCombinator::union(...$resultTypes);
-
-		if ($intUnionFloat->isSuperTypeOf($resultType)->yes()) {
-			return $resultType;
-		}
-		return $intUnionFloat;
+		return TypeCombinator::union(...$resultTypes)->toNumber();
 	}
 
 }

@@ -93,7 +93,7 @@ final class GetTemplateTypeType implements CompoundType, LateResolvableType
 
 	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
 	{
-		$type = $this->type->traverseWithVariance($variance, $cb);
+		$type = $cb($this->type, $variance);
 
 		if ($this->type === $type) {
 			return $this;

@@ -2368,7 +2368,7 @@ class NodeScopeResolver
 			}
 		} elseif ($expr instanceof Expr\NullsafePropertyFetch) {
 			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $scope, $expr->var);
-			$exprResult = $this->processExprNode(new PropertyFetch($expr->var, $expr->name, $expr->getAttributes()), $nonNullabilityResult->getScope(), $nodeCallback, $context);
+			$exprResult = $this->processExprNode(new PropertyFetch($expr->var, $expr->name, array_merge($expr->getAttributes(), ['virtualNullsafePropertyFetch' => true])), $nonNullabilityResult->getScope(), $nodeCallback, $context);
 			$scope = $this->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 
 			return new ExpressionResult(

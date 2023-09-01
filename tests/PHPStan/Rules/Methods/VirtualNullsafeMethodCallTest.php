@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Testing\RuleTestCase;
 
 /**
@@ -14,9 +15,12 @@ use PHPStan\Testing\RuleTestCase;
 class VirtualNullsafeMethodCallTest extends RuleTestCase
 {
 
+	/**
+	 * @return Rule<MethodCall>
+	 */
 	protected function getRule(): Rule
 	{
-		return new class implements Rule {
+		return new /** @implements Rule<MethodCall> */ class implements Rule {
 
 			public function getNodeType(): string
 			{
@@ -26,10 +30,10 @@ class VirtualNullsafeMethodCallTest extends RuleTestCase
 			public function processNode(Node $node, Scope $scope): array
 			{
 				if ($node->getAttribute('virtualNullsafeMethodCall') === true) {
-					return ['Nullable method call detected'];
+					return [RuleErrorBuilder::message('Nullable method call detected')->identifier('')->build()];
 				}
 
-				return ['Regular method call detected'];
+				return [RuleErrorBuilder::message('Regular method call detected')->identifier('')->build()];
 			}
 
 		};

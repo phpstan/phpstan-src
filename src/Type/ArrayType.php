@@ -670,6 +670,10 @@ class ArrayType implements Type
 			return $this;
 		}
 
+		if ($newKeyType instanceof NeverType && $newItemType instanceof NeverType) {
+			return new ConstantArrayType([], []);
+		}
+
 		return new self($newKeyType, $newItemType);
 	}
 

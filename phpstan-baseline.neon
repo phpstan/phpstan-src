@@ -439,16 +439,6 @@ parameters:
 			path: src/Rules/Api/NodeConnectingVisitorAttributesRule.php
 
 		-
-			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRule\\:\\:processNode\\(\\) should return list\\<PHPStan\\\\Rules\\\\IdentifierRuleError\\> but returns array\\{PHPStan\\\\Rules\\\\TipRuleError\\}\\.$#"
-			count: 1
-			path: src/Rules/Arrays/AppendedArrayItemTypeRule.php
-
-		-
-			message: "#^Method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRule\\:\\:processNode\\(\\) should return list\\<PHPStan\\\\Rules\\\\IdentifierRuleError\\> but returns array\\{PHPStan\\\\Rules\\\\RuleError\\}\\.$#"
-			count: 1
-			path: src/Rules/Arrays/AppendedArrayKeyTypeRule.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Arrays/DuplicateKeysInLiteralArraysRule.php
@@ -527,11 +517,6 @@ parameters:
 			path: src/Rules/Comparison/MatchExpressionRule.php
 
 		-
-			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\MatchExpressionRule\\:\\:processNode\\(\\) should return list\\<PHPStan\\\\Rules\\\\IdentifierRuleError\\> but returns list\\<PHPStan\\\\Rules\\\\IdentifierRuleError\\|PHPStan\\\\Rules\\\\LineRuleError\\>\\.$#"
-			count: 1
-			path: src/Rules/Comparison/MatchExpressionRule.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 2
 			path: src/Rules/Comparison/NumberComparisonOperatorsConstantConditionRule.php
@@ -552,17 +537,7 @@ parameters:
 			path: src/Rules/Comparison/UnreachableIfBranchesRule.php
 
 		-
-			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\UnreachableIfBranchesRule\\:\\:processNode\\(\\) should return list\\<PHPStan\\\\Rules\\\\IdentifierRuleError\\> but returns list\\<PHPStan\\\\Rules\\\\RuleError\\>\\.$#"
-			count: 1
-			path: src/Rules/Comparison/UnreachableIfBranchesRule.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
-			count: 1
-			path: src/Rules/Comparison/UnreachableTernaryElseBranchRule.php
-
-		-
-			message: "#^Method PHPStan\\\\Rules\\\\Comparison\\\\UnreachableTernaryElseBranchRule\\:\\:processNode\\(\\) should return list\\<PHPStan\\\\Rules\\\\IdentifierRuleError\\> but returns array\\{PHPStan\\\\Rules\\\\LineRuleError\\}\\.$#"
 			count: 1
 			path: src/Rules/Comparison/UnreachableTernaryElseBranchRule.php
 

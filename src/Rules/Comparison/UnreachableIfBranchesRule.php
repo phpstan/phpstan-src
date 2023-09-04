@@ -38,6 +38,7 @@ class UnreachableIfBranchesRule implements Rule
 		$conditionType = $this->treatPhpDocTypesAsCertain ? $scope->getType($condition) : $scope->getNativeType($condition);
 		$conditionBooleanType = $conditionType->toBoolean();
 		$nextBranchIsDead = $conditionBooleanType->isTrue()->yes() && $this->helper->shouldSkip($scope, $node->cond) && !$this->helper->shouldReportAlwaysTrueByDefault($node->cond);
+
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, &$condition): RuleErrorBuilder {
 			if (!$this->treatPhpDocTypesAsCertain) {
 				return $ruleErrorBuilder;
@@ -53,7 +54,10 @@ class UnreachableIfBranchesRule implements Rule
 
 		foreach ($node->elseifs as $elseif) {
 			if ($nextBranchIsDead) {
-				$errors[] = $addTip(RuleErrorBuilder::message('Elseif branch is unreachable because previous condition is always true.')->line($elseif->getLine()))->build();
+				$errors[] = $addTip(RuleErrorBuilder::message('Elseif branch is unreachable because previous condition is always true.'))
+					->identifier('elseif.unreachable')
+					->line($elseif->getLine())
+					->build();
 				continue;
 			}
 
@@ -64,7 +68,10 @@ class UnreachableIfBranchesRule implements Rule
 		}
 
 		if ($node->else !== null && $nextBranchIsDead) {
-			$errors[] = $addTip(RuleErrorBuilder::message('Else branch is unreachable because previous condition is always true.'))->line($node->else->getLine())->build();
+			$errors[] = $addTip(RuleErrorBuilder::message('Else branch is unreachable because previous condition is always true.'))
+				->identifier('else.unreachable')
+				->line($node->else->getLine())
+				->build();
 		}
 
 		return $errors;

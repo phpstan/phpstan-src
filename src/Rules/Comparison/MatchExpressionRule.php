@@ -55,7 +55,10 @@ class MatchExpressionRule implements Rule
 				|| ($nextArmIsDeadForType && $this->treatPhpDocTypesAsCertain)
 			) {
 				if (!$this->disableUnreachable) {
-					$errors[] = RuleErrorBuilder::message('Match arm is unreachable because previous comparison is always true.')->line($arm->getLine())->build();
+					$errors[] = RuleErrorBuilder::message('Match arm is unreachable because previous comparison is always true.')
+						->identifier('match.unreachable')
+						->line($arm->getLine())
+						->build();
 				}
 				continue;
 			}

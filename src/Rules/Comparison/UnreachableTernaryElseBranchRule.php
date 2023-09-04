@@ -54,6 +54,7 @@ class UnreachableTernaryElseBranchRule implements Rule
 			};
 			return [
 				$addTip(RuleErrorBuilder::message('Else branch is unreachable because ternary operator condition is always true.'))
+					->identifier('ternary.elseUnreachable')
 					->line($node->else->getLine())
 					->build(),
 			];

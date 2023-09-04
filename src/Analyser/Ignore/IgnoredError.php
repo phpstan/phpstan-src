@@ -6,6 +6,7 @@ use Nette\Utils\Strings;
 use PHPStan\Analyser\Error;
 use PHPStan\File\FileExcluder;
 use PHPStan\File\FileHelper;
+use PHPStan\ShouldNotHappenException;
 use function count;
 use function implode;
 use function is_array;
@@ -26,9 +27,20 @@ class IgnoredError
 			return $ignoredError;
 		}
 
-		$message = $ignoredError['message'];
+		$message = '';
+		if (isset($ignoredError['message'])) {
+			$message = $ignoredError['message'];
+		}
 		if (isset($ignoredError['identifier'])) {
-			$message = sprintf('%s (%s)', $message, $ignoredError['identifier']);
+			if ($message === '') {
+				$message = $ignoredError['identifier'];
+			} else {
+				$message = sprintf('%s (%s)', $message, $ignoredError['identifier']);
+			}
+		}
+
+		if ($message === '') {
+			throw new ShouldNotHappenException();
 		}
 
 		// ignore by path
@@ -51,7 +63,7 @@ class IgnoredError
 	public static function shouldIgnore(
 		FileHelper $fileHelper,
 		Error $error,
-		string $ignoredErrorPattern,
+		?string $ignoredErrorPattern,
 		?string $identifier,
 		?string $path,
 	): bool
@@ -62,16 +74,17 @@ class IgnoredError
 			}
 		}
 
-		// normalize newlines to allow working with ignore-patterns independent of used OS newline-format
-		$errorMessage = $error->getMessage();
-		$errorMessage = str_replace(['\r\n', '\r'], '\n', $errorMessage);
-		$ignoredErrorPattern = str_replace([preg_quote('\r\n'), preg_quote('\r')], preg_quote('\n'), $ignoredErrorPattern);
-
-		if ($path !== null) {
+		if ($ignoredErrorPattern !== null) {
+			// normalize newlines to allow working with ignore-patterns independent of used OS newline-format
+			$errorMessage = $error->getMessage();
+			$errorMessage = str_replace(['\r\n', '\r'], '\n', $errorMessage);
+			$ignoredErrorPattern = str_replace([preg_quote('\r\n'), preg_quote('\r')], preg_quote('\n'), $ignoredErrorPattern);
 			if (Strings::match($errorMessage, $ignoredErrorPattern) === null) {
 				return false;
 			}
+		}
 
+		if ($path !== null) {
 			$fileExcluder = new FileExcluder($fileHelper, [$path]);
 			$isExcluded = $fileExcluder->isExcludedFromAnalysing($error->getFilePath());
 			if (!$isExcluded && $error->getTraitFilePath() !== null) {
@@ -81,7 +94,7 @@ class IgnoredError
 			return $isExcluded;
 		}
 
-		return Strings::match($errorMessage, $ignoredErrorPattern) !== null;
+		return true;
 	}
 
 }

@@ -79,9 +79,25 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertSame('Ignored error pattern #Fail\.# (wrong.identifier) was not matched in reported errors.', $result[1]);
 	}
 
+	public function testFileWithAnIgnoredWrongIdentifier(): void
+	{
+		$result = $this->runAnalyser([['identifier' => 'wrong.identifier']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertCount(2, $result);
+		assert($result[0] instanceof Error);
+		$this->assertSame('Fail.', $result[0]->getMessage());
+		assert(is_string($result[1]));
+		$this->assertSame('Ignored error pattern wrong.identifier was not matched in reported errors.', $result[1]);
+	}
+
 	public function testFileWithAnIgnoredErrorMessageAndCorrectIdentifier(): void
 	{
 		$result = $this->runAnalyser([['message' => '#Fail\.#', 'identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertEmpty($result);
+	}
+
+	public function testFileWithAnIgnoredErrorIdentifier(): void
+	{
+		$result = $this->runAnalyser([['identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
 		$this->assertEmpty($result);
 	}
 
@@ -418,7 +434,7 @@ class AnalyserTest extends PHPStanTestCase
 
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', false);
 		$this->assertCount(1, $result);
-		$this->assertSame('Ignored error {"path":"' . $expectedPath . '/data/empty/empty.php"} is missing a message.', $result[0]);
+		$this->assertSame('Ignored error {"path":"' . $expectedPath . '/data/empty/empty.php"} is missing a message or an identifier.', $result[0]);
 	}
 
 	public function testReportMultipleParserErrorsAtOnce(): void

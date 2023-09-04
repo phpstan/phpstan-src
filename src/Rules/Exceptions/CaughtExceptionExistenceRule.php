@@ -45,7 +45,7 @@ class CaughtExceptionExistenceRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))
 					->line($class->getLine())
 					->identifier('class.notFound')
-					->discoveringSymbolsTip()
+					->discoveringSymbolsTip($className)
 					->build();
 				continue;
 			}

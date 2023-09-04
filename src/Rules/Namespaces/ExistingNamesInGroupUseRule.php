@@ -73,7 +73,7 @@ class ExistingNamesInGroupUseRule implements Rule
 	{
 		if (!$this->reflectionProvider->hasConstant($name, null)) {
 			return RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $name))
-				->discoveringSymbolsTip()
+				->discoveringSymbolsTip((string) $name)
 				->line($name->getLine())
 				->identifier('constant.notFound')
 				->build();
@@ -86,7 +86,7 @@ class ExistingNamesInGroupUseRule implements Rule
 	{
 		if (!$this->reflectionProvider->hasFunction($name, null)) {
 			return RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $name))
-				->discoveringSymbolsTip()
+				->discoveringSymbolsTip((string) $name)
 				->line($name->getLine())
 				->identifier('function.notFound')
 				->build();

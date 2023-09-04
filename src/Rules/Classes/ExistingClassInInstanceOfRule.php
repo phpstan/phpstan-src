@@ -73,7 +73,7 @@ class ExistingClassInInstanceOfRule implements Rule
 				RuleErrorBuilder::message(sprintf('Class %s not found.', $name))
 					->identifier('class.notFound')
 					->line($class->getLine())
-					->discoveringSymbolsTip()
+					->discoveringSymbolsTip($name)
 					->build(),
 			];
 		} elseif ($this->checkClassCaseSensitivity) {

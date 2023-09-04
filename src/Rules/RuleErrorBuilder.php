@@ -10,6 +10,7 @@ use function count;
 use function implode;
 use function is_file;
 use function sprintf;
+use function substr;
 
 /**
  * @api
@@ -182,8 +183,11 @@ class RuleErrorBuilder
 	 * @phpstan-this-out self<T&TipRuleError>
 	 * @return self<T&TipRuleError>
 	 */
-	public function discoveringSymbolsTip(): self
+	public function discoveringSymbolsTip(?string $className = null): self
 	{
+		if (isset($className) && substr($className, 0, 7) === 'Drupal/') {
+			return $this->tip('Learn more at https://github.com/mglaman/phpstan-drupal');
+		}
 		return $this->tip('Learn more at https://phpstan.org/user-guide/discovering-symbols');
 	}
 

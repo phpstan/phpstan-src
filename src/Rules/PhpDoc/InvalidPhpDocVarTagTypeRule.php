@@ -144,7 +144,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 					$referencedClass,
 				))
 					->identifier('class.notFound')
-					->discoveringSymbolsTip()
+					->discoveringSymbolsTip($referencedClass)
 					->build();
 			}
 

@@ -72,7 +72,7 @@ class ExistingNamesInUseRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $use->name))
 				->line($use->name->getLine())
 				->identifier('constant.notFound')
-				->discoveringSymbolsTip()
+				->discoveringSymbolsTip((string) $use->name)
 				->build();
 		}
 
@@ -91,7 +91,7 @@ class ExistingNamesInUseRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $use->name))
 					->line($use->name->getLine())
 					->identifier('function.notFound')
-					->discoveringSymbolsTip()
+					->discoveringSymbolsTip((string) $use->name)
 					->build();
 			} elseif ($this->checkFunctionNameCase) {
 				$functionReflection = $this->reflectionProvider->getFunction($use->name, null);

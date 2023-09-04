@@ -41,7 +41,7 @@ class CallToNonExistentFunctionRule implements Rule
 			}
 
 			return [
-				RuleErrorBuilder::message(sprintf('Function %s not found.', (string) $node->name))->identifier('function.notFound')->discoveringSymbolsTip()->build(),
+				RuleErrorBuilder::message(sprintf('Function %s not found.', (string) $node->name))->identifier('function.notFound')->discoveringSymbolsTip((string) $node->name)->build(),
 			];
 		}
 

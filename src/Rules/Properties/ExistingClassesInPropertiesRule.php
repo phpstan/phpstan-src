@@ -69,7 +69,7 @@ class ExistingClassesInPropertiesRule implements Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 				$referencedClass,
-			))->identifier('class.notFound')->discoveringSymbolsTip()->build();
+			))->identifier('class.notFound')->discoveringSymbolsTip($referencedClass)->build();
 		}
 
 		if ($this->checkClassCaseSensitivity) {

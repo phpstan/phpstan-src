@@ -48,7 +48,7 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 					))
 						->identifier('interface.notFound')
 						->nonIgnorable()
-						->discoveringSymbolsTip()
+						->discoveringSymbolsTip($extendedInterfaceName)
 						->build();
 				}
 			} else {

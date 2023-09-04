@@ -96,7 +96,7 @@ class ClassConstantRule implements Rule
 						return [
 							RuleErrorBuilder::message(sprintf('Class %s not found.', $className))
 								->identifier('class.notFound')
-								->discoveringSymbolsTip()
+								->discoveringSymbolsTip($className)
 								->build(),
 						];
 					}
@@ -106,7 +106,7 @@ class ClassConstantRule implements Rule
 							sprintf('Access to constant %s on an unknown class %s.', $constantName, $className),
 						)
 							->identifier('class.notFound')
-							->discoveringSymbolsTip()
+							->discoveringSymbolsTip($className)
 							->build(),
 					];
 				}

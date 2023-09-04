@@ -49,7 +49,7 @@ class ExistingClassInClassExtendsRule implements Rule
 				))
 					->identifier('class.notFound')
 					->nonIgnorable()
-					->discoveringSymbolsTip()
+					->discoveringSymbolsTip($extendedClassName)
 					->build();
 			}
 		} else {

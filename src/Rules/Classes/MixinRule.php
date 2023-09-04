@@ -88,7 +88,7 @@ class MixinRule implements Rule
 				if (!$this->reflectionProvider->hasClass($class)) {
 					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains unknown class %s.', $class))
 						->identifier('class.notFound')
-						->discoveringSymbolsTip()
+						->discoveringSymbolsTip($class)
 						->build();
 				} elseif ($this->reflectionProvider->getClass($class)->isTrait()) {
 					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains invalid type %s.', $class))

@@ -49,7 +49,7 @@ class ExistingClassesInEnumImplementsRule implements Rule
 					))
 						->identifier('interface.notFound')
 						->nonIgnorable()
-						->discoveringSymbolsTip()
+						->discoveringSymbolsTip($implementedClassName)
 						->build();
 				}
 			} else {

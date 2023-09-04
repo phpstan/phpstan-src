@@ -131,7 +131,7 @@ class AccessStaticPropertiesRule implements Rule
 							$name,
 							$class,
 						))
-							->discoveringSymbolsTip()
+							->discoveringSymbolsTip($class)
 							->identifier('class.notFound')
 							->build(),
 					];

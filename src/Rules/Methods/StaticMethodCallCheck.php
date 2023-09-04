@@ -124,7 +124,7 @@ class StaticMethodCallCheck
 								'Call to static method %s() on an unknown class %s.',
 								$methodName,
 								$className,
-							))->identifier('class.notFound')->discoveringSymbolsTip()->build(),
+							))->identifier('class.notFound')->discoveringSymbolsTip($className)->build(),
 						],
 						null,
 					];

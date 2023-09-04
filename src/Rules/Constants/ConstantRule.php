@@ -28,7 +28,7 @@ class ConstantRule implements Rule
 					(string) $node->name,
 				))
 					->identifier('constant.notFound')
-					->discoveringSymbolsTip()
+					->discoveringSymbolsTip((string) $node->name)
 					->build(),
 			];
 		}

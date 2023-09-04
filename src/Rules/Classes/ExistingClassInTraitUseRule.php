@@ -67,7 +67,7 @@ class ExistingClassInTraitUseRule implements Rule
 					$messages[] = RuleErrorBuilder::message(sprintf('%s uses unknown trait %s.', $currentName, $traitName))
 						->identifier('trait.notFound')
 						->nonIgnorable()
-						->discoveringSymbolsTip()
+						->discoveringSymbolsTip($traitName)
 						->build();
 				} else {
 					$reflection = $this->reflectionProvider->getClass($traitName);

@@ -123,7 +123,7 @@ class InstantiationRule implements Rule
 				return [
 					RuleErrorBuilder::message(sprintf('Instantiated class %s not found.', $class))
 						->identifier('class.notFound')
-						->discoveringSymbolsTip()
+						->discoveringSymbolsTip($class)
 						->build(),
 				];
 			}

@@ -344,7 +344,7 @@ class RuleLevelHelper
 			$errors[] = RuleErrorBuilder::message(sprintf($unknownClassErrorPattern, $referencedClass))
 				->line($var->getLine())
 				->identifier('class.notFound')
-				->discoveringSymbolsTip()
+				->discoveringSymbolsTip($referencedClass)
 				->build();
 		}
 

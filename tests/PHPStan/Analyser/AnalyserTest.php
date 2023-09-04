@@ -69,6 +69,22 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertEmpty($result);
 	}
 
+	public function testFileWithAnIgnoredErrorMessageAndWrongIdentifier(): void
+	{
+		$result = $this->runAnalyser([['message' => '#Fail\.#', 'identifier' => 'wrong.identifier']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertCount(2, $result);
+		assert($result[0] instanceof Error);
+		$this->assertSame('Fail.', $result[0]->getMessage());
+		assert(is_string($result[1]));
+		$this->assertSame('Ignored error pattern #Fail\.# (wrong.identifier) was not matched in reported errors.', $result[1]);
+	}
+
+	public function testFileWithAnIgnoredErrorMessageAndCorrectIdentifier(): void
+	{
+		$result = $this->runAnalyser([['message' => '#Fail\.#', 'identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertEmpty($result);
+	}
+
 	public function testFileWithAnIgnoredErrorMessages(): void
 	{
 		$result = $this->runAnalyser([['messages' => ['#Fail\.#']]], true, __DIR__ . '/data/bootstrap-error.php', false);

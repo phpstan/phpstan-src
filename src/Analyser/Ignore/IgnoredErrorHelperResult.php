@@ -61,13 +61,13 @@ class IgnoredErrorHelperResult
 		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$addErrors): bool {
 			$shouldBeIgnored = false;
 			if (is_string($ignore)) {
-				$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore, null);
+				$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore, null, null);
 				if ($shouldBeIgnored) {
 					unset($unmatchedIgnoredErrors[$i]);
 				}
 			} else {
 				if (isset($ignore['path'])) {
-					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignore['path']);
+					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignore['identifier'] ?? null, $ignore['path']);
 					if ($shouldBeIgnored) {
 						if (isset($ignore['count'])) {
 							$realCount = $unmatchedIgnoredErrors[$i]['realCount'] ?? 0;
@@ -88,7 +88,7 @@ class IgnoredErrorHelperResult
 					}
 				} elseif (isset($ignore['paths'])) {
 					foreach ($ignore['paths'] as $j => $ignorePath) {
-						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignorePath);
+						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignore['identifier'] ?? null, $ignorePath);
 						if (!$shouldBeIgnored) {
 							continue;
 						}
@@ -105,7 +105,7 @@ class IgnoredErrorHelperResult
 						break;
 					}
 				} else {
-					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], null);
+					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignore['identifier'] ?? null, null);
 					if ($shouldBeIgnored) {
 						unset($unmatchedIgnoredErrors[$i]);
 					}

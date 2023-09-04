@@ -26,18 +26,23 @@ class IgnoredError
 			return $ignoredError;
 		}
 
-		// ignore by path
-		if (isset($ignoredError['path'])) {
-			return sprintf('%s in path %s', $ignoredError['message'], $ignoredError['path']);
-		} elseif (isset($ignoredError['paths'])) {
-			if (count($ignoredError['paths']) === 1) {
-				return sprintf('%s in path %s', $ignoredError['message'], implode(', ', $ignoredError['paths']));
-
-			}
-			return sprintf('%s in paths: %s', $ignoredError['message'], implode(', ', $ignoredError['paths']));
+		$message = $ignoredError['message'];
+		if (isset($ignoredError['identifier'])) {
+			$message = sprintf('%s (%s)', $message, $ignoredError['identifier']);
 		}
 
-		return $ignoredError['message'];
+		// ignore by path
+		if (isset($ignoredError['path'])) {
+			return sprintf('%s in path %s', $message, $ignoredError['path']);
+		} elseif (isset($ignoredError['paths'])) {
+			if (count($ignoredError['paths']) === 1) {
+				return sprintf('%s in path %s', $message, implode(', ', $ignoredError['paths']));
+
+			}
+			return sprintf('%s in paths: %s', $message, implode(', ', $ignoredError['paths']));
+		}
+
+		return $message;
 	}
 
 	/**
@@ -47,9 +52,16 @@ class IgnoredError
 		FileHelper $fileHelper,
 		Error $error,
 		string $ignoredErrorPattern,
+		?string $identifier,
 		?string $path,
 	): bool
 	{
+		if ($identifier !== null) {
+			if ($error->getIdentifier() !== $identifier) {
+				return false;
+			}
+		}
+
 		// normalize newlines to allow working with ignore-patterns independent of used OS newline-format
 		$errorMessage = $error->getMessage();
 		$errorMessage = str_replace(['\r\n', '\r'], '\n', $errorMessage);

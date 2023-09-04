@@ -93,6 +93,7 @@ class TableErrorFormatter implements ErrorFormatter
 			if (!in_array($fileSpecificError->getIdentifier(), [
 				'ignore.unmatchedIdentifier',
 				'ignore.parseError',
+				'ignore.unmatched',
 			], true)) {
 				continue;
 			}

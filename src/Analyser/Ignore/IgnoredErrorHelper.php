@@ -68,6 +68,9 @@ class IgnoredErrorHelper
 			}
 
 			$key = sprintf("%s\n%s", $ignoreError['message'], $ignoreError['path']);
+			if (isset($ignoreError['identifier'])) {
+				$key = sprintf("%s\n%s", $key, $ignoreError['identifier']);
+			}
 			if (!array_key_exists($key, $uniquedExpandedIgnoreErrors)) {
 				$uniquedExpandedIgnoreErrors[$key] = $ignoreError;
 				continue;
@@ -76,6 +79,7 @@ class IgnoredErrorHelper
 			$uniquedExpandedIgnoreErrors[$key] = [
 				'message' => $ignoreError['message'],
 				'path' => $ignoreError['path'],
+				'identifier' => $ignoreError['identifier'] ?? null,
 				'count' => ($uniquedExpandedIgnoreErrors[$key]['count'] ?? 1) + ($ignoreError['count'] ?? 1),
 				'reportUnmatched' => ($uniquedExpandedIgnoreErrors[$key]['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors) || ($ignoreError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors),
 			];

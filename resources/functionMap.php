@@ -5336,7 +5336,7 @@ return [
 'inotify_add_watch' => ['int<1,max>|false', 'inotify_instance'=>'resource', 'pathname'=>'string', 'mask'=>'int'],
 'inotify_init' => ['resource'],
 'inotify_queue_len' => ['int<0,max>', 'inotify_instance'=>'resource'],
-'inotify_read' => ['array{wd:int<1,max>,mask:int<0,max>,cookie:int<0,max>,name:string}|false', 'inotify_instance'=>'resource'],
+'inotify_read' => ['list<array{wd:int<1,max>,mask:int<0,max>,cookie:int<0,max>,name:string}>|false', 'inotify_instance'=>'resource'],
 'inotify_rm_watch' => ['bool', 'inotify_instance'=>'resource', 'watch_descriptor'=>'int'],
 'intdiv' => ['int', 'numerator'=>'int', 'divisor'=>'int'],
 'interface_exists' => ['bool', 'classname'=>'string', 'autoload='=>'bool'],

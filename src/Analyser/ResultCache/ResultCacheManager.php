@@ -264,6 +264,8 @@ class ResultCacheManager
 	{
 		$projectConfig = $currentMeta['projectConfig'];
 		if ($projectConfig !== null) {
+			ksort($currentMeta['projectConfig']);
+
 			$currentMeta['projectConfig'] = Neon::encode($currentMeta['projectConfig']);
 		}
 
@@ -728,6 +730,8 @@ return [
 			unset($projectConfigArray['parameters']['memoryLimitFile']);
 			unset($projectConfigArray['parameters']['pro']);
 			unset($projectConfigArray['parametersSchema']);
+
+			ksort($projectConfigArray);
 		}
 
 		return [

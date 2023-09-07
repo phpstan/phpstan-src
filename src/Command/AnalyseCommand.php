@@ -424,6 +424,7 @@ class AnalyseCommand extends Command
 					$analysisResult->getProjectConfigFile(),
 					$analysisResult->isResultCacheSaved(),
 					$analysisResult->getPeakMemoryUsageBytes(),
+					$analysisResult->isResultCacheUsed(),
 				);
 
 				$stdOutput = $inceptionResult->getStdOutput();

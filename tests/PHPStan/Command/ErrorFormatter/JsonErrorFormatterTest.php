@@ -253,7 +253,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter = new JsonErrorFormatter(false);
 		$formatter->formatErrors(new AnalysisResult([
 			new Error('Foo', '/foo/bar.php', 1, true, null, null, $tip),
-		], [], [], [], [], false, null, true, 0), $this->getOutput());
+		], [], [], [], [], false, null, true, 0, false), $this->getOutput());
 
 		$content = $this->getOutputContent();
 		$json = Json::decode($content, Json::FORCE_ARRAY);

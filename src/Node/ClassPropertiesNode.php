@@ -219,7 +219,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				}
 			} elseif (array_key_exists($propertyName, $initializedPropertiesMap)) {
 				$hasInitialization = $initializedPropertiesMap[$propertyName]->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
-				if ($usageScope->isInAnonymousFunction() && $usageScope->getParentScope() !== null) {
+				if (!$hasInitialization->yes() && $usageScope->isInAnonymousFunction() && $usageScope->getParentScope() !== null) {
 					$hasInitialization = $hasInitialization->or($usageScope->getParentScope()->hasExpressionType(new PropertyInitializationExpr($propertyName)));
 				}
 				if (

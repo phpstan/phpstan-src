@@ -149,6 +149,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			null,
 			true,
 			0,
+			false,
 		);
 		$formatter->formatErrors(
 			$result,
@@ -187,6 +188,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			null,
 			true,
 			0,
+			false,
 		);
 
 		$formatter->formatErrors(
@@ -252,6 +254,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			null,
 			true,
 			0,
+			false,
 		);
 
 		$formatter->formatErrors(
@@ -410,6 +413,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			null,
 			true,
 			0,
+			false,
 		);
 
 		$resource = fopen('php://memory', 'w', false);

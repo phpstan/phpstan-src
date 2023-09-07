@@ -192,4 +192,14 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9831(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9831.php'], [
+			[
+				'Access to an uninitialized property Bug9831\Foo::$bar.',
+				12,
+			],
+		]);
+	}
+
 }

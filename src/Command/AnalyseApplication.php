@@ -61,6 +61,7 @@ class AnalyseApplication
 		InputInterface $input,
 	): AnalysisResult
 	{
+		$isResultCacheUsed = false;
 		$resultCacheManager = $this->resultCacheManagerFactory->create();
 
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
@@ -106,6 +107,7 @@ class AnalyseApplication
 			$errors = $analyserResult->getErrors();
 			$hasInternalErrors = count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
 			$memoryUsageBytes = $analyserResult->getPeakMemoryUsageBytes();
+			$isResultCacheUsed = !$resultCache->isFullAnalysis();
 
 			if (!$hasInternalErrors) {
 				foreach ($this->getCollectedDataErrors($analyserResult->getCollectedData(), $onlyFiles) as $error) {
@@ -142,6 +144,7 @@ class AnalyseApplication
 			$projectConfigFile,
 			$savedResultCache,
 			$memoryUsageBytes,
+			$isResultCacheUsed,
 		);
 	}
 

@@ -1953,6 +1953,9 @@ services:
 			editorUrl: %editorUrl%
 			editorUrlTitle: %editorUrlTitle%
 
+	errorFormatter.failWithoutResultCache:
+		class: PHPStan\Command\ErrorFormatter\FailWithoutResultCacheErrorFormatter
+
 	errorFormatter.checkstyle:
 		class: PHPStan\Command\ErrorFormatter\CheckstyleErrorFormatter
 		arguments:

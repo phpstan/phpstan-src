@@ -162,6 +162,7 @@ return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
 				null,
 				true,
 				0,
+				true,
 			),
 			$this->getOutput(),
 		);

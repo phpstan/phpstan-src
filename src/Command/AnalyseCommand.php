@@ -503,8 +503,8 @@ class AnalyseCommand extends Command
 
 	private function failIfNoResultCache(AnalysisResult $analysisResult, int $exitCode): int
 	{
-		$failWithoutResultCache = $_SERVER['PHPSTAN_FAIL_WITHOUT_RESULT_CACHE'] ?? false;
-		if (!$analysisResult->isResultCacheUsed() && $failWithoutResultCache) {
+		$failWithoutResultCache = $_SERVER['PHPSTAN_FAIL_WITHOUT_RESULT_CACHE'] ?? 'false';
+		if (!$analysisResult->isResultCacheUsed() && $failWithoutResultCache === 'true') {
 			return 2;
 		}
 

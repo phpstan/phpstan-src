@@ -396,9 +396,9 @@ class AnalyseCommand extends Command
 			return $inceptionResult->handleReturn(
 				$this->failIfNoResultCache(
 					$analysisResult,
-					0
+					0,
 				),
-				$analysisResult->getPeakMemoryUsageBytes()
+				$analysisResult->getPeakMemoryUsageBytes(),
 			);
 		}
 
@@ -495,7 +495,7 @@ class AnalyseCommand extends Command
 		return $inceptionResult->handleReturn(
 			$this->failIfNoResultCache(
 				$analysisResult,
-				$errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput())
+				$errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput()),
 			),
 			$analysisResult->getPeakMemoryUsageBytes(),
 		);

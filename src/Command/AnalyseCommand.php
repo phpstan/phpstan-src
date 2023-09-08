@@ -87,6 +87,7 @@ class AnalyseCommand extends Command
 				new InputOption('fix', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('watch', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('pro', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
+				new InputOption('fail-without-result-cache', null, InputOption::VALUE_NONE, 'Return non-zero exit code when result cache is not used'),
 			]);
 	}
 
@@ -120,6 +121,7 @@ class AnalyseCommand extends Command
 		$allowXdebug = $input->getOption('xdebug');
 		$debugEnabled = (bool) $input->getOption('debug');
 		$fix = (bool) $input->getOption('fix') || (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
+		$failWithoutResultCache = (bool) $input->getOption('fail-without-result-cache');
 
 		/** @var string|false|null $generateBaselineFile */
 		$generateBaselineFile = $input->getOption('generate-baseline');
@@ -393,7 +395,15 @@ class AnalyseCommand extends Command
 				$inceptionResult->getStdOutput()->getStyle()->warning($message . "\nSome errors could not be put into baseline. Re-run PHPStan and fix them.");
 			}
 
-			return $inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes());
+			$exitCode = 0;
+			if ($failWithoutResultCache && !$analysisResult->isResultCacheUsed()) {
+				$exitCode = 2;
+			}
+
+			return $inceptionResult->handleReturn(
+				$exitCode,
+				$analysisResult->getPeakMemoryUsageBytes(),
+			);
 		}
 
 		if ($fix) {
@@ -486,8 +496,13 @@ class AnalyseCommand extends Command
 		/** @var ErrorFormatter $errorFormatter */
 		$errorFormatter = $container->getService($errorFormatterServiceName);
 
+		$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
+		if ($failWithoutResultCache && !$analysisResult->isResultCacheUsed()) {
+			$exitCode = 2;
+		}
+
 		return $inceptionResult->handleReturn(
-			$errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput()),
+			$exitCode,
 			$analysisResult->getPeakMemoryUsageBytes(),
 		);
 	}

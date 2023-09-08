@@ -393,7 +393,13 @@ class AnalyseCommand extends Command
 				$inceptionResult->getStdOutput()->getStyle()->warning($message . "\nSome errors could not be put into baseline. Re-run PHPStan and fix them.");
 			}
 
-			return $inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes());
+			return $inceptionResult->handleReturn(
+				$this->failIfNoResultCache(
+					$analysisResult,
+					0
+				),
+				$analysisResult->getPeakMemoryUsageBytes()
+			);
 		}
 
 		if ($fix) {
@@ -487,9 +493,22 @@ class AnalyseCommand extends Command
 		$errorFormatter = $container->getService($errorFormatterServiceName);
 
 		return $inceptionResult->handleReturn(
-			$errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput()),
+			$this->failIfNoResultCache(
+				$analysisResult,
+				$errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput())
+			),
 			$analysisResult->getPeakMemoryUsageBytes(),
 		);
+	}
+
+	private function failIfNoResultCache(AnalysisResult $analysisResult, int $exitCode): int
+	{
+		$failWithoutResultCache = $_SERVER['PHPSTAN_FAIL_WITHOUT_RESULT_CACHE'] ?? false;
+		if (!$analysisResult->isResultCacheUsed() && $failWithoutResultCache) {
+			return 2;
+		}
+
+		return $exitCode;
 	}
 
 	private function createStreamOutput(): StreamOutput

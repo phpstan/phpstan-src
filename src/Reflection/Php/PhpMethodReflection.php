@@ -385,17 +385,21 @@ class PhpMethodReflection implements ExtendedMethodReflection
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return $this->reflection->isDeprecated()->or(TrinaryLogic::createFromBoolean($this->isDeprecated));
+		if ($this->isDeprecated) {
+			return TrinaryLogic::createYes();
+		}
+
+		return $this->reflection->isDeprecated();
 	}
 
 	public function isInternal(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->reflection->isInternal() || $this->isInternal);
+		return TrinaryLogic::createFromBoolean($this->isInternal || $this->reflection->isInternal());
 	}
 
 	public function isFinal(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->reflection->isFinal() || $this->isFinal);
+		return TrinaryLogic::createFromBoolean($this->isFinal || $this->reflection->isFinal());
 	}
 
 	public function isAbstract(): bool

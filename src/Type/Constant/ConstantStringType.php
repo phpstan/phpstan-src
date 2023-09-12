@@ -41,6 +41,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function addcslashes;
+use function in_array;
 use function is_float;
 use function is_int;
 use function is_numeric;
@@ -325,7 +326,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function isNonFalsyString(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->getValue() !== '' && $this->getValue() !== '0');
+		return TrinaryLogic::createFromBoolean(!in_array($this->getValue(), ['', '0'], true));
 	}
 
 	public function isLiteralString(): TrinaryLogic

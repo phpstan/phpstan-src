@@ -105,7 +105,7 @@ class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFunction
 			if ($argType instanceof ConstantStringType) {
 				$value = strtolower($argType->getValue());
 
-				if ($value === 'none' || $value === 'long' || $value === 'entity') {
+				if (in_array($value, ['none', 'long', 'entity'], true)) {
 					return new ConstantBooleanType(true);
 				}
 

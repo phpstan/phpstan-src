@@ -974,7 +974,7 @@ class TypeSpecifier
 			if ($constantType->getValue() === 'boolean') {
 				$type = new BooleanType();
 			}
-			if ($constantType->getValue() === 'resource' || $constantType->getValue() === 'resource (closed)') {
+			if (in_array($constantType->getValue(), ['resource', 'resource (closed)'], true)) {
 				$type = new ResourceType();
 			}
 			if ($constantType->getValue() === 'integer') {

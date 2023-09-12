@@ -619,7 +619,7 @@ class TypeNodeResolver
 			$typeNode->variances,
 		);
 
-		if ($mainTypeName === 'array' || $mainTypeName === 'non-empty-array') {
+		if (in_array($mainTypeName, ['array', 'non-empty-array'], true)) {
 			if (count($genericTypes) === 1) { // array<ValueType>
 				$arrayType = new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), $genericTypes[0]);
 			} elseif (count($genericTypes) === 2) { // array<KeyType, ValueType>
@@ -637,7 +637,7 @@ class TypeNodeResolver
 			}
 
 			return $arrayType;
-		} elseif ($mainTypeName === 'list' || $mainTypeName === 'non-empty-list') {
+		} elseif (in_array($mainTypeName, ['list', 'non-empty-list'], true)) {
 			if (count($genericTypes) === 1) { // list<ValueType>
 				$listType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $genericTypes[0]));
 				if ($mainTypeName === 'non-empty-list') {

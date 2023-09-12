@@ -13,6 +13,7 @@ use PHPStan\Type\VerbosityLevel;
 use Serializable;
 use function array_key_exists;
 use function count;
+use function in_array;
 use function implode;
 use function sprintf;
 
@@ -88,7 +89,7 @@ class EnumSanityRule implements Rule
 				continue;
 			}
 
-			if ($lowercasedMethodName !== 'from' && $lowercasedMethodName !== 'tryfrom') {
+			if (!in_array($lowercasedMethodName, ['from', 'tryfrom'], true)) {
 				continue;
 			}
 
@@ -101,8 +102,7 @@ class EnumSanityRule implements Rule
 
 		if (
 			$enumNode->scalarType !== null
-			&& $enumNode->scalarType->name !== 'int'
-			&& $enumNode->scalarType->name !== 'string'
+			&& !in_array($enumNode->scalarType->name, ['int', 'string'], true)
 		) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Backed enum %s can have only "int" or "string" type.',
@@ -124,7 +124,7 @@ class EnumSanityRule implements Rule
 			}
 			$caseName = $stmt->name->name;
 
-			if (($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_)) {
+			if ($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_) {
 				if ($enumNode->scalarType === null) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s is not backed, but case %s has value %s.',

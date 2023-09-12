@@ -11,6 +11,7 @@ use PHPStan\Reflection\ConstantNameHelper;
 use function array_key_exists;
 use function count;
 use function ltrim;
+use function in_array;
 use function php_strip_whitespace;
 use function preg_match_all;
 use function preg_replace;
@@ -201,7 +202,7 @@ class OptimizedDirectorySourceLocatorFactory
 			$name = $matches['name'][$i];
 
 			// skip anon classes extending/implementing
-			if ($name === 'extends' || $name === 'implements') {
+			if (in_array($name, ['extends', 'implements'], true)) {
 				continue;
 			}
 

@@ -37,6 +37,7 @@ use ReflectionException;
 use function array_map;
 use function explode;
 use function filemtime;
+use function in_array;
 use function is_bool;
 use function sprintf;
 use function strtolower;
@@ -319,13 +320,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 			$name = strtolower($this->getName());
 			$returnType = $this->reflection->getReturnType();
 			if ($returnType === null) {
-				if (
-					$name === '__construct'
-					|| $name === '__destruct'
-					|| $name === '__unset'
-					|| $name === '__wakeup'
-					|| $name === '__clone'
-				) {
+				if (in_array($name, ['__construct', '__destruct', '__unset', '__wakeup', '__clone'], true)) {
 					return $this->returnType = TypehintHelper::decideType(new VoidType(), $this->phpDocReturnType);
 				}
 				if ($name === '__tostring') {

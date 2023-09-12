@@ -13,8 +13,8 @@ use PHPStan\Type\VerbosityLevel;
 use Serializable;
 use function array_key_exists;
 use function count;
-use function in_array;
 use function implode;
+use function in_array;
 use function sprintf;
 
 /**

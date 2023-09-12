@@ -19,6 +19,9 @@ use function count;
 use function ksort;
 use function max;
 
+/**
+ * @api
+ */
 final class ArgumentsNormalizer
 {
 

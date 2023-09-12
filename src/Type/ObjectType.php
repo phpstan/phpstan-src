@@ -308,8 +308,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		$thatClassNames = $type->getObjectClassNames();
-		if (!$type instanceof CompoundType && $thatClassNames === [] && !$type instanceof ObjectWithoutClassType) {
+		if (!$type instanceof CompoundType && !$type instanceof ObjectWithoutClassType && $type->getObjectClassNames() === []) {
 			return TrinaryLogic::createNo();
 		}
 

@@ -20,6 +20,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VoidType;
+use function in_array;
 use function strtolower;
 
 /**
@@ -57,13 +58,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	)
 	{
 		$name = strtolower($classMethod->name->name);
-		if (
-			$name === '__construct'
-			|| $name === '__destruct'
-			|| $name === '__unset'
-			|| $name === '__wakeup'
-			|| $name === '__clone'
-		) {
+		if (in_array($name, ['__construct', '__destruct', '__unset', '__wakeup', '__clone'], true)) {
 			$realReturnType = new VoidType();
 		}
 		if ($name === '__tostring') {

@@ -10,6 +10,7 @@ use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use function count;
+use function in_array;
 
 final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -21,7 +22,7 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return $methodReflection->getName() === 'get' || $methodReflection->getName() === 'remove';
+		return in_array($methodReflection->getName(), ['get', 'remove'], true);
 	}
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type

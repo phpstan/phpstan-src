@@ -28,22 +28,22 @@ class Foo
 		assertType('string|false', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_EMAIL);
-		assertType('non-empty-string|false', $return);
+		assertType('non-falsy-string|false', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_REGEXP);
 		assertType('non-empty-string|false', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_URL);
-		assertType('non-empty-string|false', $return);
+		assertType('non-falsy-string|false', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_URL, FILTER_NULL_ON_FAILURE);
-		assertType('non-empty-string|null', $return);
+		assertType('non-falsy-string|null', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_IP);
-		assertType('non-empty-string|false', $return);
+		assertType('non-falsy-string|false', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_MAC);
-		assertType('non-empty-string|false', $return);
+		assertType('non-falsy-string|false', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_DOMAIN);
 		assertType('non-empty-string|false', $return);
@@ -101,7 +101,7 @@ class Foo
 		assertType("''", $return);
 
 		$return = filter_var($str2, FILTER_VALIDATE_URL);
-		assertType('string|false', $return);
+		assertType('non-falsy-string|false', $return);
 
 		$return = filter_var('foo', FILTER_VALIDATE_INT);
 		assertType('false', $return);

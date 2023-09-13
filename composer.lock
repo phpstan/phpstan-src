@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "15370fe06e70912dc718f07a86da0ef0",
+    "content-hash": "66a1ad030befadba6ebd1b506ba58cd2",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -6560,6 +6560,63 @@
                 }
             ],
             "time": "2020-09-28T06:39:44+00:00"
+        },
+        {
+            "name": "shipmonk/name-collision-detector",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/shipmonk-rnd/name-collision-detector.git",
+                "reference": "6c9c6bc0cdd1d56df80ad145147ca22618bf9d77"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/shipmonk-rnd/name-collision-detector/zipball/6c9c6bc0cdd1d56df80ad145147ca22618bf9d77",
+                "reference": "6c9c6bc0cdd1d56df80ad145147ca22618bf9d77",
+                "shasum": ""
+            },
+            "require": {
+                "ext-tokenizer": "*",
+                "nette/schema": "^1.1.0",
+                "php": "^7.2 || ^8.0"
+            },
+            "require-dev": {
+                "editorconfig-checker/editorconfig-checker": "^10.3.0",
+                "ergebnis/composer-normalize": "^2.19",
+                "phpstan/phpstan": "^1.8.7",
+                "phpstan/phpstan-phpunit": "^1.1.1",
+                "phpstan/phpstan-strict-rules": "^1.2.3",
+                "phpunit/phpunit": "^8.5.28 || ^9.5.20",
+                "slevomat/coding-standard": "^8.0.1"
+            },
+            "default-branch": true,
+            "bin": [
+                "bin/detect-collisions"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ShipMonk\\NameCollision\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Simple tool to find ambiguous classes or any other name duplicates within your project.",
+            "keywords": [
+                "ambiguous",
+                "autoload",
+                "autoloading",
+                "classname",
+                "collision",
+                "namespace"
+            ],
+            "support": {
+                "issues": "https://github.com/shipmonk-rnd/name-collision-detector/issues",
+                "source": "https://github.com/shipmonk-rnd/name-collision-detector/tree/master"
+            },
+            "time": "2023-09-01T13:43:26+00:00"
         },
         {
             "name": "theseer/tokenizer",

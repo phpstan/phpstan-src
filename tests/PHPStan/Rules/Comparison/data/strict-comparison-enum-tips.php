@@ -10,6 +10,7 @@ enum SomeEnum
 
 	public function exhaustiveWithSafetyCheck(): int
 	{
+		// not reported by this rule at all
 		if ($this === self::One) {
 			return -1;
 		} elseif ($this === self::Two) {
@@ -22,6 +23,7 @@ enum SomeEnum
 
 	public function exhaustiveWithSafetyCheck2(): int
 	{
+		// not reported by this rule at all
 		if ($this === self::One) {
 			return -1;
 		}

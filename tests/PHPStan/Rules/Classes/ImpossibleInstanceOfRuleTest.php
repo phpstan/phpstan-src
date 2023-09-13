@@ -570,6 +570,10 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				'Instanceof between Exception and Exception will always evaluate to true.',
 				21,
 			],
+			[
+				'Instanceof between DateTime and DateTime will always evaluate to true.',
+				34,
+			],
 		]];
 	}
 

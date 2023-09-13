@@ -946,18 +946,8 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/strict-comparison-enum-tips.php'], [
 			[
-				'Strict comparison using === between $this(StrictComparisonEnumTips\SomeEnum)&StrictComparisonEnumTips\SomeEnum::Two and StrictComparisonEnumTips\SomeEnum::Two will always evaluate to true.',
-				15,
-				"• Remove remaining cases below this one and this error will disappear too.\n• Use match expression instead. PHPStan will report unhandled enum cases.",
-			],
-			[
-				'Strict comparison using === between $this(StrictComparisonEnumTips\SomeEnum)&StrictComparisonEnumTips\SomeEnum::Two and StrictComparisonEnumTips\SomeEnum::Two will always evaluate to true.',
-				29,
-				'Use match expression instead. PHPStan will report unhandled enum cases.',
-			],
-			[
 				'Strict comparison using === between StrictComparisonEnumTips\SomeEnum::Two and StrictComparisonEnumTips\SomeEnum::Two will always evaluate to true.',
-				50,
+				52,
 				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);

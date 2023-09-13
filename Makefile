@@ -71,3 +71,6 @@ phpstan-pro:
 
 composer-require-checker:
 	php build/composer-require-checker.phar check --config-file $(CURDIR)/build/composer-require-checker.json
+
+name-collision:
+	php vendor/bin/detect-collisions

@@ -432,7 +432,7 @@ class FixerApplication
 			$server->close();
 			$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
 			$phpstanFixerEncoder->write(['action' => 'analysisCrash', 'data' => [
-				'error' => $e->getMessage(),
+				'errors' => [$e->getMessage()],
 			]]);
 			throw $e;
 		});

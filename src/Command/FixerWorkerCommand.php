@@ -211,6 +211,12 @@ class FixerWorkerCommand extends Command
 						$collectorErrors[] = $error;
 						$intermediateErrors[] = $error;
 					}
+				} else {
+					$out->write(['action' => 'analysisCrash', 'data' => [
+						'errors' => count($result->getInternalErrors()) > 0 ? $result->getInternalErrors() : [
+							'Internal error occurred',
+						],
+					]]);
 				}
 
 				$collectorErrors = $this->filterErrors($collectorErrors, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, $hasInternalErrors);

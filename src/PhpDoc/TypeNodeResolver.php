@@ -696,22 +696,8 @@ class TypeNodeResolver
 			return new ErrorType();
 		} elseif ($mainTypeName === 'value-of') {
 			if (count($genericTypes) === 1) { // value-of<ValueType>
-				$genericType = $genericTypes[0];
-				if ($genericType->isEnum()->yes()) {
-					$valueTypes = [];
-					foreach ($genericType->getEnumCases() as $enumCase) {
-						$valueType = $enumCase->getBackingValueType();
-						if ($valueType === null) {
-							continue;
-						}
+				$type = new ValueOfType($genericTypes[0]);
 
-						$valueTypes[] = $valueType;
-					}
-
-					return TypeCombinator::union(...$valueTypes);
-				}
-
-				$type = new ValueOfType($genericType);
 				return $type->isResolvable() ? $type->resolve() : $type;
 			}
 

@@ -61,7 +61,7 @@
 		"phpstan/phpstan-strict-rules": "1.5.x-dev",
 		"phpunit/phpunit": "^9.5.4",
 		"rector/rector": "^0.17",
-		"shipmonk/name-collision-detector": "dev-master"
+		"shipmonk/name-collision-detector": "^2.0"
 	},
 	"config": {
 		"platform": {

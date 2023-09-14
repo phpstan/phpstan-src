@@ -73,4 +73,4 @@ composer-require-checker:
 	php build/composer-require-checker.phar check --config-file $(CURDIR)/build/composer-require-checker.json
 
 name-collision:
-	php vendor/bin/detect-collisions
+	php vendor/bin/detect-collisions --configuration build/collision-detector.json

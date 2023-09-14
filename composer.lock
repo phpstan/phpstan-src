@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "66a1ad030befadba6ebd1b506ba58cd2",
+    "content-hash": "2f3c244d8faf175a6c95d841dfd3a8a1",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -6563,16 +6563,16 @@
         },
         {
             "name": "shipmonk/name-collision-detector",
-            "version": "dev-master",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/shipmonk-rnd/name-collision-detector.git",
-                "reference": "6c9c6bc0cdd1d56df80ad145147ca22618bf9d77"
+                "reference": "034b32f263edb71d08c15591d35544c2189d9fca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shipmonk-rnd/name-collision-detector/zipball/6c9c6bc0cdd1d56df80ad145147ca22618bf9d77",
-                "reference": "6c9c6bc0cdd1d56df80ad145147ca22618bf9d77",
+                "url": "https://api.github.com/repos/shipmonk-rnd/name-collision-detector/zipball/034b32f263edb71d08c15591d35544c2189d9fca",
+                "reference": "034b32f263edb71d08c15591d35544c2189d9fca",
                 "shasum": ""
             },
             "require": {
@@ -6589,7 +6589,6 @@
                 "phpunit/phpunit": "^8.5.28 || ^9.5.20",
                 "slevomat/coding-standard": "^8.0.1"
             },
-            "default-branch": true,
             "bin": [
                 "bin/detect-collisions"
             ],
@@ -6614,9 +6613,9 @@
             ],
             "support": {
                 "issues": "https://github.com/shipmonk-rnd/name-collision-detector/issues",
-                "source": "https://github.com/shipmonk-rnd/name-collision-detector/tree/master"
+                "source": "https://github.com/shipmonk-rnd/name-collision-detector/tree/2.0.0"
             },
-            "time": "2023-09-01T13:43:26+00:00"
+            "time": "2023-09-14T09:44:51+00:00"
         },
         {
             "name": "theseer/tokenizer",

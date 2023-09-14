@@ -78,7 +78,6 @@ jobs:
     needs: download
 
     runs-on: "ubuntu-latest"
-    timeout-minutes: 5
 
     strategy:
       fail-fast: false
@@ -108,6 +107,7 @@ jobs:
 
       - name: "Run PHPStan"
         working-directory: "issue-bot"
+        timeout-minutes: 5
         run: ./console.php run ${{ matrix.phpVersion }} ${{ matrix.playgroundExamples }}
 
       - uses: actions/upload-artifact@v3

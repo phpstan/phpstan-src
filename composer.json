@@ -94,6 +94,7 @@
 			],
 			"jetbrains/phpstorm-stubs": [
 				"patches/PDO.patch",
+				"patches/ReflectionProperty.patch",
 				"patches/SessionHandler.patch"
 			],
 			"rector/rector": [

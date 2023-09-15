@@ -1,0 +1,11 @@
+--- Reflection/ReflectionProperty.php	2023-09-07 12:59:56.000000000 +0200
++++ Reflection/ReflectionProperty.php	2023-09-15 13:24:07.900736741 +0200
+@@ -248,7 +248,7 @@
+      * Gets property type
+      *
+      * @link https://php.net/manual/en/reflectionproperty.gettype.php
+-     * @return ReflectionNamedType|ReflectionUnionType|null Returns a {@see ReflectionType} if the
++     * @return ReflectionType|null Returns a {@see ReflectionType} if the
+      * property has a type, and {@see null} otherwise.
+      * @since 7.4
+      */

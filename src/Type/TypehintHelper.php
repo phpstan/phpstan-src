@@ -162,6 +162,10 @@ class TypehintHelper
 		?Type $phpDocType = null,
 	): Type
 	{
+		if ($type instanceof BenevolentUnionType) {
+			return $type;
+		}
+
 		if ($phpDocType !== null && !$phpDocType instanceof ErrorType) {
 			if ($phpDocType instanceof NeverType && $phpDocType->isExplicit()) {
 				return $phpDocType;

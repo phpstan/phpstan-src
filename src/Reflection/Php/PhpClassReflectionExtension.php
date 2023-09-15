@@ -595,7 +595,7 @@ class PhpClassReflectionExtension
 								$throwType = $throwsTag->getType();
 							}
 							$returnTag = $phpDocBlock->getReturnTag();
-							if ($returnTag !== null) {
+							if ($returnTag !== null && count($methodSignatures) === 1) {
 								$phpDocReturnType = $returnTag->getType();
 							}
 							foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
@@ -860,10 +860,11 @@ class PhpClassReflectionExtension
 			);
 		}
 
-		$returnType = null;
 		if ($stubPhpDocReturnType !== null) {
 			$returnType = $stubPhpDocReturnType;
 			$phpDocReturnType = $stubPhpDocReturnType;
+		} else {
+			$returnType = TypehintHelper::decideType($methodSignature->getReturnType(), $phpDocReturnType);
 		}
 
 		return new FunctionVariantWithPhpDocs(
@@ -871,7 +872,7 @@ class PhpClassReflectionExtension
 			null,
 			$parameters,
 			$methodSignature->isVariadic(),
-			$returnType ?? $methodSignature->getReturnType(),
+			$returnType,
 			$phpDocReturnType ?? new MixedType(),
 			$methodSignature->getNativeReturnType(),
 		);

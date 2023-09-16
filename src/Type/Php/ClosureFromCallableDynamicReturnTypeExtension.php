@@ -7,9 +7,11 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
@@ -50,7 +52,7 @@ class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStaticMeth
 				$variant->isVariadic(),
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),
-				$variant->getCallSiteVarianceMap(),
+				$variant instanceof ParametersAcceptorWithPhpDocs ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 			);
 		}
 

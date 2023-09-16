@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
 /** @api */
@@ -19,8 +18,6 @@ interface ParametersAcceptor
 	public function getTemplateTypeMap(): TemplateTypeMap;
 
 	public function getResolvedTemplateTypeMap(): TemplateTypeMap;
-
-	public function getCallSiteVarianceMap(): TemplateTypeVarianceMap;
 
 	/**
 	 * @return array<int, ParameterReflection>

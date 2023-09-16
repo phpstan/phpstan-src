@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_map;
@@ -77,7 +78,7 @@ class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 				$variant->getReturnType(),
 				$variant->getReturnType(),
 				new MixedType(),
-				$variant->getCallSiteVarianceMap(),
+				TemplateTypeVarianceMap::createEmpty(),
 			);
 		}
 

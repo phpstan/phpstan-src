@@ -6,6 +6,7 @@ use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -101,7 +102,7 @@ class GenericParametersAcceptorResolver
 				$parametersAcceptor->getReturnType(),
 				$parametersAcceptor->getReturnType(),
 				new MixedType(),
-				$parametersAcceptor->getCallSiteVarianceMap(),
+				TemplateTypeVarianceMap::createEmpty(),
 			);
 		}
 

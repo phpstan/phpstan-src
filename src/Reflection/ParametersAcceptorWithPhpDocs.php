@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
 /** @api */
@@ -16,5 +17,7 @@ interface ParametersAcceptorWithPhpDocs extends ParametersAcceptor
 	public function getPhpDocReturnType(): Type;
 
 	public function getNativeReturnType(): Type;
+
+	public function getCallSiteVarianceMap(): TemplateTypeVarianceMap;
 
 }

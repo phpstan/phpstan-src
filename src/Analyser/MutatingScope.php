@@ -91,6 +91,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -2141,7 +2142,7 @@ class MutatingScope implements Scope
 				$variant->isVariadic(),
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),
-				$variant->getCallSiteVarianceMap(),
+				$variant instanceof ParametersAcceptorWithPhpDocs ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 			);
 		}
 

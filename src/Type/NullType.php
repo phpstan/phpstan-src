@@ -11,7 +11,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -202,11 +201,6 @@ class NullType implements ConstantScalarType
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
-	{
-		return $this;
-	}
-
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
 	{
 		return $this;
 	}

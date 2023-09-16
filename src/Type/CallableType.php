@@ -405,32 +405,6 @@ class CallableType implements CompoundType, ParametersAcceptor
 		);
 	}
 
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		if ($this->isCommonCallable) {
-			return $this;
-		}
-
-		$parameterVariance = $variance->compose(TemplateTypeVariance::createContravariant());
-		$parameters = array_map(static function (ParameterReflection $param) use ($cb, $parameterVariance): NativeParameterReflection {
-			$defaultValue = $param->getDefaultValue();
-			return new NativeParameterReflection(
-				$param->getName(),
-				$param->isOptional(),
-				$cb($param->getType(), $parameterVariance),
-				$param->passedByReference(),
-				$param->isVariadic(),
-				$defaultValue !== null ? $cb($defaultValue, $parameterVariance) : null,
-			);
-		}, $this->getParameters());
-
-		return new self(
-			$parameters,
-			$cb($this->getReturnType(), $variance->compose(TemplateTypeVariance::createCovariant())),
-			$this->isVariadic(),
-		);
-	}
-
 	public function isOversizedArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

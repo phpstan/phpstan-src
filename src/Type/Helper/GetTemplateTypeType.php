@@ -91,17 +91,6 @@ final class GetTemplateTypeType implements CompoundType, LateResolvableType
 		return new self($type, $this->ancestorClassName, $this->templateTypeName);
 	}
 
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		$type = $cb($this->type, $variance);
-
-		if ($this->type === $type) {
-			return $this;
-		}
-
-		return new self($type, $this->ancestorClassName, $this->templateTypeName);
-	}
-
 	public function toPhpDocNode(): TypeNode
 	{
 		return new GenericTypeNode(

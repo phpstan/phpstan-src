@@ -164,19 +164,6 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 		return new self($this->parameterName, $target, $if, $else, $this->negated);
 	}
 
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		$target = $cb($this->target, $variance);
-		$if = $cb($this->if, $variance);
-		$else = $cb($this->else, $variance);
-
-		if ($this->target === $target && $this->if === $if && $this->else === $else) {
-			return $this;
-		}
-
-		return new self($this->parameterName, $target, $if, $else, $this->negated);
-	}
-
 	public function toPhpDocNode(): TypeNode
 	{
 		return new ConditionalTypeForParameterNode(

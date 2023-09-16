@@ -10,7 +10,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -144,11 +143,6 @@ class HasPropertyType implements AccessoryType, CompoundType
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
-	{
-		return $this;
-	}
-
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
 	{
 		return $this;
 	}

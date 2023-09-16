@@ -483,29 +483,6 @@ class ObjectShapeType implements Type
 		return new self($properties, $this->optionalProperties);
 	}
 
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		$composedVariance = $variance->compose(TemplateTypeVariance::createCovariant());
-
-		$properties = [];
-		$stillOriginal = true;
-
-		foreach ($this->properties as $name => $propertyType) {
-			$transformed = $cb($propertyType, $composedVariance);
-			if ($transformed !== $propertyType) {
-				$stillOriginal = false;
-			}
-
-			$properties[$name] = $transformed;
-		}
-
-		if ($stillOriginal) {
-			return $this;
-		}
-
-		return new self($properties, $this->optionalProperties);
-	}
-
 	public function exponentiate(Type $exponent): Type
 	{
 		if (!$exponent instanceof NeverType && !$this->isSuperTypeOf($exponent)->no()) {

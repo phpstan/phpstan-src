@@ -147,16 +147,6 @@ class GenericClassStringType extends ClassStringType
 		return new self($newType);
 	}
 
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		$newType = $cb($this->type, $variance->compose(TemplateTypeVariance::createCovariant()));
-		if ($newType === $this->type) {
-			return $this;
-		}
-
-		return new self($newType);
-	}
-
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {

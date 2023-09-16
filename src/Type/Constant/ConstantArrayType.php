@@ -1472,28 +1472,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 	}
 
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		$composedVariance = $variance->compose(TemplateTypeVariance::createCovariant());
-		$valueTypes = $keyTypes = [];
-
-		$stillOriginal = true;
-		foreach ($this->valueTypes as $valueType) {
-			$transformedValueType = $cb($valueType, $composedVariance);
-			if ($transformedValueType !== $valueType) {
-				$stillOriginal = false;
-			}
-
-			$valueTypes[] = $transformedValueType;
-		}
-
-		if ($stillOriginal) {
-			return $this;
-		}
-
-		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
-	}
-
 	public function isKeysSupersetOf(self $otherArray): bool
 	{
 		$keyTypesCount = count($this->keyTypes);

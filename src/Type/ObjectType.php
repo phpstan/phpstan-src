@@ -41,7 +41,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
-use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -1416,20 +1415,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		return new self($this->className);
-	}
-
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		$subtractedType = $this->subtractedType !== null ? $cb($this->subtractedType, $variance) : null;
-
-		if ($subtractedType !== $this->subtractedType) {
-			return new self(
-				$this->className,
-				$subtractedType,
-			);
-		}
-
-		return $this;
 	}
 
 	public function getNakedClassReflection(): ?ClassReflection

@@ -86,17 +86,6 @@ class KeyOfType implements CompoundType, LateResolvableType
 		return new self($type);
 	}
 
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		$type = $cb($this->type, $variance);
-
-		if ($this->type === $type) {
-			return $this;
-		}
-
-		return new self($type);
-	}
-
 	public function toPhpDocNode(): TypeNode
 	{
 		return new GenericTypeNode(new IdentifierTypeNode('key-of'), [$this->type->toPhpDocNode()]);

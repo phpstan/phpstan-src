@@ -7,7 +7,6 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Generic\TemplateTypeVariance;
 use function sprintf;
 
 /** @api */
@@ -81,20 +80,6 @@ class ThisType extends StaticType
 		}
 
 		return new self($this->getClassReflection());
-	}
-
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		$subtractedType = $this->getSubtractedType() !== null ? $cb($this->getSubtractedType(), $variance) : null;
-
-		if ($subtractedType !== $this->getSubtractedType()) {
-			return new self(
-				$this->getClassReflection(),
-				$subtractedType,
-			);
-		}
-
-		return $this;
 	}
 
 	public function toPhpDocNode(): TypeNode

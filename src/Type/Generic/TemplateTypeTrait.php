@@ -335,22 +335,6 @@ trait TemplateTypeTrait
 		);
 	}
 
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		$bound = $cb($this->getBound(), $variance);
-		if ($this->getBound() === $bound) {
-			return $this;
-		}
-
-		return TemplateTypeFactory::create(
-			$this->getScope(),
-			$this->getName(),
-			$bound,
-			$this->getVariance(),
-			$this->getStrategy(),
-		);
-	}
-
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($this->getBound()->isSuperTypeOf($typeToRemove)->yes()) {

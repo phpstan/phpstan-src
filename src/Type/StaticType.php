@@ -19,7 +19,6 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
-use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
@@ -646,20 +645,6 @@ class StaticType implements TypeWithClassName, SubtractableType
 		}
 
 		return new self($this->classReflection);
-	}
-
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		$subtractedType = $this->subtractedType !== null ? $cb($this->subtractedType, $variance) : null;
-
-		if ($subtractedType !== $this->subtractedType) {
-			return new self(
-				$this->classReflection,
-				$subtractedType,
-			);
-		}
-
-		return $this;
 	}
 
 	public function subtract(Type $type): Type

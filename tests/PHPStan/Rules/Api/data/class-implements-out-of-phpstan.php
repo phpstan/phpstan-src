@@ -312,11 +312,6 @@ class Baz implements Type
 		// TODO: Implement traverseSimultaneously() method.
 	}
 
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		// TODO: Implement traverseWithVariance() method.
-	}
-
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		// TODO: Implement generalize() method.

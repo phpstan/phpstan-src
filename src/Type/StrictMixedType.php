@@ -405,11 +405,6 @@ class StrictMixedType implements CompoundType
 		return $this;
 	}
 
-	public function traverseWithVariance(TemplateTypeVariance $variance, callable $cb): Type
-	{
-		return $this;
-	}
-
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();

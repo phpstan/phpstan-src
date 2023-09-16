@@ -14,7 +14,6 @@ use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\VarianceAwareTypeTraverser;
 use function array_key_exists;
 use function array_map;
 
@@ -172,11 +171,23 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 
 	private function resolveResolvableTemplateTypes(Type $type, TemplateTypeVariance $positionVariance): Type
 	{
-		return VarianceAwareTypeTraverser::map($type, $positionVariance, function (Type $type, TemplateTypeVariance $positionVariance, callable $traverse): Type {
+		$references = $type->getReferencedTemplateTypes($positionVariance);
+
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($references): Type {
 			if ($type instanceof TemplateType && !$type->isArgument()) {
 				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
 				if ($newType === null || $newType instanceof ErrorType) {
-					return $traverse($type, $positionVariance);
+					return $traverse($type);
+				}
+
+				$variance = TemplateTypeVariance::createInvariant();
+				foreach ($references as $reference) {
+					// this uses identity to distinguish between different occurrences of the same template type
+					// see https://github.com/phpstan/phpstan-src/pull/2485#discussion_r1328555397 for details
+					if ($reference->getType() === $type) {
+						$variance = $reference->getPositionVariance();
+						break;
+					}
 				}
 
 				$callSiteVariance = $this->callSiteVarianceMap->getVariance($type->getName());
@@ -184,18 +195,18 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 					return $newType;
 				}
 
-				if (!$callSiteVariance->covariant() && $positionVariance->covariant()) {
-					return $traverse($type->getBound(), $positionVariance);
+				if (!$callSiteVariance->covariant() && $variance->covariant()) {
+					return $traverse($type->getBound());
 				}
 
-				if (!$callSiteVariance->contravariant() && $positionVariance->contravariant()) {
+				if (!$callSiteVariance->contravariant() && $variance->contravariant()) {
 					return new NonAcceptingNeverType();
 				}
 
 				return $newType;
 			}
 
-			return $traverse($type, $positionVariance);
+			return $traverse($type);
 		});
 	}
 

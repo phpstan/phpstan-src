@@ -6,7 +6,6 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\VarianceAwareTypeTraverser;
 
 class TemplateTypeHelper
 {
@@ -22,15 +21,28 @@ class TemplateTypeHelper
 		bool $keepErrorTypes = false,
 	): Type
 	{
-		return VarianceAwareTypeTraverser::map($type, $positionVariance, static function (Type $type, TemplateTypeVariance $variance, callable $traverse) use ($standins, $callSiteVariances, $keepErrorTypes): Type {
+		$references = $type->getReferencedTemplateTypes($positionVariance);
+
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins, $references, $callSiteVariances, $keepErrorTypes): Type {
 			if ($type instanceof TemplateType && !$type->isArgument()) {
 				$newType = $standins->getType($type->getName());
+
+				$variance = TemplateTypeVariance::createInvariant();
+				foreach ($references as $reference) {
+					// this uses identity to distinguish between different occurrences of the same template type
+					// see https://github.com/phpstan/phpstan-src/pull/2485#discussion_r1328555397 for details
+					if ($reference->getType() === $type) {
+						$variance = $reference->getPositionVariance();
+						break;
+					}
+				}
+
 				if ($newType === null) {
-					return $traverse($type, $variance);
+					return $traverse($type);
 				}
 
 				if ($newType instanceof ErrorType && !$keepErrorTypes) {
-					return $traverse($type->getBound(), $variance);
+					return $traverse($type->getBound());
 				}
 
 				$callSiteVariance = $callSiteVariances->getVariance($type->getName());
@@ -39,7 +51,7 @@ class TemplateTypeHelper
 				}
 
 				if (!$callSiteVariance->covariant() && $variance->covariant()) {
-					return $traverse($type->getBound(), $variance);
+					return $traverse($type->getBound());
 				}
 
 				if (!$callSiteVariance->contravariant() && $variance->contravariant()) {
@@ -49,7 +61,7 @@ class TemplateTypeHelper
 				return $newType;
 			}
 
-			return $traverse($type, $variance);
+			return $traverse($type);
 		});
 	}
 

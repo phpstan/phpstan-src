@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f3c244d8faf175a6c95d841dfd3a8a1",
+    "content-hash": "74282dce755cd4065833ca7649dbe1a3",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -5538,21 +5538,21 @@
         },
         {
             "name": "rector/rector",
-            "version": "0.17.7",
+            "version": "0.18.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "0e76101aa329911b7fec43106aac5843a978b209"
+                "reference": "ba7988e3e028e68e07191d75b0d5473ac320c5e7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/0e76101aa329911b7fec43106aac5843a978b209",
-                "reference": "0e76101aa329911b7fec43106aac5843a978b209",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/ba7988e3e028e68e07191d75b0d5473ac320c5e7",
+                "reference": "ba7988e3e028e68e07191d75b0d5473ac320c5e7",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.2|^8.0",
-                "phpstan/phpstan": "^1.10.26"
+                "phpstan/phpstan": "^1.10.31"
             },
             "conflict": {
                 "rector/rector-doctrine": "*",
@@ -5564,11 +5564,6 @@
                 "bin/rector"
             ],
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "0.15-dev"
-                }
-            },
             "autoload": {
                 "files": [
                     "bootstrap.php"
@@ -5587,7 +5582,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/0.17.7"
+                "source": "https://github.com/rectorphp/rector/tree/0.18.3"
             },
             "funding": [
                 {
@@ -5595,7 +5590,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-07-23T20:44:23+00:00"
+            "time": "2023-09-12T20:18:14+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -6684,5 +6679,5 @@
     "platform-overrides": {
         "php": "8.1.99"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }

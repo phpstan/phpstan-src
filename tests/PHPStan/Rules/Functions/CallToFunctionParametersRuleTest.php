@@ -1512,4 +1512,41 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/call-to-function-named-params-multivariant.php'], []);
 	}
 
+	public function testBug9793(): void
+	{
+		$errors = [];
+
+		if (PHP_VERSION_ID < 80200) {
+			$errors = [
+				[
+					'Parameter #1 $iterator of function iterator_to_array expects Traversable, array<stdClass> given.',
+					13,
+				],
+				[
+					'Parameter #1 $iterator of function iterator_to_array expects Traversable, array<stdClass>|Iterator<mixed, stdClass> given.',
+					14,
+				],
+				[
+					'Parameter #1 $iterator of function iterator_count expects Traversable, array<stdClass> given.',
+					15,
+				],
+				[
+					'Parameter #1 $iterator of function iterator_count expects Traversable, array<stdClass>|Iterator<mixed, stdClass> given.',
+					16,
+				],
+			];
+		}
+
+		$errors[] = [
+			'Parameter #1 $iterator of function iterator_apply expects Traversable, array<stdClass> given.',
+			17,
+		];
+		$errors[] = [
+			'Parameter #1 $iterator of function iterator_apply expects Traversable, array<stdClass>|Iterator<mixed, stdClass> given.',
+			18,
+		];
+
+		$this->analyse([__DIR__ . '/data/bug-9793.php'], $errors);
+	}
+
 }

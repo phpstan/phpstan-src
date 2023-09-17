@@ -21,6 +21,8 @@
  */
 return [
 	'new' => [
+		'iterator_count' => ['0|positive-int', 'iterator'=>'iterable'],
+		'iterator_to_array' => ['array', 'iterator'=>'iterable', 'use_keys='=>'bool'],
 		'str_split' => ['list<string>', 'str'=>'string', 'split_length='=>'positive-int'],
 	],
 	'old' => [

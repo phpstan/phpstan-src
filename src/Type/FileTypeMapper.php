@@ -20,6 +20,8 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -666,7 +668,7 @@ class FileTypeMapper
 
 								$transformedTraitTypeMap = $traitReflection->typeMapFromList($useType->getTypes());
 
-								return $original->withTemplateTypeMap($traitTemplateTypeMap->map(static fn (string $name, Type $type): Type => TemplateTypeHelper::resolveTemplateTypes($type, $transformedTraitTypeMap)));
+								return $original->withTemplateTypeMap($traitTemplateTypeMap->map(static fn (string $name, Type $type): Type => TemplateTypeHelper::resolveTemplateTypes($type, $transformedTraitTypeMap, TemplateTypeVarianceMap::createEmpty(), TemplateTypeVariance::createStatic())));
 							};
 						}
 						$nameScopeMap = array_merge($nameScopeMap, $finalTraitPhpDocMap);

@@ -184,6 +184,7 @@ final class FilterFunctionReturnTypeHelper
 		$floatType = new FloatType();
 		$intType = new IntegerType();
 		$stringType = new StringType();
+		$nonFalsyStringType = TypeCombinator::intersect($stringType, new AccessoryNonFalsyStringType());
 
 		$this->filterTypeMap = [
 			$this->getConstant('FILTER_UNSAFE_RAW') => $stringType,
@@ -196,13 +197,13 @@ final class FilterFunctionReturnTypeHelper
 			$this->getConstant('FILTER_SANITIZE_URL') => $stringType,
 			$this->getConstant('FILTER_VALIDATE_BOOLEAN') => $booleanType,
 			$this->getConstant('FILTER_VALIDATE_DOMAIN') => $stringType,
-			$this->getConstant('FILTER_VALIDATE_EMAIL') => $stringType,
+			$this->getConstant('FILTER_VALIDATE_EMAIL') => $nonFalsyStringType,
 			$this->getConstant('FILTER_VALIDATE_FLOAT') => $floatType,
 			$this->getConstant('FILTER_VALIDATE_INT') => $intType,
-			$this->getConstant('FILTER_VALIDATE_IP') => $stringType,
-			$this->getConstant('FILTER_VALIDATE_MAC') => $stringType,
+			$this->getConstant('FILTER_VALIDATE_IP') => $nonFalsyStringType,
+			$this->getConstant('FILTER_VALIDATE_MAC') => $nonFalsyStringType,
 			$this->getConstant('FILTER_VALIDATE_REGEXP') => $stringType,
-			$this->getConstant('FILTER_VALIDATE_URL') => $stringType,
+			$this->getConstant('FILTER_VALIDATE_URL') => $nonFalsyStringType,
 		];
 
 		if ($this->reflectionProvider->hasConstant(new Node\Name('FILTER_SANITIZE_MAGIC_QUOTES'), null)) {

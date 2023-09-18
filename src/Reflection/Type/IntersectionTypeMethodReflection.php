@@ -89,6 +89,7 @@ class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 			$returnType,
 			$phpDocReturnType,
 			$nativeReturnType,
+			$acceptor->getCallSiteVarianceMap(),
 		), $this->methods[0]->getVariants());
 	}
 

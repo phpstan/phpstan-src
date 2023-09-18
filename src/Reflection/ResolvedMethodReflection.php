@@ -6,6 +6,8 @@ use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
 class ResolvedMethodReflection implements ExtendedMethodReflection
@@ -18,7 +20,11 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 
 	private Type|false|null $selfOutType = false;
 
-	public function __construct(private ExtendedMethodReflection $reflection, private TemplateTypeMap $resolvedTemplateTypeMap)
+	public function __construct(
+		private ExtendedMethodReflection $reflection,
+		private TemplateTypeMap $resolvedTemplateTypeMap,
+		private TemplateTypeVarianceMap $callSiteVarianceMap,
+	)
 	{
 	}
 
@@ -44,6 +50,7 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 			$variants[] = new ResolvedFunctionVariant(
 				$variant,
 				$this->resolvedTemplateTypeMap,
+				$this->callSiteVarianceMap,
 				[],
 			);
 		}
@@ -119,7 +126,12 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 
 	public function getAsserts(): Assertions
 	{
-		return $this->asserts ??= $this->reflection->getAsserts()->mapTypes(fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes($type, $this->resolvedTemplateTypeMap));
+		return $this->asserts ??= $this->reflection->getAsserts()->mapTypes(fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+			$type,
+			$this->resolvedTemplateTypeMap,
+			$this->callSiteVarianceMap,
+			TemplateTypeVariance::createInvariant(),
+		));
 	}
 
 	public function getSelfOutType(): ?Type
@@ -127,7 +139,12 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 		if ($this->selfOutType === false) {
 			$selfOutType = $this->reflection->getSelfOutType();
 			if ($selfOutType !== null) {
-				$selfOutType = TemplateTypeHelper::resolveTemplateTypes($selfOutType, $this->resolvedTemplateTypeMap);
+				$selfOutType = TemplateTypeHelper::resolveTemplateTypes(
+					$selfOutType,
+					$this->resolvedTemplateTypeMap,
+					$this->callSiteVarianceMap,
+					TemplateTypeVariance::createInvariant(),
+				);
 			}
 
 			$this->selfOutType = $selfOutType;

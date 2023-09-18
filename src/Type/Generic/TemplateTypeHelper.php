@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 
@@ -12,17 +13,49 @@ class TemplateTypeHelper
 	/**
 	 * Replaces template types with standin types
 	 */
-	public static function resolveTemplateTypes(Type $type, TemplateTypeMap $standins, bool $keepErrorTypes = false): Type
+	public static function resolveTemplateTypes(
+		Type $type,
+		TemplateTypeMap $standins,
+		TemplateTypeVarianceMap $callSiteVariances,
+		TemplateTypeVariance $positionVariance,
+		bool $keepErrorTypes = false,
+	): Type
 	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins, $keepErrorTypes): Type {
+		$references = $type->getReferencedTemplateTypes($positionVariance);
+
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins, $references, $callSiteVariances, $keepErrorTypes): Type {
 			if ($type instanceof TemplateType && !$type->isArgument()) {
 				$newType = $standins->getType($type->getName());
+
+				$variance = TemplateTypeVariance::createInvariant();
+				foreach ($references as $reference) {
+					// this uses identity to distinguish between different occurrences of the same template type
+					// see https://github.com/phpstan/phpstan-src/pull/2485#discussion_r1328555397 for details
+					if ($reference->getType() === $type) {
+						$variance = $reference->getPositionVariance();
+						break;
+					}
+				}
+
 				if ($newType === null) {
 					return $traverse($type);
 				}
 
 				if ($newType instanceof ErrorType && !$keepErrorTypes) {
 					return $traverse($type->getBound());
+				}
+
+				$callSiteVariance = $callSiteVariances->getVariance($type->getName());
+				if ($callSiteVariance === null || $callSiteVariance->invariant()) {
+					return $newType;
+				}
+
+				if (!$callSiteVariance->covariant() && $variance->covariant()) {
+					return $traverse($type->getBound());
+				}
+
+				if (!$callSiteVariance->contravariant() && $variance->contravariant()) {
+					return new NonAcceptingNeverType();
 				}
 
 				return $newType;

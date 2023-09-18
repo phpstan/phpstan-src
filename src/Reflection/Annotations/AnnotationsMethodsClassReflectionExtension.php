@@ -7,6 +7,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use function count;
 
 class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
@@ -65,6 +66,8 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 				TemplateTypeHelper::resolveTemplateTypes(
 					$methodTags[$methodName]->getReturnType(),
 					$classReflection->getActiveTemplateTypeMap(),
+					$classReflection->getCallSiteVarianceMap(),
+					TemplateTypeVariance::createCovariant(),
 				),
 				$parameters,
 				$isStatic,

@@ -25,6 +25,7 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
@@ -750,7 +751,7 @@ class ResolvedPhpDocBlock
 	private static function mergeOneParentVarTags(self $parent, PhpDocBlock $phpDocBlock): ?array
 	{
 		foreach ($parent->getVarTags() as $key => $parentVarTag) {
-			return [$key => self::resolveTemplateTypeInTag($parentVarTag, $phpDocBlock)];
+			return [$key => self::resolveTemplateTypeInTag($parentVarTag, $phpDocBlock, TemplateTypeVariance::createInvariant())];
 		}
 
 		return null;
@@ -785,7 +786,7 @@ class ResolvedPhpDocBlock
 				continue;
 			}
 
-			$paramTags[$name] = self::resolveTemplateTypeInTag($parentParamTag, $phpDocBlock);
+			$paramTags[$name] = self::resolveTemplateTypeInTag($parentParamTag, $phpDocBlock, TemplateTypeVariance::createContravariant());
 		}
 
 		return $paramTags;
@@ -834,6 +835,7 @@ class ResolvedPhpDocBlock
 				$phpDocBlock->transformConditionalReturnTypeWithParameterNameMapping($parentReturnTag->getType()),
 			)->toImplicit(),
 			$phpDocBlock,
+			TemplateTypeVariance::createCovariant(),
 		);
 	}
 
@@ -959,7 +961,7 @@ class ResolvedPhpDocBlock
 				continue;
 			}
 
-			$paramOutTags[$name] = self::resolveTemplateTypeInTag($parentParamTag, $phpDocBlock);
+			$paramOutTags[$name] = self::resolveTemplateTypeInTag($parentParamTag, $phpDocBlock, TemplateTypeVariance::createCovariant());
 		}
 
 		return $paramOutTags;
@@ -970,11 +972,17 @@ class ResolvedPhpDocBlock
 	 * @param T $tag
 	 * @return T
 	 */
-	private static function resolveTemplateTypeInTag(TypedTag $tag, PhpDocBlock $phpDocBlock): TypedTag
+	private static function resolveTemplateTypeInTag(
+		TypedTag $tag,
+		PhpDocBlock $phpDocBlock,
+		TemplateTypeVariance $positionVariance,
+	): TypedTag
 	{
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$tag->getType(),
 			$phpDocBlock->getClassReflection()->getActiveTemplateTypeMap(),
+			$phpDocBlock->getClassReflection()->getCallSiteVarianceMap(),
+			$positionVariance,
 		);
 		return $tag->withType($type);
 	}

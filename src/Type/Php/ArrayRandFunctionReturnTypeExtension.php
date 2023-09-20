@@ -9,6 +9,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -49,14 +50,14 @@ class ArrayRandFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 		$secondArgType = $scope->getType($functionCall->getArgs()[1]->value);
 
-		if ($secondArgType instanceof ConstantIntegerType) {
-			if ($secondArgType->getValue() === 1) {
-				return $valueType;
-			}
+		$one = new ConstantIntegerType(1);
+		if ($one->isSuperTypeOf($secondArgType)->yes()) {
+			return $valueType;
+		}
 
-			if ($secondArgType->getValue() >= 2) {
-				return new ArrayType(new IntegerType(), $valueType);
-			}
+		$bigger2 = IntegerRangeType::fromInterval(2, null);
+		if ($bigger2->isSuperTypeOf($secondArgType)->yes()) {
+			return new ArrayType(new IntegerType(), $valueType);
 		}
 
 		return TypeCombinator::union($valueType, new ArrayType(new IntegerType(), $valueType));

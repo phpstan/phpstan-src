@@ -20,6 +20,7 @@ function doFoo() {
 		assertType('array<int, int>', $keys);
 	}
 
+	assertType('array<int, int>', $keys);
 	$theKeys = array_keys($keys);
 	assertType('list<int>', $theKeys);
 }

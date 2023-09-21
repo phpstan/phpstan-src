@@ -48,8 +48,8 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 			$preserveKeys = false;
 		}
 
-		$negativeRange = IntegerRangeType::fromInterval(null, 0);
-		if ($negativeRange->isSuperTypeOf($lengthType)->yes()) {
+		$negativeOrZero = IntegerRangeType::fromInterval(null, 0);
+		if ($negativeOrZero->isSuperTypeOf($lengthType)->yes()) {
 			return $this->phpVersion->throwsValueErrorForInternalFunctions() ? new NeverType() : new NullType();
 		}
 

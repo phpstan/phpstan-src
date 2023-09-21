@@ -11,6 +11,8 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use function array_map;
+use function array_merge;
+use function is_null;
 use function sprintf;
 use function strtolower;
 use function ucfirst;
@@ -44,18 +46,21 @@ class UsedTraitsRule implements Rule
 		if ($scope->isInTrait()) {
 			$traitName = $scope->getTraitReflection()->getName();
 		}
-		$useTags = [];
+		$classResolvedPhpDoc = $scope->getClassReflection()->getResolvedPhpDoc();
 		$docComment = $node->getDocComment();
-		if ($docComment !== null) {
-			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+		if (isset($docComment)) {
+			$docComment = $docComment->getText();
+		}
+		$useTags = array_merge(
+			is_null($classResolvedPhpDoc) ? [] : $classResolvedPhpDoc->getUsesTags(),
+			is_null($docComment) ? [] : $this->fileTypeMapper->getResolvedPhpDoc(
 				$scope->getFile(),
 				$className,
 				$traitName,
 				null,
-				$docComment->getText(),
-			);
-			$useTags = $resolvedPhpDoc->getUsesTags();
-		}
+				$docComment,
+			)->getUsesTags(),
+		);
 
 		$typeDescription = strtolower($scope->getClassReflection()->getClassTypeDescription());
 		$description = sprintf('%s %s', $typeDescription, SprintfHelper::escapeFormatString($className));

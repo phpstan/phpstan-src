@@ -47,7 +47,7 @@ final class MissingMethodReturnTypehintRule implements Rule
 					'Method %s::%s() has no return type specified.',
 					$methodReflection->getDeclaringClass()->getDisplayName(),
 					$methodReflection->getName(),
-				))->build(),
+				))->identifier('missingType.return')->build(),
 			];
 		}
 
@@ -59,7 +59,10 @@ final class MissingMethodReturnTypehintRule implements Rule
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$iterableTypeDescription,
-			))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+				->identifier('missingType.iterableValue')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($returnType) as [$name, $genericTypeNames]) {
@@ -69,7 +72,10 @@ final class MissingMethodReturnTypehintRule implements Rule
 				$methodReflection->getName(),
 				$name,
 				implode(', ', $genericTypeNames),
-			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+				->identifier('missingType.generics')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($returnType) as $callableType) {
@@ -78,7 +84,7 @@ final class MissingMethodReturnTypehintRule implements Rule
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$callableType->describe(VerbosityLevel::typeOnly()),
-			))->build();
+			))->identifier('missingType.callable')->build();
 		}
 
 		return $messages;

@@ -8,7 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
@@ -31,7 +31,7 @@ class MethodCallCheck
 	}
 
 	/**
-	 * @return array{RuleError[], MethodReflection|null}
+	 * @return array{list<IdentifierRuleError>, MethodReflection|null}
 	 */
 	public function check(
 		Scope $scope,
@@ -57,7 +57,7 @@ class MethodCallCheck
 						'Cannot call method %s() on %s.',
 						$methodName,
 						$type->describe(VerbosityLevel::typeOnly()),
-					))->build(),
+					))->identifier('method.nonObject')->build(),
 				],
 				null,
 			];
@@ -91,7 +91,7 @@ class MethodCallCheck
 									'Call to private method %s() of parent class %s.',
 									$methodReflection->getName(),
 									$parentClassReflection->getDisplayName(),
-								))->build(),
+								))->identifier('method.private')->build(),
 							],
 							$methodReflection,
 						];
@@ -107,7 +107,7 @@ class MethodCallCheck
 						'Call to an undefined method %s::%s().',
 						$type->describe(VerbosityLevel::typeOnly()),
 						$methodName,
-					))->build(),
+					))->identifier('method.notFound')->build(),
 				],
 				null,
 			];
@@ -123,7 +123,9 @@ class MethodCallCheck
 				$methodReflection->isPrivate() ? 'private' : 'protected',
 				$methodReflection->getName(),
 				$declaringClass->getDisplayName(),
-			))->build();
+			))
+				->identifier(sprintf('method.%s', $methodReflection->isPrivate() ? 'private' : 'protected'))
+				->build();
 		}
 
 		if (
@@ -133,7 +135,7 @@ class MethodCallCheck
 		) {
 			$errors[] = RuleErrorBuilder::message(
 				sprintf('Call to method %s with incorrect case: %s', $messagesMethodName, $methodName),
-			)->build();
+			)->identifier('method.nameCase')->build();
 		}
 
 		return [$errors, $methodReflection];

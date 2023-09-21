@@ -79,7 +79,7 @@ class AppendedArrayKeyTypeRule implements Rule
 					'Array (%s) does not accept key %s.',
 					$arrayType->describe($verbosity),
 					$keyType->describe(VerbosityLevel::value()),
-				))->build(),
+				))->identifier('array.keyType')->build(),
 			];
 		}
 

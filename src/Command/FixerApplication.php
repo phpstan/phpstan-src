@@ -10,15 +10,11 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Nette\Utils\Json;
 use Phar;
-use PHPStan\Analyser\AnalyserResult;
-use PHPStan\Analyser\Error;
-use PHPStan\Analyser\IgnoredErrorHelper;
-use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\File\FileMonitor;
 use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
-use PHPStan\File\PathNotFoundException;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\ProcessPromise;
@@ -32,7 +28,6 @@ use React\EventLoop\StreamSelectLoop;
 use React\Http\Browser;
 use React\Promise\CancellablePromiseInterface;
 use React\Promise\ExtendedPromiseInterface;
-use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\Connector;
 use React\Socket\TcpServer;
@@ -53,15 +48,13 @@ use function http_build_query;
 use function ini_get;
 use function is_dir;
 use function is_file;
-use function is_string;
-use function memory_get_peak_usage;
 use function mkdir;
 use function parse_url;
 use function React\Async\await;
-use function React\Promise\resolve;
 use function sprintf;
 use function strlen;
 use function unlink;
+use const JSON_INVALID_UTF8_IGNORE;
 use const PHP_BINARY;
 use const PHP_URL_PORT;
 use const PHP_VERSION_ID;
@@ -78,7 +71,6 @@ class FixerApplication
 	 */
 	public function __construct(
 		private FileMonitor $fileMonitor,
-		private ResultCacheManagerFactory $resultCacheManagerFactory,
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private array $analysedPaths,
 		private string $currentWorkingDirectory,
@@ -88,17 +80,10 @@ class FixerApplication
 	{
 	}
 
-	/**
-	 * @param Error[] $fileSpecificErrors
-	 * @param string[] $notFileSpecificErrors
-	 */
 	public function run(
 		?string $projectConfigFile,
-		InceptionResult $inceptionResult,
 		InputInterface $input,
 		OutputInterface $output,
-		array $fileSpecificErrors,
-		array $notFileSpecificErrors,
 		int $filesCount,
 		string $mainScript,
 	): int
@@ -111,15 +96,13 @@ class FixerApplication
 		/** @var int<0, 65535> $serverPort */
 		$serverPort = parse_url($serverAddress, PHP_URL_PORT);
 
-		$server->on('connection', function (ConnectionInterface $connection) use ($loop, $projectConfigFile, $input, $output, $fileSpecificErrors, $notFileSpecificErrors, $mainScript, $filesCount, $inceptionResult): void {
+		$server->on('connection', function (ConnectionInterface $connection) use ($loop, $projectConfigFile, $input, $output, $mainScript, $filesCount): void {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
 			$decoder = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, 128 * 1024 * 1024);
 			$encoder = new Encoder($connection, $jsonInvalidUtf8Ignore);
 			$encoder->write(['action' => 'initialData', 'data' => [
-				'fileSpecificErrors' => $fileSpecificErrors,
-				'notFileSpecificErrors' => $notFileSpecificErrors,
 				'currentWorkingDirectory' => $this->currentWorkingDirectory,
 				'analysedPaths' => $this->analysedPaths,
 				'projectConfigFile' => $projectConfigFile,
@@ -137,34 +120,30 @@ class FixerApplication
 			});
 
 			$this->fileMonitor->initialize($this->analysedPaths);
-			$this->monitorFileChanges($loop, function (FileMonitorResult $changes) use ($loop, $mainScript, $projectConfigFile, $input, $encoder, $output, $inceptionResult): void {
+
+			$this->analyse(
+				$loop,
+				$mainScript,
+				$projectConfigFile,
+				$input,
+				$output,
+				$encoder,
+			);
+
+			$this->monitorFileChanges($loop, function (FileMonitorResult $changes) use ($loop, $mainScript, $projectConfigFile, $input, $encoder, $output): void {
 				if ($this->processInProgress !== null) {
 					$this->processInProgress->cancel();
 					$this->processInProgress = null;
-				} else {
-					$encoder->write(['action' => 'analysisStart']);
 				}
 
-				$this->reanalyseAfterFileChanges(
+				$this->analyse(
 					$loop,
-					$inceptionResult,
 					$mainScript,
 					$projectConfigFile,
 					$input,
-				)->done(function (array $json) use ($encoder, $changes): void {
-					$this->processInProgress = null;
-					$encoder->write(['action' => 'analysisEnd', 'data' => [
-						'fileSpecificErrors' => $json['fileSpecificErrors'],
-						'notFileSpecificErrors' => $json['notFileSpecificErrors'],
-						'filesCount' => $changes->getTotalFilesCount(),
-					]]);
-				}, function (Throwable $e) use ($encoder, $output): void {
-					$this->processInProgress = null;
-					$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
-					$encoder->write(['action' => 'analysisCrash', 'data' => [
-						'error' => $e->getMessage(),
-					]]);
-				});
+					$output,
+					$encoder,
+				);
 			});
 		});
 
@@ -279,7 +258,7 @@ class FixerApplication
 	): void
 	{
 		$currentVersion = null;
-		$branch = 'master';
+		$branch = 'main';
 		if (is_file($pharPath) && is_file($infoPath)) {
 			/** @var array{version: string, date: string, branch?: string} $currentInfo */
 			$currentInfo = Json::decode(FileReader::read($infoPath), Json::FORCE_ARRAY);
@@ -402,72 +381,61 @@ class FixerApplication
 		$loop->addTimer(1.0, $callback);
 	}
 
-	private function reanalyseAfterFileChanges(
+	private function analyse(
 		LoopInterface $loop,
-		InceptionResult $inceptionResult,
 		string $mainScript,
 		?string $projectConfigFile,
 		InputInterface $input,
-	): PromiseInterface
+		OutputInterface $output,
+		Encoder $phpstanFixerEncoder,
+	): void
 	{
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			throw new ShouldNotHappenException();
 		}
 
-		$projectConfigArray = $inceptionResult->getProjectConfigArray();
+		// TCP server for fixer:worker (TCP client)
+		$server = new TcpServer('127.0.0.1:0', $loop);
+		/** @var string $serverAddress */
+		$serverAddress = $server->getAddress();
+		/** @var int<0, 65535> $serverPort */
+		$serverPort = parse_url($serverAddress, PHP_URL_PORT);
 
-		$resultCacheManager = $this->resultCacheManagerFactory->create();
+		$server->on('connection', static function (ConnectionInterface $connection) use ($phpstanFixerEncoder): void {
+			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
+			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
+			// phpcs:enable
+			$decoder = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, 128 * 1024 * 1024);
+			$decoder->on('data', static function (array $data) use ($phpstanFixerEncoder): void {
+				$phpstanFixerEncoder->write($data);
+			});
+		});
 
-		try {
-			[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
-		} catch (InceptionNotSuccessfulException | PathNotFoundException) {
-			throw new ShouldNotHappenException();
-		}
-
-		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput());
-		if (count($resultCache->getFilesToAnalyse()) === 0) {
-			$result = $resultCacheManager->process(
-				new AnalyserResult([], [], [], [], [], false, memory_get_peak_usage(true)),
-				$resultCache,
-				$inceptionResult->getErrorOutput(),
-				false,
-				true,
-			)->getAnalyserResult();
-			$intermediateErrors = $ignoredErrorHelperResult->process(
-				$result->getErrors(),
-				$isOnlyFiles,
-				$inceptionFiles,
-				count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit(),
-			);
-			$finalFileSpecificErrors = [];
-			$finalNotFileSpecificErrors = [];
-			foreach ($intermediateErrors as $intermediateError) {
-				if (is_string($intermediateError)) {
-					$finalNotFileSpecificErrors[] = $intermediateError;
-					continue;
-				}
-
-				$finalFileSpecificErrors[] = $intermediateError;
-			}
-
-			return resolve([
-				'fileSpecificErrors' => $finalFileSpecificErrors,
-				'notFileSpecificErrors' => $finalNotFileSpecificErrors,
-			]);
-		}
-
-		$options = ['--save-result-cache', '--allow-parallel'];
 		$process = new ProcessPromise($loop, 'changedFileAnalysis', ProcessHelper::getWorkerCommand(
 			$mainScript,
 			'fixer:worker',
 			$projectConfigFile,
-			$options,
+			[
+				'--server-port',
+				(string) $serverPort,
+			],
 			$input,
 		));
 		$this->processInProgress = $process->run();
 
-		return $this->processInProgress->then(static fn (string $output): array => Json::decode($output, Json::FORCE_ARRAY));
+		$this->processInProgress->done(function () use ($server): void {
+			$this->processInProgress = null;
+			$server->close();
+		}, function (Throwable $e) use ($server, $output, $phpstanFixerEncoder): void {
+			$this->processInProgress = null;
+			$server->close();
+			$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
+			$phpstanFixerEncoder->write(['action' => 'analysisCrash', 'data' => [
+				'errors' => [$e->getMessage()],
+			]]);
+			throw $e;
+		});
 	}
 
 	private function isDockerRunning(): bool

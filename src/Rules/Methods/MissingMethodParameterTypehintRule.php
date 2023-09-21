@@ -8,9 +8,9 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
@@ -47,7 +47,7 @@ final class MissingMethodParameterTypehintRule implements Rule
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function checkMethodParameter(MethodReflection $methodReflection, ParameterReflection $parameterReflection): array
 	{
@@ -60,7 +60,7 @@ final class MissingMethodParameterTypehintRule implements Rule
 					$methodReflection->getDeclaringClass()->getDisplayName(),
 					$methodReflection->getName(),
 					$parameterReflection->getName(),
-				))->build(),
+				))->identifier('missingType.parameter')->build(),
 			];
 		}
 
@@ -73,7 +73,10 @@ final class MissingMethodParameterTypehintRule implements Rule
 				$methodReflection->getName(),
 				$parameterReflection->getName(),
 				$iterableTypeDescription,
-			))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+				->identifier('missingType.iterableValue')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($parameterType) as [$name, $genericTypeNames]) {
@@ -84,7 +87,10 @@ final class MissingMethodParameterTypehintRule implements Rule
 				$parameterReflection->getName(),
 				$name,
 				implode(', ', $genericTypeNames),
-			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+				->identifier('missingType.generics')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($parameterType) as $callableType) {
@@ -94,7 +100,7 @@ final class MissingMethodParameterTypehintRule implements Rule
 				$methodReflection->getName(),
 				$parameterReflection->getName(),
 				$callableType->describe(VerbosityLevel::typeOnly()),
-			))->build();
+			))->identifier('missingType.callable')->build();
 		}
 
 		return $messages;

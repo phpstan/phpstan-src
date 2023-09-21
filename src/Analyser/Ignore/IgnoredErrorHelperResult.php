@@ -1,7 +1,8 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Analyser;
+namespace PHPStan\Analyser\Ignore;
 
+use PHPStan\Analyser\Error;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_fill_keys;
@@ -60,13 +61,13 @@ class IgnoredErrorHelperResult
 		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$addErrors): bool {
 			$shouldBeIgnored = false;
 			if (is_string($ignore)) {
-				$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore, null);
+				$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore, null, null);
 				if ($shouldBeIgnored) {
 					unset($unmatchedIgnoredErrors[$i]);
 				}
 			} else {
 				if (isset($ignore['path'])) {
-					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignore['path']);
+					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'] ?? null, $ignore['identifier'] ?? null, $ignore['path']);
 					if ($shouldBeIgnored) {
 						if (isset($ignore['count'])) {
 							$realCount = $unmatchedIgnoredErrors[$i]['realCount'] ?? 0;
@@ -87,7 +88,7 @@ class IgnoredErrorHelperResult
 					}
 				} elseif (isset($ignore['paths'])) {
 					foreach ($ignore['paths'] as $j => $ignorePath) {
-						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], $ignorePath);
+						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'] ?? null, $ignore['identifier'] ?? null, $ignorePath);
 						if (!$shouldBeIgnored) {
 							continue;
 						}
@@ -104,7 +105,7 @@ class IgnoredErrorHelperResult
 						break;
 					}
 				} else {
-					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], null);
+					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'] ?? null, $ignore['identifier'] ?? null, null);
 					if ($shouldBeIgnored) {
 						unset($unmatchedIgnoredErrors[$i]);
 					}
@@ -175,14 +176,14 @@ class IgnoredErrorHelperResult
 				continue;
 			}
 
-			$addErrors[] = new Error(sprintf(
+			$addErrors[] = (new Error(sprintf(
 				'Ignored error pattern %s is expected to occur %d %s, but occurred %d %s.',
 				IgnoredError::stringifyPattern($unmatchedIgnoredError),
 				$unmatchedIgnoredError['count'],
 				$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
 				$unmatchedIgnoredError['realCount'],
 				$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times',
-			), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false);
+			), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false))->withIdentifier('ignore.count');
 		}
 
 		$errors = array_merge($errors, $addErrors);
@@ -201,21 +202,21 @@ class IgnoredErrorHelperResult
 					&& (isset($unmatchedIgnoredError['realPath']) || !$onlyFiles)
 				) {
 					if ($unmatchedIgnoredError['realCount'] < $unmatchedIgnoredError['count']) {
-						$errors[] = new Error(sprintf(
+						$errors[] = (new Error(sprintf(
 							'Ignored error pattern %s is expected to occur %d %s, but occurred only %d %s.',
 							IgnoredError::stringifyPattern($unmatchedIgnoredError),
 							$unmatchedIgnoredError['count'],
 							$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
 							$unmatchedIgnoredError['realCount'],
 							$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times',
-						), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false);
+						), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false))->withIdentifier('ignore.count');
 					}
 				} elseif (isset($unmatchedIgnoredError['realPath'])) {
 					if (!array_key_exists($unmatchedIgnoredError['realPath'], $analysedFilesKeys)) {
 						continue;
 					}
 
-					$errors[] = new Error(
+					$errors[] = (new Error(
 						sprintf(
 							'Ignored error pattern %s was not matched in reported errors.',
 							IgnoredError::stringifyPattern($unmatchedIgnoredError),
@@ -223,7 +224,7 @@ class IgnoredErrorHelperResult
 						$unmatchedIgnoredError['realPath'],
 						null,
 						false,
-					);
+					))->withIdentifier('ignore.unmatched');
 				} elseif (!$onlyFiles) {
 					$errors[] = sprintf(
 						'Ignored error pattern %s was not matched in reported errors.',

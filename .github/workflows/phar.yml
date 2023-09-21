@@ -6,9 +6,9 @@ on:
   pull_request:
   push:
     branches:
-      - "1.10.x"
+      - "1.11.x"
     tags:
-      - '1.10.*'
+      - '1.11.*'
 
 concurrency:
   group: phar-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -89,14 +89,14 @@ jobs:
       - name: "Composer dump"
         run: "composer install --no-interaction --no-progress"
         env:
-          COMPOSER_ROOT_VERSION: "1.10.x-dev"
+          COMPOSER_ROOT_VERSION: "1.11.x-dev"
 
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"
         run: "php box.phar compile --no-parallel"
         env:
           PHAR_CHECKSUM: "1"
-          COMPOSER_ROOT_VERSION: "1.10.x-dev"
+          COMPOSER_ROOT_VERSION: "1.11.x-dev"
 
       - name: "Re-sign PHAR"
         run: "php compiler/build/resign.php tmp/phpstan.phar"
@@ -119,30 +119,30 @@ jobs:
   integration-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@1.10.x
+    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@1.11.x
     with:
-      ref: 1.10.x
+      ref: 1.11.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   extension-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@1.10.x
+    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@1.11.x
     with:
-      ref: 1.10.x
+      ref: 1.11.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   other-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-    uses: phpstan/phpstan/.github/workflows/other-tests.yml@1.10.x
+    uses: phpstan/phpstan/.github/workflows/other-tests.yml@1.11.x
     with:
-      ref: 1.10.x
+      ref: 1.11.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   commit:
     name: "Commit PHAR"
-    if: "github.repository_owner == 'phpstan' && (github.ref == 'refs/heads/1.10.x' || startsWith(github.ref, 'refs/tags/'))"
+    if: "github.repository_owner == 'phpstan' && (github.ref == 'refs/heads/1.11.x' || startsWith(github.ref, 'refs/tags/'))"
     needs: compiler-tests
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
@@ -150,7 +150,7 @@ jobs:
       -
         name: Import GPG key
         id: import-gpg
-        uses: crazy-max/ghaction-import-gpg@v5
+        uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PHPSTANBOT_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PHPSTANBOT_KEY_PASSPHRASE }}
@@ -159,12 +159,12 @@ jobs:
           git_commit_gpgsign: true
 
       - name: "Checkout phpstan-dist"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: phpstan/phpstan
           path: phpstan-dist
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-          ref: 1.10.x
+          ref: 1.11.x
 
       - name: "Get previous pushed dist commit"
         id: previous-commit
@@ -172,7 +172,7 @@ jobs:
         run: echo "sha=$(sed -n '2p' .phar-checksum)" >> $GITHUB_OUTPUT
 
       - name: "Checkout phpstan-src"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           path: phpstan-src

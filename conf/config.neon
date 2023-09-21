@@ -440,10 +440,13 @@ services:
 		class: PHPStan\Analyser\RuleErrorTransformer
 
 	-
-		class: PHPStan\Analyser\IgnoredErrorHelper
+		class: PHPStan\Analyser\Ignore\IgnoredErrorHelper
 		arguments:
 			ignoreErrors: %ignoreErrors%
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
+
+	-
+		class: PHPStan\Analyser\Ignore\IgnoreLexer
 
 	-
 		class: PHPStan\Analyser\LazyInternalScopeFactory
@@ -618,11 +621,6 @@ services:
 		class: PHPStan\File\FileMonitor
 		arguments:
 			fileFinder: @fileFinderAnalyse
-
-	-
-		class: PHPStan\NodeVisitor\StatementOrderVisitor
-		tags:
-			- phpstan.parser.richParserNodeVisitor
 
 	-
 		class: PHPStan\Parallel\ParallelAnalyser

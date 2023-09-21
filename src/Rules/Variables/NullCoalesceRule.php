@@ -40,9 +40,9 @@ class NullCoalesceRule implements Rule
 		};
 
 		if ($node instanceof Node\Expr\BinaryOp\Coalesce) {
-			$error = $this->issetCheck->check($node->left, $scope, 'on left side of ??', $typeMessageCallback);
+			$error = $this->issetCheck->check($node->left, $scope, 'on left side of ??', 'nullCoalesce', $typeMessageCallback);
 		} elseif ($node instanceof Node\Expr\AssignOp\Coalesce) {
-			$error = $this->issetCheck->check($node->var, $scope, 'on left side of ??=', $typeMessageCallback);
+			$error = $this->issetCheck->check($node->var, $scope, 'on left side of ??=', 'nullCoalesce', $typeMessageCallback);
 		} else {
 			return [];
 		}

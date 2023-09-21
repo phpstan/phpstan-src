@@ -26,6 +26,7 @@ class IllegalConstructorMethodCallRule implements Rule
 
 		return [
 			RuleErrorBuilder::message('Call to __construct() on an existing object is not allowed.')
+				->identifier('constructor.call')
 				->build(),
 		];
 	}

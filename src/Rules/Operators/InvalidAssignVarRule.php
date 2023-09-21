@@ -39,19 +39,28 @@ class InvalidAssignVarRule implements Rule
 
 		if ($this->nullsafeCheck->containsNullSafe($node->var)) {
 			return [
-				RuleErrorBuilder::message('Nullsafe operator cannot be on left side of assignment.')->nonIgnorable()->build(),
+				RuleErrorBuilder::message('Nullsafe operator cannot be on left side of assignment.')
+					->identifier('nullsafe.assign')
+					->nonIgnorable()
+					->build(),
 			];
 		}
 
 		if ($node instanceof AssignRef && $this->nullsafeCheck->containsNullSafe($node->expr)) {
 			return [
-				RuleErrorBuilder::message('Nullsafe operator cannot be on right side of assignment by reference.')->nonIgnorable()->build(),
+				RuleErrorBuilder::message('Nullsafe operator cannot be on right side of assignment by reference.')
+					->identifier('nullsafe.byRef')
+					->nonIgnorable()
+					->build(),
 			];
 		}
 
 		if ($this->containsNonAssignableExpression($node->var)) {
 			return [
-				RuleErrorBuilder::message('Expression on left side of assignment is not assignable.')->nonIgnorable()->build(),
+				RuleErrorBuilder::message('Expression on left side of assignment is not assignable.')
+					->identifier('assign.invalidExpr')
+					->nonIgnorable()
+					->build(),
 			];
 		}
 

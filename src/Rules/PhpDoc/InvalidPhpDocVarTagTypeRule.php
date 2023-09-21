@@ -79,7 +79,10 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 			if (
 				$this->unresolvableTypeHelper->containsUnresolvableType($varTagType)
 			) {
-				$errors[] = RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))->line($docComment->getStartLine())->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('%s contains unresolvable type.', $identifier))
+					->line($docComment->getStartLine())
+					->identifier('varTag.unresolvableType')
+					->build();
 				continue;
 			}
 
@@ -90,7 +93,10 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 						'%s has no value type specified in iterable type %s.',
 						$identifier,
 						$iterableTypeDescription,
-					))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+					))
+						->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+						->identifier('missingType.iterableValue')
+						->build();
 				}
 			}
 
@@ -111,7 +117,10 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 					$identifier,
 					$innerName,
 					implode(', ', $genericTypeNames),
-				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+				))
+					->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+					->identifier('missingType.generics')
+					->build();
 			}
 
 			$referencedClasses = $varTagType->getReferencedClasses();
@@ -121,7 +130,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							sprintf('%s has invalid type %%s.', $identifier),
 							$referencedClass,
-						))->build();
+						))->identifier('varTag.trait')->build();
 					}
 					continue;
 				}
@@ -133,7 +142,10 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					sprintf('%s contains unknown class %%s.', $identifier),
 					$referencedClass,
-				))->discoveringSymbolsTip()->build();
+				))
+					->identifier('class.notFound')
+					->discoveringSymbolsTip()
+					->build();
 			}
 
 			if (!$this->checkClassCaseSensitivity) {

@@ -36,7 +36,10 @@ class AbstractMethodInNonAbstractClassRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message(sprintf('Non-abstract class %s contains abstract method %s().', $class->getDisplayName(), $node->name->toString()))->nonIgnorable()->build(),
+			RuleErrorBuilder::message(sprintf('Non-abstract class %s contains abstract method %s().', $class->getDisplayName(), $node->name->toString()))
+				->nonIgnorable()
+				->identifier('method.abstract')
+				->build(),
 		];
 	}
 

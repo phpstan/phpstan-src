@@ -28,14 +28,20 @@ class CatchWithUnthrownExceptionRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Dead catch - %s is already caught above.', $node->getOriginalCaughtType()->describe(VerbosityLevel::typeOnly())),
-				)->line($node->getLine())->build(),
+				)
+					->line($node->getLine())
+					->identifier('catch.alreadyCaught')
+					->build(),
 			];
 		}
 
 		return [
 			RuleErrorBuilder::message(
 				sprintf('Dead catch - %s is never thrown in the try block.', $node->getCaughtType()->describe(VerbosityLevel::typeOnly())),
-			)->line($node->getLine())->build(),
+			)
+				->line($node->getLine())
+				->identifier('catch.neverThrown')
+				->build(),
 		];
 	}
 

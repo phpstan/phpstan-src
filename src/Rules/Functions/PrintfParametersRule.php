@@ -10,6 +10,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_filter;
+use function array_key_exists;
 use function count;
 use function in_array;
 use function max;
@@ -53,7 +54,7 @@ class PrintfParametersRule implements Rule
 		];
 
 		$name = strtolower((string) $node->name);
-		if (!isset($functionsArgumentPositions[$name])) {
+		if (!array_key_exists($name, $functionsArgumentPositions)) {
 			return [];
 		}
 
@@ -99,7 +100,7 @@ class PrintfParametersRule implements Rule
 					$name,
 					$placeHoldersCount,
 					$argsCount - 1,
-				))->build(),
+				))->identifier(sprintf('argument.%s', $name))->build(),
 			];
 		}
 

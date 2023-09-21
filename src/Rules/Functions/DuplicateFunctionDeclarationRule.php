@@ -52,7 +52,7 @@ class DuplicateFunctionDeclarationRule implements Rule
 				"Function %s declared multiple times:\n%s",
 				$thisFunction->getName(),
 				implode("\n", array_map(fn (ReflectionFunction $function) => sprintf('- %s:%d', $this->relativePathHelper->getRelativePath($function->getFileName() ?? 'unknown'), $function->getStartLine()), $filteredFunctions)),
-			))->build(),
+			))->identifier('function.duplicate')->build(),
 		];
 	}
 

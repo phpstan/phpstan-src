@@ -81,7 +81,7 @@ parameters:
 			message: '#Fetching class constant class of deprecated class DeprecatedAnnotations\\DeprecatedWithMultipleTags.#'
 			path: ../tests/PHPStan/Reflection/Annotations/DeprecatedAnnotationsTest.php
 		-
-			message: '#^Variable property access on PHPStan\\Rules\\RuleError\.$#'
+			message: '#^Variable property access on T of PHPStan\\Rules\\RuleError\.$#'
 			path: ../src/Rules/RuleErrorBuilder.php
 		-
 			message: "#^Parameter \\#1 (?:\\$argument|\\$objectOrClass) of class ReflectionClass constructor expects class\\-string\\<PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\>\\|PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig, string given\\.$#"

@@ -792,7 +792,7 @@ class InitializerExprTypeResolver
 						return new ErrorType();
 					}
 
-					$resultType = $this->getTypeFromValue($leftNumberType->getValue() / $rightNumberType->getValue()); // @phpstan-ignore-line
+					$resultType = $this->getTypeFromValue($leftNumberType->getValue() / $rightNumberType->getValue()); // @phpstan-ignore binaryOp.invalid
 					if ($generalize) {
 						$resultType = $resultType->generalize(GeneralizePrecision::lessSpecific());
 					}

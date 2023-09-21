@@ -7,7 +7,7 @@ use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\CircularTypeAliasErrorType;
 use PHPStan\Type\ErrorType;
@@ -33,7 +33,7 @@ class LocalTypeAliasesCheck
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(ClassReflection $reflection): array
 	{
@@ -62,7 +62,9 @@ class LocalTypeAliasesCheck
 			$importedFromClassName = $typeAliasImportTag->getImportedFrom();
 
 			if (!$this->reflectionProvider->hasClass($importedFromClassName)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Cannot import type alias %s: class %s does not exist.', $importedAlias, $importedFromClassName))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Cannot import type alias %s: class %s does not exist.', $importedAlias, $importedFromClassName))
+					->identifier('class.notFound')
+					->build();
 				continue;
 			}
 
@@ -70,7 +72,9 @@ class LocalTypeAliasesCheck
 			$typeAliases = $importedFromReflection->getTypeAliases();
 
 			if (!array_key_exists($importedAlias, $typeAliases)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Cannot import type alias %s: type alias does not exist in %s.', $importedAlias, $importedFromClassName))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Cannot import type alias %s: type alias does not exist in %s.', $importedAlias, $importedFromClassName))
+					->identifier('typeAlias.notFound')
+					->build();
 				continue;
 			}
 
@@ -85,18 +89,20 @@ class LocalTypeAliasesCheck
 				} elseif ($classReflection->isEnum()) {
 					$classLikeDescription = 'an enum';
 				}
-				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as %s in scope of %s.', $aliasName, $classLikeDescription, $className))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as %s in scope of %s.', $aliasName, $classLikeDescription, $className))
+					->identifier('typeAlias.duplicate')
+					->build();
 				continue;
 			}
 
 			if (array_key_exists($aliasName, $this->globalTypeAliases)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as a global type alias.', $aliasName))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as a global type alias.', $aliasName))->identifier('typeAlias.duplicate')->build();
 				continue;
 			}
 
 			$importedAs = $typeAliasImportTag->getImportedAs();
 			if ($importedAs !== null && !$this->isAliasNameValid($importedAs, $nameScope)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Imported type alias %s has an invalid name: %s.', $importedAlias, $importedAs))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Imported type alias %s has an invalid name: %s.', $importedAlias, $importedAs))->identifier('typeAlias.invalidName')->build();
 				continue;
 			}
 
@@ -107,7 +113,7 @@ class LocalTypeAliasesCheck
 			$aliasName = $typeAliasTag->getAliasName();
 
 			if (in_array($aliasName, $importedAliases, true)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s overwrites an imported type alias of the same name.', $aliasName))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s overwrites an imported type alias of the same name.', $aliasName))->identifier('typeAlias.duplicate')->build();
 				continue;
 			}
 
@@ -122,17 +128,19 @@ class LocalTypeAliasesCheck
 				} elseif ($classReflection->isEnum()) {
 					$classLikeDescription = 'an enum';
 				}
-				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as %s in scope of %s.', $aliasName, $classLikeDescription, $className))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as %s in scope of %s.', $aliasName, $classLikeDescription, $className))->identifier('typeAlias.duplicate')->build();
 				continue;
 			}
 
 			if (array_key_exists($aliasName, $this->globalTypeAliases)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as a global type alias.', $aliasName))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as a global type alias.', $aliasName))->identifier('typeAlias.duplicate')->build();
 				continue;
 			}
 
 			if (!$this->isAliasNameValid($aliasName, $nameScope)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Type alias has an invalid name: %s.', $aliasName))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias has an invalid name: %s.', $aliasName))
+					->identifier('typeAlias.invalidName')
+					->build();
 				continue;
 			}
 
@@ -144,13 +152,17 @@ class LocalTypeAliasesCheck
 				}
 
 				if ($type instanceof CircularTypeAliasErrorType) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Circular definition detected in type alias %s.', $aliasName))->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('Circular definition detected in type alias %s.', $aliasName))
+						->identifier('typeAlias.circular')
+						->build();
 					$foundError = true;
 					return $type;
 				}
 
 				if ($type instanceof ErrorType) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Invalid type definition detected in type alias %s.', $aliasName))->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('Invalid type definition detected in type alias %s.', $aliasName))
+						->identifier('typeAlias.invalidType')
+						->build();
 					$foundError = true;
 					return $type;
 				}

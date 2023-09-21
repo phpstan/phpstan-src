@@ -13,6 +13,7 @@ use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\Parser\MarkdownParser;
 use PHPStan\IssueBot\Comment\BotCommentParser;
+use PHPStan\IssueBot\Comment\IssueCommentDownloader;
 use PHPStan\IssueBot\Console\DownloadCommand;
 use PHPStan\IssueBot\Console\EvaluateCommand;
 use PHPStan\IssueBot\Console\RunCommand;
@@ -47,6 +48,7 @@ use function implode;
 	$markdownEnvironment->addExtension(new CommonMarkCoreExtension());
 	$markdownEnvironment->addExtension(new GithubFlavoredMarkdownExtension());
 	$botCommentParser = new BotCommentParser(new MarkdownParser($markdownEnvironment));
+	$issueCommentDownloader = new IssueCommentDownloader($client, $botCommentParser);
 
 	$issueCachePath = __DIR__ . '/tmp/issueCache.tmp';
 	$playgroundCachePath = __DIR__ . '/tmp/playgroundCache.tmp';
@@ -62,9 +64,9 @@ use function implode;
 	$postGenerator = new PostGenerator(new Differ(new UnifiedDiffOutputBuilder('')));
 
 	$application = new Application();
-	$application->add(new DownloadCommand($client, $botCommentParser, new PlaygroundClient(new \GuzzleHttp\Client()), $issueCachePath, $playgroundCachePath));
+	$application->add(new DownloadCommand($client, new PlaygroundClient(new \GuzzleHttp\Client()), $issueCommentDownloader, $issueCachePath, $playgroundCachePath));
 	$application->add(new RunCommand($playgroundCachePath, $tmpDir));
-	$application->add(new EvaluateCommand(new TabCreator(), $postGenerator, $client, $issueCachePath, $playgroundCachePath, $tmpDir, $gitBranch, $phpstanSrcCommitBefore, $phpstanSrcCommitAfter));
+	$application->add(new EvaluateCommand(new TabCreator(), $postGenerator, $client, $issueCommentDownloader, $issueCachePath, $playgroundCachePath, $tmpDir, $gitBranch, $phpstanSrcCommitBefore, $phpstanSrcCommitAfter));
 
 	$application->setCatchExceptions(false);
 	$application->run();

@@ -2,10 +2,13 @@
 
 namespace PHPStan\Command;
 
-use Nette\Utils\Json;
+use Clue\React\NDJson\Encoder;
 use PHPStan\AnalysedCodeException;
+use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
-use PHPStan\Analyser\IgnoredErrorHelper;
+use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
+use PHPStan\Analyser\Ignore\IgnoredErrorHelperResult;
+use PHPStan\Analyser\ResultCache\ResultCacheManager;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Analyser\ScopeContext;
@@ -17,18 +20,32 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\Node\CollectedDataNode;
+use PHPStan\Parallel\ParallelAnalyser;
+use PHPStan\Parallel\Scheduler;
+use PHPStan\Process\CpuCoreCounter;
 use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\ShouldNotHappenException;
+use React\EventLoop\LoopInterface;
+use React\EventLoop\StreamSelectLoop;
+use React\Promise\PromiseInterface;
+use React\Socket\ConnectionInterface;
+use React\Socket\TcpConnector;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use function array_diff;
 use function count;
+use function in_array;
 use function is_array;
 use function is_bool;
+use function is_file;
 use function is_string;
+use function memory_get_peak_usage;
+use function React\Promise\resolve;
 use function sprintf;
+use const JSON_INVALID_UTF8_IGNORE;
 
 class FixerWorkerCommand extends Command
 {
@@ -56,8 +73,7 @@ class FixerWorkerCommand extends Command
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
 				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
-				new InputOption('save-result-cache', null, InputOption::VALUE_OPTIONAL, '', false),
-				new InputOption('allow-parallel', null, InputOption::VALUE_NONE, 'Allow parallel analysis'),
+				new InputOption('server-port', null, InputOption::VALUE_REQUIRED, 'Server port for FixerApplication'),
 			]);
 	}
 
@@ -69,7 +85,7 @@ class FixerWorkerCommand extends Command
 		$configuration = $input->getOption('configuration');
 		$level = $input->getOption(AnalyseCommand::OPTION_LEVEL);
 		$allowXdebug = $input->getOption('xdebug');
-		$allowParallel = $input->getOption('allow-parallel');
+		$serverPort = $input->getOption('server-port');
 
 		if (
 			!is_array($paths)
@@ -78,13 +94,10 @@ class FixerWorkerCommand extends Command
 			|| (!is_string($configuration) && $configuration !== null)
 			|| (!is_string($level) && $level !== null)
 			|| (!is_bool($allowXdebug))
-			|| (!is_bool($allowParallel))
+			|| (!is_string($serverPort))
 		) {
 			throw new ShouldNotHappenException();
 		}
-
-		/** @var false|string|null $saveResultCache */
-		$saveResultCache = $input->getOption('save-result-cache');
 
 		try {
 			$inceptionResult = CommandHelper::begin(
@@ -107,73 +120,175 @@ class FixerWorkerCommand extends Command
 
 		$container = $inceptionResult->getContainer();
 
+		/** @var IgnoredErrorHelper $ignoredErrorHelper */
 		$ignoredErrorHelper = $container->getByType(IgnoredErrorHelper::class);
 		$ignoredErrorHelperResult = $ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			throw new ShouldNotHappenException();
 		}
 
-		$analyserRunner = $container->getByType(AnalyserRunner::class);
+		$loop = new StreamSelectLoop();
+		$tcpConnector = new TcpConnector($loop);
+		$tcpConnector->connect(sprintf('127.0.0.1:%d', $serverPort))->done(function (ConnectionInterface $connection) use ($container, $inceptionResult, $configuration, $input, $ignoredErrorHelperResult, $loop): void {
+			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
+			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
+			// phpcs:enable
+			$out = new Encoder($connection, $jsonInvalidUtf8Ignore);
+			//$in = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, 128 * 1024 * 1024);
 
-		$resultCacheManager = $container->getByType(ResultCacheManagerFactory::class)->create();
-		$projectConfigArray = $inceptionResult->getProjectConfigArray();
+			/** @var ResultCacheManager $resultCacheManager */
+			$resultCacheManager = $container->getByType(ResultCacheManagerFactory::class)->create();
+			$projectConfigArray = $inceptionResult->getProjectConfigArray();
 
-		try {
-			[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
-		} catch (PathNotFoundException | InceptionNotSuccessfulException) {
-			return 1;
-		}
-
-		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput());
-
-		$intermediateAnalyserResult = $analyserRunner->runAnalyser(
-			$resultCache->getFilesToAnalyse(),
-			$inceptionFiles,
-			null,
-			null,
-			false,
-			$allowParallel,
-			$configuration,
-			$input,
-		);
-		$result = $resultCacheManager->process(
-			$intermediateAnalyserResult,
-			$resultCache,
-			$inceptionResult->getErrorOutput(),
-			false,
-			is_string($saveResultCache) ? $saveResultCache : $saveResultCache === null,
-		)->getAnalyserResult();
-
-		$hasInternalErrors = count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit();
-		$intermediateErrors = $ignoredErrorHelperResult->process(
-			$result->getErrors(),
-			$isOnlyFiles,
-			$inceptionFiles,
-			$hasInternalErrors,
-		);
-		if (!$hasInternalErrors) {
-			foreach ($this->getCollectedDataErrors($container, $result->getCollectedData(), $isOnlyFiles) as $error) {
-				$intermediateErrors[] = $error;
-			}
-		}
-
-		$finalFileSpecificErrors = [];
-		$finalNotFileSpecificErrors = [];
-		foreach ($intermediateErrors as $intermediateError) {
-			if (is_string($intermediateError)) {
-				$finalNotFileSpecificErrors[] = $intermediateError;
-				continue;
+			try {
+				[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
+			} catch (PathNotFoundException | InceptionNotSuccessfulException) {
+				throw new ShouldNotHappenException();
 			}
 
-			$finalFileSpecificErrors[] = $intermediateError;
-		}
+			$out->write([
+				'action' => 'analysisStart',
+				'result' => [
+					'analysedFiles' => $inceptionFiles,
+				],
+			]);
 
-		$output->writeln(Json::encode([
-			'fileSpecificErrors' => $finalFileSpecificErrors,
-			'notFileSpecificErrors' => $finalNotFileSpecificErrors,
-		]), OutputInterface::OUTPUT_RAW);
+			$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput());
+
+			$errorsFromResultCacheTmp = $resultCache->getErrors();
+			foreach ($resultCache->getFilesToAnalyse() as $fileToAnalyse) {
+				unset($errorsFromResultCacheTmp[$fileToAnalyse]);
+			}
+
+			$errorsFromResultCache = [];
+			foreach ($errorsFromResultCacheTmp as $errorsByFile) {
+				foreach ($errorsByFile as $error) {
+					$errorsFromResultCache[] = $error;
+				}
+			}
+
+			$errorsFromResultCache = $this->filterErrors($errorsFromResultCache, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, false);
+
+			$out->write([
+				'action' => 'analysisStream',
+				'result' => [
+					'errors' => $errorsFromResultCache,
+					'analysedFiles' => array_diff($inceptionFiles, $resultCache->getFilesToAnalyse()),
+				],
+			]);
+
+			$this->runAnalyser(
+				$loop,
+				$container,
+				$resultCache->getFilesToAnalyse(),
+				$configuration,
+				$input,
+				function (array $errors, array $analysedFiles) use ($out, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles): void {
+					$errors = $this->filterErrors($errors, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, false);
+					$out->write([
+						'action' => 'analysisStream',
+						'result' => [
+							'errors' => $errors,
+							'analysedFiles' => $analysedFiles,
+						],
+					]);
+				},
+			)->then(function (AnalyserResult $intermediateAnalyserResult) use ($resultCacheManager, $resultCache, $inceptionResult, $container, $isOnlyFiles, $ignoredErrorHelperResult, $inceptionFiles, $out): void {
+				$result = $resultCacheManager->process(
+					$intermediateAnalyserResult,
+					$resultCache,
+					$inceptionResult->getErrorOutput(),
+					false,
+					true,
+				)->getAnalyserResult();
+
+				$hasInternalErrors = count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit();
+
+				$collectorErrors = [];
+				$intermediateErrors = $result->getErrors();
+				if (!$hasInternalErrors) {
+					foreach ($this->getCollectedDataErrors($container, $result->getCollectedData(), $isOnlyFiles) as $error) {
+						$collectorErrors[] = $error;
+						$intermediateErrors[] = $error;
+					}
+				} else {
+					$out->write(['action' => 'analysisCrash', 'data' => [
+						'errors' => count($result->getInternalErrors()) > 0 ? $result->getInternalErrors() : [
+							'Internal error occurred',
+						],
+					]]);
+				}
+
+				$collectorErrors = $this->filterErrors($collectorErrors, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, $hasInternalErrors);
+				$out->write([
+					'action' => 'analysisStream',
+					'result' => [
+						'errors' => $collectorErrors,
+						'analysedFiles' => [],
+					],
+				]);
+
+				$intermediateErrors = $ignoredErrorHelperResult->process(
+					$intermediateErrors,
+					$isOnlyFiles,
+					$inceptionFiles,
+					$hasInternalErrors,
+				);
+
+				$ignoreFileErrors = [];
+				$ignoreNotFileErrors = [];
+				foreach ($intermediateErrors as $error) {
+					if (is_string($error)) {
+						$ignoreNotFileErrors[] = $error;
+						continue;
+					}
+					if ($error->getIdentifier() === null) {
+						continue;
+					}
+					if (!in_array($error->getIdentifier(), ['ignore.count', 'ignore.unmatched'], true)) {
+						continue;
+					}
+					$ignoreFileErrors[] = $error;
+				}
+
+				$out->end([
+					'action' => 'analysisEnd',
+					'result' => [
+						'ignoreFileErrors' => $ignoreFileErrors,
+						'ignoreNotFileErrors' => $ignoreNotFileErrors,
+					],
+				]);
+			});
+		});
+		$loop->run();
 
 		return 0;
+	}
+
+	/**
+	 * @param string[] $inceptionFiles
+	 * @param array<Error> $errors
+	 * @return array<Error>
+	 */
+	private function filterErrors(array $errors, IgnoredErrorHelperResult $ignoredErrorHelperResult, bool $onlyFiles, array $inceptionFiles, bool $hasInternalErrors): array
+	{
+		$errors = $ignoredErrorHelperResult->process($errors, $onlyFiles, $inceptionFiles, $hasInternalErrors);
+		$finalErrors = [];
+		foreach ($errors as $error) {
+			if (is_string($error)) {
+				continue;
+			}
+			if ($error->getIdentifier() === null) {
+				$finalErrors[] = $error;
+				continue;
+			}
+			if (in_array($error->getIdentifier(), ['ignore.count', 'ignore.unmatched'], true)) {
+				continue;
+			}
+			$finalErrors[] = $error;
+		}
+
+		return $finalErrors;
 	}
 
 	/**
@@ -194,13 +309,13 @@ class FixerWorkerCommand extends Command
 			try {
 				$ruleErrors = $rule->processNode($node, $scope);
 			} catch (AnalysedCodeException $e) {
-				$errors[] = new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip());
+				$errors[] = (new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
 				continue;
 			} catch (IdentifierNotFound $e) {
-				$errors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
+				$errors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
 				continue;
 			} catch (UnableToCompileNode | CircularReference $e) {
-				$errors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e);
+				$errors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e))->withIdentifier('phpstan.reflection');
 				continue;
 			}
 
@@ -210,6 +325,42 @@ class FixerWorkerCommand extends Command
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * @param string[] $files
+	 * @param callable(list<Error>, string[]): void $onFileAnalysisHandler
+	 */
+	private function runAnalyser(LoopInterface $loop, Container $container, array $files, ?string $configuration, InputInterface $input, callable $onFileAnalysisHandler): PromiseInterface
+	{
+		/** @var ParallelAnalyser $parallelAnalyser */
+		$parallelAnalyser = $container->getByType(ParallelAnalyser::class);
+		$filesCount = count($files);
+		if ($filesCount === 0) {
+			return resolve(new AnalyserResult([], [], [], [], [], false, memory_get_peak_usage(true)));
+		}
+
+		/** @var Scheduler $scheduler */
+		$scheduler = $container->getByType(Scheduler::class);
+
+		/** @var CpuCoreCounter $cpuCoreCounter */
+		$cpuCoreCounter = $container->getByType(CpuCoreCounter::class);
+
+		$schedule = $scheduler->scheduleWork($cpuCoreCounter->getNumberOfCpuCores(), $files);
+		$mainScript = null;
+		if (isset($_SERVER['argv'][0]) && is_file($_SERVER['argv'][0])) {
+			$mainScript = $_SERVER['argv'][0];
+		}
+
+		return $parallelAnalyser->analyse(
+			$loop,
+			$schedule,
+			$mainScript,
+			null,
+			$configuration,
+			$input,
+			$onFileAnalysisHandler,
+		);
 	}
 
 }

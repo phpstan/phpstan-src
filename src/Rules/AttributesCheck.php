@@ -29,7 +29,7 @@ class AttributesCheck
 	/**
 	 * @param AttributeGroup[] $attrGroups
 	 * @param Attribute::TARGET_* $requiredTarget
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
 		Scope $scope,
@@ -44,27 +44,27 @@ class AttributesCheck
 			foreach ($attrGroup->attrs as $attribute) {
 				$name = $attribute->name->toString();
 				if (!$this->reflectionProvider->hasClass($name)) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not exist.', $name))->line($attribute->getLine())->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not exist.', $name))
+						->line($attribute->getLine())
+						->identifier('attribute.notFound')
+						->build();
 					continue;
 				}
 
 				$attributeClass = $this->reflectionProvider->getClass($name);
 				if (!$attributeClass->isAttributeClass()) {
-					$classLikeDescription = 'Class';
-					if ($attributeClass->isInterface()) {
-						$classLikeDescription = 'Interface';
-					} elseif ($attributeClass->isTrait()) {
-						$classLikeDescription = 'Trait';
-					} elseif ($attributeClass->isEnum()) {
-						$classLikeDescription = 'Enum';
-					}
-
-					$errors[] = RuleErrorBuilder::message(sprintf('%s %s is not an Attribute class.', $classLikeDescription, $attributeClass->getDisplayName()))->line($attribute->getLine())->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('%s %s is not an Attribute class.', $attributeClass->getClassTypeDescription(), $attributeClass->getDisplayName()))
+						->identifier('attribute.notAttribute')
+						->line($attribute->getLine())
+						->build();
 					continue;
 				}
 
 				if ($attributeClass->isAbstract()) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s is abstract.', $name))->line($attribute->getLine())->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s is abstract.', $name))
+						->identifier('attribute.abstract')
+						->line($attribute->getLine())
+						->build();
 				}
 
 				foreach ($this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($name, $attribute)]) as $caseSensitivityError) {
@@ -73,13 +73,19 @@ class AttributesCheck
 
 				$flags = $attributeClass->getAttributeClassFlags();
 				if (($flags & $requiredTarget) === 0) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not have the %s target.', $name, $targetName))->line($attribute->getLine())->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not have the %s target.', $name, $targetName))
+						->identifier('attribute.target')
+						->line($attribute->getLine())
+						->build();
 				}
 
 				if (($flags & Attribute::IS_REPEATABLE) === 0) {
 					$loweredName = strtolower($name);
 					if (array_key_exists($loweredName, $alreadyPresent)) {
-						$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s is not repeatable but is already present above the %s.', $name, $targetName))->line($attribute->getLine())->build();
+						$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s is not repeatable but is already present above the %s.', $name, $targetName))
+							->identifier('attribute.nonRepeatable')
+							->line($attribute->getLine())
+							->build();
 					}
 
 					$alreadyPresent[$loweredName] = true;
@@ -91,19 +97,28 @@ class AttributesCheck
 					} else {
 						$deprecatedError = sprintf('Attribute class %s is deprecated.', $name);
 					}
-					$errors[] = RuleErrorBuilder::message($deprecatedError)->line($attribute->getLine())->build();
+					$errors[] = RuleErrorBuilder::message($deprecatedError)
+						->identifier('attribute.deprecated')
+						->line($attribute->getLine())
+						->build();
 				}
 
 				if (!$attributeClass->hasConstructor()) {
 					if (count($attribute->args) > 0) {
-						$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not have a constructor and must be instantiated without any parameters.', $name))->line($attribute->getLine())->build();
+						$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not have a constructor and must be instantiated without any parameters.', $name))
+							->identifier('attribute.noConstructor')
+							->line($attribute->getLine())
+							->build();
 					}
 					continue;
 				}
 
 				$attributeConstructor = $attributeClass->getConstructor();
 				if (!$attributeConstructor->isPublic()) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Constructor of attribute class %s is not public.', $name))->line($attribute->getLine())->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('Constructor of attribute class %s is not public.', $name))
+						->identifier('attribute.constructorNotPublic')
+						->line($attribute->getLine())
+						->build();
 				}
 
 				$attributeClassName = SprintfHelper::escapeFormatString($attributeClass->getDisplayName());
@@ -136,6 +151,7 @@ class AttributesCheck
 						'Return type of call to ' . $attributeClassName . ' constructor contains unresolvable type.',
 						'Parameter %s of attribute class ' . $attributeClassName . ' constructor contains unresolvable type.',
 					],
+					'attribute',
 				);
 
 				foreach ($parameterErrors as $error) {

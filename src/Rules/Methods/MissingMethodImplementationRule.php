@@ -57,7 +57,7 @@ class MissingMethodImplementationRule implements Rule
 				$method->getName(),
 				$declaringClass->isInterface() ? 'interface' : 'class',
 				$declaringClass->getName(),
-			))->nonIgnorable()->build();
+			))->nonIgnorable()->identifier('method.abstract')->build();
 		}
 
 		return $messages;

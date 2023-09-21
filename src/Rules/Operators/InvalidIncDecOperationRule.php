@@ -6,8 +6,10 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\VerbosityLevel;
+use function get_class;
 use function sprintf;
 
 /**
@@ -36,6 +38,23 @@ class InvalidIncDecOperationRule implements Rule
 			return [];
 		}
 
+		switch (get_class($node)) {
+			case Node\Expr\PreInc::class:
+				$nodeType = 'preInc';
+				break;
+			case Node\Expr\PostInc::class:
+				$nodeType = 'postInc';
+				break;
+			case Node\Expr\PreDec::class:
+				$nodeType = 'preDec';
+				break;
+			case Node\Expr\PostDec::class:
+				$nodeType = 'postDec';
+				break;
+			default:
+				throw new ShouldNotHappenException();
+		}
+
 		$operatorString = $node instanceof Node\Expr\PreInc || $node instanceof Node\Expr\PostInc ? '++' : '--';
 
 		if (
@@ -48,7 +67,10 @@ class InvalidIncDecOperationRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot use %s on a non-variable.',
 					$operatorString,
-				))->line($node->var->getLine())->build(),
+				))
+					->line($node->var->getLine())
+					->identifier(sprintf('%s.expr', $nodeType))
+					->build(),
 			];
 		}
 
@@ -66,7 +88,10 @@ class InvalidIncDecOperationRule implements Rule
 					'Cannot use %s on %s.',
 					$operatorString,
 					$varType->describe(VerbosityLevel::value()),
-				))->line($node->var->getLine())->build(),
+				))
+					->line($node->var->getLine())
+					->identifier(sprintf('%s.type', $nodeType))
+					->build(),
 			];
 		}
 

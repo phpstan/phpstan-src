@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -19,12 +19,13 @@ use function array_values;
 use function count;
 use function implode;
 use function sprintf;
+use function strtolower;
 
 class GenericObjectTypeCheck
 {
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
 		Type $phpDocType,
@@ -44,16 +45,11 @@ class GenericObjectTypeCheck
 				continue;
 			}
 
-			$classLikeDescription = 'class';
-			if ($classReflection->isInterface()) {
-				$classLikeDescription = 'interface';
-			} elseif ($classReflection->isTrait()) {
-				$classLikeDescription = 'trait';
-			} elseif ($classReflection->isEnum()) {
-				$classLikeDescription = 'enum';
-			}
+			$classLikeDescription = strtolower($classReflection->getClassTypeDescription());
 			if (!$classReflection->isGeneric()) {
-				$messages[] = RuleErrorBuilder::message(sprintf($classNotGenericMessage, $genericType->describe(VerbosityLevel::typeOnly()), $classLikeDescription, $classReflection->getDisplayName()))->build();
+				$messages[] = RuleErrorBuilder::message(sprintf($classNotGenericMessage, $genericType->describe(VerbosityLevel::typeOnly()), $classLikeDescription, $classReflection->getDisplayName()))
+					->identifier('generics.notGeneric')
+					->build();
 				continue;
 			}
 
@@ -70,7 +66,7 @@ class GenericObjectTypeCheck
 					$classLikeDescription,
 					$classReflection->getDisplayName(false),
 					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes())),
-				))->build();
+				))->identifier('generics.lessTypes')->build();
 			} elseif ($templateTypesCount < $genericTypeTypesCount) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$extraTypesMessage,
@@ -80,7 +76,7 @@ class GenericObjectTypeCheck
 					$classReflection->getDisplayName(false),
 					$templateTypesCount,
 					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes())),
-				))->build();
+				))->identifier('generics.moreTypes')->build();
 			}
 
 			$templateTypesCount = count($templateTypes);
@@ -147,7 +143,7 @@ class GenericObjectTypeCheck
 					$templateType->describe(VerbosityLevel::typeOnly()),
 					$classLikeDescription,
 					$classReflection->getDisplayName(false),
-				))->build();
+				))->identifier('generics.notSubtype')->build();
 			}
 		}
 

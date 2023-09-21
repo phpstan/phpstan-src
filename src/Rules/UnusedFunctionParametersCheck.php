@@ -23,8 +23,8 @@ class UnusedFunctionParametersCheck
 	/**
 	 * @param string[] $parameterNames
 	 * @param Node[] $statements
-	 * @param mixed[] $additionalMetadata
-	 * @return RuleError[]
+	 * @param 'constructor.unusedParameter'|'closure.unusedUse' $identifier
+	 * @return list<IdentifierRuleError>
 	 */
 	public function getUnusedParameters(
 		Scope $scope,
@@ -32,7 +32,6 @@ class UnusedFunctionParametersCheck
 		array $statements,
 		string $unusedParameterMessage,
 		string $identifier,
-		array $additionalMetadata,
 	): array
 	{
 		$unusedParameters = array_fill_keys($parameterNames, true);
@@ -47,7 +46,7 @@ class UnusedFunctionParametersCheck
 		foreach (array_keys($unusedParameters) as $name) {
 			$errors[] = RuleErrorBuilder::message(
 				sprintf($unusedParameterMessage, $name),
-			)->identifier($identifier)->metadata($additionalMetadata + ['variableName' => $name])->build();
+			)->identifier($identifier)->build();
 		}
 
 		return $errors;

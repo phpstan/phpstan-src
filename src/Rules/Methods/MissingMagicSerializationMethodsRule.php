@@ -66,13 +66,19 @@ class MissingMagicSerializationMethodsRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Non-abstract class %s implements the Serializable interface, but does not implement __serialize().',
 				$classReflection->getDisplayName(),
-			))->tip('See https://wiki.php.net/rfc/phase_out_serializable')->build();
+			))
+				->tip('See https://wiki.php.net/rfc/phase_out_serializable')
+				->identifier('class.serializable')
+				->build();
 		}
 		if ($missingMagicUnserialize) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Non-abstract class %s implements the Serializable interface, but does not implement __unserialize().',
 				$classReflection->getDisplayName(),
-			))->tip('See https://wiki.php.net/rfc/phase_out_serializable')->build();
+			))
+				->tip('See https://wiki.php.net/rfc/phase_out_serializable')
+				->identifier('class.serializable')
+				->build();
 		}
 
 		return $messages;

@@ -41,12 +41,7 @@ class TooWideFunctionThrowTypeRule implements Rule
 				$functionReflection->getName(),
 				$throwClass,
 			))
-				->identifier('exceptions.tooWideThrowType')
-				->metadata([
-					'exceptionName' => $throwClass,
-					'statementDepth' => $node->getAttribute('statementDepth'),
-					'statementOrder' => $node->getAttribute('statementOrder'),
-				])
+				->identifier('throws.unusedType')
 				->build();
 		}
 

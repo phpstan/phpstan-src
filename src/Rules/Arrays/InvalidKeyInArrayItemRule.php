@@ -37,13 +37,13 @@ class InvalidKeyInArrayItemRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Invalid array key type %s.', $dimensionType->describe(VerbosityLevel::typeOnly())),
-				)->build(),
+				)->identifier('array.invalidKey')->build(),
 			];
 		} elseif ($this->reportMaybes && $isSuperType->maybe() && !$dimensionType instanceof MixedType) {
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Possibly invalid array key type %s.', $dimensionType->describe(VerbosityLevel::typeOnly())),
-				)->build(),
+				)->identifier('array.invalidKey')->build(),
 			];
 		}
 

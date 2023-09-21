@@ -6,6 +6,7 @@ use Exception;
 use Github\Api\Issue as GitHubIssueApi;
 use Github\Client;
 use PHPStan\IssueBot\Comment\BotComment;
+use PHPStan\IssueBot\Comment\IssueCommentDownloader;
 use PHPStan\IssueBot\Issue\IssueCache;
 use PHPStan\IssueBot\Playground\PlaygroundCache;
 use PHPStan\IssueBot\Playground\PlaygroundError;
@@ -36,6 +37,7 @@ class EvaluateCommand extends Command
 		private TabCreator $tabCreator,
 		private PostGenerator $postGenerator,
 		private Client $githubClient,
+		private IssueCommentDownloader $issueCommentDownloader,
 		private string $issueCachePath,
 		private string $playgroundCachePath,
 		private string $tmpDir,
@@ -108,6 +110,16 @@ class EvaluateCommand extends Command
 					continue;
 				}
 
+				if ($this->isIssueClosed($issue->getNumber())) {
+					continue;
+				}
+
+				$freshBotComments = $this->getFreshBotComments($issue->getNumber());
+				$textAgain = $this->postGenerator->createText($hash, $originalTabs, $newTabs, $freshBotComments);
+				if ($textAgain === null) {
+					continue;
+				}
+
 				$toPost[] = [
 					'issue' => $issue->getNumber(),
 					'hash' => $hash,
@@ -177,6 +189,32 @@ class EvaluateCommand extends Command
 		}
 
 		return 0;
+	}
+
+	/**
+	 * @return list<BotComment>
+	 */
+	private function getFreshBotComments(int $issueNumber): array
+	{
+		$comments = [];
+		foreach ($this->issueCommentDownloader->getComments($issueNumber) as $issueComment) {
+			if (!$issueComment instanceof BotComment) {
+				continue;
+			}
+
+			$comments[] = $issueComment;
+		}
+
+		return $comments;
+	}
+
+	private function isIssueClosed(int $issueNumber): bool
+	{
+		/** @var GitHubIssueApi $issueApi */
+		$issueApi = $this->githubClient->api('issue');
+		$issue = $issueApi->show('phpstan', 'phpstan', $issueNumber);
+
+		return $issue['state'] === 'closed';
 	}
 
 	private function loadIssueCache(): IssueCache

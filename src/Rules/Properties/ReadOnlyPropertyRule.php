@@ -32,19 +32,28 @@ class ReadOnlyPropertyRule implements Rule
 
 		$errors = [];
 		if (!$this->phpVersion->supportsReadOnlyProperties()) {
-			 $errors[] = RuleErrorBuilder::message('Readonly properties are supported only on PHP 8.1 and later.')->nonIgnorable()->build();
+			 $errors[] = RuleErrorBuilder::message('Readonly properties are supported only on PHP 8.1 and later.')->nonIgnorable()
+				 ->identifier('property.readOnlyNotSupported')
+				 ->build();
 		}
 
 		if ($node->getNativeType() === null) {
-			 $errors[] = RuleErrorBuilder::message('Readonly property must have a native type.')->nonIgnorable()->build();
+			 $errors[] = RuleErrorBuilder::message('Readonly property must have a native type.')
+				 ->identifier('property.readOnlyNoNativeType')
+				 ->nonIgnorable()
+				 ->build();
 		}
 
 		if ($node->getDefault() !== null) {
-			 $errors[] = RuleErrorBuilder::message('Readonly property cannot have a default value.')->nonIgnorable()->build();
+			 $errors[] = RuleErrorBuilder::message('Readonly property cannot have a default value.')->nonIgnorable()
+				 ->identifier('property.readOnlyDefaultValue')
+				 ->build();
 		}
 
 		if ($node->isStatic()) {
-			$errors[] = RuleErrorBuilder::message('Readonly property cannot be static.')->nonIgnorable()->build();
+			$errors[] = RuleErrorBuilder::message('Readonly property cannot be static.')->nonIgnorable()
+				->identifier('property.readOnlyStatic')
+				->build();
 		}
 
 		return $errors;

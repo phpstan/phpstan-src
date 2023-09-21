@@ -22,7 +22,7 @@ class FunctionReturnTypeCheck
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function checkReturnType(
 		Scope $scope,
@@ -42,6 +42,7 @@ class FunctionReturnTypeCheck
 			return [
 				RuleErrorBuilder::message($neverMessage)
 					->line($returnNode->getLine())
+					->identifier('return.never')
 					->build(),
 			];
 		}
@@ -64,7 +65,10 @@ class FunctionReturnTypeCheck
 				RuleErrorBuilder::message(sprintf(
 					$emptyReturnStatementMessage,
 					$returnType->describe($verbosityLevel),
-				))->line($returnNode->getLine())->build(),
+				))
+					->line($returnNode->getLine())
+					->identifier('return.empty')
+					->build(),
 			];
 		}
 
@@ -80,7 +84,10 @@ class FunctionReturnTypeCheck
 				RuleErrorBuilder::message(sprintf(
 					$voidMessage,
 					$returnValueType->describe($verbosityLevel),
-				))->line($returnNode->getLine())->build(),
+				))
+					->line($returnNode->getLine())
+					->identifier('return.void')
+					->build(),
 			];
 		}
 
@@ -91,7 +98,11 @@ class FunctionReturnTypeCheck
 					$typeMismatchMessage,
 					$returnType->describe($verbosityLevel),
 					$returnValueType->describe($verbosityLevel),
-				))->line($returnNode->getLine())->acceptsReasonsTip($accepts->reasons)->build(),
+				))
+					->line($returnNode->getLine())
+					->identifier('return.type')
+					->acceptsReasonsTip($accepts->reasons)
+					->build(),
 			];
 		}
 

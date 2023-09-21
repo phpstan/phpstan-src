@@ -6,8 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_merge;
 use function count;
@@ -43,7 +43,7 @@ class ApiClassImplementsRule implements Rule
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function checkName(Scope $scope, Node\Name $name): array
 	{
@@ -60,7 +60,7 @@ class ApiClassImplementsRule implements Rule
 		$ruleError = RuleErrorBuilder::message(sprintf(
 			'Implementing %s is not covered by backward compatibility promise. The interface might change in a minor PHPStan version.',
 			$implementedClassReflection->getDisplayName(),
-		))->tip(sprintf(
+		))->identifier('phpstanApi.interface')->tip(sprintf(
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
 			'https://github.com/phpstan/phpstan/discussions',
 		))->build();

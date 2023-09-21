@@ -84,7 +84,10 @@ class MissingReturnRule implements Rule
 						return [
 							RuleErrorBuilder::message(
 								sprintf('%s should return %s but return statement is missing.', $description, $returnType->describe(VerbosityLevel::typeOnly())),
-							)->line($node->getNode()->getStartLine())->build(),
+							)
+								->line($node->getNode()->getStartLine())
+								->identifier('return.missing')
+								->build(),
 						];
 					}
 				}
@@ -106,6 +109,8 @@ class MissingReturnRule implements Rule
 			if ($node->hasNativeReturnTypehint()) {
 				$errorBuilder->nonIgnorable();
 			}
+
+			$errorBuilder->identifier('return.never');
 
 			return [
 				$errorBuilder->build(),
@@ -131,6 +136,8 @@ class MissingReturnRule implements Rule
 		if ($node->hasNativeReturnTypehint()) {
 			$errorBuilder->nonIgnorable();
 		}
+
+		$errorBuilder->identifier('return.missing');
 
 		return [
 			$errorBuilder->build(),

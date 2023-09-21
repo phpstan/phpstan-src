@@ -78,7 +78,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 						'PHPDoc tag %s references unknown parameter: $%s',
 						$tagName,
 						$parameterName,
-					))->identifier('phpDoc.unknownParameter')->metadata(['parameterName' => $parameterName])->build();
+					))->identifier('parameter.notFound')->build();
 
 				} elseif (
 					$this->unresolvableTypeHelper->containsUnresolvableType($phpDocParamType)
@@ -87,7 +87,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 						'PHPDoc tag %s for parameter $%s contains unresolvable type.',
 						$tagName,
 						$parameterName,
-					))->build();
+					))->identifier('parameter.unresolvableType')->build();
 
 				} else {
 					$nativeParamType = $nativeParameterTypes[$parameterName];
@@ -144,7 +144,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 								'Parameter $%s for PHPDoc tag %s is not passed by reference.',
 								$parameterName,
 								$tagName,
-							))->build();
+							))->identifier('parameter.notByRef')->build();
 
 						}
 						continue;
@@ -157,7 +157,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 							$parameterName,
 							$phpDocParamType->describe(VerbosityLevel::typeOnly()),
 							$nativeParamType->describe(VerbosityLevel::typeOnly()),
-						))->build();
+						))->identifier('parameter.phpDocType')->build();
 
 					} elseif ($isParamSuperType->maybe()) {
 						$errorBuilder = RuleErrorBuilder::message(sprintf(
@@ -166,7 +166,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 							$parameterName,
 							$phpDocParamType->describe(VerbosityLevel::typeOnly()),
 							$nativeParamType->describe(VerbosityLevel::typeOnly()),
-						));
+						))->identifier('parameter.phpDocType');
 						if ($phpDocParamType instanceof TemplateType) {
 							$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocParamType->getName(), $nativeParamType->describe(VerbosityLevel::typeOnly())));
 						}
@@ -183,7 +183,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 			if (
 				$this->unresolvableTypeHelper->containsUnresolvableType($phpDocReturnType)
 			) {
-				$errors[] = RuleErrorBuilder::message('PHPDoc tag @return contains unresolvable type.')->build();
+				$errors[] = RuleErrorBuilder::message('PHPDoc tag @return contains unresolvable type.')->identifier('return.unresolvableType')->build();
 
 			} else {
 				$isReturnSuperType = $nativeReturnType->isSuperTypeOf($phpDocReturnType);
@@ -201,14 +201,14 @@ class IncompatiblePhpDocTypeRule implements Rule
 						'PHPDoc tag @return with type %s is incompatible with native type %s.',
 						$phpDocReturnType->describe(VerbosityLevel::typeOnly()),
 						$nativeReturnType->describe(VerbosityLevel::typeOnly()),
-					))->build();
+					))->identifier('return.phpDocType')->build();
 
 				} elseif ($isReturnSuperType->maybe()) {
 					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag @return with type %s is not subtype of native type %s.',
 						$phpDocReturnType->describe(VerbosityLevel::typeOnly()),
 						$nativeReturnType->describe(VerbosityLevel::typeOnly()),
-					));
+					))->identifier('return.phpDocType');
 					if ($phpDocReturnType instanceof TemplateType) {
 						$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocReturnType->getName(), $nativeReturnType->describe(VerbosityLevel::typeOnly())));
 					}

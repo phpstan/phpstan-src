@@ -53,7 +53,7 @@ class ApiClassConstFetchRule implements Rule
 			'Accessing %s::%s is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
 			$classReflection->getDisplayName(),
 			$node->name->toString(),
-		))->tip(sprintf(
+		))->identifier('phpstanApi.classConstant')->tip(sprintf(
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
 			'https://github.com/phpstan/phpstan/discussions',
 		))->build();

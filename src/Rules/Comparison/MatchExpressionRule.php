@@ -55,7 +55,10 @@ class MatchExpressionRule implements Rule
 				|| ($nextArmIsDeadForType && $this->treatPhpDocTypesAsCertain)
 			) {
 				if (!$this->disableUnreachable) {
-					$errors[] = RuleErrorBuilder::message('Match arm is unreachable because previous comparison is always true.')->line($arm->getLine())->build();
+					$errors[] = RuleErrorBuilder::message('Match arm is unreachable because previous comparison is always true.')
+						->identifier('match.unreachable')
+						->line($arm->getLine())
+						->build();
 				}
 				continue;
 			}
@@ -101,7 +104,7 @@ class MatchExpressionRule implements Rule
 						'Match arm comparison between %s and %s is always false.',
 						$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
 						$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
-					))->line($armLine)->build();
+					))->line($armLine)->identifier('match.alwaysFalse')->build();
 				} else {
 					if ($this->checkAlwaysTrueStrictComparison) {
 						if ($i === $armsCount - 1 && !$this->reportAlwaysTrueInLastCondition) {
@@ -115,6 +118,9 @@ class MatchExpressionRule implements Rule
 						if ($i !== $armsCount - 1 && !$this->reportAlwaysTrueInLastCondition) {
 							$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 						}
+
+						$errorBuilder->identifier('match.alwaysTrue');
+
 						$errors[] = $errorBuilder->build();
 					}
 				}
@@ -140,7 +146,7 @@ class MatchExpressionRule implements Rule
 					'Match expression does not handle remaining %s: %s',
 					$remainingType instanceof UnionType ? 'values' : 'value',
 					$remainingType->describe(VerbosityLevel::value()),
-				))->build();
+				))->identifier('match.unhandled')->build();
 			}
 		}
 

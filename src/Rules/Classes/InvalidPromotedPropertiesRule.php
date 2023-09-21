@@ -55,7 +55,7 @@ class InvalidPromotedPropertiesRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					'Promoted properties are supported only on PHP 8.0 and later.',
-				)->nonIgnorable()->build(),
+				)->identifier('property.promotedNotSupported')->nonIgnorable()->build(),
 			];
 		}
 
@@ -68,7 +68,7 @@ class InvalidPromotedPropertiesRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					'Promoted properties can be in constructor only.',
-				)->nonIgnorable()->build(),
+				)->identifier('property.invalidPromoted')->nonIgnorable()->build(),
 			];
 		}
 
@@ -76,7 +76,7 @@ class InvalidPromotedPropertiesRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					'Promoted properties are not allowed in abstract constructors.',
-				)->nonIgnorable()->build(),
+				)->identifier('property.invalidPromoted')->nonIgnorable()->build(),
 			];
 		}
 
@@ -97,8 +97,7 @@ class InvalidPromotedPropertiesRule implements Rule
 			$propertyName = $param->var->name;
 			$errors[] = RuleErrorBuilder::message(
 				sprintf('Promoted property parameter $%s can not be variadic.', $propertyName),
-			)->nonIgnorable()->line($param->getLine())->build();
-			continue;
+			)->identifier('property.invalidPromoted')->nonIgnorable()->line($param->getLine())->build();
 		}
 
 		return $errors;

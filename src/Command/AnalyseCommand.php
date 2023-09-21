@@ -6,9 +6,9 @@ use OndraM\CiDetector\CiDetector;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
-use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
@@ -260,6 +260,10 @@ class AnalyseCommand extends Command
 			));
 		}
 
+		if ($fix) {
+			return $this->runFixer($inceptionResult, $container, $onlyFiles, $input, $output, $files);
+		}
+
 		$application = $container->getByType(AnalyseApplication::class);
 
 		$debug = $input->getOption('debug');
@@ -316,181 +320,7 @@ class AnalyseCommand extends Command
 		}
 
 		if ($generateBaselineFile !== null) {
-			if (!$allowEmptyBaseline && !$analysisResult->hasErrors()) {
-				$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
-				$inceptionResult->getStdOutput()->writeLineFormatted('To allow generating empty baselines, pass <fg=cyan>--allow-empty-baseline</> option.');
-
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-			}
-			if ($analysisResult->hasInternalErrors()) {
-				$inceptionResult->getStdOutput()->getStyle()->error('An internal error occurred. Baseline could not be generated. Re-run PHPStan without --generate-baseline to see what\'s going on.');
-
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-			}
-
-			$streamOutput = $this->createStreamOutput();
-			$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $streamOutput);
-			$baselineOutput = new SymfonyOutput($streamOutput, new SymfonyStyle($errorConsoleStyle));
-			$baselineFileDirectory = dirname($generateBaselineFile);
-			$baselinePathHelper = new ParentDirectoryRelativePathHelper($baselineFileDirectory);
-
-			if ($baselineExtension === 'php') {
-				$baselineErrorFormatter = new BaselinePhpErrorFormatter($baselinePathHelper);
-				$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput);
-			} else {
-				$baselineErrorFormatter = new BaselineNeonErrorFormatter($baselinePathHelper);
-				$existingBaselineContent = is_file($generateBaselineFile) ? FileReader::read($generateBaselineFile) : '';
-				$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput, $existingBaselineContent);
-			}
-
-			$stream = $streamOutput->getStream();
-			rewind($stream);
-			$baselineContents = stream_get_contents($stream);
-			if ($baselineContents === false) {
-				throw new ShouldNotHappenException();
-			}
-
-			if (!is_dir($baselineFileDirectory)) {
-				$mkdirResult = @mkdir($baselineFileDirectory, 0644, true);
-				if ($mkdirResult === false) {
-					$inceptionResult->getStdOutput()->writeLineFormatted(sprintf('Failed to create directory "%s".', $baselineFileDirectory));
-
-					return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-				}
-			}
-
-			try {
-				FileWriter::write($generateBaselineFile, $baselineContents);
-			} catch (CouldNotWriteFileException $e) {
-				$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
-
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-			}
-
-			$errorsCount = 0;
-			$unignorableCount = 0;
-			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-				if (!$fileSpecificError->canBeIgnored()) {
-					$unignorableCount++;
-					if ($output->isVeryVerbose()) {
-						$inceptionResult->getStdOutput()->writeLineFormatted('Unignorable could not be added to the baseline:');
-						$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getMessage());
-						$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getFile());
-						$inceptionResult->getStdOutput()->writeLineFormatted('');
-					}
-					continue;
-				}
-
-				$errorsCount++;
-			}
-
-			$message = sprintf('Baseline generated with %d %s.', $errorsCount, $errorsCount === 1 ? 'error' : 'errors');
-
-			if (
-				$unignorableCount === 0
-				&& count($analysisResult->getNotFileSpecificErrors()) === 0
-			) {
-				$inceptionResult->getStdOutput()->getStyle()->success($message);
-			} else {
-				$inceptionResult->getStdOutput()->getStyle()->warning($message . "\nSome errors could not be put into baseline. Re-run PHPStan and fix them.");
-			}
-
-			$exitCode = 0;
-			if ($failWithoutResultCache && !$analysisResult->isResultCacheUsed()) {
-				$exitCode = 2;
-			}
-
-			return $inceptionResult->handleReturn(
-				$exitCode,
-				$analysisResult->getPeakMemoryUsageBytes(),
-			);
-		}
-
-		if ($fix) {
-			$ciDetector = new CiDetector();
-			if ($ciDetector->isCiDetected()) {
-				$inceptionResult->getStdOutput()->writeLineFormatted('PHPStan Pro can\'t run in CI environment yet. Stay tuned!');
-
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-			}
-			$hasInternalErrors = $analysisResult->hasInternalErrors();
-			$nonIgnorableErrorsByException = [];
-			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-				if (!$fileSpecificError->hasNonIgnorableException()) {
-					continue;
-				}
-
-				$nonIgnorableErrorsByException[] = $fileSpecificError;
-			}
-
-			if ($hasInternalErrors || count($nonIgnorableErrorsByException) > 0) {
-				$fixerAnalysisResult = new AnalysisResult(
-					$nonIgnorableErrorsByException,
-					$analysisResult->getInternalErrors(),
-					$analysisResult->getInternalErrors(),
-					[],
-					$analysisResult->getCollectedData(),
-					$analysisResult->isDefaultLevelUsed(),
-					$analysisResult->getProjectConfigFile(),
-					$analysisResult->isResultCacheSaved(),
-					$analysisResult->getPeakMemoryUsageBytes(),
-					$analysisResult->isResultCacheUsed(),
-				);
-
-				$stdOutput = $inceptionResult->getStdOutput();
-				$stdOutput->getStyle()->error('PHPStan Pro can\'t be launched because of these errors:');
-
-				/** @var TableErrorFormatter $tableErrorFormatter */
-				$tableErrorFormatter = $container->getService('errorFormatter.table');
-				$tableErrorFormatter->formatErrors($fixerAnalysisResult, $stdOutput);
-
-				$stdOutput->writeLineFormatted('Please fix them first and then re-run PHPStan.');
-
-				if ($stdOutput->isDebug()) {
-					$stdOutput->writeLineFormatted(sprintf('hasInternalErrors: %s', $hasInternalErrors ? 'true' : 'false'));
-					$stdOutput->writeLineFormatted(sprintf('nonIgnorableErrorsByExceptionCount: %d', count($nonIgnorableErrorsByException)));
-				}
-
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-			}
-
-			if (!$analysisResult->isResultCacheSaved() && !$onlyFiles) {
-				// this can happen only if there are some regex-related errors in ignoreErrors configuration
-				$stdOutput = $inceptionResult->getStdOutput();
-				if (count($analysisResult->getFileSpecificErrors()) > 0) {
-					$stdOutput->getStyle()->error('Unknown error. Please report this as a bug.');
-					return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-				}
-
-				$stdOutput->getStyle()->error('PHPStan Pro can\'t be launched because of these errors:');
-
-				/** @var TableErrorFormatter $tableErrorFormatter */
-				$tableErrorFormatter = $container->getService('errorFormatter.table');
-				$tableErrorFormatter->formatErrors($analysisResult, $stdOutput);
-
-				$stdOutput->writeLineFormatted('Please fix them first and then re-run PHPStan.');
-
-				if ($stdOutput->isDebug()) {
-					$stdOutput->writeLineFormatted('Result cache was not saved.');
-				}
-
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-			}
-
-			$inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes());
-
-			$fixerApplication = $container->getByType(FixerApplication::class);
-
-			return $fixerApplication->run(
-				$inceptionResult->getProjectConfigFile(),
-				$inceptionResult,
-				$input,
-				$output,
-				$analysisResult->getFileSpecificErrors(),
-				$analysisResult->getNotFileSpecificErrors(),
-				count($files),
-				$_SERVER['argv'][0],
-			);
+			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension, $failWithoutResultCache);
 		}
 
 		/** @var ErrorFormatter $errorFormatter */
@@ -514,6 +344,119 @@ class AnalyseCommand extends Command
 			throw new ShouldNotHappenException();
 		}
 		return new StreamOutput($resource);
+	}
+
+	private function generateBaseline(string $generateBaselineFile, InceptionResult $inceptionResult, AnalysisResult $analysisResult, OutputInterface $output, bool $allowEmptyBaseline, string $baselineExtension, bool $failWithoutResultCache): int
+	{
+		if (!$allowEmptyBaseline && !$analysisResult->hasErrors()) {
+			$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
+			$inceptionResult->getStdOutput()->writeLineFormatted('To allow generating empty baselines, pass <fg=cyan>--allow-empty-baseline</> option.');
+
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+		}
+		if ($analysisResult->hasInternalErrors()) {
+			$inceptionResult->getStdOutput()->getStyle()->error('An internal error occurred. Baseline could not be generated. Re-run PHPStan without --generate-baseline to see what\'s going on.');
+
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+		}
+
+		$streamOutput = $this->createStreamOutput();
+		$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $streamOutput);
+		$baselineOutput = new SymfonyOutput($streamOutput, new SymfonyStyle($errorConsoleStyle));
+		$baselineFileDirectory = dirname($generateBaselineFile);
+		$baselinePathHelper = new ParentDirectoryRelativePathHelper($baselineFileDirectory);
+
+		if ($baselineExtension === 'php') {
+			$baselineErrorFormatter = new BaselinePhpErrorFormatter($baselinePathHelper);
+			$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput);
+		} else {
+			$baselineErrorFormatter = new BaselineNeonErrorFormatter($baselinePathHelper);
+			$existingBaselineContent = is_file($generateBaselineFile) ? FileReader::read($generateBaselineFile) : '';
+			$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput, $existingBaselineContent);
+		}
+
+		$stream = $streamOutput->getStream();
+		rewind($stream);
+		$baselineContents = stream_get_contents($stream);
+		if ($baselineContents === false) {
+			throw new ShouldNotHappenException();
+		}
+
+		if (!is_dir($baselineFileDirectory)) {
+			$mkdirResult = @mkdir($baselineFileDirectory, 0644, true);
+			if ($mkdirResult === false) {
+				$inceptionResult->getStdOutput()->writeLineFormatted(sprintf('Failed to create directory "%s".', $baselineFileDirectory));
+
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+			}
+		}
+
+		try {
+			FileWriter::write($generateBaselineFile, $baselineContents);
+		} catch (CouldNotWriteFileException $e) {
+			$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
+
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+		}
+
+		$errorsCount = 0;
+		$unignorableCount = 0;
+		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+			if (!$fileSpecificError->canBeIgnored()) {
+				$unignorableCount++;
+				if ($output->isVeryVerbose()) {
+					$inceptionResult->getStdOutput()->writeLineFormatted('Unignorable could not be added to the baseline:');
+					$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getMessage());
+					$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getFile());
+					$inceptionResult->getStdOutput()->writeLineFormatted('');
+				}
+				continue;
+			}
+
+			$errorsCount++;
+		}
+
+		$message = sprintf('Baseline generated with %d %s.', $errorsCount, $errorsCount === 1 ? 'error' : 'errors');
+
+		if (
+			$unignorableCount === 0
+			&& count($analysisResult->getNotFileSpecificErrors()) === 0
+		) {
+			$inceptionResult->getStdOutput()->getStyle()->success($message);
+		} else {
+			$inceptionResult->getStdOutput()->getStyle()->warning($message . "\nSome errors could not be put into baseline. Re-run PHPStan and fix them.");
+		}
+
+		$exitCode = 0;
+		if ($failWithoutResultCache && !$analysisResult->isResultCacheUsed()) {
+			$exitCode = 2;
+		}
+
+		return $inceptionResult->handleReturn($exitCode, $analysisResult->getPeakMemoryUsageBytes());
+	}
+
+	/**
+	 * @param string[] $files
+	 */
+	private function runFixer(InceptionResult $inceptionResult, Container $container, bool $onlyFiles, InputInterface $input, OutputInterface $output, array $files): int
+	{
+		$ciDetector = new CiDetector();
+		if ($ciDetector->isCiDetected()) {
+			$inceptionResult->getStdOutput()->writeLineFormatted('PHPStan Pro can\'t run in CI environment yet. Stay tuned!');
+
+			return $inceptionResult->handleReturn(1, null);
+		}
+
+		/** @var FixerApplication $fixerApplication */
+		$fixerApplication = $container->getByType(FixerApplication::class);
+
+		return $fixerApplication->run(
+			$inceptionResult->getProjectConfigFile(),
+			$input,
+			$output,
+			count($files),
+			$_SERVER['argv'][0],
+		);
 	}
 
 }

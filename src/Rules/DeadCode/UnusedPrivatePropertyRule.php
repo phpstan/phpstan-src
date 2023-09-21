@@ -184,20 +184,22 @@ class UnusedPrivatePropertyRule implements Rule
 				if (!$data['written']) {
 					$errors[] = RuleErrorBuilder::message(sprintf('%s is unused.', $propertyName))
 						->line($propertyNode->getStartLine())
-						->identifier('deadCode.unusedProperty')
-						->metadata([
-							'classOrder' => $node->getClass()->getAttribute('statementOrder'),
-							'classDepth' => $node->getClass()->getAttribute('statementDepth'),
-							'classStartLine' => $node->getClass()->getStartLine(),
-							'propertyName' => $name,
-						])
 						->tip($tip)
+						->identifier('property.unused')
 						->build();
 				} else {
-					$errors[] = RuleErrorBuilder::message(sprintf('%s is never read, only written.', $propertyName))->line($propertyNode->getStartLine())->tip($tip)->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('%s is never read, only written.', $propertyName))
+						->line($propertyNode->getStartLine())
+						->identifier('property.onlyWritten')
+						->tip($tip)
+						->build();
 				}
 			} elseif (!$data['written'] && (!array_key_exists($name, $uninitializedProperties) || !$this->checkUninitializedProperties)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('%s is never written, only read.', $propertyName))->line($propertyNode->getStartLine())->tip($tip)->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('%s is never written, only read.', $propertyName))
+					->line($propertyNode->getStartLine())
+					->identifier('property.onlyRead')
+					->tip($tip)
+					->build();
 			}
 		}
 

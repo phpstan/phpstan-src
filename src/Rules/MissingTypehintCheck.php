@@ -24,6 +24,7 @@ use function array_keys;
 use function array_merge;
 use function in_array;
 use function sprintf;
+use function strtolower;
 
 class MissingTypehintCheck
 {
@@ -139,7 +140,7 @@ class MissingTypehintCheck
 					throw new ShouldNotHappenException();
 				}
 				$objectTypes[] = [
-					sprintf('%s %s', $classReflection->isInterface() ? 'interface' : 'class', $classReflection->getDisplayName(false)),
+					sprintf('%s %s', strtolower($classReflection->getClassTypeDescription()), $classReflection->getDisplayName(false)),
 					array_keys($classReflection->getTemplateTypeMap()->getTypes()),
 				];
 				return $type;

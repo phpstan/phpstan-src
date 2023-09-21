@@ -7,7 +7,7 @@ use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IterableType;
@@ -29,11 +29,11 @@ class MethodParameterComparisonHelper
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function compare(MethodPrototypeReflection $prototype, PhpMethodFromParserNodeReflection $method, bool $ignorable = false): array
 	{
-		/** @var RuleError[] $messages */
+		/** @var list<IdentifierRuleError> $messages */
 		$messages = [];
 		$prototypeVariant = $prototype->getVariants()[0];
 
@@ -51,7 +51,7 @@ class MethodParameterComparisonHelper
 					$prototype->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-				));
+				))->identifier('parameter.missing');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
@@ -75,7 +75,7 @@ class MethodParameterComparisonHelper
 						$prototypeParameter->getName(),
 						$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 						$prototype->getName(),
-					));
+					))->identifier('parameter.byRef');
 
 					if (! $ignorable) {
 						$error->nonIgnorable();
@@ -94,7 +94,7 @@ class MethodParameterComparisonHelper
 					$prototypeParameter->getName(),
 					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				));
+				))->identifier('parameter.notByRef');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
@@ -114,7 +114,7 @@ class MethodParameterComparisonHelper
 								$methodParameter->getName(),
 								$method->getDeclaringClass()->getDisplayName(),
 								$method->getName(),
-							));
+							))->identifier('parameter.notOptional');
 
 							if (! $ignorable) {
 								$error->nonIgnorable();
@@ -135,7 +135,7 @@ class MethodParameterComparisonHelper
 							$prototypeParameter->getName(),
 							$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 							$prototype->getName(),
-						));
+						))->identifier('parameter.notVariadic');
 
 						if (! $ignorable) {
 							$error->nonIgnorable();
@@ -151,7 +151,7 @@ class MethodParameterComparisonHelper
 							$methodParameter->getName(),
 							$method->getDeclaringClass()->getDisplayName(),
 							$method->getName(),
-						));
+						))->identifier('parameter.notVariadic');
 
 						if (! $ignorable) {
 							$error->nonIgnorable();
@@ -183,7 +183,7 @@ class MethodParameterComparisonHelper
 							$remainingPrototypeParameter->getNativeType()->describe(VerbosityLevel::typeOnly()),
 							$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 							$prototype->getName(),
-						));
+						))->identifier('method.childParameterType');
 
 						if (! $ignorable) {
 							$error->nonIgnorable();
@@ -203,7 +203,7 @@ class MethodParameterComparisonHelper
 					$prototypeParameter->getName(),
 					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				));
+				))->identifier('parameter.variadic');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
@@ -225,7 +225,7 @@ class MethodParameterComparisonHelper
 					$prototypeParameter->getName(),
 					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				));
+				))->identifier('parameter.notOptional');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
@@ -255,7 +255,7 @@ class MethodParameterComparisonHelper
 						$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
 						$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 						$prototype->getName(),
-					));
+					))->identifier('method.childParameterType');
 
 					if (! $ignorable) {
 						$error->nonIgnorable();
@@ -283,7 +283,7 @@ class MethodParameterComparisonHelper
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				));
+				))->identifier('method.childParameterType');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
@@ -303,7 +303,7 @@ class MethodParameterComparisonHelper
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				));
+				))->identifier('method.childParameterType');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
@@ -333,7 +333,7 @@ class MethodParameterComparisonHelper
 					$methodParameter->getName(),
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-				));
+				))->identifier('parameter.notVariadic');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
@@ -354,7 +354,7 @@ class MethodParameterComparisonHelper
 				$methodParameter->getName(),
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-			));
+			))->identifier('parameter.notOptional');
 
 			if (! $ignorable) {
 				$error->nonIgnorable();

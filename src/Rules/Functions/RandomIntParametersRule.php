@@ -64,7 +64,7 @@ class RandomIntParametersRule implements Rule
 					$message,
 					$minType->describe(VerbosityLevel::value()),
 					$maxType->describe(VerbosityLevel::value()),
-				))->build(),
+				))->identifier('argument.type')->build(),
 			];
 		}
 

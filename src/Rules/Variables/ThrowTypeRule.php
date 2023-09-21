@@ -55,7 +55,7 @@ class ThrowTypeRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Invalid type %s to throw.',
 				$foundType->describe(VerbosityLevel::typeOnly()),
-			))->build(),
+			))->identifier('throw.notThrowable')->build(),
 		];
 	}
 

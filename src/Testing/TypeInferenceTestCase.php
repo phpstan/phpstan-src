@@ -161,7 +161,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 					self::fail(sprintf('ERROR: Invalid TrinaryLogic call.'));
 				}
 
-				// @phpstan-ignore-next-line
+				// @phpstan-ignore staticMethod.dynamicName
 				$expectedertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
 				$variable = $node->getArgs()[1]->value;
 				if (!$variable instanceof Node\Expr\Variable) {

@@ -9,6 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_values;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<InClassNode>
@@ -53,11 +54,12 @@ class AllowedSubTypesRule implements Rule
 				}
 			}
 
+			$identifierType = strtolower($classReflection->getClassTypeDescription());
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Type %s is not allowed to be a subtype of %s.',
 				$className,
 				$parentReflection->getName(),
-			))->build();
+			))->identifier(sprintf('%s.disallowedSubtype', $identifierType))->build();
 		}
 
 		return $messages;

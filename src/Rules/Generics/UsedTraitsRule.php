@@ -12,6 +12,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use function array_map;
 use function sprintf;
+use function strtolower;
 use function ucfirst;
 
 /**
@@ -56,11 +57,11 @@ class UsedTraitsRule implements Rule
 			$useTags = $resolvedPhpDoc->getUsesTags();
 		}
 
-		$description = sprintf('class %s', SprintfHelper::escapeFormatString($className));
-		$typeDescription = 'class';
+		$typeDescription = strtolower($scope->getClassReflection()->getClassTypeDescription());
+		$description = sprintf('%s %s', $typeDescription, SprintfHelper::escapeFormatString($className));
 		if ($traitName !== null) {
-			$description = sprintf('trait %s', SprintfHelper::escapeFormatString($traitName));
 			$typeDescription = 'trait';
+			$description = sprintf('%s %s', $typeDescription, SprintfHelper::escapeFormatString($traitName));
 		}
 
 		return $this->genericAncestorsCheck->check(

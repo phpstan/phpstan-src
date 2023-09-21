@@ -43,7 +43,10 @@ class YieldFromTypeRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					$messagePattern,
 					$exprType->describe(VerbosityLevel::typeOnly()),
-				))->line($node->expr->getLine())->build(),
+				))
+					->line($node->expr->getLine())
+					->identifier('generator.nonIterable')
+					->build(),
 			];
 		} elseif (
 			!$exprType instanceof MixedType
@@ -54,7 +57,10 @@ class YieldFromTypeRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					$messagePattern,
 					$exprType->describe(VerbosityLevel::typeOnly()),
-				))->line($node->expr->getLine())->build(),
+				))
+					->line($node->expr->getLine())
+					->identifier('generator.nonIterable')
+					->build(),
 			];
 		}
 
@@ -80,7 +86,11 @@ class YieldFromTypeRule implements Rule
 				'Generator expects key type %s, %s given.',
 				$returnType->getIterableKeyType()->describe($verbosityLevel),
 				$exprType->getIterableKeyType()->describe($verbosityLevel),
-			))->line($node->expr->getLine())->acceptsReasonsTip($acceptsKey->reasons)->build();
+			))
+				->line($node->expr->getLine())
+				->identifier('generator.keyType')
+				->acceptsReasonsTip($acceptsKey->reasons)
+				->build();
 		}
 
 		$acceptsValue = $this->ruleLevelHelper->acceptsWithReason($returnType->getIterableValueType(), $exprType->getIterableValueType(), $scope->isDeclareStrictTypes());
@@ -90,7 +100,11 @@ class YieldFromTypeRule implements Rule
 				'Generator expects value type %s, %s given.',
 				$returnType->getIterableValueType()->describe($verbosityLevel),
 				$exprType->getIterableValueType()->describe($verbosityLevel),
-			))->line($node->expr->getLine())->acceptsReasonsTip($acceptsValue->reasons)->build();
+			))
+				->line($node->expr->getLine())
+				->identifier('generator.valueType')
+				->acceptsReasonsTip($acceptsValue->reasons)
+				->build();
 		}
 
 		$scopeFunction = $scope->getFunction();
@@ -111,17 +125,19 @@ class YieldFromTypeRule implements Rule
 				'Generator expects delegated TSend type %s, %s given.',
 				$exprSendType->describe(VerbosityLevel::typeOnly()),
 				$thisSendType->describe(VerbosityLevel::typeOnly()),
-			))->build();
+			))->identifier('generator.sendType')->build();
 		} elseif ($this->reportMaybes && !$isSuperType->yes()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects delegated TSend type %s, %s given.',
 				$exprSendType->describe(VerbosityLevel::typeOnly()),
 				$thisSendType->describe(VerbosityLevel::typeOnly()),
-			))->build();
+			))->identifier('generator.sendType')->build();
 		}
 
 		if (!$scope->isInFirstLevelStatement() && $scope->getType($node)->isVoid()->yes()) {
-			$messages[] = RuleErrorBuilder::message('Result of yield from (void) is used.')->build();
+			$messages[] = RuleErrorBuilder::message('Result of yield from (void) is used.')
+				->identifier('generator.void')
+				->build();
 		}
 
 		return $messages;

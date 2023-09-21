@@ -113,8 +113,10 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 				}
 				if (isset($ignoreError['messages'])) {
 					$ignoreMessages = $ignoreError['messages'];
-				} else {
+				} elseif (isset($ignoreError['message'])) {
 					$ignoreMessages = [$ignoreError['message']];
+				} else {
+					continue;
 				}
 			} else {
 				$ignoreMessages = [$ignoreError];

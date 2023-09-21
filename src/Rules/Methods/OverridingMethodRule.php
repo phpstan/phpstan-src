@@ -9,8 +9,8 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
@@ -56,7 +56,10 @@ class OverridingMethodRule implements Rule
 								$method->getName(),
 								$parent->getDisplayName($this->genericPrototypeMessage),
 								$parentConstructor->getName(),
-							))->nonIgnorable()->build(),
+							))
+								->nonIgnorable()
+								->identifier('method.parentMethodFinal')
+								->build(),
 						], $node, $scope);
 					}
 				}
@@ -77,7 +80,10 @@ class OverridingMethodRule implements Rule
 				$method->getName(),
 				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
-			))->nonIgnorable()->build();
+			))
+				->nonIgnorable()
+				->identifier('method.parentMethodFinal')
+				->build();
 		}
 
 		if ($prototype->isStatic()) {
@@ -88,7 +94,10 @@ class OverridingMethodRule implements Rule
 					$method->getName(),
 					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('method.nonStatic')
+					->build();
 			}
 		} elseif ($method->isStatic()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
@@ -97,7 +106,10 @@ class OverridingMethodRule implements Rule
 				$method->getName(),
 				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
-			))->nonIgnorable()->build();
+			))
+				->nonIgnorable()
+				->identifier('method.static')
+				->build();
 		}
 
 		if ($prototype->isPublic()) {
@@ -109,7 +121,10 @@ class OverridingMethodRule implements Rule
 					$method->getName(),
 					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('method.visibility')
+					->build();
 			}
 		} elseif ($method->isPrivate()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
@@ -118,7 +133,10 @@ class OverridingMethodRule implements Rule
 				$method->getName(),
 				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
-			))->nonIgnorable()->build();
+			))
+				->nonIgnorable()
+				->identifier('method.visibility')
+				->build();
 		}
 
 		$prototypeVariants = $prototype->getVariants();
@@ -146,7 +164,11 @@ class OverridingMethodRule implements Rule
 					$prototype->getTentativeReturnType()->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				))->tip('Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.')->nonIgnorable()->build();
+				))
+					->tip('Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.')
+					->nonIgnorable()
+					->identifier('method.tentativeReturnType')
+					->build();
 			}
 		}
 
@@ -168,7 +190,10 @@ class OverridingMethodRule implements Rule
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('method.childReturnType')
+					->build();
 			} else {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Return type %s of method %s::%s() is not compatible with return type %s of method %s::%s().',
@@ -178,7 +203,10 @@ class OverridingMethodRule implements Rule
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('method.childReturnType')
+					->build();
 			}
 		}
 
@@ -186,8 +214,8 @@ class OverridingMethodRule implements Rule
 	}
 
 	/**
-	 * @param RuleError[] $errors
-	 * @return (string|RuleError)[]
+	 * @param list<IdentifierRuleError> $errors
+	 * @return list<IdentifierRuleError>
 	 */
 	private function addErrors(
 		array $errors,

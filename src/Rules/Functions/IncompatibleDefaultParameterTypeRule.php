@@ -60,7 +60,11 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 				$defaultValueType->describe($verbosityLevel),
 				$function->getName(),
 				$parameterType->describe($verbosityLevel),
-			))->line($param->getLine())->acceptsReasonsTip($accepts->reasons)->build();
+			))
+				->line($param->getLine())
+				->identifier('parameter.defaultValue')
+				->acceptsReasonsTip($accepts->reasons)
+				->build();
 		}
 
 		return $errors;

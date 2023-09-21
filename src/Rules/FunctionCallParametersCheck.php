@@ -51,7 +51,8 @@ class FunctionCallParametersCheck
 	/**
 	 * @param Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall
 	 * @param array{0: string, 1: string, 2: string, 3: string, 4: string, 5: string, 6: string, 7: string, 8: string, 9: string, 10: string, 11: string, 12: string, 13?: string} $messages
-	 * @return RuleError[]
+	 * @param 'attribute'|'callable'|'method'|'staticMethod'|'function'|'new' $nodeType
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
 		ParametersAcceptor $parametersAcceptor,
@@ -59,6 +60,7 @@ class FunctionCallParametersCheck
 		bool $isBuiltin,
 		$funcCall,
 		array $messages,
+		string $nodeType = 'function',
 	): array
 	{
 		$functionParametersMinCount = 0;
@@ -85,10 +87,18 @@ class FunctionCallParametersCheck
 		foreach ($args as $i => $arg) {
 			$type = $scope->getType($arg->value);
 			if ($hasNamedArguments && $arg->unpack) {
-				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by an unpacked (...) argument.')->line($arg->getLine())->nonIgnorable()->build();
+				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by an unpacked (...) argument.')
+					->identifier('argument.unpackAfterNamed')
+					->line($arg->getLine())
+					->nonIgnorable()
+					->build();
 			}
 			if ($hasUnpackedArgument && !$arg->unpack) {
-				$errors[] = RuleErrorBuilder::message('Unpacked argument (...) cannot be followed by a non-unpacked argument.')->line($arg->getLine())->nonIgnorable()->build();
+				$errors[] = RuleErrorBuilder::message('Unpacked argument (...) cannot be followed by a non-unpacked argument.')
+					->identifier('argument.nonUnpackAfterUnpacked')
+					->line($arg->getLine())
+					->nonIgnorable()
+					->build();
 			}
 			if ($arg->unpack) {
 				$hasUnpackedArgument = true;
@@ -168,7 +178,11 @@ class FunctionCallParametersCheck
 		}
 
 		if ($hasNamedArguments && !$this->phpVersion->supportsNamedArguments() && !(bool) $funcCall->getAttribute('isAttribute', false)) {
-			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')->line($funcCall->getLine())->nonIgnorable()->build();
+			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')
+				->identifier('argument.namedNotSupported')
+				->line($funcCall->getLine())
+				->nonIgnorable()
+				->build();
 		}
 
 		if (!$hasNamedArguments) {
@@ -189,20 +203,29 @@ class FunctionCallParametersCheck
 						$invokedParametersCount === 1 ? $messages[0] : $messages[1],
 						$invokedParametersCount,
 						$functionParametersMinCount,
-					))->line($funcCall->getLine())->build();
+					))
+						->identifier('arguments.count')
+						->line($funcCall->getLine())
+						->build();
 				} elseif ($functionParametersMaxCount === -1 && $invokedParametersCount < $functionParametersMinCount) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$invokedParametersCount === 1 ? $messages[2] : $messages[3],
 						$invokedParametersCount,
 						$functionParametersMinCount,
-					))->line($funcCall->getLine())->build();
+					))
+						->identifier('arguments.count')
+						->line($funcCall->getLine())
+						->build();
 				} elseif ($functionParametersMaxCount !== -1) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$invokedParametersCount === 1 ? $messages[4] : $messages[5],
 						$invokedParametersCount,
 						$functionParametersMinCount,
 						$functionParametersMaxCount,
-					))->line($funcCall->getLine())->build();
+					))
+						->identifier('arguments.count')
+						->line($funcCall->getLine())
+						->build();
 				}
 			}
 		}
@@ -212,7 +235,10 @@ class FunctionCallParametersCheck
 			&& !$scope->isInFirstLevelStatement()
 			&& $scope->getType($funcCall)->isVoid()->yes()
 		) {
-			$errors[] = RuleErrorBuilder::message($messages[7])->line($funcCall->getLine())->build();
+			$errors[] = RuleErrorBuilder::message($messages[7])
+				->identifier(sprintf('%s.void', $nodeType))
+				->line($funcCall->getLine())
+				->build();
 		}
 
 		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCall->getLine(), $isBuiltin, $arguments, $hasNamedArguments, $messages[10], $messages[11]);
@@ -241,7 +267,7 @@ class FunctionCallParametersCheck
 						'Only iterables can be unpacked, %s given in argument #%d.',
 						$iterableTypeResultType->describe(VerbosityLevel::typeOnly()),
 						$i + 1,
-					))->line($argumentLine)->build();
+					))->identifier('argument.unpackNonIterable')->line($argumentLine)->build();
 				}
 			}
 
@@ -267,7 +293,11 @@ class FunctionCallParametersCheck
 							) : $parameterDescription,
 							$parameterType->describe($verbosityLevel),
 							$argumentValueType->describe($verbosityLevel),
-						))->line($argumentLine)->acceptsReasonsTip($accepts->reasons)->build();
+						))
+							->identifier('argument.type')
+							->line($argumentLine)
+							->acceptsReasonsTip($accepts->reasons)
+							->build();
 					}
 				}
 
@@ -285,7 +315,7 @@ class FunctionCallParametersCheck
 							$i + 1,
 							$parameterDescription,
 						) : $parameterDescription,
-					))->line($argumentLine)->build();
+					))->identifier('argument.unresolvableType')->line($argumentLine)->build();
 				}
 			}
 
@@ -301,7 +331,10 @@ class FunctionCallParametersCheck
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[8],
 					$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
-				))->line($argumentLine)->build();
+				))
+					->identifier('argument.byRef')
+					->line($argumentLine)
+					->build();
 				continue;
 			}
 
@@ -329,7 +362,7 @@ class FunctionCallParametersCheck
 						'Parameter %s is passed by reference so it does not accept %s.',
 						$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
 						$propertyDescription,
-					))->line($argumentLine)->build();
+					))->identifier('argument.byRef')->line($argumentLine)->build();
 				}
 			}
 
@@ -344,7 +377,7 @@ class FunctionCallParametersCheck
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				$messages[8],
 				$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
-			))->line($argumentLine)->build();
+			))->identifier('argument.byRef')->line($argumentLine)->build();
 		}
 
 		if ($this->checkMissingTypehints && $parametersAcceptor instanceof ResolvedFunctionVariant) {
@@ -399,7 +432,11 @@ class FunctionCallParametersCheck
 						continue;
 					}
 
-					$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))->line($funcCall->getLine())->tip('See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type')->build();
+					$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))
+						->identifier('argument.templateType')
+						->line($funcCall->getLine())
+						->tip('See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type')
+						->build();
 				}
 			}
 
@@ -407,7 +444,10 @@ class FunctionCallParametersCheck
 				!$this->unresolvableTypeHelper->containsUnresolvableType($originalParametersAcceptor->getReturnType())
 				&& $this->unresolvableTypeHelper->containsUnresolvableType($parametersAcceptor->getReturnType())
 			) {
-				$errors[] = RuleErrorBuilder::message($messages[12])->line($funcCall->getLine())->build();
+				$errors[] = RuleErrorBuilder::message($messages[12])
+					->identifier(sprintf('%s.unresolvableReturnType', $nodeType))
+					->line($funcCall->getLine())
+					->build();
 			}
 		}
 
@@ -416,7 +456,7 @@ class FunctionCallParametersCheck
 
 	/**
 	 * @param array<int, array{Expr, Type, bool, string|null, int}> $arguments
-	 * @return array{RuleError[], array<int, array{Expr, Type, bool, (string|null), int, (ParameterReflection|null), (ParameterReflection|null)}>}
+	 * @return array{list<IdentifierRuleError>, array<int, array{Expr, Type, bool, (string|null), int, (ParameterReflection|null), (ParameterReflection|null)}>}
 	 */
 	private function processArguments(
 		ParametersAcceptor $parametersAcceptor,
@@ -481,7 +521,10 @@ class FunctionCallParametersCheck
 					|| $parametersCount <= 0
 					|| $isBuiltin
 				) {
-					$errors[] = RuleErrorBuilder::message(sprintf($unknownParameterMessage, $argumentName))->line($argumentLine)->build();
+					$errors[] = RuleErrorBuilder::message(sprintf($unknownParameterMessage, $argumentName))
+						->identifier('argument.unknown')
+						->line($argumentLine)
+						->build();
 					$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, null, null];
 					continue;
 				}
@@ -491,7 +534,11 @@ class FunctionCallParametersCheck
 			}
 
 			if ($namedArgumentAlreadyOccurred && $argumentName === null && !$unpack) {
-				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by a positional argument.')->line($argumentLine)->nonIgnorable()->build();
+				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by a positional argument.')
+					->identifier('argument.positionalAfterNamed')
+					->line($argumentLine)
+					->nonIgnorable()
+					->build();
 				$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, null, null];
 				continue;
 			}
@@ -503,7 +550,10 @@ class FunctionCallParametersCheck
 				&& !$parameter->isVariadic()
 				&& !array_key_exists($parameter->getName(), $unusedParametersByName)
 			) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))->line($argumentLine)->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))
+					->identifier('argument.duplicate')
+					->line($argumentLine)
+					->build();
 				continue;
 			}
 
@@ -516,7 +566,10 @@ class FunctionCallParametersCheck
 					continue;
 				}
 
-				$errors[] = RuleErrorBuilder::message(sprintf($missingParameterMessage, sprintf('%s (%s)', $parameter->getName(), $parameter->getType()->describe(VerbosityLevel::typeOnly()))))->line($line)->build();
+				$errors[] = RuleErrorBuilder::message(sprintf($missingParameterMessage, sprintf('%s (%s)', $parameter->getName(), $parameter->getType()->describe(VerbosityLevel::typeOnly()))))
+					->identifier('argument.missing')
+					->line($line)
+					->build();
 			}
 		}
 

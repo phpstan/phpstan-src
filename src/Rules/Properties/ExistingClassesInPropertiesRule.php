@@ -59,7 +59,7 @@ class ExistingClassesInPropertiesRule implements Rule
 						$propertyReflection->getDeclaringClass()->getDisplayName(),
 						$node->getName(),
 						$referencedClass,
-					))->build();
+					))->identifier('property.trait')->build();
 				}
 				continue;
 			}
@@ -69,7 +69,7 @@ class ExistingClassesInPropertiesRule implements Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 				$referencedClass,
-			))->discoveringSymbolsTip()->build();
+			))->identifier('class.notFound')->discoveringSymbolsTip()->build();
 		}
 
 		if ($this->checkClassCaseSensitivity) {
@@ -87,7 +87,7 @@ class ExistingClassesInPropertiesRule implements Rule
 				'Property %s::$%s has unresolvable native type.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-			))->build();
+			))->identifier('property.unresolvableNativeType')->build();
 		}
 
 		return $errors;

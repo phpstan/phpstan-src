@@ -7,16 +7,25 @@ use PhpParser\Lexer;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
+use PHPStan\Analyser\Ignore\IgnoreLexer;
+use PHPStan\Analyser\Ignore\IgnoreParseException;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
+use function array_pop;
+use function array_values;
+use function count;
+use function in_array;
 use function is_string;
+use function strlen;
 use function strpos;
+use function substr;
 use function substr_count;
 use const ARRAY_FILTER_USE_KEY;
 use const T_COMMENT;
 use const T_DOC_COMMENT;
+use const T_WHITESPACE;
 
 class RichParser implements Parser
 {
@@ -28,6 +37,7 @@ class RichParser implements Parser
 		private Lexer $lexer,
 		private NameResolver $nameResolver,
 		private Container $container,
+		private IgnoreLexer $ignoreLexer,
 	)
 	{
 	}
@@ -52,6 +62,8 @@ class RichParser implements Parser
 	{
 		$errorHandler = new Collecting();
 		$nodes = $this->parser->parse($sourceCode, $errorHandler);
+
+		/** @var list<string|array{0:int,1:string,2:int}> $tokens */
 		$tokens = $this->lexer->getTokens();
 		if ($errorHandler->hasErrors()) {
 			throw new ParserErrorsException($errorHandler->getErrors(), null);
@@ -72,9 +84,12 @@ class RichParser implements Parser
 
 		/** @var array<Node\Stmt> */
 		$nodes = $nodeTraverser->traverse($nodes);
-		$linesToIgnore = $this->getLinesToIgnore($tokens);
+		['lines' => $linesToIgnore, 'errors' => $ignoreParseErrors] = $this->getLinesToIgnore($tokens);
 		if (isset($nodes[0])) {
 			$nodes[0]->setAttribute('linesToIgnore', $linesToIgnore);
+			if (count($ignoreParseErrors) > 0) {
+				$nodes[0]->setAttribute('linesToIgnoreParseErrors', $ignoreParseErrors);
+			}
 		}
 
 		foreach ($traitCollectingVisitor->traits as $trait) {
@@ -85,36 +100,170 @@ class RichParser implements Parser
 	}
 
 	/**
-	 * @param mixed[] $tokens
-	 * @return array<int, list<string>|null>
+	 * @param list<string|array{0:int,1:string,2:int}> $tokens
+	 * @return array{lines: array<int, non-empty-list<string>|null>, errors: array<int, non-empty-list<string>>}
 	 */
 	private function getLinesToIgnore(array $tokens): array
 	{
 		$lines = [];
+		$previousToken = null;
+		$pendingToken = null;
+		$errors = [];
 		foreach ($tokens as $token) {
 			if (is_string($token)) {
 				continue;
 			}
 
 			$type = $token[0];
+			$line = $token[2];
 			if ($type !== T_COMMENT && $type !== T_DOC_COMMENT) {
+				if ($type !== T_WHITESPACE) {
+					if ($pendingToken !== null) {
+						[$pendingText, $pendingIgnorePos, $tokenLine, $pendingLine] = $pendingToken;
+
+						try {
+							$identifiers = $this->parseIdentifiers($pendingText, $pendingIgnorePos);
+						} catch (IgnoreParseException $e) {
+							$errors[] = [$tokenLine + $e->getPhpDocLine(), $e->getMessage()];
+							$pendingToken = null;
+							continue;
+						}
+
+						if ($line !== $pendingLine + 1) {
+							$lineToAdd = $pendingLine;
+						} else {
+							$lineToAdd = $line;
+						}
+
+						foreach ($identifiers as $identifier) {
+							$lines[$lineToAdd][] = $identifier;
+						}
+
+						$pendingToken = null;
+					}
+					$previousToken = $token;
+				}
 				continue;
 			}
 
 			$text = $token[1];
-			$line = $token[2];
-			if (strpos($text, '@phpstan-ignore-next-line') !== false) {
+			$isNextLine = strpos($text, '@phpstan-ignore-next-line') !== false;
+			$isCurrentLine = strpos($text, '@phpstan-ignore-line') !== false;
+			if ($isNextLine) {
 				$line++;
-			} elseif (strpos($text, '@phpstan-ignore-line') === false) {
+			}
+			if ($isNextLine || $isCurrentLine) {
+				$line += substr_count($token[1], "\n");
+
+				$lines[$line] = null;
+				continue;
+			}
+
+			$ignorePos = strpos($text, '@phpstan-ignore');
+			if ($ignorePos === false) {
+				continue;
+			}
+
+			$ignoreLine = substr_count(substr($text, 0, $ignorePos), "\n") - 1;
+
+			if ($previousToken !== null && $previousToken[2] === $line) {
+				try {
+					foreach ($this->parseIdentifiers($text, $ignorePos) as $identifier) {
+						$lines[$line][] = $identifier;
+					}
+				} catch (IgnoreParseException $e) {
+					$errors[] = [$token[2] + $e->getPhpDocLine() + $ignoreLine, $e->getMessage()];
+				}
+
 				continue;
 			}
 
 			$line += substr_count($token[1], "\n");
-
-			$lines[$line] = null;
+			$pendingToken = [$text, $ignorePos, $token[2] + $ignoreLine, $line];
 		}
 
-		return $lines;
+		if ($pendingToken !== null) {
+			[$pendingText, $pendingIgnorePos, $tokenLine, $pendingLine] = $pendingToken;
+
+			try {
+				foreach ($this->parseIdentifiers($pendingText, $pendingIgnorePos) as $identifier) {
+					$lines[$pendingLine][] = $identifier;
+				}
+			} catch (IgnoreParseException $e) {
+				$errors[] = [$tokenLine + $e->getPhpDocLine(), $e->getMessage()];
+			}
+		}
+
+		$processedErrors = [];
+		foreach ($errors as [$line, $message]) {
+			$processedErrors[$line][] = $message;
+		}
+
+		return [
+			'lines' => $lines,
+			'errors' => $processedErrors,
+		];
+	}
+
+	/**
+	 * @return non-empty-list<string>
+	 * @throws IgnoreParseException
+	 */
+	private function parseIdentifiers(string $text, int $ignorePos): array
+	{
+		$text = substr($text, $ignorePos + strlen('@phpstan-ignore'));
+		$tokens = $this->ignoreLexer->tokenize($text);
+		$tokens = array_values(array_filter($tokens, static fn (array $token) => !in_array($token[IgnoreLexer::TYPE_OFFSET], [IgnoreLexer::TOKEN_WHITESPACE, IgnoreLexer::TOKEN_EOL], true)));
+		$c = count($tokens);
+
+		$identifiers = [];
+		$depth = 0;
+		$parenthesisStack = [];
+		for ($i = 0; $i < $c; $i++) {
+			[IgnoreLexer::VALUE_OFFSET => $content, IgnoreLexer::TYPE_OFFSET => $tokenType, IgnoreLexer::LINE_OFFSET => $tokenLine] = $tokens[$i];
+			if ($tokenType === IgnoreLexer::TOKEN_IDENTIFIER && $depth === 0) {
+				$identifiers[] = $content;
+				if (isset($tokens[$i + 1])) {
+					if ($tokens[$i + 1][IgnoreLexer::TYPE_OFFSET] === IgnoreLexer::TOKEN_COMMA) {
+						$i++;
+					}
+				}
+				continue;
+			}
+			if ($i === 0) {
+				throw new IgnoreParseException('First token is not an identifier', $tokenLine);
+			}
+			if ($tokenType === IgnoreLexer::TOKEN_COMMA) {
+				throw new IgnoreParseException('Unexpected comma (,)', $tokenLine);
+			}
+			if ($tokenType === IgnoreLexer::TOKEN_CLOSE_PARENTHESIS) {
+				if ($depth < 1) {
+					throw new IgnoreParseException('Closing parenthesis ")" before opening parenthesis "("', $tokenLine);
+				}
+
+				$depth--;
+				array_pop($parenthesisStack);
+				if ($depth === 0) {
+					break;
+				}
+			}
+			if ($tokenType !== IgnoreLexer::TOKEN_OPEN_PARENTHESIS) {
+				continue;
+			}
+
+			$depth++;
+			$parenthesisStack[] = $tokenLine;
+		}
+
+		if (count($parenthesisStack) > 0) {
+			throw new IgnoreParseException('Unclosed opening parenthesis "(" without closing parenthesis ")"', $parenthesisStack[count($parenthesisStack) - 1]);
+		}
+
+		if (count($identifiers) === 0) {
+			throw new IgnoreParseException('Missing identifier', 1);
+		}
+
+		return $identifiers;
 	}
 
 }

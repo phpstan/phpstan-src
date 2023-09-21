@@ -133,29 +133,34 @@ parametersSchema:
 		anyOf(
 			string(),
 			structure([
-				messages: listOf(string())
+				?messages: listOf(string())
+				?identifier: string()
 				?path: string()
 				?reportUnmatched: bool()
 			]),
 			structure([
-				message: string()
+				?message: string()
+				?identifier: string()
 				?path: string()
 				?reportUnmatched: bool()
 			]),
 			structure([
-				message: string()
+				?message: string()
 				count: int()
 				path: string()
+				?identifier: string()
 				?reportUnmatched: bool()
 			]),
 			structure([
-				message: string()
+				?message: string()
 				paths: listOf(string())
+				?identifier: string()
 				?reportUnmatched: bool()
 			]),
 			structure([
-				messages: listOf(string())
+				?messages: listOf(string())
 				paths: listOf(string())
+				?identifier: string()
 				?reportUnmatched: bool()
 			])
 		)

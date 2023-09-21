@@ -7,8 +7,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use function array_map;
@@ -59,7 +59,7 @@ class ExistingNamesInUseRule implements Rule
 
 	/**
 	 * @param Node\Stmt\UseUse[] $uses
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function checkConstants(array $uses): array
 	{
@@ -69,7 +69,11 @@ class ExistingNamesInUseRule implements Rule
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $use->name))->line($use->name->getLine())->discoveringSymbolsTip()->build();
+			$errors[] = RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $use->name))
+				->line($use->name->getLine())
+				->identifier('constant.notFound')
+				->discoveringSymbolsTip()
+				->build();
 		}
 
 		return $errors;
@@ -77,14 +81,18 @@ class ExistingNamesInUseRule implements Rule
 
 	/**
 	 * @param Node\Stmt\UseUse[] $uses
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function checkFunctions(array $uses): array
 	{
 		$errors = [];
 		foreach ($uses as $use) {
 			if (!$this->reflectionProvider->hasFunction($use->name, null)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $use->name))->line($use->name->getLine())->discoveringSymbolsTip()->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $use->name))
+					->line($use->name->getLine())
+					->identifier('function.notFound')
+					->discoveringSymbolsTip()
+					->build();
 			} elseif ($this->checkFunctionNameCase) {
 				$functionReflection = $this->reflectionProvider->getFunction($use->name, null);
 				$realName = $functionReflection->getName();
@@ -97,7 +105,10 @@ class ExistingNamesInUseRule implements Rule
 						'Function %s used with incorrect case: %s.',
 						$realName,
 						$usedName,
-					))->line($use->name->getLine())->build();
+					))
+						->line($use->name->getLine())
+						->identifier('function.nameCase')
+						->build();
 				}
 			}
 		}
@@ -107,7 +118,7 @@ class ExistingNamesInUseRule implements Rule
 
 	/**
 	 * @param Node\Stmt\UseUse[] $uses
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function checkClasses(array $uses): array
 	{

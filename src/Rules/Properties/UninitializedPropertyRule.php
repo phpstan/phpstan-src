@@ -41,7 +41,10 @@ class UninitializedPropertyRule implements Rule
 				'Class %s has an uninitialized property $%s. Give it default value or assign it in the constructor.',
 				$classReflection->getDisplayName(),
 				$propertyName,
-			))->line($propertyNode->getLine())->build();
+			))
+				->line($propertyNode->getLine())
+				->identifier('property.uninitialized')
+				->build();
 		}
 
 		foreach ($prematureAccess as [$propertyName, $line, $propertyNode, $file, $fileDescription]) {
@@ -52,7 +55,11 @@ class UninitializedPropertyRule implements Rule
 				'Access to an uninitialized property %s::$%s.',
 				$classReflection->getDisplayName(),
 				$propertyName,
-			))->line($line)->file($file, $fileDescription)->build();
+			))
+				->line($line)
+				->file($file, $fileDescription)
+				->identifier('property.uninitialized')
+				->build();
 		}
 
 		return $errors;

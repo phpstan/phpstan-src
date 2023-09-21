@@ -51,7 +51,7 @@ class TooWideArrowFunctionReturnTypehintRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Anonymous function never returns %s so it can be removed from the return type.',
 				$type->describe(VerbosityLevel::getRecommendedLevelByType($type)),
-			))->build();
+			))->identifier('return.unusedType')->build();
 		}
 
 		return $messages;

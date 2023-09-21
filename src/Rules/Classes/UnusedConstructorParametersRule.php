@@ -65,7 +65,6 @@ class UnusedConstructorParametersRule implements Rule
 			$originalNode->stmts,
 			$message,
 			'constructor.unusedParameter',
-			[],
 		);
 	}
 

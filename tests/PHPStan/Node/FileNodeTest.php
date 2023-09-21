@@ -5,8 +5,8 @@ namespace PHPStan\Node;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\File\SimpleRelativePathHelper;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Testing\RuleTestCase;
 use function get_class;
@@ -27,7 +27,7 @@ class FileNodeTest extends RuleTestCase
 
 			/**
 			 * @param FileNode $node
-			 * @return RuleError[]
+			 * @return list<IdentifierRuleError>
 			 */
 			public function processNode(Node $node, Scope $scope): array
 			{
@@ -35,14 +35,16 @@ class FileNodeTest extends RuleTestCase
 				$pathHelper = new SimpleRelativePathHelper(__DIR__ . DIRECTORY_SEPARATOR . 'data');
 				if (!isset($nodes[0])) {
 					return [
-						RuleErrorBuilder::message(sprintf('File %s is empty.', $pathHelper->getRelativePath($scope->getFile())))->line(1)->build(),
+						RuleErrorBuilder::message(sprintf('File %s is empty.', $pathHelper->getRelativePath($scope->getFile())))->line(1)
+							->identifier('tests.fileNode')
+							->build(),
 					];
 				}
 
 				return [
 					RuleErrorBuilder::message(
 						sprintf('First node in file %s is: %s', $pathHelper->getRelativePath($scope->getFile()), get_class($nodes[0])),
-					)->build(),
+					)->identifier('tests.fileNode')->build(),
 				];
 			}
 

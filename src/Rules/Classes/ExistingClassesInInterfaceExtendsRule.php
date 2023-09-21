@@ -45,7 +45,11 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 						'Interface %s extends unknown interface %s.',
 						$currentInterfaceName,
 						$extendedInterfaceName,
-					))->nonIgnorable()->discoveringSymbolsTip()->build();
+					))
+						->identifier('interface.notFound')
+						->nonIgnorable()
+						->discoveringSymbolsTip()
+						->build();
 				}
 			} else {
 				$reflection = $this->reflectionProvider->getClass($extendedInterfaceName);
@@ -54,19 +58,28 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 						'Interface %s extends class %s.',
 						$currentInterfaceName,
 						$reflection->getDisplayName(),
-					))->nonIgnorable()->build();
+					))
+						->identifier('interfaceExtends.class')
+						->nonIgnorable()
+						->build();
 				} elseif ($reflection->isTrait()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Interface %s extends trait %s.',
 						$currentInterfaceName,
 						$reflection->getDisplayName(),
-					))->nonIgnorable()->build();
+					))
+						->identifier('interfaceExtends.trait')
+						->nonIgnorable()
+						->build();
 				} elseif ($reflection->isEnum()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Interface %s extends enum %s.',
 						$currentInterfaceName,
 						$reflection->getDisplayName(),
-					))->nonIgnorable()->build();
+					))
+						->identifier('interfaceExtends.enum')
+						->nonIgnorable()
+						->build();
 				}
 			}
 

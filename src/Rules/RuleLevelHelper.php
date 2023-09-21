@@ -342,7 +342,11 @@ class RuleLevelHelper
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf($unknownClassErrorPattern, $referencedClass))->line($var->getLine())->discoveringSymbolsTip()->build();
+			$errors[] = RuleErrorBuilder::message(sprintf($unknownClassErrorPattern, $referencedClass))
+				->line($var->getLine())
+				->identifier('class.notFound')
+				->discoveringSymbolsTip()
+				->build();
 		}
 
 		if (count($errors) > 0 || $hasClassExistsClass) {

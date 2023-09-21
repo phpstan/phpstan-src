@@ -64,7 +64,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				TrinaryLogic::createYes(),
 			],
 			'implementation with @extends with different type args' => [
-				new GenericObjectType(B\I::class, [new ObjectType('DateTimeInteface')]),
+				new GenericObjectType(B\I::class, [new ObjectType('DateTimeInterface')]),
 				new GenericObjectType(B\IImpl::class, [new ObjectType('DateTime')]),
 				TrinaryLogic::createNo(),
 			],
@@ -308,12 +308,12 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				TrinaryLogic::createYes(),
 			],
 			'implementation with @extends with different type args' => [
-				new GenericObjectType(B\I::class, [new ObjectType('DateTimeInteface')]),
+				new GenericObjectType(B\I::class, [new ObjectType('DateTimeInterface')]),
 				new GenericObjectType(B\IImpl::class, [new ObjectType('DateTime')]),
 				TrinaryLogic::createNo(),
 			],
 			'generic object accepts normal object of same type' => [
-				new GenericObjectType(Traversable::class, [new MixedType(true), new ObjectType('DateTimeInteface')]),
+				new GenericObjectType(Traversable::class, [new MixedType(true), new ObjectType('DateTimeInterface')]),
 				new ObjectType(Traversable::class),
 				TrinaryLogic::createYes(),
 			],

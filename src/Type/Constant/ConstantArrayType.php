@@ -422,7 +422,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		if ($this->isIterableAtLeastOnce()->no() && count($type->getConstantScalarValues()) === 1) {
-			// @phpstan-ignore-next-line
+			// @phpstan-ignore equal.invalid, equal.notAllowed
 			return new ConstantBooleanType($type->getConstantScalarValues()[0] == []); // phpcs:ignore
 		}
 
@@ -983,7 +983,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				array_pop($valueTypes);
 				$nextAutoindex = $removedKeyType instanceof ConstantIntegerType
 					? $removedKeyType->getValue()
-					: $this->getNextAutoIndex(); // @phpstan-ignore-line
+					: $this->getNextAutoIndex(); // @phpstan-ignore method.deprecated
 				continue;
 			}
 

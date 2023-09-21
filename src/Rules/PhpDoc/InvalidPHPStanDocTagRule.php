@@ -32,6 +32,7 @@ class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-template-covariant',
 		'@phpstan-return',
 		'@phpstan-throws',
+		'@phpstan-ignore',
 		'@phpstan-ignore-next-line',
 		'@phpstan-ignore-line',
 		'@phpstan-method',
@@ -113,7 +114,7 @@ class InvalidPHPStanDocTagRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Unknown PHPDoc tag: %s',
 				$phpDocTag->name,
-			))->build();
+			))->identifier('phpDoc.phpstanTag')->build();
 		}
 
 		return $errors;

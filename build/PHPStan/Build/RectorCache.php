@@ -125,11 +125,11 @@ class RectorCache
 				// dead symlink
 				return \false;
 			}
-			// make the path work accross different OSes
+			// make the path work across different OSes
 			$realPath = \str_replace('\\', '/', $realPath);
 			// return false to remove file
 			foreach (self::SKIP_PATHS as $excludePath) {
-				// make the path work accross different OSes
+				// make the path work across different OSes
 				$excludePath = \str_replace('\\', '/', $excludePath);
 				if (Strings::match($realPath, '#' . \preg_quote($excludePath, '#') . '#') !== null) {
 					return \false;

@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules;
 
-use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use function sprintf;
 use function strtolower;
@@ -16,7 +15,7 @@ class ClassCaseSensitivityCheck
 
 	/**
 	 * @param ClassNameNodePair[] $pairs
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function checkClassNames(array $pairs): array
 	{
@@ -38,28 +37,19 @@ class ClassCaseSensitivityCheck
 				continue;
 			}
 
+			$typeName = $classReflection->getClassTypeDescription();
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'%s %s referenced with incorrect case: %s.',
-				$this->getTypeName($classReflection),
+				$typeName,
 				$realClassName,
 				$className,
-			))->line($pair->getNode()->getLine())->build();
+			))
+				->identifier(sprintf('%s.nameCase', strtolower($typeName)))
+				->line($pair->getNode()->getLine())
+				->build();
 		}
 
 		return $errors;
-	}
-
-	private function getTypeName(ClassReflection $classReflection): string
-	{
-		if ($classReflection->isInterface()) {
-			return 'Interface';
-		} elseif ($classReflection->isTrait()) {
-			return 'Trait';
-		} elseif ($classReflection->isEnum()) {
-			return 'Enum';
-		}
-
-		return 'Class';
 	}
 
 }

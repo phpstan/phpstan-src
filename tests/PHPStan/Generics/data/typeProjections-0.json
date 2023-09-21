@@ -1,0 +1,37 @@
+[
+	{
+		"message": "Dumped type: PHPStan\\Generics\\TypeProjections\\B",
+		"line": 38,
+		"ignorable": false
+	},
+	{
+		"message": "Dumped type: mixed",
+		"line": 48,
+		"ignorable": false
+	},
+	{
+		"message": "Dumped type: PHPStan\\Generics\\TypeProjections\\A",
+		"line": 56,
+		"ignorable": false
+	},
+	{
+		"message": "Dumped type: mixed",
+		"line": 65,
+		"ignorable": false
+	},
+	{
+		"message": "Dumped type: PHPStan\\Generics\\TypeProjections\\B",
+		"line": 91,
+		"ignorable": false
+	},
+	{
+		"message": "Dumped type: mixed",
+		"line": 105,
+		"ignorable": false
+	},
+	{
+		"message": "Dumped type: mixed",
+		"line": 119,
+		"ignorable": false
+	}
+]

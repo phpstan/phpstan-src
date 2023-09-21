@@ -25,6 +25,8 @@ class TemplateTypeHelperTest extends PHPStanTestCase
 			new TemplateTypeMap([
 				'T' => $templateType,
 			]),
+			TemplateTypeVarianceMap::createEmpty(),
+			TemplateTypeVariance::createInvariant(),
 		);
 
 		$this->assertEquals(
@@ -40,6 +42,8 @@ class TemplateTypeHelperTest extends PHPStanTestCase
 					$templateType,
 				]),
 			]),
+			TemplateTypeVarianceMap::createEmpty(),
+			TemplateTypeVariance::createInvariant(),
 		);
 
 		$this->assertEquals(

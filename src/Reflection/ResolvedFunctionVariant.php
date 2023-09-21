@@ -8,6 +8,9 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
@@ -34,6 +37,7 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 	public function __construct(
 		private ParametersAcceptorWithPhpDocs $parametersAcceptor,
 		private TemplateTypeMap $resolvedTemplateTypeMap,
+		private TemplateTypeVarianceMap $callSiteVarianceMap,
 		private array $passedArgs,
 	)
 	{
@@ -54,6 +58,11 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 		return $this->resolvedTemplateTypeMap;
 	}
 
+	public function getCallSiteVarianceMap(): TemplateTypeVarianceMap
+	{
+		return $this->callSiteVarianceMap;
+	}
+
 	public function getParameters(): array
 	{
 		$parameters = $this->parameters;
@@ -65,6 +74,8 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 						TemplateTypeHelper::resolveTemplateTypes(
 							$this->resolveConditionalTypesForParameter($param->getType()),
 							$this->resolvedTemplateTypeMap,
+							$this->callSiteVarianceMap,
+							TemplateTypeVariance::createContravariant(),
 						),
 						false,
 					);
@@ -99,7 +110,7 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 	{
 		return $this->returnTypeWithUnresolvableTemplateTypes ??=
 			$this->resolveConditionalTypesForParameter(
-				$this->resolveResolvableTemplateTypes($this->parametersAcceptor->getReturnType()),
+				$this->resolveResolvableTemplateTypes($this->parametersAcceptor->getReturnType(), TemplateTypeVariance::createCovariant()),
 			);
 	}
 
@@ -107,7 +118,7 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 	{
 		return $this->phpDocReturnTypeWithUnresolvableTemplateTypes ??=
 			$this->resolveConditionalTypesForParameter(
-				$this->resolveResolvableTemplateTypes($this->parametersAcceptor->getPhpDocReturnType()),
+				$this->resolveResolvableTemplateTypes($this->parametersAcceptor->getPhpDocReturnType(), TemplateTypeVariance::createCovariant()),
 			);
 	}
 
@@ -120,6 +131,8 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 				TemplateTypeHelper::resolveTemplateTypes(
 					$this->getReturnTypeWithUnresolvableTemplateTypes(),
 					$this->resolvedTemplateTypeMap,
+					$this->callSiteVarianceMap,
+					TemplateTypeVariance::createCovariant(),
 				),
 				false,
 			);
@@ -139,6 +152,8 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 				TemplateTypeHelper::resolveTemplateTypes(
 					$this->getPhpDocReturnTypeWithUnresolvableTemplateTypes(),
 					$this->resolvedTemplateTypeMap,
+					$this->callSiteVarianceMap,
+					TemplateTypeVariance::createCovariant(),
 				),
 				false,
 			);
@@ -154,14 +169,41 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 		return $this->parametersAcceptor->getNativeReturnType();
 	}
 
-	private function resolveResolvableTemplateTypes(Type $type): Type
+	private function resolveResolvableTemplateTypes(Type $type, TemplateTypeVariance $positionVariance): Type
 	{
-		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+		$references = $type->getReferencedTemplateTypes($positionVariance);
+
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($references): Type {
 			if ($type instanceof TemplateType && !$type->isArgument()) {
 				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
-				if ($newType !== null && !$newType instanceof ErrorType) {
+				if ($newType === null || $newType instanceof ErrorType) {
+					return $traverse($type);
+				}
+
+				$variance = TemplateTypeVariance::createInvariant();
+				foreach ($references as $reference) {
+					// this uses identity to distinguish between different occurrences of the same template type
+					// see https://github.com/phpstan/phpstan-src/pull/2485#discussion_r1328555397 for details
+					if ($reference->getType() === $type) {
+						$variance = $reference->getPositionVariance();
+						break;
+					}
+				}
+
+				$callSiteVariance = $this->callSiteVarianceMap->getVariance($type->getName());
+				if ($callSiteVariance === null || $callSiteVariance->invariant()) {
 					return $newType;
 				}
+
+				if (!$callSiteVariance->covariant() && $variance->covariant()) {
+					return $traverse($type->getBound());
+				}
+
+				if (!$callSiteVariance->contravariant() && $variance->contravariant()) {
+					return new NonAcceptingNeverType();
+				}
+
+				return $newType;
 			}
 
 			return $traverse($type);

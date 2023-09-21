@@ -6,6 +6,8 @@ use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
 class ResolvedPropertyReflection implements WrapperPropertyReflection
@@ -15,7 +17,11 @@ class ResolvedPropertyReflection implements WrapperPropertyReflection
 
 	private ?Type $writableType = null;
 
-	public function __construct(private PropertyReflection $reflection, private TemplateTypeMap $templateTypeMap)
+	public function __construct(
+		private PropertyReflection $reflection,
+		private TemplateTypeMap $templateTypeMap,
+		private TemplateTypeVarianceMap $callSiteVarianceMap,
+	)
 	{
 	}
 
@@ -63,10 +69,14 @@ class ResolvedPropertyReflection implements WrapperPropertyReflection
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$this->reflection->getReadableType(),
 			$this->templateTypeMap,
+			$this->callSiteVarianceMap,
+			TemplateTypeVariance::createCovariant(),
 		);
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$type,
 			$this->templateTypeMap,
+			$this->callSiteVarianceMap,
+			TemplateTypeVariance::createCovariant(),
 		);
 
 		$this->readableType = $type;
@@ -84,10 +94,14 @@ class ResolvedPropertyReflection implements WrapperPropertyReflection
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$this->reflection->getWritableType(),
 			$this->templateTypeMap,
+			$this->callSiteVarianceMap,
+			TemplateTypeVariance::createContravariant(),
 		);
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$type,
 			$this->templateTypeMap,
+			$this->callSiteVarianceMap,
+			TemplateTypeVariance::createContravariant(),
 		);
 
 		$this->writableType = $type;

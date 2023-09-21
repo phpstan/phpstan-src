@@ -97,6 +97,7 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 				$this->closureType->getReturnType(),
 				$this->closureType->getReturnType(),
 				new MixedType(),
+				$this->closureType->getCallSiteVarianceMap(),
 			),
 		];
 	}

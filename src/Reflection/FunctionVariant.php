@@ -3,11 +3,14 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
 /** @api */
 class FunctionVariant implements ParametersAcceptor
 {
+
+	private TemplateTypeVarianceMap $callSiteVarianceMap;
 
 	/**
 	 * @api
@@ -19,8 +22,10 @@ class FunctionVariant implements ParametersAcceptor
 		private array $parameters,
 		private bool $isVariadic,
 		private Type $returnType,
+		?TemplateTypeVarianceMap $callSiteVarianceMap = null,
 	)
 	{
+		$this->callSiteVarianceMap = $callSiteVarianceMap ?? TemplateTypeVarianceMap::createEmpty();
 	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap
@@ -31,6 +36,11 @@ class FunctionVariant implements ParametersAcceptor
 	public function getResolvedTemplateTypeMap(): TemplateTypeMap
 	{
 		return $this->resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
+	}
+
+	public function getCallSiteVarianceMap(): TemplateTypeVarianceMap
+	{
+		return $this->callSiteVarianceMap;
 	}
 
 	/**

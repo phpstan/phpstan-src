@@ -207,6 +207,8 @@ class ClassReflection
 				$extendedType = TemplateTypeHelper::resolveTemplateTypes(
 					$extendedType,
 					$this->getPossiblyIncompleteActiveTemplateTypeMap(),
+					$this->getCallSiteVarianceMap(),
+					TemplateTypeVariance::createStatic(),
 				);
 			}
 
@@ -862,6 +864,8 @@ class ClassReflection
 					$implementedType = TemplateTypeHelper::resolveTemplateTypes(
 						$implementedType,
 						$this->getPossiblyIncompleteActiveTemplateTypeMap(),
+						$this->getCallSiteVarianceMap(),
+						TemplateTypeVariance::createStatic(),
 						true,
 					);
 				}
@@ -1621,6 +1625,8 @@ class ClassReflection
 			$types[] = TemplateTypeHelper::resolveTemplateTypes(
 				$mixinTag->getType(),
 				$this->getActiveTemplateTypeMap(),
+				$this->getCallSiteVarianceMap(),
+				TemplateTypeVariance::createStatic(),
 			);
 		}
 

@@ -57,21 +57,23 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 			return null;
 		}
 
-		$constantArrays = $arrayType->getConstantArrays();
-		$biggerOne = IntegerRangeType::fromInterval(1, null);
-		if (count($constantArrays) > 0 && $biggerOne->isSuperTypeOf($lengthType)->yes()) {
-			$results = [];
-			foreach ($constantArrays as $constantArray) {
-				foreach ($lengthType->getFiniteTypes() as $finiteType) {
-					if (!$finiteType instanceof ConstantIntegerType) {
-						throw new ShouldNotHappenException();
+		if ($preserveKeys !== null) {
+			$constantArrays = $arrayType->getConstantArrays();
+			$biggerOne = IntegerRangeType::fromInterval(1, null);
+			if (count($constantArrays) > 0 && $biggerOne->isSuperTypeOf($lengthType)->yes()) {
+				$results = [];
+				foreach ($constantArrays as $constantArray) {
+					foreach ($lengthType->getFiniteTypes() as $finiteType) {
+						if (!$finiteType instanceof ConstantIntegerType || $finiteType->getValue() < 1) {
+							throw new ShouldNotHappenException();
+						}
+
+						$results[] = $constantArray->chunk($finiteType->getValue(), $preserveKeys);
 					}
-
-					$results[] = $constantArray->chunk($finiteType->getValue(), $preserveKeys);
 				}
-			}
 
-			return TypeCombinator::union(...$results);
+				return TypeCombinator::union(...$results);
+			}
 		}
 
 		$chunkType = self::getChunkType($arrayType, $preserveKeys);

@@ -1654,11 +1654,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$arraysForCombinations = [];
 			$combinationCount = 1;
 			foreach ($values as $valueType) {
-				if ($valueType->getFiniteTypes() === []) {
+				$finiteTypes = $valueType->getFiniteTypes();
+				if ($finiteTypes === []) {
 					return [];
 				}
-				$arraysForCombinations[] = $valueType->getFiniteTypes();
-				$combinationCount *= count($valueType->getFiniteTypes());
+				$arraysForCombinations[] = $finiteTypes;
+				$combinationCount *= count($finiteTypes);
 			}
 			$arraysArraysForCombinations[] = $arraysForCombinations;
 			$count += $combinationCount;

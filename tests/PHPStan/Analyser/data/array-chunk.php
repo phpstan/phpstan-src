@@ -43,4 +43,22 @@ class Foo
 		assertType('array{array{a?: 0, b?: 1, c?: 2}, array{c?: 2}}', array_chunk($arr, 2, true));
 	}
 
+	/**
+	 * @param int<2, 3> $positiveRange
+	 * @param int<-5, -10> $negativeRange
+	 * @param int<-5, 0> $negativeWithZero
+	 *
+	 * @param 2|3 $positiveUnion
+	 */
+	public function chunkUnionTypeLength(array $arr, $positiveRange, $negativeRange, $negativeWithZero, $positiveUnion) {
+		assertType('*NEVER*', array_chunk($arr, $negativeRange));
+		assertType('*NEVER*', array_chunk($arr, $negativeWithZero));
+
+		/** @var array{a: 0, b?: 1, c: 2} $arr */
+		assertType('array{0: array{0: 0, 1?: 1|2, 2?: 2}, 1?: array{0?: 2}}', array_chunk($arr, $positiveRange));
+		assertType('array{0: array{a: 0, b?: 1, c?: 2}, 1?: array{c?: 2}}', array_chunk($arr, $positiveRange, true));
+		assertType('array{0: array{0: 0, 1?: 1|2, 2?: 2}, 1?: array{0?: 2}}', array_chunk($arr, $positiveUnion));
+		assertType('array{0: array{a: 0, b?: 1, c?: 2}, 1?: array{c?: 2}}', array_chunk($arr, $positiveUnion, true));
+	}
+
 }

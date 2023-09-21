@@ -6,12 +6,14 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -46,7 +48,8 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 			$preserveKeys = false;
 		}
 
-		if ($lengthType instanceof ConstantIntegerType && $lengthType->getValue() < 1) {
+		$negativeRange = IntegerRangeType::fromInterval(null, 0);
+		if ($negativeRange->isSuperTypeOf($lengthType)->yes()) {
 			return $this->phpVersion->throwsValueErrorForInternalFunctions() ? new NeverType() : new NullType();
 		}
 
@@ -55,10 +58,17 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 		}
 
 		$constantArrays = $arrayType->getConstantArrays();
-		if ($lengthType instanceof ConstantIntegerType && $lengthType->getValue() >= 1 && $preserveKeys !== null && count($constantArrays) > 0) {
+		$biggerOne = IntegerRangeType::fromInterval(1, null);
+		if (count($constantArrays) > 0 && $biggerOne->isSuperTypeOf($lengthType)->yes()) {
 			$results = [];
 			foreach ($constantArrays as $constantArray) {
-				$results[] = $constantArray->chunk($lengthType->getValue(), $preserveKeys);
+				foreach ($lengthType->getFiniteTypes() as $finiteType) {
+					if (!$finiteType instanceof ConstantIntegerType) {
+						throw new ShouldNotHappenException();
+					}
+
+					$results[] = $constantArray->chunk($finiteType->getValue(), $preserveKeys);
+				}
 			}
 
 			return TypeCombinator::union(...$results);

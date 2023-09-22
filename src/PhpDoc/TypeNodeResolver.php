@@ -64,6 +64,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericIntegerRangeType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Helper\GetTemplateTypeType;
@@ -669,23 +670,25 @@ class TypeNodeResolver
 		} elseif ($mainTypeName === 'int') {
 			if (count($genericTypes) === 2) { // int<min, max>, int<1, 3>
 
-				if ($genericTypes[0] instanceof ConstantIntegerType) {
-					$min = $genericTypes[0]->getValue();
-				} elseif ($typeNode->genericTypes[0] instanceof IdentifierTypeNode && $typeNode->genericTypes[0]->name === 'min') {
+				if ($typeNode->genericTypes[0] instanceof IdentifierTypeNode && $typeNode->genericTypes[0]->name === 'min') {
 					$min = null;
-				} else {
+				} elseif (!$genericTypes[0]->isInteger()->yes()) {
 					return new ErrorType();
+				} else {
+					$min = $genericTypes[0];
 				}
 
-				if ($genericTypes[1] instanceof ConstantIntegerType) {
-					$max = $genericTypes[1]->getValue();
-				} elseif ($typeNode->genericTypes[1] instanceof IdentifierTypeNode && $typeNode->genericTypes[1]->name === 'max') {
+				if ($typeNode->genericTypes[1] instanceof IdentifierTypeNode && $typeNode->genericTypes[1]->name === 'max') {
 					$max = null;
-				} else {
+				} elseif (!$genericTypes[1]->isInteger()->yes()) {
 					return new ErrorType();
+				} else {
+					$max = $genericTypes[1];
 				}
 
-				return IntegerRangeType::fromInterval($min, $max);
+				$type = new GenericIntegerRangeType($min, $max);
+
+				return $type->isResolvable() ? $type->resolve() : $type;
 			}
 		} elseif ($mainTypeName === 'key-of') {
 			if (count($genericTypes) === 1) { // key-of<ValueType>

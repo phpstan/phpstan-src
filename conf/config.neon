@@ -1412,6 +1412,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\PregGrepDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\ReflectionClassIsSubclassOfTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.methodTypeSpecifyingExtension
@@ -1723,6 +1728,9 @@ services:
 
 	-
 		class: PHPStan\Type\Constant\OversizedArrayBuilder
+
+	-
+		class: PHPStan\Rules\Regexp\PatternValidator
 
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver

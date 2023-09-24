@@ -3322,7 +3322,7 @@ return [
 'get_required_files' => ['list<string>'],
 'get_resource_type' => ['string', 'res'=>'resource'],
 'get_resources' => ['array<int, resource>', 'type='=>'string'],
-'getallheaders' => ['array'],
+'getallheaders' => ['array', 'false'],
 'getcwd' => ['non-empty-string|false'],
 'getdate' => ['array{seconds: int<0, 59>, minutes: int<0, 59>, hours: int<0, 23>, mday: int<1, 31>, wday: int<0, 6>, mon: int<1, 12>, year: int, yday: int<0, 365>, weekday: "Monday"|"Tuesday"|"Wednesday"|"Thursday"|"Friday"|"Saturday"|"Sunday", month: "January"|"February"|"March"|"April"|"May"|"June"|"July"|"August"|"September"|"October"|"November"|"December", 0: int}', 'timestamp='=>'int'],
 'getenv' => ['string|false', 'varname'=>'string', 'local_only='=>'bool'],

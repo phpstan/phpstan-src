@@ -91,11 +91,8 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	): void
 	{
 		if ($assertType === 'type') {
-			$expectedType = $args[0];
-			$this->assertInstanceOf(ConstantScalarType::class, $expectedType);
-			$expected = $expectedType->getValue();
-			$actualType = $args[1];
-			$actual = $actualType->describe(VerbosityLevel::precise());
+			$expected = $args[0];
+			$actual = $args[1];
 			$this->assertSame(
 				$expected,
 				$actual,
@@ -138,12 +135,20 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				));
 			} elseif ($functionName === 'PHPStan\\Testing\\assertType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
+				if (!$expectedType instanceof ConstantScalarType) {
+					self::fail(sprintf('First argument of %s() must be a constant scalar type', $functionName));
+				}
+
 				$actualType = $scope->getType($node->getArgs()[1]->value);
-				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
+				$assert = ['type', $file, $expectedType->getValue(), $actualType->describe(VerbosityLevel::precise()), $node->getLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertNativeType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
+				if (!$expectedType instanceof ConstantScalarType) {
+					self::fail(sprintf('First argument of %s() must be a constant scalar type', $functionName));
+				}
+
 				$actualType = $scope->getNativeType($node->getArgs()[1]->value);
-				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
+				$assert = ['type', $file, $expectedType->getValue(), $actualType->describe(VerbosityLevel::precise()), $node->getLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertVariableCertainty') {
 				$certainty = $node->getArgs()[0]->value;
 				if (!$certainty instanceof StaticCall) {

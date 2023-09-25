@@ -93,7 +93,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		if ($assertType === 'type') {
 			$expectedType = $args[0];
 			$this->assertInstanceOf(ConstantScalarType::class, $expectedType);
-			$expected = $expectedType->getValue() .'1';
+			$expected = $expectedType->getValue();
 			$actualType = $args[1];
 			$actual = $actualType->describe(VerbosityLevel::precise());
 			$this->assertSame(

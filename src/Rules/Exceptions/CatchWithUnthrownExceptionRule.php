@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -16,6 +17,13 @@ use function sprintf;
  */
 class CatchWithUnthrownExceptionRule implements Rule
 {
+
+	public function __construct(
+		private ExceptionTypeResolver $exceptionTypeResolver,
+		private bool $reportUncheckedExceptionDeadCatch,
+	)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -30,6 +38,14 @@ class CatchWithUnthrownExceptionRule implements Rule
 					sprintf('Dead catch - %s is already caught above.', $node->getOriginalCaughtType()->describe(VerbosityLevel::typeOnly())),
 				)->line($node->getLine())->build(),
 			];
+		}
+
+		$isCheckedException = TrinaryLogic::createFromBoolean($this->reportUncheckedExceptionDeadCatch)->lazyOr(
+			$node->getCaughtType()->getObjectClassNames(),
+			fn (string $objectClassName) => TrinaryLogic::createFromBoolean($this->exceptionTypeResolver->isCheckedException($objectClassName, $scope)),
+		);
+		if ($isCheckedException->no()) {
+			return [];
 		}
 
 		return [

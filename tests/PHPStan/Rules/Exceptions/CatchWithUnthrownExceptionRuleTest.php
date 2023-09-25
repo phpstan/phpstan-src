@@ -2,6 +2,8 @@
 
 namespace PHPStan\Rules\Exceptions;
 
+use Error;
+use InvalidArgumentException;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -12,9 +14,20 @@ use const PHP_VERSION_ID;
 class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 {
 
+	private bool $reportUncheckedExceptionDeadCatch = true;
+
+	/** @var string[] */
+	private array $uncheckedExceptionClasses = [];
+
 	protected function getRule(): Rule
 	{
-		return new CatchWithUnthrownExceptionRule();
+		return new CatchWithUnthrownExceptionRule(new DefaultExceptionTypeResolver(
+			$this->createReflectionProvider(),
+			[],
+			$this->uncheckedExceptionClasses,
+			[],
+			[],
+		), $this->reportUncheckedExceptionDeadCatch);
 	}
 
 	public function testRule(): void
@@ -71,6 +84,98 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 			[
 				'Dead catch - ArithmeticError is never thrown in the try block.',
 				279,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				312,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				344,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				375,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				380,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				398,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				432,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				437,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				485,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				532,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				555,
+			],
+		]);
+	}
+
+	public function testRuleWithoutReportingUncheckedException(): void
+	{
+		$this->reportUncheckedExceptionDeadCatch = false;
+		$this->uncheckedExceptionClasses = [
+			InvalidArgumentException::class,
+			Error::class,
+		];
+
+		$this->analyse([__DIR__ . '/data/unthrown-exception.php'], [
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				12,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				38,
+			],
+			[
+				'Dead catch - RuntimeException is never thrown in the try block.',
+				49,
+			],
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				71,
+			],
+			[
+				'Dead catch - DomainException is never thrown in the try block.',
+				117,
+			],
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				119,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				171,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				180,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				224,
 			],
 			[
 				'Dead catch - Exception is never thrown in the try block.',

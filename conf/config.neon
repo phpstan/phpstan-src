@@ -13,6 +13,7 @@ parameters:
 	paths: []
 	exceptions:
 		implicitThrows: true
+		reportUncheckedExceptionDeadCatch: true
 		uncheckedExceptionRegexes: []
 		uncheckedExceptionClasses: []
 		checkedExceptionRegexes: []

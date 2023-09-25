@@ -7,7 +7,6 @@ rules:
 	- PHPStan\Rules\DeadCode\UnreachableStatementRule
 	- PHPStan\Rules\DeadCode\UnusedPrivateConstantRule
 	- PHPStan\Rules\DeadCode\UnusedPrivateMethodRule
-	- PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
 	- PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
 	- PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
@@ -215,3 +214,11 @@ services:
 
 	-
 		class: PHPStan\Rules\Traits\NotAnalysedTraitRule
+
+	-
+		class: PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule
+		arguments:
+			exceptionTypeResolver: @exceptionTypeResolver
+			reportUncheckedExceptionDeadCatch: %exceptions.reportUncheckedExceptionDeadCatch%
+		tags:
+			- phpstan.rules.rule

@@ -113,15 +113,29 @@ final class ConditionalType implements CompoundType, LateResolvableType
 	{
 		$isSuperType = $this->target->isSuperTypeOf($this->subject);
 
+		$yesType = fn () => TypeTraverser::map(!$this->negated ? $this->if : $this->else, function (Type $type, callable $traverse) {
+			if ($type->equals($this->subject)) {
+				return !$this->negated ? TypeCombinator::intersect($type, $this->target) : TypeCombinator::remove($type, $this->target);
+			}
+			return $traverse($type);
+		});
+
+		$noType = fn () => TypeTraverser::map(!$this->negated ? $this->else : $this->if, function (Type $type, callable $traverse) {
+			if ($type->equals($this->subject)) {
+				return !$this->negated ? TypeCombinator::remove($type, $this->target) : TypeCombinator::intersect($type, $this->target);
+			}
+			return $traverse($type);
+		});
+
 		if ($isSuperType->yes()) {
-			return !$this->negated ? $this->if : $this->else;
+			return $yesType();
 		}
 
 		if ($isSuperType->no()) {
-			return !$this->negated ? $this->else : $this->if;
+			return $noType();
 		}
 
-		return TypeCombinator::union($this->if, $this->else);
+		return TypeCombinator::union($yesType(), $noType());
 	}
 
 	public function traverse(callable $cb): Type

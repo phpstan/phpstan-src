@@ -409,13 +409,11 @@ class TypeUtils
 	public static function resolveLateResolvableTypes(Type $type, bool $resolveUnresolvableTypes = true): Type
 	{
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($resolveUnresolvableTypes): Type {
-			$type = $traverse($type);
-
-			if ($type instanceof LateResolvableType && ($resolveUnresolvableTypes || $type->isResolvable())) {
+			while ($type instanceof LateResolvableType && ($resolveUnresolvableTypes || $type->isResolvable())) {
 				$type = $type->resolve();
 			}
 
-			return $type;
+			return $traverse($type);
 		});
 	}
 

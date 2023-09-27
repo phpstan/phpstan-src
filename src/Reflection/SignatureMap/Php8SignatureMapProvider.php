@@ -32,9 +32,6 @@ use function strtolower;
 
 class Php8SignatureMapProvider implements SignatureMapProvider
 {
-
-	private const DIRECTORY = __DIR__ . '/../../../vendor/phpstan/php-8-stubs';
-
 	/** @var array<string, array<string, array{ClassMethod, string}>> */
 	private array $methodNodes = [];
 
@@ -80,7 +77,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			return $this->methodNodes[$lowerClassName][$lowerMethodName];
 		}
 
-		$stubFile = self::DIRECTORY . '/' . $this->map->classes[$lowerClassName];
+		$stubFile = $this->map->classes[$lowerClassName];
 		$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
 		$classes = $nodes->getClassNodes();
 		if (count($classes) !== 1) {
@@ -183,7 +180,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			return $this->functionSignatureMapProvider->getFunctionSignatures($functionName, $className, $reflectionFunction);
 		}
 
-		$stubFile = self::DIRECTORY . '/' . $this->map->functions[$lowerName];
+		$stubFile = $this->map->functions[$lowerName];
 		$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
 		$functions = $nodes->getFunctionNodes();
 		if (!array_key_exists($lowerName, $functions)) {

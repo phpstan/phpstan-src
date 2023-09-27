@@ -302,7 +302,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 	public function dataParseAll(): array
 	{
 		$map = new Php8StubsMap(PHP_VERSION_ID);
-		return array_map(static fn (string $file): array => [__DIR__ . '/../../../../vendor/phpstan/php-8-stubs/' . $file], array_merge($map->classes, $map->functions));
+		return array_map(static fn (string $file): array => [$file], array_merge($map->classes, $map->functions));
 	}
 
 	/**

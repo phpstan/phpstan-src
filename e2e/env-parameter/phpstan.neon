@@ -1,0 +1,2 @@
+parameters:
+	scopeClass: %env.PHPSTAN_SCOPE_CLASS%

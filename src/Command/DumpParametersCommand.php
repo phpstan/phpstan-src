@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use Nette\Neon\Neon;
+use Nette\Utils\Json;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,6 +36,7 @@ class DumpParametersCommand extends Command
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('debug', null, InputOption::VALUE_NONE, 'Show debug information - which file is analysed, do not catch internal errors'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for clearing result cache'),
+				new InputOption('json', null, InputOption::VALUE_NONE, 'Dump parameters as JSON instead of NEON'),
 			]);
 	}
 
@@ -56,6 +58,7 @@ class DumpParametersCommand extends Command
 		$autoloadFile = $input->getOption('autoload-file');
 		$configuration = $input->getOption('configuration');
 		$level = $input->getOption(AnalyseCommand::OPTION_LEVEL);
+		$json = (bool) $input->getOption('json');
 
 		if (
 			(!is_string($memoryLimit) && $memoryLimit !== null)
@@ -93,7 +96,13 @@ class DumpParametersCommand extends Command
 		unset($parameters['tempDir']);
 		unset($parameters['__validate']);
 
-		$output->writeln(Neon::encode($parameters, true));
+		if ($json) {
+			$encoded = Json::encode($parameters, Json::PRETTY);
+		} else {
+			$encoded = Neon::encode($parameters, true);
+		}
+
+		$output->writeln($encoded);
 
 		return 0;
 	}

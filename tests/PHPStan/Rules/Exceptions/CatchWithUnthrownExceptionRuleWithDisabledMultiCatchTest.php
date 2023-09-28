@@ -14,7 +14,13 @@ class CatchWithUnthrownExceptionRuleWithDisabledMultiCatchTest extends RuleTestC
 
 	protected function getRule(): Rule
 	{
-		return new CatchWithUnthrownExceptionRule();
+		return new CatchWithUnthrownExceptionRule(new DefaultExceptionTypeResolver(
+			$this->createReflectionProvider(),
+			[],
+			[],
+			[],
+			[],
+		), true);
 	}
 
 	public static function getAdditionalConfigFiles(): array

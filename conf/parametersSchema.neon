@@ -17,6 +17,7 @@ parametersSchema:
 	paths: listOf(string())
 	exceptions: structure([
 		implicitThrows: bool(),
+		reportUncheckedExceptionDeadCatch: bool(),
 		uncheckedExceptionRegexes: listOf(string()),
 		uncheckedExceptionClasses: listOf(string()),
 		checkedExceptionRegexes: listOf(string()),

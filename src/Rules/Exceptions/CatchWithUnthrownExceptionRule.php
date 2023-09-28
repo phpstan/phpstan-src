@@ -17,6 +17,13 @@ use function sprintf;
 class CatchWithUnthrownExceptionRule implements Rule
 {
 
+	public function __construct(
+		private ExceptionTypeResolver $exceptionTypeResolver,
+		private bool $reportUncheckedExceptionDeadCatch,
+	)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return CatchWithUnthrownExceptionNode::class;
@@ -33,6 +40,20 @@ class CatchWithUnthrownExceptionRule implements Rule
 					->identifier('catch.alreadyCaught')
 					->build(),
 			];
+		}
+
+		if (!$this->reportUncheckedExceptionDeadCatch) {
+			$isCheckedException = false;
+			foreach ($node->getCaughtType()->getObjectClassNames() as $objectClassName) {
+				if ($this->exceptionTypeResolver->isCheckedException($objectClassName, $scope)) {
+					$isCheckedException = true;
+					break;
+				}
+			}
+
+			if (!$isCheckedException) {
+				return [];
+			}
 		}
 
 		return [

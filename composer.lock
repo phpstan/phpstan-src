@@ -1483,12 +1483,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/di.git",
-                "reference": "f80a9f71e47d50f696f583f6b4ef44856618b686"
+                "reference": "888dd1896bae36334952b42afec16f2c3104edba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/di/zipball/f80a9f71e47d50f696f583f6b4ef44856618b686",
-                "reference": "f80a9f71e47d50f696f583f6b4ef44856618b686",
+                "url": "https://api.github.com/repos/nette/di/zipball/888dd1896bae36334952b42afec16f2c3104edba",
+                "reference": "888dd1896bae36334952b42afec16f2c3104edba",
                 "shasum": ""
             },
             "require": {
@@ -1547,7 +1547,7 @@
                 "issues": "https://github.com/nette/di/issues",
                 "source": "https://github.com/nette/di/tree/v3.1"
             },
-            "time": "2023-08-30T15:26:38+00:00"
+            "time": "2023-09-27T18:20:38+00:00"
         },
         {
             "name": "nette/finder",

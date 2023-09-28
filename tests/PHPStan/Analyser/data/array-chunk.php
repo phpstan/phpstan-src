@@ -55,4 +55,13 @@ class Foo
 		assertType('array{0: array{a: 0, b?: 1, c?: 2}, 1?: array{c?: 2}}', array_chunk($arr, $positiveUnion, true));
 	}
 
+	/**
+	 * @param positive-int $positiveInt
+	 * @param int<50, max> $bigger50
+	 */
+	public function lengthIntRanges(array $arr, int $positiveInt, int $bigger50) {
+		assertType('list<non-empty-list<mixed>>', array_chunk($arr, $positiveInt));
+		assertType('list<non-empty-list<mixed>>', array_chunk($arr, $bigger50));
+	}
+
 }

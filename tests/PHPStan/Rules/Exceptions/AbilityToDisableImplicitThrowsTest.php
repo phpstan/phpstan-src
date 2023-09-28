@@ -14,7 +14,13 @@ class AbilityToDisableImplicitThrowsTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CatchWithUnthrownExceptionRule();
+		return new CatchWithUnthrownExceptionRule(new DefaultExceptionTypeResolver(
+			$this->createReflectionProvider(),
+			[],
+			[],
+			[],
+			[],
+		), true);
 	}
 
 	public function testRule(): void

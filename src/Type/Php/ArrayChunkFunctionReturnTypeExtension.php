@@ -23,7 +23,7 @@ use function count;
 final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	private const FINITE_TYPES_LIMIT = 10;
+	private const FINITE_TYPES_LIMIT = 5;
 
 	public function __construct(private PhpVersion $phpVersion)
 	{
@@ -61,12 +61,11 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 		if ($preserveKeys !== null) {
 			$constantArrays = $arrayType->getConstantArrays();
 			$biggerOne = IntegerRangeType::fromInterval(1, null);
-			if (count($constantArrays) > 0 && $biggerOne->isSuperTypeOf($lengthType)->yes()) {
-				$finiteTypes = $lengthType->getFiniteTypes();
-				if (count($finiteTypes) > self::FINITE_TYPES_LIMIT) {
-					return null;
-				}
-
+			$finiteTypes = $lengthType->getFiniteTypes();
+			if (count($constantArrays) > 0
+				&& $biggerOne->isSuperTypeOf($lengthType)->yes()
+				&& count($finiteTypes) < self::FINITE_TYPES_LIMIT
+			) {
 				$results = [];
 				foreach ($constantArrays as $constantArray) {
 					foreach ($finiteTypes as $finiteType) {

@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -23,6 +22,7 @@ use function count;
 
 final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
 	private const FINITE_TYPES_LIMIT = 10;
 
 	public function __construct(private PhpVersion $phpVersion)

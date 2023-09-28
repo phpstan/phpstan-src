@@ -64,12 +64,12 @@ class NetteContainer implements Container
 	 */
 	public function getParameters(): array
 	{
-		return $this->container->parameters;
+		return $this->container->getParameters();
 	}
 
 	public function hasParameter(string $parameterName): bool
 	{
-		return array_key_exists($parameterName, $this->container->parameters);
+		return array_key_exists($parameterName, $this->container->getParameters());
 	}
 
 	/**
@@ -81,7 +81,7 @@ class NetteContainer implements Container
 			throw new ParameterNotFoundException($parameterName);
 		}
 
-		return $this->container->parameters[$parameterName];
+		return $this->container->getParameter($parameterName);
 	}
 
 	/**

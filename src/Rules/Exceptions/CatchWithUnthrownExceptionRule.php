@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -40,12 +39,18 @@ class CatchWithUnthrownExceptionRule implements Rule
 			];
 		}
 
-		$isCheckedException = TrinaryLogic::createFromBoolean($this->reportUncheckedExceptionDeadCatch)->lazyOr(
-			$node->getCaughtType()->getObjectClassNames(),
-			fn (string $objectClassName) => TrinaryLogic::createFromBoolean($this->exceptionTypeResolver->isCheckedException($objectClassName, $scope)),
-		);
-		if ($isCheckedException->no()) {
-			return [];
+		if (!$this->reportUncheckedExceptionDeadCatch) {
+			$isCheckedException = false;
+			foreach ($node->getCaughtType()->getObjectClassNames() as $objectClassName) {
+				if ($this->exceptionTypeResolver->isCheckedException($objectClassName, $scope)) {
+					$isCheckedException = true;
+					break;
+				}
+			}
+
+			if (!$isCheckedException) {
+				return [];
+			}
 		}
 
 		return [

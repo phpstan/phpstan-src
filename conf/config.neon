@@ -731,6 +731,22 @@ services:
 			classes: %universalObjectCratesClasses%
 
 	-
+		class: PHPStan\Reflection\PHPStan\NativeReflectionEnumReturnDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+		arguments:
+			className: PHPStan\Reflection\ClassReflection
+			methodName: getNativeReflection
+
+	-
+		class: PHPStan\Reflection\PHPStan\NativeReflectionEnumReturnDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+		arguments:
+			className: PHPStan\Reflection\Php\BuiltinMethodReflection
+			methodName: getDeclaringClass
+
+	-
 		class: PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider
 		factory: PHPStan\Reflection\ReflectionProvider\LazyReflectionProviderProvider
 

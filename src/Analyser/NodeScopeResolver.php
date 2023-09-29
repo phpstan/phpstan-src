@@ -1959,7 +1959,10 @@ class NodeScopeResolver
 
 				$nameResult = $this->processExprNode($expr->name, $scope, $nodeCallback, $context->enterDeep());
 				$throwPoints = $nameResult->getThrowPoints();
-				if ($nameType->isObject()->yes()) {
+				if (
+					$nameType->isObject()->yes()
+					&& $nameType->accepts(new ObjectType(Closure::class), true)->no()
+				) {
 					$invokeResult = $this->processExprNode(
 						new MethodCall($expr->name, '__invoke', $expr->getArgs(), $expr->getAttributes()),
 						$scope,

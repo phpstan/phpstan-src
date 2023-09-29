@@ -73,8 +73,6 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 				$this->packagePrefixPath($installedJsonDirectoryPath, $package, $vendorDirectory),
 			), $installed),
 		);
-		$classMapFiles = array_filter($classMapPaths, 'is_file');
-		$classMapDirectories = array_filter($classMapPaths, 'is_dir');
 		$filePaths = array_merge(
 			$this->prefixPaths($this->packageToFilePaths($composer), $projectInstallationPath . '/'),
 			$dev ? $this->prefixPaths($this->packageToFilePaths($composer, 'autoload-dev'), $projectInstallationPath . '/') : [],
@@ -111,12 +109,14 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			)),
 		);
 
+		$classMapDirectories = array_filter($classMapPaths, 'is_dir');
 		foreach ($classMapDirectories as $classMapDirectory) {
 			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapDirectory);
 		}
 
 		$files = [];
 
+		$classMapFiles = array_filter($classMapPaths, 'is_file');
 		foreach (array_merge($classMapFiles, $filePaths) as $file) {
 			$files[] = $file;
 		}

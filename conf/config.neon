@@ -956,6 +956,13 @@ services:
 		class: PHPStan\Rules\UnusedFunctionParametersCheck
 
 	-
+		class: PHPStan\Rules\Debug\TraceRule
+		arguments:
+			phpParser: @currentPhpVersionSimpleDirectParser
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: PHPStan\Type\FileTypeMapper
 		arguments:
 			phpParser: @defaultAnalysisParser

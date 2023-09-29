@@ -60,6 +60,7 @@ use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvi
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
+use PHPStan\Node\AfterStmtNode;
 use PHPStan\Node\BooleanAndNode;
 use PHPStan\Node\BooleanOrNode;
 use PHPStan\Node\BreaklessWhileLoopNode;
@@ -264,6 +265,7 @@ class NodeScopeResolver
 
 			$statementResult = $this->processStmtNode($node, $scope, $nodeCallback, StatementContext::createTopLevel());
 			$scope = $statementResult->getScope();
+			$nodeCallback(new AfterStmtNode($node), $scope);
 			if (!$statementResult->isAlwaysTerminating()) {
 				continue;
 			}
@@ -311,6 +313,7 @@ class NodeScopeResolver
 				$context,
 			);
 			$scope = $statementResult->getScope();
+			$nodeCallback(new AfterStmtNode($stmt), $scope);
 			$hasYield = $hasYield || $statementResult->hasYield();
 
 			if ($shouldCheckLastStatement && $isLast) {

@@ -117,6 +117,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		$files = [];
 
 		$classMapFiles = array_filter($classMapPaths, 'is_file');
+		$filePaths = array_filter($filePaths, 'is_file');
 		foreach (array_merge($classMapFiles, $filePaths) as $file) {
 			$files[] = $file;
 		}

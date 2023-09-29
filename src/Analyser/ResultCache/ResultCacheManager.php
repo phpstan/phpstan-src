@@ -28,6 +28,7 @@ use function array_unique;
 use function array_values;
 use function count;
 use function get_loaded_extensions;
+use function implode;
 use function is_array;
 use function is_file;
 use function is_string;
@@ -128,7 +129,8 @@ class ResultCacheManager
 		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
 		if ($this->isMetaDifferent($data['meta'], $meta)) {
 			if ($output->isDebug()) {
-				$output->writeLineFormatted('Result cache not used because the metadata do not match.');
+				$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
+				$output->writeLineFormatted('Result cache not used because the metadata do not match: ' . implode(', ', $diffs));
 			}
 			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], []);
 		}
@@ -270,6 +272,37 @@ class ResultCacheManager
 		}
 
 		return $cachedMeta !== $currentMeta;
+	}
+
+	/**
+	 * @param mixed[] $cachedMeta
+	 * @param mixed[] $currentMeta
+	 *
+	 * @return string[]
+	 */
+	private function getMetaKeyDifferences(array $cachedMeta, array $currentMeta): array
+	{
+		$diffs = [];
+		foreach ($cachedMeta as $key => $value) {
+			if (!array_key_exists($key, $currentMeta)) {
+				$diffs[] = $key;
+				continue;
+			}
+
+			if ($value === $currentMeta[$key]) {
+				continue;
+			}
+
+			$diffs[] = $key;
+		}
+
+		if ($diffs === []) {
+			// when none of the keys is different,
+			// the order of the keys is the problem
+			$diffs[] = 'keyOrder';
+		}
+
+		return $diffs;
 	}
 
 	/**

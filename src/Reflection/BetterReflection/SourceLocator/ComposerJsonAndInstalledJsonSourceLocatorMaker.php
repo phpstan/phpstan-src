@@ -12,7 +12,6 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
-use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
@@ -109,16 +108,20 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			)),
 		);
 
-		$classMapDirectories = array_filter($classMapPaths, 'is_dir');
-		foreach ($classMapDirectories as $classMapDirectory) {
-			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapDirectory);
-		}
-
 		$files = [];
-
-		$classMapFiles = array_filter($classMapPaths, 'is_file');
-		$filePaths = array_filter($filePaths, 'is_file');
-		foreach (array_merge($classMapFiles, $filePaths) as $file) {
+		foreach ($classMapPaths as $classMapPath) {
+			if (is_dir($classMapPath)) {
+				$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapPath);
+			}
+			if (!is_file($classMapPath)) {
+				continue;
+			}
+			$files[] = $classMapPath;
+		}
+		foreach ($filePaths as $file) {
+			if (!is_file($file)) {
+				continue;
+			}
 			$files[] = $file;
 		}
 

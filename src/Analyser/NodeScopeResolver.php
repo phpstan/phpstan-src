@@ -1958,6 +1958,7 @@ class NodeScopeResolver
 				}
 
 				$nameResult = $this->processExprNode($expr->name, $scope, $nodeCallback, $context->enterDeep());
+				$throwPoints = $nameResult->getThrowPoints();
 				if ($nameType->isObject()->yes()) {
 					$invokeResult = $this->processExprNode(
 						new MethodCall($expr->name, '__invoke', $expr->getArgs(), $expr->getAttributes()),
@@ -1966,9 +1967,7 @@ class NodeScopeResolver
 						},
 						$context->enterDeep(),
 					);
-					$throwPoints = $invokeResult->getThrowPoints();
-				} else {
-					$throwPoints = $nameResult->getThrowPoints();
+					$throwPoints = array_merge($throwPoints, $invokeResult->getThrowPoints());
 				}
 				$scope = $nameResult->getScope();
 			} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {

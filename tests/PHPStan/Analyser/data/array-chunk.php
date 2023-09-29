@@ -43,4 +43,36 @@ class Foo
 		assertType('array{array{a?: 0, b?: 1, c?: 2}, array{c?: 2}}', array_chunk($arr, 2, true));
 	}
 
+	/**
+	 * @param int<2, 3> $positiveRange
+	 * @param 2|3 $positiveUnion
+	 */
+	public function chunkUnionTypeLength(array $arr, $positiveRange, $positiveUnion) {
+		/** @var array{a: 0, b?: 1, c: 2} $arr */
+		assertType('array{0: array{0: 0, 1?: 1|2, 2?: 2}, 1?: array{0?: 2}}', array_chunk($arr, $positiveRange));
+		assertType('array{0: array{a: 0, b?: 1, c?: 2}, 1?: array{c?: 2}}', array_chunk($arr, $positiveRange, true));
+		assertType('array{0: array{0: 0, 1?: 1|2, 2?: 2}, 1?: array{0?: 2}}', array_chunk($arr, $positiveUnion));
+		assertType('array{0: array{a: 0, b?: 1, c?: 2}, 1?: array{c?: 2}}', array_chunk($arr, $positiveUnion, true));
+	}
+
+	/**
+	 * @param positive-int $positiveInt
+	 * @param int<50, max> $bigger50
+	 */
+	public function lengthIntRanges(array $arr, int $positiveInt, int $bigger50) {
+		assertType('list<non-empty-list<mixed>>', array_chunk($arr, $positiveInt));
+		assertType('list<non-empty-list<mixed>>', array_chunk($arr, $bigger50));
+	}
+
+	/**
+	 * @param int<1, 4> $oneToFour
+	 * @param int<1, 5> $tooBig
+	 */
+	function testLimits(array $arr, int $oneToFour, int $tooBig) {
+		/** @var array{a: 0, b?: 1, c: 2, d: 3} $arr */
+		assertType('array{0: array{0: 0, 1?: 1|2, 2?: 2|3, 3?: 3}, 1?: array{0?: 2|3, 1?: 3}}|array{array{0}, array{0?: 1|2, 1?: 2}, array{0?: 2|3, 1?: 3}, array{0?: 3}}', array_chunk($arr, $oneToFour));
+		assertType('non-empty-list<non-empty-list<0|1|2|3>>', array_chunk($arr, $tooBig));
+	}
+
+
 }

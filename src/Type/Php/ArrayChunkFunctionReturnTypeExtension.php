@@ -12,6 +12,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -21,6 +22,8 @@ use function count;
 
 final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	private const FINITE_TYPES_LIMIT = 5;
 
 	public function __construct(private PhpVersion $phpVersion)
 	{
@@ -46,7 +49,8 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 			$preserveKeys = false;
 		}
 
-		if ($lengthType instanceof ConstantIntegerType && $lengthType->getValue() < 1) {
+		$negativeOrZero = IntegerRangeType::fromInterval(null, 0);
+		if ($negativeOrZero->isSuperTypeOf($lengthType)->yes()) {
 			return $this->phpVersion->throwsValueErrorForInternalFunctions() ? new NeverType() : new NullType();
 		}
 
@@ -54,14 +58,27 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 			return null;
 		}
 
-		$constantArrays = $arrayType->getConstantArrays();
-		if ($lengthType instanceof ConstantIntegerType && $lengthType->getValue() >= 1 && $preserveKeys !== null && count($constantArrays) > 0) {
-			$results = [];
-			foreach ($constantArrays as $constantArray) {
-				$results[] = $constantArray->chunk($lengthType->getValue(), $preserveKeys);
-			}
+		if ($preserveKeys !== null) {
+			$constantArrays = $arrayType->getConstantArrays();
+			$biggerOne = IntegerRangeType::fromInterval(1, null);
+			$finiteTypes = $lengthType->getFiniteTypes();
+			if (count($constantArrays) > 0
+				&& $biggerOne->isSuperTypeOf($lengthType)->yes()
+				&& count($finiteTypes) < self::FINITE_TYPES_LIMIT
+			) {
+				$results = [];
+				foreach ($constantArrays as $constantArray) {
+					foreach ($finiteTypes as $finiteType) {
+						if (!$finiteType instanceof ConstantIntegerType || $finiteType->getValue() < 1) {
+							return null;
+						}
 
-			return TypeCombinator::union(...$results);
+						$results[] = $constantArray->chunk($finiteType->getValue(), $preserveKeys);
+					}
+				}
+
+				return TypeCombinator::union(...$results);
+			}
 		}
 
 		$chunkType = self::getChunkType($arrayType, $preserveKeys);

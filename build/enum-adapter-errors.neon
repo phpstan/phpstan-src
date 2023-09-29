@@ -41,42 +41,22 @@ parameters:
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Call to method getInterfaceNames\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 2
-			path: ../src/Reflection/ClassReflection.php
-
-		-
-			message: "#^Call to method getInterfaces\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 2
-			path: ../src/Reflection/ClassReflection.php
-
-		-
 			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Reflection/ClassReflection.php
 
 		-
 			message: "#^Call to method getParentClass\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 8
-			path: ../src/Reflection/ClassReflection.php
-
-		-
-			message: "#^Call to method getReflectionConstant\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 2
+			count: 4
 			path: ../src/Reflection/ClassReflection.php
 
 		-
 			message: "#^Call to method getTraits\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 2
-			path: ../src/Reflection/ClassReflection.php
-
-		-
-			message: "#^Call to method hasCase\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Call to method hasConstant\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			message: "#^Call to method hasCase\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Reflection/ClassReflection.php
 

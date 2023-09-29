@@ -337,11 +337,18 @@ trait TemplateTypeTrait
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		if ($this->getBound()->isSuperTypeOf($typeToRemove)->yes()) {
-			return $this->subtract($typeToRemove);
+		$bound = TypeCombinator::remove($this->getBound(), $typeToRemove);
+		if ($this->getBound() === $bound) {
+			return null;
 		}
 
-		return null;
+		return TemplateTypeFactory::create(
+			$this->getScope(),
+			$this->getName(),
+			$bound,
+			$this->getVariance(),
+			$this->getStrategy(),
+		);
 	}
 
 	public function toPhpDocNode(): TypeNode

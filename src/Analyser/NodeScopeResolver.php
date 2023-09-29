@@ -1949,17 +1949,6 @@ class NodeScopeResolver
 			$throwPoints = [];
 			if ($expr->name instanceof Expr) {
 				$nameType = $scope->getType($expr->name);
-				if (
-					$nameType->isObject()->yes()
-					&& $nameType->accepts(new ObjectType(Closure::class), true)->no()
-				) {
-					return $this->processExprNode(
-						new MethodCall($expr->name, '__invoke', $expr->getArgs(), $expr->getAttributes()),
-						$scope,
-						$nodeCallback,
-						$context->enterDeep(),
-					);
-				}
 				if ($nameType->isCallable()->yes()) {
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 						$scope,
@@ -1967,8 +1956,20 @@ class NodeScopeResolver
 						$nameType->getCallableParametersAcceptors($scope),
 					);
 				}
+
 				$nameResult = $this->processExprNode($expr->name, $scope, $nodeCallback, $context->enterDeep());
-				$throwPoints = $nameResult->getThrowPoints();
+				if ($nameType->isObject()->yes()) {
+					$invokeResult = $this->processExprNode(
+						new MethodCall($expr->name, '__invoke', $expr->getArgs(), $expr->getAttributes()),
+						$scope,
+						static function (): void {
+						},
+						$context->enterDeep(),
+					);
+					$throwPoints = $invokeResult->getThrowPoints();
+				} else {
+					$throwPoints = $nameResult->getThrowPoints();
+				}
 				$scope = $nameResult->getScope();
 			} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);

@@ -83,6 +83,8 @@ use Symfony\Component\Finder\Finder;
 					'rand',
 					'random_bytes',
 					'random_int',
+					'connection_aborted',
+					'connection_status',
 				], true)) {
 					continue;
 				}

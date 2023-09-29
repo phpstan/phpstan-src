@@ -30,7 +30,7 @@ class NativeReflectionEnumReturnDynamicReturnTypeExtension implements DynamicMet
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
-		if ($this->phpVersion->supportsEnums()) {
+		if ($this->phpVersion->getVersionId() >= 80000) {
 			return null;
 		}
 

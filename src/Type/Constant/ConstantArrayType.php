@@ -384,7 +384,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 						return TrinaryLogic::createNo();
 					}
 
-					$results[] = TrinaryLogic::createMaybe();
+					$results[] = TrinaryLogic::createYes();
 					continue;
 				} elseif ($hasOffset->maybe() && !$this->isOptionalKey($i)) {
 					$results[] = TrinaryLogic::createMaybe();

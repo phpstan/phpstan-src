@@ -10,6 +10,7 @@ on:
 jobs:
   merge:
     name: Merge branch
+    if: github.repository_owner == 'phpstan'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"

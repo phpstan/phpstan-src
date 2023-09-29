@@ -113,6 +113,9 @@ use function substr;
 class TypeNodeResolver
 {
 
+	/** @var array<string, true> */
+	private array $genericTypeResolvingStack = [];
+
 	public function __construct(
 		private TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
@@ -826,18 +829,32 @@ class TypeNodeResolver
 		}
 
 		if ($mainType->isIterable()->yes()) {
-			if (count($genericTypes) === 1) { // Foo<ValueType>
-				return TypeCombinator::intersect(
-					$mainType,
-					new IterableType(new MixedType(true), $genericTypes[0]),
-				);
+			if ($mainTypeClassName !== null) {
+				if (isset($this->genericTypeResolvingStack[$mainTypeClassName])) {
+					return new ErrorType();
+				}
+
+				$this->genericTypeResolvingStack[$mainTypeClassName] = true;
 			}
 
-			if (count($genericTypes) === 2) { // Foo<KeyType, ValueType>
-				return TypeCombinator::intersect(
-					$mainType,
-					new IterableType($genericTypes[0], $genericTypes[1]),
-				);
+			try {
+				if (count($genericTypes) === 1) { // Foo<ValueType>
+					return TypeCombinator::intersect(
+						$mainType,
+						new IterableType(new MixedType(true), $genericTypes[0]),
+					);
+				}
+
+				if (count($genericTypes) === 2) { // Foo<KeyType, ValueType>
+					return TypeCombinator::intersect(
+						$mainType,
+						new IterableType($genericTypes[0], $genericTypes[1]),
+					);
+				}
+			} finally {
+				if ($mainTypeClassName !== null) {
+					unset($this->genericTypeResolvingStack[$mainTypeClassName]);
+				}
 			}
 		}
 

@@ -222,6 +222,24 @@ class FilterIteratorChild extends \FilterIterator
 
 }
 
+/** @extends FooObjectStorage<object> */
+class FooObjectStorage extends \SplObjectStorage
+{
+}
+
+/**
+ * @template T
+ * @implements \Iterator<int, T>
+ */
+abstract class AbstractFooCollection implements \Iterator
+{
+}
+
+/** @extends FooCollection<int> */
+class FooCollection extends AbstractFooCollection
+{
+}
+
 /**
  * @extends FooGeneric<covariant \Throwable, \InvalidArgumentException>
  */

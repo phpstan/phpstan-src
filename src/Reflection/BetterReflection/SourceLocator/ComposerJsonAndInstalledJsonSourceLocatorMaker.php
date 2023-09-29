@@ -12,7 +12,6 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
-use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
@@ -73,8 +72,6 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 				$this->packagePrefixPath($installedJsonDirectoryPath, $package, $vendorDirectory),
 			), $installed),
 		);
-		$classMapFiles = array_filter($classMapPaths, 'is_file');
-		$classMapDirectories = array_filter($classMapPaths, 'is_dir');
 		$filePaths = array_merge(
 			$this->prefixPaths($this->packageToFilePaths($composer), $projectInstallationPath . '/'),
 			$dev ? $this->prefixPaths($this->packageToFilePaths($composer, 'autoload-dev'), $projectInstallationPath . '/') : [],
@@ -111,16 +108,17 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			)),
 		);
 
-		foreach ($classMapDirectories as $classMapDirectory) {
-			if (!is_dir($classMapDirectory)) {
+		$files = [];
+		foreach ($classMapPaths as $classMapPath) {
+			if (is_dir($classMapPath)) {
+				$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapPath);
+			}
+			if (!is_file($classMapPath)) {
 				continue;
 			}
-			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapDirectory);
+			$files[] = $classMapPath;
 		}
-
-		$files = [];
-
-		foreach (array_merge($classMapFiles, $filePaths) as $file) {
+		foreach ($filePaths as $file) {
 			if (!is_file($file)) {
 				continue;
 			}

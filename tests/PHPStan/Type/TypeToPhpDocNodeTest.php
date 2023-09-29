@@ -19,6 +19,8 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use stdClass;
 use function sprintf;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
 class TypeToPhpDocNodeTest extends PHPStanTestCase
 {
@@ -326,23 +328,58 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		];
 
 		yield [
+			new ConstantIntegerType(PHP_INT_MIN),
+			(string) PHP_INT_MIN,
+		];
+
+		yield [
+			new ConstantIntegerType(PHP_INT_MAX),
+			(string) PHP_INT_MAX,
+		];
+
+		yield [
 			new ConstantFloatType(9223372036854775807),
-			'9223372036854775808',
+			'9.223372036854776E+18',
 		];
 
 		yield [
 			new ConstantFloatType(-9223372036854775808),
-			'-9223372036854775808',
+			'-9.223372036854776E+18',
 		];
 
 		yield [
 			new ConstantFloatType(2.35),
-			'2.35000000000000008882',
+			'2.35',
 		];
 
 		yield [
 			new ConstantFloatType(100),
-			'100',
+			'100.0',
+		];
+
+		yield [
+			new ConstantFloatType(8.202343767574732),
+			'8.202343767574732',
+		];
+
+		yield [
+			new ConstantFloatType(1e80),
+			'1.0E+80',
+		];
+
+		yield [
+			new ConstantFloatType(-5e-80),
+			'-5.0E-80',
+		];
+
+		yield [
+			new ConstantFloatType(0.0),
+			'0.0',
+		];
+
+		yield [
+			new ConstantFloatType(-0.0),
+			'-0.0',
 		];
 	}
 

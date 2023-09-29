@@ -1046,9 +1046,13 @@ class TypeNodeResolver
 				return new EnumCaseObjectType($classReflection->getName(), $constantName);
 			}
 
-			$reflectionConstant = $classReflection->getConstant($constantName);
+			$reflectionConstant = $classReflection->getNativeReflection()->getReflectionConstant($constantName);
+			if ($reflectionConstant === false) {
+				return new ErrorType();
+			}
+			$declaringClass = $reflectionConstant->getDeclaringClass();
 
-			return $this->initializerExprTypeResolver->getType($reflectionConstant->getValueExpr(), InitializerExprContext::fromClassReflection($reflectionConstant->getDeclaringClass()));
+			return $this->initializerExprTypeResolver->getType($reflectionConstant->getValueExpression(), InitializerExprContext::fromClass($declaringClass->getName(), $declaringClass->getFileName() ?: null));
 		}
 
 		if ($constExpr instanceof ConstExprFloatNode) {

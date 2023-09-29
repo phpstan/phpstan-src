@@ -1191,6 +1191,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(10, $errors[0]->getLine());
 	}
 
+	public function testBug9039(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9039.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Constant Bug9039\Test::RULES is unused.', $errors[0]->getMessage());
+	}
+
 	public function testDiscussion9053(): void
 	{
 		if (PHP_VERSION_ID < 80000) {

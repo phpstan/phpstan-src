@@ -17,6 +17,7 @@ class HelloWorld
 		if (isset($a['bar'])) {
 			assertType("array{bar: 'string'}", $a);
 			$a['bar'] = 1;
+			assertType("array{bar: 1}", $a);
 		} else {
 			assertType('array{}', $a);
 		}

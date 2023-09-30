@@ -14,12 +14,10 @@ use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
-use function abs;
 use function ini_get;
 use function ini_set;
 use function is_finite;
 use function strpos;
-use const PHP_FLOAT_EPSILON;
 
 /** @api */
 class ConstantFloatType extends FloatType implements ConstantScalarType
@@ -42,7 +40,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 
 	public function equals(Type $type): bool
 	{
-		return $type instanceof self && abs($this->value - $type->value) < PHP_FLOAT_EPSILON;
+		return $type instanceof self && $this->value === $type->value;
 	}
 
 	private function castFloatToString(float $value): string
@@ -73,10 +71,6 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	{
 		if ($type instanceof self) {
 			if (!$this->equals($type)) {
-				if (abs($this->value - $type->value) < PHP_FLOAT_EPSILON) {
-					return TrinaryLogic::createMaybe();
-				}
-
 				return TrinaryLogic::createNo();
 			}
 

@@ -681,14 +681,42 @@ class TypeSpecifier
 					throw new ShouldNotHappenException();
 				}
 
-				return array_reduce(
-					array_filter(
-						$expr->vars,
-						static fn (Expr $var) => $scope->issetCheck($var, static fn () => true),
-					),
+				$filtered = array_filter(
+					$expr->vars,
+					static fn (Expr $var) => $scope->issetCheck($var, static fn () => true),
+				);
+
+				$specifiedTypes = array_reduce(
+					$filtered,
 					fn (SpecifiedTypes $types, Expr $var) => $types->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr)),
 					new SpecifiedTypes(),
 				);
+
+				foreach ($expr->vars as $var) {
+					if (!($var instanceof ArrayDimFetch)
+						|| $var->dim === null
+						|| $scope->getType($var->var) instanceof MixedType
+					) {
+						continue;
+					}
+
+					$dimType = $scope->getType($var->dim);
+
+					if (!($dimType instanceof ConstantIntegerType) && !($dimType instanceof ConstantStringType)) {
+						continue;
+					}
+
+					$specifiedTypes = $specifiedTypes->unionWith($this->create(
+						$var->var,
+						new HasOffsetType($dimType),
+						$context,
+						false,
+						$scope,
+						$rootExpr,
+					));
+				}
+
+				return $specifiedTypes;
 			}
 
 			$vars = [];

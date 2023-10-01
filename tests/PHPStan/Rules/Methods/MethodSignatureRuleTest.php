@@ -443,4 +443,11 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9905(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-9905.php'], []);
+	}
+
 }

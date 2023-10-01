@@ -616,8 +616,16 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	public function testBug2851b(): void
 	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
 		$this->checkAlwaysTrueStrictComparison = true;
-		$this->analyse([__DIR__ . '/data/bug-2851b.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-2851b.php'], [
+			[
+				'Strict comparison using === between 0 and 0 will always evaluate to true.',
+				21,
+				$tipText,
+			],
+		]);
 	}
 
 	public function testBug8158(): void

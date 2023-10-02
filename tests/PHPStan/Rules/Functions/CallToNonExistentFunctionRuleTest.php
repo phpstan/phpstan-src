@@ -35,7 +35,6 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 				'Function foobarNonExistentFunction not found.',
 				5,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-
 			],
 		]);
 	}
@@ -47,7 +46,6 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 				'Function barNonExistentFunction not found.',
 				5,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-
 			],
 		]);
 	}
@@ -92,6 +90,61 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 			[
 				'Function sit not found.',
 				12,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
+	public function testCallToRemovedFunctionsOnPhp8(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/removed-functions-from-php8.php'], [
+			[
+				'Function convert_cyr_string not found.',
+				3,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function ezmlm_hash not found.',
+				4,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function fgetss not found.',
+				5,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function get_magic_quotes_gpc not found.',
+				6,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function hebrevc not found.',
+				7,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function imap_header not found.',
+				8,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function ldap_control_paged_result not found.',
+				9,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function ldap_control_paged_result_response not found.',
+				10,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Function restore_include_path not found.',
+				11,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);

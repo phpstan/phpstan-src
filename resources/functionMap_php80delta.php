@@ -158,7 +158,6 @@ return [
 		'xmlwriter_write_raw' => ['bool', 'xmlwriter'=>'XMLWriter', 'content'=>'string'],
 	],
 	'old' => [
-
 		'array_combine' => ['associative-array|false', 'keys'=>'string[]|int[]', 'values'=>'array'],
 		'bcdiv' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcmod' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
@@ -214,8 +213,9 @@ return [
 		'ldap_set_rebind_proc' => ['bool', 'link_identifier'=>'resource', 'callback'=>'callable'],
 		'ldap_sort' => ['bool', 'link_identifier'=>'resource', 'result_identifier'=>'resource', 'sortfilter'=>'string'],
 		'mb_decode_numericentity' => ['string|false', 'string'=>'string', 'convmap'=>'array', 'encoding='=>'string', 'is_hex='=>'bool'],
-		'mktime' => ['int|false', 'hour='=>'int', 'minute='=>'int', 'second='=>'int', 'month='=>'int', 'day='=>'int', 'year='=>'int'],
 		'mb_strlen' => ['0|positive-int', 'str'=>'string', 'encoding='=>'string'],
+		'mktime' => ['int|false', 'hour='=>'int', 'minute='=>'int', 'second='=>'int', 'month='=>'int', 'day='=>'int', 'year='=>'int'],
+		'money_format' => ['string', 'format'=>'string', 'value'=>'float'],
 		'odbc_exec' => ['resource|false', 'connection_id'=>'resource', 'query'=>'string', 'flags='=>'int'],
 		'parse_str' => ['void', 'encoded_string'=>'string', '&w_result='=>'array'],
 		'password_hash' => ['string|false|null', 'password'=>'string', 'algo'=>'?string|?int', 'options='=>'array'],

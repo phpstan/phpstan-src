@@ -1956,8 +1956,23 @@ class NodeScopeResolver
 						$nameType->getCallableParametersAcceptors($scope),
 					);
 				}
+
 				$nameResult = $this->processExprNode($expr->name, $scope, $nodeCallback, $context->enterDeep());
 				$throwPoints = $nameResult->getThrowPoints();
+				if (
+					$nameType->isObject()->yes()
+					&& $nameType->isCallable()->yes()
+					&& (new ObjectType(Closure::class))->isSuperTypeOf($nameType)->no()
+				) {
+					$invokeResult = $this->processExprNode(
+						new MethodCall($expr->name, '__invoke', $expr->getArgs(), $expr->getAttributes()),
+						$scope,
+						static function (): void {
+						},
+						$context->enterDeep(),
+					);
+					$throwPoints = array_merge($throwPoints, $invokeResult->getThrowPoints());
+				}
 				$scope = $nameResult->getScope();
 			} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);

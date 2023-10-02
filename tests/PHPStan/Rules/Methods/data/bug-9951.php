@@ -23,7 +23,7 @@ class Cl
 
 	public function testMixed(mixed $field, bool $value): void
 	{
-		$this->addCondition($field, $value); // no phpstan expected, no phpstan error was present before rel. 1.10.36
+		$this->addCondition($field, $value);
 	}
 
 	public function testMixedAsUnion(string|object|null $field, bool $value): void

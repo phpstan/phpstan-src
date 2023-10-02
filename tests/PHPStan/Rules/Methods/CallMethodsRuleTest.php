@@ -3048,4 +3048,22 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9951(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-9951.php'], [
+			[
+				'Parameter #1 $field of method Bug9951\Cl::addCondition() expects array<int, Bug9951\AbstractScope|Bug9951\Expressionable>|Bug9951\AbstractScope|Bug9951\Expressionable|string, mixed given.',
+				26,
+			],
+			[
+				'Parameter #1 $field of method Bug9951\Cl::addCondition() expects array<int, Bug9951\AbstractScope|Bug9951\Expressionable>|Bug9951\AbstractScope|Bug9951\Expressionable|string, object|string|null given.',
+				31,
+			],
+		]);
+	}
+
 }

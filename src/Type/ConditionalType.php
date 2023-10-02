@@ -113,19 +113,17 @@ final class ConditionalType implements CompoundType, LateResolvableType
 	{
 		$isSuperType = $this->target->isSuperTypeOf($this->subject);
 
-		$yesType = fn () => TypeTraverser::map(!$this->negated ? $this->if : $this->else, function (Type $type, callable $traverse) {
-			if ($type->equals($this->subject)) {
-				return !$this->negated ? TypeCombinator::intersect($type, $this->target) : TypeCombinator::remove($type, $this->target);
-			}
-			return $traverse($type);
-		});
+		$intersectedType = TypeCombinator::intersect($this->subject, $this->target);
+		$removedType = TypeCombinator::remove($this->subject, $this->target);
 
-		$noType = fn () => TypeTraverser::map(!$this->negated ? $this->else : $this->if, function (Type $type, callable $traverse) {
-			if ($type->equals($this->subject)) {
-				return !$this->negated ? TypeCombinator::remove($type, $this->target) : TypeCombinator::intersect($type, $this->target);
-			}
-			return $traverse($type);
-		});
+		$yesType = fn () => TypeTraverser::map(
+			!$this->negated ? $this->if : $this->else,
+			fn (Type $type, callable $traverse) => $type === $this->subject ? (!$this->negated ? $intersectedType : $removedType) : $traverse($type),
+		);
+		$noType = fn () => TypeTraverser::map(
+			!$this->negated ? $this->else : $this->if,
+			fn (Type $type, callable $traverse) => $type === $this->subject ? (!$this->negated ? $removedType : $intersectedType) : $traverse($type),
+		);
 
 		if ($isSuperType->yes()) {
 			return $yesType();

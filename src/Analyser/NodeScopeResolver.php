@@ -1961,6 +1961,7 @@ class NodeScopeResolver
 				$throwPoints = $nameResult->getThrowPoints();
 				if (
 					$nameType->isObject()->yes()
+					&& $nameType->isCallable()->yes()
 					&& (new ObjectType(Closure::class))->isSuperTypeOf($nameType)->no()
 				) {
 					$invokeResult = $this->processExprNode(

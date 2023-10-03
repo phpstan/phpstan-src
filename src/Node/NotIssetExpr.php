@@ -21,7 +21,7 @@ class NotIssetExpr extends Expr implements VirtualNode
 
 	public function getType(): string
 	{
-		return 'PHPStan_Node_UnsetExpr';
+		return 'PHPStan_Node_NotIssetExpr';
 	}
 
 	/**

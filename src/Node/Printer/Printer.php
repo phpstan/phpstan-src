@@ -58,9 +58,9 @@ class Printer extends Standard
 		return sprintf('__phpstanPropertyInitialization(%s)', $expr->getPropertyName());
 	}
 
-	protected function pPHPStan_Node_UnsetExpr(NotIssetExpr $expr): string // phpcs:ignore
+	protected function pPHPStan_Node_NotIssetExpr(NotIssetExpr $expr): string // phpcs:ignore
 	{
-		return sprintf('__phpstanUnsetExpr(%s)', $this->p($expr->getExpr()));
+		return sprintf('__phpstanNotIssetExpr(%s)', $this->p($expr->getExpr()));
 	}
 
 }

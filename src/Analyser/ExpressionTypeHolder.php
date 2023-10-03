@@ -24,6 +24,11 @@ class ExpressionTypeHolder
 		return new self($expr, $type, TrinaryLogic::createMaybe());
 	}
 
+	public static function createNo(Expr $expr, Type $type): self
+	{
+		return new self($expr, $type, TrinaryLogic::createNo());
+	}
+
 	public function equals(self $other): bool
 	{
 		if (!$this->certainty->equals($other->certainty)) {

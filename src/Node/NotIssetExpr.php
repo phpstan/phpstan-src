@@ -2,15 +2,15 @@
 
 namespace PHPStan\Node;
 
-use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\NodeAbstract;
 
-class UnsetExpr extends NodeAbstract implements VirtualNode
+class NotIssetExpr extends Expr implements VirtualNode
 {
+
 	public function __construct(
-		private Node\Expr $expr
-	) {
+		private Expr $expr,
+	)
+	{
 		parent::__construct([]);
 	}
 
@@ -31,6 +31,5 @@ class UnsetExpr extends NodeAbstract implements VirtualNode
 	{
 		return [];
 	}
-
 
 }

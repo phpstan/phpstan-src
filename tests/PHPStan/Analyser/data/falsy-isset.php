@@ -8,6 +8,15 @@ use PHPStan\TrinaryLogic;
 
 class HelloWorld
 {
+	public function undefinedVar(): void
+	{
+		if (isset($a['bar'])) {
+			assertType("*ERROR*", $a);
+		} else {
+			assertType("*ERROR*", $a);
+		}
+	}
+
 	public function maybeCertainNull(): void
 	{
 		if (rand() % 2) {
@@ -78,7 +87,7 @@ class HelloWorld
 		}
 
 		assertVariableCertainty(TrinaryLogic::createYes(), $a);
-		assertType("array{bar: null}|array{bar: 1}", $a);
+		assertType("array{bar: 1}|array{bar: null}", $a);
 	}
 
 	public function yesCertainNonNull(): void

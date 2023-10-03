@@ -37,6 +37,7 @@ use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Node\NotIssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
@@ -3398,6 +3399,39 @@ class MutatingScope implements Scope
 		return $scope;
 	}
 
+	private function notIssetExpression(NotIssetExpr $unsetExpr): self
+	{
+		$scope = $this;
+
+		$expr = $unsetExpr->getExpr();
+		$scope = $scope->unsetExpression($expr);
+
+		if ($expr instanceof Expr\ArrayDimFetch) {
+			$type = $scope->getType($expr->var);
+			$arraySize = $type->getArraySize();
+
+			if (
+				$arraySize instanceof ConstantIntegerType
+				&& $arraySize->getValue() === 0) {
+				$exprString = $this->getNodeKey($expr->var);
+				if (array_key_exists($exprString, $scope->expressionTypes)) {
+					$scope->expressionTypes[$exprString] = ExpressionTypeHolder::createNo(
+						$scope->expressionTypes[$exprString]->getExpr(),
+						$scope->expressionTypes[$exprString]->getType(),
+					);
+				}
+				if (array_key_exists($exprString, $scope->nativeExpressionTypes)) {
+					$scope->nativeExpressionTypes[$exprString] = ExpressionTypeHolder::createNo(
+						$scope->nativeExpressionTypes[$exprString]->getExpr(),
+						$scope->nativeExpressionTypes[$exprString]->getType(),
+					);
+				}
+			}
+		}
+
+		return $scope;
+	}
+
 	public function unsetExpression(Expr $expr): self
 	{
 		$scope = $this;
@@ -3782,9 +3816,15 @@ class MutatingScope implements Scope
 
 	public function filterBySpecifiedTypes(SpecifiedTypes $specifiedTypes): self
 	{
+		$scope = $this;
+
 		$typeSpecifications = [];
 		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $type]) {
 			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
+				continue;
+			}
+			if ($expr instanceof NotIssetExpr) {
+				$scope = $scope->notIssetExpression($expr);
 				continue;
 			}
 			$typeSpecifications[] = [
@@ -3796,6 +3836,10 @@ class MutatingScope implements Scope
 		}
 		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
 			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
+				continue;
+			}
+			if ($expr instanceof NotIssetExpr) {
+				$scope = $scope->notIssetExpression($expr);
 				continue;
 			}
 			$typeSpecifications[] = [
@@ -3815,7 +3859,6 @@ class MutatingScope implements Scope
 			return $b['sure'] - $a['sure']; // @phpstan-ignore-line
 		});
 
-		$scope = $this;
 		$specifiedExpressions = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];

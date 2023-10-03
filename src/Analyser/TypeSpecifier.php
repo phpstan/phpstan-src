@@ -19,6 +19,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\NotIssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -41,6 +42,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -67,11 +69,9 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
-use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
-use function array_reduce;
 use function array_reverse;
 use function count;
 use function in_array;
@@ -681,28 +681,50 @@ class TypeSpecifier
 					throw new ShouldNotHappenException();
 				}
 
-				$filtered = array_filter(
-					$expr->vars,
-					static fn (Expr $var) => $scope->issetCheck($var, static fn () => true),
-				);
-
-				$specifiedTypes = array_reduce(
-					$filtered,
-					fn (SpecifiedTypes $types, Expr $var) => $types->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr)),
-					new SpecifiedTypes(),
-				);
-
+				$specifiedTypes = new SpecifiedTypes();
 				foreach ($expr->vars as $var) {
+					$isset = $scope->issetCheck($var, static fn () => true);
+
+					// variable is always defined
+					if ($isset) {
+						$specifiedTypes = $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr));
+						continue;
+					}
+
 					if (!($var instanceof ArrayDimFetch)
 						|| $var->dim === null
-						|| $scope->getType($var->var) instanceof MixedType
 					) {
 						continue;
 					}
 
-					$dimType = $scope->getType($var->dim);
+					// variable is always undefined
+					if (
+						$isset === false
+					) {
+						continue;
+					}
 
+					// variable maybe be defined
+					$type = $scope->getType($var->var);
+					if ($type instanceof MixedType) {
+						continue;
+					}
+
+					$dimType = $scope->getType($var->dim);
 					if (!($dimType instanceof ConstantIntegerType) && !($dimType instanceof ConstantStringType)) {
+						continue;
+					}
+
+					$offsetType = $type->getOffsetValueType($dimType);
+					if (!TypeCombinator::containsNull($offsetType)) {
+						$specifiedTypes = $specifiedTypes->unionWith($this->create(
+							new NotIssetExpr($var),
+							new ErrorType(),
+							$context,
+							false,
+							$scope,
+							$rootExpr,
+						));
 						continue;
 					}
 

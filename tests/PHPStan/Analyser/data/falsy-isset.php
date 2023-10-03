@@ -12,43 +12,49 @@ class HelloWorld
 	{
 		if (rand() % 2) {
 			$a = ['bar' => null];
-			if (rand() % 2) {
+			if (rand() % 3) {
 				$a = ['bar' => 'hello'];
 			}
 		}
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 
-		assertType("array{bar: null}|array{bar: 'hello'}", $a);
+		assertType("array{bar?: null}|array{bar?: 'hello'}", $a);
 		if (isset($a['bar'])) {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
 			assertType("array{bar: 'hello'}", $a);
 			$a['bar'] = 1;
 			assertType("array{bar: 1}", $a);
 		} else {
-			assertType('array{}', $a);
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+			assertType('array{bar?: null}', $a);
 		}
 
-		assertType("array{bar: null}|array{bar: 1}", $a);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+		assertType("array{bar?: null}|array{bar: 1}", $a);
 	}
 
 	public function maybeCertainNonNull(): void
 	{
 		if (rand() % 2) {
 			$a = ['bar' => 'world'];
-			if (rand() % 2) {
+			if (rand() % 3) {
 				$a = ['bar' => 'hello'];
 			}
 		}
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 
-		assertType("array{bar: 'world'}|array{bar: 'hello'}", $a);
+		assertType("array{bar?: 'hello'}|array{bar?: 'world'}", $a);
 		if (isset($a['bar'])) {
-			assertType("array{bar: 'world'}|array{bar: 'hello'}", $a);
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{bar: 'hello'}|array{bar: 'world'}", $a);
 			$a['bar'] = 1;
 			assertType("array{bar: 1}", $a);
 		} else {
-			assertType('array{}', $a);
+			assertVariableCertainty(TrinaryLogic::createNo(), $a);
+			assertType('*ERROR*', $a);
 		}
 
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 		assertType("array{bar: 1}", $a);
 	}
 
@@ -60,15 +66,18 @@ class HelloWorld
 		}
 		assertVariableCertainty(TrinaryLogic::createYes(), $a);
 
-		assertType("array{bar: null}|array{bar: 'hello'}", $a);
+		assertType("array{bar: 'hello'}|array{bar: null}", $a);
 		if (isset($a['bar'])) {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
 			assertType("array{bar: 'hello'}", $a);
 			$a['bar'] = 1;
 			assertType("array{bar: 1}", $a);
 		} else {
-			assertType('array{}', $a);
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{bar: null}", $a);
 		}
 
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
 		assertType("array{bar: null}|array{bar: 1}", $a);
 	}
 
@@ -80,15 +89,18 @@ class HelloWorld
 		}
 		assertVariableCertainty(TrinaryLogic::createYes(), $a);
 
-		assertType("array{bar: 'world'}|array{bar: 'hello'}", $a);
+		assertType("array{bar: 'hello'}|array{bar: 'world'}", $a);
 		if (isset($a['bar'])) {
-			assertType("array{bar: 'world'}|array{bar: 'hello'}", $a);
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{bar: 'hello'}|array{bar: 'world'}", $a);
 			$a['bar'] = 1;
 			assertType("array{bar: 1}", $a);
 		} else {
-			assertType('array{}', $a);
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType('*NEVER*', $a);
 		}
 
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
 		assertType("array{bar: 1}", $a);
 	}
 }

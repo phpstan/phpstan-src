@@ -2006,7 +2006,7 @@ class MutatingScope implements Scope
 				return false;
 			}
 
-			// If offset cannot be null, store this error message and see if one of the earlier offsets is.
+			// If offset is cannot be null, store this error message and see if one of the earlier offsets is.
 			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
 			if ($hasOffsetValue->yes()) {
 				$result = $typeCallback($type->getOffsetValueType($dimType));

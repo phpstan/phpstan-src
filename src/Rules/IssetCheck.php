@@ -67,14 +67,14 @@ class IssetCheck
 			$type = $this->treatPhpDocTypesAsCertain
 				? $scope->getType($expr->var)
 				: $scope->getNativeType($expr->var);
-			$dimType = $this->treatPhpDocTypesAsCertain
-				? $scope->getType($expr->dim)
-				: $scope->getNativeType($expr->dim);
-			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 			if (!$type->isOffsetAccessible()->yes()) {
 				return $error ?? $this->checkUndefined($expr->var, $scope, $operatorDescription, $identifier);
 			}
 
+			$dimType = $this->treatPhpDocTypesAsCertain
+				? $scope->getType($expr->dim)
+				: $scope->getNativeType($expr->dim);
+			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 			if ($hasOffsetValue->no()) {
 				if (!$this->checkAdvancedIsset) {
 					return null;
@@ -90,7 +90,7 @@ class IssetCheck
 				)->identifier(sprintf('%s.offset', $identifier))->build();
 			}
 
-			// If offset is cannot be null, store this error message and see if one of the earlier offsets is.
+			// If offset cannot be null, store this error message and see if one of the earlier offsets is.
 			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
 			if ($hasOffsetValue->yes() || $scope->hasExpressionType($expr)->yes()) {
 				if (!$this->checkAdvancedIsset) {

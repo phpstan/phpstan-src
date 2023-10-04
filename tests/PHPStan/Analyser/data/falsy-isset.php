@@ -42,7 +42,7 @@ class HelloWorld
 		}
 
 		assertVariableCertainty(TrinaryLogic::createYes(), $a);
-		assertType("array{bar?: null}|array{bar: 1}", $a);
+		assertType("array{bar: 1}|array{bar?: null}", $a);
 	}
 
 	/**

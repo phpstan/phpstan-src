@@ -32,11 +32,13 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -726,6 +728,22 @@ class TypeSpecifier
 							$scope,
 							$rootExpr,
 						));
+						continue;
+					}
+
+					if (TypeCombinator::containsNull($offsetType)) {
+						$nullOffsetArray = ConstantArrayTypeBuilder::createEmpty();
+						$nullOffsetArray->setOffsetValueType($dimType, new NullType(), true);
+
+						$specifiedTypes = $specifiedTypes->unionWith($this->create(
+							$var->var,
+							$nullOffsetArray->getArray(),
+							$context->negate(),
+							false,
+							$scope,
+							$rootExpr,
+						));
+
 						continue;
 					}
 

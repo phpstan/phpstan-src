@@ -74,7 +74,7 @@ class HelloWorld
 		}
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 
-		assertType("array{bar: null}|array{bar: 'hello'}", $a);
+		assertType("array{bar: 'hello'}|array{bar: null}", $a);
 		if (isset($a['bar'])) {
 			assertVariableCertainty(TrinaryLogic::createYes(), $a);
 			assertType("array{bar: 'hello'}", $a);
@@ -82,11 +82,11 @@ class HelloWorld
 			assertType("array{bar: 1}", $a);
 		} else {
 			assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
-			assertType('array{bar?: null}', $a);
+			assertType('array{bar: null}', $a);
 		}
 
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
-		assertType("array{bar?: null}|array{bar: 1}", $a);
+		assertType("array{bar: 1}|array{bar: null}", $a);
 	}
 
 	public function maybeCertainNonNull(): void

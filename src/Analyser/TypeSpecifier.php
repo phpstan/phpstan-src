@@ -735,7 +735,7 @@ class TypeSpecifier
 
 						$specifiedTypes = $specifiedTypes->unionWith($this->create(
 							$var->var,
-							$nullOffsetArray->getArray(),
+							TypeCombinator::union($type, $nullOffsetArray->getArray()),
 							$context->negate(),
 							false,
 							$scope,

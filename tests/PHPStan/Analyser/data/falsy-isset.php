@@ -61,7 +61,7 @@ class HelloWorld
 		}
 
 		assertVariableCertainty(TrinaryLogic::createYes(), $a);
-		assertType("array{bar?: null}|array{bar: 1}", $a);
+		assertType("array{}|array{bar: 1}", $a);
 	}
 
 	public function maybeCertainNull(): void

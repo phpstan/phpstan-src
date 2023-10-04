@@ -715,8 +715,9 @@ class TypeSpecifier
 						continue;
 					}
 
+					$hasOffsetType = $type->hasOffsetValueType($dimType);
 					$offsetType = $type->getOffsetValueType($dimType);
-					if (!TypeCombinator::containsNull($offsetType)) {
+					if ($hasOffsetType->yes() && !TypeCombinator::containsNull($offsetType)) {
 						$specifiedTypes = $specifiedTypes->unionWith($this->create(
 							new NotIssetExpr($var),
 							new ErrorType(),

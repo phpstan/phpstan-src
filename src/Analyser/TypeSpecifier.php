@@ -686,7 +686,7 @@ class TypeSpecifier
 					$isset = $scope->issetCheck($var, static fn () => true);
 
 					// variable is always defined
-					if ($isset) {
+					if ($isset === true) {
 						$specifiedTypes = $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr));
 						continue;
 					}

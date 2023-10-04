@@ -1003,6 +1003,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
 		$this->polluteScopeWithAlwaysIterableForeach = true;
+
 		$this->analyse([__DIR__ . '/data/isstring-certainty.php'], [
 			[
 				'Variable $a might not be defined.',
@@ -1013,6 +1014,16 @@ class DefinedVariableRuleTest extends RuleTestCase
 				19,
 			],
 		]);
+	}
+
+	public function testBug9426(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-9426.php'], []);
 	}
 
 }

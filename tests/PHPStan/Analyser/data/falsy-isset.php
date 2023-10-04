@@ -17,6 +17,53 @@ class HelloWorld
 		}
 	}
 
+	public function definedVar($a): void
+	{
+		if (isset($a['bar'])) {
+			assertType("mixed~null", $a);
+		} else {
+			assertType("mixed", $a);
+		}
+	}
+
+	/**
+	 * @param array{bar?: null}|array{bar?: 'hello'} $a
+	 */
+	public function optionalOffsetNull($a): void
+	{
+		if (isset($a['bar'])) {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{bar: 'hello'}", $a);
+			$a['bar'] = 1;
+			assertType("array{bar: 1}", $a);
+		} else {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType('array{bar?: null}', $a);
+		}
+
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+		assertType("array{bar?: null}|array{bar: 1}", $a);
+	}
+
+	/**
+	 * @param array{bar?: 'world'}|array{bar?: 'hello'} $a
+	 */
+	public function optionalOffsetNonNull($a): void
+	{
+		if (isset($a['bar'])) {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{bar: 'hello'}|array{bar: 'world'}", $a);
+			$a['bar'] = 1;
+			assertType("array{bar: 1}", $a);
+		} else {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType('array{}', $a);
+		}
+
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+		assertType("array{bar?: null}|array{bar: 1}", $a);
+	}
+
 	public function maybeCertainNull(): void
 	{
 		if (rand() % 2) {
@@ -27,7 +74,7 @@ class HelloWorld
 		}
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 
-		assertType("array{bar?: null}|array{bar?: 'hello'}", $a);
+		assertType("array{bar: null}|array{bar: 'hello'}", $a);
 		if (isset($a['bar'])) {
 			assertVariableCertainty(TrinaryLogic::createYes(), $a);
 			assertType("array{bar: 'hello'}", $a);
@@ -52,7 +99,7 @@ class HelloWorld
 		}
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 
-		assertType("array{bar?: 'hello'}|array{bar?: 'world'}", $a);
+		assertType("array{bar: 'hello'}|array{bar: 'world'}", $a);
 		if (isset($a['bar'])) {
 			assertVariableCertainty(TrinaryLogic::createYes(), $a);
 			assertType("array{bar: 'hello'}|array{bar: 'world'}", $a);

@@ -37,6 +37,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -730,14 +731,33 @@ class TypeSpecifier
 					}
 
 					if (TypeCombinator::containsNull($offsetType)) {
-						$nullOffsetArray = ConstantArrayTypeBuilder::createEmpty();
-						$nullOffsetArray->setOffsetValueType($dimType, new NullType(), true);
+						$newType = $type->unsetOffset($dimType);
+
+						$newType = TypeTraverser::map($newType, static function (Type $type, callable $traverse) use ($dimType): Type {
+							if ($type instanceof UnionType || $type instanceof IntersectionType) {
+								return $traverse($type);
+							}
+
+							if ($type instanceof ConstantArrayType) {
+								$builder = ConstantArrayTypeBuilder::createFromConstantArray(
+									$type,
+								);
+								$builder->setOffsetValueType(
+									$dimType,
+									new NullType(),
+									true,
+								);
+								return $builder->getArray();
+							}
+
+							return $type->setOffsetValueType($dimType, new NullType());
+						});
 
 						$specifiedTypes = $specifiedTypes->unionWith($this->create(
 							$var->var,
-							TypeCombinator::union($type, $nullOffsetArray->getArray()),
+							$newType,
 							$context->negate(),
-							false,
+							true,
 							$scope,
 							$rootExpr,
 						));

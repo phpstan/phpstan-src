@@ -65,7 +65,6 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Helper\GetTemplateTypeType;
 use PHPStan\Type\IntegerRangeType;
@@ -759,29 +758,6 @@ class TypeNodeResolver
 
 			$classReflection = $this->getReflectionProvider()->getClass($mainTypeClassName);
 			if ($classReflection->isGeneric()) {
-				if ($mainTypeName === 'static') {
-					$templateTags = $classReflection->getTemplateTags();
-					$templateTypeMap = $classReflection->getTemplateTypeMap();
-					if (count($genericTypes) === $templateTypeMap->count()) {
-						$templateTypeList = $classReflection->typeMapToList($templateTypeMap);
-						foreach ($genericTypes as $i => $genericType) {
-							if (!$genericType instanceof TemplateType) {
-								break;
-							}
-							$templateType = $templateTypeList[$i];
-							if (!$templateType instanceof TemplateType) {
-								break;
-							}
-							if ($templateType->getName() !== $genericType->getName()) {
-								break;
-							}
-							unset($templateTags[$genericType->getName()]);
-						}
-						if (count($templateTags) === 0) {
-							return new StaticType($classReflection);
-						}
-					}
-				}
 				if (in_array($mainTypeClassName, [
 					Traversable::class,
 					IteratorAggregate::class,

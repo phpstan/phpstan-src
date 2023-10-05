@@ -2132,15 +2132,6 @@ class NodeScopeResolver
 				$scope = $scope->afterOpenSslCall($functionReflection->getName());
 			}
 
-			if (
-				$functionReflection !== null
-				&& $functionReflection->hasSideEffects()->yes()
-			) {
-				foreach ($expr->getArgs() as $arg) {
-					$scope = $scope->invalidateExpression($arg->value, true);
-				}
-			}
-
 		} elseif ($expr instanceof MethodCall) {
 			$originalScope = $scope;
 			if (
@@ -2196,11 +2187,7 @@ class NodeScopeResolver
 				$hasSideEffects = $methodReflection->hasSideEffects();
 				if ($hasSideEffects->yes() || $methodReflection->getName() === '__construct') {
 					$scope = $scope->invalidateExpression($expr->var, true);
-					foreach ($expr->getArgs() as $arg) {
-						$scope = $scope->invalidateExpression($arg->value, true);
-					}
 				}
-
 				if ($parametersAcceptor !== null) {
 					$selfOutType = $methodReflection->getSelfOutType();
 					if ($selfOutType !== null) {
@@ -2371,14 +2358,6 @@ class NodeScopeResolver
 				)
 			) {
 				$scope = $scope->invalidateExpression(new Variable('this'), true);
-			}
-
-			if ($methodReflection !== null) {
-				if ($methodReflection->hasSideEffects()->yes() || $methodReflection->getName() === '__construct') {
-					foreach ($expr->getArgs() as $arg) {
-						$scope = $scope->invalidateExpression($arg->value, true);
-					}
-				}
 			}
 
 			$hasYield = $hasYield || $result->hasYield();
@@ -2689,12 +2668,6 @@ class NodeScopeResolver
 							$expr->getArgs(),
 							$constructorReflection->getVariants(),
 						);
-						$hasSideEffects = $constructorReflection->hasSideEffects();
-						if ($hasSideEffects->yes()) {
-							foreach ($expr->getArgs() as $arg) {
-								$scope = $scope->invalidateExpression($arg->value, true);
-							}
-						}
 						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, $expr->class, $expr->getArgs(), $scope);
 						if ($constructorThrowPoint !== null) {
 							$throwPoints[] = $constructorThrowPoint;
@@ -3623,7 +3596,11 @@ class NodeScopeResolver
 					$argValue = $arg->value;
 					if ($argValue instanceof Variable && is_string($argValue->name)) {
 						$scope = $scope->assignVariable($argValue->name, $byRefType, new MixedType());
+					} else {
+						$scope = $scope->invalidateExpression($argValue);
 					}
+				} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
+					$scope = $scope->invalidateExpression($arg->value, true);
 				}
 			}
 

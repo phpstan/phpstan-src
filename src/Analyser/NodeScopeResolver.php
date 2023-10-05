@@ -148,6 +148,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
@@ -2012,6 +2013,15 @@ class NodeScopeResolver
 
 			if (
 				$functionReflection !== null
+				&& $functionReflection->getName() === 'file_put_contents'
+				&& count($expr->getArgs()) > 0
+			) {
+				$scope = $scope->invalidateExpression(new FuncCall(new Name('file_get_contents'), [$expr->getArgs()[0]]))
+					->invalidateExpression(new FuncCall(new Name\FullyQualified('file_get_contents'), [$expr->getArgs()[0]]));
+			}
+
+			if (
+				$functionReflection !== null
 				&& in_array($functionReflection->getName(), ['array_pop', 'array_shift'], true)
 				&& count($expr->getArgs()) >= 1
 			) {
@@ -3600,7 +3610,10 @@ class NodeScopeResolver
 						$scope = $scope->invalidateExpression($argValue);
 					}
 				} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
-					$scope = $scope->invalidateExpression($arg->value, true);
+					$argType = $scope->getType($arg->value);
+					if (!$argType->isObject()->no() || !(new ResourceType())->isSuperTypeOf($argType)->no()) {
+						$scope = $scope->invalidateExpression($arg->value, true);
+					}
 				}
 			}
 

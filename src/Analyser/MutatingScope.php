@@ -3617,7 +3617,7 @@ class MutatingScope implements Scope
 		}
 
 		// Variables will not contain traversable expressions. skip the NodeFinder overhead
-		if ($expr instanceof Variable && is_string($expr->name)) {
+		if ($expr instanceof Variable && is_string($expr->name) && !$requireMoreCharacters) {
 			return $exprStringToInvalidate === $this->getNodeKey($expr);
 		}
 

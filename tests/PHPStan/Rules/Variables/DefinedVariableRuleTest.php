@@ -67,6 +67,10 @@ class DefinedVariableRuleTest extends RuleTestCase
 				34,
 			],
 			[
+				'Undefined variable: $parseStrParameter',
+				36,
+			],
+			[
 				'Undefined variable: $foo',
 				39,
 			],

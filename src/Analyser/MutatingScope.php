@@ -3827,6 +3827,13 @@ class MutatingScope implements Scope
 				$unsetExpr = $expr->getExpr();
 				$scope = $scope->unsetExpression($unsetExpr);
 
+				if ($unsetExpr instanceof Variable) {
+					$exprString = $this->getNodeKey($unsetExpr);
+
+					unset($scope->expressionTypes[$exprString]);
+					unset($scope->nativeExpressionTypes[$exprString]);
+				}
+
 				if ($unsetExpr instanceof Expr\ArrayDimFetch) {
 					$type = $scope->getType($unsetExpr->var);
 					$arraySize = $type->getArraySize();

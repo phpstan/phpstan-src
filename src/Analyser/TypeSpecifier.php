@@ -686,26 +686,65 @@ class TypeSpecifier
 				foreach ($expr->vars as $var) {
 					$isset = $scope->issetCheck($var, static fn () => true);
 
-					// variable is always defined
+					if ($var instanceof Expr\Variable) {
+						$type = $scope->getType($var);
+
+						if ($isset === true && !TypeCombinator::containsNull($type)) {
+							$specifiedTypes = $specifiedTypes->unionWith($this->create(
+								new NotIssetExpr($var),
+								new NullType(),
+								$context,
+								false,
+								$scope,
+								$rootExpr,
+							));
+							continue;
+						}
+
+						if (TypeCombinator::containsNull($type)) {
+							$specifiedTypes = $specifiedTypes->unionWith($this->create(
+								$var,
+								new NullType(),
+								$context->negate(),
+								false,
+								$scope,
+								$rootExpr,
+							));
+							continue;
+						}
+
+						$specifiedTypes = $specifiedTypes->unionWith($this->create(
+							$var,
+							new NullType(),
+							$context->negate(),
+							true,
+							$scope,
+							$rootExpr,
+						));
+						continue;
+					}
+
+					// expression is always defined
 					if ($isset === true) {
 						$specifiedTypes = $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr));
 						continue;
 					}
 
-					if (!($var instanceof ArrayDimFetch)
-						|| $var->dim === null
-					) {
-						continue;
-					}
-
-					// variable is always undefined
+					// expression is always undefined
 					if (
 						$isset === false
 					) {
 						continue;
 					}
 
-					// variable maybe be defined
+					// expression maybe defined
+					if (!($var instanceof ArrayDimFetch)
+						|| $var->dim === null
+					) {
+						continue;
+					}
+
+
 					$type = $scope->getType($var->var);
 					if ($type instanceof MixedType) {
 						continue;
@@ -721,7 +760,7 @@ class TypeSpecifier
 					if ($hasOffsetType->yes() && !TypeCombinator::containsNull($offsetType)) {
 						$specifiedTypes = $specifiedTypes->unionWith($this->create(
 							new NotIssetExpr($var),
-							new ErrorType(),
+							new NullType(),
 							$context,
 							false,
 							$scope,

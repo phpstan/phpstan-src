@@ -6,7 +6,7 @@ use function PHPStan\Testing\assertType;
 use function PHPStan\Testing\assertVariableCertainty;
 use PHPStan\TrinaryLogic;
 
-class HelloWorld
+class ArrayOffset
 {
 	public function undefinedVar(): void
 	{
@@ -160,3 +160,79 @@ class HelloWorld
 		assertType("array{bar: 1}", $a);
 	}
 }
+
+function doFoo():mixed {
+	return 1;
+}
+
+function maybeMixedVariable(): void
+{
+	if (rand(0,1)) {
+		$a = doFoo();
+	}
+
+	if (isset($a)) {
+		assertType("mixed~null", $a);
+	} else {
+		assertType("null", $a);
+	}
+}
+
+function maybeNullableVariable(): void
+{
+	if (rand(0,1)) {
+		$a = 'hello';
+
+		if (rand(0,2)) {
+			$a = null;
+		}
+	}
+
+	if (isset($a)) {
+		assertType("'hello'", $a);
+	} else {
+		assertType("null", $a);
+	}
+}
+
+function maybeNonNullableVariable(): void
+{
+	if (rand(0,1)) {
+		$a = 'hello';
+	}
+
+	if (isset($a)) {
+		assertType("'hello'", $a);
+	} else {
+		assertType("null", $a);
+	}
+}
+
+function nonNullableVariable(string $a): void
+{
+	if (isset($a)) {
+		assertType("string", $a);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createNo(), $a);
+		assertType("*ERROR*", $a);
+	}
+}
+
+function nullableVariable(?string $a): void
+{
+	if (isset($a)) {
+		assertType("string", $a);
+	} else {
+		assertType("null", $a);
+	}
+}
+
+function nullableUnionVariable(null|string|int $a): void
+{
+	if (isset($a)) {
+		assertType("int|string", $a);
+	} else {
+		assertType("null", $a);
+	}
+}
+

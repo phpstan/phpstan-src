@@ -43,7 +43,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -743,7 +742,6 @@ class TypeSpecifier
 					) {
 						continue;
 					}
-
 
 					$type = $scope->getType($var->var);
 					if ($type instanceof MixedType) {

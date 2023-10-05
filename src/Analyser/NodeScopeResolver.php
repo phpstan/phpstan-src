@@ -3580,42 +3580,26 @@ class NodeScopeResolver
 		$hasYield = false;
 		$throwPoints = [];
 		foreach ($args as $i => $arg) {
-			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
-			$nodeCallback($originalArg, $scope);
+			$assignByReference = false;
 			if (isset($parameters) && $parametersAcceptor !== null) {
-				$byRefType = new MixedType();
-				$assignByReference = false;
 				if (isset($parameters[$i])) {
 					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
 					$parameterType = $parameters[$i]->getType();
-
-					if (isset($paramOutTypes[$parameters[$i]->getName()])) {
-						$byRefType = $paramOutTypes[$parameters[$i]->getName()];
-					}
 				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
 					$lastParameter = $parameters[count($parameters) - 1];
 					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
 					$parameterType = $lastParameter->getType();
-
-					if (isset($paramOutTypes[$lastParameter->getName()])) {
-						$byRefType = $paramOutTypes[$lastParameter->getName()];
-					}
-				}
-
-				if ($assignByReference) {
-					$argValue = $arg->value;
-					if ($argValue instanceof Variable && is_string($argValue->name)) {
-						$scope = $scope->assignVariable($argValue->name, $byRefType, new MixedType());
-					} else {
-						$scope = $scope->invalidateExpression($argValue);
-					}
-				} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
-					$argType = $scope->getType($arg->value);
-					if (!$argType->isObject()->no() || !(new ResourceType())->isSuperTypeOf($argType)->no()) {
-						$scope = $scope->invalidateExpression($arg->value, true);
-					}
 				}
 			}
+
+			if ($assignByReference) {
+				if ($arg->value instanceof Variable) {
+					$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $arg->value);
+				}
+			}
+
+			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
+			$nodeCallback($originalArg, $scope);
 
 			$originalScope = $scope;
 			$scopeToPass = $scope;
@@ -3633,6 +3617,11 @@ class NodeScopeResolver
 				$result = $this->processExprNode($arg->value, $scopeToPass, $nodeCallback, $context->enterDeep());
 			}
 			$scope = $result->getScope();
+			if ($assignByReference) {
+				if ($arg->value instanceof Variable) {
+					$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $arg->value);
+				}
+			}
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			if ($i !== 0 || $closureBindScope === null) {
@@ -3644,6 +3633,41 @@ class NodeScopeResolver
 
 		if ($calleeReflection !== null) {
 			$scope = $scope->popInFunctionCall();
+		}
+
+		foreach ($args as $i => $arg) {
+			if (!isset($parameters) || $parametersAcceptor === null) {
+				continue;
+			}
+
+			$byRefType = new MixedType();
+			$assignByReference = false;
+			if (isset($parameters[$i])) {
+				$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
+				if (isset($paramOutTypes[$parameters[$i]->getName()])) {
+					$byRefType = $paramOutTypes[$parameters[$i]->getName()];
+				}
+			} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
+				$lastParameter = $parameters[count($parameters) - 1];
+				$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
+				if (isset($paramOutTypes[$lastParameter->getName()])) {
+					$byRefType = $paramOutTypes[$lastParameter->getName()];
+				}
+			}
+
+			if ($assignByReference) {
+				$argValue = $arg->value;
+				if ($argValue instanceof Variable && is_string($argValue->name)) {
+					$scope = $scope->assignVariable($argValue->name, $byRefType, new MixedType());
+				} else {
+					$scope = $scope->invalidateExpression($argValue);
+				}
+			} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
+				$argType = $scope->getType($arg->value);
+				if (!$argType->isObject()->no() || !(new ResourceType())->isSuperTypeOf($argType)->no()) {
+					$scope = $scope->invalidateExpression($arg->value, true);
+				}
+			}
 		}
 
 		return new ExpressionResult($scope, $hasYield, $throwPoints);

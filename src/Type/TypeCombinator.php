@@ -210,12 +210,7 @@ class TypeCombinator
 			$scalarTypes[$classType] = array_values($scalarTypeItems);
 		}
 
-		$types = array_values(
-			array_merge(
-				$types,
-				self::processArrayTypes($arrayTypes),
-			),
-		);
+		$types = array_values($types);
 		$typesCount = count($types);
 
 		foreach ($scalarTypes as $classType => $scalarTypeItems) {
@@ -263,8 +258,13 @@ class TypeCombinator
 				$newTypes[$type->describe(VerbosityLevel::cache())] = $type;
 			}
 			$types = array_values($newTypes);
-			$typesCount = count($types);
 		}
+
+		$types = array_merge(
+			$types,
+			self::processArrayTypes($arrayTypes),
+		);
+		$typesCount = count($types);
 
 		// transform A | A to A
 		// transform A | never to A

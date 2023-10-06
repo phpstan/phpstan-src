@@ -608,9 +608,12 @@ class ClassReflection
 		return $this->reflection->isTrait();
 	}
 
+	/**
+	 * @phpstan-assert-if-true ReflectionEnum $this->reflection
+	 */
 	public function isEnum(): bool
 	{
-		return $this->reflection->isEnum();
+		return $this->reflection->isEnum() && $this->reflection instanceof ReflectionEnum;
 	}
 
 	public function isReadOnly(): bool
@@ -651,10 +654,6 @@ class ClassReflection
 			return false;
 		}
 
-		if (!$this->reflection instanceof ReflectionEnum) {
-			return false;
-		}
-
 		return $this->reflection->hasCase($name);
 	}
 
@@ -663,7 +662,7 @@ class ClassReflection
 	 */
 	public function getEnumCases(): array
 	{
-		if (!$this->reflection instanceof ReflectionEnum) {
+		if (!$this->isEnum()) {
 			throw new ShouldNotHappenException();
 		}
 

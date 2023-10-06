@@ -2450,6 +2450,50 @@ class TypeCombinatorTest extends PHPStanTestCase
 			NeverType::class,
 			'*NEVER*',
 		];
+		yield [
+			[
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new ConstantBooleanType(true),
+					new ConstantBooleanType(true),
+				], [0], [0]),
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('c'),
+				], [
+					new ConstantBooleanType(true),
+					new ConstantBooleanType(true),
+				], [0], [0, 1]),
+			],
+			UnionType::class,
+			'array{a?: true, b: true}|array{a?: true, c?: true}',
+		];
+
+		yield [
+			[
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new ConstantBooleanType(true),
+					new ConstantBooleanType(true),
+				], [0], [0]),
+				new IntersectionType([
+					new ConstantArrayType([
+						new ConstantStringType('a'),
+						new ConstantStringType('c'),
+					], [
+						new ConstantBooleanType(true),
+						new ConstantBooleanType(true),
+					], [0], [0, 1]),
+					new NonEmptyArrayType(),
+				]),
+			],
+			UnionType::class,
+			'array{a?: true, b: true}|(array{a?: true, c?: true}&non-empty-array)',
+		];
 	}
 
 	/**
@@ -4029,6 +4073,66 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			NonAcceptingNeverType::class,
 			'never=explicit',
+		];
+		yield [
+			[
+				new UnionType([
+					new ConstantArrayType([], []),
+					new ConstantArrayType([
+						new ConstantStringType('a'),
+						new ConstantStringType('b'),
+					], [
+						new ConstantBooleanType(true),
+						new ConstantBooleanType(true),
+					], [0], [0]),
+					new ConstantArrayType([
+						new ConstantStringType('a'),
+						new ConstantStringType('c'),
+					], [
+						new ConstantBooleanType(true),
+						new ConstantBooleanType(true),
+					], [0], [0, 1]),
+				]),
+				new NonEmptyArrayType(),
+			],
+			UnionType::class,
+			'array{a?: true, b: true}|(array{a?: true, c?: true}&non-empty-array)',
+		];
+		yield [
+			[
+				new ConstantArrayType([], []),
+				new NonEmptyArrayType(),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new ConstantBooleanType(true),
+					new ConstantBooleanType(true),
+				], [0], [0]),
+				new NonEmptyArrayType(),
+			],
+			ConstantArrayType::class,
+			'array{a?: true, b: true}',
+		];
+		yield [
+			[
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('c'),
+				], [
+					new ConstantBooleanType(true),
+					new ConstantBooleanType(true),
+				], [0], [0, 1]),
+				new NonEmptyArrayType(),
+			],
+			IntersectionType::class,
+			'array{a?: true, c?: true}&non-empty-array',
 		];
 	}
 

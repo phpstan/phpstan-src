@@ -1932,7 +1932,28 @@ class NodeScopeResolver
 				$expr,
 				$nodeCallback,
 				$context,
-				fn (MutatingScope $scope): ExpressionResult => $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep()),
+				function (MutatingScope $scope) use ($expr, $nodeCallback, $context): ExpressionResult {
+					$originalScope = $scope;
+					if ($expr instanceof Expr\AssignOp\Coalesce) {
+						$scope = $scope->filterByFalseyValue(
+							new BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
+						);
+					}
+
+					$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
+					if ($expr instanceof Expr\AssignOp\Coalesce) {
+						return new ExpressionResult(
+							$result->getScope()->mergeWith(
+								$this->processExprNode($expr->expr, $originalScope, static function (): void {
+								}, $context->enterDeep())->getScope(),
+							),
+							$result->hasYield(),
+							$result->getThrowPoints(),
+						);
+					}
+
+					return $result;
+				},
 				$expr instanceof Expr\AssignOp\Coalesce,
 			);
 			$scope = $result->getScope();

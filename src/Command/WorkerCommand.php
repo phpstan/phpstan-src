@@ -200,11 +200,13 @@ class WorkerCommand extends Command
 				} catch (Throwable $t) {
 					$this->errorCount++;
 					$internalErrorsCount++;
-					$internalErrorMessage = sprintf('Internal error: %s in file %s', $t->getMessage(), $file);
+					$internalErrorMessage = sprintf('Internal error: %s while analysing file %s', $t->getMessage(), $file);
 
 					$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml';
 					if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
-						$internalErrorMessage .= sprintf('%sPost the following stack trace to %s: %s%s', "\n\n", $bugReportUrl, "\n", $t->getTraceAsString());
+						$trace = sprintf('## %s(%d)%s', $t->getFile(), $t->getLine(), "\n");
+						$trace .= $t->getTraceAsString();
+						$internalErrorMessage .= sprintf('%sPost the following stack trace to %s: %s%s', "\n\n", $bugReportUrl, "\n", $trace);
 					} else {
 						$internalErrorMessage .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s', "\n", "\n", $bugReportUrl);
 					}

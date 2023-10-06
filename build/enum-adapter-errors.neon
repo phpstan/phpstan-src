@@ -2,7 +2,7 @@ parameters:
 	ignoreErrors:
 		-
 			message: "#^Call to method getAttributes\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 3
+			count: 2
 			path: ../src/Reflection/ClassReflection.php
 
 		-
@@ -112,7 +112,7 @@ parameters:
 
 		-
 			message: "#^Class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum not found\\.$#"
-			count: 5
+			count: 4
 			path: ../src/Reflection/ClassReflection.php
 
 		-

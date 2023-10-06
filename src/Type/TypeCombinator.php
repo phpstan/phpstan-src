@@ -354,7 +354,7 @@ class TypeCombinator
 				return [new HasOffsetValueType($a->getOffsetType(), self::union($a->getValueType(), $b->getValueType())), null];
 			}
 		}
-		if ($a instanceof ConstantArrayType && $b instanceof ConstantArrayType) {
+		if ($a->isConstantArray()->yes() && $b->isConstantArray()->yes()) {
 			return null;
 		}
 

@@ -3394,6 +3394,50 @@ class MutatingScope implements Scope
 		return $scope;
 	}
 
+	public function makeExpressionUncertain(Expr $expr): self
+	{
+		$exprString = $this->getNodeKey($expr);
+		if (!array_key_exists($exprString, $this->expressionTypes)
+			|| !array_key_exists($exprString, $this->nativeExpressionTypes)
+		) {
+			return $this;
+		}
+
+		$scope = $this;
+
+		$expressionTypes = $scope->expressionTypes;
+		$expressionTypes[$exprString] = new ExpressionTypeHolder(
+			$expressionTypes[$exprString]->getExpr(),
+			$expressionTypes[$exprString]->getType(),
+			TrinaryLogic::createMaybe(),
+		);
+		$nativeTypes = $scope->nativeExpressionTypes;
+		$nativeTypes[$exprString] = new ExpressionTypeHolder(
+			$nativeTypes[$exprString]->getExpr(),
+			$nativeTypes[$exprString]->getType(),
+			TrinaryLogic::createMaybe(),
+		);
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	public function unsetExpression(Expr $expr): self
 	{
 		$scope = $this;

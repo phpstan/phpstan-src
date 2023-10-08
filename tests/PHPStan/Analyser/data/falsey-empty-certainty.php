@@ -14,6 +14,7 @@ function falseyEmptyArrayDimFetch(): void
 		}
 	}
 
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 	if (empty($a['bar'])) {
 		assertVariableCertainty(TrinaryLogic::createYes(), $a);
 	} else {

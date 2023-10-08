@@ -54,6 +54,10 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 			return $isOffsetAccessibleTypeResult->getUnknownClassErrors();
 		}
 
+		if ($scope->hasExpressionType($node)->yes()) {
+			return [];
+		}
+
 		$isOffsetAccessible = $isOffsetAccessibleType->isOffsetAccessible();
 
 		if ($scope->isInExpressionAssign($node) && $isOffsetAccessible->yes()) {
@@ -87,7 +91,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 			return [];
 		}
 
-		if ($dimType === null || $scope->hasExpressionType($node)->yes()) {
+		if ($dimType === null) {
 			return [];
 		}
 

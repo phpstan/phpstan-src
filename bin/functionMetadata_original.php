@@ -101,6 +101,7 @@ return [
 	'rewind' => ['hasSideEffects' => true],
 	'rmdir' => ['hasSideEffects' => true],
 	'sprintf' => ['hasSideEffects' => false],
+	'stream_filter_append' => ['hasSideEffects' => true],
 	'symlink' => ['hasSideEffects' => true],
 	'tempnam' => ['hasSideEffects' => true],
 	'tmpfile' => ['hasSideEffects' => true],
@@ -113,6 +114,9 @@ return [
 	'rand' => ['hasSideEffects' => true],
 	'random_bytes' => ['hasSideEffects' => true],
 	'random_int' => ['hasSideEffects' => true],
+
+	'ob_get_clean' => ['hasSideEffects' => true],
+	'openssl_sign' => ['hasSideEffects' => true],
 
 	// methods
 	'DateTime::createFromFormat' => ['hasSideEffects' => false],

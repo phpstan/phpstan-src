@@ -552,14 +552,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Cannot access offset string on mixed.',
 				24,
 			],
-			[
-				'Cannot access offset string on mixed.',
-				29,
-			],
-			[
-				'Cannot access offset string on mixed.',
-				32,
-			],
 		]);
 	}
 
@@ -725,6 +717,17 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				"Offset 'invalid' does not exist on array{b: array{5}}.",
 				17,
+			],
+		]);
+	}
+
+	public function testBug9991(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-9991.php'], [
+			[
+				'Cannot access offset \'title\' on mixed.',
+				9,
 			],
 		]);
 	}

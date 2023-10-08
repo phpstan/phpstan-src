@@ -2666,7 +2666,7 @@ class NodeScopeResolver
 					$scope = $scope->filterByTruthyValue($expr);
 
 					if ($keepMaybeVariable !== null) {
-						$scope = $scope->makeExpressionUncertain($keepMaybeVariable);
+						$scope = $scope->makeVariableUncertain($keepMaybeVariable);
 					}
 
 					return $scope;
@@ -2675,7 +2675,7 @@ class NodeScopeResolver
 					$scope = $scope->filterByFalseyValue($expr);
 
 					if ($keepMaybeVariable !== null) {
-						$scope = $scope->makeExpressionUncertain($keepMaybeVariable);
+						$scope = $scope->makeVariableUncertain($keepMaybeVariable);
 					}
 
 					return $scope;
@@ -2724,7 +2724,7 @@ class NodeScopeResolver
 					$scope = $scope->filterByFalseyValue($expr);
 
 					foreach ($keepMaybeVariables as $variable) {
-						$scope = $scope->makeExpressionUncertain($variable);
+						$scope = $scope->makeVariableUncertain($variable);
 					}
 
 					return $scope;

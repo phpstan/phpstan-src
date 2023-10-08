@@ -3394,7 +3394,7 @@ class MutatingScope implements Scope
 		return $scope;
 	}
 
-	public function makeExpressionUncertain(Expr $expr): self
+	public function makeVariableUncertain(Variable $expr): self
 	{
 		$exprString = $this->getNodeKey($expr);
 		if (!array_key_exists($exprString, $this->expressionTypes)

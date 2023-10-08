@@ -5,8 +5,6 @@ namespace FalseyIssetCertainty;
 use function PHPStan\Testing\assertVariableCertainty;
 use PHPStan\TrinaryLogic;
 
-
-
 function falseyIssetArrayDimFetch(): void
 {
 	$a = ['bar' => null];

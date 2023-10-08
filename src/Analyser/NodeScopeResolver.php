@@ -2665,7 +2665,7 @@ class NodeScopeResolver
 					$scope = $scope->filterByFalseyValue($expr);
 
 					if ($keepMaybeVariable !== null) {
-						$scope = $scope->makeExpressionUncertain($expr->expr);
+						$scope = $scope->makeExpressionUncertain($keepMaybeVariable);
 					}
 
 					return $scope;

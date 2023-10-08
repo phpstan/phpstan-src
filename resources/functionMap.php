@@ -11649,7 +11649,7 @@ return [
 'SQLite3::lastInsertRowID' => ['int'],
 'SQLite3::loadExtension' => ['bool', 'shared_library'=>'string'],
 'SQLite3::open' => ['void', 'filename'=>'string', 'flags='=>'int', 'encryption_key='=>'string|null'],
-'SQLite3::openBlob' => ['resource', 'table'=>'string', 'column'=>'string', 'rowid'=>'int', 'dbname'=>'string', 'flags='=>'int'],
+'SQLite3::openBlob' => ['resource|false', 'table'=>'string', 'column'=>'string', 'rowid'=>'int', 'dbname='=>'string', 'flags='=>'int'],
 'SQLite3::prepare' => ['SQLite3Stmt|false', 'query'=>'string'],
 'SQLite3::query' => ['SQLite3Result|false', 'query'=>'string'],
 'SQLite3::querySingle' => ['array|int|string|bool|float|null|false', 'query'=>'string', 'entire_row='=>'bool'],

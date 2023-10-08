@@ -56,3 +56,22 @@ function falseyIssetVariable(): void
 
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 }
+
+function falseyIssetWithAssignment(): void
+{
+	if (rand() % 2) {
+		$x = ['x' => 1];
+	}
+
+	if (isset($x[$z = getFoo()])) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $z);
+		assertVariableCertainty(TrinaryLogic::createYes(), $x);
+
+	} else {
+		assertVariableCertainty(TrinaryLogic::createYes(), $z);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $x);
+	}
+
+	assertVariableCertainty(TrinaryLogic::createYes(), $z);
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $x);
+}

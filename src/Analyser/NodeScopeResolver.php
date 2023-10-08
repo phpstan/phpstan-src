@@ -1868,8 +1868,6 @@ class NodeScopeResolver
 	 */
 	public function processExprNode(Expr $expr, MutatingScope $scope, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$falsyScope = null;
-
 		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
 			if ($expr instanceof FuncCall) {
 				$newExpr = new FunctionCallableNode($expr->name, $expr);
@@ -2646,8 +2644,6 @@ class NodeScopeResolver
 			$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 			$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $expr->expr);
 		} elseif ($expr instanceof Expr\Isset_) {
-			$falsyScope = $scope;
-
 			$hasYield = false;
 			$throwPoints = [];
 			$nonNullabilityResults = [];
@@ -2953,16 +2949,12 @@ class NodeScopeResolver
 			$throwPoints = [];
 		}
 
-		if ($falsyScope === null) {
-			$falsyScope = $scope;
-		}
-
 		return new ExpressionResult(
 			$scope,
 			$hasYield,
 			$throwPoints,
 			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			static fn (): MutatingScope => $falsyScope->filterByFalseyValue($expr),
+			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 	}
 

@@ -16,7 +16,26 @@ function falseyEmptyArrayDimFetch(): void
 
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 	if (empty($a['bar'])) {
-		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+}
+
+function falseyEmptyUncertainPropertyFetch(): void
+{
+	if (rand() % 2) {
+		$a = new \stdClass();
+		if (rand() % 3) {
+			$a->x = 'hello';
+		}
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+	if (empty($a->x)) {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 	} else {
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 	}

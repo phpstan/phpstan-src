@@ -75,3 +75,22 @@ function falseyIssetWithAssignment(): void
 	assertVariableCertainty(TrinaryLogic::createYes(), $z);
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $x);
 }
+
+function falseyIssetUncertainPropertyFetch(): void
+{
+	if (rand() % 2) {
+		$a = new \stdClass();
+		if (rand() % 3) {
+			$a->x = 'hello';
+		}
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+	if (isset($a->x)) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+}

@@ -2640,6 +2640,8 @@ class NodeScopeResolver
 			$variable = null;
 			if ($expr->expr instanceof ArrayDimFetch && $expr->expr->var instanceof Variable) {
 				$variable = $expr->expr->var;
+			} elseif ($expr->expr instanceof PropertyFetch && $expr->expr->var instanceof Variable) {
+				$variable = $expr->expr->var;
 			} elseif ($expr->expr instanceof Variable) {
 				$variable = $expr->expr;
 			}
@@ -2660,7 +2662,15 @@ class NodeScopeResolver
 				$scope,
 				$hasYield,
 				$throwPoints,
-				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+				static function () use ($scope, $expr, $keepMaybeVariable): MutatingScope {
+					$scope = $scope->filterByTruthyValue($expr);
+
+					if ($keepMaybeVariable !== null) {
+						$scope = $scope->makeExpressionUncertain($keepMaybeVariable);
+					}
+
+					return $scope;
+				},
 				static function () use ($scope, $expr, $keepMaybeVariable): MutatingScope {
 					$scope = $scope->filterByFalseyValue($expr);
 
@@ -2680,6 +2690,8 @@ class NodeScopeResolver
 			foreach ($expr->vars as $var) {
 				$variable = null;
 				if ($var instanceof ArrayDimFetch && $var->var instanceof Variable) {
+					$variable = $var->var;
+				} elseif ($var instanceof PropertyFetch && $var->var instanceof Variable) {
 					$variable = $var->var;
 				} elseif ($var instanceof Variable) {
 					$variable = $var;
@@ -2711,8 +2723,8 @@ class NodeScopeResolver
 				static function () use ($scope, $expr, $keepMaybeVariables): MutatingScope {
 					$scope = $scope->filterByFalseyValue($expr);
 
-					foreach ($keepMaybeVariables as $keepCertainty) {
-						$scope = $scope->makeExpressionUncertain($keepCertainty);
+					foreach ($keepMaybeVariables as $variable) {
+						$scope = $scope->makeExpressionUncertain($variable);
 					}
 
 					return $scope;

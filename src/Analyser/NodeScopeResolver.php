@@ -1758,11 +1758,7 @@ class NodeScopeResolver
 		$certainty = TrinaryLogic::createYes();
 		$hasExpressionType = $originalScope->hasExpressionType($exprToSpecify);
 		if (!$hasExpressionType->no()) {
-			if ($exprToSpecify instanceof Variable && is_string($exprToSpecify->name)) {
-				$certainty = $originalScope->hasVariableType($exprToSpecify->name);
-			} else {
-				$certainty = $hasExpressionType;
-			}
+			$certainty = $hasExpressionType;
 		}
 
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);

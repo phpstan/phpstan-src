@@ -2340,6 +2340,10 @@ class MutatingScope implements Scope
 	/** @api */
 	public function hasExpressionType(Expr $node): TrinaryLogic
 	{
+		if ($node instanceof Variable && is_string($node->name)) {
+			return $this->hasVariableType($node->name);
+		}
+
 		$exprString = $this->getNodeKey($node);
 		if (!isset($this->expressionTypes[$exprString])) {
 			return TrinaryLogic::createNo();
@@ -3467,9 +3471,11 @@ class MutatingScope implements Scope
 						$types[] = new StringType();
 					}
 
-					$variableCertainty = null;
-					if ($expr->var instanceof Variable && is_string($expr->var->name)) {
-						$variableCertainty = $scope->hasVariableType($expr->var->name);
+					// keep certainty
+					$certainty = null;
+					$hasExpressionType = $scope->hasExpressionType($expr->var);
+					if (!$hasExpressionType->no()) {
+						$certainty = $hasExpressionType;
 					}
 
 					$scope = $scope->specifyExpressionType(
@@ -3479,7 +3485,7 @@ class MutatingScope implements Scope
 							new HasOffsetValueType($dimType, $type),
 						),
 						$scope->getNativeType($expr->var),
-						$variableCertainty, // keep variable certainty
+						$certainty,
 					);
 				}
 			}

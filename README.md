@@ -19,8 +19,7 @@ composer install
 
 If you encounter dependency problem, try using `export COMPOSER_ROOT_VERSION=1.10.x-dev`
 
-If you are using macOS and are using an older version of patch, you may have problems with patch application failure.
-Try using `brew install gpatch`
+If you are using macOS and are using an older version of `patch`, you may have problems with patch application failure during `composer install`. Try using `brew install gpatch` to install a newer and supported `patch` version.
 
 ### Building
 

@@ -2642,20 +2642,6 @@ class NodeScopeResolver
 				$throwPoints = $result->getThrowPoints();
 			}
 		} elseif ($expr instanceof Expr\Empty_) {
-			$keepMaybeVariable = null;
-
-			$variable = null;
-			if ($expr->expr instanceof ArrayDimFetch && $expr->expr->var instanceof Variable) {
-				$variable = $expr->expr->var;
-			} elseif ($expr->expr instanceof PropertyFetch && $expr->expr->var instanceof Variable) {
-				$variable = $expr->expr->var;
-			} elseif ($expr->expr instanceof Variable) {
-				$variable = $expr->expr;
-			}
-			if ($variable !== null && is_string($variable->name) && $scope->hasVariableType($variable->name)->maybe()) {
-				$keepMaybeVariable = $variable;
-			}
-
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->expr);
 			$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr);
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
@@ -2664,32 +2650,7 @@ class NodeScopeResolver
 			$throwPoints = $result->getThrowPoints();
 			$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 			$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $expr->expr);
-
-			return new ExpressionResult(
-				$scope,
-				$hasYield,
-				$throwPoints,
-				static function () use ($scope, $expr, $keepMaybeVariable): MutatingScope {
-					$scope = $scope->filterByTruthyValue($expr);
-
-					if ($keepMaybeVariable !== null) {
-						$scope = $scope->makeVariableUncertain($keepMaybeVariable);
-					}
-
-					return $scope;
-				},
-				static function () use ($scope, $expr, $keepMaybeVariable): MutatingScope {
-					$scope = $scope->filterByFalseyValue($expr);
-
-					if ($keepMaybeVariable !== null) {
-						$scope = $scope->makeVariableUncertain($keepMaybeVariable);
-					}
-
-					return $scope;
-				},
-			);
 		} elseif ($expr instanceof Expr\Isset_) {
-
 			$hasYield = false;
 			$throwPoints = [];
 			$nonNullabilityResults = [];

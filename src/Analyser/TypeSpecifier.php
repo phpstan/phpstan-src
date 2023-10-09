@@ -791,11 +791,9 @@ class TypeSpecifier
 		} elseif (
 			$expr instanceof Expr\Empty_
 		) {
-			if ($context->false()) {
-				$isset = $scope->issetCheck($expr->expr, static fn () => true);
-				if ($isset === false) {
-					return new SpecifiedTypes();
-				}
+			$isset = $scope->issetCheck($expr->expr, static fn () => true);
+			if ($isset === false) {
+				return new SpecifiedTypes();
 			}
 
 			return $this->specifyTypesInCondition($scope, new BooleanOr(

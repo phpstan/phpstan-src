@@ -43,6 +43,17 @@ function falseyEmptyUncertainPropertyFetch(): void
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 }
 
+function justEmpty(): void
+{
+	assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+	if (!empty($foo)) {
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+	}
+	assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+}
+
 function maybeEmpty(): void
 {
 	if (rand() % 2) {

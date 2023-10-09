@@ -103,6 +103,10 @@ class DefinedVariableRuleTest extends RuleTestCase
 				145,
 			],
 			[
+				'Undefined variable: $negatedVariableInEmpty',
+				152,
+			],
+			[
 				'Undefined variable: $variableInEmpty',
 				155,
 			],

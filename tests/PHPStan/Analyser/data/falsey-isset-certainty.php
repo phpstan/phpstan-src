@@ -114,3 +114,15 @@ function maybeIsset(): void
 		assertType('1', $foo);
 	}
 }
+
+function isStringNarrowsMaybeCertainty(int $i, string $s): void
+{
+	if (rand(0, 1)) {
+		$a = rand(0,1) ? $i : $s;
+	}
+
+	if (is_string($a)) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+		echo $a;
+	}
+}

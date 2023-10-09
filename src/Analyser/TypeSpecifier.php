@@ -791,6 +791,10 @@ class TypeSpecifier
 		} elseif (
 			$expr instanceof Expr\Empty_
 		) {
+			if (!$scope instanceof MutatingScope) {
+				throw new ShouldNotHappenException();
+			}
+
 			$isset = $scope->issetCheck($expr->expr, static fn () => true);
 			if ($isset === false) {
 				return new SpecifiedTypes();

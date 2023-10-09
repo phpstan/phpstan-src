@@ -1753,6 +1753,12 @@ class NodeScopeResolver
 		if ($isNull->yes()) {
 			return new EnsuredNonNullabilityResult($scope, []);
 		}
+
+		$certainty = TrinaryLogic::createYes();
+		if ($exprToSpecify instanceof Variable && is_string($exprToSpecify->name)) {
+			$certainty = $originalScope->hasVariableType($exprToSpecify->name);
+		}
+
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
 		if ($exprType->equals($exprTypeWithoutNull)) {
 			$originalExprType = $originalScope->getType($exprToSpecify);
@@ -1760,7 +1766,7 @@ class NodeScopeResolver
 				$originalNativeType = $originalScope->getNativeType($exprToSpecify);
 
 				return new EnsuredNonNullabilityResult($scope, [
-					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType),
+					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $certainty),
 				]);
 			}
 			return new EnsuredNonNullabilityResult($scope, []);
@@ -1776,7 +1782,7 @@ class NodeScopeResolver
 		return new EnsuredNonNullabilityResult(
 			$scope,
 			[
-				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType),
+				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty),
 			],
 		);
 	}
@@ -1806,6 +1812,7 @@ class NodeScopeResolver
 				$specifiedExpressionResult->getExpression(),
 				$specifiedExpressionResult->getOriginalType(),
 				$specifiedExpressionResult->getOriginalNativeType(),
+				$specifiedExpressionResult->getCertainty(),
 			);
 		}
 
@@ -2686,20 +2693,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$nonNullabilityResults = [];
-			$keepMaybeVariables = [];
 			foreach ($expr->vars as $var) {
-				$variable = null;
-				if ($var instanceof ArrayDimFetch && $var->var instanceof Variable) {
-					$variable = $var->var;
-				} elseif ($var instanceof PropertyFetch && $var->var instanceof Variable) {
-					$variable = $var->var;
-				} elseif ($var instanceof Variable) {
-					$variable = $var;
-				}
-				if ($variable !== null && is_string($variable->name) && $scope->hasVariableType($variable->name)->maybe()) {
-					$keepMaybeVariables[] = $variable;
-				}
-
 				$nonNullabilityResult = $this->ensureNonNullability($scope, $var);
 				$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
 				$result = $this->processExprNode($var, $scope, $nodeCallback, $context->enterDeep());
@@ -2714,22 +2708,6 @@ class NodeScopeResolver
 			foreach (array_reverse($nonNullabilityResults) as $nonNullabilityResult) {
 				$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 			}
-
-			return new ExpressionResult(
-				$scope,
-				$hasYield,
-				$throwPoints,
-				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-				static function () use ($scope, $expr, $keepMaybeVariables): MutatingScope {
-					$scope = $scope->filterByFalseyValue($expr);
-
-					foreach ($keepMaybeVariables as $variable) {
-						$scope = $scope->makeVariableUncertain($variable);
-					}
-
-					return $scope;
-				},
-			);
 		} elseif ($expr instanceof Instanceof_) {
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();

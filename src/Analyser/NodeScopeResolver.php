@@ -1754,6 +1754,7 @@ class NodeScopeResolver
 			return new EnsuredNonNullabilityResult($scope, []);
 		}
 
+		// keep variable certainty
 		$certainty = TrinaryLogic::createYes();
 		if ($exprToSpecify instanceof Variable && is_string($exprToSpecify->name)) {
 			$certainty = $originalScope->hasVariableType($exprToSpecify->name);

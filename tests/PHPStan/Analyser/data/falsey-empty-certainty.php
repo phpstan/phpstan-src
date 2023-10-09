@@ -18,7 +18,7 @@ function falseyEmptyArrayDimFetch(): void
 	if (empty($a['bar'])) {
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 	} else {
-		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
 	}
 
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
@@ -37,7 +37,7 @@ function falseyEmptyUncertainPropertyFetch(): void
 	if (empty($a->x)) {
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 	} else {
-		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
 	}
 
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);

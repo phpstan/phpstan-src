@@ -3472,10 +3472,9 @@ class MutatingScope implements Scope
 					}
 
 					// keep certainty
-					$certainty = null;
-					$hasExpressionType = $scope->hasExpressionType($expr->var);
-					if (!$hasExpressionType->no()) {
-						$certainty = $hasExpressionType;
+					$variableCertainty = null;
+					if ($expr->var instanceof Variable && is_string($expr->var->name)) {
+						$variableCertainty = $scope->hasVariableType($expr->var->name);
 					}
 
 					$scope = $scope->specifyExpressionType(
@@ -3485,7 +3484,7 @@ class MutatingScope implements Scope
 							new HasOffsetValueType($dimType, $type),
 						),
 						$scope->getNativeType($expr->var),
-						$certainty,
+						$variableCertainty,
 					);
 				}
 			}

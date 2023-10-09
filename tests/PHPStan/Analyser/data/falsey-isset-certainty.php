@@ -2,6 +2,7 @@
 
 namespace FalseyIssetCertainty;
 
+use function PHPStan\Testing\assertType;
 use function PHPStan\Testing\assertVariableCertainty;
 use PHPStan\TrinaryLogic;
 
@@ -93,4 +94,23 @@ function falseyIssetUncertainPropertyFetch(): void
 	}
 
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+}
+
+function justIsset(): void
+{
+	if (isset($foo)) {
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+	}
+}
+
+function maybeIsset(): void
+{
+	if (rand() % 2) {
+		$foo = 1;
+	}
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+	if (isset($foo)) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+		assertType('1', $foo);
+	}
 }

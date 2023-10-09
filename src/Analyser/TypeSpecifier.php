@@ -717,11 +717,14 @@ class TypeSpecifier
 
 			$types = null;
 			foreach ($vars as $var) {
+				$type = new SpecifiedTypes();
+
 				if ($var instanceof Expr\Variable && is_string($var->name)) {
 					if ($scope->hasVariableType($var->name)->no()) {
 						return new SpecifiedTypes([], [], false, [], $rootExpr);
 					}
 				}
+
 				if (
 					$var instanceof ArrayDimFetch
 					&& $var->dim !== null
@@ -738,16 +741,12 @@ class TypeSpecifier
 							$scope,
 							$rootExpr,
 						);
-					} else {
-						$type = new SpecifiedTypes();
 					}
-
-					$type = $type->unionWith(
-						$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
-					);
-				} else {
-					$type = $this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr);
 				}
+
+				$type = $type->unionWith(
+					$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
+				);
 
 				if (
 					$var instanceof PropertyFetch

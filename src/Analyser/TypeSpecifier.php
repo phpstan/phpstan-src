@@ -744,28 +744,28 @@ class TypeSpecifier
 					}
 				}
 
-				$type = $type->unionWith(
-					$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
-				);
-
 				if (
 					$var instanceof PropertyFetch
 					&& $var->name instanceof Node\Identifier
 				) {
-					$type = $type->unionWith($this->create($var->var, new IntersectionType([
+					$type = $this->create($var->var, new IntersectionType([
 						new ObjectWithoutClassType(),
 						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr));
+					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr);
 				} elseif (
 					$var instanceof StaticPropertyFetch
 					&& $var->class instanceof Expr
 					&& $var->name instanceof Node\VarLikeIdentifier
 				) {
-					$type = $type->unionWith($this->create($var->class, new IntersectionType([
+					$type = $this->create($var->class, new IntersectionType([
 						new ObjectWithoutClassType(),
 						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr));
+					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr);
 				}
+
+				$type = $type->unionWith(
+					$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
+				);
 
 				if ($types === null) {
 					$types = $type;

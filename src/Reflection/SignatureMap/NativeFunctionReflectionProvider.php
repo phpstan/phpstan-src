@@ -35,6 +35,7 @@ class NativeFunctionReflectionProvider
 	public function findFunctionReflection(string $functionName): ?NativeFunctionReflection
 	{
 		$lowerCasedFunctionName = strtolower($functionName);
+		$realFunctionName = $lowerCasedFunctionName;
 		if (isset($this->functionMap[$lowerCasedFunctionName])) {
 			return $this->functionMap[$lowerCasedFunctionName];
 		}
@@ -54,6 +55,7 @@ class NativeFunctionReflectionProvider
 			$reflectionFunction = $this->reflector->reflectFunction($functionName);
 			$reflectionFunctionAdapter = new ReflectionFunction($reflectionFunction);
 			$returnsByReference = TrinaryLogic::createFromBoolean($reflectionFunctionAdapter->returnsReference());
+			$realFunctionName = $reflectionFunction->getName();
 			if ($reflectionFunction->getFileName() !== null) {
 				$fileName = $reflectionFunction->getFileName();
 				$docComment = $reflectionFunction->getDocComment();
@@ -127,7 +129,7 @@ class NativeFunctionReflectionProvider
 		}
 
 		$functionReflection = new NativeFunctionReflection(
-			$lowerCasedFunctionName,
+			$realFunctionName,
 			$variants,
 			$throwType,
 			$hasSideEffects,

@@ -244,4 +244,18 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8205.php'], []);
 	}
 
+	public function testBug10003(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10003.php'], [
+			[
+				'Call to function MongoDB\Driver\Monitoring\addSubscriber() with incorrect case: MONGODB\Driver\Monitoring\addSubscriber',
+				10,
+			],
+			[
+				'Call to function MongoDB\Driver\Monitoring\addSubscriber() with incorrect case: mongodb\driver\monitoring\addsubscriber',
+				14,
+			],
+		]);
+	}
+
 }

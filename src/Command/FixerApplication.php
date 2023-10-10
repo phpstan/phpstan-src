@@ -136,6 +136,12 @@ class FixerApplication
 					$this->processInProgress = null;
 				}
 
+				if (count($changes->getChangedFiles()) > 0) {
+					$encoder->write(['action' => 'changedFiles', 'data' => [
+						'paths' => $changes->getChangedFiles(),
+					]]);
+				}
+
 				$this->analyse(
 					$loop,
 					$mainScript,

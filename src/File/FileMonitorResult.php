@@ -21,6 +21,14 @@ class FileMonitorResult
 	{
 	}
 
+	/**
+	 * @return string[]
+	 */
+	public function getChangedFiles(): array
+	{
+		return $this->changedFiles;
+	}
+
 	public function hasAnyChanges(): bool
 	{
 		return count($this->newFiles) > 0

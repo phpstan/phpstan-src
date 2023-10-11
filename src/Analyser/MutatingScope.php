@@ -3473,8 +3473,9 @@ class MutatingScope implements Scope
 
 					// keep certainty
 					$variableCertainty = null;
-					if ($expr->var instanceof Variable && is_string($expr->var->name)) {
-						$variableCertainty = $scope->hasVariableType($expr->var->name);
+					$hasExpressionType = $scope->hasExpressionType($expr->var);
+					if (!$hasExpressionType->no()) {
+						$variableCertainty = $hasExpressionType;
 					}
 
 					$scope = $scope->specifyExpressionType(

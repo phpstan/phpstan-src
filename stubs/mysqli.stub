@@ -14,7 +14,25 @@ class mysqli_result
      * @var int<0,max>|numeric-string
      */
     public $num_rows;
+
+    /**
+     * @template T of object
+     * @param class-string<T> $class
+     * @param array<mixed> $constructor_args
+     * @return T|null|false
+     */
+    function fetch_object(string $class = 'stdClass', array $constructor_args = []) {}
 }
+
+
+/**
+ * @template T of object
+ *
+ * @param class-string<T> $class
+ * @param array<mixed> $constructor_args
+ * @return T|null|false
+ */
+function mysqli_fetch_object(mysqli_result $result, string $class = 'stdClass', array $constructor_args = []) {}
 
 class mysqli_stmt
 {

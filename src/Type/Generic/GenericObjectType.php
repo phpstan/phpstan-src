@@ -23,9 +23,11 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use Traversable;
 use function array_map;
 use function count;
 use function implode;
+use function in_array;
 use function sprintf;
 
 /** @api */
@@ -136,6 +138,17 @@ class GenericObjectType extends ObjectType
 	{
 		if ($type instanceof CompoundType) {
 			return $type->isSubTypeOf($this);
+		}
+
+		// don't collapse Traversable with classes which also implement Traversable to support phpstan-dba
+		// in inferring Traversable shapes onto php-src builtin classes
+		if ($this->getClassName() === Traversable::class) {
+			$classNames = $type->getObjectClassNames();
+			foreach ($classNames as $className) {
+				if (in_array($className, ['mysqli_result', 'PDOStatement'], true)) {
+					return TrinaryLogic::createMaybe();
+				}
+			}
 		}
 
 		return $this->isSuperTypeOfInternal($type, false)->result;

@@ -7472,7 +7472,7 @@ return [
 'mysqli_fetch_field_direct' => ['object|false', 'result'=>'mysqli_result', 'fieldnr'=>'int'],
 'mysqli_fetch_fields' => ['array', 'result'=>'mysqli_result'],
 'mysqli_fetch_lengths' => ['array|false', 'result'=>'mysqli_result'],
-'mysqli_fetch_object' => ['object|null', 'result'=>'mysqli_result', 'class_name='=>'string', 'params='=>'?array'],
+'mysqli_fetch_object' => ['object|false|null', 'result'=>'mysqli_result', 'class_name='=>'class-string', 'params='=>'?array'],
 'mysqli_fetch_row' => ['array|null', 'result'=>'mysqli_result'],
 'mysqli_field_count' => ['int', 'link'=>'mysqli'],
 'mysqli_field_seek' => ['bool', 'result'=>'mysqli_result', 'fieldnr'=>'int'],

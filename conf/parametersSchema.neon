@@ -187,14 +187,16 @@ parametersSchema:
 	mixinExcludeClasses: listOf(string())
 	scanFiles: listOf(string())
 	scanDirectories: listOf(string())
-	fixerTmpDir: string()
+	fixerTmpDir: string() #unused
 	editorUrl: schema(string(), nullable())
 	editorUrlTitle: schema(string(), nullable())
 	errorFormat: schema(string(), nullable())
 	pro: structure([
 		dnsServers: schema(listOf(string()), min(1)),
+		tmpDir: string()
 	])
 	env: arrayOf(string(), string())
+	sysGetTempDir: string()
 
 	# irrelevant Nette parameters
 	debugMode: bool()

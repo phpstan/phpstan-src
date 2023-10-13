@@ -82,7 +82,7 @@ class FixerApplication
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private array $analysedPaths,
 		private string $currentWorkingDirectory,
-		private string $fixerTmpDir,
+		private string $proTmpDir,
 		private array $dnsServers,
 	)
 	{
@@ -184,7 +184,7 @@ class FixerApplication
 				return;
 			}
 			$output->writeln(sprintf('<fg=red>PHPStan Pro process exited with code %d.</>', $exitCode));
-			@unlink($this->fixerTmpDir . '/phar-info.json');
+			@unlink($this->proTmpDir . '/phar-info.json');
 		});
 
 		$loop->run();
@@ -197,13 +197,13 @@ class FixerApplication
 	 */
 	private function getFixerProcess(OutputInterface $output, int $serverPort): Process
 	{
-		if (!@mkdir($this->fixerTmpDir, 0777) && !is_dir($this->fixerTmpDir)) {
-			$output->writeln(sprintf('Cannot create a temp directory %s', $this->fixerTmpDir));
+		if (!@mkdir($this->proTmpDir, 0777) && !is_dir($this->proTmpDir)) {
+			$output->writeln(sprintf('Cannot create a temp directory %s', $this->proTmpDir));
 			throw new FixerProcessException();
 		}
 
-		$pharPath = $this->fixerTmpDir . '/phpstan-fixer.phar';
-		$infoPath = $this->fixerTmpDir . '/phar-info.json';
+		$pharPath = $this->proTmpDir . '/phpstan-fixer.phar';
+		$infoPath = $this->proTmpDir . '/phar-info.json';
 
 		try {
 			$this->downloadPhar($output, $pharPath, $infoPath);
@@ -237,7 +237,7 @@ class FixerApplication
 		}
 
 		$env = getenv();
-		$env['PHPSTAN_PRO_TMP_DIR'] = $this->fixerTmpDir;
+		$env['PHPSTAN_PRO_TMP_DIR'] = $this->proTmpDir;
 		$forcedPort = $_SERVER['PHPSTAN_PRO_WEB_PORT'] ?? null;
 		if ($forcedPort !== null) {
 			$env['PHPSTAN_PRO_WEB_PORT'] = $_SERVER['PHPSTAN_PRO_WEB_PORT'];
@@ -249,7 +249,7 @@ class FixerApplication
 				$output->writeln(sprintf('   <fg=cyan>-p 127.0.0.1:%d:%d</>', $_SERVER['PHPSTAN_PRO_WEB_PORT'], $_SERVER['PHPSTAN_PRO_WEB_PORT']));
 				$output->writeln('2) Map the temp directory to a persistent volume');
 				$output->writeln('   so that you don\'t have to log in every time:');
-				$output->writeln(sprintf('   <fg=cyan>-v ~/.phpstan-pro:%s</>', $this->fixerTmpDir));
+				$output->writeln(sprintf('   <fg=cyan>-v ~/.phpstan-pro:%s</>', $this->proTmpDir));
 				$output->writeln('');
 			}
 		} else {
@@ -265,7 +265,7 @@ class FixerApplication
 				$output->writeln('   <fg=cyan>-p 127.0.0.1:11111:11111</>');
 				$output->writeln('4) Map the temp directory to a persistent volume');
 				$output->writeln('   so that you don\'t have to log in every time:');
-				$output->writeln(sprintf('   <fg=cyan>-v ~/phpstan-pro:%s</>', $this->fixerTmpDir));
+				$output->writeln(sprintf('   <fg=cyan>-v ~/phpstan-pro:%s</>', $this->proTmpDir));
 				$output->writeln('');
 			}
 		}

@@ -237,6 +237,7 @@ class FixerApplication
 		}
 
 		$env = getenv();
+		$env['PHPSTAN_PRO_TMP_DIR'] = $this->fixerTmpDir;
 		$forcedPort = $_SERVER['PHPSTAN_PRO_WEB_PORT'] ?? null;
 		if ($forcedPort !== null) {
 			$env['PHPSTAN_PRO_WEB_PORT'] = $_SERVER['PHPSTAN_PRO_WEB_PORT'];

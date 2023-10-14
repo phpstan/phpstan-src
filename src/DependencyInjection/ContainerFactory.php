@@ -51,7 +51,6 @@ use function spl_object_id;
 use function sprintf;
 use function str_ends_with;
 use function substr;
-use function sys_get_temp_dir;
 use function time;
 use function unlink;
 
@@ -133,7 +132,6 @@ class ContainerFactory
 			'generateBaselineFile' => $generateBaselineFile,
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
-			'fixerTmpDir' => sys_get_temp_dir() . '/phpstan-fixer',
 		]);
 		$configurator->addDynamicParameters([
 			'analysedPaths' => $analysedPaths,

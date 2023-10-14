@@ -128,6 +128,7 @@ parameters:
 	polluteScopeWithAlwaysIterableForeach: true
 	propertyAlwaysWrittenTags: []
 	propertyAlwaysReadTags: []
+	fixerTmpDir: %pro.tmpDir% #unused
 	additionalConstructors: []
 	treatPhpDocTypesAsCertain: true
 	usePathConstantsAsConstantString: false
@@ -233,9 +234,11 @@ parameters:
 	editorUrl: null
 	editorUrlTitle: null
 	errorFormat: null
+	sysGetTempDir: ::sys_get_temp_dir()
 	pro:
 		dnsServers:
 			- '1.1.1.2'
+		tmpDir: %sysGetTempDir%/phpstan-fixer
 	__validate: true
 
 extensions:
@@ -523,7 +526,7 @@ services:
 		arguments:
 			analysedPaths: %analysedPaths%
 			currentWorkingDirectory: %currentWorkingDirectory%
-			fixerTmpDir: %fixerTmpDir%
+			proTmpDir: %pro.tmpDir%
 			dnsServers: %pro.dnsServers%
 
 	-

@@ -28,7 +28,7 @@ use function substr;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v20-env';
+	public const CACHE_KEY = 'v23-pro-tmp-dir';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 
@@ -112,6 +112,7 @@ class NeonAdapter implements Adapter
 				'[parameters][scanFiles][]',
 				'[parameters][scanDirectories][]',
 				'[parameters][tmpDir]',
+				'[parameters][pro][tmpDir]',
 				'[parameters][memoryLimitFile]',
 				'[parameters][benchmarkFile]',
 				'[parameters][stubFiles][]',

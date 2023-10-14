@@ -81,7 +81,13 @@ class FileMonitor
 
 	private function getFileHash(string $filePath): string
 	{
-		return sha1_file($filePath);
+		$hash = sha1_file($filePath);
+
+		if ($hash === false) {
+			throw new CouldNotReadFileException($filePath);
+		}
+
+		return $hash;
 	}
 
 }

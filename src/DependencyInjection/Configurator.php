@@ -5,6 +5,7 @@ namespace PHPStan\DependencyInjection;
 use Nette\DI\Config\Loader;
 use Nette\DI\Container as OriginalNetteContainer;
 use Nette\DI\ContainerLoader;
+use PHPStan\File\CouldNotReadFileException;
 use function array_keys;
 use function error_reporting;
 use function restore_error_handler;
@@ -91,7 +92,13 @@ class Configurator extends \Nette\Bootstrap\Configurator
 	{
 		$hashes = [];
 		foreach ($this->allConfigFiles as $file) {
-			$hashes[$file] = sha1_file($file);
+			$hash = sha1_file($file);
+
+			if ($hash === false) {
+				throw new CouldNotReadFileException($file);
+			}
+
+			$hashes[$file] = $hash;
 		}
 
 		return $hashes;

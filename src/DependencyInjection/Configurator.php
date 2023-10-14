@@ -5,12 +5,11 @@ namespace PHPStan\DependencyInjection;
 use Nette\DI\Config\Loader;
 use Nette\DI\Container as OriginalNetteContainer;
 use Nette\DI\ContainerLoader;
-use PHPStan\File\FileReader;
 use function array_keys;
 use function error_reporting;
 use function restore_error_handler;
 use function set_error_handler;
-use function sha1;
+use function sha1_file;
 use const E_USER_DEPRECATED;
 use const PHP_RELEASE_VERSION;
 use const PHP_VERSION_ID;
@@ -92,7 +91,7 @@ class Configurator extends \Nette\Bootstrap\Configurator
 	{
 		$hashes = [];
 		foreach ($this->allConfigFiles as $file) {
-			$hashes[$file] = sha1(FileReader::read($file));
+			$hashes[$file] = sha1_file($file);
 		}
 
 		return $hashes;

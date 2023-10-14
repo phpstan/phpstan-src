@@ -3,9 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\Cache\Cache;
-use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileFinder;
-use PHPStan\File\FileReader;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use function array_key_exists;
@@ -15,7 +13,7 @@ use function ltrim;
 use function php_strip_whitespace;
 use function preg_match_all;
 use function preg_replace;
-use function sha1;
+use function sha1_file;
 use function sprintf;
 use function strtolower;
 
@@ -42,12 +40,11 @@ class OptimizedDirectorySourceLocatorFactory
 		$files = $this->fileFinder->findFiles([$directory])->getFiles();
 		$fileHashes = [];
 		foreach ($files as $file) {
-			try {
-				$contents = FileReader::read($file);
-			} catch (CouldNotReadFileException) {
+			$hash = sha1_file($file);
+			if ($hash === false) {
 				continue;
 			}
-			$fileHashes[$file] = sha1($contents);
+			$fileHashes[$file] = $hash;
 		}
 
 		$cacheKey = sprintf('odsl-%s', $directory);

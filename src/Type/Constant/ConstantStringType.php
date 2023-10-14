@@ -135,7 +135,8 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	private function export(string $value): string
 	{
-		if (Strings::match($value, '([\000-\037])') !== null) {
+		$escapedValue = addcslashes($value, "\0..\37");
+		if ($escapedValue !== $value) {
 			return '"' . addcslashes($value, "\0..\37\\\"") . '"';
 		}
 

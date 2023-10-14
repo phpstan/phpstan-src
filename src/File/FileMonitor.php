@@ -6,7 +6,7 @@ use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function array_keys;
 use function count;
-use function sha1;
+use function sha1_file;
 
 class FileMonitor
 {
@@ -81,7 +81,13 @@ class FileMonitor
 
 	private function getFileHash(string $filePath): string
 	{
-		return sha1(FileReader::read($filePath));
+		$hash = sha1_file($filePath);
+
+		if ($hash === false) {
+			throw new CouldNotReadFileException($filePath);
+		}
+
+		return $hash;
 	}
 
 }

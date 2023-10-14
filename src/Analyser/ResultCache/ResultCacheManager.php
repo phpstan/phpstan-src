@@ -10,8 +10,8 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\Dependency\RootExportedNode;
+use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileFinder;
-use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
@@ -33,10 +33,9 @@ use function is_array;
 use function is_file;
 use function is_string;
 use function ksort;
-use function sha1;
+use function sha1_file;
 use function sort;
 use function sprintf;
-use function str_replace;
 use function time;
 use function unlink;
 use function var_export;
@@ -786,10 +785,10 @@ return [
 			return $this->fileHashes[$path];
 		}
 
-		$contents = FileReader::read($path);
-		$contents = str_replace("\r\n", "\n", $contents);
-
-		$hash = sha1($contents);
+		$hash = sha1_file($path);
+		if ($hash === false) {
+			throw new CouldNotReadFileException($path);
+		}
 		$this->fileHashes[$path] = $hash;
 
 		return $hash;

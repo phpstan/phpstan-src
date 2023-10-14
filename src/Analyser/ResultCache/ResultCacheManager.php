@@ -789,10 +789,7 @@ return [
 			return $this->fileHashes[$path];
 		}
 
-		$contents = FileReader::read($path);
-		$contents = str_replace("\r\n", "\n", $contents);
-
-		$hash = sha1($contents);
+		$hash = sha1_file($path);
 		$this->fileHashes[$path] = $hash;
 
 		return $hash;

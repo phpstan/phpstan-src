@@ -3,14 +3,20 @@
 namespace PHPStan\Reflection;
 
 use PhpParser\Node\Name;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
 use function count;
 use function explode;
 use function file_get_contents;
+use function file_put_contents;
 use function floor;
+use function getenv;
 use function implode;
+use function ksort;
+use function sort;
+use function substr;
 use function trim;
 use const PHP_VERSION_ID;
 
@@ -20,13 +26,11 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	/** @return iterable<string, array<string>> */
 	public static function data(): iterable
 	{
-		$first = (int) floor(PHP_VERSION_ID / 10000);
-		$second = (int) (floor(PHP_VERSION_ID % 10000) / 100);
-		$currentVersion = $first . '.' . $second;
-		$contents = file_get_contents(__DIR__ . '/data/golden/reflection-' . $currentVersion . '.test');
+		$inputFile = self::getTestInputFile();
+		$contents = file_get_contents($inputFile);
 
 		if ($contents === false) {
-			self::fail('Reflection test data is missing for PHP ' . $currentVersion);
+			self::fail('Input file \'' . $inputFile . '\' is missing.');
 		}
 
 		$parts = explode('-----', $contents);
@@ -59,7 +63,106 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		$this->assertSame($expectedOutput, $output);
 	}
 
-	public static function generateFunctionDescription(string $functionName): string
+	public static function dumpOutput(): void
+	{
+		$symbols = require_once __DIR__ . '/data/golden/phpSymbols.php';
+
+		$functions = [];
+		$classes = [];
+
+		foreach ($symbols as $symbol) {
+			$parts = explode('::', $symbol);
+			$partsCount = count($parts);
+
+			if ($partsCount === 1) {
+				$functions[] = $parts[0];
+			} elseif ($partsCount === 2) {
+				[$class, $method] = $parts;
+				$classes[$class] ??= [
+					'methods' => [],
+					'properties' => [],
+				];
+
+				if (substr($method, 0, 1) === '$') {
+					$classes[$class]['properties'][] = substr($method, 1);
+				} else {
+					$classes[$class]['methods'][] = $method;
+				}
+			}
+		}
+
+		sort($functions);
+		ksort($classes);
+
+		foreach ($classes as &$class) {
+			sort($class['properties']);
+			sort($class['methods']);
+		}
+
+		unset($class);
+		$container = PHPStanTestCase::getContainer();
+		$reflectionProvider = $container->getByType(ReflectionProvider::class);
+
+		$separator = '-----';
+		$contents = '';
+
+		foreach ($functions as $function) {
+			$contents .= $separator . "\n";
+			$contents .= 'FUNCTION ' . $function . "\n";
+			$contents .= $separator . "\n";
+			$contents .= self::generateFunctionDescription($function);
+		}
+
+		foreach ($classes as $className => $class) {
+			$contents .= $separator . "\n";
+			$contents .= 'CLASS ' . $className . "\n";
+			$contents .= $separator . "\n";
+			$contents .= self::generateClassDescription($className);
+
+			if (! $reflectionProvider->hasClass($className)) {
+				continue;
+			}
+
+			foreach ($class['properties'] as $property) {
+				$contents .= $separator . "\n";
+				$contents .= 'PROPERTY ' . $className . '::' . $property . "\n";
+				$contents .= $separator . "\n";
+				$contents .= self::generateClassPropertyDescription($className . '::' . $property);
+			}
+
+			foreach ($class['methods'] as $method) {
+				$contents .= $separator . "\n";
+				$contents .= 'METHOD ' . $className . '::' . $method . "\n";
+				$contents .= $separator . "\n";
+				$contents .= self::generateClassMethodDescription($className . '::' . $method);
+			}
+		}
+
+		$result = file_put_contents(self::getTestInputFile(), $contents);
+
+		if ($result !== false) {
+			return;
+		}
+
+		throw new ShouldNotHappenException('Failed write dump for reflection golden test.');
+	}
+
+	private static function getTestInputFile(): string
+	{
+		$fileFromEnv = getenv('REFLECTION_GOLDEN_TEST_FILE');
+
+		if ($fileFromEnv !== false) {
+			return $fileFromEnv;
+		}
+
+		$first = (int) floor(PHP_VERSION_ID / 10000);
+		$second = (int) (floor(PHP_VERSION_ID % 10000) / 100);
+		$currentVersion = $first . '.' . $second;
+
+		return __DIR__ . '/data/golden/reflection-' . $currentVersion . '.test';
+	}
+
+	private static function generateFunctionDescription(string $functionName): string
 	{
 		$nameNode = new Name($functionName);
 		$reflectionProvider = self::getContainer()->getByType(ReflectionProvider::class);
@@ -80,7 +183,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		return $result;
 	}
 
-	public static function generateClassDescription(string $className): string
+	private static function generateClassDescription(string $className): string
 	{
 		$reflectionProvider = self::getContainer()->getByType(ReflectionProvider::class);
 
@@ -164,7 +267,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		return $result;
 	}
 
-	public static function generateClassMethodDescription(string $classMethodName): string
+	private static function generateClassMethodDescription(string $classMethodName): string
 	{
 		[$className, $methodName] = explode('::', $classMethodName);
 
@@ -290,7 +393,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		return $result;
 	}
 
-	public static function generateClassPropertyDescription(string $propertyName): string
+	private static function generateClassPropertyDescription(string $propertyName): string
 	{
 		[$className, $propertyName] = explode('::', $propertyName);
 

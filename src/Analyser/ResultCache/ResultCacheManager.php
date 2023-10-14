@@ -601,19 +601,6 @@ class ResultCacheManager
 			$invertedDependencies[$file]['dependentFiles'] = $dependentFiles;
 		}
 
-		$template = "<?php declare(strict_types = 1);
-
-return [
-	'lastFullAnalysisTime' => %s,
-	'meta' => %s,
-	'projectExtensionFiles' => %s,
-	'errorsCallback' => static function (): array { return %s; },
-	'collectedDataCallback' => static function (): array { return %s; },
-	'dependencies' => %s,
-	'exportedNodesCallback' => static function (): array { return %s; },
-];
-";
-
 		ksort($exportedNodes);
 
 		$file = $this->cacheFilePath;
@@ -624,16 +611,18 @@ return [
 
 		FileWriter::write(
 			$file,
-			sprintf(
-				$template,
-				var_export($lastFullAnalysisTime, true),
-				var_export($meta, true),
-				var_export($this->getProjectExtensionFiles($projectConfigArray, $dependencies), true),
-				var_export($errors, true),
-				var_export($collectedData, true),
-				var_export($invertedDependencies, true),
-				var_export($exportedNodes, true),
-			),
+			"<?php declare(strict_types = 1);
+
+return [
+	'lastFullAnalysisTime' => " . var_export($lastFullAnalysisTime, true) . ",
+	'meta' => " . var_export($meta, true) . ",
+	'projectExtensionFiles' => " . var_export($this->getProjectExtensionFiles($projectConfigArray, $dependencies), true) . ",
+	'errorsCallback' => static function (): array { return " . var_export($errors, true) . "; },
+	'collectedDataCallback' => static function (): array { return " . var_export($collectedData, true) . "; },
+	'dependencies' => " . var_export($invertedDependencies, true) . ",
+	'exportedNodesCallback' => static function (): array { return " . var_export($exportedNodes, true) . '; },
+];
+',
 		);
 	}
 

@@ -33,7 +33,8 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\ObjectType;
-use Symfony\Component\Finder\Finder;
+use RecursiveDirectoryIterator;
+use SplFileInfo;
 use function array_diff_key;
 use function array_map;
 use function array_merge;
@@ -50,6 +51,7 @@ use function is_readable;
 use function spl_object_id;
 use function sprintf;
 use function str_ends_with;
+use function str_starts_with;
 use function substr;
 use function time;
 use function unlink;
@@ -207,11 +209,11 @@ class ContainerFactory
 			return;
 		}
 
-		$flags = \RecursiveDirectoryIterator::SKIP_DOTS;
-		$iterator = new \RecursiveDirectoryIterator($containerDirectory, $flags);
+		$flags = RecursiveDirectoryIterator::SKIP_DOTS;
+		$iterator = new RecursiveDirectoryIterator($containerDirectory, $flags);
 		$twoDaysAgo = time() - 24 * 60 * 60 * 2;
 
-		/** @var \SplFileInfo $containerFile */
+		/** @var SplFileInfo $containerFile */
 		foreach ($iterator as $containerFile) {
 			$path = $containerFile->getRealPath();
 			if ($path === false) {

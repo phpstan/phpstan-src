@@ -4,6 +4,7 @@ namespace PHPStan\File;
 
 use Symfony\Component\Finder\Finder;
 use function array_filter;
+use function array_unique;
 use function array_values;
 use function file_exists;
 use function implode;
@@ -45,7 +46,7 @@ class FileFinder
 			}
 		}
 
-		$files = array_values(array_filter($files, fn (string $file): bool => !$this->fileExcluder->isExcludedFromAnalysing($file)));
+		$files = array_values(array_unique(array_filter($files, fn (string $file): bool => !$this->fileExcluder->isExcludedFromAnalysing($file))));
 
 		return new FileFinderResult($files, $onlyFiles);
 	}

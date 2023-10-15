@@ -528,6 +528,10 @@ services:
 			currentWorkingDirectory: %currentWorkingDirectory%
 			proTmpDir: %pro.tmpDir%
 			dnsServers: %pro.dnsServers%
+			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+			allConfigFiles: %allConfigFiles%
+			cliAutoloadFile: %cliAutoloadFile%
+			bootstrapFiles: %bootstrapFiles%
 
 	-
 		class: PHPStan\Dependency\DependencyResolver

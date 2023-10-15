@@ -16,6 +16,7 @@ use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\ProcessPromise;
 use PHPStan\ShouldNotHappenException;
@@ -37,6 +38,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
+use function array_merge;
 use function count;
 use function defined;
 use function escapeshellarg;
@@ -68,14 +70,22 @@ class FixerApplication
 	/**
 	 * @param string[] $analysedPaths
 	 * @param list<string> $dnsServers
+	 * @param string[] $composerAutoloaderProjectPaths
+	 * @param string[] $allConfigFiles
+	 * @param string[] $bootstrapFiles
 	 */
 	public function __construct(
 		private FileMonitor $fileMonitor,
 		private IgnoredErrorHelper $ignoredErrorHelper,
+		private StubFilesProvider $stubFilesProvider,
 		private array $analysedPaths,
 		private string $currentWorkingDirectory,
 		private string $proTmpDir,
 		private array $dnsServers,
+		private array $composerAutoloaderProjectPaths,
+		private array $allConfigFiles,
+		private ?string $cliAutoloadFile,
+		private array $bootstrapFiles,
 	)
 	{
 	}
@@ -119,7 +129,14 @@ class FixerApplication
 				}
 			});
 
-			$this->fileMonitor->initialize($this->analysedPaths);
+			$this->fileMonitor->initialize(array_merge(
+				$this->analysedPaths,
+				$this->getComposerLocks(),
+				$this->getComposerInstalled(),
+				$this->getExecutedFiles(),
+				$this->getStubFiles(),
+				$this->allConfigFiles,
+			));
 
 			$this->analyse(
 				$loop,
@@ -448,6 +465,77 @@ class FixerApplication
 	private function isDockerRunning(): bool
 	{
 		return is_file('/.dockerenv');
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private function getComposerLocks(): array
+	{
+		$locks = [];
+		foreach ($this->composerAutoloaderProjectPaths as $autoloadPath) {
+			$lockPath = $autoloadPath . '/composer.lock';
+			if (!is_file($lockPath)) {
+				continue;
+			}
+
+			$locks[] = $lockPath;
+		}
+
+		return $locks;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private function getComposerInstalled(): array
+	{
+		$files = [];
+		foreach ($this->composerAutoloaderProjectPaths as $autoloadPath) {
+			$composer = ComposerHelper::getComposerConfig($autoloadPath);
+			if ($composer === null) {
+				continue;
+			}
+
+			$filePath = ComposerHelper::getVendorDirFromComposerConfig($autoloadPath, $composer) . '/composer/installed.php';
+			if (!is_file($filePath)) {
+				continue;
+			}
+
+			$files[] = $filePath;
+		}
+
+		return $files;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private function getExecutedFiles(): array
+	{
+		$files = [];
+		if ($this->cliAutoloadFile !== null) {
+			$files[] = $this->cliAutoloadFile;
+		}
+
+		foreach ($this->bootstrapFiles as $bootstrapFile) {
+			$files[] = $bootstrapFile;
+		}
+
+		return $files;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private function getStubFiles(): array
+	{
+		$stubFiles = [];
+		foreach ($this->stubFilesProvider->getProjectStubFiles() as $stubFile) {
+			$stubFiles[] = $stubFile;
+		}
+
+		return $stubFiles;
 	}
 
 }

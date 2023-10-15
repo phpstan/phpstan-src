@@ -9,6 +9,7 @@ use Rector\DowngradePhp74\Rector\Property\DowngradeTypedPropertyRector;
 use Rector\DowngradePhp80\Rector\Catch_\DowngradeNonCapturingCatchesRector;
 use Rector\DowngradePhp80\Rector\Class_\DowngradePropertyPromotionRector;
 use Rector\DowngradePhp80\Rector\ClassMethod\DowngradeTrailingCommasInParamUseRector;
+use Rector\DowngradePhp80\Rector\Expression\DowngradeMatchToSwitchRector;
 use Rector\DowngradePhp80\Rector\FunctionLike\DowngradeMixedTypeDeclarationRector;
 use Rector\DowngradePhp80\Rector\FunctionLike\DowngradeUnionTypeDeclarationRector;
 use Rector\DowngradePhp80\Rector\Property\DowngradeUnionTypeTypedPropertyRector;
@@ -42,6 +43,7 @@ return static function (RectorConfig $config): void {
 		$config->rule(DowngradePropertyPromotionRector::class);
 		$config->rule(DowngradeUnionTypeDeclarationRector::class);
 		$config->rule(DowngradeMixedTypeDeclarationRector::class);
+		$config->rule(DowngradeMatchToSwitchRector::class);
 	}
 
 	if ($targetPhpVersionId < 70400) {

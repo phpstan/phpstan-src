@@ -207,15 +207,21 @@ class ContainerFactory
 			return;
 		}
 
-		$finder = new Finder();
-		$finder->name('Container_*')->in($containerDirectory);
+		$flags = \RecursiveDirectoryIterator::SKIP_DOTS;
+		$iterator = new \RecursiveDirectoryIterator($containerDirectory, $flags);
 		$twoDaysAgo = time() - 24 * 60 * 60 * 2;
 
-		foreach ($finder as $containerFile) {
+		/** @var \SplFileInfo $containerFile */
+		foreach ($iterator as $containerFile) {
 			$path = $containerFile->getRealPath();
 			if ($path === false) {
 				continue;
 			}
+
+			if (!str_starts_with($containerFile->getFilename(), 'Container_')) {
+				continue;
+			}
+
 			if ($containerFile->getATime() > $twoDaysAgo) {
 				continue;
 			}

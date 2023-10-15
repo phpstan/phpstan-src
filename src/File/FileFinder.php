@@ -2,7 +2,6 @@
 
 namespace PHPStan\File;
 
-use Symfony\Component\Finder\Finder;
 use function array_filter;
 use function array_values;
 use function file_exists;
@@ -36,10 +35,15 @@ class FileFinder
 			} elseif (!file_exists($path)) {
 				throw new PathNotFoundException($path);
 			} else {
-				$finder = new Finder();
-				$finder->followLinks();
-				foreach ($finder->files()->name('*.{' . implode(',', $this->fileExtensions) . '}')->in($path) as $fileInfo) {
-					$files[] = $this->fileHelper->normalizePath($fileInfo->getPathname());
+				$flags = \RecursiveDirectoryIterator::SKIP_DOTS | \RecursiveDirectoryIterator::FOLLOW_SYMLINKS | \FilesystemIterator::CURRENT_AS_PATHNAME;
+				$iterator = new \RecursiveDirectoryIterator($path, $flags);
+				$iterator = new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::SELF_FIRST);
+
+				foreach($iterator as $pathName) {
+					if ($this->skipPath($pathName)) {
+						continue;
+					}
+					$files[] = $this->fileHelper->normalizePath($pathName);
 					$onlyFiles = false;
 				}
 			}
@@ -48,6 +52,15 @@ class FileFinder
 		$files = array_values(array_filter($files, fn (string $file): bool => !$this->fileExcluder->isExcludedFromAnalysing($file)));
 
 		return new FileFinderResult($files, $onlyFiles);
+	}
+
+	private function skipPath(string $pathName): bool {
+		// fast path without regex for the common case
+		if (count($this->fileExtensions) === 1) {
+			return !str_ends_with($pathName, '.'.$this->fileExtensions[0]);
+		}
+
+		return !preg_match('{\.(' . implode('|', $this->fileExtensions) . ')$}', $pathName);
 	}
 
 }

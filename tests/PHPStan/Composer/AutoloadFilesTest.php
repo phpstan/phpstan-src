@@ -7,7 +7,9 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Finder\Finder;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use function array_map;
 use function array_splice;
 use function dirname;
@@ -24,8 +26,6 @@ class AutoloadFilesTest extends TestCase
 
 	public function testExpectedFiles(): void
 	{
-		$finder = new Finder();
-		$finder->followLinks();
 		$autoloadFiles = [];
 		$vendorPath = realpath(__DIR__ . '/../../../vendor');
 		if ($vendorPath === false) {
@@ -34,11 +34,23 @@ class AutoloadFilesTest extends TestCase
 
 		$fileHelper = new FileHelper(__DIR__);
 
-		foreach ($finder->files()->name('composer.json')->in(__DIR__ . '/../../../vendor') as $fileInfo) {
+		$flags = RecursiveDirectoryIterator::SKIP_DOTS | RecursiveDirectoryIterator::FOLLOW_SYMLINKS;
+		$iterator = new RecursiveDirectoryIterator(__DIR__ . '/../../../vendor', $flags);
+		$iterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
+		/** @var SplFileInfo $fileInfo */
+		foreach ($iterator as $fileInfo) {
+			if (!$fileInfo->isFile()) {
+				continue;
+			}
+			if ($fileInfo->getFilename() !== 'composer.json') {
+				continue;
+			}
+
 			$realpath = $fileInfo->getRealPath();
 			if ($realpath === false) {
 				throw new ShouldNotHappenException();
 			}
+
 			$json = Json::decode(FileReader::read($realpath), Json::FORCE_ARRAY);
 			if (!isset($json['autoload']['files'])) {
 				continue;

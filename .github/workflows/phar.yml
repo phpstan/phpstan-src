@@ -248,7 +248,7 @@ jobs:
 
       - name: "Commit PHAR - tag"
         if: "startsWith(github.ref, 'refs/tags/')"
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_user_name: "phpstan-bot"
           commit_user_email: "ondrej+phpstanbot@mirtes.cz"

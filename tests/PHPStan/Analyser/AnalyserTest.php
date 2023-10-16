@@ -631,7 +631,9 @@ class AnalyserTest extends PHPStanTestCase
 
 		$analyserResult = $analyser->analyse($normalizedFilePaths);
 
-		$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
+		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
+		$errors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
+		$errors = array_merge($errors, $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages());
 		if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
 			$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', 50);
 		}

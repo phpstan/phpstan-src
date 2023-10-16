@@ -23,7 +23,6 @@ use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function count;
-use function is_string;
 use function memory_get_peak_usage;
 use function microtime;
 use function sprintf;
@@ -65,8 +64,10 @@ class AnalyseApplication
 		$resultCacheManager = $this->resultCacheManagerFactory->create();
 
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
+		$fileSpecificErrors = [];
+		$notFileSpecificErrors = [];
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
-			$errors = $ignoredErrorHelperResult->getErrors();
+			$notFileSpecificErrors = $ignoredErrorHelperResult->getErrors();
 			$internalErrors = [];
 			$collectedData = [];
 			$savedResultCache = false;
@@ -114,24 +115,15 @@ class AnalyseApplication
 					$errors[] = $error;
 				}
 			}
-			$errors = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
+			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
+			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
+			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 			$collectedData = $analyserResult->getCollectedData();
 			$savedResultCache = $resultCacheResult->isSaved();
 			if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
-				$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
+				$notFileSpecificErrors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
 			}
-			$errors = array_merge($errors, $internalErrors);
-		}
-
-		$fileSpecificErrors = [];
-		$notFileSpecificErrors = [];
-		foreach ($errors as $error) {
-			if (is_string($error)) {
-				$notFileSpecificErrors[] = $error;
-				continue;
-			}
-
-			$fileSpecificErrors[] = $error;
+			$notFileSpecificErrors = array_merge($notFileSpecificErrors, $internalErrors);
 		}
 
 		return new AnalysisResult(

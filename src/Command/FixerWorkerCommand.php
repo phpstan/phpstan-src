@@ -167,12 +167,13 @@ class FixerWorkerCommand extends Command
 				}
 			}
 
-			$errorsFromResultCache = $this->filterErrors($errorsFromResultCache, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, false);
+			[$errorsFromResultCache, $ignoredErrorsFromResultCache] = $this->filterErrors($errorsFromResultCache, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, false);
 
 			$out->write([
 				'action' => 'analysisStream',
 				'result' => [
 					'errors' => $errorsFromResultCache,
+					'ignoredErrors' => $ignoredErrorsFromResultCache,
 					'analysedFiles' => array_diff($inceptionFiles, $resultCache->getFilesToAnalyse()),
 				],
 			]);
@@ -184,11 +185,12 @@ class FixerWorkerCommand extends Command
 				$configuration,
 				$input,
 				function (array $errors, array $analysedFiles) use ($out, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles): void {
-					$errors = $this->filterErrors($errors, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, false);
+					[$errors, $ignoredErrors] = $this->filterErrors($errors, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, false);
 					$out->write([
 						'action' => 'analysisStream',
 						'result' => [
 							'errors' => $errors,
+							'ignoredErrors' => $ignoredErrors,
 							'analysedFiles' => $analysedFiles,
 						],
 					]);
@@ -219,29 +221,27 @@ class FixerWorkerCommand extends Command
 					]]);
 				}
 
-				$collectorErrors = $this->filterErrors($collectorErrors, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, $hasInternalErrors);
+				[$collectorErrors, $ignoredCollectorErrors] = $this->filterErrors($collectorErrors, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, $hasInternalErrors);
 				$out->write([
 					'action' => 'analysisStream',
 					'result' => [
 						'errors' => $collectorErrors,
+						'ignoredErrors' => $ignoredCollectorErrors,
 						'analysedFiles' => [],
 					],
 				]);
 
-				$intermediateErrors = $ignoredErrorHelperResult->process(
+				$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process(
 					$intermediateErrors,
 					$isOnlyFiles,
 					$inceptionFiles,
 					$hasInternalErrors,
 				);
+				$intermediateErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
+				$ignoreNotFileErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 
 				$ignoreFileErrors = [];
-				$ignoreNotFileErrors = [];
 				foreach ($intermediateErrors as $error) {
-					if (is_string($error)) {
-						$ignoreNotFileErrors[] = $error;
-						continue;
-					}
 					if ($error->getIdentifier() === null) {
 						continue;
 					}
@@ -268,16 +268,13 @@ class FixerWorkerCommand extends Command
 	/**
 	 * @param string[] $inceptionFiles
 	 * @param array<Error> $errors
-	 * @return array<Error>
+	 * @return array{list<Error>, list<array{Error, mixed[]|string}>}
 	 */
 	private function filterErrors(array $errors, IgnoredErrorHelperResult $ignoredErrorHelperResult, bool $onlyFiles, array $inceptionFiles, bool $hasInternalErrors): array
 	{
-		$errors = $ignoredErrorHelperResult->process($errors, $onlyFiles, $inceptionFiles, $hasInternalErrors);
+		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $inceptionFiles, $hasInternalErrors);
 		$finalErrors = [];
-		foreach ($errors as $error) {
-			if (is_string($error)) {
-				continue;
-			}
+		foreach ($ignoredErrorHelperProcessedResult->getNotIgnoredErrors() as $error) {
 			if ($error->getIdentifier() === null) {
 				$finalErrors[] = $error;
 				continue;
@@ -288,7 +285,10 @@ class FixerWorkerCommand extends Command
 			$finalErrors[] = $error;
 		}
 
-		return $finalErrors;
+		return [
+			$finalErrors,
+			$ignoredErrorHelperProcessedResult->getIgnoredErrors(),
+		];
 	}
 
 	/**

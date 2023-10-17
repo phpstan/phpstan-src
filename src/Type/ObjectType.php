@@ -456,12 +456,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($thisReflection->isInterface() && $thatReflection->isInterface()) {
 			return AcceptsResult::createFromBoolean(
-				$thatReflection->implementsInterface($this->className),
+				$thatReflection->implementsInterface($thisReflection->getName()),
 			);
 		}
 
 		return AcceptsResult::createFromBoolean(
-			$thatReflection->isSubclassOf($this->className),
+			$thatReflection->isSubclassOf($thisReflection->getName()),
 		);
 	}
 

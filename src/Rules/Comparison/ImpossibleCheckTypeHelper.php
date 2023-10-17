@@ -59,6 +59,9 @@ class ImpossibleCheckTypeHelper
 	): ?bool
 	{
 		if ($node instanceof FuncCall) {
+			if ($node->isFirstClassCallable()) {
+				return null;
+			}
 			$argsCount = count($node->getArgs());
 			if ($node->name instanceof Node\Name) {
 				$functionName = strtolower((string) $node->name);
@@ -358,6 +361,10 @@ class ImpossibleCheckTypeHelper
 	private function determineContext(Scope $scope, Expr $node): TypeSpecifierContext
 	{
 		if (!$this->nullContextForVoidReturningFunctions) {
+			return TypeSpecifierContext::createTruthy();
+		}
+
+		if ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
 			return TypeSpecifierContext::createTruthy();
 		}
 

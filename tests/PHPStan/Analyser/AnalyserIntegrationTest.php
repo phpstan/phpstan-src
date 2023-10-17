@@ -1251,6 +1251,18 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(16, $errors[4]->getLine());
 	}
 
+	public function testBug9994(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9994.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Negated boolean expression is always false.', $errors[0]->getMessage());
+		$this->assertSame('Parameter #2 $callback of function array_filter expects callable(1|2|3|null): mixed, false given.', $errors[1]->getMessage());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

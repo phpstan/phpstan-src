@@ -62,6 +62,9 @@ class FileAnalyser
 		/** @var list<Error> $fileErrors */
 		$fileErrors = [];
 
+		/** @var list<Error> $locallyIgnoredErrors */
+		$locallyIgnoredErrors = [];
+
 		/** @var list<CollectedData> $fileCollectedData */
 		$fileCollectedData = [];
 
@@ -180,6 +183,7 @@ class FileAnalyser
 					) {
 						$identifiers = $linesToIgnore[$tmpFileError->getFile()][$line];
 						if ($identifiers === null) {
+							$locallyIgnoredErrors[] = $tmpFileError;
 							unset($unmatchedLineIgnores[$tmpFileError->getFile()][$line]);
 							continue;
 						}
@@ -215,6 +219,7 @@ class FileAnalyser
 								}
 							}
 
+							$locallyIgnoredErrors[] = $tmpFileError;
 							continue 2;
 						}
 					}
@@ -275,7 +280,7 @@ class FileAnalyser
 
 		$fileErrors = array_merge($fileErrors, $this->collectedErrors);
 
-		return new FileAnalyserResult($fileErrors, $fileCollectedData, array_values(array_unique($fileDependencies)), $exportedNodes);
+		return new FileAnalyserResult($fileErrors, $locallyIgnoredErrors, $fileCollectedData, array_values(array_unique($fileDependencies)), $exportedNodes);
 	}
 
 	/**

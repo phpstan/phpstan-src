@@ -10,12 +10,14 @@ class FileAnalyserResult
 
 	/**
 	 * @param list<Error> $errors
+	 * @param list<Error> $locallyIgnoredErrors
 	 * @param list<CollectedData> $collectedData
 	 * @param list<string> $dependencies
 	 * @param list<RootExportedNode> $exportedNodes
 	 */
 	public function __construct(
 		private array $errors,
+		private array $locallyIgnoredErrors,
 		private array $collectedData,
 		private array $dependencies,
 		private array $exportedNodes,
@@ -29,6 +31,14 @@ class FileAnalyserResult
 	public function getErrors(): array
 	{
 		return $this->errors;
+	}
+
+	/**
+	 * @return list<Error>
+	 */
+	public function getLocallyIgnoredErrors(): array
+	{
+		return $this->locallyIgnoredErrors;
 	}
 
 	/**

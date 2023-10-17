@@ -12,7 +12,8 @@ class ResultCache
 	/**
 	 * @param string[] $filesToAnalyse
 	 * @param mixed[] $meta
-	 * @param array<string, array<Error>> $errors
+	 * @param array<string, list<Error>> $errors
+	 * @param array<string, list<Error>> $locallyIgnoredErrors
 	 * @param array<string, array<CollectedData>> $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
@@ -23,6 +24,7 @@ class ResultCache
 		private int $lastFullAnalysisTime,
 		private array $meta,
 		private array $errors,
+		private array $locallyIgnoredErrors,
 		private array $collectedData,
 		private array $dependencies,
 		private array $exportedNodes,
@@ -57,11 +59,19 @@ class ResultCache
 	}
 
 	/**
-	 * @return array<string, array<Error>>
+	 * @return array<string, list<Error>>
 	 */
 	public function getErrors(): array
 	{
 		return $this->errors;
+	}
+
+	/**
+	 * @return array<string, list<Error>>
+	 */
+	public function getLocallyIgnoredErrors(): array
+	{
+		return $this->locallyIgnoredErrors;
 	}
 
 	/**

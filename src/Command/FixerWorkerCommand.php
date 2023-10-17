@@ -156,8 +156,10 @@ class FixerWorkerCommand extends Command
 			$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput());
 
 			$errorsFromResultCacheTmp = $resultCache->getErrors();
+			$locallyIgnoredErrorsFromResultCacheTmp = $resultCache->getLocallyIgnoredErrors();
 			foreach ($resultCache->getFilesToAnalyse() as $fileToAnalyse) {
 				unset($errorsFromResultCacheTmp[$fileToAnalyse]);
+				unset($locallyIgnoredErrorsFromResultCacheTmp[$fileToAnalyse]);
 			}
 
 			$errorsFromResultCache = [];
@@ -168,6 +170,12 @@ class FixerWorkerCommand extends Command
 			}
 
 			[$errorsFromResultCache, $ignoredErrorsFromResultCache] = $this->filterErrors($errorsFromResultCache, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, false);
+
+			foreach ($locallyIgnoredErrorsFromResultCacheTmp as $locallyIgnoredErrors) {
+				foreach ($locallyIgnoredErrors as $locallyIgnoredError) {
+					$ignoredErrorsFromResultCache[] = [$locallyIgnoredError, null];
+				}
+			}
 
 			$out->write([
 				'action' => 'analysisStream',
@@ -184,8 +192,11 @@ class FixerWorkerCommand extends Command
 				$resultCache->getFilesToAnalyse(),
 				$configuration,
 				$input,
-				function (array $errors, array $analysedFiles) use ($out, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles): void {
+				function (array $errors, array $locallyIgnoredErrors, array $analysedFiles) use ($out, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles): void {
 					[$errors, $ignoredErrors] = $this->filterErrors($errors, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, false);
+					foreach ($locallyIgnoredErrors as $locallyIgnoredError) {
+						$ignoredErrors[] = [$locallyIgnoredError, null];
+					}
 					$out->write([
 						'action' => 'analysisStream',
 						'result' => [
@@ -329,7 +340,7 @@ class FixerWorkerCommand extends Command
 
 	/**
 	 * @param string[] $files
-	 * @param callable(list<Error>, string[]): void $onFileAnalysisHandler
+	 * @param callable(list<Error>, list<Error>, string[]): void $onFileAnalysisHandler
 	 */
 	private function runAnalyser(LoopInterface $loop, Container $container, array $files, ?string $configuration, InputInterface $input, callable $onFileAnalysisHandler): PromiseInterface
 	{
@@ -337,7 +348,7 @@ class FixerWorkerCommand extends Command
 		$parallelAnalyser = $container->getByType(ParallelAnalyser::class);
 		$filesCount = count($files);
 		if ($filesCount === 0) {
-			return resolve(new AnalyserResult([], [], [], [], [], false, memory_get_peak_usage(true)));
+			return resolve(new AnalyserResult([], [], [], [], [], [], false, memory_get_peak_usage(true)));
 		}
 
 		/** @var Scheduler $scheduler */

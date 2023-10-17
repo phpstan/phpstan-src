@@ -181,6 +181,7 @@ class WorkerCommand extends Command
 			$internalErrorsCount = 0;
 			$files = $json['files'];
 			$errors = [];
+			$locallyIgnoredErrors = [];
 			$collectedData = [];
 			$dependencies = [];
 			$exportedNodes = [];
@@ -192,6 +193,9 @@ class WorkerCommand extends Command
 					$exportedNodes[$file] = $fileAnalyserResult->getExportedNodes();
 					foreach ($fileErrors as $fileError) {
 						$errors[] = $fileError;
+					}
+					foreach ($fileAnalyserResult->getLocallyIgnoredErrors() as $locallyIgnoredError) {
+						$locallyIgnoredErrors[] = $locallyIgnoredError;
 					}
 					foreach ($fileAnalyserResult->getCollectedData() as $data) {
 						$collectedData[] = $data;
@@ -218,6 +222,7 @@ class WorkerCommand extends Command
 				'action' => 'result',
 				'result' => [
 					'errors' => $errors,
+					'locallyIgnoredErrors' => $locallyIgnoredErrors,
 					'collectedData' => $collectedData,
 					'memoryUsage' => memory_get_peak_usage(true),
 					'dependencies' => $dependencies,

@@ -51,7 +51,7 @@ class ParallelAnalyser
 
 	/**
 	 * @param Closure(int ): void|null $postFileCallback
-	 * @param (callable(list<Error>, string[]): void)|null $onFileAnalysisHandler
+	 * @param (callable(list<Error>, list<Error>, string[]): void)|null $onFileAnalysisHandler
 	 */
 	public function analyse(
 		LoopInterface $loop,
@@ -68,6 +68,7 @@ class ParallelAnalyser
 		$numberOfProcesses = $schedule->getNumberOfProcesses();
 		$someChildEnded = false;
 		$errors = [];
+		$locallyIgnoredErrors = [];
 		$peakMemoryUsages = [];
 		$internalErrors = [];
 		$internalErrorsCount = 0;
@@ -79,7 +80,7 @@ class ParallelAnalyser
 		$deferred = new Deferred();
 
 		$server = new TcpServer('127.0.0.1:0', $loop);
-		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages): void {
+		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$locallyIgnoredErrors, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages): void {
 			if (count($jobs) > 0 && $internalErrorsCount === 0) {
 				$internalErrors[] = 'Some parallel worker jobs have not finished.';
 				$internalErrorsCount++;
@@ -87,6 +88,7 @@ class ParallelAnalyser
 
 			$deferred->resolve(new AnalyserResult(
 				$errors,
+				$locallyIgnoredErrors,
 				$internalErrors,
 				$collectedData,
 				$internalErrorsCount === 0 ? $dependencies : null,
@@ -151,7 +153,7 @@ class ParallelAnalyser
 				$commandOptions,
 				$input,
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$locallyIgnoredErrors, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler): void {
 				$fileErrors = [];
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
@@ -162,12 +164,21 @@ class ParallelAnalyser
 					$fileErrors[] = Error::decode($jsonError);
 				}
 
+				$locallyIgnoredFileErrors = [];
+				foreach ($json['locallyIgnoredErrors'] as $locallyIgnoredJsonError) {
+					$locallyIgnoredFileErrors[] = Error::decode($locallyIgnoredJsonError);
+				}
+
 				if ($onFileAnalysisHandler !== null) {
-					$onFileAnalysisHandler($fileErrors, $json['files']);
+					$onFileAnalysisHandler($fileErrors, $locallyIgnoredFileErrors, $json['files']);
 				}
 
 				foreach ($fileErrors as $fileError) {
 					$errors[] = $fileError;
+				}
+
+				foreach ($locallyIgnoredFileErrors as $locallyIgnoredFileError) {
+					$locallyIgnoredErrors[] = $locallyIgnoredFileError;
 				}
 
 				foreach ($json['collectedData'] as $jsonData) {

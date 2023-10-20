@@ -51,13 +51,23 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	{
 		[$type, $name] = explode(' ', $input);
 
-		$output = match ($type) {
-			'FUNCTION' => self::generateFunctionDescription($name),
-			'CLASS' => self::generateClassDescription($name),
-			'METHOD' => self::generateClassMethodDescription($name),
-			'PROPERTY' => self::generateClassPropertyDescription($name),
-			default => $this->fail('Unknown type ' . $type),
-		};
+		switch ($type) {
+			case 'FUNCTION':
+				$output = self::generateFunctionDescription($name);
+				break;
+			case 'CLASS':
+				$output = self::generateClassDescription($name);
+				break;
+			case 'METHOD':
+				$output = self::generateClassMethodDescription($name);
+				break;
+			case 'PROPERTY':
+				$output = self::generateClassPropertyDescription($name);
+				break;
+			default:
+				$this->fail('Unknown type ' . $type);
+		}
+
 		$output = trim($output);
 
 		$this->assertSame($expectedOutput, $output);
@@ -231,13 +241,24 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		$abstractTxt = $classReflection->isAbstract()
 			? 'abstract '
 			: '';
-		$keyword = match (true) {
-			$classReflection->isEnum() => 'enum',
-			$classReflection->isInterface() => 'interface',
-			$classReflection->isTrait() => 'trait',
-			$classReflection->isClass() => 'class',
-			default => self::fail(),
-		};
+
+		switch (true) {
+			case $classReflection->isEnum():
+				$keyword = 'enum';
+				break;
+			case $classReflection->isInterface():
+				$keyword = 'interface';
+				break;
+			case $classReflection->isTrait():
+				$keyword = 'trait';
+				break;
+			case $classReflection->isClass():
+				$keyword = 'class';
+				break;
+			default:
+				$keyword = self::fail();
+		}
+
 		$verbosityLevel = VerbosityLevel::precise();
 		$backedEnumType = $classReflection->getBackedEnumType();
 		$backedEnumTypeTxt = $backedEnumType !== null

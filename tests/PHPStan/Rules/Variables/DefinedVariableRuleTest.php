@@ -971,6 +971,19 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9474.php'], []);
 	}
 
+	public function testEnum(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/defined-variables-enum.php'], []);
+	}
+
 	public function testBug5326(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

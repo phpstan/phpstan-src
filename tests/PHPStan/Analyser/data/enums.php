@@ -309,6 +309,7 @@ class LooseComparisonWithEnums
 		assertType('false', false == Foo::ONE);
 		assertType('false', null == Foo::ONE);
 		assertType('false', Foo::ONE == null);
+		assertType('true', $foo == Foo::ONE || Foo::TWO == $foo);
 
 		assertType('bool', (rand() ? $bar : null) == $s);
 		assertType('bool', $s == (rand() ? $bar : null));

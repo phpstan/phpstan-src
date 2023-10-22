@@ -137,6 +137,16 @@ class MissingReturnRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug3488(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkExplicitMixedMissingReturn = true;
+		$this->analyse([__DIR__ . '/data/bug-3488.php'], []);
+	}
+
 	public function testBug3669(): void
 	{
 		$this->checkExplicitMixedMissingReturn = true;

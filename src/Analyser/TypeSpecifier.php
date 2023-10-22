@@ -288,6 +288,7 @@ class TypeSpecifier
 				($leftType->isString()->yes() && $rightType->isString()->yes())
 				|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
 				|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
+				|| ($leftType->isEnum()->yes() && $rightType->isEnum()->yes())
 			) {
 				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 			}

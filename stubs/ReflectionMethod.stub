@@ -2,10 +2,15 @@
 
 class ReflectionMethod
 {
-
 	/**
 	 * @var class-string
 	 */
 	public $class;
 
+	/**
+	 * @return ReflectionIntersectionType|ReflectionNamedType|ReflectionUnionType|null
+	 */
+	public function getReturnType()
+	{
+	}
 }

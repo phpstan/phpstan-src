@@ -21,7 +21,10 @@
  */
 return [
 	'new' => [
-
+		'ReflectionFunction::getReturnType' => ['ReflectionNamedType|ReflectionUnionType|ReflectionIntersectionType|null'],
+		'ReflectionMethod::getReturnType' => ['ReflectionNamedType|ReflectionUnionType|ReflectionIntersectionType|null'],
+		'ReflectionParameter::getType' => ['ReflectionNamedType|ReflectionUnionType|ReflectionIntersectionType|null'],
+		'ReflectionProperty::getType' => ['ReflectionNamedType|ReflectionUnionType|ReflectionIntersectionType|null'],
 	],
 	'old' => [
 		'pg_escape_bytea' => ['string', 'connection'=>'resource', 'data'=>'string'],
@@ -64,5 +67,9 @@ return [
 		'pg_tty\'1' => ['string'],
 		'pg_untrace' => ['bool', 'connection='=>'resource'],
 		'pg_untrace\'1' => ['bool'],
+		'ReflectionFunction::getReturnType' => ['ReflectionNamedType|ReflectionUnionType|null'],
+		'ReflectionMethod::getReturnType' => ['ReflectionNamedType|ReflectionUnionType|null'],
+		'ReflectionParameter::getType' => ['ReflectionNamedType|ReflectionUnionType|null'],
+		'ReflectionProperty::getType' => ['ReflectionNamedType|ReflectionUnionType|null'],
 	]
 ];

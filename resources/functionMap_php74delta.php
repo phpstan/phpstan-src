@@ -46,7 +46,7 @@ return [
 		'preg_replace_callback' => ['string|array|null', 'regex'=>'string|array', 'callback'=>'callable(array<int|string, string>):string', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int', 'flags='=>'int'],
 		'preg_replace_callback_array' => ['string|array|null', 'pattern'=>'array<string,callable>', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int', 'flags='=>'int'],
 		'sapi_windows_set_ctrl_handler' => ['bool', 'callable'=>'callable(int):void', 'add='=>'bool'],
-		'ReflectionProperty::getType' => ['?ReflectionType'],
+		'ReflectionProperty::getType' => ['?ReflectionNamedType'],
 		'ReflectionProperty::hasType' => ['bool'],
 		'ReflectionProperty::isInitialized' => ['bool', 'object='=>'?object'],
 		'ReflectionReference::fromArrayElement' => ['?ReflectionReference', 'array'=>'array', 'key'=>'int|string'],

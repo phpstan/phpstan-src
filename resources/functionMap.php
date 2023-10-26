@@ -13856,7 +13856,7 @@ return [
 'Yaf_View_Simple::__isset' => ['bool', 'name'=>'string'],
 'Yaf_View_Simple::__set' => ['void', 'name'=>'string', 'value'=>'mixed'],
 'Yaf_View_Simple::assign' => ['Yaf_View_Simple|false|null', 'name='=>'?mixed', 'default='=>'?mixed'],
-'Yaf_View_Simple::assignRef' => ['?Yaf_View_Simple', 'name='=>'string', '&value'=>'mixed'],
+'Yaf_View_Simple::assignRef' => ['?Yaf_View_Simple', 'name'=>'string', '&value'=>'mixed'],
 'Yaf_View_Simple::clear' => ['?Yaf_View_Simple', 'name='=>'string'],
 'Yaf_View_Simple::display' => ['?bool', 'tpl'=>'string', 'tpl_vars='=>'?array'],
 'Yaf_View_Simple::eval' => ['string|null|false', 'tpl_str'=>'string', 'vars='=>'?array'],

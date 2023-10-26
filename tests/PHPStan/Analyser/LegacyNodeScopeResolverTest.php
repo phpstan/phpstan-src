@@ -5333,7 +5333,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbInternalEncodingWithUnknownEncoding',
 			],
 			[
-				'list<string>',
+				'list<non-falsy-string>',
 				'$mbEncodingAliasesWithValidEncoding',
 			],
 			[
@@ -5341,11 +5341,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbEncodingAliasesWithInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
+				PHP_VERSION_ID < 80000 ? 'list<non-falsy-string>|false' : 'list<non-falsy-string>',
 				'$mbEncodingAliasesWithValidAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
+				PHP_VERSION_ID < 80000 ? 'list<non-falsy-string>|false' : 'list<non-falsy-string>',
 				'$mbEncodingAliasesWithUnknownEncoding',
 			],
 			[

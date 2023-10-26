@@ -5,12 +5,10 @@ namespace PHPStan\Cache;
 use InvalidArgumentException;
 use Nette\Utils\Random;
 use PHPStan\File\FileWriter;
+use PHPStan\Internal\DirectoryCreator;
 use PHPStan\ShouldNotHappenException;
-use function clearstatcache;
 use function error_get_last;
-use function is_dir;
 use function is_file;
-use function mkdir;
 use function rename;
 use function sha1;
 use function sprintf;
@@ -26,22 +24,12 @@ class FileCacheStorage implements CacheStorage
 	{
 	}
 
+	/**
+	 * @throws \PHPStan\Internal\DirectoryCreatorException
+	 */
 	private function makeDir(string $directory): void
 	{
-		if (is_dir($directory)) {
-			return;
-		}
-
-		$result = @mkdir($directory, 0777);
-		if ($result === false) {
-			clearstatcache();
-			if (is_dir($directory)) {
-				return;
-			}
-
-			$error = error_get_last();
-			throw new InvalidArgumentException(sprintf('Failed to create directory "%s" (%s).', $this->directory, $error !== null ? $error['message'] : 'unknown cause'));
-		}
+		DirectoryCreator::ensureDirectoryExists($directory, 0777);
 	}
 
 	/**
@@ -66,6 +54,7 @@ class FileCacheStorage implements CacheStorage
 
 	/**
 	 * @param mixed $data
+	 * @throws \PHPStan\Internal\DirectoryCreatorException
 	 */
 	public function save(string $key, string $variableKey, $data): void
 	{

@@ -1794,7 +1794,7 @@ class TypeSpecifier
 		$types = null;
 		if (
 			count($leftType->getFiniteTypes()) === 1
-			|| ($leftType->isConstantValue()->yes() && !$rightType->equals($leftType) && $rightType->isSuperTypeOf($leftType)->yes() && $context->true())
+			|| ($context->true() && $leftType->isConstantValue()->yes() && !$rightType->equals($leftType) && $rightType->isSuperTypeOf($leftType)->yes())
 		) {
 			$types = $this->create(
 				$rightExpr,
@@ -1817,7 +1817,7 @@ class TypeSpecifier
 		}
 		if (
 			count($rightType->getFiniteTypes()) === 1
-			|| ($rightType->isConstantValue()->yes() && !$leftType->equals($rightType) && $leftType->isSuperTypeOf($rightType)->yes() && $context->true())
+			|| ($context->true() && $rightType->isConstantValue()->yes() && !$leftType->equals($rightType) && $leftType->isSuperTypeOf($rightType)->yes())
 		) {
 			$leftTypes = $this->create(
 				$leftExpr,

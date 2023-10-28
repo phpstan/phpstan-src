@@ -1384,6 +1384,8 @@ class TypeSpecifier
 				$specifiedExprs[] = $expr->expr->var;
 				$expr = $expr->expr;
 			}
+		} elseif ($expr instanceof Expr\AssignOp\Coalesce) {
+			$specifiedExprs[] = $expr->var;
 		} else {
 			$specifiedExprs[] = $expr;
 		}

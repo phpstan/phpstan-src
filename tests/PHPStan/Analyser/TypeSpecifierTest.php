@@ -907,6 +907,27 @@ class TypeSpecifierTest extends PHPStanTestCase
 				],
 			],
 			[
+				new Identical(
+					new Expr\ConstFetch(new Name('null')),
+					new Expr\AssignOp\Coalesce(
+						new Variable('a'),
+						new Expr\Ternary(
+							new Variable('b'),
+							new Variable('b'),
+							new Expr\ConstFetch(
+								new Name('null'),
+							),
+						),
+					),
+				),
+				[
+					'$a' => 'null',
+				],
+				[
+					'$a' => '~null',
+				],
+			],
+			[
 				new NotIdentical(
 					new Variable('barOrFalse'),
 					new Expr\ConstFetch(new Name('false')),

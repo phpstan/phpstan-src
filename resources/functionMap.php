@@ -9569,7 +9569,7 @@ return [
 'Redis::multi' => ['Redis', 'mode='=>'int'],
 'Redis::object' => ['string|long|false', 'info'=>'string', 'key'=>'string'],
 'Redis::open' => ['bool', 'host'=>'string', 'port='=>'int', 'timeout='=>'float', 'reserved='=>'null', 'retry_interval='=>'?int', 'read_timeout='=>'float'],
-'Redis::pconnect' => ['bool', 'host'=>'string', 'port='=>'int', 'timeout='=>'float', 'persistent_id='=>'string', 'retry_interval='=>'?int'],
+'Redis::pconnect' => ['bool', 'host'=>'string', 'port='=>'int', 'timeout='=>'float', 'persistent_id='=>'?string', 'retry_interval='=>'int', 'read_timeout='=>'float', 'context='=>'?array{auth?:list{string|null|false,string}|list{string},stream?:array<string,mixed>}'],
 'Redis::persist' => ['bool', 'key'=>'string'],
 'Redis::pExpire' => ['bool', 'key'=>'string', 'ttl'=>'int'],
 'Redis::pexpireAt' => ['bool', 'key'=>'string', 'expiry'=>'int'],

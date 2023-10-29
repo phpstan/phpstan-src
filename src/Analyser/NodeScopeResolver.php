@@ -2151,7 +2151,7 @@ class NodeScopeResolver
 
 			if (
 				$functionReflection !== null
-				&& ($functionReflection->getName() === 'clearstatcache' || $functionReflection->getName() === 'unlink')
+				&& in_array($functionReflection->getName(), ['clearstatcache', 'unlink'], true)
 			) {
 				$scope = $scope->afterClearstatcacheCall();
 			}

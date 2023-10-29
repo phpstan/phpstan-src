@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use function array_keys;
 use function implode;
+use function in_array;
 use function preg_match;
 use function preg_quote;
 use function strlen;
@@ -64,7 +65,7 @@ class PhpFileCleaner
 					continue 2;
 				}
 
-				if ($char === '"' || $char === "'") {
+				if (in_array($char, ['"', "'"], true)) {
 					if ($inDefine) {
 						$clean .= $char . $this->consumeString($char);
 						$inDefine = false;

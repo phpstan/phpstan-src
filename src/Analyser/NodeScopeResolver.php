@@ -1759,6 +1759,14 @@ class NodeScopeResolver
 		if ($isNull->yes()) {
 			return new EnsuredNonNullabilityResult($scope, []);
 		}
+
+		// keep certainty
+		$certainty = TrinaryLogic::createYes();
+		$hasExpressionType = $originalScope->hasExpressionType($exprToSpecify);
+		if (!$hasExpressionType->no()) {
+			$certainty = $hasExpressionType;
+		}
+
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
 		if ($exprType->equals($exprTypeWithoutNull)) {
 			$originalExprType = $originalScope->getType($exprToSpecify);
@@ -1766,7 +1774,7 @@ class NodeScopeResolver
 				$originalNativeType = $originalScope->getNativeType($exprToSpecify);
 
 				return new EnsuredNonNullabilityResult($scope, [
-					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType),
+					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $certainty),
 				]);
 			}
 			return new EnsuredNonNullabilityResult($scope, []);
@@ -1782,7 +1790,7 @@ class NodeScopeResolver
 		return new EnsuredNonNullabilityResult(
 			$scope,
 			[
-				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType),
+				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty),
 			],
 		);
 	}
@@ -1812,6 +1820,7 @@ class NodeScopeResolver
 				$specifiedExpressionResult->getExpression(),
 				$specifiedExpressionResult->getOriginalType(),
 				$specifiedExpressionResult->getOriginalNativeType(),
+				$specifiedExpressionResult->getCertainty(),
 			);
 		}
 

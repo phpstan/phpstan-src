@@ -2340,6 +2340,10 @@ class MutatingScope implements Scope
 	/** @api */
 	public function hasExpressionType(Expr $node): TrinaryLogic
 	{
+		if ($node instanceof Variable && is_string($node->name)) {
+			return $this->hasVariableType($node->name);
+		}
+
 		$exprString = $this->getNodeKey($node);
 		if (!isset($this->expressionTypes[$exprString])) {
 			return TrinaryLogic::createNo();
@@ -3432,7 +3436,7 @@ class MutatingScope implements Scope
 		return $scope->invalidateExpression($expr);
 	}
 
-	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType): self
+	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType, ?TrinaryLogic $certainty = null): self
 	{
 		if ($expr instanceof ConstFetch) {
 			$loweredConstName = strtolower($expr->name->toString());
@@ -3466,6 +3470,7 @@ class MutatingScope implements Scope
 					if ($dimType instanceof ConstantIntegerType) {
 						$types[] = new StringType();
 					}
+
 					$scope = $scope->specifyExpressionType(
 						$expr->var,
 						TypeCombinator::intersect(
@@ -3473,16 +3478,23 @@ class MutatingScope implements Scope
 							new HasOffsetValueType($dimType, $type),
 						),
 						$scope->getNativeType($expr->var),
+						$certainty,
 					);
 				}
 			}
 		}
 
+		if ($certainty === null) {
+			$certainty = TrinaryLogic::createYes();
+		} elseif ($certainty->no()) {
+			throw new ShouldNotHappenException();
+		}
+
 		$exprString = $this->getNodeKey($expr);
 		$expressionTypes = $scope->expressionTypes;
-		$expressionTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $type);
+		$expressionTypes[$exprString] = new ExpressionTypeHolder($expr, $type, $certainty);
 		$nativeTypes = $scope->nativeExpressionTypes;
-		$nativeTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $nativeType);
+		$nativeTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
 
 		return $this->scopeFactory->create(
 			$this->context,

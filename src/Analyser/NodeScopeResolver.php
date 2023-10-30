@@ -414,6 +414,8 @@ class NodeScopeResolver
 		if ($stmt instanceof Node\Stmt\Declare_) {
 			$hasYield = false;
 			$throwPoints = [];
+			$alwaysTerminating = false;
+			$exitPoints = [];
 			foreach ($stmt->declares as $declare) {
 				$nodeCallback($declare, $scope);
 				$nodeCallback($declare->value, $scope);
@@ -427,6 +429,17 @@ class NodeScopeResolver
 
 				$scope = $scope->enterDeclareStrictTypes();
 			}
+
+			if ($stmt->stmts !== null) {
+				$result = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback, $context);
+				$scope = $result->getScope();
+				$hasYield = $result->hasYield();
+				$throwPoints = $result->getThrowPoints();
+				$alwaysTerminating = $result->isAlwaysTerminating();
+				$exitPoints = $result->getExitPoints();
+			}
+
+			return new StatementResult($scope, $hasYield, $alwaysTerminating, $exitPoints, $throwPoints);
 		} elseif ($stmt instanceof Node\Stmt\Function_) {
 			$hasYield = false;
 			$throwPoints = [];

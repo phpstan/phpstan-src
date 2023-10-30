@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
+use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ReflectionProvider;
@@ -53,6 +54,7 @@ class TemplateTypeCheck
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
+		Scope $scope,
 		Node $node,
 		TemplateTypeScope $templateTypeScope,
 		array $templateTags,
@@ -64,7 +66,7 @@ class TemplateTypeCheck
 	{
 		$messages = [];
 		foreach ($templateTags as $templateTag) {
-			$templateTagName = $templateTag->getName();
+			$templateTagName = $scope->resolveName(new Node\Name($templateTag->getName()));
 			if ($this->reflectionProvider->hasClass($templateTagName)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsClassMessage,

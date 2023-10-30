@@ -58,6 +58,7 @@ class MethodTemplateTypeRule implements Rule
 		$escapedClassName = SprintfHelper::escapeFormatString($className);
 		$escapedMethodName = SprintfHelper::escapeFormatString($methodName);
 		$messages = $this->templateTypeCheck->check(
+			$scope,
 			$node,
 			TemplateTypeScope::createWithMethod($className, $methodName),
 			$methodTemplateTags,

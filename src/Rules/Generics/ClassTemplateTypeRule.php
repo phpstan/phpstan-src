@@ -41,6 +41,7 @@ class ClassTemplateTypeRule implements Rule
 		}
 
 		return $this->templateTypeCheck->check(
+			$scope,
 			$node,
 			TemplateTypeScope::createWithClass($className),
 			$classReflection->getTemplateTags(),

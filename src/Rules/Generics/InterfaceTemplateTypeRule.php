@@ -38,6 +38,7 @@ class InterfaceTemplateTypeRule implements Rule
 		$escapadInterfaceName = SprintfHelper::escapeFormatString($interfaceName);
 
 		return $this->templateTypeCheck->check(
+			$scope,
 			$node,
 			TemplateTypeScope::createWithClass($interfaceName),
 			$classReflection->getTemplateTags(),

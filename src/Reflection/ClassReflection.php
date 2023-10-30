@@ -241,21 +241,26 @@ class ClassReflection
 
 	public function getDisplayName(bool $withTemplateTypes = true): string
 	{
-		$name = $this->displayName;
-
 		if (
 			$withTemplateTypes === false
 			|| $this->resolvedTemplateTypeMap === null
 			|| count($this->resolvedTemplateTypeMap->getTypes()) === 0
 		) {
-			return $name;
+			return $this->displayName;
 		}
 
-		return $name . '<' . implode(',', array_map(
-			static fn (Type $type, TemplateTypeVariance $variance): string => TypeProjectionHelper::describe($type, $variance, VerbosityLevel::typeOnly()),
-			$this->getActiveTemplateTypeMap()->getTypes(),
-			$this->getCallSiteVarianceMap()->getVariances(),
-		)) . '>';
+		$templateTypes = [];
+		$variances = $this->getCallSiteVarianceMap()->getVariances();
+		foreach ($this->getActiveTemplateTypeMap()->getTypes() as $name => $templateType) {
+			$variance = $variances[$name] ?? null;
+			if ($variance === null) {
+				continue;
+			}
+
+			$templateTypes[] = TypeProjectionHelper::describe($templateType, $variance, VerbosityLevel::typeOnly());
+		}
+
+		return $this->displayName . '<' . implode(',', $templateTypes) . '>';
 	}
 
 	public function getCacheKey(): string
@@ -268,11 +273,18 @@ class ClassReflection
 		$cacheKey = $this->displayName;
 
 		if ($this->resolvedTemplateTypeMap !== null) {
-			$cacheKey .= '<' . implode(',', array_map(
-				static fn (Type $type, TemplateTypeVariance $variance): string => TypeProjectionHelper::describe($type, $variance, VerbosityLevel::cache()),
-				$this->getActiveTemplateTypeMap()->getTypes(),
-				$this->getCallSiteVarianceMap()->getVariances(),
-			)) . '>';
+			$templateTypes = [];
+			$variances = $this->getCallSiteVarianceMap()->getVariances();
+			foreach ($this->getActiveTemplateTypeMap()->getTypes() as $name => $templateType) {
+				$variance = $variances[$name] ?? null;
+				if ($variance === null) {
+					continue;
+				}
+
+				$templateTypes[] = TypeProjectionHelper::describe($templateType, $variance, VerbosityLevel::cache());
+			}
+
+			$cacheKey .= '<' . implode(',', $templateTypes) . '>';
 		}
 
 		if ($this->extraCacheKey !== null) {

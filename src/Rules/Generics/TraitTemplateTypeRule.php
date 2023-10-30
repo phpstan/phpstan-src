@@ -52,6 +52,7 @@ class TraitTemplateTypeRule implements Rule
 		$escapedTraitName = SprintfHelper::escapeFormatString($traitName);
 
 		return $this->templateTypeCheck->check(
+			$scope,
 			$node,
 			TemplateTypeScope::createWithClass($traitName),
 			$resolvedPhpDoc->getTemplateTags(),

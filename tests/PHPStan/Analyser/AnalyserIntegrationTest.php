@@ -948,9 +948,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug7903(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7903.php');
-		$this->assertCount(2, $errors);
-		$this->assertSame('Comparison operation ">" between (0|(non-empty-array<int|string, 0|(non-empty-array<literal-string&non-falsy-string, 0|float>)|float>)|float) and 0 results in an error.', $errors[0]->getMessage());
-		$this->assertSame('Comparison operation ">" between (0|(non-empty-array<int|string, 0|(non-empty-array<literal-string&non-falsy-string, 0|float>)|float>)|float) and 0 results in an error.', $errors[1]->getMessage());
+		$this->assertCount(0, $errors);
 	}
 
 	public function testBug7901(): void

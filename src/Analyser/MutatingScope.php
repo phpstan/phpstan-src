@@ -3478,7 +3478,7 @@ class MutatingScope implements Scope
 							new HasOffsetValueType($dimType, $type),
 						),
 						$scope->getNativeType($expr->var),
-						$scope->hasExpressionType($expr->var), // keep certainty
+						$certainty,
 					);
 				}
 			}
@@ -3486,6 +3486,8 @@ class MutatingScope implements Scope
 
 		if ($certainty === null) {
 			$certainty = TrinaryLogic::createYes();
+		} elseif ($certainty->no()) {
+			throw new ShouldNotHappenException();
 		}
 
 		$exprString = $this->getNodeKey($expr);

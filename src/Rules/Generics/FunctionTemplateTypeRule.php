@@ -52,6 +52,7 @@ class FunctionTemplateTypeRule implements Rule
 		$escapedFunctionName = SprintfHelper::escapeFormatString($functionName);
 
 		return $this->templateTypeCheck->check(
+			$scope,
 			$node,
 			TemplateTypeScope::createWithFunction($functionName),
 			$resolvedPhpDoc->getTemplateTags(),

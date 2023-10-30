@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Generics;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ClassTemplateTypeRule>
@@ -117,6 +118,19 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 	public function testInInterface(): void
 	{
 		$this->analyse([__DIR__ . '/data/interface-template.php'], []);
+	}
+
+	public function testBug10049(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+		$this->analyse([__DIR__ . '/data/bug-10049.php'], [
+			[
+				'PHPDoc tag @template for class Bug10049\SimpleEntity cannot have existing class Bug10049\SimpleEntity as its name.',
+				8,
+			],
+		]);
 	}
 
 }

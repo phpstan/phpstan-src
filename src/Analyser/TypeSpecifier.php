@@ -861,6 +861,10 @@ class TypeSpecifier
 	{
 		if (!$context->null() && $constantType->getValue() === false) {
 			$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
+			if ($exprNode instanceof Expr\NullsafeMethodCall || $exprNode instanceof Expr\NullsafePropertyFetch) {
+				return $types;
+			}
+
 			return $types->unionWith($this->specifyTypesInCondition(
 				$scope,
 				$exprNode,
@@ -871,6 +875,10 @@ class TypeSpecifier
 
 		if (!$context->null() && $constantType->getValue() === true) {
 			$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
+			if ($exprNode instanceof Expr\NullsafeMethodCall || $exprNode instanceof Expr\NullsafePropertyFetch) {
+				return $types;
+			}
+
 			return $types->unionWith($this->specifyTypesInCondition(
 				$scope,
 				$exprNode,

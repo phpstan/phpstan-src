@@ -4,7 +4,7 @@ namespace PHPStan\Node;
 
 use PhpParser\Node\Expr;
 
-class NotIssetExpr extends Expr implements VirtualNode
+class IssetExpr extends Expr implements VirtualNode
 {
 
 	public function __construct(
@@ -21,7 +21,7 @@ class NotIssetExpr extends Expr implements VirtualNode
 
 	public function getType(): string
 	{
-		return 'PHPStan_Node_NotIssetExpr';
+		return 'PHPStan_Node_IssetExpr';
 	}
 
 	/**

@@ -37,7 +37,7 @@ use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Node\NotIssetExpr;
+use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
@@ -3823,7 +3823,7 @@ class MutatingScope implements Scope
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
 
-			if ($expr instanceof NotIssetExpr) {
+			if ($expr instanceof IssetExpr) {
 				$unsetExpr = $expr->getExpr();
 				$scope = $scope->unsetExpression($unsetExpr);
 

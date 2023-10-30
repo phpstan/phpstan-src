@@ -11,7 +11,7 @@ use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Node\NotIssetExpr;
+use PHPStan\Node\IssetExpr;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -58,9 +58,9 @@ class Printer extends Standard
 		return sprintf('__phpstanPropertyInitialization(%s)', $expr->getPropertyName());
 	}
 
-	protected function pPHPStan_Node_NotIssetExpr(NotIssetExpr $expr): string // phpcs:ignore
+	protected function pPHPStan_Node_IssetExpr(IssetExpr $expr): string // phpcs:ignore
 	{
-		return sprintf('__phpstanNotIssetExpr(%s)', $this->p($expr->getExpr()));
+		return sprintf('__phpstanIssetExpr(%s)', $this->p($expr->getExpr()));
 	}
 
 }

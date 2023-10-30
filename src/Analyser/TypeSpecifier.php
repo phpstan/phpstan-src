@@ -19,7 +19,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
-use PHPStan\Node\NotIssetExpr;
+use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -690,7 +690,7 @@ class TypeSpecifier
 
 						if ($isset === true && !TypeCombinator::containsNull($type)) {
 							$specifiedTypes = $specifiedTypes->unionWith($this->create(
-								new NotIssetExpr($var),
+								new IssetExpr($var),
 								new NullType(),
 								$context,
 								false,
@@ -757,7 +757,7 @@ class TypeSpecifier
 					$offsetType = $type->getOffsetValueType($dimType);
 					if ($hasOffsetType->yes() && !TypeCombinator::containsNull($offsetType)) {
 						$specifiedTypes = $specifiedTypes->unionWith($this->create(
-							new NotIssetExpr($var),
+							new IssetExpr($var),
 							new NullType(),
 							$context,
 							false,

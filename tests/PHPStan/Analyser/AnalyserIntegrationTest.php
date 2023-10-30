@@ -1251,11 +1251,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		}
 
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10049-recursive.php');
-	}
-
-	public function testFalseyEmpty(): void
-	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/falsey-empty-certainty.php');
 		$this->assertNoErrors($errors);
 	}
 

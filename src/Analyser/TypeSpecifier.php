@@ -717,11 +717,14 @@ class TypeSpecifier
 
 			$types = null;
 			foreach ($vars as $var) {
+				$type = new SpecifiedTypes();
+
 				if ($var instanceof Expr\Variable && is_string($var->name)) {
 					if ($scope->hasVariableType($var->name)->no()) {
 						return new SpecifiedTypes([], [], false, [], $rootExpr);
 					}
 				}
+
 				if (
 					$var instanceof ArrayDimFetch
 					&& $var->dim !== null
@@ -738,35 +741,31 @@ class TypeSpecifier
 							$scope,
 							$rootExpr,
 						);
-					} else {
-						$type = new SpecifiedTypes();
 					}
-
-					$type = $type->unionWith(
-						$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
-					);
-				} else {
-					$type = $this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr);
 				}
 
 				if (
 					$var instanceof PropertyFetch
 					&& $var->name instanceof Node\Identifier
 				) {
-					$type = $type->unionWith($this->create($var->var, new IntersectionType([
+					$type = $this->create($var->var, new IntersectionType([
 						new ObjectWithoutClassType(),
 						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr));
+					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr);
 				} elseif (
 					$var instanceof StaticPropertyFetch
 					&& $var->class instanceof Expr
 					&& $var->name instanceof Node\VarLikeIdentifier
 				) {
-					$type = $type->unionWith($this->create($var->class, new IntersectionType([
+					$type = $this->create($var->class, new IntersectionType([
 						new ObjectWithoutClassType(),
 						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr));
+					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr);
 				}
+
+				$type = $type->unionWith(
+					$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
+				);
 
 				if ($types === null) {
 					$types = $type;
@@ -792,6 +791,15 @@ class TypeSpecifier
 		} elseif (
 			$expr instanceof Expr\Empty_
 		) {
+			if (!$scope instanceof MutatingScope) {
+				throw new ShouldNotHappenException();
+			}
+
+			$isset = $scope->issetCheck($expr->expr, static fn () => true);
+			if ($isset === false) {
+				return new SpecifiedTypes();
+			}
+
 			return $this->specifyTypesInCondition($scope, new BooleanOr(
 				new Expr\BooleanNot(new Expr\Isset_([$expr->expr])),
 				new Expr\BooleanNot($expr->expr),

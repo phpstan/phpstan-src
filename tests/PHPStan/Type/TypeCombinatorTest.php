@@ -2520,7 +2520,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				)),
 			],
 			GenericClassStringType::class,
-			"class-string<T (function foo(), parameter)>",
+			'class-string<T (function foo(), parameter)>',
 		];
 	}
 

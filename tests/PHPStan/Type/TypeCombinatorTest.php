@@ -2494,6 +2494,34 @@ class TypeCombinatorTest extends PHPStanTestCase
 			UnionType::class,
 			'array{a?: true, b: true}|(array{a?: true, c?: true}&non-empty-array)',
 		];
+
+		yield [
+			[
+				new ConstantStringType('array'),
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					null,
+					TemplateTypeVariance::createInvariant(),
+				)),
+			],
+			UnionType::class,
+			"'array'|class-string<T (function foo(), parameter)>",
+		];
+
+		yield [
+			[
+				new ConstantStringType(Exception::class),
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					null,
+					TemplateTypeVariance::createInvariant(),
+				)),
+			],
+			GenericClassStringType::class,
+			"class-string<T (function foo(), parameter)>",
+		];
 	}
 
 	/**
@@ -4133,6 +4161,19 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			IntersectionType::class,
 			'array{a?: true, c?: true}&non-empty-array',
+		];
+		yield [
+			[
+				new ConstantStringType(Exception::class),
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					null,
+					TemplateTypeVariance::createInvariant(),
+				)),
+			],
+			ConstantStringType::class,
+			"'Exception'",
 		];
 	}
 

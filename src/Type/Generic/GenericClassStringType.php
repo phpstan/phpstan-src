@@ -94,7 +94,7 @@ class GenericClassStringType extends ClassStringType
 		if ($type instanceof ConstantStringType) {
 			$genericType = $this->type;
 			if ($genericType instanceof MixedType) {
-				return TrinaryLogic::createYes();
+				return $type->isClassStringType();
 			}
 
 			if ($genericType instanceof StaticType) {

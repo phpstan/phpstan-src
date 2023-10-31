@@ -34,6 +34,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
@@ -146,6 +147,10 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof GenericClassStringType) {
+			if ($this->isClassStringType()->no()) {
+				return TrinaryLogic::createNo();
+			}
+
 			$genericType = $type->getGenericType();
 			if ($genericType instanceof MixedType) {
 				return TrinaryLogic::createMaybe();

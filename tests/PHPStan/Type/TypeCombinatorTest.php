@@ -4164,6 +4164,19 @@ class TypeCombinatorTest extends PHPStanTestCase
 		];
 		yield [
 			[
+				new ConstantStringType('array'),
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					null,
+					TemplateTypeVariance::createInvariant(),
+				)),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
 				new ConstantStringType(Exception::class),
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithFunction('foo'),

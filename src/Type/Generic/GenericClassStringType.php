@@ -91,10 +91,6 @@ class GenericClassStringType extends ClassStringType
 		}
 
 		if ($type instanceof ConstantStringType) {
-			if ($type->isClassStringType()->no()) {
-				return TrinaryLogic::createNo();
-			}
-
 			$genericType = $this->type;
 			if ($genericType instanceof StaticType) {
 				$genericType = $genericType->getStaticObjectType();
@@ -112,11 +108,7 @@ class GenericClassStringType extends ClassStringType
 				$isSuperType = $genericType->isSuperTypeOf($objectType);
 			}
 
-			if (!$type->isClassStringType()->yes()) {
-				$isSuperType = $isSuperType->and(TrinaryLogic::createMaybe());
-			}
-
-			return $isSuperType;
+			return $isSuperType->and($type->isClassStringType());
 		} elseif ($type instanceof self) {
 			return $this->type->isSuperTypeOf($type->type);
 		} elseif ($type instanceof StringType) {

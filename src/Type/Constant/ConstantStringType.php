@@ -146,7 +146,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof GenericClassStringType) {
-			if ($this->isClassStringType()->no()) {
+			if (!$this->isClassStringType()->yes()) {
 				return TrinaryLogic::createNo();
 			}
 

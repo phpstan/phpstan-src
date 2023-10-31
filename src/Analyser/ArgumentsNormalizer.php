@@ -237,7 +237,7 @@ final class ArgumentsNormalizer
 			return [];
 		}
 
-		// fill up all wholes with default values until the last given argument
+		// fill up all holes with default values until the last given argument
 		for ($j = 0; $j < max(array_keys($reorderedArgs)); $j++) {
 			if (array_key_exists($j, $reorderedArgs)) {
 				continue;

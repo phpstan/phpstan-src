@@ -9544,7 +9544,7 @@ return [
 'Redis::incrBy' => ['int', 'key'=>'string', 'value'=>'int'],
 'Redis::incrByFloat' => ['float', 'key'=>'string', 'value'=>'float'],
 'Redis::info' => ['array', 'option='=>'string'],
-'Redis::keys' => ['array<int,string>', 'pattern'=>'string'],
+'Redis::keys' => ['Redis|array<int,string>|false', 'pattern'=>'string'],
 'Redis::lastSave' => ['int'],
 'Redis::lGet' => ['', 'key'=>'string', 'index'=>'int'],
 'Redis::lGetRange' => ['', 'key'=>'string', 'start'=>'int', 'end'=>'int'],

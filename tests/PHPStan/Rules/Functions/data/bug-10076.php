@@ -14,7 +14,9 @@ function result($type = 'object'): array
 	return [];
 }
 
-result();
-result('object');
-result('array');
-result(\DateTime::class);
+function () {
+	result();
+	result('object');
+	result('array');
+	result(\DateTime::class);
+};

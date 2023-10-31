@@ -3517,7 +3517,7 @@ class MutatingScope implements Scope
 		);
 	}
 
-	public function assignExpression(Expr $expr, Type $type, ?Type $nativeType = null): self
+	public function assignExpression(Expr $expr, Type $type, ?Type $nativeType = null, ?TrinaryLogic $certainty = null): self
 	{
 		if ($nativeType === null) {
 			$nativeType = new MixedType();
@@ -3532,7 +3532,7 @@ class MutatingScope implements Scope
 			$scope = $this->invalidateExpression($expr);
 		}
 
-		return $scope->specifyExpressionType($expr, $type, $nativeType);
+		return $scope->specifyExpressionType($expr, $type, $nativeType, $certainty);
 	}
 
 	public function assignInitializedProperty(Type $fetchedOnType, string $propertyName): self
@@ -3712,7 +3712,7 @@ class MutatingScope implements Scope
 		);
 	}
 
-	private function addTypeToExpression(Expr $expr, Type $type): self
+	private function addTypeToExpression(Expr $expr, Type $type, ?TrinaryLogic $certainty = null): self
 	{
 		$originalExprType = $this->getType($expr);
 		$nativeType = $this->getNativeType($expr);
@@ -3726,10 +3726,11 @@ class MutatingScope implements Scope
 			$expr,
 			TypeCombinator::intersect($type, $originalExprType),
 			TypeCombinator::intersect($type, $nativeType),
+			$certainty,
 		);
 	}
 
-	public function removeTypeFromExpression(Expr $expr, Type $typeToRemove): self
+	public function removeTypeFromExpression(Expr $expr, Type $typeToRemove, ?TrinaryLogic $certainty = null): self
 	{
 		$exprType = $this->getType($expr);
 		if (
@@ -3742,6 +3743,7 @@ class MutatingScope implements Scope
 			$expr,
 			TypeCombinator::remove($exprType, $typeToRemove),
 			TypeCombinator::remove($this->getNativeType($expr), $typeToRemove),
+			$certainty,
 		);
 	}
 
@@ -3822,43 +3824,50 @@ class MutatingScope implements Scope
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
+			$certainty = TrinaryLogic::createYes();
 
 			if ($expr instanceof IssetExpr) {
-				$unsetExpr = $expr->getExpr();
-				$scope = $scope->unsetExpression($unsetExpr);
+				$issetExpr = $expr;
+				$expr = $issetExpr->getExpr();
+				$certainty = $issetExpr->getCertainty();
 
-				if ($unsetExpr instanceof Variable) {
-					$exprString = $this->getNodeKey($unsetExpr);
+				if ($certainty->no()) {
+					$scope = $scope->unsetExpression($expr);
 
-					unset($scope->expressionTypes[$exprString]);
-					unset($scope->nativeExpressionTypes[$exprString]);
-				}
-
-				if ($unsetExpr instanceof Expr\ArrayDimFetch) {
-					$type = $scope->getType($unsetExpr->var);
-					$arraySize = $type->getArraySize();
-
-					if (
-						$arraySize instanceof ConstantIntegerType
-						&& $arraySize->getValue() === 0
-					) {
-						$exprString = $this->getNodeKey($unsetExpr->var);
+					if ($expr instanceof Variable) {
+						$exprString = $this->getNodeKey($expr);
 
 						unset($scope->expressionTypes[$exprString]);
 						unset($scope->nativeExpressionTypes[$exprString]);
 					}
+
+					if ($expr instanceof Expr\ArrayDimFetch) {
+						$type = $scope->getType($expr->var);
+						$arraySize = $type->getArraySize();
+
+						if (
+							$arraySize instanceof ConstantIntegerType
+							&& $arraySize->getValue() === 0
+						) {
+							$exprString = $this->getNodeKey($expr->var);
+
+							unset($scope->expressionTypes[$exprString]);
+							unset($scope->nativeExpressionTypes[$exprString]);
+						}
+					}
+
+					continue;
 				}
-				continue;
 			}
 
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
-					$scope = $scope->assignExpression($expr, $type, $type);
+					$scope = $scope->assignExpression($expr, $type, $type, $certainty);
 				} else {
-					$scope = $scope->addTypeToExpression($expr, $type);
+					$scope = $scope->addTypeToExpression($expr, $type, $certainty);
 				}
 			} else {
-				$scope = $scope->removeTypeFromExpression($expr, $type);
+				$scope = $scope->removeTypeFromExpression($expr, $type, $certainty);
 			}
 			$specifiedExpressions[$this->getNodeKey($expr)] = ExpressionTypeHolder::createYes($expr, $scope->getType($expr));
 		}

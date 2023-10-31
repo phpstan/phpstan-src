@@ -111,7 +111,7 @@ function falseyIssetVariable(): void
 	if (isset($a)) {
 		assertVariableCertainty(TrinaryLogic::createYes(), $a);
 	} else {
-		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+		assertVariableCertainty(TrinaryLogic::createNo(), $a);
 	}
 
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);

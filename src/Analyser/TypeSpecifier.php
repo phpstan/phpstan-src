@@ -688,9 +688,9 @@ class TypeSpecifier
 					if ($var instanceof Expr\Variable) {
 						$type = $scope->getType($var);
 
-						if ($isset === true && !TypeCombinator::containsNull($type)) {
+						if ($isset !== false && !$type instanceof MixedType && !TypeCombinator::containsNull($type)) {
 							$specifiedTypes = $specifiedTypes->unionWith($this->create(
-								new IssetExpr($var),
+								new IssetExpr($var, TrinaryLogic::createNo()),
 								new NullType(),
 								$context,
 								false,
@@ -713,7 +713,7 @@ class TypeSpecifier
 						}
 
 						$specifiedTypes = $specifiedTypes->unionWith($this->create(
-							$var,
+							new IssetExpr($var, $scope->hasExpressionType($var)),
 							new NullType(),
 							$context->negate(),
 							true,
@@ -757,7 +757,7 @@ class TypeSpecifier
 					$offsetType = $type->getOffsetValueType($dimType);
 					if ($hasOffsetType->yes() && !TypeCombinator::containsNull($offsetType)) {
 						$specifiedTypes = $specifiedTypes->unionWith($this->create(
-							new IssetExpr($var),
+							new IssetExpr($var, $scope->hasExpressionType($var)),
 							new NullType(),
 							$context,
 							false,
@@ -791,7 +791,7 @@ class TypeSpecifier
 						});
 
 						$specifiedTypes = $specifiedTypes->unionWith($this->create(
-							$var->var,
+							new IssetExpr($var->var, $scope->hasExpressionType($var->var)),
 							$newType,
 							$context->negate(),
 							true,

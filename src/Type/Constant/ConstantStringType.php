@@ -34,7 +34,6 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
@@ -152,9 +151,6 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			}
 
 			$genericType = $type->getGenericType();
-			if ($genericType instanceof MixedType) {
-				return TrinaryLogic::createMaybe();
-			}
 			if ($genericType instanceof StaticType) {
 				$genericType = $genericType->getStaticObjectType();
 			}

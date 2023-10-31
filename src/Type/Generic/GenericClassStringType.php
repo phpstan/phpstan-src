@@ -12,7 +12,6 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -92,11 +91,11 @@ class GenericClassStringType extends ClassStringType
 		}
 
 		if ($type instanceof ConstantStringType) {
-			$genericType = $this->type;
-			if ($genericType instanceof MixedType) {
-				return $type->isClassStringType();
+			if ($type->isClassStringType()->no()) {
+				return TrinaryLogic::createNo();
 			}
 
+			$genericType = $this->type;
 			if ($genericType instanceof StaticType) {
 				$genericType = $genericType->getStaticObjectType();
 			}

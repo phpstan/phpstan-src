@@ -67,11 +67,9 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
-use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
-use function array_reduce;
 use function array_reverse;
 use function count;
 use function in_array;
@@ -681,14 +679,32 @@ class TypeSpecifier
 					throw new ShouldNotHappenException();
 				}
 
-				return array_reduce(
-					array_filter(
-						$expr->vars,
-						static fn (Expr $var) => $scope->issetCheck($var, static fn () => true),
-					),
-					fn (SpecifiedTypes $types, Expr $var) => $types->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr)),
-					new SpecifiedTypes(),
-				);
+				$specifiedTypes = new SpecifiedTypes();
+				foreach ($expr->vars as $var) {
+					$isset = $scope->issetCheck($var, static fn () => true);
+
+					if ($isset !== true) {
+						continue;
+					}
+
+					$type = $scope->getType($var);
+					if (!$var instanceof Expr\Variable || !TypeCombinator::containsNull($type)) {
+						$specifiedTypes = $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr));
+
+						continue;
+					}
+
+					$specifiedTypes = $specifiedTypes->unionWith($this->create(
+						$var,
+						new NullType(),
+						$context->negate(),
+						false,
+						$scope,
+						$rootExpr,
+					));
+				}
+
+				return $specifiedTypes;
 			}
 
 			$vars = [];

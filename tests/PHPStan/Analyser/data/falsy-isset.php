@@ -15,6 +15,15 @@ function mixedIsset(mixed $m): void
 	}
 }
 
+function stdclassIsset(?\stdClass $m): void
+{
+	if (isset($m)) {
+		assertType("stdClass", $m);
+	} else {
+		assertType("null", $m);
+	}
+}
+
 function nullableVariable(?string $a): void
 {
 	if (isset($a)) {

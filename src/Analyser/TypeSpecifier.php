@@ -71,6 +71,7 @@ use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function array_reverse;
+use function array_shift;
 use function count;
 use function in_array;
 use function is_string;
@@ -683,8 +684,8 @@ class TypeSpecifier
 
 				$first = array_shift($issets);
 				$andChain = null;
-				foreach($issets as $isset) {
-					if ($andChain == null) {
+				foreach ($issets as $isset) {
+					if ($andChain === null) {
 						$andChain = new BooleanAnd($first, $isset);
 						continue;
 					}

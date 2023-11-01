@@ -6,6 +6,15 @@ use function PHPStan\Testing\assertType;
 use function PHPStan\Testing\assertVariableCertainty;
 use PHPStan\TrinaryLogic;
 
+function mixedIsset(mixed $m): void
+{
+	if (isset($m)) {
+		assertType("mixed~null", $m);
+	} else {
+		assertType("null", $m);
+	}
+}
+
 function nullableVariable(?string $a): void
 {
 	if (isset($a)) {

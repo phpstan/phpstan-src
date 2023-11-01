@@ -674,55 +674,72 @@ class TypeSpecifier
 			&& count($expr->vars) > 0
 			&& !$context->null()
 		) {
+			if (count($expr->vars) > 1) {
+				// rewrite multi param isset() to and-chained single param isset()
+				$issets = [];
+				foreach ($expr->vars as $var) {
+					$issets[] = new Expr\Isset_([$var], $expr->getAttributes());
+				}
+
+				$first = array_shift($issets);
+				$andChain = null;
+				foreach($issets as $isset) {
+					if ($andChain == null) {
+						$andChain = new BooleanAnd($first, $isset);
+						continue;
+					}
+
+					$andChain = new BooleanAnd($andChain, $isset);
+				}
+
+				return $this->specifyTypesInCondition($scope, $andChain, $context, $rootExpr);
+			}
+
+			$var = $expr->vars[0];
+
 			if (!$context->true()) {
 				if (!$scope instanceof MutatingScope) {
 					throw new ShouldNotHappenException();
 				}
 
-				$specifiedTypes = new SpecifiedTypes();
-				foreach ($expr->vars as $var) {
-					$isset = $scope->issetCheck($var, static fn () => true);
+				$isset = $scope->issetCheck($var, static fn () => true);
 
-					if ($isset !== true) {
-						continue;
-					}
-
-					$specifiedTypes = $specifiedTypes->unionWith($this->create(
-						$var,
-						new NullType(),
-						$context->negate(),
-						false,
-						$scope,
-						$rootExpr,
-					));
+				if ($isset !== true) {
+					continue;
 				}
 
-				return $specifiedTypes;
+				$specifiedTypes = $specifiedTypes->unionWith($this->create(
+					$var,
+					new NullType(),
+					$context->negate(),
+					false,
+					$scope,
+					$rootExpr,
+				));
+
+				return $this->specifyTypesInCondition($scope, $var, $context, $rootExpr);
 			}
 
-			$vars = [];
-			foreach ($expr->vars as $var) {
-				$tmpVars = [$var];
+			$tmpVars = [$var];
 
-				while (
-					$var instanceof ArrayDimFetch
-					|| $var instanceof PropertyFetch
-					|| (
-						$var instanceof StaticPropertyFetch
-						&& $var->class instanceof Expr
-					)
-				) {
-					if ($var instanceof StaticPropertyFetch) {
-						/** @var Expr $var */
-						$var = $var->class;
-					} else {
-						$var = $var->var;
-					}
-					$tmpVars[] = $var;
+			while (
+				$var instanceof ArrayDimFetch
+				|| $var instanceof PropertyFetch
+				|| (
+					$var instanceof StaticPropertyFetch
+					&& $var->class instanceof Expr
+				)
+			) {
+				if ($var instanceof StaticPropertyFetch) {
+					/** @var Expr $var */
+					$var = $var->class;
+				} else {
+					$var = $var->var;
 				}
-
-				$vars = array_merge($vars, array_reverse($tmpVars));
+				$tmpVars[] = $var;
 			}
+
+			$vars = array_reverse($tmpVars);
 
 			$types = null;
 			foreach ($vars as $var) {

@@ -1392,9 +1392,14 @@ class TypeSpecifier
 		}
 
 		$specifiedExprs = [];
+		if ($expr instanceof AlwaysRememberedExpr) {
+			$specifiedExprs[] = $expr;
+			$expr = $expr->expr;
+		}
 
 		if ($expr instanceof Expr\Assign) {
 			$specifiedExprs[] = $expr->var;
+			$specifiedExprs[] = $expr->expr;
 
 			while ($expr->expr instanceof Expr\Assign) {
 				$specifiedExprs[] = $expr->expr->var;

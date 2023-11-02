@@ -752,9 +752,11 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$notNullBar' => 'null',
+					'$barOrNull' => 'null',
 				],
 				[
 					'$notNullBar' => '~null',
+					'$barOrNull' => '~null',
 				],
 			],
 			[
@@ -874,9 +876,11 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$notNullBar' => '~null',
+					'$barOrNull' => '~null',
 				],
 				[
 					'$notNullBar' => 'null',
+					'$barOrNull' => 'null',
 				],
 			],
 			[
@@ -901,9 +905,11 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$notFalseBar' => 'false & ' . self::SURE_NOT_TRUTHY,
+					'$barOrFalse' => 'false',
 				],
 				[
 					'$notFalseBar' => '~false',
+					'$barOrFalse' => '~false',
 				],
 			],
 			[
@@ -949,9 +955,11 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$notFalseBar' => '~false',
+					'$barOrFalse' => '~false',
 				],
 				[
 					'$notFalseBar' => 'false & ' . self::SURE_NOT_TRUTHY,
+					'$barOrFalse' => 'false',
 				],
 			],
 			[
@@ -964,9 +972,11 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$notFalseBar' => 'Bar',
+					'$barOrFalse' => 'Bar',
 				],
 				[
 					'$notFalseBar' => '~Bar',
+					'$barOrFalse' => '~Bar',
 				],
 			],
 			[

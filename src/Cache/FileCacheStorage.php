@@ -6,6 +6,7 @@ use InvalidArgumentException;
 use Nette\Utils\Random;
 use PHPStan\File\FileWriter;
 use PHPStan\Internal\DirectoryCreator;
+use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\ShouldNotHappenException;
 use function error_get_last;
 use function is_file;
@@ -22,14 +23,6 @@ class FileCacheStorage implements CacheStorage
 
 	public function __construct(private string $directory)
 	{
-	}
-
-	/**
-	 * @throws \PHPStan\Internal\DirectoryCreatorException
-	 */
-	private function makeDir(string $directory): void
-	{
-		DirectoryCreator::ensureDirectoryExists($directory, 0777);
 	}
 
 	/**
@@ -54,14 +47,14 @@ class FileCacheStorage implements CacheStorage
 
 	/**
 	 * @param mixed $data
-	 * @throws \PHPStan\Internal\DirectoryCreatorException
+	 * @throws DirectoryCreatorException
 	 */
 	public function save(string $key, string $variableKey, $data): void
 	{
 		[$firstDirectory, $secondDirectory, $path] = $this->getFilePaths($key);
-		$this->makeDir($this->directory);
-		$this->makeDir($firstDirectory);
-		$this->makeDir($secondDirectory);
+		DirectoryCreator::ensureDirectoryExists($this->directory, 0777);
+		DirectoryCreator::ensureDirectoryExists($firstDirectory, 0777);
+		DirectoryCreator::ensureDirectoryExists($secondDirectory, 0777);
 
 		$tmpPath = sprintf('%s/%s.tmp', $this->directory, Random::generate());
 		$errorBefore = error_get_last();

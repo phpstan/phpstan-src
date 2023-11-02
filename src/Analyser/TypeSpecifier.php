@@ -675,8 +675,8 @@ class TypeSpecifier
 			&& count($expr->vars) > 0
 			&& !$context->null()
 		) {
+			// rewrite multi param isset() to and-chained single param isset()
 			if (count($expr->vars) > 1) {
-				// rewrite multi param isset() to and-chained single param isset()
 				$issets = [];
 				foreach ($expr->vars as $var) {
 					$issets[] = new Expr\Isset_([$var], $expr->getAttributes());
@@ -693,58 +693,57 @@ class TypeSpecifier
 					$andChain = new BooleanAnd($andChain, $isset);
 				}
 
+				if ($andChain === null) {
+					throw new ShouldNotHappenException();
+				}
+
 				return $this->specifyTypesInCondition($scope, $andChain, $context, $rootExpr);
 			}
 
-			$var = $expr->vars[0];
+			$issetExpr = $expr->vars[0];
 
 			if (!$context->true()) {
 				if (!$scope instanceof MutatingScope) {
 					throw new ShouldNotHappenException();
 				}
 
-				$isset = $scope->issetCheck($var, static fn () => true);
+				$isset = $scope->issetCheck($issetExpr, static fn () => true);
 
 				if ($isset !== true) {
-					continue;
+					return new SpecifiedTypes();
 				}
 
-				$specifiedTypes = $specifiedTypes->unionWith($this->create(
-					$var,
+				return $this->create(
+					$issetExpr,
 					new NullType(),
 					$context->negate(),
 					false,
 					$scope,
 					$rootExpr,
-				));
-
-				return $this->specifyTypesInCondition($scope, $var, $context, $rootExpr);
+				);
 			}
 
-			$tmpVars = [$var];
-
+			$tmpVars = [$issetExpr];
 			while (
-				$var instanceof ArrayDimFetch
-				|| $var instanceof PropertyFetch
+				$issetExpr instanceof ArrayDimFetch
+				|| $issetExpr instanceof PropertyFetch
 				|| (
-					$var instanceof StaticPropertyFetch
-					&& $var->class instanceof Expr
+					$issetExpr instanceof StaticPropertyFetch
+					&& $issetExpr->class instanceof Expr
 				)
 			) {
-				if ($var instanceof StaticPropertyFetch) {
-					/** @var Expr $var */
-					$var = $var->class;
+				if ($issetExpr instanceof StaticPropertyFetch) {
+					/** @var Expr $issetExpr */
+					$issetExpr = $issetExpr->class;
 				} else {
-					$var = $var->var;
+					$issetExpr = $issetExpr->var;
 				}
-				$tmpVars[] = $var;
+				$tmpVars[] = $issetExpr;
 			}
-
 			$vars = array_reverse($tmpVars);
 
-			$types = null;
+			$types = new SpecifiedTypes();
 			foreach ($vars as $var) {
-				$type = new SpecifiedTypes();
 
 				if ($var instanceof Expr\Variable && is_string($var->name)) {
 					if ($scope->hasVariableType($var->name)->no()) {
@@ -760,13 +759,15 @@ class TypeSpecifier
 					$dimType = $scope->getType($var->dim);
 
 					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
-						$type = $this->create(
-							$var->var,
-							new HasOffsetType($dimType),
-							$context,
-							false,
-							$scope,
-							$rootExpr,
+						$types = $types->unionWith(
+							$this->create(
+								$var->var,
+								new HasOffsetType($dimType),
+								$context,
+								false,
+								$scope,
+								$rootExpr,
+							),
 						);
 					}
 				}
@@ -775,30 +776,28 @@ class TypeSpecifier
 					$var instanceof PropertyFetch
 					&& $var->name instanceof Node\Identifier
 				) {
-					$type = $this->create($var->var, new IntersectionType([
-						new ObjectWithoutClassType(),
-						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr);
+					$types = $types->unionWith(
+						$this->create($var->var, new IntersectionType([
+							new ObjectWithoutClassType(),
+							new HasPropertyType($var->name->toString()),
+						]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr),
+					);
 				} elseif (
 					$var instanceof StaticPropertyFetch
 					&& $var->class instanceof Expr
 					&& $var->name instanceof Node\VarLikeIdentifier
 				) {
-					$type = $this->create($var->class, new IntersectionType([
-						new ObjectWithoutClassType(),
-						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr);
+					$types = $types->unionWith(
+						$this->create($var->class, new IntersectionType([
+							new ObjectWithoutClassType(),
+							new HasPropertyType($var->name->toString()),
+						]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr),
+					);
 				}
 
-				$type = $type->unionWith(
+				$types = $types->unionWith(
 					$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
 				);
-
-				if ($types === null) {
-					$types = $type;
-				} else {
-					$types = $types->unionWith($type);
-				}
 			}
 
 			return $types;

@@ -688,22 +688,20 @@ class TypeSpecifier
 					}
 
 					$type = $scope->getType($var);
-					if (
-						!$type instanceof MixedType && !TypeCombinator::containsNull($type)
-					) {
-						$specifiedTypes = $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr));
+					if (TypeCombinator::containsNull($type) || $type instanceof MixedType) {
+						$specifiedTypes = $specifiedTypes->unionWith($this->create(
+							$var,
+							new NullType(),
+							$context->negate(),
+							false,
+							$scope,
+							$rootExpr,
+						));
 
 						continue;
 					}
 
-					$specifiedTypes = $specifiedTypes->unionWith($this->create(
-						$var,
-						new NullType(),
-						$context->negate(),
-						false,
-						$scope,
-						$rootExpr,
-					));
+					$specifiedTypes = $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr));
 				}
 
 				return $specifiedTypes;

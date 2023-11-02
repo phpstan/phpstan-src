@@ -9467,7 +9467,7 @@ return [
 'RecursiveTreeIterator::setPostfix' => ['void', 'prefix'=>'string'],
 'RecursiveTreeIterator::setPrefixPart' => ['void', 'part'=>'int', 'prefix'=>'string'],
 'RecursiveTreeIterator::valid' => ['bool'],
-'Redis::__construct' => ['void', 'options'=>'?array{host?:string,port?:int,connectTimeout?:float,auth?:list{string|null|false,string}|list{string},ssl?:array<string, mixed>,backoff?:array<string, mixed>}'],
+'Redis::__construct' => ['void', 'options='=>'?array{host?:string,port?:int,connectTimeout?:float,auth?:list{string|null|false,string}|list{string},ssl?:array<string, mixed>,backoff?:array<string, mixed>}'],
 'Redis::_compress' => ['string', 'value'=>'string'],
 'Redis::_uncompress' => ['string', 'value'=>'string'],
 'Redis::_prefix' => ['string', 'key'=>'mixed'],

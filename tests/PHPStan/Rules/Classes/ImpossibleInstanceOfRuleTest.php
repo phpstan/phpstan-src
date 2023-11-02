@@ -604,7 +604,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			],
 		]);
 	}
-	
+
 	public function testBug3632(): void
 	{
 		$this->checkAlwaysTrueInstanceOf = true;

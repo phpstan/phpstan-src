@@ -9535,7 +9535,7 @@ return [
 'Redis::get' => ['string|false', 'key'=>'string'],
 'Redis::getAuth' => ['string|false|null'],
 'Redis::getBit' => ['__benevolent<Redis|int|false>', 'key'=>'string', 'idx'=>'int'],
-'Redis::getEx' => ['__benevolent<Redis|string|bool>', 'key'=>'string', 'array<string,mixed>'],
+'Redis::getEx' => ['__benevolent<Redis|string|bool>', 'key'=>'string', 'options'=>'?array{EX?:int,PX?:int,EXAT?:int,PXAT?:int,PERSIST?:bool}'],
 'Redis::getDBNum' => ['int'],
 'Redis::getDel' => ['__benevolent<Redis|string|bool>', 'key'=>'string'],
 'Redis::getHost' => ['string'],

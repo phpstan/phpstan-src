@@ -6,6 +6,9 @@ use function PHPStan\Testing\assertType;
 use function PHPStan\Testing\assertVariableCertainty;
 use PHPStan\TrinaryLogic;
 
+function doFoo():mixed {
+	return 1;
+}
 
 function falseyIssetArrayDimFetchOnProperty(): void
 {
@@ -112,6 +115,22 @@ function falseyIssetVariable(): void
 		assertVariableCertainty(TrinaryLogic::createYes(), $a);
 	} else {
 		assertVariableCertainty(TrinaryLogic::createNo(), $a);
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+}
+
+function falseyMixedIssetVariable(): void
+{
+	if (rand() % 2) {
+		$a = getFoo();
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+	if (isset($a)) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 	}
 
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);

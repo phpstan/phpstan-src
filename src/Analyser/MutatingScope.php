@@ -3720,6 +3720,23 @@ class MutatingScope implements Scope
 		);
 	}
 
+	private function setExpressionCertainty(Expr $expr, TrinaryLogic $certainty): self
+	{
+		if ($this->hasExpressionType($expr)->no()) {
+			throw new ShouldNotHappenException();
+		}
+
+		$originalExprType = $this->getType($expr);
+		$nativeType = $this->getNativeType($expr);
+
+		return $this->specifyExpressionType(
+			$expr,
+			$originalExprType,
+			$nativeType,
+			$certainty,
+		);
+	}
+
 	private function addTypeToExpression(Expr $expr, Type $type): self
 	{
 		$originalExprType = $this->getType($expr);
@@ -3844,6 +3861,11 @@ class MutatingScope implements Scope
 						unset($scope->expressionTypes[$exprString]);
 						unset($scope->nativeExpressionTypes[$exprString]);
 					}
+				} else {
+					$scope = $scope->setExpressionCertainty(
+						$expr,
+						$certainty,
+					);
 				}
 
 				continue;

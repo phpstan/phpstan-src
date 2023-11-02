@@ -606,30 +606,40 @@ class TypeSpecifier
 					return new SpecifiedTypes();
 				}
 
+				$exprType = $this->create(
+					$issetExpr,
+					new NullType(),
+					$context->negate(),
+					false,
+					$scope,
+					$rootExpr,
+				);
 				if ($isset === true) {
+					return $exprType;
+				}
+
+				if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
+					$type = $scope->getType($issetExpr);
+
+					if ($type instanceof MixedType || TypeCombinator::containsNull($type)) {
+						return $exprType->unionWith($this->create(
+							new IssetExpr($issetExpr, TrinaryLogic::createMaybe()),
+							new NullType(),
+							$context->negate(),
+							false,
+							$scope,
+							$rootExpr,
+						));
+					}
+
 					return $this->create(
-						$issetExpr,
+						new IssetExpr($issetExpr, TrinaryLogic::createNo()),
 						new NullType(),
 						$context->negate(),
 						false,
 						$scope,
 						$rootExpr,
 					);
-				}
-
-				if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
-					$type = $scope->getType($issetExpr);
-
-					if (!TypeCombinator::containsNull($type)) {
-						return $this->create(
-							new IssetExpr($issetExpr, TrinaryLogic::createNo()),
-							new NullType(),
-							$context->negate(),
-							false,
-							$scope,
-							$rootExpr,
-						);
-					}
 				}
 
 				return new SpecifiedTypes();

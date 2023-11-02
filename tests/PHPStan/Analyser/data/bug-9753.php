@@ -17,8 +17,8 @@ function (): void {
 				$items[] = $entry;
 			}
 		}
-		assertType('list<1|2|3|4|5>|null', $items);
+		assertType('non-empty-list<1|2|3|4|5>|null', $items);
 	}
 
-	assertType('list<1|2|3|4|5>|null', $items);
+	assertType('non-empty-list<1|2|3|4|5>|null', $items);
 };

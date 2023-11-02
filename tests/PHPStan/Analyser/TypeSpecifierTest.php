@@ -606,7 +606,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\Empty_(new Variable('array')),
 				[
-					'$array' => 'array{}',
+					'$array' => 'array{}|null',
 				],
 				[
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
@@ -618,7 +618,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 				[
-					'$array' => 'array{}',
+					'$array' => 'array{}|null',
 				],
 			],
 			[

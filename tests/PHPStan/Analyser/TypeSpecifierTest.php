@@ -580,8 +580,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$barOrNull' => '~null',
 				],
 				[
-					'$stringOrNull' => 'null',
-					'$barOrNull' => 'null',
+					'$stringOrNull' => self::SURE_NOT_TRUTHY,
+					'$barOrNull' => self::SURE_NOT_TRUTHY,
 				],
 			],
 			[

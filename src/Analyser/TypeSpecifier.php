@@ -689,8 +689,7 @@ class TypeSpecifier
 
 					$type = $scope->getType($var);
 					if (
-						!$var instanceof Expr\Variable ||
-						(!$type instanceof MixedType && !TypeCombinator::containsNull($type))
+						!$type instanceof MixedType && !TypeCombinator::containsNull($type)
 					) {
 						$specifiedTypes = $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr));
 

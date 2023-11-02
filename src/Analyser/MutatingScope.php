@@ -37,6 +37,7 @@ use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
@@ -3828,6 +3829,26 @@ class MutatingScope implements Scope
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
+
+			if ($expr instanceof IssetExpr) {
+				$issetExpr = $expr;
+				$expr = $issetExpr->getExpr();
+				$certainty = $issetExpr->getCertainty();
+
+				if ($certainty->no()) {
+					$scope = $scope->unsetExpression($expr);
+
+					if ($expr instanceof Variable) {
+						$exprString = $this->getNodeKey($expr);
+
+						unset($scope->expressionTypes[$exprString]);
+						unset($scope->nativeExpressionTypes[$exprString]);
+					}
+				}
+
+				continue;
+			}
+
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
 					$scope = $scope->assignExpression($expr, $type, $type);

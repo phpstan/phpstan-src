@@ -19,6 +19,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -601,18 +602,37 @@ class TypeSpecifier
 
 				$isset = $scope->issetCheck($issetExpr, static fn () => true);
 
-				if ($isset !== true) {
+				if ($isset === false) {
 					return new SpecifiedTypes();
 				}
 
-				return $this->create(
-					$issetExpr,
-					new NullType(),
-					$context->negate(),
-					false,
-					$scope,
-					$rootExpr,
-				);
+				if ($isset === true) {
+					return $this->create(
+						$issetExpr,
+						new NullType(),
+						$context->negate(),
+						false,
+						$scope,
+						$rootExpr,
+					);
+				}
+
+				if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
+					$type = $scope->getType($issetExpr);
+
+					if (!TypeCombinator::containsNull($type)) {
+						return $this->create(
+							new IssetExpr($issetExpr, TrinaryLogic::createNo()),
+							new NullType(),
+							$context->negate(),
+							false,
+							$scope,
+							$rootExpr,
+						);
+					}
+				}
+
+				return new SpecifiedTypes();
 			}
 
 			$tmpVars = [$issetExpr];

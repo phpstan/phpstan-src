@@ -19,7 +19,6 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
-use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -37,7 +36,6 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -69,9 +67,11 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
+use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
+use function array_reduce;
 use function array_reverse;
 use function count;
 use function in_array;
@@ -681,138 +681,14 @@ class TypeSpecifier
 					throw new ShouldNotHappenException();
 				}
 
-				$specifiedTypes = new SpecifiedTypes();
-				foreach ($expr->vars as $var) {
-					$isset = $scope->issetCheck($var, static fn () => true);
-
-					if ($var instanceof Expr\Variable) {
-						$type = $scope->getType($var);
-
-						if ($isset !== false && !$type instanceof MixedType && !TypeCombinator::containsNull($type)) {
-							$specifiedTypes = $specifiedTypes->unionWith($this->create(
-								new IssetExpr($var, TrinaryLogic::createNo()),
-								new NullType(),
-								$context,
-								false,
-								$scope,
-								$rootExpr,
-							));
-							continue;
-						}
-
-						if (TypeCombinator::containsNull($type)) {
-							$specifiedTypes = $specifiedTypes->unionWith($this->create(
-								$var,
-								new NullType(),
-								$context->negate(),
-								false,
-								$scope,
-								$rootExpr,
-							));
-							continue;
-						}
-
-						$specifiedTypes = $specifiedTypes->unionWith($this->create(
-							new IssetExpr($var, $scope->hasExpressionType($var)),
-							new NullType(),
-							$context->negate(),
-							true,
-							$scope,
-							$rootExpr,
-						));
-						continue;
-					}
-
-					// expression is always defined
-					if ($isset === true) {
-						$specifiedTypes = $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr));
-						continue;
-					}
-
-					// expression is always undefined
-					if (
-						$isset === false
-					) {
-						continue;
-					}
-
-					// expression maybe defined
-					if (!($var instanceof ArrayDimFetch)
-						|| $var->dim === null
-					) {
-						continue;
-					}
-
-					$type = $scope->getType($var->var);
-					if ($type instanceof MixedType) {
-						continue;
-					}
-
-					$dimType = $scope->getType($var->dim);
-					if (!($dimType instanceof ConstantIntegerType) && !($dimType instanceof ConstantStringType)) {
-						continue;
-					}
-
-					$hasOffsetType = $type->hasOffsetValueType($dimType);
-					$offsetType = $type->getOffsetValueType($dimType);
-					if ($hasOffsetType->yes() && !TypeCombinator::containsNull($offsetType)) {
-						$specifiedTypes = $specifiedTypes->unionWith($this->create(
-							new IssetExpr($var, $scope->hasExpressionType($var)),
-							new NullType(),
-							$context,
-							false,
-							$scope,
-							$rootExpr,
-						));
-						continue;
-					}
-
-					if (TypeCombinator::containsNull($offsetType)) {
-						$newType = $type->unsetOffset($dimType);
-
-						$newType = TypeTraverser::map($newType, static function (Type $type, callable $traverse) use ($dimType): Type {
-							if ($type instanceof UnionType || $type instanceof IntersectionType) {
-								return $traverse($type);
-							}
-
-							if ($type instanceof ConstantArrayType) {
-								$builder = ConstantArrayTypeBuilder::createFromConstantArray(
-									$type,
-								);
-								$builder->setOffsetValueType(
-									$dimType,
-									new NullType(),
-									true,
-								);
-								return $builder->getArray();
-							}
-
-							return $type->setOffsetValueType($dimType, new NullType());
-						});
-
-						$specifiedTypes = $specifiedTypes->unionWith($this->create(
-							new IssetExpr($var->var, $scope->hasExpressionType($var->var)),
-							$newType,
-							$context->negate(),
-							true,
-							$scope,
-							$rootExpr,
-						));
-
-						continue;
-					}
-
-					$specifiedTypes = $specifiedTypes->unionWith($this->create(
-						$var->var,
-						new HasOffsetType($dimType),
-						$context,
-						false,
-						$scope,
-						$rootExpr,
-					));
-				}
-
-				return $specifiedTypes;
+				return array_reduce(
+					array_filter(
+						$expr->vars,
+						static fn (Expr $var) => $scope->issetCheck($var, static fn () => true),
+					),
+					fn (SpecifiedTypes $types, Expr $var) => $types->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr)),
+					new SpecifiedTypes(),
+				);
 			}
 
 			$vars = [];

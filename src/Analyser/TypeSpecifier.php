@@ -621,7 +621,8 @@ class TypeSpecifier
 				if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
 					$type = $scope->getType($issetExpr);
 
-					if ($type instanceof MixedType || TypeCombinator::containsNull($type)) {
+					$nullType = new NullType();
+					if (!$nullType->isSuperTypeOf($type)->no()) {
 						return $exprType->unionWith($this->create(
 							new IssetExpr($issetExpr, TrinaryLogic::createMaybe()),
 							new NullType(),

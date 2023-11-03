@@ -125,6 +125,7 @@ use function array_map;
 use function array_merge;
 use function array_pop;
 use function array_slice;
+use function array_values;
 use function count;
 use function explode;
 use function get_class;
@@ -4822,6 +4823,24 @@ class MutatingScope implements Scope
 		foreach ($this->nativeExpressionTypes as $exprString => $nativeTypeHolder) {
 			$key = sprintf('native %s', $exprString);
 			$descriptions[$key] = $nativeTypeHolder->getType()->describe(VerbosityLevel::precise());
+		}
+
+		foreach ($this->conditionalExpressions as $exprString => $holders) {
+			foreach (array_values($holders) as $i => $holder) {
+				$key = sprintf('condition about %s #%d', $exprString, $i + 1);
+				$parts = [];
+				foreach ($holder->getConditionExpressionTypeHolders() as $conditionalExprString => $expressionTypeHolder) {
+					$parts[] = $conditionalExprString . '=' . $expressionTypeHolder->getType()->describe(VerbosityLevel::precise());
+				}
+				$condition = implode(' && ', $parts);
+				$descriptions[$key] = sprintf(
+					'if %s then %s is %s (%s)',
+					$condition,
+					$exprString,
+					$holder->getTypeHolder()->getType()->describe(VerbosityLevel::precise()),
+					$holder->getTypeHolder()->getCertainty()->describe(),
+				);
+			}
 		}
 
 		return $descriptions;

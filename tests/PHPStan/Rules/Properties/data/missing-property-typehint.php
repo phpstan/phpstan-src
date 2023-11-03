@@ -93,3 +93,13 @@ class CallableSignature
 	private $cb;
 
 }
+
+class NestedArrayInProperty
+{
+
+	/**
+	 * @var list<array{string, array|self|null, bool}>|null
+	 */
+	public $args;
+
+}

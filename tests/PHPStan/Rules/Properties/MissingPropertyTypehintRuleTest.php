@@ -51,6 +51,11 @@ class MissingPropertyTypehintRuleTest extends RuleTestCase
 				'Property MissingPropertyTypehint\CallableSignature::$cb type has no signature specified for callable.',
 				93,
 			],
+			[
+				'Property MissingPropertyTypehint\NestedArrayInProperty::$args type has no value type specified in iterable type array.',
+				103,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
 		]);
 	}
 

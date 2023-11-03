@@ -86,11 +86,9 @@ class MissingTypehintCheck
 				if ($iterableValue instanceof MixedType && !$iterableValue->isExplicitMixed()) {
 					$iterablesWithMissingValueTypehint[] = $type;
 				}
-				if (!$type instanceof IntersectionType) {
-					return $traverse($type);
+				if ($type instanceof IntersectionType && !$type->isList()->yes()) {
+					return $type;
 				}
-
-				return $type;
 			}
 			return $traverse($type);
 		});

@@ -174,6 +174,7 @@ function falseySubtractedMixedIssetVariable(): void
 
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 }
+
 function falseyIssetWithAssignment(): void
 {
 	if (rand() % 2) {

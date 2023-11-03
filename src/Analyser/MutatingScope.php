@@ -3858,10 +3858,6 @@ class MutatingScope implements Scope
 					);
 				} else {
 					$scope = $scope->unsetExpression($expr);
-					$exprString = $this->getNodeKey($expr);
-
-					unset($scope->expressionTypes[$exprString]);
-					unset($scope->nativeExpressionTypes[$exprString]);
 				}
 
 				continue;

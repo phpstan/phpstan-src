@@ -6,8 +6,10 @@ use PhpParser\Node\Name;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use Symfony\Component\Finder\Finder;
 use function array_keys;
 use function count;
+use function dirname;
 use function explode;
 use function file_get_contents;
 use function file_put_contents;
@@ -15,7 +17,9 @@ use function floor;
 use function getenv;
 use function implode;
 use function ksort;
+use function mkdir;
 use function sort;
+use function strpos;
 use function substr;
 use function trim;
 use const PHP_VERSION_ID;
@@ -75,8 +79,13 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 
 	public static function dumpOutput(): void
 	{
-		$symbols = require_once __DIR__ . '/data/golden/phpSymbols.php';
+		$symbolsTxt = file_get_contents(self::getPhpSymbolsFile());
 
+		if ($symbolsTxt === false) {
+			throw new ShouldNotHappenException('Cannot read phpSymbols.txt');
+		}
+
+		$symbols = explode("\n", $symbolsTxt);
 		$functions = [];
 		$classes = [];
 
@@ -170,6 +179,17 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		$currentVersion = $first . '.' . $second;
 
 		return __DIR__ . '/data/golden/reflection-' . $currentVersion . '.test';
+	}
+
+	private static function getPhpSymbolsFile(): string
+	{
+		$fileFromEnv = getenv('REFLECTION_GOLDEN_SYMBOLS_FILE');
+
+		if ($fileFromEnv !== false) {
+			return $fileFromEnv;
+		}
+
+		return __DIR__ . '/data/golden/phpSymbols.txt';
 	}
 
 	private static function generateFunctionDescription(string $functionName): string
@@ -470,6 +490,64 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 
 		if ($propertyReflection->isWritable()) {
 			$result .= 'Write type: ' . $propertyReflection->getWritableType()->describe($verbosityLevel) . "\n";
+		}
+
+		return $result;
+	}
+
+	public static function dumpInputSymbols(): void
+	{
+		$symbols = self::scrapeInputSymbols();
+		$symbolsFile = self::getPhpSymbolsFile();
+		@mkdir(dirname($symbolsFile), 0777, true);
+		$result = file_put_contents($symbolsFile, implode("\n", $symbols));
+
+		if ($result !== false) {
+			return;
+		}
+
+		throw new ShouldNotHappenException('Failed write dump for reflection golden test.');
+	}
+
+	/** @return list<string> */
+	public static function scrapeInputSymbols(): array
+	{
+		$result = array_keys(self::scrapeInputSymbolsFromFunctionMap());
+		sort($result);
+
+		return $result;
+	}
+
+	/** @return array<string, true> */
+	private static function scrapeInputSymbolsFromFunctionMap(): array
+	{
+		$finder = new Finder();
+		$files = $finder->files()->name('functionMap*.php')->in(__DIR__ . '/../../../resources');
+		$combinedMap = [];
+
+		foreach ($files as $file) {
+			if ($file->getBasename() === 'functionMap.php') {
+				$combinedMap += require $file->getPathname();
+				continue;
+			}
+
+			$deltaMap = require $file->getPathname();
+
+			// Deltas have new/old sections which contain the same format as the base functionMap.php
+			foreach ($deltaMap as $functionMap) {
+				$combinedMap += $functionMap;
+			}
+		}
+
+		$result = [];
+
+		foreach (array_keys($combinedMap) as $symbol) {
+			// skip duplicated variants
+			if (strpos($symbol, "'") !== false) {
+				continue;
+			}
+
+			$result[$symbol] = true;
 		}
 
 		return $result;

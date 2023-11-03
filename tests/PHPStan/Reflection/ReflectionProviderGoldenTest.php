@@ -12,7 +12,9 @@ use PHPStan\Php8StubsMap;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use ReflectionClass;
 use Symfony\Component\Finder\Finder;
+use function array_fill_keys;
 use function array_keys;
 use function array_merge;
 use function count;
@@ -21,6 +23,8 @@ use function explode;
 use function file_get_contents;
 use function file_put_contents;
 use function floor;
+use function get_declared_classes;
+use function get_defined_functions;
 use function getenv;
 use function implode;
 use function ksort;
@@ -523,7 +527,8 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		$result = array_keys(
 			self::scrapeInputSymbolsFromFunctionMap()
 			+ self::scrapeInputSymbolsFromPhp8Stubs()
-			+ self::scrapeInputSymbolsFromPhpStormStubs(),
+			+ self::scrapeInputSymbolsFromPhpStormStubs()
+			+ self::scrapeInputSymbolsFromReflection(),
 		);
 		sort($result);
 
@@ -589,6 +594,32 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		}
 
 		return self::scrapeSymbolsFromStubs($files);
+	}
+
+	/** @return array<string, true> */
+	private static function scrapeInputSymbolsFromReflection(): array
+	{
+		$result = array_fill_keys(get_defined_functions()['internal'], true);
+
+		foreach (get_declared_classes() as $class) {
+			$reflection = new ReflectionClass($class);
+
+			if ($reflection->getFileName() !== false) {
+				continue;
+			}
+
+			$className = $reflection->getName();
+
+			foreach ($reflection->getMethods() as $method) {
+				$result[$className . '::' . $method->getName()] = true;
+			}
+
+			foreach ($reflection->getProperties() as $property) {
+				$result[$className . '::$' . $property->getName()] = true;
+			}
+		}
+
+		return $result;
 	}
 
 	/**

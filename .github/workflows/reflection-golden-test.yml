@@ -52,7 +52,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: phpSymbols.txt
+          name: phpSymbols
           path: ${{ env.REFLECTION_GOLDEN_SYMBOLS_FILE }}
 
   reflection-golden-test:
@@ -76,8 +76,8 @@ jobs:
       - name: "Download phpSymbols.txt"
         uses: actions/download-artifact@v3
         with:
-          name: phpSymbols.txt
-          path:  ${{ env.REFLECTION_GOLDEN_SYMBOLS_FILE }}
+          name: phpSymbols
+          path: /tmp
 
       - name: "Checkout base commit"
         uses: actions/checkout@v3

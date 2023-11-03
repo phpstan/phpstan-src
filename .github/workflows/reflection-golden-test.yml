@@ -41,7 +41,8 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.3"
-          # TODO: enable extensions
+          # Include exotic extensions to discover more symbols
+          extensions: ds,mbstring,runkit7,scoutapm,seaslog,simdjson,var_representation,yac
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"

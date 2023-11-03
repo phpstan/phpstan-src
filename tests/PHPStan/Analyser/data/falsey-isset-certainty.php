@@ -2,11 +2,12 @@
 
 namespace FalseyIssetCertainty;
 
+use function PHPStan\dumpType;
 use function PHPStan\Testing\assertType;
 use function PHPStan\Testing\assertVariableCertainty;
 use PHPStan\TrinaryLogic;
 
-function doFoo():mixed {
+function getFoo():mixed {
 	return 1;
 }
 
@@ -120,6 +121,25 @@ function falseyIssetVariable(): void
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 }
 
+function falseyIssetNullableVariable(): void
+{
+	if (rand() % 2) {
+		$a = 'bar';
+		if (rand() % 3) {
+			$a = null;
+		}
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+	if (isset($a)) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+}
+
 function falseyMixedIssetVariable(): void
 {
 	if (rand() % 2) {
@@ -136,6 +156,24 @@ function falseyMixedIssetVariable(): void
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 }
 
+function falseySubtractedMixedIssetVariable(): void
+{
+	if (rand() % 2) {
+		$a = getFoo();
+		if ($a === null) {
+			return;
+		}
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+	if (isset($a)) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createNo(), $a);
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+}
 function falseyIssetWithAssignment(): void
 {
 	if (rand() % 2) {

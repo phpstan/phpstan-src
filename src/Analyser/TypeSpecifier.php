@@ -624,7 +624,7 @@ class TypeSpecifier
 					$nullType = new NullType();
 					if (!$nullType->isSuperTypeOf($type)->no()) {
 						return $exprType->unionWith($this->create(
-							new IssetExpr($issetExpr, TrinaryLogic::createMaybe()),
+							new IssetExpr($issetExpr),
 							new NullType(),
 							$context->negate(),
 							false,
@@ -634,9 +634,9 @@ class TypeSpecifier
 					}
 
 					return $this->create(
-						new IssetExpr($issetExpr, TrinaryLogic::createNo()),
+						new IssetExpr($issetExpr),
 						new NullType(),
-						$context->negate(),
+						$context,
 						false,
 						$scope,
 						$rootExpr,

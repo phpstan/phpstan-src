@@ -40,6 +40,20 @@ function maybeNullableVariable(): void
 	}
 }
 
+function subtractedMixedIsset(mixed $m): void
+{
+	if ($m === null) {
+		return;
+	}
+
+	assertType("mixed~null", $m);
+	if (isset($m)) {
+		assertType("mixed~null", $m);
+	} else {
+		assertType("*NEVER*", $m);
+	}
+}
+
 function mixedIsset(mixed $m): void
 {
 	if (isset($m)) {

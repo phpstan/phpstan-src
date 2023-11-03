@@ -3850,22 +3850,18 @@ class MutatingScope implements Scope
 			if ($expr instanceof IssetExpr) {
 				$issetExpr = $expr;
 				$expr = $issetExpr->getExpr();
-				$certainty = $issetExpr->getCertainty();
 
-				if ($certainty->no()) {
-					$scope = $scope->unsetExpression($expr);
-
-					if ($expr instanceof Variable) {
-						$exprString = $this->getNodeKey($expr);
-
-						unset($scope->expressionTypes[$exprString]);
-						unset($scope->nativeExpressionTypes[$exprString]);
-					}
-				} else {
+				if ($typeSpecification['sure']) {
 					$scope = $scope->setExpressionCertainty(
 						$expr,
-						$certainty,
+						TrinaryLogic::createMaybe(),
 					);
+				} else {
+					$scope = $scope->unsetExpression($expr);
+					$exprString = $this->getNodeKey($expr);
+
+					unset($scope->expressionTypes[$exprString]);
+					unset($scope->nativeExpressionTypes[$exprString]);
 				}
 
 				continue;

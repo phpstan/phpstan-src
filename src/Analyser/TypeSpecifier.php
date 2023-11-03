@@ -517,8 +517,10 @@ class TypeSpecifier
 					$types->getSureNotTypes(),
 					false,
 					array_merge(
-						$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes),
-						$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes),
+						$this->processBooleanNotSureConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanNotSureConditionalTypes($scope, $rightTypes, $leftTypes),
+						$this->processBooleanSureConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanSureConditionalTypes($scope, $rightTypes, $leftTypes),
 					),
 					$rootExpr,
 				);
@@ -539,8 +541,10 @@ class TypeSpecifier
 					$types->getSureNotTypes(),
 					false,
 					array_merge(
-						$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes),
-						$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes),
+						$this->processBooleanNotSureConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanNotSureConditionalTypes($scope, $rightTypes, $leftTypes),
+						$this->processBooleanSureConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanSureConditionalTypes($scope, $rightTypes, $leftTypes),
 					),
 					$rootExpr,
 				);
@@ -1212,7 +1216,54 @@ class TypeSpecifier
 	/**
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $leftTypes, SpecifiedTypes $rightTypes): array
+	private function processBooleanSureConditionalTypes(Scope $scope, SpecifiedTypes $leftTypes, SpecifiedTypes $rightTypes): array
+	{
+		$conditionExpressionTypes = [];
+		foreach ($leftTypes->getSureTypes() as $exprString => [$expr, $type]) {
+			if (!$expr instanceof Expr\Variable) {
+				continue;
+			}
+			if (!is_string($expr->name)) {
+				continue;
+			}
+
+			$conditionExpressionTypes[$exprString] = ExpressionTypeHolder::createYes(
+				$expr,
+				TypeCombinator::remove($scope->getType($expr), $type),
+			);
+		}
+
+		if (count($conditionExpressionTypes) > 0) {
+			$holders = [];
+			foreach ($rightTypes->getSureTypes() as $exprString => [$expr, $type]) {
+				if (!$expr instanceof Expr\Variable) {
+					continue;
+				}
+				if (!is_string($expr->name)) {
+					continue;
+				}
+
+				if (!isset($holders[$exprString])) {
+					$holders[$exprString] = [];
+				}
+
+				$holder = new ConditionalExpressionHolder(
+					$conditionExpressionTypes,
+					new ExpressionTypeHolder($expr, TypeCombinator::intersect($scope->getType($expr), $type), TrinaryLogic::createYes()),
+				);
+				$holders[$exprString][$holder->getKey()] = $holder;
+			}
+
+			return $holders;
+		}
+
+		return [];
+	}
+
+	/**
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processBooleanNotSureConditionalTypes(Scope $scope, SpecifiedTypes $leftTypes, SpecifiedTypes $rightTypes): array
 	{
 		$conditionExpressionTypes = [];
 		foreach ($leftTypes->getSureNotTypes() as $exprString => [$expr, $type]) {

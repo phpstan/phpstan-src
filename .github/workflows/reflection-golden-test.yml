@@ -73,6 +73,12 @@ jobs:
           - "8.3"
 
     steps:
+      - name: "Download phpSymbols.txt"
+        uses: actions/download-artifact@v3
+        with:
+          name: phpSymbols.txt
+          path:  ${{ env.REFLECTION_GOLDEN_SYMBOLS_FILE }}
+
       - name: "Checkout base commit"
         uses: actions/checkout@v3
         with:

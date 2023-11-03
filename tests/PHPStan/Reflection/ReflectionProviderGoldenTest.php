@@ -596,16 +596,25 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 					$this->classLike = $node;
 				}
 
-				if ($node instanceof Node\Stmt\ClassMethod) {
-					$this->symbols['METHOD ' . $this->classLike->namespacedName?->toString() . '::' . $node->name->name] = true;
+				if ($node instanceof Node\Stmt\ClassMethod && isset($this->classLike->namespacedName)) {
+					$this->symbols['METHOD ' . $this->classLike->namespacedName->toString() . '::' . $node->name->name] = true;
 				}
 
-				if ($node instanceof Node\Stmt\PropertyProperty) {
-					$this->symbols['PROPERTY ' . $this->classLike->namespacedName?->toString() . '::$' . $node->name->toString()] = true;
+				if ($node instanceof Node\Stmt\PropertyProperty && isset($this->classLike->namespacedName)) {
+					$this->symbols['PROPERTY ' . $this->classLike->namespacedName->toString() . '::$' . $node->name->toString()] = true;
 				}
 
 				if ($node instanceof Node\Stmt\Function_) {
 					$this->symbols['FUNCTION ' . $node->name->name] = true;
+				}
+
+				return null;
+			}
+
+			public function leaveNode(Node $node)
+			{
+				if ($node instanceof Node\Stmt\ClassLike) {
+					unset($this->classLike);
 				}
 
 				return null;

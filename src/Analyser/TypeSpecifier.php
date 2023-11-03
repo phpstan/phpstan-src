@@ -606,23 +606,37 @@ class TypeSpecifier
 					return new SpecifiedTypes();
 				}
 
-				$exprType = $this->create(
-					$issetExpr,
-					new NullType(),
-					$context->negate(),
-					false,
-					$scope,
-					$rootExpr,
-				);
-				if ($isset === true) {
-					return $exprType;
-				}
-
 				if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
 					$type = $scope->getType($issetExpr);
-
 					$nullType = new NullType();
-					if (!$nullType->isSuperTypeOf($type)->no()) {
+					$isNullable = !$nullType->isSuperTypeOf($type)->no();
+
+					$exprType = $this->create(
+						$issetExpr,
+						new NullType(),
+						$context->negate(),
+						false,
+						$scope,
+						$rootExpr,
+					);
+					if ($isset === true) {
+						if ($isNullable) {
+							return $exprType;
+						}
+
+						// variable cannot exist in !isset()
+						return $exprType->unionWith($this->create(
+							new IssetExpr($issetExpr),
+							new NullType(),
+							$context,
+							false,
+							$scope,
+							$rootExpr,
+						));
+					}
+
+					if ($isNullable) {
+						// reduces variable certainty to maybe
 						return $exprType->unionWith($this->create(
 							new IssetExpr($issetExpr),
 							new NullType(),
@@ -633,6 +647,7 @@ class TypeSpecifier
 						));
 					}
 
+					// variable cannot exist in !isset()
 					return $this->create(
 						new IssetExpr($issetExpr),
 						new NullType(),

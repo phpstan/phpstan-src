@@ -2,12 +2,18 @@
 
 namespace PHPStan\Reflection;
 
+use PhpParser\Node;
 use PhpParser\Node\Name;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitorAbstract;
+use PHPStan\Parser\Parser;
+use PHPStan\Php8StubsMap;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
 use Symfony\Component\Finder\Finder;
 use function array_keys;
+use function array_merge;
 use function count;
 use function dirname;
 use function explode;
@@ -22,6 +28,7 @@ use function sort;
 use function strpos;
 use function substr;
 use function trim;
+use const PHP_INT_MAX;
 use const PHP_VERSION_ID;
 
 class ReflectionProviderGoldenTest extends PHPStanTestCase
@@ -512,7 +519,10 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	/** @return list<string> */
 	public static function scrapeInputSymbols(): array
 	{
-		$result = array_keys(self::scrapeInputSymbolsFromFunctionMap());
+		$result = array_keys(
+			self::scrapeInputSymbolsFromFunctionMap()
+			+ self::scrapeInputSymbolsFromPhp8Stubs(),
+		);
 		sort($result);
 
 		return $result;
@@ -551,6 +561,49 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		}
 
 		return $result;
+	}
+
+	/** @return array<string, true> */
+	private static function scrapeInputSymbolsFromPhp8Stubs(): array
+	{
+		// Currently the Php8StubsMap only adds symbols for later versions, so let's max it.
+		$map = new Php8StubsMap(PHP_INT_MAX);
+		$parser = self::getContainer()->getService('defaultAnalysisParser');
+		self::assertInstanceOf(Parser::class, $parser);
+		$visitor = new class () extends NodeVisitorAbstract {
+
+			/** @var array<string, true> */
+			public array $symbols = [];
+
+			private Node\Stmt\ClassLike $classLike;
+
+			public function enterNode(Node $node)
+			{
+				if ($node instanceof Node\Stmt\ClassLike && $node->namespacedName !== null) {
+					$this->classLike = $node;
+				}
+
+				if ($node instanceof Node\Stmt\ClassMethod) {
+					$this->symbols[$this->classLike->namespacedName?->toString() . '::' . $node->name->name] = true;
+				}
+
+				if ($node instanceof Node\Stmt\Function_) {
+					$this->symbols[$node->name->name] = true;
+				}
+
+				return null;
+			}
+
+		};
+		$traverser = new NodeTraverser();
+		$traverser->addVisitor($visitor);
+
+		foreach (array_merge($map->classes, $map->functions) as $file) {
+			$ast = $parser->parseFile(__DIR__ . '/../../../vendor/phpstan/php-8-stubs/' . $file);
+			$traverser->traverse($ast);
+		}
+
+		return $visitor->symbols;
 	}
 
 }

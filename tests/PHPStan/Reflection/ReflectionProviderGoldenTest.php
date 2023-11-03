@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use JetBrains\PHPStormStub\PhpStormStubsMap;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\NodeTraverser;
@@ -521,7 +522,8 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	{
 		$result = array_keys(
 			self::scrapeInputSymbolsFromFunctionMap()
-			+ self::scrapeInputSymbolsFromPhp8Stubs(),
+			+ self::scrapeInputSymbolsFromPhp8Stubs()
+			+ self::scrapeInputSymbolsFromPhpStormStubs(),
 		);
 		sort($result);
 
@@ -568,6 +570,33 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	{
 		// Currently the Php8StubsMap only adds symbols for later versions, so let's max it.
 		$map = new Php8StubsMap(PHP_INT_MAX);
+		$files = [];
+
+		foreach (array_merge($map->classes, $map->functions) as $file) {
+			$files[] = __DIR__ . '/../../../vendor/phpstan/php-8-stubs/' . $file;
+		}
+
+		return self::scrapeSymbolsFromStubs($files);
+	}
+
+	/** @return array<string, true> */
+	private static function scrapeInputSymbolsFromPhpStormStubs(): array
+	{
+		$files = [];
+
+		foreach (PhpStormStubsMap::CLASSES as $file) {
+			$files[] = PhpStormStubsMap::DIR . '/' . $file;
+		}
+
+		return self::scrapeSymbolsFromStubs($files);
+	}
+
+	/**
+	 * @param array<string> $stubFiles
+	 * @return array<string, true>
+	 */
+	private static function scrapeSymbolsFromStubs(array $stubFiles): array
+	{
 		$parser = self::getContainer()->getService('defaultAnalysisParser');
 		self::assertInstanceOf(Parser::class, $parser);
 		$visitor = new class () extends NodeVisitorAbstract {
@@ -587,6 +616,10 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 					$this->symbols[$this->classLike->namespacedName?->toString() . '::' . $node->name->name] = true;
 				}
 
+				if ($node instanceof Node\Stmt\PropertyProperty) {
+					$this->symbols[$this->classLike->namespacedName?->toString() . '::$' . $node->name->toString()] = true;
+				}
+
 				if ($node instanceof Node\Stmt\Function_) {
 					$this->symbols[$node->name->name] = true;
 				}
@@ -598,8 +631,8 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		$traverser = new NodeTraverser();
 		$traverser->addVisitor($visitor);
 
-		foreach (array_merge($map->classes, $map->functions) as $file) {
-			$ast = $parser->parseFile(__DIR__ . '/../../../vendor/phpstan/php-8-stubs/' . $file);
+		foreach ($stubFiles as $file) {
+			$ast = $parser->parseFile($file);
 			$traverser->traverse($ast);
 		}
 

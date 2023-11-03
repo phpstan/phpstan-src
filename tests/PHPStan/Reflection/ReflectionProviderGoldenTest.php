@@ -14,7 +14,6 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionClass;
 use Symfony\Component\Finder\Finder;
-use function array_fill_keys;
 use function array_keys;
 use function array_merge;
 use function count;
@@ -27,11 +26,9 @@ use function get_declared_classes;
 use function get_defined_functions;
 use function getenv;
 use function implode;
-use function ksort;
 use function mkdir;
 use function sort;
 use function strpos;
-use function substr;
 use function trim;
 use const PHP_INT_MAX;
 use const PHP_VERSION_ID;
@@ -65,28 +62,27 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	/** @dataProvider data */
 	public function test(string $input, string $expectedOutput): void
 	{
-		[$type, $name] = explode(' ', $input);
+		$output = self::generateSymbolDescription($input);
+		$output = trim($output);
+		$this->assertSame($expectedOutput, $output);
+	}
+
+	private static function generateSymbolDescription(string $symbol): string
+	{
+		[$type, $name] = explode(' ', $symbol);
 
 		switch ($type) {
 			case 'FUNCTION':
-				$output = self::generateFunctionDescription($name);
-				break;
+				return self::generateFunctionDescription($name);
 			case 'CLASS':
-				$output = self::generateClassDescription($name);
-				break;
+				return self::generateClassDescription($name);
 			case 'METHOD':
-				$output = self::generateClassMethodDescription($name);
-				break;
+				return self::generateClassMethodDescription($name);
 			case 'PROPERTY':
-				$output = self::generateClassPropertyDescription($name);
-				break;
+				return self::generateClassPropertyDescription($name);
 			default:
-				$this->fail('Unknown type ' . $type);
+				self::fail('Unknown symbol type ' . $type);
 		}
-
-		$output = trim($output);
-
-		$this->assertSame($expectedOutput, $output);
 	}
 
 	public static function dumpOutput(): void
@@ -98,75 +94,14 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		}
 
 		$symbols = explode("\n", $symbolsTxt);
-		$functions = [];
-		$classes = [];
-
-		foreach ($symbols as $symbol) {
-			$parts = explode('::', $symbol);
-			$partsCount = count($parts);
-
-			if ($partsCount === 1) {
-				$functions[] = $parts[0];
-			} elseif ($partsCount === 2) {
-				[$class, $method] = $parts;
-				$classes[$class] ??= [
-					'methods' => [],
-					'properties' => [],
-				];
-
-				if (substr($method, 0, 1) === '$') {
-					$classes[$class]['properties'][] = substr($method, 1);
-				} else {
-					$classes[$class]['methods'][] = $method;
-				}
-			}
-		}
-
-		sort($functions);
-		ksort($classes);
-
-		foreach ($classes as &$class) {
-			sort($class['properties']);
-			sort($class['methods']);
-		}
-
-		unset($class);
-		$container = PHPStanTestCase::getContainer();
-		$reflectionProvider = $container->getByType(ReflectionProvider::class);
-
 		$separator = '-----';
 		$contents = '';
 
-		foreach ($functions as $function) {
+		foreach ($symbols as $line) {
 			$contents .= $separator . "\n";
-			$contents .= 'FUNCTION ' . $function . "\n";
+			$contents .= $line . "\n";
 			$contents .= $separator . "\n";
-			$contents .= self::generateFunctionDescription($function);
-		}
-
-		foreach ($classes as $className => $class) {
-			$contents .= $separator . "\n";
-			$contents .= 'CLASS ' . $className . "\n";
-			$contents .= $separator . "\n";
-			$contents .= self::generateClassDescription($className);
-
-			if (! $reflectionProvider->hasClass($className)) {
-				continue;
-			}
-
-			foreach ($class['properties'] as $property) {
-				$contents .= $separator . "\n";
-				$contents .= 'PROPERTY ' . $className . '::' . $property . "\n";
-				$contents .= $separator . "\n";
-				$contents .= self::generateClassPropertyDescription($className . '::' . $property);
-			}
-
-			foreach ($class['methods'] as $method) {
-				$contents .= $separator . "\n";
-				$contents .= 'METHOD ' . $className . '::' . $method . "\n";
-				$contents .= $separator . "\n";
-				$contents .= self::generateClassMethodDescription($className . '::' . $method);
-			}
+			$contents .= self::generateSymbolDescription($line);
 		}
 
 		$result = file_put_contents(self::getTestInputFile(), $contents);
@@ -564,7 +499,19 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 				continue;
 			}
 
-			$result[$symbol] = true;
+			$parts = explode('::', $symbol);
+
+			switch (count($parts)) {
+				case 1:
+					$result['FUNCTION ' . $symbol] = true;
+					break;
+				case 2:
+					$result['CLASS ' . $parts[0]] = true;
+					$result['METHOD ' . $symbol] = true;
+					break;
+				default:
+					throw new ShouldNotHappenException('Invalid symbol ' . $symbol);
+			}
 		}
 
 		return $result;
@@ -599,7 +546,11 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	/** @return array<string, true> */
 	private static function scrapeInputSymbolsFromReflection(): array
 	{
-		$result = array_fill_keys(get_defined_functions()['internal'], true);
+		$result = [];
+
+		foreach (get_defined_functions()['internal'] as $function) {
+			$result['FUNCTION ' . $function] = true;
+		}
 
 		foreach (get_declared_classes() as $class) {
 			$reflection = new ReflectionClass($class);
@@ -609,13 +560,14 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			}
 
 			$className = $reflection->getName();
+			$result['CLASS ' . $className] = true;
 
 			foreach ($reflection->getMethods() as $method) {
-				$result[$className . '::' . $method->getName()] = true;
+				$result['METHOD ' . $className . '::' . $method->getName()] = true;
 			}
 
 			foreach ($reflection->getProperties() as $property) {
-				$result[$className . '::$' . $property->getName()] = true;
+				$result['PROPERTY ' . $className . '::$' . $property->getName()] = true;
 			}
 		}
 
@@ -640,19 +592,20 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			public function enterNode(Node $node)
 			{
 				if ($node instanceof Node\Stmt\ClassLike && $node->namespacedName !== null) {
+					$this->symbols['CLASS ' . $node->namespacedName->toString()] = true;
 					$this->classLike = $node;
 				}
 
 				if ($node instanceof Node\Stmt\ClassMethod) {
-					$this->symbols[$this->classLike->namespacedName?->toString() . '::' . $node->name->name] = true;
+					$this->symbols['METHOD ' . $this->classLike->namespacedName?->toString() . '::' . $node->name->name] = true;
 				}
 
 				if ($node instanceof Node\Stmt\PropertyProperty) {
-					$this->symbols[$this->classLike->namespacedName?->toString() . '::$' . $node->name->toString()] = true;
+					$this->symbols['PROPERTY ' . $this->classLike->namespacedName?->toString() . '::$' . $node->name->toString()] = true;
 				}
 
 				if ($node instanceof Node\Stmt\Function_) {
-					$this->symbols[$node->name->name] = true;
+					$this->symbols['FUNCTION ' . $node->name->name] = true;
 				}
 
 				return null;

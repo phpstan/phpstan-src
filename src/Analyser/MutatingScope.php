@@ -3833,6 +3833,7 @@ class MutatingScope implements Scope
 			$specifiedExpressions[$this->getNodeKey($expr)] = ExpressionTypeHolder::createYes($expr, $scope->getType($expr));
 		}
 
+		$conditions = [];
 		foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
 			foreach ($conditionalExpressions as $conditionalExpression) {
 				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
@@ -3841,18 +3842,24 @@ class MutatingScope implements Scope
 					}
 				}
 
-				if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
-					unset($scope->expressionTypes[$conditionalExprString]);
-				} else {
-					$scope->expressionTypes[$conditionalExprString] = array_key_exists($conditionalExprString, $scope->expressionTypes)
-						? new ExpressionTypeHolder(
-							$scope->expressionTypes[$conditionalExprString]->getExpr(),
-							TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $conditionalExpression->getTypeHolder()->getType()),
-							TrinaryLogic::maxMin($scope->expressionTypes[$conditionalExprString]->getCertainty(), $conditionalExpression->getTypeHolder()->getCertainty()),
-						)
-						: $conditionalExpression->getTypeHolder();
-					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
-				}
+				$conditions[$conditionalExprString][] = $conditionalExpression;
+				$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+			}
+		}
+
+		foreach ($conditions as $conditionalExprString => $expressions) {
+			$certainty = TrinaryLogic::lazyExtremeIdentity($expressions, static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getCertainty());
+			$type = TypeCombinator::union(...array_map(static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getType(), $expressions));
+			if ($certainty->no()) {
+				unset($scope->expressionTypes[$conditionalExprString]);
+			} else {
+				$scope->expressionTypes[$conditionalExprString] = array_key_exists($conditionalExprString, $scope->expressionTypes)
+					? new ExpressionTypeHolder(
+						$scope->expressionTypes[$conditionalExprString]->getExpr(),
+						TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $type),
+						TrinaryLogic::maxMin($scope->expressionTypes[$conditionalExprString]->getCertainty(), $certainty),
+					)
+					: $expressions[0]->getTypeHolder();
 			}
 		}
 

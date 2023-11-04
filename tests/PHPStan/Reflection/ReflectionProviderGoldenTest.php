@@ -14,6 +14,7 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionClass;
 use Symfony\Component\Finder\Finder;
+use Throwable;
 use function array_keys;
 use function array_merge;
 use function count;
@@ -71,17 +72,26 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	{
 		[$type, $name] = explode(' ', $symbol);
 
-		switch ($type) {
-			case 'FUNCTION':
-				return self::generateFunctionDescription($name);
-			case 'CLASS':
-				return self::generateClassDescription($name);
-			case 'METHOD':
-				return self::generateClassMethodDescription($name);
-			case 'PROPERTY':
-				return self::generateClassPropertyDescription($name);
-			default:
-				self::fail('Unknown symbol type ' . $type);
+		try {
+			switch ($type) {
+				case 'FUNCTION':
+					return self::generateFunctionDescription($name);
+				case 'CLASS':
+					return self::generateClassDescription($name);
+				case 'METHOD':
+					return self::generateClassMethodDescription($name);
+				case 'PROPERTY':
+					return self::generateClassPropertyDescription($name);
+				default:
+					self::fail('Unknown symbol type ' . $type);
+			}
+		} catch (Throwable $e) {
+			// phpcs:ignore SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
+			if ($e instanceof \PHPUnit\Exception) {
+				throw $e;
+			}
+
+			return "Generating symbol description failed:\n" . ((string) $e) . "\n";
 		}
 	}
 

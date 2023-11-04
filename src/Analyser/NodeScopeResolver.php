@@ -3742,14 +3742,18 @@ class NodeScopeResolver
 			$type = $scope->getType($assignedExpr);
 
 			$conditionalExpressions = [];
-			if ($assignedExpr instanceof Ternary && $assignedExpr->if !== null) {
+			if ($assignedExpr instanceof Ternary) {
+				$if = $assignedExpr->if;
+				if ($if === null) {
+					$if = $assignedExpr->cond;
+				}
 				$condScope = $this->processExprNode($assignedExpr->cond, $scope, static function (): void {
 				}, ExpressionContext::createDeep())->getScope();
 				$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createTruthy());
 				$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createFalsey());
 				$truthyScope = $condScope->filterBySpecifiedTypes($truthySpecifiedTypes);
 				$falsyScope = $condScope->filterBySpecifiedTypes($falseySpecifiedTypes);
-				$truthyType = $truthyScope->getType($assignedExpr->if);
+				$truthyType = $truthyScope->getType($if);
 				$falseyType = $falsyScope->getType($assignedExpr->else);
 				$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
 				$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);

@@ -23,6 +23,7 @@ use function explode;
 use function file_get_contents;
 use function file_put_contents;
 use function floor;
+use function get_class;
 use function get_declared_classes;
 use function get_defined_functions;
 use function getenv;
@@ -91,7 +92,24 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 				throw $e;
 			}
 
-			return "Generating symbol description failed:\n" . ((string) $e) . "\n";
+			$result = "Generating symbol description failed:\n"
+				. get_class($e) . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n"
+				. "Stack trace:\n";
+			$i = 0;
+
+			foreach ($e->getTrace() as $trace) {
+				// The rest differs between dump and test - skip it.
+				if ($trace['class'] === self::class && $trace['function'] === __FUNCTION__) {
+					break;
+				}
+
+				$result .= $i . '# ' . $trace['file'] . '(' . $trace['line'] . '): ' . $trace['class'] . $trace['type']
+					. $trace['function'] . "()\n";
+
+				$i++;
+			}
+
+			return $result;
 		}
 	}
 

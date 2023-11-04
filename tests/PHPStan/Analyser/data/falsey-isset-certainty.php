@@ -2,7 +2,6 @@
 
 namespace FalseyIssetCertainty;
 
-use function PHPStan\dumpType;
 use function PHPStan\Testing\assertType;
 use function PHPStan\Testing\assertVariableCertainty;
 use PHPStan\TrinaryLogic;
@@ -119,6 +118,37 @@ function falseyIssetVariable(): void
 	}
 
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+}
+
+function nullableVariable(): void
+{
+	$a = 'bar';
+	if (rand() % 2) {
+		$a = null;
+	}
+
+	assertVariableCertainty(TrinaryLogic::createYes(), $a);
+	if (isset($a)) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+	}
+
+	assertVariableCertainty(TrinaryLogic::createYes(), $a);
+}
+
+function nonNullableVariable(): void
+{
+	$a = 'bar';
+
+	assertVariableCertainty(TrinaryLogic::createYes(), $a);
+	if (isset($a)) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createNo(), $a);
+	}
+
+	assertVariableCertainty(TrinaryLogic::createYes(), $a);
 }
 
 function falseyIssetNullableVariable(): void

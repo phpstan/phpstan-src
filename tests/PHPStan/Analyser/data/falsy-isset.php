@@ -50,7 +50,7 @@ function subtractedMixedIsset(mixed $m): void
 	if (isset($m)) {
 		assertType("mixed~null", $m);
 	} else {
-		assertType("*NEVER*", $m);
+		assertType("*ERROR*", $m);
 	}
 }
 

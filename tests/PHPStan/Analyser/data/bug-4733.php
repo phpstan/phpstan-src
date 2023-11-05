@@ -23,23 +23,6 @@ class HelloWorld
 		assertType('string', $someObject);
 	}
 
-	public function getDescriptionn(?\DateTimeImmutable $start, ?string $someObject): void
-	{
-		if ($start !== null && $someObject !== null) {
-			return;
-		}
-
-		// $start === null || $someObject === null
-
-		if ($start === null) {
-			return;
-		}
-
-		// $start !== null therefore $someObject === null
-
-		assertType('null', $someObject);
-	}
-
 	public function getDescription2(?\DateTimeImmutable $start, ?string $someObject): void
 	{
 		if ($start !== null || $someObject !== null) {

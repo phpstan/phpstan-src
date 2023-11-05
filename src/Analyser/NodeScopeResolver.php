@@ -1753,14 +1753,6 @@ class NodeScopeResolver
 		if ($isNull->yes()) {
 			return new EnsuredNonNullabilityResult($scope, []);
 		}
-
-		// keep certainty
-		$certainty = TrinaryLogic::createYes();
-		$hasExpressionType = $originalScope->hasExpressionType($exprToSpecify);
-		if (!$hasExpressionType->no()) {
-			$certainty = $hasExpressionType;
-		}
-
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
 		if ($exprType->equals($exprTypeWithoutNull)) {
 			$originalExprType = $originalScope->getType($exprToSpecify);
@@ -1768,7 +1760,7 @@ class NodeScopeResolver
 				$originalNativeType = $originalScope->getNativeType($exprToSpecify);
 
 				return new EnsuredNonNullabilityResult($scope, [
-					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $certainty),
+					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType),
 				]);
 			}
 			return new EnsuredNonNullabilityResult($scope, []);
@@ -1784,7 +1776,7 @@ class NodeScopeResolver
 		return new EnsuredNonNullabilityResult(
 			$scope,
 			[
-				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty),
+				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType),
 			],
 		);
 	}
@@ -1814,7 +1806,6 @@ class NodeScopeResolver
 				$specifiedExpressionResult->getExpression(),
 				$specifiedExpressionResult->getOriginalType(),
 				$specifiedExpressionResult->getOriginalNativeType(),
-				$specifiedExpressionResult->getCertainty(),
 			);
 		}
 
@@ -3740,29 +3731,10 @@ class NodeScopeResolver
 			$throwPoints = $result->getThrowPoints();
 			$assignedExpr = $this->unwrapAssign($assignedExpr);
 			$type = $scope->getType($assignedExpr);
-
-			$conditionalExpressions = [];
-			if ($assignedExpr instanceof Ternary) {
-				$if = $assignedExpr->if;
-				if ($if === null) {
-					$if = $assignedExpr->cond;
-				}
-				$condScope = $this->processExprNode($assignedExpr->cond, $scope, static function (): void {
-				}, ExpressionContext::createDeep())->getScope();
-				$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createTruthy());
-				$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createFalsey());
-				$truthyScope = $condScope->filterBySpecifiedTypes($truthySpecifiedTypes);
-				$falsyScope = $condScope->filterBySpecifiedTypes($falseySpecifiedTypes);
-				$truthyType = $truthyScope->getType($if);
-				$falseyType = $falsyScope->getType($assignedExpr->else);
-				$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-				$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-				$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
-				$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
-			}
-
 			$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
 			$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
+
+			$conditionalExpressions = [];
 
 			$truthyType = TypeCombinator::removeFalsey($type);
 			$falseyType = TypeCombinator::intersect($type, StaticTypeFactory::falsey());
@@ -3772,6 +3744,7 @@ class NodeScopeResolver
 			$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 
+			// TODO conditional expressions for native type should be handled too
 			$scope = $result->getScope()->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr));
 			foreach ($conditionalExpressions as $exprString => $holders) {
 				$scope = $scope->addConditionalExpressions($exprString, $holders);

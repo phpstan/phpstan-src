@@ -65,7 +65,6 @@ class TypeSpecifierTest extends PHPStanTestCase
 		$this->scope = $this->scope->assignVariable('bar', new ObjectType('Bar'), new ObjectType('Bar'));
 		$this->scope = $this->scope->assignVariable('stringOrNull', new UnionType([new StringType(), new NullType()]), new UnionType([new StringType(), new NullType()]));
 		$this->scope = $this->scope->assignVariable('string', new StringType(), new StringType());
-		$this->scope = $this->scope->assignVariable('fooOrNull', new UnionType([new ObjectType('Foo'), new NullType()]), new UnionType([new ObjectType('Foo'), new NullType()]));
 		$this->scope = $this->scope->assignVariable('barOrNull', new UnionType([new ObjectType('Bar'), new NullType()]), new UnionType([new ObjectType('Bar'), new NullType()]));
 		$this->scope = $this->scope->assignVariable('barOrFalse', new UnionType([new ObjectType('Bar'), new ConstantBooleanType(false)]), new UnionType([new ObjectType('Bar'), new ConstantBooleanType(false)]));
 		$this->scope = $this->scope->assignVariable('stringOrFalse', new UnionType([new StringType(), new ConstantBooleanType(false)]), new UnionType([new StringType(), new ConstantBooleanType(false)]));
@@ -574,37 +573,16 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\Isset_([
 					new Variable('stringOrNull'),
-				]),
-				[
-					'$stringOrNull' => '~null',
-				],
-				[
-					'$stringOrNull' => 'null',
-				],
-			],
-			[
-				new Expr\Isset_([
-					new Variable('stringOrNull'),
 					new Variable('barOrNull'),
 				]),
 				[
 					'$stringOrNull' => '~null',
 					'$barOrNull' => '~null',
 				],
-				[],
-			],
-			[
-				new Expr\Isset_([
-					new Variable('stringOrNull'),
-					new Variable('barOrNull'),
-					new Variable('fooOrNull'),
-				]),
 				[
-					'$stringOrNull' => '~null',
-					'$barOrNull' => '~null',
-					'$fooOrNull' => '~null',
+					'$stringOrNull' => self::SURE_NOT_TRUTHY,
+					'$barOrNull' => self::SURE_NOT_TRUTHY,
 				],
-				[],
 			],
 			[
 				new Expr\BooleanNot(new Expr\Empty_(new Variable('stringOrNull'))),
@@ -628,7 +606,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\Empty_(new Variable('array')),
 				[
-					'$array' => 'array{}|null',
+					'$array' => 'array{}',
 				],
 				[
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
@@ -640,7 +618,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 				[
-					'$array' => 'array{}|null',
+					'$array' => 'array{}',
 				],
 			],
 			[

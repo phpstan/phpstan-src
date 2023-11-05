@@ -19,7 +19,11 @@ class Foo
 
 		$link_mode = isset($shortcut_id) ? "remove" : "add";
 		if ($link_mode === "add") {
-			assertVariableCertainty(TrinaryLogic::createNo(), $shortcut_id);
+			assertVariableCertainty(
+				// should be NO, see https://github.com/phpstan/phpstan-src/pull/2710#issuecomment-1793677703
+				TrinaryLogic::createMaybe(),
+				$shortcut_id
+			);
 		} else {
 			assertVariableCertainty(TrinaryLogic::createYes(), $shortcut_id);
 		}

@@ -21,12 +21,12 @@ function validateParams(
 
 	if ($untilDate !== null && $datePeriod > $untilDate) {
 		assertType('DateTimeImmutable', $untilDate);
-		assertType('null', $count);
+		assertType('int|null', $count);
 		throw new \InvalidArgumentException('End date must not be greater than until date.');
 	}
 
 	if ($count !== null && $count < 1) {
-		assertType('null', $untilDate);
+		assertType('DateTimeImmutable|null', $untilDate);
 		assertType('int<min, 0>', $count);
 		throw new \InvalidArgumentException('Count must be positive.');
 	}

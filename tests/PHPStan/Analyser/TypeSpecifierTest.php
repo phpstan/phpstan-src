@@ -580,8 +580,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$barOrNull' => '~null',
 				],
 				[
-					'$stringOrNull' => 'null',
-					'$barOrNull' => 'null',
+					'$stringOrNull' => self::SURE_NOT_TRUTHY,
+					'$barOrNull' => self::SURE_NOT_TRUTHY,
 				],
 			],
 			[
@@ -606,7 +606,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\Empty_(new Variable('array')),
 				[
-					'$array' => 'array{}|null',
+					'$array' => 'array{}',
 				],
 				[
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
@@ -618,7 +618,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 				[
-					'$array' => 'array{}|null',
+					'$array' => 'array{}',
 				],
 			],
 			[

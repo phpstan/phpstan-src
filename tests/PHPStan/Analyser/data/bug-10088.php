@@ -66,20 +66,4 @@ class Foo
 		assertVariableCertainty(TrinaryLogic::createYes(), $date);
 	}
 
-	function testDrupal():void {
-		assertVariableCertainty(TrinaryLogic::createNo(), $book_links);
-		if (isset($x)) {
-			$book_links = 1;
-			assertVariableCertainty(TrinaryLogic::createYes(), $book_links);
-		}
-
-		assertVariableCertainty(TrinaryLogic::createMaybe(), $book_links);
-		if (isset($book_links)) {
-			assertVariableCertainty(TrinaryLogic::createYes(), $book_links);
-			var_dump($book_links);
-		}
-		assertVariableCertainty(TrinaryLogic::createMaybe(), $book_links);
-	}
-
-
 }

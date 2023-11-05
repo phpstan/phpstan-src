@@ -16,6 +16,8 @@ use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Internal\DirectoryCreator;
+use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\ProcessPromise;
@@ -48,9 +50,7 @@ use function fwrite;
 use function getenv;
 use function http_build_query;
 use function ini_get;
-use function is_dir;
 use function is_file;
-use function mkdir;
 use function parse_url;
 use function React\Async\await;
 use function sprintf;
@@ -199,8 +199,10 @@ class FixerApplication
 	 */
 	private function getFixerProcess(OutputInterface $output, int $serverPort): Process
 	{
-		if (!@mkdir($this->proTmpDir, 0777) && !is_dir($this->proTmpDir)) {
-			$output->writeln(sprintf('Cannot create a temp directory %s', $this->proTmpDir));
+		try {
+			DirectoryCreator::ensureDirectoryExists($this->proTmpDir, 0777);
+		} catch (DirectoryCreatorException $e) {
+			$output->writeln($e->getMessage());
 			throw new FixerProcessException();
 		}
 

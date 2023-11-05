@@ -22,6 +22,8 @@ use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\FileExcluder;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
+use PHPStan\Internal\DirectoryCreator;
+use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
@@ -48,7 +50,6 @@ use function is_dir;
 use function is_file;
 use function is_readable;
 use function is_string;
-use function mkdir;
 use function register_shutdown_function;
 use function spl_autoload_functions;
 use function sprintf;
@@ -278,8 +279,10 @@ class CommandHelper
 		}
 
 		$createDir = static function (string $path) use ($errorOutput): void {
-			if (!is_dir($path) && !@mkdir($path, 0777) && !is_dir($path)) {
-				$errorOutput->writeLineFormatted(sprintf('Cannot create a temp directory %s', $path));
+			try {
+				DirectoryCreator::ensureDirectoryExists($path, 0777);
+			} catch (DirectoryCreatorException $e) {
+				$errorOutput->writeLineFormatted($e->getMessage());
 				throw new InceptionNotSuccessfulException();
 			}
 		};

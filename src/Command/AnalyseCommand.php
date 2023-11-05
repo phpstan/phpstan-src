@@ -16,6 +16,8 @@ use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Internal\BytesHelper;
+use PHPStan\Internal\DirectoryCreator;
+use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -36,10 +38,8 @@ use function implode;
 use function in_array;
 use function is_array;
 use function is_bool;
-use function is_dir;
 use function is_file;
 use function is_string;
-use function mkdir;
 use function pathinfo;
 use function rewind;
 use function sprintf;
@@ -350,13 +350,12 @@ class AnalyseCommand extends Command
 				throw new ShouldNotHappenException();
 			}
 
-			if (!is_dir($baselineFileDirectory)) {
-				$mkdirResult = @mkdir($baselineFileDirectory, 0644, true);
-				if ($mkdirResult === false) {
-					$inceptionResult->getStdOutput()->writeLineFormatted(sprintf('Failed to create directory "%s".', $baselineFileDirectory));
+			try {
+				DirectoryCreator::ensureDirectoryExists($baselineFileDirectory, 0644);
+			} catch (DirectoryCreatorException $e) {
+				$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
 
-					return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-				}
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 			}
 
 			try {

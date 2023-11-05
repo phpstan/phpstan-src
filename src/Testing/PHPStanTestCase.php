@@ -20,6 +20,8 @@ use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvi
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
+use PHPStan\Internal\DirectoryCreator;
+use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
@@ -37,8 +39,6 @@ use PHPUnit\Framework\TestCase;
 use function array_merge;
 use function count;
 use function implode;
-use function is_dir;
-use function mkdir;
 use function rtrim;
 use function sha1;
 use function sprintf;
@@ -65,8 +65,10 @@ abstract class PHPStanTestCase extends TestCase
 
 		if (!isset(self::$containers[$cacheKey])) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan-tests';
-			if (!@mkdir($tmpDir, 0777) && !is_dir($tmpDir)) {
-				self::fail(sprintf('Cannot create temp directory %s', $tmpDir));
+			try {
+				DirectoryCreator::ensureDirectoryExists($tmpDir, 0777);
+			} catch (DirectoryCreatorException $e) {
+				self::fail($e->getMessage());
 			}
 
 			$rootDir = __DIR__ . '/../..';

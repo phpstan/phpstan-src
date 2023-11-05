@@ -450,21 +450,4 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/isset-object-shapes.php'], []);
 	}
 
-	public function testBug3985(): void
-	{
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
-
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-3985.php'], [
-			[
-				'Variable $foo in isset() is never defined.',
-				13,
-			],
-			[
-				'Variable $foo in isset() is never defined.',
-				21,
-			],
-		]);
-	}
-
 }

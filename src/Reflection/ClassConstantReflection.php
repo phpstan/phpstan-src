@@ -18,6 +18,8 @@ class ClassConstantReflection implements ConstantReflection
 
 	private ?Type $valueType = null;
 
+	private ?Type $finalNativeType = null;
+
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ClassReflection $declaringClass,
@@ -72,6 +74,23 @@ class ClassConstantReflection implements ConstantReflection
 	public function hasNativeType(): bool
 	{
 		return $this->nativeType !== null;
+	}
+
+	public function getNativeType(): ?Type
+	{
+		if ($this->nativeType === null) {
+			return null;
+		}
+
+		if ($this->finalNativeType !== null) {
+			return $this->finalNativeType;
+		}
+
+		return $this->finalNativeType = TypehintHelper::decideTypeFromReflection(
+			$this->nativeType,
+			null,
+			$this->declaringClass,
+		);
 	}
 
 	public function getValueType(): Type

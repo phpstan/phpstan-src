@@ -46,6 +46,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Classes/data/first-class-instantiation-callable.php \
 		--exclude tests/PHPStan/Rules/Classes/data/instantiation-callable.php \
 		--exclude tests/PHPStan/Rules/Classes/data/bug-9402.php \
+		--exclude tests/PHPStan/Rules/Constants/data/value-assigned-to-class-constant-native-type.php \
 		src tests
 
 cs:

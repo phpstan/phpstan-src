@@ -111,7 +111,7 @@ class OverridingConstantRule implements Rule
 						$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
 						$prototype->getDeclaringClass()->getDisplayName(),
 						$prototype->getName(),
-					))->nonIgnorable()->build();
+					))->identifier('classConstant.nativeType')->nonIgnorable()->build();
 				}
 			} else {
 				$errors[] = RuleErrorBuilder::message(sprintf(
@@ -122,7 +122,7 @@ class OverridingConstantRule implements Rule
 					$prototype->getName(),
 					$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
 					$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
-				))->nonIgnorable()->build();
+				))->identifier('classConstant.missingNativeType')->nonIgnorable()->build();
 			}
 		}
 

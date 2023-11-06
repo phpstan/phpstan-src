@@ -6,8 +6,8 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
@@ -53,7 +53,7 @@ class ValueAssignedToClassConstantRule implements Rule
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processSingleConstant(ClassReflection $classReflection, string $constantName, Type $valueExprType, ?Type $nativeType): array
 	{
@@ -80,7 +80,7 @@ class ValueAssignedToClassConstantRule implements Rule
 					$constantName,
 					$nativeType->describe(VerbosityLevel::typeOnly()),
 					$valueExprType->describe(VerbosityLevel::value()),
-				))->nonIgnorable()->build(),
+				))->nonIgnorable()->identifier('classConstant.value')->build(),
 			];
 		} elseif ($nativeType === null) {
 			$isSuperType = $phpDocType->isSuperTypeOf($valueExprType);
@@ -93,7 +93,7 @@ class ValueAssignedToClassConstantRule implements Rule
 						$constantName,
 						$phpDocType->describe($verbosity),
 						$valueExprType->describe(VerbosityLevel::value()),
-					))->build(),
+					))->identifier('classConstant.phpDocType')->build(),
 				];
 
 			} elseif ($isSuperType->maybe()) {
@@ -104,7 +104,7 @@ class ValueAssignedToClassConstantRule implements Rule
 						$constantName,
 						$phpDocType->describe($verbosity),
 						$valueExprType->describe(VerbosityLevel::value()),
-					))->build(),
+					))->identifier('classConstant.phpDocType')->build(),
 				];
 			}
 
@@ -126,7 +126,7 @@ class ValueAssignedToClassConstantRule implements Rule
 				$constantName,
 				$type->describe(VerbosityLevel::typeOnly()),
 				$valueExprType->describe($verbosity),
-			))->build(),
+			))->identifier('classConstant.value')->build(),
 		];
 	}
 

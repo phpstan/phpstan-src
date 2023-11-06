@@ -286,4 +286,9 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10097(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10097.php'], []);
+	}
+
 }

@@ -54,7 +54,7 @@
 		"brianium/paratest": "^6.5",
 		"cweagans/composer-patches": "^1.7.3",
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",
-		"phpstan/phpstan-deprecation-rules": "1.2.x-dev",
+		"phpstan/phpstan-deprecation-rules": "^1.2",
 		"phpstan/phpstan-nette": "^1.0",
 		"phpstan/phpstan-phpunit": "^1.0",
 		"phpstan/phpstan-strict-rules": "^1.6",

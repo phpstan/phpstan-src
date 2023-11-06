@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7155b2b60b9ad9bd68ae764c70204137",
+    "content-hash": "999aa5db11835f46fa3aafcfe4ffa443",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -4864,12 +4864,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-deprecation-rules.git",
-                "reference": "f1cacde9aaf049973db8ca94c926e89a1c59333d"
+                "reference": "788ea1bd84f7848abf27ba29b92c6c9d285dfc95"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-deprecation-rules/zipball/f1cacde9aaf049973db8ca94c926e89a1c59333d",
-                "reference": "f1cacde9aaf049973db8ca94c926e89a1c59333d",
+                "url": "https://api.github.com/repos/phpstan/phpstan-deprecation-rules/zipball/788ea1bd84f7848abf27ba29b92c6c9d285dfc95",
+                "reference": "788ea1bd84f7848abf27ba29b92c6c9d285dfc95",
                 "shasum": ""
             },
             "require": {
@@ -4878,7 +4878,6 @@
             },
             "require-dev": {
                 "php-parallel-lint/php-parallel-lint": "^1.2",
-                "phpstan/phpstan-php-parser": "^1.1",
                 "phpstan/phpstan-phpunit": "^1.0",
                 "phpunit/phpunit": "^9.5"
             },
@@ -4905,7 +4904,7 @@
                 "issues": "https://github.com/phpstan/phpstan-deprecation-rules/issues",
                 "source": "https://github.com/phpstan/phpstan-deprecation-rules/tree/1.2.x"
             },
-            "time": "2023-08-06T10:05:15+00:00"
+            "time": "2023-09-19T08:17:29+00:00"
         },
         {
             "name": "phpstan/phpstan-nette",
@@ -6622,8 +6621,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20,
-        "phpstan/phpstan-deprecation-rules": 20
+        "jetbrains/phpstorm-stubs": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

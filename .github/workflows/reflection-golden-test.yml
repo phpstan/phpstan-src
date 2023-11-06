@@ -146,16 +146,6 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v3
 
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "none"
-          php-version: "${{ matrix.php-version }}"
-          tools: pecl
-          extensions: ds,mbstring
-          ini-file: development
-          ini-values: memory_limit=2G
-
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 

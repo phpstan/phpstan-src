@@ -987,6 +987,7 @@ class ClassReflection
 				$this->initializerExprTypeResolver,
 				$declaringClass,
 				$reflectionConstant,
+				$reflectionConstant->getType(),
 				$phpDocType,
 				$deprecatedDescription,
 				$isDeprecated,

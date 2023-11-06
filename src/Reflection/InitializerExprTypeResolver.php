@@ -1895,6 +1895,7 @@ class InitializerExprTypeResolver
 				$constantReflection instanceof ClassConstantReflection
 				&& !$constantClassReflection->isFinal()
 				&& !$constantReflection->hasPhpDocType()
+				&& !$constantReflection->hasNativeType()
 			) {
 				return new MixedType();
 			}

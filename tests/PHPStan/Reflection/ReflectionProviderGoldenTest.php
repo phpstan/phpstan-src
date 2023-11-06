@@ -92,24 +92,9 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 				throw $e;
 			}
 
-			$result = "Generating symbol description failed:\n"
-				. get_class($e) . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n"
-				. "Stack trace:\n";
-			$i = 0;
-
-			foreach ($e->getTrace() as $trace) {
-				// The rest differs between dump and test - skip it.
-				if ($trace['class'] === self::class && $trace['function'] === __FUNCTION__) {
-					break;
-				}
-
-				$result .= $i . '# ' . $trace['file'] . '(' . $trace['line'] . '): ' . $trace['class'] . $trace['type']
-					. $trace['function'] . "()\n";
-
-				$i++;
-			}
-
-			return $result;
+			// Skip stack trace - it's not fully consistent between dump and test.
+			return "Generating symbol description failed:\n"
+				. get_class($e) . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n";
 		}
 	}
 

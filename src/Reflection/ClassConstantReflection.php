@@ -64,6 +64,11 @@ class ClassConstantReflection implements ConstantReflection
 		return $this->phpDocType !== null;
 	}
 
+	public function getPhpDocType(): ?Type
+	{
+		return $this->phpDocType;
+	}
+
 	public function hasNativeType(): bool
 	{
 		return $this->nativeType !== null;

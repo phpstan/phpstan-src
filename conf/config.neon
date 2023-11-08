@@ -669,16 +669,10 @@ services:
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\CachingVisitor
 
-	defaultFileNodesFetcher:
+	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher
 		arguments:
 			parser: @defaultAnalysisParser
-
-	php8FileNodesFetcher:
-		class: PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher
-		arguments:
-			parser: @php8Parser
-		autowired: false
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker
@@ -687,7 +681,6 @@ services:
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory
 		arguments:
 			fileFinder: @fileFinderScan
-			fileNodesFetcher: @defaultFileNodesFetcher
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository
@@ -697,8 +690,6 @@ services:
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorFactory
-		arguments:
-			fileNodesFetcher: @defaultFileNodesFetcher
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository
@@ -783,8 +774,6 @@ services:
 
 	-
 		class: PHPStan\Reflection\SignatureMap\Php8SignatureMapProvider
-		arguments:
-			fileNodesFetcher: @php8FileNodesFetcher
 		autowired:
 			- PHPStan\Reflection\SignatureMap\Php8SignatureMapProvider
 
@@ -1926,7 +1915,6 @@ services:
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
-			fileNodesFetcher: @defaultFileNodesFetcher
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory

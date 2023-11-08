@@ -9,7 +9,6 @@ services:
 		arguments:
 			phpParser: @phpParserDecorator
 			php8Parser: @php8PhpParser
-			fileNodesFetcher: @defaultFileNodesFetcher
 
 	cacheStorage:
 		class: PHPStan\Cache\MemoryCacheStorage

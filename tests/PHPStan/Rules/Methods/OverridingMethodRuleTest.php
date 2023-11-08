@@ -121,7 +121,11 @@ class OverridingMethodRuleTest extends RuleTestCase
 				280,
 			],
 			[
-				'Parameter #1 $index (int) of method OverridingFinalMethod\FixedArrayOffsetExists::offsetExists() is not ' . $contravariantMessage . ' with parameter #1 $offset (mixed) of method ArrayAccess<int,mixed>::offsetExists().',
+				'Method OverridingFinalMethod\ExtendsFinalWithAnnotation::doFoo() overrides @final method OverridingFinalMethod\FinalWithAnnotation::doFoo().',
+				303,
+			],
+			[
+				'Parameter #1 $index (int) of method OverridingFinalMethod\FixedArrayOffsetExists::offsetExists() is not ' . $contravariantMessage . ' with parameter #1 $index (mixed) of method SplFixedArray<mixed>::offsetExists().',
 				313,
 			],
 		];
@@ -560,6 +564,21 @@ class OverridingMethodRuleTest extends RuleTestCase
 	{
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-9391.php'], []);
+	}
+
+	public function testBugWithIndirectPrototype(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/overriding-indirect-prototype.php'], [
+			[
+				'Return type mixed of method OverridingIndirectPrototype\Baz::doFoo() is not covariant with return type string of method OverridingIndirectPrototype\Bar::doFoo().',
+				28,
+			],
+		]);
 	}
 
 }

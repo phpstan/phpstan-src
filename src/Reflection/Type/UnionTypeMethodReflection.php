@@ -113,6 +113,11 @@ class UnionTypeMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::lazyExtremeIdentity($this->methods, static fn (MethodReflection $method): TrinaryLogic => $method->isFinal());
 	}
 
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return TrinaryLogic::lazyExtremeIdentity($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->isFinalByKeyword());
+	}
+
 	public function isInternal(): TrinaryLogic
 	{
 		return TrinaryLogic::lazyExtremeIdentity($this->methods, static fn (MethodReflection $method): TrinaryLogic => $method->isInternal());

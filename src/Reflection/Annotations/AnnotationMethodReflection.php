@@ -96,6 +96,11 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createNo();
 	}
 
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isInternal(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

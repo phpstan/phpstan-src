@@ -75,6 +75,11 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->isFinal();
 	}
 
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return $this->reflection->isFinalByKeyword();
+	}
+
 	public function isInternal(): TrinaryLogic
 	{
 		return $this->reflection->isInternal();

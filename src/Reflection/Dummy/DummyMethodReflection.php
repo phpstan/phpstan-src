@@ -73,6 +73,11 @@ class DummyMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isInternal(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

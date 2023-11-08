@@ -117,6 +117,11 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 		return $this->nativeMethodReflection->isFinal();
 	}
 
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return $this->nativeMethodReflection->isFinalByKeyword();
+	}
+
 	public function isInternal(): TrinaryLogic
 	{
 		return $this->nativeMethodReflection->isInternal();

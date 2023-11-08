@@ -20,6 +20,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
@@ -87,6 +88,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::getContainer()->getByType(FileTypeMapper::class),
 				self::getContainer()->getByType(StubPhpDocProvider::class),
 				self::getContainer()->getByType(PhpVersion::class),
+				self::getContainer()->getByType(SignatureMapProvider::class),
 				self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 				self::getContainer()->getByType(FileHelper::class),
 				$typeSpecifier,

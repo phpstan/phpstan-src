@@ -256,4 +256,14 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		return $signatureMap;
 	}
 
+	public function hasClassConstantMetadata(string $className, string $constantName): bool
+	{
+		return false;
+	}
+
+	public function getClassConstantMetadata(string $className, string $constantName): array
+	{
+		throw new ShouldNotHappenException();
+	}
+
 }

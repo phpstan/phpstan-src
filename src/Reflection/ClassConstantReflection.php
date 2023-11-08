@@ -5,9 +5,6 @@ namespace PHPStan\Reflection;
 use PhpParser\Node\Expr;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
@@ -18,13 +15,11 @@ class ClassConstantReflection implements ConstantReflection
 
 	private ?Type $valueType = null;
 
-	private ?Type $finalNativeType = null;
-
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ClassReflection $declaringClass,
 		private ReflectionClassConstant $reflection,
-		private ReflectionUnionType|ReflectionNamedType|ReflectionIntersectionType|null $nativeType,
+		private ?Type $nativeType,
 		private ?Type $phpDocType,
 		private ?string $deprecatedDescription,
 		private bool $isDeprecated,
@@ -78,30 +73,23 @@ class ClassConstantReflection implements ConstantReflection
 
 	public function getNativeType(): ?Type
 	{
-		if ($this->nativeType === null) {
-			return null;
-		}
-
-		if ($this->finalNativeType !== null) {
-			return $this->finalNativeType;
-		}
-
-		return $this->finalNativeType = TypehintHelper::decideTypeFromReflection(
-			$this->nativeType,
-			null,
-			$this->declaringClass,
-		);
+		return $this->nativeType;
 	}
 
 	public function getValueType(): Type
 	{
 		if ($this->valueType === null) {
-			if ($this->phpDocType !== null || $this->nativeType !== null) {
-				return $this->valueType = TypehintHelper::decideTypeFromReflection(
-					$this->nativeType,
-					$this->phpDocType,
-					$this->declaringClass,
-				);
+			if ($this->phpDocType !== null) {
+				if ($this->nativeType !== null) {
+					return $this->valueType = TypehintHelper::decideType(
+						$this->nativeType,
+						$this->phpDocType,
+					);
+				}
+
+				return $this->phpDocType;
+			} elseif ($this->nativeType !== null) {
+				return $this->nativeType;
 			}
 
 			$this->valueType = $this->initializerExprTypeResolver->getType($this->getValueExpr(), InitializerExprContext::fromClassReflection($this->declaringClass));

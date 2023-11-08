@@ -26,6 +26,7 @@ use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
 use PHPStan\PhpDoc\Tag\TypeAliasTag;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
+use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\CircularTypeAliasDefinitionException;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -138,6 +139,7 @@ class ClassReflection
 		private StubPhpDocProvider $stubPhpDocProvider,
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		private PhpVersion $phpVersion,
+		private SignatureMapProvider $signatureMapProvider,
 		private array $propertiesClassReflectionExtensions,
 		private array $methodsClassReflectionExtensions,
 		private array $allowedSubTypesClassReflectionExtensions,
@@ -983,11 +985,18 @@ class ClassReflection
 				$phpDocType = $varTags[0]->getType();
 			}
 
+			$nativeType = null;
+			if ($reflectionConstant->getType() !== null) {
+				$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), null, $this);
+			} elseif ($this->signatureMapProvider->hasClassConstantMetadata($declaringClass->getName(), $name)) {
+				$nativeType = $this->signatureMapProvider->getClassConstantMetadata($declaringClass->getName(), $name)['nativeType'];
+			}
+
 			$this->constants[$name] = new ClassConstantReflection(
 				$this->initializerExprTypeResolver,
 				$declaringClass,
 				$reflectionConstant,
-				$reflectionConstant->getType(),
+				$nativeType,
 				$phpDocType,
 				$deprecatedDescription,
 				$isDeprecated,
@@ -1394,6 +1403,7 @@ class ClassReflection
 			$this->stubPhpDocProvider,
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
+			$this->signatureMapProvider,
 			$this->propertiesClassReflectionExtensions,
 			$this->methodsClassReflectionExtensions,
 			$this->allowedSubTypesClassReflectionExtensions,
@@ -1419,6 +1429,7 @@ class ClassReflection
 			$this->stubPhpDocProvider,
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
+			$this->signatureMapProvider,
 			$this->propertiesClassReflectionExtensions,
 			$this->methodsClassReflectionExtensions,
 			$this->allowedSubTypesClassReflectionExtensions,

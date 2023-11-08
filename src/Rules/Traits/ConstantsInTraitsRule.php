@@ -44,7 +44,7 @@ class ConstantsInTraitsRule implements Rule
 				'Constant %s::%s is declared inside a trait but is only supported on PHP 8.2 and later.',
 				$scope->getTraitReflection()->getDisplayName(),
 				$const->name->toString(),
-			))->identifier('constants.inTraits')->nonIgnorable()->build(),
+			))->identifier('classConstant.inTrait')->nonIgnorable()->build(),
 			$node->consts,
 		);
 	}

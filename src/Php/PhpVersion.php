@@ -232,4 +232,9 @@ class PhpVersion
 		return $this->versionId >= 80300;
 	}
 
+	public function supportsConstantsInTraits(): bool
+	{
+		return $this->versionId >= 80200;
+	}
+
 }

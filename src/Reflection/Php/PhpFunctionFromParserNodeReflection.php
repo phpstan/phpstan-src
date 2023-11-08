@@ -189,6 +189,15 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		return TrinaryLogic::createFromBoolean($finalMethod || $this->isFinal);
 	}
 
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		$finalMethod = false;
+		if ($this->functionLike instanceof ClassMethod) {
+			$finalMethod = $this->functionLike->isFinal();
+		}
+		return TrinaryLogic::createFromBoolean($finalMethod);
+	}
+
 	public function getThrowType(): ?Type
 	{
 		return $this->throwType;

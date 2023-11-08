@@ -397,6 +397,11 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createFromBoolean($this->isFinal || $this->reflection->isFinal());
 	}
 
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->reflection->isFinal());
+	}
+
 	public function isAbstract(): bool
 	{
 		return $this->reflection->isAbstract();

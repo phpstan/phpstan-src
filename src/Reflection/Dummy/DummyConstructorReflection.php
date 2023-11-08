@@ -2,16 +2,18 @@
 
 namespace PHPStan\Reflection\Dummy;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\FunctionVariant;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
 
-class DummyConstructorReflection implements MethodReflection
+class DummyConstructorReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(private ClassReflection $declaringClass)
@@ -51,12 +53,15 @@ class DummyConstructorReflection implements MethodReflection
 	public function getVariants(): array
 	{
 		return [
-			new FunctionVariant(
+			new FunctionVariantWithPhpDocs(
 				TemplateTypeMap::createEmpty(),
 				null,
 				[],
 				false,
 				new VoidType(),
+				new MixedType(),
+				new MixedType(),
+				null,
 			),
 		];
 	}
@@ -94,6 +99,26 @@ class DummyConstructorReflection implements MethodReflection
 	public function getDocComment(): ?string
 	{
 		return null;
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return Assertions::createEmpty();
+	}
+
+	public function getSelfOutType(): ?Type
+	{
+		return null;
+	}
+
+	public function returnsByReference(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
 	}
 
 }

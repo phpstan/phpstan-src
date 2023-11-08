@@ -121,6 +121,11 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createFromBoolean($this->reflection->isFinal());
 	}
 
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return $this->isFinal();
+	}
+
 	public function getThrowType(): ?Type
 	{
 		return $this->throwType;

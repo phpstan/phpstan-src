@@ -100,6 +100,11 @@ class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return $this->method->isFinal();
 	}
 
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return $this->isFinal();
+	}
+
 	public function isInternal(): TrinaryLogic
 	{
 		return $this->method->isInternal();

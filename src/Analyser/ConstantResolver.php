@@ -20,6 +20,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function in_array;
+use function sprintf;
 use const INF;
 use const NAN;
 use const PHP_INT_SIZE;
@@ -294,6 +295,22 @@ class ConstantResolver
 	{
 		if ($constantType->isConstantValue()->yes() && in_array($constantName, $this->dynamicConstantNames, true)) {
 			return $constantType->generalize(GeneralizePrecision::lessSpecific());
+		}
+
+		return $constantType;
+	}
+
+	public function resolveClassConstantType(string $className, string $constantName, Type $constantType, ?Type $nativeType): Type
+	{
+		$lookupConstantName = sprintf('%s::%s', $className, $constantName);
+		if (in_array($lookupConstantName, $this->dynamicConstantNames, true)) {
+			if ($nativeType !== null) {
+				return $nativeType;
+			}
+
+			if ($constantType->isConstantValue()->yes()) {
+				return $constantType->generalize(GeneralizePrecision::lessSpecific());
+			}
 		}
 
 		return $constantType;

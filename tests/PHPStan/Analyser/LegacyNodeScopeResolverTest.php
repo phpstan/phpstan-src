@@ -8413,6 +8413,52 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
+	public function dataDynamicConstantsWithNativeTypes(): array
+	{
+		return [
+			[
+				'int',
+				'DynamicConstantNativeTypes\Foo::FOO',
+			],
+			[
+				'int|string',
+				'DynamicConstantNativeTypes\Foo::BAR',
+			],
+			[
+				'int',
+				'$foo::FOO',
+			],
+			[
+				'int|string',
+				'$foo::BAR',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataDynamicConstantsWithNativeTypes
+	 */
+	public function testDynamicConstantsWithNativeTypes(
+		string $description,
+		string $expression,
+	): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$this->assertTypes(
+			__DIR__ . '/data/dynamic-constant-native-types.php',
+			$description,
+			$expression,
+			'die',
+			[
+				'DynamicConstantNativeTypes\Foo::FOO',
+				'DynamicConstantNativeTypes\Foo::BAR',
+			],
+		);
+	}
+
 	public function dataIsset(): array
 	{
 		return [

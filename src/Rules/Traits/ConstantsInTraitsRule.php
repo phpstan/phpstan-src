@@ -6,10 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use function array_map;
-use function sprintf;
 
 /**
  * @implements Rule<Node\Stmt\ClassConst>
@@ -39,14 +36,11 @@ class ConstantsInTraitsRule implements Rule
 			return [];
 		}
 
-		return array_map(
-			static fn (Node\Const_ $const): RuleError => RuleErrorBuilder::message(sprintf(
-				'Constant %s::%s is declared inside a trait but is only supported on PHP 8.2 and later.',
-				$scope->getTraitReflection()->getDisplayName(),
-				$const->name->toString(),
-			))->identifier('classConstant.inTrait')->nonIgnorable()->build(),
-			$node->consts,
-		);
+		return [
+			RuleErrorBuilder::message(
+				'Constant is declared inside a trait but is only supported on PHP 8.2 and later.',
+			)->identifier('classConstant.inTrait')->nonIgnorable()->build(),
+		];
 	}
 
 }

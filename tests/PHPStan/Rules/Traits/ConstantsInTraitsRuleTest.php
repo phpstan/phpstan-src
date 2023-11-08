@@ -27,15 +27,11 @@ class ConstantsInTraitsRuleTest extends RuleTestCase
 				80100,
 				[
 					[
-						'Constant ConstantsInTraits\FooBar::FOO is declared inside a trait but is only supported on PHP 8.2 and later.',
+						'Constant is declared inside a trait but is only supported on PHP 8.2 and later.',
 						7,
 					],
 					[
-						'Constant ConstantsInTraits\FooBar::BAR is declared inside a trait but is only supported on PHP 8.2 and later.',
-						8,
-					],
-					[
-						'Constant ConstantsInTraits\FooBar::QUX is declared inside a trait but is only supported on PHP 8.2 and later.',
+						'Constant is declared inside a trait but is only supported on PHP 8.2 and later.',
 						8,
 					],
 				],

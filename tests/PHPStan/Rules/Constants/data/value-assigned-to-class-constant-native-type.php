@@ -21,3 +21,18 @@ class Bar
 	public const int BAR = 0;
 
 }
+
+class Floats
+{
+
+	public const float FOO = 1;
+
+	public const int BAR = 1.0;
+
+	/** @var float */
+	public const BAZ = 1;
+
+	/** @var float */
+	public const float LOREM = 1;
+
+}

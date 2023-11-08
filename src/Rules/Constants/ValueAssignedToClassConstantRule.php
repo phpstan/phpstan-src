@@ -68,8 +68,8 @@ class ValueAssignedToClassConstantRule implements Rule
 				return [];
 			}
 
-			$isSuperType = $nativeType->isSuperTypeOf($valueExprType);
-			if ($isSuperType->yes()) {
+			$accepts = $nativeType->acceptsWithReason($valueExprType, true);
+			if ($accepts->yes()) {
 				return [];
 			}
 
@@ -80,7 +80,7 @@ class ValueAssignedToClassConstantRule implements Rule
 					$constantName,
 					$nativeType->describe(VerbosityLevel::typeOnly()),
 					$valueExprType->describe(VerbosityLevel::value()),
-				))->nonIgnorable()->identifier('classConstant.value')->build(),
+				))->acceptsReasonsTip($accepts->reasons)->nonIgnorable()->identifier('classConstant.value')->build(),
 			];
 		} elseif ($nativeType === null) {
 			$isSuperType = $phpDocType->isSuperTypeOf($valueExprType);
@@ -112,8 +112,8 @@ class ValueAssignedToClassConstantRule implements Rule
 		}
 
 		$type = $constantReflection->getValueType();
-		$isSuperType = $type->isSuperTypeOf($valueExprType);
-		if ($isSuperType->yes()) {
+		$accepts = $type->acceptsWithReason($valueExprType, true);
+		if ($accepts->yes()) {
 			return [];
 		}
 
@@ -126,7 +126,7 @@ class ValueAssignedToClassConstantRule implements Rule
 				$constantName,
 				$type->describe(VerbosityLevel::typeOnly()),
 				$valueExprType->describe($verbosity),
-			))->identifier('classConstant.value')->build(),
+			))->acceptsReasonsTip($accepts->reasons)->identifier('classConstant.value')->build(),
 		];
 	}
 

@@ -237,4 +237,9 @@ class PhpVersion
 		return $this->versionId >= 80200;
 	}
 
+	public function supportsNativeTypesInClassConstants(): bool
+	{
+		return $this->versionId >= 80300;
+	}
+
 }

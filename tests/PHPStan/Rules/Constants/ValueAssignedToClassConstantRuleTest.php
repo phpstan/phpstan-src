@@ -75,6 +75,14 @@ class ValueAssignedToClassConstantRuleTest extends RuleTestCase
 				'Constant ValueAssignedToClassConstantNativeType\Bar::BAR (int<1, max>) does not accept value 0.',
 				21,
 			],
+			[
+				'Constant ValueAssignedToClassConstantNativeType\Floats::BAR (int) does not accept value 1.0.',
+				30,
+			],
+			[
+				'PHPDoc tag @var for constant ValueAssignedToClassConstantNativeType\Floats::BAZ with type float is incompatible with value 1.',
+				33,
+			],
 		]);
 	}
 

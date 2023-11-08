@@ -105,6 +105,14 @@ class OverridingConstantRuleTest extends RuleTestCase
 				'Constant OverridingConstantNativeTypes\Ipsum::B overriding constant OverridingConstantNativeTypes\Lorem::B (int) should also have native type int.',
 				37,
 			],
+			[
+				'Constant OverridingConstantNativeTypes\PharChild::BZ2 overriding constant Phar::BZ2 (int) should also have native type int.',
+				44,
+			],
+			[
+				'Native type int|string of constant OverridingConstantNativeTypes\PharChild::NONE is not covariant with native type int of constant Phar::NONE.',
+				48,
+			],
 		]);
 	}
 

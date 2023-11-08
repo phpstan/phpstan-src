@@ -2,9 +2,10 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Expr\Variable;
-use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
@@ -38,6 +39,9 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 	/** @var array<string, array<string, array{ClassMethod, string}>> */
 	private array $methodNodes = [];
 
+	/** @var array<string, array<string, Type|null>> */
+	private array $constantTypes = [];
+
 	private Php8StubsMap $map;
 
 	public function __construct(
@@ -70,7 +74,6 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 
 	/**
 	 * @return array{ClassMethod, string}|null
-	 * @throws ShouldNotHappenException
 	 */
 	private function findMethodNode(string $className, string $methodName): ?array
 	{
@@ -98,7 +101,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			}
 
 			if ($stmt->name->toLowerString() === $lowerMethodName) {
-				if (!$this->isForCurrentVersion($stmt)) {
+				if (!$this->isForCurrentVersion($stmt->attrGroups)) {
 					continue;
 				}
 				return $this->methodNodes[$lowerClassName][$lowerMethodName] = [$stmt, $stubFile];
@@ -108,9 +111,12 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		return null;
 	}
 
-	private function isForCurrentVersion(FunctionLike $functionLike): bool
+	/**
+	 * @param AttributeGroup[] $attrGroups
+	 */
+	private function isForCurrentVersion(array $attrGroups): bool
 	{
-		foreach ($functionLike->getAttrGroups() as $attrGroup) {
+		foreach ($attrGroups as $attrGroup) {
 			foreach ($attrGroup->attrs as $attr) {
 				if ($attr->name->toString() === 'Until') {
 					$arg = $attr->args[0]->value;
@@ -190,7 +196,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			throw new ShouldNotHappenException(sprintf('Function %s stub not found in %s.', $functionName, $stubFile));
 		}
 		foreach ($functions[$lowerName] as $functionNode) {
-			if (!$this->isForCurrentVersion($functionNode->getNode())) {
+			if (!$this->isForCurrentVersion($functionNode->getNode()->getAttrGroups())) {
 				continue;
 			}
 
@@ -357,6 +363,78 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			$returnType,
 			$variadic,
 		);
+	}
+
+	public function hasClassConstantMetadata(string $className, string $constantName): bool
+	{
+		$lowerClassName = strtolower($className);
+		if (!array_key_exists($lowerClassName, $this->map->classes)) {
+			return false;
+		}
+
+		return $this->findConstantType($className, $constantName) !== null;
+	}
+
+	public function getClassConstantMetadata(string $className, string $constantName): array
+	{
+		$lowerClassName = strtolower($className);
+		if (!array_key_exists($lowerClassName, $this->map->classes)) {
+			throw new ShouldNotHappenException();
+		}
+
+		$type = $this->findConstantType($className, $constantName);
+		if ($type === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		return [
+			'nativeType' => $type,
+		];
+	}
+
+	private function findConstantType(string $className, string $constantName): ?Type
+	{
+		$lowerClassName = strtolower($className);
+		$lowerConstantName = strtolower($constantName);
+		if (isset($this->constantTypes[$lowerClassName][$lowerConstantName])) {
+			return $this->constantTypes[$lowerClassName][$lowerConstantName];
+		}
+
+		$stubFile = self::DIRECTORY . '/' . $this->map->classes[$lowerClassName];
+		$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
+		$classes = $nodes->getClassNodes();
+		if (count($classes) !== 1) {
+			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
+		}
+
+		$class = $classes[$lowerClassName];
+		if (count($class) !== 1) {
+			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
+		}
+
+		foreach ($class[0]->getNode()->stmts as $stmt) {
+			if (!$stmt instanceof ClassConst) {
+				continue;
+			}
+
+			foreach ($stmt->consts as $const) {
+				if ($const->name->toString() !== $constantName) {
+					continue;
+				}
+
+				if (!$this->isForCurrentVersion($stmt->attrGroups)) {
+					continue;
+				}
+
+				if ($stmt->type === null) {
+					return null;
+				}
+
+				return $this->constantTypes[$lowerClassName][$lowerConstantName] = ParserNodeTypeToPHPStanType::resolve($stmt->type, null);
+			}
+		}
+
+		return null;
 	}
 
 }

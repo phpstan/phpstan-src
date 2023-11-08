@@ -37,3 +37,14 @@ class Ipsum extends Lorem
 	public const B = 1;
 
 }
+
+class PharChild extends \Phar
+{
+
+	const BZ2 = 'foo'; // error
+
+	const int GZ = 1; // OK
+
+	const int|string NONE = 1; // error
+
+}

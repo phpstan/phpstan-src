@@ -176,8 +176,8 @@ class OverridingMethodRule implements Rule
 			&& $this->phpVersion->hasTentativeReturnTypes()
 			&& $realPrototype->getTentativeReturnType() !== null
 			&& !$this->hasReturnTypeWillChangeAttribute($node->getOriginalNode())
+			&& count($prototype->getDeclaringClass()->getNativeReflection()->getMethod($prototype->getName())->getAttributes('ReturnTypeWillChange')) === 0
 		) {
-
 			if (!$this->methodParameterComparisonHelper->isReturnTypeCompatible($realPrototype->getTentativeReturnType(), $methodVariant->getNativeReturnType(), true)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Return type %s of method %s::%s() is not covariant with tentative return type %s of method %s::%s().',

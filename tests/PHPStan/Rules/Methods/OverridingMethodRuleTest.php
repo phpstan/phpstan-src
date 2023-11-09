@@ -682,4 +682,27 @@ class OverridingMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9615(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$tipText = 'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.';
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-9615.php'], [
+			[
+				'Return type mixed of method Bug9615\ExpectComplaintsHere::accept() is not covariant with tentative return type bool of method FilterIterator<mixed,mixed,Traversable<mixed, mixed>>::accept().',
+				19,
+				$tipText,
+			],
+			[
+				'Return type mixed of method Bug9615\ExpectComplaintsHere::getChildren() is not covariant with tentative return type RecursiveIterator|null of method RecursiveIterator<mixed,mixed>::getChildren().',
+				20,
+				$tipText,
+			],
+		]);
+	}
+
 }

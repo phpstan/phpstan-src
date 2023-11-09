@@ -37,7 +37,7 @@ class NoncapturingCatchRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message('Noncapturing catch is supported only on PHP 8.0 and later.')
+			RuleErrorBuilder::message('Non-capturing catch is supported only on PHP 8.0 and later.')
 				->nonIgnorable()
 				->build(),
 		];

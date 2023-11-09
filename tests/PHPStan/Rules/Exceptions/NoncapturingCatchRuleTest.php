@@ -26,11 +26,11 @@ class NoncapturingCatchRuleTest extends RuleTestCase
 				70400,
 				[
 					[
-						'Noncapturing catch is supported only on PHP 8.0 and later.',
+						'Non-capturing catch is supported only on PHP 8.0 and later.',
 						12,
 					],
 					[
-						'Noncapturing catch is supported only on PHP 8.0 and later.',
+						'Non-capturing catch is supported only on PHP 8.0 and later.',
 						21,
 					],
 				],

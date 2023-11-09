@@ -669,6 +669,10 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	public function testBug10101(): void
 	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-10101.php'], [
 			[

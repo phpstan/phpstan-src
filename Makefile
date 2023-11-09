@@ -51,6 +51,11 @@ lint:
 		--exclude tests/PHPStan/Rules/Classes/data/bug-9402.php \
 		--exclude tests/PHPStan/Rules/Constants/data/value-assigned-to-class-constant-native-type.php \
 		--exclude tests/PHPStan/Rules/Constants/data/overriding-constant-native-types.php \
+		--exclude tests/PHPStan/Rules/Methods/data/bug-10043.php \
+		--exclude tests/PHPStan/Rules/Methods/data/bug-7859.php \
+		--exclude tests/PHPStan/Rules/Methods/data/bug-8081.php \
+		--exclude tests/PHPStan/Rules/Methods/data/bug-9014.php \
+		--exclude tests/PHPStan/Rules/Methods/data/bug-10101.php \
 		src tests
 
 cs:

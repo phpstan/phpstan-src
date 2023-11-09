@@ -14,6 +14,9 @@ tests-levels:
 tests-coverage:
 	php vendor/bin/paratest --runner WrapperRunner
 
+tests-golden-reflection:
+	php vendor/bin/paratest --runner WrapperRunner --no-coverage tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php
+
 lint:
 	php vendor/bin/parallel-lint --colors \
 		--exclude tests/PHPStan/Analyser/data \

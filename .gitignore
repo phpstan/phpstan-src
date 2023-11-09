@@ -7,4 +7,5 @@
 !.idea/icon.png
 /tests/tmp
 /tests/.phpunit.result.cache
+/tests/PHPStan/Reflection/data/golden/
 tmp/.memory_limit

@@ -1,0 +1,191 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Reflection golden test"
+
+on:
+  pull_request:
+    paths-ignore:
+      - 'compiler/**'
+      - 'apigen/**'
+      - 'changelog-generator/**'
+      - 'issue-bot/**'
+  push:
+    branches:
+      - "1.10.x"
+    paths-ignore:
+      - 'compiler/**'
+      - 'apigen/**'
+      - 'changelog-generator/**'
+      - 'issue-bot/**'
+
+env:
+  COMPOSER_ROOT_VERSION: "1.10.x-dev"
+  REFLECTION_GOLDEN_TEST_FILE: "/tmp/reflection-golden.test"
+  REFLECTION_GOLDEN_SYMBOLS_FILE: "/tmp/reflection-golden-symbols.txt"
+
+concurrency:
+  group: reflection-golden-test-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
+  cancel-in-progress: true
+
+jobs:
+  dump-php-symbols:
+    name: "Dump PHP symbols"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.3"
+          # Include exotic extensions to discover more symbols
+          extensions: ds,mbstring,runkit7,scoutapm,seaslog,simdjson,var_representation,yac
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Dump phpSymbols.txt"
+        run: "php tests/dump-reflection-test-symbols.php"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: phpSymbols
+          path: ${{ env.REFLECTION_GOLDEN_SYMBOLS_FILE }}
+
+  reflection-golden-test:
+    name: "Reflection golden test"
+    needs: dump-php-symbols
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+          - "8.2"
+          - "8.3"
+
+    steps:
+      - name: "Download phpSymbols.txt"
+        uses: actions/download-artifact@v3
+        with:
+          name: phpSymbols
+          path: /tmp
+
+      - name: "Checkout base commit"
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.event.push.before }}
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-file: development
+          ini-values: memory_limit=2G
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Install PHP for code transform"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: 8.1
+          extensions: mbstring, intl
+
+      - name: "Rector downgrade cache key"
+        id: rector-cache-key-base
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        run: echo "sha=$(php build/rector-cache-files-hash.php)" >> $GITHUB_OUTPUT
+
+      - name: "Rector downgrade cache"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        uses: actions/cache@v3
+        with:
+          path: ./tmp/rectorCache.php
+          key: "rector-v3-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key-base.outputs.sha }}"
+          restore-keys: |
+            rector-v3-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
+
+      - name: "Transform source code"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        shell: bash
+        run: "build/transform-source ${{ matrix.php-version }}"
+
+      - name: "Reinstall matrix PHP version"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-file: development
+          ini-values: memory_limit=2G
+
+      - name: "Dump previous reflection data"
+        run: "php tests/generate-reflection-test.php"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: reflection-${{ matrix.php-version }}.test
+          path: ${{ env.REFLECTION_GOLDEN_TEST_FILE }}
+
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Install PHP for code transform"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: 8.1
+          extensions: mbstring, intl
+
+      - name: "Rector downgrade cache key"
+        id: rector-cache-key-head
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        run: echo "sha=$(php build/rector-cache-files-hash.php)" >> $GITHUB_OUTPUT
+
+      - name: "Rector downgrade cache"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        uses: actions/cache@v3
+        with:
+          path: ./tmp/rectorCache.php
+          key: "rector-v3-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key-head.outputs.sha }}"
+          restore-keys: |
+            rector-v3-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
+
+      - name: "Transform source code"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        shell: bash
+        run: "build/transform-source ${{ matrix.php-version }}"
+
+      - name: "Reinstall matrix PHP version"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-file: development
+          ini-values: memory_limit=2G
+
+      - name: "Reflection golden test"
+        run: "make tests-golden-reflection"

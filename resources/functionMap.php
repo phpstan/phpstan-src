@@ -6066,7 +6066,7 @@ return [
 'mailparse_msg_extract_part_file' => ['string', 'mimemail'=>'resource', 'filename'=>'mixed', 'callbackfunc='=>'callable'],
 'mailparse_msg_extract_whole_part_file' => ['string', 'mimemail'=>'resource', 'filename'=>'string', 'callbackfunc='=>'callable'],
 'mailparse_msg_free' => ['bool', 'mimemail'=>'resource'],
-'mailparse_msg_get_part' => ['resource', 'mimemail'=>'resource', 'mimesection'=>'string'],
+'mailparse_msg_get_part' => ['resource|false', 'mimemail'=>'resource', 'mimesection'=>'string'],
 'mailparse_msg_get_part_data' => ['array', 'mimemail'=>'resource'],
 'mailparse_msg_get_structure' => ['array', 'mimemail'=>'resource'],
 'mailparse_msg_parse' => ['bool', 'mimemail'=>'resource', 'data'=>'string'],

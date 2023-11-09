@@ -93,3 +93,16 @@ class UntypedIterator implements \Iterator
 	}
 
 }
+
+
+abstract class MetadataFilter extends \FilterIterator
+{
+	/**
+	 * @return \ArrayIterator<int, string>
+	 */
+	#[\ReturnTypeWillChange]
+	public function getInnerIterator()
+	{
+
+	}
+}

@@ -203,7 +203,13 @@ class OverridingMethodRule implements Rule
 
 		$prototypeReturnType = $prototypeVariant->getNativeReturnType();
 
-		if (!$this->methodParameterComparisonHelper->isReturnTypeCompatible($prototypeReturnType, $methodReturnType, $this->phpVersion->supportsReturnCovariance())) {
+		if (
+			(
+				(!$realPrototype instanceof MethodPrototypeReflection || $realPrototype->getTentativeReturnType() === null)
+				|| $prototype->isInternal()->no()
+			)
+			&& !$this->methodParameterComparisonHelper->isReturnTypeCompatible($prototypeReturnType, $methodReturnType, $this->phpVersion->supportsReturnCovariance())
+		) {
 			if ($this->phpVersion->supportsReturnCovariance()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Return type %s of method %s::%s() is not covariant with return type %s of method %s::%s().',

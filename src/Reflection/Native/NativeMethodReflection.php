@@ -113,7 +113,7 @@ class NativeMethodReflection implements ExtendedMethodReflection
 
 	public function isInternal(): TrinaryLogic
 	{
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createFromBoolean($this->reflection->isInternal());
 	}
 
 	public function isFinal(): TrinaryLogic

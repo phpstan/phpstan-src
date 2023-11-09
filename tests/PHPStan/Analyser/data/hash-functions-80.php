@@ -23,7 +23,7 @@ class HashFunctionTests80
 	public function hash(string $string): void
 	{
 		assertType('*NEVER*', hash('invalid', 'data', false));
-		assertType('non-empty-string', hash($string, 'data'));
+		assertType('non-falsy-string', hash($string, 'data'));
 	}
 
 	public function hash_file(): void
@@ -35,7 +35,7 @@ class HashFunctionTests80
 	{
 		assertType('*NEVER*', hash_hkdf('crc32', 'key'));
 		assertType('*NEVER*', hash_hkdf('invalid', 'key'));
-		assertType('non-empty-string', hash_hkdf($string, 'key'));
+		assertType('non-falsy-string', hash_hkdf($string, 'key'));
 	}
 
 	public function hash_pbkdf2(string $string): void

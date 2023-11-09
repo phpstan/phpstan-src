@@ -581,4 +581,101 @@ class OverridingMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10043(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-10043.php'], [
+			[
+				'Method Bug10043\C::foo() overrides final method Bug10043\B::foo().',
+				17,
+			],
+		]);
+	}
+
+	public function testBug7859(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-7859.php'], [
+			[
+				'Method Bug7859\ExtendingClassImplementingSomeInterface::getList() overrides method Bug7859\ImplementingSomeInterface::getList() but misses parameter #2 $b.',
+				21,
+			],
+			[
+				'Method Bug7859\ExtendingClassNotImplementingSomeInterface::getList() overrides method Bug7859\NotImplementingSomeInterface::getList() but misses parameter #2 $b.',
+				37,
+			],
+		]);
+	}
+
+	public function testBug8081(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-8081.php'], [
+			[
+				'Return type mixed of method Bug8081\three::foo() is not covariant with return type array of method Bug8081\two::foo().',
+				21,
+			],
+		]);
+	}
+
+	public function testBug8500(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-8500.php'], [
+			[
+				'Return type mixed of method Bug8500\DBOHB::test() is not covariant with return type Bug8500\DBOA of method Bug8500\DBOHA::test().',
+				30,
+			],
+		]);
+	}
+
+	public function testBug9014(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-9014.php'], [
+			[
+				'Method Bug9014\Bar::test() overrides method Bug9014\Foo::test() but misses parameter #2 $test.',
+				16,
+			],
+			[
+				'Return type mixed of method Bug9014\extended::renderForUser() is not covariant with return type string of method Bug9014\middle::renderForUser().',
+				42,
+			],
+		]);
+	}
+
+	public function testBug9135(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-9135.php'], [
+			[
+				'Method Bug9135\Sub::sayHello() overrides @final method Bug9135\HelloWorld::sayHello().',
+				15,
+			],
+		]);
+	}
+
+	public function testBug10101(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-10101.php'], [
+			[
+				'Return type mixed of method Bug10101\B::next() is not covariant with return type void of method Bug10101\A::next().',
+				10,
+			],
+		]);
+	}
+
 }

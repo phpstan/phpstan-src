@@ -82,7 +82,7 @@ jobs:
       - name: "Checkout base commit"
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.base.sha || github.event.push.before }}
+          ref: ${{ github.event.pull_request.base.sha || github.event.before }}
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"

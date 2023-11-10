@@ -14,6 +14,7 @@ use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function in_array;
 use function sprintf;
 use function strpos;
 
@@ -22,6 +23,40 @@ use function strpos;
  */
 class InvalidPhpDocTagValueRule implements Rule
 {
+
+	private const POSSIBLE_PHPSTAN_TAGS = [
+		'@phpstan-param',
+		'@phpstan-param-out',
+		'@phpstan-var',
+		'@phpstan-extends',
+		'@phpstan-implements',
+		'@phpstan-use',
+		'@phpstan-template',
+		'@phpstan-template-contravariant',
+		'@phpstan-template-covariant',
+		'@phpstan-return',
+		'@phpstan-throws',
+		'@phpstan-ignore-next-line',
+		'@phpstan-ignore-line',
+		'@phpstan-method',
+		'@phpstan-pure',
+		'@phpstan-impure',
+		'@phpstan-immutable',
+		'@phpstan-type',
+		'@phpstan-import-type',
+		'@phpstan-property',
+		'@phpstan-property-read',
+		'@phpstan-property-write',
+		'@phpstan-consistent-constructor',
+		'@phpstan-assert',
+		'@phpstan-assert-if-true',
+		'@phpstan-assert-if-false',
+		'@phpstan-self-out',
+		'@phpstan-this-out',
+		'@phpstan-allow-private-mutation',
+		'@phpstan-readonly',
+		'@phpstan-readonly-allow-private-mutation',
+	];
 
 	public function __construct(
 		private Lexer $phpDocLexer,
@@ -52,7 +87,6 @@ class InvalidPhpDocTagValueRule implements Rule
 				return [];
 			}
 		} else {
-			// mirrored with InvalidPHPStanDocTagRule
 			if ($node instanceof VirtualNode) {
 				return [];
 			}
@@ -75,6 +109,17 @@ class InvalidPhpDocTagValueRule implements Rule
 
 		$errors = [];
 		foreach ($phpDocNode->getTags() as $phpDocTag) {
+			if (strpos($phpDocTag->name, '@phpstan-') === 0
+				&& !in_array($phpDocTag->name, self::POSSIBLE_PHPSTAN_TAGS, true)
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Unknown PHPDoc tag: %s',
+					$phpDocTag->name,
+				))->identifier('phpDoc.phpstanTag')->build();
+
+				continue;
+			}
+
 			if (strpos($phpDocTag->name, '@psalm-') === 0) {
 				continue;
 			}

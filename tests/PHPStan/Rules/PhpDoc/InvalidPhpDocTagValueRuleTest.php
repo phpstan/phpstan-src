@@ -141,4 +141,49 @@ class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function dataRulePhpstan(): iterable
+	{
+		$errors = [
+			[
+				'Unknown PHPDoc tag: @phpstan-extens',
+				7,
+			],
+			[
+				'Unknown PHPDoc tag: @phpstan-pararm',
+				14,
+			],
+			[
+				'Unknown PHPDoc tag: @phpstan-varr',
+				44,
+			],
+			[
+				'Unknown PHPDoc tag: @phpstan-varr',
+				47,
+			],
+		];
+		yield [false, $errors];
+		yield [true, array_merge($errors, [
+			[
+				'Unknown PHPDoc tag: @phpstan-varr',
+				57,
+			],
+		])];
+	}
+
+	/**
+	 * @dataProvider dataRulePhpstan
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testRulePhpstan(bool $checkAllInvalidPhpDocs, array $expectedErrors): void
+	{
+		$this->checkAllInvalidPhpDocs = $checkAllInvalidPhpDocs;
+		$this->analyse([__DIR__ . '/data/invalid-phpstan-doc.php'], $expectedErrors);
+	}
+
+	public function testBug8697(): void
+	{
+		$this->checkAllInvalidPhpDocs = true;
+		$this->analyse([__DIR__ . '/data/bug-8697.php'], []);
+	}
+
 }

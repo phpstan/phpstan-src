@@ -92,12 +92,6 @@ services:
 		tags:
 			- phpstan.rules.rule
 	-
-		class: PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
-		arguments:
-			checkAllInvalidPhpDocs: %featureToggles.allInvalidPhpDocs%
-		tags:
-			- phpstan.rules.rule
-	-
 		class: PHPStan\Rules\PhpDoc\VarTagChangedExpressionTypeRule
 	-
 		class: PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule

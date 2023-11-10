@@ -741,17 +741,40 @@ class TypeSpecifier
 			return $types;
 		} elseif (
 			$expr instanceof Expr\BinaryOp\Coalesce
-			&& $context->true()
-			&& $scope->getType($expr->right)->isFalse()->yes()
+			&& !$context->null()
 		) {
-			return $this->create(
-				$expr->left,
-				new NullType(),
-				TypeSpecifierContext::createFalse(),
-				false,
-				$scope,
-				$rootExpr,
-			);
+			if (!$context->true()) {
+				if (!$scope instanceof MutatingScope) {
+					throw new ShouldNotHappenException();
+				}
+
+				$isset = $scope->issetCheck($expr->left, static fn () => true);
+
+				if ($isset !== true) {
+					return new SpecifiedTypes();
+				}
+
+				return $this->create(
+					$expr->left,
+					new NullType(),
+					$context->negate(),
+					false,
+					$scope,
+					$rootExpr,
+				);
+			}
+
+			if ((new ConstantBooleanType(false))->isSuperTypeOf($scope->getType($expr->right))->yes()) {
+				return $this->create(
+					$expr->left,
+					new NullType(),
+					TypeSpecifierContext::createFalse(),
+					false,
+					$scope,
+					$rootExpr,
+				);
+			}
+
 		} elseif (
 			$expr instanceof Expr\Empty_
 		) {

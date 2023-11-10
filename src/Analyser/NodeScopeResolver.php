@@ -2577,7 +2577,7 @@ class NodeScopeResolver
 			$scope = $this->revertNonNullability($condResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 			$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $expr->left);
 
-			$rightScope = $scope->filterByFalseyValue(new Expr\Isset_([$expr->left]));
+			$rightScope = $scope->filterByFalseyValue($expr);
 			$rightResult = $this->processExprNode($expr->right, $rightScope, $nodeCallback, $context->enterDeep());
 			$rightExprType = $scope->getType($expr->right);
 			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {

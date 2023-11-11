@@ -202,12 +202,29 @@ class OverridingMethodRule implements Rule
 		}
 
 		$prototypeReturnType = $prototypeVariant->getNativeReturnType();
+		$reportReturnType = true;
+		if ($this->phpVersion->hasTentativeReturnTypes()) {
+			$reportReturnType = !$realPrototype instanceof MethodPrototypeReflection || $realPrototype->getTentativeReturnType() === null || $prototype->isInternal()->no();
+		} else {
+			if ($realPrototype->isInternal()) {
+				if ($prototype->isInternal()->yes() && $prototype->getDeclaringClass()->getName() !== $realPrototype->getDeclaringClass()->getName()) {
+					$realPrototypeVariant = $realPrototype->getVariants()[0];
+					if (
+						$prototypeReturnType === null
+						&& $realPrototypeVariant->getReturnType() !== null
+					) {
+						$reportReturnType = false;
+					}
+				}
+
+				if ($reportReturnType) {
+					$reportReturnType = !$this->hasReturnTypeWillChangeAttribute($node->getOriginalNode());
+				}
+			}
+		}
 
 		if (
-			(
-				(!$realPrototype instanceof MethodPrototypeReflection || $realPrototype->getTentativeReturnType() === null)
-				|| $prototype->isInternal()->no()
-			)
+			$reportReturnType
 			&& !$this->methodParameterComparisonHelper->isReturnTypeCompatible($prototypeReturnType, $methodReturnType, $this->phpVersion->supportsReturnCovariance())
 		) {
 			if ($this->phpVersion->supportsReturnCovariance()) {

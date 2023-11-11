@@ -18,6 +18,7 @@ class MethodPrototypeReflection implements ClassMemberReflection
 		private bool $isPublic,
 		private bool $isAbstract,
 		private bool $isFinal,
+		private bool $isInternal,
 		private array $variants,
 		private ?Type $tentativeReturnType,
 	)
@@ -57,6 +58,11 @@ class MethodPrototypeReflection implements ClassMemberReflection
 	public function isFinal(): bool
 	{
 		return $this->isFinal;
+	}
+
+	public function isInternal(): bool
+	{
+		return $this->isInternal;
 	}
 
 	public function getDocComment(): ?string

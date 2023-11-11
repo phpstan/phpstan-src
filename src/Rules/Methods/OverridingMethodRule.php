@@ -16,6 +16,7 @@ use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
@@ -206,12 +207,13 @@ class OverridingMethodRule implements Rule
 		if ($this->phpVersion->hasTentativeReturnTypes()) {
 			$reportReturnType = !$realPrototype instanceof MethodPrototypeReflection || $realPrototype->getTentativeReturnType() === null || $prototype->isInternal()->no();
 		} else {
-			if ($realPrototype->isInternal()) {
+			if ($realPrototype instanceof MethodPrototypeReflection && $realPrototype->isInternal()) {
 				if ($prototype->isInternal()->yes() && $prototype->getDeclaringClass()->getName() !== $realPrototype->getDeclaringClass()->getName()) {
 					$realPrototypeVariant = $realPrototype->getVariants()[0];
 					if (
-						$prototypeReturnType === null
-						&& $realPrototypeVariant->getReturnType() !== null
+						$prototypeReturnType instanceof MixedType
+						&& !$prototypeReturnType->isExplicitMixed()
+						&& (!$realPrototypeVariant->getReturnType() instanceof MixedType || $realPrototypeVariant->getReturnType()->isExplicitMixed())
 					) {
 						$reportReturnType = false;
 					}

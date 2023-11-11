@@ -195,7 +195,7 @@ class OverridingMethodRule implements Rule
 					}
 				}
 
-				if ($reportReturnType) {
+				if ($reportReturnType && $prototype->isInternal()->yes()) {
 					$reportReturnType = !$this->hasReturnTypeWillChangeAttribute($node->getOriginalNode());
 				}
 			}

@@ -525,6 +525,9 @@ class OverridingMethodRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID < 80100) {
 			$errors = [];
 		}
+		if ($phpVersionId > PHP_VERSION_ID) {
+			$this->markTestSkipped();
+		}
 
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/tentative-return-types.php'], $errors);

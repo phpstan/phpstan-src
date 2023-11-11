@@ -510,7 +510,7 @@ class TypeSpecifier
 					return $extension->specifyTypes($functionReflection, $expr, $scope, $context);
 				}
 
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants());
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariant());
 				if (count($expr->getArgs()) > 0) {
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
@@ -550,7 +550,7 @@ class TypeSpecifier
 					}
 				}
 
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants());
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariant());
 				if (count($expr->getArgs()) > 0) {
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
@@ -595,7 +595,7 @@ class TypeSpecifier
 					}
 				}
 
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants());
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariant());
 				if (count($expr->getArgs()) > 0) {
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {

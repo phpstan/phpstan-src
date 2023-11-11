@@ -58,6 +58,7 @@ class CallStaticMethodsRule implements Rule
 				$scope,
 				$node->getArgs(),
 				$method->getVariants(),
+				$method->getNamedArgumentsVariant(),
 			),
 			$scope,
 			$method->getDeclaringClass()->isBuiltin(),

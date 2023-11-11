@@ -1885,6 +1885,7 @@ class MutatingScope implements Scope
 					$this,
 					$node->getArgs(),
 					$calledOnType->getCallableParametersAcceptors($this),
+					null,
 				)->getReturnType();
 			}
 
@@ -1910,6 +1911,7 @@ class MutatingScope implements Scope
 				$this,
 				$node->getArgs(),
 				$functionReflection->getVariants(),
+				$functionReflection->getNamedArgumentsVariant(),
 			);
 			$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
 			if ($normalizedNode !== null) {
@@ -4863,6 +4865,7 @@ class MutatingScope implements Scope
 			$this,
 			$methodCall->getArgs(),
 			$constructorMethod->getVariants(),
+			$constructorMethod->getNamedArgumentsVariant(),
 		);
 		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 
@@ -4937,6 +4940,7 @@ class MutatingScope implements Scope
 			$this,
 			$methodCall->getArgs(),
 			$constructorMethod->getVariants(),
+			$constructorMethod->getNamedArgumentsVariant(),
 		);
 
 		if ($this->explicitMixedInUnknownGenericNew) {
@@ -5022,6 +5026,7 @@ class MutatingScope implements Scope
 			$this,
 			$methodCall->getArgs(),
 			$methodReflection->getVariants(),
+			$methodReflection->getNamedArgumentsVariant(),
 		);
 		if ($methodCall instanceof MethodCall) {
 			$normalizedMethodCall = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $methodCall);

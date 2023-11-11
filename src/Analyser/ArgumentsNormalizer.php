@@ -70,6 +70,7 @@ final class ArgumentsNormalizer
 			$scope,
 			$passThruArgs,
 			$calledOnType->getCallableParametersAcceptors($scope),
+			null,
 		);
 
 		return [$parametersAcceptor, new FuncCall(

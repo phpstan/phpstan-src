@@ -96,6 +96,7 @@ class CallCallablesRule implements Rule
 			$scope,
 			$node->getArgs(),
 			$parametersAcceptors,
+			null,
 		);
 
 		if ($type instanceof ClosureType) {

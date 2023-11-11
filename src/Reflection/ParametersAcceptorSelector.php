@@ -76,6 +76,7 @@ class ParametersAcceptorSelector
 		Scope $scope,
 		array $args,
 		array $parametersAcceptors,
+		?ParametersAcceptorWithPhpDocs $namedArgumentsVariant = null,
 	): ParametersAcceptor
 	{
 		$types = [];
@@ -231,15 +232,25 @@ class ParametersAcceptorSelector
 			}
 		}
 
+		$hasName = false;
 		foreach ($args as $i => $arg) {
 			$type = $scope->getType($arg->value);
-			$index = $arg->name !== null ? $arg->name->toString() : $i;
+			if ($arg->name !== null) {
+				$index = $arg->name->toString();
+				$hasName = true;
+			} else {
+				$index = $i;
+			}
 			if ($arg->unpack) {
 				$unpack = true;
 				$types[$index] = $type->getIterableValueType();
 			} else {
 				$types[$index] = $type;
 			}
+		}
+
+		if ($hasName && $namedArgumentsVariant !== null) {
+			return self::selectFromTypes($types, [$namedArgumentsVariant], $unpack);
 		}
 
 		return self::selectFromTypes($types, $parametersAcceptors, $unpack);

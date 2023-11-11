@@ -27,6 +27,8 @@ interface ExtendedMethodReflection extends MethodReflection
 	 */
 	public function getVariants(): array;
 
+	public function getNamedArgumentsVariant(): ?ParametersAcceptorWithPhpDocs;
+
 	public function getAsserts(): Assertions;
 
 	public function getSelfOutType(): ?Type;

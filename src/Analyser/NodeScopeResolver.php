@@ -126,6 +126,7 @@ use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -214,6 +215,7 @@ class NodeScopeResolver
 		private readonly FileTypeMapper $fileTypeMapper,
 		private readonly StubPhpDocProvider $stubPhpDocProvider,
 		private readonly PhpVersion $phpVersion,
+		private readonly SignatureMapProvider $signatureMapProvider,
 		private readonly PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		private readonly FileHelper $fileHelper,
 		private readonly TypeSpecifier $typeSpecifier,
@@ -1696,6 +1698,7 @@ class NodeScopeResolver
 			$this->stubPhpDocProvider,
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
+			$this->signatureMapProvider,
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getAllowedSubTypesClassReflectionExtensions(),
@@ -1753,14 +1756,6 @@ class NodeScopeResolver
 		if ($isNull->yes()) {
 			return new EnsuredNonNullabilityResult($scope, []);
 		}
-
-		// keep certainty
-		$certainty = TrinaryLogic::createYes();
-		$hasExpressionType = $originalScope->hasExpressionType($exprToSpecify);
-		if (!$hasExpressionType->no()) {
-			$certainty = $hasExpressionType;
-		}
-
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
 		if ($exprType->equals($exprTypeWithoutNull)) {
 			$originalExprType = $originalScope->getType($exprToSpecify);
@@ -1768,7 +1763,7 @@ class NodeScopeResolver
 				$originalNativeType = $originalScope->getNativeType($exprToSpecify);
 
 				return new EnsuredNonNullabilityResult($scope, [
-					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $certainty),
+					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType),
 				]);
 			}
 			return new EnsuredNonNullabilityResult($scope, []);
@@ -1784,7 +1779,7 @@ class NodeScopeResolver
 		return new EnsuredNonNullabilityResult(
 			$scope,
 			[
-				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty),
+				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType),
 			],
 		);
 	}
@@ -1814,7 +1809,6 @@ class NodeScopeResolver
 				$specifiedExpressionResult->getExpression(),
 				$specifiedExpressionResult->getOriginalType(),
 				$specifiedExpressionResult->getOriginalNativeType(),
-				$specifiedExpressionResult->getCertainty(),
 			);
 		}
 

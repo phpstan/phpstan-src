@@ -83,6 +83,7 @@ class NativeMethodReflection implements ExtendedMethodReflection
 				$prototypeMethod->isPublic(),
 				$prototypeMethod->isAbstract(),
 				$prototypeMethod->isFinal(),
+				$prototypeMethod->isInternal(),
 				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants(),
 				$tentativeReturnType,
 			);
@@ -113,12 +114,17 @@ class NativeMethodReflection implements ExtendedMethodReflection
 
 	public function isInternal(): TrinaryLogic
 	{
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createFromBoolean($this->reflection->isInternal());
 	}
 
 	public function isFinal(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->reflection->isFinal());
+	}
+
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return $this->isFinal();
 	}
 
 	public function getThrowType(): ?Type

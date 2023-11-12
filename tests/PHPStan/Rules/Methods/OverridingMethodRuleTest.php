@@ -121,7 +121,11 @@ class OverridingMethodRuleTest extends RuleTestCase
 				280,
 			],
 			[
-				'Parameter #1 $index (int) of method OverridingFinalMethod\FixedArrayOffsetExists::offsetExists() is not ' . $contravariantMessage . ' with parameter #1 $offset (mixed) of method ArrayAccess<int,mixed>::offsetExists().',
+				'Method OverridingFinalMethod\ExtendsFinalWithAnnotation::doFoo() overrides @final method OverridingFinalMethod\FinalWithAnnotation::doFoo().',
+				303,
+			],
+			[
+				'Parameter #1 $index (int) of method OverridingFinalMethod\FixedArrayOffsetExists::offsetExists() is not ' . $contravariantMessage . ' with parameter #1 $index (mixed) of method SplFixedArray<mixed>::offsetExists().',
 				313,
 			],
 		];
@@ -521,6 +525,9 @@ class OverridingMethodRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID < 80100) {
 			$errors = [];
 		}
+		if ($phpVersionId > PHP_VERSION_ID) {
+			$this->markTestSkipped();
+		}
 
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/tentative-return-types.php'], $errors);
@@ -560,6 +567,145 @@ class OverridingMethodRuleTest extends RuleTestCase
 	{
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-9391.php'], []);
+	}
+
+	public function testBugWithIndirectPrototype(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/overriding-indirect-prototype.php'], [
+			[
+				'Return type mixed of method OverridingIndirectPrototype\Baz::doFoo() is not covariant with return type string of method OverridingIndirectPrototype\Bar::doFoo().',
+				28,
+			],
+		]);
+	}
+
+	public function testBug10043(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-10043.php'], [
+			[
+				'Method Bug10043\C::foo() overrides final method Bug10043\B::foo().',
+				17,
+			],
+		]);
+	}
+
+	public function testBug7859(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-7859.php'], [
+			[
+				'Method Bug7859\ExtendingClassImplementingSomeInterface::getList() overrides method Bug7859\ImplementingSomeInterface::getList() but misses parameter #2 $b.',
+				21,
+			],
+			[
+				'Method Bug7859\ExtendingClassNotImplementingSomeInterface::getList() overrides method Bug7859\NotImplementingSomeInterface::getList() but misses parameter #2 $b.',
+				37,
+			],
+		]);
+	}
+
+	public function testBug8081(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-8081.php'], [
+			[
+				'Return type mixed of method Bug8081\three::foo() is not covariant with return type array of method Bug8081\two::foo().',
+				21,
+			],
+		]);
+	}
+
+	public function testBug8500(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-8500.php'], [
+			[
+				'Return type mixed of method Bug8500\DBOHB::test() is not covariant with return type Bug8500\DBOA of method Bug8500\DBOHA::test().',
+				30,
+			],
+		]);
+	}
+
+	public function testBug9014(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-9014.php'], [
+			[
+				'Method Bug9014\Bar::test() overrides method Bug9014\Foo::test() but misses parameter #2 $test.',
+				16,
+			],
+			[
+				'Return type mixed of method Bug9014\extended::renderForUser() is not covariant with return type string of method Bug9014\middle::renderForUser().',
+				42,
+			],
+		]);
+	}
+
+	public function testBug9135(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-9135.php'], [
+			[
+				'Method Bug9135\Sub::sayHello() overrides @final method Bug9135\HelloWorld::sayHello().',
+				15,
+			],
+		]);
+	}
+
+	public function testBug10101(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-10101.php'], [
+			[
+				'Return type mixed of method Bug10101\B::next() is not covariant with return type void of method Bug10101\A::next().',
+				10,
+			],
+		]);
+	}
+
+	public function testBug9615(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$tipText = 'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.';
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-9615.php'], [
+			[
+				'Return type mixed of method Bug9615\ExpectComplaintsHere::accept() is not covariant with tentative return type bool of method FilterIterator<mixed,mixed,Traversable<mixed, mixed>>::accept().',
+				19,
+				$tipText,
+			],
+			[
+				'Return type mixed of method Bug9615\ExpectComplaintsHere::getChildren() is not covariant with tentative return type RecursiveIterator|null of method RecursiveIterator<mixed,mixed>::getChildren().',
+				20,
+				$tipText,
+			],
+		]);
 	}
 
 }

@@ -103,10 +103,6 @@ class DefinedVariableRuleTest extends RuleTestCase
 				145,
 			],
 			[
-				'Undefined variable: $negatedVariableInEmpty',
-				152,
-			],
-			[
 				'Undefined variable: $variableInEmpty',
 				155,
 			],
@@ -995,24 +991,6 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->checkMaybeUndefinedVariables = true;
 		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-5326.php'], []);
-	}
-
-	public function testIsStringNarrowsCertainty(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/isstring-certainty.php'], [
-			[
-				'Variable $a might not be defined.',
-				11,
-			],
-			[
-				'Undefined variable: $a',
-				19,
-			],
-		]);
 	}
 
 	public function testBug5266(): void

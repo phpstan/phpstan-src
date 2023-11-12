@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
 class EnsuredNonNullabilityResultExpression
@@ -13,7 +12,6 @@ class EnsuredNonNullabilityResultExpression
 		private Expr $expression,
 		private Type $originalType,
 		private Type $originalNativeType,
-		private TrinaryLogic $certainty,
 	)
 	{
 	}
@@ -31,11 +29,6 @@ class EnsuredNonNullabilityResultExpression
 	public function getOriginalNativeType(): Type
 	{
 		return $this->originalNativeType;
-	}
-
-	public function getCertainty(): TrinaryLogic
-	{
-		return $this->certainty;
 	}
 
 }

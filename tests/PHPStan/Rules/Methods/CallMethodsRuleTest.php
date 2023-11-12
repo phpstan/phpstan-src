@@ -3066,4 +3066,17 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTypedClassConstants(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/return-type-class-constant.php'], []);
+	}
+
 }

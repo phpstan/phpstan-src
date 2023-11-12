@@ -3,8 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Php\PhpVersion;
-use PHPStan\Reflection\MethodPrototypeReflection;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\IdentifierRuleError;
@@ -31,7 +30,7 @@ class MethodParameterComparisonHelper
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	public function compare(MethodPrototypeReflection $prototype, PhpMethodFromParserNodeReflection $method, bool $ignorable = false): array
+	public function compare(ExtendedMethodReflection $prototype, PhpMethodFromParserNodeReflection $method, bool $ignorable = false): array
 	{
 		/** @var list<IdentifierRuleError> $messages */
 		$messages = [];
@@ -164,9 +163,6 @@ class MethodParameterComparisonHelper
 				if ($this->phpVersion->supportsLessOverridenParametersWithVariadic()) {
 					$remainingPrototypeParameters = array_slice($prototypeVariant->getParameters(), $i);
 					foreach ($remainingPrototypeParameters as $j => $remainingPrototypeParameter) {
-						if (!$remainingPrototypeParameter instanceof ParameterReflectionWithPhpDocs) {
-							continue;
-						}
 						if ($methodParameter->getNativeType()->isSuperTypeOf($remainingPrototypeParameter->getNativeType())->yes()) {
 							continue;
 						}
@@ -235,10 +231,6 @@ class MethodParameterComparisonHelper
 			}
 
 			$methodParameterType = $methodParameter->getNativeType();
-
-			if (!$prototypeParameter instanceof ParameterReflectionWithPhpDocs) {
-				continue;
-			}
 
 			$prototypeParameterType = $prototypeParameter->getNativeType();
 			if (!$this->phpVersion->supportsParameterTypeWidening()) {

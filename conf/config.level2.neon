@@ -13,6 +13,7 @@ rules:
 	- PHPStan\Rules\Cast\PrintRule
 	- PHPStan\Rules\Classes\AccessPrivateConstantThroughStaticRule
 	- PHPStan\Rules\Comparison\UsageOfVoidMatchExpressionRule
+	- PHPStan\Rules\Constants\ValueAssignedToClassConstantRule
 	- PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
 	- PHPStan\Rules\Generics\ClassAncestorsRule
 	- PHPStan\Rules\Generics\ClassTemplateTypeRule

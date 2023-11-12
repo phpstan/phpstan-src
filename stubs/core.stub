@@ -69,6 +69,11 @@ function base64_encode(string $string) : string {}
 function bin2hex(string $string): string {}
 
 /**
+ * @return ($string is non-empty-string ? non-empty-string : string)
+ */
+function str_shuffle(string $string): string {}
+
+/**
  * @param array<mixed> $result
  * @param-out array<int|string, array|string> $result
  */

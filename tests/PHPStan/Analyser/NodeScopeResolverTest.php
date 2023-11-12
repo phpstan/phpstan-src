@@ -918,6 +918,10 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6904.php');
 		}
 
+		if (PHP_VERSION_ID >= 80300) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/class-constant-native-type.php');
+		}
+
 		if (PHP_VERSION_ID >= 80000) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-combine-php8.php');
 		} else {
@@ -973,6 +977,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		if (PHP_VERSION_ID >= 80300) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/json-validate.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/return-type-class-constant.php');
 		}
 
 		if (PHP_VERSION_ID >= 80100) {
@@ -1352,7 +1357,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/trigger-error-php7.php');
 		}
 
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/falsy-isset.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7915.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9714.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9105.php');
@@ -1363,11 +1367,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Functions/data/bug-9803.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/impure-connection-fns.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9963.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/str-shuffle.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9995.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/falsey-isset-certainty.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/falsey-empty-certainty.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-8366.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7291.php');
 	}
 
 	/**

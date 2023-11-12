@@ -33,4 +33,6 @@ interface ExtendedMethodReflection extends MethodReflection
 
 	public function returnsByReference(): TrinaryLogic;
 
+	public function isFinalByKeyword(): TrinaryLogic;
+
 }

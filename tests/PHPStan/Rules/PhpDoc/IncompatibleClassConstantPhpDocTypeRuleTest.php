@@ -2,10 +2,10 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
-use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<IncompatibleClassConstantPhpDocTypeRule>
@@ -15,7 +15,7 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new IncompatibleClassConstantPhpDocTypeRule(new GenericObjectTypeCheck(), new UnresolvableTypeHelper(), self::getContainer()->getByType(InitializerExprTypeResolver::class));
+		return new IncompatibleClassConstantPhpDocTypeRule(new GenericObjectTypeCheck(), new UnresolvableTypeHelper());
 	}
 
 	public function testRule(): void
@@ -26,47 +26,28 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 				9,
 			],
 			[
-				'PHPDoc tag @var for constant IncompatibleClassConstantPhpDoc\Foo::BAZ with type string is incompatible with value 1.',
-				17,
-			],
-			[
-				'PHPDoc tag @var for constant IncompatibleClassConstantPhpDoc\Foo::DOLOR with type IncompatibleClassConstantPhpDoc\Foo<int> is incompatible with value 1.',
-				26,
-			],
-			[
 				'PHPDoc tag @var for constant IncompatibleClassConstantPhpDoc\Foo::DOLOR contains generic type IncompatibleClassConstantPhpDoc\Foo<int> but class IncompatibleClassConstantPhpDoc\Foo is not generic.',
-				26,
-			],
-			[
-				'PHPDoc tag @var for constant IncompatibleClassConstantPhpDoc\Bar::BAZ with type string is incompatible with value 2.',
-				35,
+				12,
 			],
 		]);
 	}
 
-	public function testBug7352(): void
+	public function testNativeType(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-7352.php'], []);
-	}
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
 
-	public function testBug7352WithSubNamespace(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-7352-with-sub-namespace.php'], []);
-	}
-
-	public function testBug7273(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-7273.php'], []);
-	}
-
-	public function testBug7273b(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-7273b.php'], []);
-	}
-
-	public function testBug5655(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-5655.php'], []);
+		$this->analyse([__DIR__ . '/data/incompatible-class-constant-phpdoc-native-type.php'], [
+			[
+				'PHPDoc tag @var for constant IncompatibleClassConstantPhpDocNativeType\Foo::BAZ with type string is incompatible with native type int.',
+				14,
+			],
+			[
+				'PHPDoc tag @var for constant IncompatibleClassConstantPhpDocNativeType\Foo::LOREM with type int|string is not subtype of native type int.',
+				17,
+			],
+		]);
 	}
 
 }

@@ -123,6 +123,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 				$prototypeMethod->isPublic(),
 				$prototypeMethod->isAbstract(),
 				$prototypeMethod->isFinal(),
+				$prototypeMethod->isInternal(),
 				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants(),
 				$tentativeReturnType,
 			);
@@ -395,6 +396,11 @@ class PhpMethodReflection implements ExtendedMethodReflection
 	public function isFinal(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->isFinal || $this->reflection->isFinal());
+	}
+
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->reflection->isFinal());
 	}
 
 	public function isAbstract(): bool

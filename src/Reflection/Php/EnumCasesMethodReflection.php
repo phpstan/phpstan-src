@@ -90,6 +90,11 @@ class EnumCasesMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createYes();
 	}
 
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function isInternal(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

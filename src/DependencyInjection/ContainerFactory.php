@@ -25,6 +25,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Broker\Broker;
 use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
+use PHPStan\Node\Printer\Printer;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider;
@@ -177,6 +178,7 @@ class ContainerFactory
 			$reflector,
 			$phpParser,
 			$container->getByType(PhpStormStubsSourceStubber::class),
+			$container->getByType(Printer::class),
 		);
 
 		$broker = $container->getByType(Broker::class);

@@ -7,13 +7,13 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\InitializerExprContext;
-use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ParserNodeTypeToPHPStanType;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function sprintf;
@@ -27,7 +27,6 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 	public function __construct(
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
-		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
 	}
@@ -43,10 +42,15 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 			throw new ShouldNotHappenException();
 		}
 
+		$nativeType = null;
+		if ($node->type !== null) {
+			$nativeType = ParserNodeTypeToPHPStanType::resolve($node->type, $scope->getClassReflection());
+		}
+
 		$errors = [];
 		foreach ($node->consts as $const) {
 			$constantName = $const->name->toString();
-			$errors = array_merge($errors, $this->processSingleConstant($scope->getClassReflection(), $constantName));
+			$errors = array_merge($errors, $this->processSingleConstant($scope->getClassReflection(), $nativeType, $constantName));
 		}
 
 		return $errors;
@@ -55,18 +59,17 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
+	private function processSingleConstant(ClassReflection $classReflection, ?Type $nativeType, string $constantName): array
 	{
 		$constantReflection = $classReflection->getConstant($constantName);
 		if (!$constantReflection instanceof ClassConstantReflection) {
 			return [];
 		}
 
-		if (!$constantReflection->hasPhpDocType()) {
+		$phpDocType = $constantReflection->getPhpDocType();
+		if ($phpDocType === null) {
 			return [];
 		}
-
-		$phpDocType = $constantReflection->getValueType();
 
 		$errors = [];
 		if (
@@ -77,26 +80,24 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 				$constantReflection->getDeclaringClass()->getName(),
 				$constantName,
 			))->identifier('classConstant.unresolvableType')->build();
-		} else {
-			$nativeType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpr(), InitializerExprContext::fromClassReflection($constantReflection->getDeclaringClass()));
-			$isSuperType = $phpDocType->isSuperTypeOf($nativeType);
-			$verbosity = VerbosityLevel::getRecommendedLevelByType($phpDocType, $nativeType);
+		} elseif ($nativeType !== null) {
+			$isSuperType = $nativeType->isSuperTypeOf($phpDocType);
 			if ($isSuperType->no()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'PHPDoc tag @var for constant %s::%s with type %s is incompatible with value %s.',
+					'PHPDoc tag @var for constant %s::%s with type %s is incompatible with native type %s.',
 					$constantReflection->getDeclaringClass()->getDisplayName(),
 					$constantName,
-					$phpDocType->describe($verbosity),
-					$nativeType->describe(VerbosityLevel::value()),
+					$phpDocType->describe(VerbosityLevel::typeOnly()),
+					$nativeType->describe(VerbosityLevel::typeOnly()),
 				))->identifier('classConstant.phpDocType')->build();
 
 			} elseif ($isSuperType->maybe()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'PHPDoc tag @var for constant %s::%s with type %s is not subtype of value %s.',
+					'PHPDoc tag @var for constant %s::%s with type %s is not subtype of native type %s.',
 					$constantReflection->getDeclaringClass()->getDisplayName(),
 					$constantName,
-					$phpDocType->describe($verbosity),
-					$nativeType->describe(VerbosityLevel::value()),
+					$phpDocType->describe(VerbosityLevel::typeOnly()),
+					$nativeType->describe(VerbosityLevel::typeOnly()),
 				))->identifier('classConstant.phpDocType')->build();
 			}
 		}

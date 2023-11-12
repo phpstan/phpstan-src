@@ -56,7 +56,9 @@ rules:
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
 	- PHPStan\Rules\Classes\TraitAttributeClassRule
 	- PHPStan\Rules\Constants\FinalConstantRule
+	- PHPStan\Rules\Constants\NativeTypedClassConstantRule
 	- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
+	- PHPStan\Rules\Exceptions\NoncapturingCatchRule
 	- PHPStan\Rules\Exceptions\ThrowExpressionRule
 	- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
 	- PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule
@@ -89,6 +91,7 @@ rules:
 	- PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
 	- PHPStan\Rules\Properties\PropertyAttributesRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyRule
+	- PHPStan\Rules\Traits\ConstantsInTraitsRule
 	- PHPStan\Rules\Variables\UnsetRule
 	- PHPStan\Rules\Whitespace\FileWhitespaceRule
 

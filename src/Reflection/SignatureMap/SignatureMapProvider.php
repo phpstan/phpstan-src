@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\Type\Type;
 use ReflectionFunctionAbstract;
 
 interface SignatureMapProvider
@@ -31,5 +32,12 @@ interface SignatureMapProvider
 	 * @return array{hasSideEffects: bool}
 	 */
 	public function getFunctionMetadata(string $functionName): array;
+
+	public function hasClassConstantMetadata(string $className, string $constantName): bool;
+
+	/**
+	 * @return array{nativeType: Type}
+	 */
+	public function getClassConstantMetadata(string $className, string $constantName): array;
 
 }

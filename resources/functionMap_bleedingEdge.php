@@ -3,6 +3,7 @@
 return [
 	'new' => [
 		'error_log' => ['bool', 'message'=>'string', 'message_type='=>'0|1|2|3|4', 'destination='=>'string', 'extra_headers='=>'string'],
+		'SplFileObject::flock' => ['bool', 'operation'=>'int-mask<LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB>', '&w_wouldblock='=>'0|1'],
 		'Imagick::adaptiveBlurImage' => ['bool', 'radius'=>'float', 'sigma'=>'float', 'channel='=>'Imagick::CHANNEL_*'],
 		'Imagick::adaptiveSharpenImage' => ['bool', 'radius'=>'float', 'sigma'=>'float', 'channel='=>'Imagick::CHANNEL_*'],
 		'Imagick::addNoiseImage' => ['bool', 'noise_type'=>'Imagick::NOISE_*', 'channel='=>'Imagick::CHANNEL_*'],
@@ -106,9 +107,10 @@ return [
 		'ImagickKernel::fromBuiltin' => ['ImagickKernel', 'kernelType'=>'Imagick::KERNEL_*', 'kernelString'=>'string'],
 		'ImagickKernel::scale' => ['void', 'scale'=>'float', 'normalizeFlag'=>'Imagick::NORMALIZE_KERNEL_*'],
 		'max' => ['', '...arg1'=>'non-empty-array'],
+		'mb_detect_order' => ['bool|list<non-falsy-string>', 'encoding_list='=>'non-empty-list<non-falsy-string>|non-falsy-string'],
 		'min' => ['', '...arg1'=>'non-empty-array'],
 		'file' => ['list<string>|false', 'filename'=>'string', 'flags='=>'int-mask<FILE_USE_INCLUDE_PATH|FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES|FILE_NO_DEFAULT_CONTEXT>', 'context='=>'resource'],
-		'flock' => ['bool', 'fp'=>'resource', 'operation'=>'int-mask<LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB>', '&w_wouldblock='=>'int'],
+		'flock' => ['bool', 'fp'=>'resource', 'operation'=>'int-mask<LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB>', '&w_wouldblock='=>'0|1'],
 		'ftp_append' => ['bool', 'ftp'=>'resource', 'remote_file'=>'string', 'local_file'=>'string', 'mode='=>'FTP_ASCII|FTP_BINARY'],
 		'ftp_fget' => ['bool', 'stream'=>'resource', 'fp'=>'resource', 'remote_file'=>'string', 'mode='=>'FTP_ASCII|FTP_BINARY', 'resumepos='=>'int'],
 		'ftp_fput' => ['bool', 'stream'=>'resource', 'remote_file'=>'string', 'fp'=>'resource', 'mode='=>'FTP_ASCII|FTP_BINARY', 'startpos='=>'int'],

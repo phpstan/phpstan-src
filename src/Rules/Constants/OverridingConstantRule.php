@@ -98,6 +98,34 @@ class OverridingConstantRule implements Rule
 			return $errors;
 		}
 
+		$prototypeNativeType = $prototype->getNativeType();
+		$constantNativeType = $constantReflection->getNativeType();
+		if ($prototypeNativeType !== null) {
+			if ($constantNativeType !== null) {
+				if (!$prototypeNativeType->isSuperTypeOf($constantNativeType)->yes()) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Native type %s of constant %s::%s is not covariant with native type %s of constant %s::%s.',
+						$constantNativeType->describe(VerbosityLevel::typeOnly()),
+						$constantReflection->getDeclaringClass()->getDisplayName(),
+						$constantReflection->getName(),
+						$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
+						$prototype->getDeclaringClass()->getDisplayName(),
+						$prototype->getName(),
+					))->identifier('classConstant.nativeType')->nonIgnorable()->build();
+				}
+			} else {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Constant %s::%s overriding constant %s::%s (%s) should also have native type %s.',
+					$constantReflection->getDeclaringClass()->getDisplayName(),
+					$constantReflection->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
+					$prototype->getName(),
+					$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
+					$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
+				))->identifier('classConstant.missingNativeType')->nonIgnorable()->build();
+			}
+		}
+
 		if (!$prototype->hasPhpDocType()) {
 			return $errors;
 		}

@@ -41,6 +41,7 @@ use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
+use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -82,6 +83,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
 		private FileHelper $fileHelper,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
+		private SignatureMapProvider $signatureMapProvider,
 	)
 	{
 	}
@@ -133,6 +135,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$this->stubPhpDocProvider,
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
+			$this->signatureMapProvider,
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getAllowedSubTypesClassReflectionExtensions(),
@@ -209,6 +212,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$this->stubPhpDocProvider,
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
+			$this->signatureMapProvider,
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getAllowedSubTypesClassReflectionExtensions(),

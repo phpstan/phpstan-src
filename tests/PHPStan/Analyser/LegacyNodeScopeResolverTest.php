@@ -5333,7 +5333,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbInternalEncodingWithUnknownEncoding',
 			],
 			[
-				'list<string>',
+				'list<non-falsy-string>',
 				'$mbEncodingAliasesWithValidEncoding',
 			],
 			[
@@ -5341,11 +5341,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbEncodingAliasesWithInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
+				PHP_VERSION_ID < 80000 ? 'list<non-falsy-string>|false' : 'list<non-falsy-string>',
 				'$mbEncodingAliasesWithValidAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
+				PHP_VERSION_ID < 80000 ? 'list<non-falsy-string>|false' : 'list<non-falsy-string>',
 				'$mbEncodingAliasesWithUnknownEncoding',
 			],
 			[
@@ -8409,6 +8409,52 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				'DynamicConstants\\DynamicConstantClass::DYNAMIC_CONSTANT_IN_CLASS',
 				'GLOBAL_DYNAMIC_CONSTANT',
+			],
+		);
+	}
+
+	public function dataDynamicConstantsWithNativeTypes(): array
+	{
+		return [
+			[
+				'int',
+				'DynamicConstantNativeTypes\Foo::FOO',
+			],
+			[
+				'int|string',
+				'DynamicConstantNativeTypes\Foo::BAR',
+			],
+			[
+				'int',
+				'$foo::FOO',
+			],
+			[
+				'int|string',
+				'$foo::BAR',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataDynamicConstantsWithNativeTypes
+	 */
+	public function testDynamicConstantsWithNativeTypes(
+		string $description,
+		string $expression,
+	): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$this->assertTypes(
+			__DIR__ . '/data/dynamic-constant-native-types.php',
+			$description,
+			$expression,
+			'die',
+			[
+				'DynamicConstantNativeTypes\Foo::FOO',
+				'DynamicConstantNativeTypes\Foo::BAR',
 			],
 		);
 	}

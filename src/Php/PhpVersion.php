@@ -41,6 +41,11 @@ class PhpVersion
 		return $this->versionId >= 70400;
 	}
 
+	public function supportsNoncapturingCatches(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 	public function supportsNativeUnionTypes(): bool
 	{
 		return $this->versionId >= 80000;
@@ -228,6 +233,16 @@ class PhpVersion
 	}
 
 	public function supportsJsonValidate(): bool
+	{
+		return $this->versionId >= 80300;
+	}
+
+	public function supportsConstantsInTraits(): bool
+	{
+		return $this->versionId >= 80200;
+	}
+
+	public function supportsNativeTypesInClassConstants(): bool
 	{
 		return $this->versionId >= 80300;
 	}

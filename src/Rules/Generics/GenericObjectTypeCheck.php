@@ -136,6 +136,10 @@ class GenericObjectTypeCheck
 					continue;
 				}
 
+				if ($genericTypeVariance->bivariant()) {
+					continue;
+				}
+
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$typeIsNotSubtypeMessage,
 					$genericTypeType->describe(VerbosityLevel::typeOnly()),

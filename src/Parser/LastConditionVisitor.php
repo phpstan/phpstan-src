@@ -26,6 +26,17 @@ class LastConditionVisitor extends NodeVisitorAbstract
 			}
 		}
 
+		if (
+			$node instanceof Node\Stmt\If_
+			&& $node->else instanceof Node\Stmt\Else_
+			&& count($node->else->stmts) === 1
+			&& $node->else->stmts[0] instanceof Node\Stmt\If_
+			&& $node->else->stmts[0]->else === null
+		) {
+			// consider last else if of an if / else if combination to be the last condition
+			$node->else->stmts[0]->cond->setAttribute(self::ATTRIBUTE_NAME, true);
+		}
+
 		if ($node instanceof Node\Expr\Match_ && $node->arms !== []) {
 			$lastArm = count($node->arms) - 1;
 

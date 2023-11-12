@@ -425,12 +425,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	public function testStrictComparisonPhp71(): void
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
-		$this->analyse([__DIR__ . '/data/strict-comparison-71.php'], [
-			[
-				'Strict comparison using === between null and null will always evaluate to true.',
-				20,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/strict-comparison-71.php'], []);
 	}
 
 	public function testStrictComparisonPropertyNativeTypesPhp74(): void
@@ -988,6 +983,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-4061.php'], []);
+	}
+
+	public function testBug10113(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/bug-10113.php'], []);
 	}
 
 }

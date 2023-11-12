@@ -7,7 +7,6 @@ use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;

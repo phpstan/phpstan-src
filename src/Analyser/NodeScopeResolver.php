@@ -2019,7 +2019,7 @@ class NodeScopeResolver
 					$scope,
 					$expr->getArgs(),
 					$functionReflection->getVariants(),
-					$functionReflection->getNamedArgumentsVariant(),
+					$functionReflection->getNamedArgumentsVariants(),
 				);
 			}
 
@@ -2217,7 +2217,7 @@ class NodeScopeResolver
 						$scope,
 						$expr->getArgs(),
 						$methodReflection->getVariants(),
-						$methodReflection->getNamedArgumentsVariant(),
+						$methodReflection->getNamedArgumentsVariants(),
 					);
 
 					$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
@@ -2329,7 +2329,7 @@ class NodeScopeResolver
 							$scope,
 							$expr->getArgs(),
 							$methodReflection->getVariants(),
-							$methodReflection->getNamedArgumentsVariant(),
+							$methodReflection->getNamedArgumentsVariants(),
 						);
 
 						$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
@@ -2718,7 +2718,7 @@ class NodeScopeResolver
 							$scope,
 							$expr->getArgs(),
 							$constructorReflection->getVariants(),
-							$constructorReflection->getNamedArgumentsVariant(),
+							$constructorReflection->getNamedArgumentsVariants(),
 						);
 						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, $expr->class, $expr->getArgs(), $scope);
 						if ($constructorThrowPoint !== null) {

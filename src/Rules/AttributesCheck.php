@@ -116,7 +116,7 @@ class AttributesCheck
 						$scope,
 						$attribute->args,
 						$attributeConstructor->getVariants(),
-						$attributeConstructor->getNamedArgumentsVariant(),
+						$attributeConstructor->getNamedArgumentsVariants(),
 					),
 					$scope,
 					$attributeConstructor->getDeclaringClass()->isBuiltin(),

@@ -50,7 +50,7 @@ class CallMethodsRule implements Rule
 				$scope,
 				$node->getArgs(),
 				$methodReflection->getVariants(),
-				$methodReflection->getNamedArgumentsVariant(),
+				$methodReflection->getNamedArgumentsVariants(),
 			),
 			$scope,
 			$declaringClass->isBuiltin(),

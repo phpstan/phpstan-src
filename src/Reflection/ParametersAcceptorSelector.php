@@ -71,12 +71,13 @@ class ParametersAcceptorSelector
 	/**
 	 * @param Node\Arg[] $args
 	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[]|null $namedArgumentVariants
 	 */
 	public static function selectFromArgs(
 		Scope $scope,
 		array $args,
 		array $parametersAcceptors,
-		?ParametersAcceptorWithPhpDocs $namedArgumentsVariant = null,
+		?array $namedArgumentVariants = null,
 	): ParametersAcceptor
 	{
 		$types = [];
@@ -249,8 +250,8 @@ class ParametersAcceptorSelector
 			}
 		}
 
-		if ($hasName && $namedArgumentsVariant !== null) {
-			return self::selectFromTypes($types, [$namedArgumentsVariant], $unpack);
+		if ($hasName && $namedArgumentsVariants !== null) {
+			return self::selectFromTypes($types, $namedArgumentsVariants, $unpack);
 		}
 
 		return self::selectFromTypes($types, $parametersAcceptors, $unpack);

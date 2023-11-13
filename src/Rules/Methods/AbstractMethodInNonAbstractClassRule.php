@@ -29,10 +29,11 @@ class AbstractMethodInNonAbstractClassRule implements Rule
 		$class = $scope->getClassReflection();
 
 		if (!$class->isAbstract() && $node->isAbstract()) {
+			$description = $class->getClassTypeDescription();
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'%s %s contains abstract method %s().',
-					$class->isInterface() ? 'Interface' : 'Non-abstract class',
+					$description === 'Class' ? 'Non-abstract class' : $description,
 					$class->getDisplayName(),
 					$node->name->toString(),
 				))
@@ -54,6 +55,8 @@ class AbstractMethodInNonAbstractClassRule implements Rule
 					->build(),
 			];
 		}
+
+		return [];
 	}
 
 }

@@ -6,6 +6,7 @@ use Bug3406\AbstractFoo;
 use Bug3406\ClassFoo;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<AbstractMethodInNonAbstractClassRule>
@@ -66,6 +67,24 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 			[
 				'Non-abstract method HelloWorld::sayHello() must contain a body.',
 				5,
+			],
+		]);
+	}
+
+	public function testEnum(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/method-in-enum-without-body.php'], [
+			[
+				'Non-abstract method MethodInEnumWithoutBody\Foo::doFoo() must contain a body.',
+				8,
+			],
+			[
+				'Enum MethodInEnumWithoutBody\Foo contains abstract method doBar().',
+				10,
 			],
 		]);
 	}

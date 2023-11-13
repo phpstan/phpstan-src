@@ -31,6 +31,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Classes/data/implements-error.php \
 		--exclude tests/PHPStan/Rules/Classes/data/interface-extends-error.php \
 		--exclude tests/PHPStan/Rules/Classes/data/trait-use-error.php \
+		--exclude tests/PHPStan/Rules/Methods/data/method-in-enum-without-body.php \
 		--exclude tests/PHPStan/Rules/Properties/data/default-value-for-native-property-type.php \
 		--exclude tests/PHPStan/Rules/Arrays/data/empty-array-item.php \
 		--exclude tests/PHPStan/Rules/Classes/data/invalid-promoted-properties.php \

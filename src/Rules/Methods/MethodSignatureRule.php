@@ -28,6 +28,7 @@ use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use function count;
+use function is_bool;
 use function min;
 use function sprintf;
 use function strtolower;
@@ -41,6 +42,7 @@ class MethodSignatureRule implements Rule
 	public function __construct(
 		private bool $reportMaybes,
 		private bool $reportStatic,
+		private bool $abstractTraitMethod,
 	)
 	{
 	}
@@ -162,6 +164,24 @@ class MethodSignatureRule implements Rule
 			}
 
 			$parentMethods[] = $interface->getNativeMethod($methodName);
+		}
+
+		if ($this->abstractTraitMethod) {
+			foreach ($class->getTraits(true) as $trait) {
+				if (!$trait->hasNativeMethod($methodName)) {
+					continue;
+				}
+
+				$method = $trait->getNativeMethod($methodName);
+				$isAbstract = $method->isAbstract();
+				if (is_bool($isAbstract)) {
+					if ($isAbstract) {
+						$parentMethods[] = $method;
+					}
+				} elseif ($isAbstract->yes()) {
+					$parentMethods[] = $method;
+				}
+			}
 		}
 
 		return $parentMethods;

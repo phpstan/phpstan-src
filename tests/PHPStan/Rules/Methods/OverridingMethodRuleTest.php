@@ -23,7 +23,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 		return new OverridingMethodRule(
 			$phpVersion,
-			new MethodSignatureRule(true, true),
+			new MethodSignatureRule(true, true, true),
 			false,
 			new MethodParameterComparisonHelper($phpVersion, true),
 			true,

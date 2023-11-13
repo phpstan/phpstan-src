@@ -23,7 +23,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 		return new OverridingMethodRule(
 			$phpVersion,
-			new MethodSignatureRule($this->reportMaybes, $this->reportStatic),
+			new MethodSignatureRule($this->reportMaybes, $this->reportStatic, true),
 			true,
 			new MethodParameterComparisonHelper($phpVersion, true),
 			true,
@@ -449,6 +449,19 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-9905.php'], []);
+	}
+
+	public function testTraits(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+
+		$this->analyse([__DIR__ . '/data/overriding-trait-methods-phpdoc.php'], [
+			[
+				'Parameter #1 $i (non-empty-string) of method OverridingTraitMethodsPhpDoc\Bar::doBar() should be contravariant with parameter $i (string) of method OverridingTraitMethodsPhpDoc\Foo::doBar()',
+				33,
+			],
+		]);
 	}
 
 }

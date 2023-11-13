@@ -50,6 +50,7 @@ parametersSchema:
 		notAnalysedTrait: bool()
 		curlSetOptTypes: bool()
 		listType: bool()
+		abstractTraitMethod: bool()
 		missingMagicSerializationRule: bool()
 		nullContextForVoidReturningFunctions: bool()
 		unescapeStrings: bool()

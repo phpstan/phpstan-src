@@ -41,3 +41,4 @@ parameters:
 		detectDeadTypeInMultiCatch: true
 		zeroFiles: true
 		callUserFunc: true
+		finalByPhpDoc: true

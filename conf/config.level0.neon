@@ -151,6 +151,7 @@ services:
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
 			genericPrototypeMessage: %featureToggles.genericPrototypeMessage%
+			finalByPhpDoc: %featureToggles.finalByPhpDoc%
 		tags:
 			- phpstan.rules.rule
 

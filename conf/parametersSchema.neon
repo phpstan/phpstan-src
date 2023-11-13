@@ -71,6 +71,7 @@ parametersSchema:
 		detectDeadTypeInMultiCatch: bool()
 		zeroFiles: bool()
 		callUserFunc: bool()
+		finalByPhpDoc: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

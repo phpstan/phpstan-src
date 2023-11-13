@@ -140,4 +140,18 @@ class ReflectionProviderTest extends PHPStanTestCase
 		);
 	}
 
+	public function testNativeClassConstantTypeInEvaledClass(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		eval('namespace NativeClassConstantInEvaledClass; class Foo { public const int FOO = 1; }');
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass('NativeClassConstantInEvaledClass\\Foo');
+		$constant = $class->getConstant('FOO');
+		$this->assertSame('int', $constant->getValueType()->describe(VerbosityLevel::precise()));
+	}
+
 }

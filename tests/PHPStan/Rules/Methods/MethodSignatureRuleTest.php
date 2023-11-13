@@ -432,7 +432,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $i (non-empty-string) of method OverridingTraitMethodsPhpDoc\Bar::doBar() should be contravariant with parameter $i (string) of method OverridingTraitMethodsPhpDoc\Foo::doBar()',
 				33,
-			]
+			],
 		]);
 	}
 

@@ -15,6 +15,7 @@ use function array_map;
 use function array_merge;
 use function count;
 use function implode;
+use function is_bool;
 
 class UnionTypeMethodReflection implements ExtendedMethodReflection
 {

@@ -26,7 +26,10 @@ class PropertiesInInterfaceRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message('Interfaces may not include properties.')->nonIgnorable()->build(),
+			RuleErrorBuilder::message('Interfaces may not include properties.')
+				->nonIgnorable()
+				->identifier('property.inInterface')
+				->build(),
 		];
 	}
 

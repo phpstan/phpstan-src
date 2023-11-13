@@ -41,19 +41,19 @@ class ConflictingTraitConstantsRuleTest extends RuleTestCase
 				59,
 			],
 			[
-				'Public constant ConflictingTraitConstants\Bar5::PRIVATE_CONSTANT overriding private constant ConflictingTraitConstants\Foo::PRIVATE_CONSTANT should also be private.',
+				'Public constant ConflictingTraitConstants\Bar6::PRIVATE_CONSTANT overriding private constant ConflictingTraitConstants\Foo::PRIVATE_CONSTANT should also be private.',
 				68,
 			],
 			[
-				'Non-final constant ConflictingTraitConstants\Bar6::PUBLIC_FINAL_CONSTANT overriding final constant ConflictingTraitConstants\Foo::PUBLIC_FINAL_CONSTANT should also be final.',
+				'Non-final constant ConflictingTraitConstants\Bar7::PUBLIC_FINAL_CONSTANT overriding final constant ConflictingTraitConstants\Foo::PUBLIC_FINAL_CONSTANT should also be final.',
 				77,
 			],
 			[
-				'Final constant ConflictingTraitConstants\Bar7::PUBLIC_CONSTANT overriding non-final constant ConflictingTraitConstants\Foo::PUBLIC_CONSTANT should also be non-final.',
+				'Final constant ConflictingTraitConstants\Bar8::PUBLIC_CONSTANT overriding non-final constant ConflictingTraitConstants\Foo::PUBLIC_CONSTANT should also be non-final.',
 				86,
 			],
 			[
-				'Constant ConflictingTraitConstants\Bar8::PUBLIC_CONSTANT with value 2 overriding constant ConflictingTraitConstants\Foo::PUBLIC_CONSTANT with different value 1 should have the same value.',
+				'Constant ConflictingTraitConstants\Bar9::PUBLIC_CONSTANT with value 2 overriding constant ConflictingTraitConstants\Foo::PUBLIC_CONSTANT with different value 1 should have the same value.',
 				96,
 			],
 		]);

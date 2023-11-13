@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.2
 
 namespace ConflictingTraitConstants;
 
@@ -60,7 +60,7 @@ class Bar5
 
 }
 
-class Bar5
+class Bar6
 {
 
 	use Foo;
@@ -69,7 +69,7 @@ class Bar5
 
 }
 
-class Bar6
+class Bar7
 {
 
 	use Foo;
@@ -78,7 +78,7 @@ class Bar6
 
 }
 
-class Bar7
+class Bar8
 {
 
 	use Foo;
@@ -88,7 +88,7 @@ class Bar7
 }
 
 
-class Bar8
+class Bar9
 {
 
 	use Foo;

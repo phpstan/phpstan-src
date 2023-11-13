@@ -43,6 +43,17 @@ class ConstantArrayTypeBuilderInnards
 	{
 	}
 
+	public function duplicate(): self
+	{
+		return new self(
+			$this->keyTypes,
+			$this->valueTypes,
+			$this->nextAutoIndexes,
+			$this->optionalKeys,
+			$this->isList,
+		);
+	}
+
 	public function setValueTypeForNewOffset(Type $valueType, bool $optional): void
 	{
 		$newAutoIndexes = $optional ? $this->nextAutoIndexes : [];

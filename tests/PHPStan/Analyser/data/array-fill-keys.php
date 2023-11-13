@@ -54,14 +54,14 @@ function withObjectKey() : array
 function withUnionKeys(): void
 {
 	$arr1 = ['foo', rand(0, 1) ? 'bar1' : 'bar2', 'baz'];
-	assertType("non-empty-array<'bar1'|'bar2'|'baz'|'foo', 'b'>", array_fill_keys($arr1, 'b'));
+	assertType("array{foo: 'b', bar1: 'b', baz: 'b'}|array{foo: 'b', bar2: 'b', baz: 'b'}", array_fill_keys($arr1, 'b'));
 
 	$arr2 = ['foo'];
 	if (rand(0, 1)) {
 		$arr2[] = 'bar';
 	}
 	$arr2[] = 'baz';
-	assertType("non-empty-array<'bar'|'baz'|'foo', 'b'>", array_fill_keys($arr2, 'b'));
+	assertType("array{foo: 'b', bar?: 'b', baz?: 'b'}", array_fill_keys($arr2, 'b'));
 }
 
 function withOptionalKeys(): void

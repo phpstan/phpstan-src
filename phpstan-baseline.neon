@@ -829,11 +829,6 @@ parameters:
 		-
 			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Type is always PHPStan\\\\Type\\\\Constant\\\\ConstantIntegerType\\|PHPStan\\\\Type\\\\Constant\\\\ConstantStringType but it's error\\-prone and dangerous\\.$#"
 			count: 1
-			path: src/Type/Constant/ConstantArrayTypeBuilder.php
-
-		-
-			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Type is always PHPStan\\\\Type\\\\Constant\\\\ConstantIntegerType\\|PHPStan\\\\Type\\\\Constant\\\\ConstantStringType but it's error\\-prone and dangerous\\.$#"
-			count: 1
 			path: src/Type/Constant/ConstantArrayTypeBuilderInnards.php
 
 		-

@@ -118,40 +118,25 @@ class ConstantArrayTypeBuilder
 			}
 			if (
 				count($scalarTypes) > 0
-				&& count($scalarTypes) < self::ARRAY_COUNT_LIMIT
-				&& count($this->innards) === 1
+				&& (count($scalarTypes) * count($this->innards)) < self::ARRAY_COUNT_LIMIT
 			) {
-				$innard = $this->innards[0];
-				$match = true;
-				$valueTypes = $innard->valueTypes;
+				$newInnards = [];
 				foreach ($scalarTypes as $scalarType) {
-					$scalarOffsetType = $scalarType->toArrayKey();
-					if (!$scalarOffsetType instanceof ConstantIntegerType && !$scalarOffsetType instanceof ConstantStringType) {
-						throw new ShouldNotHappenException();
-					}
-					$offsetMatch = false;
-
-					/** @var ConstantIntegerType|ConstantStringType $keyType */
-					foreach ($innard->keyTypes as $i => $keyType) {
-						if ($keyType->getValue() !== $scalarOffsetType->getValue()) {
-							continue;
+					foreach ($this->innards as $innard) {
+						$scalarOffsetType = $scalarType->toArrayKey();
+						if (!$scalarOffsetType instanceof ConstantIntegerType && !$scalarOffsetType instanceof ConstantStringType) {
+							throw new ShouldNotHappenException();
 						}
 
-						$valueTypes[$i] = TypeCombinator::union($valueTypes[$i], $valueType);
-						$offsetMatch = true;
+						$newInnard = $innard->duplicate();
+						$newInnard->setValueTypeForConstantOffset($scalarOffsetType, $valueType, $optional);
+						$newInnards[] = $newInnard;
 					}
-
-					if ($offsetMatch) {
-						continue;
-					}
-
-					$match = false;
 				}
 
-				if ($match) {
-					$innard->valueTypes = $valueTypes;
-					return;
-				}
+				$this->innards = $newInnards;
+
+				return;
 			}
 		}
 

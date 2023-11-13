@@ -79,6 +79,17 @@ class OverridingMethodRule implements Rule
 					}
 				}
 			}
+
+			if ($this->phpVersion->supportsOverrideAttribute() && $this->hasOverrideAttribute($node->getOriginalNode())) {
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Method %s::%s() has #[Override] attribute but does not override any method.',
+						$method->getDeclaringClass()->getDisplayName(),
+						$method->getName(),
+					))->nonIgnorable()->build(),
+				];
+			}
+
 			return [];
 		}
 
@@ -259,6 +270,19 @@ class OverridingMethodRule implements Rule
 		foreach ($method->attrGroups as $attrGroup) {
 			foreach ($attrGroup->attrs as $attr) {
 				if ($attr->name->toLowerString() === 'returntypewillchange') {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private function hasOverrideAttribute(Node\Stmt\ClassMethod $method): bool
+	{
+		foreach ($method->attrGroups as $attrGroup) {
+			foreach ($attrGroup->attrs as $attr) {
+				if ($attr->name->toLowerString() === 'override') {
 					return true;
 				}
 			}

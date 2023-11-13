@@ -724,4 +724,19 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/overriding-trait-methods.php'], $errors);
 	}
 
+	public function testOverrideAttribute(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/override-attribute.php'], [
+			[
+				'Method OverrideAttribute\Bar::test2() has #[Override] attribute but does not override any method.',
+				24,
+			],
+		]);
+	}
+
 }

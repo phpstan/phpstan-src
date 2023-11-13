@@ -35,6 +35,7 @@ class OverridingMethodRule implements Rule
 		private bool $checkPhpDocMethodSignatures,
 		private MethodParameterComparisonHelper $methodParameterComparisonHelper,
 		private bool $genericPrototypeMessage,
+		private bool $finalByPhpDoc,
 	)
 	{
 	}
@@ -67,7 +68,7 @@ class OverridingMethodRule implements Rule
 								->build(),
 						], $node, $scope);
 					}
-					if ($parentConstructor->isFinal()->yes()) {
+					if ($parentConstructor->isFinal()->yes() && $this->finalByPhpDoc) {
 						return $this->addErrors([
 							RuleErrorBuilder::message(sprintf(
 								'Method %s::%s() overrides @final method %s::%s().',
@@ -96,7 +97,7 @@ class OverridingMethodRule implements Rule
 				->nonIgnorable()
 				->identifier('method.parentMethodFinal')
 				->build();
-		} elseif ($prototype->isFinal()->yes()) {
+		} elseif ($prototype->isFinal()->yes() && $this->finalByPhpDoc) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() overrides @final method %s::%s().',
 				$method->getDeclaringClass()->getDisplayName(),

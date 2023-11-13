@@ -58,6 +58,8 @@ lint:
 		--exclude tests/PHPStan/Rules/Methods/data/bug-8081.php \
 		--exclude tests/PHPStan/Rules/Methods/data/bug-9014.php \
 		--exclude tests/PHPStan/Rules/Methods/data/bug-10101.php \
+		--exclude tests/PHPStan/Rules/Methods/data/final-method-by-phpdoc.php \
+		--exclude tests/PHPStan/Rules/Traits/data/conflicting-trait-constants-types.php \
 		src tests
 
 cs:

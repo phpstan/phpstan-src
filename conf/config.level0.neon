@@ -92,6 +92,7 @@ rules:
 	- PHPStan\Rules\Properties\PropertiesInInterfaceRule
 	- PHPStan\Rules\Properties\PropertyAttributesRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyRule
+	- PHPStan\Rules\Traits\ConflictingTraitConstantsRule
 	- PHPStan\Rules\Traits\ConstantsInTraitsRule
 	- PHPStan\Rules\Variables\UnsetRule
 	- PHPStan\Rules\Whitespace\FileWhitespaceRule
@@ -152,6 +153,7 @@ services:
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
 			genericPrototypeMessage: %featureToggles.genericPrototypeMessage%
+			finalByPhpDoc: %featureToggles.finalByPhpDoc%
 		tags:
 			- phpstan.rules.rule
 

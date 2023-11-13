@@ -27,6 +27,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 			false,
 			new MethodParameterComparisonHelper($phpVersion, true),
 			true,
+			true,
 		);
 	}
 

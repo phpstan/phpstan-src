@@ -41,5 +41,6 @@ parameters:
 		detectDeadTypeInMultiCatch: true
 		zeroFiles: true
 		callUserFunc: true
+		finalByPhpDoc: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Rule.stub

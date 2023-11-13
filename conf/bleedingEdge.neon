@@ -20,6 +20,7 @@ parameters:
 		notAnalysedTrait: true
 		curlSetOptTypes: true
 		listType: true
+		abstractTraitMethod: true
 		missingMagicSerializationRule: true
 		nullContextForVoidReturningFunctions: true
 		unescapeStrings: true

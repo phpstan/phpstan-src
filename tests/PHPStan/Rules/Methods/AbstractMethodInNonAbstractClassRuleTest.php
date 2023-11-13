@@ -26,7 +26,7 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 				15,
 			],
 			[
-				'Non-abstract class AbstractMethod\Baz contains abstract method doBar().',
+				'Interface AbstractMethod\Baz contains abstract method doBar().',
 				22,
 			],
 		]);
@@ -58,6 +58,16 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 	public function testBug4214(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4214.php'], []);
+	}
+
+	public function testNonAbstractMethodWithNoBody(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4244.php'], [
+			[
+				'Non-abstract method HelloWorld::sayHello() must contain a body.',
+				5,
+			],
+		]);
 	}
 
 }

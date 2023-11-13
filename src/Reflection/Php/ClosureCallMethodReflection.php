@@ -18,6 +18,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use function array_map;
 use function array_unshift;
+use function is_bool;
 
 final class ClosureCallMethodReflection implements ExtendedMethodReflection
 {
@@ -150,6 +151,16 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 	public function returnsByReference(): TrinaryLogic
 	{
 		return $this->nativeMethodReflection->returnsByReference();
+	}
+
+	public function isAbstract(): TrinaryLogic
+	{
+		$abstract = $this->nativeMethodReflection->isAbstract();
+		if (is_bool($abstract)) {
+			return TrinaryLogic::createFromBoolean($abstract);
+		}
+
+		return $abstract;
 	}
 
 }

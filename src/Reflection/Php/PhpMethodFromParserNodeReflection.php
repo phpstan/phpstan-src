@@ -163,4 +163,9 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		return TrinaryLogic::createFromBoolean($this->getClassMethod()->returnsByRef());
 	}
 
+	public function isAbstract(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->getClassMethod()->isAbstract());
+	}
+
 }

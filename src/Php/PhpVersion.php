@@ -247,4 +247,9 @@ class PhpVersion
 		return $this->versionId >= 80300;
 	}
 
+	public function supportsAbstractTraitMethods(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 }

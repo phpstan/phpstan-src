@@ -9,6 +9,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
+use function is_bool;
 
 class ChangedTypeMethodReflection implements ExtendedMethodReflection
 {
@@ -108,6 +109,16 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 	public function returnsByReference(): TrinaryLogic
 	{
 		return $this->reflection->returnsByReference();
+	}
+
+	public function isAbstract(): TrinaryLogic
+	{
+		$abstract = $this->reflection->isAbstract();
+		if (is_bool($abstract)) {
+			return TrinaryLogic::createFromBoolean($abstract);
+		}
+
+		return $abstract;
 	}
 
 }

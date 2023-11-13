@@ -709,4 +709,19 @@ class OverridingMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTraits(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID >= 80000) {
+			$errors = [
+				[
+					'Parameter #1 $i (int) of method OverridingTraitMethods\Bar::doBar() is not contravariant with parameter #1 $i (string) of method OverridingTraitMethods\Foo::doBar().',
+					27,
+				],
+			];
+		}
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/overriding-trait-methods.php'], $errors);
+	}
+
 }

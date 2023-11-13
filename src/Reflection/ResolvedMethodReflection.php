@@ -9,6 +9,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
+use function is_bool;
 
 class ResolvedMethodReflection implements ExtendedMethodReflection
 {
@@ -161,6 +162,16 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 	public function returnsByReference(): TrinaryLogic
 	{
 		return $this->reflection->returnsByReference();
+	}
+
+	public function isAbstract(): TrinaryLogic
+	{
+		$abstract = $this->reflection->isAbstract();
+		if (is_bool($abstract)) {
+			return TrinaryLogic::createFromBoolean($abstract);
+		}
+
+		return $abstract;
 	}
 
 }

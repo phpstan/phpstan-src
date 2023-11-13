@@ -125,4 +125,9 @@ class EnumCasesMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createNo();
 	}
 
+	public function isAbstract(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

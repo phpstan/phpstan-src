@@ -168,4 +168,9 @@ class UnionTypeMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::lazyExtremeIdentity($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->returnsByReference());
 	}
 
+	public function isAbstract(): TrinaryLogic
+	{
+		return TrinaryLogic::lazyExtremeIdentity($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => is_bool($method->isAbstract()) ? TrinaryLogic::createFromBoolean($method->isAbstract()) : $method->isAbstract());
+	}
+
 }

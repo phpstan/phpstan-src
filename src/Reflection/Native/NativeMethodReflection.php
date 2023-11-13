@@ -56,9 +56,9 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->isPublic();
 	}
 
-	public function isAbstract(): bool
+	public function isAbstract(): TrinaryLogic
 	{
-		return $this->reflection->isAbstract();
+		return TrinaryLogic::createFromBoolean($this->reflection->isAbstract());
 	}
 
 	public function getPrototype(): ClassMemberReflection

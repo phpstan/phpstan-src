@@ -35,4 +35,6 @@ interface ExtendedMethodReflection extends MethodReflection
 
 	public function isFinalByKeyword(): TrinaryLogic;
 
+	public function isAbstract(): TrinaryLogic|bool;
+
 }

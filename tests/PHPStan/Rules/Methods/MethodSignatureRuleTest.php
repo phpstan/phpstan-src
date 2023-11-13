@@ -453,6 +453,10 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 	public function testTraits(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 

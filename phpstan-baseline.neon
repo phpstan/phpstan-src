@@ -828,18 +828,23 @@ parameters:
 
 		-
 			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Type is always PHPStan\\\\Type\\\\Constant\\\\ConstantIntegerType\\|PHPStan\\\\Type\\\\Constant\\\\ConstantStringType but it's error\\-prone and dangerous\\.$#"
-			count: 2
+			count: 1
 			path: src/Type/Constant/ConstantArrayTypeBuilder.php
+
+		-
+			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Type is always PHPStan\\\\Type\\\\Constant\\\\ConstantIntegerType\\|PHPStan\\\\Type\\\\Constant\\\\ConstantStringType but it's error\\-prone and dangerous\\.$#"
+			count: 1
+			path: src/Type/Constant/ConstantArrayTypeBuilderInnards.php
 
 		-
 			message: "#^PHPDoc tag @var with type float\\|int is not subtype of native type int\\.$#"
 			count: 2
-			path: src/Type/Constant/ConstantArrayTypeBuilder.php
+			path: src/Type/Constant/ConstantArrayTypeBuilderInnards.php
 
 		-
 			message: "#^PHPDoc tag @var with type float\\|int is not subtype of type int\\.$#"
 			count: 1
-			path: src/Type/Constant/ConstantArrayTypeBuilder.php
+			path: src/Type/Constant/ConstantArrayTypeBuilderInnards.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\BooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isBoolean\\(\\) instead\\.$#"

@@ -5629,7 +5629,7 @@ return [
 'InvalidArgumentException::getTraceAsString' => ['string'],
 'ip2long' => ['int|false', 'ip_address'=>'string'],
 'iptcembed' => ['string|bool', 'iptcdata'=>'string', 'jpeg_file_name'=>'string', 'spool='=>'int'],
-'iptcparse' => ['array|false', 'iptcdata'=>'string'],
+'iptcparse' => ['array<string,array<string>>|false', 'iptcdata'=>'string'],
 'is_a' => ['bool', 'object_or_string'=>'object|string', 'class_name'=>'string', 'allow_string='=>'bool'],
 'is_array' => ['bool', 'var'=>'mixed'],
 'is_bool' => ['bool', 'var'=>'mixed'],

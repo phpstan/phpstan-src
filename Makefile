@@ -40,6 +40,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Functions/data/arrow-function-nullsafe-by-ref.php \
 		--exclude tests/PHPStan/Levels/data/namedArguments.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/continue-break.php \
+		--exclude tests/PHPStan/Rules/Properties/data/properties-in-interface.php \
 		--exclude tests/PHPStan/Rules/Properties/data/read-only-property.php \
 		--exclude tests/PHPStan/Rules/Properties/data/read-only-property-phpdoc-and-native.php   \
 		--exclude tests/PHPStan/Rules/Properties/data/read-only-property-readonly-class.php \

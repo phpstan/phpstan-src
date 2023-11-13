@@ -88,6 +88,7 @@ rules:
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
 	- PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
+	- PHPStan\Rules\Properties\PropertiesInInterfaceRule
 	- PHPStan\Rules\Properties\PropertyAttributesRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyRule
 	- PHPStan\Rules\Traits\ConstantsInTraitsRule

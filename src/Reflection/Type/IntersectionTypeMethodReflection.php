@@ -16,6 +16,7 @@ use PHPStan\Type\TypeCombinator;
 use function array_map;
 use function count;
 use function implode;
+use function is_bool;
 
 class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 {
@@ -184,6 +185,11 @@ class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 	public function returnsByReference(): TrinaryLogic
 	{
 		return TrinaryLogic::lazyMaxMin($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->returnsByReference());
+	}
+
+	public function isAbstract(): TrinaryLogic
+	{
+		return TrinaryLogic::lazyMaxMin($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => is_bool($method->isAbstract()) ? TrinaryLogic::createFromBoolean($method->isAbstract()) : $method->isAbstract());
 	}
 
 }

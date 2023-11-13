@@ -140,6 +140,9 @@ class StaticMethodCallCheck
 				$nativeMethodReflection = $classReflection->getNativeMethod($methodName);
 				if ($nativeMethodReflection instanceof PhpMethodReflection || $nativeMethodReflection instanceof NativeMethodReflection) {
 					$isAbstract = $nativeMethodReflection->isAbstract();
+					if ($isAbstract instanceof TrinaryLogic) {
+						$isAbstract = $isAbstract->yes();
+					}
 				}
 			}
 		} else {

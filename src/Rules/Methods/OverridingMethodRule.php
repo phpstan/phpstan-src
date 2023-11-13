@@ -20,6 +20,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
+use function is_bool;
 use function sprintf;
 use function strtolower;
 
@@ -274,6 +275,24 @@ class OverridingMethodRule implements Rule
 			}
 		}
 
+		if ($this->phpVersion->supportsAbstractTraitMethods()) {
+			foreach ($classReflection->getTraits(true) as $trait) {
+				if (!$trait->hasNativeMethod($methodName)) {
+					continue;
+				}
+
+				$method = $trait->getNativeMethod($methodName);
+				$isAbstract = $method->isAbstract();
+				if (is_bool($isAbstract)) {
+					if ($isAbstract) {
+						return $method;
+					}
+				} elseif ($isAbstract->yes()) {
+					return $method;
+				}
+			}
+		}
+
 		$parentClass = $classReflection->getParentClass();
 		if ($parentClass === null) {
 			return null;
@@ -293,7 +312,12 @@ class OverridingMethodRule implements Rule
 			if ($method->getName() === $declaringClass->getConstructor()->getName()) {
 				$prototype = $method->getPrototype();
 				if ($prototype instanceof PhpMethodReflection || $prototype instanceof MethodPrototypeReflection || $prototype instanceof NativeMethodReflection) {
-					if (!$prototype->isAbstract()) {
+					$abstract = $prototype->isAbstract();
+					if (is_bool($abstract)) {
+						if (!$abstract) {
+							return null;
+						}
+					} elseif (!$abstract->yes()) {
 						return null;
 					}
 				}

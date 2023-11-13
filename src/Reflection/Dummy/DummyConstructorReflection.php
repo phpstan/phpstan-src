@@ -121,4 +121,9 @@ class DummyConstructorReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isAbstract(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

@@ -144,13 +144,15 @@ class OverridingMethodRule implements Rule
 				))->nonIgnorable()->build();
 			}
 		} elseif ($method->isPrivate()) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
-				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
-				$prototype->getName(),
-			))->nonIgnorable()->build();
+			if (!$prototype->isPrivate()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
+					$method->getDeclaringClass()->getDisplayName(),
+					$method->getName(),
+					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$prototype->getName(),
+				))->nonIgnorable()->build();
+			}
 		}
 
 		$prototypeVariants = $prototype->getVariants();

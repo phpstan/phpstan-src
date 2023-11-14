@@ -30,3 +30,20 @@ class Bar
 	}
 
 }
+
+trait FooPrivate
+{
+
+	abstract private function doBar(string $i): int;
+
+}
+
+class Baz
+{
+	use FooPrivate;
+
+	private function doBar(int $i): int
+	{
+
+	}
+}

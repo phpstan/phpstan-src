@@ -718,6 +718,10 @@ class OverridingMethodRuleTest extends RuleTestCase
 					'Parameter #1 $i (int) of method OverridingTraitMethods\Bar::doBar() is not contravariant with parameter #1 $i (string) of method OverridingTraitMethods\Foo::doBar().',
 					27,
 				],
+				[
+					'Parameter #1 $i (int) of method OverridingTraitMethods\Baz::doBar() is not contravariant with parameter #1 $i (string) of method OverridingTraitMethods\FooPrivate::doBar().',
+					45,
+				],
 			];
 		}
 		$this->phpVersionId = PHP_VERSION_ID;

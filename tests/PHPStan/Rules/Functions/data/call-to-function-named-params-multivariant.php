@@ -13,6 +13,8 @@ $cal = new \IntlGregorianCalendar();
 var_dump(intlcal_set(calendar: $cal, month: 5, year: 6));
 var_dump(join(separator: 'a', array: []));
 var_dump(join(separator: ['aaa', 'bbb']));
+var_dump(implode(separator: 'a', array: []));
+var_dump(implode(separator: ['aaa', 'bbb']));
 var_dump(levenshtein(string1: 'aaa', string2: 'bbb', insertion_cost: 1, deletion_cost: 1, replacement_cost: 1));
 var_dump(levenshtein(string1: 'aaa', string2: 'bbb'));
 // Is it possible to call it with multiple named args?

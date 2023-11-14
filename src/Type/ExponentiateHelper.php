@@ -12,6 +12,14 @@ final class ExponentiateHelper
 
 	public static function exponentiate(Type $base, Type $exponent): Type
 	{
+		if ($base->isString()->yes() && !$base->isNumericString()->yes()) {
+			return new ErrorType();
+		}
+
+		if ($exponent->isString()->yes() && !$exponent->isNumericString()->yes()) {
+			return new ErrorType();
+		}
+
 		if ($exponent instanceof UnionType) {
 			$results = [];
 			foreach ($exponent->getTypes() as $unionType) {

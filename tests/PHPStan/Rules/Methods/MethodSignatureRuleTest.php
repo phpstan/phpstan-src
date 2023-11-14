@@ -28,6 +28,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 			new MethodParameterComparisonHelper($phpVersion, true),
 			true,
 			true,
+			false,
 		);
 	}
 

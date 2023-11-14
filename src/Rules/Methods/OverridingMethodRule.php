@@ -37,6 +37,7 @@ class OverridingMethodRule implements Rule
 		private MethodParameterComparisonHelper $methodParameterComparisonHelper,
 		private bool $genericPrototypeMessage,
 		private bool $finalByPhpDoc,
+		private bool $checkMissingOverrideMethodAttribute,
 	)
 	{
 	}
@@ -96,6 +97,19 @@ class OverridingMethodRule implements Rule
 		[$prototype, $checkVisibility] = $prototypeData;
 
 		$messages = [];
+		if (
+			$this->phpVersion->supportsOverrideAttribute()
+			&& $this->checkMissingOverrideMethodAttribute
+			&& !$this->hasOverrideAttribute($node->getOriginalNode())
+		) {
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Method %s::%s() overrides method %s::%s() but is missing the #[Override] attribute.',
+				$method->getDeclaringClass()->getDisplayName(),
+				$method->getName(),
+				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+				$prototype->getName(),
+			))->build();
+		}
 		if ($prototype->isFinalByKeyword()->yes()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() overrides final method %s::%s().',

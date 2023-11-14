@@ -49,8 +49,8 @@ class OverridingMethodRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$method = $node->getMethodReflection();
-		$prototype = $this->findPrototype($node->getClassReflection(), $method->getName());
-		if ($prototype === null) {
+		$prototypeData = $this->findPrototype($node->getClassReflection(), $method->getName());
+		if ($prototypeData === null) {
 			if (strtolower($method->getName()) === '__construct') {
 				$parent = $method->getDeclaringClass()->getParentClass();
 				if ($parent !== null && $parent->hasConstructor()) {
@@ -93,6 +93,8 @@ class OverridingMethodRule implements Rule
 			return [];
 		}
 
+		[$prototype, $checkVisibility] = $prototypeData;
+
 		$messages = [];
 		if ($prototype->isFinalByKeyword()->yes()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
@@ -132,19 +134,19 @@ class OverridingMethodRule implements Rule
 			))->nonIgnorable()->build();
 		}
 
-		if ($prototype->isPublic()) {
-			if (!$method->isPublic()) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
-					'%s method %s::%s() overriding public method %s::%s() should also be public.',
-					$method->isPrivate() ? 'Private' : 'Protected',
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
-					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
-					$prototype->getName(),
-				))->nonIgnorable()->build();
-			}
-		} elseif ($method->isPrivate()) {
-			if (!$prototype->isPrivate()) {
+		if ($checkVisibility) {
+			if ($prototype->isPublic()) {
+				if (!$method->isPublic()) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'%s method %s::%s() overriding public method %s::%s() should also be public.',
+						$method->isPrivate() ? 'Private' : 'Protected',
+						$method->getDeclaringClass()->getDisplayName(),
+						$method->getName(),
+						$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+						$prototype->getName(),
+					))->nonIgnorable()->build();
+				}
+			} elseif ($method->isPrivate()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
 					$method->getDeclaringClass()->getDisplayName(),
@@ -293,11 +295,14 @@ class OverridingMethodRule implements Rule
 		return false;
 	}
 
-	private function findPrototype(ClassReflection $classReflection, string $methodName): ?ExtendedMethodReflection
+	/**
+	 * @return array{ExtendedMethodReflection, bool}|null
+	 */
+	private function findPrototype(ClassReflection $classReflection, string $methodName): ?array
 	{
 		foreach ($classReflection->getImmediateInterfaces() as $immediateInterface) {
 			if ($immediateInterface->hasNativeMethod($methodName)) {
-				return $immediateInterface->getNativeMethod($methodName);
+				return [$immediateInterface->getNativeMethod($methodName), true];
 			}
 		}
 
@@ -311,10 +316,10 @@ class OverridingMethodRule implements Rule
 				$isAbstract = $method->isAbstract();
 				if (is_bool($isAbstract)) {
 					if ($isAbstract) {
-						return $method;
+						return [$method, false];
 					}
 				} elseif ($isAbstract->yes()) {
-					return $method;
+					return [$method, false];
 				}
 			}
 		}
@@ -350,7 +355,7 @@ class OverridingMethodRule implements Rule
 			}
 		}
 
-		return $method;
+		return [$method, true];
 	}
 
 }

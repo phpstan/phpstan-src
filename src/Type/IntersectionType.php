@@ -189,6 +189,20 @@ class IntersectionType implements CompoundType
 			$result = $result->and($type->acceptsWithReason($otherType, $strictTypes));
 		}
 
+		if (!$result->yes()) {
+			$isList = $otherType->isList();
+			if ($this->isList()->yes() && !$isList->yes()) {
+				$verbosity = VerbosityLevel::getRecommendedLevelByType($this, $otherType);
+				return new AcceptsResult($result->result, [
+					sprintf(
+						'%s %s a list.',
+						$otherType->describe($verbosity),
+						$isList->no() ? 'is not' : 'might not be',
+					),
+				]);
+			}
+		}
+
 		return $result;
 	}
 

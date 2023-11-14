@@ -231,4 +231,16 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8846.php'], []);
 	}
 
+	public function testBug10077(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkNullables = true;
+		$this->analyse([__DIR__ . '/data/bug-10077.php'], [
+			[
+				'Function Bug10077\mergeMediaQueries() should return list<Bug10077\CssMediaQuery>|null but returns list<Bug10077\MediaQueryMergeResult>.',
+				56,
+			],
+		]);
+	}
+
 }

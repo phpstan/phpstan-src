@@ -955,4 +955,14 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9766.php'], []);
 	}
 
+	public function testWrongListTip(): void
+	{
+		$this->analyse([__DIR__ . '/data/wrong-list-tip.php'], [
+			[
+				'Method WrongListTip\Test::doFoo() should return list<WrongListTip\Foo> but returns list<WrongListTip\Bar>.',
+				23,
+			],
+		]);
+	}
+
 }

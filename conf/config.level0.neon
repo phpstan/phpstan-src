@@ -155,6 +155,7 @@ services:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
 			genericPrototypeMessage: %featureToggles.genericPrototypeMessage%
 			finalByPhpDoc: %featureToggles.finalByPhpDoc%
+			checkMissingOverrideMethodAttribute: %checkMissingOverrideMethodAttribute%
 		tags:
 			- phpstan.rules.rule
 

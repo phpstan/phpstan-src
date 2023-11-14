@@ -17,6 +17,8 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	private int $phpVersionId;
 
+	private bool $checkMissingOverrideMethodAttribute = false;
+
 	protected function getRule(): Rule
 	{
 		$phpVersion = new PhpVersion($this->phpVersionId);
@@ -28,6 +30,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 			new MethodParameterComparisonHelper($phpVersion, true),
 			true,
 			true,
+			$this->checkMissingOverrideMethodAttribute,
 		);
 	}
 
@@ -749,6 +752,30 @@ class OverridingMethodRuleTest extends RuleTestCase
 				24,
 			],
 		]);
+	}
+
+	public function dataCheckMissingOverrideAttribute(): iterable
+	{
+		yield [false, 80000, []];
+		yield [true, 80000, []];
+		yield [false, 80300, []];
+		yield [true, 80300, [
+			[
+				'Method CheckMissingOverrideAttr\Bar::doFoo() overrides method CheckMissingOverrideAttr\Foo::doFoo() but is missing the #[Override] attribute.',
+				18,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataCheckMissingOverrideAttribute
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
+	 */
+	public function testCheckMissingOverrideAttribute(bool $checkMissingOverrideMethodAttribute, int $phpVersionId, array $errors): void
+	{
+		$this->checkMissingOverrideMethodAttribute = $checkMissingOverrideMethodAttribute;
+		$this->phpVersionId = $phpVersionId;
+		$this->analyse([__DIR__ . '/data/check-missing-override-attr.php'], $errors);
 	}
 
 }

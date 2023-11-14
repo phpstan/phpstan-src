@@ -116,6 +116,7 @@ parameters:
 	reportMaybesInPropertyPhpDocTypes: false
 	reportStaticMethodSignatures: false
 	reportWrongPhpDocTypeInVarTag: false
+	checkMissingOverrideMethodAttribute: false
 	mixinExcludeClasses: []
 	scanFiles: []
 	scanDirectories: []

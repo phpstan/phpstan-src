@@ -96,3 +96,10 @@ class Bar9
 	public const PUBLIC_CONSTANT = 2;
 
 }
+
+class Bar10
+{
+	use Foo;
+
+	final public const PUBLIC_FINAL_CONSTANT = 1;
+}

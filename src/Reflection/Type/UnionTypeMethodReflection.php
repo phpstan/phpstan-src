@@ -81,6 +81,12 @@ class UnionTypeMethodReflection implements ExtendedMethodReflection
 		return [ParametersAcceptorSelector::combineAcceptors($variants)];
 	}
 
+	public function getNamedArgumentsVariants(): ?array
+	{
+		// TODO: does anything have to be done here?
+		return null;
+	}
+
 	public function isDeprecated(): TrinaryLogic
 	{
 		return TrinaryLogic::lazyExtremeIdentity($this->methods, static fn (MethodReflection $method): TrinaryLogic => $method->isDeprecated());

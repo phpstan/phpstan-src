@@ -21,12 +21,14 @@ class NativeMethodReflection implements ExtendedMethodReflection
 
 	/**
 	 * @param ParametersAcceptorWithPhpDocs[] $variants
+	 * @param ParametersAcceptorWithPhpDocs[]|null $namedArgumentsVariants
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private ClassReflection $declaringClass,
 		private BuiltinMethodReflection $reflection,
 		private array $variants,
+		private ?array $namedArgumentsVariants,
 		private TrinaryLogic $hasSideEffects,
 		private ?Type $throwType,
 		private Assertions $assertions,
@@ -100,6 +102,11 @@ class NativeMethodReflection implements ExtendedMethodReflection
 	public function getVariants(): array
 	{
 		return $this->variants;
+	}
+
+	public function getNamedArgumentsVariants(): ?array
+	{
+		return $this->namedArgumentsVariants;
 	}
 
 	public function getDeprecatedDescription(): ?string

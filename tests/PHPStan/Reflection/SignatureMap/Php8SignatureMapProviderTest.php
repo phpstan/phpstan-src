@@ -139,7 +139,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 	{
 		$provider = $this->createProvider();
 		$reflector = self::getContainer()->getByType(Reflector::class);
-		$signatures = $provider->getFunctionSignatures($functionName, null, new ReflectionFunction($reflector->reflectFunction($functionName)));
+		$signatures = $provider->getFunctionSignatures($functionName, null, new ReflectionFunction($reflector->reflectFunction($functionName)))['positional'];
 		$this->assertCount(1, $signatures);
 		$this->assertSignature($parameters, $returnType, $nativeReturnType, $variadic, $signatures[0]);
 	}
@@ -267,7 +267,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 	): void
 	{
 		$provider = $this->createProvider();
-		$signatures = $provider->getMethodSignatures($className, $methodName, null);
+		$signatures = $provider->getMethodSignatures($className, $methodName, null)['positional'];
 		$this->assertCount(1, $signatures);
 		$this->assertSignature($parameters, $returnType, $nativeReturnType, $variadic, $signatures[0]);
 	}

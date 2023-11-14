@@ -71,13 +71,13 @@ class ParametersAcceptorSelector
 	/**
 	 * @param Node\Arg[] $args
 	 * @param ParametersAcceptor[] $parametersAcceptors
-	 * @param ParametersAcceptor[]|null $namedArgumentVariants
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
 	 */
 	public static function selectFromArgs(
 		Scope $scope,
 		array $args,
 		array $parametersAcceptors,
-		?array $namedArgumentVariants = null,
+		?array $namedArgumentsVariants = null,
 	): ParametersAcceptor
 	{
 		$types = [];

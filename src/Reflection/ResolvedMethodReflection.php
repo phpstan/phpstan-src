@@ -16,6 +16,9 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 	/** @var ParametersAcceptorWithPhpDocs[]|null */
 	private ?array $variants = null;
 
+	/** @var ParametersAcceptorWithPhpDocs[]|null */
+	private ?array $namedArgumentVariants = null;
+
 	private ?Assertions $asserts = null;
 
 	private Type|false|null $selfOutType = false;
@@ -45,9 +48,33 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 			return $variants;
 		}
 
-		$variants = [];
-		foreach ($this->reflection->getVariants() as $variant) {
-			$variants[] = new ResolvedFunctionVariant(
+		return $this->variants = $this->resolveVariants($this->reflection->getVariants());
+	}
+
+	public function getNamedArgumentsVariants(): ?array
+	{
+		$variants = $this->namedArgumentVariants;
+		if ($variants !== null) {
+			return $variants;
+		}
+
+		$innerVariants = $this->reflection->getNamedArgumentsVariants();
+		if ($innerVariants === null) {
+			return null;
+		}
+
+		return $this->namedArgumentVariants = $this->resolveVariants($innerVariants);
+	}
+
+	/**
+	 * @param ParametersAcceptorWithPhpDocs[] $variants
+	 * @return ResolvedFunctionVariant[]
+	 */
+	private function resolveVariants(array $variants): array
+	{
+		$result = [];
+		foreach ($variants as $variant) {
+			$result[] = new ResolvedFunctionVariant(
 				$variant,
 				$this->resolvedTemplateTypeMap,
 				$this->callSiteVarianceMap,
@@ -55,9 +82,7 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 			);
 		}
 
-		$this->variants = $variants;
-
-		return $variants;
+		return $result;
 	}
 
 	public function getDeclaringClass(): ClassReflection

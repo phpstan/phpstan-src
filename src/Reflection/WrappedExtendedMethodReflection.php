@@ -85,6 +85,11 @@ class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return $variants;
 	}
 
+	public function getNamedArgumentsVariants(): ?array
+	{
+		return null;
+	}
+
 	public function isDeprecated(): TrinaryLogic
 	{
 		return $this->method->isDeprecated();

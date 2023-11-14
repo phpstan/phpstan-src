@@ -65,7 +65,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 			$variantFunctionName = $functionName . '\'' . $i;
 		}
 
-		return $signatures;
+		return ['positional' => $signatures, 'named' => null];
 	}
 
 	private function createSignature(string $functionName, ?string $className, ?ReflectionFunctionAbstract $reflectionFunction): FunctionSignature

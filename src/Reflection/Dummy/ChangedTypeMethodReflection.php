@@ -60,6 +60,11 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 		return $this->variants;
 	}
 
+	public function getNamedArgumentsVariants(): ?array
+	{
+		return null;
+	}
+
 	public function isDeprecated(): TrinaryLogic
 	{
 		return $this->reflection->isDeprecated();

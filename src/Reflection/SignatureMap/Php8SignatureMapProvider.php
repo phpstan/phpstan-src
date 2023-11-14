@@ -179,7 +179,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			return $this->getMergedSignatures($signature, $functionMapSignatures);
 		}
 
-		return [$signature];
+		return ['positional' => [$signature], 'named' => null];
 	}
 
 	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunctionAbstract|null $reflectionFunction): array
@@ -207,23 +207,24 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				return $this->getMergedSignatures($signature, $functionMapSignatures);
 			}
 
-			return [$signature];
+			return ['positional' => [$signature], 'named' => null];
 		}
 
 		throw new ShouldNotHappenException(sprintf('Function %s stub not found in %s.', $functionName, $stubFile));
 	}
 
 	/**
-	 * @param array<int, FunctionSignature> $functionMapSignatures
-	 * @return array<int, FunctionSignature>
+	 * @param array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>} $functionMapSignatures
+	 * @return array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>}
 	 */
 	private function getMergedSignatures(FunctionSignature $nativeSignature, array $functionMapSignatures): array
 	{
-		if (count($functionMapSignatures) === 1) {
-			return [$this->mergeSignatures($nativeSignature, $functionMapSignatures[0])];
+		if (count($functionMapSignatures['positional']) === 1) {
+			return ['positional' => [$this->mergeSignatures($nativeSignature, $functionMapSignatures['positional'][0])], 'named' => null];
 		}
 
-		return $functionMapSignatures;
+		// TODO: provide named signatures
+		return ['positional' => $functionMapSignatures['positional'], 'named' => null];
 	}
 
 	private function mergeSignatures(FunctionSignature $nativeSignature, FunctionSignature $functionMapSignature): FunctionSignature

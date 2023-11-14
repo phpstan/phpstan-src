@@ -8,8 +8,8 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\TypehintHelper;
@@ -62,7 +62,7 @@ class ConflictingTraitConstantsRule implements Rule
 	}
 
 	/**
-	 * @return list<RuleError>
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processSingleConstant(ClassReflection $classReflection, ReflectionClassConstant $traitConstant, Node\Stmt\ClassConst $classConst, Node\Expr $valueExpr): array
 	{
@@ -75,7 +75,10 @@ class ConflictingTraitConstantsRule implements Rule
 					$traitConstant->getName(),
 					$traitConstant->getDeclaringClass()->getName(),
 					$traitConstant->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('classConstant.visibility')
+					->build();
 			} elseif ($classConst->isPrivate()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Private constant %s::%s overriding public constant %s::%s should also be public.',
@@ -83,7 +86,10 @@ class ConflictingTraitConstantsRule implements Rule
 					$traitConstant->getName(),
 					$traitConstant->getDeclaringClass()->getName(),
 					$traitConstant->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('classConstant.visibility')
+					->build();
 			}
 		} elseif ($traitConstant->isProtected()) {
 			if ($classConst->isPublic()) {
@@ -93,7 +99,10 @@ class ConflictingTraitConstantsRule implements Rule
 					$traitConstant->getName(),
 					$traitConstant->getDeclaringClass()->getName(),
 					$traitConstant->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('classConstant.visibility')
+					->build();
 			} elseif ($classConst->isPrivate()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Private constant %s::%s overriding protected constant %s::%s should also be protected.',
@@ -101,7 +110,10 @@ class ConflictingTraitConstantsRule implements Rule
 					$traitConstant->getName(),
 					$traitConstant->getDeclaringClass()->getName(),
 					$traitConstant->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('classConstant.visibility')
+					->build();
 			}
 		} elseif ($traitConstant->isPrivate()) {
 			if ($classConst->isPublic()) {
@@ -111,7 +123,10 @@ class ConflictingTraitConstantsRule implements Rule
 					$traitConstant->getName(),
 					$traitConstant->getDeclaringClass()->getName(),
 					$traitConstant->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('classConstant.visibility')
+					->build();
 			} elseif ($classConst->isProtected()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Protected constant %s::%s overriding private constant %s::%s should also be private.',
@@ -119,7 +134,10 @@ class ConflictingTraitConstantsRule implements Rule
 					$traitConstant->getName(),
 					$traitConstant->getDeclaringClass()->getName(),
 					$traitConstant->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('classConstant.visibility')
+					->build();
 			}
 		}
 
@@ -131,7 +149,10 @@ class ConflictingTraitConstantsRule implements Rule
 					$traitConstant->getName(),
 					$traitConstant->getDeclaringClass()->getName(),
 					$traitConstant->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('classConstant.nonFinal')
+					->build();
 			}
 		} elseif ($classConst->isFinal()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -140,7 +161,10 @@ class ConflictingTraitConstantsRule implements Rule
 				$traitConstant->getName(),
 				$traitConstant->getDeclaringClass()->getName(),
 				$traitConstant->getName(),
-			))->nonIgnorable()->build();
+			))
+				->nonIgnorable()
+				->identifier('classConstant.final')
+				->build();
 		}
 
 		$traitNativeType = $traitConstant->getType();
@@ -156,7 +180,10 @@ class ConflictingTraitConstantsRule implements Rule
 					$constantNativeTypeType->describe(VerbosityLevel::typeOnly()),
 					$traitConstant->getDeclaringClass()->getName(),
 					$traitConstant->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('classConstant.nativeType')
+					->build();
 			}
 		} elseif ($constantNativeType === null) {
 			$traitNativeTypeType = TypehintHelper::decideTypeFromReflection($traitNativeType, null, $traitDeclaringClass->getName());
@@ -168,7 +195,10 @@ class ConflictingTraitConstantsRule implements Rule
 				$traitConstant->getName(),
 				$traitNativeTypeType->describe(VerbosityLevel::typeOnly()),
 				$traitNativeTypeType->describe(VerbosityLevel::typeOnly()),
-			))->nonIgnorable()->build();
+			))
+				->nonIgnorable()
+				->identifier('classConstant.missingNativeType')
+				->build();
 		} else {
 			$traitNativeTypeType = TypehintHelper::decideTypeFromReflection($traitNativeType, null, $traitDeclaringClass->getName());
 			$constantNativeTypeType = ParserNodeTypeToPHPStanType::resolve($constantNativeType, $classReflection);
@@ -182,7 +212,10 @@ class ConflictingTraitConstantsRule implements Rule
 					$traitConstant->getName(),
 					$traitNativeTypeType->describe(VerbosityLevel::typeOnly()),
 					$traitNativeTypeType->describe(VerbosityLevel::typeOnly()),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('classConstant.nativeType')
+					->build();
 			}
 		}
 
@@ -203,7 +236,10 @@ class ConflictingTraitConstantsRule implements Rule
 				$traitConstant->getDeclaringClass()->getName(),
 				$traitConstant->getName(),
 				$traitConstantValueType->describe(VerbosityLevel::value()),
-			))->nonIgnorable()->build();
+			))
+				->nonIgnorable()
+				->identifier('classConstant.value')
+				->build();
 		}
 
 		return $errors;

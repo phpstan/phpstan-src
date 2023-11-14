@@ -90,7 +90,10 @@ class OverridingMethodRule implements Rule
 						'Method %s::%s() has #[Override] attribute but does not override any method.',
 						$method->getDeclaringClass()->getDisplayName(),
 						$method->getName(),
-					))->nonIgnorable()->build(),
+					))
+						->nonIgnorable()
+						->identifier('method.override')
+						->build(),
 				];
 			}
 
@@ -158,7 +161,10 @@ class OverridingMethodRule implements Rule
 						$method->getName(),
 						$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 						$prototype->getName(),
-					))->nonIgnorable()->build();
+					))
+						->nonIgnorable()
+						->identifier('method.visibility')
+						->build();
 				}
 			} elseif ($method->isPrivate()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(

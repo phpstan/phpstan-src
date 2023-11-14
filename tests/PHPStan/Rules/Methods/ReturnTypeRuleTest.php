@@ -962,6 +962,15 @@ class ReturnTypeRuleTest extends RuleTestCase
 				'Method WrongListTip\Test::doFoo() should return list<WrongListTip\Foo> but returns list<WrongListTip\Bar>.',
 				23,
 			],
+			[
+				'Method WrongListTip\Test2::doFoo() should return non-empty-array<WrongListTip\Foo> but returns non-empty-array<WrongListTip\Bar>.',
+				44,
+			],
+			[
+				'Method WrongListTip\Test3::doFoo() should return non-empty-list<WrongListTip\Foo> but returns array<WrongListTip\Bar>.',
+				67,
+				"• array<WrongListTip\Bar> might not be a list.\n• array<WrongListTip\Bar> might be empty.",
+			],
 		]);
 	}
 

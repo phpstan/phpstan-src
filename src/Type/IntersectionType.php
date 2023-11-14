@@ -191,15 +191,27 @@ class IntersectionType implements CompoundType
 
 		if (!$result->yes()) {
 			$isList = $otherType->isList();
+			$reasons = [];
+			$verbosity = VerbosityLevel::getRecommendedLevelByType($this, $otherType);
 			if ($this->isList()->yes() && !$isList->yes()) {
-				$verbosity = VerbosityLevel::getRecommendedLevelByType($this, $otherType);
-				return new AcceptsResult($result->result, [
-					sprintf(
-						'%s %s a list.',
-						$otherType->describe($verbosity),
-						$isList->no() ? 'is not' : 'might not be',
-					),
-				]);
+				$reasons[] = sprintf(
+					'%s %s a list.',
+					$otherType->describe($verbosity),
+					$isList->no() ? 'is not' : 'might not be',
+				);
+			}
+
+			$isNonEmpty = $otherType->isIterableAtLeastOnce();
+			if ($this->isIterableAtLeastOnce()->yes() && !$isNonEmpty->yes()) {
+				$reasons[] = sprintf(
+					'%s %s empty.',
+					$otherType->describe($verbosity),
+					$isNonEmpty->no() ? 'is' : 'might be',
+				);
+			}
+
+			if (count($reasons) > 0) {
+				return new AcceptsResult($result->result, $reasons);
 			}
 		}
 

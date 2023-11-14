@@ -111,6 +111,11 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		return $this->variants;
 	}
 
+	public function getNamedArgumentsVariants(): ?array
+	{
+		return null;
+	}
+
 	/**
 	 * @return ParameterReflectionWithPhpDocs[]
 	 */

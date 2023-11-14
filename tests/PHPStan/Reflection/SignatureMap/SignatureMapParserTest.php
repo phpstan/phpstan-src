@@ -535,7 +535,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 			}
 
 			try {
-				$signatures = $provider->getFunctionSignatures($functionName, $className, $reflectionFunction);
+				$signatures = $provider->getFunctionSignatures($functionName, $className, $reflectionFunction)['positional'];
 				$count += count($signatures);
 			} catch (ParserException $e) {
 				$this->fail(sprintf('Could not parse %s: %s.', $functionName, $e->getMessage()));

@@ -185,6 +185,7 @@ class InstantiationRule implements Rule
 				$scope,
 				$node->getArgs(),
 				$constructorReflection->getVariants(),
+				$constructorReflection->getNamedArgumentsVariants(),
 			),
 			$scope,
 			$constructorReflection->getDeclaringClass()->isBuiltin(),

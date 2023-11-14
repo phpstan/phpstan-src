@@ -17,10 +17,12 @@ class NativeFunctionReflection implements FunctionReflection
 
 	/**
 	 * @param ParametersAcceptorWithPhpDocs[] $variants
+	 * @param ParametersAcceptorWithPhpDocs[]|null $namedArgumentsVariants
 	 */
 	public function __construct(
 		private string $name,
 		private array $variants,
+		private ?array $namedArgumentsVariants,
 		private ?Type $throwType,
 		private TrinaryLogic $hasSideEffects,
 		private bool $isDeprecated,
@@ -49,6 +51,11 @@ class NativeFunctionReflection implements FunctionReflection
 	public function getVariants(): array
 	{
 		return $this->variants;
+	}
+
+	public function getNamedArgumentsVariants(): ?array
+	{
+		return $this->namedArgumentsVariants;
 	}
 
 	public function getThrowType(): ?Type

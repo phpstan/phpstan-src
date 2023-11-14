@@ -71,11 +71,13 @@ class ParametersAcceptorSelector
 	/**
 	 * @param Node\Arg[] $args
 	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
 	 */
 	public static function selectFromArgs(
 		Scope $scope,
 		array $args,
 		array $parametersAcceptors,
+		?array $namedArgumentsVariants = null,
 	): ParametersAcceptor
 	{
 		$types = [];
@@ -231,15 +233,25 @@ class ParametersAcceptorSelector
 			}
 		}
 
+		$hasName = false;
 		foreach ($args as $i => $arg) {
 			$type = $scope->getType($arg->value);
-			$index = $arg->name !== null ? $arg->name->toString() : $i;
+			if ($arg->name !== null) {
+				$index = $arg->name->toString();
+				$hasName = true;
+			} else {
+				$index = $i;
+			}
 			if ($arg->unpack) {
 				$unpack = true;
 				$types[$index] = $type->getIterableValueType();
 			} else {
 				$types[$index] = $type;
 			}
+		}
+
+		if ($hasName && $namedArgumentsVariants !== null) {
+			return self::selectFromTypes($types, $namedArgumentsVariants, $unpack);
 		}
 
 		return self::selectFromTypes($types, $parametersAcceptors, $unpack);

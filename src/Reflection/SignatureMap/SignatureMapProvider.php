@@ -13,10 +13,10 @@ interface SignatureMapProvider
 
 	public function hasFunctionSignature(string $name): bool;
 
-	/** @return array<int, FunctionSignature> */
+	/** @return array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>} */
 	public function getMethodSignatures(string $className, string $methodName, ?ReflectionMethod $reflectionMethod): array;
 
-	/** @return array<int, FunctionSignature> */
+	/** @return array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>} */
 	public function getFunctionSignatures(string $functionName, ?string $className, ?ReflectionFunctionAbstract $reflectionFunction): array;
 
 	public function hasMethodMetadata(string $className, string $methodName): bool;

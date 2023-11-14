@@ -500,7 +500,7 @@ class PhpClassReflectionExtension
 		}
 
 		if ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName())) {
-			$variants = [];
+			$variantsByType = ['positional' => []];
 			$reflectionMethod = null;
 			$throwType = null;
 			$asserts = Assertions::createEmpty();
@@ -509,119 +509,125 @@ class PhpClassReflectionExtension
 			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
 				$reflectionMethod = $classReflection->getNativeReflection()->getMethod($methodReflection->getName());
 			}
-			$methodSignatures = $this->signatureMapProvider->getMethodSignatures($declaringClassName, $methodReflection->getName(), $reflectionMethod);
-			foreach ($methodSignatures as $methodSignature) {
-				$phpDocParameterNameMapping = [];
-				foreach ($methodSignature->getParameters() as $parameter) {
-					$phpDocParameterNameMapping[$parameter->getName()] = $parameter->getName();
+			$methodSignaturesResult = $this->signatureMapProvider->getMethodSignatures($declaringClassName, $methodReflection->getName(), $reflectionMethod);
+			foreach ($methodSignaturesResult as $signatureType => $methodSignatures) {
+				if ($methodSignatures === null) {
+					continue;
 				}
-				$stubPhpDocReturnType = null;
-				$stubPhpDocParameterTypes = [];
-				$stubPhpDocParameterVariadicity = [];
-				$phpDocParameterTypes = [];
-				$phpDocReturnType = null;
-				$stubPhpDocPair = null;
-				$stubPhpParameterOutTypes = [];
-				$phpDocParameterOutTypes = [];
-				if (count($methodSignatures) === 1) {
-					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
-					if ($stubPhpDocPair !== null) {
-						[$stubPhpDoc, $stubDeclaringClass] = $stubPhpDocPair;
-						$templateTypeMap = $stubDeclaringClass->getActiveTemplateTypeMap();
-						$callSiteVarianceMap = $stubDeclaringClass->getCallSiteVarianceMap();
-						$returnTag = $stubPhpDoc->getReturnTag();
-						if ($returnTag !== null) {
-							$stubPhpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
-								$returnTag->getType(),
-								$templateTypeMap,
-								$callSiteVarianceMap,
-								TemplateTypeVariance::createCovariant(),
-							);
-						}
 
-						foreach ($stubPhpDoc->getParamTags() as $name => $paramTag) {
-							$stubPhpDocParameterTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
-								$paramTag->getType(),
-								$templateTypeMap,
-								$callSiteVarianceMap,
-								TemplateTypeVariance::createContravariant(),
-							);
-							$stubPhpDocParameterVariadicity[$name] = $paramTag->isVariadic();
-						}
-
-						$throwsTag = $stubPhpDoc->getThrowsTag();
-						if ($throwsTag !== null) {
-							$throwType = $throwsTag->getType();
-						}
-
-						$asserts = Assertions::createFromResolvedPhpDocBlock($stubPhpDoc);
-
-						$selfOutTypeTag = $stubPhpDoc->getSelfOutTag();
-						if ($selfOutTypeTag !== null) {
-							$selfOutType = $selfOutTypeTag->getType();
-						}
-
-						foreach ($stubPhpDoc->getParamOutTags() as $name => $paramOutTag) {
-							$stubPhpParameterOutTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
-								$paramOutTag->getType(),
-								$templateTypeMap,
-								$callSiteVarianceMap,
-								TemplateTypeVariance::createCovariant(),
-							);
-						}
-
-						if ($declaringClassName === $stubDeclaringClass->getName() && $stubPhpDoc->hasPhpDocString()) {
-							$phpDocComment = $stubPhpDoc->getPhpDocString();
-						}
+				foreach ($methodSignatures as $methodSignature) {
+					$phpDocParameterNameMapping = [];
+					foreach ($methodSignature->getParameters() as $parameter) {
+						$phpDocParameterNameMapping[$parameter->getName()] = $parameter->getName();
 					}
-				}
-				if ($stubPhpDocPair === null && $reflectionMethod !== null && $reflectionMethod->getDocComment() !== false) {
-					$filename = $reflectionMethod->getFileName();
-					if ($filename !== false) {
-						$phpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc(
-							$filename,
-							$declaringClassName,
-							null,
-							$reflectionMethod->getName(),
-							$reflectionMethod->getDocComment(),
-						);
-						$throwsTag = $phpDocBlock->getThrowsTag();
-						if ($throwsTag !== null) {
-							$throwType = $throwsTag->getType();
-						}
-						$returnTag = $phpDocBlock->getReturnTag();
-						if ($returnTag !== null) {
-							$phpDocReturnType = $returnTag->getType();
-						}
-						foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
-							$phpDocParameterTypes[$name] = $paramTag->getType();
-						}
-						$asserts = Assertions::createFromResolvedPhpDocBlock($phpDocBlock);
-
-						$selfOutTypeTag = $phpDocBlock->getSelfOutTag();
-						if ($selfOutTypeTag !== null) {
-							$selfOutType = $selfOutTypeTag->getType();
-						}
-
-						if ($phpDocBlock->hasPhpDocString()) {
-							$phpDocComment = $phpDocBlock->getPhpDocString();
-						}
-
-						foreach ($phpDocBlock->getParamOutTags() as $name => $paramOutTag) {
-							$phpDocParameterOutTypes[$name] = $paramOutTag->getType();
-						}
-
-						$signatureParameters = $methodSignature->getParameters();
-						foreach ($reflectionMethod->getParameters() as $paramI => $reflectionParameter) {
-							if (!array_key_exists($paramI, $signatureParameters)) {
-								continue;
+					$stubPhpDocReturnType = null;
+					$stubPhpDocParameterTypes = [];
+					$stubPhpDocParameterVariadicity = [];
+					$phpDocParameterTypes = [];
+					$phpDocReturnType = null;
+					$stubPhpDocPair = null;
+					$stubPhpParameterOutTypes = [];
+					$phpDocParameterOutTypes = [];
+					if (count($methodSignatures) === 1) {
+						$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
+						if ($stubPhpDocPair !== null) {
+							[$stubPhpDoc, $stubDeclaringClass] = $stubPhpDocPair;
+							$templateTypeMap = $stubDeclaringClass->getActiveTemplateTypeMap();
+							$callSiteVarianceMap = $stubDeclaringClass->getCallSiteVarianceMap();
+							$returnTag = $stubPhpDoc->getReturnTag();
+							if ($returnTag !== null) {
+								$stubPhpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
+									$returnTag->getType(),
+									$templateTypeMap,
+									$callSiteVarianceMap,
+									TemplateTypeVariance::createCovariant(),
+								);
 							}
 
-							$phpDocParameterNameMapping[$signatureParameters[$paramI]->getName()] = $reflectionParameter->getName();
+							foreach ($stubPhpDoc->getParamTags() as $name => $paramTag) {
+								$stubPhpDocParameterTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
+									$paramTag->getType(),
+									$templateTypeMap,
+									$callSiteVarianceMap,
+									TemplateTypeVariance::createContravariant(),
+								);
+								$stubPhpDocParameterVariadicity[$name] = $paramTag->isVariadic();
+							}
+
+							$throwsTag = $stubPhpDoc->getThrowsTag();
+							if ($throwsTag !== null) {
+								$throwType = $throwsTag->getType();
+							}
+
+							$asserts = Assertions::createFromResolvedPhpDocBlock($stubPhpDoc);
+
+							$selfOutTypeTag = $stubPhpDoc->getSelfOutTag();
+							if ($selfOutTypeTag !== null) {
+								$selfOutType = $selfOutTypeTag->getType();
+							}
+
+							foreach ($stubPhpDoc->getParamOutTags() as $name => $paramOutTag) {
+								$stubPhpParameterOutTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
+									$paramOutTag->getType(),
+									$templateTypeMap,
+									$callSiteVarianceMap,
+									TemplateTypeVariance::createCovariant(),
+								);
+							}
+
+							if ($declaringClassName === $stubDeclaringClass->getName() && $stubPhpDoc->hasPhpDocString()) {
+								$phpDocComment = $stubPhpDoc->getPhpDocString();
+							}
 						}
 					}
+					if ($stubPhpDocPair === null && $reflectionMethod !== null && $reflectionMethod->getDocComment() !== false) {
+						$filename = $reflectionMethod->getFileName();
+						if ($filename !== false) {
+							$phpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc(
+								$filename,
+								$declaringClassName,
+								null,
+								$reflectionMethod->getName(),
+								$reflectionMethod->getDocComment(),
+							);
+							$throwsTag = $phpDocBlock->getThrowsTag();
+							if ($throwsTag !== null) {
+								$throwType = $throwsTag->getType();
+							}
+							$returnTag = $phpDocBlock->getReturnTag();
+							if ($returnTag !== null) {
+								$phpDocReturnType = $returnTag->getType();
+							}
+							foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
+								$phpDocParameterTypes[$name] = $paramTag->getType();
+							}
+							$asserts = Assertions::createFromResolvedPhpDocBlock($phpDocBlock);
+
+							$selfOutTypeTag = $phpDocBlock->getSelfOutTag();
+							if ($selfOutTypeTag !== null) {
+								$selfOutType = $selfOutTypeTag->getType();
+							}
+
+							if ($phpDocBlock->hasPhpDocString()) {
+								$phpDocComment = $phpDocBlock->getPhpDocString();
+							}
+
+							foreach ($phpDocBlock->getParamOutTags() as $name => $paramOutTag) {
+								$phpDocParameterOutTypes[$name] = $paramOutTag->getType();
+							}
+
+							$signatureParameters = $methodSignature->getParameters();
+							foreach ($reflectionMethod->getParameters() as $paramI => $reflectionParameter) {
+								if (!array_key_exists($paramI, $signatureParameters)) {
+									continue;
+								}
+
+								$phpDocParameterNameMapping[$signatureParameters[$paramI]->getName()] = $reflectionParameter->getName();
+							}
+						}
+					}
+					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes);
 				}
-				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes);
 			}
 
 			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
@@ -633,7 +639,8 @@ class PhpClassReflectionExtension
 				$this->reflectionProviderProvider->getReflectionProvider(),
 				$declaringClass,
 				$methodReflection,
-				$variants,
+				$variantsByType['positional'],
+				$variantsByType['named'] ?? null,
 				$hasSideEffects,
 				$throwType,
 				$asserts,

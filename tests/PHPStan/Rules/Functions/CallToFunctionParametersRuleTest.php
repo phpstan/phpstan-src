@@ -1450,4 +1450,66 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9803.php'], []);
 	}
 
+	public function testBug9018(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9018.php'], [
+			[
+				'Unknown parameter $str1 in call to function levenshtein.',
+				13,
+			],
+			[
+				'Unknown parameter $str2 in call to function levenshtein.',
+				13,
+			],
+			[
+				'Missing parameter $string1 (string) in call to function levenshtein.',
+				13,
+			],
+			[
+				'Missing parameter $string2 (string) in call to function levenshtein.',
+				13,
+			],
+		]);
+	}
+
+	public function testBug9399(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9399.php'], []);
+	}
+
+	public function testBug9923(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9923.php'], []);
+	}
+
+	public function testBug9823(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9823.php'], []);
+	}
+
+	public function testNamedParametersForMultiVariantFunctions(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/call-to-function-named-params-multivariant.php'], []);
+	}
+
 }

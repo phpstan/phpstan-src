@@ -72,9 +72,9 @@ class NativeFunctionReflectionProvider
 			// pass
 		}
 
-		$functionSignatures = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
+		$functionSignaturesResult = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
 
-		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignatures[0]->getParameters()));
+		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignaturesResult['positional'][0]->getParameters()));
 		if ($phpDoc !== null) {
 			if ($phpDoc->hasPhpDocString()) {
 				$docComment = $phpDoc->getPhpDocString();
@@ -86,40 +86,41 @@ class NativeFunctionReflectionProvider
 			$phpDocReturnType = $this->getReturnTypeFromPhpDoc($phpDoc);
 		}
 
-		$variants = [];
-		$functionSignatures = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
-		foreach ($functionSignatures as $functionSignature) {
-			$variants[] = new FunctionVariantWithPhpDocs(
-				TemplateTypeMap::createEmpty(),
-				null,
-				array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc): NativeParameterWithPhpDocsReflection {
-					$type = $parameterSignature->getType();
+		$variantsByType = ['positional' => []];
+		foreach ($functionSignaturesResult as $signatureType => $functionSignatures) {
+			foreach ($functionSignatures ?? [] as $functionSignature) {
+				$variantsByType[$signatureType][] = new FunctionVariantWithPhpDocs(
+					TemplateTypeMap::createEmpty(),
+					null,
+					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc): NativeParameterWithPhpDocsReflection {
+						$type = $parameterSignature->getType();
 
-					$phpDocType = null;
-					if ($phpDoc !== null) {
-						$phpDocParam = $phpDoc->getParamTags()[$parameterSignature->getName()] ?? null;
-						if ($phpDocParam !== null) {
-							$phpDocType = $phpDocParam->getType();
+						$phpDocType = null;
+						if ($phpDoc !== null) {
+							$phpDocParam = $phpDoc->getParamTags()[$parameterSignature->getName()] ?? null;
+							if ($phpDocParam !== null) {
+								$phpDocType = $phpDocParam->getType();
+							}
 						}
-					}
 
-					return new NativeParameterWithPhpDocsReflection(
-						$parameterSignature->getName(),
-						$parameterSignature->isOptional(),
-						TypehintHelper::decideType($type, $phpDocType),
-						$phpDocType ?? new MixedType(),
-						$type,
-						$parameterSignature->passedByReference(),
-						$parameterSignature->isVariadic(),
-						$parameterSignature->getDefaultValue(),
-						$phpDoc !== null ? NativeFunctionReflectionProvider::getParamOutTypeFromPhpDoc($parameterSignature->getName(), $phpDoc) : null,
-					);
-				}, $functionSignature->getParameters()),
-				$functionSignature->isVariadic(),
-				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDocReturnType),
-				$phpDocReturnType ?? new MixedType(),
-				$functionSignature->getReturnType(),
-			);
+						return new NativeParameterWithPhpDocsReflection(
+							$parameterSignature->getName(),
+							$parameterSignature->isOptional(),
+							TypehintHelper::decideType($type, $phpDocType),
+							$phpDocType ?? new MixedType(),
+							$type,
+							$parameterSignature->passedByReference(),
+							$parameterSignature->isVariadic(),
+							$parameterSignature->getDefaultValue(),
+							$phpDoc !== null ? NativeFunctionReflectionProvider::getParamOutTypeFromPhpDoc($parameterSignature->getName(), $phpDoc) : null,
+						);
+					}, $functionSignature->getParameters()),
+					$functionSignature->isVariadic(),
+					TypehintHelper::decideType($functionSignature->getReturnType(), $phpDocReturnType),
+					$phpDocReturnType ?? new MixedType(),
+					$functionSignature->getReturnType(),
+				);
+			}
 		}
 
 		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
@@ -130,7 +131,8 @@ class NativeFunctionReflectionProvider
 
 		$functionReflection = new NativeFunctionReflection(
 			$realFunctionName,
-			$variants,
+			$variantsByType['positional'],
+			$variantsByType['named'] ?? null,
 			$throwType,
 			$hasSideEffects,
 			$isDeprecated,

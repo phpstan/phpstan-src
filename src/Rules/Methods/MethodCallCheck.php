@@ -6,7 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -31,7 +31,7 @@ class MethodCallCheck
 	}
 
 	/**
-	 * @return array{RuleError[], MethodReflection|null}
+	 * @return array{RuleError[], ExtendedMethodReflection|null}
 	 */
 	public function check(
 		Scope $scope,

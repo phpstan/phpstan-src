@@ -223,8 +223,58 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			return ['positional' => [$this->mergeSignatures($nativeSignature, $functionMapSignatures['positional'][0])], 'named' => null];
 		}
 
-		// TODO: provide named signatures
-		return ['positional' => $functionMapSignatures['positional'], 'named' => null];
+
+		if (count($functionMapSignatures['positional']) === 0) {
+			return ['positional' => [], 'named' => null];
+		}
+
+		$nativeParams = $nativeSignature->getParameters();
+		$namedArgumentsVariants = [];
+		foreach ($functionMapSignatures['positional'] as $functionMapSignature) {
+			$isPrevParamVariadic = false;
+			$hasMiddleVariadicParam = false;
+			// avoid weird functions like array_diff_uassoc
+			foreach ($functionMapSignature->getParameters() as $i => $functionParam) {
+				$nativeParam = $nativeParams[$i] ?? null;
+				$hasMiddleVariadicParam = $hasMiddleVariadicParam || $isPrevParamVariadic;
+				$isPrevParamVariadic = $functionParam->isVariadic() || (
+					$nativeParam !== null
+						? $nativeParam->isVariadic()
+						: false
+					);
+			}
+
+			if ($hasMiddleVariadicParam) {
+				continue;
+			}
+
+			$parameters = [];
+			foreach ($functionMapSignature->getParameters() as $i => $functionParam) {
+				if (!array_key_exists($i, $nativeParams)) {
+					continue 2;
+				}
+
+				$parameters[] = new ParameterSignature(
+					$nativeParams[$i]->getName(),
+					$functionParam->isOptional(),
+					$functionParam->getType(),
+					$functionParam->getNativeType(),
+					$functionParam->passedByReference(),
+					$functionParam->isVariadic(),
+					$functionParam->getDefaultValue(),
+					$functionParam->getOutType(),
+				);
+			}
+
+			$namedArgumentsVariants[] = new FunctionSignature(
+				$parameters,
+				$functionMapSignature->getReturnType(),
+				$functionMapSignature->getNativeReturnType(),
+				$functionMapSignature->isVariadic(),
+			);
+		}
+
+		return ['positional' => $functionMapSignatures['positional'], 'named' => $namedArgumentsVariants];
 	}
 
 	private function mergeSignatures(FunctionSignature $nativeSignature, FunctionSignature $functionMapSignature): FunctionSignature

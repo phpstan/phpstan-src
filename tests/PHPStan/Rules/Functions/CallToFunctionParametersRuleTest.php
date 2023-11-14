@@ -1450,4 +1450,22 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9803.php'], []);
 	}
 
+	public function testBug9823(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9823.php'], []);
+	}
+
+	public function testNamedParametersForMultiVariantFunctions(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/call-to-function-named-params-multivariant.php'], []);
+	}
+
 }

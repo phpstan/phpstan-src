@@ -83,7 +83,6 @@ class UnionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getNamedArgumentsVariants(): ?array
 	{
-		// TODO: does anything have to be done here?
 		return null;
 	}
 

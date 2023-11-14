@@ -191,7 +191,7 @@ class IntersectionType implements CompoundType
 
 		if (!$result->yes()) {
 			$isList = $otherType->isList();
-			$reasons = [];
+			$reasons = $result->reasons;
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($this, $otherType);
 			if ($this->isList()->yes() && !$isList->yes()) {
 				$reasons[] = sprintf(

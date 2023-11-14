@@ -223,7 +223,6 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			return ['positional' => [$this->mergeSignatures($nativeSignature, $functionMapSignatures['positional'][0])], 'named' => null];
 		}
 
-
 		if (count($functionMapSignatures['positional']) === 0) {
 			return ['positional' => [], 'named' => null];
 		}
@@ -272,6 +271,10 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$functionMapSignature->getNativeReturnType(),
 				$functionMapSignature->isVariadic(),
 			);
+		}
+
+		if (count($namedArgumentsVariants) === 0) {
+			$namedArgumentsVariants = null;
 		}
 
 		return ['positional' => $functionMapSignatures['positional'], 'named' => $namedArgumentsVariants];

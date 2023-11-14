@@ -115,7 +115,7 @@ class OverridingMethodRule implements Rule
 				$method->getName(),
 				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
-			))->build();
+			))->identifier('method.missingOverride')->build();
 		}
 		if ($prototype->isFinalByKeyword()->yes()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(

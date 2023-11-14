@@ -179,7 +179,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			return $this->getMergedSignatures($signature, $functionMapSignatures);
 		}
 
-		return [$signature];
+		return ['positional' => [$signature], 'named' => null];
 	}
 
 	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunctionAbstract|null $reflectionFunction): array
@@ -207,23 +207,77 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				return $this->getMergedSignatures($signature, $functionMapSignatures);
 			}
 
-			return [$signature];
+			return ['positional' => [$signature], 'named' => null];
 		}
 
 		throw new ShouldNotHappenException(sprintf('Function %s stub not found in %s.', $functionName, $stubFile));
 	}
 
 	/**
-	 * @param array<int, FunctionSignature> $functionMapSignatures
-	 * @return array<int, FunctionSignature>
+	 * @param array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>} $functionMapSignatures
+	 * @return array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>}
 	 */
 	private function getMergedSignatures(FunctionSignature $nativeSignature, array $functionMapSignatures): array
 	{
-		if (count($functionMapSignatures) === 1) {
-			return [$this->mergeSignatures($nativeSignature, $functionMapSignatures[0])];
+		if (count($functionMapSignatures['positional']) === 1) {
+			return ['positional' => [$this->mergeSignatures($nativeSignature, $functionMapSignatures['positional'][0])], 'named' => null];
 		}
 
-		return $functionMapSignatures;
+		if (count($functionMapSignatures['positional']) === 0) {
+			return ['positional' => [], 'named' => null];
+		}
+
+		$nativeParams = $nativeSignature->getParameters();
+		$namedArgumentsVariants = [];
+		foreach ($functionMapSignatures['positional'] as $functionMapSignature) {
+			$isPrevParamVariadic = false;
+			$hasMiddleVariadicParam = false;
+			// avoid weird functions like array_diff_uassoc
+			foreach ($functionMapSignature->getParameters() as $i => $functionParam) {
+				$nativeParam = $nativeParams[$i] ?? null;
+				$hasMiddleVariadicParam = $hasMiddleVariadicParam || $isPrevParamVariadic;
+				$isPrevParamVariadic = $functionParam->isVariadic() || (
+					$nativeParam !== null
+						? $nativeParam->isVariadic()
+						: false
+					);
+			}
+
+			if ($hasMiddleVariadicParam) {
+				continue;
+			}
+
+			$parameters = [];
+			foreach ($functionMapSignature->getParameters() as $i => $functionParam) {
+				if (!array_key_exists($i, $nativeParams)) {
+					continue 2;
+				}
+
+				$parameters[] = new ParameterSignature(
+					$nativeParams[$i]->getName(),
+					$functionParam->isOptional(),
+					$functionParam->getType(),
+					$functionParam->getNativeType(),
+					$functionParam->passedByReference(),
+					$functionParam->isVariadic(),
+					$functionParam->getDefaultValue(),
+					$functionParam->getOutType(),
+				);
+			}
+
+			$namedArgumentsVariants[] = new FunctionSignature(
+				$parameters,
+				$functionMapSignature->getReturnType(),
+				$functionMapSignature->getNativeReturnType(),
+				$functionMapSignature->isVariadic(),
+			);
+		}
+
+		if (count($namedArgumentsVariants) === 0) {
+			$namedArgumentsVariants = null;
+		}
+
+		return ['positional' => $functionMapSignatures['positional'], 'named' => $namedArgumentsVariants];
 	}
 
 	private function mergeSignatures(FunctionSignature $nativeSignature, FunctionSignature $functionMapSignature): FunctionSignature

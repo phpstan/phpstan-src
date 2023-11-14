@@ -94,6 +94,11 @@ class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		), $this->methods[0]->getVariants());
 	}
 
+	public function getNamedArgumentsVariants(): ?array
+	{
+		return null;
+	}
+
 	public function isDeprecated(): TrinaryLogic
 	{
 		return TrinaryLogic::lazyMaxMin($this->methods, static fn (MethodReflection $method): TrinaryLogic => $method->isDeprecated());

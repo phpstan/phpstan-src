@@ -44,6 +44,7 @@ class CallToFunctionParametersRule implements Rule
 				$scope,
 				$node->getArgs(),
 				$function->getVariants(),
+				$function->getNamedArgumentsVariants(),
 			),
 			$scope,
 			$function->isBuiltin(),

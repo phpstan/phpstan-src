@@ -58,6 +58,11 @@ class DummyMethodReflection implements ExtendedMethodReflection
 		];
 	}
 
+	public function getNamedArgumentsVariants(): ?array
+	{
+		return null;
+	}
+
 	public function isDeprecated(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

@@ -8,6 +8,7 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
@@ -46,7 +47,7 @@ class StaticMethodCallCheck
 
 	/**
 	 * @param Name|Expr $class
-	 * @return array{list<IdentifierRuleError>, MethodReflection|null}
+	 * @return array{list<IdentifierRuleError>, ExtendedMethodReflection|null}
 	 */
 	public function check(
 		Scope $scope,

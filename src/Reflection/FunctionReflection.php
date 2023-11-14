@@ -18,6 +18,11 @@ interface FunctionReflection
 	 */
 	public function getVariants(): array;
 
+	/**
+	 * @return ParametersAcceptorWithPhpDocs[]|null
+	 */
+	public function getNamedArgumentsVariants(): ?array;
+
 	public function isDeprecated(): TrinaryLogic;
 
 	public function getDeprecatedDescription(): ?string;

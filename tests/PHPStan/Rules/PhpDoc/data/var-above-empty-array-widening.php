@@ -19,3 +19,6 @@ $a = [];
 
 /** @var array{string, int} $a */
 $a = [];
+
+/** @var int $a */
+$a = [];

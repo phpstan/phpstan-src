@@ -352,7 +352,17 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	{
 		$this->checkTypeAgainstNativeType = $checkTypeAgainstNativeType;
 		$this->checkTypeAgainstPhpDocType = $checkTypeAgainstPhpDocType;
-		$this->analyse([__DIR__ . '/data/var-above-empty-array-widening.php'], []);
+
+		$errors = !$checkTypeAgainstNativeType
+			? []
+			: [
+				[
+					'PHPDoc tag @var with type int is not subtype of native type array{}.',
+					24,
+				]
+			];
+
+		$this->analyse([__DIR__ . '/data/var-above-empty-array-widening.php'], $errors);
 	}
 
 	public function dataPermutateCheckTypeAgainst(): iterable

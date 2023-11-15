@@ -9,7 +9,9 @@ use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
@@ -128,7 +130,8 @@ class VarTagTypeRuleHelper
 	private function shouldVarTagTypeBeReported(Node\Expr $expr, Type $type, Type $varTagType): bool
 	{
 		if ($expr instanceof Expr\Array_ && $expr->items === []) {
-			return false;
+			$type = new ArrayType(new MixedType(), new MixedType());
+			return $type->isSuperTypeOf($varTagType)->no(); // allow annotating empty array with anything that can accept it (e.g. int[]|null)
 		}
 
 		if ($expr instanceof Expr\New_) {

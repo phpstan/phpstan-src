@@ -35,10 +35,6 @@ class MagicConstantContextRuleTest extends RuleTestCase
 				'Magic constant __CLASS__ is always empty when used outside a class.',
 				20,
 			],
-			[
-				'Magic constant __METHOD__ is always empty when used outside a class.',
-				22,
-			],
 		]);
 	}
 
@@ -68,10 +64,6 @@ class MagicConstantContextRuleTest extends RuleTestCase
 			[
 				'Magic constant __CLASS__ is always empty when used outside a class.',
 				20,
-			],
-			[
-				'Magic constant __METHOD__ is always empty when used outside a class.',
-				22,
 			],
 			[
 				'Magic constant __NAMESPACE__ is always empty when used in global namespace.',

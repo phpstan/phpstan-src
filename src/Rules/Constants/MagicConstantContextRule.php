@@ -20,12 +20,11 @@ class MagicConstantContextRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node instanceof MagicConst\Class_ || $node instanceof MagicConst\Method) {
+		if ($node instanceof MagicConst\Class_) {
 			if ($scope->isInClass()) {
 				return [];
 			}
-		} elseif ($node instanceof MagicConst\Function_) {
-			// __FUNCTION__ can be used in a method, but __METHOD__ cannot be used in a function
+		} elseif ($node instanceof MagicConst\Method || $node instanceof MagicConst\Function_) {
 			// https://3v4l.org/3CAHm
 			if ($scope->getFunctionName() !== null) {
 				return [];

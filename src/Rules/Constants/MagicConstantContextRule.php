@@ -30,6 +30,16 @@ class MagicConstantContextRule implements Rule
 			if ($scope->getFunctionName() !== null) {
 				return [];
 			}
+		} elseif ($node instanceof MagicConst\Namespace_) {
+			if ($scope->getNamespace() === null) {
+				return [
+					RuleErrorBuilder::message(
+						sprintf('Magic constant %s is always empty when used in global namespace.', $node->getName()),
+					)->build(),
+				];
+			}
+
+			return [];
 		} else {
 			return [];
 		}

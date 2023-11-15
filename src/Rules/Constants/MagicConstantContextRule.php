@@ -30,6 +30,16 @@ class MagicConstantContextRule implements Rule
 					sprintf('Magic constant %s is always empty when used outside a class.', $node->getName()),
 				)->build(),
 			];
+		} elseif ($node instanceof MagicConst\Trait_) {
+			if ($scope->isInClass() || $scope->isInTrait()) {
+				return [];
+			}
+
+			return [
+				RuleErrorBuilder::message(
+					sprintf('Magic constant %s is always empty when used outside a trait-using-class.', $node->getName()),
+				)->build(),
+			];
 		} elseif ($node instanceof MagicConst\Method || $node instanceof MagicConst\Function_) {
 			// https://3v4l.org/3CAHm
 			if ($scope->isInClass() || $scope->getFunctionName() !== null) {

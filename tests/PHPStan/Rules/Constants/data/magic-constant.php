@@ -6,6 +6,7 @@ echo __CLASS__;
 echo __FUNCTION__;
 echo __METHOD__;
 echo __NAMESPACE__;
+echo __TRAIT__;
 
 class x {
 	function doFoo (): void {
@@ -13,6 +14,7 @@ class x {
 		echo __FUNCTION__;
 		echo __METHOD__;
 		echo __NAMESPACE__;
+		echo __TRAIT__;
 	}
 }
 
@@ -21,6 +23,7 @@ function doFoo (): void {
 	echo __FUNCTION__;
 	echo __METHOD__;
 	echo __NAMESPACE__;
+	echo __TRAIT__;
 }
 
 trait t {
@@ -29,5 +32,10 @@ trait t {
 		echo __FUNCTION__;
 		echo __METHOD__;
 		echo __NAMESPACE__;
+		echo __TRAIT__;
 	}
+}
+
+class T1 {
+	use t ;
 }

@@ -32,9 +32,22 @@ class MagicConstantContextRuleTest extends RuleTestCase
 				7,
 			],
 			[
-				'Magic constant __CLASS__ is always empty when used outside a class.',
-				20,
+				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				9,
 			],
+			[
+				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				17,
+			],
+			[
+				'Magic constant __CLASS__ is always empty when used outside a class.',
+				22,
+			],
+			[
+				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				26,
+			],
+
 		]);
 	}
 
@@ -58,16 +71,32 @@ class MagicConstantContextRuleTest extends RuleTestCase
 				8,
 			],
 			[
+				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				9,
+			],
+			[
 				'Magic constant __NAMESPACE__ is always empty when used in global namespace.',
-				15,
+				16,
+			],
+			[
+				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				17,
 			],
 			[
 				'Magic constant __CLASS__ is always empty when used outside a class.',
-				20,
+				22,
 			],
 			[
 				'Magic constant __NAMESPACE__ is always empty when used in global namespace.',
-				23,
+				25,
+			],
+			[
+				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				26,
+			],
+			[
+				'Magic constant __NAMESPACE__ is always empty when used in global namespace.',
+				34,
 			],
 		]);
 	}

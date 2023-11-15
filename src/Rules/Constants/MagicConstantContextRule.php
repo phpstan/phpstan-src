@@ -32,7 +32,7 @@ class MagicConstantContextRule implements Rule
 			];
 		} elseif ($node instanceof MagicConst\Method || $node instanceof MagicConst\Function_) {
 			// https://3v4l.org/3CAHm
-			if ($scope->getFunctionName() !== null) {
+			if ($scope->isInClass() || $scope->getFunctionName() !== null) {
 				return [];
 			}
 

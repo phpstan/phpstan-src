@@ -171,13 +171,16 @@ class ParametersAcceptorSelector
 				$parameters[1] = new NativeParameterReflection(
 					$parameters[1]->getName(),
 					$parameters[1]->isOptional(),
-					new CallableType(
-						$arrayFilterParameters ?? [
-							new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
-						],
-						new MixedType(),
-						false,
-					),
+					new UnionType([
+						new CallableType(
+							$arrayFilterParameters ?? [
+								new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
+							],
+							new MixedType(),
+							false,
+						),
+						new NullType(),
+					]),
 					$parameters[1]->passedByReference(),
 					$parameters[1]->isVariadic(),
 					$parameters[1]->getDefaultValue(),

@@ -359,7 +359,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				[
 					'PHPDoc tag @var with type int is not subtype of native type array{}.',
 					24,
-				]
+				],
 			];
 
 		$this->analyse([__DIR__ . '/data/var-above-empty-array-widening.php'], $errors);

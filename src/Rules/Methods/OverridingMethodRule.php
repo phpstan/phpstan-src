@@ -84,7 +84,7 @@ class OverridingMethodRule implements Rule
 			if ($this->phpVersion->supportsOverrideAttribute() && $this->hasOverrideAttribute($node->getOriginalNode())) {
 				return [
 					RuleErrorBuilder::message(sprintf(
-						'Method %s::%s() has #[Override] attribute but does not override any method.',
+						'Method %s::%s() has #[\Override] attribute but does not override any method.',
 						$method->getDeclaringClass()->getDisplayName(),
 						$method->getName(),
 					))->nonIgnorable()->build(),
@@ -103,7 +103,7 @@ class OverridingMethodRule implements Rule
 			&& !$this->hasOverrideAttribute($node->getOriginalNode())
 		) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() overrides method %s::%s() but is missing the #[Override] attribute.',
+				'Method %s::%s() overrides method %s::%s() but is missing the #[\Override] attribute.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),

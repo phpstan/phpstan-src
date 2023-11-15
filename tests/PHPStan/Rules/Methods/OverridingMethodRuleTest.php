@@ -748,7 +748,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/override-attribute.php'], [
 			[
-				'Method OverrideAttribute\Bar::test2() has #[Override] attribute but does not override any method.',
+				'Method OverrideAttribute\Bar::test2() has #[\Override] attribute but does not override any method.',
 				24,
 			],
 		]);
@@ -761,7 +761,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		yield [false, 80300, []];
 		yield [true, 80300, [
 			[
-				'Method CheckMissingOverrideAttr\Bar::doFoo() overrides method CheckMissingOverrideAttr\Foo::doFoo() but is missing the #[Override] attribute.',
+				'Method CheckMissingOverrideAttr\Bar::doFoo() overrides method CheckMissingOverrideAttr\Foo::doFoo() but is missing the #[\Override] attribute.',
 				18,
 			],
 		]];

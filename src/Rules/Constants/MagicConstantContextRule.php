@@ -24,11 +24,23 @@ class MagicConstantContextRule implements Rule
 			if ($scope->isInClass()) {
 				return [];
 			}
+
+			return [
+				RuleErrorBuilder::message(
+					sprintf('Magic constant %s is always empty when used outside a class.', $node->getName()),
+				)->build(),
+			];
 		} elseif ($node instanceof MagicConst\Method || $node instanceof MagicConst\Function_) {
 			// https://3v4l.org/3CAHm
 			if ($scope->getFunctionName() !== null) {
 				return [];
 			}
+
+			return [
+				RuleErrorBuilder::message(
+					sprintf('Magic constant %s is always empty when used outside a function.', $node->getName()),
+				)->build(),
+			];
 		} elseif ($node instanceof MagicConst\Namespace_) {
 			if ($scope->getNamespace() === null) {
 				return [
@@ -37,17 +49,8 @@ class MagicConstantContextRule implements Rule
 					)->build(),
 				];
 			}
-
-			return [];
-		} else {
-			return [];
 		}
-
-		return [
-			RuleErrorBuilder::message(
-				sprintf('Magic constant %s is always empty when used outside a class.', $node->getName()),
-			)->build(),
-		];
+		return [];
 	}
 
 }

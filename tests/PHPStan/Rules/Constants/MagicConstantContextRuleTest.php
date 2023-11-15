@@ -24,11 +24,11 @@ class MagicConstantContextRuleTest extends RuleTestCase
 				5,
 			],
 			[
-				'Magic constant __FUNCTION__ is always empty when used outside a class.',
+				'Magic constant __FUNCTION__ is always empty when used outside a function.',
 				6,
 			],
 			[
-				'Magic constant __METHOD__ is always empty when used outside a class.',
+				'Magic constant __METHOD__ is always empty when used outside a function.',
 				7,
 			],
 			[
@@ -46,11 +46,11 @@ class MagicConstantContextRuleTest extends RuleTestCase
 				5,
 			],
 			[
-				'Magic constant __FUNCTION__ is always empty when used outside a class.',
+				'Magic constant __FUNCTION__ is always empty when used outside a function.',
 				6,
 			],
 			[
-				'Magic constant __METHOD__ is always empty when used outside a class.',
+				'Magic constant __METHOD__ is always empty when used outside a function.',
 				7,
 			],
 			[

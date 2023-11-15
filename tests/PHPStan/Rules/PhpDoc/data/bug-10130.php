@@ -10,14 +10,14 @@ class Ipsum
 	 */
 	public function doFoo($map, $list, $shape): void
 	{
-		/** @var mixed[] */
-		$map = $map;
+		/** @var mixed[] $map */
+		if ($map) {}
 
-		/** @var mixed[] */
-		$list = $list;
+		/** @var mixed[] $list */
+		if ($list) {}
 
-		/** @var mixed[] */
-		$shape = $shape;
+		/** @var mixed[] $shape */
+		if ($shape) {}
 	}
 
 }

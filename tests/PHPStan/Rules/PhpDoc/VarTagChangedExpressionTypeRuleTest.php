@@ -48,4 +48,22 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10130(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10130.php'], [
+			[
+				'PHPDoc tag @var with type array is not subtype of type array<int>.',
+				14,
+			],
+			[
+				'PHPDoc tag @var with type array is not subtype of type list<int>.',
+				17,
+			],
+			[
+				'PHPDoc tag @var with type array is not subtype of type array{id: int}.',
+				20,
+			],
+		]);
+	}
+
 }

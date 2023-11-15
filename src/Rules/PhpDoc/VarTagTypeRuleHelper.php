@@ -9,7 +9,9 @@ use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
@@ -127,6 +129,11 @@ class VarTagTypeRuleHelper
 
 	private function shouldVarTagTypeBeReported(Node\Expr $expr, Type $type, Type $varTagType): bool
 	{
+		if ($expr instanceof Expr\Array_ && $expr->items === []) {
+			$type = new ArrayType(new MixedType(), new MixedType());
+			return $type->isSuperTypeOf($varTagType)->no(); // allow annotating empty array with anything that can accept it (e.g. int[]|null)
+		}
+
 		if ($expr instanceof Expr\New_) {
 			if ($type instanceof GenericObjectType) {
 				$type = new ObjectType($type->getClassName());
@@ -138,10 +145,6 @@ class VarTagTypeRuleHelper
 
 	private function checkType(Type $type, Type $varTagType): bool
 	{
-		if ($type->isConstantValue()->yes()) {
-			return $type->isSuperTypeOf($varTagType)->no();
-		}
-
 		if ($type->isIterable()->yes() && $varTagType->isIterable()->yes()) {
 			if ($type->isSuperTypeOf($varTagType)->no()) {
 				return true;
@@ -155,6 +158,10 @@ class VarTagTypeRuleHelper
 			}
 
 			return $this->checkType($innerType, $innerVarTagType);
+		}
+
+		if ($type->isConstantValue()->yes()) {
+			return $type->isSuperTypeOf($varTagType)->no();
 		}
 
 		return !$type->isSuperTypeOf($varTagType)->yes();

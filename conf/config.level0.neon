@@ -56,6 +56,7 @@ rules:
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
 	- PHPStan\Rules\Classes\TraitAttributeClassRule
 	- PHPStan\Rules\Constants\FinalConstantRule
+	- PHPStan\Rules\Constants\MagicClassConstantRule
 	- PHPStan\Rules\Constants\NativeTypedClassConstantRule
 	- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
 	- PHPStan\Rules\Exceptions\NoncapturingCatchRule

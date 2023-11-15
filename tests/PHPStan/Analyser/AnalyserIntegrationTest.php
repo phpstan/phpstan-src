@@ -1239,7 +1239,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9994.php');
 		$this->assertCount(2, $errors);
 		$this->assertSame('Negated boolean expression is always false.', $errors[0]->getMessage());
-		$this->assertSame('Parameter #2 $callback of function array_filter expects callable(1|2|3|null): mixed, false given.', $errors[1]->getMessage());
+		$this->assertSame('Parameter #2 $callback of function array_filter expects (callable(1|2|3|null): mixed)|null, false given.', $errors[1]->getMessage());
 	}
 
 	public function testBug10049(): void

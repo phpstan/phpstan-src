@@ -593,6 +593,10 @@ class PhpClassReflectionExtension
 
 								$phpDocParameterNameMapping[$signatureParameters[$paramI]->getName()] = $reflectionParameter->getName();
 							}
+
+							if ($signatureType === 'named') {
+								$phpDocParameterNameMapping = [];
+							}
 						}
 					}
 					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes);

@@ -20,12 +20,12 @@ class MagicClassConstantRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/magic-class-constant.php'], [
 			[
-				'Magic constant __CLASS__ cannot be used outside a class.',
+				'Magic constant __CLASS__ is always empty when used outside a class.',
 				5,
 			],
 
 			[
-				'Magic constant __CLASS__ cannot be used outside a class.',
+				'Magic constant __CLASS__ is always empty when used outside a class.',
 				14,
 			],
 		]);

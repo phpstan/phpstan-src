@@ -25,7 +25,7 @@ class MagicClassConstantRule implements Rule
 
 		return [
 			RuleErrorBuilder::message(
-				sprintf('Magic constant %s cannot be used outside a class.', $node->getName()),
+				sprintf('Magic constant %s is always empty when used outside a class.', $node->getName()),
 			)->build(),
 		];
 	}

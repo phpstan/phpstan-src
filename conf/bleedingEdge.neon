@@ -43,3 +43,4 @@ parameters:
 		zeroFiles: true
 		callUserFunc: true
 		finalByPhpDoc: true
+		magicConstantOutOfContext: true

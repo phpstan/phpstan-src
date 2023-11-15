@@ -127,6 +127,10 @@ class VarTagTypeRuleHelper
 
 	private function shouldVarTagTypeBeReported(Node\Expr $expr, Type $type, Type $varTagType): bool
 	{
+		if ($expr instanceof Expr\Array_ && $expr->items === []) {
+			return false;
+		}
+
 		if ($expr instanceof Expr\New_) {
 			if ($type instanceof GenericObjectType) {
 				$type = new ObjectType($type->getClassName());

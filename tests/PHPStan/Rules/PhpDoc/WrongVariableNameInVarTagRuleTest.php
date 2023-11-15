@@ -346,6 +346,24 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	}
 
 	/**
+	 * @dataProvider dataPermutateCheckTypeAgainst
+	 */
+	public function testEmptyArrayInitWithWiderPhpDoc(bool $checkTypeAgainstNativeType, bool $checkTypeAgainstPhpDocType): void
+	{
+		$this->checkTypeAgainstNativeType = $checkTypeAgainstNativeType;
+		$this->checkTypeAgainstPhpDocType = $checkTypeAgainstPhpDocType;
+		$this->analyse([__DIR__ . '/data/var-above-empty-array-widening.php'], []);
+	}
+
+	public function dataPermutateCheckTypeAgainst(): iterable
+	{
+		yield [true, true];
+		yield [false, true];
+		yield [true, false];
+		yield [false, false];
+	}
+
+	/**
 	 * @dataProvider dataReportWrongType
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */

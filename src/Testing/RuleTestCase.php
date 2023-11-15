@@ -2,6 +2,7 @@
 
 namespace PHPStan\Testing;
 
+use LogicException;
 use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\Error;
@@ -29,8 +30,12 @@ use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
 use function count;
+use function explode;
+use function file_get_contents;
 use function implode;
+use function preg_match_all;
 use function sprintf;
+use function trim;
 
 /**
  * @api
@@ -156,6 +161,53 @@ abstract class RuleTestCase extends PHPStanTestCase
 		);
 
 		$this->assertSame(implode("\n", $expectedErrors) . "\n", implode("\n", $actualErrors) . "\n");
+	}
+
+	/**
+	 * Any single line comment prefixed 'error:' is used as expected error
+	 */
+	protected function analyseFileWithErrorsAsComments(string $file): void
+	{
+		$file = self::getFileHelper()->normalizePath($file);
+		$this->analyse([$file], $this->parseExpectedErrorsFromComments($file));
+	}
+
+	/**
+	 * @return list<array{0: string, 1: int}>
+	 */
+	private function parseExpectedErrorsFromComments(string $file): array
+	{
+		$fileData = file_get_contents($file);
+
+		if ($fileData === false) {
+			throw new LogicException('Error while reading data from ' . $file);
+		}
+
+		$fileDataLines = explode("\n", $fileData);
+
+		$expectedErrors = [];
+
+		foreach ($fileDataLines as $line => $row) {
+			$matches = [];
+			$matched = preg_match_all('#// error:(.+)#', $row, $matches);
+
+			if ($matched === false) {
+				throw new LogicException('Error while matching errors');
+			}
+
+			if ($matched === 0) {
+				continue;
+			}
+
+			foreach ($matches[1] as $error) {
+				$expectedErrors[] = [
+					trim($error),
+					$line + 1,
+				];
+			}
+		}
+
+		return $expectedErrors;
 	}
 
 	/**

@@ -316,6 +316,11 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\MagicConstantParamDefaultVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parser\NewAssignedToPropertyVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor

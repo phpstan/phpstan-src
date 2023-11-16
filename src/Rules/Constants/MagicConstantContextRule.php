@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Constants;
 use PhpParser\Node;
 use PhpParser\Node\Scalar\MagicConst;
 use PHPStan\Analyser\Scope;
+use PHPStan\Parser\MagicConstantParamDefaultVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
@@ -43,6 +44,10 @@ class MagicConstantContextRule implements Rule
 		} elseif ($node instanceof MagicConst\Method || $node instanceof MagicConst\Function_) {
 			// https://3v4l.org/3CAHm
 			if ($scope->isInClass() || $scope->getFunctionName() !== null) {
+				return [];
+			}
+
+			if ((bool) $node->getAttribute(MagicConstantParamDefaultVisitor::ATTRIBUTE_NAME)) {
 				return [];
 			}
 

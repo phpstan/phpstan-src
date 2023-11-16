@@ -129,9 +129,20 @@ class VarTagTypeRuleHelper
 
 	private function shouldVarTagTypeBeReported(Node\Expr $expr, Type $type, Type $varTagType): bool
 	{
-		if ($expr instanceof Expr\Array_ && $expr->items === []) {
-			$type = new ArrayType(new MixedType(), new MixedType());
-			return $type->isSuperTypeOf($varTagType)->no(); // allow annotating empty array with anything that can accept it (e.g. int[]|null)
+		if ($expr instanceof Expr\Array_) {
+			if ($expr->items === []) {
+				$type = new ArrayType(new MixedType(), new MixedType());
+			}
+
+			return $type->isSuperTypeOf($varTagType)->no();
+		}
+
+		if ($expr instanceof Expr\ConstFetch) {
+			return $type->isSuperTypeOf($varTagType)->no();
+		}
+
+		if ($expr instanceof Node\Scalar) {
+			return $type->isSuperTypeOf($varTagType)->no();
 		}
 
 		if ($expr instanceof Expr\New_) {
@@ -158,10 +169,6 @@ class VarTagTypeRuleHelper
 			}
 
 			return $this->checkType($innerType, $innerVarTagType);
-		}
-
-		if ($type->isConstantValue()->yes()) {
-			return $type->isSuperTypeOf($varTagType)->no();
 		}
 
 		return !$type->isSuperTypeOf($varTagType)->yes();

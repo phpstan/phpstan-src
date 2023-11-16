@@ -31,7 +31,7 @@ class MagicConstantContextRule implements Rule
 				)->build(),
 			];
 		} elseif ($node instanceof MagicConst\Trait_) {
-			if ($scope->isInClass() || $scope->isInTrait()) {
+			if ($scope->isInTrait()) {
 				return [];
 			}
 

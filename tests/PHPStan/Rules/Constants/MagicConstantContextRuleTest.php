@@ -49,11 +49,15 @@ class MagicConstantContextRuleTest extends RuleTestCase
 			],
 			[
 				'Magic constant __CLASS__ is always empty when used outside a class.',
-				46,
+				59,
 			],
 			[
 				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
-				51,
+				64,
+			],
+			[
+				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				78,
 			],
 
 		]);

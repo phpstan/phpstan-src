@@ -233,7 +233,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug3405(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3405.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Magic constant __TRAIT__ is always empty when used outside a trait-using-class.', $errors[0]->getMessage());
+		$this->assertSame(16, $errors[0]->getLine());
 	}
 
 	public function testBug3415(): void

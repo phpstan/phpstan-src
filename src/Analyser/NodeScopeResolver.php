@@ -448,14 +448,6 @@ class NodeScopeResolver
 			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
 			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes] = $this->getPhpDocs($scope, $stmt);
 
-			foreach ($stmt->params as $param) {
-				$this->processParamNode($param, $scope, $nodeCallback);
-			}
-
-			if ($stmt->returnType !== null) {
-				$nodeCallback($stmt->returnType, $scope);
-			}
-
 			$functionScope = $scope->enterFunction(
 				$stmt,
 				$templateTypeMap,
@@ -472,6 +464,15 @@ class NodeScopeResolver
 				$phpDocComment,
 				$phpDocParameterOutTypes,
 			);
+
+			foreach ($stmt->params as $param) {
+				$this->processParamNode($param, $functionScope, $nodeCallback);
+			}
+
+			if ($stmt->returnType !== null) {
+				$nodeCallback($stmt->returnType, $functionScope);
+			}
+
 			$functionReflection = $functionScope->getFunction();
 			if (!$functionReflection instanceof PhpFunctionFromParserNodeReflection) {
 				throw new ShouldNotHappenException();

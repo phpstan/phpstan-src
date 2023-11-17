@@ -125,7 +125,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 	/**
 	 * @param string[] $files
-	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 * @param list<array{0: string, 1: int, 2?: string|null}> $expectedErrors
 	 */
 	public function analyse(array $files, array $expectedErrors): void
 	{

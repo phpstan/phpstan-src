@@ -156,6 +156,13 @@ class VarTagTypeRuleHelper
 
 	private function checkType(Type $type, Type $varTagType): bool
 	{
+		if ($type->isConstantArray()->yes()) {
+			if ($type->isIterableAtLeastOnce()->no()) {
+				$type = new ArrayType(new MixedType(), new MixedType());
+				return $type->isSuperTypeOf($varTagType)->no();
+			}
+		}
+
 		if ($type->isIterable()->yes() && $varTagType->isIterable()->yes()) {
 			if ($type->isSuperTypeOf($varTagType)->no()) {
 				return true;

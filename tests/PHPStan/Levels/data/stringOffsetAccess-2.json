@@ -3,15 +3,5 @@
         "message": "PHPDoc tag @var with type int|object is not subtype of native type null.",
         "line": 7,
         "ignorable": true
-    },
-    {
-        "message": "PHPDoc tag @var with type array{baz: 21}|array{foo: 17, bar: 19} is not subtype of native type array{}.",
-        "line": 54,
-        "ignorable": true
-    },
-    {
-        "message": "PHPDoc tag @var with type array{baz: 21}|array{foo: 17, bar: 19} is not subtype of native type array{}.",
-        "line": 58,
-        "ignorable": true
     }
 ]

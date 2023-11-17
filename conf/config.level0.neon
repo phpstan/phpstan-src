@@ -89,6 +89,7 @@ rules:
 	- PHPStan\Rules\Operators\InvalidAssignVarRule
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
+	- PHPStan\Rules\Properties\InvalidCallablePropertyTypeRule
 	- PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
 	- PHPStan\Rules\Properties\PropertiesInInterfaceRule
 	- PHPStan\Rules\Properties\PropertyAttributesRule

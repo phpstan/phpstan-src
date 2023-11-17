@@ -868,15 +868,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = $checkExplicitMixed;
 		$errors = [
 			[
-				'Parameter #2 $callback of function array_filter expects callable(int): mixed, Closure(string): true given.',
+				'Parameter #2 $callback of function array_filter expects (callable(int): mixed)|null, Closure(string): true given.',
 				17,
 			],
 		];
 		if ($checkExplicitMixed) {
 			$errors[] = [
-				'Parameter #2 $callback of function array_filter expects callable(mixed): mixed, Closure(int): true given.',
+				'Parameter #2 $callback of function array_filter expects (callable(mixed): mixed)|null, Closure(int): true given.',
 				20,
-				'Type int of parameter #1 $i of passed callable needs to be same or wider than parameter type mixed of accepting callable.',
+				'Type #1 from the union: Type int of parameter #1 $i of passed callable needs to be same or wider than parameter type mixed of accepting callable.',
 			];
 		}
 		$this->analyse([__DIR__ . '/data/array_filter_callback.php'], $errors);
@@ -1547,6 +1547,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		];
 
 		$this->analyse([__DIR__ . '/data/bug-9793.php'], $errors);
+	}
+
+	public function testCallToArrayFilterWithNullCallback(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/array_filter_null_callback.php'], []);
 	}
 
 }

@@ -357,10 +357,6 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			? []
 			: [
 				[
-					'PHPDoc tag @var with type int|null is not subtype of native type null.',
-					6,
-				],
-				[
 					'PHPDoc tag @var with type int is not subtype of native type array{}.',
 					24,
 				],

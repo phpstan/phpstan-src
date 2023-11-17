@@ -22,6 +22,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
 	PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule:
 		phpstan.rules.rule: %featureToggles.missingMagicSerializationRule%
+	PHPStan\Rules\Constants\MagicConstantContextRule:
+		phpstan.rules.rule: %featureToggles.magicConstantOutOfContext%
 
 rules:
 	- PHPStan\Rules\Api\ApiInstantiationRule
@@ -278,3 +280,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule
+
+	-
+		class: PHPStan\Rules\Constants\MagicConstantContextRule

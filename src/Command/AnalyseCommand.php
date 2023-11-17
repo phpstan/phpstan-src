@@ -83,7 +83,7 @@ class AnalyseCommand extends Command
 				new InputOption('generate-baseline', 'b', InputOption::VALUE_OPTIONAL, 'Path to a file where the baseline should be saved', false),
 				new InputOption('allow-empty-baseline', null, InputOption::VALUE_NONE, 'Do not error out when the generated baseline is empty'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
-				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
+				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with Xdebug for debugging purposes'),
 				new InputOption('fix', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('watch', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('pro', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),

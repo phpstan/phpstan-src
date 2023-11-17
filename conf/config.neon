@@ -77,6 +77,7 @@ parameters:
 		zeroFiles: false
 		callUserFunc: false
 		finalByPhpDoc: false
+		magicConstantOutOfContext: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -311,6 +312,11 @@ services:
 
 	-
 		class: PHPStan\Parser\ArrowFunctionArgVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
+		class: PHPStan\Parser\MagicConstantParamDefaultVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor
 

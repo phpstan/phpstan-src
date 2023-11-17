@@ -43,5 +43,6 @@ parameters:
 		zeroFiles: true
 		callUserFunc: true
 		finalByPhpDoc: true
+		magicConstantOutOfContext: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Rule.stub

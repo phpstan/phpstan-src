@@ -73,6 +73,7 @@ parametersSchema:
 		zeroFiles: bool()
 		callUserFunc: bool()
 		finalByPhpDoc: bool()
+		magicConstantOutOfContext: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

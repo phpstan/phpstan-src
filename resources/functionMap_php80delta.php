@@ -159,7 +159,6 @@ return [
 	],
 	'old' => [
 		'array_combine' => ['associative-array|false', 'keys'=>'string[]|int[]', 'values'=>'array'],
-		'array_filter' => ['array', 'input'=>'array', 'callback='=>'callable(mixed,mixed):bool|callable(mixed):bool|null', 'flag='=>'int'],
 		'bcdiv' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcmod' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcpowmod' => ['?string', 'base'=>'string', 'exponent'=>'string', 'modulus'=>'string', 'scale='=>'int'],

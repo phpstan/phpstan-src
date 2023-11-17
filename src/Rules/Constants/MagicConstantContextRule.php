@@ -28,7 +28,7 @@ class MagicConstantContextRule implements Rule
 
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Magic constant %s is always empty when used outside a class.', $node->getName()),
+					sprintf('Magic constant %s is always empty outside a class.', $node->getName()),
 				)->build(),
 			];
 		} elseif ($node instanceof MagicConst\Trait_) {
@@ -38,7 +38,7 @@ class MagicConstantContextRule implements Rule
 
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Magic constant %s is always empty when used outside a trait-using-class.', $node->getName()),
+					sprintf('Magic constant %s is always empty outside a trait.', $node->getName()),
 				)->build(),
 			];
 		} elseif ($node instanceof MagicConst\Method || $node instanceof MagicConst\Function_) {
@@ -53,14 +53,14 @@ class MagicConstantContextRule implements Rule
 
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Magic constant %s is always empty when used outside a function.', $node->getName()),
+					sprintf('Magic constant %s is always empty outside a function.', $node->getName()),
 				)->build(),
 			];
 		} elseif ($node instanceof MagicConst\Namespace_) {
 			if ($scope->getNamespace() === null) {
 				return [
 					RuleErrorBuilder::message(
-						sprintf('Magic constant %s is always empty when used in global namespace.', $node->getName()),
+						sprintf('Magic constant %s is always empty in global namespace.', $node->getName()),
 					)->build(),
 				];
 			}

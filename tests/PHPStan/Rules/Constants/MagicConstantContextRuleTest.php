@@ -20,43 +20,43 @@ class MagicConstantContextRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/magic-constant.php'], [
 			[
-				'Magic constant __CLASS__ is always empty when used outside a class.',
+				'Magic constant __CLASS__ is always empty outside a class.',
 				5,
 			],
 			[
-				'Magic constant __FUNCTION__ is always empty when used outside a function.',
+				'Magic constant __FUNCTION__ is always empty outside a function.',
 				6,
 			],
 			[
-				'Magic constant __METHOD__ is always empty when used outside a function.',
+				'Magic constant __METHOD__ is always empty outside a function.',
 				7,
 			],
 			[
-				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				'Magic constant __TRAIT__ is always empty outside a trait.',
 				9,
 			],
 			[
-				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				'Magic constant __TRAIT__ is always empty outside a trait.',
 				17,
 			],
 			[
-				'Magic constant __CLASS__ is always empty when used outside a class.',
+				'Magic constant __CLASS__ is always empty outside a class.',
 				22,
 			],
 			[
-				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				'Magic constant __TRAIT__ is always empty outside a trait.',
 				26,
 			],
 			[
-				'Magic constant __CLASS__ is always empty when used outside a class.',
+				'Magic constant __CLASS__ is always empty outside a class.',
 				59,
 			],
 			[
-				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				'Magic constant __TRAIT__ is always empty outside a trait.',
 				64,
 			],
 			[
-				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				'Magic constant __TRAIT__ is always empty outside a trait.',
 				78,
 			],
 
@@ -67,59 +67,59 @@ class MagicConstantContextRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/magic-constant-global-ns.php'], [
 			[
-				'Magic constant __CLASS__ is always empty when used outside a class.',
+				'Magic constant __CLASS__ is always empty outside a class.',
 				5,
 			],
 			[
-				'Magic constant __FUNCTION__ is always empty when used outside a function.',
+				'Magic constant __FUNCTION__ is always empty outside a function.',
 				6,
 			],
 			[
-				'Magic constant __METHOD__ is always empty when used outside a function.',
+				'Magic constant __METHOD__ is always empty outside a function.',
 				7,
 			],
 			[
-				'Magic constant __NAMESPACE__ is always empty when used in global namespace.',
+				'Magic constant __NAMESPACE__ is always empty in global namespace.',
 				8,
 			],
 			[
-				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				'Magic constant __TRAIT__ is always empty outside a trait.',
 				9,
 			],
 			[
-				'Magic constant __NAMESPACE__ is always empty when used in global namespace.',
+				'Magic constant __NAMESPACE__ is always empty in global namespace.',
 				16,
 			],
 			[
-				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				'Magic constant __TRAIT__ is always empty outside a trait.',
 				17,
 			],
 			[
-				'Magic constant __CLASS__ is always empty when used outside a class.',
+				'Magic constant __CLASS__ is always empty outside a class.',
 				22,
 			],
 			[
-				'Magic constant __NAMESPACE__ is always empty when used in global namespace.',
+				'Magic constant __NAMESPACE__ is always empty in global namespace.',
 				25,
 			],
 			[
-				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				'Magic constant __TRAIT__ is always empty outside a trait.',
 				26,
 			],
 			[
-				'Magic constant __NAMESPACE__ is always empty when used in global namespace.',
+				'Magic constant __NAMESPACE__ is always empty in global namespace.',
 				34,
 			],
 			[
-				'Magic constant __CLASS__ is always empty when used outside a class.',
+				'Magic constant __CLASS__ is always empty outside a class.',
 				46,
 			],
 			[
-				'Magic constant __NAMESPACE__ is always empty when used in global namespace.',
+				'Magic constant __NAMESPACE__ is always empty in global namespace.',
 				48,
 			],
 			[
-				'Magic constant __TRAIT__ is always empty when used outside a trait-using-class.',
+				'Magic constant __TRAIT__ is always empty outside a trait.',
 				51,
 			],
 		]);

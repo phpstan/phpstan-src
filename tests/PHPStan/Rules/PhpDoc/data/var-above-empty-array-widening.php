@@ -22,3 +22,8 @@ $a = [];
 
 /** @var int $a */
 $a = [];
+
+$translationsTree = [];
+
+/** @var array $byRef */
+$byRef = &$translationsTree;

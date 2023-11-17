@@ -110,6 +110,15 @@ class CommandHelper
 			}
 		} elseif (XdebugHandler::isXdebugActive()) {
 			$errorOutput->getStyle()->note('The Xdebug PHP extension is active, but "--xdebug" is not used. This may slow down performance and the process will not halt at breakpoints.');
+		} elseif ($debugEnabled) {
+			$v = XdebugHandler::getSkippedVersion();
+			if ($v !== '') {
+				$errorOutput->getStyle()->note(
+					"The Xdebug PHP extension is active, but \"--xdebug\" is not used.\n" .
+					"The process was restarted and it will not halt at breakpoints.\n" .
+					'Use "--xdebug" if you want to halt at breakpoints.',
+				);
+			}
 		}
 
 		if ($memoryLimit !== null) {

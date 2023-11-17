@@ -42,8 +42,10 @@ class MagicConstantContextRule implements Rule
 				)->build(),
 			];
 		} elseif ($node instanceof MagicConst\Method || $node instanceof MagicConst\Function_) {
-			// https://3v4l.org/3CAHm
-			if ($scope->isInClass() || $scope->getFunctionName() !== null) {
+			if ($scope->getFunctionName() !== null) {
+				return [];
+			}
+			if ($scope->isInAnonymousFunction()) {
 				return [];
 			}
 

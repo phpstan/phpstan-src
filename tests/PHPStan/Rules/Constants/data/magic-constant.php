@@ -82,3 +82,29 @@ class y {
 
 }
 
+class props {
+	public $f = __FILE__;
+	public $l = __LINE__;
+	public $c = __CLASS__;
+	public $d = __DIR__;
+	public $n = __NAMESPACE__;
+	public $m = __METHOD__;
+	public $fun = __FUNCTION__;
+	public $t = __TRAIT__;
+}
+
+$func = function() {
+	echo __CLASS__;
+	echo __FUNCTION__;
+	echo __METHOD__;
+	echo __NAMESPACE__;
+	echo __TRAIT__;
+};
+
+$staticFunc = static function() {
+	echo __CLASS__;
+	echo __FUNCTION__;
+	echo __METHOD__;
+	echo __NAMESPACE__;
+	echo __TRAIT__;
+};

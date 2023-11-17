@@ -171,6 +171,10 @@ class VarTagTypeRuleHelper
 			return $this->checkType($innerType, $innerVarTagType);
 		}
 
+		if ($type->isConstantValue()->yes()) {
+			return $type->isSuperTypeOf($varTagType)->no();
+		}
+
 		return !$type->isSuperTypeOf($varTagType)->yes();
 	}
 

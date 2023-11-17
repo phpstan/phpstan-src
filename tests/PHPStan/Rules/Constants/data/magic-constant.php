@@ -108,3 +108,31 @@ $staticFunc = static function() {
 	echo __NAMESPACE__;
 	echo __TRAIT__;
 };
+
+$funcParams = function(
+	string $file = __FILE__,
+	int $line = __LINE__,
+	string $class = __CLASS__,
+	string $dir = __DIR__,
+	string $namespace = __NAMESPACE__,
+	string $method = __METHOD__,
+	string $function = __FUNCTION__,
+	string $trait = __TRAIT__
+) {
+};
+
+class inConstruct {
+	function __construct(
+		string $file = __FILE__,
+		int $line = __LINE__,
+		string $class = __CLASS__,
+		string $dir = __DIR__,
+		string $namespace = __NAMESPACE__,
+		string $method = __METHOD__,
+		string $function = __FUNCTION__,
+		string $trait = __TRAIT__
+	)
+	{
+	}
+
+}

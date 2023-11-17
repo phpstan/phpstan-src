@@ -21,6 +21,8 @@ class MagicConstantContextRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		// test cases https://3v4l.org/ZUvvr
+
 		if ($node instanceof MagicConst\Class_) {
 			if ($scope->isInClass()) {
 				return [];

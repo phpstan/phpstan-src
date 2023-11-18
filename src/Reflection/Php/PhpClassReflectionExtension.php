@@ -98,7 +98,6 @@ class PhpClassReflectionExtension
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		private FileTypeMapper $fileTypeMapper,
 		private bool $inferPrivatePropertyTypeFromConstructor,
-		private array $universalObjectCratesClasses,
 	)
 	{
 	}
@@ -398,20 +397,7 @@ class PhpClassReflectionExtension
 
 	public function hasNativeMethod(ClassReflection $classReflection, string $methodName): bool
 	{
-		$hasMethod = $this->hasMethod($classReflection, $methodName);
-		if ($hasMethod) {
-			return true;
-		}
-
-		if ($methodName === '__get' && UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
-			$this->reflectionProviderProvider->getReflectionProvider(),
-			$this->universalObjectCratesClasses,
-			$classReflection,
-		)) {
-			return true;
-		}
-
-		return false;
+		return $this->hasMethod($classReflection, $methodName);
 	}
 
 	public function getNativeMethod(ClassReflection $classReflection, string $methodName): ExtendedMethodReflection
@@ -420,26 +406,13 @@ class PhpClassReflectionExtension
 			return $this->nativeMethods[$classReflection->getCacheKey()][$methodName];
 		}
 
-		if ($classReflection->getNativeReflection()->hasMethod($methodName)) {
-			$nativeMethodReflection = new NativeBuiltinMethodReflection(
-				$classReflection->getNativeReflection()->getMethod($methodName),
-			);
-		} else {
-			if (
-				$methodName !== '__get'
-				|| !UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
-					$this->reflectionProviderProvider->getReflectionProvider(),
-					$this->universalObjectCratesClasses,
-					$classReflection,
-				)) {
-				throw new ShouldNotHappenException();
-			}
-
-			$nativeMethodReflection = new FakeBuiltinMethodReflection(
-				$methodName,
-				$classReflection->getNativeReflection(),
-			);
+		if (!$classReflection->getNativeReflection()->hasMethod($methodName)) {
+			throw new ShouldNotHappenException();
 		}
+
+		$nativeMethodReflection = new NativeBuiltinMethodReflection(
+			$classReflection->getNativeReflection()->getMethod($methodName),
+		);
 
 		if (!isset($this->nativeMethods[$classReflection->getCacheKey()][$nativeMethodReflection->getName()])) {
 			$method = $this->createMethod($classReflection, $nativeMethodReflection, false);
@@ -595,7 +568,7 @@ class PhpClassReflectionExtension
 								$throwType = $throwsTag->getType();
 							}
 							$returnTag = $phpDocBlock->getReturnTag();
-							if ($returnTag !== null) {
+							if ($returnTag !== null && count($methodSignatures) === 1) {
 								$phpDocReturnType = $returnTag->getType();
 							}
 							foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
@@ -860,10 +833,11 @@ class PhpClassReflectionExtension
 			);
 		}
 
-		$returnType = null;
 		if ($stubPhpDocReturnType !== null) {
 			$returnType = $stubPhpDocReturnType;
 			$phpDocReturnType = $stubPhpDocReturnType;
+		} else {
+			$returnType = TypehintHelper::decideType($methodSignature->getReturnType(), $phpDocReturnType);
 		}
 
 		return new FunctionVariantWithPhpDocs(
@@ -871,7 +845,7 @@ class PhpClassReflectionExtension
 			null,
 			$parameters,
 			$methodSignature->isVariadic(),
-			$returnType ?? $methodSignature->getReturnType(),
+			$returnType,
 			$phpDocReturnType ?? new MixedType(),
 			$methodSignature->getNativeReturnType(),
 		);

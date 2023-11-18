@@ -229,12 +229,14 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 
 		$nativeParams = $nativeSignature->getParameters();
 		$namedArgumentsVariants = [];
+		$allParamNamesMatchNative = true;
 		foreach ($functionMapSignatures['positional'] as $functionMapSignature) {
 			$isPrevParamVariadic = false;
 			$hasMiddleVariadicParam = false;
 			// avoid weird functions like array_diff_uassoc
 			foreach ($functionMapSignature->getParameters() as $i => $functionParam) {
 				$nativeParam = $nativeParams[$i] ?? null;
+				$allParamNamesMatchNative = $allParamNamesMatchNative && $nativeParam !== null && $functionParam->getName() === $nativeParam->getName();
 				$hasMiddleVariadicParam = $hasMiddleVariadicParam || $isPrevParamVariadic;
 				$isPrevParamVariadic = $functionParam->isVariadic() || (
 					$nativeParam !== null
@@ -273,7 +275,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			);
 		}
 
-		if (count($namedArgumentsVariants) === 0) {
+		if ($allParamNamesMatchNative || count($namedArgumentsVariants) === 0) {
 			$namedArgumentsVariants = null;
 		}
 

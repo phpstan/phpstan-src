@@ -168,7 +168,12 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			$result .= "NOT BUILTIN\n";
 		}
 
-		$result .= self::generateVariantsDescription($functionReflection->getName(), $functionReflection->getVariants());
+		$result .= self::generateVariantsDescription($functionReflection->getName(), $functionReflection->getVariants(), false);
+		$namedArgumentsVariants = $functionReflection->getNamedArgumentsVariants();
+
+		if ($namedArgumentsVariants !== null) {
+			$result .= self::generateVariantsDescription($functionReflection->getName(), $namedArgumentsVariants, true);
+		}
 
 		return $result;
 	}
@@ -309,7 +314,12 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		}
 
 		$result .= 'Visibility: ' . $visibility . "\n";
-		$result .= self::generateVariantsDescription($methodReflection->getName(), $methodReflection->getVariants());
+		$result .= self::generateVariantsDescription($methodReflection->getName(), $methodReflection->getVariants(), false);
+		$namedArgumentsVariants = $methodReflection->getNamedArgumentsVariants();
+
+		if ($namedArgumentsVariants !== null) {
+			$result .= self::generateVariantsDescription($methodReflection->getName(), $namedArgumentsVariants, true);
+		}
 
 		return $result;
 	}
@@ -347,10 +357,13 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	}
 
 	/** @param ParametersAcceptorWithPhpDocs[] $variants */
-	private static function generateVariantsDescription(string $name, array $variants): string
+	private static function generateVariantsDescription(string $name, array $variants, bool $isNamedArguments): string
 	{
 		$variantCount = count($variants);
-		$result = 'Variants: ' . $variantCount . "\n";
+		$result = $isNamedArguments
+			? 'Named arguments variants: '
+			: 'Variants: ';
+		$result .= $variantCount . "\n";
 		$variantIdent = '    ';
 		$verbosityLevel = VerbosityLevel::precise();
 

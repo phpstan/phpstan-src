@@ -40,6 +40,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/generic-class-string.php');
 		if (PHP_VERSION_ID >= 80100) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/generic-enum-class-string.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7162.php');
 		}
 
 		require_once __DIR__ . '/data/generic-generalization.php';
@@ -81,6 +82,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		if (PHP_VERSION_ID >= 70400) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/native-types.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/reflection-type.php');
 		}
 
 		if (PHP_VERSION_ID >= 80100) {
@@ -1370,6 +1372,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9963.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/str-shuffle.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9995.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9867.php');
 	}
 
 	/**

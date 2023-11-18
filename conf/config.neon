@@ -722,7 +722,6 @@ services:
 		arguments:
 			parser: @defaultAnalysisParser
 			inferPrivatePropertyTypeFromConstructor: %inferPrivatePropertyTypeFromConstructor%
-			universalObjectCratesClasses: %universalObjectCratesClasses%
 
 	-
 		implement: PHPStan\Reflection\Php\PhpMethodReflectionFactory

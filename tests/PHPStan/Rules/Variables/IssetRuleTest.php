@@ -450,4 +450,12 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/isset-object-shapes.php'], []);
 	}
 
+	public function testBug10151(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10151.php'], []);
+	}
+
 }

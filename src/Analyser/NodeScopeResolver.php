@@ -1959,10 +1959,7 @@ class NodeScopeResolver
 					$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 					if ($expr instanceof Expr\AssignOp\Coalesce) {
 						return new ExpressionResult(
-							$result->getScope()->mergeWith(
-								$this->processExprNode($expr->expr, $originalScope, static function (): void {
-								}, $context->enterDeep())->getScope(),
-							),
+							$result->getScope()->mergeWith($originalScope),
 							$result->hasYield(),
 							$result->getThrowPoints(),
 						);

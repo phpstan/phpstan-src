@@ -82,9 +82,6 @@ class PhpClassReflectionExtension
 	/** @var array<string, true> */
 	private array $inferClassConstructorPropertyTypesInProcess = [];
 
-	/**
-	 * @param string[] $universalObjectCratesClasses
-	 */
 	public function __construct(
 		private ScopeFactory $scopeFactory,
 		private NodeScopeResolver $nodeScopeResolver,

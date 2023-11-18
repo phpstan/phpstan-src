@@ -712,6 +712,21 @@ class OverridingMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10149(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$errors = [];
+		if (PHP_VERSION_ID >= 80300) {
+			$errors = [
+				[
+					'Method Bug10149\StdSat::__get() has #[\Override] attribute but does not override any method.',
+					10,
+				],
+			];
+		}
+		$this->analyse([__DIR__ . '/data/bug-10149.php'], $errors);
+	}
+
 	public function testTraits(): void
 	{
 		$errors = [];

@@ -146,21 +146,6 @@ parameters:
 			path: ../src/Reflection/Php/BuiltinMethodReflection.php
 
 		-
-			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) has invalid return type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Reflection/Php/FakeBuiltinMethodReflection.php
-
-		-
-			message: "#^Parameter \\$declaringClass of method PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:__construct\\(\\) has invalid type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Reflection/Php/FakeBuiltinMethodReflection.php
-
-		-
-			message: "#^Property PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:\\$declaringClass has unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum as its type\\.$#"
-			count: 1
-			path: ../src/Reflection/Php/FakeBuiltinMethodReflection.php
-
-		-
 			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\NativeBuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) has invalid return type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Reflection/Php/NativeBuiltinMethodReflection.php

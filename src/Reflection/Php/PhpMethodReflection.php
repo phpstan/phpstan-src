@@ -7,6 +7,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Namespace_;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\Cache\Cache;
 use PHPStan\Parser\FunctionCallStatementFinder;
@@ -71,7 +72,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ClassReflection $declaringClass,
 		private ?ClassReflection $declaringTrait,
-		private BuiltinMethodReflection $reflection,
+		private ReflectionMethod $reflection,
 		private ReflectionProvider $reflectionProvider,
 		private Parser $parser,
 		private FunctionCallStatementFinder $functionCallStatementFinder,
@@ -409,7 +410,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			return TrinaryLogic::createYes();
 		}
 
-		return $this->reflection->isDeprecated();
+		return TrinaryLogic::createFromBoolean($this->reflection->isDeprecated());
 	}
 
 	public function isInternal(): TrinaryLogic
@@ -478,7 +479,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	public function returnsByReference(): TrinaryLogic
 	{
-		return $this->reflection->returnsByReference();
+		return TrinaryLogic::createFromBoolean($this->reflection->returnsReference());
 	}
 
 	public function isPure(): TrinaryLogic

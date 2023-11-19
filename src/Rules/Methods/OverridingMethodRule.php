@@ -11,7 +11,6 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
-use PHPStan\Reflection\Php\NativeBuiltinMethodReflection;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\IdentifierRuleError;
@@ -368,7 +367,7 @@ final class OverridingMethodRule implements Rule
 						$this->phpClassReflectionExtension->createUserlandMethodReflection(
 							$trait,
 							$classReflection,
-							new NativeBuiltinMethodReflection($methodReflection),
+							$methodReflection,
 							$declaringTrait->getName(),
 						),
 						$declaringTrait,

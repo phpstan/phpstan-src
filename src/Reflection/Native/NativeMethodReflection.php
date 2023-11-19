@@ -2,13 +2,13 @@
 
 namespace PHPStan\Reflection\Native;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
-use PHPStan\Reflection\Php\BuiltinMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -28,7 +28,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private ClassReflection $declaringClass,
-		private BuiltinMethodReflection $reflection,
+		private ReflectionMethod $reflection,
 		private array $variants,
 		private ?array $namedArgumentsVariants,
 		private TrinaryLogic $hasSideEffects,
@@ -133,7 +133,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return $this->reflection->isDeprecated();
+		return TrinaryLogic::createFromBoolean($this->reflection->isDeprecated());
 	}
 
 	public function isInternal(): TrinaryLogic
@@ -212,7 +212,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 
 	public function returnsByReference(): TrinaryLogic
 	{
-		return $this->reflection->returnsByReference();
+		return TrinaryLogic::createFromBoolean($this->reflection->returnsReference());
 	}
 
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\TrinaryLogic;
@@ -20,7 +21,7 @@ interface PhpMethodReflectionFactory
 	public function create(
 		ClassReflection $declaringClass,
 		?ClassReflection $declaringTrait,
-		BuiltinMethodReflection $reflection,
+		ReflectionMethod $reflection,
 		TemplateTypeMap $templateTypeMap,
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,

@@ -9,7 +9,6 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
-use PHPStan\Reflection\Php\NativeBuiltinMethodReflection;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -182,7 +181,7 @@ final class MethodSignatureRule implements Rule
 				$this->phpClassReflectionExtension->createUserlandMethodReflection(
 					$trait,
 					$class,
-					new NativeBuiltinMethodReflection($methodReflection),
+					$methodReflection,
 					$declaringTrait->getName(),
 				),
 				$declaringTrait,

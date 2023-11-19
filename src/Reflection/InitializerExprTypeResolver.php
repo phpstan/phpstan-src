@@ -66,6 +66,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use function array_key_exists;
 use function array_keys;
 use function array_merge;
 use function assert;
@@ -79,6 +80,7 @@ use function is_float;
 use function is_int;
 use function max;
 use function min;
+use function sprintf;
 use function strtolower;
 use const INF;
 
@@ -86,6 +88,9 @@ class InitializerExprTypeResolver
 {
 
 	public const CALCULATE_SCALARS_LIMIT = 128;
+
+	/** @var array<string, true> */
+	private array $currentlyResolvingClassConstant = [];
 
 	public function __construct(
 		private ConstantResolver $constantResolver,
@@ -1876,9 +1881,18 @@ class InitializerExprTypeResolver
 				continue;
 			}
 
+			$resolvingName = sprintf('%s::%s', $constantClassReflection->getName(), $constantName);
+			if (array_key_exists($resolvingName, $this->currentlyResolvingClassConstant)) {
+				$types[] = new MixedType();
+				continue;
+			}
+
+			$this->currentlyResolvingClassConstant[$resolvingName] = true;
+
 			if (!$isObject) {
 				$reflectionConstant = $constantClassReflection->getNativeReflection()->getReflectionConstant($constantName);
 				if ($reflectionConstant === false) {
+					unset($this->currentlyResolvingClassConstant[$resolvingName]);
 					continue;
 				}
 				$reflectionConstantDeclaringClass = $reflectionConstant->getDeclaringClass();
@@ -1893,6 +1907,7 @@ class InitializerExprTypeResolver
 					$constantType,
 					$nativeType,
 				);
+				unset($this->currentlyResolvingClassConstant[$resolvingName]);
 				continue;
 			}
 
@@ -1903,6 +1918,7 @@ class InitializerExprTypeResolver
 				&& !$constantReflection->hasPhpDocType()
 				&& !$constantReflection->hasNativeType()
 			) {
+				unset($this->currentlyResolvingClassConstant[$resolvingName]);
 				return new MixedType();
 			}
 
@@ -1925,6 +1941,7 @@ class InitializerExprTypeResolver
 				$constantType,
 				$nativeType,
 			);
+			unset($this->currentlyResolvingClassConstant[$resolvingName]);
 			$types[] = $constantType;
 		}
 

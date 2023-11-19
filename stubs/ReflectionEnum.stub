@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @template-covariant T of UnitEnum
+ * @extends ReflectionClass<T>
+ */
+class ReflectionEnum extends ReflectionClass
+{
+
+	/**
+	 * @return (T is BackedEnum ? ReflectionEnumBackedCase[] : ReflectionEnumUnitCase[])
+	 */
+	public function getCases(): array {}
+
+	/**
+	 * @return (T is BackedEnum ? ReflectionEnumBackedCase : ReflectionEnumUnitCase)
+	 * @throws ReflectionException
+	 */
+	public function getCase(string $name): ReflectionEnumUnitCase {}
+
+}

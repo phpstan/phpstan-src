@@ -440,6 +440,11 @@ services:
 			- phpstan.stubFilesExtension
 
 	-
+		class: PHPStan\PhpDoc\ReflectionEnumStubFilesExtension
+		tags:
+			- phpstan.stubFilesExtension
+
+	-
 		class: PHPStan\Analyser\Analyser
 		arguments:
 			internalErrorsCountLimit: %internalErrorsCountLimit%

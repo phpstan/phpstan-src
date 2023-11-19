@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function array_filter;
@@ -28,6 +29,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 			new MethodSignatureRule(true, true, true),
 			false,
 			new MethodParameterComparisonHelper($phpVersion, true),
+			self::getContainer()->getByType(PhpClassReflectionExtension::class),
 			true,
 			true,
 			$this->checkMissingOverrideMethodAttribute,
@@ -791,6 +793,17 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->checkMissingOverrideMethodAttribute = $checkMissingOverrideMethodAttribute;
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/check-missing-override-attr.php'], $errors);
+	}
+
+	public function testBug10153(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-10153.php'], [
+			[
+				'Return type Bug10153\MyClass2|null of method Bug10153\MyClass2::drc() is not covariant with return type Bug10153\MyClass2 of method Bug10153\MyTrait::drc().',
+				24,
+			],
+		]);
 	}
 
 }

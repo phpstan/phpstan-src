@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
@@ -30,7 +31,7 @@ class MethodParameterComparisonHelper
 	/**
 	 * @return RuleError[]
 	 */
-	public function compare(ExtendedMethodReflection $prototype, PhpMethodFromParserNodeReflection $method, bool $ignorable = false): array
+	public function compare(ExtendedMethodReflection $prototype, ClassReflection $prototypeDeclaringClass, PhpMethodFromParserNodeReflection $method, bool $ignorable = false): array
 	{
 		/** @var RuleError[] $messages */
 		$messages = [];
@@ -46,7 +47,7 @@ class MethodParameterComparisonHelper
 					'Method %s::%s() overrides method %s::%s() but misses parameter #%d $%s.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
@@ -72,7 +73,7 @@ class MethodParameterComparisonHelper
 						$method->getName(),
 						$i + 1,
 						$prototypeParameter->getName(),
-						$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+						$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 						$prototype->getName(),
 					));
 
@@ -91,7 +92,7 @@ class MethodParameterComparisonHelper
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				));
 
@@ -132,7 +133,7 @@ class MethodParameterComparisonHelper
 							$method->getName(),
 							$i + 1,
 							$prototypeParameter->getName(),
-							$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+							$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 							$prototype->getName(),
 						));
 
@@ -177,7 +178,7 @@ class MethodParameterComparisonHelper
 							$i + $j + 1,
 							$remainingPrototypeParameter->getName(),
 							$remainingPrototypeParameter->getNativeType()->describe(VerbosityLevel::typeOnly()),
-							$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+							$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 							$prototype->getName(),
 						));
 
@@ -197,7 +198,7 @@ class MethodParameterComparisonHelper
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				));
 
@@ -219,7 +220,7 @@ class MethodParameterComparisonHelper
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				));
 
@@ -245,7 +246,7 @@ class MethodParameterComparisonHelper
 						$i + 1,
 						$prototypeParameter->getName(),
 						$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-						$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+						$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 						$prototype->getName(),
 					));
 
@@ -273,7 +274,7 @@ class MethodParameterComparisonHelper
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				));
 
@@ -293,7 +294,7 @@ class MethodParameterComparisonHelper
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				));
 

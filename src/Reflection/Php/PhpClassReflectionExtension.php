@@ -618,10 +618,15 @@ class PhpClassReflectionExtension
 			);
 		}
 
+		return $this->createUserlandMethodReflection($declaringClass, $declaringClass, $methodReflection);
+	}
+
+	public function createUserlandMethodReflection(ClassReflection $fileDeclaringClass, ClassReflection $actualDeclaringClass, ReflectionMethod $methodReflection): PhpMethodReflection
+	{
 		$declaringTraitName = $this->findMethodTrait($methodReflection);
 		$resolvedPhpDoc = null;
-		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
-		$phpDocBlockClassReflection = $declaringClass;
+		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($fileDeclaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
+		$phpDocBlockClassReflection = $fileDeclaringClass;
 
 		$methodDeclaringClass = $methodReflection->getBetterReflection()->getDeclaringClass();
 
@@ -648,13 +653,13 @@ class PhpClassReflectionExtension
 
 			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 				$docComment,
-				$declaringClass->getFileName(),
-				$declaringClass,
+				$fileDeclaringClass->getFileName(),
+				$fileDeclaringClass,
 				$declaringTraitName,
 				$methodReflection->getName(),
 				$positionalParameterNames,
 			);
-			$phpDocBlockClassReflection = $declaringClass;
+			$phpDocBlockClassReflection = $fileDeclaringClass;
 		}
 
 		$declaringTrait = null;
@@ -685,8 +690,8 @@ class PhpClassReflectionExtension
 				}
 
 				$propertyDocblock = $this->fileTypeMapper->getResolvedPhpDoc(
-					$declaringClass->getFileName(),
-					$declaringClassName,
+					$fileDeclaringClass->getFileName(),
+					$fileDeclaringClass->getName(),
 					$declaringTraitName,
 					$methodReflection->getName(),
 					$parameterProperty->getDocComment(),
@@ -734,7 +739,7 @@ class PhpClassReflectionExtension
 		$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 			$methodReflection->getReturnType(),
 			null,
-			$declaringClass,
+			$actualDeclaringClass,
 		);
 		$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
 		$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
@@ -751,7 +756,7 @@ class PhpClassReflectionExtension
 		}
 
 		return $this->methodReflectionFactory->create(
-			$declaringClass,
+			$actualDeclaringClass,
 			$declaringTrait,
 			$methodReflection,
 			$templateTypeMap,

@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\DerivativeContainerFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
+use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
@@ -164,7 +165,7 @@ class StubValidator
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, $unresolvableTypeHelper, $phpVersion, true, false),
-			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true, $container->getParameter('featureToggles')['abstractTraitMethod']), true, new MethodParameterComparisonHelper($phpVersion, $container->getParameter('featureToggles')['genericPrototypeMessage']), $container->getParameter('featureToggles')['genericPrototypeMessage'], $container->getParameter('featureToggles')['finalByPhpDoc'], $container->getParameter('checkMissingOverrideMethodAttribute')),
+			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true, $container->getParameter('featureToggles')['abstractTraitMethod']), true, new MethodParameterComparisonHelper($phpVersion, $container->getParameter('featureToggles')['genericPrototypeMessage']), $container->getByType(PhpClassReflectionExtension::class), $container->getParameter('featureToggles')['genericPrototypeMessage'], $container->getParameter('featureToggles')['finalByPhpDoc'], $container->getParameter('checkMissingOverrideMethodAttribute')),
 			new DuplicateDeclarationRule(),
 			new LocalTypeAliasesRule($localTypeAliasesCheck),
 			new LocalTypeTraitAliasesRule($localTypeAliasesCheck, $reflectionProvider),

@@ -26,6 +26,7 @@ use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
 use PHPStan\PhpDoc\Tag\TypeAliasTag;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
+use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\CircularTypeAliasDefinitionException;
@@ -45,7 +46,6 @@ use PHPStan\Type\TypeAlias;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionException;
-use stdClass;
 use function array_diff;
 use function array_filter;
 use function array_key_exists;
@@ -131,6 +131,7 @@ class ClassReflection
 	 * @param PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
 	 * @param MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
 	 * @param AllowedSubTypesClassReflectionExtension[] $allowedSubTypesClassReflectionExtensions
+	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
@@ -148,6 +149,7 @@ class ClassReflection
 		private ?string $anonymousFilename,
 		private ?TemplateTypeMap $resolvedTemplateTypeMap,
 		private ?ResolvedPhpDocBlock $stubPhpDocBlock,
+		private array $universalObjectCratesClasses,
 		private ?string $extraCacheKey = null,
 		private ?TemplateTypeVarianceMap $resolvedCallSiteVarianceMap = null,
 	)
@@ -389,7 +391,11 @@ class ClassReflection
 			return false;
 		}
 
-		if ($this->is(stdClass::class)) {
+		if (UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
+			$this->reflectionProvider,
+			$this->universalObjectCratesClasses,
+			$this,
+		)) {
 			return true;
 		}
 
@@ -1412,6 +1418,7 @@ class ClassReflection
 			$this->anonymousFilename,
 			$this->typeMapFromList($types),
 			$this->stubPhpDocBlock,
+			$this->universalObjectCratesClasses,
 			null,
 			$this->resolvedCallSiteVarianceMap,
 		);
@@ -1438,6 +1445,7 @@ class ClassReflection
 			$this->anonymousFilename,
 			$this->resolvedTemplateTypeMap,
 			$this->stubPhpDocBlock,
+			$this->universalObjectCratesClasses,
 			null,
 			$this->varianceMapFromList($variances),
 		);

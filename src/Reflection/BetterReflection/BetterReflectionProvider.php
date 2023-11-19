@@ -68,6 +68,9 @@ class BetterReflectionProvider implements ReflectionProvider
 	/** @var array<string, GlobalConstantReflection> */
 	private array $cachedConstants = [];
 
+	/**
+	 * @param string[] $universalObjectCratesClasses
+	 */
 	public function __construct(
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -84,6 +87,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		private FileHelper $fileHelper,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private SignatureMapProvider $signatureMapProvider,
+		private array $universalObjectCratesClasses,
 	)
 	{
 	}
@@ -144,6 +148,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			null,
 			null,
 			$this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName()),
+			$this->universalObjectCratesClasses,
 		);
 
 		$this->classReflections[$reflectionClassName] = $classReflection;
@@ -221,6 +226,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$scopeFile,
 			null,
 			$this->stubPhpDocProvider->findClassPhpDoc($className),
+			$this->universalObjectCratesClasses,
 		);
 		$this->classReflections[$className] = self::$anonymousClasses[$className];
 

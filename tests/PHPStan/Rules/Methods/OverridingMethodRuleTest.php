@@ -798,12 +798,16 @@ class OverridingMethodRuleTest extends RuleTestCase
 	public function testBug10153(): void
 	{
 		$this->phpVersionId = PHP_VERSION_ID;
-		$this->analyse([__DIR__ . '/data/bug-10153.php'], [
-			[
-				'Return type Bug10153\MyClass2|null of method Bug10153\MyClass2::drc() is not covariant with return type Bug10153\MyClass2 of method Bug10153\MyTrait::drc().',
-				24,
-			],
-		]);
+		$errors = [];
+		if (PHP_VERSION_ID >= 80000) {
+			$errors = [
+				[
+					'Return type Bug10153\MyClass2|null of method Bug10153\MyClass2::drc() is not covariant with return type Bug10153\MyClass2 of method Bug10153\MyTrait::drc().',
+					24,
+				],
+			];
+		}
+		$this->analyse([__DIR__ . '/data/bug-10153.php'], $errors);
 	}
 
 }

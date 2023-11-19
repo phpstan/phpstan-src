@@ -10,6 +10,7 @@ use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
 use PHPStan\Parser\Parser;
@@ -380,7 +381,7 @@ class PhpClassReflectionExtension
 			return $this->methodsIncludingAnnotations[$classReflection->getCacheKey()][$methodName];
 		}
 
-		$nativeMethodReflection = new NativeBuiltinMethodReflection($classReflection->getNativeReflection()->getMethod($methodName));
+		$nativeMethodReflection = $classReflection->getNativeReflection()->getMethod($methodName);
 		if (!isset($this->methodsIncludingAnnotations[$classReflection->getCacheKey()][$nativeMethodReflection->getName()])) {
 			$method = $this->createMethod($classReflection, $nativeMethodReflection, true);
 			$this->methodsIncludingAnnotations[$classReflection->getCacheKey()][$nativeMethodReflection->getName()] = $method;
@@ -407,9 +408,7 @@ class PhpClassReflectionExtension
 			throw new ShouldNotHappenException();
 		}
 
-		$nativeMethodReflection = new NativeBuiltinMethodReflection(
-			$classReflection->getNativeReflection()->getMethod($methodName),
-		);
+		$nativeMethodReflection = $classReflection->getNativeReflection()->getMethod($methodName);
 
 		if (!isset($this->nativeMethods[$classReflection->getCacheKey()][$nativeMethodReflection->getName()])) {
 			$method = $this->createMethod($classReflection, $nativeMethodReflection, false);
@@ -421,7 +420,7 @@ class PhpClassReflectionExtension
 
 	private function createMethod(
 		ClassReflection $classReflection,
-		BuiltinMethodReflection $methodReflection,
+		ReflectionMethod $methodReflection,
 		bool $includingAnnotations,
 	): ExtendedMethodReflection
 	{
@@ -624,20 +623,18 @@ class PhpClassReflectionExtension
 		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
 		$phpDocBlockClassReflection = $declaringClass;
 
-		if ($methodReflection->getReflection() !== null) {
-			$methodDeclaringClass = $methodReflection->getReflection()->getBetterReflection()->getDeclaringClass();
+		$methodDeclaringClass = $methodReflection->getBetterReflection()->getDeclaringClass();
 
-			if ($stubPhpDocPair === null && $methodDeclaringClass->isTrait()) {
-				if (! $methodReflection->getDeclaringClass()->isTrait() || $methodDeclaringClass->getName() !== $methodReflection->getDeclaringClass()->getName()) {
-					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors(
-						$this->reflectionProviderProvider->getReflectionProvider()->getClass($methodDeclaringClass->getName()),
-						$methodReflection->getName(),
-						array_map(
-							static fn (ReflectionParameter $parameter): string => $parameter->getName(),
-							$methodReflection->getParameters(),
-						),
-					);
-				}
+		if ($stubPhpDocPair === null && $methodDeclaringClass->isTrait()) {
+			if (! $methodReflection->getDeclaringClass()->isTrait() || $methodDeclaringClass->getName() !== $methodReflection->getDeclaringClass()->getName()) {
+				$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors(
+					$this->reflectionProviderProvider->getReflectionProvider()->getClass($methodDeclaringClass->getName()),
+					$methodReflection->getName(),
+					array_map(
+						static fn (ReflectionParameter $parameter): string => $parameter->getName(),
+						$methodReflection->getParameters(),
+					),
+				);
 			}
 		}
 
@@ -646,7 +643,7 @@ class PhpClassReflectionExtension
 		}
 
 		if ($resolvedPhpDoc === null) {
-			$docComment = $methodReflection->getDocComment();
+			$docComment = $methodReflection->getDocComment() !== false ? $methodReflection->getDocComment() : null;
 			$positionalParameterNames = array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters());
 
 			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
@@ -669,10 +666,7 @@ class PhpClassReflectionExtension
 		}
 
 		$phpDocParameterTypes = [];
-		if (
-			$methodReflection instanceof NativeBuiltinMethodReflection
-			&& $methodReflection->isConstructor()
-		) {
+		if ($methodReflection->isConstructor()) {
 			foreach ($methodReflection->getParameters() as $parameter) {
 				if (!$parameter->isPromoted()) {
 					continue;
@@ -863,14 +857,10 @@ class PhpClassReflectionExtension
 	}
 
 	private function findMethodTrait(
-		BuiltinMethodReflection $methodReflection,
+		ReflectionMethod $methodReflection,
 	): ?string
 	{
-		if ($methodReflection->getReflection() === null) {
-			return null;
-		}
-
-		$declaringClass = $methodReflection->getReflection()->getBetterReflection()->getDeclaringClass();
+		$declaringClass = $methodReflection->getBetterReflection()->getDeclaringClass();
 		if ($declaringClass->isTrait()) {
 			if ($methodReflection->getDeclaringClass()->isTrait() && $declaringClass->getName() === $methodReflection->getDeclaringClass()->getName()) {
 				return null;

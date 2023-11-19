@@ -139,8 +139,3 @@ parameters:
 			message: "#^Property PHPStan\\\\Reflection\\\\ClassReflection\\:\\:\\$reflection has unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum as its type\\.$#"
 			count: 1
 			path: ../src/Reflection/ClassReflection.php
-
-		-
-			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\BuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) has invalid return type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Reflection/Php/BuiltinMethodReflection.php

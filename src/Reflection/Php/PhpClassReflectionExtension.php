@@ -593,13 +593,9 @@ class PhpClassReflectionExtension
 
 								$phpDocParameterNameMapping[$signatureParameters[$paramI]->getName()] = $reflectionParameter->getName();
 							}
-
-							if ($signatureType === 'named') {
-								$phpDocParameterNameMapping = [];
-							}
 						}
 					}
-					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes);
+					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes, $signatureType !== 'named');
 				}
 			}
 
@@ -792,6 +788,7 @@ class PhpClassReflectionExtension
 		array $phpDocParameterNameMapping,
 		array $stubPhpDocParameterOutTypes,
 		array $phpDocParameterOutTypes,
+		bool $usePhpDocParameterNames,
 	): FunctionVariantWithPhpDocs
 	{
 		$parameters = [];
@@ -816,7 +813,9 @@ class PhpClassReflectionExtension
 			}
 
 			$parameters[] = new NativeParameterWithPhpDocsReflection(
-				$phpDocParameterName,
+				$usePhpDocParameterNames
+					? $phpDocParameterName
+					: $parameterSignature->getName(),
 				$parameterSignature->isOptional(),
 				$type ?? $parameterSignature->getType(),
 				$phpDocType ?? new MixedType(),

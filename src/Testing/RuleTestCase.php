@@ -99,6 +99,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 				[],
 				[],
+				self::getContainer()->getParameter('universalObjectCratesClasses'),
 				self::getContainer()->getParameter('exceptions')['implicitThrows'],
 				$this->shouldTreatPhpDocTypesAsCertain(),
 				self::getContainer()->getParameter('featureToggles')['detectDeadTypeInMultiCatch'],

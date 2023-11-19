@@ -24,6 +24,7 @@ use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
+use stdClass;
 use function array_map;
 use function array_merge;
 use function assert;
@@ -679,6 +680,7 @@ class AnalyserTest extends PHPStanTestCase
 			true,
 			[],
 			[],
+			[stdClass::class],
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			self::getContainer()->getParameter('featureToggles')['detectDeadTypeInMultiCatch'],

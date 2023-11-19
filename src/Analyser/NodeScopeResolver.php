@@ -205,6 +205,7 @@ class NodeScopeResolver
 	/**
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
+	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(
 		private readonly ReflectionProvider $reflectionProvider,
@@ -226,6 +227,7 @@ class NodeScopeResolver
 		private readonly bool $polluteScopeWithAlwaysIterableForeach,
 		private readonly array $earlyTerminatingMethodCalls,
 		private readonly array $earlyTerminatingFunctionCalls,
+		private readonly array $universalObjectCratesClasses,
 		private readonly bool $implicitThrows,
 		private readonly bool $treatPhpDocTypesAsCertain,
 		private readonly bool $detectDeadTypeInMultiCatch,
@@ -1707,6 +1709,7 @@ class NodeScopeResolver
 			null,
 			null,
 			null,
+			$this->universalObjectCratesClasses,
 			sprintf('%s:%d', $scope->getFile(), $stmt->getStartLine()),
 		);
 	}

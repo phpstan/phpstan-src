@@ -48,3 +48,23 @@ class ReflectionClass
     {
     }
 }
+
+/**
+ * @template-covariant T of UnitEnum
+ * @extends ReflectionClass<T>
+ */
+class ReflectionEnum extends ReflectionClass
+{
+
+	/**
+	 * @return (T is BackedEnum ? ReflectionEnumBackedCase[] : ReflectionEnumUnitCase[])
+	 */
+	public function getCases(): array {}
+
+	/**
+	 * @return (T is BackedEnum ? ReflectionEnumBackedCase : ReflectionEnumUnitCase)
+	 * @throws ReflectionException If no found single reflection object for the corresponding case
+	 */
+	public function getCase(string $name): ReflectionEnumUnitCase {}
+
+}

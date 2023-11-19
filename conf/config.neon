@@ -35,6 +35,7 @@ parameters:
 			- InfiniteIterator
 			- CachingIterator
 			- RegexIterator
+			- ReflectionEnum
 		explicitMixedInUnknownGenericNew: false
 		explicitMixedForGlobalVariables: false
 		explicitMixedViaIsArray: false

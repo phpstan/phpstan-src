@@ -66,4 +66,22 @@ function maybeEmpty(): void
 	} else {
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
 	}
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+}
+
+function maybeEmptyUnset(): void
+{
+	if (rand() % 2) {
+		$foo = 1;
+	}
+
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+	if (!empty($foo)) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+		unset($foo);
+		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+	}
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
 }

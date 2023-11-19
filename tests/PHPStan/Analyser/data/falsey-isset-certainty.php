@@ -151,6 +151,22 @@ function nonNullableVariable(): void
 	assertVariableCertainty(TrinaryLogic::createYes(), $a);
 }
 
+function nonNullableVariableUnset(): void
+{
+	$a = 'bar';
+
+	assertVariableCertainty(TrinaryLogic::createYes(), $a);
+	if (isset($a)) {
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+		unset($a);
+		assertVariableCertainty(TrinaryLogic::createNo(), $a);
+	} else {
+		assertVariableCertainty(TrinaryLogic::createNo(), $a);
+	}
+
+	assertVariableCertainty(TrinaryLogic::createNo(), $a);
+}
+
 function falseyIssetNullableVariable(): void
 {
 	if (rand() % 2) {

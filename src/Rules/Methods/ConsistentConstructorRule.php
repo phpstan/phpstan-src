@@ -47,7 +47,7 @@ class ConsistentConstructorRule implements Rule
 			return [];
 		}
 
-		return $this->methodParameterComparisonHelper->compare($parentConstructor, $method, true);
+		return $this->methodParameterComparisonHelper->compare($parentConstructor, $parentConstructor->getDeclaringClass(), $method, true);
 	}
 
 }

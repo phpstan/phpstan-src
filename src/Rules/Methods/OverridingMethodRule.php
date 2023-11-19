@@ -12,6 +12,7 @@ use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -35,6 +36,7 @@ class OverridingMethodRule implements Rule
 		private MethodSignatureRule $methodSignatureRule,
 		private bool $checkPhpDocMethodSignatures,
 		private MethodParameterComparisonHelper $methodParameterComparisonHelper,
+		private PhpClassReflectionExtension $phpClassReflectionExtension,
 		private bool $genericPrototypeMessage,
 		private bool $finalByPhpDoc,
 		private bool $checkMissingOverrideMethodAttribute,
@@ -101,7 +103,7 @@ class OverridingMethodRule implements Rule
 			return [];
 		}
 
-		[$prototype, $checkVisibility] = $prototypeData;
+		[$prototype, $prototypeDeclaringClass, $checkVisibility] = $prototypeData;
 
 		$messages = [];
 		if (
@@ -113,7 +115,7 @@ class OverridingMethodRule implements Rule
 				'Method %s::%s() overrides method %s::%s() but is missing the #[\Override] attribute.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
 			))->identifier('method.missingOverride')->build();
 		}
@@ -122,7 +124,7 @@ class OverridingMethodRule implements Rule
 				'Method %s::%s() overrides final method %s::%s().',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
 			))
 				->nonIgnorable()
@@ -133,7 +135,7 @@ class OverridingMethodRule implements Rule
 				'Method %s::%s() overrides @final method %s::%s().',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
 			))->identifier('method.parentMethodFinalByPhpDoc')
 				->build();
@@ -145,7 +147,7 @@ class OverridingMethodRule implements Rule
 					'Non-static method %s::%s() overrides static method %s::%s().',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				))
 					->nonIgnorable()
@@ -157,7 +159,7 @@ class OverridingMethodRule implements Rule
 				'Static method %s::%s() overrides non-static method %s::%s().',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
 			))
 				->nonIgnorable()
@@ -173,7 +175,7 @@ class OverridingMethodRule implements Rule
 						$method->isPrivate() ? 'Private' : 'Protected',
 						$method->getDeclaringClass()->getDisplayName(),
 						$method->getName(),
-						$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+						$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 						$prototype->getName(),
 					))
 						->nonIgnorable()
@@ -185,7 +187,7 @@ class OverridingMethodRule implements Rule
 					'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				))
 					->nonIgnorable()
@@ -211,7 +213,7 @@ class OverridingMethodRule implements Rule
 			&& $this->phpVersion->hasTentativeReturnTypes()
 			&& $realPrototype->getTentativeReturnType() !== null
 			&& !$this->hasReturnTypeWillChangeAttribute($node->getOriginalNode())
-			&& count($prototype->getDeclaringClass()->getNativeReflection()->getMethod($prototype->getName())->getAttributes('ReturnTypeWillChange')) === 0
+			&& count($prototypeDeclaringClass->getNativeReflection()->getMethod($prototype->getName())->getAttributes('ReturnTypeWillChange')) === 0
 		) {
 			if (!$this->methodParameterComparisonHelper->isReturnTypeCompatible($realPrototype->getTentativeReturnType(), $methodVariant->getNativeReturnType(), true)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
@@ -230,7 +232,7 @@ class OverridingMethodRule implements Rule
 			}
 		}
 
-		$messages = array_merge($messages, $this->methodParameterComparisonHelper->compare($prototype, $method));
+		$messages = array_merge($messages, $this->methodParameterComparisonHelper->compare($prototype, $prototypeDeclaringClass, $method));
 
 		if (!$prototypeVariant instanceof FunctionVariantWithPhpDocs) {
 			return $this->addErrors($messages, $node, $scope);
@@ -242,7 +244,7 @@ class OverridingMethodRule implements Rule
 			$reportReturnType = !$realPrototype instanceof MethodPrototypeReflection || $realPrototype->getTentativeReturnType() === null || $prototype->isInternal()->no();
 		} else {
 			if ($realPrototype instanceof MethodPrototypeReflection && $realPrototype->isInternal()) {
-				if ($prototype->isInternal()->yes() && $prototype->getDeclaringClass()->getName() !== $realPrototype->getDeclaringClass()->getName()) {
+				if ($prototype->isInternal()->yes() && $prototypeDeclaringClass->getName() !== $realPrototype->getDeclaringClass()->getName()) {
 					$realPrototypeVariant = $realPrototype->getVariants()[0];
 					if (
 						$prototypeReturnType instanceof MixedType
@@ -270,7 +272,7 @@ class OverridingMethodRule implements Rule
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				))
 					->nonIgnorable()
@@ -283,7 +285,7 @@ class OverridingMethodRule implements Rule
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
-					$prototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
 				))
 					->nonIgnorable()
@@ -343,30 +345,36 @@ class OverridingMethodRule implements Rule
 	}
 
 	/**
-	 * @return array{ExtendedMethodReflection, bool}|null
+	 * @return array{ExtendedMethodReflection, ClassReflection, bool}|null
 	 */
 	private function findPrototype(ClassReflection $classReflection, string $methodName): ?array
 	{
 		foreach ($classReflection->getImmediateInterfaces() as $immediateInterface) {
 			if ($immediateInterface->hasNativeMethod($methodName)) {
-				return [$immediateInterface->getNativeMethod($methodName), true];
+				$method = $immediateInterface->getNativeMethod($methodName);
+				return [$method, $method->getDeclaringClass(), true];
 			}
 		}
 
 		if ($this->phpVersion->supportsAbstractTraitMethods()) {
 			foreach ($classReflection->getTraits(true) as $trait) {
-				if (!$trait->hasNativeMethod($methodName)) {
+				$nativeTraitReflection = $trait->getNativeReflection();
+				if (!$nativeTraitReflection->hasMethod($methodName)) {
 					continue;
 				}
 
-				$method = $trait->getNativeMethod($methodName);
-				$isAbstract = $method->isAbstract();
-				if (is_bool($isAbstract)) {
-					if ($isAbstract) {
-						return [$method, false];
-					}
-				} elseif ($isAbstract->yes()) {
-					return [$method, false];
+				$methodReflection = $nativeTraitReflection->getMethod($methodName);
+				$isAbstract = $methodReflection->isAbstract();
+				if ($isAbstract) {
+					return [
+						$this->phpClassReflectionExtension->createUserlandMethodReflection(
+							$trait,
+							$classReflection,
+							$methodReflection,
+						),
+						$trait->getNativeMethod($methodName)->getDeclaringClass(),
+						false,
+					];
 				}
 			}
 		}
@@ -402,7 +410,7 @@ class OverridingMethodRule implements Rule
 			}
 		}
 
-		return [$method, true];
+		return [$method, $method->getDeclaringClass(), true];
 	}
 
 }

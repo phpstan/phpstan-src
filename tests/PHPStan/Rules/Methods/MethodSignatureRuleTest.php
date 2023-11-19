@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -26,6 +27,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 			new MethodSignatureRule($this->reportMaybes, $this->reportStatic, true),
 			true,
 			new MethodParameterComparisonHelper($phpVersion, true),
+			self::getContainer()->getByType(PhpClassReflectionExtension::class),
 			true,
 			true,
 			false,

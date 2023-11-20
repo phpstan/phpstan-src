@@ -408,6 +408,8 @@ class OverridingMethodRule implements Rule
 						return null;
 					}
 				}
+			} elseif (strtolower($methodName) === '__construct') {
+				return null;
 			}
 		}
 

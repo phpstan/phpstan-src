@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Class constant name in dynamic fetch can only be a string, string|null given.",
+        "line": 20,
+        "ignorable": true
+    }
+]

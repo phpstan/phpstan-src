@@ -57,15 +57,20 @@ class UnusedPrivateConstantRule implements Rule
 
 		foreach ($node->getFetches() as $fetch) {
 			$fetchNode = $fetch->getNode();
-			if (!$fetchNode->name instanceof Node\Identifier) {
-				continue;
-			}
 
 			$fetchScope = $fetch->getScope();
 			if ($fetchNode->class instanceof Node\Name) {
 				$fetchedOnClass = $fetchScope->resolveTypeByName($fetchNode->class);
 			} else {
 				$fetchedOnClass = $fetchScope->getType($fetchNode->class);
+			}
+
+			if (!$fetchNode->name instanceof Node\Identifier) {
+				if (!$classType->isSuperTypeOf($fetchedOnClass)->no()) {
+					$constants = [];
+					break;
+				}
+				continue;
 			}
 
 			$constantReflection = $fetchScope->getConstantReflection($fetchedOnClass, $fetchNode->name->toString());

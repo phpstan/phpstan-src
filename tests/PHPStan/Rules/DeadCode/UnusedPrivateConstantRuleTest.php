@@ -97,4 +97,19 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9765.php'], []);
 	}
 
+	public function testDynamicConstantFetch(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$this->analyse([__DIR__ . '/data/unused-private-constant-dynamic-fetch.php'], [
+			[
+				'Constant UnusedPrivateConstantDynamicFetch\Baz::FOO is unused.',
+				32,
+				'See: https://phpstan.org/developing-extensions/always-used-class-constants',
+			],
+		]);
+	}
+
 }

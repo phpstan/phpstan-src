@@ -255,8 +255,14 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 					continue 2;
 				}
 
+				// it seems that variadic parameters cannot be named in native functions/methods.
+				$nativeParam = $nativeParams[$i];
+				if ($nativeParam->isVariadic()) {
+					break;
+				}
+
 				$parameters[] = new ParameterSignature(
-					$nativeParams[$i]->getName(),
+					$nativeParam->getName(),
 					$functionParam->isOptional(),
 					$functionParam->getType(),
 					$functionParam->getNativeType(),

@@ -16,8 +16,9 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 
 	/**
 	 * @param ParametersAcceptorWithPhpDocs[] $variants
+	 * @param ParametersAcceptorWithPhpDocs[]|null $namedArgumentsVariants
 	 */
-	public function __construct(private ClassReflection $declaringClass, private ExtendedMethodReflection $reflection, private array $variants)
+	public function __construct(private ClassReflection $declaringClass, private ExtendedMethodReflection $reflection, private array $variants, private ?array $namedArgumentsVariants)
 	{
 	}
 
@@ -63,7 +64,7 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getNamedArgumentsVariants(): ?array
 	{
-		return null;
+		return $this->namedArgumentsVariants;
 	}
 
 	public function isDeprecated(): TrinaryLogic

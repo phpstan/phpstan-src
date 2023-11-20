@@ -1558,4 +1558,30 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/array_filter_null_callback.php'], []);
 	}
 
+	public function testBug10171(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-10171.php'], [
+			[
+				'Unknown parameter $samesite in call to function setcookie.',
+				12,
+			],
+			[
+				'Function setcookie invoked with 9 parameters, 1-7 required.',
+				13,
+			],
+			[
+				'Unknown parameter $samesite in call to function setrawcookie.',
+				25,
+			],
+			[
+				'Function setrawcookie invoked with 9 parameters, 1-7 required.',
+				26,
+			],
+		]);
+	}
+
 }

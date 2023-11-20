@@ -73,29 +73,37 @@ class Foo
 
 	function constantIfElse(int $x): void {
 		$link_mode = $x > 10 ? "remove" : "add";
+
+		assertType('int', $x);
 		if ($link_mode === "add") {
 			assertType('int<min, 10>', $x);
 		} else {
 			assertType('int<11, max>', $x);
 		}
+		assertType('int', $x);
 	}
 
 	function constantIfElseShort(int $x): void {
 		$link_mode = $x > 10 ?: "remove";
+
+		assertType('int', $x);
 		if ($link_mode === "remove") {
 			assertType('int<min, 10>', $x);
 		} else {
 			assertType('int<11, max>', $x);
 		}
+		assertType('int', $x);
 	}
 
 	function nonEmptyArray(array $arr): void {
 		$link_mode = $arr ? "truethy-arr" : "falsey-arr";
+		assertType('array', $arr);
 		if ($link_mode === "truethy-arr") {
 			assertType('non-empty-array', $arr);
 		} else {
 			assertType('array{}', $arr);
 		}
+		assertType('array', $arr);
 	}
 
 	/**
@@ -104,11 +112,13 @@ class Foo
 	 */
 	function nonEmptyArrayViaInt(array $arr, $intRange): void {
 		$link_mode = $arr ? $intRange : -10;
+		assertType('array', $arr);
 		if ($link_mode >= 0) {
 			assertType('non-empty-array', $arr);
 		} else {
 			assertType('array{}', $arr);
 		}
+		assertType('array', $arr);
 	}
 
 	/**

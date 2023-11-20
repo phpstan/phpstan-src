@@ -4,6 +4,7 @@ namespace Bug10088;
 
 use PHPStan\TrinaryLogic;
 use stdClass;
+use function PHPStan\Testing\assertType;
 use function PHPStan\Testing\assertVariableCertainty;
 
 class Foo
@@ -68,6 +69,35 @@ class Foo
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $date);
 		assert(($date ?? null) instanceof stdClass);
 		assertVariableCertainty(TrinaryLogic::createYes(), $date);
+	}
+
+	function constantIfElse(int $x): void {
+		$link_mode = $x > 10 ? "remove" : "add";
+		if ($link_mode === "add") {
+			assertType('int<min, 10>', $x);
+		} else {
+			assertType('int<11, max>', $x);
+		}
+	}
+
+	function constantIfElseShort(int $x): void {
+		$link_mode = $x > 10 ?: "remove";
+		if ($link_mode === "remove") {
+			assertType('int<min, 10>', $x);
+		} else {
+			assertType('int<11, max>', $x);
+		}
+	}
+
+	/**
+	 * @param string[] $arr
+	 * @param 0|positive-int $posInt
+	 */
+	function overlappingIfElseType($arr, int $x, int $posInt): void {
+		$link_mode = $arr ? $posInt : $x;
+		assert($link_mode >= 0);
+
+		assertType('array<string>', $arr);
 	}
 
 }

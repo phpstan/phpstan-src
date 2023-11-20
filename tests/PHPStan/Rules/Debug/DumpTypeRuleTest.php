@@ -23,10 +23,6 @@ class DumpTypeRuleTest extends RuleTestCase
 				'Dumped type: non-empty-array',
 				10,
 			],
-			[
-				'Missing argument for PHPStan\dumpType() function call.',
-				11,
-			],
 		]);
 	}
 

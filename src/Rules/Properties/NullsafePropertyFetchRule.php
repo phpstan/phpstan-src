@@ -42,7 +42,9 @@ class NullsafePropertyFetchRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message(sprintf('Using nullsafe property access on non-nullable type %s. Use -> instead.', $calledOnType->describe(VerbosityLevel::typeOnly())))->build(),
+			RuleErrorBuilder::message(sprintf('Using nullsafe property access on non-nullable type %s. Use -> instead.', $calledOnType->describe(VerbosityLevel::typeOnly())))
+				->identifier('nullsafe.neverNull')
+				->build(),
 		];
 	}
 

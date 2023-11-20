@@ -50,6 +50,7 @@ class InvalidBinaryOperationRule implements Rule
 			$leftVariable = new Node\Expr\Variable($leftName);
 			$rightVariable = new Node\Expr\Variable($rightName);
 			if ($node instanceof Node\Expr\AssignOp) {
+				$identifier = 'assignOp';
 				$newNode = clone $node;
 				$newNode->setAttribute('phpstan_cache_printer', null);
 				$left = $node->var;
@@ -57,6 +58,7 @@ class InvalidBinaryOperationRule implements Rule
 				$newNode->var = $leftVariable;
 				$newNode->expr = $rightVariable;
 			} else {
+				$identifier = 'binaryOp';
 				$newNode = clone $node;
 				$newNode->setAttribute('phpstan_cache_printer', null);
 				$left = $node->left;
@@ -109,7 +111,10 @@ class InvalidBinaryOperationRule implements Rule
 					substr(substr($this->exprPrinter->printExpr($newNode), strlen($leftName) + 2), 0, -(strlen($rightName) + 2)),
 					$scope->getType($left)->describe(VerbosityLevel::value()),
 					$scope->getType($right)->describe(VerbosityLevel::value()),
-				))->line($left->getLine())->build(),
+				))
+					->line($left->getLine())
+					->identifier(sprintf('%s.invalid', $identifier))
+					->build(),
 			];
 		}
 

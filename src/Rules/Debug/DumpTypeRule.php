@@ -43,11 +43,7 @@ class DumpTypeRule implements Rule
 		}
 
 		if (count($node->getArgs()) === 0) {
-			return [
-				RuleErrorBuilder::message(sprintf('Missing argument for %s() function call.', $functionName))
-					->nonIgnorable()
-					->build(),
-			];
+			return [];
 		}
 
 		return [
@@ -56,7 +52,7 @@ class DumpTypeRule implements Rule
 					'Dumped type: %s',
 					$scope->getType($node->getArgs()[0]->value)->describe(VerbosityLevel::precise()),
 				),
-			)->nonIgnorable()->build(),
+			)->nonIgnorable()->identifier('phpstan.dumpType')->build(),
 		];
 	}
 

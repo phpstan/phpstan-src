@@ -23,11 +23,7 @@ class UnreachableStatementRule implements Rule
 	{
 		return [
 			RuleErrorBuilder::message('Unreachable statement - code above always terminates.')
-				->identifier('deadCode.unreachableStatement')
-				->metadata([
-					'depth' => $node->getAttribute('statementDepth'),
-					'order' => $node->getAttribute('statementOrder'),
-				])
+				->identifier('deadCode.unreachable')
 				->build(),
 		];
 	}

@@ -30,7 +30,9 @@ class ThrowExpressionRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message('Throw expression is supported only on PHP 8.0 and later.')->nonIgnorable()->build(),
+			RuleErrorBuilder::message('Throw expression is supported only on PHP 8.0 and later.')->nonIgnorable()
+				->identifier('throw.notSupported')
+				->build(),
 		];
 	}
 

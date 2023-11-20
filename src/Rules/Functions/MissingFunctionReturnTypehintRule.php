@@ -41,14 +41,17 @@ final class MissingFunctionReturnTypehintRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Function %s() has no return type specified.',
 					$functionReflection->getName(),
-				))->build(),
+				))->identifier('missingType.return')->build(),
 			];
 		}
 
 		$messages = [];
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($returnType) as $iterableType) {
 			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
-			$messages[] = RuleErrorBuilder::message(sprintf('Function %s() return type has no value type specified in iterable type %s.', $functionReflection->getName(), $iterableTypeDescription))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+			$messages[] = RuleErrorBuilder::message(sprintf('Function %s() return type has no value type specified in iterable type %s.', $functionReflection->getName(), $iterableTypeDescription))
+				->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+				->identifier('missingType.iterableValue')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($returnType) as [$name, $genericTypeNames]) {
@@ -57,7 +60,10 @@ final class MissingFunctionReturnTypehintRule implements Rule
 				$functionReflection->getName(),
 				$name,
 				implode(', ', $genericTypeNames),
-			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+				->identifier('missingType.generics')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($returnType) as $callableType) {
@@ -65,7 +71,7 @@ final class MissingFunctionReturnTypehintRule implements Rule
 				'Function %s() return type has no signature specified for %s.',
 				$functionReflection->getName(),
 				$callableType->describe(VerbosityLevel::typeOnly()),
-			))->build();
+			))->identifier('missingType.callable')->build();
 		}
 
 		return $messages;

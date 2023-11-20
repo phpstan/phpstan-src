@@ -54,17 +54,13 @@ class ElseIfConstantConditionRule implements Rule
 				$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 					'Elseif condition is always %s.',
 					$exprType->getValue() ? 'true' : 'false',
-				)))->line($node->cond->getLine())
-					->identifier('deadCode.elseifConstantCondition')
-					->metadata([
-						'depth' => $node->getAttribute('statementDepth'),
-						'order' => $node->getAttribute('statementOrder'),
-						'value' => $exprType->getValue(),
-					]);
+				)))->line($node->cond->getLine());
 
 				if ($exprType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
+
+				$errorBuilder->identifier(sprintf('elseif.always%s', $exprType->getValue() ? 'True' : 'False'));
 
 				return [$errorBuilder->build()];
 			}

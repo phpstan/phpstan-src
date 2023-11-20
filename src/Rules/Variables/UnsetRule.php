@@ -4,8 +4,8 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
 use function is_string;
@@ -39,14 +39,17 @@ class UnsetRule implements Rule
 		return $errors;
 	}
 
-	private function canBeUnset(Node $node, Scope $scope): ?RuleError
+	private function canBeUnset(Node $node, Scope $scope): ?IdentifierRuleError
 	{
 		if ($node instanceof Node\Expr\Variable && is_string($node->name)) {
 			$hasVariable = $scope->hasVariableType($node->name);
 			if ($hasVariable->no()) {
 				return RuleErrorBuilder::message(
 					sprintf('Call to function unset() contains undefined variable $%s.', $node->name),
-				)->line($node->getLine())->build();
+				)
+					->line($node->getLine())
+					->identifier('unset.variable')
+					->build();
 			}
 		} elseif ($node instanceof Node\Expr\ArrayDimFetch && $node->dim !== null) {
 			$type = $scope->getType($node->var);
@@ -59,7 +62,10 @@ class UnsetRule implements Rule
 						$dimType->describe(VerbosityLevel::value()),
 						$type->describe(VerbosityLevel::value()),
 					),
-				)->line($node->getLine())->build();
+				)
+					->line($node->getLine())
+					->identifier('unset.offset')
+					->build();
 			}
 
 			return $this->canBeUnset($node->var, $scope);

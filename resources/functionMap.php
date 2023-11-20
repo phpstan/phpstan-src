@@ -1909,7 +1909,7 @@ return [
 'DOMDocument::createElementNS' => ['DOMElement', 'namespaceuri'=>'string', 'qualifiedname'=>'string', 'value='=>'string'],
 'DOMDocument::createEntityReference' => ['DOMEntityReference', 'name'=>'string'],
 'DOMDocument::createProcessingInstruction' => ['DOMProcessingInstruction', 'target'=>'string', 'data='=>'string'],
-'DOMDocument::createTextNode' => ['DOMText', 'content'=>'string'],
+'DOMDocument::createTextNode' => ['DOMText|false', 'content'=>'string'],
 'DOMDocument::getElementById' => ['DOMElement|null', 'elementid'=>'string'],
 'DOMDocument::getElementsByTagName' => ['DOMNodeList', 'name'=>'string'],
 'DOMDocument::getElementsByTagNameNS' => ['DOMNodeList', 'namespaceuri'=>'string', 'localname'=>'string'],

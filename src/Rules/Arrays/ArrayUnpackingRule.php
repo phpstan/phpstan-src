@@ -58,7 +58,7 @@ class ArrayUnpackingRule implements Rule
 				'Array unpacking cannot be used on an array with %sstring keys: %s',
 				$isString->yes() ? '' : 'potential ',
 				$scope->getType($node->value)->describe(VerbosityLevel::value()),
-			))->build(),
+			))->identifier('arrayUnpacking.stringOffset')->build(),
 		];
 	}
 

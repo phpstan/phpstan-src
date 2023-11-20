@@ -57,13 +57,17 @@ class ReadOnlyPropertyAssignRule implements Rule
 			$declaringClass = $nativeReflection->getDeclaringClass();
 
 			if (!$scope->isInClass()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+					->identifier('property.readOnlyAssignOutOfClass')
+					->build();
 				continue;
 			}
 
 			$scopeClassReflection = $scope->getClassReflection();
 			if ($scopeClassReflection->getName() !== $declaringClass->getName()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+					->identifier('property.readOnlyAssignOutOfClass')
+					->build();
 				continue;
 			}
 
@@ -77,13 +81,17 @@ class ReadOnlyPropertyAssignRule implements Rule
 				|| strtolower($scopeMethod->getName()) === '__unserialize'
 			) {
 				if (TypeUtils::findThisType($scope->getType($propertyFetch->var)) === null) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is not assigned on $this.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is not assigned on $this.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+						->identifier('property.readOnlyAssignNotOnThis')
+						->build();
 				}
 
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of the constructor.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
+			$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of the constructor.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+				->identifier('property.readOnlyAssignNotInConstructor')
+				->build();
 		}
 
 		return $errors;

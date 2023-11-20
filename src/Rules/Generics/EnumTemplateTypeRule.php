@@ -36,7 +36,9 @@ class EnumTemplateTypeRule implements Rule
 		$className = $classReflection->getDisplayName();
 
 		return [
-			RuleErrorBuilder::message(sprintf('Enum %s has PHPDoc @template tag%s but enums cannot be generic.', $className, $templateTagsCount === 1 ? '' : 's'))->build(),
+			RuleErrorBuilder::message(sprintf('Enum %s has PHPDoc @template tag%s but enums cannot be generic.', $className, $templateTagsCount === 1 ? '' : 's'))
+				->identifier('enum.generic')
+				->build(),
 		];
 	}
 

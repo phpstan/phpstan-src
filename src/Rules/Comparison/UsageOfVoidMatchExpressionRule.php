@@ -23,7 +23,7 @@ class UsageOfVoidMatchExpressionRule implements Rule
 		if (!$scope->isInFirstLevelStatement()) {
 			$matchResultType = $scope->getType($node);
 			if ($matchResultType->isVoid()->yes()) {
-				return [RuleErrorBuilder::message('Result of match expression (void) is used.')->build()];
+				return [RuleErrorBuilder::message('Result of match expression (void) is used.')->identifier('match.void')->build()];
 			}
 		}
 

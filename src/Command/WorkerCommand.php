@@ -23,7 +23,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 use function array_fill_keys;
-use function count;
 use function defined;
 use function is_array;
 use function is_bool;
@@ -58,7 +57,7 @@ class WorkerCommand extends Command
 				new InputOption(AnalyseCommand::OPTION_LEVEL, 'l', InputOption::VALUE_REQUIRED, 'Level of rule options - the higher the stricter'),
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
-				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with XDebug for debugging purposes'),
+				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with Xdebug for debugging purposes'),
 				new InputOption('port', null, InputOption::VALUE_REQUIRED),
 				new InputOption('identifier', null, InputOption::VALUE_REQUIRED),
 			]);
@@ -124,8 +123,8 @@ class WorkerCommand extends Command
 
 		$analysedFiles = array_fill_keys($analysedFiles, true);
 
-		$tcpConector = new TcpConnector($loop);
-		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->done(function (ConnectionInterface $connection) use ($container, $identifier, $output, $analysedFiles): void {
+		$tcpConnector = new TcpConnector($loop);
+		$tcpConnector->connect(sprintf('127.0.0.1:%d', $port))->done(function (ConnectionInterface $connection) use ($container, $identifier, $output, $analysedFiles): void {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
@@ -163,7 +162,7 @@ class WorkerCommand extends Command
 				'result' => [
 					'errors' => [$error->getMessage()],
 					'dependencies' => [],
-					'filesCount' => 0,
+					'files' => [],
 					'internalErrorsCount' => 1,
 				],
 			]);
@@ -182,6 +181,7 @@ class WorkerCommand extends Command
 			$internalErrorsCount = 0;
 			$files = $json['files'];
 			$errors = [];
+			$locallyIgnoredErrors = [];
 			$collectedData = [];
 			$dependencies = [];
 			$exportedNodes = [];
@@ -193,6 +193,9 @@ class WorkerCommand extends Command
 					$exportedNodes[$file] = $fileAnalyserResult->getExportedNodes();
 					foreach ($fileErrors as $fileError) {
 						$errors[] = $fileError;
+					}
+					foreach ($fileAnalyserResult->getLocallyIgnoredErrors() as $locallyIgnoredError) {
+						$locallyIgnoredErrors[] = $locallyIgnoredError;
 					}
 					foreach ($fileAnalyserResult->getCollectedData() as $data) {
 						$collectedData[] = $data;
@@ -219,11 +222,12 @@ class WorkerCommand extends Command
 				'action' => 'result',
 				'result' => [
 					'errors' => $errors,
+					'locallyIgnoredErrors' => $locallyIgnoredErrors,
 					'collectedData' => $collectedData,
 					'memoryUsage' => memory_get_peak_usage(true),
 					'dependencies' => $dependencies,
 					'exportedNodes' => $exportedNodes,
-					'filesCount' => count($files),
+					'files' => $files,
 					'internalErrorsCount' => $internalErrorsCount,
 				]]);
 		});

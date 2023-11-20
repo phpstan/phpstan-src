@@ -9,10 +9,12 @@ use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use Symfony\Component\Console\Formatter\OutputFormatter;
+use function array_key_exists;
 use function array_map;
 use function count;
 use function explode;
 use function getenv;
+use function in_array;
 use function is_string;
 use function ltrim;
 use function sprintf;
@@ -67,18 +69,47 @@ class TableErrorFormatter implements ErrorFormatter
 
 		/** @var array<string, Error[]> $fileErrors */
 		$fileErrors = [];
+		$outputIdentifiers = $output->isVerbose();
+		$outputIdentifiersInFile = [];
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			if (!isset($fileErrors[$fileSpecificError->getFile()])) {
 				$fileErrors[$fileSpecificError->getFile()] = [];
 			}
 
 			$fileErrors[$fileSpecificError->getFile()][] = $fileSpecificError;
+			if ($outputIdentifiers) {
+				continue;
+			}
+
+			$filePath = $fileSpecificError->getTraitFilePath() ?? $fileSpecificError->getFilePath();
+			if (array_key_exists($filePath, $outputIdentifiersInFile)) {
+				continue;
+			}
+
+			if ($fileSpecificError->getIdentifier() === null) {
+				continue;
+			}
+
+			if (!in_array($fileSpecificError->getIdentifier(), [
+				'ignore.unmatchedIdentifier',
+				'ignore.parseError',
+				'ignore.unmatched',
+			], true)) {
+				continue;
+			}
+
+			$outputIdentifiersInFile[$filePath] = true;
 		}
 
 		foreach ($fileErrors as $file => $errors) {
 			$rows = [];
 			foreach ($errors as $error) {
 				$message = $error->getMessage();
+				$filePath = $error->getTraitFilePath() ?? $error->getFilePath();
+				if (($outputIdentifiers || array_key_exists($filePath, $outputIdentifiersInFile)) && $error->getIdentifier() !== null && $error->canBeIgnored()) {
+					$message .= "\n";
+					$message .= '🪪  ' . $error->getIdentifier();
+				}
 				if ($error->getTip() !== null) {
 					$tip = $error->getTip();
 					$tip = str_replace('%configurationFile%', $projectConfigFile, $tip);
@@ -94,21 +125,20 @@ class TableErrorFormatter implements ErrorFormatter
 					}
 				}
 				if (is_string($this->editorUrl)) {
-					$editorFile = $error->getTraitFilePath() ?? $error->getFilePath();
 					$url = str_replace(
 						['%file%', '%relFile%', '%line%'],
-						[$editorFile, $this->simpleRelativePathHelper->getRelativePath($editorFile), (string) $error->getLine()],
+						[$filePath, $this->simpleRelativePathHelper->getRelativePath($filePath), (string) $error->getLine()],
 						$this->editorUrl,
 					);
 
 					if (is_string($this->editorUrlTitle)) {
 						$title = str_replace(
 							['%file%', '%relFile%', '%line%'],
-							[$editorFile, $this->simpleRelativePathHelper->getRelativePath($editorFile), (string) $error->getLine()],
+							[$filePath, $this->simpleRelativePathHelper->getRelativePath($filePath), (string) $error->getLine()],
 							$this->editorUrlTitle,
 						);
 					} else {
-						$title = $this->relativePathHelper->getRelativePath($editorFile);
+						$title = $this->relativePathHelper->getRelativePath($filePath);
 					}
 
 					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $title . '</>';

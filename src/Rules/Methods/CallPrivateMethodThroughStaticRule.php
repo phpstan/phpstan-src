@@ -55,7 +55,7 @@ class CallPrivateMethodThroughStaticRule implements Rule
 				'Unsafe call to private method %s::%s() through static::.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-			))->build(),
+			))->identifier('staticClassAccess.privateMethod')->build(),
 		];
 	}
 

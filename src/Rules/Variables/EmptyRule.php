@@ -27,7 +27,7 @@ class EmptyRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$error = $this->issetCheck->check($node->expr, $scope, 'in empty()', static function (Type $type): ?string {
+		$error = $this->issetCheck->check($node->expr, $scope, 'in empty()', 'empty', static function (Type $type): ?string {
 			$isNull = (new NullType())->isSuperTypeOf($type);
 			$isFalsey = (new ConstantBooleanType(false))->isSuperTypeOf($type->toBoolean());
 			if ($isNull->maybe()) {

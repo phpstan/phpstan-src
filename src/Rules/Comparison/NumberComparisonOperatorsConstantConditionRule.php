@@ -7,8 +7,10 @@ use PhpParser\Node\Expr\BinaryOp;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\VerbosityLevel;
+use function get_class;
 use function sprintf;
 
 /**
@@ -57,6 +59,23 @@ class NumberComparisonOperatorsConstantConditionRule implements Rule
 				return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
 			};
 
+			switch (get_class($node)) {
+				case BinaryOp\Greater::class:
+					$nodeType = 'greater';
+					break;
+				case BinaryOp\GreaterOrEqual::class:
+					$nodeType = 'greaterOrEqual';
+					break;
+				case BinaryOp\Smaller::class:
+					$nodeType = 'smaller';
+					break;
+				case BinaryOp\SmallerOrEqual::class:
+					$nodeType = 'smallerOrEqual';
+					break;
+				default:
+					throw new ShouldNotHappenException();
+			}
+
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Comparison operation "%s" between %s and %s is always %s.',
@@ -64,7 +83,7 @@ class NumberComparisonOperatorsConstantConditionRule implements Rule
 					$scope->getType($node->left)->describe(VerbosityLevel::value()),
 					$scope->getType($node->right)->describe(VerbosityLevel::value()),
 					$exprType->getValue() ? 'true' : 'false',
-				)))->build(),
+				)))->identifier(sprintf('%s.always%s', $nodeType, $exprType->getValue() ? 'True' : 'False'))->build(),
 			];
 		}
 

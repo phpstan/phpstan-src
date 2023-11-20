@@ -38,7 +38,7 @@ class MissingCheckedExceptionInMethodThrowsRule implements Rule
 				$className,
 			))
 				->line($throwPointNode->getLine())
-				->identifier('exceptions.missingThrowsTag')
+				->identifier('missingType.checkedException')
 				->build();
 		}
 

@@ -50,6 +50,9 @@ class Analyser
 		/** @var list<Error> $errors */
 		$errors = [];
 
+		/** @var list<Error> $locallyIgnoredErrors */
+		$locallyIgnoredErrors = [];
+
 		/** @var list<CollectedData> $collectedData */
 		$collectedData = [];
 
@@ -71,6 +74,7 @@ class Analyser
 					null,
 				);
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
+				$locallyIgnoredErrors = array_merge($locallyIgnoredErrors, $fileAnalyserResult->getLocallyIgnoredErrors());
 				$collectedData = array_merge($collectedData, $fileAnalyserResult->getCollectedData());
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
 
@@ -90,7 +94,7 @@ class Analyser
 					"\n",
 					'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml',
 				);
-				$errors[] = new Error($internalErrorMessage, $file, null, $t);
+				$errors[] = (new Error($internalErrorMessage, $file, null, $t))->withIdentifier('phpstan.internal');
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
 					break;
@@ -106,6 +110,7 @@ class Analyser
 
 		return new AnalyserResult(
 			$errors,
+			$locallyIgnoredErrors,
 			[],
 			$collectedData,
 			$internalErrorsCount === 0 ? $dependencies : null,

@@ -49,6 +49,7 @@ class NotAnalysedTraitRule implements Rule
 				'Trait %s is used zero times and is not analysed.',
 				$name,
 			))
+				->identifier('phpstanPlayground.traitUnused')
 				->file($file)
 				->line($line)
 				->tip('See: https://phpstan.org/blog/how-phpstan-analyses-traits')

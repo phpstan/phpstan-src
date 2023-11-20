@@ -42,6 +42,7 @@ class DummyCollectorRule implements Rule
 			RuleErrorBuilder::message(implode(', ', $parts))
 				->file(__DIR__ . '/data/dummy-collector.php')
 				->line(5)
+				->identifier('tests.dummyCollector')
 				->build(),
 		];
 	}

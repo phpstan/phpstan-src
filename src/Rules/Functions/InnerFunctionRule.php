@@ -28,7 +28,7 @@ class InnerFunctionRule implements Rule
 		return [
 			RuleErrorBuilder::message(
 				'Inner named functions are not supported by PHPStan. Consider refactoring to an anonymous function, class method, or a top-level-defined function. See issue #165 (https://github.com/phpstan/phpstan/issues/165) for more details.',
-			)->build(),
+			)->identifier('function.inner')->build(),
 		];
 	}
 

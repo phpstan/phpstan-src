@@ -3,7 +3,7 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
@@ -21,7 +21,7 @@ class ConditionalReturnTypeRuleHelper
 {
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(ParametersAcceptor $acceptor): array
 	{
@@ -65,13 +65,17 @@ class ConditionalReturnTypeRuleHelper
 				});
 
 				if (count($templateTypes) === 0) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type uses subject type %s which is not part of PHPDoc @template tags.', $subjectType->describe(VerbosityLevel::typeOnly())))->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type uses subject type %s which is not part of PHPDoc @template tags.', $subjectType->describe(VerbosityLevel::typeOnly())))
+						->identifier('conditionalType.subjectNotFound')
+						->build();
 					continue;
 				}
 			} else {
 				$parameterName = substr($conditionalType->getParameterName(), 1);
 				if (!array_key_exists($parameterName, $parametersByName)) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type references unknown parameter $%s.', $parameterName))->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type references unknown parameter $%s.', $parameterName))
+						->identifier('parameter.notFound')
+						->build();
 					continue;
 				}
 				$subjectType = $parametersByName[$parameterName]->getType();
@@ -91,7 +95,11 @@ class ConditionalReturnTypeRuleHelper
 				$conditionalType->isNegated()
 					? ($isTargetSuperType->yes() ? 'false' : 'true')
 					: ($isTargetSuperType->yes() ? 'true' : 'false'),
-			))->build();
+			))
+				->identifier(sprintf('conditionalType.always%s', $conditionalType->isNegated()
+					? ($isTargetSuperType->yes() ? 'False' : 'True')
+					: ($isTargetSuperType->yes() ? 'True' : 'False')))
+				->build();
 		}
 
 		return $errors;

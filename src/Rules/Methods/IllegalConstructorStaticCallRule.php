@@ -35,6 +35,7 @@ class IllegalConstructorStaticCallRule implements Rule
 
 		return [
 			RuleErrorBuilder::message('Static call to __construct() is only allowed on a parent class in the constructor.')
+				->identifier('constructor.call')
 				->build(),
 		];
 	}

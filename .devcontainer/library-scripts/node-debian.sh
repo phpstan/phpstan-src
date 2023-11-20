@@ -18,7 +18,7 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-# Treat a user name of "none" or non-existant user as root
+# Treat a user name of "none" or non-existent user as root
 if [ "${USERNAME}" = "none" ] || ! id -u ${USERNAME} > /dev/null 2>&1; then
     USERNAME=root
 fi

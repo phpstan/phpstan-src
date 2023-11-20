@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Arrays;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\BenevolentUnionType;
@@ -28,7 +28,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
 		Scope $scope,
@@ -54,7 +54,9 @@ class NonexistentOffsetInArrayDimFetchCheck
 
 		if ($type->hasOffsetValueType($dimType)->no()) {
 			return [
-				RuleErrorBuilder::message(sprintf('Offset %s does not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))->build(),
+				RuleErrorBuilder::message(sprintf('Offset %s does not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))
+					->identifier('offsetAccess.notFound')
+					->build(),
 			];
 		}
 
@@ -85,11 +87,15 @@ class NonexistentOffsetInArrayDimFetchCheck
 			if ($report) {
 				if ($this->bleedingEdge) {
 					return [
-						RuleErrorBuilder::message(sprintf('Offset %s might not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))->build(),
+						RuleErrorBuilder::message(sprintf('Offset %s might not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))
+							->identifier('offsetAccess.notFound')
+							->build(),
 					];
 				}
 				return [
-					RuleErrorBuilder::message(sprintf('Offset %s does not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))->build(),
+					RuleErrorBuilder::message(sprintf('Offset %s does not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))
+						->identifier('offsetAccess.notFound')
+						->build(),
 				];
 			}
 		}

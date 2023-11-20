@@ -52,7 +52,7 @@ class VariableCloningRule implements Rule
 					'Cannot clone non-object variable $%s of type %s.',
 					$node->expr->name,
 					$type->describe(VerbosityLevel::typeOnly()),
-				))->build(),
+				))->identifier('clone.nonObject')->build(),
 			];
 		}
 
@@ -60,7 +60,7 @@ class VariableCloningRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Cannot clone %s.',
 				$type->describe(VerbosityLevel::typeOnly()),
-			))->build(),
+			))->identifier('clone.nonObject')->build(),
 		];
 	}
 

@@ -38,6 +38,7 @@ class FunctionCallableRule implements Rule
 			return [
 				RuleErrorBuilder::message('First-class callables are supported only on PHP 8.1 and later.')
 					->nonIgnorable()
+					->identifier('callable.notSupported')
 					->build(),
 			];
 		}
@@ -60,7 +61,7 @@ class FunctionCallableRule implements Rule
 								'Call to function %s() with incorrect case: %s',
 								$function->getName(),
 								$functionNameName,
-							))->build(),
+							))->identifier('function.nameCase')->build(),
 						];
 					}
 				}
@@ -74,6 +75,7 @@ class FunctionCallableRule implements Rule
 
 			return [
 				RuleErrorBuilder::message(sprintf('Function %s not found.', $functionNameName))
+					->identifier('function.notFound')
 					->build(),
 			];
 		}
@@ -94,14 +96,14 @@ class FunctionCallableRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Creating callable from %s but it\'s not a callable.', $type->describe(VerbosityLevel::value())),
-				)->build(),
+				)->identifier('callable.nonCallable')->build(),
 			];
 		}
 		if ($this->reportMaybes && $isCallable->maybe()) {
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Creating callable from %s but it might not be a callable.', $type->describe(VerbosityLevel::value())),
-				)->build(),
+				)->identifier('callable.nonCallable')->build(),
 			];
 		}
 

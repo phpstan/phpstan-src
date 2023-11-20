@@ -30,10 +30,10 @@ class VirtualNullsafeMethodCallTest extends RuleTestCase
 			public function processNode(Node $node, Scope $scope): array
 			{
 				if ($node->getAttribute('virtualNullsafeMethodCall') === true) {
-					return [RuleErrorBuilder::message('Nullable method call detected')->identifier('')->build()];
+					return [RuleErrorBuilder::message('Nullable method call detected')->identifier('ruleTest.VirtualNullsafeMethod')->build()];
 				}
 
-				return [RuleErrorBuilder::message('Regular method call detected')->identifier('')->build()];
+				return [RuleErrorBuilder::message('Regular method call detected')->identifier('ruleTest.VirtualNullsafeMethod')->build()];
 			}
 
 		};

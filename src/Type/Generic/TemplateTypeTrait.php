@@ -54,10 +54,10 @@ trait TemplateTypeTrait
 	public function describe(VerbosityLevel $level): string
 	{
 		$basicDescription = function () use ($level): string {
-			// @phpstan-ignore-next-line
+			// @phpstan-ignore booleanAnd.alwaysFalse, instanceof.alwaysFalse, booleanAnd.alwaysFalse, instanceof.alwaysFalse, instanceof.alwaysTrue
 			if ($this->bound instanceof MixedType && $this->bound->getSubtractedType() === null && !$this->bound instanceof TemplateMixedType) {
 				$boundDescription = '';
-			} else { // @phpstan-ignore-line
+			} else {
 				$boundDescription = sprintf(' of %s', $this->bound->describe($level));
 			}
 			return sprintf(
@@ -115,7 +115,7 @@ trait TemplateTypeTrait
 	public function getTypeWithoutSubtractedType(): Type
 	{
 		$bound = $this->getBound();
-		if (!$bound instanceof SubtractableType) { // @phpstan-ignore-line
+		if (!$bound instanceof SubtractableType) { // @phpstan-ignore instanceof.alwaysTrue
 			return $this;
 		}
 
@@ -131,7 +131,7 @@ trait TemplateTypeTrait
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
 		$bound = $this->getBound();
-		if (!$bound instanceof SubtractableType) { // @phpstan-ignore-line
+		if (!$bound instanceof SubtractableType) { // @phpstan-ignore instanceof.alwaysTrue
 			return $this;
 		}
 
@@ -147,7 +147,7 @@ trait TemplateTypeTrait
 	public function getSubtractedType(): ?Type
 	{
 		$bound = $this->getBound();
-		if (!$bound instanceof SubtractableType) { // @phpstan-ignore-line
+		if (!$bound instanceof SubtractableType) { // @phpstan-ignore instanceof.alwaysTrue
 			return null;
 		}
 

@@ -5,9 +5,9 @@ namespace PHPStan\Rules\Constants;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\VerbosityLevel;
@@ -46,7 +46,7 @@ final class MissingClassConstantTypehintRule implements Rule
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
 	{
@@ -61,7 +61,10 @@ final class MissingClassConstantTypehintRule implements Rule
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
 				$iterableTypeDescription,
-			))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+				->identifier('missingType.iterableValue')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($constantType) as [$name, $genericTypeNames]) {
@@ -71,7 +74,10 @@ final class MissingClassConstantTypehintRule implements Rule
 				$constantName,
 				$name,
 				implode(', ', $genericTypeNames),
-			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+				->identifier('missingType.generics')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($constantType) as $callableType) {
@@ -80,7 +86,7 @@ final class MissingClassConstantTypehintRule implements Rule
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
 				$callableType->describe(VerbosityLevel::typeOnly()),
-			))->build();
+			))->identifier('missingType.callable')->build();
 		}
 
 		return $errors;

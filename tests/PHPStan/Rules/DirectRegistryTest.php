@@ -26,8 +26,12 @@ class DirectRegistryTest extends PHPStanTestCase
 
 	public function testGetRulesWithTwoDifferentInstances(): void
 	{
-		$fooRule = new UniversalRule(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => ['Foo error']);
-		$barRule = new UniversalRule(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => ['Bar error']);
+		$fooRule = new UniversalRule(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => [
+			RuleErrorBuilder::message('Foo error')->identifier('tests.fooRule')->build(),
+		]);
+		$barRule = new UniversalRule(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => [
+			RuleErrorBuilder::message('Bar error')->identifier('tests.barRule')->build(),
+		]);
 
 		$registry = new DirectRegistry([
 			$fooRule,

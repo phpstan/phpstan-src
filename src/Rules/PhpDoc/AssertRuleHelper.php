@@ -8,7 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
@@ -25,7 +25,7 @@ class AssertRuleHelper
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(ExtendedMethodReflection|FunctionReflection $reflection, ParametersAcceptor $acceptor): array
 	{
@@ -45,7 +45,9 @@ class AssertRuleHelper
 		foreach ($reflection->getAsserts()->getAll() as $assert) {
 			$parameterName = substr($assert->getParameter()->getParameterName(), 1);
 			if (!array_key_exists($parameterName, $parametersByName)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Assert references unknown parameter $%s.', $parameterName))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Assert references unknown parameter $%s.', $parameterName))
+					->identifier('parameter.notFound')
+					->build();
 				continue;
 			}
 
@@ -71,7 +73,7 @@ class AssertRuleHelper
 					$assertedType->describe(VerbosityLevel::precise()),
 					$assertedExprString,
 					$assertedExprType->describe(VerbosityLevel::precise()),
-				))->build();
+				))->identifier('assert.impossibleType')->build();
 			} elseif ($assert->isNegated() ? $isSuperType->no() : $isSuperType->yes()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Asserted %stype %s for %s with type %s does not narrow down the type.',
@@ -79,7 +81,7 @@ class AssertRuleHelper
 					$assertedType->describe(VerbosityLevel::precise()),
 					$assertedExprString,
 					$assertedExprType->describe(VerbosityLevel::precise()),
-				))->build();
+				))->identifier('assert.alreadyNarrowedType')->build();
 			}
 		}
 

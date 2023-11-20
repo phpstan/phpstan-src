@@ -78,7 +78,10 @@ class DoWhileLoopConstantConditionRule implements Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Do-while loop condition is always %s.',
 					$exprType->getValue() ? 'true' : 'false',
-				)))->line($node->getCond()->getLine())->build(),
+				)))
+					->line($node->getCond()->getLine())
+					->identifier(sprintf('doWhile.always%s', $exprType->getValue() ? 'True' : 'False'))
+					->build(),
 			];
 		}
 

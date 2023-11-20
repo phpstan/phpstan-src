@@ -17,10 +17,6 @@ class AlwaysFailRule implements Rule
 		return Node\Expr\FuncCall::class;
 	}
 
-	/**
-	 * @param Node\Expr\FuncCall $node
-	 * @return string[]
-	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$node->name instanceof Node\Name) {
@@ -32,10 +28,18 @@ class AlwaysFailRule implements Rule
 		}
 
 		if (count($node->getArgs()) === 1 && $node->getArgs()[0]->value instanceof Node\Scalar\String_) {
-			return [$node->getArgs()[0]->value->value];
+			return [
+				RuleErrorBuilder::message($node->getArgs()[0]->value->value)
+					->identifier('tests.alwaysFail')
+					->build(),
+			];
 		}
 
-		return ['Fail.'];
+		return [
+			RuleErrorBuilder::message('Fail.')
+				->identifier('tests.alwaysFail')
+				->build(),
+		];
 	}
 
 }

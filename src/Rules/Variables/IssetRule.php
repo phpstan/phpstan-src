@@ -28,7 +28,7 @@ class IssetRule implements Rule
 	{
 		$messages = [];
 		foreach ($node->vars as $var) {
-			$error = $this->issetCheck->check($var, $scope, 'in isset()', static function (Type $type): ?string {
+			$error = $this->issetCheck->check($var, $scope, 'in isset()', 'isset', static function (Type $type): ?string {
 				$isNull = (new NullType())->isSuperTypeOf($type);
 				if ($isNull->maybe()) {
 					return null;

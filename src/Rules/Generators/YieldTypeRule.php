@@ -61,7 +61,10 @@ class YieldTypeRule implements Rule
 				'Generator expects key type %s, %s given.',
 				$returnType->getIterableKeyType()->describe($verbosityLevel),
 				$keyType->describe($verbosityLevel),
-			))->acceptsReasonsTip($acceptsKey->reasons)->build();
+			))
+				->acceptsReasonsTip($acceptsKey->reasons)
+				->identifier('generator.keyType')
+				->build();
 		}
 
 		if ($node->value === null) {
@@ -77,10 +80,15 @@ class YieldTypeRule implements Rule
 				'Generator expects value type %s, %s given.',
 				$returnType->getIterableValueType()->describe($verbosityLevel),
 				$valueType->describe($verbosityLevel),
-			))->acceptsReasonsTip($acceptsValue->reasons)->build();
+			))
+				->acceptsReasonsTip($acceptsValue->reasons)
+				->identifier('generator.valueType')
+				->build();
 		}
 		if (!$scope->isInFirstLevelStatement() && $scope->getType($node)->isVoid()->yes()) {
-			$messages[] = RuleErrorBuilder::message('Result of yield (void) is used.')->build();
+			$messages[] = RuleErrorBuilder::message('Result of yield (void) is used.')
+				->identifier('generator.void')
+				->build();
 		}
 
 		return $messages;

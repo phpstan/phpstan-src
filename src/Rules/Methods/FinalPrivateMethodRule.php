@@ -45,7 +45,7 @@ class FinalPrivateMethodRule implements Rule
 				'Private method %s::%s() cannot be final as it is never overridden by other classes.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-			))->build(),
+			))->identifier('method.finalPrivate')->build(),
 		];
 	}
 

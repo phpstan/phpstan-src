@@ -30,6 +30,7 @@ class EmptyArrayItemRule implements Rule
 			return [
 				RuleErrorBuilder::message('Literal array contains empty item.')
 					->nonIgnorable()
+					->identifier('array.emptyItem')
 					->build(),
 			];
 		}

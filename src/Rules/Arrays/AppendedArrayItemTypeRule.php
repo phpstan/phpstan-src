@@ -80,7 +80,10 @@ class AppendedArrayItemTypeRule implements Rule
 					'Array (%s) does not accept %s.',
 					$assignedToType->describe($verbosityLevel),
 					$assignedValueType->describe($verbosityLevel),
-				))->acceptsReasonsTip($accepts->reasons)->build(),
+				))
+					->acceptsReasonsTip($accepts->reasons)
+					->identifier('array.valueType')
+					->build(),
 			];
 		}
 

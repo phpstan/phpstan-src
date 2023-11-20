@@ -18,7 +18,7 @@ class PhpDocStringResolver
 	{
 		$tokens = new TokenIterator($this->phpDocLexer->tokenize($phpDocString));
 		$phpDocNode = $this->phpDocParser->parse($tokens);
-		$tokens->consumeTokenType(Lexer::TOKEN_END); // @phpstan-ignore-line
+		$tokens->consumeTokenType(Lexer::TOKEN_END); // @phpstan-ignore missingType.checkedException
 
 		return $phpDocNode;
 	}

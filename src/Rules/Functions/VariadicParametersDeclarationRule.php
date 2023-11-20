@@ -39,7 +39,10 @@ class VariadicParametersDeclarationRule implements Rule
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message('Only the last parameter can be variadic.')->nonIgnorable()->build();
+			$errors[] = RuleErrorBuilder::message('Only the last parameter can be variadic.')
+				->nonIgnorable()
+				->identifier('parameter.variadicNotLast')
+				->build();
 		}
 
 		return $errors;

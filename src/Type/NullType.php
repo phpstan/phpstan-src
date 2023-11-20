@@ -312,7 +312,7 @@ class NullType implements ConstantScalarType
 		}
 
 		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
-			// @phpstan-ignore-next-line
+			// @phpstan-ignore equal.alwaysTrue, equal.notAllowed
 			return new ConstantBooleanType($this->getValue() == []); // phpcs:ignore
 		}
 

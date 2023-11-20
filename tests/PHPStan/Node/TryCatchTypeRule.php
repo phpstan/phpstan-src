@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
@@ -30,10 +31,10 @@ class TryCatchTypeRule implements Rule
 			$type = TypeCombinator::union(...array_map(static fn (string $name) => new ObjectType($name), $tryCatchTypes));
 		}
 		return [
-			sprintf(
+			RuleErrorBuilder::message(sprintf(
 				'Try catch type: %s',
 				$type !== null ? $type->describe(VerbosityLevel::precise()) : 'nothing',
-			),
+			))->identifier('tests.tryCatchType')->build(),
 		];
 	}
 

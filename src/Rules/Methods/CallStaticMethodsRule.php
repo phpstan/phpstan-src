@@ -79,6 +79,7 @@ class CallStaticMethodsRule implements Rule
 				'Return type of call to ' . $lowercasedMethodName . ' contains unresolvable type.',
 				'Parameter %s of ' . $lowercasedMethodName . ' contains unresolvable type.',
 			],
+			'staticMethod',
 		));
 
 		return $errors;

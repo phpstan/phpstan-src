@@ -20,7 +20,7 @@ class TypeStringResolver
 	{
 		$tokens = new TokenIterator($this->typeLexer->tokenize($typeString));
 		$typeNode = $this->typeParser->parse($tokens);
-		$tokens->consumeTokenType(Lexer::TOKEN_END); // @phpstan-ignore-line
+		$tokens->consumeTokenType(Lexer::TOKEN_END); // @phpstan-ignore missingType.checkedException
 
 		return $this->typeNodeResolver->resolve($typeNode, $nameScope ?? new NameScope(null, []));
 	}

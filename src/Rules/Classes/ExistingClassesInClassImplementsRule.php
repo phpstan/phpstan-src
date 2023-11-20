@@ -49,7 +49,11 @@ class ExistingClassesInClassImplementsRule implements Rule
 						'%s implements unknown interface %s.',
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 						$implementedClassName,
-					))->nonIgnorable()->discoveringSymbolsTip()->build();
+					))
+						->identifier('interface.notFound')
+						->nonIgnorable()
+						->discoveringSymbolsTip()
+						->build();
 				}
 			} else {
 				$reflection = $this->reflectionProvider->getClass($implementedClassName);
@@ -58,19 +62,28 @@ class ExistingClassesInClassImplementsRule implements Rule
 						'%s implements class %s.',
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 						$reflection->getDisplayName(),
-					))->nonIgnorable()->build();
+					))
+						->identifier('classImplements.class')
+						->nonIgnorable()
+						->build();
 				} elseif ($reflection->isTrait()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'%s implements trait %s.',
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 						$reflection->getDisplayName(),
-					))->nonIgnorable()->build();
+					))
+						->identifier('classImplements.trait')
+						->nonIgnorable()
+						->build();
 				} elseif ($reflection->isEnum()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'%s implements enum %s.',
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 						$reflection->getDisplayName(),
-					))->nonIgnorable()->build();
+					))
+						->identifier('classImplements.enum')
+						->nonIgnorable()
+						->build();
 				}
 			}
 		}

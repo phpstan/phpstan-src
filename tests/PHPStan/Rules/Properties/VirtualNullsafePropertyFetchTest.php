@@ -30,10 +30,10 @@ class VirtualNullsafePropertyFetchTest extends RuleTestCase
 			public function processNode(Node $node, Scope $scope): array
 			{
 				if ($node->getAttribute('virtualNullsafePropertyFetch') === true) {
-					return [RuleErrorBuilder::message('Nullable property fetch detected')->identifier('')->build()];
+					return [RuleErrorBuilder::message('Nullable property fetch detected')->identifier('ruleTest.VirtualNullsafeProperty')->build()];
 				}
 
-				return [RuleErrorBuilder::message('Regular property fetch detected')->identifier('')->build()];
+				return [RuleErrorBuilder::message('Regular property fetch detected')->identifier('ruleTest.VirtualNullsafeProperty')->build()];
 			}
 
 		};

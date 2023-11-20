@@ -8,8 +8,8 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
@@ -57,7 +57,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processSingleConstant(ClassReflection $classReflection, ?Type $nativeType, string $constantName): array
 	{
@@ -79,7 +79,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 				'PHPDoc tag @var for constant %s::%s contains unresolvable type.',
 				$constantReflection->getDeclaringClass()->getName(),
 				$constantName,
-			))->build();
+			))->identifier('classConstant.unresolvableType')->build();
 		} elseif ($nativeType !== null) {
 			$isSuperType = $nativeType->isSuperTypeOf($phpDocType);
 			if ($isSuperType->no()) {
@@ -89,7 +89,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 					$constantName,
 					$phpDocType->describe(VerbosityLevel::typeOnly()),
 					$nativeType->describe(VerbosityLevel::typeOnly()),
-				))->build();
+				))->identifier('classConstant.phpDocType')->build();
 
 			} elseif ($isSuperType->maybe()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
@@ -98,7 +98,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 					$constantName,
 					$phpDocType->describe(VerbosityLevel::typeOnly()),
 					$nativeType->describe(VerbosityLevel::typeOnly()),
-				))->build();
+				))->identifier('classConstant.phpDocType')->build();
 			}
 		}
 

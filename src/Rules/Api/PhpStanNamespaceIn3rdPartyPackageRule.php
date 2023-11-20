@@ -52,6 +52,7 @@ class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
 
 		return [
 			RuleErrorBuilder::message('Declaring PHPStan namespace is not allowed in 3rd party packages.')
+				->identifier('phpstanApi.phpstanNamespace')
 				->tip("See:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise")
 				->build(),
 		];

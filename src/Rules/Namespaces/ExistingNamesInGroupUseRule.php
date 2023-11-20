@@ -8,8 +8,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use function count;
@@ -69,19 +69,27 @@ class ExistingNamesInGroupUseRule implements Rule
 		return $errors;
 	}
 
-	private function checkConstant(Node\Name $name): ?RuleError
+	private function checkConstant(Node\Name $name): ?IdentifierRuleError
 	{
 		if (!$this->reflectionProvider->hasConstant($name, null)) {
-			return RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $name))->discoveringSymbolsTip()->line($name->getLine())->build();
+			return RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $name))
+				->discoveringSymbolsTip()
+				->line($name->getLine())
+				->identifier('constant.notFound')
+				->build();
 		}
 
 		return null;
 	}
 
-	private function checkFunction(Node\Name $name): ?RuleError
+	private function checkFunction(Node\Name $name): ?IdentifierRuleError
 	{
 		if (!$this->reflectionProvider->hasFunction($name, null)) {
-			return RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $name))->discoveringSymbolsTip()->line($name->getLine())->build();
+			return RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $name))
+				->discoveringSymbolsTip()
+				->line($name->getLine())
+				->identifier('function.notFound')
+				->build();
 		}
 
 		if ($this->checkFunctionNameCase) {
@@ -96,14 +104,17 @@ class ExistingNamesInGroupUseRule implements Rule
 					'Function %s used with incorrect case: %s.',
 					$realName,
 					$usedName,
-				))->line($name->getLine())->build();
+				))
+					->line($name->getLine())
+					->identifier('function.nameCase')
+					->build();
 			}
 		}
 
 		return null;
 	}
 
-	private function checkClass(Node\Name $name): ?RuleError
+	private function checkClass(Node\Name $name): ?IdentifierRuleError
 	{
 		$errors = $this->classCaseSensitivityCheck->checkClassNames([
 			new ClassNameNodePair((string) $name, $name),

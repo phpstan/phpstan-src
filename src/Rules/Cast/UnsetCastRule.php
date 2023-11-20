@@ -30,7 +30,10 @@ class UnsetCastRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message('The (unset) cast is no longer supported in PHP 8.0 and later.')->nonIgnorable()->build(),
+			RuleErrorBuilder::message('The (unset) cast is no longer supported in PHP 8.0 and later.')
+				->identifier('cast.unset')
+				->nonIgnorable()
+				->build(),
 		];
 	}
 

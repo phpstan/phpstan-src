@@ -3,7 +3,7 @@
 namespace PHPStan\Rules\Generics;
 
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
@@ -13,7 +13,7 @@ class CrossCheckInterfacesHelper
 {
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(ClassReflection $classReflection): array
 	{
@@ -44,7 +44,7 @@ class CrossCheckInterfacesHelper
 							$interface->getName(),
 							$type->describe(VerbosityLevel::value()),
 							$otherType->describe(VerbosityLevel::value()),
-						))->build();
+						))->identifier('generics.interfaceConflict')->build();
 					}
 					continue;
 				}

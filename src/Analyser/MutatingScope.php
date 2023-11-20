@@ -3803,7 +3803,7 @@ class MutatingScope implements Scope
 				return $length;
 			}
 
-			return $b['sure'] - $a['sure']; // @phpstan-ignore-line
+			return $b['sure'] - $a['sure']; // @phpstan-ignore minus.leftNonNumeric, minus.rightNonNumeric
 		});
 
 		$scope = $this;

@@ -15,6 +15,7 @@ use function array_map;
 use function count;
 use function implode;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<InClassNode>
@@ -51,12 +52,14 @@ class DuplicateClassDeclarationRule implements Rule
 
 		$filteredClasses = array_filter($filteredClasses, static fn (ReflectionClass $class) => $class->getStartLine() !== $thisClass->getNativeReflection()->getStartLine());
 
+		$identifierType = strtolower($thisClass->getClassTypeDescription());
+
 		return [
 			RuleErrorBuilder::message(sprintf(
 				"Class %s declared multiple times:\n%s",
 				$thisClass->getDisplayName(),
 				implode("\n", array_map(fn (ReflectionClass $class) => sprintf('- %s:%d', $this->relativePathHelper->getRelativePath($class->getFileName() ?? 'unknown'), $class->getStartLine()), $filteredClasses)),
-			))->build(),
+			))->identifier(sprintf('%s.duplicate', $identifierType))->build(),
 		];
 	}
 

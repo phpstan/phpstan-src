@@ -8,8 +8,8 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -53,7 +53,7 @@ class ArrayDestructuringRule implements Rule
 
 	/**
 	 * @param Node\Expr\List_|Node\Expr\Array_ $var
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function getErrors(Scope $scope, Expr $var, Expr $expr): array
 	{
@@ -69,7 +69,9 @@ class ArrayDestructuringRule implements Rule
 		}
 		if (!$exprType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($exprType)->yes()) {
 			return [
-				RuleErrorBuilder::message(sprintf('Cannot use array destructuring on %s.', $exprType->describe(VerbosityLevel::typeOnly())))->build(),
+				RuleErrorBuilder::message(sprintf('Cannot use array destructuring on %s.', $exprType->describe(VerbosityLevel::typeOnly())))
+					->identifier('offsetAccess.nonArray')
+					->build(),
 			];
 		}
 

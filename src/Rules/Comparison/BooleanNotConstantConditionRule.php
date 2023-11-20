@@ -59,6 +59,8 @@ class BooleanNotConstantConditionRule implements Rule
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
 
+				$errorBuilder->identifier(sprintf('booleanNot.always%s', $exprType->getValue() ? 'False' : 'True'));
+
 				return [
 					$errorBuilder->build(),
 				];

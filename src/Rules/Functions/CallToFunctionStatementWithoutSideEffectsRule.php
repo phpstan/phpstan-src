@@ -126,7 +126,7 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Call to function %s() on a separate line has no effect.',
 					$function->getName(),
-				))->build(),
+				))->identifier('function.resultUnused')->build(),
 			];
 		}
 

@@ -11,8 +11,8 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
@@ -67,7 +67,7 @@ class AccessStaticPropertiesRule implements Rule
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processSingleProperty(Scope $scope, StaticPropertyFetch $node, string $name): array
 	{
@@ -82,7 +82,7 @@ class AccessStaticPropertiesRule implements Rule
 							'Accessing %s::$%s outside of class scope.',
 							$class,
 							$name,
-						))->build(),
+						))->identifier(sprintf('outOfClass.%s', $lowercasedClass))->build(),
 					];
 				}
 				$classType = $scope->resolveTypeByName($node->class);
@@ -93,7 +93,7 @@ class AccessStaticPropertiesRule implements Rule
 							'Accessing %s::$%s outside of class scope.',
 							$class,
 							$name,
-						))->build(),
+						))->identifier('outOfClass.parent')->build(),
 					];
 				}
 				if ($scope->getClassReflection()->getParentClass() === null) {
@@ -104,7 +104,7 @@ class AccessStaticPropertiesRule implements Rule
 							$scope->getFunctionName(),
 							$name,
 							$scope->getClassReflection()->getDisplayName(),
-						))->build(),
+						))->identifier('class.noParent')->build(),
 					];
 				}
 
@@ -130,7 +130,10 @@ class AccessStaticPropertiesRule implements Rule
 							'Access to static property $%s on an unknown class %s.',
 							$name,
 							$class,
-						))->discoveringSymbolsTip()->build(),
+						))
+							->discoveringSymbolsTip()
+							->identifier('class.notFound')
+							->build(),
 					];
 				}
 
@@ -171,7 +174,7 @@ class AccessStaticPropertiesRule implements Rule
 					'Cannot access static property $%s on %s.',
 					$name,
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
-				))->build(),
+				))->identifier('staticProperty.nonObject')->build(),
 			]);
 		}
 
@@ -200,7 +203,7 @@ class AccessStaticPropertiesRule implements Rule
 								'Access to private static property $%s of parent class %s.',
 								$name,
 								$parentClassReflection->getDisplayName(),
-							))->build(),
+							))->identifier('staticProperty.private')->build(),
 						];
 					}
 
@@ -213,7 +216,7 @@ class AccessStaticPropertiesRule implements Rule
 					'Access to an undefined static property %s::$%s.',
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 					$name,
-				))->build(),
+				))->identifier('staticProperty.notFound')->build(),
 			]);
 		}
 
@@ -231,7 +234,7 @@ class AccessStaticPropertiesRule implements Rule
 					'Static access to instance property %s::$%s.',
 					$property->getDeclaringClass()->getDisplayName(),
 					$name,
-				))->build(),
+				))->identifier('property.staticAccess')->build(),
 			]);
 		}
 
@@ -242,7 +245,7 @@ class AccessStaticPropertiesRule implements Rule
 					$property->isPrivate() ? 'private' : 'protected',
 					$name,
 					$property->getDeclaringClass()->getDisplayName(),
-				))->build(),
+				))->identifier(sprintf('staticProperty.%s', $property->isPrivate() ? 'private' : 'protected'))->build(),
 			]);
 		}
 

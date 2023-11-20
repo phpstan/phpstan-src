@@ -9,7 +9,7 @@ use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -51,7 +51,7 @@ class TemplateTypeCheck
 
 	/**
 	 * @param array<string, TemplateTag> $templateTags
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
 		Scope $scope,
@@ -71,20 +71,25 @@ class TemplateTypeCheck
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsClassMessage,
 					$templateTagName,
-				))->build();
+				))->identifier('generics.existingClass')->build();
 			}
 			if ($this->typeAliasResolver->hasTypeAlias($templateTagName, $templateTypeScope->getClassName())) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsTypeMessage,
 					$templateTagName,
-				))->build();
+				))->identifier('generics.existingTypeAlias')->build();
 			}
 			$boundType = $templateTag->getBound();
 			foreach ($boundType->getReferencedClasses() as $referencedClass) {
-				if (
-					$this->reflectionProvider->hasClass($referencedClass)
-					&& !$this->reflectionProvider->getClass($referencedClass)->isTrait()
-				) {
+				if (!$this->reflectionProvider->hasClass($referencedClass)) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						$invalidBoundTypeMessage,
+						$templateTagName,
+						$referencedClass,
+					))->identifier('class.notFound')->build();
+					continue;
+				}
+				if (!$this->reflectionProvider->getClass($referencedClass)->isTrait()) {
 					continue;
 				}
 
@@ -92,7 +97,7 @@ class TemplateTypeCheck
 					$invalidBoundTypeMessage,
 					$templateTagName,
 					$referencedClass,
-				))->build();
+				))->identifier('generics.traitBound')->build();
 			}
 
 			if ($this->checkClassCaseSensitivity) {
@@ -121,7 +126,9 @@ class TemplateTypeCheck
 				&& !$boundType instanceof IntersectionType
 				&& !$boundType instanceof TemplateType
 			) {
-				$messages[] = RuleErrorBuilder::message(sprintf($notSupportedBoundMessage, $templateTagName, $boundType->describe(VerbosityLevel::typeOnly())))->build();
+				$messages[] = RuleErrorBuilder::message(sprintf($notSupportedBoundMessage, $templateTagName, $boundType->describe(VerbosityLevel::typeOnly())))
+					->identifier('generics.notSupportedBound')
+					->build();
 			}
 
 			$escapedTemplateTagName = SprintfHelper::escapeFormatString($templateTagName);

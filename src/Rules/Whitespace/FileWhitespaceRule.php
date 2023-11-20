@@ -33,7 +33,9 @@ class FileWhitespaceRule implements Rule
 		$firstNode = $nodes[0];
 		$messages = [];
 		if ($firstNode instanceof Node\Stmt\InlineHTML && $firstNode->value === "\xef\xbb\xbf") {
-			$messages[] = RuleErrorBuilder::message('File begins with UTF-8 BOM character. This may cause problems when running the code in the web browser.')->build();
+			$messages[] = RuleErrorBuilder::message('File begins with UTF-8 BOM character. This may cause problems when running the code in the web browser.')
+				->identifier('whitespace.bom')
+				->build();
 		}
 
 		$nodeTraverser = new NodeTraverser();
@@ -81,7 +83,9 @@ class FileWhitespaceRule implements Rule
 				continue;
 			}
 
-			$messages[] = RuleErrorBuilder::message('File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.')->line($lastNode->getStartLine())->build();
+			$messages[] = RuleErrorBuilder::message('File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.')->line($lastNode->getStartLine())
+				->identifier('whitespace.fileEnd')
+				->build();
 		}
 
 		return $messages;

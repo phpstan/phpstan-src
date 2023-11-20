@@ -15,8 +15,8 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\NativeBuiltinMethodReflection;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpMethodReflection;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
@@ -67,7 +67,10 @@ class OverridingMethodRule implements Rule
 								$method->getName(),
 								$parent->getDisplayName($this->genericPrototypeMessage),
 								$parentConstructor->getName(),
-							))->nonIgnorable()->build(),
+							))
+								->nonIgnorable()
+								->identifier('method.parentMethodFinal')
+								->build(),
 						], $node, $scope);
 					}
 					if ($parentConstructor->isFinal()->yes() && $this->finalByPhpDoc) {
@@ -78,7 +81,8 @@ class OverridingMethodRule implements Rule
 								$method->getName(),
 								$parent->getDisplayName($this->genericPrototypeMessage),
 								$parentConstructor->getName(),
-							))->build(),
+							))->identifier('method.parentMethodFinalByPhpDoc')
+								->build(),
 						], $node, $scope);
 					}
 				}
@@ -90,7 +94,10 @@ class OverridingMethodRule implements Rule
 						'Method %s::%s() has #[\Override] attribute but does not override any method.',
 						$method->getDeclaringClass()->getDisplayName(),
 						$method->getName(),
-					))->nonIgnorable()->build(),
+					))
+						->nonIgnorable()
+						->identifier('method.override')
+						->build(),
 				];
 			}
 
@@ -111,7 +118,7 @@ class OverridingMethodRule implements Rule
 				$method->getName(),
 				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
-			))->build();
+			))->identifier('method.missingOverride')->build();
 		}
 		if ($prototype->isFinalByKeyword()->yes()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
@@ -120,7 +127,10 @@ class OverridingMethodRule implements Rule
 				$method->getName(),
 				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
-			))->nonIgnorable()->build();
+			))
+				->nonIgnorable()
+				->identifier('method.parentMethodFinal')
+				->build();
 		} elseif ($prototype->isFinal()->yes() && $this->finalByPhpDoc) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() overrides @final method %s::%s().',
@@ -128,7 +138,8 @@ class OverridingMethodRule implements Rule
 				$method->getName(),
 				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
-			))->build();
+			))->identifier('method.parentMethodFinalByPhpDoc')
+				->build();
 		}
 
 		if ($prototype->isStatic()) {
@@ -139,7 +150,10 @@ class OverridingMethodRule implements Rule
 					$method->getName(),
 					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('method.nonStatic')
+					->build();
 			}
 		} elseif ($method->isStatic()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
@@ -148,7 +162,10 @@ class OverridingMethodRule implements Rule
 				$method->getName(),
 				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 				$prototype->getName(),
-			))->nonIgnorable()->build();
+			))
+				->nonIgnorable()
+				->identifier('method.static')
+				->build();
 		}
 
 		if ($checkVisibility) {
@@ -161,7 +178,10 @@ class OverridingMethodRule implements Rule
 						$method->getName(),
 						$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 						$prototype->getName(),
-					))->nonIgnorable()->build();
+					))
+						->nonIgnorable()
+						->identifier('method.visibility')
+						->build();
 				}
 			} elseif ($method->isPrivate()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
@@ -170,7 +190,10 @@ class OverridingMethodRule implements Rule
 					$method->getName(),
 					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('method.visibility')
+					->build();
 			}
 		}
 
@@ -202,7 +225,11 @@ class OverridingMethodRule implements Rule
 					$realPrototype->getTentativeReturnType()->describe(VerbosityLevel::typeOnly()),
 					$realPrototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
 					$realPrototype->getName(),
-				))->tip('Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.')->nonIgnorable()->build();
+				))
+					->tip('Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.')
+					->nonIgnorable()
+					->identifier('method.tentativeReturnType')
+					->build();
 			}
 		}
 
@@ -248,7 +275,10 @@ class OverridingMethodRule implements Rule
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
 					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('method.childReturnType')
+					->build();
 			} else {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Return type %s of method %s::%s() is not compatible with return type %s of method %s::%s().',
@@ -258,7 +288,10 @@ class OverridingMethodRule implements Rule
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
 					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				))
+					->nonIgnorable()
+					->identifier('method.childReturnType')
+					->build();
 			}
 		}
 
@@ -266,8 +299,8 @@ class OverridingMethodRule implements Rule
 	}
 
 	/**
-	 * @param RuleError[] $errors
-	 * @return (string|RuleError)[]
+	 * @param list<IdentifierRuleError> $errors
+	 * @return list<IdentifierRuleError>
 	 */
 	private function addErrors(
 		array $errors,

@@ -58,7 +58,10 @@ class ThrowsVoidFunctionWithExplicitThrowPointRule implements Rule
 					'Function %s() throws exception %s but the PHPDoc contains @throws void.',
 					$functionReflection->getName(),
 					$throwPointType->describe(VerbosityLevel::typeOnly()),
-				))->line($throwPoint->getNode()->getLine())->build();
+				))
+					->line($throwPoint->getNode()->getLine())
+					->identifier('throws.void')
+					->build();
 			}
 		}
 

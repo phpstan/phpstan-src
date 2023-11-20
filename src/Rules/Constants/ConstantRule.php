@@ -26,7 +26,10 @@ class ConstantRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Constant %s not found.',
 					(string) $node->name,
-				))->discoveringSymbolsTip()->build(),
+				))
+					->identifier('constant.notFound')
+					->discoveringSymbolsTip()
+					->build(),
 			];
 		}
 

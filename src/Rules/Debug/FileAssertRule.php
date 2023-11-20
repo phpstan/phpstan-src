@@ -6,8 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\VerbosityLevel;
@@ -58,7 +58,7 @@ class FileAssertRule implements Rule
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processAssertType(array $args, Scope $scope): array
 	{
@@ -69,7 +69,10 @@ class FileAssertRule implements Rule
 		$expectedTypeStrings = $scope->getType($args[0]->value)->getConstantStrings();
 		if (count($expectedTypeStrings) !== 1) {
 			return [
-				RuleErrorBuilder::message('Expected type must be a literal string.')->nonIgnorable()->build(),
+				RuleErrorBuilder::message('Expected type must be a literal string.')
+					->nonIgnorable()
+					->identifier('phpstan.unknownExpectation')
+					->build(),
 			];
 		}
 
@@ -79,13 +82,16 @@ class FileAssertRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message(sprintf('Expected type %s, actual: %s', $expectedTypeStrings[0]->getValue(), $expressionType))->nonIgnorable()->build(),
+			RuleErrorBuilder::message(sprintf('Expected type %s, actual: %s', $expectedTypeStrings[0]->getValue(), $expressionType))
+				->nonIgnorable()
+				->identifier('phpstan.type')
+				->build(),
 		];
 	}
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processAssertNativeType(array $args, Scope $scope): array
 	{
@@ -96,7 +102,10 @@ class FileAssertRule implements Rule
 		$expectedTypeStrings = $scope->getNativeType($args[0]->value)->getConstantStrings();
 		if (count($expectedTypeStrings) !== 1) {
 			return [
-				RuleErrorBuilder::message('Expected native type must be a literal string.')->nonIgnorable()->build(),
+				RuleErrorBuilder::message('Expected native type must be a literal string.')
+					->nonIgnorable()
+					->identifier('phpstan.unknownExpectation')
+					->build(),
 			];
 		}
 
@@ -106,13 +115,16 @@ class FileAssertRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message(sprintf('Expected native type %s, actual: %s', $expectedTypeStrings[0]->getValue(), $expressionType))->nonIgnorable()->build(),
+			RuleErrorBuilder::message(sprintf('Expected native type %s, actual: %s', $expectedTypeStrings[0]->getValue(), $expressionType))
+				->nonIgnorable()
+				->identifier('phpstan.nativeType')
+				->build(),
 		];
 	}
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processAssertVariableCertainty(array $args, Scope $scope): array
 	{
@@ -125,6 +137,7 @@ class FileAssertRule implements Rule
 			return [
 				RuleErrorBuilder::message('First argument of %s() must be TrinaryLogic call')
 					->nonIgnorable()
+					->identifier('phpstan.unknownExpectation')
 					->build(),
 			];
 		}
@@ -132,6 +145,7 @@ class FileAssertRule implements Rule
 			return [
 				RuleErrorBuilder::message('Invalid TrinaryLogic call.')
 					->nonIgnorable()
+					->identifier('phpstan.unknownExpectation')
 					->build(),
 			];
 		}
@@ -140,6 +154,7 @@ class FileAssertRule implements Rule
 			return [
 				RuleErrorBuilder::message('Invalid TrinaryLogic call.')
 					->nonIgnorable()
+					->identifier('phpstan.unknownExpectation')
 					->build(),
 			];
 		}
@@ -148,17 +163,19 @@ class FileAssertRule implements Rule
 			return [
 				RuleErrorBuilder::message('Invalid TrinaryLogic call.')
 					->nonIgnorable()
+					->identifier('phpstan.unknownExpectation')
 					->build(),
 			];
 		}
 
-		// @phpstan-ignore-next-line
+		// @phpstan-ignore staticMethod.dynamicName
 		$expectedCertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
 		$variable = $args[1]->value;
 		if (!$variable instanceof Node\Expr\Variable) {
 			return [
 				RuleErrorBuilder::message('Invalid assertVariableCertainty call.')
 					->nonIgnorable()
+					->identifier('phpstan.unknownExpectation')
 					->build(),
 			];
 		}
@@ -166,6 +183,7 @@ class FileAssertRule implements Rule
 			return [
 				RuleErrorBuilder::message('Invalid assertVariableCertainty call.')
 					->nonIgnorable()
+					->identifier('phpstan.unknownExpectation')
 					->build(),
 			];
 		}
@@ -176,7 +194,10 @@ class FileAssertRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message(sprintf('Expected variable certainty %s, actual: %s', $expectedCertaintyValue->describe(), $actualCertaintyValue->describe()))->nonIgnorable()->build(),
+			RuleErrorBuilder::message(sprintf('Expected variable certainty %s, actual: %s', $expectedCertaintyValue->describe(), $actualCertaintyValue->describe()))
+				->nonIgnorable()
+				->identifier('phpstan.variable')
+				->build(),
 		];
 	}
 

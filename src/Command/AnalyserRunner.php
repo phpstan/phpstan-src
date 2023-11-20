@@ -8,6 +8,8 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
 use PHPStan\Process\CpuCoreCounter;
+use PHPStan\ShouldNotHappenException;
+use React\EventLoop\StreamSelectLoop;
 use Symfony\Component\Console\Input\InputInterface;
 use function count;
 use function function_exists;
@@ -45,7 +47,7 @@ class AnalyserRunner
 	{
 		$filesCount = count($files);
 		if ($filesCount === 0) {
-			return new AnalyserResult([], [], [], [], [], false, memory_get_peak_usage(true));
+			return new AnalyserResult([], [], [], [], [], [], false, memory_get_peak_usage(true));
 		}
 
 		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files);
@@ -61,7 +63,17 @@ class AnalyserRunner
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 0
 		) {
-			return $this->parallelAnalyser->analyse($schedule, $mainScript, $postFileCallback, $projectConfigFile, $input);
+			$loop = new StreamSelectLoop();
+			$result = null;
+			$promise = $this->parallelAnalyser->analyse($loop, $schedule, $mainScript, $postFileCallback, $projectConfigFile, $input, null);
+			$promise->then(static function (AnalyserResult $tmp) use (&$result): void {
+				$result = $tmp;
+			});
+			$loop->run();
+			if ($result === null) {
+				throw new ShouldNotHappenException();
+			}
+			return $result;
 		}
 
 		return $this->analyser->analyse(

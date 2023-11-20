@@ -71,7 +71,7 @@ class GetTemplateTypeRule implements Rule
 					$methodReflection->getName(),
 					$templateTypeName->getValue(),
 					$classReflection->getDisplayName(),
-				))->build();
+				))->identifier('phpstanApi.getTemplateType')->build();
 			}
 		}
 

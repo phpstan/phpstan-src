@@ -46,7 +46,11 @@ class ExistingClassesInEnumImplementsRule implements Rule
 						'Enum %s implements unknown interface %s.',
 						$currentEnumName,
 						$implementedClassName,
-					))->nonIgnorable()->discoveringSymbolsTip()->build();
+					))
+						->identifier('interface.notFound')
+						->nonIgnorable()
+						->discoveringSymbolsTip()
+						->build();
 				}
 			} else {
 				$reflection = $this->reflectionProvider->getClass($implementedClassName);
@@ -55,19 +59,28 @@ class ExistingClassesInEnumImplementsRule implements Rule
 						'Enum %s implements class %s.',
 						$currentEnumName,
 						$reflection->getDisplayName(),
-					))->nonIgnorable()->build();
+					))
+						->identifier('enumImplements.class')
+						->nonIgnorable()
+						->build();
 				} elseif ($reflection->isTrait()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s implements trait %s.',
 						$currentEnumName,
 						$reflection->getDisplayName(),
-					))->nonIgnorable()->build();
+					))
+						->identifier('enumImplements.trait')
+						->nonIgnorable()
+						->build();
 				} elseif ($reflection->isEnum()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s implements enum %s.',
 						$currentEnumName,
 						$reflection->getDisplayName(),
-					))->nonIgnorable()->build();
+					))
+						->identifier('enumImplements.enum')
+						->nonIgnorable()
+						->build();
 				}
 			}
 		}

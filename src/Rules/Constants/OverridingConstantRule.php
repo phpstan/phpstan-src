@@ -7,8 +7,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\VerbosityLevel;
@@ -48,7 +48,7 @@ class OverridingConstantRule implements Rule
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
 	{
@@ -70,7 +70,7 @@ class OverridingConstantRule implements Rule
 				$constantReflection->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName(),
-			))->nonIgnorable()->build();
+			))->identifier('classConstant.final')->nonIgnorable()->build();
 		}
 
 		if ($prototype->isPublic()) {
@@ -82,7 +82,7 @@ class OverridingConstantRule implements Rule
 					$constantReflection->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				))->identifier('classConstant.visibility')->nonIgnorable()->build();
 			}
 		} elseif ($constantReflection->isPrivate()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -91,7 +91,7 @@ class OverridingConstantRule implements Rule
 				$constantReflection->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName(),
-			))->nonIgnorable()->build();
+			))->identifier('classConstant.visibility')->nonIgnorable()->build();
 		}
 
 		if (!$this->checkPhpDocMethodSignatures) {
@@ -111,7 +111,7 @@ class OverridingConstantRule implements Rule
 						$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
 						$prototype->getDeclaringClass()->getDisplayName(),
 						$prototype->getName(),
-					))->nonIgnorable()->build();
+					))->identifier('classConstant.nativeType')->nonIgnorable()->build();
 				}
 			} else {
 				$errors[] = RuleErrorBuilder::message(sprintf(
@@ -122,7 +122,7 @@ class OverridingConstantRule implements Rule
 					$prototype->getName(),
 					$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
 					$prototypeNativeType->describe(VerbosityLevel::typeOnly()),
-				))->nonIgnorable()->build();
+				))->identifier('classConstant.missingNativeType')->nonIgnorable()->build();
 			}
 		}
 
@@ -143,7 +143,7 @@ class OverridingConstantRule implements Rule
 				$prototype->getValueType()->describe(VerbosityLevel::value()),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$prototype->getName(),
-			))->build();
+			))->identifier('classConstant.type')->build();
 		}
 
 		return $errors;

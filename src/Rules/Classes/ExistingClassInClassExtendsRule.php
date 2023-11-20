@@ -46,7 +46,11 @@ class ExistingClassInClassExtendsRule implements Rule
 					'%s extends unknown class %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 					$extendedClassName,
-				))->nonIgnorable()->discoveringSymbolsTip()->build();
+				))
+					->identifier('class.notFound')
+					->nonIgnorable()
+					->discoveringSymbolsTip()
+					->build();
 			}
 		} else {
 			$reflection = $this->reflectionProvider->getClass($extendedClassName);
@@ -55,31 +59,45 @@ class ExistingClassInClassExtendsRule implements Rule
 					'%s extends interface %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 					$reflection->getDisplayName(),
-				))->nonIgnorable()->build();
+				))
+					->identifier('class.extendsInterface')
+					->nonIgnorable()
+					->build();
 			} elseif ($reflection->isTrait()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends trait %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 					$reflection->getDisplayName(),
-				))->nonIgnorable()->build();
+				))
+					->identifier('class.extendsTrait')
+					->nonIgnorable()
+					->build();
 			} elseif ($reflection->isEnum()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends enum %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 					$reflection->getDisplayName(),
-				))->nonIgnorable()->build();
+				))
+					->identifier('class.extendsEnum')
+					->nonIgnorable()
+					->build();
 			} elseif ($reflection->isFinalByKeyword()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends final class %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 					$reflection->getDisplayName(),
-				))->nonIgnorable()->build();
+				))
+					->identifier('class.extendsFinal')
+					->nonIgnorable()
+					->build();
 			} elseif ($reflection->isFinal()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends @final class %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 					$reflection->getDisplayName(),
-				))->build();
+				))
+					->identifier('class.extendsFinalByPhpDoc')
+					->build();
 			}
 		}
 

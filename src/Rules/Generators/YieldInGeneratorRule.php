@@ -40,7 +40,12 @@ class YieldInGeneratorRule implements Rule
 		} elseif ($scopeFunction !== null) {
 			$returnType = ParametersAcceptorSelector::selectSingle($scopeFunction->getVariants())->getReturnType();
 		} else {
-			return [RuleErrorBuilder::message('Yield can be used only inside a function.')->build()];
+			return [
+				RuleErrorBuilder::message('Yield can be used only inside a function.')
+					->identifier('generator.outOfFunction')
+					->nonIgnorable()
+					->build(),
+			];
 		}
 
 		if ($returnType instanceof MixedType) {
@@ -66,7 +71,7 @@ class YieldInGeneratorRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Yield can be used only with these return types: %s.',
 				'Generator, Iterator, Traversable, iterable',
-			))->build(),
+			))->identifier('generator.returnType')->build(),
 		];
 	}
 

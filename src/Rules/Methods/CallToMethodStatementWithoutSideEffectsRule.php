@@ -80,7 +80,7 @@ class CallToMethodStatementWithoutSideEffectsRule implements Rule
 					$method->isStatic() ? 'static method' : 'method',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-				))->build(),
+				))->identifier('method.resultUnused')->build(),
 			];
 		}
 

@@ -76,6 +76,7 @@ class WhileLoopAlwaysTrueConditionRule implements Rule
 
 			return [
 				$addTip(RuleErrorBuilder::message('While loop condition is always true.'))->line($originalNode->cond->getLine())
+					->identifier('while.alwaysTrue')
 					->build(),
 			];
 		}

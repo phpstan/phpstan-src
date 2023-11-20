@@ -944,6 +944,27 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6856.php'], []);
 	}
 
+	public function testRuleError(): void
+	{
+		$this->analyse([__DIR__ . '/data/return-rule-error.php'], [
+			[
+				"Method ReturnRuleError\Bar::processNode() should return list<PHPStan\Rules\IdentifierRuleError> but returns array{'foo'}.",
+				47,
+				'Rules can no longer return plain strings. See: https://phpstan.org/blog/using-rule-error-builder',
+			],
+			[
+				'Method ReturnRuleError\Baz::processNode() should return list<PHPStan\Rules\IdentifierRuleError> but returns array{PHPStan\Rules\RuleError}.',
+				66,
+				'Error is missing an identifier. See: https://phpstan.org/blog/using-rule-error-builder',
+			],
+			[
+				'Method ReturnRuleError\Lorem::processNode() should return list<PHPStan\Rules\IdentifierRuleError> but returns array{1: PHPStan\Rules\IdentifierRuleError}.',
+				88,
+				'array{1: PHPStan\Rules\IdentifierRuleError} is not a list.',
+			],
+		]);
+	}
+
 	public function testBug6175(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6175.php'], []);

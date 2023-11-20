@@ -38,6 +38,7 @@ class FunctionSignatureVarianceRule implements Rule
 			sprintf('in function %s()', $functionName),
 			false,
 			false,
+			'function',
 		);
 	}
 

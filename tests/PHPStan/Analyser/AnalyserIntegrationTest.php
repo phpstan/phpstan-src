@@ -63,7 +63,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testNestedFunctionCallsDoNotCauseExcessiveFunctionNesting(): void
 	{
 		if (extension_loaded('xdebug')) {
-			$this->markTestSkipped('This test takes too long with XDebug enabled.');
+			$this->markTestSkipped('This test takes too long with Xdebug enabled.');
 		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/nested-functions.php');
 		$this->assertNoErrors($errors);
@@ -1230,6 +1230,27 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9690.php');
 		$this->assertNoErrors($errors);
+	}
+
+	public function testIgnoreIdentifiers(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/ignore-identifiers.php');
+		$this->assertCount(5, $errors);
+
+		$this->assertSame('No error with identifier wrong.id is reported on line 12.', $errors[0]->getMessage());
+		$this->assertSame(12, $errors[0]->getLine());
+
+		$this->assertSame('Undefined variable: $foo', $errors[1]->getMessage());
+		$this->assertSame(12, $errors[1]->getLine());
+
+		$this->assertSame('Undefined variable: $bar', $errors[2]->getMessage());
+		$this->assertSame(14, $errors[2]->getLine());
+
+		$this->assertSame('Undefined variable: $foo', $errors[3]->getMessage());
+		$this->assertSame(14, $errors[3]->getLine());
+
+		$this->assertSame('Undefined variable: $bar', $errors[4]->getMessage());
+		$this->assertSame(16, $errors[4]->getLine());
 	}
 
 	public function testBug9994(): void

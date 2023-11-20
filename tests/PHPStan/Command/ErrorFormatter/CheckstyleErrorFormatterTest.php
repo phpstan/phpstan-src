@@ -164,4 +164,34 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 </checkstyle>', $this->getOutputContent());
 	}
 
+	public function testIdentifier(): void
+	{
+		$formatter = new CheckstyleErrorFormatter(new SimpleRelativePathHelper(__DIR__));
+		$error = (new Error(
+			'Foo',
+			__DIR__ . '/FooTrait.php',
+			5,
+			true,
+			__DIR__ . '/Foo.php',
+			null,
+		))->withIdentifier('argument.type');
+		$formatter->formatErrors(new AnalysisResult(
+			[$error],
+			[],
+			[],
+			[],
+			[],
+			false,
+			null,
+			true,
+			0,
+			true,
+		), $this->getOutput());
+		$this->assertXmlStringEqualsXmlString('<checkstyle>
+	<file name="Foo.php">
+		<error column="1" line="5" message="Foo" severity="error" source="argument.type" />
+	</file>
+</checkstyle>', $this->getOutputContent());
+	}
+
 }

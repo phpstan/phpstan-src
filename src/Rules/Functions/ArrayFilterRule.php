@@ -61,7 +61,7 @@ class ArrayFilterRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					$message,
 					$arrayType->describe(VerbosityLevel::value()),
-				))->build(),
+				))->identifier('arrayFilter.empty')->build(),
 			];
 		}
 
@@ -74,7 +74,7 @@ class ArrayFilterRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					$message,
 					$arrayType->describe(VerbosityLevel::value()),
-				))->build(),
+				))->identifier('arrayFilter.same')->build(),
 			];
 		}
 
@@ -84,7 +84,7 @@ class ArrayFilterRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					$message,
 					$arrayType->describe(VerbosityLevel::value()),
-				))->build(),
+				))->identifier('arrayFilter.alwaysEmpty')->build(),
 			];
 		}
 

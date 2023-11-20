@@ -28,10 +28,14 @@ class DateTimeInstantiationRule implements Rule
 	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$node->class instanceof Node\Name) {
+			return [];
+		}
+
+		$lowerClassName = strtolower((string) $node->class);
 		if (
-			!($node->class instanceof Node\Name)
-			|| count($node->getArgs()) === 0
-			|| !in_array(strtolower((string) $node->class), ['datetime', 'datetimeimmutable'], true)
+			count($node->getArgs()) === 0
+			|| !in_array($lowerClassName, ['datetime', 'datetimeimmutable'], true)
 		) {
 			return [];
 		}
@@ -54,10 +58,10 @@ class DateTimeInstantiationRule implements Rule
 			foreach ($lastErrors['errors'] as $error) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Instantiating %s with %s produces an error: %s',
-					(string) $node->class,
+					$lowerClassName === 'datetime' ? 'DateTime' : 'DateTimeImmutable',
 					$dateString,
 					$error,
-				))->build();
+				))->identifier(sprintf('new.%s', $lowerClassName === 'datetime' ? 'dateTime' : 'dateTimeImmutable'))->build();
 			}
 		}
 

@@ -25,7 +25,9 @@ class TraitAttributeClassRule implements Rule
 				$name = $attr->name->toLowerString();
 				if ($name === 'attribute') {
 					return [
-						RuleErrorBuilder::message('Trait cannot be an Attribute class.')->build(),
+						RuleErrorBuilder::message('Trait cannot be an Attribute class.')
+							->identifier('attribute.trait')
+							->build(),
 					];
 				}
 			}

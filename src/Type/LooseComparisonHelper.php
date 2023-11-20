@@ -43,7 +43,7 @@ final class LooseComparisonHelper
 			}
 		}
 
-		// @phpstan-ignore-next-line
+		// @phpstan-ignore equal.notAllowed
 		return new ConstantBooleanType($leftType->getValue() == $rightType->getValue()); // phpcs:ignore
 	}
 

@@ -45,7 +45,7 @@ class IncompatibleSelfOutTypeRule implements Rule
 				$classReflection->getName(),
 				$method->getName(),
 				$classType->describe(VerbosityLevel::precise()),
-			))->build(),
+			))->identifier('selfOut.type')->build(),
 		];
 	}
 

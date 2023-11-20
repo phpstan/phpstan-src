@@ -6,8 +6,8 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\VerbosityLevel;
@@ -48,7 +48,7 @@ class TypesAssignedToPropertiesRule implements Rule
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processSingleProperty(
 		FoundPropertyReflection $propertyReflection,
@@ -74,7 +74,10 @@ class TypesAssignedToPropertiesRule implements Rule
 					$propertyDescription,
 					$propertyType->describe($verbosityLevel),
 					$assignedValueType->describe($verbosityLevel),
-				))->acceptsReasonsTip($accepts->reasons)->build(),
+				))
+					->identifier('assign.propertyType')
+					->acceptsReasonsTip($accepts->reasons)
+					->build(),
 			];
 		}
 

@@ -484,7 +484,7 @@ class ObjectTypeTest extends PHPStanTestCase
 			],
 			[
 				new ObjectType(Traversable::class),
-				new GenericObjectType(Traversable::class, [new MixedType(true), new ObjectType('DateTimeInteface')]),
+				new GenericObjectType(Traversable::class, [new MixedType(true), new ObjectType('DateTimeInterface')]),
 				TrinaryLogic::createYes(),
 			],
 			[

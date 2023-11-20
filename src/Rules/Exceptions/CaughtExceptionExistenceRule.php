@@ -42,13 +42,20 @@ class CaughtExceptionExistenceRule implements Rule
 				if ($scope->isInClassExists($className)) {
 					continue;
 				}
-				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))->line($class->getLine())->discoveringSymbolsTip()->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))
+					->line($class->getLine())
+					->identifier('class.notFound')
+					->discoveringSymbolsTip()
+					->build();
 				continue;
 			}
 
 			$classReflection = $this->reflectionProvider->getClass($className);
 			if (!$classReflection->isInterface() && !$classReflection->implementsInterface(Throwable::class)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s is not an exception.', $classReflection->getDisplayName()))->line($class->getLine())->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s is not an exception.', $classReflection->getDisplayName()))
+					->line($class->getLine())
+					->identifier('catch.notThrowable')
+					->build();
 			}
 
 			if (!$this->checkClassCaseSensitivity) {

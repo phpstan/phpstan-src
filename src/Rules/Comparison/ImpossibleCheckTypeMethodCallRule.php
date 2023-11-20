@@ -64,7 +64,7 @@ class ImpossibleCheckTypeMethodCallRule implements Rule
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
-				)))->build(),
+				)))->identifier('method.impossibleType')->build(),
 			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -82,6 +82,8 @@ class ImpossibleCheckTypeMethodCallRule implements Rule
 			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 				$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 			}
+
+			$errorBuilder->identifier('method.alreadyNarrowedType');
 
 			return [$errorBuilder->build()];
 		}

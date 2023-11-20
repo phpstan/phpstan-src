@@ -8,9 +8,9 @@ use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
@@ -49,7 +49,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 	}
 
 	/**
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function checkFunctionParameter(FunctionReflection $functionReflection, ParameterReflection $parameterReflection): array
 	{
@@ -61,7 +61,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 					'Function %s() has parameter $%s with no type specified.',
 					$functionReflection->getName(),
 					$parameterReflection->getName(),
-				))->build(),
+				))->identifier('missingType.parameter')->build(),
 			];
 		}
 
@@ -73,7 +73,10 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
 				$iterableTypeDescription,
-			))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+				->identifier('missingType.iterableValue')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($parameterType) as [$name, $genericTypeNames]) {
@@ -83,7 +86,10 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				$parameterReflection->getName(),
 				$name,
 				implode(', ', $genericTypeNames),
-			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+				->identifier('missingType.generics')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($parameterType) as $callableType) {
@@ -92,7 +98,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
 				$callableType->describe(VerbosityLevel::typeOnly()),
-			))->build();
+			))->identifier('missingType.callable')->build();
 		}
 
 		return $messages;

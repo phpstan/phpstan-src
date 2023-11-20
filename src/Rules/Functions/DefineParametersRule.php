@@ -47,7 +47,10 @@ class DefineParametersRule implements Rule
 		return [
 			RuleErrorBuilder::message(
 				'Argument #3 ($case_insensitive) is ignored since declaration of case-insensitive constants is no longer supported.',
-			)->line($node->getLine())->build(),
+			)
+				->line($node->getLine())
+				->identifier('argument.unused')
+				->build(),
 		];
 	}
 

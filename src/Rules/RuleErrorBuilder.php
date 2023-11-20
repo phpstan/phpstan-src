@@ -2,14 +2,19 @@
 
 namespace PHPStan\Rules;
 
+use PHPStan\Analyser\Error;
 use PHPStan\ShouldNotHappenException;
 use function array_map;
 use function class_exists;
 use function count;
 use function implode;
+use function is_file;
 use function sprintf;
 
-/** @api */
+/**
+ * @api
+ * @template-covariant T of RuleError
+ */
 class RuleErrorBuilder
 {
 
@@ -113,11 +118,18 @@ class RuleErrorBuilder
 		];
 	}
 
+	/**
+	 * @return self<RuleError>
+	 */
 	public static function message(string $message): self
 	{
 		return new self($message);
 	}
 
+	/**
+	 * @phpstan-this-out self<T&LineRuleError>
+	 * @return self<T&LineRuleError>
+	 */
 	public function line(int $line): self
 	{
 		$this->properties['line'] = $line;
@@ -126,8 +138,15 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @phpstan-this-out self<T&FileRuleError>
+	 * @return self<T&FileRuleError>
+	 */
 	public function file(string $file, ?string $fileDescription = null): self
 	{
+		if (!is_file($file)) {
+			throw new ShouldNotHappenException(sprintf('File %s does not exist.', $file));
+		}
 		$this->properties['file'] = $file;
 		$this->properties['fileDescription'] = $fileDescription ?? $file;
 		$this->type |= self::TYPE_FILE;
@@ -135,6 +154,10 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @phpstan-this-out self<T&TipRuleError>
+	 * @return self<T&TipRuleError>
+	 */
 	public function tip(string $tip): self
 	{
 		$this->tips = [$tip];
@@ -143,6 +166,10 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @phpstan-this-out self<T&TipRuleError>
+	 * @return self<T&TipRuleError>
+	 */
 	public function addTip(string $tip): self
 	{
 		$this->tips[] = $tip;
@@ -151,6 +178,10 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @phpstan-this-out self<T&TipRuleError>
+	 * @return self<T&TipRuleError>
+	 */
 	public function discoveringSymbolsTip(): self
 	{
 		return $this->tip('Learn more at https://phpstan.org/user-guide/discovering-symbols');
@@ -158,6 +189,8 @@ class RuleErrorBuilder
 
 	/**
 	 * @param list<string> $reasons
+	 * @phpstan-this-out self<T&TipRuleError>
+	 * @return self<T&TipRuleError>
 	 */
 	public function acceptsReasonsTip(array $reasons): self
 	{
@@ -168,8 +201,20 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * Sets an error identifier.
+	 *
+	 * List of all current error identifiers in PHPStan: https://phpstan.org/error-identifiers
+	 *
+	 * @phpstan-this-out self<T&IdentifierRuleError>
+	 * @return self<T&IdentifierRuleError>
+	 */
 	public function identifier(string $identifier): self
 	{
+		if (!Error::validateIdentifier($identifier)) {
+			throw new ShouldNotHappenException(sprintf('Invalid identifier: %s', $identifier));
+		}
+
 		$this->properties['identifier'] = $identifier;
 		$this->type |= self::TYPE_IDENTIFIER;
 
@@ -178,6 +223,8 @@ class RuleErrorBuilder
 
 	/**
 	 * @param mixed[] $metadata
+	 * @phpstan-this-out self<T&MetadataRuleError>
+	 * @return self<T&MetadataRuleError>
 	 */
 	public function metadata(array $metadata): self
 	{
@@ -187,6 +234,10 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @phpstan-this-out self<T&NonIgnorableRuleError>
+	 * @return self<T&NonIgnorableRuleError>
+	 */
 	public function nonIgnorable(): self
 	{
 		$this->type |= self::TYPE_NON_IGNORABLE;
@@ -194,9 +245,12 @@ class RuleErrorBuilder
 		return $this;
 	}
 
+	/**
+	 * @return T
+	 */
 	public function build(): RuleError
 	{
-		/** @var class-string<RuleError> $className */
+		/** @var class-string<T> $className */
 		$className = sprintf('PHPStan\\Rules\\RuleErrors\\RuleError%d', $this->type);
 		if (!class_exists($className)) {
 			throw new ShouldNotHappenException(sprintf('Class %s does not exist.', $className));

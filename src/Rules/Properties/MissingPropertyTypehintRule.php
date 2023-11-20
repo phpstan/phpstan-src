@@ -44,7 +44,7 @@ final class MissingPropertyTypehintRule implements Rule
 					'Property %s::$%s has no type specified.',
 					$propertyReflection->getDeclaringClass()->getDisplayName(),
 					$node->getName(),
-				))->build(),
+				))->identifier('missingType.property')->build(),
 			];
 		}
 
@@ -56,7 +56,10 @@ final class MissingPropertyTypehintRule implements Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 				$iterableTypeDescription,
-			))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+				->identifier('missingType.iterableValue')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($propertyType) as [$name, $genericTypeNames]) {
@@ -66,7 +69,10 @@ final class MissingPropertyTypehintRule implements Rule
 				$node->getName(),
 				$name,
 				implode(', ', $genericTypeNames),
-			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
+			))
+				->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
+				->identifier('missingType.generics')
+				->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($propertyType) as $callableType) {
@@ -75,7 +81,7 @@ final class MissingPropertyTypehintRule implements Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 				$callableType->describe(VerbosityLevel::typeOnly()),
-			))->build();
+			))->identifier('missingType.callable')->build();
 		}
 
 		return $messages;

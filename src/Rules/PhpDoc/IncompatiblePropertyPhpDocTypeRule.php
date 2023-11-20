@@ -58,7 +58,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 				$description,
 				$classReflection->getDisplayName(),
 				$propertyName,
-			))->build();
+			))->identifier('property.unresolvableType')->build();
 		}
 
 		$nativeType = ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $classReflection);
@@ -71,7 +71,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 				$propertyName,
 				$phpDocType->describe(VerbosityLevel::typeOnly()),
 				$nativeType->describe(VerbosityLevel::typeOnly()),
-			))->build();
+			))->identifier('property.phpDocType')->build();
 
 		} elseif ($isSuperType->maybe()) {
 			$errorBuilder = RuleErrorBuilder::message(sprintf(
@@ -81,7 +81,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 				$propertyName,
 				$phpDocType->describe(VerbosityLevel::typeOnly()),
 				$nativeType->describe(VerbosityLevel::typeOnly()),
-			));
+			))->identifier('property.phpDocType');
 
 			if ($phpDocType instanceof TemplateType) {
 				$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocType->getName(), $nativeType->describe(VerbosityLevel::typeOnly())));

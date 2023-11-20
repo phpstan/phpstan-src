@@ -5,7 +5,7 @@ namespace PHPStan\Command;
 use PHPStan\AnalysedCodeException;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
-use PHPStan\Analyser\IgnoredErrorHelper;
+use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Analyser\ScopeContext;
@@ -23,7 +23,6 @@ use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function count;
-use function is_string;
 use function memory_get_peak_usage;
 use function microtime;
 use function sprintf;
@@ -65,8 +64,10 @@ class AnalyseApplication
 		$resultCacheManager = $this->resultCacheManagerFactory->create();
 
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
+		$fileSpecificErrors = [];
+		$notFileSpecificErrors = [];
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
-			$errors = $ignoredErrorHelperResult->getErrors();
+			$notFileSpecificErrors = $ignoredErrorHelperResult->getErrors();
 			$internalErrors = [];
 			$collectedData = [];
 			$savedResultCache = false;
@@ -92,6 +93,7 @@ class AnalyseApplication
 				$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);
 				$intermediateAnalyserResult = new AnalyserResult(
 					array_merge($intermediateAnalyserResult->getUnorderedErrors(), $stubErrors),
+					$intermediateAnalyserResult->getLocallyIgnoredErrors(),
 					$intermediateAnalyserResult->getInternalErrors(),
 					$intermediateAnalyserResult->getCollectedData(),
 					$intermediateAnalyserResult->getDependencies(),
@@ -114,24 +116,15 @@ class AnalyseApplication
 					$errors[] = $error;
 				}
 			}
-			$errors = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
+			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
+			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
+			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 			$collectedData = $analyserResult->getCollectedData();
 			$savedResultCache = $resultCacheResult->isSaved();
 			if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
-				$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
+				$notFileSpecificErrors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
 			}
-			$errors = array_merge($errors, $internalErrors);
-		}
-
-		$fileSpecificErrors = [];
-		$notFileSpecificErrors = [];
-		foreach ($errors as $error) {
-			if (is_string($error)) {
-				$notFileSpecificErrors[] = $error;
-				continue;
-			}
-
-			$fileSpecificErrors[] = $error;
+			$notFileSpecificErrors = array_merge($notFileSpecificErrors, $internalErrors);
 		}
 
 		return new AnalysisResult(
@@ -163,13 +156,13 @@ class AnalyseApplication
 			try {
 				$ruleErrors = $rule->processNode($node, $scope);
 			} catch (AnalysedCodeException $e) {
-				$errors[] = new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip());
+				$errors[] = (new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
 				continue;
 			} catch (IdentifierNotFound $e) {
-				$errors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
+				$errors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
 				continue;
 			} catch (UnableToCompileNode | CircularReference $e) {
-				$errors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e);
+				$errors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e))->withIdentifier('phpstan.reflection');
 				continue;
 			}
 
@@ -201,7 +194,7 @@ class AnalyseApplication
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressFinish();
-			return new AnalyserResult([], [], [], [], [], false, memory_get_peak_usage(true));
+			return new AnalyserResult([], [], [], [], [], [], false, memory_get_peak_usage(true));
 		}
 
 		if (!$debug) {

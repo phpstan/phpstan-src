@@ -33,7 +33,10 @@ class FinalConstantRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message('Final class constants are supported only on PHP 8.1 and later.')->nonIgnorable()->build(),
+			RuleErrorBuilder::message('Final class constants are supported only on PHP 8.1 and later.')
+				->identifier('classConstant.finalNotSupported')
+				->nonIgnorable()
+				->build(),
 		];
 	}
 

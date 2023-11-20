@@ -5,6 +5,8 @@ namespace PHPStan\Analyser;
 use PhpParser\Lexer;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
+use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
+use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
@@ -66,6 +68,38 @@ class AnalyserTest extends PHPStanTestCase
 	public function testFileWithAnIgnoredErrorMessage(): void
 	{
 		$result = $this->runAnalyser([['message' => '#Fail\.#']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertEmpty($result);
+	}
+
+	public function testFileWithAnIgnoredErrorMessageAndWrongIdentifier(): void
+	{
+		$result = $this->runAnalyser([['message' => '#Fail\.#', 'identifier' => 'wrong.identifier']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertCount(2, $result);
+		assert($result[0] instanceof Error);
+		$this->assertSame('Fail.', $result[0]->getMessage());
+		assert(is_string($result[1]));
+		$this->assertSame('Ignored error pattern #Fail\.# (wrong.identifier) was not matched in reported errors.', $result[1]);
+	}
+
+	public function testFileWithAnIgnoredWrongIdentifier(): void
+	{
+		$result = $this->runAnalyser([['identifier' => 'wrong.identifier']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertCount(2, $result);
+		assert($result[0] instanceof Error);
+		$this->assertSame('Fail.', $result[0]->getMessage());
+		assert(is_string($result[1]));
+		$this->assertSame('Ignored error pattern wrong.identifier was not matched in reported errors.', $result[1]);
+	}
+
+	public function testFileWithAnIgnoredErrorMessageAndCorrectIdentifier(): void
+	{
+		$result = $this->runAnalyser([['message' => '#Fail\.#', 'identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertEmpty($result);
+	}
+
+	public function testFileWithAnIgnoredErrorIdentifier(): void
+	{
+		$result = $this->runAnalyser([['identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
 		$this->assertEmpty($result);
 	}
 
@@ -402,7 +436,7 @@ class AnalyserTest extends PHPStanTestCase
 
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', false);
 		$this->assertCount(1, $result);
-		$this->assertSame('Ignored error {"path":"' . $expectedPath . '/data/empty/empty.php"} is missing a message.', $result[0]);
+		$this->assertSame('Ignored error {"path":"' . $expectedPath . '/data/empty/empty.php"} is missing a message or an identifier.', $result[0]);
 	}
 
 	public function testReportMultipleParserErrorsAtOnce(): void
@@ -599,7 +633,9 @@ class AnalyserTest extends PHPStanTestCase
 
 		$analyserResult = $analyser->analyse($normalizedFilePaths);
 
-		$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
+		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
+		$errors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
+		$errors = array_merge($errors, $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages());
 		if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
 			$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', 50);
 		}
@@ -658,6 +694,7 @@ class AnalyserTest extends PHPStanTestCase
 				$lexer,
 				new NameResolver(),
 				self::getContainer(),
+				new IgnoreLexer(),
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new RuleErrorTransformer(),

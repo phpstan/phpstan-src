@@ -54,7 +54,7 @@ class AccessPrivateConstantThroughStaticRule implements Rule
 				'Unsafe access to private constant %s::%s through static::.',
 				$constant->getDeclaringClass()->getDisplayName(),
 				$constantName,
-			))->build(),
+			))->identifier('staticClassAccess.privateConstant')->build(),
 		];
 	}
 

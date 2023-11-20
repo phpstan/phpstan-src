@@ -262,4 +262,14 @@ class PhpVersion
 		return $this->versionId >= 80300;
 	}
 
+	public function supportsReadOnlyClasses(): bool
+	{
+		return $this->versionId >= 80200;
+	}
+
+	public function supportsReadOnlyAnonymousClasses(): bool
+	{
+		return $this->versionId >= 80300;
+	}
+
 }

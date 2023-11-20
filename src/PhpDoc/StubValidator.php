@@ -155,6 +155,7 @@ class StubValidator
 		$crossCheckInterfacesHelper = $container->getByType(CrossCheckInterfacesHelper::class);
 		$phpVersion = $container->getByType(PhpVersion::class);
 		$localTypeAliasesCheck = $container->getByType(LocalTypeAliasesCheck::class);
+		$phpClassReflectionExtension = $container->getByType(PhpClassReflectionExtension::class);
 
 		$rules = [
 			// level 0
@@ -165,7 +166,7 @@ class StubValidator
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, $unresolvableTypeHelper, $phpVersion, true, false),
-			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true, $container->getParameter('featureToggles')['abstractTraitMethod']), true, new MethodParameterComparisonHelper($phpVersion, $container->getParameter('featureToggles')['genericPrototypeMessage']), $container->getByType(PhpClassReflectionExtension::class), $container->getParameter('featureToggles')['genericPrototypeMessage'], $container->getParameter('featureToggles')['finalByPhpDoc'], $container->getParameter('checkMissingOverrideMethodAttribute')),
+			new OverridingMethodRule($phpVersion, new MethodSignatureRule($phpClassReflectionExtension, true, true, $container->getParameter('featureToggles')['abstractTraitMethod']), true, new MethodParameterComparisonHelper($phpVersion, $container->getParameter('featureToggles')['genericPrototypeMessage']), $phpClassReflectionExtension, $container->getParameter('featureToggles')['genericPrototypeMessage'], $container->getParameter('featureToggles')['finalByPhpDoc'], $container->getParameter('checkMissingOverrideMethodAttribute')),
 			new DuplicateDeclarationRule(),
 			new LocalTypeAliasesRule($localTypeAliasesCheck),
 			new LocalTypeTraitAliasesRule($localTypeAliasesCheck, $reflectionProvider),

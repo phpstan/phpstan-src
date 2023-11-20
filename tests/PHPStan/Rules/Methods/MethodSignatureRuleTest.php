@@ -22,12 +22,14 @@ class MethodSignatureRuleTest extends RuleTestCase
 	{
 		$phpVersion = new PhpVersion(PHP_VERSION_ID);
 
+		$phpClassReflectionExtension = self::getContainer()->getByType(PhpClassReflectionExtension::class);
+
 		return new OverridingMethodRule(
 			$phpVersion,
-			new MethodSignatureRule($this->reportMaybes, $this->reportStatic, true),
+			new MethodSignatureRule($phpClassReflectionExtension, $this->reportMaybes, $this->reportStatic, true),
 			true,
 			new MethodParameterComparisonHelper($phpVersion, true),
-			self::getContainer()->getByType(PhpClassReflectionExtension::class),
+			$phpClassReflectionExtension,
 			true,
 			true,
 			false,
@@ -439,6 +441,23 @@ class MethodSignatureRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $i (non-empty-string) of method OverridingTraitMethodsPhpDoc\Bar::doBar() should be contravariant with parameter $i (string) of method OverridingTraitMethodsPhpDoc\Foo::doBar()',
 				33,
+			],
+		]);
+	}
+
+	public function testBug10166(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10166.php'], [
+			[
+				'Return type Bug10166\ReturnTypeClass2|null of method Bug10166\ReturnTypeClass2::createSelf() is not covariant with return type Bug10166\ReturnTypeClass2 of method Bug10166\ReturnTypeTrait::createSelf().',
+				23,
 			],
 		]);
 	}

@@ -24,12 +24,14 @@ class OverridingMethodRuleTest extends RuleTestCase
 	{
 		$phpVersion = new PhpVersion($this->phpVersionId);
 
+		$phpClassReflectionExtension = self::getContainer()->getByType(PhpClassReflectionExtension::class);
+
 		return new OverridingMethodRule(
 			$phpVersion,
-			new MethodSignatureRule(true, true, true),
+			new MethodSignatureRule($phpClassReflectionExtension, true, true, true),
 			false,
 			new MethodParameterComparisonHelper($phpVersion, true),
-			self::getContainer()->getByType(PhpClassReflectionExtension::class),
+			$phpClassReflectionExtension,
 			true,
 			true,
 			$this->checkMissingOverrideMethodAttribute,

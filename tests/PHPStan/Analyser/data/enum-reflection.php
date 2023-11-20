@@ -5,6 +5,7 @@ namespace EnumReflection;
 use ReflectionEnum;
 use ReflectionEnumBackedCase;
 use ReflectionEnumUnitCase;
+use ReflectionType;
 use function PHPStan\Testing\assertType;
 
 enum Foo: int
@@ -40,4 +41,10 @@ enum Bar
 		assertType(ReflectionEnumUnitCase::class, $r->getCase('FOO'));
 	}
 
+}
+
+$r = new ReflectionEnum(Foo::class);
+assertType(ReflectionType::class . '|null', $r->getBackingType());
+if ($r->isBacked()) {
+	assertType(ReflectionType::class, $r->getBackingType());
 }

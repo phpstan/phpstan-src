@@ -18,4 +18,8 @@ class ReflectionEnum extends ReflectionClass
 	 */
 	public function getCase(string $name): ReflectionEnumUnitCase {}
 
+	/**
+	 * @phpstan-assert-if-true !null $this->getBackingType()
+	 */
+	public function isBacked(): bool {}
 }

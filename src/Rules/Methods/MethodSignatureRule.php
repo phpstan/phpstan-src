@@ -10,6 +10,8 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Reflection\Php\NativeBuiltinMethodReflection;
+use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
@@ -28,7 +30,6 @@ use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use function count;
-use function is_bool;
 use function min;
 use function sprintf;
 use function strtolower;
@@ -40,6 +41,7 @@ class MethodSignatureRule implements Rule
 {
 
 	public function __construct(
+		private PhpClassReflectionExtension $phpClassReflectionExtension,
 		private bool $reportMaybes,
 		private bool $reportStatic,
 		private bool $abstractTraitMethod,
@@ -69,7 +71,7 @@ class MethodSignatureRule implements Rule
 
 		$errors = [];
 		$declaringClass = $method->getDeclaringClass();
-		foreach ($this->collectParentMethods($methodName, $method->getDeclaringClass()) as $parentMethod) {
+		foreach ($this->collectParentMethods($methodName, $method->getDeclaringClass()) as [$parentMethod, $parentMethodDeclaringClass]) {
 			$parentVariants = $parentMethod->getVariants();
 			if (count($parentVariants) !== 1) {
 				continue;
@@ -84,7 +86,7 @@ class MethodSignatureRule implements Rule
 					$method->getName(),
 					$returnTypeCompatibility->no() ? 'compatible' : 'covariant',
 					$parentReturnType->describe(VerbosityLevel::value()),
-					$parentMethod->getDeclaringClass()->getDisplayName(),
+					$parentMethodDeclaringClass->getDisplayName(),
 					$parentMethod->getName(),
 				))->identifier('method.childReturnType');
 				if (
@@ -134,7 +136,7 @@ class MethodSignatureRule implements Rule
 					$parameterResult->no() ? 'compatible' : 'contravariant',
 					$parentParameter->getName(),
 					$parentParameterType->describe(VerbosityLevel::value()),
-					$parentMethod->getDeclaringClass()->getDisplayName(),
+					$parentMethodDeclaringClass->getDisplayName(),
 					$parentMethod->getName(),
 				))->identifier('method.childParameterType')->build();
 			}
@@ -144,7 +146,7 @@ class MethodSignatureRule implements Rule
 	}
 
 	/**
-	 * @return ExtendedMethodReflection[]
+	 * @return list<array{ExtendedMethodReflection, ClassReflection}>
 	 */
 	private function collectParentMethods(string $methodName, ClassReflection $class): array
 	{
@@ -154,7 +156,7 @@ class MethodSignatureRule implements Rule
 		if ($parentClass !== null && $parentClass->hasNativeMethod($methodName)) {
 			$parentMethod = $parentClass->getNativeMethod($methodName);
 			if (!$parentMethod->isPrivate()) {
-				$parentMethods[] = $parentMethod;
+				$parentMethods[] = [$parentMethod, $parentMethod->getDeclaringClass()];
 			}
 		}
 
@@ -163,24 +165,31 @@ class MethodSignatureRule implements Rule
 				continue;
 			}
 
-			$parentMethods[] = $interface->getNativeMethod($methodName);
+			$method = $interface->getNativeMethod($methodName);
+			$parentMethods[] = [$method, $method->getDeclaringClass()];
 		}
 
 		if ($this->abstractTraitMethod) {
 			foreach ($class->getTraits(true) as $trait) {
-				if (!$trait->hasNativeMethod($methodName)) {
+				$nativeTraitReflection = $trait->getNativeReflection();
+				if (!$nativeTraitReflection->hasMethod($methodName)) {
 					continue;
 				}
 
-				$method = $trait->getNativeMethod($methodName);
-				$isAbstract = $method->isAbstract();
-				if (is_bool($isAbstract)) {
-					if ($isAbstract) {
-						$parentMethods[] = $method;
-					}
-				} elseif ($isAbstract->yes()) {
-					$parentMethods[] = $method;
+				$methodReflection = $nativeTraitReflection->getMethod($methodName);
+				$isAbstract = $methodReflection->isAbstract();
+				if (!$isAbstract) {
+					continue;
 				}
+
+				$parentMethods[] = [
+					$this->phpClassReflectionExtension->createUserlandMethodReflection(
+						$trait,
+						$class,
+						new NativeBuiltinMethodReflection($methodReflection),
+					),
+					$trait->getNativeMethod($methodName)->getDeclaringClass(),
+				];
 			}
 		}
 

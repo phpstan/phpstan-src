@@ -57,6 +57,7 @@ rules:
 	- PHPStan\Rules\Classes\NewStaticRule
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
 	- PHPStan\Rules\Classes\TraitAttributeClassRule
+	- PHPStan\Rules\Constants\DynamicClassConstantFetchRule
 	- PHPStan\Rules\Constants\FinalConstantRule
 	- PHPStan\Rules\Constants\NativeTypedClassConstantRule
 	- PHPStan\Rules\EnumCases\EnumCaseAttributesRule

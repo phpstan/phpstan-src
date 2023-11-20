@@ -257,4 +257,9 @@ class PhpVersion
 		return $this->versionId >= 80300;
 	}
 
+	public function supportsDynamicClassConstantFetch(): bool
+	{
+		return $this->versionId >= 80300;
+	}
+
 }

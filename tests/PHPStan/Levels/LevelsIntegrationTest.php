@@ -3,6 +3,7 @@
 namespace PHPStan\Levels;
 
 use PHPStan\Testing\LevelsTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @group levels
@@ -12,7 +13,7 @@ class LevelsIntegrationTest extends LevelsTestCase
 
 	public function dataTopics(): array
 	{
-		return [
+		$topics = [
 			['returnTypes'],
 			['acceptTypes'],
 			['methodCalls'],
@@ -41,6 +42,11 @@ class LevelsIntegrationTest extends LevelsTestCase
 			['arrayDestructuring'],
 			['listType'],
 		];
+		if (PHP_VERSION_ID >= 80300) {
+			$topics[] = ['constantAccesses83'];
+		}
+
+		return $topics;
 	}
 
 	public function getDataPath(): string

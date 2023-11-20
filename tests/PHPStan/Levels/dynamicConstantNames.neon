@@ -4,3 +4,4 @@ includes:
 parameters:
 	dynamicConstantNames:
 		- Levels\Comparison\Foo::FOO_CONST
+	phpVersion: 80300

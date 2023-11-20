@@ -11,3 +11,4 @@ parameters:
 	paths:
 		- src
 		- run.php
+	checkGenericClassInNonGenericObjectType: false

@@ -3079,4 +3079,43 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/return-type-class-constant.php'], []);
 	}
 
+	public function testNamedParametersForMultiVariantFunctions(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/call-methods-named-params-multivariant.php'], [
+			[
+				'Unknown parameter $options in call to method XSLTProcessor::setParameter().',
+				10,
+			],
+			[
+				'Missing parameter $name (array) in call to method XSLTProcessor::setParameter().',
+				10,
+			],
+			[
+				'Unknown parameter $colno in call to method PDO::query().',
+				15,
+			],
+			[
+				'Unknown parameter $className in call to method PDO::query().',
+				17,
+			],
+			[
+				'Unknown parameter $constructorArgs in call to method PDO::query().',
+				17,
+			],
+			[
+				'Unknown parameter $className in call to method PDOStatement::setFetchMode().',
+				22,
+			],
+		]);
+	}
+
 }

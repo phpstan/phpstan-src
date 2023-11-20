@@ -82,7 +82,7 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 
 	private function transformMethodWithStaticType(ClassReflection $declaringClass, ExtendedMethodReflection $method): ExtendedMethodReflection
 	{
-		$variants = array_map(fn (ParametersAcceptorWithPhpDocs $acceptor): ParametersAcceptorWithPhpDocs => new FunctionVariantWithPhpDocs(
+		$variantFn = fn (ParametersAcceptorWithPhpDocs $acceptor): ParametersAcceptorWithPhpDocs => new FunctionVariantWithPhpDocs(
 			$acceptor->getTemplateTypeMap(),
 			$acceptor->getResolvedTemplateTypeMap(),
 			array_map(
@@ -104,9 +104,14 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 			$this->transformStaticType($acceptor->getPhpDocReturnType()),
 			$this->transformStaticType($acceptor->getNativeReturnType()),
 			$acceptor->getCallSiteVarianceMap(),
-		), $method->getVariants());
+		);
+		$variants = array_map($variantFn, $method->getVariants());
+		$namedArgumentVariants = $method->getNamedArgumentsVariants();
+		$namedArgumentVariants = $namedArgumentVariants !== null
+			? array_map($variantFn, $namedArgumentVariants)
+			: null;
 
-		return new ChangedTypeMethodReflection($declaringClass, $method, $variants);
+		return new ChangedTypeMethodReflection($declaringClass, $method, $variants, $namedArgumentVariants);
 	}
 
 	private function transformStaticType(Type $type): Type

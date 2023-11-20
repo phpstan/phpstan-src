@@ -89,6 +89,28 @@ class Foo
 		}
 	}
 
+	function nonEmptyArray(array $arr): void {
+		$link_mode = $arr ? "truethy-arr" : "falsey-arr";
+		if ($link_mode === "truethy-arr") {
+			assertType('non-empty-array', $arr);
+		} else {
+			assertType('array{}', $arr);
+		}
+	}
+
+	/**
+	 * @param array $arr
+	 * @param 0|positive-int $intRange
+	 */
+	function nonEmptyArrayViaInt(array $arr, $intRange): void {
+		$link_mode = $arr ? $intRange : -10;
+		if ($link_mode >= 0) {
+			assertType('non-empty-array', $arr);
+		} else {
+			assertType('array{}', $arr);
+		}
+	}
+
 	/**
 	 * @param string[] $arr
 	 * @param 0|positive-int $posInt

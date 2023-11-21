@@ -90,6 +90,7 @@ rules:
 	- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Methods\FinalPrivateMethodRule
 	- PHPStan\Rules\Methods\MethodCallableRule
+	- PHPStan\Rules\Methods\MethodVisibitiliyInInterfaceRule
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule
 	- PHPStan\Rules\Methods\MethodAttributesRule
 	- PHPStan\Rules\Methods\StaticMethodCallableRule

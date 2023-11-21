@@ -48,7 +48,10 @@ class RedefinedParametersRule implements Rule
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf('Redefinition of parameter $%s.', $var))->nonIgnorable()->build();
+			$errors[] = RuleErrorBuilder::message(sprintf('Redefinition of parameter $%s.', $var))
+				->identifier('parameter.duplicate')
+				->nonIgnorable()
+				->build();
 		}
 
 		return $errors;

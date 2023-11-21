@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PrivateAbstractMethod;
+namespace AbstractMethods;
 
 abstract class HelloWorld
 {

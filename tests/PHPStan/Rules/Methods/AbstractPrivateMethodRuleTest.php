@@ -16,13 +16,13 @@ class AbstractPrivateMethodRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/abstract-private-method.php'], [
+		$this->analyse([__DIR__ . '/data/abstract-methods.php'], [
 			[
-				'Private method PrivateAbstractMethod\HelloWorld::sayPrivate() cannot be abstract.',
+				'Private method AbstractMethods\HelloWorld::sayPrivate() cannot be abstract.',
 				12,
 			],
 			[
-				'Private method PrivateAbstractMethod\fooInterface::sayPrivate() cannot be abstract.',
+				'Private method AbstractMethods\fooInterface::sayPrivate() cannot be abstract.',
 				24,
 			],
 		]);

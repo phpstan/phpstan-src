@@ -61,6 +61,9 @@ lint:
 		--exclude tests/PHPStan/Rules/Methods/data/final-method-by-phpdoc.php \
 		--exclude tests/PHPStan/Rules/Traits/data/conflicting-trait-constants-types.php \
 		--exclude tests/PHPStan/Rules/Constants/data/dynamic-class-constant-fetch.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/declare-position.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/declare-position2.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/declare-position-nested.php \
 		src tests
 
 cs:

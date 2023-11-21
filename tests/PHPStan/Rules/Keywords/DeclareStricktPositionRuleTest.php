@@ -6,21 +6,21 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<DeclarePositionRule>
+ * @extends RuleTestCase<DeclareStrictPositionRule>
  */
-class DeclarePositionRuleTest extends RuleTestCase
+class DeclareStricktPositionRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new DeclarePositionRule();
+		return new DeclareStrictPositionRule();
 	}
 
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/declare-position.php'], [
 			[
-				'Declare must be the very first statement.',
+				'Declare strict_types must be the very first statement.',
 				5,
 			],
 		]);
@@ -30,7 +30,7 @@ class DeclarePositionRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/declare-position2.php'], [
 			[
-				'Declare must be the very first statement.',
+				'Declare strict_types must be the very first statement.',
 				1,
 			],
 		]);
@@ -40,11 +40,11 @@ class DeclarePositionRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/declare-position-nested.php'], [
 			[
-				'Declare must be the very first statement.',
+				'Declare strict_types must be the very first statement.',
 				7,
 			],
 			[
-				'Declare must be the very first statement.',
+				'Declare strict_types must be the very first statement.',
 				12,
 			],
 		]);
@@ -55,4 +55,13 @@ class DeclarePositionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/declare-position-valid.php'], []);
 	}
 
+	public function testTicks(): void
+	{
+		$this->analyse([__DIR__ . '/data/declare-ticks.php'], []);
+	}
+
+	public function testMulti(): void
+	{
+		$this->analyse([__DIR__ . '/data/declare-multi.php'], []);
+	}
 }

@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<Stmt>
  */
-class DeclarePositionRule implements Rule
+class DeclareStrictPositionRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -23,6 +23,20 @@ class DeclarePositionRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		$declaresStrictTypes = false;
+		foreach ($node->declares as $declare) {
+			if (
+				$declare->key->name === 'strict_types'
+			) {
+				$declaresStrictTypes = true;
+				break;
+			}
+		}
+
+		if ($declaresStrictTypes === false) {
+			return [];
+		}
+
 		if (!$node->hasAttribute(DeclarePositionVisitor::ATTRIBUTE_NAME)) {
 			return [];
 		}
@@ -34,7 +48,7 @@ class DeclarePositionRule implements Rule
 
 		return [
 			RuleErrorBuilder::message(sprintf(
-				'Declare must be the very first statement.',
+				'Declare strict_types must be the very first statement.',
 			))->nonIgnorable()->build(),
 		];
 	}

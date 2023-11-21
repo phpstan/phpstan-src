@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 
 /**
- * @implements Rule<Stmt>
+ * @implements Rule<Stmt\Declare_>
  */
 class DeclareStrictPositionRule implements Rule
 {

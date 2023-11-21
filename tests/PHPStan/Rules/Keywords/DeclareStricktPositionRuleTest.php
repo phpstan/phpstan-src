@@ -64,4 +64,5 @@ class DeclareStricktPositionRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/declare-multi.php'], []);
 	}
+
 }

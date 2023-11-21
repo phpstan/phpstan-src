@@ -30,8 +30,16 @@ class AbstractPrivateMethodRule implements Rule
 			return [];
 		}
 
+		if ($scope->isInTrait()) {
+			return [];
+		}
+
 		$classReflection = $scope->getClassReflection();
-		if ($classReflection === null || !$classReflection->isAbstract()) {
+		if ($classReflection === null) {
+			return [];
+		}
+
+		if (!$classReflection->isAbstract() && !$classReflection->isInterface()) {
 			return [];
 		}
 

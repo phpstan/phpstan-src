@@ -21,6 +21,10 @@ class AbstractPrivateMethodRuleTest extends RuleTestCase
 				'Private method PrivateAbstractMethod\HelloWorld::sayPrivate() cannot be abstract.',
 				12,
 			],
+			[
+				'Private method PrivateAbstractMethod\fooInterface::sayPrivate() cannot be abstract.',
+				24,
+			],
 		]);
 	}
 

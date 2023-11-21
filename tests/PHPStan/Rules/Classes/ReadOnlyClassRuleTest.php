@@ -22,18 +22,15 @@ class ReadOnlyClassRuleTest extends RuleTestCase
 	{
 		$errors = [];
 		if (PHP_VERSION_ID < 80200) {
-			$errors = [
-				[
-					'Readonly classes are supported only on PHP 8.2 and later.',
-					5,
-				],
+			$errors[] = [
+				'Readonly classes are supported only on PHP 8.2 and later.',
+				5,
 			];
-		} elseif (PHP_VERSION_ID < 80300) {
-			$errors = [
-				[
-					'Anonymous readonly classes are supported only on PHP 8.3 and later.',
-					15,
-				],
+		}
+		if (PHP_VERSION_ID < 80300) {
+			$errors[] = [
+				'Anonymous readonly classes are supported only on PHP 8.3 and later.',
+				15,
 			];
 		}
 		$this->analyse([__DIR__ . '/data/readonly-class.php'], $errors);

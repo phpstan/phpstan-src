@@ -8,12 +8,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Parser\DeclarePositionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\UnionType;
 use function sprintf;
 
 /**
  * @implements Rule<Stmt\Declare_>
  */
-class DeclareStrictPositionRule implements Rule
+class DeclareStrictTypesRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -26,11 +28,22 @@ class DeclareStrictPositionRule implements Rule
 		$declaresStrictTypes = false;
 		foreach ($node->declares as $declare) {
 			if (
-				$declare->key->name === 'strict_types'
+				$declare->key->name !== 'strict_types'
 			) {
-				$declaresStrictTypes = true;
-				break;
+				continue;
 			}
+
+			$validValues = new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
+			if (!$validValues->isSuperTypeOf($scope->getType($declare->value))->yes()) {
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Declare strict_types must have 0 or 1 as its value.',
+					))->nonIgnorable()->build(),
+				];
+			}
+
+			$declaresStrictTypes = true;
+			break;
 		}
 
 		if ($declaresStrictTypes === false) {

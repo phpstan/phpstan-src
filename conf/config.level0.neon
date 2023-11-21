@@ -81,7 +81,7 @@ rules:
 	- PHPStan\Rules\Functions\ReturnNullsafeByRefRule
 	- PHPStan\Rules\Functions\VariadicParametersDeclarationRule
 	- PHPStan\Rules\Keywords\ContinueBreakInLoopRule
-	- PHPStan\Rules\Keywords\DeclareStrictPositionRule
+	- PHPStan\Rules\Keywords\DeclareStrictTypesRule
 	- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
 	- PHPStan\Rules\Methods\AbstractPrivateMethodRule
 	- PHPStan\Rules\Methods\CallMethodsRule

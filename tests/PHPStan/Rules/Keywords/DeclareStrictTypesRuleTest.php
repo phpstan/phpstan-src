@@ -6,14 +6,14 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<DeclareStrictPositionRule>
+ * @extends RuleTestCase<DeclareStrictTypesRule>
  */
-class DeclareStricktPositionRuleTest extends RuleTestCase
+class DeclareStrictTypesRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new DeclareStrictPositionRule();
+		return new DeclareStrictTypesRule();
 	}
 
 	public function testRule(): void
@@ -63,6 +63,26 @@ class DeclareStricktPositionRuleTest extends RuleTestCase
 	public function testMulti(): void
 	{
 		$this->analyse([__DIR__ . '/data/declare-multi.php'], []);
+	}
+
+	public function testNonsense(): void
+	{
+		$this->analyse([__DIR__ . '/data/declare-strict-nonsense.php'], [
+			[
+				'Declare strict_types must have 0 or 1 as its value.',
+				1,
+			],
+		]);
+	}
+
+	public function testNonsenseBool(): void
+	{
+		$this->analyse([__DIR__ . '/data/declare-strict-nonsense-bool.php'], [
+			[
+				'Declare strict_types must have 0 or 1 as its value.',
+				1,
+			],
+		]);
 	}
 
 }

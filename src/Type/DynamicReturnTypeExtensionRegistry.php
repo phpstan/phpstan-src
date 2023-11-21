@@ -83,7 +83,7 @@ class DynamicReturnTypeExtensionRegistry
 
 		$extensionsForClass = [[]];
 		$class = $this->reflectionProvider->getClass($className);
-		foreach (array_merge([$className], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames()) as $extensionClassName) {
+		foreach (array_merge([$className, 'object'], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames()) as $extensionClassName) {
 			$extensionClassName = strtolower($extensionClassName);
 			if (!isset($extensions[$extensionClassName])) {
 				continue;

@@ -88,6 +88,8 @@ class Foo
 		assertType('DynamicMethodReturnTypesNamespace\Foo', $container[\DynamicMethodReturnTypesNamespace\Foo::class]);
 		assertType('object', new \DynamicMethodReturnTypesNamespace\Foo());
 		assertType('object', new \DynamicMethodReturnTypesNamespace\FooWithoutConstructor());
+		assertType('bool', \DynamicMethodReturnTypesNamespace\WhateverClass::methodReturningBoolNoMatterTheCaller());
+		assertType('bool', \DynamicMethodReturnTypesNamespace\WhateverClass2::methodReturningBoolNoMatterTheCaller());
 	}
 
 }
@@ -95,4 +97,12 @@ class Foo
 class FooWithoutConstructor
 {
 
+}
+
+
+class WhateverClass {
+	public static function methodReturningBoolNoMatterTheCaller(){}
+}
+class WhateverClass2 {
+	public static function methodReturningBoolNoMatterTheCaller(){}
 }

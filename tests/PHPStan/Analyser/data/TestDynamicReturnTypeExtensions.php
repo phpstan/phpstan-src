@@ -13,6 +13,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnionTypeMethodReflection;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
@@ -262,4 +263,24 @@ class Bug7391BDynamicStaticMethodReturnTypeExtension implements DynamicStaticMet
 		// return instantiated type from class string
 		return $scope->getType(new New_($methodCall->class));
 	}
+}
+
+
+class ObjectHookedDynamicStaticMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension {
+
+	public function getClass(): string
+	{
+		return 'object';
+	}
+
+	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
+	{
+		return $methodReflection->getName() === 'methodReturningBoolNoMatterTheCaller';
+	}
+
+	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): Type
+	{
+		return new BooleanType();
+	}
+
 }

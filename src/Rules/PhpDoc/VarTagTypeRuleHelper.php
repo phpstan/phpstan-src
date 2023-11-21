@@ -154,7 +154,7 @@ class VarTagTypeRuleHelper
 		return $this->checkType($type, $varTagType);
 	}
 
-	private function checkType(Type $type, Type $varTagType): bool
+	private function checkType(Type $type, Type $varTagType, int $depth = 0): bool
 	{
 		if ($type->isConstantArray()->yes()) {
 			if ($type->isIterableAtLeastOnce()->no()) {
@@ -175,10 +175,10 @@ class VarTagTypeRuleHelper
 				return !$innerType->isSuperTypeOf($innerVarTagType)->yes();
 			}
 
-			return $this->checkType($innerType, $innerVarTagType);
+			return $this->checkType($innerType, $innerVarTagType, $depth + 1);
 		}
 
-		if ($type->isConstantValue()->yes()) {
+		if ($type->isConstantValue()->yes() && $depth === 0) {
 			return $type->isSuperTypeOf($varTagType)->no();
 		}
 

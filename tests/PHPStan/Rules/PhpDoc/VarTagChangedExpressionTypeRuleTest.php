@@ -63,6 +63,10 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @var with type array is not subtype of type array{id: int}.',
 				20,
 			],
+			[
+				'PHPDoc tag @var with type array is not subtype of type list<array{id: int}>.',
+				23,
+			],
 		]);
 	}
 

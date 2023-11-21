@@ -628,18 +628,20 @@ class PhpClassReflectionExtension
 		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($fileDeclaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
 		$phpDocBlockClassReflection = $fileDeclaringClass;
 
-		$methodDeclaringClass = $methodReflection->getReflection()->getBetterReflection()->getDeclaringClass();
+		if ($methodReflection->getReflection() !== null) {
+			$methodDeclaringClass = $methodReflection->getReflection()->getBetterReflection()->getDeclaringClass();
 
-		if ($stubPhpDocPair === null && $methodDeclaringClass->isTrait()) {
-			if (! $methodReflection->getDeclaringClass()->isTrait() || $methodDeclaringClass->getName() !== $methodReflection->getDeclaringClass()->getName()) {
-				$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors(
-					$this->reflectionProviderProvider->getReflectionProvider()->getClass($methodDeclaringClass->getName()),
-					$methodReflection->getName(),
-					array_map(
-						static fn (ReflectionParameter $parameter): string => $parameter->getName(),
-						$methodReflection->getParameters(),
-					),
-				);
+			if ($stubPhpDocPair === null && $methodDeclaringClass->isTrait()) {
+				if (! $methodReflection->getDeclaringClass()->isTrait() || $methodDeclaringClass->getName() !== $methodReflection->getDeclaringClass()->getName()) {
+					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors(
+						$this->reflectionProviderProvider->getReflectionProvider()->getClass($methodDeclaringClass->getName()),
+						$methodReflection->getName(),
+						array_map(
+							static fn (ReflectionParameter $parameter): string => $parameter->getName(),
+							$methodReflection->getParameters(),
+						),
+					);
+				}
 			}
 		}
 
@@ -871,6 +873,10 @@ class PhpClassReflectionExtension
 		BuiltinMethodReflection $methodReflection,
 	): ?string
 	{
+		if ($methodReflection->getReflection() === null) {
+			return null;
+		}
+
 		$declaringClass = $methodReflection->getReflection()->getBetterReflection()->getDeclaringClass();
 		if ($declaringClass->isTrait()) {
 			if ($methodReflection->getDeclaringClass()->isTrait() && $declaringClass->getName() === $methodReflection->getDeclaringClass()->getName()) {

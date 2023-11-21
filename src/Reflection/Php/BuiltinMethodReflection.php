@@ -16,7 +16,7 @@ interface BuiltinMethodReflection
 
 	public function getName(): string;
 
-	public function getReflection(): ReflectionMethod;
+	public function getReflection(): ?ReflectionMethod;
 
 	public function getFileName(): ?string;
 

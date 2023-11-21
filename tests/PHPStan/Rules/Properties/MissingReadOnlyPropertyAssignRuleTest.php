@@ -247,4 +247,18 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testAnonymousReadonlyClass(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$this->analyse([__DIR__ . '/data/missing-readonly-anonymous-class-property-assign.php'], [
+			[
+				'Class class@anonymous/tests/PHPStan/Rules/Properties/data/missing-readonly-anonymous-class-property-assign.php:10 has an uninitialized readonly property $foo. Assign it in the constructor.',
+				11,
+			],
+		]);
+	}
+
 }

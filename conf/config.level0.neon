@@ -56,6 +56,7 @@ rules:
 	- PHPStan\Rules\Classes\LocalTypeTraitAliasesRule
 	- PHPStan\Rules\Classes\NewStaticRule
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
+	- PHPStan\Rules\Classes\ReadOnlyClassRule
 	- PHPStan\Rules\Classes\TraitAttributeClassRule
 	- PHPStan\Rules\Constants\DynamicClassConstantFetchRule
 	- PHPStan\Rules\Constants\FinalConstantRule
@@ -75,11 +76,13 @@ rules:
 	- PHPStan\Rules\Functions\InnerFunctionRule
 	- PHPStan\Rules\Functions\ParamAttributesRule
 	- PHPStan\Rules\Functions\PrintfParametersRule
+	- PHPStan\Rules\Functions\RedefinedParametersRule
 	- PHPStan\Rules\Functions\ReturnNullsafeByRefRule
 	- PHPStan\Rules\Ignore\IgnoreParseErrorRule
 	- PHPStan\Rules\Functions\VariadicParametersDeclarationRule
 	- PHPStan\Rules\Keywords\ContinueBreakInLoopRule
 	- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
+	- PHPStan\Rules\Methods\AbstractPrivateMethodRule
 	- PHPStan\Rules\Methods\CallMethodsRule
 	- PHPStan\Rules\Methods\CallStaticMethodsRule
 	- PHPStan\Rules\Methods\ConstructorReturnTypeRule

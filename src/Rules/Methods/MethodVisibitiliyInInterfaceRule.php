@@ -10,7 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 
 /** @implements Rule<InClassMethodNode> */
-class AbstractProtectedMethodRule implements Rule
+class MethodVisibitiliyInInterfaceRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -22,11 +22,7 @@ class AbstractProtectedMethodRule implements Rule
 	{
 		$method = $node->getMethodReflection();
 
-		if ($method->isPrivate() || $method->isPublic()) {
-			return [];
-		}
-
-		if (!$method->isAbstract()->yes()) {
+		if ($method->isPublic()) {
 			return [];
 		}
 
@@ -41,7 +37,7 @@ class AbstractProtectedMethodRule implements Rule
 
 		return [
 			RuleErrorBuilder::message(sprintf(
-				'Protected method %s::%s() cannot be abstract.',
+				'Method %s::%s() cannot use non-public visibility in interface.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 			))->nonIgnorable()->build(),

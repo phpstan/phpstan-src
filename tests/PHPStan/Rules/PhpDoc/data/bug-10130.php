@@ -2,13 +2,13 @@
 
 class Ipsum
 {
-
 	/**
 	 * @param array<int> $map
 	 * @param list<int> $list
 	 * @param array{id: int} $shape
+	 * @param list<array{id: int}> $listOfShapes
 	 */
-	public function doFoo($map, $list, $shape): void
+	public function doFoo($map, $list, $shape, $listOfShapes): void
 	{
 		/** @var mixed[] $map */
 		if ($map) {}
@@ -18,6 +18,9 @@ class Ipsum
 
 		/** @var mixed[] $shape */
 		if ($shape) {}
+
+		/** @var mixed[] $listOfShapes */
+		if ($listOfShapes) {}
 	}
 
 }

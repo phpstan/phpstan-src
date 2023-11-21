@@ -48,7 +48,7 @@ class AbstractPrivateMethodRule implements Rule
 				'Private method %s::%s() cannot be abstract.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-			))->build(),
+			))->nonIgnorable()->build(),
 		];
 	}
 

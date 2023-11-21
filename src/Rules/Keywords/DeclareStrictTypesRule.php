@@ -33,8 +33,10 @@ class DeclareStrictTypesRule implements Rule
 				continue;
 			}
 
-			$validValues = new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
-			if (!$validValues->isSuperTypeOf($scope->getType($declare->value))->yes()) {
+			if (
+				!$declare->value instanceof Node\Scalar\LNumber
+				|| !in_array($declare->value->value, [0, 1], true)
+			) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Declare strict_types must have 0 or 1 as its value.',

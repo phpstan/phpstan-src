@@ -8,8 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Parser\DeclarePositionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\UnionType;
+use function in_array;
 use function sprintf;
 
 /**

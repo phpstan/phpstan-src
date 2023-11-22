@@ -61,6 +61,9 @@ lint:
 		--exclude tests/PHPStan/Rules/Methods/data/bug-10101.php \
 		--exclude tests/PHPStan/Rules/Methods/data/final-method-by-phpdoc.php \
 		--exclude tests/PHPStan/Rules/Traits/data/conflicting-trait-constants-types.php \
+		--exclude tests/PHPStan/Rules/Types/data/invalid-union-with-mixed.php \
+		--exclude tests/PHPStan/Rules/Types/data/invalid-union-with-never.php \
+		--exclude tests/PHPStan/Rules/Types/data/invalid-union-with-void.php \
 		--exclude tests/PHPStan/Rules/Constants/data/dynamic-class-constant-fetch.php \
 		src tests
 

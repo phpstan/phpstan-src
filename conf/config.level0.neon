@@ -104,6 +104,7 @@ rules:
 	- PHPStan\Rules\Properties\ReadOnlyPropertyRule
 	- PHPStan\Rules\Traits\ConflictingTraitConstantsRule
 	- PHPStan\Rules\Traits\ConstantsInTraitsRule
+	- PHPStan\Rules\Types\InvalidTypesInUnionRule
 	- PHPStan\Rules\Variables\UnsetRule
 	- PHPStan\Rules\Whitespace\FileWhitespaceRule
 

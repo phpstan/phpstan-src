@@ -64,6 +64,11 @@ lint:
 		--exclude tests/PHPStan/Rules/Types/data/invalid-union-with-never.php \
 		--exclude tests/PHPStan/Rules/Types/data/invalid-union-with-void.php \
 		--exclude tests/PHPStan/Rules/Constants/data/dynamic-class-constant-fetch.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/declare-position.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/declare-position2.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/declare-position-nested.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/declare-strict-nonsense.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/declare-strict-nonsense-bool.php \
 		src tests
 
 cs:

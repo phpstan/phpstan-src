@@ -645,6 +645,11 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\DeclarePositionVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parallel\ParallelAnalyser
 		arguments:
 			internalErrorsCountLimit: %internalErrorsCountLimit%

@@ -589,4 +589,32 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/impossible-instanceof-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
+	public function testNullableClassname(): void
+	{
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-10036.php'], [
+			[
+				'Classname in instanceof cannot be null, string|null given.',
+				9,
+			],
+		]);
+	}
+
+	public function testNullablePhpdocClassname(): void
+	{
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-10036.php'], [
+			[
+				'Classname in instanceof cannot be null, string|null given.',
+				9,
+			],
+			[
+				'Classname in instanceof cannot be null, string|null given.',
+				17,
+			],
+		]);
+	}
+
 }

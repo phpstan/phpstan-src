@@ -36,6 +36,18 @@ class ImpossibleInstanceOfRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$node->class instanceof Node\Name) {
+			$classType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->class) : $scope->getNativeType($node->class);
+			if (TypeCombinator::containsNull($classType)) {
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Classname in instanceof cannot be null, %s given.',
+						$classType->describe(VerbosityLevel::typeOnly()),
+					))->build(),
+				];
+			}
+		}
+
 		$instanceofType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
 		if (!$instanceofType instanceof ConstantBooleanType) {
 			return [];
@@ -45,7 +57,6 @@ class ImpossibleInstanceOfRule implements Rule
 			$className = $scope->resolveName($node->class);
 			$classType = new ObjectType($className);
 		} else {
-			$classType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->class) : $scope->getNativeType($node->class);
 			$allowed = TypeCombinator::union(
 				new StringType(),
 				new ObjectWithoutClassType(),

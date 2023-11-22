@@ -268,9 +268,9 @@ class Bug7391BDynamicStaticMethodReturnTypeExtension implements DynamicStaticMet
 
 class ObjectHookedDynamicStaticMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension {
 
-	public function getClass(): string
+	public function getClass(): ?string
 	{
-		return 'object';
+		return null;
 	}
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool

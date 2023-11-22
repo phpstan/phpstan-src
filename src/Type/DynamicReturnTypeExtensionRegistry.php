@@ -47,7 +47,7 @@ class DynamicReturnTypeExtensionRegistry
 		if ($this->dynamicMethodReturnTypeExtensionsByClass === null) {
 			$byClass = [];
 			foreach ($this->dynamicMethodReturnTypeExtensions as $extension) {
-				$byClass[strtolower($extension->getClass())][] = $extension;
+				$byClass[$this->normalizeClassName($extension->getClass())][] = $extension;
 			}
 
 			$this->dynamicMethodReturnTypeExtensionsByClass = $byClass;
@@ -63,7 +63,7 @@ class DynamicReturnTypeExtensionRegistry
 		if ($this->dynamicStaticMethodReturnTypeExtensionsByClass === null) {
 			$byClass = [];
 			foreach ($this->dynamicStaticMethodReturnTypeExtensions as $extension) {
-				$byClass[strtolower($extension->getClass())][] = $extension;
+				$byClass[$this->normalizeClassName($extension->getClass())][] = $extension;
 			}
 
 			$this->dynamicStaticMethodReturnTypeExtensionsByClass = $byClass;
@@ -83,8 +83,8 @@ class DynamicReturnTypeExtensionRegistry
 
 		$extensionsForClass = [[]];
 		$class = $this->reflectionProvider->getClass($className);
-		foreach (array_merge([$className, 'object'], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames()) as $extensionClassName) {
-			$extensionClassName = strtolower($extensionClassName);
+		foreach (array_merge([$className, $this->normalizeClassName(null)], $class->getParentClassesNames(), $class->getNativeReflection()->getInterfaceNames()) as $extensionClassName) {
+			$extensionClassName = $this->normalizeClassName($extensionClassName);
 			if (!isset($extensions[$extensionClassName])) {
 				continue;
 			}
@@ -101,6 +101,14 @@ class DynamicReturnTypeExtensionRegistry
 	public function getDynamicFunctionReturnTypeExtensions(): array
 	{
 		return $this->dynamicFunctionReturnTypeExtensions;
+	}
+
+	private function normalizeClassName(?string $className): string
+	{
+		if ($className === null) {
+			return '0_any_class'; // such classname cannot ever exist
+		}
+		return strtolower($className);
 	}
 
 }

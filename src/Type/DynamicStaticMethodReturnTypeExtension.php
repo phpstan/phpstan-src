@@ -26,7 +26,7 @@ use PHPStan\Reflection\MethodReflection;
 interface DynamicStaticMethodReturnTypeExtension
 {
 
-	public function getClass(): string;
+	public function getClass(): ?string;
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool;
 

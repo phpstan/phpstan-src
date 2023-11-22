@@ -2,6 +2,8 @@
 
 namespace PHPStan\Rules\Keywords;
 
+use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Node\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -13,7 +15,7 @@ class DeclareStrictTypesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new DeclareStrictTypesRule();
+		return new DeclareStrictTypesRule(new ExprPrinter(new Printer()));
 	}
 
 	public function testRule(): void
@@ -69,7 +71,7 @@ class DeclareStrictTypesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/declare-strict-nonsense.php'], [
 			[
-				'Declare strict_types must have 0 or 1 as its value.',
+				"Declare strict_types must have 0 or 1 as its value, 'foo' given.",
 				1,
 			],
 		]);
@@ -79,7 +81,7 @@ class DeclareStrictTypesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/declare-strict-nonsense-bool.php'], [
 			[
-				'Declare strict_types must have 0 or 1 as its value.',
+				'Declare strict_types must have 0 or 1 as its value, \true given.',
 				1,
 			],
 		]);

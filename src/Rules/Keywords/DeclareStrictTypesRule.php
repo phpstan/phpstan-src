@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Keywords;
 use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\DeclarePositionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,6 +17,12 @@ use function sprintf;
  */
 class DeclareStrictTypesRule implements Rule
 {
+
+	public function __construct(
+		private readonly ExprPrinter $exprPrinter,
+	)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -38,7 +45,10 @@ class DeclareStrictTypesRule implements Rule
 			) {
 				return [
 					RuleErrorBuilder::message(sprintf(
-						'Declare strict_types must have 0 or 1 as its value.',
+						sprintf(
+							'Declare strict_types must have 0 or 1 as its value, %s given.',
+							$this->exprPrinter->printExpr($declare->value),
+						),
 					))->nonIgnorable()->build(),
 				];
 			}

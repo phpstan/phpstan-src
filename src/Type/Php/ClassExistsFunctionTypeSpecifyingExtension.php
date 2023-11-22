@@ -55,20 +55,14 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			);
 		}
 
+		$narrowedType = new ClassStringType();
 		if ($functionReflection->getName() === 'enum_exists') {
-			return $this->typeSpecifier->create(
-				$node->getArgs()[0]->value,
-				new GenericClassStringType(new ObjectType('UnitEnum')),
-				$context,
-				false,
-				$scope,
-			);
+			$narrowedType = new GenericClassStringType(new ObjectType('UnitEnum'));
 		}
 
-		$classStringType = new ClassStringType();
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,
-			$classStringType,
+			$narrowedType,
 			$context,
 			false,
 			$scope,

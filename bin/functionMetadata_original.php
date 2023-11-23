@@ -149,6 +149,16 @@ return [
 	'DateTimeImmutable::getTimestamp' => ['hasSideEffects' => false],
 	'DateTimeImmutable::getTimezone' => ['hasSideEffects' => false],
 
+	'Closure::bind' => ['hasSideEffects' => false],
+	'Closure::bindTo' => ['hasSideEffects' => false],
+
+	'WeakReference::create' => ['hasSideEffects' => false],
+	'WeakReference::get' => ['hasSideEffects' => false],
+	'WeakMap::count' => ['hasSideEffects' => false],
+	'WeakMap::getIterator' => ['hasSideEffects' => false],
+	'WeakMap::offsetExists' => ['hasSideEffects' => false],
+	'WeakMap::offsetGet' => ['hasSideEffects' => false],
+
 	'XmlReader::next' => ['hasSideEffects' => true],
 	'XmlReader::read' => ['hasSideEffects' => true],
 ];

@@ -9631,7 +9631,7 @@ return [
 'Redis::renameNx' => ['__benevolent<Redis|bool>', 'old_name'=>'string', 'new_name'=>'string'],
 'Redis::reset' => ['__benevolent<Redis|bool>'],
 'Redis::resetStat' => ['bool'],
-'Redis::restore' => ['__benevolent<Redis|bool>', 'key'=>'string', 'ttl'=>'int', 'value'=>'string', 'options'=>'?array{ABSTTL?:bool,REPLACE?:bool,IDLETIME?:int,FREQ?:int}'],
+'Redis::restore' => ['__benevolent<Redis|bool>', 'key'=>'string', 'ttl'=>'int', 'value'=>'string', 'options='=>'?array{ABSTTL?:bool,REPLACE?:bool,IDLETIME?:int,FREQ?:int}'],
 'Redis::role' => ['mixed'],
 'Redis::rPop' => ['__benevolent<Redis|array<string, mixed>|string|bool>', 'key'=>'string', 'count='=>'int'],
 'Redis::rpoplpush' => ['__benevolent<Redis|string|false>', 'srckey'=>'string', 'dstkey'=>'string'],

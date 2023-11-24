@@ -309,7 +309,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @return Generator<string, array{errors: list<Error>}>
+	 * @return Generator<string, array{errors: list<Error>, existingBaselineContent: string, expectedNewlinesCount: int}>
 	 */
 	public function endOfFileNewlinesProvider(): Generator
 	{

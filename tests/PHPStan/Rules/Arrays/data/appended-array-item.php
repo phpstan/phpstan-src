@@ -78,3 +78,19 @@ function (Lorem $lorem)
 {
 	$lorem->staticProperty[] = new Baz();
 };
+
+class ArrayShapes
+{
+
+	/** @var array<array{opt?: int, req: int}> */
+	private $arrays = [];
+
+	public function test(): void
+	{
+		$this->arrays[] = ['req' => 1, 'foo' => 1];
+		$this->arrays[] = rand()
+			? ['req' => 1, 'opt' => 1]
+			: ['req' => 1, 'foo' => 1];
+	}
+
+}

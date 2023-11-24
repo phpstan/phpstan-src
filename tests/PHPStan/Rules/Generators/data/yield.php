@@ -146,3 +146,14 @@ function yieldWithoutSendType(){
 	$something = yield 1;
 	var_dump(yield 1);
 }
+
+/**
+ * @return \Generator<array{opt?: int, req: int}>
+ */
+function yieldNamedArrayShape(): \Generator
+{
+	yield ['req' => 1, 'foo' => 1];
+	yield rand()
+		? ['req' => 1, 'opt' => 1]
+		: ['req' => 1, 'foo' => 1];
+}

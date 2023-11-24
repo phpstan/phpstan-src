@@ -45,6 +45,16 @@ class YieldFromTypeRuleTest extends RuleTestCase
 				'Result of yield from (void) is used.',
 				111,
 			],
+			[
+				'Generator expects value type array{opt?: int, req: int}, array{req: 1, foo: 1} given.',
+				119,
+				"Offset 'foo' is not accepted.",
+			],
+			[
+				'Generator expects value type array{opt?: int, req: int}, array{req: 1, foo: 1}|array{req: 1, opt: 1} given.',
+				120,
+				"Offset 'foo' is not accepted.",
+			],
 		]);
 	}
 

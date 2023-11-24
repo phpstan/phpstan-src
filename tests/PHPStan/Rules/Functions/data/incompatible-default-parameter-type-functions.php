@@ -15,3 +15,10 @@ function takesInt($int = 10): void
 function takesString($string = false): void
 {
 }
+
+/**
+ * @param array{opt?: int, req: int} $arr
+ */
+function takesArrayShape($arr = ['req' => 1, 'foo' => 2]): void
+{
+}

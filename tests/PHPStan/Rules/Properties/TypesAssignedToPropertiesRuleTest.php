@@ -295,6 +295,16 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 					'Property AppendedArrayItem\Baz::$staticProperty (array<AppendedArrayItem\Lorem>) does not accept array<AppendedArrayItem\Baz>.',
 					79,
 				],
+				[
+					'Property AppendedArrayItem\ArrayShapes::$arrays (array<array{opt?: int, req: int}>) does not accept non-empty-array<array{opt?: int, req: int}|array{req: 1, foo: 1}>.',
+					90,
+					"Offset 'foo' is not accepted.",
+				],
+				[
+					'Property AppendedArrayItem\ArrayShapes::$arrays (array<array{opt?: int, req: int}>) does not accept non-empty-array<array{req: 1, foo: 1}|array{req: int, opt?: int}>.',
+					91,
+					"Offset 'foo' is not accepted.",
+				],
 			],
 		);
 	}
@@ -564,6 +574,22 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Property WritingToReadOnlyProperties\Foo::$writeOnlyProperty (int) does not accept string.',
 				40,
+			],
+		]);
+	}
+
+	public function testArrayShape(): void
+	{
+		$this->analyse([__DIR__ . '/data/property-assign-array-shape.php'], [
+			[
+				'Property PropertyAssignArrayShape\Foo::$prop (array{opt?: int, req: int}) does not accept array{req: 1, foo: 1}.',
+				13,
+				"Offset 'foo' is not accepted.",
+			],
+			[
+				'Property PropertyAssignArrayShape\Foo::$prop (array{opt?: int, req: int}) does not accept array{req: 1, foo: 1}|array{req: 1, opt: 1}.',
+				14,
+				"Offset 'foo' is not accepted.",
 			],
 		]);
 	}

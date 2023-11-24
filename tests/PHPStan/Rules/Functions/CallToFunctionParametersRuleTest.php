@@ -10,6 +10,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function implode;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -141,6 +142,31 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testCallToArrayMapVariadic(): void
 	{
 		$this->analyse([__DIR__ . '/data/call-to-array-map-unique.php'], []);
+	}
+
+	public function testArrayShape(): void
+	{
+		$this->analyse([__DIR__ . '/data/call-to-function-array-shape.php'], [
+			[
+				'Parameter #1 $a of function CallToFunctionArrayShape\test expects array{opt?: int, req: int}, array{foo: 1, req: 1} given.',
+				9,
+				"Offset 'foo' is not accepted.",
+			],
+			[
+				'Parameter #1 $a of function CallToFunctionArrayShape\test expects array{opt?: int, req: int}, array{foo: 1} given.',
+				10,
+				"Array does not have offset 'req'.",
+			],
+			[
+				'Parameter #1 $a of function CallToFunctionArrayShape\test expects array{opt?: int, req: int}, array{foo: 1}|array{req: 1, foo2: 2} given.',
+				11,
+				implode("\n", [
+					"• Array might not have offset 'req'.",
+					"• Offset 'foo' is not accepted.",
+					"• Offset 'foo2' is not accepted.",
+				]),
+			],
+		]);
 	}
 
 	public function testCallToWeirdFunctions(): void

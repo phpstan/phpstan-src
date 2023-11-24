@@ -359,6 +359,24 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			}
 		}
 
+		foreach ($type->getConstantArrays() as $otherConstantArray) {
+			foreach ($otherConstantArray->keyTypes as $i => $keyType) {
+				if (!$this->hasOffsetValueType($keyType)->no()) {
+					continue;
+				}
+
+				$isOptionalKey = $otherConstantArray->isOptionalKey($i);
+				$result = $result->and(
+					new AcceptsResult(
+						$isOptionalKey
+							? TrinaryLogic::createMaybe()
+							: TrinaryLogic::createNo(),
+						[sprintf('Offset %s is not accepted.', $keyType->describe(VerbosityLevel::value()))],
+					),
+				);
+			}
+		}
+
 		return $result;
 	}
 

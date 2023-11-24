@@ -110,4 +110,17 @@ class Foo
 		yield from $this->yieldWithVoidReturn();
 		$void = yield from $this->yieldWithVoidReturn();
 	}
+
+	/**
+	 * @return \Generator<array{opt?: int, req: int}>
+	 */
+	public function yieldNamedArrayShape(): \Generator
+	{
+		yield from [['req' => 1, 'foo' => 1]];
+		yield from [
+			rand()
+				? ['req' => 1, 'opt' => 1]
+				: ['req' => 1, 'foo' => 1],
+		];
+	}
 }

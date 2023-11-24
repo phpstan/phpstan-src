@@ -58,6 +58,16 @@ class AppendedArrayItemTypeRuleTest extends RuleTestCase
 					'Array (array<AppendedArrayItem\Lorem>) does not accept AppendedArrayItem\Baz.',
 					79,
 				],
+				[
+					'Array (array<array{opt?: int, req: int}>) does not accept array{req: 1, foo: 1}.',
+					90,
+					"Offset 'foo' is not accepted.",
+				],
+				[
+					'Array (array<array{opt?: int, req: int}>) does not accept array{req: 1, foo: 1}|array{req: 1, opt: 1}.',
+					91,
+					"Offset 'foo' is not accepted.",
+				],
 			],
 		);
 	}

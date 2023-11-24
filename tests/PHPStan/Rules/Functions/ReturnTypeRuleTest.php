@@ -6,6 +6,7 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function implode;
 use const PHP_VERSION_ID;
 
 /**
@@ -244,6 +245,32 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				'Function Bug10077\mergeMediaQueries() should return list<Bug10077\CssMediaQuery>|null but returns list<Bug10077\MediaQueryMergeResult>.',
 				56,
+			],
+		]);
+	}
+
+	public function testArrayShape(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkNullables = true;
+		$this->analyse([__DIR__ . '/data/return-type-array-shape.php'], [
+			[
+				'Function ReturnTypeArrayShape\test2() should return array{opt?: int, req: int} but returns array{foo: 1}.',
+				13,
+				"Array does not have offset 'req'.",
+			],
+			[
+				'Function ReturnTypeArrayShape\test2() should return array{opt?: int, req: int} but returns array{req: 1, foo2: 1}|array{req: 1, foo: 1}.',
+				17,
+				implode("\n", [
+					"• Offset 'foo' is not accepted.",
+					"• Offset 'foo2' is not accepted.",
+				]),
+			],
+			[
+				'Function ReturnTypeArrayShape\test2() should return array{opt?: int, req: int} but returns array{req: 1, foo: 1}.',
+				22,
+				"Offset 'foo' is not accepted.",
 			],
 		]);
 	}

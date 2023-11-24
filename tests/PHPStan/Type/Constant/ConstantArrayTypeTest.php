@@ -103,7 +103,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		yield [
 			new ConstantArrayType([new ConstantStringType('foo')], [new StringType()]),
 			new ConstantArrayType([new ConstantStringType('foo'), new ConstantStringType('bar')], [new StringType(), new StringType()]),
-			TrinaryLogic::createYes(),
+			TrinaryLogic::createNo(),
 		];
 
 		yield [
@@ -142,7 +142,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new StringType(),
 				new IntegerType(),
 			]),
-			TrinaryLogic::createYes(),
+			TrinaryLogic::createNo(),
 		];
 
 		yield [
@@ -307,7 +307,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			], [
 				new ConstantStringType('test'),
 			]),
-			TrinaryLogic::createYes(),
+			TrinaryLogic::createNo(),
 		];
 
 		yield [

@@ -24,6 +24,11 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 				'Default value of the parameter #1 $string (false) of function IncompatibleDefaultParameter\takesString() is incompatible with type string.',
 				15,
 			],
+			[
+				'Default value of the parameter #1 $arr (array{req: 1, foo: 2}) of function IncompatibleDefaultParameter\takesArrayShape() is incompatible with type array{opt?: int, req: int}.',
+				22,
+				"Offset 'foo' is not accepted.",
+			],
 		]);
 	}
 

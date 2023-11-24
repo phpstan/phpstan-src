@@ -6,8 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\NullType;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -32,8 +30,7 @@ class NullableInstanceOfRule implements Rule
 	{
 		if (!$node->class instanceof Node\Name) {
 			$classType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->class) : $scope->getNativeType($node->class);
-			$nullType = new NullType();
-			if (!$nullType->isSuperTypeOf($classType)->no()) {
+			if (!$classType->isNull()->no()) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Classname in instanceof cannot be null, %s given.',

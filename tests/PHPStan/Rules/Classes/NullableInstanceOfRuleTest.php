@@ -6,7 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<NullableInstanceOfRuleTest>
+ * @extends RuleTestCase<NullableInstanceOfRule>
  */
 class NullableInstanceOfRuleTest extends RuleTestCase
 {

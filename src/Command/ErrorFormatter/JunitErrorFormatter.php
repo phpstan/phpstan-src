@@ -27,7 +27,7 @@ class JunitErrorFormatter implements ErrorFormatter
 
 		$result = '<?xml version="1.0" encoding="UTF-8"?>';
 		$result .= sprintf(
-			'<testsuite failures="%d" name="phpstan" tests="%d" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">',
+			'<testsuite failures="%d" name="phpstan" tests="%d">',
 			$totalFailuresCount,
 			$totalTestsCount,
 		);
@@ -38,6 +38,8 @@ class JunitErrorFormatter implements ErrorFormatter
 				sprintf('%s:%s', $fileName, (string) $fileSpecificError->getLine()),
 				'ERROR',
 				$this->escape($fileSpecificError->getMessage()),
+				$fileName,
+				$fileSpecificError->getLine(),
 			);
 		}
 
@@ -65,9 +67,16 @@ class JunitErrorFormatter implements ErrorFormatter
 	 *
 	 *
 	 */
-	private function createTestCase(string $reference, string $type, ?string $message = null): string
+	private function createTestCase(string $reference, string $type, ?string $message = null, ?string $fileName = null, ?int $lineNumber = null): string
 	{
-		$result = sprintf('<testcase name="%s">', $this->escape($reference));
+		$result = sprintf('<testcase name="%s"', $this->escape($reference));
+		if ($fileName !== null) {
+			$result .= sprintf(' file="%s"', $this->escape($fileName));
+		}
+		if ($lineNumber !== null) {
+			$result .= sprintf(' line="%s"', (string) $lineNumber);
+		}
+		$result .= '>';
 
 		if ($message !== null) {
 			$result .= sprintf('<failure type="%s" message="%s" />', $this->escape($type), $this->escape($message));

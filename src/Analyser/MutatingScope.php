@@ -729,8 +729,8 @@ class MutatingScope implements Scope
 
 		if ($node instanceof Expr\Empty_) {
 			$result = $this->issetCheck($node->expr, static function (Type $type): ?bool {
-				$isNull = (new NullType())->isSuperTypeOf($type);
-				$isFalsey = (new ConstantBooleanType(false))->isSuperTypeOf($type->toBoolean());
+				$isNull = $type->isNull();
+				$isFalsey = $type->toBoolean()->isFalse();
 				if ($isNull->maybe()) {
 					return null;
 				}
@@ -1519,7 +1519,7 @@ class MutatingScope implements Scope
 			$issetResult = true;
 			foreach ($node->vars as $var) {
 				$result = $this->issetCheck($var, static function (Type $type): ?bool {
-					$isNull = (new NullType())->isSuperTypeOf($type);
+					$isNull = $type->isNull();
 					if ($isNull->maybe()) {
 						return null;
 					}
@@ -1552,7 +1552,7 @@ class MutatingScope implements Scope
 			$leftType = $this->getType($node->left);
 
 			$result = $this->issetCheck($node->left, static function (Type $type): ?bool {
-				$isNull = (new NullType())->isSuperTypeOf($type);
+				$isNull = $type->isNull();
 				if ($isNull->maybe()) {
 					return null;
 				}

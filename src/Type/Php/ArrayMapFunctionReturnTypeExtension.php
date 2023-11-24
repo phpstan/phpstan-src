@@ -15,7 +15,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -38,7 +37,7 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		$singleArrayArgument = !isset($functionCall->getArgs()[2]);
 		$callableType = $scope->getType($functionCall->getArgs()[0]->value);
-		$callableIsNull = (new NullType())->isSuperTypeOf($callableType)->yes();
+		$callableIsNull = $callableType->isNull()->yes();
 
 		if ($callableType->isCallable()->yes()) {
 			$valueType = new NeverType();

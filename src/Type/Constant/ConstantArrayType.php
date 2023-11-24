@@ -309,19 +309,18 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$result = AcceptsResult::createYes();
 		foreach ($this->keyTypes as $i => $keyType) {
 			$valueType = $this->valueTypes[$i];
-			$hasOffsetValueType = $type->hasOffsetValueType($keyType);
-			$hasOffset = new AcceptsResult(
-				$hasOffsetValueType,
-				$hasOffsetValueType->yes() || !$type->isConstantArray()->yes() ? [] : [sprintf('Array %s have offset %s.', $hasOffsetValueType->no() ? 'does not' : 'might not', $keyType->describe(VerbosityLevel::value()))],
-			);
-			if ($hasOffset->no()) {
-				if ($this->isOptionalKey($i)) {
-					continue;
-				}
-				return $hasOffset;
-			}
-			if ($hasOffset->maybe() && $this->isOptionalKey($i)) {
+			if ($this->isOptionalKey($i)) {
 				$hasOffset = AcceptsResult::createYes();
+			} else {
+				$hasOffsetValueType = $type->hasOffsetValueType($keyType);
+				$hasOffset = new AcceptsResult(
+					$hasOffsetValueType,
+					$hasOffsetValueType->yes() || !$type->isConstantArray()->yes() ? [] : [sprintf('Array %s have offset %s.', $hasOffsetValueType->no() ? 'does not' : 'might not', $keyType->describe(VerbosityLevel::value()))],
+				);
+			}
+
+			if ($hasOffset->no()) {
+				return $hasOffset;
 			}
 
 			$result = $result->and($hasOffset);

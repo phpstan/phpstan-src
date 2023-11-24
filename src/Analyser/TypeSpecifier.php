@@ -608,8 +608,7 @@ class TypeSpecifier
 
 				if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
 					$type = $scope->getType($issetExpr);
-					$nullType = new NullType();
-					$isNullable = !$nullType->isSuperTypeOf($type)->no();
+					$isNullable = !$type->isNull()->no();
 
 					$exprType = $this->create(
 						$issetExpr,

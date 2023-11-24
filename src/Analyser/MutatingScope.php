@@ -1504,7 +1504,7 @@ class MutatingScope implements Scope
 
 				$filteringExprType = $matchScope->getType($filteringExpr);
 
-				if (!(new ConstantBooleanType(false))->isSuperTypeOf($filteringExprType)->yes()) {
+				if (!$filteringExprType->isFalse()->yes()) {
 					$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
 					$types[] = $truthyScope->getType($arm->body);
 				}
@@ -2433,7 +2433,7 @@ class MutatingScope implements Scope
 			new Arg(new String_(ltrim($className, '\\'))),
 		]);
 
-		return (new ConstantBooleanType(true))->isSuperTypeOf($this->getType($expr))->yes();
+		return $this->getType($expr)->isTrue()->yes();
 	}
 
 	/** @api */
@@ -2443,7 +2443,7 @@ class MutatingScope implements Scope
 			new Arg(new String_(ltrim($functionName, '\\'))),
 		]);
 
-		return (new ConstantBooleanType(true))->isSuperTypeOf($this->getType($expr))->yes();
+		return $this->getType($expr)->isTrue()->yes();
 	}
 
 	/** @api */
@@ -2993,7 +2993,7 @@ class MutatingScope implements Scope
 			&& $expr->name->toLowerString() === 'function_exists'
 			&& isset($expr->getArgs()[0])
 			&& count($this->getType($expr->getArgs()[0]->value)->getConstantStrings()) === 1
-			&& (new ConstantBooleanType(true))->isSuperTypeOf($type)->yes();
+			&& $type->isTrue()->yes();
 	}
 
 	/**

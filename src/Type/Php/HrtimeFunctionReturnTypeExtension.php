@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
@@ -35,8 +34,8 @@ class HrtimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
-		$isTrueType = (new ConstantBooleanType(true))->isSuperTypeOf($argType);
-		$isFalseType = (new ConstantBooleanType(false))->isSuperTypeOf($argType);
+		$isTrueType = $argType->isTrue();
+		$isFalseType = $argType->isFalse();
 		$compareTypes = $isTrueType->compareTo($isFalseType);
 		if ($compareTypes === $isTrueType) {
 			return $numberType;

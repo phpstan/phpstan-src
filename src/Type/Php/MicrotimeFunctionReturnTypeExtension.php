@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BenevolentUnionType;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\MixedType;
@@ -30,8 +29,8 @@ class MicrotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
-		$isTrueType = (new ConstantBooleanType(true))->isSuperTypeOf($argType);
-		$isFalseType = (new ConstantBooleanType(false))->isSuperTypeOf($argType);
+		$isTrueType = $argType->isTrue();
+		$isFalseType = $argType->isFalse();
 		$compareTypes = $isTrueType->compareTo($isFalseType);
 		if ($compareTypes === $isTrueType) {
 			return new FloatType();

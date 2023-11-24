@@ -27,10 +27,10 @@ class EmptyRule implements Rule
 	{
 		$error = $this->issetCheck->check($node->expr, $scope, 'in empty()', static function (Type $type): ?string {
 			$isNull = $type->isNull();
-			$isFalsey = $type->toBoolean()->isFalse();
 			if ($isNull->maybe()) {
 				return null;
 			}
+			$isFalsey = $type->toBoolean()->isFalse();
 			if ($isFalsey->maybe()) {
 				return null;
 			}

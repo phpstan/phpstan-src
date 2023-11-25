@@ -16,6 +16,8 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\ObjectType;
 use function in_array;
 use function ltrim;
 
@@ -41,7 +43,6 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		$argType = $scope->getType($node->getArgs()[0]->value);
-		$classStringType = new ClassStringType();
 		if ($argType instanceof ConstantStringType) {
 			return $this->typeSpecifier->create(
 				new FuncCall(new FullyQualified('class_exists'), [
@@ -54,9 +55,14 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			);
 		}
 
+		$narrowedType = new ClassStringType();
+		if ($functionReflection->getName() === 'enum_exists') {
+			$narrowedType = new GenericClassStringType(new ObjectType('UnitEnum'));
+		}
+
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,
-			$classStringType,
+			$narrowedType,
 			$context,
 			false,
 			$scope,

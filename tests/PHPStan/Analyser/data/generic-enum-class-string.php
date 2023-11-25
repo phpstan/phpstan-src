@@ -8,7 +8,7 @@ function testEnumExists(string $str)
 {
 	assertType('string', $str);
 	if (enum_exists($str)) {
-		assertType('class-string', $str);
+		assertType('class-string<UnitEnum>', $str);
 	}
 }
 

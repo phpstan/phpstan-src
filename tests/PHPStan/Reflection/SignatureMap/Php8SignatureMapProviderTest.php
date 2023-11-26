@@ -19,6 +19,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
@@ -94,9 +95,9 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						new ConstantStringType('error_count'),
 						new ConstantStringType('errors'),
 					], [
-						new IntegerType(),
+						IntegerRangeType::fromInterval(0, null),
 						new ArrayType(new IntegerType(), new StringType()),
-						new IntegerType(),
+						IntegerRangeType::fromInterval(0, null),
 						new ArrayType(new IntegerType(), new StringType()),
 					]),
 				]),

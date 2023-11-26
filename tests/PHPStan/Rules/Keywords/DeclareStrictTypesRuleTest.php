@@ -67,6 +67,12 @@ class DeclareStrictTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/declare-multi.php'], []);
 	}
 
+	public function testShebang(): void
+	{
+		$this->analyse([__DIR__ . '/data/declare-shebang.php'], []);
+		$this->analyse([__DIR__ . '/data/declare-shebang2.php'], []);
+	}
+
 	public function testNonsense(): void
 	{
 		$this->analyse([__DIR__ . '/data/declare-strict-nonsense.php'], [

@@ -281,7 +281,7 @@ class IssetRuleTest extends RuleTestCase
 				116,
 			],
 			[
-				'Variable $variableInSecondCase in isset() always exists and is always null.',
+				'Variable $variableInSecondCase in isset() is never defined.',
 				117,
 			],
 			[

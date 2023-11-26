@@ -12,9 +12,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function in_array;
@@ -57,8 +55,8 @@ class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFunction
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		$isString = $argType->isString();
-		$isNull = (new NullType())->isSuperTypeOf($argType);
-		$isInteger = (new IntegerType())->isSuperTypeOf($argType);
+		$isNull = $argType->isNull();
+		$isInteger = $argType->isInteger();
 
 		if ($isString->no() && $isNull->no() && $isInteger->no()) {
 			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {

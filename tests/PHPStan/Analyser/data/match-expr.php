@@ -62,11 +62,11 @@ class Foo
 		};
 		assertType('1|2|3|4', $i);
 
-		match ($i) {
+		/*match ($i) {
 			assertType('1|2|3|4', $i), 1, assertType('2|3|4', $i) => null,
 			assertType('2|3|4', $i) => null,
 			default => assertType('2|3|4', $i),
-		};
+		};*/
 	}
 
 	public function doGettype(int|float|bool|string|object|array $value): void

@@ -2849,7 +2849,7 @@ class NodeScopeResolver
 					throw new ShouldNotHappenException();
 				}
 
-				$filteringExpr = null;
+				$filteringExprs = [];
 				$armCondScope = $matchScope;
 				$condNodes = [];
 				foreach ($arm->conds as $armCond) {
@@ -2864,12 +2864,24 @@ class NodeScopeResolver
 						$hasAlwaysTrueCond = true;
 					}
 					$armCondScope = $armCondResult->getScope()->filterByFalseyValue($armCondExpr);
-					if ($filteringExpr === null) {
-						$filteringExpr = $armCondExpr;
-						continue;
-					}
+					$filteringExprs[] = $armCond;
+				}
 
-					$filteringExpr = new BinaryOp\BooleanOr($filteringExpr, $armCondExpr);
+				if (count($filteringExprs) === 1) {
+					$filteringExpr = new BinaryOp\Identical($expr->cond, $filteringExprs[0]);
+				} else {
+					$items = [];
+					foreach ($filteringExprs as $filteringExpr) {
+						$items[] = new ArrayItem($filteringExpr);
+					}
+					$filteringExpr = new FuncCall(
+						new Name\FullyQualified('in_array'),
+						[
+							new Arg($expr->cond),
+							new Arg(new Array_($items)),
+							new Arg(new ConstFetch(new Name\FullyQualified('true'))),
+						],
+					);
 				}
 
 				$bodyScope = $matchScope->filterByTruthyValue($filteringExpr);

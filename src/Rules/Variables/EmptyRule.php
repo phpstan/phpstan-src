@@ -6,8 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
 /**
@@ -28,11 +26,11 @@ class EmptyRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$error = $this->issetCheck->check($node->expr, $scope, 'in empty()', 'empty', static function (Type $type): ?string {
-			$isNull = (new NullType())->isSuperTypeOf($type);
-			$isFalsey = (new ConstantBooleanType(false))->isSuperTypeOf($type->toBoolean());
+			$isNull = $type->isNull();
 			if ($isNull->maybe()) {
 				return null;
 			}
+			$isFalsey = $type->toBoolean()->isFalse();
 			if ($isFalsey->maybe()) {
 				return null;
 			}

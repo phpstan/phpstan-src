@@ -729,8 +729,8 @@ class MutatingScope implements Scope
 
 		if ($node instanceof Expr\Empty_) {
 			$result = $this->issetCheck($node->expr, static function (Type $type): ?bool {
-				$isNull = (new NullType())->isSuperTypeOf($type);
-				$isFalsey = (new ConstantBooleanType(false))->isSuperTypeOf($type->toBoolean());
+				$isNull = $type->isNull();
+				$isFalsey = $type->toBoolean()->isFalse();
 				if ($isNull->maybe()) {
 					return null;
 				}
@@ -1490,21 +1490,26 @@ class MutatingScope implements Scope
 					throw new ShouldNotHappenException();
 				}
 
-				$filteringExpr = null;
-				foreach ($arm->conds as $armCond) {
-					$armCondExpr = new BinaryOp\Identical($cond, $armCond);
-
-					if ($filteringExpr === null) {
-						$filteringExpr = $armCondExpr;
-						continue;
+				if (count($arm->conds) === 1) {
+					$filteringExpr = new BinaryOp\Identical($cond, $arm->conds[0]);
+				} else {
+					$items = [];
+					foreach ($arm->conds as $filteringExpr) {
+						$items[] = new Expr\ArrayItem($filteringExpr);
 					}
-
-					$filteringExpr = new BinaryOp\BooleanOr($filteringExpr, $armCondExpr);
+					$filteringExpr = new FuncCall(
+						new Name\FullyQualified('in_array'),
+						[
+							new Arg($cond),
+							new Arg(new Array_($items)),
+							new Arg(new ConstFetch(new Name\FullyQualified('true'))),
+						],
+					);
 				}
 
 				$filteringExprType = $matchScope->getType($filteringExpr);
 
-				if (!(new ConstantBooleanType(false))->isSuperTypeOf($filteringExprType)->yes()) {
+				if (!$filteringExprType->isFalse()->yes()) {
 					$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
 					$types[] = $truthyScope->getType($arm->body);
 				}
@@ -1519,7 +1524,7 @@ class MutatingScope implements Scope
 			$issetResult = true;
 			foreach ($node->vars as $var) {
 				$result = $this->issetCheck($var, static function (Type $type): ?bool {
-					$isNull = (new NullType())->isSuperTypeOf($type);
+					$isNull = $type->isNull();
 					if ($isNull->maybe()) {
 						return null;
 					}
@@ -1552,7 +1557,7 @@ class MutatingScope implements Scope
 			$leftType = $this->getType($node->left);
 
 			$result = $this->issetCheck($node->left, static function (Type $type): ?bool {
-				$isNull = (new NullType())->isSuperTypeOf($type);
+				$isNull = $type->isNull();
 				if ($isNull->maybe()) {
 					return null;
 				}
@@ -2433,7 +2438,7 @@ class MutatingScope implements Scope
 			new Arg(new String_(ltrim($className, '\\'))),
 		]);
 
-		return (new ConstantBooleanType(true))->isSuperTypeOf($this->getType($expr))->yes();
+		return $this->getType($expr)->isTrue()->yes();
 	}
 
 	/** @api */
@@ -2443,7 +2448,7 @@ class MutatingScope implements Scope
 			new Arg(new String_(ltrim($functionName, '\\'))),
 		]);
 
-		return (new ConstantBooleanType(true))->isSuperTypeOf($this->getType($expr))->yes();
+		return $this->getType($expr)->isTrue()->yes();
 	}
 
 	/** @api */
@@ -2993,7 +2998,7 @@ class MutatingScope implements Scope
 			&& $expr->name->toLowerString() === 'function_exists'
 			&& isset($expr->getArgs()[0])
 			&& count($this->getType($expr->getArgs()[0]->value)->getConstantStrings()) === 1
-			&& (new ConstantBooleanType(true))->isSuperTypeOf($type)->yes();
+			&& $type->isTrue()->yes();
 	}
 
 	/**

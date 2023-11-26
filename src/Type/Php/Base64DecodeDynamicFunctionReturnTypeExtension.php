@@ -37,8 +37,8 @@ class Base64DecodeDynamicFunctionReturnTypeExtension implements DynamicFunctionR
 			return new BenevolentUnionType([new StringType(), new ConstantBooleanType(false)]);
 		}
 
-		$isTrueType = (new ConstantBooleanType(true))->isSuperTypeOf($argType);
-		$isFalseType = (new ConstantBooleanType(false))->isSuperTypeOf($argType);
+		$isTrueType = $argType->isTrue();
+		$isFalseType = $argType->isFalse();
 		$compareTypes = $isTrueType->compareTo($isFalseType);
 		if ($compareTypes === $isTrueType) {
 			return new UnionType([new StringType(), new ConstantBooleanType(false)]);

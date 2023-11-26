@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function is_string;
@@ -48,13 +49,16 @@ class IssetCheck
 						return null;
 					}
 
-					return $this->generateError(
-						$this->treatPhpDocTypesAsCertain ? $scope->getType($expr) : $scope->getNativeType($expr),
-						sprintf('Variable $%s %s always exists and', $expr->name, $operatorDescription),
-						$typeMessageCallback,
-						$identifier,
-						'variable',
-					);
+					$type = $this->treatPhpDocTypesAsCertain ? $scope->getType($expr) : $scope->getNativeType($expr);
+					if (!$type instanceof NeverType) {
+						return $this->generateError(
+							$type,
+							sprintf('Variable $%s %s always exists and', $expr->name, $operatorDescription),
+							$typeMessageCallback,
+							$identifier,
+							'variable',
+						);
+					}
 				}
 
 				return RuleErrorBuilder::message(sprintf('Variable $%s %s is never defined.', $expr->name, $operatorDescription))

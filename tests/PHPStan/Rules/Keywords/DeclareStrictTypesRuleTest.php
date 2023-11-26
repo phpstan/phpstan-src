@@ -67,6 +67,23 @@ class DeclareStrictTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/declare-multi.php'], []);
 	}
 
+	public function testShebang(): void
+	{
+		$this->analyse([__DIR__ . '/data/declare-shebang.php'], []);
+		$this->analyse([__DIR__ . '/data/declare-shebang2.php'], []);
+		$this->analyse([__DIR__ . '/data/declare-shebang3.php'], []);
+	}
+
+	public function testHtmlBeforeDecalre(): void
+	{
+		$this->analyse([__DIR__ . '/data/declare-inline-html.php'], [
+			[
+				'Declare strict_types must be the very first statement.',
+				2,
+			],
+		]);
+	}
+
 	public function testNonsense(): void
 	{
 		$this->analyse([__DIR__ . '/data/declare-strict-nonsense.php'], [

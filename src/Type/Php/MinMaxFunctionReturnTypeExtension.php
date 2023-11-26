@@ -19,15 +19,10 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
+use function in_array;
 
 class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
-
-	/** @var string[] */
-	private array $functionNames = [
-		'min' => '',
-		'max' => '',
-	];
 
 	public function __construct(
 		private PhpVersion $phpVersion,
@@ -37,7 +32,7 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return isset($this->functionNames[$functionReflection->getName()]);
+		return in_array($functionReflection->getName(), ['min', 'max'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type

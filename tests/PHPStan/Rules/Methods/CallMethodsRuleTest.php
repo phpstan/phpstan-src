@@ -105,70 +105,6 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				66,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				68,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				70,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				72,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				75,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				76,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				77,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				78,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				79,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				81,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				83,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				84,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				85,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				86,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				90,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				91,
-			],
-			[
 				'Call to an undefined method ArrayObject<int, stdClass>::doFoo().',
 				108,
 			],
@@ -203,10 +139,6 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Method DateTimeZone::getTransitions() invoked with 3 parameters, 0-2 required.',
 				214,
-			],
-			[
-				'Result of method Test\ReturningSomethingFromConstructor::__construct() (void) is used.',
-				234,
 			],
 			[
 				'Cannot call method foo() on int|string.',
@@ -589,70 +521,6 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Method Test\Foo::test() invoked with 0 parameters, 1 required.',
 				46,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				66,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				68,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				70,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				72,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				75,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				76,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				77,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				78,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				79,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				81,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				83,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				84,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				85,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				86,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				90,
-			],
-			[
-				'Result of method Test\Bar::returnsVoid() (void) is used.',
-				91,
 			],
 			[
 				'Parameter #1 $bar of method Test\ClassWithNullableProperty::doBar() is passed by reference, so it expects variables only.',
@@ -1459,10 +1327,6 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Method Closure::call() invoked with 3 parameters, 2 required.',
 				14,
 			],
-			[
-				'Result of method Closure::call() (void) is used.',
-				18,
-			],
 		]);
 	}
 
@@ -1740,16 +1604,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/match-expr-void-used.php'], [
-			[
-				'Result of method MatchExprVoidUsed\Foo::doLorem() (void) is used.',
-				10,
-			],
-			[
-				'Result of method MatchExprVoidUsed\Foo::doBar() (void) is used.',
-				11,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/match-expr-void-used.php'], []);
 	}
 
 	public function testNullSafe(): void

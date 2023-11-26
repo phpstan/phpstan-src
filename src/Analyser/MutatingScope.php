@@ -1946,7 +1946,7 @@ class MutatingScope implements Scope
 				}
 			}
 
-			return $parametersAcceptor->getReturnType();
+			return $this->transformVoidToNull($parametersAcceptor->getReturnType());
 		}
 
 		return new MixedType();
@@ -1984,6 +1984,21 @@ class MutatingScope implements Scope
 		}
 
 		return $type;
+	}
+
+	private function transformVoidToNull(Type $type): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof UnionType || $type instanceof IntersectionType) {
+				return $traverse($type);
+			}
+
+			if ($type->isVoid()->yes()) {
+				return new NullType();
+			}
+
+			return $type;
+		});
 	}
 
 	/**
@@ -5103,7 +5118,7 @@ class MutatingScope implements Scope
 			$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 		}
 		if ($normalizedMethodCall === null) {
-			return $parametersAcceptor->getReturnType();
+			return $this->transformVoidToNull($parametersAcceptor->getReturnType());
 		}
 
 		$resolvedTypes = [];
@@ -5142,10 +5157,10 @@ class MutatingScope implements Scope
 		}
 
 		if (count($resolvedTypes) > 0) {
-			return TypeCombinator::union(...$resolvedTypes);
+			return $this->transformVoidToNull(TypeCombinator::union(...$resolvedTypes));
 		}
 
-		return $parametersAcceptor->getReturnType();
+		return $this->transformVoidToNull($parametersAcceptor->getReturnType());
 	}
 
 	/** @api */

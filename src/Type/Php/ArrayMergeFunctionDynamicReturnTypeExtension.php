@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -30,12 +29,12 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 		return $functionReflection->getName() === 'array_merge';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		$args = $functionCall->getArgs();
 
 		if (!isset($args[0])) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$argTypes = [];

@@ -8,7 +8,6 @@ use PhpParser\Node\Expr\Ternary;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
@@ -35,10 +34,10 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		return in_array($functionReflection->getName(), ['min', 'max'], true);
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		if (!isset($functionCall->getArgs()[0])) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		if (count($functionCall->getArgs()) === 1) {

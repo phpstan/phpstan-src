@@ -21,15 +21,15 @@ class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		return $functionReflection->getName() === 'array_reduce';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		if (!isset($functionCall->getArgs()[1])) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$callbackType = $scope->getType($functionCall->getArgs()[1]->value);
 		if ($callbackType->isCallable()->no()) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$callbackReturnType = ParametersAcceptorSelector::selectFromArgs(

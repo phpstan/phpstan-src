@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -25,11 +24,11 @@ class ArrayRandFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 		return $functionReflection->getName() === 'array_rand';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		$argsCount = count($functionCall->getArgs());
 		if ($argsCount < 1) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);

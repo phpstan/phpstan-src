@@ -9,7 +9,6 @@ use PhpParser\Node\Scalar\LNumber;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -25,10 +24,10 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		return $functionReflection->getName() === 'array_sum';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		if (!isset($functionCall->getArgs()[0])) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);

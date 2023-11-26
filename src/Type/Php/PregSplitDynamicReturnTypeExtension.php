@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
@@ -35,7 +34,7 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return strtolower($functionReflection->getName()) === 'preg_split';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		$flagsArg = $functionCall->getArgs()[3] ?? null;
 
@@ -47,7 +46,7 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			return TypeCombinator::union(AccessoryArrayListType::intersectWith($type), new ConstantBooleanType(false));
 		}
 
-		return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		return null;
 	}
 
 }

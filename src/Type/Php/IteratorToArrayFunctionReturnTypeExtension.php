@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -21,12 +20,12 @@ final class IteratorToArrayFunctionReturnTypeExtension implements DynamicFunctio
 		return strtolower($functionReflection->getName()) === 'iterator_to_array';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		$arguments = $functionCall->getArgs();
 
 		if ($arguments === []) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$traversableType = $scope->getType($arguments[0]->value);

@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -39,11 +38,11 @@ class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionRetur
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) === 0) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$argType = $scope->getType($args[0]->value);

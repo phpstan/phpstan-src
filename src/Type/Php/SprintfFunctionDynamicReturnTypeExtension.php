@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -42,7 +41,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) === 0) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$formatType = $scope->getType($args[0]->value);

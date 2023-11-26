@@ -70,6 +70,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Keywords/data/declare-position-nested.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/declare-strict-nonsense.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/declare-strict-nonsense-bool.php \
+		--exclude tests/PHPStan/Rules/Keywords/data/declare-inline-html.php \
 		src tests
 
 cs:

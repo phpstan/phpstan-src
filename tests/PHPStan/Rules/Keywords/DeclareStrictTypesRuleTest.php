@@ -71,6 +71,7 @@ class DeclareStrictTypesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/declare-shebang.php'], []);
 		$this->analyse([__DIR__ . '/data/declare-shebang2.php'], []);
+		$this->analyse([__DIR__ . '/data/declare-shebang3.php'], []);
 	}
 
 	public function testNonsense(): void

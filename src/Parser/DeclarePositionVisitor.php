@@ -21,10 +21,11 @@ class DeclarePositionVisitor extends NodeVisitorAbstract
 
 	public function enterNode(Node $node): ?Node
 	{
+		// ignore shebang
 		if (
 			$this->isFirstStatement
 			&& $node instanceof Node\Stmt\InlineHTML
-			&& str_starts_with($node->value, '#!/usr/bin/')
+			&& str_starts_with($node->value, '#!')
 		) {
 			return null;
 		}

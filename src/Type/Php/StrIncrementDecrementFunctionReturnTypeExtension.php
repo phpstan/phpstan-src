@@ -5,20 +5,19 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
-use ValueError;
+use PHPStan\Type\TypeCombinator;
 use function chr;
 use function count;
-use function function_exists;
 use function implode;
 use function in_array;
 use function is_float;
 use function is_int;
 use function is_numeric;
+use function is_string;
 use function ord;
 use function preg_match;
 use function str_split;
@@ -36,40 +35,48 @@ class StrIncrementDecrementFunctionReturnTypeExtension implements DynamicFunctio
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		$fnName = $functionReflection->getName();
 		$args = $functionCall->getArgs();
 
 		if (count($args) !== 1) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$argType = $scope->getType($args[0]->value);
 		if (count($argType->getConstantScalarValues()) === 0) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
-		$value = $argType->getConstantScalarValues()[0];
-		if (!(is_string($value) || is_int($value) || is_float($value))) {
-			return new ErrorType();
-		}
-		$string = (string) $value;
+		$types = [];
+		foreach ($argType->getConstantScalarValues() as $value) {
+			if (!(is_string($value) || is_int($value) || is_float($value))) {
+				continue;
+			}
+			$string = (string) $value;
 
-		if (preg_match('/\A(?:0|[1-9A-Za-z][0-9A-Za-z]*)+\z/', $string) < 1) {
-			return new ErrorType();
+			if (preg_match('/\A(?:0|[1-9A-Za-z][0-9A-Za-z]*)+\z/', $string) < 1) {
+				continue;
+			}
+
+			$result = null;
+			if ($fnName === 'str_increment') {
+				$result = $this->increment($string);
+			} elseif ($fnName === 'str_decrement') {
+				$result = $this->decrement($string);
+			}
+
+			if ($result === null) {
+				continue;
+			}
+
+			$types[] = new ConstantStringType($result);
 		}
 
-		$value = null;
-		if ($fnName === 'str_increment') {
-			$value = $this->increment($string);
-		} elseif ($fnName === 'str_decrement') {
-			$value = $this->decrement($string);
-		}
-
-		return $value === null
+		return count($types) === 0
 			? new ErrorType()
-			: new ConstantStringType($value);
+			: TypeCombinator::union(...$types);
 	}
 
 	private function increment(string $s): string

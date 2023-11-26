@@ -237,6 +237,15 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 			$signatureMap = $this->computeSignatureMap($signatureMap, $php82MapDelta);
 		}
 
+		if ($this->phpVersion->getVersionId() >= 80300) {
+			$php83MapDelta = require __DIR__ . '/../../../resources/functionMap_php83delta.php';
+			if (!is_array($php83MapDelta)) {
+				throw new ShouldNotHappenException('Signature map could not be loaded.');
+			}
+
+			$signatureMap = $this->computeSignatureMap($signatureMap, $php83MapDelta);
+		}
+
 		return self::$signatureMaps[$cacheKey] = $signatureMap;
 	}
 

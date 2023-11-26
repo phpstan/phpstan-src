@@ -10,7 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 
 /** @implements Rule<InClassMethodNode> */
-class MethodVisibitiliyInInterfaceRule implements Rule
+class MethodVisibilityInInterfaceRule implements Rule
 {
 
 	public function getNodeType(): string

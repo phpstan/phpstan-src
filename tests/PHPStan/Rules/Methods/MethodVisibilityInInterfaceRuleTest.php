@@ -5,13 +5,13 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
-/** @extends RuleTestCase<MethodVisibitiliyInInterfaceRule> */
-class MethodVisibitiliyInInterfaceRuleTest extends RuleTestCase
+/** @extends RuleTestCase<MethodVisibilityInInterfaceRule> */
+class MethodVisibilityInInterfaceRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new MethodVisibitiliyInInterfaceRule();
+		return new MethodVisibilityInInterfaceRule();
 	}
 
 	public function testRule(): void

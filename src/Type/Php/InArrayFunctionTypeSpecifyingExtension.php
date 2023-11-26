@@ -37,15 +37,15 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		$isStrictComparison = false;
 		$argsCount = count($node->getArgs());
+		if ($argsCount < 2) {
+			return new SpecifiedTypes();
+		}
+
+		$isStrictComparison = false;
 		if ($argsCount >= 3) {
 			$strictNodeType = $scope->getType($node->getArgs()[2]->value);
 			$isStrictComparison = $strictNodeType->isTrue()->yes();
-		}
-
-		if ($argsCount < 2) {
-			return new SpecifiedTypes();
 		}
 
 		$needleExpr = $node->getArgs()[0]->value;

@@ -8,6 +8,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -47,7 +48,8 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			return new SpecifiedTypes();
 		}
 
-		$needleType = $scope->getType($node->getArgs()[0]->value);
+		$needleExpr = $node->getArgs()[0]->value;
+		$needleType = $scope->getType($needleExpr);
 		$arrayType = $scope->getType($node->getArgs()[1]->value);
 		$arrayValueType = $arrayType->getIterableValueType();
 		$isStrictComparison = $isStrictComparison
@@ -71,12 +73,21 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			)
 		) {
 			$specifiedTypes = $this->typeSpecifier->create(
-				$node->getArgs()[0]->value,
+				$needleExpr,
 				$arrayValueType,
 				$context,
 				false,
 				$scope,
 			);
+			if ($needleExpr instanceof AlwaysRememberedExpr) {
+				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+					$needleExpr->getExpr(),
+					$arrayValueType,
+					$context,
+					false,
+					$scope,
+				));
+			}
 		}
 
 		if (

@@ -1490,16 +1490,21 @@ class MutatingScope implements Scope
 					throw new ShouldNotHappenException();
 				}
 
-				$filteringExpr = null;
-				foreach ($arm->conds as $armCond) {
-					$armCondExpr = new BinaryOp\Identical($cond, $armCond);
-
-					if ($filteringExpr === null) {
-						$filteringExpr = $armCondExpr;
-						continue;
+				if (count($arm->conds) === 1) {
+					$filteringExpr = new BinaryOp\Identical($cond, $arm->conds[0]);
+				} else {
+					$items = [];
+					foreach ($arm->conds as $filteringExpr) {
+						$items[] = new Expr\ArrayItem($filteringExpr);
 					}
-
-					$filteringExpr = new BinaryOp\BooleanOr($filteringExpr, $armCondExpr);
+					$filteringExpr = new FuncCall(
+						new Name\FullyQualified('in_array'),
+						[
+							new Arg($cond),
+							new Arg(new Array_($items)),
+							new Arg(new ConstFetch(new Name\FullyQualified('true'))),
+						],
+					);
 				}
 
 				$filteringExprType = $matchScope->getType($filteringExpr);

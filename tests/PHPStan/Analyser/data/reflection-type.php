@@ -9,7 +9,7 @@ function test(
 	\ReflectionFunctionAbstract $reflectionFunctionAbstract,
 	\ReflectionParameter $reflectionParameter
 ){
-	assertType('ReflectionNamedType|ReflectionUnionType|null', $reflectionProperty->getType());
+	assertType('ReflectionType|nulll', $reflectionProperty->getType());
 	assertType('ReflectionType|null', $reflectionFunctionAbstract->getReturnType());
 	assertType('ReflectionType|null', $reflectionParameter->getType());
 }

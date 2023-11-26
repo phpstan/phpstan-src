@@ -779,7 +779,7 @@ class TypeSpecifier
 		} elseif (
 			$expr instanceof Expr\BinaryOp\Coalesce
 			&& $context->true()
-			&& ((new ConstantBooleanType(false))->isSuperTypeOf($scope->getType($expr->right))->yes())
+			&& $scope->getType($expr->right)->isFalse()->yes()
 		) {
 			return $this->create(
 				$expr->left,
@@ -801,7 +801,7 @@ class TypeSpecifier
 		} elseif (
 			$expr instanceof Expr\Ternary
 			&& !$context->null()
-			&& ((new ConstantBooleanType(false))->isSuperTypeOf($scope->getType($expr->else))->yes())
+			&& $scope->getType($expr->else)->isFalse()->yes()
 		) {
 			$conditionExpr = $expr->cond;
 			if ($expr->if !== null) {

@@ -11,7 +11,6 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
@@ -41,7 +40,7 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		$argsCount = count($node->getArgs());
 		if ($argsCount >= 3) {
 			$strictNodeType = $scope->getType($node->getArgs()[2]->value);
-			$isStrictComparison = (new ConstantBooleanType(true))->isSuperTypeOf($strictNodeType)->yes();
+			$isStrictComparison = $strictNodeType->isTrue()->yes();
 		}
 
 		if ($argsCount < 2) {

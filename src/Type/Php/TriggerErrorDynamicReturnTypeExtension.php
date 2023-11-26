@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -31,12 +30,12 @@ class TriggerErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 		return $functionReflection->getName() === 'trigger_error';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		$args = $functionCall->getArgs();
 
 		if (count($args) === 0) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		if (count($args) === 1) {
@@ -63,7 +62,7 @@ class TriggerErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 			return new ConstantBooleanType(true);
 		}
 
-		return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		return null;
 	}
 
 }

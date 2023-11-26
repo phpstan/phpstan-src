@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -37,7 +36,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) === 0) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		if (count($args) >= 2) {

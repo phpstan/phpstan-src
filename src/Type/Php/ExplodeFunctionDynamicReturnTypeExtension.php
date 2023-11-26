@@ -39,10 +39,10 @@ class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		if (count($functionCall->getArgs()) < 2) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$delimiterType = $scope->getType($functionCall->getArgs()[0]->value);

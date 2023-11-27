@@ -18,6 +18,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\DirectoryCreator;
@@ -180,6 +181,7 @@ abstract class PHPStanTestCase extends TestCase
 					$container->getParameter('usePathConstantsAsConstantString'),
 				),
 				$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
+				$container->getByType(ExpressionTypeResolverExtensionRegistryProvider::class),
 				$container->getByType(ExprPrinter::class),
 				$typeSpecifier,
 				new PropertyReflectionFinder(),

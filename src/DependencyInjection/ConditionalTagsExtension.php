@@ -33,6 +33,7 @@ class ConditionalTagsExtension extends CompilerExtension
 			BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG => $bool,
 			BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG => $bool,
 			BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG => $bool,
+			BrokerFactory::EXPRESSION_TYPE_RESOLVER_EXTENSION_TAG => $bool,
 			BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			BrokerFactory::ALLOWED_SUB_TYPES_CLASS_REFLECTION_EXTENSION_TAG => $bool,
 			LazyRegistry::RULE_TAG => $bool,

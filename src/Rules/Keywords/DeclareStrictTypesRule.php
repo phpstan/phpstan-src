@@ -49,7 +49,7 @@ class DeclareStrictTypesRule implements Rule
 							'Declare strict_types must have 0 or 1 as its value, %s given.',
 							$this->exprPrinter->printExpr($declare->value),
 						),
-					))->nonIgnorable()->build(),
+					))->identifier('declareStrictTypes.value')->nonIgnorable()->build(),
 				];
 			}
 
@@ -73,7 +73,7 @@ class DeclareStrictTypesRule implements Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Declare strict_types must be the very first statement.',
-			))->nonIgnorable()->build(),
+			))->identifier('declareStrictTypes.notFirst')->nonIgnorable()->build(),
 		];
 	}
 

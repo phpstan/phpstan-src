@@ -40,7 +40,7 @@ class MethodVisibilityInInterfaceRule implements Rule
 				'Method %s::%s() cannot use non-public visibility in interface.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-			))->nonIgnorable()->build(),
+			))->identifier('method.visibility')->nonIgnorable()->build(),
 		];
 	}
 

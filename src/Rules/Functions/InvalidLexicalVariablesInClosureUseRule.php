@@ -66,6 +66,7 @@ class InvalidLexicalVariablesInClosureUseRule implements Rule
 			if ($var === 'this') {
 				$errors[] = RuleErrorBuilder::message('Cannot use $this as lexical variable.')
 					->line($use->getLine())
+					->identifier('closure.useThis')
 					->nonIgnorable()
 					->build();
 				continue;
@@ -74,6 +75,7 @@ class InvalidLexicalVariablesInClosureUseRule implements Rule
 			if (in_array($var, self::SUPERGLOBAL_NAMES, true)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Cannot use superglobal variable $%s as lexical variable.', $var))
 					->line($use->getLine())
+					->identifier('closure.useSuperGlobal')
 					->nonIgnorable()
 					->build();
 				continue;
@@ -85,6 +87,7 @@ class InvalidLexicalVariablesInClosureUseRule implements Rule
 
 			$errors[] = RuleErrorBuilder::message(sprintf('Cannot use lexical variable $%s since a parameter with the same name already exists.', $var))
 				->line($use->getLine())
+				->identifier('closure.useDuplicate')
 				->nonIgnorable()
 				->build();
 		}

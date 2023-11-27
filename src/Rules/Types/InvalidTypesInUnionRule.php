@@ -5,8 +5,8 @@ namespace PHPStan\Rules\Types;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertyNode;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_merge;
 use function in_array;
@@ -43,7 +43,7 @@ class InvalidTypesInUnionRule implements Rule
 	}
 
 	/**
-	 * @return list<RuleError>
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processFunctionLikeNode(Node\FunctionLike $functionLike): array
 	{
@@ -65,7 +65,7 @@ class InvalidTypesInUnionRule implements Rule
 	}
 
 	/**
-	 * @return list<RuleError>
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processClassPropertyNode(ClassPropertyNode $classPropertyNode): array
 	{
@@ -77,7 +77,7 @@ class InvalidTypesInUnionRule implements Rule
 	}
 
 	/**
-	 * @return list<RuleError>
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processComplexType(Node\ComplexType $complexType): array
 	{
@@ -87,10 +87,16 @@ class InvalidTypesInUnionRule implements Rule
 
 		if ($complexType instanceof Node\UnionType) {
 			foreach ($complexType->types as $type) {
-				if ($type instanceof Node\Identifier && in_array($type->toString(), self::ONLY_STANDALONE_TYPES, true)) {
+				if (!$type instanceof Node\Identifier) {
+					continue;
+				}
+
+				$typeString = $type->toLowerString();
+				if (in_array($typeString, self::ONLY_STANDALONE_TYPES, true)) {
 					return [
 						RuleErrorBuilder::message(sprintf('Type %s cannot be part of a union type declaration.', $type->toString()))
 							->line($complexType->getLine())
+							->identifier(sprintf('unionType.%s', $typeString))
 							->nonIgnorable()
 							->build(),
 					];
@@ -100,13 +106,17 @@ class InvalidTypesInUnionRule implements Rule
 			return [];
 		}
 
-		if ($complexType->type instanceof Node\Identifier && in_array($complexType->type->toString(), self::ONLY_STANDALONE_TYPES, true)) {
-			return [
-				RuleErrorBuilder::message(sprintf('Type %s cannot be part of a nullable type declaration.', $complexType->type->toString()))
-					->line($complexType->getLine())
-					->nonIgnorable()
-					->build(),
-			];
+		if ($complexType->type instanceof Node\Identifier) {
+			$complexTypeString = $complexType->type->toLowerString();
+			if (in_array($complexTypeString, self::ONLY_STANDALONE_TYPES, true)) {
+				return [
+					RuleErrorBuilder::message(sprintf('Type %s cannot be part of a nullable type declaration.', $complexType->type->toString()))
+						->line($complexType->getLine())
+						->identifier(sprintf('nullableType.%s', $complexTypeString))
+						->nonIgnorable()
+						->build(),
+				];
+			}
 		}
 
 		return [];

@@ -16,7 +16,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
@@ -200,8 +199,10 @@ class TypeCombinator
 			if ($types[$i] instanceof StringType && !$types[$i] instanceof ClassStringType) {
 				$hasGenericScalarTypes[ConstantStringType::class] = true;
 			}
-			if ($types[$i] instanceof EnumCaseObjectType) {
+			$enumCases = $types[$i]->getEnumCases();
+			if (count($enumCases) === 1) {
 				$enumCaseTypes[$types[$i]->describe(VerbosityLevel::cache())] = $types[$i];
+
 				unset($types[$i]);
 				continue;
 			}

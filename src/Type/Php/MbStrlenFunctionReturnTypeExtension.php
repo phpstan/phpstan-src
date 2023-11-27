@@ -136,7 +136,7 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			} else {
 				$range = TypeCombinator::union(...array_map(static fn ($l) => new ConstantIntegerType($l), $lengths));
 			}
-		} elseif ((new BooleanType())->isSuperTypeOf($argType)->yes()) {
+		} elseif ($argType->isBoolean()->yes()) {
 			$range = IntegerRangeType::fromInterval(0, 1);
 		} elseif (
 			$isNonEmpty->yes()

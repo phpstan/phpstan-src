@@ -591,6 +591,10 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testBug10201(): void
 	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
 		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-10201.php'], [

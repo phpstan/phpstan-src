@@ -14,7 +14,10 @@ use Exception;
 use InvalidArgumentException;
 use Iterator;
 use ObjectShapesAcceptance\ClassWithFooIntProperty;
+use PHPStan\Fixture\AnotherTestEnum;
 use PHPStan\Fixture\FinalClass;
+use PHPStan\Fixture\TestEnum;
+use PHPStan\Fixture\TestEnumInterface;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -2493,6 +2496,34 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			UnionType::class,
 			'array{a?: true, b: true}|(array{a?: true, c?: true}&non-empty-array)',
+		];
+
+		yield [
+			[
+				new EnumCaseObjectType(AnotherTestEnum::class, 'ONE'),
+				new EnumCaseObjectType(AnotherTestEnum::class, 'TWO'),
+				new ObjectType(TestEnumInterface::class),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\AnotherTestEnum::ONE|PHPStan\Fixture\AnotherTestEnum::TWO|PHPStan\Fixture\TestEnumInterface',
+		];
+		yield [
+			[
+				new EnumCaseObjectType(TestEnum::class, 'ONE'),
+				new EnumCaseObjectType(TestEnum::class, 'TWO'),
+				new ObjectType(TestEnumInterface::class),
+			],
+			ObjectType::class,
+			TestEnumInterface::class,
+		];
+		yield [
+			[
+				new EnumCaseObjectType(TestEnum::class, 'ONE'),
+				new EnumCaseObjectType(TestEnum::class, 'TWO'),
+				new ObjectWithoutClassType(),
+			],
+			ObjectWithoutClassType::class,
+			'object',
 		];
 	}
 

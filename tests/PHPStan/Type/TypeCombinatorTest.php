@@ -2500,26 +2500,26 @@ class TypeCombinatorTest extends PHPStanTestCase
 
 		yield [
 			[
-				new EnumCaseObjectType(AnotherTestEnum::class, 'ONE'),
-				new EnumCaseObjectType(AnotherTestEnum::class, 'TWO'),
-				new ObjectType(TestEnumInterface::class),
+				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'TWO'),
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
 			],
 			UnionType::class,
 			'PHPStan\Fixture\AnotherTestEnum::ONE|PHPStan\Fixture\AnotherTestEnum::TWO|PHPStan\Fixture\TestEnumInterface',
 		];
 		yield [
 			[
-				new EnumCaseObjectType(TestEnum::class, 'ONE'),
-				new EnumCaseObjectType(TestEnum::class, 'TWO'),
-				new ObjectType(TestEnumInterface::class),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
 			],
 			ObjectType::class,
-			TestEnumInterface::class,
+			'PHPStan\Fixture\TestEnumInterface',
 		];
 		yield [
 			[
-				new EnumCaseObjectType(TestEnum::class, 'ONE'),
-				new EnumCaseObjectType(TestEnum::class, 'TWO'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
 				new ObjectWithoutClassType(),
 			],
 			ObjectWithoutClassType::class,

@@ -16,6 +16,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
@@ -179,6 +180,7 @@ class TypeCombinator
 		$arrayTypes = [];
 		$scalarTypes = [];
 		$hasGenericScalarTypes = [];
+		$enumCaseTypes = [];
 		for ($i = 0; $i < $typesCount; $i++) {
 			if ($types[$i] instanceof ConstantScalarType) {
 				$type = $types[$i];
@@ -198,6 +200,12 @@ class TypeCombinator
 			if ($types[$i] instanceof StringType && !$types[$i] instanceof ClassStringType) {
 				$hasGenericScalarTypes[ConstantStringType::class] = true;
 			}
+			if ($types[$i] instanceof EnumCaseObjectType) {
+				$enumCaseTypes[$types[$i]->describe(VerbosityLevel::cache())] = $types[$i];
+				unset($types[$i]);
+				continue;
+			}
+
 			if (!$types[$i]->isArray()->yes()) {
 				continue;
 			}
@@ -210,6 +218,7 @@ class TypeCombinator
 			$scalarTypes[$classType] = array_values($scalarTypeItems);
 		}
 
+		$enumCaseTypes = array_values($enumCaseTypes);
 		$types = array_values($types);
 		$typesCount = count($types);
 
@@ -289,6 +298,35 @@ class TypeCombinator
 					continue 2;
 				}
 			}
+		}
+
+		$enumCasesCount = count($enumCaseTypes);
+		for ($i = 0; $i < $typesCount; $i++) {
+			for ($j = 0; $j < $enumCasesCount; $j++) {
+				$compareResult = self::compareTypesInUnion($types[$i], $enumCaseTypes[$j]);
+				if ($compareResult === null) {
+					continue;
+				}
+
+				[$a, $b] = $compareResult;
+				if ($a !== null) {
+					$types[$i] = $a;
+					array_splice($enumCaseTypes, $j--, 1);
+					$enumCasesCount--;
+					continue 1;
+				}
+				if ($b !== null) {
+					$enumCaseTypes[$j] = $b;
+					array_splice($types, $i--, 1);
+					$typesCount--;
+					continue 2;
+				}
+			}
+		}
+
+		foreach ($enumCaseTypes as $enumCaseType) {
+			$types[] = $enumCaseType;
+			$typesCount++;
 		}
 
 		foreach ($scalarTypes as $scalarTypeItems) {

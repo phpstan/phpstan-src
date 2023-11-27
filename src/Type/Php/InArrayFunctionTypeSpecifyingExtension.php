@@ -58,6 +58,10 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 				if ($item === null) {
 					continue;
 				}
+				if ($item->unpack) {
+					$types = null;
+					break;
+				}
 				$itemTypes = $this->typeSpecifier->resolveIdentical(new Identical($needleExpr, $item->value), $scope, $context, null);
 
 				if ($types === null) {

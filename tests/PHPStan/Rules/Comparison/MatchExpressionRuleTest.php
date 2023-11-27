@@ -527,7 +527,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 
 	public function testBug6407(): void
 	{
-		if (PHP_VERSION_ID < 8000) {
+		if (PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 

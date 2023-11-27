@@ -2786,8 +2786,8 @@ class NodeScopeResolver
 
 			$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $expr->cond, TypeSpecifierContext::createTruthy());
 			$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $expr->cond, TypeSpecifierContext::createFalsey());
-			$ifTrueScope = $condScope->filterBySpecifiedTypes($truthySpecifiedTypes);
-			$ifFalseScope = $condScope->filterBySpecifiedTypes($falseySpecifiedTypes);
+			$ifTrueScope = $ternaryCondResult->getTruthyScope()->filterBySpecifiedTypes($truthySpecifiedTypes);
+			$ifFalseScope = $ternaryCondResult->getFalseyScope()->filterBySpecifiedTypes($falseySpecifiedTypes);
 
 			$restoreIssetExprCertainty = static function (MutatingScope $previousScope, MutatingScope $scope, SpecifiedTypes $specifiedTypes): MutatingScope {
 				foreach ($specifiedTypes->getSureNotTypes() as [$expr, $exprType]) {

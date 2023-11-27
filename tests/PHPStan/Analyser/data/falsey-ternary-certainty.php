@@ -216,3 +216,11 @@ function falseySubtractedMixedTernaryVariable(): void
 
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 }
+
+function parseVariableSymbolFromXmlNode(SimpleXMLElement $transactionXmlElement): string
+{
+	return isset($transactionXmlElement->invoice_number)
+		&& preg_match('~^\d+/\d+\-0*(\d+)$~', (string) $transactionXmlElement->invoice_number, $matches) === 1
+		? assertVariableCertainty(TrinaryLogic::createYes(), $matches)
+		: '';
+}

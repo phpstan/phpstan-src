@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1); // lint >= 8.1
 
-namespace Bug9723_2;
+namespace Bug9723b;
 
 enum State : int
 {

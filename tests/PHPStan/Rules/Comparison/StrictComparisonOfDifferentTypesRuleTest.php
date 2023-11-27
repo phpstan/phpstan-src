@@ -1000,14 +1000,14 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9723.php'], []);
 	}
 
-	public function testBug9723_2(): void
+	public function testBug9723b(): void
 	{
 		if (PHP_VERSION_ID < 80100) {
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
 		$this->checkAlwaysTrueStrictComparison = true;
-		$this->analyse([__DIR__ . '/data/bug-9723_2.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-9723b.php'], []);
 	}
 
 }

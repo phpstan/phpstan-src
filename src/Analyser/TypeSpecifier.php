@@ -1556,7 +1556,7 @@ class TypeSpecifier
 		return array_merge(...$extensionsForClass);
 	}
 
-	public function resolveEqual(Expr\BinaryOp\Equal $expr, Scope $scope, TypeSpecifierContext $context, Expr $rootExpr): SpecifiedTypes
+	public function resolveEqual(Expr\BinaryOp\Equal $expr, Scope $scope, TypeSpecifierContext $context, ?Expr $rootExpr): SpecifiedTypes
 	{
 		$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
 		if ($expressions !== null) {
@@ -1673,7 +1673,7 @@ class TypeSpecifier
 			: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
 	}
 
-	public function resolveIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context, Expr $rootExpr): SpecifiedTypes
+	public function resolveIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context, ?Expr $rootExpr): SpecifiedTypes
 	{
 		$leftExpr = $expr->left;
 		$rightExpr = $expr->right;

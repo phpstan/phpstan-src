@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -49,9 +51,32 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		}
 
 		$needleExpr = $node->getArgs()[0]->value;
+		$arrayExpr = $node->getArgs()[1]->value;
+		if ($arrayExpr instanceof Array_ && $isStrictComparison) {
+			$types = null;
+			foreach ($arrayExpr->items as $item) {
+				if ($item === null) {
+					continue;
+				}
+				$itemTypes = $this->typeSpecifier->resolveIdentical(new Identical($needleExpr, $item->value), $scope, $context, null);
+
+				if ($types === null) {
+					$types = $itemTypes;
+					continue;
+				}
+
+				$types = $context->true() ? $types->normalize($scope)->intersectWith($itemTypes->normalize($scope)) : $types->unionWith($itemTypes);
+			}
+
+			if ($types !== null) {
+				return $types;
+			}
+		}
+
 		$needleType = $scope->getType($needleExpr);
-		$arrayType = $scope->getType($node->getArgs()[1]->value);
+		$arrayType = $scope->getType($arrayExpr);
 		$arrayValueType = $arrayType->getIterableValueType();
+
 		$isStrictComparison = $isStrictComparison
 			|| $needleType->isEnum()->yes()
 			|| $arrayValueType->isEnum()->yes();

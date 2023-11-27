@@ -115,8 +115,7 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new IntegerType()));
 		}
 
-		$isFloat = (new FloatType())->isSuperTypeOf($argType)->yes();
-		if ($isFloat) {
+		if ($argType->isFloat()->yes()) {
 			return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new FloatType()));
 		}
 
@@ -127,8 +126,7 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $numberType));
 		}
 
-		$isString = $argType->isString()->yes();
-		if ($isString) {
+		if ($argType->isString()->yes()) {
 			return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
 		}
 

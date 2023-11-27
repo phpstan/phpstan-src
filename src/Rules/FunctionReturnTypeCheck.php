@@ -11,7 +11,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
-use PHPStan\Type\VoidType;
 use function sprintf;
 
 class FunctionReturnTypeCheck
@@ -54,7 +53,7 @@ class FunctionReturnTypeCheck
 			}
 		}
 
-		$isVoidSuperType = (new VoidType())->isSuperTypeOf($returnType);
+		$isVoidSuperType = $returnType->isVoid();
 		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType, null);
 		if ($returnValue === null) {
 			if (!$isVoidSuperType->no()) {

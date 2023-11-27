@@ -3891,10 +3891,11 @@ class MutatingScope implements Scope
 
 		foreach ($conditions as $conditionalExprString => $expressions) {
 			$certainty = TrinaryLogic::lazyExtremeIdentity($expressions, static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getCertainty());
-			$type = TypeCombinator::union(...array_map(static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getType(), $expressions));
 			if ($certainty->no()) {
 				unset($scope->expressionTypes[$conditionalExprString]);
 			} else {
+				$type = TypeCombinator::union(...array_map(static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getType(), $expressions));
+
 				$scope->expressionTypes[$conditionalExprString] = array_key_exists($conditionalExprString, $scope->expressionTypes)
 					? new ExpressionTypeHolder(
 						$scope->expressionTypes[$conditionalExprString]->getExpr(),

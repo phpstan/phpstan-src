@@ -194,119 +194,7 @@ class TypeSpecifier
 				$rootExpr,
 			);
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Equal) {
-			$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
-			if ($expressions !== null) {
-				$exprNode = $expressions[0];
-				$constantType = $expressions[1];
-				if (!$context->null() && ($constantType->getValue() === false || $constantType->getValue() === null)) {
-					return $this->specifyTypesInCondition(
-						$scope,
-						$exprNode,
-						$context->true() ? TypeSpecifierContext::createFalsey() : TypeSpecifierContext::createFalsey()->negate(),
-						$rootExpr,
-					);
-				}
-
-				if (!$context->null() && $constantType->getValue() === true) {
-					return $this->specifyTypesInCondition(
-						$scope,
-						$exprNode,
-						$context->true() ? TypeSpecifierContext::createTruthy() : TypeSpecifierContext::createTruthy()->negate(),
-						$rootExpr,
-					);
-				}
-
-				if (
-					$exprNode instanceof FuncCall
-					&& $exprNode->name instanceof Name
-					&& strtolower($exprNode->name->toString()) === 'gettype'
-					&& isset($exprNode->getArgs()[0])
-					&& $constantType->isString()->yes()
-				) {
-					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
-				}
-
-				if (
-					$exprNode instanceof FuncCall
-					&& $exprNode->name instanceof Name
-					&& strtolower($exprNode->name->toString()) === 'get_class'
-					&& isset($exprNode->getArgs()[0])
-					&& $constantType->isString()->yes()
-				) {
-					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
-				}
-			}
-
-			$leftType = $scope->getType($expr->left);
-			$rightType = $scope->getType($expr->right);
-
-			$leftBooleanType = $leftType->toBoolean();
-			if ($leftBooleanType instanceof ConstantBooleanType && $rightType->isBoolean()->yes()) {
-				return $this->specifyTypesInCondition(
-					$scope,
-					new Expr\BinaryOp\Identical(
-						new ConstFetch(new Name($leftBooleanType->getValue() ? 'true' : 'false')),
-						$expr->right,
-					),
-					$context,
-					$rootExpr,
-				);
-			}
-
-			$rightBooleanType = $rightType->toBoolean();
-			if ($rightBooleanType instanceof ConstantBooleanType && $leftType->isBoolean()->yes()) {
-				return $this->specifyTypesInCondition(
-					$scope,
-					new Expr\BinaryOp\Identical(
-						$expr->left,
-						new ConstFetch(new Name($rightBooleanType->getValue() ? 'true' : 'false')),
-					),
-					$context,
-					$rootExpr,
-				);
-			}
-
-			if (
-				!$context->null()
-				&& $rightType->isArray()->yes()
-				&& $leftType->isConstantArray()->yes() && $leftType->isIterableAtLeastOnce()->no()
-			) {
-				return $this->create($expr->right, new NonEmptyArrayType(), $context->negate(), false, $scope, $rootExpr);
-			}
-
-			if (
-				!$context->null()
-				&& $leftType->isArray()->yes()
-				&& $rightType->isConstantArray()->yes() && $rightType->isIterableAtLeastOnce()->no()
-			) {
-				return $this->create($expr->left, new NonEmptyArrayType(), $context->negate(), false, $scope, $rootExpr);
-			}
-
-			$integerType = new IntegerType();
-			$floatType = new FloatType();
-			if (
-				($leftType->isString()->yes() && $rightType->isString()->yes())
-				|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
-				|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
-				|| ($leftType->isEnum()->yes() && $rightType->isEnum()->yes())
-			) {
-				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
-			}
-
-			$leftExprString = $this->exprPrinter->printExpr($expr->left);
-			$rightExprString = $this->exprPrinter->printExpr($expr->right);
-			if ($leftExprString === $rightExprString) {
-				if (!$expr->left instanceof Expr\Variable || !$expr->right instanceof Expr\Variable) {
-					return new SpecifiedTypes([], [], false, [], $rootExpr);
-				}
-			}
-
-			$leftTypes = $this->create($expr->left, $leftType, $context, false, $scope, $rootExpr);
-			$rightTypes = $this->create($expr->right, $rightType, $context, false, $scope, $rootExpr);
-
-			return $context->true()
-				? $leftTypes->unionWith($rightTypes)
-				: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
+			return $this->resolveEqual($expr, $scope, $context, $rootExpr);
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotEqual) {
 			return $this->specifyTypesInCondition(
 				$scope,
@@ -1668,7 +1556,124 @@ class TypeSpecifier
 		return array_merge(...$extensionsForClass);
 	}
 
-	public function resolveIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context, Expr $rootExpr): SpecifiedTypes
+	public function resolveEqual(Expr\BinaryOp\Equal $expr, Scope $scope, TypeSpecifierContext $context, ?Expr $rootExpr): SpecifiedTypes
+	{
+		$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
+		if ($expressions !== null) {
+			$exprNode = $expressions[0];
+			$constantType = $expressions[1];
+			if (!$context->null() && ($constantType->getValue() === false || $constantType->getValue() === null)) {
+				return $this->specifyTypesInCondition(
+					$scope,
+					$exprNode,
+					$context->true() ? TypeSpecifierContext::createFalsey() : TypeSpecifierContext::createFalsey()->negate(),
+					$rootExpr,
+				);
+			}
+
+			if (!$context->null() && $constantType->getValue() === true) {
+				return $this->specifyTypesInCondition(
+					$scope,
+					$exprNode,
+					$context->true() ? TypeSpecifierContext::createTruthy() : TypeSpecifierContext::createTruthy()->negate(),
+					$rootExpr,
+				);
+			}
+
+			if (
+				$exprNode instanceof FuncCall
+				&& $exprNode->name instanceof Name
+				&& strtolower($exprNode->name->toString()) === 'gettype'
+				&& isset($exprNode->getArgs()[0])
+				&& $constantType->isString()->yes()
+			) {
+				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
+			}
+
+			if (
+				$exprNode instanceof FuncCall
+				&& $exprNode->name instanceof Name
+				&& strtolower($exprNode->name->toString()) === 'get_class'
+				&& isset($exprNode->getArgs()[0])
+				&& $constantType->isString()->yes()
+			) {
+				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
+			}
+		}
+
+		$leftType = $scope->getType($expr->left);
+		$rightType = $scope->getType($expr->right);
+
+		$leftBooleanType = $leftType->toBoolean();
+		if ($leftBooleanType instanceof ConstantBooleanType && $rightType->isBoolean()->yes()) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				new Expr\BinaryOp\Identical(
+					new ConstFetch(new Name($leftBooleanType->getValue() ? 'true' : 'false')),
+					$expr->right,
+				),
+				$context,
+				$rootExpr,
+			);
+		}
+
+		$rightBooleanType = $rightType->toBoolean();
+		if ($rightBooleanType instanceof ConstantBooleanType && $leftType->isBoolean()->yes()) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				new Expr\BinaryOp\Identical(
+					$expr->left,
+					new ConstFetch(new Name($rightBooleanType->getValue() ? 'true' : 'false')),
+				),
+				$context,
+				$rootExpr,
+			);
+		}
+
+		if (
+			!$context->null()
+			&& $rightType->isArray()->yes()
+			&& $leftType->isConstantArray()->yes() && $leftType->isIterableAtLeastOnce()->no()
+		) {
+			return $this->create($expr->right, new NonEmptyArrayType(), $context->negate(), false, $scope, $rootExpr);
+		}
+
+		if (
+			!$context->null()
+			&& $leftType->isArray()->yes()
+			&& $rightType->isConstantArray()->yes() && $rightType->isIterableAtLeastOnce()->no()
+		) {
+			return $this->create($expr->left, new NonEmptyArrayType(), $context->negate(), false, $scope, $rootExpr);
+		}
+
+		$integerType = new IntegerType();
+		$floatType = new FloatType();
+		if (
+			($leftType->isString()->yes() && $rightType->isString()->yes())
+			|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
+			|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
+			|| ($leftType->isEnum()->yes() && $rightType->isEnum()->yes())
+		) {
+			return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
+		}
+
+		$leftExprString = $this->exprPrinter->printExpr($expr->left);
+		$rightExprString = $this->exprPrinter->printExpr($expr->right);
+		if ($leftExprString === $rightExprString) {
+			if (!$expr->left instanceof Expr\Variable || !$expr->right instanceof Expr\Variable) {
+				return new SpecifiedTypes([], [], false, [], $rootExpr);
+			}
+		}
+
+		$leftTypes = $this->create($expr->left, $leftType, $context, false, $scope, $rootExpr);
+		$rightTypes = $this->create($expr->right, $rightType, $context, false, $scope, $rootExpr);
+
+		return $context->true()
+			? $leftTypes->unionWith($rightTypes)
+			: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
+	}
+
+	public function resolveIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context, ?Expr $rootExpr): SpecifiedTypes
 	{
 		$leftExpr = $expr->left;
 		$rightExpr = $expr->right;

@@ -525,4 +525,13 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9499.php'], []);
 	}
 
+	public function testBug6407(): void
+	{
+		if (PHP_VERSION_ID < 8000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6407.php'], []);
+	}
+
 }

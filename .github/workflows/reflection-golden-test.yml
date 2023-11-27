@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
@@ -80,7 +80,7 @@ jobs:
           path: /tmp
 
       - name: "Checkout base commit"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.sha || github.event.before }}
 
@@ -144,7 +144,7 @@ jobs:
           path: ${{ env.REFLECTION_GOLDEN_TEST_FILE }}
 
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"

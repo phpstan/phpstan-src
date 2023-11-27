@@ -499,7 +499,7 @@ class ArrayType implements Type
 	public function fillKeysArray(Type $valueType): Type
 	{
 		$itemType = $this->getItemType();
-		if ((new IntegerType())->isSuperTypeOf($itemType)->no()) {
+		if ($itemType->isInteger()->no()) {
 			$stringKeyType = $itemType->toString();
 			if ($stringKeyType instanceof ErrorType) {
 				return $stringKeyType;

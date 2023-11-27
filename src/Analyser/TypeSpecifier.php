@@ -239,7 +239,7 @@ class TypeSpecifier
 				&& count($expr->right->getArgs()) === 1
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
-				&& (new IntegerType())->isSuperTypeOf($leftType)->yes()
+				&& $leftType->isInteger()->yes()
 			) {
 				if (
 					$context->truthy() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
@@ -258,7 +258,7 @@ class TypeSpecifier
 				&& count($expr->right->getArgs()) === 1
 				&& $expr->right->name instanceof Name
 				&& strtolower((string) $expr->right->name) === 'strlen'
-				&& (new IntegerType())->isSuperTypeOf($leftType)->yes()
+				&& $leftType->isInteger()->yes()
 			) {
 				if (
 					$context->truthy() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
@@ -1646,12 +1646,10 @@ class TypeSpecifier
 			return $this->create($expr->left, new NonEmptyArrayType(), $context->negate(), false, $scope, $rootExpr);
 		}
 
-		$integerType = new IntegerType();
-		$floatType = new FloatType();
 		if (
 			($leftType->isString()->yes() && $rightType->isString()->yes())
-			|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
-			|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
+			|| ($leftType->isInteger()->yes() && $rightType->isInteger()->yes())
+			|| ($leftType->isFloat()->yes() && $rightType->isFloat()->yes())
 			|| ($leftType->isEnum()->yes() && $rightType->isEnum()->yes())
 		) {
 			return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);

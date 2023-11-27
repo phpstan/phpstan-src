@@ -94,8 +94,7 @@ final class BitwiseFlagHelper
 			return TrinaryLogic::createNo();
 		}
 
-		$integerType = new IntegerType();
-		if ($integerType->isSuperTypeOf($type)->yes() || $type instanceof MixedType) {
+		if ($type->isInteger()->yes() || $type instanceof MixedType) {
 			return TrinaryLogic::createMaybe();
 		}
 

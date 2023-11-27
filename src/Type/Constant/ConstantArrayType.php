@@ -37,7 +37,6 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -746,7 +745,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
 		foreach ($this->valueTypes as $i => $keyType) {
-			if ((new IntegerType())->isSuperTypeOf($keyType)->no()) {
+			if ($keyType->isInteger()->no()) {
 				$stringKeyType = $keyType->toString();
 				if ($stringKeyType instanceof ErrorType) {
 					return $stringKeyType;

@@ -3895,7 +3895,7 @@ class NodeScopeResolver
 						new ObjectType(ArrayAccess::class),
 						new NullType(),
 					];
-					if ($offsetType !== null && (new IntegerType())->isSuperTypeOf($offsetType)->yes()) {
+					if ($offsetType !== null && $offsetType->isInteger()->yes()) {
 						$types[] = new StringType();
 					}
 					$offsetValueType = TypeCombinator::intersect($offsetValueType, TypeCombinator::union(...$types));
@@ -3911,7 +3911,7 @@ class NodeScopeResolver
 						new ObjectType(ArrayAccess::class),
 						new NullType(),
 					];
-					if ($offsetNativeType !== null && (new IntegerType())->isSuperTypeOf($offsetNativeType)->yes()) {
+					if ($offsetNativeType !== null && $offsetNativeType->isInteger()->yes()) {
 						$types[] = new StringType();
 					}
 					$offsetNativeValueType = TypeCombinator::intersect($offsetNativeValueType, TypeCombinator::union(...$types));

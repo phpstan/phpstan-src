@@ -9,7 +9,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
-use PHPStan\Type\VoidType;
 use Throwable;
 use function sprintf;
 
@@ -57,7 +56,7 @@ class InvalidThrowsPhpDocValueRule implements Rule
 		}
 
 		$phpDocThrowsType = $resolvedPhpDoc->getThrowsTag()->getType();
-		if ((new VoidType())->isSuperTypeOf($phpDocThrowsType)->yes()) {
+		if ($phpDocThrowsType->isVoid()->yes()) {
 			return [];
 		}
 

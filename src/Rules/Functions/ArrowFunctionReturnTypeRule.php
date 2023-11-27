@@ -11,7 +11,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use PHPStan\Type\VoidType;
 
 /**
  * @implements Rule<InArrowFunctionNode>
@@ -39,7 +38,7 @@ class ArrowFunctionReturnTypeRule implements Rule
 		$generatorType = new ObjectType(Generator::class);
 
 		$originalNode = $node->getOriginalNode();
-		$isVoidSuperType = (new VoidType())->isSuperTypeOf($returnType);
+		$isVoidSuperType = $returnType->isVoid();
 		if ($originalNode->returnType === null && $isVoidSuperType->yes()) {
 			return [];
 		}

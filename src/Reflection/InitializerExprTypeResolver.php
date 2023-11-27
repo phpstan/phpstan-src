@@ -1507,8 +1507,8 @@ class InitializerExprTypeResolver
 		}
 
 		if (
-			(new FloatType())->isSuperTypeOf($leftNumberType)->yes()
-			|| (new FloatType())->isSuperTypeOf($rightNumberType)->yes()
+			$leftNumberType->isFloat()->yes()
+			|| $rightNumberType->isFloat()->yes()
 		) {
 			return new FloatType();
 		}

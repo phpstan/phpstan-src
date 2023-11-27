@@ -3894,7 +3894,7 @@ class MutatingScope implements Scope
 			if ($certainty->no()) {
 				unset($scope->expressionTypes[$conditionalExprString]);
 			} else {
-				$type = TypeCombinator::union(...array_map(static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getType(), $expressions));
+				$type = TypeCombinator::intersect(...array_map(static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getType(), $expressions));
 
 				$scope->expressionTypes[$conditionalExprString] = array_key_exists($conditionalExprString, $scope->expressionTypes)
 					? new ExpressionTypeHolder(

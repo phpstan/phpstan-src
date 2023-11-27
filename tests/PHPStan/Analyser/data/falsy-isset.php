@@ -90,3 +90,10 @@ function nullableUnionVariable(null|string|int $a): void
 	}
 }
 
+function render(?int $noteListLimit, int $count): void
+{
+	$showAllLink = $noteListLimit !== null && $count > $noteListLimit;
+	if ($showAllLink) {
+		assertType('int', $noteListLimit);
+	}
+}

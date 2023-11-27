@@ -122,7 +122,8 @@ return [
 		'ftp_put' => ['bool', 'stream'=>'resource', 'remote_file'=>'string', 'local_file'=>'string', 'mode='=>'FTP_ASCII|FTP_BINARY', 'startpos='=>'int'],
 		'scandir' => ['list<string>|false', 'dir'=>'string', 'sorting_order='=>'SCANDIR_SORT_ASCENDING|SCANDIR_SORT_DESCENDING| SCANDIR_SORT_NONE', 'context='=>'resource'],
 		'stream_socket_client' => ['resource|false', 'remoteaddress'=>'string', '&w_errcode='=>'int', '&w_errstring='=>'string', 'timeout='=>'float', 'flags='=>'int-mask<STREAM_CLIENT_CONNECT|STREAM_CLIENT_ASYNC_CONNECT|STREAM_CLIENT_PERSISTENT>', 'context='=>'resource'],
-		'extract' => ['int', '&rw_var_array'=>'array', 'extract_type='=>'EXTR_OVERWRITE|EXTR_SKIP|EXTR_PREFIX_SAME|EXTR_PREFIX_ALL|EXTR_PREFIX_INVALID|EXTR_IF_EXISTS|EXTR_PREFIX_IF_EXISTS|EXTR_REFS', 'prefix='=>'string|null'],
+		'stream_socket_enable_crypto' => ['0|bool', 'stream'=>'resource', 'enable'=>'bool', 'crypto_method='=>'STREAM_CRYPTO_METHOD_SSLv2_CLIENT|STREAM_CRYPTO_METHOD_SSLv3_CLIENT|STREAM_CRYPTO_METHOD_SSLv23_CLIENT|STREAM_CRYPTO_METHOD_ANY_CLIENT|STREAM_CRYPTO_METHOD_TLS_CLIENT|STREAM_CRYPTO_METHOD_TLSv1_0_CLIENT|STREAM_CRYPTO_METHOD_TLSv1_1_CLIENT|STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT|STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT|STREAM_CRYPTO_METHOD_SSLv2_SERVER|STREAM_CRYPTO_METHOD_SSLv3_SERVER|STREAM_CRYPTO_METHOD_SSLv23_SERVER|STREAM_CRYPTO_METHOD_ANY_SERVER|STREAM_CRYPTO_METHOD_TLS_SERVER|STREAM_CRYPTO_METHOD_TLSv1_0_SERVER|STREAM_CRYPTO_METHOD_TLSv1_1_SERVER|STREAM_CRYPTO_METHOD_TLSv1_2_SERVER|STREAM_CRYPTO_METHOD_TLSv1_3_SERVER', 'session_stream='=>'resource'],
+		'extract' => ['0|positive-int', '&rw_var_array'=>'array', 'extract_type='=>'EXTR_OVERWRITE|EXTR_SKIP|EXTR_PREFIX_SAME|EXTR_PREFIX_ALL|EXTR_PREFIX_INVALID|EXTR_IF_EXISTS|EXTR_PREFIX_IF_EXISTS|EXTR_REFS', 'prefix='=>'string|null'],
 	],
 	'old' => [
 

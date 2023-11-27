@@ -5700,7 +5700,7 @@ return [
 'jpeg2wbmp' => ['bool', 'jpegname'=>'string', 'wbmpname'=>'string', 'dest_height'=>'int', 'dest_width'=>'int', 'threshold'=>'int'],
 'json_decode' => ['mixed', 'json'=>'string', 'assoc='=>'bool|null', 'depth='=>'positive-int', 'options='=>'int'],
 'json_encode' => ['non-empty-string|false', 'data'=>'mixed', 'options='=>'int', 'depth='=>'positive-int'],
-'json_last_error' => ['JSON_ERROR_*'],
+'json_last_error' => ['JSON_ERROR_NONE|JSON_ERROR_DEPTH|JSON_ERROR_STATE_MISMATCH|JSON_ERROR_CTRL_CHAR|JSON_ERROR_SYNTAX|JSON_ERROR_UTF8|JSON_ERROR_RECURSION|JSON_ERROR_INF_OR_NAN|JSON_ERROR_UNSUPPORTED_TYPE|JSON_ERROR_INVALID_PROPERTY_NAME|JSON_ERROR_UTF16'],
 'json_last_error_msg' => ['string'],
 'JsonIncrementalParser::__construct' => ['void', 'depth'=>'', 'options'=>''],
 'JsonIncrementalParser::get' => ['', 'options'=>''],

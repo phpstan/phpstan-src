@@ -108,8 +108,8 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		}
 
 		$argType = TypeCombinator::union($startType, $endType);
-		$isInteger = (new IntegerType())->isSuperTypeOf($argType)->yes();
-		$isStepInteger = (new IntegerType())->isSuperTypeOf($stepType)->yes();
+		$isInteger = $argType->isInteger()->yes();
+		$isStepInteger = $stepType->isInteger()->yes();
 
 		if ($isInteger && $isStepInteger) {
 			return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new IntegerType()));

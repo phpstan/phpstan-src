@@ -70,7 +70,7 @@ class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodRet
 			]);
 		}
 
-		if ((new IntegerType())->isSuperTypeOf($thirdArgType)->yes()) {
+		if ($thirdArgType->isInteger()->yes()) {
 			return new GenericObjectType(DatePeriod::class, [
 				$firstArgType,
 				new NullType(),

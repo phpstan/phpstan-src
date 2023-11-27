@@ -12,7 +12,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
@@ -85,7 +84,7 @@ class BcMathStringOrNullReturnTypeExtension implements DynamicFunctionReturnType
 		if ($thirdArgument instanceof ConstantScalarType && is_numeric($thirdArgument->getValue())) {
 			$thirdArgumentIsNumeric = true;
 			$thirdArgumentIsNegative = ($thirdArgument->getValue() < 0);
-		} elseif ((new IntegerType())->isSuperTypeOf($thirdArgument)->yes()) {
+		} elseif ($thirdArgument->isInteger()->yes()) {
 			$thirdArgumentIsNumeric = true;
 			if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($thirdArgument)->yes()) {
 				$thirdArgumentIsNegative = true;

@@ -15,7 +15,6 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -74,7 +73,7 @@ class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		if ($keysParamType->isArray()->yes()) {
 			$itemType = $keysParamType->getIterableValueType();
 
-			if ((new IntegerType())->isSuperTypeOf($itemType)->no()) {
+			if ($itemType->isInteger()->no()) {
 				if ($itemType->toString() instanceof ErrorType) {
 					return new NeverType();
 				}
@@ -117,7 +116,7 @@ class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		$sanitizedTypes = [];
 
 		foreach ($types as $type) {
-			if ((new IntegerType())->isSuperTypeOf($type)->no() && ! $type->toString() instanceof ErrorType) {
+			if ($type->isInteger()->no() && ! $type->toString() instanceof ErrorType) {
 				$type = $type->toString();
 			}
 

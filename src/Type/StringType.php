@@ -58,7 +58,7 @@ class StringType implements Type
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		return (new IntegerType())->isSuperTypeOf($offsetType)->and(TrinaryLogic::createMaybe());
+		return $offsetType->isInteger()->and(TrinaryLogic::createMaybe());
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type
@@ -81,7 +81,7 @@ class StringType implements Type
 			return new ErrorType();
 		}
 
-		if ((new IntegerType())->isSuperTypeOf($offsetType)->yes() || $offsetType instanceof MixedType) {
+		if ($offsetType->isInteger()->yes() || $offsetType instanceof MixedType) {
 			return new StringType();
 		}
 

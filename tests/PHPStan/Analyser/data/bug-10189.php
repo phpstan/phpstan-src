@@ -20,7 +20,7 @@ function file_managed_file_save_upload(): array {
 	}
 	assertType('non-empty-array|Bug10189\SomeInterface', $files);
 	$files = array_filter($files);
-	assertType('array{}', $files);
+	assertType("array<mixed~0|0.0|''|'0'|array{}|false|null>", $files);
 
 	return empty($files) ? [] : [1,2];
 }

@@ -515,6 +515,10 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				'Instanceof between UnreachableTernaryElseBranchNotPhpDoc\Foo and UnreachableTernaryElseBranchNotPhpDoc\Foo will always evaluate to true.',
 				17,
 			],
+			[
+				'Instanceof between UnreachableTernaryElseBranchNotPhpDoc\Foo and UnreachableTernaryElseBranchNotPhpDoc\Foo will always evaluate to true.',
+				20,
+			],
 		]);
 	}
 
@@ -540,7 +544,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between UnreachableTernaryElseBranchNotPhpDoc\Foo and UnreachableTernaryElseBranchNotPhpDoc\Foo will always evaluate to true.',
 				20,
-				$tipText,
 			],
 		]);
 	}

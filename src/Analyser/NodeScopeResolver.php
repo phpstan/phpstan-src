@@ -2796,15 +2796,22 @@ class NodeScopeResolver
 			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
 			$ifFalseScope = $elseResult->getScope();
 
-			if ($ifTrueType instanceof NeverType && $ifTrueType->isExplicit()) {
+			$condType = $scope->getType($expr->cond);
+			if ($condType->isTrue()->yes()) {
+				$finalScope = $ifTrueScope;
+			} elseif ($condType->isFalse()->yes()) {
 				$finalScope = $ifFalseScope;
 			} else {
-				$ifFalseType = $ifFalseScope->getType($expr->else);
-
-				if ($ifFalseType instanceof NeverType && $ifFalseType->isExplicit()) {
-					$finalScope = $ifTrueScope;
+				if ($ifTrueType instanceof NeverType && $ifTrueType->isExplicit()) {
+					$finalScope = $ifFalseScope;
 				} else {
-					$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
+					$ifFalseType = $ifFalseScope->getType($expr->else);
+
+					if ($ifFalseType instanceof NeverType && $ifFalseType->isExplicit()) {
+						$finalScope = $ifTrueScope;
+					} else {
+						$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
+					}
 				}
 			}
 

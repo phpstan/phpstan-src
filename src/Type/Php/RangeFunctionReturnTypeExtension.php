@@ -112,7 +112,7 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		$isStepInteger = $stepType->isInteger()->yes();
 
 		if ($isInteger && $isStepInteger) {
-			return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new IntegerType()));
+			return AccessoryArrayListType::intersectWith(new ArrayType($argType, $argType));
 		}
 
 		if ($argType->isFloat()->yes()) {

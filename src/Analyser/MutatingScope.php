@@ -37,7 +37,6 @@ use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
@@ -2006,7 +2005,7 @@ class MutatingScope implements Scope
 				return false;
 			}
 
-			// If offset is cannot be null, store this error message and see if one of the earlier offsets is.
+			// If offset cannot be null, store this error message and see if one of the earlier offsets is.
 			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
 			if ($hasOffsetValue->yes()) {
 				$result = $typeCallback($type->getOffsetValueType($dimType));
@@ -3517,7 +3516,7 @@ class MutatingScope implements Scope
 		);
 	}
 
-	public function assignExpression(Expr $expr, Type $type, ?Type $nativeType = null, ?TrinaryLogic $certainty = null): self
+	public function assignExpression(Expr $expr, Type $type, ?Type $nativeType = null): self
 	{
 		if ($nativeType === null) {
 			$nativeType = new MixedType();
@@ -3532,7 +3531,7 @@ class MutatingScope implements Scope
 			$scope = $this->invalidateExpression($expr);
 		}
 
-		return $scope->specifyExpressionType($expr, $type, $nativeType, $certainty);
+		return $scope->specifyExpressionType($expr, $type, $nativeType);
 	}
 
 	public function assignInitializedProperty(Type $fetchedOnType, string $propertyName): self
@@ -3712,7 +3711,7 @@ class MutatingScope implements Scope
 		);
 	}
 
-	private function addTypeToExpression(Expr $expr, Type $type, ?TrinaryLogic $certainty = null): self
+	private function addTypeToExpression(Expr $expr, Type $type): self
 	{
 		$originalExprType = $this->getType($expr);
 		$nativeType = $this->getNativeType($expr);
@@ -3726,11 +3725,10 @@ class MutatingScope implements Scope
 			$expr,
 			TypeCombinator::intersect($type, $originalExprType),
 			TypeCombinator::intersect($type, $nativeType),
-			$certainty,
 		);
 	}
 
-	public function removeTypeFromExpression(Expr $expr, Type $typeToRemove, ?TrinaryLogic $certainty = null): self
+	public function removeTypeFromExpression(Expr $expr, Type $typeToRemove): self
 	{
 		$exprType = $this->getType($expr);
 		if (
@@ -3743,7 +3741,6 @@ class MutatingScope implements Scope
 			$expr,
 			TypeCombinator::remove($exprType, $typeToRemove),
 			TypeCombinator::remove($this->getNativeType($expr), $typeToRemove),
-			$certainty,
 		);
 	}
 
@@ -3785,8 +3782,6 @@ class MutatingScope implements Scope
 
 	public function filterBySpecifiedTypes(SpecifiedTypes $specifiedTypes): self
 	{
-		$scope = $this;
-
 		$typeSpecifications = [];
 		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $type]) {
 			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
@@ -3820,54 +3815,19 @@ class MutatingScope implements Scope
 			return $b['sure'] - $a['sure']; // @phpstan-ignore-line
 		});
 
+		$scope = $this;
 		$specifiedExpressions = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
-			$certainty = TrinaryLogic::createYes();
-
-			if ($expr instanceof IssetExpr) {
-				$issetExpr = $expr;
-				$expr = $issetExpr->getExpr();
-				$certainty = $issetExpr->getCertainty();
-
-				if ($certainty->no()) {
-					$scope = $scope->unsetExpression($expr);
-
-					if ($expr instanceof Variable) {
-						$exprString = $this->getNodeKey($expr);
-
-						unset($scope->expressionTypes[$exprString]);
-						unset($scope->nativeExpressionTypes[$exprString]);
-					}
-
-					if ($expr instanceof Expr\ArrayDimFetch) {
-						$type = $scope->getType($expr->var);
-						$arraySize = $type->getArraySize();
-
-						if (
-							$arraySize instanceof ConstantIntegerType
-							&& $arraySize->getValue() === 0
-						) {
-							$exprString = $this->getNodeKey($expr->var);
-
-							unset($scope->expressionTypes[$exprString]);
-							unset($scope->nativeExpressionTypes[$exprString]);
-						}
-					}
-
-					continue;
-				}
-			}
-
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
-					$scope = $scope->assignExpression($expr, $type, $type, $certainty);
+					$scope = $scope->assignExpression($expr, $type, $type);
 				} else {
-					$scope = $scope->addTypeToExpression($expr, $type, $certainty);
+					$scope = $scope->addTypeToExpression($expr, $type);
 				}
 			} else {
-				$scope = $scope->removeTypeFromExpression($expr, $type, $certainty);
+				$scope = $scope->removeTypeFromExpression($expr, $type);
 			}
 			$specifiedExpressions[$this->getNodeKey($expr)] = ExpressionTypeHolder::createYes($expr, $scope->getType($expr));
 		}

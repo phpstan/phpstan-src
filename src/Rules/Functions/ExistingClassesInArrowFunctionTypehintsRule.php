@@ -34,6 +34,7 @@ class ExistingClassesInArrowFunctionTypehintsRule implements Rule
 			$returnType = ParserNodeTypeToPHPStanType::resolve($node->returnType, $scope->isInClass() ? $scope->getClassReflection() : null);
 			if ($returnType instanceof NonAcceptingNeverType) {
 				$messages[] = RuleErrorBuilder::message('Never return type in arrow function is supported only on PHP 8.2 and later.')
+					->identifier('return.neverTypeNotSupported')
 					->nonIgnorable()
 					->build();
 			}

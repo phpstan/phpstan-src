@@ -37,6 +37,7 @@ use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
@@ -2348,6 +2349,10 @@ class MutatingScope implements Scope
 	/** @api */
 	public function hasExpressionType(Expr $node): TrinaryLogic
 	{
+		if ($node instanceof Variable && is_string($node->name)) {
+			return $this->hasVariableType($node->name);
+		}
+
 		$exprString = $this->getNodeKey($node);
 		if (!isset($this->expressionTypes[$exprString])) {
 			return TrinaryLogic::createNo();
@@ -3440,7 +3445,7 @@ class MutatingScope implements Scope
 		return $scope->invalidateExpression($expr);
 	}
 
-	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType): self
+	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType, ?TrinaryLogic $certainty = null): self
 	{
 		if ($expr instanceof ConstFetch) {
 			$loweredConstName = strtolower($expr->name->toString());
@@ -3474,6 +3479,7 @@ class MutatingScope implements Scope
 					if ($dimType instanceof ConstantIntegerType) {
 						$types[] = new StringType();
 					}
+
 					$scope = $scope->specifyExpressionType(
 						$expr->var,
 						TypeCombinator::intersect(
@@ -3481,16 +3487,23 @@ class MutatingScope implements Scope
 							new HasOffsetValueType($dimType, $type),
 						),
 						$scope->getNativeType($expr->var),
+						$certainty,
 					);
 				}
 			}
 		}
 
+		if ($certainty === null) {
+			$certainty = TrinaryLogic::createYes();
+		} elseif ($certainty->no()) {
+			throw new ShouldNotHappenException();
+		}
+
 		$exprString = $this->getNodeKey($expr);
 		$expressionTypes = $scope->expressionTypes;
-		$expressionTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $type);
+		$expressionTypes[$exprString] = new ExpressionTypeHolder($expr, $type, $certainty);
 		$nativeTypes = $scope->nativeExpressionTypes;
-		$nativeTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $nativeType);
+		$nativeTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
 
 		return $this->scopeFactory->create(
 			$this->context,
@@ -3707,6 +3720,23 @@ class MutatingScope implements Scope
 		);
 	}
 
+	private function setExpressionCertainty(Expr $expr, TrinaryLogic $certainty): self
+	{
+		if ($this->hasExpressionType($expr)->no()) {
+			throw new ShouldNotHappenException();
+		}
+
+		$originalExprType = $this->getType($expr);
+		$nativeType = $this->getNativeType($expr);
+
+		return $this->specifyExpressionType(
+			$expr,
+			$originalExprType,
+			$nativeType,
+			$certainty,
+		);
+	}
+
 	private function addTypeToExpression(Expr $expr, Type $type): self
 	{
 		$originalExprType = $this->getType($expr);
@@ -3816,6 +3846,23 @@ class MutatingScope implements Scope
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
+
+			if ($expr instanceof IssetExpr) {
+				$issetExpr = $expr;
+				$expr = $issetExpr->getExpr();
+
+				if ($typeSpecification['sure']) {
+					$scope = $scope->setExpressionCertainty(
+						$expr,
+						TrinaryLogic::createMaybe(),
+					);
+				} else {
+					$scope = $scope->unsetExpression($expr);
+				}
+
+				continue;
+			}
+
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
 					$scope = $scope->assignExpression($expr, $type, $type);
@@ -3828,6 +3875,7 @@ class MutatingScope implements Scope
 			$specifiedExpressions[$this->getNodeKey($expr)] = ExpressionTypeHolder::createYes($expr, $scope->getType($expr));
 		}
 
+		$conditions = [];
 		foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
 			foreach ($conditionalExpressions as $conditionalExpression) {
 				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
@@ -3836,18 +3884,25 @@ class MutatingScope implements Scope
 					}
 				}
 
-				if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
-					unset($scope->expressionTypes[$conditionalExprString]);
-				} else {
-					$scope->expressionTypes[$conditionalExprString] = array_key_exists($conditionalExprString, $scope->expressionTypes)
-						? new ExpressionTypeHolder(
-							$scope->expressionTypes[$conditionalExprString]->getExpr(),
-							TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $conditionalExpression->getTypeHolder()->getType()),
-							TrinaryLogic::maxMin($scope->expressionTypes[$conditionalExprString]->getCertainty(), $conditionalExpression->getTypeHolder()->getCertainty()),
-						)
-						: $conditionalExpression->getTypeHolder();
-					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
-				}
+				$conditions[$conditionalExprString][] = $conditionalExpression;
+				$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+			}
+		}
+
+		foreach ($conditions as $conditionalExprString => $expressions) {
+			$certainty = TrinaryLogic::lazyExtremeIdentity($expressions, static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getCertainty());
+			if ($certainty->no()) {
+				unset($scope->expressionTypes[$conditionalExprString]);
+			} else {
+				$type = TypeCombinator::intersect(...array_map(static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getType(), $expressions));
+
+				$scope->expressionTypes[$conditionalExprString] = array_key_exists($conditionalExprString, $scope->expressionTypes)
+					? new ExpressionTypeHolder(
+						$scope->expressionTypes[$conditionalExprString]->getExpr(),
+						TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $type),
+						TrinaryLogic::maxMin($scope->expressionTypes[$conditionalExprString]->getCertainty(), $certainty),
+					)
+					: $expressions[0]->getTypeHolder();
 			}
 		}
 

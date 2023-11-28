@@ -19,6 +19,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -67,12 +68,11 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
-use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
-use function array_reduce;
 use function array_reverse;
+use function array_shift;
 use function count;
 use function in_array;
 use function is_string;
@@ -518,8 +518,10 @@ class TypeSpecifier
 					$types->getSureNotTypes(),
 					false,
 					array_merge(
-						$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes),
-						$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes),
+						$this->processBooleanNotSureConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanNotSureConditionalTypes($scope, $rightTypes, $leftTypes),
+						$this->processBooleanSureConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanSureConditionalTypes($scope, $rightTypes, $leftTypes),
 					),
 					$rootExpr,
 				);
@@ -540,8 +542,10 @@ class TypeSpecifier
 					$types->getSureNotTypes(),
 					false,
 					array_merge(
-						$this->processBooleanConditionalTypes($scope, $leftTypes, $rightTypes),
-						$this->processBooleanConditionalTypes($scope, $rightTypes, $leftTypes),
+						$this->processBooleanNotSureConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanNotSureConditionalTypes($scope, $rightTypes, $leftTypes),
+						$this->processBooleanSureConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanSureConditionalTypes($scope, $rightTypes, $leftTypes),
 					),
 					$rootExpr,
 				);
@@ -564,52 +568,126 @@ class TypeSpecifier
 			&& count($expr->vars) > 0
 			&& !$context->null()
 		) {
+			// rewrite multi param isset() to and-chained single param isset()
+			if (count($expr->vars) > 1) {
+				$issets = [];
+				foreach ($expr->vars as $var) {
+					$issets[] = new Expr\Isset_([$var], $expr->getAttributes());
+				}
+
+				$first = array_shift($issets);
+				$andChain = null;
+				foreach ($issets as $isset) {
+					if ($andChain === null) {
+						$andChain = new BooleanAnd($first, $isset);
+						continue;
+					}
+
+					$andChain = new BooleanAnd($andChain, $isset);
+				}
+
+				if ($andChain === null) {
+					throw new ShouldNotHappenException();
+				}
+
+				return $this->specifyTypesInCondition($scope, $andChain, $context, $rootExpr);
+			}
+
+			$issetExpr = $expr->vars[0];
+
 			if (!$context->true()) {
 				if (!$scope instanceof MutatingScope) {
 					throw new ShouldNotHappenException();
 				}
 
-				return array_reduce(
-					array_filter(
-						$expr->vars,
-						static fn (Expr $var) => $scope->issetCheck($var, static fn () => true),
-					),
-					fn (SpecifiedTypes $types, Expr $var) => $types->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr)),
-					new SpecifiedTypes(),
-				);
-			}
+				$isset = $scope->issetCheck($issetExpr, static fn () => true);
 
-			$vars = [];
-			foreach ($expr->vars as $var) {
-				$tmpVars = [$var];
-
-				while (
-					$var instanceof ArrayDimFetch
-					|| $var instanceof PropertyFetch
-					|| (
-						$var instanceof StaticPropertyFetch
-						&& $var->class instanceof Expr
-					)
-				) {
-					if ($var instanceof StaticPropertyFetch) {
-						/** @var Expr $var */
-						$var = $var->class;
-					} else {
-						$var = $var->var;
-					}
-					$tmpVars[] = $var;
+				if ($isset === false) {
+					return new SpecifiedTypes();
 				}
 
-				$vars = array_merge($vars, array_reverse($tmpVars));
+				if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
+					$type = $scope->getType($issetExpr);
+					$isNullable = !$type->isNull()->no();
+
+					$exprType = $this->create(
+						$issetExpr,
+						new NullType(),
+						$context->negate(),
+						false,
+						$scope,
+						$rootExpr,
+					);
+					if ($isset === true) {
+						if ($isNullable) {
+							return $exprType;
+						}
+
+						// variable cannot exist in !isset()
+						return $exprType->unionWith($this->create(
+							new IssetExpr($issetExpr),
+							new NullType(),
+							$context,
+							false,
+							$scope,
+							$rootExpr,
+						));
+					}
+
+					if ($isNullable) {
+						// reduces variable certainty to maybe
+						return $exprType->unionWith($this->create(
+							new IssetExpr($issetExpr),
+							new NullType(),
+							$context->negate(),
+							false,
+							$scope,
+							$rootExpr,
+						));
+					}
+
+					// variable cannot exist in !isset()
+					return $this->create(
+						new IssetExpr($issetExpr),
+						new NullType(),
+						$context,
+						false,
+						$scope,
+						$rootExpr,
+					);
+				}
+
+				return new SpecifiedTypes();
 			}
 
-			$types = null;
+			$tmpVars = [$issetExpr];
+			while (
+				$issetExpr instanceof ArrayDimFetch
+				|| $issetExpr instanceof PropertyFetch
+				|| (
+					$issetExpr instanceof StaticPropertyFetch
+					&& $issetExpr->class instanceof Expr
+				)
+			) {
+				if ($issetExpr instanceof StaticPropertyFetch) {
+					/** @var Expr $issetExpr */
+					$issetExpr = $issetExpr->class;
+				} else {
+					$issetExpr = $issetExpr->var;
+				}
+				$tmpVars[] = $issetExpr;
+			}
+			$vars = array_reverse($tmpVars);
+
+			$types = new SpecifiedTypes();
 			foreach ($vars as $var) {
+
 				if ($var instanceof Expr\Variable && is_string($var->name)) {
 					if ($scope->hasVariableType($var->name)->no()) {
 						return new SpecifiedTypes([], [], false, [], $rootExpr);
 					}
 				}
+
 				if (
 					$var instanceof ArrayDimFetch
 					&& $var->dim !== null
@@ -618,68 +696,96 @@ class TypeSpecifier
 					$dimType = $scope->getType($var->dim);
 
 					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
-						$type = $this->create(
-							$var->var,
-							new HasOffsetType($dimType),
-							$context,
-							false,
-							$scope,
-							$rootExpr,
+						$types = $types->unionWith(
+							$this->create(
+								$var->var,
+								new HasOffsetType($dimType),
+								$context,
+								false,
+								$scope,
+								$rootExpr,
+							),
 						);
-					} else {
-						$type = new SpecifiedTypes();
 					}
-
-					$type = $type->unionWith(
-						$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
-					);
-				} else {
-					$type = $this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr);
 				}
 
 				if (
 					$var instanceof PropertyFetch
 					&& $var->name instanceof Node\Identifier
 				) {
-					$type = $type->unionWith($this->create($var->var, new IntersectionType([
-						new ObjectWithoutClassType(),
-						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr));
+					$types = $types->unionWith(
+						$this->create($var->var, new IntersectionType([
+							new ObjectWithoutClassType(),
+							new HasPropertyType($var->name->toString()),
+						]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr),
+					);
 				} elseif (
 					$var instanceof StaticPropertyFetch
 					&& $var->class instanceof Expr
 					&& $var->name instanceof Node\VarLikeIdentifier
 				) {
-					$type = $type->unionWith($this->create($var->class, new IntersectionType([
-						new ObjectWithoutClassType(),
-						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr));
+					$types = $types->unionWith(
+						$this->create($var->class, new IntersectionType([
+							new ObjectWithoutClassType(),
+							new HasPropertyType($var->name->toString()),
+						]), TypeSpecifierContext::createTruthy(), false, $scope, $rootExpr),
+					);
 				}
 
-				if ($types === null) {
-					$types = $type;
-				} else {
-					$types = $types->unionWith($type);
-				}
+				$types = $types->unionWith(
+					$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
+				);
 			}
 
 			return $types;
 		} elseif (
 			$expr instanceof Expr\BinaryOp\Coalesce
-			&& $context->true()
-			&& $scope->getType($expr->right)->isFalse()->yes()
+			&& !$context->null()
 		) {
-			return $this->create(
-				$expr->left,
-				new NullType(),
-				TypeSpecifierContext::createFalse(),
-				false,
-				$scope,
-				$rootExpr,
-			);
+			if (!$context->true()) {
+				if (!$scope instanceof MutatingScope) {
+					throw new ShouldNotHappenException();
+				}
+
+				$isset = $scope->issetCheck($expr->left, static fn () => true);
+
+				if ($isset !== true) {
+					return new SpecifiedTypes();
+				}
+
+				return $this->create(
+					$expr->left,
+					new NullType(),
+					$context->negate(),
+					false,
+					$scope,
+					$rootExpr,
+				);
+			}
+
+			if ((new ConstantBooleanType(false))->isSuperTypeOf($scope->getType($expr->right))->yes()) {
+				return $this->create(
+					$expr->left,
+					new NullType(),
+					TypeSpecifierContext::createFalse(),
+					false,
+					$scope,
+					$rootExpr,
+				);
+			}
+
 		} elseif (
 			$expr instanceof Expr\Empty_
 		) {
+			if (!$scope instanceof MutatingScope) {
+				throw new ShouldNotHappenException();
+			}
+
+			$isset = $scope->issetCheck($expr->expr, static fn () => true);
+			if ($isset === false) {
+				return new SpecifiedTypes();
+			}
+
 			return $this->specifyTypesInCondition($scope, new BooleanOr(
 				new Expr\BooleanNot(new Expr\Isset_([$expr->expr])),
 				new Expr\BooleanNot($expr->expr),
@@ -1178,7 +1284,74 @@ class TypeSpecifier
 	/**
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
-	private function processBooleanConditionalTypes(Scope $scope, SpecifiedTypes $leftTypes, SpecifiedTypes $rightTypes): array
+	private function processBooleanSureConditionalTypes(Scope $scope, SpecifiedTypes $leftTypes, SpecifiedTypes $rightTypes): array
+	{
+		$conditionExpressionTypes = [];
+		foreach ($leftTypes->getSureTypes() as $exprString => [$expr, $type]) {
+			if (!$expr instanceof Expr\Variable) {
+				continue;
+			}
+			if (!is_string($expr->name)) {
+				continue;
+			}
+
+			$conditionExpressionTypes[$exprString] = ExpressionTypeHolder::createYes(
+				$expr,
+				TypeCombinator::remove($scope->getType($expr), $type),
+			);
+		}
+
+		if (count($conditionExpressionTypes) > 0) {
+			$holders = [];
+			foreach ($rightTypes->getSureTypes() as $exprString => [$expr, $type]) {
+				if (!$expr instanceof Expr\Variable) {
+					continue;
+				}
+				if (!is_string($expr->name)) {
+					continue;
+				}
+
+				if (!isset($holders[$exprString])) {
+					$holders[$exprString] = [];
+				}
+
+				$conditions = $conditionExpressionTypes;
+				foreach ($conditions as $conditionExprString => $conditionExprTypeHolder) {
+					$conditionExpr = $conditionExprTypeHolder->getExpr();
+					if (!$conditionExpr instanceof Expr\Variable) {
+						continue;
+					}
+					if (!is_string($conditionExpr->name)) {
+						continue;
+					}
+					if ($conditionExpr->name !== $expr->name) {
+						continue;
+					}
+
+					unset($conditions[$conditionExprString]);
+				}
+
+				if (count($conditions) === 0) {
+					continue;
+				}
+
+				$holder = new ConditionalExpressionHolder(
+					$conditions,
+					new ExpressionTypeHolder($expr, TypeCombinator::intersect($scope->getType($expr), $type), TrinaryLogic::createYes()),
+				);
+				$holders[$exprString][$holder->getKey()] = $holder;
+			}
+
+			return $holders;
+		}
+
+		return [];
+	}
+
+	/**
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processBooleanNotSureConditionalTypes(Scope $scope, SpecifiedTypes $leftTypes, SpecifiedTypes $rightTypes): array
 	{
 		$conditionExpressionTypes = [];
 		foreach ($leftTypes->getSureNotTypes() as $exprString => [$expr, $type]) {

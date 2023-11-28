@@ -90,7 +90,6 @@ use PHPStan\Node\InForeachNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\InTraitNode;
-use PHPStan\Node\IssetExpr;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\MatchExpressionArm;
@@ -2782,41 +2781,9 @@ class NodeScopeResolver
 			)->getScope();
 		} elseif ($expr instanceof Ternary) {
 			$ternaryCondResult = $this->processExprNode($expr->cond, $scope, $nodeCallback, $context->enterDeep());
-			$condScope = $ternaryCondResult->getScope();
-
-			$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $expr->cond, TypeSpecifierContext::createTruthy());
-			$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $expr->cond, TypeSpecifierContext::createFalsey());
-			$ifTrueScope = $ternaryCondResult->getTruthyScope()->filterBySpecifiedTypes($truthySpecifiedTypes);
-			$ifFalseScope = $ternaryCondResult->getFalseyScope()->filterBySpecifiedTypes($falseySpecifiedTypes);
-
-			$restoreIssetExprCertainty = static function (MutatingScope $previousScope, MutatingScope $scope, SpecifiedTypes $specifiedTypes): MutatingScope {
-				foreach ($specifiedTypes->getSureNotTypes() as [$expr, $exprType]) {
-					if (!$expr instanceof IssetExpr) {
-						continue;
-					}
-
-					$expr = $expr->getExpr();
-					if ($scope->hasExpressionType($expr)->no()) {
-						continue;
-					}
-
-					$previousScopeHasExpressionType = $previousScope->hasExpressionType($expr);
-					if ($previousScopeHasExpressionType->no()) {
-						continue;
-					}
-
-					$scope = $scope->specifyExpressionType(
-						$expr,
-						$scope->getType($expr),
-						$scope->getNativeType($expr),
-						$previousScopeHasExpressionType,
-					);
-				}
-
-				return $scope;
-			};
-
 			$throwPoints = $ternaryCondResult->getThrowPoints();
+			$ifTrueScope = $ternaryCondResult->getTruthyScope();
+			$ifFalseScope = $ternaryCondResult->getFalseyScope();
 			$ifTrueType = null;
 			if ($expr->if !== null) {
 				$ifResult = $this->processExprNode($expr->if, $ifTrueScope, $nodeCallback, $context);
@@ -2840,9 +2807,6 @@ class NodeScopeResolver
 					$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
 				}
 			}
-
-			$finalScope = $restoreIssetExprCertainty($scope, $finalScope, $truthySpecifiedTypes);
-			$finalScope = $restoreIssetExprCertainty($scope, $finalScope, $falseySpecifiedTypes);
 
 			return new ExpressionResult(
 				$finalScope,

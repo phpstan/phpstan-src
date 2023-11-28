@@ -9,6 +9,7 @@ use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 
@@ -40,6 +41,16 @@ class ArrowFunctionReturnTypeRule implements Rule
 		$originalNode = $node->getOriginalNode();
 		$isVoidSuperType = $returnType->isVoid();
 		if ($originalNode->returnType === null && $isVoidSuperType->yes()) {
+			return [];
+		}
+
+		$exprType = $scope->getType($originalNode->expr);
+		if (
+			$returnType instanceof NeverType
+			&& $returnType->isExplicit()
+			&& $exprType instanceof NeverType
+			&& $exprType->isExplicit()
+		) {
 			return [];
 		}
 

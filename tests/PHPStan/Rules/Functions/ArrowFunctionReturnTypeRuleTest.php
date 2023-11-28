@@ -39,6 +39,10 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 				'Anonymous function should return int but returns string.',
 				14,
 			],
+			[
+				'Anonymous function should never return but return statement found.',
+				44,
+			],
 		]);
 	}
 

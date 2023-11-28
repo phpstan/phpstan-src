@@ -1,6 +1,6 @@
 <?php
 
-namespace RangeNumericString;
+namespace RangeIntRange;
 
 use function PHPStan\Testing\assertType;
 

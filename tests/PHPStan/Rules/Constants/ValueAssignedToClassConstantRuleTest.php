@@ -86,4 +86,18 @@ class ValueAssignedToClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10212(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-10212.php'], [
+			[
+				'Constant Bug10212\HelloWorld::B (Bug10212\X\Foo) does not accept value Bug10212\Foo::Bar.',
+				15,
+			],
+		]);
+	}
+
 }

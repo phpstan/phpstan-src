@@ -1,0 +1,12 @@
+--- lib/PhpParser/NodeVisitor/NameResolver.php	2023-11-28 14:02:15
++++ lib/PhpParser/NodeVisitor/NameResolver.php	2023-11-28 14:03:53
+@@ -119,6 +119,9 @@
+             }
+         } else if ($node instanceof Stmt\ClassConst) {
+             $this->resolveAttrGroups($node);
++            if (null !== $node->type) {
++                $node->type = $this->resolveType($node->type);
++            }
+         } else if ($node instanceof Stmt\EnumCase) {
+             $this->resolveAttrGroups($node);
+         } elseif ($node instanceof Expr\StaticCall

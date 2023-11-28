@@ -1315,8 +1315,28 @@ class TypeSpecifier
 					$holders[$exprString] = [];
 				}
 
+				$conditions = $conditionExpressionTypes;
+				foreach ($conditions as $conditionExprString => $conditionExprTypeHolder) {
+					$conditionExpr = $conditionExprTypeHolder->getExpr();
+					if (!$conditionExpr instanceof Expr\Variable) {
+						continue;
+					}
+					if (!is_string($conditionExpr->name)) {
+						continue;
+					}
+					if ($conditionExpr->name !== $expr->name) {
+						continue;
+					}
+
+					unset($conditions[$conditionExprString]);
+				}
+
+				if (count($conditions) === 0) {
+					continue;
+				}
+
 				$holder = new ConditionalExpressionHolder(
-					$conditionExpressionTypes,
+					$conditions,
 					new ExpressionTypeHolder($expr, TypeCombinator::intersect($scope->getType($expr), $type), TrinaryLogic::createYes()),
 				);
 				$holders[$exprString][$holder->getKey()] = $holder;

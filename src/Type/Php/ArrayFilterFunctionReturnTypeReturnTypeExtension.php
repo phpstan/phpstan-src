@@ -23,6 +23,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -54,9 +55,13 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 		}
 
 		$arrayArgType = $scope->getType($arrayArg);
+		$arrayArgType->isArray();
 		$keyType = $arrayArgType->getIterableKeyType();
 		$itemType = $arrayArgType->getIterableValueType();
 
+		if ($itemType instanceof ErrorType || $keyType instanceof ErrorType) {
+			return new ConstantArrayType([], []);
+		}
 		if ($itemType instanceof NeverType || $keyType instanceof NeverType) {
 			return new ConstantArrayType([], []);
 		}

@@ -21,7 +21,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ExistingClassesInArrowFunctionTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker, true), new UnresolvableTypeHelper(), new PhpVersion($this->phpVersionId), true, false));
+		return new ExistingClassesInArrowFunctionTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker, true), new UnresolvableTypeHelper(), new PhpVersion($this->phpVersionId), true, false), new PhpVersion(PHP_VERSION_ID));
 	}
 
 	public function testRule(): void
@@ -145,6 +145,20 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 		$this->phpVersionId = $phpVersion;
 
 		$this->analyse([__DIR__ . '/data/arrow-function-intersection-types.php'], $errors);
+	}
+
+	public function testNever(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80200) {
+			$errors = [
+				[
+					'Never return type in arrow function is supported only on PHP 8.2 and later.',
+					6,
+				],
+			];
+		}
+		$this->analyse([__DIR__ . '/data/arrow-function-never.php'], $errors);
 	}
 
 }

@@ -272,4 +272,9 @@ class PhpVersion
 		return $this->versionId >= 80300;
 	}
 
+	public function supportsNeverReturnTypeInArrowFunction(): bool
+	{
+		return $this->versionId >= 80200;
+	}
+
 }

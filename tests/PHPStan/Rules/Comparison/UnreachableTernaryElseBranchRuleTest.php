@@ -64,6 +64,10 @@ class UnreachableTernaryElseBranchRuleTest extends RuleTestCase
 				'Else branch is unreachable because ternary operator condition is always true.',
 				17,
 			],
+			[
+				'Else branch is unreachable because ternary operator condition is always true.',
+				20,
+			],
 		]);
 	}
 
@@ -88,7 +92,6 @@ class UnreachableTernaryElseBranchRuleTest extends RuleTestCase
 			[
 				'Else branch is unreachable because ternary operator condition is always true.',
 				20,
-				$tipText,
 			],
 		]);
 	}

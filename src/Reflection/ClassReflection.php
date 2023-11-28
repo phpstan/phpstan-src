@@ -993,7 +993,7 @@ class ClassReflection
 
 			$nativeType = null;
 			if ($reflectionConstant->getType() !== null) {
-				$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), null, $this);
+				$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), null, $declaringClass);
 			} elseif ($this->signatureMapProvider->hasClassConstantMetadata($declaringClass->getName(), $name)) {
 				$nativeType = $this->signatureMapProvider->getClassConstantMetadata($declaringClass->getName(), $name)['nativeType'];
 			}

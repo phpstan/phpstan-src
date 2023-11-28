@@ -9577,7 +9577,7 @@ return [
 'Redis::hKeys' => ['__benevolent<Redis|string[]|false>', 'key'=>'string'],
 'Redis::hLen' => ['__benevolent<Redis|int|false>', 'key'=>'string'],
 'Redis::hMget' => ['__benevolent<Redis|array<string, mixed>|false>', 'key'=>'string', 'fields'=>'string[]'],
-'Redis::hMset' => ['__benevolent<Redis|bool>', 'key'=>'string', 'fieldvals'=>'array<string, mixed>'],
+'Redis::hMset' => ['__benevolent<Redis|bool>', 'key'=>'string', 'fieldvals'=>'array'],
 'Redis::hRandField' => ['__benevolent<Redis|string|array<string, mixed>>', 'key'=>'string', 'options'=>'?array{COUNT?:int,WITHVALUES?:bool}'],
 'Redis::hscan' => ['__benevolent<Redis|array<string, mixed>|bool>', 'key'=>'string', '&iterator'=>'?int', 'pattern='=>'?string', 'count='=>'int'],
 'Redis::hSet' => ['__benevolent<Redis|int|false>', 'key'=>'string', 'member'=>'string', 'value'=>'mixed'],

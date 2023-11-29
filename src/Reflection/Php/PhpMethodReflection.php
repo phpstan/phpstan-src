@@ -431,7 +431,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		if ($this->isPure !== null) {
 			return TrinaryLogic::createFromBoolean(!$this->isPure);
 		}
-		if (count($this->getParameters()) === 0 && preg_match('#^(get|is|has|can)[A-Z0-9_]#', $this->getName())) {
+		if (count($this->getParameters()) === 0 && preg_match('#^(get|is|has|can)[A-Z0-9_]#', $this->getName()) === 1) {
 			return TrinaryLogic::createNo();
 		}
 

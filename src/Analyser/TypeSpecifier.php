@@ -763,7 +763,7 @@ class TypeSpecifier
 				);
 			}
 
-			if ((new ConstantBooleanType(false))->isSuperTypeOf($scope->getType($expr->right))->yes()) {
+			if ((new ConstantBooleanType(false))->isSuperTypeOf($scope->getType($expr->right)->toBoolean())->yes()) {
 				return $this->create(
 					$expr->left,
 					new NullType(),

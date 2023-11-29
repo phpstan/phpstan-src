@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function is_float;
@@ -24,14 +25,20 @@ final class ExponentiateHelper
 			return new NeverType();
 		}
 
-		$allowedExponentTypes = new UnionType([
+		$allowedOperandTypes = new UnionType([
 			new IntegerType(),
 			new FloatType(),
-			new StringType(),
+			new IntersectionType([
+				new StringType(),
+				new AccessoryNumericStringType(),
+			]),
 			new BooleanType(),
 			new NullType(),
 		]);
-		if (!$allowedExponentTypes->isSuperTypeOf($exponent)->yes()) {
+		if (!$allowedOperandTypes->isSuperTypeOf($exponent)->yes()) {
+			return new ErrorType();
+		}
+		if (!$allowedOperandTypes->isSuperTypeOf($base)->yes()) {
 			return new ErrorType();
 		}
 

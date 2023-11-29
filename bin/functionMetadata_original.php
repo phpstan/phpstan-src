@@ -153,6 +153,8 @@ return [
 	'DateTimeImmutable::getTimestamp' => ['hasSideEffects' => false],
 	'DateTimeImmutable::getTimezone' => ['hasSideEffects' => false],
 
+	'Redis::get' => ['hasSideEffects' => true],
+
 	'XmlReader::next' => ['hasSideEffects' => true],
 	'XmlReader::read' => ['hasSideEffects' => true],
 ];

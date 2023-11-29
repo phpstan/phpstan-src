@@ -35,10 +35,12 @@ use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
 use ReflectionException;
 use function array_map;
+use function count;
 use function explode;
 use function filemtime;
 use function in_array;
 use function is_bool;
+use function preg_match;
 use function sprintf;
 use function strtolower;
 use function time;
@@ -428,6 +430,9 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		}
 		if ($this->isPure !== null) {
 			return TrinaryLogic::createFromBoolean(!$this->isPure);
+		}
+		if (count($this->getParameters()) === 0 && preg_match('#^(get|is|has|can)[A-Z0-9_]#', $this->getName())) {
+			return TrinaryLogic::createNo();
 		}
 
 		return TrinaryLogic::createMaybe();

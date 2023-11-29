@@ -207,12 +207,12 @@ class FunctionCallParametersCheck
 			}
 		}
 
-		if (
-			!$funcCall instanceof Node\Expr\New_
-			&& !$scope->isInFirstLevelStatement()
-			&& $scope->getType($funcCall)->isVoid()->yes()
-		) {
-			$errors[] = RuleErrorBuilder::message($messages[7])->line($funcCall->getLine())->build();
+		if (!$funcCall instanceof Node\Expr\New_ && !$scope->isInFirstLevelStatement()) {
+			$clonedFuncCall = clone $funcCall;
+			$clonedFuncCall->setAttribute('keepVoid', true);
+			if ($scope->getType($clonedFuncCall)->isVoid()->yes()) {
+				$errors[] = RuleErrorBuilder::message($messages[7])->line($funcCall->getLine())->build();
+			}
 		}
 
 		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCall->getLine(), $isBuiltin, $arguments, $hasNamedArguments, $messages[10], $messages[11]);

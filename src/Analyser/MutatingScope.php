@@ -676,6 +676,10 @@ class MutatingScope implements Scope
 			$key .= '/*' . $node->getAttribute('startFilePos') . '*/';
 		}
 
+		if ($node->hasAttribute('keepVoid')) {
+			$key .= '/*keepVoid*/';
+		}
+
 		return $key;
 	}
 
@@ -1492,6 +1496,9 @@ class MutatingScope implements Scope
 			$matchScope = $this;
 			foreach ($node->arms as $arm) {
 				if ($arm->conds === null) {
+					if ($node->hasAttribute('keepVoid')) {
+						$arm->body->setAttribute('keepVoid', $node->getAttribute('keepVoid'));
+					}
 					$types[] = $matchScope->getType($arm->body);
 					continue;
 				}
@@ -1521,6 +1528,9 @@ class MutatingScope implements Scope
 
 				if (!$filteringExprType->isFalse()->yes()) {
 					$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
+					if ($node->hasAttribute('keepVoid')) {
+						$arm->body->setAttribute('keepVoid', $node->getAttribute('keepVoid'));
+					}
 					$types[] = $truthyScope->getType($arm->body);
 				}
 
@@ -1946,7 +1956,7 @@ class MutatingScope implements Scope
 				}
 			}
 
-			return $this->transformVoidToNull($parametersAcceptor->getReturnType());
+			return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $node);
 		}
 
 		return new MixedType();
@@ -1986,8 +1996,12 @@ class MutatingScope implements Scope
 		return $type;
 	}
 
-	private function transformVoidToNull(Type $type): Type
+	private function transformVoidToNull(Type $type, Node $node): Type
 	{
+		if ($node->getAttribute('keepVoid') === true) {
+			return $type;
+		}
+
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof UnionType || $type instanceof IntersectionType) {
 				return $traverse($type);
@@ -5118,7 +5132,7 @@ class MutatingScope implements Scope
 			$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 		}
 		if ($normalizedMethodCall === null) {
-			return $this->transformVoidToNull($parametersAcceptor->getReturnType());
+			return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $methodCall);
 		}
 
 		$resolvedTypes = [];
@@ -5157,10 +5171,10 @@ class MutatingScope implements Scope
 		}
 
 		if (count($resolvedTypes) > 0) {
-			return $this->transformVoidToNull(TypeCombinator::union(...$resolvedTypes));
+			return $this->transformVoidToNull(TypeCombinator::union(...$resolvedTypes), $methodCall);
 		}
 
-		return $this->transformVoidToNull($parametersAcceptor->getReturnType());
+		return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $methodCall);
 	}
 
 	/** @api */

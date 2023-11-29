@@ -18,7 +18,12 @@ class UsageOfVoidMatchExpressionRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/void-match.php'], []);
+		$this->analyse([__DIR__ . '/data/void-match.php'], [
+			[
+				'Result of match expression (void) is used.',
+				21,
+			],
+		]);
 	}
 
 }

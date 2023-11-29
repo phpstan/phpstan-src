@@ -87,6 +87,7 @@ use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ExpressionTypeResolverExtensionRegistry;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -1461,6 +1462,12 @@ class MutatingScope implements Scope
 			} elseif ($varType->isString()->yes()) {
 				if ($varType->isLiteralString()->yes()) {
 					return new IntersectionType([$stringType, new AccessoryLiteralStringType()]);
+				}
+				if ($varType->isNumericString()->yes()) {
+					return new BenevolentUnionType([
+						new IntegerType(),
+						new FloatType(),
+					]);
 				}
 				return $stringType;
 			}

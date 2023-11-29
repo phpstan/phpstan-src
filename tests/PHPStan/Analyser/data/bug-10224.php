@@ -15,6 +15,7 @@ function foo(bool $condition): ?string
 		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
 		return $foo;
 	}
+	assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
 	return null;
 }
 

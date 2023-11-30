@@ -15,4 +15,11 @@ function doFoo(string $s, $ns, float $f) {
 	assertType('(float|int)', --$ns);
 	assertType('float', ++$f);
 	assertType('float', --$f);
+
+	assertType('string', $s++);
+	assertType('string', $s--);
+	assertType('(float|int)', $ns++);
+	assertType('(float|int)', $ns--);
+	assertType('float', $f++);
+	assertType('float', $f--);
 }

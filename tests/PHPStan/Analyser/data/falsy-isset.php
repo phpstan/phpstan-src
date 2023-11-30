@@ -152,8 +152,8 @@ class ArrayOffset
 			$a['bar'] = 1;
 			assertType("array{bar: 1}", $a);
 		} else {
-			assertVariableCertainty(TrinaryLogic::createYes(), $a);
-			assertType('*NEVER*', $a);
+			assertVariableCertainty(TrinaryLogic::createNo(), $a);
+			assertType('*ERROR*', $a);
 		}
 
 		assertVariableCertainty(TrinaryLogic::createYes(), $a);

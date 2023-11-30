@@ -696,8 +696,13 @@ class TypeSpecifier
 							}
 
 							if ($type instanceof ConstantArrayType) {
+								$typeWithoutOffset = $type->unsetOffset($dimType);
+								if (!$typeWithoutOffset instanceof ConstantArrayType) {
+									throw new ShouldNotHappenException();
+								}
+
 								$builder = ConstantArrayTypeBuilder::createFromConstantArray(
-									$type->unsetOffset($dimType),
+									$typeWithoutOffset,
 								);
 								$builder->setOffsetValueType(
 									$dimType,

@@ -38,6 +38,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -659,6 +660,97 @@ class TypeSpecifier
 						new IssetExpr($issetExpr),
 						new NullType(),
 						$context,
+						false,
+						$scope,
+						$rootExpr,
+					);
+				}
+
+				if (
+					$issetExpr instanceof ArrayDimFetch
+					&& $issetExpr->dim !== null
+				) {
+					$type = $scope->getType($issetExpr->var);
+					if ($type instanceof MixedType) {
+						return new SpecifiedTypes();
+					}
+
+					$dimType = $scope->getType($issetExpr->dim);
+					if (!($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType)) {
+						return new SpecifiedTypes();
+					}
+
+					$hasOffsetType = $type->hasOffsetValueType($dimType);
+					if ($hasOffsetType->no()) {
+						return new SpecifiedTypes();
+					}
+
+					$isset = $hasOffsetType->yes();
+					$offsetType = $type->getOffsetValueType($dimType);
+					$isNullable = !$offsetType->isNull()->no();
+
+					$setOptionalDim = function (Type $outerType, Type $dimType): Type {
+						return TypeTraverser::map($outerType, static function (Type $type, callable $traverse) use ($dimType): Type {
+							if ($type instanceof UnionType || $type instanceof IntersectionType) {
+								return $traverse($type);
+							}
+
+							if ($type instanceof ConstantArrayType) {
+								$builder = ConstantArrayTypeBuilder::createFromConstantArray(
+									$type->unsetOffset($dimType),
+								);
+								$builder->setOffsetValueType(
+									$dimType,
+									new NullType(),
+									true,
+								);
+								$buildType = $builder->getArray();
+								return $buildType;
+							}
+
+							return $type;
+						});
+					};
+
+					$exprType = $this->create(
+						$issetExpr,
+						new NullType(),
+						$context->negate(),
+						false,
+						$scope,
+						$rootExpr,
+					);
+					if ($isset === true) {
+						if ($isNullable) {
+							return $exprType;
+						}
+
+						// array-key cannot exist in !isset()
+						return $exprType->unionWith($this->create(
+							$issetExpr,
+							new HasOffsetType($dimType),
+							$context,
+							false,
+							$scope,
+							$rootExpr,
+						));
+					}
+
+					if ($isNullable) {
+						return $this->create(
+							$issetExpr->var,
+							$setOptionalDim($type, $dimType),
+							$context->negate(),
+							false,
+							$scope,
+							$rootExpr,
+						);
+					}
+
+					return $this->create(
+						$issetExpr->var,
+						$type->unsetOffset($dimType),
+						$context->negate(),
 						false,
 						$scope,
 						$rootExpr,

@@ -55,7 +55,7 @@ class Foo
 		if (isset($foo['C'])) {
 			assertType("array{A: string, C: 1}", $foo);
 		} else {
-			assertType("array{A: int, B: 1}", $foo);
+			assertType("array{A: int, B: 1}|array{A: string, C: 1}", $foo); // could be array{A: int, B: 1}
 		}
 
 		assertType('array{A: int, B: 1}|array{A: string, C: 1}', $foo);

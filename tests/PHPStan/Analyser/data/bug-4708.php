@@ -51,7 +51,7 @@ function GetASCConfig()
 		assertType('array<string>', $result);
 		if (!isset($result['bsw']))
 		{
-			assertType('array<string>', $result);
+			assertType("array<mixed~'bsw', string>", $result);
 			$result['bsw'] = 1;
 			assertType("non-empty-array<1|string>&hasOffsetValue('bsw', 1)", $result);
 		}
@@ -66,7 +66,7 @@ function GetASCConfig()
 
 		if (!isset($result['bew']))
 		{
-			assertType("non-empty-array<int|string>&hasOffsetValue('bsw', int)", $result);
+			assertType("non-empty-array<mixed~'bew', int|string>&hasOffsetValue('bsw', int)", $result);
 			$result['bew'] = 5;
 			assertType("non-empty-array<int|string>&hasOffsetValue('bew', 5)&hasOffsetValue('bsw', int)", $result);
 		}

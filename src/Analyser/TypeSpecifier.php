@@ -712,28 +712,33 @@ class TypeSpecifier
 						});
 					};
 
-					$exprType = $this->create(
-						$issetExpr,
-						new NullType(),
-						$context->negate(),
-						false,
-						$scope,
-						$rootExpr,
-					);
 					if ($isset === true) {
 						if ($isNullable) {
-							return $exprType;
+							return $this->create(
+								$issetExpr->var,
+								$setOptionalDim($type, $dimType),
+								$context->negate(),
+								true,
+								$scope,
+								$rootExpr,
+							)->unionWith($this->create(
+								new IssetExpr($issetExpr->var),
+								new NullType(),
+								$context->negate(),
+								false,
+								$scope,
+								$rootExpr,
+							));
 						}
 
-						// array-key cannot exist in !isset()
-						return $exprType->unionWith($this->create(
-							$issetExpr,
-							new HasOffsetType($dimType),
+						return $this->create(
+							new IssetExpr($issetExpr->var),
+							new NullType(),
 							$context,
 							false,
 							$scope,
 							$rootExpr,
-						));
+						);
 					}
 
 					if ($isNullable) {

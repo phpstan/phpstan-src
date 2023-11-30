@@ -685,7 +685,7 @@ class TypeSpecifier
 						return new SpecifiedTypes();
 					}
 
-					$isset = $hasOffsetType->yes();
+					$hasOffset = $hasOffsetType->yes();
 					$offsetType = $type->getOffsetValueType($dimType);
 					$isNullable = !$offsetType->isNull()->no();
 
@@ -712,23 +712,30 @@ class TypeSpecifier
 						});
 					};
 
-					if ($isset === true) {
+					if ($hasOffset === true) {
 						if ($isNullable) {
-							return $this->create(
+							$specifiedType =  $this->create(
 								$issetExpr->var,
 								$setOptionalDim($type, $dimType),
 								$context->negate(),
 								true,
 								$scope,
 								$rootExpr,
-							)->unionWith($this->create(
-								new IssetExpr($issetExpr->var),
-								new NullType(),
-								$context->negate(),
-								false,
-								$scope,
-								$rootExpr,
-							));
+							);
+
+							// keep maybe certainty
+							if ($scope->hasExpressionType($issetExpr->var)->maybe()) {
+								return $specifiedType->unionWith($this->create(
+									new IssetExpr($issetExpr->var),
+									new NullType(),
+									$context->negate(),
+									false,
+									$scope,
+									$rootExpr,
+								));
+							}
+
+							return $specifiedType;
 						}
 
 						return $this->create(

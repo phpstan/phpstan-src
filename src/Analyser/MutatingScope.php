@@ -150,6 +150,8 @@ class MutatingScope implements Scope
 
 	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
 
+	private const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
+
 	/** @var Type[] */
 	private array $resolvedTypes = [];
 
@@ -676,8 +678,8 @@ class MutatingScope implements Scope
 			$key .= '/*' . $node->getAttribute('startFilePos') . '*/';
 		}
 
-		if ($node->hasAttribute('keepVoid')) {
-			$key .= '/*keepVoid*/';
+		if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
+			$key .= '/*' . self::KEEP_VOID_ATTRIBUTE_NAME . '*/';
 		}
 
 		return $key;
@@ -1240,9 +1242,7 @@ class MutatingScope implements Scope
 						new VoidType(),
 					]);
 				} else {
-					$expr = clone $node->expr;
-					$expr->setAttribute('keepVoid', true);
-					$returnType = $arrowScope->getType($expr);
+					$returnType = $arrowScope->getKeepVoidType($node->expr);
 					if ($node->returnType !== null) {
 						$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
 					}
@@ -1498,8 +1498,8 @@ class MutatingScope implements Scope
 			$matchScope = $this;
 			foreach ($node->arms as $arm) {
 				if ($arm->conds === null) {
-					if ($node->hasAttribute('keepVoid')) {
-						$arm->body->setAttribute('keepVoid', $node->getAttribute('keepVoid'));
+					if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
+						$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
 					}
 					$types[] = $matchScope->getType($arm->body);
 					continue;
@@ -1530,8 +1530,8 @@ class MutatingScope implements Scope
 
 				if (!$filteringExprType->isFalse()->yes()) {
 					$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
-					if ($node->hasAttribute('keepVoid')) {
-						$arm->body->setAttribute('keepVoid', $node->getAttribute('keepVoid'));
+					if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
+						$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
 					}
 					$types[] = $truthyScope->getType($arm->body);
 				}
@@ -2000,7 +2000,7 @@ class MutatingScope implements Scope
 
 	private function transformVoidToNull(Type $type, Node $node): Type
 	{
-		if ($node->getAttribute('keepVoid') === true) {
+		if ($node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME) === true) {
 			return $type;
 		}
 
@@ -2202,6 +2202,14 @@ class MutatingScope implements Scope
 	public function getNativeType(Expr $expr): Type
 	{
 		return $this->promoteNativeTypes()->getType($expr);
+	}
+
+	public function getKeepVoidType(Expr $node): Type
+	{
+		$clonedNode = clone $node;
+		$clonedNode->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, true);
+
+		return $this->getType($clonedNode);
 	}
 
 	/**

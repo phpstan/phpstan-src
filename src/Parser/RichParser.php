@@ -78,6 +78,9 @@ class RichParser implements Parser
 		$traitCollectingVisitor = new TraitCollectingVisitor();
 		$nodeTraverser->addVisitor($traitCollectingVisitor);
 
+		$transformElseIfToFlatElseIfVisitor = new TransformElseIfToFlatElseIfVisitor();
+		$nodeTraverser->addVisitor($transformElseIfToFlatElseIfVisitor);
+
 		foreach ($this->container->getServicesByTag(self::VISITOR_SERVICE_TAG) as $visitor) {
 			$nodeTraverser->addVisitor($visitor);
 		}

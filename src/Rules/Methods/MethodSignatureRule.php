@@ -182,13 +182,15 @@ class MethodSignatureRule implements Rule
 					continue;
 				}
 
+				$declaringTrait = $trait->getNativeMethod($methodName)->getDeclaringClass();
 				$parentMethods[] = [
 					$this->phpClassReflectionExtension->createUserlandMethodReflection(
 						$trait,
 						$class,
 						new NativeBuiltinMethodReflection($methodReflection),
+						$declaringTrait->getName(),
 					),
-					$trait->getNativeMethod($methodName)->getDeclaringClass(),
+					$declaringTrait,
 				];
 			}
 		}

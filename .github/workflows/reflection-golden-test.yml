@@ -115,9 +115,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./tmp/rectorCache.php
-          key: "rector-v3-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key-base.outputs.sha }}"
+          key: "rector-v4-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key-base.outputs.sha }}"
           restore-keys: |
-            rector-v3-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
+            rector-v4-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
 
       - name: "Transform source code"
         if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
@@ -167,9 +167,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./tmp/rectorCache.php
-          key: "rector-v3-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key-head.outputs.sha }}"
+          key: "rector-v4-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key-head.outputs.sha }}"
           restore-keys: |
-            rector-v3-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
+            rector-v4-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
 
       - name: "Transform source code"
         if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'

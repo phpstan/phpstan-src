@@ -67,9 +67,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./tmp/rectorCache.php
-          key: "rector-v3-lint-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key.outputs.sha }}"
+          key: "rector-v4-lint-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key.outputs.sha }}"
           restore-keys: |
-            rector-v3-lint-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
+            rector-v4-lint-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
 
       - name: "Transform source code"
         if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'

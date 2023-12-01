@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
@@ -26,6 +27,7 @@ class DirectInternalScopeFactory implements InternalScopeFactory
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
+		private ExpressionTypeResolverExtensionRegistryProvider $expressionTypeResolverExtensionRegistryProvider,
 		private ExprPrinter $exprPrinter,
 		private TypeSpecifier $typeSpecifier,
 		private PropertyReflectionFinder $propertyReflectionFinder,
@@ -76,6 +78,7 @@ class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
 			$this->dynamicReturnTypeExtensionRegistryProvider->getRegistry(),
+			$this->expressionTypeResolverExtensionRegistryProvider->getRegistry(),
 			$this->exprPrinter,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,

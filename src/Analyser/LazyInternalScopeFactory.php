@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
@@ -72,6 +73,7 @@ class LazyInternalScopeFactory implements InternalScopeFactory
 			$this->container->getByType(ReflectionProvider::class),
 			$this->container->getByType(InitializerExprTypeResolver::class),
 			$this->container->getByType(DynamicReturnTypeExtensionRegistryProvider::class)->getRegistry(),
+			$this->container->getByType(ExpressionTypeResolverExtensionRegistryProvider::class)->getRegistry(),
 			$this->container->getByType(ExprPrinter::class),
 			$this->container->getByType(TypeSpecifier::class),
 			$this->container->getByType(PropertyReflectionFinder::class),

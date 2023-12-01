@@ -86,6 +86,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\ExpressionTypeResolverExtensionRegistry;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -178,6 +179,7 @@ class MutatingScope implements Scope
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
+		private ExpressionTypeResolverExtensionRegistry $expressionTypeResolverExtensionRegistry,
 		private ExprPrinter $exprPrinter,
 		private TypeSpecifier $typeSpecifier,
 		private PropertyReflectionFinder $propertyReflectionFinder,
@@ -679,6 +681,13 @@ class MutatingScope implements Scope
 
 	private function resolveType(string $exprString, Expr $node): Type
 	{
+		foreach ($this->expressionTypeResolverExtensionRegistry->getExtensions() as $extension) {
+			$type = $extension->getType($node, $this);
+			if ($type !== null) {
+				return $type;
+			}
+		}
+
 		if ($node instanceof Expr\Exit_ || $node instanceof Expr\Throw_) {
 			return new NonAcceptingNeverType();
 		}

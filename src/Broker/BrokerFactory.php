@@ -15,6 +15,7 @@ class BrokerFactory
 	public const DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG = 'phpstan.broker.dynamicStaticMethodReturnTypeExtension';
 	public const DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG = 'phpstan.broker.dynamicFunctionReturnTypeExtension';
 	public const OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG = 'phpstan.broker.operatorTypeSpecifyingExtension';
+	public const EXPRESSION_TYPE_RESOLVER_EXTENSION_TAG = 'phpstan.broker.expressionTypeResolverExtension';
 
 	public function __construct(private Container $container)
 	{

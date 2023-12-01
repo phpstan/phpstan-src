@@ -159,6 +159,70 @@ class ArrayOffset
 		assertVariableCertainty(TrinaryLogic::createYes(), $a);
 		assertType("array{bar: 1}", $a);
 	}
+
+	public function nestedFetch(): void
+	{
+		$a = ['bar' => null];
+		if (rand() % 2) {
+			$a = ['bar' => ['foo' => 'hello']];
+		}
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+
+		assertType("array{bar: array{foo: 'hello'}}|array{bar: null}", $a);
+		if (isset($a['bar']['foo'])) {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{bar: array{foo: 'hello'}}", $a);
+		} else {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{bar: null}", $a);
+		}
+
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+		assertType("array{bar: array{foo: 'hello'}}|array{bar: null}", $a);
+	}
+
+	public function nestedNullableFetch(?string $nullableString): void
+	{
+		$a = ['bar' => null];
+		if (rand() % 2) {
+			$a = ['bar' => ['foo' => $nullableString]];
+		}
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+
+		assertType("array{bar: array{foo: string|null}}|array{bar: null}", $a);
+		if (isset($a['bar']['foo'])) {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{bar: array{foo: string}}", $a);
+		} else {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{bar: array{foo: null}}|array{bar: null}", $a);
+		}
+
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+		assertType("array{bar: array{foo: null}}|array{bar: array{foo: string}}|array{bar: null}", $a);
+	}
+
+	public function nestedOptionalNullableFetch(?string $nullableString): void
+	{
+		$a = [];
+		if (rand() % 2) {
+			$a = ['bar' => ['foo' => $nullableString]];
+		}
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+
+		assertType("array{}|array{bar: array{foo: string|null}}", $a);
+		if (isset($a['bar']['foo'])) {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{bar: array{foo: string}}", $a);
+		} else {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{}|array{bar: array{foo: null}}", $a);
+		}
+
+		assertVariableCertainty(TrinaryLogic::createYes(), $a);
+		assertType("array{}|array{bar: array{foo: string|null}}", $a);
+	}
+
 }
 
 function doFoo():mixed {

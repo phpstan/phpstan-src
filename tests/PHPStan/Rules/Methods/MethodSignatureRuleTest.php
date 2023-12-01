@@ -462,4 +462,16 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10184(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10184.php'], []);
+	}
+
 }

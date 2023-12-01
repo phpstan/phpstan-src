@@ -618,12 +618,16 @@ class PhpClassReflectionExtension
 			);
 		}
 
-		return $this->createUserlandMethodReflection($declaringClass, $declaringClass, $methodReflection);
+		return $this->createUserlandMethodReflection(
+			$declaringClass,
+			$declaringClass,
+			$methodReflection,
+			$this->findMethodTrait($methodReflection),
+		);
 	}
 
-	public function createUserlandMethodReflection(ClassReflection $fileDeclaringClass, ClassReflection $actualDeclaringClass, BuiltinMethodReflection $methodReflection): PhpMethodReflection
+	public function createUserlandMethodReflection(ClassReflection $fileDeclaringClass, ClassReflection $actualDeclaringClass, BuiltinMethodReflection $methodReflection, ?string $declaringTraitName): PhpMethodReflection
 	{
-		$declaringTraitName = $this->findMethodTrait($methodReflection);
 		$resolvedPhpDoc = null;
 		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($fileDeclaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
 		$phpDocBlockClassReflection = $fileDeclaringClass;

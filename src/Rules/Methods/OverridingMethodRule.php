@@ -334,13 +334,15 @@ class OverridingMethodRule implements Rule
 				$methodReflection = $nativeTraitReflection->getMethod($methodName);
 				$isAbstract = $methodReflection->isAbstract();
 				if ($isAbstract) {
+					$declaringTrait = $trait->getNativeMethod($methodName)->getDeclaringClass();
 					return [
 						$this->phpClassReflectionExtension->createUserlandMethodReflection(
 							$trait,
 							$classReflection,
 							new NativeBuiltinMethodReflection($methodReflection),
+							$declaringTrait->getName(),
 						),
-						$trait->getNativeMethod($methodName)->getDeclaringClass(),
+						$declaringTrait,
 						false,
 					];
 				}

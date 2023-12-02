@@ -82,11 +82,11 @@ class ArrayOffset
 			assertType("array{bar: 1}", $a);
 		} else {
 			assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
-			assertType('array{bar?: null}', $a);
+			assertType('array{bar: null}', $a);
 		}
 
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
-		assertType("array{bar: 1}|array{bar?: null}", $a);
+		assertType("array{bar: 1}|array{bar: null}", $a);
 	}
 
 	public function maybeCertainNonNull(): void

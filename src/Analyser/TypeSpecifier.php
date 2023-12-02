@@ -689,7 +689,9 @@ class TypeSpecifier
 					$offsetType = $type->getOffsetValueType($dimType);
 					$isNullable = !$offsetType->isNull()->no();
 
-					$setOffset = static fn (Type $outerType, Type $dimType, bool $optional): Type => TypeTraverser::map($outerType, static function (Type $type, callable $traverse) use ($dimType, $optional): Type {
+					$setOffset = static fn (Type $outerType, Type $dimType, bool $optional): Type => TypeTraverser::map(
+						$outerType,
+						static function (Type $type, callable $traverse) use ($dimType, $optional): Type {
 							if ($type instanceof UnionType || $type instanceof IntersectionType) {
 								return $traverse($type);
 							}
@@ -712,13 +714,14 @@ class TypeSpecifier
 							}
 
 							return $type;
-					});
+						},
+					);
 
 					if ($hasOffset === true) {
 						if ($isNullable) {
 							$specifiedType = $this->create(
 								$issetExpr->var,
-								$setOffset($type, $dimType, !$scope->hasExpressionType($issetExpr->var)->yes()),
+								$setOffset($type, $dimType, false),
 								$context->negate(),
 								true,
 								$scope,

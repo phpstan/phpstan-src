@@ -4,22 +4,47 @@ namespace Bug10122;
 
 use function PHPStan\Testing\assertType;
 
-/**
- * @param string $s
- * @param numeric-string $ns
- */
-function doFoo(string $s, $ns, float $f) {
-	assertType('string', ++$s);
-	assertType('string', --$s);
-	assertType('(float|int)', ++$ns);
-	assertType('(float|int)', --$ns);
-	assertType('float', ++$f);
-	assertType('float', --$f);
+function doFoo():void
+{
+	function(string $s) {
+		assertType('(float|int|string)', ++$s);
+	};
+	function(string $s) {
+		assertType('(float|int|string)', --$s);
+	};
+	function(string $s) {
+		assertType('(float|int|string)', $s++);
+	};
+	function(string $s) {
+		assertType('(float|int|string)', $s--);
+	};
 
-	assertType('string', $s++);
-	assertType('string', $s--);
-	assertType('(float|int)', $ns++);
-	assertType('(float|int)', $ns--);
-	assertType('float', $f++);
-	assertType('float', $f--);
+	function(float $f) {
+		assertType('float', ++$f);
+	};
+	function(float $f) {
+		assertType('float', --$f);
+	};
+	function(float $f) {
+		assertType('float', $f++);
+	};
+	function(float $f) {
+		assertType('float', $f--);
+	};
+}
+
+/** @param numeric-string $ns */
+function doNumericString(string $ns) {
+	function() use ($ns) {
+		assertType('(float|int)', ++$ns);
+	};
+	function() use ($ns) {
+		assertType('(float|int)', --$ns);
+	};
+	function() use ($ns) {
+		assertType('(float|int)', $ns++);
+	};
+	function() use ($ns) {
+		assertType('(float|int)', $ns--);
+	};
 }

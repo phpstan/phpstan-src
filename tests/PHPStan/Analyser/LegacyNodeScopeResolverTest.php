@@ -2956,19 +2956,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$string--',
 			],
 			[
-				'string',
+				'(float|int|string)',
 				'++$string',
 			],
 			[
-				'string',
+				'(float|int|string)',
 				'--$string',
 			],
 			[
-				'string',
+				'(float|int|string)',
 				'$incrementedString',
 			],
 			[
-				'string',
+				'(float|int|string)',
 				'$decrementedString',
 			],
 			[

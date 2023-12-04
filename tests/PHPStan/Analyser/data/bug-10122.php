@@ -34,7 +34,7 @@ function doFoo():void
 }
 
 /** @param numeric-string $ns */
-function doNumericString(string $ns) {
+function doNumericString(string $ns):void {
 	function() use ($ns) {
 		assertType('(float|int)', ++$ns);
 	};

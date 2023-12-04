@@ -1458,7 +1458,28 @@ class MutatingScope implements Scope
 		} elseif ($node instanceof Unset_) {
 			return new NullType();
 		} elseif ($node instanceof Expr\PostInc || $node instanceof Expr\PostDec) {
-			return $this->getType($node->var);
+			$varType = $this->getType($node->var);
+
+			$stringType = new StringType();
+			if ($varType->isString()->yes()) {
+				if ($varType->isLiteralString()->yes()) {
+					return new IntersectionType([$stringType, new AccessoryLiteralStringType()]);
+				}
+				if ($varType->isNumericString()->yes()) {
+					return new BenevolentUnionType([
+						new IntegerType(),
+						new FloatType(),
+					]);
+				}
+
+				return new BenevolentUnionType([
+					$stringType,
+					new IntegerType(),
+					new FloatType(),
+				]);
+			}
+
+			return $varType;
 		} elseif ($node instanceof Expr\PreInc || $node instanceof Expr\PreDec) {
 			$varType = $this->getType($node->var);
 			$varScalars = $varType->getConstantScalarValues();
@@ -1486,7 +1507,12 @@ class MutatingScope implements Scope
 						new FloatType(),
 					]);
 				}
-				return $stringType;
+
+				return new BenevolentUnionType([
+					$stringType,
+					new IntegerType(),
+					new FloatType(),
+				]);
 			}
 
 			if ($node instanceof Expr\PreInc) {

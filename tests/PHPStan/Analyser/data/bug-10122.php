@@ -14,9 +14,11 @@ function doFoo():void
 	};
 	function(string $s) {
 		assertType('string', $s++);
+		assertType('(float|int|string)', $s);
 	};
 	function(string $s) {
 		assertType('string', $s--);
+		assertType('(float|int|string)', $s);
 	};
 
 	function(float $f) {
@@ -43,8 +45,10 @@ function doNumericString(string $ns) {
 	};
 	function() use ($ns) {
 		assertType('numeric-string', $ns++);
+		assertType('(float|int)', $ns);
 	};
 	function() use ($ns) {
 		assertType('numeric-string', $ns--);
+		assertType('(float|int)', $ns);
 	};
 }

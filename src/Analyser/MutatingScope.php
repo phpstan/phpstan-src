@@ -1458,32 +1458,11 @@ class MutatingScope implements Scope
 		} elseif ($node instanceof Unset_) {
 			return new NullType();
 		} elseif ($node instanceof Expr\PostInc || $node instanceof Expr\PostDec) {
-			$varType = $this->getType($node->var);
-
-			$stringType = new StringType();
-			if ($varType->isString()->yes()) {
-				if ($varType->isLiteralString()->yes()) {
-					return new IntersectionType([$stringType, new AccessoryLiteralStringType()]);
-				}
-				if ($varType->isNumericString()->yes()) {
-					return new BenevolentUnionType([
-						new IntegerType(),
-						new FloatType(),
-					]);
-				}
-
-				return new BenevolentUnionType([
-					$stringType,
-					new IntegerType(),
-					new FloatType(),
-				]);
-			}
-
-			return $varType;
+			return $this->getType($node->var);
 		} elseif ($node instanceof Expr\PreInc || $node instanceof Expr\PreDec) {
 			$varType = $this->getType($node->var);
 			$varScalars = $varType->getConstantScalarValues();
-			$stringType = new StringType();
+
 			if (count($varScalars) > 0) {
 				$newTypes = [];
 
@@ -1499,8 +1478,12 @@ class MutatingScope implements Scope
 				return TypeCombinator::union(...$newTypes);
 			} elseif ($varType->isString()->yes()) {
 				if ($varType->isLiteralString()->yes()) {
-					return new IntersectionType([$stringType, new AccessoryLiteralStringType()]);
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryLiteralStringType(),
+					]);
 				}
+
 				if ($varType->isNumericString()->yes()) {
 					return new BenevolentUnionType([
 						new IntegerType(),
@@ -1509,7 +1492,7 @@ class MutatingScope implements Scope
 				}
 
 				return new BenevolentUnionType([
-					$stringType,
+					new StringType(),
 					new IntegerType(),
 					new FloatType(),
 				]);

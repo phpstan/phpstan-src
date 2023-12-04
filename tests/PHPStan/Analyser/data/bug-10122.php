@@ -13,10 +13,10 @@ function doFoo():void
 		assertType('(float|int|string)', --$s);
 	};
 	function(string $s) {
-		assertType('(float|int|string)', $s++);
+		assertType('string', $s++);
 	};
 	function(string $s) {
-		assertType('(float|int|string)', $s--);
+		assertType('string', $s--);
 	};
 
 	function(float $f) {
@@ -34,7 +34,7 @@ function doFoo():void
 }
 
 /** @param numeric-string $ns */
-function doNumericString(string $ns):void {
+function doNumericString(string $ns) {
 	function() use ($ns) {
 		assertType('(float|int)', ++$ns);
 	};
@@ -42,9 +42,9 @@ function doNumericString(string $ns):void {
 		assertType('(float|int)', --$ns);
 	};
 	function() use ($ns) {
-		assertType('(float|int)', $ns++);
+		assertType('numeric-string', $ns++);
 	};
 	function() use ($ns) {
-		assertType('(float|int)', $ns--);
+		assertType('numeric-string', $ns--);
 	};
 }

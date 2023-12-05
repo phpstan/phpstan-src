@@ -154,41 +154,8 @@ class VarTagTypeRuleHelper
 		return $this->checkType($type, $varTagType);
 	}
 
-	private function checkType(Type $type, Type $varTagType, int $depth = 0): bool
+	private function checkType(Type $type, Type $varTagType): bool
 	{
-		if ($type->isConstantArray()->yes()) {
-			if ($type->isIterableAtLeastOnce()->no()) {
-				$type = new ArrayType(new MixedType(), new MixedType());
-				return $type->isSuperTypeOf($varTagType)->no();
-			}
-		}
-
-		if ($type->isIterable()->yes() && $varTagType->isIterable()->yes()) {
-			if ($type->isSuperTypeOf($varTagType)->no()) {
-				return true;
-			}
-
-			$innerValueType = $type->getIterableValueType();
-			$innerVarTagValueType = $varTagType->getIterableValueType();
-
-			$innerKeyType = $type->getIterableKeyType();
-			$innerVarTagKeyValueType = $varTagType->getIterableKeyType();
-
-			if ($type->equals($innerValueType) || $varTagType->equals($innerVarTagValueType)) {
-				return !$innerValueType->isSuperTypeOf($innerVarTagValueType)->yes();
-			}
-
-			if ($innerValueType->equals($innerVarTagValueType)) {
-				return $this->checkType($innerKeyType, $innerVarTagKeyValueType, $depth + 1);
-			}
-
-			return $this->checkType($innerValueType, $innerVarTagValueType, $depth + 1);
-		}
-
-		if ($type->isConstantValue()->yes() && $depth === 0) {
-			return $type->isSuperTypeOf($varTagType)->no();
-		}
-
 		return !$type->isSuperTypeOf($varTagType)->yes();
 	}
 

@@ -323,6 +323,14 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				148,
 			],
 			[
+				'PHPDoc tag @var with type array<array<string>> is not subtype of type array<list<string|null>>.',
+				154,
+			],
+			[
+				'PHPDoc tag @var with type array<array<string>> is not subtype of type array<list<string|null>>.',
+				157,
+			],
+			[
 				'PHPDoc tag @var with type array<array<int>> is not subtype of type array<list<string|null>>.',
 				160,
 			],
@@ -369,8 +377,16 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			? []
 			: [
 				[
+					'PHPDoc tag @var with type int|null is not subtype of native type null.',
+					6,
+				],
+				[
 					'PHPDoc tag @var with type int is not subtype of native type array{}.',
 					24,
+				],
+				[
+					'PHPDoc tag @var with type array is not subtype of native type array{}.',
+					29,
 				],
 			];
 

@@ -483,7 +483,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 
-		$this->analyse([__DIR__ . '/data/bug-10184.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-10208.php'], []);
 	}
 
 }

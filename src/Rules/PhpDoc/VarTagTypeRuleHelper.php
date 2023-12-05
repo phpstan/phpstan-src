@@ -168,14 +168,21 @@ class VarTagTypeRuleHelper
 				return true;
 			}
 
-			$innerType = $type->getIterableValueType();
-			$innerVarTagType = $varTagType->getIterableValueType();
+			$innerValueType = $type->getIterableValueType();
+			$innerVarTagValueType = $varTagType->getIterableValueType();
 
-			if ($type->equals($innerType) || $varTagType->equals($innerVarTagType)) {
-				return !$innerType->isSuperTypeOf($innerVarTagType)->yes();
+			$innerKeyType = $type->getIterableKeyType();
+			$innerVarTagKeyValueType = $varTagType->getIterableKeyType();
+
+			if ($type->equals($innerValueType) || $varTagType->equals($innerVarTagValueType)) {
+				return !$innerValueType->isSuperTypeOf($innerVarTagValueType)->yes();
 			}
 
-			return $this->checkType($innerType, $innerVarTagType, $depth + 1);
+			if ($innerValueType->equals($innerVarTagValueType)) {
+				return $this->checkType($innerKeyType, $innerVarTagKeyValueType, $depth + 1);
+			}
+
+			return $this->checkType($innerValueType, $innerVarTagValueType, $depth + 1);
 		}
 
 		if ($type->isConstantValue()->yes() && $depth === 0) {

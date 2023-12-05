@@ -270,6 +270,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				29,
 			],
 			[
+				'PHPDoc tag @var with type array<int> is not subtype of type list<int>.',
+				32,
+			],
+			[
 				'PHPDoc tag @var with type array<string> is not subtype of type list<int>.',
 				35,
 			],
@@ -280,6 +284,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var with type Iterator<mixed, string> is not subtype of type Iterator<int, int>.',
 				44,
+			],
+			[
+				'PHPDoc tag @var with type array<int> is not subtype of type array<int, int>.',
+				47,
 			],
 			/*[
 				// reported by VarTagChangedExpressionTypeRule
@@ -293,6 +301,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var with type int is not subtype of native type string.',
 				109,
+			],
+			[
+				'PHPDoc tag @var with type array<string> is not subtype of type array<int, string>.',
+				122,
 			],
 			[
 				'PHPDoc tag @var with type array<int> is not subtype of type array<int, string>.',

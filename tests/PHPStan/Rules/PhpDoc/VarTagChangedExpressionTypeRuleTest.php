@@ -70,4 +70,14 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testNarrowListToArray(): void
+	{
+		$this->analyse([__DIR__ . '/data/narrow-list-to-array.php'], [
+			[
+				'PHPDoc tag @var with type array<int> is not subtype of type list<int>.',
+				13,
+			],
+		]);
+	}
+
 }

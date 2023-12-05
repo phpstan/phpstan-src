@@ -474,7 +474,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10184.php'], []);
 	}
 
-	public function testBug10208(): void
+	public function testParentReturnTypeMergingFix(): void
 	{
 		if (PHP_VERSION_ID < 70400) {
 			$this->markTestSkipped('Test requires PHP 7.4.');
@@ -483,7 +483,12 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 
-		$this->analyse([__DIR__ . '/data/bug-10208.php'], []);
+		$this->analyse([
+			__DIR__ . '/data/bug-10208.php',
+			__DIR__ . '/data/bug-6462.php',
+			__DIR__ . '/data/bug-4396.php',
+			__DIR__ . '/data/bug-3580.php',
+		], []);
 	}
 
 }

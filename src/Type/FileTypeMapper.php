@@ -159,6 +159,7 @@ class FileTypeMapper
 			new TemplateTypeMap($phpDocTemplateTypes),
 			$templateTags,
 			$this->phpDocNodeResolver,
+			$this->reflectionProviderProvider->getReflectionProvider(),
 		);
 		$this->resolvedPhpDocBlockCacheCount++;
 

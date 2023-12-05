@@ -474,4 +474,16 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10184.php'], []);
 	}
 
+	public function testBug10208(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10184.php'], []);
+	}
+
 }

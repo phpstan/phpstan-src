@@ -19,3 +19,17 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	public function sayHello(\stdClass $s): void
+	{
+		$a = null;
+		foreach ($s as $k => $v) {
+			$a .= 'test';
+		}
+		assertType('(literal-string&non-falsy-string)|null', $a);
+	}
+
+}

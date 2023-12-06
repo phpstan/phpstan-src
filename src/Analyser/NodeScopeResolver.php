@@ -927,10 +927,9 @@ class NodeScopeResolver
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 			}
 
-			$isIterableAtLeastOnce = $scope->getType($stmt->expr)->isIterableAtLeastOnce();
-			if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
-				$finalScope = $scope;
-			} elseif ($isIterableAtLeastOnce->maybe()) {
+			$exprType = $scope->getType($stmt->expr);
+			$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
+			if ($exprType->isIterable()->no() || $isIterableAtLeastOnce->maybe()) {
 				if ($this->polluteScopeWithAlwaysIterableForeach) {
 					$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(
 						new BinaryOp\Identical(
@@ -944,6 +943,8 @@ class NodeScopeResolver
 				} else {
 					$finalScope = $finalScope->mergeWith($scope);
 				}
+			} elseif ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
+				$finalScope = $scope;
 			} elseif (!$this->polluteScopeWithAlwaysIterableForeach) {
 				$finalScope = $scope->processAlwaysIterableForeachScopeWithoutPollute($finalScope);
 				// get types from finalScope, but don't create new variables

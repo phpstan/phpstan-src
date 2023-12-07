@@ -65,6 +65,14 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 				20,
 				$tipText,
 			],
+			[
+				'Left side of xor is always true.',
+				24,
+			],
+			[
+				'Right side of xor is always false.',
+				24,
+			],
 		]);
 	}
 

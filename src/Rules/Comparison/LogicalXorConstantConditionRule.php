@@ -63,7 +63,7 @@ class LogicalXorConstantConditionRule implements Rule
 		}
 
 		$rightType = $this->helper->getBooleanType($scope, $node->right);
-		if ($rightType instanceof ConstantBooleanType && !$scope->isInFirstLevelStatement()) {
+		if ($rightType instanceof ConstantBooleanType) {
 			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $tipText): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
 					return $ruleErrorBuilder;

@@ -46,6 +46,7 @@ parametersSchema:
 		checkUnresolvableParameterTypes: bool()
 		readOnlyByPhpDoc: bool()
 		phpDocParserRequireWhitespaceBeforeDescription: bool()
+		phpDocParserIncludeLines: bool()
 		runtimeReflectionRules: bool()
 		notAnalysedTrait: bool()
 		curlSetOptTypes: bool()

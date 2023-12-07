@@ -16,6 +16,7 @@ parameters:
 		checkUnresolvableParameterTypes: true
 		readOnlyByPhpDoc: true
 		phpDocParserRequireWhitespaceBeforeDescription: true
+		phpDocParserIncludeLines: true
 		runtimeReflectionRules: true
 		notAnalysedTrait: true
 		curlSetOptTypes: true

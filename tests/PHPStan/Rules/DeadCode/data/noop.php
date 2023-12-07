@@ -2,7 +2,7 @@
 
 namespace DeadCodeNoop;
 
-function (stdClass $foo) {
+function (stdClass $foo, bool $a, bool $b) {
 	$foo->foo();
 
 	$arr = [];
@@ -28,4 +28,6 @@ function (stdClass $foo) {
 	Foo::TEST;
 
 	(string) 1;
+
+	$r = $a xor $b;
 };

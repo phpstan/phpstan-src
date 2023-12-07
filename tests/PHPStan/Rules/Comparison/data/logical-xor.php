@@ -20,6 +20,8 @@ class Foo
 		if ($a xor $b) {
 
 		}
+
+		1 xor 0;
 	}
 
 }

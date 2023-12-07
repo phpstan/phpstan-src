@@ -3,7 +3,6 @@ includes:
 
 rules:
 	- PHPStan\Rules\Arrays\DeadForeachRule
-	- PHPStan\Rules\DeadCode\NoopRule
 	- PHPStan\Rules\DeadCode\UnreachableStatementRule
 	- PHPStan\Rules\DeadCode\UnusedPrivateConstantRule
 	- PHPStan\Rules\DeadCode\UnusedPrivateMethodRule
@@ -65,6 +64,13 @@ services:
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\DeadCode\NoopRule
+		arguments:
+			logicalXor: %featureToggles.logicalXor%
 		tags:
 			- phpstan.rules.rule
 

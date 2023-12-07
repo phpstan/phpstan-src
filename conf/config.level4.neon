@@ -26,6 +26,8 @@ conditionalTags:
 		phpstan.collector: %featureToggles.notAnalysedTrait%
 	PHPStan\Rules\Traits\NotAnalysedTraitRule:
 		phpstan.rules.rule: %featureToggles.notAnalysedTrait%
+	PHPStan\Rules\Comparison\LogicalXorConstantConditionRule:
+		phpstan.rules.rule: %featureToggles.logicalXor%
 
 parameters:
 	checkAdvancedIsset: true
@@ -123,6 +125,12 @@ services:
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\LogicalXorConstantConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 
 	-
 		class: PHPStan\Rules\Comparison\MatchExpressionRule

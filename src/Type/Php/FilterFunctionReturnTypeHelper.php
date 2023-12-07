@@ -55,7 +55,7 @@ final class FilterFunctionReturnTypeHelper
 		$this->flagsString = new ConstantStringType('flags');
 	}
 
-	public function getOffsetValueType(Type $inputType, Type $offsetType, ?Type $filterType, ?Type $flagsType): ?Type
+	public function getOffsetValueType(Type $inputType, Type $offsetType, ?Type $filterType, ?Type $flagsType): Type
 	{
 		$inexistentOffsetType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsType)
 			? new ConstantBooleanType(false)
@@ -73,7 +73,7 @@ final class FilterFunctionReturnTypeHelper
 			: $filteredType;
 	}
 
-	public function getInputType(Type $typeType, Type $varNameType, ?Type $filterType, ?Type $flagsType): ?Type
+	public function getInputType(Type $typeType, Type $varNameType, ?Type $filterType, ?Type $flagsType): Type
 	{
 		$this->supportedFilterInputTypes ??= TypeCombinator::union(
 			$this->reflectionProvider->getConstant(new Node\Name('INPUT_GET'), null)->getValueType(),

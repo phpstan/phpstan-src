@@ -45,7 +45,7 @@ class FileWhitespaceRule implements Rule
 			private array $lastNodes = [];
 
 			/**
-			 * @return int|Node|null
+			 * @return int|null
 			 */
 			public function enterNode(Node $node)
 			{

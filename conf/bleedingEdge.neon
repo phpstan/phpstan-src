@@ -24,6 +24,7 @@ parameters:
 		missingMagicSerializationRule: true
 		nullContextForVoidReturningFunctions: true
 		unescapeStrings: true
+		alwaysCheckTooWideReturnTypeFinalMethods: true
 		duplicateStubs: true
 		invarianceComposition: true
 		alwaysTrueAlwaysReported: true

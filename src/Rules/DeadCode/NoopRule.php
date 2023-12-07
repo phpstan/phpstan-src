@@ -15,7 +15,7 @@ use function sprintf;
 class NoopRule implements Rule
 {
 
-	public function __construct(private ExprPrinter $exprPrinter)
+	public function __construct(private ExprPrinter $exprPrinter, private bool $logicalXor)
 	{
 	}
 
@@ -35,6 +35,15 @@ class NoopRule implements Rule
 			|| $expr instanceof Node\Expr\ErrorSuppress
 		) {
 			$expr = $expr->expr;
+		}
+		if ($this->logicalXor && $expr instanceof Node\Expr\BinaryOp\LogicalXor) {
+			return [
+				RuleErrorBuilder::message(
+					'Unused result of "xor" operator.',
+				)->line($expr->getLine())
+					->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
+					->build(),
+			];
 		}
 		if (
 			!$expr instanceof Node\Expr\Variable

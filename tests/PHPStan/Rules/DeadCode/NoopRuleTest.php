@@ -15,7 +15,7 @@ class NoopRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new NoopRule(new ExprPrinter(new Printer()));
+		return new NoopRule(new ExprPrinter(new Printer()), true);
 	}
 
 	public function testRule(): void
@@ -76,6 +76,11 @@ class NoopRuleTest extends RuleTestCase
 			[
 				'Expression "(string) 1" on a separate line does not do anything.',
 				30,
+			],
+			[
+				'Unused result of "xor" operator.',
+				32,
+				'This operator has unexpected precedence, try disambiguating the logic with parentheses ().',
 			],
 		]);
 	}

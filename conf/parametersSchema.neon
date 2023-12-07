@@ -56,6 +56,7 @@ parametersSchema:
 		unescapeStrings: bool()
 		alwaysCheckTooWideReturnTypeFinalMethods: bool()
 		duplicateStubs: bool()
+		logicalXor: bool()
 		invarianceComposition: bool()
 		alwaysTrueAlwaysReported: bool()
 		disableUnreachableBranchesRules: bool()

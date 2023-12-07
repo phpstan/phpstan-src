@@ -61,6 +61,7 @@ parameters:
 		unescapeStrings: false
 		alwaysCheckTooWideReturnTypeFinalMethods: false
 		duplicateStubs: false
+		logicalXor: false
 		invarianceComposition: false
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false

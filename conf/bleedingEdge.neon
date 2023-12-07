@@ -26,6 +26,7 @@ parameters:
 		unescapeStrings: true
 		alwaysCheckTooWideReturnTypeFinalMethods: true
 		duplicateStubs: true
+		logicalXor: true
 		invarianceComposition: true
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true

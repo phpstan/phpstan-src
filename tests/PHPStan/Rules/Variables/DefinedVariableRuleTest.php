@@ -215,27 +215,23 @@ class DefinedVariableRuleTest extends RuleTestCase
 				360,
 			],
 			[
-				'Undefined variable: $variableInWhileIsset',
-				365,
-			],
-			[
-				'Undefined variable: $unknownVariablePassedToReset',
+				'Variable $unknownVariablePassedToReset might not be defined.',
 				368,
 			],
 			[
-				'Undefined variable: $unknownVariablePassedToReset',
+				'Variable $unknownVariablePassedToReset might not be defined.',
 				369,
 			],
 			[
-				'Undefined variable: $variableInAssign',
+				'Variable $variableInAssign might not be defined.',
 				384,
 			],
 			[
-				'Undefined variable: $undefinedArrayIndex',
+				'Variable $undefinedArrayIndex might not be defined.',
 				409,
 			],
 			[
-				'Undefined variable: $anotherUndefinedArrayIndex',
+				'Variable $anotherUndefinedArrayIndex might not be defined.',
 				409,
 			],
 			[
@@ -1022,6 +1018,15 @@ class DefinedVariableRuleTest extends RuleTestCase
 				19,
 			],
 		]);
+	}
+
+	public function testDiscussion10252(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/discussion-10252.php'], []);
 	}
 
 }

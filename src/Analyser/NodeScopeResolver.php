@@ -2609,7 +2609,7 @@ class NodeScopeResolver
 			$throwPoints = $result->getThrowPoints();
 			$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 			$hasYield = $result->hasYield();
-			$scope = $result->getScope();
+			$scope = $result->getScope()->afterExtractCall();
 		} elseif (
 			$expr instanceof Expr\BitwiseNot
 			|| $expr instanceof Cast

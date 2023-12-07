@@ -12,9 +12,13 @@ use const PHP_VERSION_ID;
 class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 {
 
+	private bool $checkProtectedAndPublicMethods = true;
+
+	private bool $alwaysCheckFinal = false;
+
 	protected function getRule(): Rule
 	{
-		return new TooWideMethodReturnTypehintRule(true);
+		return new TooWideMethodReturnTypehintRule($this->checkProtectedAndPublicMethods, $this->alwaysCheckFinal);
 	}
 
 	public function testPrivate(): void
@@ -100,6 +104,144 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 	public function testBug6175(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6175.php'], []);
+	}
+
+	public function dataAlwaysCheckFinal(): iterable
+	{
+		yield [
+			false,
+			false,
+			[
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\Foo::test() never returns null so it can be removed from the return type.',
+					8,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FinalFoo::test() never returns null so it can be removed from the return type.',
+					28,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FooFinalMethods::test() never returns null so it can be removed from the return type.',
+					48,
+				],
+			],
+		];
+
+		yield [
+			true,
+			false,
+			[
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\Foo::test() never returns null so it can be removed from the return type.',
+					8,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FinalFoo::test() never returns null so it can be removed from the return type.',
+					28,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FinalFoo::test2() never returns null so it can be removed from the return type.',
+					33,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FinalFoo::test3() never returns null so it can be removed from the return type.',
+					38,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FooFinalMethods::test() never returns null so it can be removed from the return type.',
+					48,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FooFinalMethods::test2() never returns null so it can be removed from the return type.',
+					53,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FooFinalMethods::test3() never returns null so it can be removed from the return type.',
+					58,
+				],
+			],
+		];
+
+		yield [
+			false,
+			true,
+			[
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\Foo::test() never returns null so it can be removed from the return type.',
+					8,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FinalFoo::test() never returns null so it can be removed from the return type.',
+					28,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FinalFoo::test2() never returns null so it can be removed from the return type.',
+					33,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FinalFoo::test3() never returns null so it can be removed from the return type.',
+					38,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FooFinalMethods::test() never returns null so it can be removed from the return type.',
+					48,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FooFinalMethods::test2() never returns null so it can be removed from the return type.',
+					53,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FooFinalMethods::test3() never returns null so it can be removed from the return type.',
+					58,
+				],
+			],
+		];
+
+		yield [
+			true,
+			true,
+			[
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\Foo::test() never returns null so it can be removed from the return type.',
+					8,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FinalFoo::test() never returns null so it can be removed from the return type.',
+					28,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FinalFoo::test2() never returns null so it can be removed from the return type.',
+					33,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FinalFoo::test3() never returns null so it can be removed from the return type.',
+					38,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FooFinalMethods::test() never returns null so it can be removed from the return type.',
+					48,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FooFinalMethods::test2() never returns null so it can be removed from the return type.',
+					53,
+				],
+				[
+					'Method MethodTooWideReturnAlwaysCheckFinal\FooFinalMethods::test3() never returns null so it can be removed from the return type.',
+					58,
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataAlwaysCheckFinal
+	 * @param list<array{0: string, 1: int, 2?: string|null}> $expectedErrors
+	 */
+	public function testAlwaysCheckFinal(bool $checkProtectedAndPublicMethods, bool $alwaysCheckFinal, array $expectedErrors): void
+	{
+		$this->checkProtectedAndPublicMethods = $checkProtectedAndPublicMethods;
+		$this->alwaysCheckFinal = $alwaysCheckFinal;
+		$this->analyse([__DIR__ . '/data/method-too-wide-return-always-check-final.php'], $expectedErrors);
 	}
 
 }

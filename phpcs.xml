@@ -46,6 +46,9 @@
 			<property name="enableIntersectionTypeHint" value="true"/>
 		</properties>
 	</rule>
+	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingNativeTypeHint">
+		<exclude-pattern>src/Rules/Whitespace/FileWhitespaceRule.php</exclude-pattern>
+	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.UselessAnnotation">
 		<severity>10</severity>
 	</rule>

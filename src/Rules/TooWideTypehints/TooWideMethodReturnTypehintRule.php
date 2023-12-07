@@ -32,6 +32,9 @@ class TooWideMethodReturnTypehintRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($scope->isInTrait()) {
+			return [];
+		}
 		$method = $node->getMethodReflection();
 		$isFirstDeclaration = $method->getPrototype()->getDeclaringClass() === $method->getDeclaringClass();
 		if (!$method->isPrivate()) {

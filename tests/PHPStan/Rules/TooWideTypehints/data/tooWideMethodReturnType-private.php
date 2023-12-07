@@ -92,3 +92,20 @@ class Foo
 	}
 
 }
+
+trait FooTrait
+{
+
+	private function doFoo(): ?int
+	{
+		return 1;
+	}
+
+}
+
+class UsesFooTrait
+{
+
+	use FooTrait;
+
+}

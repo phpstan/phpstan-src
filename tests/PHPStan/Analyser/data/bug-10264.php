@@ -30,7 +30,7 @@ class A
 
 		assertType('list<stdClass>', $c);
 	}
-	
+
 	function doBar() {
 		/** @var list<A> $list */
 		$list = [];
@@ -40,4 +40,18 @@ class A
 		assert((count($list, COUNT_RECURSIVE) <= 1) === true);
 		assertType('list<Bug10264\A>', $list);
 	}
+
+	function doIf():void {
+		/** @var list<A> $list */
+		$list = [];
+
+		assertType('list<Bug10264\A>', $list);
+
+		if( count($list, COUNT_RECURSIVE) >= 1) {
+			assertType('non-empty-list<Bug10264\A>', $list);
+		} else {
+			assertType('array{}', $list);
+		}
+	}
+
 }

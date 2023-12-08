@@ -1827,6 +1827,7 @@ services:
 		arguments:
 			parser: @currentPhpVersionPhpParser
 			lexer: @currentPhpVersionLexer
+			enableIgnoreErrorsWithinPhpDocs: %featureToggles.bleedingEdge%
 		autowired: no
 
 	currentPhpVersionSimpleParser:

@@ -29,6 +29,7 @@ class RichParser implements Parser
 		private Lexer $lexer,
 		private NameResolver $nameResolver,
 		private Container $container,
+		private bool $enableIgnoreErrorsWithinPhpDocs,
 	)
 	{
 	}
@@ -105,9 +106,21 @@ class RichParser implements Parser
 			$text = $token[1];
 			$line = $token[2];
 
-			$lines = $lines +
-				$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-next-line', true) +
-				$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line');
+			if ($this->enableIgnoreErrorsWithinPhpDocs) {
+				$lines = $lines +
+					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-next-line', true) +
+					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line');
+
+			} else {
+				if (strpos($text, '@phpstan-ignore-next-line') !== false) {
+					$line++;
+				} elseif (strpos($text, '@phpstan-ignore-line') === false) {
+					continue;
+				}
+
+				$line += substr_count($token[1], "\n");
+				$lines[$line] = null;
+			}
 		}
 
 		return $lines;

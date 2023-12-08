@@ -64,4 +64,17 @@ class A
 		}
 	}
 
+	function countModeInt(int $i):void {
+		/** @var list<A> $list */
+		$list = [];
+
+		assertType('list<Bug10264\A>', $list);
+
+		if( count($list, $i) >= 1) {
+			assertType('non-empty-list<Bug10264\A>', $list);
+		} else {
+			assertType('array{}', $list);
+		}
+	}
+
 }

@@ -26,6 +26,25 @@ function foo(array $items) {
 /**
  * @param list<int> $items
  */
+function modeCount(array $items, int $mode) {
+	assertType('list<int>', $items);
+	if (count($items, $mode) === 3) {
+		assertType('array{int, int, int}', $items);
+		array_shift($items);
+		assertType('array{int, int}', $items);
+	} elseif (count($items, $mode) === 0) {
+		assertType('array{}', $items);
+	} elseif (count($items, $mode) === 5) {
+		assertType('array{int, int, int, int, int}', $items);
+	} else {
+		assertType('non-empty-list<int>', $items);
+	}
+	assertType('list<int>', $items);
+}
+
+/**
+ * @param list<int> $items
+ */
 function normalCount(array $items) {
 	assertType('list<int>', $items);
 	if (count($items, COUNT_NORMAL) === 3) {

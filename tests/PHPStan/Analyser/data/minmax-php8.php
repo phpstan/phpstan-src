@@ -130,6 +130,20 @@ class HelloWorld
 /**
  * @param int[] $ints
  */
+function countMode(array $ints, int $mode): void
+{
+	if (count($ints, $mode) > 0) {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	} else {
+		assertType('*ERROR*', min($ints));
+		assertType('*ERROR*', max($ints));
+	}
+}
+
+/**
+ * @param int[] $ints
+ */
 function countNormal(array $ints): void
 {
 	if (count($ints, COUNT_NORMAL) > 0) {

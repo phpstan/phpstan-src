@@ -54,7 +54,9 @@ class LogicalXorConstantConditionRule implements Rule
 				$errorBuilder = $addTipLeft(RuleErrorBuilder::message(sprintf(
 					'Left side of xor is always %s.',
 					$leftType->getValue() ? 'true' : 'false',
-				)))->line($node->left->getLine());
+				)))
+					->identifier(sprintf('logicalXor.leftAlways%s', $leftType->getValue() ? 'True' : 'False'))
+					->line($node->left->getLine());
 				if ($leftType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
@@ -85,7 +87,9 @@ class LogicalXorConstantConditionRule implements Rule
 				$errorBuilder = $addTipRight(RuleErrorBuilder::message(sprintf(
 					'Right side of xor is always %s.',
 					$rightType->getValue() ? 'true' : 'false',
-				)))->line($node->right->getLine());
+				)))
+					->identifier(sprintf('logicalXor.rightAlways%s', $rightType->getValue() ? 'True' : 'False'))
+					->line($node->right->getLine());
 				if ($rightType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}

@@ -43,6 +43,7 @@ class NoopRule implements Rule
 						'Unused result of "xor" operator.',
 					)->line($expr->getLine())
 						->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
+						->identifier('logicalXor.resultUnused')
 						->build(),
 				];
 			}
@@ -51,12 +52,15 @@ class NoopRule implements Rule
 					return [];
 				}
 
+				$identifierType = $expr instanceof Node\Expr\BinaryOp\LogicalAnd ? 'logicalAnd' : 'logicalOr';
+
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Unused result of "%s" operator.',
 						$expr->getOperatorSigil(),
 					))->line($expr->getLine())
 						->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
+						->identifier(sprintf('%s.resultUnused', $identifierType))
 						->build(),
 				];
 			}
@@ -66,11 +70,14 @@ class NoopRule implements Rule
 					return [];
 				}
 
+				$identifierType = $expr instanceof Node\Expr\BinaryOp\BooleanAnd ? 'booleanAnd' : 'booleanOr';
+
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Unused result of "%s" operator.',
 						$expr->getOperatorSigil(),
 					))->line($expr->getLine())
+						->identifier(sprintf('%s.resultUnused', $identifierType))
 						->build(),
 				];
 			}
@@ -88,6 +95,7 @@ class NoopRule implements Rule
 				return [
 					RuleErrorBuilder::message('Unused result of ternary operator.')
 						->line($expr->getLine())
+						->identifier('ternary.resultUnused')
 						->build(),
 				];
 			}

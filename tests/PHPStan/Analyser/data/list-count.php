@@ -43,6 +43,26 @@ function modeCount(array $items, int $mode) {
 }
 
 /**
+ * @param list<int|int[]> $items
+ */
+function modeCountOnArray(array $items, int $mode) {
+	assertType('list<array<int>|int>', $items);
+	if (count($items, $mode) === 3) {
+		assertType('non-empty-list<array<int>|int>', $items);
+		array_shift($items);
+		assertType('list<array<int>|int>', $items);
+	} elseif (count($items, $mode) === 0) {
+		assertType('array{}', $items);
+	} elseif (count($items, $mode) === 5) {
+		assertType('non-empty-list<array<int>|int>', $items);
+	} else {
+		assertType('non-empty-list<array<int>|int>', $items);
+	}
+	assertType('list<array<int>|int>', $items);
+}
+
+
+/**
  * @param list<int> $items
  */
 function normalCount(array $items) {

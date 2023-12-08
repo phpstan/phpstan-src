@@ -79,7 +79,6 @@ use function in_array;
 use function is_string;
 use function strtolower;
 use function substr;
-use const COUNT_NORMAL;
 
 class TypeSpecifier
 {
@@ -933,8 +932,7 @@ class TypeSpecifier
 					if (count($exprNode->getArgs()) === 1) {
 						$isNormalCount = true;
 					} else {
-						$mode = $scope->getType($exprNode->getArgs()[1]->value);
-						$isNormalCount = $mode->isSuperTypeOf(new ConstantIntegerType(COUNT_NORMAL))->yes();
+						$isNormalCount = $argType->getIterableValueType()->isScalar()->yes();
 					}
 
 					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);

@@ -12,6 +12,8 @@ class DefaultStubFilesProviderTest extends PHPStanTestCase
 
 	protected function setUp(): void
 	{
+		parent::setUp();
+
 		$this->currentWorkingDirectory = $this->getContainer()->getParameter('currentWorkingDirectory');
 	}
 

@@ -21,6 +21,8 @@ class PhpStanNamespaceIn3rdPartyPackageRuleTest extends RuleTestCase
 
 	protected function tearDown(): void
 	{
+		parent::tearDown();
+
 		@unlink(__DIR__ . '/composer.json');
 	}
 

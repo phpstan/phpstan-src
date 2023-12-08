@@ -23,6 +23,8 @@ class TraitsCachingIssueIntegrationTest extends PHPStanTestCase
 
 	public function tearDown(): void
 	{
+		parent::tearDown();
+
 		$this->deleteCache();
 
 		if ($this->originalTraitOneContents !== null) {

@@ -14,6 +14,7 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use function is_a;
 
@@ -38,6 +39,7 @@ class DirectInternalScopeFactory implements InternalScopeFactory
 		private bool $explicitMixedInUnknownGenericNew,
 		private bool $explicitMixedForGlobalVariables,
 		private ConstantResolver $constantResolver,
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
 	}
@@ -86,6 +88,7 @@ class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->parser,
 			$this->nodeScopeResolver,
 			$this->constantResolver,
+			$this->ruleLevelHelper,
 			$context,
 			$this->phpVersion,
 			$declareStrictTypes,

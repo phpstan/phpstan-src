@@ -32,6 +32,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\OversizedArrayBuilder;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\UsefulTypeAliasResolver;
@@ -56,6 +57,35 @@ abstract class PHPStanTestCase extends TestCase
 
 	/** @var array<string, Container> */
 	private static array $containers = [];
+
+	private RuleLevelHelper $tearDownRuleLevelHelper;
+
+	private bool $initialCheckExplicitMixed;
+
+	private bool $initialCheckImplicitMixed;
+
+	private bool $initialCheckThisOnly;
+
+	protected function setUp(): void
+	{
+		parent::setUp();
+
+		$this->tearDownRuleLevelHelper = $helper = self::getContainer()->getByType(RuleLevelHelper::class);
+		$this->initialCheckExplicitMixed = RuleLevelHelperHack::isCheckExplicitMixed($helper);
+		$this->initialCheckImplicitMixed = RuleLevelHelperHack::isCheckImplicitMixed($helper);
+		$this->initialCheckThisOnly = RuleLevelHelperHack::isCheckThisOnly($helper);
+	}
+
+	protected function tearDown(): void
+	{
+		parent::tearDown();
+
+		RuleLevelHelperHack::setCheckExplicitMixed($this->tearDownRuleLevelHelper, $this->initialCheckExplicitMixed);
+		RuleLevelHelperHack::setCheckImplicitMixed($this->tearDownRuleLevelHelper, $this->initialCheckImplicitMixed);
+		RuleLevelHelperHack::setCheckThisOnly($this->tearDownRuleLevelHelper, $this->initialCheckThisOnly);
+
+		unset($this->tearDownRuleLevelHelper);
+	}
 
 	/** @api */
 	public static function getContainer(): Container
@@ -191,6 +221,7 @@ abstract class PHPStanTestCase extends TestCase
 				$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
 				$container->getParameter('featureToggles')['explicitMixedForGlobalVariables'],
 				$constantResolver,
+				self::getContainer()->getByType(RuleLevelHelper::class),
 			),
 		);
 	}

@@ -66,6 +66,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -188,6 +189,7 @@ class MutatingScope implements Scope
 		private Parser $parser,
 		private NodeScopeResolver $nodeScopeResolver,
 		private ConstantResolver $constantResolver,
+		private RuleLevelHelper $ruleLevelHelper,
 		private ScopeContext $context,
 		private PhpVersion $phpVersion,
 		private bool $declareStrictTypes = false,
@@ -2772,7 +2774,7 @@ class MutatingScope implements Scope
 				}
 			}
 			$parameterNode = new Variable($parameter->getName());
-			$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameterNode, $parameterType);
+			$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameterNode, $this->ruleLevelHelper->transformCommonType($parameterType));
 
 			$nativeParameterType = $parameter->getNativeType();
 			if ($parameter->isVariadic()) {

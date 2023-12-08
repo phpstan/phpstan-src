@@ -14,6 +14,7 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use function is_a;
 
@@ -80,6 +81,7 @@ class LazyInternalScopeFactory implements InternalScopeFactory
 			$this->container->getService('currentPhpVersionSimpleParser'),
 			$this->container->getByType(NodeScopeResolver::class),
 			$this->container->getByType(ConstantResolver::class),
+			$this->container->getByType(RuleLevelHelper::class),
 			$context,
 			$this->container->getByType(PhpVersion::class),
 			$declareStrictTypes,

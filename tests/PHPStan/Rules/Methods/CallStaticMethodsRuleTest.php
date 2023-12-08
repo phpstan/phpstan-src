@@ -10,6 +10,7 @@ use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleLevelHelperHack;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
@@ -23,10 +24,15 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	private bool $checkImplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
+		$ruleLevelHelper = self::getContainer()->getByType(RuleLevelHelper::class);
+		RuleLevelHelperHack::setCheckImplicitMixed($ruleLevelHelper, $this->checkImplicitMixed);
+		RuleLevelHelperHack::setCheckExplicitMixed($ruleLevelHelper, $this->checkExplicitMixed);
+		RuleLevelHelperHack::setCheckThisOnly($ruleLevelHelper, $this->checkThisOnly);
 		$reflectionProvider = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, $this->checkExplicitMixed, false, true, false);
 		return new CallStaticMethodsRule(
 			new StaticMethodCallCheck($reflectionProvider, $ruleLevelHelper, new ClassCaseSensitivityCheck($reflectionProvider, true), true, true),
 			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
@@ -625,6 +631,35 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			[
 				'Call to an undefined static method RequireImplements\MyBaseClass::doesNotExistStatic().',
 				45,
+			],
+		]);
+	}
+
+	public function testGenericInstanceofEnum(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/generic-instanceof-enum.php'], [
+			[
+				'Call to an undefined static method T of mixed&UnitEnum::from().',
+				14,
+			],
+			[
+				'Call to an undefined static method T of mixed&UnitEnum::from().',
+				25,
+			],
+			[
+				'Call to an undefined static method T of object&UnitEnum::from().',
+				36,
+			],
+			[
+				'Call to an undefined static method UnitEnum::from().',
+				43,
 			],
 		]);
 	}

@@ -33,10 +33,10 @@ class RuleLevelHelper
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private bool $checkNullables,
-		private bool $checkThisOnly,
+		protected bool $checkThisOnly,
 		private bool $checkUnionTypes,
-		private bool $checkExplicitMixed,
-		private bool $checkImplicitMixed,
+		protected bool $checkExplicitMixed,
+		protected bool $checkImplicitMixed,
 		private bool $newRuleLevelHelper,
 		private bool $checkBenevolentUnionTypes,
 	)
@@ -55,7 +55,7 @@ class RuleLevelHelper
 		return $this->acceptsWithReason($acceptingType, $acceptedType, $strictTypes)->result;
 	}
 
-	private function transformCommonType(Type $type): Type
+	public function transformCommonType(Type $type): Type
 	{
 		if (!$this->checkExplicitMixed && !$this->checkImplicitMixed) {
 			return $type;

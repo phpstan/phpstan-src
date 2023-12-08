@@ -18,11 +18,15 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 	protected function setUp(): void
 	{
+		parent::setUp();
+
 		putenv('GITHUB_ACTIONS');
 	}
 
 	protected function tearDown(): void
 	{
+		parent::tearDown();
+
 		putenv('COLUMNS');
 	}
 

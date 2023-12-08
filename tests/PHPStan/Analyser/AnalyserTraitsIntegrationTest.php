@@ -18,6 +18,8 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 
 	protected function setUp(): void
 	{
+		parent::setUp();
+
 		$this->fileHelper = self::getContainer()->getByType(FileHelper::class);
 	}
 

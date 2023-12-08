@@ -10517,7 +10517,7 @@ return [
 'SimpleXMLElement::__get' => ['static', 'name'=>'string'],
 'SimpleXMLElement::__toString' => ['string'],
 'SimpleXMLElement::addAttribute' => ['void', 'name'=>'string', 'value='=>'string', 'ns='=>'string'],
-'SimpleXMLElement::addChild' => ['static', 'name'=>'string', 'value='=>'string|null', 'ns='=>'string|null'],
+'SimpleXMLElement::addChild' => ['static|null', 'name'=>'string', 'value='=>'string|null', 'ns='=>'string|null'],
 'SimpleXMLElement::asXML' => ['string|bool', 'filename='=>'string'],
 'SimpleXMLElement::attributes' => ['static|null', 'ns='=>'string', 'is_prefix='=>'bool'],
 'SimpleXMLElement::children' => ['__benevolent<static|null>', 'namespaceOrPrefix='=>'string|null', 'is_prefix='=>'bool'],

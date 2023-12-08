@@ -237,7 +237,7 @@ class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->getArgs()) === 1
+				&& count($expr->right->getArgs()) >= 1
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
 				&& $leftType->isInteger()->yes()

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use Countable;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -79,6 +80,7 @@ use function in_array;
 use function is_string;
 use function strtolower;
 use function substr;
+use const COUNT_NORMAL;
 
 class TypeSpecifier
 {
@@ -208,7 +210,7 @@ class TypeSpecifier
 
 			if (
 				$expr->left instanceof FuncCall
-				&& count($expr->left->getArgs()) === 1
+				&& count($expr->left->getArgs()) >= 1
 				&& $expr->left->name instanceof Name
 				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen', 'mb_strlen'], true)
 				&& (
@@ -237,7 +239,7 @@ class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->getArgs()) === 1
+				&& count($expr->right->getArgs()) >= 1
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
 				&& $leftType->isInteger()->yes()
@@ -247,6 +249,39 @@ class TypeSpecifier
 					|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
 				) {
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
+
+					if ($context->truthy() && $argType->isArray()->maybe()) {
+						$countables = [];
+						if ($argType instanceof UnionType) {
+							$countableInterface = new ObjectType(Countable::class);
+							foreach ($argType->getTypes() as $innerType) {
+								if (
+									$innerType->isArray()->yes()
+								) {
+									$innerType = TypeCombinator::intersect(new NonEmptyArrayType(), $innerType);
+									if ($innerType->isList()->yes()) {
+										$innerType = AccessoryArrayListType::intersectWith($innerType);
+									}
+									$countables[] = $innerType;
+								}
+
+								if (
+									!$countableInterface->isSuperTypeOf($innerType)->yes()
+								) {
+									continue;
+								}
+
+								$countables[] = $innerType;
+							}
+						}
+
+						if (count($countables) > 0) {
+							$countableType = TypeCombinator::union(...$countables);
+
+							return $this->create($expr->right->getArgs()[0]->value, $countableType, $context, false, $scope, $rootExpr);
+						}
+					}
+
 					if ($argType->isArray()->yes()) {
 						$newType = new NonEmptyArrayType();
 						if ($context->true() && $argType->isList()->yes()) {
@@ -944,7 +979,7 @@ class TypeSpecifier
 		if (
 			!$context->null()
 			&& $exprNode instanceof FuncCall
-			&& count($exprNode->getArgs()) === 1
+			&& count($exprNode->getArgs()) >= 1
 			&& $exprNode->name instanceof Name
 			&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
 			&& $constantType instanceof ConstantIntegerType
@@ -954,10 +989,26 @@ class TypeSpecifier
 				if ($constantType->getValue() === 0) {
 					$newContext = $newContext->negate();
 				}
+
 				$argType = $scope->getType($exprNode->getArgs()[0]->value);
+
 				if ($argType->isArray()->yes()) {
+					if (count($exprNode->getArgs()) === 1) {
+						$isNormalCount = true;
+					} else {
+						$mode = $scope->getType($exprNode->getArgs()[1]->value);
+						if (!$mode->isInteger()->yes()) {
+							return new SpecifiedTypes();
+						}
+
+						$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->yes();
+						if (!$isNormalCount) {
+							$isNormalCount = $argType->getIterableValueType()->isArray()->no();
+						}
+					}
+
 					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-					if ($argType->isList()->yes() && $context->truthy() && $constantType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+					if ($isNormalCount && $argType->isList()->yes() && $context->truthy() && $constantType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 						$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
 						$itemType = $argType->getIterableValueType();
 						for ($i = 0; $i < $constantType->getValue(); $i++) {

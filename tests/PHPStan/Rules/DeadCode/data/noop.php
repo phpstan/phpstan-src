@@ -30,4 +30,10 @@ function (stdClass $foo, bool $a, bool $b) {
 	(string) 1;
 
 	$r = $a xor $b;
+
+	$s = $a and doFoo();
+	$t = $a and $b;
+
+	$s = $a or doFoo();
+	$t = $a or $b;
 };

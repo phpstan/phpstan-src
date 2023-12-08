@@ -36,14 +36,30 @@ class NoopRule implements Rule
 		) {
 			$expr = $expr->expr;
 		}
-		if ($this->logicalXor && $expr instanceof Node\Expr\BinaryOp\LogicalXor) {
-			return [
-				RuleErrorBuilder::message(
-					'Unused result of "xor" operator.',
-				)->line($expr->getLine())
-					->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
-					->build(),
-			];
+		if ($this->logicalXor) {
+			if ($expr instanceof Node\Expr\BinaryOp\LogicalXor) {
+				return [
+					RuleErrorBuilder::message(
+						'Unused result of "xor" operator.',
+					)->line($expr->getLine())
+						->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
+						->build(),
+				];
+			}
+			if ($expr instanceof Node\Expr\BinaryOp\LogicalAnd || $expr instanceof Node\Expr\BinaryOp\LogicalOr) {
+				if (!$this->isNoopExpr($expr->right)) {
+					return [];
+				}
+
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Unused result of "%s" operator.',
+						$expr->getOperatorSigil(),
+					))->line($expr->getLine())
+						->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
+						->build(),
+				];
+			}
 		}
 		if (!$this->isNoopExpr($expr)) {
 			return [];

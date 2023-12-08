@@ -2,8 +2,8 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
-use PhpParser\Node;
-use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
+use PhpParser\Node as PhpParserNode;
+use PHPStan\PhpDocParser\Ast\Node as PhpDocNode;
 
 class PhpDocLineHelper
 {
@@ -13,9 +13,9 @@ class PhpDocLineHelper
 	 * - exact position is available only when bleedingEdge is enabled
 	 * - otherwise, it falls back to given node start line
 	 */
-	public static function detectTagLine(Node $node, PhpDocTagNode $phpDocTagNode): int
+	public static function detectLine(PhpParserNode $node, PhpDocNode $phpDocNode): int
 	{
-		$phpDocTagLine = $phpDocTagNode->getAttribute('startLine');
+		$phpDocTagLine = $phpDocNode->getAttribute('startLine');
 		$phpDoc = $node->getDocComment();
 
 		if ($phpDocTagLine === null || $phpDoc === null) {

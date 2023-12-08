@@ -91,7 +91,7 @@ class InvalidPhpDocTagValueRule implements Rule
 					$phpDocTag->value->alias,
 					$this->trimExceptionMessage($phpDocTag->value->type->getException()->getMessage()),
 				))
-					->line(PhpDocLineHelper::detectTagLine($node, $phpDocTag))
+					->line(PhpDocLineHelper::detectLine($node, $phpDocTag))
 					->build();
 
 				continue;
@@ -105,7 +105,7 @@ class InvalidPhpDocTagValueRule implements Rule
 				$phpDocTag->value->value,
 				$this->trimExceptionMessage($phpDocTag->value->exception->getMessage()),
 			))
-				->line(PhpDocLineHelper::detectTagLine($node, $phpDocTag))
+				->line(PhpDocLineHelper::detectLine($node, $phpDocTag))
 				->build();
 		}
 

@@ -115,7 +115,7 @@ class InvalidPHPStanDocTagRule implements Rule
 				'Unknown PHPDoc tag: %s',
 				$phpDocTag->name,
 			))
-				->line(PhpDocLineHelper::detectTagLine($node, $phpDocTag))
+				->line(PhpDocLineHelper::detectLine($node, $phpDocTag))
 				->build();
 		}
 

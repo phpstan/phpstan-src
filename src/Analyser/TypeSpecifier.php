@@ -208,7 +208,7 @@ class TypeSpecifier
 
 			if (
 				$expr->left instanceof FuncCall
-				&& count($expr->left->getArgs()) === 1
+				&& count($expr->left->getArgs()) >= 1
 				&& $expr->left->name instanceof Name
 				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen'], true)
 				&& (

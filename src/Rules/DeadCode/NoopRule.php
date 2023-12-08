@@ -60,6 +60,23 @@ class NoopRule implements Rule
 						->build(),
 				];
 			}
+
+			if ($expr instanceof Node\Expr\Ternary) {
+				$if = $expr->if;
+				if ($if === null) {
+					$if = $expr->cond;
+				}
+
+				if (!$this->isNoopExpr($if) || !$this->isNoopExpr($expr->else)) {
+					return [];
+				}
+
+				return [
+					RuleErrorBuilder::message('Unused result of ternary operator.')
+						->line($expr->getLine())
+						->build(),
+				];
+			}
 		}
 		if (!$this->isNoopExpr($expr)) {
 			return [];

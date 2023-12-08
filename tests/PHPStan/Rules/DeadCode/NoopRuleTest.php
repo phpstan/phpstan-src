@@ -92,6 +92,14 @@ class NoopRuleTest extends RuleTestCase
 				38,
 				'This operator has unexpected precedence, try disambiguating the logic with parentheses ().',
 			],
+			[
+				'Unused result of ternary operator.',
+				40,
+			],
+			[
+				'Unused result of ternary operator.',
+				41,
+			],
 		]);
 	}
 

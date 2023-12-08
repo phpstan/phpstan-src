@@ -36,4 +36,10 @@ function (stdClass $foo, bool $a, bool $b) {
 
 	$s = $a or doFoo();
 	$t = $a or $b;
+
+	$a ? $b : $s;
+	$a ?: $b;
+	$a ? doFoo() : $s;
+	$a ? $b : doFoo();
+	$a ? doFoo() : doBar();
 };

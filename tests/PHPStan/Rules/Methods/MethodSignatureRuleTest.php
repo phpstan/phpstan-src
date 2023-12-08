@@ -502,4 +502,52 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10184.php'], []);
 	}
 
+	public function testBug10208(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10208.php'], []);
+	}
+
+	public function testBug6462(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+
+		$this->analyse([__DIR__ . '/data/bug-6462.php'], []);
+	}
+
+	public function testBug4396(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+
+		$this->analyse([__DIR__ . '/data/bug-4396.php'], []);
+	}
+
+	public function testBug3580(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+
+		$this->analyse([__DIR__ . '/data/bug-3580.php'], []);
+	}
+
 }

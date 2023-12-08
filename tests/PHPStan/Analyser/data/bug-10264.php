@@ -17,12 +17,22 @@ class A
 		assertType('list<Bug10264\A>', $list);
 	}
 
+	function doFoo2() {
+		/** @var list<A> $list */
+		$list = [];
+
+		assertType('list<Bug10264\A>', $list);
+
+		assert((count($list, COUNT_NORMAL) <= 1) === true);
+		assertType('list<Bug10264\A>', $list);
+	}
+
 	/** @param list<int> $c */
 	public function sayHello(array $c): void
 	{
 		assertType('list<int>', $c);
 		if (count($c) > 0) {
-			$c = array_map(fn () => new stdClass(), $c);
+			$c = array_map(fn() => new stdClass(), $c);
 			assertType('non-empty-list<stdClass>', $c);
 		} else {
 			assertType('array{}', $c);
@@ -30,4 +40,41 @@ class A
 
 		assertType('list<stdClass>', $c);
 	}
+
+	function doBar() {
+		/** @var list<A> $list */
+		$list = [];
+
+		assertType('list<Bug10264\A>', $list);
+
+		assert((count($list, COUNT_RECURSIVE) <= 1) === true);
+		assertType('list<Bug10264\A>', $list);
+	}
+
+	function doIf():void {
+		/** @var list<A> $list */
+		$list = [];
+
+		assertType('list<Bug10264\A>', $list);
+
+		if( count($list, COUNT_RECURSIVE) >= 1) {
+			assertType('non-empty-list<Bug10264\A>', $list);
+		} else {
+			assertType('array{}', $list);
+		}
+	}
+
+	function countModeInt(int $i):void {
+		/** @var list<A> $list */
+		$list = [];
+
+		assertType('list<Bug10264\A>', $list);
+
+		if( count($list, $i) >= 1) {
+			assertType('non-empty-list<Bug10264\A>', $list);
+		} else {
+			assertType('array{}', $list);
+		}
+	}
+
 }

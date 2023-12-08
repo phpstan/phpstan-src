@@ -45,18 +45,7 @@ class NoopRule implements Rule
 					->build(),
 			];
 		}
-		if (
-			!$expr instanceof Node\Expr\Variable
-			&& !$expr instanceof Node\Expr\PropertyFetch
-			&& !$expr instanceof Node\Expr\StaticPropertyFetch
-			&& !$expr instanceof Node\Expr\NullsafePropertyFetch
-			&& !$expr instanceof Node\Expr\ArrayDimFetch
-			&& !$expr instanceof Node\Scalar
-			&& !$expr instanceof Node\Expr\Isset_
-			&& !$expr instanceof Node\Expr\Empty_
-			&& !$expr instanceof Node\Expr\ConstFetch
-			&& !$expr instanceof Node\Expr\ClassConstFetch
-		) {
+		if (!$this->isNoopExpr($expr)) {
 			return [];
 		}
 
@@ -72,6 +61,20 @@ class NoopRule implements Rule
 				])
 				->build(),
 		];
+	}
+
+	public function isNoopExpr(Node\Expr $expr): bool
+	{
+		return $expr instanceof Node\Expr\Variable
+			|| $expr instanceof Node\Expr\PropertyFetch
+			|| $expr instanceof Node\Expr\StaticPropertyFetch
+			|| $expr instanceof Node\Expr\NullsafePropertyFetch
+			|| $expr instanceof Node\Expr\ArrayDimFetch
+			|| $expr instanceof Node\Scalar
+			|| $expr instanceof Node\Expr\Isset_
+			|| $expr instanceof Node\Expr\Empty_
+			|| $expr instanceof Node\Expr\ConstFetch
+			|| $expr instanceof Node\Expr\ClassConstFetch;
 	}
 
 }

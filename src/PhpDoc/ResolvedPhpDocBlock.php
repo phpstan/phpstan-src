@@ -22,10 +22,13 @@ use PHPStan\PhpDoc\Tag\TypedTag;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
@@ -57,6 +60,8 @@ class ResolvedPhpDocBlock
 	private array $templateTags;
 
 	private PhpDocNodeResolver $phpDocNodeResolver;
+
+	private ReflectionProvider $reflectionProvider;
 
 	/** @var array<(string|int), VarTag>|false */
 	private array|false $varTags = false;
@@ -138,6 +143,7 @@ class ResolvedPhpDocBlock
 		TemplateTypeMap $templateTypeMap,
 		array $templateTags,
 		PhpDocNodeResolver $phpDocNodeResolver,
+		ReflectionProvider $reflectionProvider,
 	): self
 	{
 		// new property also needs to be added to createEmpty() and merge()
@@ -150,6 +156,7 @@ class ResolvedPhpDocBlock
 		$self->templateTypeMap = $templateTypeMap;
 		$self->templateTags = $templateTags;
 		$self->phpDocNodeResolver = $phpDocNodeResolver;
+		$self->reflectionProvider = $reflectionProvider;
 
 		return $self;
 	}
@@ -199,6 +206,11 @@ class ResolvedPhpDocBlock
 	 */
 	public function merge(array $parents, array $parentPhpDocBlocks): self
 	{
+		$className = $this->nameScope !== null ? $this->nameScope->getClassName() : null;
+		$classReflection = $className !== null && $this->reflectionProvider->hasClass($className)
+			? $this->reflectionProvider->getClass($className)
+			: null;
+
 		// new property also needs to be added to createEmpty()
 		$result = new self();
 		// we will resolve everything on $this here so these properties don't have to be populated
@@ -226,7 +238,7 @@ class ResolvedPhpDocBlock
 		$result->usesTags = $this->getUsesTags();
 		$result->paramTags = self::mergeParamTags($this->getParamTags(), $parents, $parentPhpDocBlocks);
 		$result->paramOutTags = self::mergeParamOutTags($this->getParamOutTags(), $parents, $parentPhpDocBlocks);
-		$result->returnTag = self::mergeReturnTags($this->getReturnTag(), $parents, $parentPhpDocBlocks);
+		$result->returnTag = self::mergeReturnTags($this->getReturnTag(), $classReflection, $parents, $parentPhpDocBlocks);
 		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), $parents);
 		$result->mixinTags = $this->getMixinTags();
 		$result->typeAliasTags = $this->getTypeAliasTags();
@@ -312,6 +324,7 @@ class ResolvedPhpDocBlock
 		$self->templateTypeMap = $this->templateTypeMap;
 		$self->templateTags = $this->templateTags;
 		$self->phpDocNodeResolver = $this->phpDocNodeResolver;
+		$self->reflectionProvider = $this->reflectionProvider;
 		$self->varTags = $this->varTags;
 		$self->methodTags = $this->methodTags;
 		$self->propertyTags = $this->propertyTags;
@@ -797,14 +810,14 @@ class ResolvedPhpDocBlock
 	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
 	 * @return ReturnTag|Null
 	 */
-	private static function mergeReturnTags(?ReturnTag $returnTag, array $parents, array $parentPhpDocBlocks): ?ReturnTag
+	private static function mergeReturnTags(?ReturnTag $returnTag, ?ClassReflection $classReflection, array $parents, array $parentPhpDocBlocks): ?ReturnTag
 	{
 		if ($returnTag !== null) {
 			return $returnTag;
 		}
 
 		foreach ($parents as $i => $parent) {
-			$result = self::mergeOneParentReturnTag($returnTag, $parent, $parentPhpDocBlocks[$i]);
+			$result = self::mergeOneParentReturnTag($returnTag, $classReflection, $parent, $parentPhpDocBlocks[$i]);
 			if ($result === null) {
 				continue;
 			}
@@ -815,7 +828,7 @@ class ResolvedPhpDocBlock
 		return null;
 	}
 
-	private static function mergeOneParentReturnTag(?ReturnTag $returnTag, self $parent, PhpDocBlock $phpDocBlock): ?ReturnTag
+	private static function mergeOneParentReturnTag(?ReturnTag $returnTag, ?ClassReflection $classReflection, self $parent, PhpDocBlock $phpDocBlock): ?ReturnTag
 	{
 		$parentReturnTag = $parent->getReturnTag();
 		if ($parentReturnTag === null) {
@@ -823,6 +836,21 @@ class ResolvedPhpDocBlock
 		}
 
 		$parentType = $parentReturnTag->getType();
+
+		if ($classReflection !== null) {
+			$parentType = TypeTraverser::map(
+				$parentType,
+				static function (Type $type, callable $traverse) use ($classReflection): Type {
+					if ($type instanceof StaticType) {
+						return $type->changeBaseClass($classReflection);
+					}
+
+					return $traverse($type);
+				},
+			);
+
+			$parentReturnTag = $parentReturnTag->withType($parentType);
+		}
 
 		// Each parent would overwrite the previous one except if it returns a less specific type.
 		// Do not care for incompatible types as there is a separate rule for that.

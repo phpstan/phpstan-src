@@ -51,6 +51,12 @@ parameters:
 			message: "#^Class PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock has an uninitialized property \\$phpDocNodeResolver\\. Give it default value or assign it in the constructor\\.$#"
 			count: 1
 			path: ../src/PhpDoc/ResolvedPhpDocBlock.php
+
+		-
+			message: "#^Class PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock has an uninitialized property \\$reflectionProvider\\. Give it default value or assign it in the constructor\\.$#"
+			count: 1
+			path: ../src/PhpDoc/ResolvedPhpDocBlock.php
+
 		-
 			message: "#^Class PHPStan\\\\Reflection\\\\BetterReflection\\\\SourceLocator\\\\CachingVisitor has an uninitialized property \\$fileName\\. Give it default value or assign it in the constructor\\.$#"
 			count: 1

@@ -249,7 +249,7 @@ class TypeSpecifier
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType->isArray()->yes()) {
 						$newType = new NonEmptyArrayType();
-						if ($argType->isList()->yes()) {
+						if ($context->truthy() && $argType->isList()->yes()) {
 							$newType = AccessoryArrayListType::intersectWith($newType);
 						}
 

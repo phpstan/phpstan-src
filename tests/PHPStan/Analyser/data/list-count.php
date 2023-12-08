@@ -26,18 +26,37 @@ function foo(array $items) {
 /**
  * @param list<int> $items
  */
-function bar(array $items) {
+function normalCount(array $items) {
 	assertType('list<int>', $items);
-	if (count($items, COUNT_RECURSIVE) === 3) {
+	if (count($items, COUNT_NORMAL) === 3) {
 		assertType('array{int, int, int}', $items);
 		array_shift($items);
 		assertType('array{int, int}', $items);
-	} elseif (count($items, COUNT_RECURSIVE) === 0) {
+	} elseif (count($items, COUNT_NORMAL) === 0) {
 		assertType('array{}', $items);
-	} elseif (count($items, COUNT_RECURSIVE) === 5) {
+	} elseif (count($items, COUNT_NORMAL) === 5) {
 		assertType('array{int, int, int, int, int}', $items);
 	} else {
 		assertType('non-empty-list<int>', $items);
 	}
 	assertType('list<int>', $items);
+}
+
+/**
+ * @param list<int|int[]> $items
+ */
+function recursiveCount(array $items):void {
+	assertType('list<array<int>|int>', $items);
+	if (count($items, COUNT_RECURSIVE) === 3) {
+		assertType('non-empty-list<array<int>|int>', $items);
+		array_shift($items);
+		assertType('list<array<int>|int>', $items);
+	} elseif (count($items, COUNT_RECURSIVE) === 0) {
+		assertType('array{}', $items);
+	} elseif (count($items, COUNT_RECURSIVE) === 5) {
+		assertType('non-empty-list<array<int>|int>', $items);
+	} else {
+		assertType('non-empty-list<array<int>|int>', $items);
+	}
+	assertType('list<array<int>|int>', $items);
 }

@@ -249,6 +249,7 @@ class TypeSpecifier
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType->isArray()->yes()) {
 						$newType = new NonEmptyArrayType();
+
 						if ($context->truthy() && $argType->isList()->yes()) {
 							$newType = AccessoryArrayListType::intersectWith($newType);
 						}
@@ -928,8 +929,15 @@ class TypeSpecifier
 				}
 				$argType = $scope->getType($exprNode->getArgs()[0]->value);
 				if ($argType->isArray()->yes()) {
+					if (count($exprNode->getArgs()) === 1) {
+						$isNormalCount = true;
+					} else {
+						$mode = $scope->getType($exprNode->getArgs()[1]->value);
+						$isNormalCount = $mode->isSuperTypeOf(new ConstantIntegerType(COUNT_NORMAL))->yes();
+					}
+
 					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-					if ($argType->isList()->yes() && $context->truthy() && $constantType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+					if ($isNormalCount && $argType->isList()->yes() && $context->truthy() && $constantType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 						$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
 						$itemType = $argType->getIterableValueType();
 						for ($i = 0; $i < $constantType->getValue(); $i++) {

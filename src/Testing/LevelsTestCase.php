@@ -169,7 +169,7 @@ abstract class LevelsTestCase extends TestCase
 	{
 		if (count($expectedMessages) === 0) {
 			try {
-				self::assertFileDoesNotExist($expectedJsonFile);
+				self::ourCustomAssertFileDoesNotExist($expectedJsonFile);
 				return null;
 			} catch (AssertionFailedError $e) {
 				unlink($expectedJsonFile);
@@ -192,8 +192,9 @@ abstract class LevelsTestCase extends TestCase
 		return null;
 	}
 
-	public static function assertFileDoesNotExist(string $filename, string $message = ''): void
+	public static function ourCustomAssertFileDoesNotExist(string $filename, string $message = ''): void
 	{
+		// this method is no longer called assertFileDoesNotExist because this method is final in PHPUnit 10
 		if (!method_exists(parent::class, 'assertFileDoesNotExist')) {
 			parent::assertFileNotExists($filename, $message);
 			return;

@@ -474,7 +474,7 @@ class AnalyserTest extends PHPStanTestCase
 			__DIR__ . '/data/ignore-next-line.php',
 		], true);
 		$this->assertCount($reportUnmatchedIgnoredErrors ? 4 : 3, $result);
-		foreach ([10, 30, 34] as $i => $line) {
+		foreach ([10, 20, 24] as $i => $line) {
 			$this->assertArrayHasKey($i, $result);
 			$this->assertInstanceOf(Error::class, $result[$i]);
 			$this->assertSame('Fail.', $result[$i]->getMessage());
@@ -487,8 +487,8 @@ class AnalyserTest extends PHPStanTestCase
 
 		$this->assertArrayHasKey(3, $result);
 		$this->assertInstanceOf(Error::class, $result[3]);
-		$this->assertSame('No error to ignore is reported on line 38.', $result[3]->getMessage());
-		$this->assertSame(38, $result[3]->getLine());
+		$this->assertSame('No error to ignore is reported on line 28.', $result[3]->getMessage());
+		$this->assertSame(28, $result[3]->getLine());
 	}
 
 	/**

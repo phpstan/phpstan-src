@@ -141,4 +141,10 @@ class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testIgnoreWithinPhpDoc(): void
+	{
+		$this->checkAllInvalidPhpDocs = true;
+		$this->analyse([__DIR__ . '/data/ignore-line-within-phpdoc.php'], []);
+	}
+
 }

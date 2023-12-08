@@ -17,16 +17,6 @@ class Foo
 
 		/** @phpstan-ignore-next-line */
 		fail();
-
-		/*
-		 * @phpstan-ignore-next-line
-		 */
-		fail();
-
-		/**
-		 * @phpstan-ignore-next-line
-		 */
-		fail();
 		fail(); // reported
 
 		// @phpstan-ignore-next-line

@@ -124,15 +124,15 @@ class RichParser implements Parser
 	): array
 	{
 		$lines = [];
-		$positionsOfIgnoreNextLineComment = [];
+		$positionsOfIgnoreComment = [];
 		$offset = 0;
 
 		while (($pos = strpos($tokenText, $ignoreComment, $offset)) !== false) {
-			$positionsOfIgnoreNextLineComment[] = $pos;
+			$positionsOfIgnoreComment[] = $pos;
 			$offset = $pos + 1;
 		}
 
-		foreach ($positionsOfIgnoreNextLineComment as $pos) {
+		foreach ($positionsOfIgnoreComment as $pos) {
 			$line = $tokenLine + substr_count(substr($tokenText, 0, $pos), "\n") + ($ignoreNextLine ? 1 : 0);
 			$lines[$line] = null;
 		}

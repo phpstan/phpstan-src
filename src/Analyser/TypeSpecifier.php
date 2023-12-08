@@ -29,6 +29,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -247,7 +248,14 @@ class TypeSpecifier
 				) {
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType->isArray()->yes()) {
-						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new NonEmptyArrayType(), $context, false, $scope, $rootExpr));
+						$newType = new NonEmptyArrayType();
+						if ($argType->isList()->yes()) {
+							$newType = AccessoryArrayListType::intersectWith($newType);
+						}
+
+						$result = $result->unionWith(
+							$this->create($expr->right->getArgs()[0]->value, $newType, $context, false, $scope, $rootExpr),
+						);
 					}
 				}
 			}

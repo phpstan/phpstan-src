@@ -100,6 +100,14 @@ class NoopRuleTest extends RuleTestCase
 				'Unused result of ternary operator.',
 				41,
 			],
+			[
+				'Unused result of "||" operator.',
+				46,
+			],
+			[
+				'Unused result of "&&" operator.',
+				49,
+			],
 		]);
 	}
 

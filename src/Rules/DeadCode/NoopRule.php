@@ -61,6 +61,20 @@ class NoopRule implements Rule
 				];
 			}
 
+			if ($expr instanceof Node\Expr\BinaryOp\BooleanAnd || $expr instanceof Node\Expr\BinaryOp\BooleanOr) {
+				if (!$this->isNoopExpr($expr->right)) {
+					return [];
+				}
+
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Unused result of "%s" operator.',
+						$expr->getOperatorSigil(),
+					))->line($expr->getLine())
+						->build(),
+				];
+			}
+
 			if ($expr instanceof Node\Expr\Ternary) {
 				$if = $expr->if;
 				if ($if === null) {

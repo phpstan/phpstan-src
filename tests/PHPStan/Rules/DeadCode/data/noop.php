@@ -42,4 +42,10 @@ function (stdClass $foo, bool $a, bool $b) {
 	$a ? doFoo() : $s;
 	$a ? $b : doFoo();
 	$a ? doFoo() : doBar();
+
+	$a || $b;
+	$a || doFoo();
+
+	$a && $b;
+	$a && doFoo();
 };

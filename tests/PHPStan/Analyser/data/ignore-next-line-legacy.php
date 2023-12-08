@@ -1,6 +1,6 @@
 <?php
 
-namespace IgnoreNextLine;
+namespace IgnoreNextLineLegacy;
 
 class Foo
 {

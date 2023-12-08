@@ -916,7 +916,7 @@ class TypeSpecifier
 		if (
 			!$context->null()
 			&& $exprNode instanceof FuncCall
-			&& count($exprNode->getArgs()) === 1
+			&& count($exprNode->getArgs()) >= 1
 			&& $exprNode->name instanceof Name
 			&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
 			&& $constantType instanceof ConstantIntegerType

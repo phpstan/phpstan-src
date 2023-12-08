@@ -99,3 +99,22 @@ function recursiveCount(array $items):void {
 	}
 	assertType('list<array<int>|int>', $items);
 }
+
+/**
+ * @param list<int|int[]> $items
+ */
+function normalCountOnArray(array $items):void {
+	assertType('list<array<int>|int>', $items);
+	if (count($items, COUNT_NORMAL) === 3) {
+		assertType('array{array<int>|int, array<int>|int, array<int>|int}', $items);
+		array_shift($items);
+		assertType('array{array<int>|int, array<int>|int}', $items);
+	} elseif (count($items, COUNT_NORMAL) === 0) {
+		assertType('array{}', $items);
+	} elseif (count($items, COUNT_NORMAL) === 5) {
+		assertType('array{array<int>|int, array<int>|int, array<int>|int, array<int>|int, array<int>|int}', $items);
+	} else {
+		assertType('non-empty-list<array<int>|int>', $items);
+	}
+	assertType('list<array<int>|int>', $items);
+}

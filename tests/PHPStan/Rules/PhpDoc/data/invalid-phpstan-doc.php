@@ -14,10 +14,10 @@ class Boo extends Baz
 	function foo(string $a){}
 
 	/**
-	 *
+	 * @phpstan-ignore-next-line
 	 * @phpstan-pararm
 	 */
-	function bar() // @phpstan-ignore-line
+	function bar()
 	{
 
 	}

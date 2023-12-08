@@ -52,6 +52,7 @@ parameters:
 		readOnlyByPhpDoc: false
 		phpDocParserRequireWhitespaceBeforeDescription: false
 		phpDocParserIncludeLines: false
+		enableIgnoreErrorsWithinPhpDocs: false
 		runtimeReflectionRules: false
 		notAnalysedTrait: false
 		curlSetOptTypes: false
@@ -1827,7 +1828,7 @@ services:
 		arguments:
 			parser: @currentPhpVersionPhpParser
 			lexer: @currentPhpVersionLexer
-			enableIgnoreErrorsWithinPhpDocs: %featureToggles.bleedingEdge%
+			enableIgnoreErrorsWithinPhpDocs: %featureToggles.enableIgnoreErrorsWithinPhpDocs%
 		autowired: no
 
 	currentPhpVersionSimpleParser:

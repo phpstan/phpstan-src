@@ -40,7 +40,17 @@
         "ignorable": true
     },
     {
+        "message": "Unused result of ternary operator.",
+        "line": 74,
+        "ignorable": true
+    },
+    {
         "message": "Instanceof between $this(Levels\\Unreachable\\Bar) and Levels\\Unreachable\\Bar will always evaluate to true.",
+        "line": 79,
+        "ignorable": true
+    },
+    {
+        "message": "Unused result of ternary operator.",
         "line": 79,
         "ignorable": true
     },
@@ -50,12 +60,27 @@
         "ignorable": true
     },
     {
+        "message": "Unused result of ternary operator.",
+        "line": 84,
+        "ignorable": true
+    },
+    {
         "message": "Ternary operator condition is always true.",
         "line": 89,
         "ignorable": true
     },
     {
+        "message": "Unused result of ternary operator.",
+        "line": 89,
+        "ignorable": true
+    },
+    {
         "message": "Ternary operator condition is always true.",
+        "line": 94,
+        "ignorable": true
+    },
+    {
+        "message": "Unused result of ternary operator.",
         "line": 94,
         "ignorable": true
     },
@@ -66,6 +91,11 @@
     },
     {
         "message": "Right side of && is always true.",
+        "line": 102,
+        "ignorable": true
+    },
+    {
+        "message": "Unused result of ternary operator.",
         "line": 102,
         "ignorable": true
     }

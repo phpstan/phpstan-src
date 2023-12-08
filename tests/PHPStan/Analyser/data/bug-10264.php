@@ -17,6 +17,16 @@ class A
 		assertType('list<Bug10264\A>', $list);
 	}
 
+	function doFoo2() {
+		/** @var list<A> $list */
+		$list = [];
+
+		assertType('list<Bug10264\A>', $list);
+
+		assert((count($list, COUNT_NORMAL) <= 1) === true);
+		assertType('list<Bug10264\A>', $list);
+	}
+
 	/** @param list<int> $c */
 	public function sayHello(array $c): void
 	{

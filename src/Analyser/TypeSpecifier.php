@@ -79,6 +79,7 @@ use function in_array;
 use function is_string;
 use function strtolower;
 use function substr;
+use const COUNT_NORMAL;
 
 class TypeSpecifier
 {

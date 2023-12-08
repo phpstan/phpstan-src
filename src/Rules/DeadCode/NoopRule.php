@@ -36,27 +36,63 @@ class NoopRule implements Rule
 		) {
 			$expr = $expr->expr;
 		}
-		if ($this->logicalXor && $expr instanceof Node\Expr\BinaryOp\LogicalXor) {
-			return [
-				RuleErrorBuilder::message(
-					'Unused result of "xor" operator.',
-				)->line($expr->getLine())
-					->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
-					->build(),
-			];
+		if ($this->logicalXor) {
+			if ($expr instanceof Node\Expr\BinaryOp\LogicalXor) {
+				return [
+					RuleErrorBuilder::message(
+						'Unused result of "xor" operator.',
+					)->line($expr->getLine())
+						->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
+						->build(),
+				];
+			}
+			if ($expr instanceof Node\Expr\BinaryOp\LogicalAnd || $expr instanceof Node\Expr\BinaryOp\LogicalOr) {
+				if (!$this->isNoopExpr($expr->right)) {
+					return [];
+				}
+
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Unused result of "%s" operator.',
+						$expr->getOperatorSigil(),
+					))->line($expr->getLine())
+						->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
+						->build(),
+				];
+			}
+
+			if ($expr instanceof Node\Expr\BinaryOp\BooleanAnd || $expr instanceof Node\Expr\BinaryOp\BooleanOr) {
+				if (!$this->isNoopExpr($expr->right)) {
+					return [];
+				}
+
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Unused result of "%s" operator.',
+						$expr->getOperatorSigil(),
+					))->line($expr->getLine())
+						->build(),
+				];
+			}
+
+			if ($expr instanceof Node\Expr\Ternary) {
+				$if = $expr->if;
+				if ($if === null) {
+					$if = $expr->cond;
+				}
+
+				if (!$this->isNoopExpr($if) || !$this->isNoopExpr($expr->else)) {
+					return [];
+				}
+
+				return [
+					RuleErrorBuilder::message('Unused result of ternary operator.')
+						->line($expr->getLine())
+						->build(),
+				];
+			}
 		}
-		if (
-			!$expr instanceof Node\Expr\Variable
-			&& !$expr instanceof Node\Expr\PropertyFetch
-			&& !$expr instanceof Node\Expr\StaticPropertyFetch
-			&& !$expr instanceof Node\Expr\NullsafePropertyFetch
-			&& !$expr instanceof Node\Expr\ArrayDimFetch
-			&& !$expr instanceof Node\Scalar
-			&& !$expr instanceof Node\Expr\Isset_
-			&& !$expr instanceof Node\Expr\Empty_
-			&& !$expr instanceof Node\Expr\ConstFetch
-			&& !$expr instanceof Node\Expr\ClassConstFetch
-		) {
+		if (!$this->isNoopExpr($expr)) {
 			return [];
 		}
 
@@ -68,6 +104,20 @@ class NoopRule implements Rule
 				->identifier('expr.resultUnused')
 				->build(),
 		];
+	}
+
+	public function isNoopExpr(Node\Expr $expr): bool
+	{
+		return $expr instanceof Node\Expr\Variable
+			|| $expr instanceof Node\Expr\PropertyFetch
+			|| $expr instanceof Node\Expr\StaticPropertyFetch
+			|| $expr instanceof Node\Expr\NullsafePropertyFetch
+			|| $expr instanceof Node\Expr\ArrayDimFetch
+			|| $expr instanceof Node\Scalar
+			|| $expr instanceof Node\Expr\Isset_
+			|| $expr instanceof Node\Expr\Empty_
+			|| $expr instanceof Node\Expr\ConstFetch
+			|| $expr instanceof Node\Expr\ClassConstFetch;
 	}
 
 }

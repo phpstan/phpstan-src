@@ -82,6 +82,32 @@ class NoopRuleTest extends RuleTestCase
 				32,
 				'This operator has unexpected precedence, try disambiguating the logic with parentheses ().',
 			],
+			[
+				'Unused result of "and" operator.',
+				35,
+				'This operator has unexpected precedence, try disambiguating the logic with parentheses ().',
+			],
+			[
+				'Unused result of "or" operator.',
+				38,
+				'This operator has unexpected precedence, try disambiguating the logic with parentheses ().',
+			],
+			[
+				'Unused result of ternary operator.',
+				40,
+			],
+			[
+				'Unused result of ternary operator.',
+				41,
+			],
+			[
+				'Unused result of "||" operator.',
+				46,
+			],
+			[
+				'Unused result of "&&" operator.',
+				49,
+			],
 		]);
 	}
 

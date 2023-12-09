@@ -45,7 +45,7 @@ function modeCount(array $items, int $mode) {
 /**
  * @param list<int|int[]> $items
  */
-function modeCountOnArray(array $items, int $mode) {
+function modeCountOnMaybeArray(array $items, int $mode) {
 	assertType('list<array<int>|int>', $items);
 	if (count($items, $mode) === 3) {
 		assertType('non-empty-list<array<int>|int>', $items);
@@ -84,7 +84,7 @@ function normalCount(array $items) {
 /**
  * @param list<int|int[]> $items
  */
-function recursiveCount(array $items):void {
+function recursiveCountOnMaybeArray(array $items):void {
 	assertType('list<array<int>|int>', $items);
 	if (count($items, COUNT_RECURSIVE) === 3) {
 		assertType('non-empty-list<array<int>|int>', $items);
@@ -103,7 +103,7 @@ function recursiveCount(array $items):void {
 /**
  * @param list<int|int[]> $items
  */
-function normalCountOnArray(array $items):void {
+function normalCountOnMaybeArray(array $items):void {
 	assertType('list<array<int>|int>', $items);
 	if (count($items, COUNT_NORMAL) === 3) {
 		assertType('array{array<int>|int, array<int>|int, array<int>|int}', $items);
@@ -117,4 +117,102 @@ function normalCountOnArray(array $items):void {
 		assertType('non-empty-list<array<int>|int>', $items);
 	}
 	assertType('list<array<int>|int>', $items);
+}
+
+class A {}
+
+/**
+ * @param list<A> $items
+ */
+function cannotCountRecursive($items, int $mode)
+{
+	if (count($items) === 3) {
+		assertType('array{ListCount\A, ListCount\A, ListCount\A}', $items);
+	}
+	if (count($items, COUNT_NORMAL) === 3) {
+		assertType('array{ListCount\A, ListCount\A, ListCount\A}', $items);
+	}
+	if (count($items, COUNT_RECURSIVE) === 3) {
+		assertType('array{ListCount\A, ListCount\A, ListCount\A}', $items);
+	}
+	if (count($items, $mode) === 3) {
+		assertType('array{ListCount\A, ListCount\A, ListCount\A}', $items);
+	}
+}
+
+/**
+ * @param list<array<A>> $items
+ */
+function cannotCountRecursiveNestedArray($items, int $mode)
+{
+	if (count($items) === 3) {
+		assertType('array{array<ListCount\A>, array<ListCount\A>, array<ListCount\A>}', $items);
+	}
+	if (count($items, COUNT_NORMAL) === 3) {
+		assertType('array{array<ListCount\A>, array<ListCount\A>, array<ListCount\A>}', $items);
+	}
+	if (count($items, COUNT_RECURSIVE) === 3) {
+		assertType('non-empty-list<array<ListCount\A>>', $items);
+	}
+	if (count($items, $mode) === 3) {
+		assertType('non-empty-list<array<ListCount\A>>', $items);
+	}
+}
+
+class CountableFoo implements \Countable
+{
+	public function count(): int
+	{
+		return 3;
+	}
+}
+
+/**
+ * @param list<CountableFoo> $items
+ */
+function cannotCountRecursiveCountable($items, int $mode)
+{
+	if (count($items) === 3) {
+		assertType('array{ListCount\CountableFoo, ListCount\CountableFoo, ListCount\CountableFoo}', $items);
+	}
+	if (count($items, COUNT_NORMAL) === 3) {
+		assertType('array{ListCount\CountableFoo, ListCount\CountableFoo, ListCount\CountableFoo}', $items);
+	}
+	if (count($items, COUNT_RECURSIVE) === 3) {
+		assertType('array{ListCount\CountableFoo, ListCount\CountableFoo, ListCount\CountableFoo}', $items);
+	}
+	if (count($items, $mode) === 3) {
+		assertType('array{ListCount\CountableFoo, ListCount\CountableFoo, ListCount\CountableFoo}', $items);
+	}
+}
+
+function countCountable(CountableFoo $x, int $mode)
+{
+	if (count($x) === 3) {
+		assertType('ListCount\CountableFoo', $x);
+	} else {
+		assertType('ListCount\CountableFoo', $x);
+	}
+	assertType('ListCount\CountableFoo', $x);
+
+	if (count($x, COUNT_NORMAL) === 3) {
+		assertType('ListCount\CountableFoo', $x);
+	} else {
+		assertType('ListCount\CountableFoo', $x);
+	}
+	assertType('ListCount\CountableFoo', $x);
+
+	if (count($x, COUNT_RECURSIVE) === 3) {
+		assertType('ListCount\CountableFoo', $x);
+	} else {
+		assertType('ListCount\CountableFoo', $x);
+	}
+	assertType('ListCount\CountableFoo', $x);
+
+	if (count($x, $mode) === 3) {
+		assertType('ListCount\CountableFoo', $x);
+	} else {
+		assertType('ListCount\CountableFoo', $x);
+	}
+	assertType('ListCount\CountableFoo', $x);
 }

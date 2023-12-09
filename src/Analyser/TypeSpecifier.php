@@ -937,7 +937,7 @@ class TypeSpecifier
 						$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->yes();
 
 						if (!$isNormalCount) {
-							$isNormalCount = $argType->getIterableValueType()->isScalar()->yes();
+							$isNormalCount = $argType->getIterableValueType()->isArray()->no();
 						}
 					}
 

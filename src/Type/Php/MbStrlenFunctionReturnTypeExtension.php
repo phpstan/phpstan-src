@@ -53,12 +53,11 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		$args = $functionCall->getArgs();
-		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		if (count($args) === 0) {
-			return $returnType;
+			return null;
 		}
 
 		$encodings = [];

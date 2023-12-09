@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -44,12 +43,10 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		return in_array($functionReflection->getName(), ['str_split', 'mb_str_split'], true);
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-
 		if (count($functionCall->getArgs()) < 1) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		if (count($functionCall->getArgs()) >= 2) {
@@ -71,7 +68,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 				$values = array_unique(array_map(static fn (ConstantStringType $encoding): string => $encoding->getValue(), $strings));
 
 				if (count($values) !== 1) {
-					return $defaultReturnType;
+					return null;
 				}
 
 				$encoding = $values[0];
@@ -84,7 +81,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		if (!isset($splitLength)) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		$stringType = $scope->getType($functionCall->getArgs()[0]->value);

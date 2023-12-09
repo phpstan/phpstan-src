@@ -16,8 +16,7 @@ use function in_array;
 class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 
-	/** @var array<string, int> */
-	private array $argumentPositions = [
+	private const ARGUMENTS_POSITIONS = [
 		'json_encode' => 1,
 		'json_decode' => 3,
 	];
@@ -49,7 +48,7 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		Scope $scope,
 	): ?Type
 	{
-		$argumentPosition = $this->argumentPositions[$functionReflection->getName()];
+		$argumentPosition = self::ARGUMENTS_POSITIONS[$functionReflection->getName()];
 		if (!isset($functionCall->getArgs()[$argumentPosition])) {
 			return null;
 		}

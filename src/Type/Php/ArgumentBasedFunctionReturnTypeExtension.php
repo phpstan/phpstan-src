@@ -11,12 +11,12 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_key_exists;
 
 class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	/** @var int[] */
-	private array $functionNames = [
+	private const FUNCTION_NAMES = [
 		'array_unique' => 0,
 		'array_change_key_case' => 0,
 		'array_diff_assoc' => 0,
@@ -38,12 +38,12 @@ class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return isset($this->functionNames[$functionReflection->getName()]);
+		return array_key_exists($functionReflection->getName(), self::FUNCTION_NAMES);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$argumentPosition = $this->functionNames[$functionReflection->getName()];
+		$argumentPosition = self::FUNCTION_NAMES[$functionReflection->getName()];
 
 		if (!isset($functionCall->getArgs()[$argumentPosition])) {
 			return null;

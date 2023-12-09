@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -37,14 +36,11 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
-		$defaultReturnType = ParametersAcceptorSelector::selectSingle(
-			$functionReflection->getVariants(),
-		)->getReturnType();
 		if (count($functionCall->getArgs()) === 0) {
 			if ($scope->isInTrait()) {
-				return $defaultReturnType;
+				return null;
 			}
 			if ($scope->isInClass()) {
 				return $this->findParentClassType(
@@ -57,7 +53,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		if ($scope->isInTrait() && TypeUtils::findThisType($argType) !== null) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		$constantStrings = $argType->getConstantStrings();
@@ -70,7 +66,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 			return TypeCombinator::union(...array_map(fn (string $classNames): Type => $this->findParentClassNameType($classNames), $classNames));
 		}
 
-		return $defaultReturnType;
+		return null;
 	}
 
 	private function findParentClassNameType(string $className): Type

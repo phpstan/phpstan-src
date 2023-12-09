@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -37,12 +36,10 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 		return $functionReflection->getName() === 'curl_getinfo';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		if (count($functionCall->getArgs()) < 1) {
-			return ParametersAcceptorSelector::selectSingle(
-				$functionReflection->getVariants(),
-			)->getReturnType();
+			return null;
 		}
 
 		if (count($functionCall->getArgs()) <= 1) {

@@ -114,6 +114,31 @@ class ArrayOffset
 		assertType("array{bar: 1}", $a);
 	}
 
+	public function maybeCertainNonNullMultiOffsetShape(): void
+	{
+		if (rand() % 2) {
+			$a = [
+				'bar' => 'world',
+				'foo' => 'hello'
+			];
+		}
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+
+		assertType("array{bar: 'world', foo: 'hello'}", $a);
+		if (isset($a['bar'])) {
+			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertType("array{bar: 'world', foo: 'hello'}", $a);
+			$a['bar'] = 1;
+			assertType("array{bar: 1, foo: 'hello'}", $a);
+		} else {
+			assertVariableCertainty(TrinaryLogic::createNo(), $a);
+			assertType("*ERROR*", $a);
+		}
+
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+		assertType("array{bar: 1, foo: 'hello'}", $a);
+	}
+
 	public function yesCertainNull(): void
 	{
 		$a = ['bar' => null];

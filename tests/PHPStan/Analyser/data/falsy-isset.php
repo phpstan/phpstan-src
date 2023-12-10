@@ -216,11 +216,11 @@ class ArrayOffset
 			assertType("array{bar: array{foo: string}}", $a);
 		} else {
 			assertVariableCertainty(TrinaryLogic::createYes(), $a);
-			assertType("array{}|array{bar: array{foo: null}}", $a);
+			assertType("array{bar: array{foo: null}}", $a);
 		}
 
 		assertVariableCertainty(TrinaryLogic::createYes(), $a);
-		assertType("array{}|array{bar: array{foo: string|null}}", $a);
+		assertType("array{bar: array{foo: null}}|array{bar: array{foo: string}}", $a);
 	}
 
 }

@@ -13,6 +13,6 @@ use function PHPStan\Testing\assertType;
 function foo(array $bar) : array{ return is_string($bar[0]) ? [$bar] : $bar; }
 
 function(): void {
-	assertType('array{array{string, string}}', foo(['foo', 'bar']));
-	assertType('array{array{string, string}, array{string, string}}', foo([['foo','bar'],['xyz','asd']]));
+	assertType("array{array{'foo', 'bar'}}", foo(['foo', 'bar']));
+	assertType("array{array{'foo', 'bar'}, array{'xyz', 'asd'}}", foo([['foo','bar'],['xyz','asd']]));
 };

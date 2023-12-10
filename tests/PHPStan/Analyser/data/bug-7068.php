@@ -18,8 +18,8 @@ class Foo
 
 	public function doFoo(): void
 	{
-		assertType('array<int>', $this->merge([1, 2], [3, 4], [5]));
-		assertType('array<int|string>', $this->merge([1, 2], ['foo', 'bar']));
+		assertType('array<1|2|3|4|5>', $this->merge([1, 2], [3, 4], [5]));
+		assertType('array<1|2|\'bar\'|\'foo\'>', $this->merge([1, 2], ['foo', 'bar']));
 	}
 
 }

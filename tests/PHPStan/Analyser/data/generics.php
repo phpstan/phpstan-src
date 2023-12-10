@@ -97,7 +97,7 @@ function testD($int, $float, $intFloat)
 	assertType('DateTime|int', d($int, new \DateTime()));
 	assertType('DateTime|float|int', d($intFloat, new \DateTime()));
 	assertType('array{}|DateTime', d([], new \DateTime()));
-	assertType('array{blabla: string}|DateTime', d(['blabla' => 'barrrr'], new \DateTime()));
+	assertType('array{blabla: \'barrrr\'}|DateTime', d(['blabla' => 'barrrr'], new \DateTime()));
 }
 
 /**
@@ -150,7 +150,7 @@ function testF($arrayOfInt, $callableOrNull)
 	assertType('Closure(int): numeric-string', function (int $a): string {
 		return (string)$a;
 	});
-	assertType('array<string>', f($arrayOfInt, function (int $a): string {
+	assertType('array<numeric-string>', f($arrayOfInt, function (int $a): string {
 		return (string)$a;
 	}));
 	assertType('Closure(mixed): string', function ($a): string {
@@ -763,7 +763,7 @@ function testClasses()
 
 	$factory = new Factory(new \DateTime(), new A(1));
 	assertType(
-		'array{DateTime, PHPStan\\Generics\\FunctionsAssertType\\A<int>, string, PHPStan\\Generics\\FunctionsAssertType\\A<DateTime>}',
+		'array{DateTime, PHPStan\\Generics\\FunctionsAssertType\\A<int>, \'\', PHPStan\\Generics\\FunctionsAssertType\\A<DateTime>}',
 		$factory->create(new \DateTime(), '', new A(new \DateTime()))
 	);
 }
@@ -1405,7 +1405,7 @@ function (\Throwable $e): void {
 
 function (): void {
 	$array = ['a' => 1, 'b' => 2];
-	assertType('array{a: int, b: int}', a($array));
+	assertType('array{a: 1, b: 2}', a($array));
 };
 
 
@@ -1544,8 +1544,8 @@ function (): void {
 	assertType('array{1: true}', arrayBound1([1 => true]));
 	assertType('array{\'a\', \'b\', \'c\'}', arrayBound2(range('a', 'c')));
 	assertType('array<string>', arrayBound2([1, 2, 3]));
-	assertType('array{bool, bool, bool}', arrayBound3([true, false, true]));
-	assertType('array{array{a: string}, array{b: string}, array{c: string}}', arrayBound4([['a' => 'a'], ['b' => 'b'], ['c' => 'c']]));
+	assertType('array{true, false, true}', arrayBound3([true, false, true]));
+	assertType("array{array{a: 'a'}, array{b: 'b'}, array{c: 'c'}}", arrayBound4([['a' => 'a'], ['b' => 'b'], ['c' => 'c']]));
 	assertType('array<string>', arrayBound5(range('a', 'c')));
 };
 

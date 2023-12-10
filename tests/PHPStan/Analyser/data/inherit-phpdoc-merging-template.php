@@ -32,7 +32,7 @@ class Bar extends Foo
 
 	public function doBar()
 	{
-		assertType('array<string>|int', $this->doFoo(1, 'hahaha'));
+		assertType('1|array<\'hahaha\'>', $this->doFoo(1, 'hahaha'));
 	}
 
 }
@@ -75,7 +75,7 @@ class Sit extends Foo
 
 	public function doBar()
 	{
-		assertType('array<InheritDocMergingTemplate\U>|int', $this->doFoo(1, 'hahaha'));
+		assertType('1|array<InheritDocMergingTemplate\U>', $this->doFoo(1, 'hahaha'));
 	}
 
 }
@@ -92,7 +92,7 @@ class Amet extends Foo
 
 	public function doBar()
 	{
-		assertType('array<string>|int', $this->doFoo(1, 'hahaha'));
+		assertType('1|array<\'hahaha\'>', $this->doFoo(1, 'hahaha'));
 	}
 
 }

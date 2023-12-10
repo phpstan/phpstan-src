@@ -33,7 +33,7 @@ class Foo
 		foreach ($intersect as $key) {
 			assertType('TValue1 (method Bug4545\Foo::compareMaps(), argument)', $firstMap->get($key));
 			assertType('TValue2 (method Bug4545\Foo::compareMaps(), argument)', $secondMap->get($key));
-			assertType('int|TValue2 (method Bug4545\Foo::compareMaps(), argument)', $secondMap->get($key, 1));
+			assertType('1|TValue2 (method Bug4545\Foo::compareMaps(), argument)', $secondMap->get($key, 1));
 		}
 
 		return $keys;

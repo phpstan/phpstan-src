@@ -678,7 +678,7 @@ class MutatingScope implements Scope
 			$key .= '/*' . $node->getAttribute('startFilePos') . '*/';
 		}
 
-		if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
+		if ($node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME) === true) {
 			$key .= '/*' . self::KEEP_VOID_ATTRIBUTE_NAME . '*/';
 		}
 

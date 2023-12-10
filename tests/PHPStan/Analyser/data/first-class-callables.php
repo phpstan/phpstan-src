@@ -44,12 +44,12 @@ class GenericFoo
 	public function doBar()
 	{
 		$f = $this->doFoo(...);
-		assertType('int', $f(1));
-		assertType('string', $f('foo'));
+		assertType('1', $f(1));
+		assertType('\'foo\'', $f('foo'));
 
 		$g = \Closure::fromCallable([$this, 'doFoo']);
-		assertType('int', $g(1));
-		assertType('string', $g('foo'));
+		assertType('1', $g(1));
+		assertType('\'foo\'', $g('foo'));
 	}
 
 	public function doBaz()

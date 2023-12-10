@@ -22,7 +22,7 @@ class Foo
 
 	public function doFoo()
 	{
-		assertType('iterable<array<int>>', Helper::chunk([1], 3));
+		assertType('iterable<array<1>>', Helper::chunk([1], 3));
 		assertType('iterable<array<*NEVER*>>', Helper::chunk([], 3));
 	}
 

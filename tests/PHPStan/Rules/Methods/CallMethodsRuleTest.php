@@ -2190,6 +2190,11 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-5372.php'], [
 			[
+				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, non-falsy-string> given.',
+				64,
+				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+			[
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
 				68,
 				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
@@ -2197,6 +2202,11 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
 				72,
+				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+			[
+				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, literal-string> given.',
+				81,
 				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 			[
@@ -2633,6 +2643,10 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $v of method UnresolvableParameter\HelloWorld::foo() contains unresolvable type.',
 				19,
+			],
+			[
+				'Parameter #2 $v of method UnresolvableParameter\HelloWorld::foo() expects 1, 0 given.',
+				21,
 			],
 		]);
 	}

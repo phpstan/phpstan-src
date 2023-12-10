@@ -32,17 +32,17 @@ function testUnbounded(
 	string $numericString,
 	string $nonEmptyString
 ): void {
-	assertType('string', unbounded('hello'));
-	assertType('string', unbounded('stdClass'));
+	assertType('\'hello\'', unbounded('hello'));
+	assertType('\'stdClass\'', unbounded('stdClass'));
 	assertType('class-string', unbounded($classString));
 	assertType('class-string<stdClass>', unbounded($genericClassString));
 
-	assertType('string', unbounded(rand(0,1) === 1 ? 'hello' : $classString));
+	assertType("'hello'|class-string", unbounded(rand(0,1) === 1 ? 'hello' : $classString));
 
-	assertType('array{foo: int}', unbounded($arrayShape));
+	assertType('array{foo: 42}', unbounded($arrayShape));
 
-	assertType('string', unbounded($numericString));
-	assertType('string', unbounded($nonEmptyString));
+	assertType('numeric-string', unbounded($numericString));
+	assertType('non-empty-string', unbounded($nonEmptyString));
 }
 
 /**

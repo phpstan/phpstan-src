@@ -5,6 +5,8 @@ namespace PHPStan\Reflection;
 use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -14,6 +16,7 @@ use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function array_map;
 
@@ -173,7 +176,51 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 	{
 		$references = $type->getReferencedTemplateTypes($positionVariance);
 
-		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($references): Type {
+		$objectCb = function (Type $type, callable $traverse) use ($references): Type {
+			if ($type instanceof TemplateType && !$type->isArgument()) {
+				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
+				if ($newType === null || $newType instanceof ErrorType) {
+					return $traverse($type);
+				}
+
+				if ($newType->isConstantValue()->yes() && (!$type->getBound()->isScalar()->yes() || $type->getBound()->describe(VerbosityLevel::precise()) === '(int|string)')) {
+					$newType = $newType->generalize(GeneralizePrecision::templateArgument());
+				}
+
+				$variance = TemplateTypeVariance::createInvariant();
+				foreach ($references as $reference) {
+					// this uses identity to distinguish between different occurrences of the same template type
+					// see https://github.com/phpstan/phpstan-src/pull/2485#discussion_r1328555397 for details
+					if ($reference->getType() === $type) {
+						$variance = $reference->getPositionVariance();
+						break;
+					}
+				}
+
+				$callSiteVariance = $this->callSiteVarianceMap->getVariance($type->getName());
+				if ($callSiteVariance === null || $callSiteVariance->invariant()) {
+					return $newType;
+				}
+
+				if (!$callSiteVariance->covariant() && $variance->covariant()) {
+					return $traverse($type->getBound());
+				}
+
+				if (!$callSiteVariance->contravariant() && $variance->contravariant()) {
+					return new NonAcceptingNeverType();
+				}
+
+				return $newType;
+			}
+
+			return $traverse($type);
+		};
+
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($references, $objectCb): Type {
+			if ($type instanceof GenericObjectType) {
+				return TypeTraverser::map($type, $objectCb);
+			}
+
 			if ($type instanceof TemplateType && !$type->isArgument()) {
 				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
 				if ($newType === null || $newType instanceof ErrorType) {

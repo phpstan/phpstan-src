@@ -744,14 +744,24 @@ class TypeSpecifier
 							return $specifiedType;
 						}
 
-						return $this->create(
-							new IssetExpr($issetExpr->var),
-							new NullType(),
-							$context,
-							false,
-							$scope,
-							$rootExpr,
-						);
+						$typeWithoutOffset = $type->unsetOffset($dimType);
+						$arraySize = $typeWithoutOffset->getArraySize();
+						if (
+							!$arraySize instanceof NeverType
+							&& (new ConstantIntegerType(0))->isSuperTypeOf($arraySize)->yes()
+						) {
+							// variable cannot exist
+							return $this->create(
+								new IssetExpr($issetExpr->var),
+								new NullType(),
+								$context,
+								false,
+								$scope,
+								$rootExpr,
+							);
+						}
+
+						return new SpecifiedTypes();
 					}
 
 					if ($isNullable) {

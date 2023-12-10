@@ -131,12 +131,12 @@ class ArrayOffset
 			$a['bar'] = 1;
 			assertType("array{bar: 1, foo: 'hello'}", $a);
 		} else {
-			assertVariableCertainty(TrinaryLogic::createNo(), $a);
-			assertType("*ERROR*", $a);
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
+			assertType("array{bar: 'world', foo: 'hello'}", $a);
 		}
 
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
-		assertType("array{bar: 1, foo: 'hello'}", $a);
+		assertType("array{bar: 1|'world', foo: 'hello'}", $a);
 	}
 
 	public function yesCertainNull(): void
@@ -366,23 +366,15 @@ function render(?int $noteListLimit, int $count): void
 	}
 }
 
-/**
- * @param mixed[] $requestAttributes
- */
-function getParameters(string $legacyLink, array $requestAttributes): void
+function getParameters(): void
 {
+	/** @var array{controller: string} */
 	$legacyParameters = [];
 
 	assertVariableCertainty(\PHPStan\TrinaryLogic::createYes(), $legacyParameters);
-	if (isset($requestAttributes['_legacy_link'])) {
-		$linkParts = explode(':', $legacyLink);
-		if (!isset($legacyParameters['controller'])) {
-			$legacyParameters['controller'] = $linkParts[0];
-		}
-
-		assertVariableCertainty(\PHPStan\TrinaryLogic::createYes(), $legacyParameters);
-		if (isset($legacyParameters['controller'], $legacyParameters['action'])) {
-		}
-		assertVariableCertainty(\PHPStan\TrinaryLogic::createYes(), $legacyParameters);
+	if (isset($legacyParameters['controller'], $legacyParameters['action'])) {
+		assertType('*NEVER*', $legacyParameters);
 	}
+	assertType('array{controller: string}', $legacyParameters);
+	assertVariableCertainty(\PHPStan\TrinaryLogic::createYes(), $legacyParameters);
 }

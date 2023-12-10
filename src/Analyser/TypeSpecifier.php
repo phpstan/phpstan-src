@@ -697,6 +697,7 @@ class TypeSpecifier
 							}
 
 							if ($type instanceof ConstantArrayType) {
+								// unset the offset and set a new value, since we don't want to narrow the existing one
 								$typeWithoutOffset = $type->unsetOffset($dimType);
 								if (!$typeWithoutOffset instanceof ConstantArrayType) {
 									throw new ShouldNotHappenException();

@@ -340,3 +340,24 @@ function render(?int $noteListLimit, int $count): void
 		assertType('int', $noteListLimit);
 	}
 }
+
+/**
+ * @param mixed[] $requestAttributes
+ */
+function getParameters(string $legacyLink, array $requestAttributes): void
+{
+	$legacyParameters = [];
+
+	assertVariableCertainty(\PHPStan\TrinaryLogic::createYes(), $legacyParameters);
+	if (isset($requestAttributes['_legacy_link'])) {
+		$linkParts = explode(':', $legacyLink);
+		if (!isset($legacyParameters['controller'])) {
+			$legacyParameters['controller'] = $linkParts[0];
+		}
+
+		assertVariableCertainty(\PHPStan\TrinaryLogic::createYes(), $legacyParameters);
+		if (isset($legacyParameters['controller'], $legacyParameters['action'])) {
+		}
+		assertVariableCertainty(\PHPStan\TrinaryLogic::createYes(), $legacyParameters);
+	}
+}

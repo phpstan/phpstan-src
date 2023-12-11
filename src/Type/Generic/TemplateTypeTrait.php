@@ -2,10 +2,12 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -264,6 +266,13 @@ trait TemplateTypeTrait
 			TemplateTypeVariance::createStatic(),
 		));
 		if ($resolvedBound->isSuperTypeOf($receivedType)->yes()) {
+			if (!BleedingEdgeToggle::isBleedingEdge() && $this->shouldGeneralizeInferredType()) {
+				$generalizedType = $receivedType->generalize(GeneralizePrecision::templateArgument());
+				if ($resolvedBound->isSuperTypeOf($generalizedType)->yes()) {
+					$receivedType = $generalizedType;
+				}
+			}
+
 			return (new TemplateTypeMap([
 				$this->name => $receivedType,
 			]))->union($map);

@@ -21,7 +21,7 @@ use function count;
 use function get_class;
 use function sprintf;
 
-class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
+class GenericParametersAcceptorResolverTest extends PHPStanTestCase
 {
 
 	/**
@@ -427,6 +427,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 	 */
 	public function testResolve(array $argTypes, ParametersAcceptor $parametersAcceptor, ParametersAcceptor $expectedResult): void
 	{
+		self::getContainer(); // to initialize bleeding edge
 		$result = GenericParametersAcceptorResolver::resolve(
 			$argTypes,
 			$parametersAcceptor,
@@ -460,6 +461,13 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 				sprintf('Unexpected parameter %d', $i + 1),
 			);
 		}
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return [
+			__DIR__ . '/../../../conf/bleedingEdge.neon',
+		];
 	}
 
 }

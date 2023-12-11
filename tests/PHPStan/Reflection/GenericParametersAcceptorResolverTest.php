@@ -14,7 +14,6 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -22,7 +21,7 @@ use function count;
 use function get_class;
 use function sprintf;
 
-class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
+class GenericParametersAcceptorResolverTest extends PHPStanTestCase
 {
 
 	/**
@@ -316,7 +315,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 						),
 						new DummyParameter(
 							'b',
-							new IntegerType(),
+							new UnionType([
+								new ConstantIntegerType(1),
+								new ConstantIntegerType(2),
+								new ConstantIntegerType(3),
+							]),
 							false,
 							PassedByReference::createNo(),
 							true,
@@ -324,7 +327,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 						),
 					],
 					false,
-					new IntegerType(),
+					new UnionType([
+						new ConstantIntegerType(1),
+						new ConstantIntegerType(2),
+						new ConstantIntegerType(3),
+					]),
 				),
 			],
 			'missing args' => [
@@ -405,10 +412,10 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 					TemplateTypeMap::createEmpty(),
 					null,
 					[
-						new DummyParameter('str', new StringType(), false, null, false, null),
+						new DummyParameter('str', new ConstantStringType('foooooo'), false, null, false, null),
 					],
 					false,
-					new StringType(),
+					new ConstantStringType('foooooo'),
 				),
 			],
 		];
@@ -420,6 +427,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 	 */
 	public function testResolve(array $argTypes, ParametersAcceptor $parametersAcceptor, ParametersAcceptor $expectedResult): void
 	{
+		self::getContainer(); // to initialize bleeding edge
 		$result = GenericParametersAcceptorResolver::resolve(
 			$argTypes,
 			$parametersAcceptor,
@@ -453,6 +461,13 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 				sprintf('Unexpected parameter %d', $i + 1),
 			);
 		}
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return [
+			__DIR__ . '/../../../conf/bleedingEdge.neon',
+		];
 	}
 
 }

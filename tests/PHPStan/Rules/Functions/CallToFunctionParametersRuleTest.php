@@ -550,16 +550,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/array_reduce.php'], [
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string, int): string, Closure(string, string): string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(string, 1|2|3): string, Closure(string, string): string given.',
 				5,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): (string|null), Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-empty-string given.',
 				13,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): (string|null), Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-empty-string given.',
 				22,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
@@ -570,16 +570,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/array_reduce_arrow.php'], [
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string, int): string, Closure(string, string): string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(string, 1|2|3): string, Closure(string, string): string given.',
 				5,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): (string|null), Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-empty-string given.',
 				11,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(string|null, int): (string|null), Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-empty-string given.',
 				18,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
@@ -628,11 +628,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/array_udiff.php'], [
 			[
-				'Parameter #3 $data_comp_func of function array_udiff expects callable(int, int): int<-1, 1>, Closure(string, string): string given.',
+				'Parameter #3 $data_comp_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int<-1, 1>, Closure(string, string): string given.',
 				6,
 			],
 			[
-				'Parameter #3 $data_comp_func of function array_udiff expects callable(int, int): int<-1, 1>, Closure(int, int): non-falsy-string given.',
+				'Parameter #3 $data_comp_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int<-1, 1>, Closure(int, int): non-falsy-string given.',
 				14,
 			],
 			[
@@ -698,7 +698,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/uasort.php'], [
 			[
-				'Parameter #2 $callback of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
+				'Parameter #2 $callback of function uasort expects callable(1|2|3, 1|2|3): int, Closure(string, string): 1 given.',
 				7,
 			],
 		]);
@@ -708,7 +708,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/uasort_arrow.php'], [
 			[
-				'Parameter #2 $callback of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
+				'Parameter #2 $callback of function uasort expects callable(1|2|3, 1|2|3): int, Closure(string, string): 1 given.',
 				7,
 			],
 		]);
@@ -718,7 +718,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/usort.php'], [
 			[
-				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
+				'Parameter #2 $callback of function usort expects callable(1|2|3, 1|2|3): int, Closure(string, string): 1 given.',
 				14,
 			],
 		]);
@@ -728,7 +728,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/usort_arrow.php'], [
 			[
-				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
+				'Parameter #2 $callback of function usort expects callable(1|2|3, 1|2|3): int, Closure(string, string): 1 given.',
 				14,
 			],
 		]);
@@ -738,7 +738,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/uksort.php'], [
 			[
-				'Parameter #2 $callback of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
+				'Parameter #2 $callback of function uksort expects callable(\'one\'|\'three\'|\'two\', \'one\'|\'three\'|\'two\'): int, Closure(stdClass, stdClass): 1 given.',
 				14,
 			],
 			[
@@ -752,7 +752,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/uksort_arrow.php'], [
 			[
-				'Parameter #2 $callback of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
+				'Parameter #2 $callback of function uksort expects callable(\'one\'|\'three\'|\'two\', \'one\'|\'three\'|\'two\'): int, Closure(stdClass, stdClass): 1 given.',
 				14,
 			],
 			[
@@ -1597,6 +1597,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testBug9580(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9580.php'], []);
+	}
+
+	public function testBug7283(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7283.php'], []);
 	}
 
 }

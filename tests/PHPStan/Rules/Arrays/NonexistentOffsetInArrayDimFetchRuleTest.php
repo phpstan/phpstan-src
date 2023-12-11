@@ -732,4 +732,19 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8166(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-8166.php'], [
+			[
+				'Offset \'b\' does not exist on array{a: 1}.',
+				22,
+			],
+			[
+				'Offset \'b\' does not exist on array<\'a\', string>.',
+				23,
+			],
+		]);
+	}
+
 }

@@ -11,7 +11,7 @@ enum Foo: int
 
 	public function toCollection(): void
 	{
-		assertType('Bug6695\Collection<int, Bug6695\Foo>', $this->collect(self::cases()));
+		assertType('Bug6695\Collection<int, Bug6695\Foo::BAR|Bug6695\Foo::BAZ>', $this->collect(self::cases()));
 	}
 
 	/**

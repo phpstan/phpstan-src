@@ -5052,10 +5052,26 @@ class MutatingScope implements Scope
 		);
 
 		if ($this->explicitMixedInUnknownGenericNew) {
-			return new GenericObjectType(
+			$resolvedTemplateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
+			return TypeTraverser::map(new GenericObjectType(
 				$resolvedClassName,
-				$classReflection->typeMapToList($parametersAcceptor->getResolvedTemplateTypeMap()),
-			);
+				$classReflection->typeMapToList($classReflection->getTemplateTypeMap()),
+			), static function (Type $type, callable $traverse) use ($resolvedTemplateTypeMap): Type {
+				if ($type instanceof TemplateType && !$type->isArgument()) {
+					$newType = $resolvedTemplateTypeMap->getType($type->getName());
+					if ($newType === null || $newType instanceof ErrorType) {
+						return $type->getBound();
+					}
+
+					if ($newType->isConstantValue()->yes() && (!$type->getBound()->isScalar()->yes() || $type->getBound()->describe(VerbosityLevel::precise()) === '(int|string)')) {
+						$newType = $newType->generalize(GeneralizePrecision::templateArgument());
+					}
+
+					return $newType;
+				}
+
+				return $traverse($type);
+			});
 		}
 
 		$resolvedPhpDoc = $classReflection->getResolvedPhpDoc();

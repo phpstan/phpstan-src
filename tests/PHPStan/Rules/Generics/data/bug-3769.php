@@ -70,8 +70,8 @@ function stringBound(string $a)
 }
 
 function (): void {
-	$a = assertType('int', mixedBound(1));
-	$a = assertType('string', mixedBound('str'));
+	$a = assertType('1', mixedBound(1));
+	$a = assertType('\'str\'', mixedBound('str'));
 	$a = assertType('1', intBound(1));
 	$a = assertType('\'str\'', stringBound('str'));
 };

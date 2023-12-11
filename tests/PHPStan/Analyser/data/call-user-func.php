@@ -52,8 +52,8 @@ class Foo {
 	 * @param string[] $strings
 	 */
 	function doFunc($strings) {
-		assertType('bool', call_user_func('CallUserFunc\generic', true));
-		assertType('string', call_user_func('CallUserFunc\generic', 'hello'));
+		assertType('true', call_user_func('CallUserFunc\generic', true));
+		assertType('\'hello\'', call_user_func('CallUserFunc\generic', 'hello'));
 		assertType('array<string>', call_user_func('CallUserFunc\generic', $strings));
 
 		assertType('int', call_user_func('CallUserFunc\fun'));

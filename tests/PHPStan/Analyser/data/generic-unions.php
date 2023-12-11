@@ -54,9 +54,9 @@ class Foo
 
 		assertType('string|null', $this->doBar($nullableString));
 
-		assertType('int', $this->doBaz(1));
-		assertType('string', $this->doBaz('foo'));
-		assertType('float', $this->doBaz(1.2));
+		assertType('1', $this->doBaz(1));
+		assertType('\'foo\'', $this->doBaz('foo'));
+		assertType('1.2', $this->doBaz(1.2));
 		assertType('string', $this->doBaz($stringOrInt));
 	}
 
@@ -114,22 +114,22 @@ function getWithDefaultCallable($key, $default = null)
 	return $default;
 }
 
-assertType('int|null', getWithDefault(3));
-assertType('int|null', getWithDefaultCallable(3));
-assertType('int|string', getWithDefault(3, 'foo'));
-assertType('int|string', getWithDefaultCallable(3, 'foo'));
-assertType('int|string', getWithDefault(3, function () {
+assertType('3|null', getWithDefault(3));
+assertType('3|null', getWithDefaultCallable(3));
+assertType('3|\'foo\'', getWithDefault(3, 'foo'));
+assertType('3|\'foo\'', getWithDefaultCallable(3, 'foo'));
+assertType('3|\'foo\'', getWithDefault(3, function () {
 	return 'foo';
 }));
-assertType('int|string', getWithDefaultCallable(3, function () {
+assertType('3|\'foo\'', getWithDefaultCallable(3, function () {
 	return 'foo';
 }));
-assertType('GenericUnions\Foo|int', getWithDefault(3, function () {
+assertType('3|GenericUnions\Foo', getWithDefault(3, function () {
 	return new Foo;
 }));
-assertType('GenericUnions\Foo|int', getWithDefaultCallable(3, function () {
+assertType('3|GenericUnions\Foo', getWithDefaultCallable(3, function () {
 	return new Foo;
 }));
-assertType('GenericUnions\Foo|int', getWithDefault(3, new Foo));
-assertType('GenericUnions\Foo|int', getWithDefaultCallable(3, new Foo));
-assertType('int|string', getWithDefaultCallable(3, new InvokableClass));
+assertType('3|GenericUnions\Foo', getWithDefault(3, new Foo));
+assertType('3|GenericUnions\Foo', getWithDefaultCallable(3, new Foo));
+assertType('3|string', getWithDefaultCallable(3, new InvokableClass));

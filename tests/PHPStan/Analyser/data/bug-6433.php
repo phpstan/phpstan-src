@@ -14,7 +14,7 @@ class Foo
 {
 
 	function x(): void {
-		assertType('Ds\Set<Bug6433\E>', new Set([E::A, E::B]));
+		assertType('Ds\Set<Bug6433\E::A|Bug6433\E::B>', new Set([E::A, E::B]));
 	}
 
 }

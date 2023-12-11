@@ -2,6 +2,7 @@
 
 namespace GenericsDoNotGeneralize;
 
+use ArrayIterator;
 use function PHPStan\Testing\assertType;
 
 /**
@@ -90,4 +91,29 @@ function (): void {
 	$bar = map([new Test()], static fn(Test $test) => $test::foo());
 
 	assertType('list<1|2>', $bar);
+};
+
+function (): void {
+	/** @var list<string> $a */
+	$a = doFoo();
+
+	assertType('ArrayIterator<int, string>', new ArrayIterator($a));
+};
+
+/**
+ * @template K of array-key
+ * @template V
+ * @param array<K, V> $a
+ * @return ArrayIterator<K, V>
+ */
+function createArrayIterator(array $a): ArrayIterator
+{
+
+}
+
+function (): void {
+	/** @var list<string> $a */
+	$a = doFoo();
+
+	assertType('ArrayIterator<int, string>', createArrayIterator($a));
 };

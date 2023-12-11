@@ -65,7 +65,7 @@ class IssetRuleTest extends RuleTestCase
 				67,
 			],
 			[
-				'Offset \'dim-null-not-set\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} in isset() does not exist.',
+				'Offset \'dim-null-not-set\' on array{dim: 1, dim-null-offset: array{a: true|null}, dim-empty: array{}, dim-null: 1|null} in isset() does not exist.',
 				73,
 			],
 			[
@@ -153,7 +153,7 @@ class IssetRuleTest extends RuleTestCase
 				67,
 			],
 			[
-				'Offset \'dim-null-not-set\' on array{dim: 1, dim-null: 1|null, dim-null-offset: array{a: true|null}, dim-empty: array{}} in isset() does not exist.',
+				'Offset \'dim-null-not-set\' on array{dim: 1, dim-null-offset: array{a: true|null}, dim-empty: array{}, dim-null: 1|null} in isset() does not exist.',
 				73,
 			],
 			[

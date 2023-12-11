@@ -3076,7 +3076,18 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = true;
+
 		$this->analyse([__DIR__ . '/data/return-type-class-constant.php'], []);
+	}
+
+	public function testBug9908b(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-9908b.php'], []);
 	}
 
 	public function testNamedParametersForMultiVariantFunctions(): void

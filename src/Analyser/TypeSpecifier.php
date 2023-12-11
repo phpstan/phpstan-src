@@ -38,6 +38,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -659,6 +660,125 @@ class TypeSpecifier
 						new IssetExpr($issetExpr),
 						new NullType(),
 						$context,
+						false,
+						$scope,
+						$rootExpr,
+					);
+				}
+
+				if (
+					$issetExpr instanceof ArrayDimFetch
+					&& $issetExpr->dim !== null
+				) {
+					$type = $scope->getType($issetExpr->var);
+					if ($type instanceof MixedType) {
+						return new SpecifiedTypes();
+					}
+
+					$dimType = $scope->getType($issetExpr->dim);
+					if (!($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType)) {
+						return new SpecifiedTypes();
+					}
+
+					$hasOffsetType = $type->hasOffsetValueType($dimType);
+					if ($hasOffsetType->no()) {
+						return new SpecifiedTypes();
+					}
+
+					$hasOffset = $hasOffsetType->yes();
+					$offsetType = $type->getOffsetValueType($dimType);
+					$isNullable = !$offsetType->isNull()->no();
+
+					$setOffset = static fn (Type $outerType, Type $dimType, bool $optional): Type => TypeTraverser::map(
+						$outerType,
+						static function (Type $type, callable $traverse) use ($dimType, $optional): Type {
+							if ($type instanceof UnionType || $type instanceof IntersectionType) {
+								return $traverse($type);
+							}
+
+							if ($type instanceof ConstantArrayType) {
+								// unset the offset and set a new value, since we don't want to narrow the existing one
+								$typeWithoutOffset = $type->unsetOffset($dimType);
+								if (!$typeWithoutOffset instanceof ConstantArrayType) {
+									throw new ShouldNotHappenException();
+								}
+
+								$builder = ConstantArrayTypeBuilder::createFromConstantArray(
+									$typeWithoutOffset,
+								);
+								$builder->setOffsetValueType(
+									$dimType,
+									new NullType(),
+									$optional,
+								);
+								return $builder->getArray();
+							}
+
+							return $type;
+						},
+					);
+
+					if ($hasOffset === true) {
+						if ($isNullable) {
+							$specifiedType = $this->create(
+								$issetExpr->var,
+								$setOffset($type, $dimType, false),
+								$context->negate(),
+								true,
+								$scope,
+								$rootExpr,
+							);
+
+							// keep variable maybe certainty
+							if ($scope->hasExpressionType($issetExpr->var)->maybe()) {
+								return $specifiedType->unionWith($this->create(
+									new IssetExpr($issetExpr->var),
+									new NullType(),
+									$context->negate(),
+									false,
+									$scope,
+									$rootExpr,
+								));
+							}
+
+							return $specifiedType;
+						}
+
+						$typeWithoutOffset = $type->unsetOffset($dimType);
+						$arraySize = $typeWithoutOffset->getArraySize();
+						if (
+							!$arraySize instanceof NeverType
+							&& (new ConstantIntegerType(0))->isSuperTypeOf($arraySize)->yes()
+						) {
+							// variable cannot exist
+							return $this->create(
+								new IssetExpr($issetExpr->var),
+								new NullType(),
+								$context,
+								false,
+								$scope,
+								$rootExpr,
+							);
+						}
+
+						return new SpecifiedTypes();
+					}
+
+					if ($isNullable) {
+						return $this->create(
+							$issetExpr->var,
+							$setOffset($type, $dimType, true),
+							$context->negate(),
+							false,
+							$scope,
+							$rootExpr,
+						);
+					}
+
+					return $this->create(
+						$issetExpr->var,
+						$type->unsetOffset($dimType),
+						$context->negate(),
 						false,
 						$scope,
 						$rootExpr,

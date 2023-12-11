@@ -15,7 +15,7 @@ use InvalidPhpDoc\Foo;
  * @param ( $invalid2 // @phpstan-ignore-line
  *
  *
- * // @phpstan-ignore-next-line
+ * @phpstan-ignore-next-line
  * @param ( $invalid2
  *
  * @return void

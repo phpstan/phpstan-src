@@ -6072,15 +6072,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'void',
+				'null',
 				'$this->doFoo()',
 			],
 			[
-				'void',
+				'null',
 				'$this->doBar()',
 			],
 			[
-				'void',
+				'null',
 				'$this->doConflictingVoid()',
 			],
 		];

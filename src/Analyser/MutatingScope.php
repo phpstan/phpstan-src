@@ -150,6 +150,8 @@ class MutatingScope implements Scope
 
 	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
 
+	private const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
+
 	/** @var Type[] */
 	private array $resolvedTypes = [];
 
@@ -674,6 +676,10 @@ class MutatingScope implements Scope
 			&& $node->hasAttribute('startFilePos')
 		) {
 			$key .= '/*' . $node->getAttribute('startFilePos') . '*/';
+		}
+
+		if ($node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME) === true) {
+			$key .= '/*' . self::KEEP_VOID_ATTRIBUTE_NAME . '*/';
 		}
 
 		return $key;
@@ -1236,7 +1242,7 @@ class MutatingScope implements Scope
 						new VoidType(),
 					]);
 				} else {
-					$returnType = $arrowScope->getType($node->expr);
+					$returnType = $arrowScope->getKeepVoidType($node->expr);
 					if ($node->returnType !== null) {
 						$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
 					}
@@ -1492,6 +1498,9 @@ class MutatingScope implements Scope
 			$matchScope = $this;
 			foreach ($node->arms as $arm) {
 				if ($arm->conds === null) {
+					if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
+						$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
+					}
 					$types[] = $matchScope->getType($arm->body);
 					continue;
 				}
@@ -1521,6 +1530,9 @@ class MutatingScope implements Scope
 
 				if (!$filteringExprType->isFalse()->yes()) {
 					$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
+					if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
+						$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
+					}
 					$types[] = $truthyScope->getType($arm->body);
 				}
 
@@ -1946,7 +1958,7 @@ class MutatingScope implements Scope
 				}
 			}
 
-			return $parametersAcceptor->getReturnType();
+			return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $node);
 		}
 
 		return new MixedType();
@@ -1984,6 +1996,25 @@ class MutatingScope implements Scope
 		}
 
 		return $type;
+	}
+
+	private function transformVoidToNull(Type $type, Node $node): Type
+	{
+		if ($node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME) === true) {
+			return $type;
+		}
+
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof UnionType || $type instanceof IntersectionType) {
+				return $traverse($type);
+			}
+
+			if ($type->isVoid()->yes()) {
+				return new NullType();
+			}
+
+			return $type;
+		});
 	}
 
 	/**
@@ -2171,6 +2202,14 @@ class MutatingScope implements Scope
 	public function getNativeType(Expr $expr): Type
 	{
 		return $this->promoteNativeTypes()->getType($expr);
+	}
+
+	public function getKeepVoidType(Expr $node): Type
+	{
+		$clonedNode = clone $node;
+		$clonedNode->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, true);
+
+		return $this->getType($clonedNode);
 	}
 
 	/**
@@ -5103,7 +5142,7 @@ class MutatingScope implements Scope
 			$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 		}
 		if ($normalizedMethodCall === null) {
-			return $parametersAcceptor->getReturnType();
+			return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $methodCall);
 		}
 
 		$resolvedTypes = [];
@@ -5142,10 +5181,10 @@ class MutatingScope implements Scope
 		}
 
 		if (count($resolvedTypes) > 0) {
-			return TypeCombinator::union(...$resolvedTypes);
+			return $this->transformVoidToNull(TypeCombinator::union(...$resolvedTypes), $methodCall);
 		}
 
-		return $parametersAcceptor->getReturnType();
+		return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $methodCall);
 	}
 
 	/** @api */

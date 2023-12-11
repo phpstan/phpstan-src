@@ -11,7 +11,7 @@ class Foo
 		assertType('EmptyIterator', $it);
 		assertType('never', $it->key());
 		assertType('never', $it->current());
-		assertType('void', $it->next());
+		assertType('null', $it->next());
 		assertType('false', $it->valid());
 	}
 

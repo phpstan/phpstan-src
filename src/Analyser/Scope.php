@@ -77,6 +77,8 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function getNativeType(Expr $expr): Type;
 
+	public function getKeepVoidType(Expr $node): Type;
+
 	/**
 	 * @deprecated Use getNativeType()
 	 */

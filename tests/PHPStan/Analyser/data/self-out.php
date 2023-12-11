@@ -69,12 +69,12 @@ function () {
 	$i = new a(123);
 	// OK - $i is a<123>
 	assertType('SelfOut\\a<int>', $i);
-	assertType('void', $i->test());
+	assertType('null', $i->test());
 
 	$i->addData(321);
 	// OK - $i is a<123|321>
 	assertType('SelfOut\\a<int>', $i);
-	assertType('void', $i->test());
+	assertType('null', $i->test());
 
 	$i->setData("test");
 	// IfThisIsMismatch - Class is not a<int> as required

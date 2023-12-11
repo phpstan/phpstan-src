@@ -983,4 +983,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/arrow-function-returning-void-closure.php'], []);
 	}
 
+	public function testBug6653(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6653.php'], []);
+	}
+
 }

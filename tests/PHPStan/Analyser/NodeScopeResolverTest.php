@@ -222,6 +222,17 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3997.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4016.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-8127.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7944.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6196.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7301.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9472.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9764.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10092.php');
+
+		if (PHP_VERSION_ID >= 80100) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9084.php');
+		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/promoted-properties-types.php');
 

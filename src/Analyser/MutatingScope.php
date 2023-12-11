@@ -5083,14 +5083,11 @@ class MutatingScope implements Scope
 		$typeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
 		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
 			$templateType = $typeMap->getType($tag->getName());
-			$bound = $tag->getBound();
 			if ($templateType !== null) {
-				if ($templateType->isConstantValue()->yes() && (!$bound->isScalar()->yes() || $bound->describe(VerbosityLevel::precise()) === '(int|string)')) {
-					$templateType = $templateType->generalize(GeneralizePrecision::templateArgument());
-				}
 				$list[] = $templateType;
 				continue;
 			}
+			$bound = $tag->getBound();
 			if ($bound instanceof MixedType && $bound->isExplicitMixed()) {
 				$bound = new MixedType(false);
 			}

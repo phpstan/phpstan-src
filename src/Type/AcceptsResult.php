@@ -6,6 +6,8 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use function array_map;
 use function array_merge;
+use function array_unique;
+use function array_values;
 
 /** @api */
 class AcceptsResult
@@ -60,7 +62,7 @@ class AcceptsResult
 	{
 		return new self(
 			$this->result->and($other->result),
-			array_merge($this->reasons, $other->reasons),
+			array_values(array_unique(array_merge($this->reasons, $other->reasons))),
 		);
 	}
 
@@ -68,7 +70,7 @@ class AcceptsResult
 	{
 		return new self(
 			$this->result->or($other->result),
-			array_merge($this->reasons, $other->reasons),
+			array_values(array_unique(array_merge($this->reasons, $other->reasons))),
 		);
 	}
 

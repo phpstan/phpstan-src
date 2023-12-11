@@ -233,7 +233,7 @@ class FunctionCallParametersCheck
 		if (
 			!$funcCall instanceof Node\Expr\New_
 			&& !$scope->isInFirstLevelStatement()
-			&& $scope->getType($funcCall)->isVoid()->yes()
+			&& $scope->getKeepVoidType($funcCall)->isVoid()->yes()
 		) {
 			$errors[] = RuleErrorBuilder::message($messages[7])
 				->identifier(sprintf('%s.void', $nodeType))

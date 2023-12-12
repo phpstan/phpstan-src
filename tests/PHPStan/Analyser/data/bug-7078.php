@@ -33,5 +33,5 @@ interface Param {
 
 function (Param $p) {
 	$result = $p->get(new TypeDefault(1), new TypeDefault('a'));
-	assertType('int|string', $result);
+	assertType('1|\'a\'', $result);
 };

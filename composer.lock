@@ -6508,16 +6508,16 @@
         },
         {
             "name": "shipmonk/name-collision-detector",
-            "version": "2.0.0",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/shipmonk-rnd/name-collision-detector.git",
-                "reference": "034b32f263edb71d08c15591d35544c2189d9fca"
+                "reference": "322993a0b057457ab363929c3ca37bce6eb4affb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shipmonk-rnd/name-collision-detector/zipball/034b32f263edb71d08c15591d35544c2189d9fca",
-                "reference": "034b32f263edb71d08c15591d35544c2189d9fca",
+                "url": "https://api.github.com/repos/shipmonk-rnd/name-collision-detector/zipball/322993a0b057457ab363929c3ca37bce6eb4affb",
+                "reference": "322993a0b057457ab363929c3ca37bce6eb4affb",
                 "shasum": ""
             },
             "require": {
@@ -6558,9 +6558,9 @@
             ],
             "support": {
                 "issues": "https://github.com/shipmonk-rnd/name-collision-detector/issues",
-                "source": "https://github.com/shipmonk-rnd/name-collision-detector/tree/2.0.0"
+                "source": "https://github.com/shipmonk-rnd/name-collision-detector/tree/2.1.0"
             },
-            "time": "2023-09-14T09:44:51+00:00"
+            "time": "2023-10-09T12:15:58+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -6628,5 +6628,5 @@
     "platform-overrides": {
         "php": "8.1.99"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }

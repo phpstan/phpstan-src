@@ -117,3 +117,32 @@ function (): void {
 
 	assertType('ArrayIterator<int, string>', createArrayIterator($a));
 };
+
+/** @template T */
+class FooInvariant
+{
+
+	/** @param T $p */
+	public function __construct($p)
+	{
+
+	}
+
+}
+
+/** @template-covariant T */
+class FooCovariant
+{
+
+	/** @param T $p */
+	public function __construct($p)
+	{
+
+	}
+
+}
+
+function (): void {
+	assertType('GenericsDoNotGeneralize\\FooInvariant<int>', new FooInvariant(1));
+	assertType('GenericsDoNotGeneralize\\FooCovariant<1>', new FooCovariant(1));
+};

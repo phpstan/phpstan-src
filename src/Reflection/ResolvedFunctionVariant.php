@@ -184,11 +184,13 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 					return $traverse($type);
 				}
 
-				$isArrayKey = $type->getBound()->describe(VerbosityLevel::precise()) === '(int|string)';
-				if ($newType->isScalar()->yes() && !$type->getVariance()->covariant() && $isArrayKey) {
-					$newType = $newType->generalize(GeneralizePrecision::templateArgument());
-				} elseif ($newType->isConstantValue()->yes() && (!$type->getBound()->isScalar()->yes() || $isArrayKey)) {
-					$newType = $newType->generalize(GeneralizePrecision::templateArgument());
+				if (!$type->getVariance()->covariant()) {
+					$isArrayKey = $type->getBound()->describe(VerbosityLevel::precise()) === '(int|string)';
+					if ($newType->isScalar()->yes() && $isArrayKey) {
+						$newType = $newType->generalize(GeneralizePrecision::templateArgument());
+					} elseif ($newType->isConstantValue()->yes() && (!$type->getBound()->isScalar()->yes() || $isArrayKey)) {
+						$newType = $newType->generalize(GeneralizePrecision::templateArgument());
+					}
 				}
 
 				$variance = TemplateTypeVariance::createInvariant();

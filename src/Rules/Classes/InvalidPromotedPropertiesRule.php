@@ -12,7 +12,7 @@ use function is_string;
 use function sprintf;
 
 /**
- * @implements Rule<Node>
+ * @implements Rule<Node\FunctionLike>
  */
 class InvalidPromotedPropertiesRule implements Rule
 {
@@ -23,22 +23,14 @@ class InvalidPromotedPropertiesRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node::class;
+		return Node\FunctionLike::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (
-			!$node instanceof Node\Expr\ArrowFunction
-			&& !$node instanceof Node\Stmt\ClassMethod
-			&& !$node instanceof Node\Expr\Closure
-			&& !$node instanceof Node\Stmt\Function_
-		) {
-			return [];
-		}
-
 		$hasPromotedProperties = false;
-		foreach ($node->params as $param) {
+
+		foreach ($node->getParams() as $param) {
 			if ($param->flags === 0) {
 				continue;
 			}
@@ -72,7 +64,7 @@ class InvalidPromotedPropertiesRule implements Rule
 			];
 		}
 
-		if ($node->stmts === null) {
+		if ($node->getStmts() === null) {
 			return [
 				RuleErrorBuilder::message(
 					'Promoted properties are not allowed in abstract constructors.',
@@ -81,7 +73,7 @@ class InvalidPromotedPropertiesRule implements Rule
 		}
 
 		$errors = [];
-		foreach ($node->params as $param) {
+		foreach ($node->getParams() as $param) {
 			if ($param->flags === 0) {
 				continue;
 			}

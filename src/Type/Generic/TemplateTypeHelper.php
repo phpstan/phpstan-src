@@ -3,9 +3,11 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\VerbosityLevel;
 
 class TemplateTypeHelper
 {
@@ -91,6 +93,20 @@ class TemplateTypeHelper
 
 			return $traverse($type);
 		});
+	}
+
+	public static function generalizeInferredTemplateType(TemplateType $templateType, Type $type): Type
+	{
+		if (!$templateType->getVariance()->covariant()) {
+			$isArrayKey = $templateType->getBound()->describe(VerbosityLevel::precise()) === '(int|string)';
+			if ($type->isScalar()->yes() && $isArrayKey) {
+				$type = $type->generalize(GeneralizePrecision::templateArgument());
+			} elseif ($type->isConstantValue()->yes() && (!$templateType->getBound()->isScalar()->yes() || $isArrayKey)) {
+				$type = $type->generalize(GeneralizePrecision::templateArgument());
+			}
+		}
+
+		return $type;
 	}
 
 }

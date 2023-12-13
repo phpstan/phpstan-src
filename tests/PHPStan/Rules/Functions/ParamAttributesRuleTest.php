@@ -66,4 +66,9 @@ class ParamAttributesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/sensitive-parameter.php'], []);
 	}
 
+	public function testBug10298(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10298.php'], []);
+	}
+
 }

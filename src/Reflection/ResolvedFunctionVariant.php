@@ -6,7 +6,6 @@ use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -17,7 +16,6 @@ use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function array_map;
 
@@ -184,15 +182,7 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 					return $traverse($type);
 				}
 
-				if (!$type->getVariance()->covariant()) {
-					$isArrayKey = $type->getBound()->describe(VerbosityLevel::precise()) === '(int|string)';
-					if ($newType->isScalar()->yes() && $isArrayKey) {
-						$newType = $newType->generalize(GeneralizePrecision::templateArgument());
-					} elseif ($newType->isConstantValue()->yes() && (!$type->getBound()->isScalar()->yes() || $isArrayKey)) {
-						$newType = $newType->generalize(GeneralizePrecision::templateArgument());
-					}
-				}
-
+				$newType = TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);
 				$variance = TemplateTypeVariance::createInvariant();
 				foreach ($references as $reference) {
 					// this uses identity to distinguish between different occurrences of the same template type

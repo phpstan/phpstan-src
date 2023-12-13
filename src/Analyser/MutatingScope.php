@@ -5063,16 +5063,7 @@ class MutatingScope implements Scope
 						return $type->getBound();
 					}
 
-					if (!$type->getVariance()->covariant()) {
-						$isArrayKey = $type->getBound()->describe(VerbosityLevel::precise()) === '(int|string)';
-						if ($newType->isScalar()->yes() && $isArrayKey) {
-							$newType = $newType->generalize(GeneralizePrecision::templateArgument());
-						} elseif ($newType->isConstantValue()->yes() && (!$type->getBound()->isScalar()->yes() || $isArrayKey)) {
-							$newType = $newType->generalize(GeneralizePrecision::templateArgument());
-						}
-					}
-
-					return $newType;
+					return TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);
 				}
 
 				return $traverse($type);

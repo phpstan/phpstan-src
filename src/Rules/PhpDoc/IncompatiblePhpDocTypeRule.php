@@ -42,16 +42,16 @@ class IncompatiblePhpDocTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$docComment = $node->getDocComment();
-		if ($docComment === null) {
-			return [];
-		}
-
 		if ($node instanceof Node\Stmt\ClassMethod) {
 			$functionName = $node->name->name;
 		} elseif ($node instanceof Node\Stmt\Function_) {
 			$functionName = trim($scope->getNamespace() . '\\' . $node->name->name, '\\');
 		} else {
+			return [];
+		}
+
+		$docComment = $node->getDocComment();
+		if ($docComment === null) {
 			return [];
 		}
 

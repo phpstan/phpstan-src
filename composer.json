@@ -97,9 +97,6 @@
 				"patches/ReflectionProperty.patch",
 				"patches/SessionHandler.patch"
 			],
-			"nikic/php-parser": [
-				"patches/NameResolver.patch"
-			],
 			"rector/rector": [
 				"patches/NameNodeMapper.patch"
 			]

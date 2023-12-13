@@ -66,7 +66,7 @@ class VoidType implements Type
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return AcceptsResult::createFromBoolean($type instanceof self);
+		return new AcceptsResult($type->isVoid()->or($type->isNull()), []);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

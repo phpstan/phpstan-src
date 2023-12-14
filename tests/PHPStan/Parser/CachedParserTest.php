@@ -60,10 +60,7 @@ class CachedParserTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @return Parser&MockObject
-	 */
-	private function getParserMock(): Parser
+	private function getParserMock(): Parser&MockObject
 	{
 		$mock = $this->createMock(Parser::class);
 
@@ -73,10 +70,7 @@ class CachedParserTest extends PHPStanTestCase
 		return $mock;
 	}
 
-	/**
-	 * @return \PhpParser\Node&MockObject
-	 */
-	private function getPhpParserNodeMock(): \PhpParser\Node
+	private function getPhpParserNodeMock(): \PhpParser\Node&MockObject
 	{
 		return $this->createMock(\PhpParser\Node::class);
 	}

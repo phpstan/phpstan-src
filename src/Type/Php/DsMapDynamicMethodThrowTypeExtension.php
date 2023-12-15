@@ -19,7 +19,7 @@ final class DsMapDynamicMethodThrowTypeExtension implements DynamicMethodThrowTy
 			&& ($methodReflection->getName() === 'get' || $methodReflection->getName() === 'remove');
 	}
 
-	public function getThrowTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type|null
+	public function getThrowTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
 		if (count($methodCall->args) < 2) {
 			return $methodReflection->getThrowType();

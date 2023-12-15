@@ -59,6 +59,7 @@ parameters:
 		missingMagicSerializationRule: false
 		nullContextForVoidReturningFunctions: false
 		unescapeStrings: false
+		promotedPropertyAttribute: false
 		alwaysCheckTooWideReturnTypeFinalMethods: false
 		duplicateStubs: false
 		logicalXor: false

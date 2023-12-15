@@ -15,7 +15,7 @@ use function count;
 class ParamAttributesRule implements Rule
 {
 
-	public function __construct(private AttributesCheck $attributesCheck)
+	public function __construct(private AttributesCheck $attributesCheck, private bool $checkPromotedPropertyAttribute)
 	{
 	}
 
@@ -28,17 +28,30 @@ class ParamAttributesRule implements Rule
 	{
 		$targetName = 'parameter';
 		if ($node->flags !== 0) {
-			$targetName = 'parameter or property';
+			if ($this->checkPromotedPropertyAttribute) {
+				$propertyTargetErrors = $this->attributesCheck->check(
+					$scope,
+					$node->attrGroups,
+					Attribute::TARGET_PROPERTY,
+					'property',
+				);
 
-			$propertyTargetErrors = $this->attributesCheck->check(
-				$scope,
-				$node->attrGroups,
-				Attribute::TARGET_PROPERTY,
-				$targetName,
-			);
+				if (count($propertyTargetErrors) > 0) {
+					return $propertyTargetErrors;
+				}
+			} else {
+				$targetName = 'parameter or property';
 
-			if (count($propertyTargetErrors) === 0) {
-				return $propertyTargetErrors;
+				$propertyTargetErrors = $this->attributesCheck->check(
+					$scope,
+					$node->attrGroups,
+					Attribute::TARGET_PROPERTY,
+					$targetName,
+				);
+
+				if (count($propertyTargetErrors) === 0) {
+					return $propertyTargetErrors;
+				}
 			}
 		}
 

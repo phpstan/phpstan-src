@@ -54,6 +54,7 @@ parametersSchema:
 		missingMagicSerializationRule: bool()
 		nullContextForVoidReturningFunctions: bool()
 		unescapeStrings: bool()
+		promotedPropertyAttribute: bool()
 		alwaysCheckTooWideReturnTypeFinalMethods: bool()
 		duplicateStubs: bool()
 		logicalXor: bool()

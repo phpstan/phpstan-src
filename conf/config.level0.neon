@@ -75,7 +75,6 @@ rules:
 	- PHPStan\Rules\Functions\FunctionAttributesRule
 	- PHPStan\Rules\Functions\InnerFunctionRule
 	- PHPStan\Rules\Functions\InvalidLexicalVariablesInClosureUseRule
-	- PHPStan\Rules\Functions\ParamAttributesRule
 	- PHPStan\Rules\Functions\PrintfParametersRule
 	- PHPStan\Rules\Functions\RedefinedParametersRule
 	- PHPStan\Rules\Functions\ReturnNullsafeByRefRule
@@ -152,6 +151,13 @@ services:
 			- phpstan.rules.rule
 		arguments:
 			checkFunctionNameCase: %checkFunctionNameCase%
+
+	-
+		class: PHPStan\Rules\Functions\ParamAttributesRule
+		tags:
+			- phpstan.rules.rule
+		arguments:
+			checkPromotedPropertyAttribute: %featureToggles.promotedPropertyAttribute%
 
 	-
 		class: PHPStan\Rules\Constants\OverridingConstantRule

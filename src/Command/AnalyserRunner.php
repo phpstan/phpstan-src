@@ -62,6 +62,7 @@ class AnalyserRunner
 			&& function_exists('proc_open')
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 0
+			&& count($files) > 1
 		) {
 			$loop = new StreamSelectLoop();
 			$result = null;

@@ -60,6 +60,7 @@ class AnalyserRunner
 			&& function_exists('proc_open')
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 0
+			&& count($files) > 1
 		) {
 			return $this->parallelAnalyser->analyse($schedule, $mainScript, $postFileCallback, $projectConfigFile, $input);
 		}

@@ -20,6 +20,7 @@ class ReflectionEnum extends ReflectionClass
 
 	/**
 	 * @phpstan-assert-if-true self<BackedEnum> $this
+	 * @phpstan-assert-if-true !null $this->getBackingType()
 	 */
 	public function isBacked(): bool {}
 

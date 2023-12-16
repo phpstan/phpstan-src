@@ -205,7 +205,7 @@ php;
 	private function transformSource(): void
 	{
 		chdir(__DIR__ . '/../../..');
-		exec(escapeshellarg(__DIR__ . '/../../../build/transform-source') . ' 7.2', $outputLines, $exitCode);
+		exec(escapeshellarg(__DIR__ . '/../../../vendor/bin/simple-downgrade') . ' downgrade -c ' . escapeshellarg('build/downgrade.php') . ' 7.2', $outputLines, $exitCode);
 		if ($exitCode === 0) {
 			return;
 		}

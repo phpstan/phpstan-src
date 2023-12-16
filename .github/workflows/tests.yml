@@ -60,43 +60,10 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
-      - name: "Install PHP for code transform"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "none"
-          php-version: 8.1
-          extensions: mbstring, intl
-
-      - name: "Rector downgrade cache key"
-        id: rector-cache-key
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
-        run: echo "sha=$(php build/rector-cache-files-hash.php)" >> $GITHUB_OUTPUT
-
-      - name: "Rector downgrade cache"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
-        uses: actions/cache@v3
-        with:
-          path: ./tmp/rectorCache.php
-          key: "rector-v4-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key.outputs.sha }}"
-          restore-keys: |
-            rector-v4-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
-
       - name: "Transform source code"
         if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
         shell: bash
-        run: "build/transform-source ${{ matrix.php-version }}"
-
-      - name: "Reinstall matrix PHP version"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "none"
-          php-version: "${{ matrix.php-version }}"
-          tools: pecl
-          extensions: ds,mbstring
-          ini-file: development
-          ini-values: memory_limit=2G
+        run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
 
       - name: "Tests"
         run: "make tests"
@@ -185,39 +152,9 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
-      - name: "Install PHP for code transform"
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "none"
-          php-version: "8.1"
-          extensions: mbstring, intl
-
-      - name: "Rector downgrade cache key"
-        id: rector-cache-key
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
-        run: echo "sha=$(php build/rector-cache-files-hash.php)" >> $GITHUB_OUTPUT
-
-      - name: "Rector downgrade cache"
-        uses: actions/cache@v3
-        with:
-          path: ./tmp/rectorCache.php
-          key: "rector-v4-tests-old-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key.outputs.sha }}"
-          restore-keys: |
-            rector-v4-tests-old-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
-
       - name: "Transform source code"
         shell: bash
-        run: "build/transform-source ${{ matrix.php-version }}"
-
-      - name: "Reinstall matrix PHP version"
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "none"
-          php-version: "${{ matrix.php-version }}"
-          tools: pecl
-          extensions: ds,mbstring
-          ini-file: development
-          ini-values: memory_limit=2G
+        run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
 
       - name: "Paratest patch"
         run: composer config extra.patches.brianium/paratest --json --merge '["patches/paratest.patch"]'

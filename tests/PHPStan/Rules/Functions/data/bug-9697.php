@@ -1,7 +1,6 @@
-<?php
+<?php // lint >= 7.4
 
 namespace Bug9697;
-
 
 function doFoo(): void
 {

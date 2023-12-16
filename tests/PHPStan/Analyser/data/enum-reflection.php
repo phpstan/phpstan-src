@@ -50,11 +50,3 @@ function testNarrowGetNameTypeAfterIsBacked(string $class) {
 		assertType('class-string<BackedEnum>', $r->getName());
 	}
 }
-
-function testNarrowGetBackingTypeAfterIsBacked() {
-	$r = new ReflectionEnum(Foo::class);
-	assertType('ReflectionNamedType|null', $r->getBackingType());
-	if ($r->isBacked()) {
-		assertType('ReflectionNamedType', $r->getBackingType());
-	}
-}

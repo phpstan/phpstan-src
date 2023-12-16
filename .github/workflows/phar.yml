@@ -51,18 +51,6 @@ jobs:
         working-directory: "compiler"
         run: "../bin/phpstan analyse -l 8 src tests"
 
-      - name: "Rector downgrade cache key"
-        id: rector-cache-key
-        run: echo "sha=$(php build/rector-cache-files-hash.php)" >> $GITHUB_OUTPUT
-
-      - name: "Rector downgrade cache"
-        uses: actions/cache@v3
-        with:
-          path: ./tmp/rectorCache.php
-          key: "rector-v4-phar-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ steps.rector-cache-key.outputs.sha }}"
-          restore-keys: |
-            rector-v4-phar-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-
-
       - name: "Prepare for PHAR compilation"
         working-directory: "compiler"
         run: "php bin/prepare"

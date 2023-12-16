@@ -676,12 +676,7 @@ class ClassReflection
 			return null;
 		}
 
-		$reflectionType = $this->reflection->getBackingType();
-		if ($reflectionType === null) {
-			return null;
-		}
-
-		return TypehintHelper::decideTypeFromReflection($reflectionType);
+		return TypehintHelper::decideTypeFromReflection($this->reflection->getBackingType());
 	}
 
 	public function hasEnumCase(string $name): bool

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "67ab8e292681dc8d6a938036beba1369",
+    "content-hash": "c2d1b55fc0e14d1e9828c58966f486c7",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -4692,16 +4692,16 @@
         },
         {
             "name": "ondrejmirtes/simple-downgrader",
-            "version": "0.1.2",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/simple-downgrader.git",
-                "reference": "58c3a9551003e7fd4330dd8a7285bdf7ed5de09d"
+                "reference": "e4d9a4f1febce7e5593becb0a7fc709186e2b14a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/58c3a9551003e7fd4330dd8a7285bdf7ed5de09d",
-                "reference": "58c3a9551003e7fd4330dd8a7285bdf7ed5de09d",
+                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/e4d9a4f1febce7e5593becb0a7fc709186e2b14a",
+                "reference": "e4d9a4f1febce7e5593becb0a7fc709186e2b14a",
                 "shasum": ""
             },
             "require": {
@@ -4735,9 +4735,9 @@
             "description": "Simple Downgrader",
             "support": {
                 "issues": "https://github.com/ondrejmirtes/simple-downgrader/issues",
-                "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/0.1.2"
+                "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/1.0.0"
             },
-            "time": "2023-12-16T20:55:58+00:00"
+            "time": "2023-12-17T12:37:19+00:00"
         },
         {
             "name": "phar-io/manifest",

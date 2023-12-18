@@ -72,13 +72,13 @@ function array_udiff(
 function array_is_list(array $value): bool {}
 
 /**
- * @template TK of mixed
- * @template TV of mixed
+ * @template TKey of array-key
+ * @template T of mixed
  *
- * @param array<TK, TV> $one
- * @param array<TK, TV> $two
- * @param callable(TK, TK): int<-1, 1> $three
- * @return array<TK, TV>
+ * @param array<TKey, T> $one
+ * @param array<TKey, T> $two
+ * @param callable(TKey, TKey): int<-1, 1> $three
+ * @return array<TKey, T>
  */
 function array_diff_uassoc(
     array $one,
@@ -87,13 +87,13 @@ function array_diff_uassoc(
 ): array {}
 
 /**
- * @template TK of mixed
- * @template TV of mixed
+ * @template TKey of array-key
+ * @template T of mixed
  *
- * @param array<TK, TV> $one
- * @param array<TK, TV> $two
- * @param callable(TK, TK): int<-1, 1> $three
- * @return array<TK, TV>
+ * @param array<TKey, T> $one
+ * @param array<TKey, T> $two
+ * @param callable(TKey, TKey): int<-1, 1> $three
+ * @return array<TKey, T>
  */
 function array_diff_ukey(
     array $one,
@@ -102,13 +102,13 @@ function array_diff_ukey(
 ): array {}
 
 /**
- * @template TK of mixed
- * @template TV of mixed
+ * @template TKey of array-key
+ * @template T of mixed
  *
- * @param array<TK, TV> $one
- * @param array<TK, TV> $two
- * @param callable(TK, TK): int<-1, 1> $three
- * @return array<TK, TV>
+ * @param array<TKey, T> $one
+ * @param array<TKey, T> $two
+ * @param callable(TKey, TKey): int<-1, 1> $three
+ * @return array<TKey, T>
  */
 function array_intersect_uassoc(
     array $one,
@@ -117,14 +117,14 @@ function array_intersect_uassoc(
 ): array {}
 
 /**
- * @template TK of mixed
- * @template TV of mixed
+ * @template TKey of array-key
+ * @template T of mixed
  *
- * @param array<TK, TV> $one
- * @param array<TK, TV> $two
- * @param callable(TK, TK): int<-1, 1> $three
+ * @param array<TKey, T> $one
+ * @param array<TKey, T> $two
+ * @param callable(TKey, TKey): int<-1, 1> $three
  *
- * @return array<TK, TV>
+ * @return array<TKey, T>
  */
 function array_intersect_ukey(
     array $one,
@@ -133,14 +133,14 @@ function array_intersect_ukey(
 ): array {}
 
 /**
- * @template TK of mixed
- * @template TV of mixed
+ * @template TKey of array-key
+ * @template T of mixed
  *
- * @param array<TK, TV> $one
- * @param array<TK, TV> $two
- * @param callable(TV, TV): int<-1, 1> $three
+ * @param array<TKey, T> $one
+ * @param array<TKey, T> $two
+ * @param callable(T, T): int<-1, 1> $three
  *
- * @return array<TK, TV>
+ * @return array<TKey, T>
  */
 function array_udiff_assoc(
     array $one,
@@ -149,14 +149,14 @@ function array_udiff_assoc(
 ): array {}
 
 /**
- * @template TK of mixed
- * @template TV of mixed
+ * @template TKey of array-key
+ * @template T of mixed
  *
- * @param array<TK, TV> $one
- * @param array<TK, TV> $two
- * @param callable(TV, TV): int<-1, 1> $three
- * @param callable(TK, TK): int<-1, 1> $four
- * @return array<TK, TV>
+ * @param array<TKey, T> $one
+ * @param array<TKey, T> $two
+ * @param callable(T, T): int<-1, 1> $three
+ * @param callable(TKey, TKey): int<-1, 1> $four
+ * @return array<TKey, T>
  */
 function array_udiff_uassoc(
     array $one,
@@ -166,13 +166,13 @@ function array_udiff_uassoc(
 ): array {}
 
 /**
- * @template TK of mixed
- * @template TV of mixed
+ * @template TKey of array-key
+ * @template T of mixed
  *
- * @param array<TK, TV> $one
- * @param array<TK, TV> $two
- * @param callable(TV, TV): int<-1, 1> $three
- * @return array<TK, TV>
+ * @param array<TKey, T> $one
+ * @param array<TKey, T> $two
+ * @param callable(T, T): int<-1, 1> $three
+ * @return array<TKey, T>
  */
 function array_uintersect_assoc(
     array $one,
@@ -181,14 +181,14 @@ function array_uintersect_assoc(
 ): array {}
 
 /**
- * @template TK of mixed
- * @template TV of mixed
+ * @template TKey of array-key
+ * @template T of mixed
  *
- * @param array<TK, TV> $one
- * @param array<TK, TV> $two
- * @param callable(TV, TV): int<-1, 1> $three
- * @param callable(TK, TK): int<-1, 1> $four
- * @return array<TK, TV>
+ * @param array<TKey, T> $one
+ * @param array<TKey, T> $two
+ * @param callable(T, T): int<-1, 1> $three
+ * @param callable(TKey, TKey): int<-1, 1> $four
+ * @return array<TKey, T>
  */
 function array_uintersect_uassoc(
     array $one,
@@ -198,13 +198,13 @@ function array_uintersect_uassoc(
 ): array {}
 
 /**
- * @template TK of mixed
- * @template TV of mixed
+ * @template TKey of array-key
+ * @template T of mixed
  *
- * @param array<TK, TV> $one
- * @param array<TK, TV> $two
- * @param callable(TV, TV): int<-1, 1> $three
- * @return array<TK, TV>
+ * @param array<TKey, T> $one
+ * @param array<TKey, T> $two
+ * @param callable(T, T): int<-1, 1> $three
+ * @return array<TKey, T>
  */
 function array_uintersect(
     array $one,

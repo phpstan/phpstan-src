@@ -1591,9 +1591,7 @@ class MutatingScope implements Scope
 				return TypeCombinator::removeNull($leftType);
 			}
 
-			$rightType = $this->filterByFalseyValue(
-				new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
-			)->getType($node->right);
+			$rightType = $this->filterByFalseyValue(new Expr\Isset_([$node->left]))->getType($node->right);
 
 			if ($result === null) {
 				return TypeCombinator::union(

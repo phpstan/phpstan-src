@@ -74,7 +74,8 @@ class FixerWorkerCommand extends Command
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
 				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with Xdebug for debugging purposes'),
 				new InputOption('server-port', null, InputOption::VALUE_REQUIRED, 'Server port for FixerApplication'),
-			]);
+			])
+			->setHidden(true);
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output): int

@@ -60,7 +60,8 @@ class WorkerCommand extends Command
 				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with Xdebug for debugging purposes'),
 				new InputOption('port', null, InputOption::VALUE_REQUIRED),
 				new InputOption('identifier', null, InputOption::VALUE_REQUIRED),
-			]);
+			])
+			->setHidden(true);
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output): int

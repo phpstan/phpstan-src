@@ -75,14 +75,11 @@ class ImpossibleCheckTypeHelper
 					return $assertValue->getValue();
 				}
 				if (in_array($functionName, [
+					'class_exists',
 					'interface_exists',
 					'trait_exists',
 					'enum_exists',
 				], true)) {
-					return null;
-				}
-
-				if ($functionName === 'class_exists') {
 					if (count($node->getArgs()) < 1) {
 						return null;
 					}
@@ -95,9 +92,23 @@ class ImpossibleCheckTypeHelper
 						return null;
 					}
 					$reflection = $this->reflectionProvider->getClass($argConstantString->getValue());
-					if ($reflection->isInterface()) {
+
+					if ($functionName === 'class_exists' && ($reflection->isInterface() || $reflection->isTrait())) {
 						return false;
 					}
+
+					if ($functionName === 'interface_exists' && ($reflection->isClass() || $reflection->isTrait() || $reflection->isEnum())) {
+						return false;
+					}
+
+					if ($functionName === 'trait_exists' && ($reflection->isClass() || $reflection->isInterface() || $reflection->isEnum())) {
+						return false;
+					}
+
+					if ($functionName === 'enum_exists' && ($reflection->isClass() || $reflection->isInterface() || $reflection->isTrait())) {
+						return false;
+					}
+
 					return null;
 				}
 

@@ -967,8 +967,3 @@ function checkSuperGlobals(): void
 		if (is_int($k)) {}
 	}
 }
-
-if (class_exists(\DateTimeInterface::class)) {} // always false for interface
-if (class_exists(\DateTime::class)) {}
-if (class_exists($mixed)) {}
-if (class_exists()) {}

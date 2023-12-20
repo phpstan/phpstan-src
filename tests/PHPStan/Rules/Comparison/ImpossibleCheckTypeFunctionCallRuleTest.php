@@ -261,10 +261,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					927,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
-				[
-					'Call to function class_exists() with \'DateTimeInterface\' will always evaluate to false.',
-					971,
-				],
 			],
 		);
 	}
@@ -375,10 +371,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					927,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
-				[
-					'Call to function class_exists() with \'DateTimeInterface\' will always evaluate to false.',
-					971,
-				],
 			],
 		);
 	}
@@ -392,6 +384,25 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				'Call to function is_int() with int will always evaluate to true.',
 				16,
 			],
+		]);
+	}
+
+	public function testStructExists(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/check-type-function-call-struct-exists.php'], [
+			['Call to function class_exists() with \'CheckTypeFunctionCall\\\\_Interface\' will always evaluate to false.', 23],
+			['Call to function class_exists() with \'CheckTypeFunctionCall\\\\_Trait\' will always evaluate to false.', 25],
+			['Call to function interface_exists() with \'CheckTypeFunctionCall\\\\_Enum\' will always evaluate to false.', 27],
+			['Call to function interface_exists() with \'CheckTypeFunctionCall\\\\_Class\' will always evaluate to false.', 29],
+			['Call to function interface_exists() with \'CheckTypeFunctionCall\\\\_Trait\' will always evaluate to false.', 30],
+			['Call to function trait_exists() with \'CheckTypeFunctionCall\\\\_Enum\' will always evaluate to false.', 32],
+			['Call to function trait_exists() with \'CheckTypeFunctionCall\\\\_Interface\' will always evaluate to false.', 33],
+			['Call to function trait_exists() with \'CheckTypeFunctionCall\\\\_Class\' will always evaluate to false.', 34],
+			['Call to function enum_exists() with \'CheckTypeFunctionCall\\\\_Interface\' will always evaluate to false.', 38],
+			['Call to function enum_exists() with \'CheckTypeFunctionCall\\\\_Class\' will always evaluate to false.', 39],
+			['Call to function enum_exists() with \'CheckTypeFunctionCall\\\\_Trait\' will always evaluate to false.', 40],
 		]);
 	}
 

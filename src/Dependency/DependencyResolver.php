@@ -479,10 +479,6 @@ final class DependencyResolver
 			return false;
 		}
 
-		if ($items[0] === null) {
-			return false;
-		}
-
 		$itemType = $scope->getType($items[0]->value);
 		return $itemType->isClassStringType()->yes();
 	}

@@ -40,7 +40,7 @@ final class ArrayDestructuringRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->var instanceof Node\Expr\List_ && !$node->var instanceof Node\Expr\Array_) {
+		if (!$node->var instanceof Node\Expr\List_) {
 			return [];
 		}
 
@@ -52,10 +52,9 @@ final class ArrayDestructuringRule implements Rule
 	}
 
 	/**
-	 * @param Node\Expr\List_|Node\Expr\Array_ $var
 	 * @return list<IdentifierRuleError>
 	 */
-	private function getErrors(Scope $scope, Expr $var, Expr $expr): array
+	private function getErrors(Scope $scope, Node\Expr\List_ $var, Expr $expr): array
 	{
 		$exprTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
@@ -100,7 +99,7 @@ final class ArrayDestructuringRule implements Rule
 			);
 			$errors = array_merge($errors, $itemErrors);
 
-			if (!$item->value instanceof Node\Expr\List_ && !$item->value instanceof Node\Expr\Array_) {
+			if (!$item->value instanceof Node\Expr\List_) {
 				$i++;
 				continue;
 			}

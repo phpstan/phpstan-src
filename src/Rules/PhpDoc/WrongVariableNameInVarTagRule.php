@@ -195,7 +195,7 @@ final class WrongVariableNameInVarTagRule implements Rule
 			return [];
 		}
 
-		if ($expr instanceof Expr\List_ || $expr instanceof Expr\Array_) {
+		if ($expr instanceof Expr\List_) {
 			$names = [];
 			foreach ($expr->items as $item) {
 				if ($item === null) {

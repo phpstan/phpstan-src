@@ -261,6 +261,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					927,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
+				[
+					'Call to function class_exists() with \'DateTimeInterface\' will always evaluate to false.',
+					971,
+				],
 			],
 		);
 	}
@@ -370,6 +374,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Call to function in_array() with arguments 1, array<string> and true will always evaluate to false.',
 					927,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				],
+				[
+					'Call to function class_exists() with \'DateTimeInterface\' will always evaluate to false.',
+					971,
 				],
 			],
 		);

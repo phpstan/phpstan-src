@@ -75,13 +75,32 @@ class ImpossibleCheckTypeHelper
 					return $assertValue->getValue();
 				}
 				if (in_array($functionName, [
-					'class_exists',
 					'interface_exists',
 					'trait_exists',
 					'enum_exists',
 				], true)) {
 					return null;
 				}
+
+				if ($functionName === 'class_exists') {
+					if (count($node->getArgs()) < 1) {
+						return null;
+					}
+					$argType = $scope->getType($node->getArgs()[0]->value);
+					if (count($argType->getConstantStrings()) !== 1) {
+						return null;
+					}
+					$argConstantString = $argType->getConstantStrings()[0];
+					if (!$this->reflectionProvider->hasClass($argConstantString->getValue())) {
+						return null;
+					}
+					$reflection = $this->reflectionProvider->getClass($argConstantString->getValue());
+					if ($reflection->isInterface()) {
+						return false;
+					}
+					return null;
+				}
+
 				if (in_array($functionName, ['count', 'sizeof'], true)) {
 					return null;
 				} elseif ($functionName === 'defined') {

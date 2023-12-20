@@ -7,6 +7,7 @@ use PhpParser\Lexer;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
+use PhpParser\Token;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Analyser\Ignore\IgnoreParseException;
 use PHPStan\DependencyInjection\Container;
@@ -17,7 +18,6 @@ use function array_map;
 use function count;
 use function implode;
 use function in_array;
-use function is_string;
 use function preg_match_all;
 use function sprintf;
 use function str_contains;
@@ -72,8 +72,7 @@ final class RichParser implements Parser
 		$errorHandler = new Collecting();
 		$nodes = $this->parser->parse($sourceCode, $errorHandler);
 
-		/** @var list<string|array{0:int,1:string,2:int}> $tokens */
-		$tokens = $this->lexer->getTokens();
+		$tokens = $this->parser->getTokens();
 		if ($errorHandler->hasErrors()) {
 			throw new ParserErrorsException($errorHandler->getErrors(), null);
 		}
@@ -109,7 +108,7 @@ final class RichParser implements Parser
 	}
 
 	/**
-	 * @param list<string|array{0:int,1:string,2:int}> $tokens
+	 * @param Token[] $tokens
 	 * @return array{lines: array<int, non-empty-list<string>|null>, errors: array<int, non-empty-list<string>>}
 	 */
 	private function getLinesToIgnore(array $tokens): array
@@ -119,12 +118,8 @@ final class RichParser implements Parser
 		$pendingToken = null;
 		$errors = [];
 		foreach ($tokens as $token) {
-			if (is_string($token)) {
-				continue;
-			}
-
-			$type = $token[0];
-			$line = $token[2];
+			$type = $token->id;
+			$line = $token->line;
 			if ($type !== T_COMMENT && $type !== T_DOC_COMMENT) {
 				if ($type !== T_WHITESPACE) {
 					if ($pendingToken !== null) {
@@ -155,7 +150,7 @@ final class RichParser implements Parser
 				continue;
 			}
 
-			$text = $token[1];
+			$text = $token->text;
 			$isNextLine = str_contains($text, '@phpstan-ignore-next-line');
 			$isCurrentLine = str_contains($text, '@phpstan-ignore-line');
 
@@ -204,20 +199,20 @@ final class RichParser implements Parser
 
 			$ignoreLine = substr_count(substr($text, 0, $ignorePos), "\n") - 1;
 
-			if ($previousToken !== null && $previousToken[2] === $line) {
+			if ($previousToken !== null && $previousToken->line === $line) {
 				try {
 					foreach ($this->parseIdentifiers($text, $ignorePos) as $identifier) {
 						$lines[$line][] = $identifier;
 					}
 				} catch (IgnoreParseException $e) {
-					$errors[] = [$token[2] + $e->getPhpDocLine() + $ignoreLine, $e->getMessage()];
+					$errors[] = [$token->line + $e->getPhpDocLine() + $ignoreLine, $e->getMessage()];
 				}
 
 				continue;
 			}
 
-			$line += substr_count($token[1], "\n");
-			$pendingToken = [$text, $ignorePos, $token[2] + $ignoreLine, $line];
+			$line += substr_count($token->text, "\n");
+			$pendingToken = [$text, $ignorePos, $token->line + $ignoreLine, $line];
 		}
 
 		if ($pendingToken !== null) {

@@ -44,7 +44,7 @@ class YieldFromTypeRule implements Rule
 					$messagePattern,
 					$exprType->describe(VerbosityLevel::typeOnly()),
 				))
-					->line($node->expr->getLine())
+					->line($node->expr->getStartLine())
 					->identifier('generator.nonIterable')
 					->build(),
 			];
@@ -58,7 +58,7 @@ class YieldFromTypeRule implements Rule
 					$messagePattern,
 					$exprType->describe(VerbosityLevel::typeOnly()),
 				))
-					->line($node->expr->getLine())
+					->line($node->expr->getStartLine())
 					->identifier('generator.nonIterable')
 					->build(),
 			];
@@ -87,7 +87,7 @@ class YieldFromTypeRule implements Rule
 				$returnType->getIterableKeyType()->describe($verbosityLevel),
 				$exprType->getIterableKeyType()->describe($verbosityLevel),
 			))
-				->line($node->expr->getLine())
+				->line($node->expr->getStartLine())
 				->identifier('generator.keyType')
 				->acceptsReasonsTip($acceptsKey->reasons)
 				->build();
@@ -101,7 +101,7 @@ class YieldFromTypeRule implements Rule
 				$returnType->getIterableValueType()->describe($verbosityLevel),
 				$exprType->getIterableValueType()->describe($verbosityLevel),
 			))
-				->line($node->expr->getLine())
+				->line($node->expr->getStartLine())
 				->identifier('generator.valueType')
 				->acceptsReasonsTip($acceptsValue->reasons)
 				->build();

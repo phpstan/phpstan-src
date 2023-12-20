@@ -49,7 +49,7 @@ class EchoRule implements Rule
 				'Parameter #%d (%s) of echo cannot be converted to string.',
 				$key + 1,
 				$typeResult->getType()->describe(VerbosityLevel::value()),
-			))->identifier('echo.nonString')->line($expr->getLine())->build();
+			))->identifier('echo.nonString')->line($expr->getStartLine())->build();
 		}
 		return $messages;
 	}

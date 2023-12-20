@@ -137,16 +137,16 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				self::fail(sprintf(
 					'Missing use statement for %s() on line %d.',
 					$functionName,
-					$node->getLine(),
+					$node->getStartLine(),
 				));
 			} elseif ($functionName === 'PHPStan\\Testing\\assertType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
 				$actualType = $scope->getType($node->getArgs()[1]->value);
-				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
+				$assert = ['type', $file, $expectedType, $actualType, $node->getStartLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertNativeType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
 				$actualType = $scope->getNativeType($node->getArgs()[1]->value);
-				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
+				$assert = ['type', $file, $expectedType, $actualType, $node->getStartLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertVariableCertainty') {
 				$certainty = $node->getArgs()[0]->value;
 				if (!$certainty instanceof StaticCall) {
@@ -175,7 +175,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				}
 
 				$actualCertaintyValue = $scope->hasVariableType($variable->name);
-				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name, $node->getLine()];
+				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name, $node->getStartLine()];
 			} else {
 				$correctFunction = null;
 
@@ -200,7 +200,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 					'Function %s imported with wrong namespace %s called on line %d.',
 					$correctFunction,
 					$functionName,
-					$node->getLine(),
+					$node->getStartLine(),
 				));
 			}
 
@@ -208,11 +208,11 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				self::fail(sprintf(
 					'ERROR: Wrong %s() call on line %d.',
 					$functionName,
-					$node->getLine(),
+					$node->getStartLine(),
 				));
 			}
 
-			$asserts[$file . ':' . $node->getLine()] = $assert;
+			$asserts[$file . ':' . $node->getStartLine()] = $assert;
 		});
 
 		if (count($asserts) === 0) {

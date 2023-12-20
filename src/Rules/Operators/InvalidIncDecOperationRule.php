@@ -68,7 +68,7 @@ class InvalidIncDecOperationRule implements Rule
 					'Cannot use %s on a non-variable.',
 					$operatorString,
 				))
-					->line($node->var->getLine())
+					->line($node->var->getStartLine())
 					->identifier(sprintf('%s.expr', $nodeType))
 					->build(),
 			];
@@ -89,7 +89,7 @@ class InvalidIncDecOperationRule implements Rule
 					$operatorString,
 					$varType->describe(VerbosityLevel::value()),
 				))
-					->line($node->var->getLine())
+					->line($node->var->getStartLine())
 					->identifier(sprintf('%s.type', $nodeType))
 					->build(),
 			];

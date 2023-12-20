@@ -42,7 +42,7 @@ class MissingReadOnlyPropertyAssignRule implements Rule
 				$classReflection->getDisplayName(),
 				$propertyName,
 			))
-				->line($propertyNode->getLine())
+				->line($propertyNode->getStartLine())
 				->identifier('property.uninitializedReadonly')
 				->build();
 		}

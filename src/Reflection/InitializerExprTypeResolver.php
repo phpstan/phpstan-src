@@ -153,7 +153,7 @@ class InitializerExprTypeResolver
 			return $this->usePathConstantsAsConstantString ? $stringType : $stringType->generalize(GeneralizePrecision::moreSpecific());
 		}
 		if ($expr instanceof Line) {
-			return new ConstantIntegerType($expr->getLine());
+			return new ConstantIntegerType($expr->getStartLine());
 		}
 		if ($expr instanceof Expr\New_) {
 			if ($expr->class instanceof Name) {

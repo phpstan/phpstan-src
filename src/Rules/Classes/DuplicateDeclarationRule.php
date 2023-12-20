@@ -43,7 +43,7 @@ class DuplicateDeclarationRule implements Rule
 						$classReflection->getDisplayName(),
 						$stmtNode->name->name,
 					))->identifier(sprintf('%s.duplicateEnumCase', $identifierType))
-						->line($stmtNode->getLine())
+						->line($stmtNode->getStartLine())
 						->nonIgnorable()
 						->build();
 				} else {
@@ -57,7 +57,7 @@ class DuplicateDeclarationRule implements Rule
 							$classReflection->getDisplayName(),
 							$classConstNode->name->name,
 						))->identifier(sprintf('%s.duplicateConstant', $identifierType))
-							->line($classConstNode->getLine())
+							->line($classConstNode->getStartLine())
 							->nonIgnorable()
 							->build();
 					} else {
@@ -76,7 +76,7 @@ class DuplicateDeclarationRule implements Rule
 						$classReflection->getDisplayName(),
 						$property->name->name,
 					))->identifier(sprintf('%s.duplicateProperty', $identifierType))
-						->line($property->getLine())
+						->line($property->getStartLine())
 						->nonIgnorable()
 						->build();
 				} else {
@@ -105,7 +105,7 @@ class DuplicateDeclarationRule implements Rule
 							$classReflection->getDisplayName(),
 							$propertyName,
 						))->identifier(sprintf('%s.duplicateProperty', $identifierType))
-							->line($param->getLine())
+							->line($param->getStartLine())
 							->nonIgnorable()
 							->build();
 					} else {

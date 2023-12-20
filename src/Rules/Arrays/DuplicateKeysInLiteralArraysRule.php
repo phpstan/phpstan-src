@@ -60,7 +60,7 @@ class DuplicateKeysInLiteralArraysRule implements Rule
 			$printedValues[$value][] = $printedValue;
 
 			if (!isset($valueLines[$value])) {
-				$valueLines[$value] = $item->getLine();
+				$valueLines[$value] = $item->getStartLine();
 			}
 
 			$previousCount = count($values);

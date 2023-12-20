@@ -48,7 +48,7 @@ class WhileLoopAlwaysFalseConditionRule implements Rule
 			};
 
 			return [
-				$addTip(RuleErrorBuilder::message('While loop condition is always false.'))->line($node->cond->getLine())
+				$addTip(RuleErrorBuilder::message('While loop condition is always false.'))->line($node->cond->getStartLine())
 					->identifier('while.alwaysFalse')
 					->build(),
 			];

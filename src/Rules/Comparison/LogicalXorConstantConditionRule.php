@@ -56,7 +56,7 @@ class LogicalXorConstantConditionRule implements Rule
 					$leftType->getValue() ? 'true' : 'false',
 				)))
 					->identifier(sprintf('logicalXor.leftAlways%s', $leftType->getValue() ? 'True' : 'False'))
-					->line($node->left->getLine());
+					->line($node->left->getStartLine());
 				if ($leftType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
@@ -89,7 +89,7 @@ class LogicalXorConstantConditionRule implements Rule
 					$rightType->getValue() ? 'true' : 'false',
 				)))
 					->identifier(sprintf('logicalXor.rightAlways%s', $rightType->getValue() ? 'True' : 'False'))
-					->line($node->right->getLine());
+					->line($node->right->getStartLine());
 				if ($rightType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}

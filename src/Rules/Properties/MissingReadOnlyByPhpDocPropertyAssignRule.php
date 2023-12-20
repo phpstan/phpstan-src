@@ -42,7 +42,7 @@ class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
 				$classReflection->getDisplayName(),
 				$propertyName,
 			))
-				->line($propertyNode->getLine())
+				->line($propertyNode->getStartLine())
 				->identifier('property.uninitializedReadonlyByPhpDoc')
 				->build();
 		}

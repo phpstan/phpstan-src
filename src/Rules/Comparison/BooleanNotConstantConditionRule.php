@@ -54,7 +54,7 @@ class BooleanNotConstantConditionRule implements Rule
 				$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 					'Negated boolean expression is always %s.',
 					$exprType->getValue() ? 'false' : 'true',
-				)))->line($node->expr->getLine());
+				)))->line($node->expr->getStartLine());
 				if (!$exprType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}

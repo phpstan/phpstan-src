@@ -54,7 +54,7 @@ class ExistingClassInInstanceOfRule implements Rule
 				return [
 					RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $lowercaseName))
 						->identifier(sprintf('outOfClass.%s', $lowercaseName))
-						->line($class->getLine())
+						->line($class->getStartLine())
 						->build(),
 				];
 			}
@@ -72,7 +72,7 @@ class ExistingClassInInstanceOfRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf('Class %s not found.', $name))
 					->identifier('class.notFound')
-					->line($class->getLine())
+					->line($class->getStartLine())
 					->discoveringSymbolsTip()
 					->build(),
 			];

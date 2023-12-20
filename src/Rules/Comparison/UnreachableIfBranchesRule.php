@@ -56,7 +56,7 @@ class UnreachableIfBranchesRule implements Rule
 			if ($nextBranchIsDead) {
 				$errors[] = $addTip(RuleErrorBuilder::message('Elseif branch is unreachable because previous condition is always true.'))
 					->identifier('elseif.unreachable')
-					->line($elseif->getLine())
+					->line($elseif->getStartLine())
 					->build();
 				continue;
 			}
@@ -70,7 +70,7 @@ class UnreachableIfBranchesRule implements Rule
 		if ($node->else !== null && $nextBranchIsDead) {
 			$errors[] = $addTip(RuleErrorBuilder::message('Else branch is unreachable because previous condition is always true.'))
 				->identifier('else.unreachable')
-				->line($node->else->getLine())
+				->line($node->else->getStartLine())
 				->build();
 		}
 

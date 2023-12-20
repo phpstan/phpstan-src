@@ -46,7 +46,7 @@ class InvalidUnaryOperationRule implements Rule
 					$operator,
 					$scope->getType($node->expr)->describe(VerbosityLevel::value()),
 				))
-					->line($node->expr->getLine())
+					->line($node->expr->getStartLine())
 					->identifier('unaryOp.invalid')
 					->build(),
 			];

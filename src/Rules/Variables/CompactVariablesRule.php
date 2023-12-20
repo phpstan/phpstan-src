@@ -53,11 +53,11 @@ final class CompactVariablesRule implements Rule
 				if ($scopeHasVariable->no()) {
 					$messages[] = RuleErrorBuilder::message(
 						sprintf('Call to function compact() contains undefined variable $%s.', $variableName),
-					)->identifier('variable.undefined')->line($argument->getLine())->build();
+					)->identifier('variable.undefined')->line($argument->getStartLine())->build();
 				} elseif ($this->checkMaybeUndefinedVariables && $scopeHasVariable->maybe()) {
 					$messages[] = RuleErrorBuilder::message(
 						sprintf('Call to function compact() contains possibly undefined variable $%s.', $variableName),
-					)->identifier('variable.undefined')->line($argument->getLine())->build();
+					)->identifier('variable.undefined')->line($argument->getStartLine())->build();
 				}
 			}
 		}

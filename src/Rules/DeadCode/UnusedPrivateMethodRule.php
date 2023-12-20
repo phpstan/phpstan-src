@@ -162,7 +162,7 @@ class UnusedPrivateMethodRule implements Rule
 				$methodType = 'Static method';
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf('%s %s::%s() is unused.', $methodType, $classReflection->getDisplayName(), $originalMethodName))
-				->line($method->getNode()->getLine())
+				->line($method->getNode()->getStartLine())
 				->identifier('method.unused')
 				->build();
 		}

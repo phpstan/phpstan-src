@@ -92,7 +92,7 @@ class InvalidCastRule implements Rule
 					'Cannot cast %s to %s.',
 					$scope->getType($node->expr)->describe(VerbosityLevel::value()),
 					$shortName,
-				))->identifier(sprintf('cast.%s', $castIdentifier))->line($node->getLine())->build(),
+				))->identifier(sprintf('cast.%s', $castIdentifier))->line($node->getStartLine())->build(),
 			];
 		}
 

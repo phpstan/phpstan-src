@@ -54,7 +54,7 @@ class EnumSanityRule implements Rule
 					$methodNode->name->name,
 				))
 					->identifier('enum.abstractMethod')
-					->line($methodNode->getLine())
+					->line($methodNode->getStartLine())
 					->nonIgnorable()
 					->build();
 			}
@@ -68,7 +68,7 @@ class EnumSanityRule implements Rule
 						$classReflection->getDisplayName(),
 					))
 						->identifier('enum.constructor')
-						->line($methodNode->getLine())
+						->line($methodNode->getStartLine())
 						->nonIgnorable()
 						->build();
 				} elseif ($lowercasedMethodName === '__destruct') {
@@ -77,7 +77,7 @@ class EnumSanityRule implements Rule
 						$classReflection->getDisplayName(),
 					))
 						->identifier('enum.destructor')
-						->line($methodNode->getLine())
+						->line($methodNode->getStartLine())
 						->nonIgnorable()
 						->build();
 				} elseif (!array_key_exists($lowercasedMethodName, self::ALLOWED_MAGIC_METHODS)) {
@@ -87,7 +87,7 @@ class EnumSanityRule implements Rule
 						$methodNode->name->name,
 					))
 						->identifier('enum.magicMethod')
-						->line($methodNode->getLine())
+						->line($methodNode->getStartLine())
 						->nonIgnorable()
 						->build();
 				}
@@ -100,7 +100,7 @@ class EnumSanityRule implements Rule
 					$methodNode->name->name,
 				))
 					->identifier('enum.methodRedeclaration')
-					->line($methodNode->getLine())
+					->line($methodNode->getStartLine())
 					->nonIgnorable()
 					->build();
 			}
@@ -119,7 +119,7 @@ class EnumSanityRule implements Rule
 				$methodNode->name->name,
 			))
 				->identifier('enum.methodRedeclaration')
-				->line($methodNode->getLine())
+				->line($methodNode->getStartLine())
 				->nonIgnorable()
 				->build();
 		}
@@ -133,7 +133,7 @@ class EnumSanityRule implements Rule
 				$classReflection->getDisplayName(),
 			))
 				->identifier('enum.backingType')
-				->line($enumNode->scalarType->getLine())
+				->line($enumNode->scalarType->getStartLine())
 				->nonIgnorable()
 				->build();
 		}
@@ -144,7 +144,7 @@ class EnumSanityRule implements Rule
 				$classReflection->getDisplayName(),
 			))
 				->identifier('enum.serializable')
-				->line($enumNode->getLine())
+				->line($enumNode->getStartLine())
 				->nonIgnorable()
 				->build();
 		}
@@ -165,7 +165,7 @@ class EnumSanityRule implements Rule
 						$stmt->expr->value,
 					))
 						->identifier('enum.caseWithValue')
-						->line($stmt->getLine())
+						->line($stmt->getStartLine())
 						->nonIgnorable()
 						->build();
 				} else {
@@ -191,7 +191,7 @@ class EnumSanityRule implements Rule
 					$enumNode->scalarType->name,
 				))
 					->identifier('enum.missingCase')
-					->line($stmt->getLine())
+					->line($stmt->getStartLine())
 					->nonIgnorable()
 					->build();
 				continue;
@@ -211,7 +211,7 @@ class EnumSanityRule implements Rule
 				$scalarType->describe(VerbosityLevel::typeOnly()),
 			))
 				->identifier('enum.caseType')
-				->line($stmt->getLine())
+				->line($stmt->getStartLine())
 				->nonIgnorable()
 				->build();
 		}
@@ -228,7 +228,7 @@ class EnumSanityRule implements Rule
 				implode(', ', $caseNames),
 			))
 				->identifier('enum.duplicateValue')
-				->line($enumNode->getLine())
+				->line($enumNode->getStartLine())
 				->nonIgnorable()
 				->build();
 		}

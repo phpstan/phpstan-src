@@ -106,7 +106,7 @@ class FunctionDefinitionCheck
 				&& !$this->phpVersion->supportsNativeUnionTypes()
 			) {
 				$errors[] = RuleErrorBuilder::message($unionTypesMessage)
-					->line($param->getLine())
+					->line($param->getStartLine())
 					->identifier('parameter.unionTypeNotSupported')
 					->nonIgnorable()
 					->build();
@@ -119,7 +119,7 @@ class FunctionDefinitionCheck
 			$type = $scope->getFunctionType($param->type, false, false);
 			if ($type->isVoid()->yes()) {
 				$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, 'void'))
-					->line($param->type->getLine())
+					->line($param->type->getStartLine())
 					->identifier('parameter.void')
 					->nonIgnorable()
 					->build();
@@ -129,7 +129,7 @@ class FunctionDefinitionCheck
 				&& $this->unresolvableTypeHelper->containsUnresolvableType($type)
 			) {
 				$errors[] = RuleErrorBuilder::message(sprintf($unresolvableParameterTypeMessage, $param->var->name))
-					->line($param->type->getLine())
+					->line($param->type->getStartLine())
 					->identifier('parameter.unresolvableNativeType')
 					->nonIgnorable()
 					->build();
@@ -138,7 +138,7 @@ class FunctionDefinitionCheck
 			foreach ($type->getReferencedClasses() as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {
 					$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, $class))
-						->line($param->type->getLine())
+						->line($param->type->getStartLine())
 						->identifier('class.notFound')
 						->build();
 					continue;
@@ -147,7 +147,7 @@ class FunctionDefinitionCheck
 				$classReflection = $this->reflectionProvider->getClass($class);
 				if ($classReflection->isTrait()) {
 					$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, $class))
-						->line($param->type->getLine())
+						->line($param->type->getStartLine())
 						->identifier('parameter.trait')
 						->build();
 					continue;
@@ -180,7 +180,7 @@ class FunctionDefinitionCheck
 			&& !$this->phpVersion->supportsNativeUnionTypes()
 		) {
 			$errors[] = RuleErrorBuilder::message($unionTypesMessage)
-				->line($returnTypeNode->getLine())
+				->line($returnTypeNode->getStartLine())
 				->identifier('reeturn.unionTypeNotSupported')
 				->nonIgnorable()
 				->build();
@@ -192,7 +192,7 @@ class FunctionDefinitionCheck
 			&& $this->unresolvableTypeHelper->containsUnresolvableType($returnType)
 		) {
 			$errors[] = RuleErrorBuilder::message($unresolvableReturnTypeMessage)
-				->line($returnTypeNode->getLine())
+				->line($returnTypeNode->getStartLine())
 				->identifier('return.unresolvableNativeType')
 				->nonIgnorable()
 				->build();
@@ -201,7 +201,7 @@ class FunctionDefinitionCheck
 		foreach ($returnType->getReferencedClasses() as $returnTypeClass) {
 			if (!$this->reflectionProvider->hasClass($returnTypeClass)) {
 				$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $returnTypeClass))
-					->line($returnTypeNode->getLine())
+					->line($returnTypeNode->getStartLine())
 					->identifier('class.notFound')
 					->build();
 				continue;
@@ -209,7 +209,7 @@ class FunctionDefinitionCheck
 
 			if ($this->reflectionProvider->getClass($returnTypeClass)->isTrait()) {
 				$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $returnTypeClass))
-					->line($returnTypeNode->getLine())
+					->line($returnTypeNode->getStartLine())
 					->identifier('return.trait')
 					->build();
 				continue;
@@ -283,7 +283,7 @@ class FunctionDefinitionCheck
 				}
 
 				$errors[] = RuleErrorBuilder::message($unionTypesMessage)
-					->line($parameterNode->getLine())
+					->line($parameterNode->getStartLine())
 					->identifier('parameter.unionTypeNotSupported')
 					->nonIgnorable()
 					->build();
@@ -293,7 +293,7 @@ class FunctionDefinitionCheck
 
 			if (!$unionTypeReported && $functionNode->getReturnType() instanceof UnionType) {
 				$errors[] = RuleErrorBuilder::message($unionTypesMessage)
-					->line($functionNode->getReturnType()->getLine())
+					->line($functionNode->getReturnType()->getStartLine())
 					->identifier('return.unionTypeNotSupported')
 					->nonIgnorable()
 					->build();
@@ -322,7 +322,7 @@ class FunctionDefinitionCheck
 				}
 				if ($parameter->getNativeType()->isVoid()->yes()) {
 					$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $parameterVar->name, 'void'))
-						->line($parameterNodeCallback()->getLine())
+						->line($parameterNodeCallback()->getStartLine())
 						->identifier('parameter.void')
 						->nonIgnorable()
 						->build();
@@ -332,7 +332,7 @@ class FunctionDefinitionCheck
 					&& $this->unresolvableTypeHelper->containsUnresolvableType($parameter->getNativeType())
 				) {
 					$errors[] = RuleErrorBuilder::message(sprintf($unresolvableParameterTypeMessage, $parameterVar->name))
-						->line($parameterNodeCallback()->getLine())
+						->line($parameterNodeCallback()->getStartLine())
 						->identifier('parameter.unresolvableNativeType')
 						->nonIgnorable()
 						->build();
@@ -345,7 +345,7 @@ class FunctionDefinitionCheck
 						$parameter->getName(),
 						$class,
 					))
-						->line($parameterNodeCallback()->getLine())
+						->line($parameterNodeCallback()->getStartLine())
 						->identifier('class.notFound')
 						->build();
 					continue;
@@ -359,7 +359,7 @@ class FunctionDefinitionCheck
 					$parameter->getName(),
 					$class,
 				))
-					->line($parameterNodeCallback()->getLine())
+					->line($parameterNodeCallback()->getStartLine())
 					->identifier('parameter.trait')
 					->build();
 			}
@@ -375,7 +375,7 @@ class FunctionDefinitionCheck
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $parameter->getName(), $parameter->getType()->describe(VerbosityLevel::typeOnly())))
-				->line($parameterNodeCallback()->getLine())
+				->line($parameterNodeCallback()->getStartLine())
 				->identifier('parameter.noParent')
 				->build();
 		}
@@ -385,7 +385,7 @@ class FunctionDefinitionCheck
 			if ($this->unresolvableTypeHelper->containsUnresolvableType($nativeReturnType)) {
 				$errors[] = RuleErrorBuilder::message($unresolvableReturnTypeMessage)
 					->nonIgnorable()
-					->line($returnTypeNode->getLine())
+					->line($returnTypeNode->getStartLine())
 					->identifier('return.unresolvableNativeType')
 					->build();
 			}
@@ -396,7 +396,7 @@ class FunctionDefinitionCheck
 		foreach ($returnTypeReferencedClasses as $class) {
 			if (!$this->reflectionProvider->hasClass($class)) {
 				$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $class))
-					->line($returnTypeNode->getLine())
+					->line($returnTypeNode->getStartLine())
 					->identifier('class.notFound')
 					->build();
 				continue;
@@ -406,7 +406,7 @@ class FunctionDefinitionCheck
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $class))
-				->line($returnTypeNode->getLine())
+				->line($returnTypeNode->getStartLine())
 				->identifier('return.trait')
 				->build();
 		}
@@ -419,7 +419,7 @@ class FunctionDefinitionCheck
 		}
 		if ($parametersAcceptor->getReturnType() instanceof NonexistentParentClassType) {
 			$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $parametersAcceptor->getReturnType()->describe(VerbosityLevel::typeOnly())))
-				->line($returnTypeNode->getLine())
+				->line($returnTypeNode->getStartLine())
 				->identifier('return.noParent')
 				->build();
 		}

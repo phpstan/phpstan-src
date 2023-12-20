@@ -2853,7 +2853,7 @@ class NodeScopeResolver
 				if ($arm->conds === null) {
 					$hasDefaultCond = true;
 					$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
-					$armNodes[] = new MatchExpressionArm($matchArmBody, [], $arm->getLine());
+					$armNodes[] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
 					$armResult = $this->processExprNode($arm->body, $matchScope, $nodeCallback, ExpressionContext::createTopLevel());
 					$matchScope = $armResult->getScope();
 					$hasYield = $hasYield || $armResult->hasYield();
@@ -2870,7 +2870,7 @@ class NodeScopeResolver
 				$armCondScope = $matchScope;
 				$condNodes = [];
 				foreach ($arm->conds as $armCond) {
-					$condNodes[] = new MatchExpressionArmCondition($armCond, $armCondScope, $armCond->getLine());
+					$condNodes[] = new MatchExpressionArmCondition($armCond, $armCondScope, $armCond->getStartLine());
 					$armCondResult = $this->processExprNode($armCond, $armCondScope, $nodeCallback, $deepContext);
 					$hasYield = $hasYield || $armCondResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $armCondResult->getThrowPoints());
@@ -2903,7 +2903,7 @@ class NodeScopeResolver
 
 				$bodyScope = $matchScope->filterByTruthyValue($filteringExpr);
 				$matchArmBody = new MatchExpressionArmBody($bodyScope, $arm->body);
-				$armNodes[] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getLine());
+				$armNodes[] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
 
 				$armResult = $this->processExprNode(
 					$arm->body,

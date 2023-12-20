@@ -58,7 +58,7 @@ class InvalidPartOfEncapsedStringRule implements Rule
 				'Part %s (%s) of encapsed string cannot be cast to string.',
 				$this->exprPrinter->printExpr($part),
 				$partType->describe(VerbosityLevel::value()),
-			))->identifier('encapsedStringPart.nonString')->line($part->getLine())->build();
+			))->identifier('encapsedStringPart.nonString')->line($part->getStartLine())->build();
 		}
 
 		return $messages;

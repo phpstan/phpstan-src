@@ -47,7 +47,7 @@ class UnsetRule implements Rule
 				return RuleErrorBuilder::message(
 					sprintf('Call to function unset() contains undefined variable $%s.', $node->name),
 				)
-					->line($node->getLine())
+					->line($node->getStartLine())
 					->identifier('unset.variable')
 					->build();
 			}
@@ -63,7 +63,7 @@ class UnsetRule implements Rule
 						$type->describe(VerbosityLevel::value()),
 					),
 				)
-					->line($node->getLine())
+					->line($node->getStartLine())
 					->identifier('unset.offset')
 					->build();
 			}

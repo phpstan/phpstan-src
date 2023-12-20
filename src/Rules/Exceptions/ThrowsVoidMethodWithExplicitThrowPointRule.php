@@ -60,7 +60,7 @@ class ThrowsVoidMethodWithExplicitThrowPointRule implements Rule
 					$methodReflection->getName(),
 					$throwPointType->describe(VerbosityLevel::typeOnly()),
 				))
-					->line($throwPoint->getNode()->getLine())
+					->line($throwPoint->getNode()->getStartLine())
 					->identifier('throws.void')
 					->build();
 			}

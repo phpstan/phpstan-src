@@ -53,7 +53,7 @@ class IfConstantConditionRule implements Rule
 					$exprType->getValue() ? 'true' : 'false',
 				)))
 					->identifier(sprintf('if.always%s', $exprType->getValue() ? 'True' : 'False'))
-					->line($node->cond->getLine())->build(),
+					->line($node->cond->getStartLine())->build(),
 			];
 		}
 

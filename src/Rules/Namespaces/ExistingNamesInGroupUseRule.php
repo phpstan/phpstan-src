@@ -42,7 +42,7 @@ class ExistingNamesInGroupUseRule implements Rule
 			$error = null;
 
 			/** @var Node\Name $name */
-			$name = Node\Name::concat($node->prefix, $use->name, ['startLine' => $use->getLine()]);
+			$name = Node\Name::concat($node->prefix, $use->name, ['startLine' => $use->getStartLine()]);
 			if (
 				$node->type === Use_::TYPE_CONSTANT
 				|| $use->type === Use_::TYPE_CONSTANT
@@ -74,7 +74,7 @@ class ExistingNamesInGroupUseRule implements Rule
 		if (!$this->reflectionProvider->hasConstant($name, null)) {
 			return RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $name))
 				->discoveringSymbolsTip()
-				->line($name->getLine())
+				->line($name->getStartLine())
 				->identifier('constant.notFound')
 				->build();
 		}
@@ -87,7 +87,7 @@ class ExistingNamesInGroupUseRule implements Rule
 		if (!$this->reflectionProvider->hasFunction($name, null)) {
 			return RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $name))
 				->discoveringSymbolsTip()
-				->line($name->getLine())
+				->line($name->getStartLine())
 				->identifier('function.notFound')
 				->build();
 		}
@@ -105,7 +105,7 @@ class ExistingNamesInGroupUseRule implements Rule
 					$realName,
 					$usedName,
 				))
-					->line($name->getLine())
+					->line($name->getStartLine())
 					->identifier('function.nameCase')
 					->build();
 			}

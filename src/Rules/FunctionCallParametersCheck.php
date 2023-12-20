@@ -89,14 +89,14 @@ class FunctionCallParametersCheck
 			if ($hasNamedArguments && $arg->unpack) {
 				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by an unpacked (...) argument.')
 					->identifier('argument.unpackAfterNamed')
-					->line($arg->getLine())
+					->line($arg->getStartLine())
 					->nonIgnorable()
 					->build();
 			}
 			if ($hasUnpackedArgument && !$arg->unpack) {
 				$errors[] = RuleErrorBuilder::message('Unpacked argument (...) cannot be followed by a non-unpacked argument.')
 					->identifier('argument.nonUnpackAfterUnpacked')
-					->line($arg->getLine())
+					->line($arg->getStartLine())
 					->nonIgnorable()
 					->build();
 			}
@@ -153,7 +153,7 @@ class FunctionCallParametersCheck
 							TypeCombinator::union(...$types),
 							false,
 							$keyArgumentName,
-							$arg->getLine(),
+							$arg->getStartLine(),
 						];
 					}
 				} else {
@@ -162,7 +162,7 @@ class FunctionCallParametersCheck
 						$type->getIterableValueType(),
 						true,
 						null,
-						$arg->getLine(),
+						$arg->getStartLine(),
 					];
 				}
 				continue;
@@ -173,14 +173,14 @@ class FunctionCallParametersCheck
 				$type,
 				false,
 				$argumentName,
-				$arg->getLine(),
+				$arg->getStartLine(),
 			];
 		}
 
 		if ($hasNamedArguments && !$this->phpVersion->supportsNamedArguments() && !(bool) $funcCall->getAttribute('isAttribute', false)) {
 			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')
 				->identifier('argument.namedNotSupported')
-				->line($funcCall->getLine())
+				->line($funcCall->getStartLine())
 				->nonIgnorable()
 				->build();
 		}
@@ -205,7 +205,7 @@ class FunctionCallParametersCheck
 						$functionParametersMinCount,
 					))
 						->identifier('arguments.count')
-						->line($funcCall->getLine())
+						->line($funcCall->getStartLine())
 						->build();
 				} elseif ($functionParametersMaxCount === -1 && $invokedParametersCount < $functionParametersMinCount) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
@@ -214,7 +214,7 @@ class FunctionCallParametersCheck
 						$functionParametersMinCount,
 					))
 						->identifier('arguments.count')
-						->line($funcCall->getLine())
+						->line($funcCall->getStartLine())
 						->build();
 				} elseif ($functionParametersMaxCount !== -1) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
@@ -224,7 +224,7 @@ class FunctionCallParametersCheck
 						$functionParametersMaxCount,
 					))
 						->identifier('arguments.count')
-						->line($funcCall->getLine())
+						->line($funcCall->getStartLine())
 						->build();
 				}
 			}
@@ -237,11 +237,11 @@ class FunctionCallParametersCheck
 		) {
 			$errors[] = RuleErrorBuilder::message($messages[7])
 				->identifier(sprintf('%s.void', $nodeType))
-				->line($funcCall->getLine())
+				->line($funcCall->getStartLine())
 				->build();
 		}
 
-		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCall->getLine(), $isBuiltin, $arguments, $hasNamedArguments, $messages[10], $messages[11]);
+		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCall->getStartLine(), $isBuiltin, $arguments, $hasNamedArguments, $messages[10], $messages[11]);
 		foreach ($addedErrors as $error) {
 			$errors[] = $error;
 		}
@@ -434,7 +434,7 @@ class FunctionCallParametersCheck
 
 					$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))
 						->identifier('argument.templateType')
-						->line($funcCall->getLine())
+						->line($funcCall->getStartLine())
 						->tip('See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type')
 						->build();
 				}
@@ -446,7 +446,7 @@ class FunctionCallParametersCheck
 			) {
 				$errors[] = RuleErrorBuilder::message($messages[12])
 					->identifier(sprintf('%s.unresolvableReturnType', $nodeType))
-					->line($funcCall->getLine())
+					->line($funcCall->getStartLine())
 					->build();
 			}
 		}

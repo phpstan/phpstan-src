@@ -94,7 +94,7 @@ class InvalidComparisonOperationRule implements Rule
 					$scope->getType($node->left)->describe(VerbosityLevel::value()),
 					$scope->getType($node->right)->describe(VerbosityLevel::value()),
 				))
-					->line($node->left->getLine())
+					->line($node->left->getStartLine())
 					->identifier(sprintf('%s.invalid', $nodeType))
 					->build(),
 			];

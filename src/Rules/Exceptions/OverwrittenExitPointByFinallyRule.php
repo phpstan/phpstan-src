@@ -30,14 +30,14 @@ class OverwrittenExitPointByFinallyRule implements Rule
 		$errors = [];
 		foreach ($node->getTryCatchExitPoints() as $exitPoint) {
 			$errors[] = RuleErrorBuilder::message(sprintf('This %s is overwritten by a different one in the finally block below.', $this->describeExitPoint($exitPoint->getStatement())))
-				->line($exitPoint->getStatement()->getLine())
+				->line($exitPoint->getStatement()->getStartLine())
 				->identifier('finally.exitPoint')
 				->build();
 		}
 
 		foreach ($node->getFinallyExitPoints() as $exitPoint) {
 			$errors[] = RuleErrorBuilder::message(sprintf('The overwriting %s is on this line.', $this->describeExitPoint($exitPoint->getStatement())))
-				->line($exitPoint->getStatement()->getLine())
+				->line($exitPoint->getStatement()->getStartLine())
 				->identifier('finally.exitPoint')
 				->build();
 		}

@@ -42,7 +42,7 @@ class PrintRule implements Rule
 			return [RuleErrorBuilder::message(sprintf(
 				'Parameter %s of print cannot be converted to string.',
 				$typeResult->getType()->describe(VerbosityLevel::value()),
-			))->identifier('print.nonString')->line($node->expr->getLine())->build()];
+			))->identifier('print.nonString')->line($node->expr->getStartLine())->build()];
 		}
 
 		return [];

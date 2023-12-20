@@ -42,7 +42,7 @@ class ReturnNullsafeByRefRule implements Rule
 			}
 
 			$errors[] = RuleErrorBuilder::message('Nullsafe cannot be returned by reference.')
-				->line($returnNode->getLine())
+				->line($returnNode->getStartLine())
 				->identifier('nullsafe.byRef')
 				->nonIgnorable()
 				->build();

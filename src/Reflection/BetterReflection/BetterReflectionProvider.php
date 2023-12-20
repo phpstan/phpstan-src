@@ -221,7 +221,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getAllowedSubTypesClassReflectionExtensions(),
-			sprintf('class@anonymous/%s:%s', $filename, $classNode->getLine()),
+			sprintf('class@anonymous/%s:%s', $filename, $classNode->getStartLine()),
 			new ReflectionClass($reflectionClass),
 			$scopeFile,
 			null,

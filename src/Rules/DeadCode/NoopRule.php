@@ -41,7 +41,7 @@ class NoopRule implements Rule
 				return [
 					RuleErrorBuilder::message(
 						'Unused result of "xor" operator.',
-					)->line($expr->getLine())
+					)->line($expr->getStartLine())
 						->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
 						->identifier('logicalXor.resultUnused')
 						->build(),
@@ -58,7 +58,7 @@ class NoopRule implements Rule
 					RuleErrorBuilder::message(sprintf(
 						'Unused result of "%s" operator.',
 						$expr->getOperatorSigil(),
-					))->line($expr->getLine())
+					))->line($expr->getStartLine())
 						->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
 						->identifier(sprintf('%s.resultUnused', $identifierType))
 						->build(),
@@ -76,7 +76,7 @@ class NoopRule implements Rule
 					RuleErrorBuilder::message(sprintf(
 						'Unused result of "%s" operator.',
 						$expr->getOperatorSigil(),
-					))->line($expr->getLine())
+					))->line($expr->getStartLine())
 						->identifier(sprintf('%s.resultUnused', $identifierType))
 						->build(),
 				];
@@ -94,7 +94,7 @@ class NoopRule implements Rule
 
 				return [
 					RuleErrorBuilder::message('Unused result of ternary operator.')
-						->line($expr->getLine())
+						->line($expr->getStartLine())
 						->identifier('ternary.resultUnused')
 						->build(),
 				];
@@ -108,7 +108,7 @@ class NoopRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Expression "%s" on a separate line does not do anything.',
 				$this->exprPrinter->printExpr($originalExpr),
-			))->line($expr->getLine())
+			))->line($expr->getStartLine())
 				->identifier('expr.resultUnused')
 				->build(),
 		];

@@ -190,7 +190,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			foreach ($ruleRegistry->getRules($nodeType) as $rule) {
 				$ruleErrors = $rule->processNode($node, $scope);
 				foreach ($ruleErrors as $ruleError) {
-					$actualErrors[] = $ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getLine());
+					$actualErrors[] = $ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
 				}
 			}
 		}

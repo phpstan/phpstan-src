@@ -89,7 +89,7 @@ class InvalidPromotedPropertiesRule implements Rule
 			$propertyName = $param->var->name;
 			$errors[] = RuleErrorBuilder::message(
 				sprintf('Promoted property parameter $%s can not be variadic.', $propertyName),
-			)->identifier('property.invalidPromoted')->nonIgnorable()->line($param->getLine())->build();
+			)->identifier('property.invalidPromoted')->nonIgnorable()->line($param->getStartLine())->build();
 		}
 
 		return $errors;

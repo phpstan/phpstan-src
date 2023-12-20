@@ -23,7 +23,7 @@ class TraitDeclarationCollector implements Collector
 			return null;
 		}
 
-		return [$node->namespacedName->toString(), $node->getLine()];
+		return [$node->namespacedName->toString(), $node->getStartLine()];
 	}
 
 }

@@ -60,7 +60,7 @@ class UnpackIterableInArrayRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Only iterables can be unpacked, %s given.',
 				$type->describe(VerbosityLevel::typeOnly()),
-			))->identifier('arrayUnpacking.nonIterable')->line($item->getLine())->build();
+			))->identifier('arrayUnpacking.nonIterable')->line($item->getStartLine())->build();
 		}
 
 		return $errors;

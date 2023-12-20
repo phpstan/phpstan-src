@@ -45,7 +45,7 @@ class AttributesCheck
 				$name = $attribute->name->toString();
 				if (!$this->reflectionProvider->hasClass($name)) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not exist.', $name))
-						->line($attribute->getLine())
+						->line($attribute->getStartLine())
 						->identifier('attribute.notFound')
 						->build();
 					continue;
@@ -55,7 +55,7 @@ class AttributesCheck
 				if (!$attributeClass->isAttributeClass()) {
 					$errors[] = RuleErrorBuilder::message(sprintf('%s %s is not an Attribute class.', $attributeClass->getClassTypeDescription(), $attributeClass->getDisplayName()))
 						->identifier('attribute.notAttribute')
-						->line($attribute->getLine())
+						->line($attribute->getStartLine())
 						->build();
 					continue;
 				}
@@ -63,7 +63,7 @@ class AttributesCheck
 				if ($attributeClass->isAbstract()) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s is abstract.', $name))
 						->identifier('attribute.abstract')
-						->line($attribute->getLine())
+						->line($attribute->getStartLine())
 						->build();
 				}
 
@@ -75,7 +75,7 @@ class AttributesCheck
 				if (($flags & $requiredTarget) === 0) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not have the %s target.', $name, $targetName))
 						->identifier('attribute.target')
-						->line($attribute->getLine())
+						->line($attribute->getStartLine())
 						->build();
 				}
 
@@ -84,7 +84,7 @@ class AttributesCheck
 					if (array_key_exists($loweredName, $alreadyPresent)) {
 						$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s is not repeatable but is already present above the %s.', $name, $targetName))
 							->identifier('attribute.nonRepeatable')
-							->line($attribute->getLine())
+							->line($attribute->getStartLine())
 							->build();
 					}
 
@@ -99,7 +99,7 @@ class AttributesCheck
 					}
 					$errors[] = RuleErrorBuilder::message($deprecatedError)
 						->identifier('attribute.deprecated')
-						->line($attribute->getLine())
+						->line($attribute->getStartLine())
 						->build();
 				}
 
@@ -107,7 +107,7 @@ class AttributesCheck
 					if (count($attribute->args) > 0) {
 						$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not have a constructor and must be instantiated without any parameters.', $name))
 							->identifier('attribute.noConstructor')
-							->line($attribute->getLine())
+							->line($attribute->getStartLine())
 							->build();
 					}
 					continue;
@@ -117,7 +117,7 @@ class AttributesCheck
 				if (!$attributeConstructor->isPublic()) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Constructor of attribute class %s is not public.', $name))
 						->identifier('attribute.constructorNotPublic')
-						->line($attribute->getLine())
+						->line($attribute->getStartLine())
 						->build();
 				}
 

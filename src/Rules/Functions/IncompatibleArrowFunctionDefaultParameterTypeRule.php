@@ -58,7 +58,7 @@ class IncompatibleArrowFunctionDefaultParameterTypeRule implements Rule
 				$defaultValueType->describe($verbosityLevel),
 				$parameterType->describe($verbosityLevel),
 			))
-				->line($param->getLine())
+				->line($param->getStartLine())
 				->identifier('parameter.defaultValue')
 				->acceptsReasonsTip($accepts->reasons)
 				->build();

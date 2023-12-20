@@ -94,7 +94,7 @@ class UnusedPrivateConstantRule implements Rule
 		$errors = [];
 		foreach ($constants as $constantName => $constantNode) {
 			$errors[] = RuleErrorBuilder::message(sprintf('Constant %s::%s is unused.', $classReflection->getDisplayName(), $constantName))
-				->line($constantNode->getLine())
+				->line($constantNode->getStartLine())
 				->identifier('classConstant.unused')
 				->tip(sprintf('See: %s', 'https://phpstan.org/developing-extensions/always-used-class-constants'))
 				->build();

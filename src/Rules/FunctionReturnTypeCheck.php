@@ -40,7 +40,7 @@ class FunctionReturnTypeCheck
 		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
 			return [
 				RuleErrorBuilder::message($neverMessage)
-					->line($returnNode->getLine())
+					->line($returnNode->getStartLine())
 					->identifier('return.never')
 					->build(),
 			];
@@ -65,7 +65,7 @@ class FunctionReturnTypeCheck
 					$emptyReturnStatementMessage,
 					$returnType->describe($verbosityLevel),
 				))
-					->line($returnNode->getLine())
+					->line($returnNode->getStartLine())
 					->identifier('return.empty')
 					->build(),
 			];
@@ -84,7 +84,7 @@ class FunctionReturnTypeCheck
 					$voidMessage,
 					$returnValueType->describe($verbosityLevel),
 				))
-					->line($returnNode->getLine())
+					->line($returnNode->getStartLine())
 					->identifier('return.void')
 					->build(),
 			];
@@ -98,7 +98,7 @@ class FunctionReturnTypeCheck
 					$returnType->describe($verbosityLevel),
 					$returnValueType->describe($verbosityLevel),
 				))
-					->line($returnNode->getLine())
+					->line($returnNode->getStartLine())
 					->identifier('return.type')
 					->acceptsReasonsTip($accepts->reasons)
 					->build(),

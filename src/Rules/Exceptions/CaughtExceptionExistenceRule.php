@@ -43,7 +43,7 @@ class CaughtExceptionExistenceRule implements Rule
 					continue;
 				}
 				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))
-					->line($class->getLine())
+					->line($class->getStartLine())
 					->identifier('class.notFound')
 					->discoveringSymbolsTip()
 					->build();
@@ -53,7 +53,7 @@ class CaughtExceptionExistenceRule implements Rule
 			$classReflection = $this->reflectionProvider->getClass($className);
 			if (!$classReflection->isInterface() && !$classReflection->implementsInterface(Throwable::class)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s is not an exception.', $classReflection->getDisplayName()))
-					->line($class->getLine())
+					->line($class->getStartLine())
 					->identifier('catch.notThrowable')
 					->build();
 			}

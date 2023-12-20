@@ -45,7 +45,7 @@ class ClassCaseSensitivityCheck
 				$className,
 			))
 				->identifier(sprintf('%s.nameCase', strtolower($typeName)))
-				->line($pair->getNode()->getLine())
+				->line($pair->getNode()->getStartLine())
 				->build();
 		}
 

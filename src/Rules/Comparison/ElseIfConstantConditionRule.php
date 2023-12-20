@@ -54,7 +54,7 @@ class ElseIfConstantConditionRule implements Rule
 				$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 					'Elseif condition is always %s.',
 					$exprType->getValue() ? 'true' : 'false',
-				)))->line($node->cond->getLine());
+				)))->line($node->cond->getStartLine());
 
 				if ($exprType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');

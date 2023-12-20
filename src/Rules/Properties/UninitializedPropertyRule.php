@@ -42,7 +42,7 @@ class UninitializedPropertyRule implements Rule
 				$classReflection->getDisplayName(),
 				$propertyName,
 			))
-				->line($propertyNode->getLine())
+				->line($propertyNode->getStartLine())
 				->identifier('property.uninitialized')
 				->build();
 		}

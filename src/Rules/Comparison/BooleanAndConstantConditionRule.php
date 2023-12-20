@@ -65,7 +65,7 @@ class BooleanAndConstantConditionRule implements Rule
 					$leftType->getValue() ? 'true' : 'false',
 				)))
 					->identifier(sprintf('%s.leftAlways%s', $identifierType, $leftType->getValue() ? 'True' : 'False'))
-					->line($originalNode->left->getLine());
+					->line($originalNode->left->getStartLine());
 				if ($leftType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
@@ -103,7 +103,7 @@ class BooleanAndConstantConditionRule implements Rule
 					$rightType->getValue() ? 'true' : 'false',
 				)))
 					->identifier(sprintf('%s.rightAlways%s', $identifierType, $rightType->getValue() ? 'True' : 'False'))
-					->line($originalNode->right->getLine());
+					->line($originalNode->right->getStartLine());
 				if ($rightType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}

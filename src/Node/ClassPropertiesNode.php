@@ -212,7 +212,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 					) {
 						$additionalAssigns[] = [
 							$propertyName,
-							$fetch->getLine(),
+							$fetch->getStartLine(),
 							$originalProperties[$propertyName],
 						];
 					}
@@ -232,7 +232,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				if (!$hasInitialization->yes()) {
 					$prematureAccess[] = [
 						$propertyName,
-						$fetch->getLine(),
+						$fetch->getStartLine(),
 						$originalProperties[$propertyName],
 						$usageScope->getFile(),
 						$usageScope->getFileDescription(),

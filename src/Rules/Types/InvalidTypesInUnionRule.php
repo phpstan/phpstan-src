@@ -95,7 +95,7 @@ class InvalidTypesInUnionRule implements Rule
 				if (in_array($typeString, self::ONLY_STANDALONE_TYPES, true)) {
 					return [
 						RuleErrorBuilder::message(sprintf('Type %s cannot be part of a union type declaration.', $type->toString()))
-							->line($complexType->getLine())
+							->line($complexType->getStartLine())
 							->identifier(sprintf('unionType.%s', $typeString))
 							->nonIgnorable()
 							->build(),
@@ -111,7 +111,7 @@ class InvalidTypesInUnionRule implements Rule
 			if (in_array($complexTypeString, self::ONLY_STANDALONE_TYPES, true)) {
 				return [
 					RuleErrorBuilder::message(sprintf('Type %s cannot be part of a nullable type declaration.', $complexType->type->toString()))
-						->line($complexType->getLine())
+						->line($complexType->getStartLine())
 						->identifier(sprintf('nullableType.%s', $complexTypeString))
 						->nonIgnorable()
 						->build(),

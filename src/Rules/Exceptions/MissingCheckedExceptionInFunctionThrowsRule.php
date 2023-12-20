@@ -36,7 +36,7 @@ class MissingCheckedExceptionInFunctionThrowsRule implements Rule
 				$functionReflection->getName(),
 				$className,
 			))
-				->line($throwPointNode->getLine())
+				->line($throwPointNode->getStartLine())
 				->identifier('missingType.checkedException')
 				->build();
 		}

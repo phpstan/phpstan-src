@@ -49,7 +49,7 @@ class IterableInForeachRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Argument of an invalid type %s supplied for foreach, only iterables are supported.',
 				$type->describe(VerbosityLevel::typeOnly()),
-			))->identifier('foreach.nonIterable')->line($originalNode->expr->getLine())->build(),
+			))->identifier('foreach.nonIterable')->line($originalNode->expr->getStartLine())->build(),
 		];
 	}
 

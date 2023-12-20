@@ -31,4 +31,9 @@ final class PhpParserDecorator implements Parser
 		}
 	}
 
+	public function getTokens(): array
+	{
+		return $this->wrappedParser->getTokens();
+	}
+
 }

@@ -2045,7 +2045,7 @@ services:
 		autowired: false
 
 	currentPhpVersionPhpParser:
-		class: PhpParser\Parser\Php7
+		class: PhpParser\Parser\Php8 # todo use factory and create Php7/Php8
 		arguments:
 			lexer: @currentPhpVersionLexer
 		autowired: false
@@ -2161,7 +2161,7 @@ services:
 		autowired: false
 
 	php8PhpParser:
-		class: PhpParser\Parser\Php7
+		class: PhpParser\Parser\Php8
 		arguments:
 			lexer: @php8Lexer
 		autowired: false

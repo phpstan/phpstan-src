@@ -271,9 +271,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				$statementResult = $executionEnd->getStatementResult();
 				$endNode = $executionEnd->getNode();
 				if ($statementResult->isAlwaysTerminating()) {
-					if ($endNode instanceof Node\Stmt\Throw_) {
-						continue;
-					}
 					if ($endNode instanceof Node\Stmt\Expression) {
 						$exprType = $statementResult->getScope()->getType($endNode->expr);
 						if ($exprType instanceof NeverType && $exprType->isExplicit()) {

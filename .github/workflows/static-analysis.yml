@@ -9,7 +9,7 @@ on:
       - 'apigen/**'
   push:
     branches:
-      - "1.12.x"
+      - "2.0.x"
     paths-ignore:
       - 'compiler/**'
       - 'apigen/**'

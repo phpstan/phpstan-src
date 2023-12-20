@@ -35,7 +35,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "7.3"
           - "7.4"
           - "8.0"
           - "8.1"
@@ -162,46 +161,3 @@ jobs:
 
       - name: "Tests"
         run: "${{ matrix.script }}"
-
-  tests-old-phpunit:
-    name: "Tests with old PHPUnit"
-    runs-on: ${{ matrix.operating-system }}
-    timeout-minutes: 60
-
-    strategy:
-      fail-fast: false
-      matrix:
-        php-version:
-          - "7.2"
-        operating-system: [ ubuntu-latest ]
-
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "none"
-          php-version: "${{ matrix.php-version }}"
-          tools: pecl
-          extensions: ds,mbstring
-          ini-file: development
-          ini-values: memory_limit=2G
-
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
-
-      - name: "Transform source code"
-        shell: bash
-        run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
-
-      - name: "Paratest patch"
-        run: composer config extra.patches.brianium/paratest --json --merge '["patches/paratest.patch"]'
-        shell: bash
-
-      - name: "Downgrade PHPUnit"
-        run: "composer require --dev phpunit/phpunit:^8.5.31 brianium/paratest:^4.0 composer/semver:^1.2 --update-with-dependencies --ignore-platform-reqs"
-
-      - name: "Tests"
-        run: "make tests-coverage"

@@ -1837,7 +1837,7 @@ final class MutatingScope implements Scope
 				} else {
 					$items = [];
 					foreach ($arm->conds as $filteringExpr) {
-						$items[] = new Expr\ArrayItem($filteringExpr);
+						$items[] = new Node\ArrayItem($filteringExpr);
 					}
 					$filteringExpr = new FuncCall(
 						new Name\FullyQualified('in_array'),

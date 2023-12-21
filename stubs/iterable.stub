@@ -162,7 +162,7 @@ class RecursiveIteratorIterator
 	 */
 	public function __construct(
 		$iterator,
-		int $mode = RecursiveIteratorIterator::LEAVES_ONLY,
+	    $mode = RecursiveIteratorIterator::LEAVES_ONLY,
 		int $flags = 0
 	)
 	{

@@ -1576,7 +1576,8 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\Coalesce) {
-			$leftType = $this->getType($node->left);
+			$issetLeftExpr = new Expr\Isset_([$node->left]);
+			$leftType = $this->filterByTruthyValue($issetLeftExpr)->getType($node->left);
 
 			$result = $this->issetCheck($node->left, static function (Type $type): ?bool {
 				$isNull = $type->isNull();
@@ -1591,7 +1592,7 @@ class MutatingScope implements Scope
 				return TypeCombinator::removeNull($leftType);
 			}
 
-			$rightType = $this->filterByFalseyValue(new Expr\Isset_([$node->left]))->getType($node->right);
+			$rightType = $this->filterByFalseyValue($issetLeftExpr)->getType($node->right);
 
 			if ($result === null) {
 				return TypeCombinator::union(

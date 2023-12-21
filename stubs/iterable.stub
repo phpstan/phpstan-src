@@ -157,11 +157,6 @@ class ArrayIterator implements SeekableIterator, ArrayAccess, Countable
  */
 class RecursiveIteratorIterator
 {
-	const LEAVES_ONLY=0;
-	const SELF_FIRST=1;
-	const CHILD_FIRST=2;
-	const CATCH_GET_CHILD=16;
-
 	/**
 	 * @param T $iterator
 	 */

@@ -13,7 +13,7 @@ assertType('true', isset($alwaysDefinedNotNullable));
 assertType('bool', isset($sometimesDefinedVariable));
 assertType('bool', isset($neverDefinedVariable));
 
-assertType('mixed', $foo ?? false);
+assertType('mixed~null', $foo ?? false);
 
 $bar = 'abc';
 assertType('\'abc\'', $bar ?? false);

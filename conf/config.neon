@@ -122,6 +122,7 @@ parameters:
 	reportMaybesInPropertyPhpDocTypes: false
 	reportStaticMethodSignatures: false
 	reportWrongPhpDocTypeInVarTag: false
+	stricterPhpDocTypeCheckInVarTag: false
 	checkMissingOverrideMethodAttribute: false
 	mixinExcludeClasses: []
 	scanFiles: []
@@ -980,6 +981,7 @@ services:
 		class: PHPStan\Rules\PhpDoc\VarTagTypeRuleHelper
 		arguments:
 			checkTypeAgainstPhpDocType: %reportWrongPhpDocTypeInVarTag%
+			strictWideningCheck: %stricterPhpDocTypeCheckInVarTag%
 
 	-
 		class: PHPStan\Rules\Playground\NeverRuleHelper

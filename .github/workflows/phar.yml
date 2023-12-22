@@ -10,6 +10,9 @@ on:
     tags:
       - '2.0.*'
 
+env:
+  COMPOSER_ROOT_VERSION: "1.12.x-dev"
+
 concurrency:
   group: phar-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
   cancel-in-progress: true
@@ -76,15 +79,12 @@ jobs:
 
       - name: "Composer dump"
         run: "composer install --no-interaction --no-progress"
-        env:
-          COMPOSER_ROOT_VERSION: "1.12.x-dev"
 
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"
         run: "php box.phar compile --no-parallel"
         env:
           PHAR_CHECKSUM: "1"
-          COMPOSER_ROOT_VERSION: "1.12.x-dev"
 
       - name: "Re-sign PHAR"
         run: "php compiler/build/resign.php tmp/phpstan.phar"
@@ -107,43 +107,25 @@ jobs:
   integration-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-<<<<<<< HEAD
-    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@1.12.x
-    with:
-      ref: 1.12.x
-=======
     uses: phpstan/phpstan/.github/workflows/integration-tests.yml@2.0.x
     with:
       ref: 2.0.x
->>>>>>> 264ce7a58b (Open 2.0.x-dev)
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   extension-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-<<<<<<< HEAD
-    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@1.12.x
-    with:
-      ref: 1.12.x
-=======
     uses: phpstan/phpstan/.github/workflows/extension-tests.yml@2.0.x
     with:
       ref: 2.0.x
->>>>>>> 264ce7a58b (Open 2.0.x-dev)
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   other-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-<<<<<<< HEAD
-    uses: phpstan/phpstan/.github/workflows/other-tests.yml@1.12.x
-    with:
-      ref: 1.12.x
-=======
     uses: phpstan/phpstan/.github/workflows/other-tests.yml@2.0.x
     with:
       ref: 2.0.x
->>>>>>> 264ce7a58b (Open 2.0.x-dev)
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   commit:
@@ -170,11 +152,7 @@ jobs:
           repository: phpstan/phpstan
           path: phpstan-dist
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-<<<<<<< HEAD
-          ref: 1.12.x
-=======
           ref: 2.0.x
->>>>>>> 264ce7a58b (Open 2.0.x-dev)
 
       - name: "Get previous pushed dist commit"
         id: previous-commit

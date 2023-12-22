@@ -13,8 +13,8 @@ class Foo
 	 */
 	public function doFoo(string $s, string $nonEmptyString): void
 	{
-		assertType('string|false', strtok($s, ' '));
-		assertType('string', strtok($nonEmptyString, ' '));
+		assertType('non-empty-string|false', strtok($s, ' '));
+		assertType('non-empty-string', strtok($nonEmptyString, ' '));
 		assertType('false', strtok('', ' '));
 
 		assertType('non-empty-string', $nonEmptyString[0]);

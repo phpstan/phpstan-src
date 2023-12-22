@@ -9,6 +9,7 @@ use PhpParser\Node\Name;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -18,6 +19,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
@@ -198,7 +200,7 @@ class ParametersAcceptorSelectorTest extends PHPStanTestCase
 					),
 				],
 				false,
-				new UnionType([new StringType(), new ConstantBooleanType(false)]),
+				new UnionType([new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]), new ConstantBooleanType(false)]),
 			),
 		];
 		yield [

@@ -54,7 +54,7 @@ class DOMElement extends DOMNode
 }
 
 /**
- * @template-covariant TNode as DOMNode
+ * @template-covariant TNode as DOMNode|DOMNameSpaceNode
  * @implements Traversable<int, TNode>
  * @implements IteratorAggregate<int, TNode>
  */
@@ -76,7 +76,7 @@ class DOMXPath
      * @param string $expression
      * @param DOMNode|null $contextNode
      * @param boolean $registerNodeNS
-     * @return DOMNodeList<DOMNode>|false
+     * @return DOMNodeList<DOMNode|DOMNameSpaceNode>|false
      */
     public function query($expression, $contextNode, $registerNodeNS) {}
 

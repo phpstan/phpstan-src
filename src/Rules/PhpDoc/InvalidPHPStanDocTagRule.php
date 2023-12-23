@@ -12,7 +12,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function in_array;
 use function sprintf;
-use function strpos;
+use function str_starts_with;
 
 /**
  * @implements Rule<Node>
@@ -105,7 +105,7 @@ class InvalidPHPStanDocTagRule implements Rule
 
 		$errors = [];
 		foreach ($phpDocNode->getTags() as $phpDocTag) {
-			if (strpos($phpDocTag->name, '@phpstan-') !== 0
+			if (!str_starts_with($phpDocTag->name, '@phpstan-')
 				|| in_array($phpDocTag->name, self::POSSIBLE_PHPSTAN_TAGS, true)
 			) {
 				continue;

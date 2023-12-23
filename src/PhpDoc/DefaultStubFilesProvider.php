@@ -6,7 +6,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\Internal\ComposerHelper;
 use function array_filter;
 use function array_values;
-use function strpos;
+use function str_contains;
 use function strtr;
 
 class DefaultStubFilesProvider implements StubFilesProvider
@@ -63,7 +63,7 @@ class DefaultStubFilesProvider implements StubFilesProvider
 
 		return $this->cachedProjectFiles = array_values(array_filter(
 			$this->getStubFiles(),
-			static fn (string $file): bool => strpos(strtr($file, '\\', '/'), $vendorDir) === false
+			static fn (string $file): bool => !str_contains(strtr($file, '\\', '/'), $vendorDir)
 		));
 	}
 

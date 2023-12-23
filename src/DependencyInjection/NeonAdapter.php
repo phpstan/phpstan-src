@@ -22,7 +22,8 @@ use function is_int;
 use function is_string;
 use function ltrim;
 use function sprintf;
-use function strpos;
+use function str_contains;
+use function str_starts_with;
 use function substr;
 
 class NeonAdapter implements Adapter
@@ -121,7 +122,7 @@ class NeonAdapter implements Adapter
 				'[parameters][symfony][container_xml_path]',
 				'[parameters][symfony][containerXmlPath]',
 				'[parameters][doctrine][objectManagerLoader]',
-			], true) && is_string($val) && strpos($val, '%') === false && strpos($val, '*') !== 0) {
+			], true) && is_string($val) && !str_contains($val, '%') && !str_starts_with($val, '*')) {
 				$fileHelper = $this->createFileHelperByFile($file);
 				$val = $fileHelper->normalizePath($fileHelper->absolutizePath($val));
 			}

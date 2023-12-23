@@ -34,7 +34,7 @@ use function count;
 use function implode;
 use function md5;
 use function sprintf;
-use function strpos;
+use function str_contains;
 
 /** @api */
 class UnionType implements CompoundType
@@ -281,7 +281,7 @@ class UnionType implements CompoundType
 					}
 				} elseif ($type instanceof IntersectionType) {
 					$intersectionDescription = $type->describe($level);
-					if (strpos($intersectionDescription, '&') !== false) {
+					if (str_contains($intersectionDescription, '&')) {
 						$typeNames[] = sprintf('(%s)', $type->describe($level));
 					} else {
 						$typeNames[] = $intersectionDescription;

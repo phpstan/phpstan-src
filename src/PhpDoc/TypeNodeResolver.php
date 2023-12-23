@@ -105,8 +105,9 @@ use function max;
 use function min;
 use function preg_match;
 use function preg_quote;
+use function str_contains;
 use function str_replace;
-use function strpos;
+use function str_starts_with;
 use function strtolower;
 use function substr;
 
@@ -455,7 +456,7 @@ class TypeNodeResolver
 		}
 
 		$stringName = $nameScope->resolveStringName($typeNode->name);
-		if (strpos($stringName, '-') !== false && strpos($stringName, 'OCI-') !== 0) {
+		if (str_contains($stringName, '-') && !str_starts_with($stringName, 'OCI-')) {
 			return new ErrorType();
 		}
 
@@ -873,7 +874,7 @@ class TypeNodeResolver
 			function (CallableTypeParameterNode $parameterNode) use ($nameScope, &$isVariadic): NativeParameterReflection {
 				$isVariadic = $isVariadic || $parameterNode->isVariadic;
 				$parameterName = $parameterNode->parameterName;
-				if (strpos($parameterName, '$') === 0) {
+				if (str_starts_with($parameterName, '$')) {
 					$parameterName = substr($parameterName, 1);
 				}
 				return new NativeParameterReflection(

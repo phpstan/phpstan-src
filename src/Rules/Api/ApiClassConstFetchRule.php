@@ -9,7 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;
 use function sprintf;
-use function strpos;
+use function str_contains;
 
 /**
  * @implements Rule<Node\Expr\ClassConstFetch>
@@ -75,7 +75,7 @@ class ApiClassConstFetchRule implements Rule
 					continue;
 				}
 
-				if (strpos($methodDocComment, '@api') === false) {
+				if (!str_contains($methodDocComment, '@api')) {
 					continue;
 				}
 

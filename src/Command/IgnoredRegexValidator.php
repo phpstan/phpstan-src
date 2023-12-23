@@ -12,7 +12,8 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function count;
-use function strpos;
+use function str_contains;
+use function str_starts_with;
 use function strrpos;
 use function substr;
 
@@ -34,12 +35,12 @@ class IgnoredRegexValidator
 			/** @var TreeNode $ast */
 			$ast = $this->parser->parse($regex);
 		} catch (Exception $e) {
-			if (strpos($e->getMessage(), 'Unexpected token "|" (alternation) at line 1') === 0) {
+			if (str_starts_with($e->getMessage(), 'Unexpected token "|" (alternation) at line 1')) {
 				return new IgnoredRegexValidatorResult([], false, true, '||', '\|\|');
 			}
 			if (
-				strpos($regex, '()') !== false
-				&& strpos($e->getMessage(), 'Unexpected token ")" (_capturing) at line 1') === 0
+				str_contains($regex, '()')
+				&& str_starts_with($e->getMessage(), 'Unexpected token ")" (_capturing) at line 1')
 			) {
 				return new IgnoredRegexValidatorResult([], false, true, '()', '\(\)');
 			}

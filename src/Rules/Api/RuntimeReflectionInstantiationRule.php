@@ -20,7 +20,7 @@ use ReflectionZendExtension;
 use function array_keys;
 use function in_array;
 use function sprintf;
-use function strpos;
+use function str_starts_with;
 
 /**
  * @implements Rule<Node\Expr\New_>
@@ -74,7 +74,7 @@ class RuntimeReflectionInstantiationRule implements Rule
 		$scopeClassReflection = $scope->getClassReflection();
 		$hasPhpStanInterface = false;
 		foreach (array_keys($scopeClassReflection->getInterfaces()) as $interfaceName) {
-			if (strpos($interfaceName, 'PHPStan\\') !== 0) {
+			if (!str_starts_with($interfaceName, 'PHPStan\\')) {
 				continue;
 			}
 

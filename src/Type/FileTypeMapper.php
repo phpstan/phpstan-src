@@ -35,7 +35,7 @@ use function is_file;
 use function ltrim;
 use function md5;
 use function sprintf;
-use function strpos;
+use function str_contains;
 use function strtolower;
 
 class FileTypeMapper
@@ -779,7 +779,7 @@ class FileTypeMapper
 			return md5(sprintf('%s', $file ?? 'no-file'));
 		}
 
-		if ($class !== null && strpos($class, 'class@anonymous') !== false) {
+		if ($class !== null && str_contains($class, 'class@anonymous')) {
 			throw new ShouldNotHappenException('Wrong anonymous class name, FilTypeMapper should be called with ClassReflection::getName().');
 		}
 

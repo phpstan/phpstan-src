@@ -12,7 +12,7 @@ use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
 use function is_string;
-use function strpos;
+use function str_contains;
 use function substr_count;
 use const ARRAY_FILTER_USE_KEY;
 use const T_COMMENT;
@@ -103,9 +103,9 @@ class RichParser implements Parser
 
 			$text = $token[1];
 			$line = $token[2];
-			if (strpos($text, '@phpstan-ignore-next-line') !== false) {
+			if (str_contains($text, '@phpstan-ignore-next-line')) {
 				$line++;
-			} elseif (strpos($text, '@phpstan-ignore-line') === false) {
+			} elseif (!str_contains($text, '@phpstan-ignore-line')) {
 				continue;
 			}
 

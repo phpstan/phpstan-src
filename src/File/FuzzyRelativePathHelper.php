@@ -9,8 +9,8 @@ use function in_array;
 use function ltrim;
 use function realpath;
 use function str_ends_with;
+use function str_starts_with;
 use function strlen;
-use function strpos;
 use function substr;
 use const DIRECTORY_SEPARATOR;
 
@@ -107,7 +107,7 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 	{
 		if (
 			$this->pathToTrim !== null
-			&& strpos($filename, $this->pathToTrim) === 0
+			&& str_starts_with($filename, $this->pathToTrim)
 		) {
 			return ltrim(substr($filename, strlen($this->pathToTrim)), $this->directorySeparator);
 		}

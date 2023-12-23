@@ -13,7 +13,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function dirname;
 use function is_dir;
 use function is_file;
-use function strpos;
+use function str_starts_with;
 
 /**
  * @implements Rule<Node\Stmt\Namespace_>
@@ -46,7 +46,7 @@ class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
 		}
 
 		$packageName = $composerJson['name'] ?? null;
-		if ($packageName !== null && strpos($packageName, 'phpstan/') === 0) {
+		if ($packageName !== null && str_starts_with($packageName, 'phpstan/')) {
 			return [];
 		}
 

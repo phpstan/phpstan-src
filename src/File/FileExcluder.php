@@ -5,8 +5,8 @@ namespace PHPStan\File;
 use function fnmatch;
 use function in_array;
 use function preg_match;
+use function str_starts_with;
 use function strlen;
-use function strpos;
 use const DIRECTORY_SEPARATOR;
 use const FNM_CASEFOLD;
 use const FNM_NOESCAPE;
@@ -65,7 +65,7 @@ class FileExcluder
 	public function isExcludedFromAnalysing(string $file): bool
 	{
 		foreach ($this->literalAnalyseExcludes as $exclude) {
-			if (strpos($file, $exclude) === 0) {
+			if (str_starts_with($file, $exclude)) {
 				return true;
 			}
 		}

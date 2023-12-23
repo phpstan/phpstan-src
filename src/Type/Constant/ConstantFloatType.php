@@ -18,7 +18,7 @@ use function abs;
 use function ini_get;
 use function ini_set;
 use function is_finite;
-use function strpos;
+use function str_contains;
 use const PHP_FLOAT_EPSILON;
 
 /** @api */
@@ -51,7 +51,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 		ini_set('precision', '-1');
 		try {
 			$valueStr = (string) $value;
-			if (is_finite($value) && strpos($valueStr, '.') === false) {
+			if (is_finite($value) && !str_contains($valueStr, '.')) {
 				$valueStr .= '.0';
 			}
 

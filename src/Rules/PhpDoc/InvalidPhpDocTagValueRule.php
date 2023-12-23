@@ -15,7 +15,7 @@ use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
-use function strpos;
+use function str_starts_with;
 
 /**
  * @implements Rule<Node>
@@ -76,7 +76,7 @@ class InvalidPhpDocTagValueRule implements Rule
 
 		$errors = [];
 		foreach ($phpDocNode->getTags() as $phpDocTag) {
-			if (strpos($phpDocTag->name, '@psalm-') === 0) {
+			if (str_starts_with($phpDocTag->name, '@psalm-')) {
 				continue;
 			}
 

@@ -3,8 +3,8 @@
 namespace PHPStan\File;
 
 use function str_replace;
+use function str_starts_with;
 use function strlen;
-use function strpos;
 use function substr;
 
 class SimpleRelativePathHelper implements RelativePathHelper
@@ -16,7 +16,7 @@ class SimpleRelativePathHelper implements RelativePathHelper
 
 	public function getRelativePath(string $filename): string
 	{
-		if ($this->currentWorkingDirectory !== '' && strpos($filename, $this->currentWorkingDirectory) === 0) {
+		if ($this->currentWorkingDirectory !== '' && str_starts_with($filename, $this->currentWorkingDirectory)) {
 			return str_replace('\\', '/', substr($filename, strlen($this->currentWorkingDirectory) + 1));
 		}
 

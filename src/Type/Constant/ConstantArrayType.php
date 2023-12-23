@@ -66,7 +66,7 @@ use function pow;
 use function range;
 use function sort;
 use function sprintf;
-use function strpos;
+use function str_contains;
 
 /**
  * @api
@@ -1349,9 +1349,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 				$keyDescription = $keyType->getValue();
 				if (is_string($keyDescription)) {
-					if (strpos($keyDescription, '"') !== false) {
+					if (str_contains($keyDescription, '"')) {
 						$keyDescription = sprintf('\'%s\'', $keyDescription);
-					} elseif (strpos($keyDescription, '\'') !== false) {
+					} elseif (str_contains($keyDescription, '\'')) {
 						$keyDescription = sprintf('"%s"', $keyDescription);
 					}
 				}

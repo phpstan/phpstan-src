@@ -54,8 +54,8 @@ use function is_string;
 use function register_shutdown_function;
 use function spl_autoload_functions;
 use function sprintf;
+use function str_contains;
 use function str_repeat;
-use function strpos;
 use function sys_get_temp_dir;
 use const DIRECTORY_SEPARATOR;
 use const E_ERROR;
@@ -144,7 +144,7 @@ class CommandHelper
 				return;
 			}
 
-			if (strpos($error['message'], 'Allowed memory size') === false) {
+			if (!str_contains($error['message'], 'Allowed memory size')) {
 				return;
 			}
 

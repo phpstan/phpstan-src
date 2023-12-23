@@ -10,7 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function array_keys;
 use function in_array;
 use function sprintf;
-use function strpos;
+use function str_starts_with;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -55,7 +55,7 @@ class RuntimeReflectionFunctionRule implements Rule
 		$classReflection = $scope->getClassReflection();
 		$hasPhpStanInterface = false;
 		foreach (array_keys($classReflection->getInterfaces()) as $interfaceName) {
-			if (strpos($interfaceName, 'PHPStan\\') !== 0) {
+			if (!str_starts_with($interfaceName, 'PHPStan\\')) {
 				continue;
 			}
 

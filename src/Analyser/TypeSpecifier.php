@@ -406,23 +406,31 @@ class TypeSpecifier
 					return $extension->specifyTypes($functionReflection, $expr, $scope, $context);
 				}
 
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+				// lazy create parametersAcceptor, as creation can be expensive
+				$parametersAcceptor = null;
 				if (count($expr->getArgs()) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
 				}
 
-				$asserts = $functionReflection->getAsserts()->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
-					$type,
-					$parametersAcceptor->getResolvedTemplateTypeMap(),
-					$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-					TemplateTypeVariance::createInvariant(),
-				));
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
-				if ($specifiedTypes !== null) {
-					return $specifiedTypes;
+				$assertions = $functionReflection->getAsserts();
+				if ($assertions->getAll() !== []) {
+					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+
+					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+						$type,
+						$parametersAcceptor->getResolvedTemplateTypeMap(),
+						$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						TemplateTypeVariance::createInvariant(),
+					));
+					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+					if ($specifiedTypes !== null) {
+						return $specifiedTypes;
+					}
 				}
 			}
 
@@ -446,23 +454,31 @@ class TypeSpecifier
 					}
 				}
 
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+				// lazy create parametersAcceptor, as creation can be expensive
+				$parametersAcceptor = null;
 				if (count($expr->getArgs()) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
 				}
 
-				$asserts = $methodReflection->getAsserts()->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
-					$type,
-					$parametersAcceptor->getResolvedTemplateTypeMap(),
-					$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-					TemplateTypeVariance::createInvariant(),
-				));
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
-				if ($specifiedTypes !== null) {
-					return $specifiedTypes;
+				$assertions = $methodReflection->getAsserts();
+				if ($assertions->getAll() !== []) {
+					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+
+					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+						$type,
+						$parametersAcceptor->getResolvedTemplateTypeMap(),
+						$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						TemplateTypeVariance::createInvariant(),
+					));
+					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+					if ($specifiedTypes !== null) {
+						return $specifiedTypes;
+					}
 				}
 			}
 
@@ -491,23 +507,31 @@ class TypeSpecifier
 					}
 				}
 
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
+				// lazy create parametersAcceptor, as creation can be expensive
+				$parametersAcceptor = null;
 				if (count($expr->getArgs()) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
+
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
 				}
 
-				$asserts = $staticMethodReflection->getAsserts()->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
-					$type,
-					$parametersAcceptor->getResolvedTemplateTypeMap(),
-					$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-					TemplateTypeVariance::createInvariant(),
-				));
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
-				if ($specifiedTypes !== null) {
-					return $specifiedTypes;
+				$assertions = $staticMethodReflection->getAsserts();
+				if ($assertions->getAll() !== []) {
+					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
+
+					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+						$type,
+						$parametersAcceptor->getResolvedTemplateTypeMap(),
+						$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						TemplateTypeVariance::createInvariant(),
+					));
+					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+					if ($specifiedTypes !== null) {
+						return $specifiedTypes;
+					}
 				}
 			}
 

@@ -23,16 +23,16 @@ class ThrowExprTypeRuleTest extends RuleTestCase
 		$this->analyse(
 			[__DIR__ . '/data/throw-values.php'],
 			[
-				/*[
+				[
 					'Invalid type int to throw.',
 					29,
 				],
 				[
-					'Invalid type ThrowValues\InvalidException to throw.',
+					'Invalid type ThrowExprValues\InvalidException to throw.',
 					32,
 				],
 				[
-					'Invalid type ThrowValues\InvalidInterfaceException to throw.',
+					'Invalid type ThrowExprValues\InvalidInterfaceException to throw.',
 					35,
 				],
 				[
@@ -40,10 +40,10 @@ class ThrowExprTypeRuleTest extends RuleTestCase
 					38,
 				],
 				[
-					'Throwing object of an unknown class ThrowValues\NonexistentClass.',
+					'Throwing object of an unknown class ThrowExprValues\NonexistentClass.',
 					44,
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-				],*/
+				],
 				[
 					'Invalid type int to throw.',
 					65,
@@ -64,10 +64,10 @@ class ThrowExprTypeRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/throw-values-nullsafe.php'], [
-			/*[
+			[
 				'Invalid type Exception|null to throw.',
 				17,
-			],*/
+			],
 		]);
 	}
 

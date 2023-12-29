@@ -549,6 +549,19 @@ class PhpDocNodeResolver
 		return count($finalTags) > 0;
 	}
 
+	public function resolveHasConsistentTemplates(PhpDocNode $phpDocNode): bool
+	{
+		foreach (['@consistent-templates', '@phpstan-consistent-templates', '@psalm-consistent-templates'] as $tagName) {
+			$tags = $phpDocNode->getTagsByName($tagName);
+
+			if (count($tags) > 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public function resolveIsPure(PhpDocNode $phpDocNode): bool
 	{
 		foreach ($phpDocNode->getTags() as $phpDocTagNode) {

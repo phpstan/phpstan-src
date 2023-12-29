@@ -14,11 +14,13 @@ use const PHP_VERSION_ID;
 class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 {
 
+	private bool $reportConsistentTemplates = false;
+
 	protected function getRule(): Rule
 	{
 		return new IncompatiblePhpDocTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new GenericObjectTypeCheck(),
+			new GenericObjectTypeCheck($this->reportConsistentTemplates),
 			new UnresolvableTypeHelper(),
 		);
 	}
@@ -289,6 +291,29 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 	public function testBug10097(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10097.php'], []);
+	}
+
+	public function testGenericStaticReturnType(): void
+	{
+		$this->reportConsistentTemplates = true;
+
+		$this->analyse([__DIR__ . '/data/generic-static-return-type.php'], [
+			[
+				'Unsafe usage of static(GenericStaticReturnType\ClassWithNoConsistentTemplatesTag<string, int>) type in PHPDoc tag. Consider adding \'@phpstan-consistent-templates\' to the class.',
+				12,
+			],
+			[
+				'Type string in generic type static(GenericStaticReturnType\ClassWithConsistentTemplatesTag<string>) in PHPDoc tag @return is not subtype of template type T of int of class GenericStaticReturnType\ClassWithConsistentTemplatesTag.',
+				25,
+			],
+		]);
+	}
+
+	public function testGenericStaticReturnTypeDontReport(): void
+	{
+		$this->reportConsistentTemplates = false;
+
+		$this->analyse([__DIR__ . '/data/generic-static-return-type-dont-report.php'], []);
 	}
 
 }

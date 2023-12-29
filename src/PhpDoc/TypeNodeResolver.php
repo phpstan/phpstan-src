@@ -67,6 +67,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Helper\GetTemplateTypeType;
+use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -742,6 +743,22 @@ class TypeNodeResolver
 			}
 
 			return new ErrorType();
+		} elseif ($mainTypeName === 'static') {
+			if (count($genericTypes) > 0) {
+				$className = $nameScope->getClassName();
+
+				if ($className === null) {
+					return new ErrorType();
+				}
+
+				if ($this->getReflectionProvider()->hasClass($className)) {
+					$classReflection = $this->getReflectionProvider()->getClass($className);
+
+					if ($classReflection->hasConsistentTemplates()) {
+						return new GenericStaticType($classReflection, $genericTypes);
+					}
+				}
+			}
 		}
 
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);

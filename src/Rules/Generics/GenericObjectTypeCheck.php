@@ -6,6 +6,7 @@ use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -22,6 +23,10 @@ use function sprintf;
 
 class GenericObjectTypeCheck
 {
+
+	public function __construct(private bool $reportConsistentTemplates = false)
+	{
+	}
 
 	/**
 	 * @return RuleError[]
@@ -41,6 +46,10 @@ class GenericObjectTypeCheck
 		foreach ($genericTypes as $genericType) {
 			$classReflection = $genericType->getClassReflection();
 			if ($classReflection === null) {
+				continue;
+			}
+
+			if ($genericType instanceof GenericStaticType && ! $classReflection->hasConsistentTemplates() && ! $this->reportConsistentTemplates) {
 				continue;
 			}
 
@@ -153,21 +162,31 @@ class GenericObjectTypeCheck
 					$classReflection->getDisplayName(false),
 				))->build();
 			}
+
+			if (!($genericType instanceof GenericStaticType) || $classReflection->hasConsistentTemplates() || !$this->reportConsistentTemplates) {
+				continue;
+			}
+
+			$messages[] = RuleErrorBuilder::message(sprintf(
+				'Unsafe usage of %s type in PHPDoc tag. Consider adding \'@phpstan-consistent-templates\' to the class.',
+				$genericType->describe(VerbosityLevel::typeOnly()),
+			))->build();
 		}
 
 		return $messages;
 	}
 
 	/**
-	 * @return GenericObjectType[]
+	 * @return (GenericObjectType|GenericStaticType)[]
 	 */
 	private function getGenericTypes(Type $phpDocType): array
 	{
 		$genericObjectTypes = [];
 		TypeTraverser::map($phpDocType, static function (Type $type, callable $traverse) use (&$genericObjectTypes): Type {
-			if ($type instanceof GenericObjectType) {
+			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {
 				$resolvedType = TemplateTypeHelper::resolveToBounds($type);
-				if (!$resolvedType instanceof GenericObjectType) {
+
+				if (!$resolvedType instanceof GenericObjectType && !$resolvedType instanceof GenericStaticType) {
 					throw new ShouldNotHappenException();
 				}
 				$genericObjectTypes[] = $resolvedType;

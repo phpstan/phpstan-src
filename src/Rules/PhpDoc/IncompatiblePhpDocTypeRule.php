@@ -215,6 +215,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 
 					$errors[] = $errorBuilder->build();
 				}
+
 			}
 		}
 

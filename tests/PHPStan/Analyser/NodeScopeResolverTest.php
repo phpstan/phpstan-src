@@ -2,9 +2,7 @@
 
 namespace PHPStan\Analyser;
 
-use EnumTypeAssertions\Foo;
 use PHPStan\Testing\TypeInferenceTestCase;
-use stdClass;
 use function define;
 use function extension_loaded;
 use const PHP_INT_SIZE;
@@ -1411,6 +1409,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5961.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10189.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10317.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/consistent-templates-static.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5512.php');
 	}
 
 	/**

@@ -94,6 +94,8 @@ class ClassReflection
 
 	private ?bool $hasConsistentConstructor = null;
 
+	private ?bool $hasConsistentTemplates = null;
+
 	private ?TemplateTypeMap $templateTypeMap = null;
 
 	private ?TemplateTypeMap $activeTemplateTypeMap = null;
@@ -1158,6 +1160,16 @@ class ClassReflection
 		}
 
 		return $this->hasConsistentConstructor;
+	}
+
+	public function hasConsistentTemplates(): bool
+	{
+		if ($this->hasConsistentTemplates === null) {
+			$resolvedPhpDoc = $this->getResolvedPhpDoc();
+			$this->hasConsistentTemplates = $resolvedPhpDoc !== null && $resolvedPhpDoc->hasConsistentTemplates();
+		}
+
+		return $this->hasConsistentTemplates;
 	}
 
 	public function isFinalByKeyword(): bool

@@ -82,6 +82,7 @@ parameters:
 		callUserFunc: false
 		finalByPhpDoc: false
 		magicConstantOutOfContext: false
+		consistentTemplates: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -905,6 +906,8 @@ services:
 
 	-
 		class: PHPStan\Rules\Generics\GenericObjectTypeCheck
+		arguments:
+			reportConsistentTemplates: %featureToggles.consistentTemplates%
 
 	-
 		class: PHPStan\Rules\Generics\TemplateTypeCheck

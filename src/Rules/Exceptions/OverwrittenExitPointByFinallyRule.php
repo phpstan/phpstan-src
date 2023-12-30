@@ -51,7 +51,7 @@ final class OverwrittenExitPointByFinallyRule implements Rule
 			return 'return';
 		}
 
-		if ($stmt instanceof Node\Stmt\Throw_) {
+		if ($stmt instanceof Node\Stmt\Expression && $stmt->expr instanceof Node\Expr\Throw_) {
 			return 'throw';
 		}
 

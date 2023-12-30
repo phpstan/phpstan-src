@@ -745,13 +745,12 @@ class AnalyserTest extends PHPStanTestCase
 			self::getContainer()->getParameter('featureToggles')['preciseMissingReturn'],
 			self::getContainer()->getParameter('featureToggles')['explicitThrow'],
 		);
-		$lexer = new Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
+		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(
 			$this->createScopeFactory($reflectionProvider, $typeSpecifier),
 			$nodeScopeResolver,
 			new RichParser(
 				new Php7($lexer),
-				$lexer,
 				new NameResolver(),
 				self::getContainer(),
 				new IgnoreLexer(),

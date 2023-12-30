@@ -89,10 +89,13 @@ final class WrongVariableNameInVarTagRule implements Rule
 		}
 
 		if ($node instanceof Node\Stmt\Expression) {
+			if ($node->expr instanceof Expr\Throw_) {
+				return $this->processStmt($scope, $varTags, $node->expr);
+			}
 			return $this->processExpression($scope, $node->expr, $varTags);
 		}
 
-		if ($node instanceof Node\Stmt\Throw_ || $node instanceof Node\Stmt\Return_) {
+		if ($node instanceof Node\Stmt\Return_) {
 			return $this->processStmt($scope, $varTags, $node->expr);
 		}
 

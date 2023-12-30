@@ -68,7 +68,13 @@ final class LastConditionVisitor extends NodeVisitorAbstract
 				return null;
 			}
 
-			if (!$statements[$statementCount - 1] instanceof Node\Stmt\Throw_) {
+			$lastStatement = $statements[$statementCount - 1];
+
+			if (!$lastStatement instanceof Node\Stmt\Expression) {
+				return null;
+			}
+
+			if (!$lastStatement->expr instanceof Node\Expr\Throw_) {
 				return null;
 			}
 

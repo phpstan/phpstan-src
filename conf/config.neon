@@ -2050,7 +2050,11 @@ services:
 		autowired: false
 
 	currentPhpVersionPhpParser:
-		class: PhpParser\Parser\Php8 # todo use factory and create Php7/Php8
+		factory: @currentPhpVersionPhpParserFactory::create()
+		autowired: false
+
+	currentPhpVersionPhpParserFactory:
+		class: PHPStan\Parser\PhpParserFactory
 		arguments:
 			lexer: @currentPhpVersionLexer
 		autowired: false

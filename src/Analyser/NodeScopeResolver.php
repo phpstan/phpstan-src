@@ -444,7 +444,6 @@ final class NodeScopeResolver
 			&& !$stmt instanceof Foreach_
 			&& !$stmt instanceof Node\Stmt\Global_
 			&& !$stmt instanceof Node\Stmt\Property
-			&& !$stmt instanceof Node\Stmt\PropertyProperty
 			&& !$stmt instanceof Node\Stmt\ClassConst
 			&& !$stmt instanceof Node\Stmt\Const_
 		) {

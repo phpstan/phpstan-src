@@ -11,8 +11,8 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\DNumber;
-use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\Float_;
+use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\MagicConst;
 use PhpParser\Node\Scalar\MagicConst\Dir;
 use PhpParser\Node\Scalar\MagicConst\File;
@@ -113,10 +113,10 @@ final class InitializerExprTypeResolver
 		if ($expr instanceof TypeExpr) {
 			return $expr->getExprType();
 		}
-		if ($expr instanceof LNumber) {
+		if ($expr instanceof Int_) {
 			return new ConstantIntegerType($expr->value);
 		}
-		if ($expr instanceof DNumber) {
+		if ($expr instanceof Float_) {
 			return new ConstantFloatType($expr->value);
 		}
 		if ($expr instanceof String_) {

@@ -5,7 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\BinaryOp\Mul;
 use PhpParser\Node\Expr\BinaryOp\Plus;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\Int_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
@@ -35,7 +35,7 @@ final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctio
 
 		if (count($argType->getConstantArrays()) > 0) {
 			foreach ($argType->getConstantArrays() as $constantArray) {
-				$node = new LNumber(0);
+				$node = new Int_(0);
 
 				foreach ($constantArray->getValueTypes() as $i => $type) {
 					if ($constantArray->isOptionalKey($i)) {

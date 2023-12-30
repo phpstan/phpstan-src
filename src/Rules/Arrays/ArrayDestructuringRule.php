@@ -85,7 +85,7 @@ final class ArrayDestructuringRule implements Rule
 			$keyExpr = null;
 			if ($item->key === null) {
 				$keyType = new ConstantIntegerType($i);
-				$keyExpr = new Node\Scalar\LNumber($i);
+				$keyExpr = new Node\Scalar\Int_($i);
 			} else {
 				$keyType = $scope->getType($item->key);
 				$keyExpr = new TypeExpr($keyType);

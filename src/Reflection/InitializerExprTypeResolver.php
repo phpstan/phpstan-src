@@ -2044,7 +2044,7 @@ final class InitializerExprTypeResolver
 		}
 
 		if ($type instanceof IntegerRangeType) {
-			return $getTypeCallback(new Expr\BinaryOp\Mul($expr, new LNumber(-1)));
+			return $getTypeCallback(new Expr\BinaryOp\Mul($expr, new Int_(-1)));
 		}
 
 		return $type;

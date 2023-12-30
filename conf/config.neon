@@ -373,6 +373,11 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\StandaloneThrowExprVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parser\TryCatchTypeVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor

@@ -6,8 +6,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use function dirname;
 use function pathinfo;
-use function stripos;
 use function str_starts_with;
+use function stripos;
 use function strtolower;
 use const PATHINFO_BASENAME;
 

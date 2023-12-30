@@ -190,6 +190,13 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			'protocol' => $integerType,
 			'ssl_verifyresult' => $integerType,
 			'scheme' => $stringType,
+			'appconnect_time_us' => $integerType,
+			'connect_time_us' => $integerType,
+			'namelookup_time_us' => $integerType,
+			'pretransfer_time_us' => $integerType,
+			'redirect_time_us' => $integerType,
+			'starttransfer_time_us' => $integerType,
+			'total_time_us' => $integerType,
 		];
 		foreach ($componentTypesPairedStrings as $componentName => $componentValueType) {
 			$builder->setOffsetValueType(new ConstantStringType($componentName), $componentValueType);

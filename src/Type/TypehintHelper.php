@@ -16,7 +16,6 @@ use function count;
 use function get_class;
 use function is_string;
 use function sprintf;
-use function str_ends_with;
 use function strtolower;
 
 final class TypehintHelper
@@ -132,20 +131,6 @@ final class TypehintHelper
 		}
 
 		$reflectionTypeString = $reflectionType->getName();
-		$loweredReflectionTypeString = strtolower($reflectionTypeString);
-		if (str_ends_with($loweredReflectionTypeString, '\\object')) {
-			$reflectionTypeString = 'object';
-		} elseif (str_ends_with($loweredReflectionTypeString, '\\mixed')) {
-			$reflectionTypeString = 'mixed';
-		} elseif (str_ends_with($loweredReflectionTypeString, '\\true')) {
-			$reflectionTypeString = 'true';
-		} elseif (str_ends_with($loweredReflectionTypeString, '\\false')) {
-			$reflectionTypeString = 'false';
-		} elseif (str_ends_with($loweredReflectionTypeString, '\\null')) {
-			$reflectionTypeString = 'null';
-		} elseif (str_ends_with($loweredReflectionTypeString, '\\never')) {
-			$reflectionTypeString = 'never';
-		}
 
 		$type = self::getTypeObjectFromTypehint($reflectionTypeString, $selfClass);
 		if ($reflectionType->allowsNull()) {

@@ -13,7 +13,7 @@ services:
 		arguments:
 			php8Parser: @php8PhpParser
 
-	nodeScopeResolverClassReflector:
+	nodeScopeResolverReflector:
 		factory: @stubReflector
 
 	stubBetterReflectionProvider:
@@ -38,3 +38,11 @@ services:
 		factory: @stubBetterReflectionProvider
 		autowired:
 			- PHPStan\Reflection\ReflectionProvider
+
+	currentPhpVersionLexer:
+		factory: @php8Lexer
+		autowired: false
+
+	currentPhpVersionPhpParser:
+		factory: @php8PhpParser
+		autowired: false

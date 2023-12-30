@@ -7,7 +7,7 @@ use function array_slice;
 use function end;
 use function explode;
 use function implode;
-use function strpos;
+use function str_contains;
 use function strtolower;
 
 class ConstantNameHelper
@@ -15,7 +15,7 @@ class ConstantNameHelper
 
 	public static function normalize(string $name): string
 	{
-		if (strpos($name, '\\') === false) {
+		if (!str_contains($name, '\\')) {
 			return $name;
 		}
 

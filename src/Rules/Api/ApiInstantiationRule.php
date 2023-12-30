@@ -8,7 +8,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
-use function strpos;
+use function str_contains;
 
 /**
  * @implements Rule<Node\Expr\New_>
@@ -62,7 +62,7 @@ class ApiInstantiationRule implements Rule
 			return [$ruleError];
 		}
 
-		if (strpos($docComment, '@api') === false) {
+		if (!str_contains($docComment, '@api')) {
 			return [$ruleError];
 		}
 

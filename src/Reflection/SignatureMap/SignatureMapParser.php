@@ -10,7 +10,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_slice;
-use function strpos;
+use function str_starts_with;
 use function substr;
 
 class SignatureMapParser
@@ -95,13 +95,13 @@ class SignatureMapParser
 		$isVariadic = $matches['variadic'] !== '';
 
 		$reference = $matches['reference'];
-		if (strpos($reference, '&...') === 0) {
+		if (str_starts_with($reference, '&...')) {
 			$reference = '&' . substr($reference, 4);
 			$isVariadic = true;
 		}
-		if (strpos($reference, '&rw') === 0) {
+		if (str_starts_with($reference, '&rw')) {
 			$passedByReference = PassedByReference::createReadsArgument();
-		} elseif (strpos($reference, '&w') === 0 || strpos($reference, '&') === 0) {
+		} elseif (str_starts_with($reference, '&')) {
 			$passedByReference = PassedByReference::createCreatesNewVariable();
 		} else {
 			$passedByReference = PassedByReference::createNo();

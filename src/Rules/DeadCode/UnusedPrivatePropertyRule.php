@@ -15,7 +15,7 @@ use function array_key_exists;
 use function array_map;
 use function count;
 use function sprintf;
-use function strpos;
+use function str_contains;
 
 /**
  * @implements Rule<ClassPropertiesNode>
@@ -62,7 +62,7 @@ class UnusedPrivatePropertyRule implements Rule
 			if ($property->getPhpDoc() !== null) {
 				$text = $property->getPhpDoc();
 				foreach ($this->alwaysReadTags as $tag) {
-					if (strpos($text, $tag) === false) {
+					if (!str_contains($text, $tag)) {
 						continue;
 					}
 
@@ -71,7 +71,7 @@ class UnusedPrivatePropertyRule implements Rule
 				}
 
 				foreach ($this->alwaysWrittenTags as $tag) {
-					if (strpos($text, $tag) === false) {
+					if (!str_contains($text, $tag)) {
 						continue;
 					}
 

@@ -4,7 +4,7 @@ namespace PHPStan\Parser;
 
 use PHPStan\File\FileHelper;
 use function array_fill_keys;
-use function strpos;
+use function str_contains;
 
 class PathRoutingParser implements Parser
 {
@@ -32,10 +32,10 @@ class PathRoutingParser implements Parser
 	public function parseFile(string $file): array
 	{
 		$normalizedPath = $this->fileHelper->normalizePath($file, '/');
-		if (strpos($normalizedPath, 'vendor/jetbrains/phpstorm-stubs') !== false) {
+		if (str_contains($normalizedPath, 'vendor/jetbrains/phpstorm-stubs')) {
 			return $this->php8Parser->parseFile($file);
 		}
-		if (strpos($normalizedPath, 'vendor/phpstan/php-8-stubs/stubs') !== false) {
+		if (str_contains($normalizedPath, 'vendor/phpstan/php-8-stubs/stubs')) {
 			return $this->php8Parser->parseFile($file);
 		}
 

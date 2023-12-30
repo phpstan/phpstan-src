@@ -25,7 +25,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
 use function sprintf;
-use function strpos;
+use function str_contains;
 
 class RuleLevelHelper
 {
@@ -383,7 +383,7 @@ class RuleLevelHelper
 		}
 
 		$tip = null;
-		if (strpos($type->describe(VerbosityLevel::typeOnly()), 'PhpParser\\Node\\Arg|PhpParser\\Node\\VariadicPlaceholder') !== false && !$unionTypeCriteriaCallback($type)) {
+		if (str_contains($type->describe(VerbosityLevel::typeOnly()), 'PhpParser\\Node\\Arg|PhpParser\\Node\\VariadicPlaceholder') && !$unionTypeCriteriaCallback($type)) {
 			$tip = 'Use <fg=cyan>->getArgs()</> instead of <fg=cyan>->args</>.';
 		}
 

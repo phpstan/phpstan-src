@@ -39,7 +39,7 @@ use function array_reverse;
 use function count;
 use function in_array;
 use function method_exists;
-use function strpos;
+use function str_starts_with;
 use function substr;
 
 class PhpDocNodeResolver
@@ -281,9 +281,9 @@ class PhpDocNodeResolver
 				continue;
 			}
 
-			if (strpos($tagName, '@psalm-') === 0) {
+			if (str_starts_with($tagName, '@psalm-')) {
 				$prefix = 'psalm';
-			} elseif (strpos($tagName, '@phpstan-') === 0) {
+			} elseif (str_starts_with($tagName, '@phpstan-')) {
 				$prefix = 'phpstan';
 			} else {
 				$prefix = '';
@@ -617,7 +617,7 @@ class PhpDocNodeResolver
 
 	private function shouldSkipType(string $tagName, Type $type): bool
 	{
-		if (strpos($tagName, '@psalm-') !== 0) {
+		if (!str_starts_with($tagName, '@psalm-')) {
 			return false;
 		}
 

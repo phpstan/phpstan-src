@@ -10,8 +10,8 @@ use function ltrim;
 use function preg_match;
 use function rtrim;
 use function str_replace;
+use function str_starts_with;
 use function strlen;
-use function strpos;
 use function strtolower;
 use function substr;
 use function trim;
@@ -78,7 +78,7 @@ class FileHelper
 
 		$path = str_replace(['\\', '//', '///', '////'], '/', $path);
 
-		$pathRoot = strpos($path, '/') === 0 ? $directorySeparator : '';
+		$pathRoot = str_starts_with($path, '/') ? $directorySeparator : '';
 		$pathParts = explode('/', trim($path, '/'));
 
 		$normalizedPathParts = [];

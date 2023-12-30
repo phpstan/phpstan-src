@@ -6,8 +6,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use function dirname;
 use function pathinfo;
+use function str_starts_with;
 use function stripos;
-use function strpos;
 use function strtolower;
 use const PATHINFO_BASENAME;
 
@@ -72,11 +72,11 @@ class ApiRuleHelper
 			return true;
 		}
 
-		if (strpos($namespace, 'PHPStan\\PhpDocParser\\') === 0) {
+		if (str_starts_with($namespace, 'PHPStan\\PhpDocParser\\')) {
 			return false;
 		}
 
-		if (strpos($namespace, 'PHPStan\\BetterReflection\\') === 0) {
+		if (str_starts_with($namespace, 'PHPStan\\BetterReflection\\')) {
 			return false;
 		}
 

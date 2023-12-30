@@ -10,7 +10,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;
 use function sprintf;
-use function strpos;
+use function str_contains;
 
 /**
  * @implements Rule<Node\Expr\StaticCall>
@@ -91,7 +91,7 @@ class ApiStaticCallRule implements Rule
 			return false;
 		}
 
-		return strpos($methodDocComment, '@api') !== false;
+		return str_contains($methodDocComment, '@api');
 	}
 
 }

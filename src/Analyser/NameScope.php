@@ -13,7 +13,7 @@ use function explode;
 use function implode;
 use function ltrim;
 use function sprintf;
-use function strpos;
+use function str_starts_with;
 use function strtolower;
 
 /** @api */
@@ -71,7 +71,7 @@ class NameScope
 
 	public function resolveStringName(string $name): string
 	{
-		if (strpos($name, '\\') === 0) {
+		if (str_starts_with($name, '\\')) {
 			return ltrim($name, '\\');
 		}
 
@@ -97,7 +97,7 @@ class NameScope
 	 */
 	public function resolveConstantNames(string $name): array
 	{
-		if (strpos($name, '\\') === 0) {
+		if (str_starts_with($name, '\\')) {
 			return [ltrim($name, '\\')];
 		}
 

@@ -22,7 +22,7 @@ use function dirname;
 use function glob;
 use function is_dir;
 use function is_file;
-use function strpos;
+use function str_contains;
 use const GLOB_ONLYDIR;
 
 class ComposerJsonAndInstalledJsonSourceLocatorMaker
@@ -138,17 +138,17 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			if ($phpunitBridgeDirectories !== false) {
 				foreach (array_reverse($phpunitBridgeDirectories) as $dir) {
 					$bestDirFound = $dir;
-					if ($this->phpVersion->getVersionId() >= 80100 && strpos($dir, 'phpunit-10') !== false) {
+					if ($this->phpVersion->getVersionId() >= 80100 && str_contains($dir, 'phpunit-10')) {
 						break;
 					}
 					if ($this->phpVersion->getVersionId() >= 80000) {
-						if (strpos($dir, 'phpunit-9') !== false) {
+						if (str_contains($dir, 'phpunit-9')) {
 							break;
 						}
 						continue;
 					}
 
-					if (strpos($dir, 'phpunit-8') !== false || strpos($dir, 'phpunit-7') !== false) {
+					if (str_contains($dir, 'phpunit-8') || str_contains($dir, 'phpunit-7')) {
 						break;
 					}
 				}

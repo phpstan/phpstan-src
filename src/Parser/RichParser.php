@@ -21,6 +21,7 @@ use function is_string;
 use function strlen;
 use function strpos;
 use function substr;
+use function str_contains;
 use function substr_count;
 use const ARRAY_FILTER_USE_KEY;
 use const T_COMMENT;
@@ -147,8 +148,8 @@ class RichParser implements Parser
 			}
 
 			$text = $token[1];
-			$isNextLine = strpos($text, '@phpstan-ignore-next-line') !== false;
-			$isCurrentLine = strpos($text, '@phpstan-ignore-line') !== false;
+			$isNextLine = str_contains($text, '@phpstan-ignore-next-line');
+			$isCurrentLine = str_contains($text, '@phpstan-ignore-line');
 			if ($isNextLine) {
 				$line++;
 			}

@@ -53,7 +53,7 @@ final class VarTagTypeRuleHelper
 					continue;
 				}
 				if ($arrayItem->key === null) {
-					$dimExpr = new Node\Scalar\LNumber($i);
+					$dimExpr = new Node\Scalar\Int_($i);
 				} else {
 					$dimExpr = $arrayItem->key;
 				}

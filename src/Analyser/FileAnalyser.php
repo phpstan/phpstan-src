@@ -207,7 +207,7 @@ class FileAnalyser
 					}
 				}
 			} catch (\PhpParser\Error $e) {
-				$fileErrors[] = new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, $e);
+				$fileErrors[] = new Error($e->getRawMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, $e);
 			} catch (ParserErrorsException $e) {
 				foreach ($e->getErrors() as $error) {
 					$fileErrors[] = new Error($error->getMessage(), $e->getParsedFile() ?? $file, $error->getStartLine() !== -1 ? $error->getStartLine() : null, $e);

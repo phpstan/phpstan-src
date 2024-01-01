@@ -1133,7 +1133,7 @@ final class MutatingScope implements Scope
 				if ($part instanceof InterpolatedStringPart) {
 					$partType = new ConstantStringType($part->value);
 				} else {
-					$partType = $this->getType($part);
+					$partType = $this->getType($part)->toString();
 				}
 				if ($resultType === null) {
 					$resultType = $partType;

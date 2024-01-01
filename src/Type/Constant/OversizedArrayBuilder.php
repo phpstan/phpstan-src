@@ -34,9 +34,6 @@ final class OversizedArrayBuilder
 		$items = $expr->items;
 		for ($i = 0; $i < count($items); $i++) {
 			$item = $items[$i];
-			if ($item === null) {
-				continue;
-			}
 			if (!$item->unpack) {
 				continue;
 			}
@@ -64,9 +61,6 @@ final class OversizedArrayBuilder
 			}
 		}
 		foreach ($items as $item) {
-			if ($item === null) {
-				continue;
-			}
 			if ($item->unpack) {
 				throw new ShouldNotHappenException();
 			}

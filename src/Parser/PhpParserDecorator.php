@@ -6,6 +6,7 @@ use PhpParser\Error;
 use PhpParser\ErrorHandler;
 use PhpParser\Node;
 use PhpParser\Parser;
+use PHPStan\ShouldNotHappenException;
 use function sprintf;
 
 final class PhpParserDecorator implements Parser
@@ -33,7 +34,7 @@ final class PhpParserDecorator implements Parser
 
 	public function getTokens(): array
 	{
-		return $this->wrappedParser->getTokens();
+		throw new ShouldNotHappenException('PhpParserDecorator::getTokens() should not be called');
 	}
 
 }

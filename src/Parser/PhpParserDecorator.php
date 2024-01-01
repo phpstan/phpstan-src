@@ -6,6 +6,7 @@ use PhpParser\Error;
 use PhpParser\ErrorHandler;
 use PhpParser\Node;
 use PhpParser\Parser;
+use PHPStan\ShouldNotHappenException;
 use function sprintf;
 
 class PhpParserDecorator implements Parser
@@ -29,6 +30,11 @@ class PhpParserDecorator implements Parser
 			}
 			throw new Error($message, $e->getAttributes());
 		}
+	}
+
+	public function getTokens(): array
+	{
+		throw new ShouldNotHappenException('PhpParserDecorator::getTokens() should not be called');
 	}
 
 }

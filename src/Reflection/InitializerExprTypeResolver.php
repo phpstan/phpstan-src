@@ -10,8 +10,8 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\DNumber;
-use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\Float_;
+use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\MagicConst;
 use PhpParser\Node\Scalar\MagicConst\Dir;
 use PhpParser\Node\Scalar\MagicConst\File;
@@ -109,10 +109,10 @@ class InitializerExprTypeResolver
 		if ($expr instanceof TypeExpr) {
 			return $expr->getExprType();
 		}
-		if ($expr instanceof LNumber) {
+		if ($expr instanceof Int_) {
 			return new ConstantIntegerType($expr->value);
 		}
-		if ($expr instanceof DNumber) {
+		if ($expr instanceof Float_) {
 			return new ConstantFloatType($expr->value);
 		}
 		if ($expr instanceof String_) {
@@ -495,10 +495,6 @@ class InitializerExprTypeResolver
 		$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 		$isList = null;
 		foreach ($expr->items as $arrayItem) {
-			if ($arrayItem === null) {
-				continue;
-			}
-
 			$valueType = $getTypeCallback($arrayItem->value);
 			if ($arrayItem->unpack) {
 				if (count($valueType->getConstantArrays()) === 1) {
@@ -1992,7 +1988,7 @@ class InitializerExprTypeResolver
 		}
 
 		if ($type instanceof IntegerRangeType) {
-			return $getTypeCallback(new Expr\BinaryOp\Mul($expr, new LNumber(-1)));
+			return $getTypeCallback(new Expr\BinaryOp\Mul($expr, new Int_(-1)));
 		}
 
 		return $type;

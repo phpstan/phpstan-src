@@ -336,7 +336,7 @@ class ExportedNodeResolver
 			$docComment = $node->getDocComment();
 
 			return new ExportedPropertiesNode(
-				array_map(static fn (Node\Stmt\PropertyProperty $prop): string => $prop->name->toString(), $node->props),
+				array_map(static fn (Node\PropertyItem $prop): string => $prop->name->toString(), $node->props),
 				$this->exportPhpDocNode(
 					$fileName,
 					$namespacedName,

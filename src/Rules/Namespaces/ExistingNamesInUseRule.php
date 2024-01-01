@@ -58,7 +58,7 @@ class ExistingNamesInUseRule implements Rule
 	}
 
 	/**
-	 * @param Node\Stmt\UseUse[] $uses
+	 * @param Node\UseItem[] $uses
 	 * @return list<IdentifierRuleError>
 	 */
 	private function checkConstants(array $uses): array
@@ -80,7 +80,7 @@ class ExistingNamesInUseRule implements Rule
 	}
 
 	/**
-	 * @param Node\Stmt\UseUse[] $uses
+	 * @param Node\UseItem[] $uses
 	 * @return list<IdentifierRuleError>
 	 */
 	private function checkFunctions(array $uses): array
@@ -117,13 +117,13 @@ class ExistingNamesInUseRule implements Rule
 	}
 
 	/**
-	 * @param Node\Stmt\UseUse[] $uses
+	 * @param Node\UseItem[] $uses
 	 * @return list<IdentifierRuleError>
 	 */
 	private function checkClasses(array $uses): array
 	{
 		return $this->classCaseSensitivityCheck->checkClassNames(
-			array_map(static fn (Node\Stmt\UseUse $use): ClassNameNodePair => new ClassNameNodePair((string) $use->name, $use->name), $uses),
+			array_map(static fn (Node\UseItem $use): ClassNameNodePair => new ClassNameNodePair((string) $use->name, $use->name), $uses),
 		);
 	}
 

@@ -11,7 +11,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Expr\ArrayItem>
+ * @implements Rule<Node\ArrayItem>
  */
 class InvalidKeyInArrayItemRule implements Rule
 {
@@ -22,7 +22,7 @@ class InvalidKeyInArrayItemRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Expr\ArrayItem::class;
+		return Node\ArrayItem::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array

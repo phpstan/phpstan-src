@@ -85,7 +85,7 @@ class InvalidAssignVarRule implements Rule
 			return false;
 		}
 
-		if ($expr instanceof Expr\List_ || $expr instanceof Expr\Array_) {
+		if ($expr instanceof Expr\List_) {
 			foreach ($expr->items as $item) {
 				if ($item === null) {
 					continue;

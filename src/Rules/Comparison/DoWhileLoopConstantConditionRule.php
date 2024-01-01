@@ -3,7 +3,7 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
-use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Continue_;
 use PHPStan\Analyser\Scope;
@@ -47,7 +47,7 @@ class DoWhileLoopConstantConditionRule implements Rule
 					if ($statement->num === null) {
 						continue;
 					}
-					if (!$statement->num instanceof LNumber) {
+					if (!$statement->num instanceof Int_) {
 						continue;
 					}
 					$value = $statement->num->value;

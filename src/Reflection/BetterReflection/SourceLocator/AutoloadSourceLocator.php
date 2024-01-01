@@ -114,6 +114,7 @@ class AutoloadSourceLocator implements SourceLocator
 					'startFilePos' => 1,
 					'endFilePos' => 4,
 				]),
+				null,
 				new LocatedSource('<?php', $constantName, null),
 				null,
 				null,

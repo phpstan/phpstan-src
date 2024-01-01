@@ -7,7 +7,7 @@ on:
     types:
       - opened
     branches:
-      - '1.11.x'
+      - '2.0.x'
 
 
 jobs:
@@ -19,6 +19,6 @@ jobs:
       - name: Comment PR
         uses: peter-evans/create-or-update-comment@v3
         with:
-          body: "You've opened the pull request against the latest branch 1.11.x. If your code is relevant on 1.10.x and you want it to be released sooner, please rebase your pull request and change its target to 1.10.x."
+          body: "You've opened the pull request against the latest branch 2.0.x. PHPStan 2.0 is not going to be released for months. If your code is relevant on 1.11.x and you want it to be released sooner, please rebase your pull request and change its target to 1.11.x."
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}

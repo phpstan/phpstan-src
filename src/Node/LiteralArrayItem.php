@@ -2,7 +2,7 @@
 
 namespace PHPStan\Node;
 
-use PhpParser\Node\Expr\ArrayItem;
+use PhpParser\Node\ArrayItem;
 use PHPStan\Analyser\Scope;
 
 /** @api */

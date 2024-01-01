@@ -26,7 +26,6 @@ rules:
 	- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRefRule
 	- PHPStan\Rules\Properties\TypesAssignedToPropertiesRule
-	- PHPStan\Rules\Variables\ThrowTypeRule
 	- PHPStan\Rules\Variables\VariableCloningRule
 
 parameters:

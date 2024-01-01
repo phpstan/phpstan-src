@@ -2,11 +2,11 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
-use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeAbstract;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\Type;
@@ -72,28 +72,28 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 
 	public function isPublic(): bool
 	{
-		return ($this->flags & Class_::MODIFIER_PUBLIC) !== 0
-			|| ($this->flags & Class_::VISIBILITY_MODIFIER_MASK) === 0;
+		return ($this->flags & Modifiers::PUBLIC) !== 0
+			|| ($this->flags & Modifiers::VISIBILITY_MASK) === 0;
 	}
 
 	public function isProtected(): bool
 	{
-		return (bool) ($this->flags & Class_::MODIFIER_PROTECTED);
+		return (bool) ($this->flags & Modifiers::PROTECTED);
 	}
 
 	public function isPrivate(): bool
 	{
-		return (bool) ($this->flags & Class_::MODIFIER_PRIVATE);
+		return (bool) ($this->flags & Modifiers::PRIVATE);
 	}
 
 	public function isStatic(): bool
 	{
-		return (bool) ($this->flags & Class_::MODIFIER_STATIC);
+		return (bool) ($this->flags & Modifiers::STATIC);
 	}
 
 	public function isReadOnly(): bool
 	{
-		return (bool) ($this->flags & Class_::MODIFIER_READONLY) || $this->isReadonlyClass;
+		return (bool) ($this->flags & Modifiers::READONLY) || $this->isReadonlyClass;
 	}
 
 	public function isReadOnlyByPhpDoc(): bool

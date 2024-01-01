@@ -51,7 +51,6 @@ class WrongVariableNameInVarTagRule implements Rule
 	{
 		if (
 			$node instanceof Node\Stmt\Property
-			|| $node instanceof Node\Stmt\PropertyProperty
 			|| $node instanceof Node\Stmt\ClassConst
 			|| $node instanceof Node\Stmt\Const_
 			|| ($node instanceof VirtualNode && !$node instanceof InFunctionNode && !$node instanceof InClassMethodNode && !$node instanceof InClassNode)
@@ -90,10 +89,13 @@ class WrongVariableNameInVarTagRule implements Rule
 		}
 
 		if ($node instanceof Node\Stmt\Expression) {
+			if ($node->expr instanceof Expr\Throw_) {
+				return $this->processStmt($scope, $varTags, $node->expr);
+			}
 			return $this->processExpression($scope, $node->expr, $varTags);
 		}
 
-		if ($node instanceof Node\Stmt\Throw_ || $node instanceof Node\Stmt\Return_) {
+		if ($node instanceof Node\Stmt\Return_) {
 			return $this->processStmt($scope, $varTags, $node->expr);
 		}
 
@@ -195,7 +197,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			return [];
 		}
 
-		if ($expr instanceof Expr\List_ || $expr instanceof Expr\Array_) {
+		if ($expr instanceof Expr\List_) {
 			$names = [];
 			foreach ($expr->items as $item) {
 				if ($item === null) {

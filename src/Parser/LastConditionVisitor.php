@@ -18,7 +18,11 @@ class LastConditionVisitor extends NodeVisitorAbstract
 			$lastElseIf = count($node->elseifs) - 1;
 
 			$elseIsMissingOrThrowing = $node->else === null
-				|| (count($node->else->stmts) === 1 && $node->else->stmts[0] instanceof Node\Stmt\Throw_);
+				|| (
+					count($node->else->stmts) === 1
+					&& $node->else->stmts[0] instanceof Node\Stmt\Expression
+					&& $node->else->stmts[0]->expr instanceof Node\Expr\Throw_
+				);
 
 			foreach ($node->elseifs as $i => $elseif) {
 				$isLast = $i === $lastElseIf && $elseIsMissingOrThrowing;
@@ -64,7 +68,13 @@ class LastConditionVisitor extends NodeVisitorAbstract
 				return null;
 			}
 
-			if (!$statements[$statementCount - 1] instanceof Node\Stmt\Throw_) {
+			$lastStatement = $statements[$statementCount - 1];
+
+			if (!$lastStatement instanceof Node\Stmt\Expression) {
+				return null;
+			}
+
+			if (!$lastStatement->expr instanceof Node\Expr\Throw_) {
 				return null;
 			}
 

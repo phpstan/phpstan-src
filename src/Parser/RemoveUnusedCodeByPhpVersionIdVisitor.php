@@ -77,7 +77,7 @@ class RemoveUnusedCodeByPhpVersionIdVisitor extends NodeVisitorAbstract
 	private function getOperands(Node\Expr $left, Node\Expr $right): ?array
 	{
 		if (
-			$left instanceof Node\Scalar\LNumber
+			$left instanceof Node\Scalar\Int_
 			&& $right instanceof Node\Expr\ConstFetch
 			&& $right->name->toString() === 'PHP_VERSION_ID'
 		) {
@@ -85,7 +85,7 @@ class RemoveUnusedCodeByPhpVersionIdVisitor extends NodeVisitorAbstract
 		}
 
 		if (
-			$right instanceof Node\Scalar\LNumber
+			$right instanceof Node\Scalar\Int_
 			&& $left instanceof Node\Expr\ConstFetch
 			&& $left->name->toString() === 'PHP_VERSION_ID'
 		) {

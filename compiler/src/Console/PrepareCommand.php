@@ -16,6 +16,7 @@ use function exec;
 use function file_get_contents;
 use function file_put_contents;
 use function implode;
+use function in_array;
 use function is_dir;
 use function json_decode;
 use function json_encode;
@@ -183,6 +184,20 @@ php;
 			$realPath = $phpFile->getRealPath();
 			if ($realPath === false) {
 				return;
+			}
+			if (in_array($realPath, [
+				$vendorDir . '/nikic/php-parser/lib/PhpParser/Node/Expr/ArrayItem.php',
+				$vendorDir . '/nikic/php-parser/lib/PhpParser/Node/Expr/ClosureUse.php',
+				$vendorDir . '/nikic/php-parser/lib/PhpParser/Node/Stmt/DeclareDeclare.php',
+				$vendorDir . '/nikic/php-parser/lib/PhpParser/Node/Scalar/DNumber.php',
+				$vendorDir . '/nikic/php-parser/lib/PhpParser/Node/Scalar/Encapsed.php',
+				$vendorDir . '/nikic/php-parser/lib/PhpParser/Node/Scalar/EncapsedStringPart.php',
+				$vendorDir . '/nikic/php-parser/lib/PhpParser/Node/Scalar/LNumber.php',
+				$vendorDir . '/nikic/php-parser/lib/PhpParser/Node/Stmt/PropertyProperty.php',
+				$vendorDir . '/nikic/php-parser/lib/PhpParser/Node/Stmt/StaticVar.php',
+				$vendorDir . '/nikic/php-parser/lib/PhpParser/Node/Stmt/UseUse.php',
+			], true)) {
+				continue;
 			}
 			$path = substr($realPath, strlen($root));
 			$output .= 'require_once __DIR__ . ' . var_export($path, true) . ';' . "\n";

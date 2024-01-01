@@ -55,9 +55,6 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		if ($arrayExpr instanceof Array_ && $isStrictComparison) {
 			$types = null;
 			foreach ($arrayExpr->items as $item) {
-				if ($item === null) {
-					continue;
-				}
 				if ($item->unpack) {
 					$types = null;
 					break;

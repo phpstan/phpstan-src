@@ -335,6 +335,11 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\StandaloneThrowExprVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parser\TryCatchTypeVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor
@@ -1825,7 +1830,6 @@ services:
 		class: PHPStan\Parser\RichParser
 		arguments:
 			parser: @currentPhpVersionPhpParser
-			lexer: @currentPhpVersionLexer
 		autowired: no
 
 	currentPhpVersionSimpleParser:
@@ -1859,7 +1863,11 @@ services:
 		autowired: false
 
 	currentPhpVersionPhpParser:
-		class: PhpParser\Parser\Php7
+		factory: @currentPhpVersionPhpParserFactory::create()
+		autowired: false
+
+	currentPhpVersionPhpParserFactory:
+		class: PHPStan\Parser\PhpParserFactory
 		arguments:
 			lexer: @currentPhpVersionLexer
 		autowired: false
@@ -1971,7 +1979,7 @@ services:
 		autowired: false
 
 	php8PhpParser:
-		class: PhpParser\Parser\Php7
+		class: PhpParser\Parser\Php8
 		arguments:
 			lexer: @php8Lexer
 		autowired: false

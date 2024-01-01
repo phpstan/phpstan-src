@@ -28,7 +28,7 @@ class ContinueBreakInLoopRule implements Rule
 			return [];
 		}
 
-		if (!$node->num instanceof Node\Scalar\LNumber) {
+		if (!$node->num instanceof Node\Scalar\Int_) {
 			$value = 1;
 		} else {
 			$value = $node->num->value;

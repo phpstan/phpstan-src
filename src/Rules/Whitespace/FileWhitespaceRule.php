@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Whitespace;
 use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
@@ -61,7 +62,7 @@ class FileWhitespaceRule implements Rule
 					}
 					return null;
 				}
-				return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+				return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
 			}
 
 			/**

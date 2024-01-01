@@ -9,6 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
+ * @deprecated Since PHP-Parser 5.0 this is a parse error.
  * @implements Rule<LiteralArrayNode>
  */
 class EmptyArrayItemRule implements Rule

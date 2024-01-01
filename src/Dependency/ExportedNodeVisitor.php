@@ -3,7 +3,7 @@
 namespace PHPStan\Dependency;
 
 use PhpParser\Node;
-use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\ShouldNotHappenException;
 
@@ -52,7 +52,7 @@ class ExportedNodeVisitor extends NodeVisitorAbstract
 			|| $node instanceof Node\Stmt\Function_
 			|| $node instanceof Node\Stmt\Trait_
 		) {
-			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
+			return NodeVisitor::DONT_TRAVERSE_CHILDREN;
 		}
 
 		return null;

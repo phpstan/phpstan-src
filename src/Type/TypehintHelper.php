@@ -2,95 +2,24 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name\FullyQualified;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
-use ReflectionIntersectionType;
-use ReflectionNamedType;
 use ReflectionType;
-use ReflectionUnionType;
 use function array_map;
 use function count;
 use function get_class;
 use function is_string;
 use function sprintf;
-use function str_ends_with;
-use function strtolower;
 
 class TypehintHelper
 {
-
-	private static function getTypeObjectFromTypehint(string $typeString, ClassReflection|string|null $selfClass): Type
-	{
-		switch (strtolower($typeString)) {
-			case 'int':
-				return new IntegerType();
-			case 'bool':
-				return new BooleanType();
-			case 'false':
-				return new ConstantBooleanType(false);
-			case 'true':
-				return new ConstantBooleanType(true);
-			case 'string':
-				return new StringType();
-			case 'float':
-				return new FloatType();
-			case 'array':
-				return new ArrayType(new MixedType(), new MixedType());
-			case 'iterable':
-				return new IterableType(new MixedType(), new MixedType());
-			case 'callable':
-				return new CallableType();
-			case 'void':
-				return new VoidType();
-			case 'object':
-				return new ObjectWithoutClassType();
-			case 'mixed':
-				return new MixedType(true);
-			case 'self':
-				if ($selfClass instanceof ClassReflection) {
-					$selfClass = $selfClass->getName();
-				}
-				return $selfClass !== null ? new ObjectType($selfClass) : new ErrorType();
-			case 'parent':
-				$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-				if (is_string($selfClass)) {
-					if ($reflectionProvider->hasClass($selfClass)) {
-						$selfClass = $reflectionProvider->getClass($selfClass);
-					} else {
-						$selfClass = null;
-					}
-				}
-				if ($selfClass !== null) {
-					if ($selfClass->getParentClass() !== null) {
-						return new ObjectType($selfClass->getParentClass()->getName());
-					}
-				}
-				return new NonexistentParentClassType();
-			case 'static':
-				$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-				if (is_string($selfClass)) {
-					if ($reflectionProvider->hasClass($selfClass)) {
-						 $selfClass = $reflectionProvider->getClass($selfClass);
-					} else {
-						$selfClass = null;
-					}
-				}
-				if ($selfClass !== null) {
-					return new StaticType($selfClass);
-				}
-
-				return new ErrorType();
-			case 'null':
-				return new NullType();
-			case 'never':
-				return new NonAcceptingNeverType();
-			default:
-				return new ObjectType($typeString);
-		}
-	}
 
 	/** @api */
 	public static function decideTypeFromReflection(
@@ -131,23 +60,21 @@ class TypehintHelper
 			throw new ShouldNotHappenException(sprintf('Unexpected type: %s', get_class($reflectionType)));
 		}
 
-		$reflectionTypeString = $reflectionType->getName();
-		$loweredReflectionTypeString = strtolower($reflectionTypeString);
-		if (str_ends_with($loweredReflectionTypeString, '\\object')) {
-			$reflectionTypeString = 'object';
-		} elseif (str_ends_with($loweredReflectionTypeString, '\\mixed')) {
-			$reflectionTypeString = 'mixed';
-		} elseif (str_ends_with($loweredReflectionTypeString, '\\true')) {
-			$reflectionTypeString = 'true';
-		} elseif (str_ends_with($loweredReflectionTypeString, '\\false')) {
-			$reflectionTypeString = 'false';
-		} elseif (str_ends_with($loweredReflectionTypeString, '\\null')) {
-			$reflectionTypeString = 'null';
-		} elseif (str_ends_with($loweredReflectionTypeString, '\\never')) {
-			$reflectionTypeString = 'never';
+		if ($reflectionType->isIdentifier()) {
+			$typeNode = new Identifier($reflectionType->getName());
+		} else {
+			$typeNode = new FullyQualified($reflectionType->getName());
 		}
 
-		$type = self::getTypeObjectFromTypehint($reflectionTypeString, $selfClass);
+		if (is_string($selfClass)) {
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+			if ($reflectionProvider->hasClass($selfClass)) {
+				$selfClass = $reflectionProvider->getClass($selfClass);
+			} else {
+				$selfClass = null;
+			}
+		}
+		$type = ParserNodeTypeToPHPStanType::resolve($typeNode, $selfClass);
 		if ($reflectionType->allowsNull()) {
 			$type = TypeCombinator::addNull($type);
 		} elseif ($phpDocType !== null) {

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Parser\StandaloneThrowExprVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -26,6 +27,10 @@ class ThrowExpressionRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($this->phpVersion->supportsThrowExpression()) {
+			return [];
+		}
+
+		if ($node->getAttribute(StandaloneThrowExprVisitor::ATTRIBUTE_NAME) === true) {
 			return [];
 		}
 

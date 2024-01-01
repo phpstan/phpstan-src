@@ -40,7 +40,7 @@ class DeclareStrictTypesRule implements Rule
 			}
 
 			if (
-				!$declare->value instanceof Node\Scalar\LNumber
+				!$declare->value instanceof Node\Scalar\Int_
 				|| !in_array($declare->value->value, [0, 1], true)
 			) {
 				return [

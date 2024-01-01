@@ -26,10 +26,17 @@ class NeverRuleHelper
 		$other = [];
 		foreach ($node->getExecutionEnds() as $executionEnd) {
 			if ($executionEnd->getStatementResult()->isAlwaysTerminating()) {
-				if (!$executionEnd->getNode() instanceof Node\Stmt\Throw_) {
+				$executionEndNode = $executionEnd->getNode();
+				if (!$executionEndNode instanceof Node\Stmt\Expression) {
 					$other[] = $executionEnd->getNode();
+					continue;
 				}
 
+				if ($executionEndNode->expr instanceof Node\Expr\Throw_) {
+					continue;
+				}
+
+				$other[] = $executionEnd->getNode();
 				continue;
 			}
 

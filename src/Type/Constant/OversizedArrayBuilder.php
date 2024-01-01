@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PHPStan\Node\Expr\TypeExpr;
@@ -33,9 +34,6 @@ class OversizedArrayBuilder
 		$items = $expr->items;
 		for ($i = 0; $i < count($items); $i++) {
 			$item = $items[$i];
-			if ($item === null) {
-				continue;
-			}
 			if (!$item->unpack) {
 				continue;
 			}
@@ -50,22 +48,19 @@ class OversizedArrayBuilder
 					} else {
 						$keyExpr = new TypeExpr($innerKeyType);
 					}
-					array_splice($items, $i++, 0, [new Expr\ArrayItem(
+					array_splice($items, $i++, 0, [new ArrayItem(
 						new TypeExpr($innerValueType),
 						$keyExpr,
 					)]);
 				}
 			} else {
-				array_splice($items, $i, 1, [new Expr\ArrayItem(
+				array_splice($items, $i, 1, [new ArrayItem(
 					new TypeExpr($valueType->getIterableValueType()),
 					new TypeExpr($valueType->getIterableKeyType()),
 				)]);
 			}
 		}
 		foreach ($items as $item) {
-			if ($item === null) {
-				continue;
-			}
 			if ($item->unpack) {
 				throw new ShouldNotHappenException();
 			}

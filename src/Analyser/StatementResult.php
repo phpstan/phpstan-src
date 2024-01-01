@@ -2,7 +2,7 @@
 
 namespace PHPStan\Analyser;
 
-use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt;
 
 /** @api */
@@ -51,7 +51,7 @@ class StatementResult
 			}
 
 			$num = $statement->num;
-			if (!$num instanceof LNumber) {
+			if (!$num instanceof Int_) {
 				return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints);
 			}
 
@@ -92,7 +92,7 @@ class StatementResult
 				continue;
 			}
 
-			if (!$value instanceof LNumber) {
+			if (!$value instanceof Int_) {
 				$exitPoints[] = $exitPoint;
 				continue;
 			}
@@ -123,7 +123,7 @@ class StatementResult
 			if ($statement->num === null) {
 				continue;
 			}
-			if (!$statement->num instanceof LNumber) {
+			if (!$statement->num instanceof Int_) {
 				continue;
 			}
 			$value = $statement->num->value;
@@ -133,7 +133,7 @@ class StatementResult
 
 			$newNode = null;
 			if ($value > 2) {
-				$newNode = new LNumber($value - 1);
+				$newNode = new Int_($value - 1);
 			}
 			if ($statement instanceof Stmt\Continue_) {
 				$newStatement = new Stmt\Continue_($newNode);

@@ -4,7 +4,7 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Namespace_;
-use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Exception\InvalidConstantNode;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
@@ -51,7 +51,7 @@ class CachingVisitor extends NodeVisitorAbstract
 				);
 			}
 
-			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
+			return NodeVisitor::DONT_TRAVERSE_CHILDREN;
 		}
 
 		if ($node instanceof Node\Stmt\Function_) {
@@ -64,7 +64,7 @@ class CachingVisitor extends NodeVisitorAbstract
 				);
 			}
 
-			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
+			return NodeVisitor::DONT_TRAVERSE_CHILDREN;
 		}
 
 		if ($node instanceof Node\Stmt\Const_) {
@@ -80,7 +80,7 @@ class CachingVisitor extends NodeVisitorAbstract
 				);
 			}
 
-			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
+			return NodeVisitor::DONT_TRAVERSE_CHILDREN;
 		}
 
 		if ($node instanceof Node\Expr\FuncCall) {
@@ -101,7 +101,7 @@ class CachingVisitor extends NodeVisitorAbstract
 			);
 			$this->constantNodes[ConstantNameHelper::normalize($constantName)][] = $constantNode;
 
-			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
+			return NodeVisitor::DONT_TRAVERSE_CHILDREN;
 		}
 
 		return null;

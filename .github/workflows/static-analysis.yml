@@ -9,7 +9,7 @@ on:
       - 'apigen/**'
   push:
     branches:
-      - "1.11.x"
+      - "2.0.x"
     paths-ignore:
       - 'compiler/**'
       - 'apigen/**'
@@ -31,8 +31,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "7.2"
-          - "7.3"
           - "7.4"
           - "8.0"
           - "8.1"
@@ -61,20 +59,11 @@ jobs:
         run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
 
       - name: "Upload transformed sources"
-        if: matrix.php-version == '7.2'
+        if: matrix.php-version == '7.4'
         uses: actions/upload-artifact@v3
         with:
           name: transformed-src
           path: src
-
-      - name: "Paratest patch"
-        if: matrix.php-version == '7.2'
-        run: composer config extra.patches.brianium/paratest --json --merge '["patches/paratest.patch"]'
-        shell: bash
-
-      - name: "Downgrade PHPUnit"
-        if: matrix.php-version == '7.2'
-        run: "composer require --dev phpunit/phpunit:^8.5.31 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "PHPStan"
         run: "make phpstan"

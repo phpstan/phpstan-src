@@ -156,7 +156,7 @@ class EnumSanityRule implements Rule
 			}
 			$caseName = $stmt->name->name;
 
-			if ($stmt->expr instanceof Node\Scalar\LNumber || $stmt->expr instanceof Node\Scalar\String_) {
+			if ($stmt->expr instanceof Node\Scalar\Int_ || $stmt->expr instanceof Node\Scalar\String_) {
 				if ($enumNode->scalarType === null) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s is not backed, but case %s has value %s.',

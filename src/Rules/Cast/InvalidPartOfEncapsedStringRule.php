@@ -14,7 +14,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Scalar\Encapsed>
+ * @implements Rule<Node\Scalar\InterpolatedString>
  */
 class InvalidPartOfEncapsedStringRule implements Rule
 {
@@ -28,14 +28,14 @@ class InvalidPartOfEncapsedStringRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Scalar\Encapsed::class;
+		return Node\Scalar\InterpolatedString::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$messages = [];
 		foreach ($node->parts as $part) {
-			if ($part instanceof Node\Scalar\EncapsedStringPart) {
+			if ($part instanceof Node\InterpolatedStringPart) {
 				continue;
 			}
 

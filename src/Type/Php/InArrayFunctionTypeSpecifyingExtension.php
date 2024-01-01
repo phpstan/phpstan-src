@@ -65,9 +65,6 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		if ($arrayExpr instanceof Array_) {
 			$types = null;
 			foreach ($arrayExpr->items as $item) {
-				if ($item === null) {
-					continue;
-				}
 				if ($item->unpack) {
 					$types = null;
 					break;

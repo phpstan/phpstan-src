@@ -737,6 +737,7 @@ class NodeScopeResolver
 			$this->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $nodeCallback);
 
 			foreach ($stmt->props as $prop) {
+				$nodeCallback($prop, $scope);
 				if ($prop->default !== null) {
 					$this->processExprNode($stmt, $prop->default, $scope, $nodeCallback, ExpressionContext::createDeep());
 				}

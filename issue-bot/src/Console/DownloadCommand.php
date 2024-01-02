@@ -124,11 +124,14 @@ class DownloadCommand extends Command
 				throw new Exception('Chunk size less than 1');
 			}
 			$chunks = array_chunk($phpVersionHashes, $chunkSize);
+			$i = 1;
 			foreach ($chunks as $chunk) {
 				$matrix[] = [
 					'phpVersion' => $phpVersion,
+					'chunkNumber' => $i,
 					'playgroundExamples' => implode(',', $chunk),
 				];
+				$i++;
 			}
 		}
 

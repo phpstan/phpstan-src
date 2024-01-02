@@ -88,7 +88,12 @@ class AnalyseApplication
 
 			$projectStubFiles = $this->stubFilesProvider->getProjectStubFiles();
 
-			if ($resultCache->isFullAnalysis() && count($projectStubFiles) !== 0 && !$onlyFiles) {
+			$forceValidateStubFiles = (bool) ($_SERVER['__PHPSTAN_FORCE_VALIDATE_STUB_FILES'] ?? false);
+			if (
+				$resultCache->isFullAnalysis()
+				&& count($projectStubFiles) !== 0
+				&& (!$onlyFiles || $forceValidateStubFiles)
+			) {
 				$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);
 				$intermediateAnalyserResult = new AnalyserResult(
 					array_merge($intermediateAnalyserResult->getUnorderedErrors(), $stubErrors),

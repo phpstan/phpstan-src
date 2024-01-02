@@ -60,13 +60,6 @@ jobs:
         shell: bash
         run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
 
-      - name: "Upload transformed sources"
-        if: matrix.php-version == '7.2'
-        uses: actions/upload-artifact@v4
-        with:
-          name: transformed-src
-          path: src
-
       - name: "Paratest patch"
         if: matrix.php-version == '7.2'
         run: composer config extra.patches.brianium/paratest --json --merge '["patches/paratest.patch"]'
@@ -124,12 +117,6 @@ jobs:
           echo -e "\n\n" >> src/TrinaryLogic.php
           make phpstan-result-cache
           make phpstan-result-cache
-
-      - name: "Upload result cache artifact"
-        uses: actions/upload-artifact@v4
-        with:
-          name: resultCache-ubuntu-latest.php
-          path: tmp/resultCache.php
 
   generate-baseline:
     name: "Generate baseline"

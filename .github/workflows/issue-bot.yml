@@ -63,12 +63,12 @@ jobs:
         run: echo "matrix=$(./console.php download)" >> $GITHUB_OUTPUT
 
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: playground-cache
           path: issue-bot/tmp/playgroundCache.tmp
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: issue-cache
           path: issue-bot/tmp/issueCache.tmp
@@ -100,7 +100,7 @@ jobs:
         working-directory: "issue-bot"
         run: "composer install --no-interaction --no-progress"
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: playground-cache
           path: issue-bot/tmp
@@ -110,9 +110,9 @@ jobs:
         timeout-minutes: 5
         run: ./console.php run ${{ matrix.phpVersion }} ${{ matrix.playgroundExamples }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: results
+          name: results-${{ matrix.phpVersion }}
           path: issue-bot/tmp/results-${{ matrix.phpVersion }}-*.tmp
 
   evaluate:
@@ -135,19 +135,20 @@ jobs:
         working-directory: "issue-bot"
         run: "composer install --no-interaction --no-progress"
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: playground-cache
           path: issue-bot/tmp
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: issue-cache
           path: issue-bot/tmp
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: results
+          pattern: results-*
+          merge-multiple: true
           path: issue-bot/tmp
 
       - name: "Evaluate results - pull request"

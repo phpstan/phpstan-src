@@ -50,7 +50,7 @@ jobs:
       - name: "Dump phpSymbols.txt"
         run: "php tests/dump-reflection-test-symbols.php"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: phpSymbols
           path: ${{ env.REFLECTION_GOLDEN_SYMBOLS_FILE }}
@@ -74,7 +74,7 @@ jobs:
 
     steps:
       - name: "Download phpSymbols.txt"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: phpSymbols
           path: /tmp
@@ -105,7 +105,7 @@ jobs:
       - name: "Dump previous reflection data"
         run: "php tests/generate-reflection-test.php"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: reflection-${{ matrix.php-version }}.test
           path: ${{ env.REFLECTION_GOLDEN_TEST_FILE }}

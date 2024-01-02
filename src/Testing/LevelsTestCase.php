@@ -16,6 +16,7 @@ use function escapeshellcmd;
 use function exec;
 use function implode;
 use function method_exists;
+use function putenv;
 use function range;
 use function sprintf;
 use function unlink;
@@ -67,6 +68,8 @@ abstract class LevelsTestCase extends TestCase
 		if ($clearResultCacheExitCode !== 0) {
 			throw new ShouldNotHappenException('Could not clear result cache: ' . implode("\n", $clearResultCacheOutputLines));
 		}
+
+		putenv('__PHPSTAN_FORCE_VALIDATE_STUB_FILES=1');
 
 		foreach (range(0, 9) as $level) {
 			unset($outputLines);

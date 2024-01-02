@@ -59,7 +59,7 @@ jobs:
         working-directory: "compiler/build"
         run: "php box.phar compile --no-parallel"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: phar-file
           path: tmp/phpstan.phar
@@ -96,7 +96,7 @@ jobs:
         id: "checksum"
         run: echo "md5=$(md5sum tmp/phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: phar-file-checksum
           path: tmp/phpstan.phar
@@ -190,7 +190,7 @@ jobs:
           fi
 
       - name: "Download phpstan.phar"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: phar-file
 

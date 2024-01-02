@@ -62,7 +62,7 @@ jobs:
 
       - name: "Upload transformed sources"
         if: matrix.php-version == '7.2'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: transformed-src
           path: src
@@ -126,7 +126,7 @@ jobs:
           make phpstan-result-cache
 
       - name: "Upload result cache artifact"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: resultCache-ubuntu-latest.php
           path: tmp/resultCache.php

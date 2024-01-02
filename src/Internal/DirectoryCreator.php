@@ -18,6 +18,9 @@ final class DirectoryCreator
 		bool $recursive = true,
 	): void
 	{
+		if (file_exists($directory)) {
+			return;
+		}
 		if (@mkdir($directory, $mode, $recursive)) {
 			return;
 		}

@@ -28,8 +28,7 @@ use function strtolower;
 final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	/** @var array<string, array{0: int, 1: int}> */
-	private array $strContainingFunctions = [
+	private const STR_CONTAINING_FUNCTIONS = [
 		'fnmatch' => [1, 0],
 		'str_contains' => [0, 1],
 		'str_starts_with' => [0, 1],
@@ -50,7 +49,7 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
-		return array_key_exists(strtolower($functionReflection->getName()), $this->strContainingFunctions)
+		return array_key_exists(strtolower($functionReflection->getName()), self::STR_CONTAINING_FUNCTIONS)
 			&& $context->true();
 	}
 
@@ -59,7 +58,7 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 		$args = $node->getArgs();
 
 		if (count($args) >= 2) {
-			[$hackstackArg, $needleArg] = $this->strContainingFunctions[strtolower($functionReflection->getName())];
+			[$hackstackArg, $needleArg] = self::STR_CONTAINING_FUNCTIONS[strtolower($functionReflection->getName())];
 
 			$haystackType = $scope->getType($args[$hackstackArg]->value);
 			$needleType = $scope->getType($args[$needleArg]->value);

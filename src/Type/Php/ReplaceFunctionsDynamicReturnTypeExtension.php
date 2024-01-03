@@ -21,8 +21,7 @@ use function count;
 class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	/** @var array<string, int> */
-	private array $functionsSubjectPosition = [
+	private const FUNCTIONS_SUBJECT_POSITION = [
 		'preg_replace' => 2,
 		'preg_replace_callback' => 2,
 		'preg_replace_callback_array' => 1,
@@ -32,8 +31,7 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 		'strtr' => 0,
 	];
 
-	/** @var array<string, int> */
-	private array $functionsReplacePosition = [
+	private const FUNCTIONS_REPLACE_POSITION = [
 		'preg_replace' => 1,
 		'str_replace' => 1,
 		'str_ireplace' => 1,
@@ -43,7 +41,7 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return array_key_exists($functionReflection->getName(), $this->functionsSubjectPosition);
+		return array_key_exists($functionReflection->getName(), self::FUNCTIONS_SUBJECT_POSITION);
 	}
 
 	public function getTypeFromFunctionCall(
@@ -75,7 +73,7 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 		Scope $scope,
 	): Type
 	{
-		$argumentPosition = $this->functionsSubjectPosition[$functionReflection->getName()];
+		$argumentPosition = self::FUNCTIONS_SUBJECT_POSITION[$functionReflection->getName()];
 		$defaultReturnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$functionCall->getArgs(),
@@ -91,8 +89,8 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
 
-		if ($subjectArgumentType->isNonEmptyString()->yes() && array_key_exists($functionReflection->getName(), $this->functionsReplacePosition)) {
-			$replaceArgumentPosition = $this->functionsReplacePosition[$functionReflection->getName()];
+		if ($subjectArgumentType->isNonEmptyString()->yes() && array_key_exists($functionReflection->getName(), self::FUNCTIONS_REPLACE_POSITION)) {
+			$replaceArgumentPosition = self::FUNCTIONS_REPLACE_POSITION[$functionReflection->getName()];
 
 			if (count($functionCall->getArgs()) > $replaceArgumentPosition) {
 				$replaceArgumentType = $scope->getType($functionCall->getArgs()[$replaceArgumentPosition]->value);

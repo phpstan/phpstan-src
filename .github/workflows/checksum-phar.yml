@@ -1,0 +1,125 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+# This workflow checks that PHAR checksum changes only when it's supposed to
+# It should stay the same when the PHAR contents do not change
+
+name: "Check PHAR checksum"
+
+on:
+  pull_request:
+    paths:
+      - 'compiler/**'
+      - '.github/workflows/checksum-phar.yml'
+  push:
+    branches:
+      - "1.10.x"
+    paths:
+      - 'compiler/**'
+      - '.github/workflows/checksum-phar.yml'
+
+env:
+  COMPOSER_ROOT_VERSION: "1.10.x-dev"
+
+concurrency:
+  group: checksum-phar-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
+  cancel-in-progress: true
+
+jobs:
+  check-phar-checksum:
+    name: "Check PHAR checksum"
+
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
+
+    steps:
+      - name: "Checkout phpstan-dist"
+        uses: actions/checkout@v3
+        with:
+          repository: phpstan/phpstan
+          path: phpstan-dist
+          ref: 1.10.x
+
+      - name: "Get info"
+        id: info
+        working-directory: phpstan-dist
+        run: |
+          echo "checksum=$(head -n 1 .phar-checksum)" >> $GITHUB_OUTPUT
+          echo "commit=$(tail -n 1 .phar-checksum)" >> $GITHUB_OUTPUT
+
+      - name: "Delete phpstan-dist"
+        run: "rm -r phpstan-dist"
+
+      - name: "Checkout"
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.info.outputs.commit }}
+
+      - name: "Checkout latest PHAR compiler"
+        uses: actions/checkout@v3
+        with:
+          path: phpstan-src
+          ref: ${{ github.sha }}
+
+      - name: "Delete old compiler"
+        run: "rm -r compiler"
+
+      - name: "Move new compiler"
+        run: "mv phpstan-src/compiler/ ."
+
+      - name: "Delete phpstan-src"
+        run: "rm -r phpstan-src"
+
+      - name: "Change and commit README.md"
+        run: |
+          echo Testing > README.md
+          git commit -a -m 'Changed README'
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+          extensions: mbstring, intl
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Install compiler dependencies"
+        run: "composer install --no-interaction --no-progress --working-dir=compiler"
+
+        # same steps as in phar.yml
+
+      - name: "Prepare for PHAR compilation"
+        working-directory: "compiler"
+        run: "php bin/prepare"
+
+      - name: "Set autoloader suffix"
+        run: "composer config autoloader-suffix PHPStanChecksum"
+
+      - name: "Composer dump"
+        run: "composer install --no-interaction --no-progress"
+        env:
+          COMPOSER_ROOT_VERSION: "1.10.x-dev"
+
+      - name: "Compile PHAR for checksum"
+        working-directory: "compiler/build"
+        run: "php box.phar compile --no-parallel"
+        env:
+          PHAR_CHECKSUM: "1"
+          COMPOSER_ROOT_VERSION: "1.10.x-dev"
+
+      - name: "Re-sign PHAR"
+        run: "php compiler/build/resign.php tmp/phpstan.phar"
+
+      - name: "Unset autoloader suffix"
+        run: "composer config autoloader-suffix --unset"
+
+      - name: "Save checksum"
+        id: "new_checksum"
+        run: echo "md5=$(md5sum tmp/phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+
+      - name: "Assert checksum"
+        run: |
+          checksum=${{ steps.info.outputs.checksum }}
+          new_checksum=${{ steps.new_checksum.outputs.md5 }}
+          [[ "$checksum" == "$new_checksum" ]];

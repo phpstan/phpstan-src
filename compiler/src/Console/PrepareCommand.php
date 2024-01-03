@@ -179,7 +179,7 @@ php;
 			$vendorDir . '/phpstan/phpdoc-parser/src',
 		])->exclude([
 			'Testing',
-		]) as $phpFile) {
+		])->sortByName() as $phpFile) {
 			$realPath = $phpFile->getRealPath();
 			if ($realPath === false) {
 				return;

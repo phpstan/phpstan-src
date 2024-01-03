@@ -435,29 +435,18 @@ class ParametersAcceptorSelector
 
 		$parameters = [];
 		$isVariadic = false;
-		$returnType = null;
-		$phpDocReturnType = null;
-		$nativeReturnType = null;
+		$returnTypes = [];
+		$phpDocReturnTypes = [];
+		$nativeReturnTypes = [];
 
 		foreach ($acceptors as $acceptor) {
-			if ($returnType === null) {
-				$returnType = $acceptor->getReturnType();
-			} else {
-				$returnType = TypeCombinator::union($returnType, $acceptor->getReturnType());
+			$returnTypes[] = $acceptor->getReturnType();
+
+			if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
+				$phpDocReturnTypes[] = $acceptor->getPhpDocReturnType();
 			}
 			if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
-				if ($phpDocReturnType === null) {
-					$phpDocReturnType = $acceptor->getPhpDocReturnType();
-				} else {
-					$phpDocReturnType = TypeCombinator::union($phpDocReturnType, $acceptor->getPhpDocReturnType());
-				}
-			}
-			if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
-				if ($nativeReturnType === null) {
-					$nativeReturnType = $acceptor->getNativeReturnType();
-				} else {
-					$nativeReturnType = TypeCombinator::union($nativeReturnType, $acceptor->getNativeReturnType());
-				}
+				$nativeReturnTypes[] = $acceptor->getNativeReturnType();
 			}
 			$isVariadic = $isVariadic || $acceptor->isVariadic();
 
@@ -523,6 +512,10 @@ class ParametersAcceptorSelector
 				}
 			}
 		}
+
+		$returnType = TypeCombinator::union(...$returnTypes);
+		$phpDocReturnType = $phpDocReturnTypes === [] ? null : TypeCombinator::union(...$phpDocReturnTypes);
+		$nativeReturnType = $nativeReturnTypes === [] ? null : TypeCombinator::union(...$nativeReturnTypes);
 
 		return new FunctionVariantWithPhpDocs(
 			TemplateTypeMap::createEmpty(),

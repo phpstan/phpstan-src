@@ -72,7 +72,7 @@ jobs:
       - name: "Change and commit README.md"
         run: |
           echo Testing > README.md
-          git commit -a -m 'Changed README'
+          git commit -a -m 'Changed README' --author "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"

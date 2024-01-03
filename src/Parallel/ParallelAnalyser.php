@@ -22,11 +22,13 @@ use function array_reverse;
 use function array_sum;
 use function count;
 use function defined;
+use function ini_get;
 use function is_string;
 use function max;
 use function memory_get_usage;
 use function parse_url;
 use function sprintf;
+use function str_contains;
 use const PHP_URL_PORT;
 
 class ParallelAnalyser
@@ -204,7 +206,26 @@ class ParallelAnalyser
 					return;
 				}
 
-				$internalErrors[] = sprintf('Child process error (exit code %d): %s', $exitCode, $output);
+				$memoryLimitMessage = 'PHPStan process crashed because it reached configured PHP memory limit';
+				if (str_contains($output, $memoryLimitMessage)) {
+					foreach ($internalErrors as $internalError) {
+						if (!str_contains($internalError, $memoryLimitMessage)) {
+							continue;
+						}
+
+						return;
+					}
+					$internalErrors[] = sprintf(sprintf(
+						"<error>Child process error</error>: %s: %s\n%s\n",
+						$memoryLimitMessage,
+						ini_get('memory_limit'),
+						'Increase your memory limit in php.ini or run PHPStan with --memory-limit CLI option.',
+					));
+					$internalErrorsCount++;
+					return;
+				}
+
+				$internalErrors[] = sprintf('<error>Child process error</error> (exit code %d): %s', $exitCode, $output);
 				$internalErrorsCount++;
 			});
 			$this->processPool->attachProcess($processIdentifier, $process);

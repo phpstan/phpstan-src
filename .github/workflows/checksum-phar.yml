@@ -95,9 +95,6 @@ jobs:
         working-directory: "compiler"
         run: "php bin/prepare"
 
-      - name: "Set autoloader suffix"
-        run: "composer config autoloader-suffix PHPStanChecksum"
-
       - name: "Composer dump"
         run: "composer install --no-interaction --no-progress"
         env:

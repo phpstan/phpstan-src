@@ -157,15 +157,12 @@ class ArrayIterator implements SeekableIterator, ArrayAccess, Countable
  */
 class RecursiveIteratorIterator
 {
-
 	/**
 	 * @param T $iterator
-	 * @param int $mode
-	 * @param int $flags
 	 */
 	public function __construct(
 		$iterator,
-		$mode = RecursiveIteratorIterator::LEAVES_ONLY,
+		int $mode = RecursiveIteratorIterator::LEAVES_ONLY,
 		int $flags = 0
 	)
 	{

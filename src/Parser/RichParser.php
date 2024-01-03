@@ -12,6 +12,7 @@ use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
 use function is_string;
+use function str_contains;
 use function strpos;
 use function substr;
 use function substr_count;
@@ -112,9 +113,9 @@ class RichParser implements Parser
 					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line');
 
 			} else {
-				if (strpos($text, '@phpstan-ignore-next-line') !== false) {
+				if (str_contains($text, '@phpstan-ignore-next-line')) {
 					$line++;
-				} elseif (strpos($text, '@phpstan-ignore-line') === false) {
+				} elseif (!str_contains($text, '@phpstan-ignore-line')) {
 					continue;
 				}
 

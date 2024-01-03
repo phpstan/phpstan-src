@@ -12,7 +12,8 @@ use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
 use function is_string;
-use function str_contains;
+use function strpos;
+use function substr;
 use function substr_count;
 use const ARRAY_FILTER_USE_KEY;
 use const T_COMMENT;
@@ -28,6 +29,7 @@ class RichParser implements Parser
 		private Lexer $lexer,
 		private NameResolver $nameResolver,
 		private Container $container,
+		private bool $enableIgnoreErrorsWithinPhpDocs,
 	)
 	{
 	}
@@ -103,14 +105,48 @@ class RichParser implements Parser
 
 			$text = $token[1];
 			$line = $token[2];
-			if (str_contains($text, '@phpstan-ignore-next-line')) {
-				$line++;
-			} elseif (!str_contains($text, '@phpstan-ignore-line')) {
-				continue;
+
+			if ($this->enableIgnoreErrorsWithinPhpDocs) {
+				$lines = $lines +
+					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-next-line', true) +
+					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line');
+
+			} else {
+				if (strpos($text, '@phpstan-ignore-next-line') !== false) {
+					$line++;
+				} elseif (strpos($text, '@phpstan-ignore-line') === false) {
+					continue;
+				}
+
+				$line += substr_count($token[1], "\n");
+				$lines[$line] = null;
 			}
+		}
 
-			$line += substr_count($token[1], "\n");
+		return $lines;
+	}
 
+	/**
+	 * @return array<int, null>
+	 */
+	private function getLinesToIgnoreForTokenByIgnoreComment(
+		string $tokenText,
+		int $tokenLine,
+		string $ignoreComment,
+		bool $ignoreNextLine = false,
+	): array
+	{
+		$lines = [];
+		$positionsOfIgnoreComment = [];
+		$offset = 0;
+
+		while (($pos = strpos($tokenText, $ignoreComment, $offset)) !== false) {
+			$positionsOfIgnoreComment[] = $pos;
+			$offset = $pos + 1;
+		}
+
+		foreach ($positionsOfIgnoreComment as $pos) {
+			$line = $tokenLine + substr_count(substr($tokenText, 0, $pos), "\n") + ($ignoreNextLine ? 1 : 0);
 			$lines[$line] = null;
 		}
 

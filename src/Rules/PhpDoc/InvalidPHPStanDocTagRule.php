@@ -114,7 +114,9 @@ class InvalidPHPStanDocTagRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Unknown PHPDoc tag: %s',
 				$phpDocTag->name,
-			))->build();
+			))
+				->line(PhpDocLineHelper::detectLine($node, $phpDocTag))
+				->build();
 		}
 
 		return $errors;

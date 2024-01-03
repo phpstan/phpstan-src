@@ -51,6 +51,8 @@ parameters:
 		checkUnresolvableParameterTypes: false
 		readOnlyByPhpDoc: false
 		phpDocParserRequireWhitespaceBeforeDescription: false
+		phpDocParserIncludeLines: false
+		enableIgnoreErrorsWithinPhpDocs: false
 		runtimeReflectionRules: false
 		notAnalysedTrait: false
 		curlSetOptTypes: false
@@ -389,6 +391,8 @@ services:
 		arguments:
 			requireWhitespaceBeforeDescription: %featureToggles.phpDocParserRequireWhitespaceBeforeDescription%
 			preserveTypeAliasesWithInvalidTypes: true
+			usedAttributes:
+				lines: %featureToggles.phpDocParserIncludeLines%
 
 	-
 		class: PHPStan\PhpDoc\ConstExprParserFactory
@@ -1824,6 +1828,7 @@ services:
 		arguments:
 			parser: @currentPhpVersionPhpParser
 			lexer: @currentPhpVersionLexer
+			enableIgnoreErrorsWithinPhpDocs: %featureToggles.enableIgnoreErrorsWithinPhpDocs%
 		autowired: no
 
 	currentPhpVersionSimpleParser:

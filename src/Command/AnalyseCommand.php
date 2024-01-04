@@ -29,6 +29,8 @@ use Symfony\Component\Console\Output\StreamOutput;
 use Throwable;
 use function array_intersect;
 use function array_map;
+use function array_unique;
+use function array_values;
 use function count;
 use function dirname;
 use function filesize;
@@ -355,7 +357,31 @@ class AnalyseCommand extends Command
 			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 		}
 		if ($analysisResult->hasInternalErrors()) {
-			$inceptionResult->getStdOutput()->getStyle()->error('An internal error occurred. Baseline could not be generated. Re-run PHPStan without --generate-baseline to see what\'s going on.');
+			$internalErrors = array_values(array_unique($analysisResult->getInternalErrors()));
+
+			foreach ($internalErrors as $internalError) {
+				$inceptionResult->getStdOutput()->writeLineFormatted($internalError);
+				$inceptionResult->getStdOutput()->writeLineFormatted('');
+			}
+
+			$inceptionResult->getStdOutput()->getStyle()->error(sprintf(
+				'%s occurred. Baseline could not be generated.',
+				count($internalErrors) === 1 ? 'An internal error' : 'Internal errors',
+			));
+
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+		}
+
+		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+			if (!$fileSpecificError->hasNonIgnorableException()) {
+				continue;
+			}
+
+			$inceptionResult->getStdOutput()->getStyle()->error('An internal error occurred. Baseline could not be generated.');
+
+			$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getMessage());
+			$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getFile());
+			$inceptionResult->getStdOutput()->writeLineFormatted('');
 
 			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 		}

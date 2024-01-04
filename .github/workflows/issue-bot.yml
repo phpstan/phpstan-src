@@ -100,10 +100,14 @@ jobs:
         working-directory: "issue-bot"
         run: "composer install --no-interaction --no-progress"
 
-      - uses: actions/download-artifact@v4
+      - uses: Wandalen/wretry.action@v1.3.0
         with:
-          name: playground-cache
-          path: issue-bot/tmp
+          action: actions/download-artifact@v4
+          with: |
+            name: playground-cache
+            path: issue-bot/tmp
+          attempt_limit: 5
+          attempt_delay: 1000
 
       - name: "Run PHPStan"
         working-directory: "issue-bot"
@@ -135,21 +139,33 @@ jobs:
         working-directory: "issue-bot"
         run: "composer install --no-interaction --no-progress"
 
-      - uses: actions/download-artifact@v4
+      - uses: Wandalen/wretry.action@v1.3.0
         with:
-          name: playground-cache
-          path: issue-bot/tmp
+          action: actions/download-artifact@v4
+          with: |
+            name: playground-cache
+            path: issue-bot/tmp
+          attempt_limit: 5
+          attempt_delay: 1000
 
-      - uses: actions/download-artifact@v4
+      - uses: Wandalen/wretry.action@v1.3.0
         with:
-          name: issue-cache
-          path: issue-bot/tmp
+          action: actions/download-artifact@v4
+          with: |
+            name: issue-cache
+            path: issue-bot/tmp
+          attempt_limit: 5
+          attempt_delay: 1000
 
-      - uses: actions/download-artifact@v4
+      - uses: Wandalen/wretry.action@v1.3.0
         with:
-          pattern: results-*
-          merge-multiple: true
-          path: issue-bot/tmp
+          action: actions/download-artifact@v4
+          with: |
+            pattern: results-*
+            merge-multiple: true
+            path: issue-bot/tmp
+          attempt_limit: 5
+          attempt_delay: 1000
 
       - name: "Evaluate results - pull request"
         working-directory: "issue-bot"

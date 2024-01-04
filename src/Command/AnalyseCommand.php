@@ -328,6 +328,20 @@ class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 			}
 
+			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+				if (!$fileSpecificError->hasNonIgnorableException()) {
+					continue;
+				}
+
+				$inceptionResult->getStdOutput()->getStyle()->error('An internal error occurred. Baseline could not be generated.');
+
+				$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getMessage());
+				$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getFile());
+				$inceptionResult->getStdOutput()->writeLineFormatted('');
+
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+			}
+
 			$streamOutput = $this->createStreamOutput();
 			$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $streamOutput);
 			$baselineOutput = new SymfonyOutput($streamOutput, new SymfonyStyle($errorConsoleStyle));

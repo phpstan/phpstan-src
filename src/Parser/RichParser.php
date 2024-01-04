@@ -18,6 +18,7 @@ use function array_values;
 use function count;
 use function in_array;
 use function is_string;
+use function str_contains;
 use function strlen;
 use function strpos;
 use function substr;
@@ -154,14 +155,17 @@ class RichParser implements Parser
 					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line');
 
 			} else {
-				if (strpos($text, '@phpstan-ignore-next-line') !== false) {
+				$isNextLine = str_contains($text, '@phpstan-ignore-next-line');
+				$isCurrentLine = str_contains($text, '@phpstan-ignore-line');
+				if ($isNextLine) {
 					$line++;
-				} elseif (strpos($text, '@phpstan-ignore-line') === false) {
+				}
+				if ($isNextLine || $isCurrentLine) {
+					$line += substr_count($token[1], "\n");
+
+					$lines[$line] = null;
 					continue;
 				}
-
-				$line += substr_count($token[1], "\n");
-				$lines[$line] = null;
 			}
 
 			$ignorePos = strpos($text, '@phpstan-ignore');

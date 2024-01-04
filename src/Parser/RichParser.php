@@ -39,7 +39,7 @@ class RichParser implements Parser
 		private NameResolver $nameResolver,
 		private Container $container,
 		private IgnoreLexer $ignoreLexer,
-		private bool $enableIgnoreErrorsWithinPhpDocs,
+		private bool $enableIgnoreErrorsWithinPhpDocs = false,
 	)
 	{
 	}

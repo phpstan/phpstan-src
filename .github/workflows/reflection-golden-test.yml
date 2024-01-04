@@ -73,11 +73,14 @@ jobs:
           - "8.3"
 
     steps:
-      - name: "Download phpSymbols.txt"
-        uses: actions/download-artifact@v4
+      - uses: Wandalen/wretry.action@v1.3.0
         with:
-          name: phpSymbols
-          path: /tmp
+          action: actions/download-artifact@v4
+          with: |
+            name: phpSymbols
+            path: /tmp
+          attempt_limit: 5
+          attempt_delay: 1000
 
       - name: "Checkout base commit"
         uses: actions/checkout@v4

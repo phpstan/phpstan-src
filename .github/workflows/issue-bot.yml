@@ -167,6 +167,9 @@ jobs:
           attempt_limit: 5
           attempt_delay: 1000
 
+      - name: "List tmp"
+        run: "ls -lA issue-bot/tmp"
+
       - name: "Evaluate results - pull request"
         working-directory: "issue-bot"
         if: github.event_name == 'pull_request'

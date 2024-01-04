@@ -39,6 +39,7 @@ class RichParser implements Parser
 		private NameResolver $nameResolver,
 		private Container $container,
 		private IgnoreLexer $ignoreLexer,
+		private bool $enableIgnoreErrorsWithinPhpDocs,
 	)
 	{
 	}
@@ -150,14 +151,26 @@ class RichParser implements Parser
 			$text = $token[1];
 			$isNextLine = str_contains($text, '@phpstan-ignore-next-line');
 			$isCurrentLine = str_contains($text, '@phpstan-ignore-line');
-			if ($isNextLine) {
-				$line++;
-			}
-			if ($isNextLine || $isCurrentLine) {
-				$line += substr_count($token[1], "\n");
 
-				$lines[$line] = null;
-				continue;
+			if ($this->enableIgnoreErrorsWithinPhpDocs) {
+				$lines = $lines +
+					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-next-line', true) +
+					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line');
+
+				if ($isNextLine || $isCurrentLine) {
+					continue;
+				}
+
+			} else {
+				if ($isNextLine) {
+					$line++;
+				}
+				if ($isNextLine || $isCurrentLine) {
+					$line += substr_count($token[1], "\n");
+
+					$lines[$line] = null;
+					continue;
+				}
 			}
 
 			$ignorePos = strpos($text, '@phpstan-ignore');
@@ -204,6 +217,33 @@ class RichParser implements Parser
 			'lines' => $lines,
 			'errors' => $processedErrors,
 		];
+	}
+
+	/**
+	 * @return array<int, null>
+	 */
+	private function getLinesToIgnoreForTokenByIgnoreComment(
+		string $tokenText,
+		int $tokenLine,
+		string $ignoreComment,
+		bool $ignoreNextLine = false,
+	): array
+	{
+		$lines = [];
+		$positionsOfIgnoreComment = [];
+		$offset = 0;
+
+		while (($pos = strpos($tokenText, $ignoreComment, $offset)) !== false) {
+			$positionsOfIgnoreComment[] = $pos;
+			$offset = $pos + 1;
+		}
+
+		foreach ($positionsOfIgnoreComment as $pos) {
+			$line = $tokenLine + substr_count(substr($tokenText, 0, $pos), "\n") + ($ignoreNextLine ? 1 : 0);
+			$lines[$line] = null;
+		}
+
+		return $lines;
 	}
 
 	/**

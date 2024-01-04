@@ -508,7 +508,7 @@ class AnalyserTest extends PHPStanTestCase
 			__DIR__ . '/data/ignore-next-line.php',
 		], true);
 		$this->assertCount($reportUnmatchedIgnoredErrors ? 4 : 3, $result);
-		foreach ([10, 30, 34] as $i => $line) {
+		foreach ([10, 20, 24] as $i => $line) {
 			$this->assertArrayHasKey($i, $result);
 			$this->assertInstanceOf(Error::class, $result[$i]);
 			$this->assertSame('Fail.', $result[$i]->getMessage());
@@ -521,8 +521,20 @@ class AnalyserTest extends PHPStanTestCase
 
 		$this->assertArrayHasKey(3, $result);
 		$this->assertInstanceOf(Error::class, $result[3]);
-		$this->assertSame('No error to ignore is reported on line 38.', $result[3]->getMessage());
-		$this->assertSame(38, $result[3]->getLine());
+		$this->assertSame('No error to ignore is reported on line 28.', $result[3]->getMessage());
+		$this->assertSame(28, $result[3]->getLine());
+	}
+
+	public function testIgnoreNextLineLegacyBehaviour(): void
+	{
+		$result = $this->runAnalyser([], false, [__DIR__ . '/data/ignore-next-line-legacy.php'], true, false);
+
+		foreach ([10, 32, 36] as $i => $line) {
+			$this->assertArrayHasKey($i, $result);
+			$this->assertInstanceOf(Error::class, $result[$i]);
+			$this->assertSame('Fail.', $result[$i]->getMessage());
+			$this->assertSame($line, $result[$i]->getLine());
+		}
 	}
 
 	/**
@@ -611,9 +623,10 @@ class AnalyserTest extends PHPStanTestCase
 		bool $reportUnmatchedIgnoredErrors,
 		$filePaths,
 		bool $onlyFiles,
+		bool $enableIgnoreErrorsWithinPhpDocs = true,
 	): array
 	{
-		$analyser = $this->createAnalyser($reportUnmatchedIgnoredErrors);
+		$analyser = $this->createAnalyser($reportUnmatchedIgnoredErrors, $enableIgnoreErrorsWithinPhpDocs);
 
 		if (is_string($filePaths)) {
 			$filePaths = [$filePaths];
@@ -646,7 +659,7 @@ class AnalyserTest extends PHPStanTestCase
 		);
 	}
 
-	private function createAnalyser(bool $reportUnmatchedIgnoredErrors): Analyser
+	private function createAnalyser(bool $reportUnmatchedIgnoredErrors, bool $enableIgnoreErrorsWithinPhpDocs): Analyser
 	{
 		$ruleRegistry = new DirectRuleRegistry([
 			new AlwaysFailRule(),
@@ -695,6 +708,7 @@ class AnalyserTest extends PHPStanTestCase
 				new NameResolver(),
 				self::getContainer(),
 				new IgnoreLexer(),
+				$enableIgnoreErrorsWithinPhpDocs,
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new RuleErrorTransformer(),

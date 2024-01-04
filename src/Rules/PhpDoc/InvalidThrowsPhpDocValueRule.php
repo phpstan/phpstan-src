@@ -29,13 +29,13 @@ class InvalidThrowsPhpDocValueRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
+			return []; // is handled by virtual nodes
+		}
+
 		$docComment = $node->getDocComment();
 		if ($docComment === null) {
 			return [];
-		}
-
-		if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
-			return []; // is handled by virtual nodes
 		}
 
 		$functionName = null;

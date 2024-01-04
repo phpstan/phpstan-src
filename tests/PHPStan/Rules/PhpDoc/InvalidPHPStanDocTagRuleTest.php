@@ -30,26 +30,26 @@ class InvalidPHPStanDocTagRuleTest extends RuleTestCase
 		$errors = [
 			[
 				'Unknown PHPDoc tag: @phpstan-extens',
-				7,
+				6,
 			],
 			[
 				'Unknown PHPDoc tag: @phpstan-pararm',
-				14,
+				11,
 			],
 			[
 				'Unknown PHPDoc tag: @phpstan-varr',
-				44,
+				43,
 			],
 			[
 				'Unknown PHPDoc tag: @phpstan-varr',
-				47,
+				46,
 			],
 		];
 		yield [false, $errors];
 		yield [true, array_merge($errors, [
 			[
 				'Unknown PHPDoc tag: @phpstan-varr',
-				57,
+				56,
 			],
 		])];
 	}

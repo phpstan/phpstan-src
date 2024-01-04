@@ -149,14 +149,20 @@ class RichParser implements Parser
 			}
 
 			$text = $token[1];
+
+			$isNextLine = str_contains($text, '@phpstan-ignore-next-line');
+			$isCurrentLine = str_contains($text, '@phpstan-ignore-line');
+
 			if ($this->enableIgnoreErrorsWithinPhpDocs) {
 				$lines = $lines +
 					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-next-line', true) +
 					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line');
 
+				if ($isNextLine || $isCurrentLine) {
+					continue;
+				}
+
 			} else {
-				$isNextLine = str_contains($text, '@phpstan-ignore-next-line');
-				$isCurrentLine = str_contains($text, '@phpstan-ignore-line');
 				if ($isNextLine) {
 					$line++;
 				}

@@ -16,7 +16,6 @@ use PHPStan\Node\FileNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use function array_merge;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -43,14 +42,19 @@ final class UsedNamesRule implements Rule
 			if ($oneNode instanceof Namespace_) {
 				$namespaceName = $oneNode->name !== null ? $oneNode->name->toString() : '';
 				foreach ($oneNode->stmts as $stmt) {
-					$errors[] = $this->findErrorsForNode($stmt, $namespaceName, $usedNames);
+					foreach ($this->findErrorsForNode($stmt, $namespaceName, $usedNames) as $error) {
+						$errors[] = $error;
+					}
 				}
+				continue;
 			}
 
-			$errors[] = $this->findErrorsForNode($oneNode, '', $usedNames);
+			foreach ($this->findErrorsForNode($oneNode, '', $usedNames) as $error) {
+				$errors[] = $error;
+			}
 		}
 
-		return array_merge(...$errors);
+		return $errors;
 	}
 
 	/**

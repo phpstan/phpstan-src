@@ -1493,6 +1493,11 @@ parameters:
 			path: src/Type/Php/SscanfFunctionDynamicReturnTypeExtension.php
 
 		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 1
+			path: src/Type/Php/StrIncrementDecrementFunctionReturnTypeExtension.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/StrRepeatFunctionReturnTypeExtension.php

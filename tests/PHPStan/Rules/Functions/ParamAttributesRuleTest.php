@@ -19,8 +19,6 @@ use PHPStan\Testing\RuleTestCase;
 class ParamAttributesRuleTest extends RuleTestCase
 {
 
-	private bool $checkPromotedPropertyAttribute;
-
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
@@ -42,13 +40,11 @@ class ParamAttributesRuleTest extends RuleTestCase
 				new ClassCaseSensitivityCheck($reflectionProvider, false),
 				true,
 			),
-			$this->checkPromotedPropertyAttribute,
 		);
 	}
 
 	public function testRule(): void
 	{
-		$this->checkPromotedPropertyAttribute = false;
 		$this->analyse([__DIR__ . '/data/param-attributes.php'], [
 			[
 				'Attribute class ParamAttributes\Foo does not have the parameter target.',
@@ -65,44 +61,8 @@ class ParamAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testRuleCheckPromotedPropertyAttribute(): void
-	{
-		$this->checkPromotedPropertyAttribute = true;
-		$this->analyse([__DIR__ . '/data/param-attributes.php'], [
-			[
-				'Attribute class ParamAttributes\Foo does not have the parameter target.',
-				33,
-			],
-			[
-				'Attribute class ParamAttributes\Foo does not have the property target.',
-				72,
-			],
-			[
-				'Attribute class ParamAttributes\Bar does not have the property target.',
-				74,
-			],
-			[
-				'Attribute class ParamAttributes\Qux does not have the parameter target.',
-				76,
-			],
-			[
-				'Attribute class ParamAttributes\Qux does not have the parameter target.',
-				78,
-			],
-			[
-				'Attribute class ParamAttributes\Qux does not have the parameter target.',
-				80,
-			],
-			[
-				'Attribute class ParamAttributes\Qux does not have the parameter target.',
-				82,
-			],
-		]);
-	}
-
 	public function testSensitiveParameterAttribute(): void
 	{
-		$this->checkPromotedPropertyAttribute = false;
 		$this->analyse([__DIR__ . '/data/sensitive-parameter.php'], []);
 	}
 

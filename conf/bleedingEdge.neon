@@ -26,7 +26,6 @@ parameters:
 		missingMagicSerializationRule: true
 		nullContextForVoidReturningFunctions: true
 		unescapeStrings: true
-		promotedPropertyAttribute: true
 		alwaysCheckTooWideReturnTypeFinalMethods: true
 		duplicateStubs: true
 		logicalXor: true

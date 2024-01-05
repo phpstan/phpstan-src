@@ -3138,7 +3138,38 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = true;
+
 		$this->analyse([__DIR__ . '/data/bug-5518.php'], []);
+	}
+
+	public function testRequireExtends(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/../Properties/data/require-extends.php'], [
+			[
+				'Call to an undefined method RequireExtends\MyInterface::doesNotExist().',
+				43,
+			],
+		]);
+	}
+
+	public function testRequireImplements(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/../Properties/data/require-implements.php'], [
+			[
+				'Call to an undefined method RequireImplements\MyBaseClass::doesNotExist().',
+				44,
+			],
+		]);
 	}
 
 }

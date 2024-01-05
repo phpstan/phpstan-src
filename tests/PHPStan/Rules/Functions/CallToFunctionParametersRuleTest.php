@@ -628,11 +628,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/array_udiff.php'], [
 			[
-				'Parameter #3 $data_comp_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int<-1, 1>, Closure(string, string): string given.',
+				'Parameter #3 $data_comp_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int, Closure(string, string): string given.',
 				6,
 			],
 			[
-				'Parameter #3 $data_comp_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int<-1, 1>, Closure(int, int): non-falsy-string given.',
+				'Parameter #3 $data_comp_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int, Closure(int, int): non-falsy-string given.',
 				14,
 			],
 			[
@@ -644,7 +644,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				21,
 			],
 			[
-				'Parameter #3 $data_comp_func of function array_udiff expects callable(string, string): int<-1, 1>, Closure(string, int): non-empty-string given.',
+				'Parameter #3 $data_comp_func of function array_udiff expects callable(string, string): int, Closure(string, int): non-empty-string given.',
 				22,
 			],
 		]);
@@ -1602,6 +1602,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testBug7283(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7283.php'], []);
+	}
+
+	public function testBug9697(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9697.php'], []);
 	}
 
 }

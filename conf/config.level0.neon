@@ -94,6 +94,7 @@ rules:
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule
 	- PHPStan\Rules\Methods\MethodAttributesRule
 	- PHPStan\Rules\Methods\StaticMethodCallableRule
+	- PHPStan\Rules\Names\UsedNamesRule
 	- PHPStan\Rules\Operators\InvalidAssignVarRule
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule

@@ -22,6 +22,7 @@ lint:
 		--exclude tests/PHPStan/Analyser/data \
 		--exclude tests/PHPStan/Rules/Methods/data \
 		--exclude tests/PHPStan/Rules/Functions/data \
+		--exclude tests/PHPStan/Rules/Names/data \
 		--exclude tests/PHPStan/Rules/Operators/data/invalid-inc-dec.php \
 		--exclude tests/PHPStan/Rules/Arrays/data/offset-access-without-dim-for-reading.php \
 		--exclude tests/PHPStan/Rules/Classes/data/duplicate-declarations.php \

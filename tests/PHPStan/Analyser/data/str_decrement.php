@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace StrIncrementFunctionReturn;
+namespace StrDecrementFunctionReturn;
 
 use function PHPStan\Testing\assertType;
 

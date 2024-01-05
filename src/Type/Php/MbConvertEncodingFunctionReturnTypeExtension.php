@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
@@ -24,11 +23,10 @@ class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunctionRet
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
-		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		if (!isset($functionCall->getArgs()[0])) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
@@ -41,7 +39,7 @@ class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunctionRet
 			return new ArrayType(new IntegerType(), new StringType());
 		}
 
-		return $defaultReturnType;
+		return null;
 	}
 
 }

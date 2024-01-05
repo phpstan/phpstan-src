@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -45,12 +44,10 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		return $functionReflection->getName() === 'parse_url';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		if (count($functionCall->getArgs()) < 1) {
-			return ParametersAcceptorSelector::selectSingle(
-				$functionReflection->getVariants(),
-			)->getReturnType();
+			return null;
 		}
 
 		$this->cacheReturnTypes();

@@ -638,18 +638,18 @@ class TypeSpecifier
 					return new SpecifiedTypes();
 				}
 
-				if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
-					$type = $scope->getType($issetExpr);
-					$isNullable = !$type->isNull()->no();
+				$type = $scope->getType($issetExpr);
+				$isNullable = !$type->isNull()->no();
+				$exprType = $this->create(
+					$issetExpr,
+					new NullType(),
+					$context->negate(),
+					false,
+					$scope,
+					$rootExpr,
+				);
 
-					$exprType = $this->create(
-						$issetExpr,
-						new NullType(),
-						$context->negate(),
-						false,
-						$scope,
-						$rootExpr,
-					);
+				if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
 					if ($isset === true) {
 						if ($isNullable) {
 							return $exprType;
@@ -687,6 +687,10 @@ class TypeSpecifier
 						$scope,
 						$rootExpr,
 					);
+				}
+
+				if ($isNullable && $isset === true) {
+					return $exprType;
 				}
 
 				return new SpecifiedTypes();

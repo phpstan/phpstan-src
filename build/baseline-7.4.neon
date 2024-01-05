@@ -4,10 +4,6 @@ parameters:
 			message: "#^Class PHPStan\\\\Command\\\\ErrorsConsoleStyle has an uninitialized property \\$progressBar\\. Give it default value or assign it in the constructor\\.$#"
 			count: 1
 			path: ../src/Command/ErrorsConsoleStyle.php
-		-
-			message: "#^Class PHPStan\\\\DependencyInjection\\\\Reflection\\\\DirectClassReflectionExtensionRegistryProvider has an uninitialized property \\$broker\\. Give it default value or assign it in the constructor\\.$#"
-			count: 1
-			path: ../src/DependencyInjection/Reflection/DirectClassReflectionExtensionRegistryProvider.php
 
 		-
 			message: "#^Class PHPStan\\\\Parallel\\\\ParallelAnalyser has an uninitialized property \\$processPool\\. Give it default value or assign it in the constructor\\.$#"

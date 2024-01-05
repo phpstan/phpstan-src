@@ -26,13 +26,13 @@ class TooWideClosureReturnTypehintRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$closureReturnType = $scope->getAnonymousFunctionReturnType();
-		if ($closureReturnType === null || !$closureReturnType instanceof UnionType) {
+		$closureExpr = $node->getClosureExpr();
+		if ($closureExpr->returnType === null) {
 			return [];
 		}
 
-		$closureExpr = $node->getClosureExpr();
-		if ($closureExpr->returnType === null) {
+		$closureReturnType = $scope->getFunctionType($closureExpr->returnType, false, false);
+		if (!$closureReturnType instanceof UnionType) {
 			return [];
 		}
 

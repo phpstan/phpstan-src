@@ -1297,6 +1297,12 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		}
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-8621.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-8084.php');
+
+		if (PHP_VERSION_ID >= 80300) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/str_increment.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/str_decrement.php');
+		}
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3019.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/get-native-type.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/callsite-cast-narrowing.php');
@@ -1412,10 +1418,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5961.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10189.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10317.php');
-		if (PHP_VERSION_ID >= 80300) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/str_increment.php');
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/str_decrement.php');
-		}
 	}
 
 	/**

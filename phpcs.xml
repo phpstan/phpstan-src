@@ -79,9 +79,6 @@
 	<rule ref="SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly.ReferencedGeneralException">
 		<exclude-pattern>tests</exclude-pattern>
 	</rule>
-	<rule ref="SlevomatCodingStandard.Variables.UnusedVariable.UnusedVariable">
-		<exclude-pattern>src/Command/AnalyseApplication.php</exclude-pattern>
-	</rule>
 	<rule ref="SlevomatCodingStandard.ControlStructures.AssignmentInCondition"/>
 	<rule ref="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceOperator"/>
 	<rule ref="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceEqualOperator">

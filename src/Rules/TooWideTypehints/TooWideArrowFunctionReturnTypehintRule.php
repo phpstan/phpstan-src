@@ -24,15 +24,16 @@ class TooWideArrowFunctionReturnTypehintRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$functionReturnType = $scope->getAnonymousFunctionReturnType();
-		if ($functionReturnType === null || !$functionReturnType instanceof UnionType) {
-			return [];
-		}
-
 		$arrowFunction = $node->getOriginalNode();
 		if ($arrowFunction->returnType === null) {
 			return [];
 		}
+
+		$functionReturnType = $scope->getFunctionType($arrowFunction->returnType, false, false);
+		if (!$functionReturnType instanceof UnionType) {
+			return [];
+		}
+
 		$expr = $arrowFunction->expr;
 		if ($expr instanceof Node\Expr\YieldFrom || $expr instanceof Node\Expr\Yield_) {
 			return [];

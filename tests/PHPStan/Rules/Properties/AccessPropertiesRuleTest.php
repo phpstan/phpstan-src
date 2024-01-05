@@ -913,4 +913,20 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Comparison/data/bug-8536.php'], []);
 	}
 
+	public function testRequireExtends(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
+
+		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
+		$this->analyse([__DIR__ . '/data/require-extends.php'], [
+			[
+				'Access to an undefined property RequireExtends\MyInterface::$bar.',
+				36,
+				$tipText,
+			],
+		]);
+	}
+
 }

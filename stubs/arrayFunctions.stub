@@ -57,7 +57,7 @@ function uksort(array &$array, callable $callback): bool
  *
  * @param array<T> $one
  * @param array<T> $two
- * @param callable(T, T): int<-1, 1> $three
+ * @param callable(T, T): int $three
  */
 function array_udiff(
     array $one,

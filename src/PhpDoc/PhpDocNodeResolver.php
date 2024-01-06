@@ -14,6 +14,8 @@ use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
+use PHPStan\PhpDoc\Tag\RequireExtendsTag;
+use PHPStan\PhpDoc\Tag\RequireImplementsTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\PhpDoc\Tag\SelfOutTypeTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
@@ -25,6 +27,8 @@ use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\MixinTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\RequireExtendsTagValueNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\RequireImplementsTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -407,6 +411,26 @@ class PhpDocNodeResolver
 		return array_map(fn (MixinTagValueNode $mixinTagValueNode): MixinTag => new MixinTag(
 			$this->typeNodeResolver->resolve($mixinTagValueNode->type, $nameScope),
 		), $phpDocNode->getMixinTagValues());
+	}
+
+	/**
+	 * @return array<RequireExtendsTag>
+	 */
+	public function resolveRequireExtendsTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		return array_map(fn (RequireExtendsTagValueNode $requireExtendsTagValueNode): RequireExtendsTag => new RequireExtendsTag(
+			$this->typeNodeResolver->resolve($requireExtendsTagValueNode->type, $nameScope),
+		), $phpDocNode->getRequireExtendsTagValues());
+	}
+
+	/**
+	 * @return array<RequireImplementsTag>
+	 */
+	public function resolveRequireImplementsTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		return array_map(fn (RequireImplementsTagValueNode $requireImplementsTagValueNode): RequireImplementsTag => new RequireImplementsTag(
+			$this->typeNodeResolver->resolve($requireImplementsTagValueNode->type, $nameScope),
+		), $phpDocNode->getRequireImplementsTagValues());
 	}
 
 	/**

@@ -28,7 +28,7 @@ class AttributesCheck
 
 	/**
 	 * @param AttributeGroup[] $attrGroups
-	 * @param Attribute::TARGET_* $requiredTarget
+	 * @param int-mask-of<Attribute::TARGET_*> $requiredTarget
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(

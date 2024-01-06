@@ -4473,8 +4473,20 @@ class NodeScopeResolver
 			if (!isset($this->analysedFiles[$fileName])) {
 				continue;
 			}
+			$adaptations = [];
+			foreach ($node->adaptations as $adaptation) {
+				if ($adaptation->trait === null) {
+					$adaptations[] = $adaptation;
+					continue;
+				}
+				if ($adaptation->trait->toLowerString() !== $trait->toLowerString()) {
+					continue;
+				}
+
+				$adaptations[] = $adaptation;
+			}
 			$parserNodes = $this->parser->parseFile($fileName);
-			$this->processNodesForTraitUse($parserNodes, $traitReflection, $classScope, $node->adaptations, $nodeCallback);
+			$this->processNodesForTraitUse($parserNodes, $traitReflection, $classScope, $adaptations, $nodeCallback);
 		}
 	}
 

@@ -6,6 +6,7 @@ rules:
 	- PHPStan\Rules\DeadCode\UnreachableStatementRule
 	- PHPStan\Rules\DeadCode\UnusedPrivateConstantRule
 	- PHPStan\Rules\DeadCode\UnusedPrivateMethodRule
+	- PHPStan\Rules\DeadCode\UnusedBinaryOperationResultRule
 	- PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
 	- PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule

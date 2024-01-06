@@ -336,6 +336,11 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\ParentNodeTypeOfBinaryOperationsVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parser\TryCatchTypeVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor

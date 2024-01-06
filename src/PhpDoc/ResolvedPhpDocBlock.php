@@ -12,6 +12,8 @@ use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
+use PHPStan\PhpDoc\Tag\RequireExtendsTag;
+use PHPStan\PhpDoc\Tag\RequireImplementsTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\PhpDoc\Tag\SelfOutTypeTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
@@ -93,6 +95,12 @@ class ResolvedPhpDocBlock
 
 	/** @var array<MixinTag>|false */
 	private array|false $mixinTags = false;
+
+	/** @var array<RequireExtendsTag>|false */
+	private array|false $requireExtendsTags = false;
+
+	/** @var array<RequireImplementsTag>|false */
+	private array|false $requireImplementsTags = false;
 
 	/** @var array<TypeAliasTag>|false */
 	private array|false $typeAliasTags = false;
@@ -181,6 +189,8 @@ class ResolvedPhpDocBlock
 		$self->returnTag = null;
 		$self->throwsTag = null;
 		$self->mixinTags = [];
+		$self->requireExtendsTags = [];
+		$self->requireImplementsTags = [];
 		$self->typeAliasTags = [];
 		$self->typeAliasImportTags = [];
 		$self->assertTags = [];
@@ -241,6 +251,8 @@ class ResolvedPhpDocBlock
 		$result->returnTag = self::mergeReturnTags($this->getReturnTag(), $classReflection, $parents, $parentPhpDocBlocks);
 		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), $parents);
 		$result->mixinTags = $this->getMixinTags();
+		$result->requireExtendsTags = $this->getRequireExtendsTags();
+		$result->requireImplementsTags = $this->getRequireImplementsTags();
 		$result->typeAliasTags = $this->getTypeAliasTags();
 		$result->typeAliasImportTags = $this->getTypeAliasImportTags();
 		$result->assertTags = self::mergeAssertTags($this->getAssertTags(), $parents, $parentPhpDocBlocks);
@@ -336,6 +348,8 @@ class ResolvedPhpDocBlock
 		$self->returnTag = $returnTag;
 		$self->throwsTag = $this->throwsTag;
 		$self->mixinTags = $this->mixinTags;
+		$self->requireImplementsTags = $this->requireImplementsTags;
+		$self->requireExtendsTags = $this->requireExtendsTags;
 		$self->typeAliasTags = $this->typeAliasTags;
 		$self->typeAliasImportTags = $this->typeAliasImportTags;
 		$self->assertTags = $assertTags;
@@ -538,6 +552,36 @@ class ResolvedPhpDocBlock
 		}
 
 		return $this->mixinTags;
+	}
+
+	/**
+	 * @return array<RequireExtendsTag>
+	 */
+	public function getRequireExtendsTags(): array
+	{
+		if ($this->requireExtendsTags === false) {
+			$this->requireExtendsTags = $this->phpDocNodeResolver->resolveRequireExtendsTags(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+
+		return $this->requireExtendsTags;
+	}
+
+	/**
+	 * @return array<RequireImplementsTag>
+	 */
+	public function getRequireImplementsTags(): array
+	{
+		if ($this->requireImplementsTags === false) {
+			$this->requireImplementsTags = $this->phpDocNodeResolver->resolveRequireImplementsTags(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+
+		return $this->requireImplementsTags;
 	}
 
 	/**

@@ -21,6 +21,8 @@ use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
+use PHPStan\PhpDoc\Tag\RequireExtendsTag;
+use PHPStan\PhpDoc\Tag\RequireImplementsTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
 use PHPStan\PhpDoc\Tag\TypeAliasTag;
@@ -1592,6 +1594,32 @@ class ClassReflection
 		}
 
 		return $resolvedPhpDoc->getMixinTags();
+	}
+
+	/**
+	 * @return array<RequireExtendsTag>
+	 */
+	public function getRequireExtendsTags(): array
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		return $resolvedPhpDoc->getRequireExtendsTags();
+	}
+
+	/**
+	 * @return array<RequireImplementsTag>
+	 */
+	public function getRequireImplementsTags(): array
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		return $resolvedPhpDoc->getRequireImplementsTags();
 	}
 
 	/**

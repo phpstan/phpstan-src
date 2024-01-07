@@ -64,6 +64,14 @@ services:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\PhpDoc\IncompatibleRequireExtendsTypeRule
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+		tags:
+			- phpstan.rules.rule
+
 	-
 		class: PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule
 	-

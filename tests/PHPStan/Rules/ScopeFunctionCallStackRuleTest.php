@@ -27,6 +27,14 @@ class ScopeFunctionCallStackRuleTest extends RuleTestCase
 				"var_dump\nprint_r\nsleep",
 				7,
 			],
+			[
+				"var_dump\nprint_r\nsleep",
+				10,
+			],
+			[
+				"var_dump\nprint_r\nsleep",
+				13,
+			],
 		]);
 	}
 

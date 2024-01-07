@@ -7,7 +7,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<IncompatibleSelfOutTypeRule>
+ * @extends RuleTestCase<IncompatibleRequireExtendsTypeRule>
  */
 class IncompatibleRequireExtendsTypeRuleTest extends RuleTestCase
 {
@@ -42,19 +42,23 @@ class IncompatibleRequireExtendsTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @require-extends contains unknown class IncompatibleRequireExtends\TypeDoesNotExist.',
 				23,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols'
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'PHPDoc tag @require-extends cannot contain generic type.',
 				29,
 			],
 			[
-				'PHPDoc tag @require-extends is only valid on trait or interface.',
+				'PHPDoc tag @require-extends contains non-object type int.',
 				34,
 			],
 			[
 				'PHPDoc tag @require-extends is only valid on trait or interface.',
 				39,
+			],
+			[
+				'PHPDoc tag @require-extends is only valid on trait or interface.',
+				44,
 			],
 		]);
 	}

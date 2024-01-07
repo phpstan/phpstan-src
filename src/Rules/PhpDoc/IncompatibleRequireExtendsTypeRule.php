@@ -4,26 +4,22 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
-use PHPStan\Rules\Generics\GenericObjectTypeCheck;
-use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\GenericObjectType;
-use PHPStan\Type\Generic\TemplateTypeHelper;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function count;
 use function sprintf;
 
 /**
- * @implements Rule<InClassMethodNode>
+ * @implements Rule<InClassNode>
  */
 class IncompatibleRequireExtendsTypeRule implements Rule
 {

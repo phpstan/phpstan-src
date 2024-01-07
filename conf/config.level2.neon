@@ -66,6 +66,10 @@ services:
 			- phpstan.rules.rule
 
 	-
+		class: PHPStan\Rules\Classes\RequireExtendsRule
+		tags:
+			- phpstan.rules.rule
+	-
 		class: PHPStan\Rules\PhpDoc\IncompatibleRequireExtendsTypeRule
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%

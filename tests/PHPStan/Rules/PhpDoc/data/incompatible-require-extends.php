@@ -29,6 +29,11 @@ interface InvalidInterface4 {}
 interface InvalidInterface5 {}
 
 /**
+ * @phpstan-require-extends int
+ */
+interface InvalidInterface6 {}
+
+/**
  * @phpstan-require-extends SomeClass
  */
 class InvalidClass {}
@@ -59,6 +64,10 @@ class ValidTraitUse extends SomeClass
 	use ValidTrait;
 }
 
+class ValidTraitUse2 extends SomeSubClass
+{
+	use ValidTrait;
+}
 /**
  * @phpstan-require-extends SomeClass
  */
@@ -82,6 +91,11 @@ trait SomeTrait
 }
 
 class SomeClass
+{
+
+}
+
+class SomeSubClass extends SomeClass
 {
 
 }

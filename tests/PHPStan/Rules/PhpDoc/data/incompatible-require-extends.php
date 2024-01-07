@@ -95,6 +95,11 @@ class SomeClass
 
 }
 
+final class SomeFinalClass
+{
+
+}
+
 class SomeSubClass extends SomeClass
 {
 
@@ -109,3 +114,23 @@ enum SomeEnum
 {
 
 }
+
+/**
+ * @phpstan-require-extends SomeFinalClass
+ */
+interface InvalidInterface7 {}
+
+/**
+ * @phpstan-require-extends SomeFinalClass
+ */
+trait InvalidTrait {}
+
+/**
+ * @phpstan-require-extends self&\stdClass
+ */
+interface UnresolvableExtendsInterface {}
+
+/**
+ * @phpstan-require-extends self&\stdClass
+ */
+trait UnresolvableExtendsTrait {}

@@ -28,15 +28,15 @@ class IncompatibleRequireExtendsTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/incompatible-require-extends.php'], [
 			[
-				'PHPDoc tag @require-extends contains invalid type IncompatibleRequireExtends\SomeTrait.',
+				'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\SomeTrait.',
 				8,
 			],
 			[
-				'PHPDoc tag @require-extends contains invalid type IncompatibleRequireExtends\SomeInterface.',
+				'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\SomeInterface.',
 				13,
 			],
 			[
-				'PHPDoc tag @require-extends contains invalid type IncompatibleRequireExtends\SomeEnum.',
+				'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\SomeEnum.',
 				18,
 			],
 			[
@@ -59,6 +59,14 @@ class IncompatibleRequireExtendsTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @require-extends is only valid on trait or interface.',
 				44,
+			],
+			[
+				'PHPDoc tag @require-extends cannot contain final class IncompatibleRequireExtends\SomeFinalClass.',
+				121,
+			],
+			[
+				'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\UnresolvableExtendsInterface.',
+				131,
 			],
 		]);
 	}

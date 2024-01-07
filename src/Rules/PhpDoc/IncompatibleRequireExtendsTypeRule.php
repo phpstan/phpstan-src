@@ -78,8 +78,14 @@ class IncompatibleRequireExtendsTypeRule implements Rule
 			foreach ($type->getReferencedClasses() as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {
 					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @require-extends contains unknown class %s.', $class))->discoveringSymbolsTip()->build();
-				} elseif (!$this->reflectionProvider->getClass($class)->isClass()) {
-					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @require-extends contains invalid type %s.', $class))->build();
+					continue;
+				}
+
+				$referencedClassReflection = $this->reflectionProvider->getClass($class);
+				if (!$referencedClassReflection->isClass()) {
+					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @require-extends cannot contain non-class type %s.', $class))->build();
+				} elseif ($referencedClassReflection->isFinal()) {
+					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @require-extends cannot contain final class %s.', $class))->build();
 				} elseif ($this->checkClassCaseSensitivity) {
 					$errors = array_merge(
 						$errors,

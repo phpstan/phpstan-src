@@ -358,6 +358,7 @@ class TypeNodeResolver
 
 				return new ResourceType();
 
+			case 'open-resource':
 			case 'closed-resource':
 				return new ResourceType();
 

@@ -11,6 +11,7 @@ class Foo
 	 * @param pure-callable $pureCallable
 	 * @param callable-array $callableArray
 	 * @param closed-resource $closedResource
+	 * @param open-resource $openResource
 	 * @param enum-string $enumString
 	 * @param non-empty-literal-string $nonEmptyLiteralString
 	 * @param non-empty-scalar $nonEmptyScalar
@@ -21,6 +22,7 @@ class Foo
 		$pureCallable,
 		$callableArray,
 		$closedResource,
+		$openResource,
 		$enumString,
 		$nonEmptyLiteralString,
 		$nonEmptyScalar,
@@ -31,6 +33,7 @@ class Foo
 		assertType('callable(): mixed', $pureCallable);
 		assertType('array&callable(): mixed', $callableArray);
 		assertType('resource', $closedResource);
+		assertType('resource', $openResource);
 		assertType('class-string', $enumString);
 		assertType('literal-string&non-empty-string', $nonEmptyLiteralString);
 		assertType('float|int<min, -1>|int<1, max>|non-falsy-string|true', $nonEmptyScalar);

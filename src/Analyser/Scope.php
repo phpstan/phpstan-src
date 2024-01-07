@@ -11,6 +11,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
@@ -103,6 +104,9 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	public function isInFunctionExists(string $functionName): bool;
 
 	public function isInClosureBind(): bool;
+
+	/** @return list<FunctionReflection|MethodReflection> */
+	public function getFunctionCallStack(): array;
 
 	public function isParameterValueNullable(Param $parameter): bool;
 

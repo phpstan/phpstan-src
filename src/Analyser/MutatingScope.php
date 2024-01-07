@@ -174,7 +174,7 @@ class MutatingScope implements Scope
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
-	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
+	 * @param list<MethodReflection|FunctionReflection> $inFunctionCallsStack
 	 */
 	public function __construct(
 		private InternalScopeFactory $scopeFactory,
@@ -2491,6 +2491,11 @@ class MutatingScope implements Scope
 		]);
 
 		return $this->getType($expr)->isTrue()->yes();
+	}
+
+	public function getFunctionCallStack(): array
+	{
+		return $this->inFunctionCallsStack;
 	}
 
 	/** @api */

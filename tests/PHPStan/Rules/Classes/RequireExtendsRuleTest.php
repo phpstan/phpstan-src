@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<RequireExtendsRule>
@@ -18,7 +19,11 @@ class RequireExtendsRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/../PhpDoc/data/incompatible-require-extends.php'], [
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
+		}
+
+		$expectedErrors = [
 			[
 				'IncompatibleRequireExtends\ValidTrait requires using class to extend IncompatibleRequireExtends\SomeClass, but IncompatibleRequireExtends\InValidTraitUse2 does not.',
 				46,
@@ -35,7 +40,9 @@ class RequireExtendsRuleTest extends RuleTestCase
 				'IncompatibleRequireExtends\ValidInterface requires implementing class to extend IncompatibleRequireExtends\SomeClass, but IncompatibleRequireExtends\InvalidInterfaceUse does not.',
 				58,
 			],
-		]);
+		];
+
+		$this->analyse([__DIR__ . '/../PhpDoc/data/incompatible-require-extends.php'], $expectedErrors);
 	}
 
 }

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<IncompatibleRequireExtendsTypeRule>
@@ -26,6 +27,13 @@ class IncompatibleRequireExtendsTypeRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
+		$enumError = 'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\SomeEnum.';
+		$enumTip = null;
+		if (PHP_VERSION_ID < 80100) {
+			$enumError = 'PHPDoc tag @require-extends contains unknown class IncompatibleRequireExtends\SomeEnum.';
+			$enumTip = 'Learn more at https://phpstan.org/user-guide/discovering-symbols';
+		}
+
 		$this->analyse([__DIR__ . '/data/incompatible-require-extends.php'], [
 			[
 				'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\SomeTrait.',
@@ -36,8 +44,9 @@ class IncompatibleRequireExtendsTypeRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\SomeEnum.',
+				$enumError,
 				18,
+				$enumTip,
 			],
 			[
 				'PHPDoc tag @require-extends contains unknown class IncompatibleRequireExtends\TypeDoesNotExist.',

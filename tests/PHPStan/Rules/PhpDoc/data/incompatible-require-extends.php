@@ -125,7 +125,7 @@ interface InvalidInterface7 {}
  */
 trait InvalidTrait {}
 
-class InvalidClass3 {
+class InvalidClass2 {
 	use InvalidTrait;
 }
 

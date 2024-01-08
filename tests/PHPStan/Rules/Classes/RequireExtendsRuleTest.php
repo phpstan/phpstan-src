@@ -41,7 +41,7 @@ class RequireExtendsRuleTest extends RuleTestCase
 				58,
 			],
 			[
-				'IncompatibleRequireExtends\InvalidTrait requires using class to extend IncompatibleRequireExtends\SomeFinalClass, but IncompatibleRequireExtends\InvalidClass3 does not.',
+				'IncompatibleRequireExtends\InvalidTrait requires using class to extend IncompatibleRequireExtends\SomeFinalClass, but IncompatibleRequireExtends\InvalidClass2 does not.',
 				128,
 			],
 			[

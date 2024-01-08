@@ -13,8 +13,8 @@ use PhpParser\Node\Stmt\Use_;
 use PhpParser\Node\Stmt\UseUse;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use function in_array;
 use function sprintf;
@@ -59,7 +59,7 @@ final class UsedNamesRule implements Rule
 
 	/**
 	 * @param array<string, string[]> $usedNames
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function findErrorsForNode(Node $node, string $namespace, array &$usedNames): array
 	{
@@ -99,6 +99,7 @@ final class UsedNamesRule implements Rule
 						$type,
 						$namespace !== '' ? $namespace . '\\' . $node->name->toString() : $node->name->toString(),
 					))
+						->identifier(sprintf('%s.nameInUse', $type))
 						->line($node->getLine())
 						->nonIgnorable()
 						->build(),
@@ -114,7 +115,7 @@ final class UsedNamesRule implements Rule
 	/**
 	 * @param UseUse[] $uses
 	 * @param array<string, string[]> $usedNames
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	private function findErrorsInUses(array $uses, string $useGroupPrefix, string $lowerNamespace, array &$usedNames): array
 	{
@@ -130,6 +131,7 @@ final class UsedNamesRule implements Rule
 					$useGroupPrefix !== '' ? $useGroupPrefix . '\\' . $use->name->toString() : $use->name->toString(),
 					$use->getAlias()->toString(),
 				))
+					->identifier('use.nameInUse')
 					->line($use->getLine())
 					->nonIgnorable()
 					->build();

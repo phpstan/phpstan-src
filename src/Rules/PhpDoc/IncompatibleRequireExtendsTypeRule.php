@@ -3,8 +3,8 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
+use PhpParser\Node\Stmt\ClassLike;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\InClassNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -19,7 +19,7 @@ use function count;
 use function sprintf;
 
 /**
- * @implements Rule<InClassNode>
+ * @implements Rule<ClassLike>
  */
 class IncompatibleRequireExtendsTypeRule implements Rule
 {
@@ -35,12 +35,19 @@ class IncompatibleRequireExtendsTypeRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return InClassNode::class;
+		return ClassLike::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$classReflection = $node->getClassReflection();
+		if (
+			$node->namespacedName === null
+			|| !$this->reflectionProvider->hasClass($node->namespacedName->toString())
+		) {
+			return [];
+		}
+
+		$classReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());
 		$extendsTags = $classReflection->getRequireExtendsTags();
 
 		if (

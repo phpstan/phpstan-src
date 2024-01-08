@@ -125,6 +125,10 @@ interface InvalidInterface7 {}
  */
 trait InvalidTrait {}
 
+class InvalidClass3 {
+	use InvalidTrait;
+}
+
 /**
  * @phpstan-require-extends self&\stdClass
  */
@@ -134,3 +138,7 @@ interface UnresolvableExtendsInterface {}
  * @phpstan-require-extends self&\stdClass
  */
 trait UnresolvableExtendsTrait {}
+
+class InvalidClass3 {
+	use UnresolvableExtendsTrait;
+}

@@ -74,8 +74,16 @@ class IncompatibleRequireExtendsTypeRuleTest extends RuleTestCase
 				121,
 			],
 			[
+				'PHPDoc tag @require-extends cannot contain final class IncompatibleRequireExtends\SomeFinalClass.',
+				126,
+			],
+			[
 				'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\UnresolvableExtendsInterface.',
-				131,
+				135,
+			],
+			[
+				'PHPDoc tag @require-extends contains unresolvable type.',
+				140,
 			],
 		]);
 	}

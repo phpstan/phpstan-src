@@ -40,6 +40,14 @@ class RequireExtendsRuleTest extends RuleTestCase
 				'IncompatibleRequireExtends\ValidInterface requires implementing class to extend IncompatibleRequireExtends\SomeClass, but IncompatibleRequireExtends\InvalidInterfaceUse does not.',
 				58,
 			],
+			[
+				'IncompatibleRequireExtends\InvalidTrait requires using class to extend IncompatibleRequireExtends\SomeFinalClass, but IncompatibleRequireExtends\InvalidClass3 does not.',
+				128,
+			],
+			[
+				'IncompatibleRequireExtends\UnresolvableExtendsTrait requires using class to extend *NEVER*, but IncompatibleRequireExtends\InvalidClass3 does not.',
+				142,
+			],
 		];
 
 		$this->analyse([__DIR__ . '/../PhpDoc/data/incompatible-require-extends.php'], $expectedErrors);

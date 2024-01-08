@@ -9,6 +9,12 @@ class Foo
 	{
 		/** @phpstan-ignore-next-line */
 		succ(); // reported as unmatched
+
+		/**
+		 * @phpstan-ignore-next-line
+		 * @var int
+		 */
+		succ(); // not reported as unmatched because phpstan-ignore-next-line is not last
 	}
 
 }

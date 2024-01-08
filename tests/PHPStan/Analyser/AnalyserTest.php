@@ -467,11 +467,11 @@ class AnalyserTest extends PHPStanTestCase
 
 	public function testIgnoreNextLine(): void
 	{
-		$result = $this->runAnalyser([], true, [
+		$result = $this->runAnalyser([], false, [
 			__DIR__ . '/data/ignore-next-line.php',
 		], true);
-		$this->assertCount(3, $result);
-		foreach ([10, 20, 24] as $i => $line) {
+		$this->assertCount(5, $result);
+		foreach ([10, 20, 24, 31, 50] as $i => $line) {
 			$this->assertArrayHasKey($i, $result);
 			$this->assertInstanceOf(Error::class, $result[$i]);
 			$this->assertSame('Fail.', $result[$i]->getMessage());
@@ -484,8 +484,8 @@ class AnalyserTest extends PHPStanTestCase
 		$result = $this->runAnalyser([], true, [
 			__DIR__ . '/data/ignore-next-line-unmatched.php',
 		], true);
-		$this->assertCount(1, $result);
-		foreach ([11] as $i => $line) {
+		$this->assertCount(2, $result);
+		foreach ([11, 15] as $i => $line) {
 			$this->assertArrayHasKey($i, $result);
 			$this->assertInstanceOf(Error::class, $result[$i]);
 			$this->assertStringContainsString('No error to ignore is reported on line', $result[$i]->getMessage());

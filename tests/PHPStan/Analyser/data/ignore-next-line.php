@@ -23,9 +23,6 @@ class Foo
 		if (fail()) {
 			fail(); // reported
 		}
-
-		/** @phpstan-ignore-next-line */
-		succ(); // reported as unmatched
 	}
 
 }

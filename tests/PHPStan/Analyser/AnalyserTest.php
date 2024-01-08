@@ -499,30 +499,32 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertNoErrors($result);
 	}
 
-	/**
-	 * @dataProvider dataTrueAndFalse
-	 */
-	public function testIgnoreNextLine(bool $reportUnmatchedIgnoredErrors): void
+	public function testIgnoreNextLine(): void
 	{
-		$result = $this->runAnalyser([], $reportUnmatchedIgnoredErrors, [
+		$result = $this->runAnalyser([], false, [
 			__DIR__ . '/data/ignore-next-line.php',
 		], true);
-		$this->assertCount($reportUnmatchedIgnoredErrors ? 4 : 3, $result);
-		foreach ([10, 20, 24] as $i => $line) {
+		$this->assertCount(5, $result);
+		foreach ([10, 20, 24, 31, 50] as $i => $line) {
 			$this->assertArrayHasKey($i, $result);
 			$this->assertInstanceOf(Error::class, $result[$i]);
 			$this->assertSame('Fail.', $result[$i]->getMessage());
 			$this->assertSame($line, $result[$i]->getLine());
 		}
+	}
 
-		if (!$reportUnmatchedIgnoredErrors) {
-			return;
+	public function testIgnoreNextLineUnmatched(): void
+	{
+		$result = $this->runAnalyser([], true, [
+			__DIR__ . '/data/ignore-next-line-unmatched.php',
+		], true);
+		$this->assertCount(2, $result);
+		foreach ([11, 15] as $i => $line) {
+			$this->assertArrayHasKey($i, $result);
+			$this->assertInstanceOf(Error::class, $result[$i]);
+			$this->assertStringContainsString('No error to ignore is reported on line', $result[$i]->getMessage());
+			$this->assertSame($line, $result[$i]->getLine());
 		}
-
-		$this->assertArrayHasKey(3, $result);
-		$this->assertInstanceOf(Error::class, $result[3]);
-		$this->assertSame('No error to ignore is reported on line 28.', $result[3]->getMessage());
-		$this->assertSame(28, $result[3]->getLine());
 	}
 
 	public function testIgnoreNextLineLegacyBehaviour(): void

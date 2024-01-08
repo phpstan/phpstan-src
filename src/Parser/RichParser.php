@@ -16,14 +16,18 @@ use function array_filter;
 use function array_pop;
 use function array_values;
 use function count;
+use function implode;
 use function in_array;
 use function is_string;
+use function preg_match_all;
+use function sprintf;
 use function str_contains;
 use function strlen;
 use function strpos;
 use function substr;
 use function substr_count;
 use const ARRAY_FILTER_USE_KEY;
+use const PREG_OFFSET_CAPTURE;
 use const T_COMMENT;
 use const T_DOC_COMMENT;
 use const T_WHITESPACE;
@@ -32,6 +36,10 @@ class RichParser implements Parser
 {
 
 	public const VISITOR_SERVICE_TAG = 'phpstan.parser.richParserNodeVisitor';
+
+	private const PHPDOC_TAG_REGEX = '(@(?:[a-z][a-z0-9-\\\\]+:)?[a-z][a-z0-9-\\\\]*+)';
+
+	private const PHPDOC_DOCTRINE_TAG_REGEX = '(@[a-z_\\\\][a-z0-9_\:\\\\]*[a-z_][a-z0-9_]*)';
 
 	public function __construct(
 		private \PhpParser\Parser $parser,
@@ -152,10 +160,27 @@ class RichParser implements Parser
 			$isNextLine = str_contains($text, '@phpstan-ignore-next-line');
 			$isCurrentLine = str_contains($text, '@phpstan-ignore-line');
 
-			if ($this->enableIgnoreErrorsWithinPhpDocs) {
-				$lines = $lines +
-					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-next-line', true) +
-					$this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line');
+			if ($this->enableIgnoreErrorsWithinPhpDocs && $type === T_DOC_COMMENT) {
+				$lines += $this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line');
+				if ($isNextLine) {
+					$pattern = sprintf('~%s~si', implode('|', [self::PHPDOC_TAG_REGEX, self::PHPDOC_DOCTRINE_TAG_REGEX]));
+					$r = preg_match_all($pattern, $text, $pregMatches, PREG_OFFSET_CAPTURE);
+					if ($r !== false) {
+						$c = count($pregMatches[0]);
+						if ($c > 0) {
+							[$lastMatchTag, $lastMatchOffset] = $pregMatches[0][$c - 1];
+							if ($lastMatchTag === '@phpstan-ignore-next-line') {
+								// this will let us ignore errors outside of PHPDoc
+								// and also cut off the PHPDoc text before the last tag
+								$lineToIgnore = $line + 1 + substr_count($text, "\n");
+								$lines[$lineToIgnore] = null;
+								$text = substr($text, 0, $lastMatchOffset);
+							}
+						}
+					}
+
+					$lines += $this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-next-line', true);
+				}
 
 				if ($isNextLine || $isCurrentLine) {
 					continue;

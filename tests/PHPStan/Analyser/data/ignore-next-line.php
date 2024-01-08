@@ -24,8 +24,30 @@ class Foo
 			fail(); // reported
 		}
 
-		/** @phpstan-ignore-next-line */
-		succ(); // reported as unmatched
+		/**
+		 * @phpstan-ignore-next-line
+		 */
+		fail();
+		fail(); // reported
+
+		/**
+		 * @noinspection PhpStrictTypeCheckingInspection
+		 * @phpstan-ignore-next-line
+		 */
+		fail(); // not reported because the ignore tag is valid
+
+		/**
+		 * @phpstan-ignore-next-line Some very loooooooooooooooooooooooooooooooooooooooooooon
+		 *                           coooooooooooooooooooooooooooooooooooooooooooooooooomment
+		 *                           on many lines.
+		 */
+		fail(); // not reported because the ignore tag is valid
+
+		/**
+		 * @phpstan-ignore-next-line
+		 * @var int
+		 */
+		fail(); // reported becase ignore tag in PHPDoc is not last
 	}
 
 }

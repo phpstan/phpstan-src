@@ -18,6 +18,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -35,7 +36,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	private ?Type $subtractedType;
 
-	private ?ObjectType $staticObjectType = null;
+	protected ?ObjectType $staticObjectType = null;
 
 	private string $baseClass;
 
@@ -43,7 +44,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 	 * @api
 	 */
 	public function __construct(
-		private ClassReflection $classReflection,
+		protected ClassReflection $classReflection,
 		?Type $subtractedType = null,
 	)
 	{
@@ -287,6 +288,18 @@ class StaticType implements TypeWithClassName, SubtractableType
 	private function transformStaticType(Type $type, ClassMemberAccessAnswerer $scope): Type
 	{
 		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($scope): Type {
+			if ($type instanceof GenericStaticType) {
+				$classReflection = $this->classReflection;
+
+				if ($scope->isInClass()) {
+					$classReflection = $scope->getClassReflection();
+				}
+
+				if ($classReflection->getParentClass() !== null && $classReflection->getParentClass()->hasConsistentTemplates()) {
+					return new GenericObjectType($this->classReflection->getName(), $type->getTypes(), null, $classReflection);
+				}
+			}
+
 			if ($type instanceof StaticType) {
 				$classReflection = $this->classReflection;
 				$isFinal = false;
@@ -321,7 +334,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->getConstant($constantName);
 	}
 
-	public function changeBaseClass(ClassReflection $classReflection): self
+	public function changeBaseClass(ClassReflection $classReflection): StaticType
 	{
 		return new self($classReflection, $this->subtractedType);
 	}

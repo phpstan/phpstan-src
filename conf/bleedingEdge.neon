@@ -48,3 +48,4 @@ parameters:
 		callUserFunc: true
 		finalByPhpDoc: true
 		magicConstantOutOfContext: true
+		consistentTemplates: true

@@ -281,4 +281,42 @@ class ClassAncestorsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8473.php'], []);
 	}
 
+	public function testConsistentTemplates(): void
+	{
+		$this->analyse([__DIR__ . '/data/consistent-templates.php'], [
+			[
+				'Class ConsistentTemplates\ClassWithTwoTemplates should have same amount of template tags as ConsistentTemplates\ConsistentFoo. 1 expected but 2 found.',
+				16,
+			],
+			[
+				'Class ConsistentTemplates\ClassExtendingWithNonTemplateType has non-template types in @extends tag but ConsistentTemplates\ConsistentFoo has consistent templates.',
+				22,
+			],
+			[
+				'Class ConsistentTemplates\ClassWithTwoTemplatesI should have same amount of template tags as ConsistentTemplates\ConsistentBar. 1 expected but 2 found.',
+				35,
+			],
+			[
+				'Class ConsistentTemplates\ClassExtendingWithNonTemplateTypeI has non-template types in @implements tag but ConsistentTemplates\ConsistentBar has consistent templates.',
+				41,
+			],
+			[
+				'Class ConsistentTemplates\Baz should have same amount of template tags as ConsistentTemplates\ConsistentFoo. 1 expected but 0 found.',
+				47,
+			],
+			[
+				'Class ConsistentTemplates\Baz has non-template types in @extends tag but ConsistentTemplates\ConsistentFoo has consistent templates.',
+				47,
+			],
+			[
+				'Class ConsistentTemplates\Baz should have same amount of template tags as ConsistentTemplates\ConsistentBar. 1 expected but 0 found.',
+				47,
+			],
+			[
+				'Class ConsistentTemplates\Baz has non-template types in @implements tag but ConsistentTemplates\ConsistentBar has consistent templates.',
+				47,
+			],
+		]);
+	}
+
 }

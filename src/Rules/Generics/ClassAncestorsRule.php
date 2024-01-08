@@ -8,10 +8,16 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
+use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use function array_map;
 use function array_merge;
+use function count;
 use function sprintf;
 
 /**
@@ -45,9 +51,12 @@ class ClassAncestorsRule implements Rule
 		$className = $classReflection->getName();
 		$escapedClassName = SprintfHelper::escapeFormatString($className);
 
+		$extendsTagTypes = array_map(static fn (ExtendsTag $tag): Type => $tag->getType(), $classReflection->getExtendsTags());
+		$implementsTagTypes = array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $classReflection->getImplementsTags());
+
 		$extendsErrors = $this->genericAncestorsCheck->check(
 			$originalNode->extends !== null ? [$originalNode->extends] : [],
-			array_map(static fn (ExtendsTag $tag): Type => $tag->getType(), $classReflection->getExtendsTags()),
+			$extendsTagTypes,
 			sprintf('Class %s @extends tag contains incompatible type %%s.', $escapedClassName),
 			sprintf('Class %s has @extends tag, but does not extend any class.', $escapedClassName),
 			sprintf('The @extends tag of class %s describes %%s but the class extends %%s.', $escapedClassName),
@@ -63,7 +72,7 @@ class ClassAncestorsRule implements Rule
 
 		$implementsErrors = $this->genericAncestorsCheck->check(
 			$originalNode->implements,
-			array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $classReflection->getImplementsTags()),
+			$implementsTagTypes,
 			sprintf('Class %s @implements tag contains incompatible type %%s.', $escapedClassName),
 			sprintf('Class %s has @implements tag, but does not implement any interface.', $escapedClassName),
 			sprintf('The @implements tag of class %s describes %%s but the class implements: %%s', $escapedClassName),
@@ -81,7 +90,76 @@ class ClassAncestorsRule implements Rule
 			$implementsErrors[] = $error;
 		}
 
+		foreach ($this->checkConsistentTemplateViolations($classReflection, $extendsTagTypes, 'extends') as $error) {
+			$extendsErrors[] = $error;
+		}
+
+		foreach ($this->checkConsistentTemplateViolations($classReflection, $implementsTagTypes, 'implements') as $error) {
+			$implementsErrors[] = $error;
+		}
+
 		return array_merge($extendsErrors, $implementsErrors);
+	}
+
+	/**
+	 * @param Type[] $types
+	 *
+	 * @return RuleError[]
+	 */
+	private function checkConsistentTemplateViolations(ClassReflection $classReflection, array $types, string $tagName): array
+	{
+		/** @var RuleError[] $errors */
+		$errors = [];
+
+		foreach ($types as $type) {
+			if (! $type instanceof GenericObjectType) {
+				continue;
+			}
+
+			$ancestorClassReflection = $type->getClassReflection();
+
+			if ($ancestorClassReflection === null) {
+				continue;
+			}
+
+			if (! $ancestorClassReflection->hasConsistentTemplates()) {
+				continue;
+			}
+
+			$className = $classReflection->getName();
+			$escapedClassName = SprintfHelper::escapeFormatString($className);
+
+			$ancestorTemplateCount = count($ancestorClassReflection->getTemplateTags());
+
+			if (count($classReflection->getTemplateTags()) !== $ancestorTemplateCount) {
+				$errors[] = RuleErrorBuilder::message(
+					sprintf(
+						'Class %s should have same amount of template tags as %s. %d expected but %d found.',
+						$escapedClassName,
+						SprintfHelper::escapeFormatString($ancestorClassReflection->getName()),
+						$ancestorTemplateCount,
+						count($classReflection->getTemplateTags()),
+					),
+				)->build();
+			}
+
+			foreach ($type->getTypes() as $extendType) {
+				if ($extendType instanceof TemplateType) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message(
+					sprintf(
+						'Class %s has non-template types in @%s tag but %s has consistent templates.',
+						$escapedClassName,
+						$tagName,
+						SprintfHelper::escapeFormatString($ancestorClassReflection->getName()),
+					),
+				)->build();
+			}
+		}
+
+		return $errors;
 	}
 
 }

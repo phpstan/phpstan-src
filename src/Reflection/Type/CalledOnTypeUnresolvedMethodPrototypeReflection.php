@@ -10,6 +10,9 @@ use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\Reflection\ResolvedMethodReflection;
+use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\GenericStaticType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -83,7 +86,7 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 			array_map(
 				fn (ParameterReflectionWithPhpDocs $parameter): ParameterReflectionWithPhpDocs => new DummyParameterWithPhpDocs(
 					$parameter->getName(),
-					$this->transformStaticType($parameter->getType()),
+					$this->transformStaticType($parameter->getType(), $declaringClass),
 					$parameter->isOptional(),
 					$parameter->passedByReference(),
 					$parameter->isVariadic(),
@@ -95,7 +98,7 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 				$acceptor->getParameters(),
 			),
 			$acceptor->isVariadic(),
-			$this->transformStaticType($acceptor->getReturnType()),
+			$this->transformStaticType($acceptor->getReturnType(), $declaringClass),
 			$this->transformStaticType($acceptor->getPhpDocReturnType()),
 			$this->transformStaticType($acceptor->getNativeReturnType()),
 			$acceptor->getCallSiteVarianceMap(),
@@ -109,9 +112,25 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 		return new ChangedTypeMethodReflection($declaringClass, $method, $variants, $namedArgumentsVariants);
 	}
 
-	private function transformStaticType(Type $type): Type
+	private function transformStaticType(Type $type, ClassReflection $declaringClass): Type
 	{
-		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($declaringClass): Type {
+			if ($type instanceof GenericStaticType) {
+				if (! $declaringClass->hasConsistentTemplates()) {
+					return $traverse($type);
+				}
+
+				if ($this->calledOnType instanceof GenericObjectType) {
+					return new GenericObjectType($this->calledOnType->getClassName(), $type->getTypes());
+				}
+
+				if ($this->calledOnType instanceof ObjectType) {
+					return new GenericObjectType($this->calledOnType->getClassName(), $type->getTypes());
+				}
+
+				return $this->calledOnType;
+			}
+
 			if ($type instanceof StaticType) {
 				return $this->calledOnType;
 			}

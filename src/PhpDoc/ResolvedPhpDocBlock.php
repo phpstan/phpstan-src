@@ -136,6 +136,8 @@ class ResolvedPhpDocBlock
 
 	private ?bool $acceptsNamedArguments = null;
 
+	private ?bool $hasConsistentTemplates = null;
+
 	private function __construct()
 	{
 	}
@@ -206,6 +208,7 @@ class ResolvedPhpDocBlock
 		$self->isAllowedPrivateMutation = false;
 		$self->hasConsistentConstructor = false;
 		$self->acceptsNamedArguments = true;
+		$self->hasConsistentTemplates = false;
 
 		return $self;
 	}
@@ -268,6 +271,7 @@ class ResolvedPhpDocBlock
 		$result->isAllowedPrivateMutation = $this->isAllowedPrivateMutation();
 		$result->hasConsistentConstructor = $this->hasConsistentConstructor();
 		$result->acceptsNamedArguments = $acceptsNamedArguments;
+		$result->hasConsistentTemplates = $this->hasConsistentTemplates();
 
 		return $result;
 	}
@@ -713,6 +717,16 @@ class ResolvedPhpDocBlock
 			);
 		}
 		return $this->acceptsNamedArguments;
+	}
+
+	public function hasConsistentTemplates(): bool
+	{
+		if ($this->hasConsistentTemplates === null) {
+			$this->hasConsistentTemplates = $this->phpDocNodeResolver->resolveHasConsistentTemplates(
+				$this->phpDocNode,
+			);
+		}
+		return $this->hasConsistentTemplates;
 	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap

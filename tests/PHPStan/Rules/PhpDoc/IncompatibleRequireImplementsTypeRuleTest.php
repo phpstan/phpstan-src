@@ -5,6 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<IncompatibleRequireImplementsTypeRule>
@@ -26,14 +27,22 @@ class IncompatibleRequireImplementsTypeRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/incompatible-require-implements.php'], [
+		$enumError = 'PHPDoc tag @require-implements cannot contain non-interface type IncompatibleRequireImplements\SomeEnum.';
+		$enumTip = null;
+		if (PHP_VERSION_ID < 80100) {
+			$enumError = 'PHPDoc tag @require-implements contains unknown class IncompatibleRequireImplements\SomeEnum.';
+			$enumTip = 'Learn more at https://phpstan.org/user-guide/discovering-symbols';
+		}
+
+		$expectedErrors = [
 			[
 				'PHPDoc tag @require-implements cannot contain non-interface type IncompatibleRequireImplements\SomeTrait.',
 				8,
 			],
 			[
-				'PHPDoc tag @require-implements cannot contain non-interface type IncompatibleRequireImplements\SomeEnum.',
+				$enumError,
 				13,
+				$enumTip,
 			],
 			[
 				'PHPDoc tag @require-implements contains unknown class IncompatibleRequireImplements\TypeDoesNotExist.',
@@ -56,11 +65,16 @@ class IncompatibleRequireImplementsTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @require-implements is only valid on trait.',
 				40,
 			],
-			[
+		];
+
+		if (PHP_VERSION_ID > 80100) {
+			$expectedErrors[] = [
 				'PHPDoc tag @require-implements is only valid on trait.',
 				45,
-			],
-		]);
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/incompatible-require-implements.php'], $expectedErrors);
 	}
 
 }

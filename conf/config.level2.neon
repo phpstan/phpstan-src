@@ -77,6 +77,17 @@ services:
 			- phpstan.rules.rule
 
 	-
+		class: PHPStan\Rules\Classes\RequireImplementsRule
+		tags:
+			- phpstan.rules.rule
+	-
+		class: PHPStan\Rules\PhpDoc\IncompatibleRequireImplementsTypeRule
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule
 	-
 		class: PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule

@@ -4,7 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\InTraitNode;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
@@ -15,12 +15,13 @@ use function array_merge;
 use function sprintf;
 
 /**
- * @implements Rule<InTraitNode>
+ * @implements Rule<Node\Stmt\Trait_>
  */
 class IncompatibleRequireExtendsTypeTraitRule implements Rule
 {
 
 	public function __construct(
+		private ReflectionProvider $reflectionProvider,
 		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		private bool $checkClassCaseSensitivity,
 	)
@@ -29,12 +30,19 @@ class IncompatibleRequireExtendsTypeTraitRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return InTraitNode::class;
+		return Node\Stmt\Trait_::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$traitReflection = $node->getTraitReflection();
+		if (
+			$node->namespacedName === null
+			|| !$this->reflectionProvider->hasClass($node->namespacedName->toString())
+		) {
+			return [];
+		}
+
+		$traitReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());
 		$extendsTags = $traitReflection->getRequireExtendsTags();
 
 		$errors = [];

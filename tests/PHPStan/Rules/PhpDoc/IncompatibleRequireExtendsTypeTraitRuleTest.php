@@ -17,6 +17,7 @@ class IncompatibleRequireExtendsTypeTraitRuleTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 
 		return new IncompatibleRequireExtendsTypeTraitRule(
+			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
 			true,
 		);

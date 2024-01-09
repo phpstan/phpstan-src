@@ -19,7 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class IncompatibleRequireImplementsTypeRule implements Rule
+class IncompatibleRequireExtendsTypeClassRule implements Rule
 {
 
 	public function __construct(
@@ -38,34 +38,36 @@ class IncompatibleRequireImplementsTypeRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$classReflection = $node->getClassReflection();
-		$implementsTags = $classReflection->getRequireImplementsTags();
+		$extendsTags = $classReflection->getRequireExtendsTags();
 
 		if (
-			!$classReflection->isTrait()
-			&& count($implementsTags) > 0
+			!$classReflection->isInterface()
+			&& count($extendsTags) > 0
 		) {
 			return [
-				RuleErrorBuilder::message('PHPDoc tag @phpstan-require-implements is only valid on trait.')->build(),
+				RuleErrorBuilder::message('PHPDoc tag @phpstan-require-extends is only valid on trait or interface.')->build(),
 			];
 		}
 
 		$errors = [];
-		foreach ($implementsTags as $implementsTag) {
-			$type = $implementsTag->getType();
+		foreach ($extendsTags as $extendsTag) {
+			$type = $extendsTag->getType();
 			if (!$type instanceof ObjectType) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))->build();
 				continue;
 			}
 
 			$class = $type->getClassName();
 			if (!$this->reflectionProvider->hasClass($class)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains unknown class %s.', $class))->discoveringSymbolsTip()->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends contains unknown class %s.', $class))->discoveringSymbolsTip()->build();
 				continue;
 			}
 
 			$referencedClassReflection = $this->reflectionProvider->getClass($class);
-			if (!$referencedClassReflection->isInterface()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements cannot contain non-interface type %s.', $class))->build();
+			if (!$referencedClassReflection->isClass()) {
+				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends cannot contain non-class type %s.', $class))->build();
+			} elseif ($referencedClassReflection->isFinal()) {
+				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends cannot contain final class %s.', $class))->build();
 			} elseif ($this->checkClassCaseSensitivity) {
 				$errors = array_merge(
 					$errors,

@@ -121,3 +121,27 @@ new class {
 new class implements RequiredInterface {
 	use ValidTrait;
 };
+
+class InvalidTraitUse1 {
+	use InvalidTrait1;
+}
+
+class InvalidTraitUse2 {
+	use InvalidTrait2;
+}
+
+class InvalidTraitUse3 {
+	use InvalidTrait3;
+}
+
+class InvalidTraitUse4 {
+	use InvalidTrait4;
+}
+
+class InvalidTraitUse5 {
+	use InvalidTrait5;
+}
+
+class InvalidTraitUse6 {
+	use InvalidTrait6;
+}

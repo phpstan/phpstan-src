@@ -8,16 +8,16 @@ use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends RuleTestCase<IncompatibleRequireExtendsTypeRule>
+ * @extends RuleTestCase<IncompatibleRequireExtendsTypeClassRule>
  */
-class IncompatibleRequireExtendsTypeRuleTest extends RuleTestCase
+class IncompatibleRequireExtendsTypeRuleClassTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
-		return new IncompatibleRequireExtendsTypeRule(
+		return new IncompatibleRequireExtendsTypeClassRule(
 			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
 			true,
@@ -69,16 +69,8 @@ class IncompatibleRequireExtendsTypeRuleTest extends RuleTestCase
 				121,
 			],
 			[
-				'PHPDoc tag @phpstan-require-extends cannot contain final class IncompatibleRequireExtends\SomeFinalClass.',
-				126,
-			],
-			[
 				'PHPDoc tag @phpstan-require-extends contains non-object type IncompatibleRequireExtends\UnresolvableExtendsInterface&stdClass.',
 				135,
-			],
-			[
-				'PHPDoc tag @phpstan-require-extends contains non-object type *NEVER*.',
-				140,
 			],
 		]);
 	}

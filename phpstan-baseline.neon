@@ -644,12 +644,17 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
-			path: src/Rules/PhpDoc/IncompatibleRequireExtendsTypeRule.php
+			path: src/Rules/PhpDoc/IncompatibleRequireExtendsTypeClassRule.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 1
-			path: src/Rules/PhpDoc/IncompatibleRequireImplementsTypeRule.php
+			path: src/Rules/PhpDoc/IncompatibleRequireExtendsTypeTraitRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/PhpDoc/IncompatibleRequireImplementsTypeTraitRule.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericObjectType is error\\-prone and deprecated\\.$#"

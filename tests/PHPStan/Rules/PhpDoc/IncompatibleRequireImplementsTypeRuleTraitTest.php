@@ -8,16 +8,16 @@ use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends RuleTestCase<IncompatibleRequireImplementsTypeRule>
+ * @extends RuleTestCase<IncompatibleRequireImplementsTypeTraitRule>
  */
-class IncompatibleRequireImplementsTypeRuleTest extends RuleTestCase
+class IncompatibleRequireImplementsTypeRuleTraitTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
-		return new IncompatibleRequireImplementsTypeRule(
+		return new IncompatibleRequireImplementsTypeTraitRule(
 			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
 			true,
@@ -60,18 +60,7 @@ class IncompatibleRequireImplementsTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @phpstan-require-implements contains non-object type *NEVER*.',
 				34,
 			],
-			[
-				'PHPDoc tag @phpstan-require-implements is only valid on trait.',
-				40,
-			],
 		];
-
-		if (PHP_VERSION_ID > 80100) {
-			$expectedErrors[] = [
-				'PHPDoc tag @phpstan-require-implements is only valid on trait.',
-				45,
-			];
-		}
 
 		$this->analyse([__DIR__ . '/data/incompatible-require-implements.php'], $expectedErrors);
 	}

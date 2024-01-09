@@ -4,7 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\InClassNode;
+use PHPStan\Node\InTraitNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -13,13 +13,12 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
-use function count;
 use function sprintf;
 
 /**
- * @implements Rule<InClassNode>
+ * @implements Rule<InTraitNode>
  */
-class IncompatibleRequireExtendsTypeRule implements Rule
+class IncompatibleRequireExtendsTypeTraitRule implements Rule
 {
 
 	public function __construct(
@@ -32,23 +31,13 @@ class IncompatibleRequireExtendsTypeRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return InClassNode::class;
+		return InTraitNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$classReflection = $node->getClassReflection();
-		$extendsTags = $classReflection->getRequireExtendsTags();
-
-		if (
-			!$classReflection->isTrait()
-			&& !$classReflection->isInterface()
-			&& count($extendsTags) > 0
-		) {
-			return [
-				RuleErrorBuilder::message('PHPDoc tag @phpstan-require-extends is only valid on trait or interface.')->build(),
-			];
-		}
+		$traitReflection = $node->getTraitReflection();
+		$extendsTags = $traitReflection->getRequireExtendsTags();
 
 		$errors = [];
 		foreach ($extendsTags as $extendsTag) {

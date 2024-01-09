@@ -142,3 +142,11 @@ trait UnresolvableExtendsTrait {}
 class InvalidClass3 {
 	use UnresolvableExtendsTrait;
 }
+
+new class {
+	use ValidTrait;
+};
+
+new class extends SomeClass {
+	use ValidTrait;
+};

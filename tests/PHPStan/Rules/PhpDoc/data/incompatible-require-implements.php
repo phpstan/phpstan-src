@@ -113,3 +113,11 @@ enum SomeEnum
 {
 
 }
+
+new class {
+	use ValidTrait;
+};
+
+new class implements RequiredInterface {
+	use ValidTrait;
+};

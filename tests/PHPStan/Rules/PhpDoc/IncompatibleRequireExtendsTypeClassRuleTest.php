@@ -10,7 +10,7 @@ use const PHP_VERSION_ID;
 /**
  * @extends RuleTestCase<IncompatibleRequireExtendsTypeClassRule>
  */
-class IncompatibleRequireExtendsTypeRuleClassTest extends RuleTestCase
+class IncompatibleRequireExtendsTypeClassRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
@@ -18,7 +18,6 @@ class IncompatibleRequireExtendsTypeRuleClassTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 
 		return new IncompatibleRequireExtendsTypeClassRule(
-			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
 			true,
 		);

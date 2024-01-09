@@ -5,7 +5,6 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InTraitNode;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
@@ -22,7 +21,6 @@ class IncompatibleRequireImplementsTypeTraitRule implements Rule
 {
 
 	public function __construct(
-		private ReflectionProvider $reflectionProvider,
 		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		private bool $checkClassCaseSensitivity,
 	)
@@ -48,12 +46,12 @@ class IncompatibleRequireImplementsTypeTraitRule implements Rule
 			}
 
 			$class = $type->getClassName();
-			if (!$this->reflectionProvider->hasClass($class)) {
+			$referencedClassReflection = $type->getClassReflection();
+			if ($referencedClassReflection === null) {
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains unknown class %s.', $class))->discoveringSymbolsTip()->build();
 				continue;
 			}
 
-			$referencedClassReflection = $this->reflectionProvider->getClass($class);
 			if (!$referencedClassReflection->isInterface()) {
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements cannot contain non-interface type %s.', $class))->build();
 			} elseif ($this->checkClassCaseSensitivity) {

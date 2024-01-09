@@ -5,7 +5,6 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
@@ -23,7 +22,6 @@ class IncompatibleRequireExtendsTypeClassRule implements Rule
 {
 
 	public function __construct(
-		private ReflectionProvider $reflectionProvider,
 		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		private bool $checkClassCaseSensitivity,
 	)
@@ -58,12 +56,12 @@ class IncompatibleRequireExtendsTypeClassRule implements Rule
 			}
 
 			$class = $type->getClassName();
-			if (!$this->reflectionProvider->hasClass($class)) {
+			$referencedClassReflection = $type->getClassReflection();
+			if ($referencedClassReflection === null) {
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends contains unknown class %s.', $class))->discoveringSymbolsTip()->build();
 				continue;
 			}
 
-			$referencedClassReflection = $this->reflectionProvider->getClass($class);
 			if (!$referencedClassReflection->isClass()) {
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends cannot contain non-class type %s.', $class))->build();
 			} elseif ($referencedClassReflection->isFinal()) {

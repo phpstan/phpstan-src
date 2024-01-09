@@ -9,7 +9,7 @@ use PHPStan\Testing\RuleTestCase;
 /**
  * @extends RuleTestCase<IncompatibleRequireExtendsTypeTraitRule>
  */
-class IncompatibleRequireExtendsTypeRuleTraitTest extends RuleTestCase
+class IncompatibleRequireExtendsTypeTraitRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
@@ -17,7 +17,6 @@ class IncompatibleRequireExtendsTypeRuleTraitTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 
 		return new IncompatibleRequireExtendsTypeTraitRule(
-			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
 			true,
 		);

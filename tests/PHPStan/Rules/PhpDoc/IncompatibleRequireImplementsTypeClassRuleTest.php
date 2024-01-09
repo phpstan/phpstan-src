@@ -9,7 +9,7 @@ use const PHP_VERSION_ID;
 /**
  * @extends RuleTestCase<IncompatibleRequireImplementsTypeClassRule>
  */
-class IncompatibleRequireImplementsTypeRuleClassTest extends RuleTestCase
+class IncompatibleRequireImplementsTypeClassRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule

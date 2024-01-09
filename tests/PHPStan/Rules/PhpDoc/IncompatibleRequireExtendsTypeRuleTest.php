@@ -20,27 +20,26 @@ class IncompatibleRequireExtendsTypeRuleTest extends RuleTestCase
 		return new IncompatibleRequireExtendsTypeRule(
 			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
-			new UnresolvableTypeHelper(),
 			true,
 		);
 	}
 
 	public function testRule(): void
 	{
-		$enumError = 'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\SomeEnum.';
+		$enumError = 'PHPDoc tag @phpstan-require-extends cannot contain non-class type IncompatibleRequireExtends\SomeEnum.';
 		$enumTip = null;
 		if (PHP_VERSION_ID < 80100) {
-			$enumError = 'PHPDoc tag @require-extends contains unknown class IncompatibleRequireExtends\SomeEnum.';
+			$enumError = 'PHPDoc tag @phpstan-require-extends contains unknown class IncompatibleRequireExtends\SomeEnum.';
 			$enumTip = 'Learn more at https://phpstan.org/user-guide/discovering-symbols';
 		}
 
 		$this->analyse([__DIR__ . '/data/incompatible-require-extends.php'], [
 			[
-				'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\SomeTrait.',
+				'PHPDoc tag @phpstan-require-extends cannot contain non-class type IncompatibleRequireExtends\SomeTrait.',
 				8,
 			],
 			[
-				'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\SomeInterface.',
+				'PHPDoc tag @phpstan-require-extends cannot contain non-class type IncompatibleRequireExtends\SomeInterface.',
 				13,
 			],
 			[
@@ -49,40 +48,36 @@ class IncompatibleRequireExtendsTypeRuleTest extends RuleTestCase
 				$enumTip,
 			],
 			[
-				'PHPDoc tag @require-extends contains unknown class IncompatibleRequireExtends\TypeDoesNotExist.',
+				'PHPDoc tag @phpstan-require-extends contains unknown class IncompatibleRequireExtends\TypeDoesNotExist.',
 				23,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'PHPDoc tag @require-extends cannot contain generic type.',
-				29,
-			],
-			[
-				'PHPDoc tag @require-extends contains non-object type int.',
+				'PHPDoc tag @phpstan-require-extends contains non-object type int.',
 				34,
 			],
 			[
-				'PHPDoc tag @require-extends is only valid on trait or interface.',
+				'PHPDoc tag @phpstan-require-extends is only valid on trait or interface.',
 				39,
 			],
 			[
-				'PHPDoc tag @require-extends is only valid on trait or interface.',
+				'PHPDoc tag @phpstan-require-extends is only valid on trait or interface.',
 				44,
 			],
 			[
-				'PHPDoc tag @require-extends cannot contain final class IncompatibleRequireExtends\SomeFinalClass.',
+				'PHPDoc tag @phpstan-require-extends cannot contain final class IncompatibleRequireExtends\SomeFinalClass.',
 				121,
 			],
 			[
-				'PHPDoc tag @require-extends cannot contain final class IncompatibleRequireExtends\SomeFinalClass.',
+				'PHPDoc tag @phpstan-require-extends cannot contain final class IncompatibleRequireExtends\SomeFinalClass.',
 				126,
 			],
 			[
-				'PHPDoc tag @require-extends cannot contain non-class type IncompatibleRequireExtends\UnresolvableExtendsInterface.',
+				'PHPDoc tag @phpstan-require-extends contains non-object type IncompatibleRequireExtends\UnresolvableExtendsInterface&stdClass.',
 				135,
 			],
 			[
-				'PHPDoc tag @require-extends contains unresolvable type.',
+				'PHPDoc tag @phpstan-require-extends contains non-object type *NEVER*.',
 				140,
 			],
 		]);

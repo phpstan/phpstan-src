@@ -5,13 +5,10 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
-use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
-use function array_map;
-use function in_array;
 use function sprintf;
 
 /**

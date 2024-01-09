@@ -449,6 +449,16 @@ parameters:
 			path: src/Rules/Classes/ImpossibleInstanceOfRule.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			count: 2
+			path: src/Rules/Classes/RequireExtendsRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/Classes/RequireImplementsRule.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 6
 			path: src/Rules/Comparison/BooleanAndConstantConditionRule.php
@@ -630,6 +640,16 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) and Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
 			count: 1
 			path: src/Rules/Methods/StaticMethodCallCheck.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/PhpDoc/IncompatibleRequireExtendsTypeRule.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			count: 1
+			path: src/Rules/PhpDoc/IncompatibleRequireImplementsTypeRule.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericObjectType is error\\-prone and deprecated\\.$#"

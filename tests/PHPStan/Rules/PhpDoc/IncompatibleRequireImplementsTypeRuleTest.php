@@ -20,23 +20,22 @@ class IncompatibleRequireImplementsTypeRuleTest extends RuleTestCase
 		return new IncompatibleRequireImplementsTypeRule(
 			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
-			new UnresolvableTypeHelper(),
 			true,
 		);
 	}
 
 	public function testRule(): void
 	{
-		$enumError = 'PHPDoc tag @require-implements cannot contain non-interface type IncompatibleRequireImplements\SomeEnum.';
+		$enumError = 'PHPDoc tag @phpstan-require-implements cannot contain non-interface type IncompatibleRequireImplements\SomeEnum.';
 		$enumTip = null;
 		if (PHP_VERSION_ID < 80100) {
-			$enumError = 'PHPDoc tag @require-implements contains unknown class IncompatibleRequireImplements\SomeEnum.';
+			$enumError = 'PHPDoc tag @phpstan-require-implements contains unknown class IncompatibleRequireImplements\SomeEnum.';
 			$enumTip = 'Learn more at https://phpstan.org/user-guide/discovering-symbols';
 		}
 
 		$expectedErrors = [
 			[
-				'PHPDoc tag @require-implements cannot contain non-interface type IncompatibleRequireImplements\SomeTrait.',
+				'PHPDoc tag @phpstan-require-implements cannot contain non-interface type IncompatibleRequireImplements\SomeTrait.',
 				8,
 			],
 			[
@@ -45,31 +44,31 @@ class IncompatibleRequireImplementsTypeRuleTest extends RuleTestCase
 				$enumTip,
 			],
 			[
-				'PHPDoc tag @require-implements contains unknown class IncompatibleRequireImplements\TypeDoesNotExist.',
+				'PHPDoc tag @phpstan-require-implements contains unknown class IncompatibleRequireImplements\TypeDoesNotExist.',
 				18,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'PHPDoc tag @require-implements cannot contain generic type.',
+				'PHPDoc tag @phpstan-require-implements cannot contain non-interface type IncompatibleRequireImplements\SomeClass.',
 				24,
 			],
 			[
-				'PHPDoc tag @require-implements contains non-object type int.',
+				'PHPDoc tag @phpstan-require-implements contains non-object type int.',
 				29,
 			],
 			[
-				'PHPDoc tag @require-implements contains unresolvable type.',
+				'PHPDoc tag @phpstan-require-implements contains non-object type *NEVER*.',
 				34,
 			],
 			[
-				'PHPDoc tag @require-implements is only valid on trait.',
+				'PHPDoc tag @phpstan-require-implements is only valid on trait.',
 				40,
 			],
 		];
 
 		if (PHP_VERSION_ID > 80100) {
 			$expectedErrors[] = [
-				'PHPDoc tag @require-implements is only valid on trait.',
+				'PHPDoc tag @phpstan-require-implements is only valid on trait.',
 				45,
 			];
 		}

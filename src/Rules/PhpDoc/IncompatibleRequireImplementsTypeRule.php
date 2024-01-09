@@ -10,9 +10,7 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Generic\GenericObjectType;
-use PHPStan\Type\Type;
-use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
@@ -27,7 +25,6 @@ class IncompatibleRequireImplementsTypeRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkClassCaseSensitivity,
 	)
 	{
@@ -55,68 +52,38 @@ class IncompatibleRequireImplementsTypeRule implements Rule
 			&& count($implementsTags) > 0
 		) {
 			return [
-				RuleErrorBuilder::message('PHPDoc tag @require-implements is only valid on trait.')->build(),
+				RuleErrorBuilder::message('PHPDoc tag @phpstan-require-implements is only valid on trait.')->build(),
 			];
 		}
 
 		$errors = [];
 		foreach ($implementsTags as $implementsTag) {
 			$type = $implementsTag->getType();
-			if (!$type->canCallMethods()->yes() || !$type->canAccessProperties()->yes()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @require-implements contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))->build();
+			if (!$type instanceof ObjectType) {
+				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))->build();
 				continue;
 			}
 
-			if (
-				$this->unresolvableTypeHelper->containsUnresolvableType($type)
-			) {
-				$errors[] = RuleErrorBuilder::message('PHPDoc tag @require-implements contains unresolvable type.')->build();
+			$class = $type->getClassName();
+			if (!$this->reflectionProvider->hasClass($class)) {
+				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains unknown class %s.', $class))->discoveringSymbolsTip()->build();
 				continue;
 			}
 
-			if (
-				$this->containsGenericType($type)
-			) {
-				$errors[] = RuleErrorBuilder::message('PHPDoc tag @require-implements cannot contain generic type.')->build();
-				continue;
-			}
-
-			foreach ($type->getReferencedClasses() as $class) {
-				if (!$this->reflectionProvider->hasClass($class)) {
-					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @require-implements contains unknown class %s.', $class))->discoveringSymbolsTip()->build();
-					continue;
-				}
-
-				$referencedClassReflection = $this->reflectionProvider->getClass($class);
-				if (!$referencedClassReflection->isInterface()) {
-					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @require-implements cannot contain non-interface type %s.', $class))->build();
-				} elseif ($this->checkClassCaseSensitivity) {
-					$errors = array_merge(
-						$errors,
-						$this->classCaseSensitivityCheck->checkClassNames([
-							new ClassNameNodePair($class, $node),
-						]),
-					);
-				}
+			$referencedClassReflection = $this->reflectionProvider->getClass($class);
+			if (!$referencedClassReflection->isInterface()) {
+				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements cannot contain non-interface type %s.', $class))->build();
+			} elseif ($this->checkClassCaseSensitivity) {
+				$errors = array_merge(
+					$errors,
+					$this->classCaseSensitivityCheck->checkClassNames([
+						new ClassNameNodePair($class, $node),
+					]),
+				);
 			}
 		}
 
 		return $errors;
-	}
-
-	private function containsGenericType(Type $phpDocType): bool
-	{
-		$containsGeneric = false;
-		TypeTraverser::map($phpDocType, static function (Type $type, callable $traverse) use (&$containsGeneric): Type {
-			if ($type instanceof GenericObjectType) {
-				$containsGeneric = true;
-				return $type;
-			}
-			$traverse($type);
-			return $type;
-		});
-
-		return $containsGeneric;
 	}
 
 }

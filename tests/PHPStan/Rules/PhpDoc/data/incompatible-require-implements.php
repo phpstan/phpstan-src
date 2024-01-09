@@ -97,6 +97,8 @@ trait SomeTrait
 
 }
 
+class SomeClass {}
+
 class SomeSubClass extends SomeClass
 {
 

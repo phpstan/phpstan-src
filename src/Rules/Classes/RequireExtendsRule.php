@@ -9,7 +9,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
-use function in_array;
 use function sprintf;
 
 /**

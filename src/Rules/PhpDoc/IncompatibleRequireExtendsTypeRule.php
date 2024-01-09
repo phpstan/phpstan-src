@@ -52,7 +52,7 @@ class IncompatibleRequireExtendsTypeRule implements Rule
 
 		if (
 			!$classReflection->isTrait()
-			&& ! $classReflection->isInterface()
+			&& !$classReflection->isInterface()
 			&& count($extendsTags) > 0
 		) {
 			return [

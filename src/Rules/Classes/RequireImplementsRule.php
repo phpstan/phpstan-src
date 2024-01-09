@@ -8,6 +8,7 @@ use PHPStan\Node\InClassNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function in_array;
@@ -27,16 +28,17 @@ class RequireImplementsRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$classReflection = $node->getClassReflection();
-		$interfaceNames = array_map(static fn (ClassReflection $interface): string => $interface->getName(), $classReflection->getInterfaces());
 
 		$errors = [];
 		foreach ($classReflection->getTraits() as $trait) {
 			$implementsTags = $trait->getRequireImplementsTags();
 			foreach ($implementsTags as $implementsTag) {
 				$type = $implementsTag->getType();
-				$typeName = $type->describe(VerbosityLevel::typeOnly());
+				if (!$type instanceof ObjectType) {
+					continue;
+				}
 
-				if (in_array($typeName, $interfaceNames, true)) {
+				if ($classReflection->implementsInterface($type->getClassName())) {
 					continue;
 				}
 

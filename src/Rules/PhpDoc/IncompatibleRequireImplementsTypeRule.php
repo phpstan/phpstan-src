@@ -51,7 +51,7 @@ class IncompatibleRequireImplementsTypeRule implements Rule
 		$implementsTags = $classReflection->getRequireImplementsTags();
 
 		if (
-			! $classReflection->isTrait()
+			!$classReflection->isTrait()
 			&& count($implementsTags) > 0
 		) {
 			return [

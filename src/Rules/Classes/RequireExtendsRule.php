@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function in_array;
 use function sprintf;
@@ -25,16 +26,17 @@ class RequireExtendsRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$classReflection = $node->getClassReflection();
-		$parentNames = $classReflection->getParentClassesNames();
 
 		$errors = [];
-		foreach ($classReflection->getInterfaces() as $interface) {
+		foreach ($classReflection->getImmediateInterfaces() as $interface) {
 			$extendsTags = $interface->getRequireExtendsTags();
 			foreach ($extendsTags as $extendsTag) {
 				$type = $extendsTag->getType();
-				$typeName = $type->describe(VerbosityLevel::typeOnly());
+				if (!$type instanceof ObjectType) {
+					continue;
+				}
 
-				if (in_array($typeName, $parentNames, true)) {
+				if ($classReflection->isSubclassOf($type->getClassName())) {
 					continue;
 				}
 
@@ -53,9 +55,11 @@ class RequireExtendsRule implements Rule
 			$extendsTags = $trait->getRequireExtendsTags();
 			foreach ($extendsTags as $extendsTag) {
 				$type = $extendsTag->getType();
-				$typeName = $type->describe(VerbosityLevel::typeOnly());
+				if (!$type instanceof ObjectType) {
+					continue;
+				}
 
-				if (in_array($typeName, $parentNames, true)) {
+				if ($classReflection->isSubclassOf($type->getClassName())) {
 					continue;
 				}
 

@@ -1299,6 +1299,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug10302(): void
 	{
+		if (PHP_VERSION_ID < 80200) {
+			$this->markTestSkipped('Test requires PHP 8.2');
+		}
+
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10302.php');
 		$this->assertNoErrors($errors);
 	}

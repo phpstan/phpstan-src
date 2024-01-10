@@ -57,4 +57,9 @@ class RequireExtendsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../PhpDoc/data/incompatible-require-extends.php'], $expectedErrors);
 	}
 
+	public function testExtendedInterfaceBug(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10302-extended-interface.php'], []);
+	}
+
 }

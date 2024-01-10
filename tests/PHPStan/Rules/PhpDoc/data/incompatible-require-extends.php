@@ -163,3 +163,16 @@ new class extends SomeClass {
 new class {
 	use ValidPsalmTrait;
 };
+
+/**
+ * @phpstan-require-extends SomeClass
+ * @phpstan-require-extends SomeOtherClass
+ */
+trait TooMuchExtends {}
+
+/**
+ * @phpstan-require-extends SomeClass
+ * @phpstan-require-extends SomeOtherClass
+ * @phpstan-require-extends SomeOtherClass
+ */
+interface TooMuchExtendsIface {}

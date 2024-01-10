@@ -73,6 +73,10 @@ class RequireExtendsDefinitionClassRuleTest extends RuleTestCase
 				'PHPDoc tag @phpstan-require-extends contains non-object type IncompatibleRequireExtends\UnresolvableExtendsInterface&stdClass.',
 				135,
 			],
+			[
+				'PHPDoc tag @phpstan-require-extends can only be used once.',
+				178,
+			],
 		]);
 	}
 

@@ -36,6 +36,10 @@ class RequireExtendsDefinitionTraitRuleTest extends RuleTestCase
 				'PHPDoc tag @phpstan-require-extends contains non-object type *NEVER*.',
 				140,
 			],
+			[
+				'PHPDoc tag @phpstan-require-extends can only be used once.',
+				171,
+			],
 		]);
 	}
 

@@ -11,6 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
+use function count;
 use function sprintf;
 
 final class RequireExtendsCheck
@@ -30,6 +31,11 @@ final class RequireExtendsCheck
 	public function checkExtendsTags(Node $node, array $extendsTags): array
 	{
 		$errors = [];
+
+		if (count($extendsTags) > 1) {
+			$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends can only be used once.'))->build();
+		}
+
 		foreach ($extendsTags as $extendsTag) {
 			$type = $extendsTag->getType();
 			if (!$type instanceof ObjectType) {

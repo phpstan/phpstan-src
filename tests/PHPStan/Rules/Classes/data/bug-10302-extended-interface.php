@@ -34,12 +34,12 @@ class Model implements BatchAware
 
 /**
  * @property-read bool $busy
- * @phpstan-require-extends Model
+ * @phpstan-require-extends TraitModel
  */
 trait BatchAwareTrait
 {
 }
 
-class Model {
+class TraitModel {
 	use BatchAwareTrait;
 }

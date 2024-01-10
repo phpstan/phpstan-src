@@ -29,6 +29,8 @@ use PHPStan\PhpDoc\Tag\TypeAliasTag;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
+use PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExtension;
+use PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\CircularTypeAliasDefinitionException;
@@ -146,6 +148,8 @@ class ClassReflection
 		private array $propertiesClassReflectionExtensions,
 		private array $methodsClassReflectionExtensions,
 		private array $allowedSubTypesClassReflectionExtensions,
+		private RequireExtendsPropertiesClassReflectionExtension $requireExtendsPropertiesClassReflectionExtension,
+		private RequireExtendsMethodsClassReflectionExtension $requireExtendsMethodsClassReflectionExtension,
 		private string $displayName,
 		private ReflectionClass|ReflectionEnum $reflection,
 		private ?string $anonymousFilename,
@@ -435,6 +439,10 @@ class ClassReflection
 			}
 		}
 
+		if ($this->requireExtendsPropertiesClassReflectionExtension->hasProperty($this, $propertyName)) {
+			return true;
+		}
+
 		return false;
 	}
 
@@ -446,6 +454,10 @@ class ClassReflection
 			}
 		}
 
+		if ($this->requireExtendsMethodsClassReflectionExtension->hasMethod($this, $methodName)) {
+			return true;
+		}
+
 		return false;
 	}
 
@@ -455,6 +467,7 @@ class ClassReflection
 		if ($scope->isInClass()) {
 			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
 		}
+
 		if (!isset($this->methods[$key])) {
 			foreach ($this->methodsClassReflectionExtensions as $extension) {
 				if (!$extension->hasMethod($this, $methodName)) {
@@ -465,6 +478,13 @@ class ClassReflection
 				if ($scope->canCallMethod($method)) {
 					return $this->methods[$key] = $method;
 				}
+				$this->methods[$key] = $method;
+			}
+		}
+
+		if (!isset($this->methods[$key])) {
+			if ($this->requireExtendsMethodsClassReflectionExtension->hasMethod($this, $methodName)) {
+				$method = $this->requireExtendsMethodsClassReflectionExtension->getMethod($this, $methodName);
 				$this->methods[$key] = $method;
 			}
 		}
@@ -577,11 +597,13 @@ class ClassReflection
 		if ($scope->isInClass()) {
 			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
 		}
+
 		if (!isset($this->properties[$key])) {
 			foreach ($this->propertiesClassReflectionExtensions as $i => $extension) {
 				if ($i > 0 && !$this->allowsDynamicPropertiesExtensions()) {
 					break;
 				}
+
 				if (!$extension->hasProperty($this, $propertyName)) {
 					continue;
 				}
@@ -590,6 +612,13 @@ class ClassReflection
 				if ($scope->canAccessProperty($property)) {
 					return $this->properties[$key] = $property;
 				}
+				$this->properties[$key] = $property;
+			}
+		}
+
+		if (!isset($this->properties[$key])) {
+			if ($this->requireExtendsPropertiesClassReflectionExtension->hasProperty($this, $propertyName)) {
+				$property = $this->requireExtendsPropertiesClassReflectionExtension->getProperty($this, $propertyName);
 				$this->properties[$key] = $property;
 			}
 		}
@@ -1426,6 +1455,8 @@ class ClassReflection
 			$this->propertiesClassReflectionExtensions,
 			$this->methodsClassReflectionExtensions,
 			$this->allowedSubTypesClassReflectionExtensions,
+			$this->requireExtendsPropertiesClassReflectionExtension,
+			$this->requireExtendsMethodsClassReflectionExtension,
 			$this->displayName,
 			$this->reflection,
 			$this->anonymousFilename,
@@ -1453,6 +1484,8 @@ class ClassReflection
 			$this->propertiesClassReflectionExtensions,
 			$this->methodsClassReflectionExtensions,
 			$this->allowedSubTypesClassReflectionExtensions,
+			$this->requireExtendsPropertiesClassReflectionExtension,
+			$this->requireExtendsMethodsClassReflectionExtension,
 			$this->displayName,
 			$this->reflection,
 			$this->anonymousFilename,

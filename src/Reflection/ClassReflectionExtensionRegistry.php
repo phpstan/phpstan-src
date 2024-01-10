@@ -3,6 +3,8 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Broker\Broker;
+use PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExtension;
+use PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension;
 use function array_merge;
 
 class ClassReflectionExtensionRegistry
@@ -18,6 +20,8 @@ class ClassReflectionExtensionRegistry
 		private array $propertiesClassReflectionExtensions,
 		private array $methodsClassReflectionExtensions,
 		private array $allowedSubTypesClassReflectionExtensions,
+		private RequireExtendsPropertiesClassReflectionExtension $requireExtendsPropertiesClassReflectionExtension,
+		private RequireExtendsMethodsClassReflectionExtension $requireExtendsMethodsClassReflectionExtension,
 	)
 	{
 		foreach (array_merge($propertiesClassReflectionExtensions, $methodsClassReflectionExtensions, $allowedSubTypesClassReflectionExtensions) as $extension) {
@@ -51,6 +55,16 @@ class ClassReflectionExtensionRegistry
 	public function getAllowedSubTypesClassReflectionExtensions(): array
 	{
 		return $this->allowedSubTypesClassReflectionExtensions;
+	}
+
+	public function getRequireExtendsPropertyClassReflectionExtension(): RequireExtendsPropertiesClassReflectionExtension
+	{
+		return $this->requireExtendsPropertiesClassReflectionExtension;
+	}
+
+	public function getRequireExtendsMethodsClassReflectionExtension(): RequireExtendsMethodsClassReflectionExtension
+	{
+		return $this->requireExtendsMethodsClassReflectionExtension;
 	}
 
 }

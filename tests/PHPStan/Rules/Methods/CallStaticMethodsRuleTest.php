@@ -603,4 +603,30 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRequireExtends(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = false;
+
+		$this->analyse([__DIR__ . '/../Properties/data/require-extends.php'], [
+			[
+				'Call to an undefined static method RequireExtends\MyInterface::doesNotExistStatic().',
+				44,
+			],
+		]);
+	}
+
+	public function testRequireImplements(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = false;
+
+		$this->analyse([__DIR__ . '/../Properties/data/require-implements.php'], [
+			[
+				'Call to an undefined static method RequireImplements\MyBaseClass::doesNotExistStatic().',
+				45,
+			],
+		]);
+	}
+
 }

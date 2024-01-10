@@ -726,6 +726,12 @@ services:
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository
 
 	-
+		class: PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExtension
+
+	-
+		class: PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension
+
+	-
 		class: PHPStan\Reflection\Mixin\MixinMethodsClassReflectionExtension
 		tags:
 			- phpstan.broker.methodsClassReflectionExtension

@@ -18,8 +18,10 @@ class RequireExtendsDefinitionClassRuleTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 
 		return new RequireExtendsDefinitionClassRule(
-			new ClassCaseSensitivityCheck($reflectionProvider, true),
-			true,
+			new RequireExtendsCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				true,
+			),
 		);
 	}
 

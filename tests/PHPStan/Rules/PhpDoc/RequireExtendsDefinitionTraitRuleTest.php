@@ -18,8 +18,10 @@ class RequireExtendsDefinitionTraitRuleTest extends RuleTestCase
 
 		return new RequireExtendsDefinitionTraitRule(
 			$reflectionProvider,
-			new ClassCaseSensitivityCheck($reflectionProvider, true),
-			true,
+			new RequireExtendsCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				true,
+			),
 		);
 	}
 

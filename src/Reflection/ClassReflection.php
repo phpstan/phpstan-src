@@ -45,6 +45,7 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Generic\TypeProjectionHelper;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
 use PHPStan\Type\TypehintHelper;
@@ -421,7 +422,30 @@ class ClassReflection
 			return true;
 		}
 
-		return $this->hasNativeMethod('__get') || $this->hasNativeMethod('__set') || $this->hasNativeMethod('__isset');
+		$hasMagicMethod = $this->hasNativeMethod('__get') || $this->hasNativeMethod('__set') || $this->hasNativeMethod('__isset');
+		if ($hasMagicMethod) {
+			return true;
+		}
+
+		foreach ($this->getRequireExtendsTags() as $extendsTag) {
+			$type = $extendsTag->getType();
+			if (!$type instanceof ObjectType) {
+				continue;
+			}
+
+			$reflection = $type->getClassReflection();
+			if ($reflection === null) {
+				continue;
+			}
+
+			if (!$reflection->allowsDynamicPropertiesExtensions()) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public function hasProperty(string $propertyName): bool

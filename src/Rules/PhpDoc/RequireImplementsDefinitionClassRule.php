@@ -25,13 +25,13 @@ class RequireImplementsDefinitionClassRule implements Rule
 		$classReflection = $node->getClassReflection();
 		$implementsTags = $classReflection->getRequireImplementsTags();
 
-		if (count($implementsTags) > 0) {
-			return [
-				RuleErrorBuilder::message('PHPDoc tag @phpstan-require-implements is only valid on trait.')->build(),
-			];
+		if (count($implementsTags) === 0) {
+			return [];
 		}
 
-		return [];
+		return [
+			RuleErrorBuilder::message('PHPDoc tag @phpstan-require-implements is only valid on trait.')->build(),
+		];
 	}
 
 }

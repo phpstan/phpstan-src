@@ -18,6 +18,7 @@ class RequireImplementsDefinitionTraitRuleTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 
 		return new RequireImplementsDefinitionTraitRule(
+			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
 			true,
 		);

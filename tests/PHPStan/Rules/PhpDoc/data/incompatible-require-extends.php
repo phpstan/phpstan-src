@@ -150,3 +150,16 @@ new class {
 new class extends SomeClass {
 	use ValidTrait;
 };
+
+/**
+ * @psalm-require-extends SomeClass
+ */
+trait ValidPsalmTrait {}
+
+new class extends SomeClass {
+	use ValidPsalmTrait;
+};
+
+new class {
+	use ValidPsalmTrait;
+};

@@ -56,6 +56,18 @@ class RequireImplementsRuleTest extends RuleTestCase
 				'Trait IncompatibleRequireImplements\InvalidTrait4 requires using class to implement IncompatibleRequireImplements\SomeClass<T>, but IncompatibleRequireImplements\InvalidTraitUse4 does not.',
 				137,
 			],
+			[
+				'Trait IncompatibleRequireImplements\ValidPsalmTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface2, but AnonymousClass4fea61018e98554a605d5c87523a32cc does not.',
+				164,
+			],
+			[
+				'Trait IncompatibleRequireImplements\ValidPsalmTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but AnonymousClassfa8cad5ec7618c488b098c6e9e71419a does not.',
+				168,
+			],
+			[
+				'Trait IncompatibleRequireImplements\ValidPsalmTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface2, but AnonymousClassfa8cad5ec7618c488b098c6e9e71419a does not.',
+				168,
+			],
 		];
 
 		$this->analyse([__DIR__ . '/../PhpDoc/data/incompatible-require-implements.php'], $expectedErrors);

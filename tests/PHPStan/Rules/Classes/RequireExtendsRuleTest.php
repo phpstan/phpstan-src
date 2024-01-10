@@ -48,6 +48,10 @@ class RequireExtendsRuleTest extends RuleTestCase
 				'Trait IncompatibleRequireExtends\ValidTrait requires using class to extend IncompatibleRequireExtends\SomeClass, but AnonymousClassa283e4f1ac026ef382e66fd5041afd37 does not.',
 				146,
 			],
+			[
+				'Trait IncompatibleRequireExtends\ValidPsalmTrait requires using class to extend IncompatibleRequireExtends\SomeClass, but AnonymousClass5bf4ec413e09e097359ccaeeabd1bb60 does not.',
+				163,
+			],
 		];
 
 		$this->analyse([__DIR__ . '/../PhpDoc/data/incompatible-require-extends.php'], $expectedErrors);

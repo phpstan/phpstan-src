@@ -145,3 +145,26 @@ class InvalidTraitUse5 {
 class InvalidTraitUse6 {
 	use InvalidTrait6;
 }
+
+interface RequiredInterface2
+{
+
+}
+
+/**
+ * @psalm-require-implements RequiredInterface
+ * @psalm-require-implements RequiredInterface2
+ */
+trait ValidPsalmTrait {}
+
+new class implements RequiredInterface, RequiredInterface2 {
+	use ValidPsalmTrait;
+};
+
+new class implements RequiredInterface {
+	use ValidPsalmTrait;
+};
+
+new class {
+	use ValidPsalmTrait;
+};

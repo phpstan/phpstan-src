@@ -31,6 +31,11 @@ class Model implements BatchAware
 	}
 }
 
+class AnotherModel implements BatchAwareExtended
+{
+
+}
+
 
 /**
  * @property-read bool $busy

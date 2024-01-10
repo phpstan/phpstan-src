@@ -41,7 +41,7 @@ class RequireExtendsRule implements Rule
 
 				$errors[] = RuleErrorBuilder::message(
 					sprintf(
-						'%s requires implementing class to extend %s, but %s does not.',
+						'Interface %s requires implementing class to extend %s, but %s does not.',
 						$interface->getName(),
 						$type->describe(VerbosityLevel::typeOnly()),
 						$classReflection->getName(),
@@ -64,7 +64,7 @@ class RequireExtendsRule implements Rule
 
 				$errors[] = RuleErrorBuilder::message(
 					sprintf(
-						'%s requires using class to extend %s, but %s does not.',
+						'Trait %s requires using class to extend %s, but %s does not.',
 						$trait->getName(),
 						$type->describe(VerbosityLevel::typeOnly()),
 						$classReflection->getName(),

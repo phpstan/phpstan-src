@@ -41,7 +41,7 @@ class RequireImplementsRule implements Rule
 
 				$errors[] = RuleErrorBuilder::message(
 					sprintf(
-						'%s requires using class to implement %s, but %s does not.',
+						'Trait %s requires using class to implement %s, but %s does not.',
 						$trait->getName(),
 						$type->describe(VerbosityLevel::typeOnly()),
 						$classReflection->getName(),

@@ -25,35 +25,35 @@ class RequireImplementsRuleTest extends RuleTestCase
 
 		$expectedErrors = [
 			[
-				'IncompatibleRequireImplements\ValidTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but IncompatibleRequireImplements\InValidTraitUse2 does not.',
+				'Trait IncompatibleRequireImplements\ValidTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but IncompatibleRequireImplements\InValidTraitUse2 does not.',
 				47,
 			],
 			[
-				'IncompatibleRequireImplements\ValidTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but IncompatibleRequireImplements\InvalidEnumTraitUse does not.',
+				'Trait IncompatibleRequireImplements\ValidTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but IncompatibleRequireImplements\InvalidEnumTraitUse does not.',
 				52,
 			],
 			[
-				'IncompatibleRequireImplements\ValidTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but IncompatibleRequireImplements\InValidTraitUse does not.',
+				'Trait IncompatibleRequireImplements\ValidTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but IncompatibleRequireImplements\InValidTraitUse does not.',
 				56,
 			],
 			[
-				'IncompatibleRequireImplements\ValidTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but AnonymousClassafc9baecb6bea09a151e986ec457a7f5 does not.',
+				'Trait IncompatibleRequireImplements\ValidTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but AnonymousClassafc9baecb6bea09a151e986ec457a7f5 does not.',
 				117,
 			],
 			[
-				'IncompatibleRequireImplements\InvalidTrait1 requires using class to implement IncompatibleRequireImplements\SomeTrait, but IncompatibleRequireImplements\InvalidTraitUse1 does not.',
+				'Trait IncompatibleRequireImplements\InvalidTrait1 requires using class to implement IncompatibleRequireImplements\SomeTrait, but IncompatibleRequireImplements\InvalidTraitUse1 does not.',
 				125,
 			],
 			[
-				'IncompatibleRequireImplements\InvalidTrait2 requires using class to implement IncompatibleRequireImplements\SomeEnum, but IncompatibleRequireImplements\InvalidTraitUse2 does not.',
+				'Trait IncompatibleRequireImplements\InvalidTrait2 requires using class to implement IncompatibleRequireImplements\SomeEnum, but IncompatibleRequireImplements\InvalidTraitUse2 does not.',
 				129,
 			],
 			[
-				'IncompatibleRequireImplements\InvalidTrait3 requires using class to implement IncompatibleRequireImplements\TypeDoesNotExist, but IncompatibleRequireImplements\InvalidTraitUse3 does not.',
+				'Trait IncompatibleRequireImplements\InvalidTrait3 requires using class to implement IncompatibleRequireImplements\TypeDoesNotExist, but IncompatibleRequireImplements\InvalidTraitUse3 does not.',
 				133,
 			],
 			[
-				'IncompatibleRequireImplements\InvalidTrait4 requires using class to implement IncompatibleRequireImplements\SomeClass<T>, but IncompatibleRequireImplements\InvalidTraitUse4 does not.',
+				'Trait IncompatibleRequireImplements\InvalidTrait4 requires using class to implement IncompatibleRequireImplements\SomeClass<T>, but IncompatibleRequireImplements\InvalidTraitUse4 does not.',
 				137,
 			],
 		];

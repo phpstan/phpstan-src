@@ -14,7 +14,7 @@ interface BatchAware
 }
 
 /**
- * @property-read bool $busy
+ * @property-read bool $busy2
  */
 class Model
 {
@@ -27,12 +27,29 @@ class Model
 	}
 }
 
-class SomeModel extends Model implements BatchAware
+function (BatchAware $b): void
+{
+	assertType('bool', $b->busy);
+	assertType('bool', $b->busy2);
+};
+
+class ModelWithoutAllowDynamicProperties
 {
 
 }
 
-function (BatchAware $b): void
+/**
+ * @property-read bool $busy
+ * @phpstan-require-extends ModelWithoutAllowDynamicProperties
+ */
+interface BatchAwareWithoutAllowDynamicProperties
 {
-	assertType('bool', $b->busy);
+
+}
+
+function (BatchAwareWithoutAllowDynamicProperties $b): void
+{
+	$result = $b->busy; // @phpstan-ignore-line
+
+	assertType('*ERROR*', $result);
 };

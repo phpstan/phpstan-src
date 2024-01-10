@@ -341,6 +341,11 @@ parameters:
 			path: src/Reflection/ClassReflection.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
+			count: 1
+			path: src/Reflection/ClassReflection.php
+
+		-
 			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:getCacheKey\\(\\) should return string but returns string\\|null\\.$#"
 			count: 1
 			path: src/Reflection/ClassReflection.php

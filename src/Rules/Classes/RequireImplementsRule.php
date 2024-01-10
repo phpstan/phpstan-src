@@ -27,7 +27,7 @@ class RequireImplementsRule implements Rule
 		$classReflection = $node->getClassReflection();
 
 		$errors = [];
-		foreach ($classReflection->getTraits() as $trait) {
+		foreach ($classReflection->getTraits(true) as $trait) {
 			$implementsTags = $trait->getRequireImplementsTags();
 			foreach ($implementsTags as $implementsTag) {
 				$type = $implementsTag->getType();

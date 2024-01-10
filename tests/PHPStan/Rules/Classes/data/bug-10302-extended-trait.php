@@ -24,3 +24,11 @@ class Baz // should report: Trait Foo requires using class to extend Father, but
 	use Bar;
 
 }
+
+
+class Baz2 extends Father
+{
+
+	use Bar;
+
+}

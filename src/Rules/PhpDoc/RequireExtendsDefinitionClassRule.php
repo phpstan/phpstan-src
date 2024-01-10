@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class IncompatibleRequireExtendsTypeClassRule implements Rule
+class RequireExtendsDefinitionClassRule implements Rule
 {
 
 	public function __construct(
@@ -38,10 +38,11 @@ class IncompatibleRequireExtendsTypeClassRule implements Rule
 		$classReflection = $node->getClassReflection();
 		$extendsTags = $classReflection->getRequireExtendsTags();
 
-		if (
-			!$classReflection->isInterface()
-			&& count($extendsTags) > 0
-		) {
+		if (count($extendsTags) === 0) {
+			return [];
+		}
+
+		if (!$classReflection->isInterface()) {
 			return [
 				RuleErrorBuilder::message('PHPDoc tag @phpstan-require-extends is only valid on trait or interface.')->build(),
 			];

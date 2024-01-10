@@ -7,16 +7,16 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<IncompatibleRequireExtendsTypeTraitRule>
+ * @extends RuleTestCase<RequireExtendsDefinitionTraitRule>
  */
-class IncompatibleRequireExtendsTypeTraitRuleTest extends RuleTestCase
+class RequireExtendsDefinitionTraitRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
-		return new IncompatibleRequireExtendsTypeTraitRule(
+		return new RequireExtendsDefinitionTraitRule(
 			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
 			true,

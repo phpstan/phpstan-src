@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<InTraitNode>
  */
-class IncompatibleRequireImplementsTypeTraitRule implements Rule
+class RequireImplementsDefinitionTraitRule implements Rule
 {
 
 	public function __construct(

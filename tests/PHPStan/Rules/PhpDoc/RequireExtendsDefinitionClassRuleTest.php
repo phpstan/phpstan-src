@@ -8,16 +8,16 @@ use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends RuleTestCase<IncompatibleRequireExtendsTypeClassRule>
+ * @extends RuleTestCase<RequireExtendsDefinitionClassRule>
  */
-class IncompatibleRequireExtendsTypeClassRuleTest extends RuleTestCase
+class RequireExtendsDefinitionClassRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
-		return new IncompatibleRequireExtendsTypeClassRule(
+		return new RequireExtendsDefinitionClassRule(
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
 			true,
 		);

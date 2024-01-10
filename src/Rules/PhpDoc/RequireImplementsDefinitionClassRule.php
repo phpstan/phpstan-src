@@ -12,7 +12,7 @@ use function count;
 /**
  * @implements Rule<InClassNode>
  */
-class IncompatibleRequireImplementsTypeClassRule implements Rule
+class RequireImplementsDefinitionClassRule implements Rule
 {
 
 	public function getNodeType(): string

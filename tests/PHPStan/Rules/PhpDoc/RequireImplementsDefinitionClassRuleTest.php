@@ -6,14 +6,14 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<IncompatibleRequireImplementsTypeClassRule>
+ * @extends RuleTestCase<RequireImplementsDefinitionClassRule>
  */
-class IncompatibleRequireImplementsTypeClassRuleTest extends RuleTestCase
+class RequireImplementsDefinitionClassRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new IncompatibleRequireImplementsTypeClassRule();
+		return new RequireImplementsDefinitionClassRule();
 	}
 
 	public function testRule(): void

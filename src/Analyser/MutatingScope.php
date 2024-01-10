@@ -174,7 +174,7 @@ class MutatingScope implements Scope
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
-	 * @param list<MethodReflection|FunctionReflection> $inFunctionCallsStack
+	 * @param list<array{MethodReflection|FunctionReflection, ParameterReflection|null}> $inFunctionCallsStack
 	 */
 	public function __construct(
 		private InternalScopeFactory $scopeFactory,
@@ -2410,10 +2410,10 @@ class MutatingScope implements Scope
 	/**
 	 * @param MethodReflection|FunctionReflection $reflection
 	 */
-	public function pushInFunctionCall($reflection): self
+	public function pushInFunctionCall($reflection, ?ParameterReflection $parameter): self
 	{
 		$stack = $this->inFunctionCallsStack;
-		$stack[] = $reflection;
+		$stack[] = [$reflection, $parameter];
 
 		$scope = $this->scopeFactory->create(
 			$this->context,
@@ -2473,7 +2473,7 @@ class MutatingScope implements Scope
 	/** @api */
 	public function isInClassExists(string $className): bool
 	{
-		foreach ($this->inFunctionCallsStack as $inFunctionCall) {
+		foreach ($this->inFunctionCallsStack as [$inFunctionCall]) {
 			if (!$inFunctionCall instanceof FunctionReflection) {
 				continue;
 			}
@@ -2494,6 +2494,11 @@ class MutatingScope implements Scope
 	}
 
 	public function getFunctionCallStack(): array
+	{
+		return array_map(static fn ($values) => $values[0], $this->inFunctionCallsStack);
+	}
+
+	public function getFunctionCallStackWithParameters(): array
 	{
 		return $this->inFunctionCallsStack;
 	}

@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 
 interface InternalScopeFactory
@@ -16,7 +17,7 @@ interface InternalScopeFactory
 	 * @param list<string> $inClosureBindScopeClasses
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
+	 * @param list<array{MethodReflection|FunctionReflection, ParameterReflection|null}> $inFunctionCallsStack
 	 */
 	public function create(
 		ScopeContext $context,

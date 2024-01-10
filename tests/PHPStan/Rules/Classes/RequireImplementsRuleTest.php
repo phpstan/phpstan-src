@@ -73,4 +73,14 @@ class RequireImplementsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../PhpDoc/data/incompatible-require-implements.php'], $expectedErrors);
 	}
 
+	public function testExtendedTraitBug(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10302-extended-implements-trait.php'], [
+			[
+				'Trait Bug10302ExtendedImplementsTrait\Foo requires using class to implement Bug10302ExtendedImplementsTrait\Interface1, but Bug10302ExtendedImplementsTrait\Baz does not.',
+				21,
+			],
+		]);
+	}
+
 }

@@ -57,4 +57,24 @@ class RequireExtendsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../PhpDoc/data/incompatible-require-extends.php'], $expectedErrors);
 	}
 
+	public function testExtendedInterfaceBug(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10302-extended-interface.php'], [
+			[
+				'Interface Bug10302ExtendedInterface\BatchAware requires implementing class to extend Bug10302ExtendedInterface\Model, but Bug10302ExtendedInterface\AnotherModel does not.',
+				34,
+			],
+		]);
+	}
+
+	public function testExtendedTraitBug(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10302-extended-trait.php'], [
+			[
+				'Trait Bug10302ExtendedTrait\Foo requires using class to extend Bug10302ExtendedTrait\Father, but Bug10302ExtendedTrait\Baz does not.',
+				21,
+			],
+		]);
+	}
+
 }

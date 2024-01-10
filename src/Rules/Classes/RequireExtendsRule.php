@@ -26,8 +26,12 @@ class RequireExtendsRule implements Rule
 	{
 		$classReflection = $node->getClassReflection();
 
+		if ($classReflection->isInterface()) {
+			return [];
+		}
+
 		$errors = [];
-		foreach ($classReflection->getImmediateInterfaces() as $interface) {
+		foreach ($classReflection->getInterfaces() as $interface) {
 			$extendsTags = $interface->getRequireExtendsTags();
 			foreach ($extendsTags as $extendsTag) {
 				$type = $extendsTag->getType();
@@ -35,7 +39,7 @@ class RequireExtendsRule implements Rule
 					continue;
 				}
 
-				if ($classReflection->isSubclassOf($type->getClassName())) {
+				if ($classReflection->is($type->getClassName())) {
 					continue;
 				}
 
@@ -50,7 +54,7 @@ class RequireExtendsRule implements Rule
 			}
 		}
 
-		foreach ($classReflection->getTraits() as $trait) {
+		foreach ($classReflection->getTraits(true) as $trait) {
 			$extendsTags = $trait->getRequireExtendsTags();
 			foreach ($extendsTags as $extendsTag) {
 				$type = $extendsTag->getType();
@@ -58,7 +62,7 @@ class RequireExtendsRule implements Rule
 					continue;
 				}
 
-				if ($classReflection->isSubclassOf($type->getClassName())) {
+				if ($classReflection->is($type->getClassName())) {
 					continue;
 				}
 

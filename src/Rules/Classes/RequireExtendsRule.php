@@ -26,16 +26,16 @@ class RequireExtendsRule implements Rule
 	{
 		$classReflection = $node->getClassReflection();
 
+		if ($classReflection->isInterface()) {
+			return [];
+		}
+
 		$errors = [];
 		foreach ($classReflection->getImmediateInterfaces() as $interface) {
 			$extendsTags = $interface->getRequireExtendsTags();
 			foreach ($extendsTags as $extendsTag) {
 				$type = $extendsTag->getType();
 				if (!$type instanceof ObjectType) {
-					continue;
-				}
-
-				if ($classReflection->isInterface()) {
 					continue;
 				}
 

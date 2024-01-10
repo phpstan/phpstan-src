@@ -37,7 +37,7 @@ class RequireImplementsRuleTest extends RuleTestCase
 				56,
 			],
 			[
-				'Trait IncompatibleRequireImplements\ValidTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but AnonymousClassafc9baecb6bea09a151e986ec457a7f5 does not.',
+				'Trait IncompatibleRequireImplements\ValidTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but class@anonymous/tests/PHPStan/Rules/PhpDoc/data/incompatible-require-implements.php:117 does not.',
 				117,
 			],
 			[
@@ -57,15 +57,15 @@ class RequireImplementsRuleTest extends RuleTestCase
 				137,
 			],
 			[
-				'Trait IncompatibleRequireImplements\ValidPsalmTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface2, but AnonymousClass4fea61018e98554a605d5c87523a32cc does not.',
+				'Trait IncompatibleRequireImplements\ValidPsalmTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface2, but class@anonymous/tests/PHPStan/Rules/PhpDoc/data/incompatible-require-implements.php:164 does not.',
 				164,
 			],
 			[
-				'Trait IncompatibleRequireImplements\ValidPsalmTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but AnonymousClassfa8cad5ec7618c488b098c6e9e71419a does not.',
+				'Trait IncompatibleRequireImplements\ValidPsalmTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but class@anonymous/tests/PHPStan/Rules/PhpDoc/data/incompatible-require-implements.php:168 does not.',
 				168,
 			],
 			[
-				'Trait IncompatibleRequireImplements\ValidPsalmTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface2, but AnonymousClassfa8cad5ec7618c488b098c6e9e71419a does not.',
+				'Trait IncompatibleRequireImplements\ValidPsalmTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface2, but class@anonymous/tests/PHPStan/Rules/PhpDoc/data/incompatible-require-implements.php:168 does not.',
 				168,
 			],
 		];

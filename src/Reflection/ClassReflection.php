@@ -940,7 +940,7 @@ class ClassReflection
 	}
 
 	/**
-	 * @return string[]
+	 * @return list<class-string>
 	 */
 	public function getParentClassesNames(): array
 	{

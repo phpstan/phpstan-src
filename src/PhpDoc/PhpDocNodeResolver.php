@@ -27,8 +27,6 @@ use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\MixinTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
-use PHPStan\PhpDocParser\Ast\PhpDoc\RequireExtendsTagValueNode;
-use PHPStan\PhpDocParser\Ast\PhpDoc\RequireImplementsTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -418,9 +416,17 @@ class PhpDocNodeResolver
 	 */
 	public function resolveRequireExtendsTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
-		return array_map(fn (RequireExtendsTagValueNode $requireExtendsTagValueNode): RequireExtendsTag => new RequireExtendsTag(
-			$this->typeNodeResolver->resolve($requireExtendsTagValueNode->type, $nameScope),
-		), $phpDocNode->getRequireExtendsTagValues());
+		$resolved = [];
+
+		foreach (['@psalm-require-extends', '@phpstan-require-extends'] as $tagName) {
+			foreach ($phpDocNode->getRequireExtendsTagValues($tagName) as $tagValue) {
+				$resolved[] = new RequireExtendsTag(
+					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
+				);
+			}
+		}
+
+		return $resolved;
 	}
 
 	/**
@@ -428,9 +434,17 @@ class PhpDocNodeResolver
 	 */
 	public function resolveRequireImplementsTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
-		return array_map(fn (RequireImplementsTagValueNode $requireImplementsTagValueNode): RequireImplementsTag => new RequireImplementsTag(
-			$this->typeNodeResolver->resolve($requireImplementsTagValueNode->type, $nameScope),
-		), $phpDocNode->getRequireImplementsTagValues());
+		$resolved = [];
+
+		foreach (['@psalm-require-implements', '@phpstan-require-implements'] as $tagName) {
+			foreach ($phpDocNode->getRequireImplementsTagValues($tagName) as $tagValue) {
+				$resolved[] = new RequireImplementsTag(
+					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
+				);
+			}
+		}
+
+		return $resolved;
 	}
 
 	/**

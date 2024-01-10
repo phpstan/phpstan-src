@@ -42,6 +42,11 @@ rules:
 	- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule
 	- PHPStan\Rules\Properties\AccessPrivatePropertyThroughStaticRule
+	- PHPStan\Rules\Classes\RequireImplementsRule
+	- PHPStan\Rules\Classes\RequireExtendsRule
+	- PHPStan\Rules\PhpDoc\RequireImplementsDefinitionClassRule
+	- PHPStan\Rules\PhpDoc\RequireExtendsDefinitionClassRule
+	- PHPStan\Rules\PhpDoc\RequireExtendsDefinitionTraitRule
 
 conditionalTags:
 	PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule:
@@ -64,6 +69,19 @@ services:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\PhpDoc\RequireExtendsCheck
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+
+	-
+		class: PHPStan\Rules\PhpDoc\RequireImplementsDefinitionTraitRule
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+		tags:
+			- phpstan.rules.rule
+
 	-
 		class: PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule
 	-

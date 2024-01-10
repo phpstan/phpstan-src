@@ -13,6 +13,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
@@ -107,6 +108,9 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	/** @return list<FunctionReflection|MethodReflection> */
 	public function getFunctionCallStack(): array;
+
+	/** @return list<array{FunctionReflection|MethodReflection, ParameterReflection|null}> */
+	public function getFunctionCallStackWithParameters(): array;
 
 	public function isParameterValueNullable(Param $parameter): bool;
 

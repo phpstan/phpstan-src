@@ -10,6 +10,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -41,8 +42,7 @@ class LazyInternalScopeFactory implements InternalScopeFactory
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
-	 *
+	 * @param list<array{FunctionReflection|MethodReflection, ParameterReflection|null}> $inFunctionCallsStack
 	 */
 	public function create(
 		ScopeContext $context,

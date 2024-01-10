@@ -3633,22 +3633,21 @@ class NodeScopeResolver
 			}
 		}
 
-		if ($calleeReflection !== null) {
-			$scope = $scope->pushInFunctionCall($calleeReflection);
-		}
-
 		$hasYield = false;
 		$throwPoints = [];
 		foreach ($args as $i => $arg) {
 			$assignByReference = false;
+			$parameter = null;
 			if (isset($parameters) && $parametersAcceptor !== null) {
 				if (isset($parameters[$i])) {
 					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
 					$parameterType = $parameters[$i]->getType();
+					$parameter = $parameters[$i];
 				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
 					$lastParameter = $parameters[count($parameters) - 1];
 					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
 					$parameterType = $lastParameter->getType();
+					$parameter = $lastParameter;
 				}
 			}
 
@@ -3656,6 +3655,10 @@ class NodeScopeResolver
 				if ($arg->value instanceof Variable) {
 					$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $arg->value);
 				}
+			}
+
+			if ($calleeReflection !== null) {
+				$scope = $scope->pushInFunctionCall($calleeReflection, $parameter);
 			}
 
 			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
@@ -3682,6 +3685,11 @@ class NodeScopeResolver
 					$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $arg->value);
 				}
 			}
+
+			if ($calleeReflection !== null) {
+				$scope = $scope->popInFunctionCall();
+			}
+
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			if ($i !== 0 || $closureBindScope === null) {
@@ -3690,11 +3698,6 @@ class NodeScopeResolver
 
 			$scope = $scope->restoreOriginalScopeAfterClosureBind($originalScope);
 		}
-
-		if ($calleeReflection !== null) {
-			$scope = $scope->popInFunctionCall();
-		}
-
 		foreach ($args as $i => $arg) {
 			if (!isset($parameters) || $parametersAcceptor === null) {
 				continue;

@@ -13825,7 +13825,7 @@ return [
 'Yaf_Response_Cli::prependBody' => ['Yaf_Response_Cli|false|null', 'body'=>'string', 'name='=>'?string'],
 'Yaf_Response_Cli::response' => ['bool'],
 'Yaf_Response_Cli::setBody' => ['Yaf_Response_Cli|false|null', 'body'=>'string', 'name='=>'?string'],
-'Yaf_Response_Cli::setRedirect' => ['?bool', 'url'=>'string'],'Yaf_Response_Http::__clone' => [''],
+'Yaf_Response_Cli::setRedirect' => ['?bool', 'url'=>'string'],
 'Yaf_Response_Http::__clone' => ['void'],
 'Yaf_Response_Http::__construct' => ['void'],
 'Yaf_Response_Http::__destruct' => ['void'],

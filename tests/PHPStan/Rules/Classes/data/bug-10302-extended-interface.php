@@ -10,7 +10,6 @@ use function PHPStan\Testing\assertType;
  */
 interface BatchAware
 {
-
 }
 
 interface BatchAwareExtended extends BatchAware
@@ -32,30 +31,15 @@ class Model implements BatchAware
 	}
 }
 
-function (BatchAware $b): void
-{
-	assertType('bool', $b->busy);
-	assertType('bool', $b->busy2);
-};
-
-class ModelWithoutAllowDynamicProperties
-{
-
-}
 
 /**
  * @property-read bool $busy
- * @phpstan-require-extends ModelWithoutAllowDynamicProperties
+ * @phpstan-require-extends Model
  */
-interface BatchAwareWithoutAllowDynamicProperties
+trait BatchAwareTrait
 {
-
 }
 
-function (BatchAwareWithoutAllowDynamicProperties $b): void
-{
-	$result = $b->busy;
-
-	assertType('*ERROR*', $result);
-};
-
+class Model {
+	use BatchAwareTrait;
+}

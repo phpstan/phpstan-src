@@ -35,7 +35,11 @@ class RequireExtendsRule implements Rule
 					continue;
 				}
 
-				if ($classReflection->isSubclassOf($type->getClassName())) {
+				if ($classReflection->isInterface()) {
+					continue;
+				}
+
+				if ($classReflection->is($type->getClassName())) {
 					continue;
 				}
 
@@ -58,7 +62,7 @@ class RequireExtendsRule implements Rule
 					continue;
 				}
 
-				if ($classReflection->isSubclassOf($type->getClassName())) {
+				if ($classReflection->is($type->getClassName())) {
 					continue;
 				}
 

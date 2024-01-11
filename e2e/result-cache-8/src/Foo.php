@@ -2,7 +2,7 @@
 
 namespace TestResultCache8;
 
-class Foo implements Baz
+abstract class Foo implements Baz
 {
 	use Bar;
 }

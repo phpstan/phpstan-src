@@ -4,5 +4,5 @@ namespace TestResultCache8;
 
 interface Baz
 {
-	public function doFoo();
+	public function doFoo(): string;
 }

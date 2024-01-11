@@ -486,6 +486,23 @@ class DependencyResolver
 				$dependenciesReflections[] = $trait;
 			}
 
+			foreach ($classReflection->getRequireImplementsTags() as $implementsTag) {
+				foreach ($implementsTag->getType()->getReferencedClasses() as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
+			}
+			foreach ($classReflection->getRequireExtendsTags() as $extendsTag) {
+				foreach ($extendsTag->getType()->getReferencedClasses() as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
+			}
+
 			foreach ($classReflection->getResolvedMixinTypes() as $mixinType) {
 				foreach ($mixinType->getReferencedClasses() as $referencedClass) {
 					if (!$this->reflectionProvider->hasClass($referencedClass)) {

@@ -7,7 +7,7 @@ namespace TestResultCache8;
  */
 trait Bar
 {
-	public function doFoo(): void
+	public function doBar(): void
 	{
 		echo $this->doFoo();
 	}

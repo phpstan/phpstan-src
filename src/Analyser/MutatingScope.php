@@ -1526,17 +1526,20 @@ class MutatingScope implements Scope
 					);
 				}
 
-				$filteringExprType = $matchScope->getType($filteringExpr);
+				$noopCallback = static function (): void {
+				};
+				$filteringExprResult = $this->nodeScopeResolver->processExprNode(new Node\Stmt\Expression($filteringExpr), $filteringExpr, $matchScope, $noopCallback, ExpressionContext::createDeep());
 
+				$filteringExprType = $matchScope->getType($filteringExpr);
 				if (!$filteringExprType->isFalse()->yes()) {
-					$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
+					$truthyScope = $filteringExprResult->getTruthyScope();
 					if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
 						$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
 					}
 					$types[] = $truthyScope->getType($arm->body);
 				}
 
-				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
+				$matchScope = $filteringExprResult->getFalseyScope();
 			}
 
 			return TypeCombinator::union(...$types);

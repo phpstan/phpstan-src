@@ -1,6 +1,0 @@
-parameters:
-	ignoreErrors:
-		-
-			message: "#^Access to an undefined property TestResultCache7\\\\Foo\\:\\:\\$s\\.$#"
-			count: 1
-			path: src/Foo.php

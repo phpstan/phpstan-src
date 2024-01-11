@@ -3,8 +3,8 @@ index c1e70847e..078e307be 100644
 --- a/e2e/result-cache-8/src/Baz.php
 +++ b/e2e/result-cache-8/src/Baz.php
 @@ -4,5 +4,4 @@ namespace TestResultCache8;
- 
+
  interface Baz
  {
--	public function doFoo();
+-	public function doFoo(): string;
  }

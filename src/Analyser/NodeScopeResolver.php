@@ -2884,7 +2884,8 @@ class NodeScopeResolver
 					);
 				}
 
-				$bodyScope = $matchScope->filterByTruthyValue($filteringExpr);
+				$bodyScope = $this->processExprNode($stmt, $filteringExpr, $matchScope, static function (): void {
+				}, $deepContext)->getTruthyScope();
 				$matchArmBody = new MatchExpressionArmBody($bodyScope, $arm->body);
 				$armNodes[] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getLine());
 

@@ -1401,9 +1401,10 @@ class MutatingScope implements Scope
 			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
 		} elseif ($node instanceof Object_) {
 			$castToObject = static function (Type $type): Type {
-				if (count($type->getConstantArrays()) > 0) {
+				$constantArrays = $type->getConstantArrays();
+				if (count($constantArrays) > 0) {
 					$objects = [];
-					foreach ($type->getConstantArrays() as $constantArray) {
+					foreach ($constantArrays as $constantArray) {
 						$properties = [];
 						$optionalProperties = [];
 						foreach ($constantArray->getKeyTypes() as $i => $keyType) {

@@ -2134,11 +2134,12 @@ class NodeScopeResolver
 			) {
 				$extractedArg = $expr->getArgs()[0]->value;
 				$extractedType = $scope->getType($extractedArg);
-				if (count($extractedType->getConstantArrays()) > 0) {
+				$constantArrays = $extractedType->getConstantArrays();
+				if (count($constantArrays) > 0) {
 					$properties = [];
 					$optionalProperties = [];
 					$refCount = [];
-					foreach ($extractedType->getConstantArrays() as $constantArray) {
+					foreach ($constantArrays as $constantArray) {
 						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 							if ($keyType->isString()->no()) {
 								// integers as variable names not allowed
@@ -2160,7 +2161,7 @@ class NodeScopeResolver
 						}
 					}
 					foreach ($properties as $name => $type) {
-						$optional = in_array($name, $optionalProperties, true) || $refCount[$name] < count($extractedType->getConstantArrays());
+						$optional = in_array($name, $optionalProperties, true) || $refCount[$name] < count($constantArrays);
 						$scope = $scope->assignVariable($name, $type, $type, $optional ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes());
 					}
 				} else {
@@ -2995,8 +2996,9 @@ class NodeScopeResolver
 			foreach ($callArgs as $callArg) {
 				$callArgType = $scope->getType($callArg->value);
 				if ($callArg->unpack) {
-					if (count($callArgType->getConstantArrays()) === 1) {
-						$iterableValueTypes = $callArgType->getConstantArrays()[0]->getValueTypes();
+					$constantArrays = $callArgType->getConstantArrays();
+					if (count($constantArrays) === 1) {
+						$iterableValueTypes = $constantArrays[0]->getValueTypes();
 					} else {
 						$iterableValueTypes = [$callArgType->getIterableValueType()];
 						$nonConstantArrayWasUnpacked = true;

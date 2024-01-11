@@ -9,5 +9,6 @@ trait Bar
 {
 	public function doFoo(): void
 	{
+		echo $this->s;
 	}
 }

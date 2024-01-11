@@ -501,8 +501,9 @@ class InitializerExprTypeResolver
 
 			$valueType = $getTypeCallback($arrayItem->value);
 			if ($arrayItem->unpack) {
-				if (count($valueType->getConstantArrays()) === 1) {
-					$constantArrayType = $valueType->getConstantArrays()[0];
+				$constantArrays = $valueType->getConstantArrays();
+				if (count($constantArrays) === 1) {
+					$constantArrayType = $constantArrays[0];
 					$hasStringKey = false;
 					foreach ($constantArrayType->getKeyTypes() as $keyType) {
 						if ($keyType->isString()->yes()) {

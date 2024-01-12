@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;

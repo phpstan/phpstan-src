@@ -6,7 +6,6 @@ use Closure;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;

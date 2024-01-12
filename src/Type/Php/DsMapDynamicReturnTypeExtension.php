@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;

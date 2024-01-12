@@ -1,6 +1,0 @@
-parameters:
-	ignoreErrors:
-		-
-			message: "#^Call to an undefined method TestResultCache8\\\\Foo\\:\\:doFoo\\(\\)\\.$#"
-			count: 1
-			path: src/Foo.php

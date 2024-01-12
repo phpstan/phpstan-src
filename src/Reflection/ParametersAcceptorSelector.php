@@ -444,8 +444,6 @@ class ParametersAcceptorSelector
 
 			if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
 				$phpDocReturnTypes[] = $acceptor->getPhpDocReturnType();
-			}
-			if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
 				$nativeReturnTypes[] = $acceptor->getNativeReturnType();
 			}
 			$isVariadic = $isVariadic || $acceptor->isVariadic();

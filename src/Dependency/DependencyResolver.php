@@ -495,6 +495,15 @@ class DependencyResolver
 				}
 			}
 
+			foreach ($classReflection->getRequireExtendsTags() as $extendsTag) {
+				foreach ($extendsTag->getType()->getReferencedClasses() as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
+			}
+
 			foreach ($classReflection->getTemplateTags() as $templateTag) {
 				foreach ($templateTag->getBound()->getReferencedClasses() as $referencedClass) {
 					if (!$this->reflectionProvider->hasClass($referencedClass)) {

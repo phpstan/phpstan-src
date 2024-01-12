@@ -26,14 +26,14 @@ class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 		return in_array($functionReflection->getName(), ['random_int', 'rand', 'mt_rand'], true);
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		if (in_array($functionReflection->getName(), ['rand', 'mt_rand'], true) && count($functionCall->getArgs()) === 0) {
 			return IntegerRangeType::fromInterval(0, null);
 		}
 
 		if (count($functionCall->getArgs()) < 2) {
-			return ParametersAcceptorSelector::selectFromArgs($scope, $functionCall->getArgs(), $functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$minType = $scope->getType($functionCall->getArgs()[0]->value)->toInteger();

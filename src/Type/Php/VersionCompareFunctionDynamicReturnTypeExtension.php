@@ -28,10 +28,10 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		if (count($functionCall->getArgs()) < 2) {
-			return ParametersAcceptorSelector::selectFromArgs($scope, $functionCall->getArgs(), $functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$version1Strings = $scope->getType($functionCall->getArgs()[0]->value)->getConstantStrings();

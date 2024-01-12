@@ -22,10 +22,10 @@ class ArraySpliceFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		if (!isset($functionCall->getArgs()[0])) {
-			return ParametersAcceptorSelector::selectFromArgs($scope, $functionCall->getArgs(), $functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$arrayArg = $scope->getType($functionCall->getArgs()[0]->value);

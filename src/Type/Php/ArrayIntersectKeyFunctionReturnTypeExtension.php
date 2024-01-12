@@ -27,11 +27,11 @@ class ArrayIntersectKeyFunctionReturnTypeExtension implements DynamicFunctionRet
 		return $functionReflection->getName() === 'array_intersect_key';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) === 0) {
-			return ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$argTypes = [];

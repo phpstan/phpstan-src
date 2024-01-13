@@ -2,6 +2,7 @@
 
 namespace PHPStan\Testing;
 
+use Nette\Neon\Neon;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\DirectInternalScopeFactory;
 use PHPStan\Analyser\Error;
@@ -40,11 +41,16 @@ use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 use function array_merge;
 use function count;
+use function file_put_contents;
 use function implode;
+use function is_array;
+use function ksort;
+use function rand;
 use function rtrim;
 use function sha1;
 use function sprintf;
 use function sys_get_temp_dir;
+use function unlink;
 use const DIRECTORY_SEPARATOR;
 use const PHP_VERSION_ID;
 
@@ -58,33 +64,28 @@ abstract class PHPStanTestCase extends TestCase
 	/** @var array<string, Container> */
 	private static array $containers = [];
 
-	private RuleLevelHelper $tearDownRuleLevelHelper;
-
-	private bool $initialCheckExplicitMixed;
-
-	private bool $initialCheckImplicitMixed;
-
-	private bool $initialCheckThisOnly;
-
-	protected function setUp(): void
-	{
-		parent::setUp();
-
-		$this->tearDownRuleLevelHelper = $helper = self::getContainer()->getByType(RuleLevelHelper::class);
-		$this->initialCheckExplicitMixed = RuleLevelHelperHack::isCheckExplicitMixed($helper);
-		$this->initialCheckImplicitMixed = RuleLevelHelperHack::isCheckImplicitMixed($helper);
-		$this->initialCheckThisOnly = RuleLevelHelperHack::isCheckThisOnly($helper);
-	}
+	private static ?string $testCaseConfig = null;
 
 	protected function tearDown(): void
 	{
 		parent::tearDown();
 
-		RuleLevelHelperHack::setCheckExplicitMixed($this->tearDownRuleLevelHelper, $this->initialCheckExplicitMixed);
-		RuleLevelHelperHack::setCheckImplicitMixed($this->tearDownRuleLevelHelper, $this->initialCheckImplicitMixed);
-		RuleLevelHelperHack::setCheckThisOnly($this->tearDownRuleLevelHelper, $this->initialCheckThisOnly);
+		self::$testCaseConfig = null;
+	}
 
-		unset($this->tearDownRuleLevelHelper);
+	/** @param array<string, mixed>|null $config */
+	protected function setTestCaseConfig(?array $config): void
+	{
+		if ($config === null) {
+			self::$testCaseConfig = null;
+			return;
+		}
+		// Normalize the config to avoid creating unnecessary containers
+		if (isset($config['parameters']) && is_array($config['parameters'])) {
+			ksort($config['parameters']);
+		}
+
+		self::$testCaseConfig = Neon::encode($config);
 	}
 
 	/** @api */
@@ -92,7 +93,7 @@ abstract class PHPStanTestCase extends TestCase
 	{
 		$additionalConfigFiles = static::getAdditionalConfigFiles();
 		$additionalConfigFiles[] = __DIR__ . '/TestCase.neon';
-		$cacheKey = sha1(implode("\n", $additionalConfigFiles));
+		$cacheKey = sha1(implode("\n", $additionalConfigFiles) . self::$testCaseConfig);
 
 		if (!isset(self::$containers[$cacheKey])) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan-tests';
@@ -100,6 +101,15 @@ abstract class PHPStanTestCase extends TestCase
 				DirectoryCreator::ensureDirectoryExists($tmpDir, 0777);
 			} catch (DirectoryCreatorException $e) {
 				self::fail($e->getMessage());
+			}
+
+			$testCaseConfigFile = null;
+			if (self::$testCaseConfig !== null) {
+				$testCaseConfigFile = $tmpDir . '/test_case_config_' . rand() . '.neon';
+				if (file_put_contents($testCaseConfigFile, self::$testCaseConfig) === false) {
+					self::fail('Failed to write test case config to temp file.');
+				}
+				$additionalConfigFiles[] = $testCaseConfigFile;
 			}
 
 			$rootDir = __DIR__ . '/../..';
@@ -123,6 +133,10 @@ abstract class PHPStanTestCase extends TestCase
 				require_once __DIR__ . '/../../stubs/runtime/Enum/ReflectionEnum.php';
 				require_once __DIR__ . '/../../stubs/runtime/Enum/ReflectionEnumUnitCase.php';
 				require_once __DIR__ . '/../../stubs/runtime/Enum/ReflectionEnumBackedCase.php';
+			}
+
+			if ($testCaseConfigFile !== null) {
+				unlink($testCaseConfigFile);
 			}
 		} else {
 			ContainerFactory::postInitializeContainer(self::$containers[$cacheKey]);

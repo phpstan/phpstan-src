@@ -33,10 +33,10 @@ class RuleLevelHelper
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private bool $checkNullables,
-		protected bool $checkThisOnly,
+		private bool $checkThisOnly,
 		private bool $checkUnionTypes,
-		protected bool $checkExplicitMixed,
-		protected bool $checkImplicitMixed,
+		private bool $checkExplicitMixed,
+		private bool $checkImplicitMixed,
 		private bool $newRuleLevelHelper,
 		private bool $checkBenevolentUnionTypes,
 	)

@@ -10,7 +10,6 @@ use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Testing\RuleLevelHelperHack;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
@@ -20,19 +19,11 @@ use const PHP_VERSION_ID;
 class CallStaticMethodsRuleTest extends RuleTestCase
 {
 
-	private bool $checkThisOnly;
-
-	private bool $checkExplicitMixed = false;
-
-	private bool $checkImplicitMixed = false;
-
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = self::getContainer()->getByType(RuleLevelHelper::class);
-		RuleLevelHelperHack::setCheckImplicitMixed($ruleLevelHelper, $this->checkImplicitMixed);
-		RuleLevelHelperHack::setCheckExplicitMixed($ruleLevelHelper, $this->checkExplicitMixed);
-		RuleLevelHelperHack::setCheckThisOnly($ruleLevelHelper, $this->checkThisOnly);
 		$reflectionProvider = $this->createReflectionProvider();
+		$ruleLevelHelper = $this->getContainer()->getByType(RuleLevelHelper::class);
+
 		return new CallStaticMethodsRule(
 			new StaticMethodCallCheck($reflectionProvider, $ruleLevelHelper, new ClassCaseSensitivityCheck($reflectionProvider, true), true, true),
 			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
@@ -41,7 +32,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testCallStaticMethods(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/call-static-methods.php'], [
 			[
 				'Call to an undefined static method CallStaticMethods\Foo::bar().',
@@ -238,7 +228,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testCallInterfaceMethods(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/call-interface-methods.php'], [
 			[
 				'Cannot call abstract static method InterfaceMethods\Foo::fooStaticMethod().',
@@ -253,7 +242,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testCallToIncorrectCaseMethodName(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/incorrect-static-method-case.php'], [
 			[
 				'Call to static method IncorrectStaticMethodCase\Foo::fooBar() with incorrect case: foobar',
@@ -264,7 +252,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testStaticCallsToInstanceMethods(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/static-calls-to-instance-methods.php'], [
 			[
 				'Static call to instance method StaticCallsToInstanceMethods\Foo::doFoo().',
@@ -299,7 +286,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testStaticCallOnExpression(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/static-call-on-expression.php'], [
 			[
 				'Call to an undefined static method StaticCallOnExpression\Foo::doBar().',
@@ -310,13 +296,16 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testStaticCallOnExpressionWithCheckDisabled(): void
 	{
-		$this->checkThisOnly = true;
+		$this->setTestCaseConfig([
+			'parameters' => [
+				'checkThisOnly' => true,
+			],
+		]);
 		$this->analyse([__DIR__ . '/data/static-call-on-expression.php'], []);
 	}
 
 	public function testReturnStatic(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/return-static-static-method.php'], [
 			[
 				'Call to an undefined static method ReturnStaticStaticMethod\Bar::doBaz().',
@@ -327,7 +316,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testCallParentAbstractMethod(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/call-parent-abstract-method.php'], [
 			[
 				'Cannot call abstract method CallParentAbstractMethod\Baz::uninstall().',
@@ -350,13 +338,11 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testClassExists(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/static-methods-class-exists.php'], []);
 	}
 
 	public function testBug3448(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-3448.php'], [
 			[
 				'Parameter #1 $lall of static method Bug3448\Foo::add() expects int, string given.',
@@ -371,7 +357,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testBug3641(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-3641.php'], [
 			[
 				'Static method Bug3641\Foo::bar() invoked with 1 parameter, 0 required.',
@@ -382,7 +367,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testBug2164(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-2164.php'], [
 			[
 				'Parameter #1 $arg of static method Bug2164\A::staticTest() expects static(Bug2164\B)|string, Bug2164\B|string given.',
@@ -393,8 +377,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testNamedArguments(): void
 	{
-		$this->checkThisOnly = false;
-
 		$this->analyse([__DIR__ . '/data/static-method-named-arguments.php'], [
 			[
 				'Missing parameter $j (int) in call to static method StaticMethodNamedArguments\Foo::doFoo().',
@@ -409,13 +391,11 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testBug577(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-577.php'], []);
 	}
 
 	public function testBug4550(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-4550.php'], [
 			[
 				'Parameter #1 $class of static method Bug4550\Test::valuesOf() expects class-string<Person>, string given.',
@@ -434,7 +414,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.x');
 		}
 
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-1971.php'], [
 			[
 				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{class-string<static(Bug1971\\HelloWorld)>, \'sayHello2\'} given.',
@@ -449,7 +428,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0');
 		}
 
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-1971.php'], [
 			[
 				'Parameter #1 $callback of static method Closure::fromCallable() expects callable(): mixed, array{\'Bug1971\\\HelloWorld\', \'sayHello\'} given.',
@@ -468,63 +446,53 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testBug5259(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-5259.php'], []);
 	}
 
 	public function testBug5536(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-5536.php'], []);
 	}
 
 	public function testBug4886(): void
 	{
-		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-4886.php'], []);
 	}
 
 	public function testFirstClassCallables(): void
 	{
-		$this->checkThisOnly = false;
-
 		// handled by a different rule
 		$this->analyse([__DIR__ . '/data/first-class-static-method-callable.php'], []);
 	}
 
 	public function testBug5893(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-5893.php'], []);
 	}
 
 	public function testBug6249(): void
 	{
 		// discussion https://github.com/phpstan/phpstan/discussions/6249
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-6249.php'], []);
 	}
 
 	public function testBug5749(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-5749.php'], []);
 	}
 
 	public function testBug5757(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-5757.php'], []);
 	}
 
 	public function testDiscussion7004(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = true;
+		$this->setTestCaseConfig([
+			'parameters' => [
+				'checkExplicitMixed' => true,
+			],
+		]);
 		$this->analyse([__DIR__ . '/data/discussion-7004.php'], [
 			[
 				'Parameter #1 $data of static method Discussion7004\Foo::fromArray1() expects array<array{newsletterName: string, subscriberCount: int}>, array given.',
@@ -543,8 +511,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testTemplateTypeInOneBranchOfConditional(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/template-type-in-one-branch-of-conditional.php'], [
 			[
 				'Parameter #1 $params of static method TemplateTypeInOneBranchOfConditional\DriverManager::getConnection() expects array{wrapperClass?: class-string<TemplateTypeInOneBranchOfConditional\Connection>}, array{wrapperClass: \'stdClass\'} given.',
@@ -561,15 +527,11 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testBug7489(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-7489.php'], []);
 	}
 
 	public function testHasMethodStaticCall(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/static-has-method.php'], [
 			[
 				'Call to an undefined static method StaticHasMethodCall\rex_var::doesNotExist().',
@@ -584,22 +546,16 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testBug1267(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/bug-1267.php'], []);
 	}
 
 	public function testBug6147(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/bug-6147.php'], []);
 	}
 
 	public function testBug5781(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/bug-5781.php'], [
 			[
 				'Parameter #1 $param of static method Bug5781\Foo::bar() expects array{a: bool, b: bool, c: bool, d: bool, e: bool, f: bool, g: bool, h: bool, ...}, array{} given.',
@@ -611,9 +567,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testRequireExtends(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = false;
-
 		$this->analyse([__DIR__ . '/../Properties/data/require-extends.php'], [
 			[
 				'Call to an undefined static method RequireExtends\MyInterface::doesNotExistStatic().',
@@ -624,9 +577,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testRequireImplements(): void
 	{
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = false;
-
 		$this->analyse([__DIR__ . '/../Properties/data/require-implements.php'], [
 			[
 				'Call to an undefined static method RequireImplements\MyBaseClass::doesNotExistStatic().',
@@ -641,9 +591,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1');
 		}
 
-		$this->checkThisOnly = false;
-		$this->checkExplicitMixed = true;
-		$this->checkImplicitMixed = true;
+		$this->setTestCaseConfig([
+			'parameters' => [
+				'checkExplicitMixed' => true,
+				'checkImplicitMixed' => true,
+			],
+		]);
 		$this->analyse([__DIR__ . '/data/generic-instanceof-enum.php'], [
 			[
 				'Call to an undefined static method T of mixed&UnitEnum::from().',

@@ -128,10 +128,10 @@ jobs:
               cd e2e/result-cache-7
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv
-              patch -b src/Baz.php < patch-1.patch
+              patch -b src/Bar.php < patch-1.patch
               cat baseline-1.neon > phpstan-baseline.neon
               ../../bin/phpstan -vvv
-              mv src/Baz.php.orig src/Baz.php
+              mv src/Bar.php.orig src/Bar.php
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv
           - script: |

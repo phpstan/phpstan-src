@@ -5,10 +5,11 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use function count;
@@ -21,11 +22,11 @@ class StrTokFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		return $functionReflection->getName() === 'strtok';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) !== 2) {
-			return ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$delimiterType = $scope->getType($functionCall->getArgs()[0]->value);
@@ -35,10 +36,10 @@ class StrTokFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		}
 
 		if ($isEmptyString->no()) {
-			return new StringType();
+			return new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
 		}
 
-		return ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants())->getReturnType();
+		return null;
 	}
 
 }

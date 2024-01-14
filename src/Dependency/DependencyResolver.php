@@ -386,14 +386,15 @@ class DependencyResolver
 			$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
 		} elseif ($node instanceof Node\Stmt\Trait_ && $node->name !== null) {
 			try {
-				$classReflection = $this->reflectionProvider->getClass($node->name->toString());
+				$classReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());
 
 				foreach ($classReflection->getRequireImplementsTags() as $implementsTag) {
 					foreach ($implementsTag->getType()->getReferencedClasses() as $referencedClass) {
 						if (!$this->reflectionProvider->hasClass($referencedClass)) {
 							continue;
 						}
-						$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+
+						$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 					}
 				}
 			} catch (ClassNotFoundException) {

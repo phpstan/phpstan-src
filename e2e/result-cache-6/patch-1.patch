@@ -1,0 +1,10 @@
+diff --git b/e2e/result-cache-6/src/Baz.php a/e2e/result-cache-6/src/Baz.php
+index 4a94eb3ae..6fed0b9ec 100644
+--- b/e2e/result-cache-6/src/Baz.php
++++ a/e2e/result-cache-6/src/Baz.php
+@@ -4,5 +4,4 @@ namespace TestResultCache6;
+ 
+ class Baz
+ {
+-	public string $s;
+ }

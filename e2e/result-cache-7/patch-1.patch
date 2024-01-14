@@ -1,0 +1,12 @@
+diff --git a/e2e/result-cache-7/src/Bar.php b/e2e/result-cache-7/src/Bar.php
+index b698e695d..0bbcc3093 100644
+--- a/e2e/result-cache-7/src/Bar.php
++++ b/e2e/result-cache-7/src/Bar.php
+@@ -2,6 +2,6 @@
+
+ namespace TestResultCache7;
+
+-interface Bar
++class Bar
+ {
+ }

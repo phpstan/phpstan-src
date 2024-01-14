@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^PHPDoc tag @phpstan\\-require\\-implements cannot contain non\\-interface type TestResultCache7\\\\Bar\\.$#"
+			count: 1
+			path: src/Foo.php

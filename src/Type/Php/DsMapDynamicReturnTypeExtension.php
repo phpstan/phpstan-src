@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
@@ -25,41 +24,35 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 		return in_array($methodReflection->getName(), ['get', 'remove'], true);
 	}
 
-	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
+	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
-		$returnType = ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$methodCall->getArgs(),
-			$methodReflection->getVariants(),
-		)->getReturnType();
-
 		$argsCount = count($methodCall->getArgs());
 		if ($argsCount > 1) {
-			return $returnType;
+			return null;
 		}
 
 		if ($argsCount === 0) {
-			return $returnType;
+			return null;
 		}
 
 		$mapType = $scope->getType($methodCall->var);
 		if (!$mapType instanceof TypeWithClassName) {
-			return $returnType;
+			return null;
 		}
 
 		$mapAncestor = $mapType->getAncestorWithClassName('Ds\Map');
 		if ($mapAncestor === null) {
-			return $returnType;
+			return null;
 		}
 
 		$mapAncestorClass = $mapAncestor->getClassReflection();
 		if ($mapAncestorClass === null) {
-			return $returnType;
+			return null;
 		}
 
 		$valueType = $mapAncestorClass->getActiveTemplateTypeMap()->getType('TValue');
 		if ($valueType === null) {
-			return $returnType;
+			return null;
 		}
 
 		return $valueType;

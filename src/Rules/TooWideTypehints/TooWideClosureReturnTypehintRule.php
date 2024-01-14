@@ -31,11 +31,6 @@ class TooWideClosureReturnTypehintRule implements Rule
 			return [];
 		}
 
-		$closureReturnType = $scope->getFunctionType($closureExpr->returnType, false, false);
-		if (!$closureReturnType instanceof UnionType) {
-			return [];
-		}
-
 		$statementResult = $node->getStatementResult();
 		if ($statementResult->hasYield()) {
 			return [];
@@ -43,6 +38,11 @@ class TooWideClosureReturnTypehintRule implements Rule
 
 		$returnStatements = $node->getReturnStatements();
 		if (count($returnStatements) === 0) {
+			return [];
+		}
+
+		$closureReturnType = $scope->getFunctionType($closureExpr->returnType, false, false);
+		if (!$closureReturnType instanceof UnionType) {
 			return [];
 		}
 

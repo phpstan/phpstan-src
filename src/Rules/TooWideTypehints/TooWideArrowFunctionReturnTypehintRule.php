@@ -29,13 +29,13 @@ class TooWideArrowFunctionReturnTypehintRule implements Rule
 			return [];
 		}
 
-		$functionReturnType = $scope->getFunctionType($arrowFunction->returnType, false, false);
-		if (!$functionReturnType instanceof UnionType) {
+		$expr = $arrowFunction->expr;
+		if ($expr instanceof Node\Expr\YieldFrom || $expr instanceof Node\Expr\Yield_) {
 			return [];
 		}
 
-		$expr = $arrowFunction->expr;
-		if ($expr instanceof Node\Expr\YieldFrom || $expr instanceof Node\Expr\Yield_) {
+		$functionReturnType = $scope->getFunctionType($arrowFunction->returnType, false, false);
+		if (!$functionReturnType instanceof UnionType) {
 			return [];
 		}
 

@@ -41,7 +41,10 @@ class ParserNodeTypeToPHPStanType
 
 			return new ObjectType($typeClassName);
 		} elseif ($type instanceof NullableType) {
-			return TypeCombinator::addNull(self::resolve($type->type, $classReflection));
+			return new UnionType([
+				self::resolve($type->type, $classReflection),
+				new NullType(),
+			]);
 		} elseif ($type instanceof Node\UnionType) {
 			$types = [];
 			foreach ($type->types as $unionTypeType) {

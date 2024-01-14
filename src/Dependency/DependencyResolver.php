@@ -384,6 +384,22 @@ class DependencyResolver
 			&& $node->class instanceof Node\Name
 		) {
 			$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
+		} elseif ($node instanceof Node\Stmt\Trait_ && $node->namespacedName !== null) {
+			try {
+				$classReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());
+
+				foreach ($classReflection->getRequireImplementsTags() as $implementsTag) {
+					foreach ($implementsTag->getType()->getReferencedClasses() as $referencedClass) {
+						if (!$this->reflectionProvider->hasClass($referencedClass)) {
+							continue;
+						}
+
+						$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+					}
+				}
+			} catch (ClassNotFoundException) {
+				// pass
+			}
 		} elseif ($node instanceof Node\Stmt\TraitUse) {
 			foreach ($node->traits as $traitName) {
 				$this->addClassToDependencies($traitName->toString(), $dependenciesReflections);
@@ -488,6 +504,15 @@ class DependencyResolver
 
 			foreach ($classReflection->getResolvedMixinTypes() as $mixinType) {
 				foreach ($mixinType->getReferencedClasses() as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
+			}
+
+			foreach ($classReflection->getRequireExtendsTags() as $extendsTag) {
+				foreach ($extendsTag->getType()->getReferencedClasses() as $referencedClass) {
 					if (!$this->reflectionProvider->hasClass($referencedClass)) {
 						continue;
 					}

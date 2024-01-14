@@ -6,7 +6,6 @@ use Closure;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
@@ -28,14 +27,10 @@ class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStaticMeth
 		return $methodReflection->getName() === 'fromCallable';
 	}
 
-	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): Type
+	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
 		if (!isset($methodCall->getArgs()[0])) {
-			return ParametersAcceptorSelector::selectFromArgs(
-				$scope,
-				$methodCall->getArgs(),
-				$methodReflection->getVariants(),
-			)->getReturnType();
+			return null;
 		}
 
 		$callableType = $scope->getType($methodCall->getArgs()[0]->value);

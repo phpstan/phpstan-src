@@ -125,6 +125,16 @@ jobs:
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv
           - script: |
+              cd e2e/result-cache-7
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              patch -b src/Baz.php < patch-1.patch
+              cat baseline-1.neon > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              mv src/Baz.php.orig src/Baz.php
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+          - script: |
               cd e2e/bug-9622
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv

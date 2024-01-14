@@ -1242,7 +1242,7 @@ class MutatingScope implements Scope
 						new VoidType(),
 					]);
 				} else {
-					$returnType = $arrowScope->getKeepVoidType($node->expr);
+					$returnType = $arrowScope->getType($node->expr);
 					if ($node->returnType !== null) {
 						$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
 					}

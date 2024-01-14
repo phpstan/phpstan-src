@@ -63,7 +63,6 @@ class IncompatiblePhpDocTypeRule implements Rule
 			$docComment->getText(),
 		);
 		$nativeParameterTypes = $this->getNativeParameterTypes($node, $scope);
-		$nativeReturnType = $this->getNativeReturnType($node, $scope);
 		$byRefParameters = $this->getByRefParameters($node);
 
 		$errors = [];
@@ -186,6 +185,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 				$errors[] = RuleErrorBuilder::message('PHPDoc tag @return contains unresolvable type.')->build();
 
 			} else {
+				$nativeReturnType = $this->getNativeReturnType($node, $scope);
 				$isReturnSuperType = $nativeReturnType->isSuperTypeOf($phpDocReturnType);
 				$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
 					$phpDocReturnType,

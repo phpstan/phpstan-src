@@ -384,7 +384,7 @@ class DependencyResolver
 			&& $node->class instanceof Node\Name
 		) {
 			$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
-		} elseif ($node instanceof Node\Stmt\Trait_ && $node->name !== null) {
+		} elseif ($node instanceof Node\Stmt\Trait_ && $node->namespacedName !== null) {
 			try {
 				$classReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());
 

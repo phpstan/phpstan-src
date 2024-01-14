@@ -1183,17 +1183,22 @@ class MutatingScope implements Scope
 				}
 			}
 
+			$realParameterTypes = $this->getRealParameterTypes($node, false);
 			foreach ($node->params as $i => $param) {
-				if ($param->variadic) {
-					$isVariadic = true;
-				}
-				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
+				if (!$param->var instanceof Variable || !is_string($param->var->name) || !array_key_exists($param->var->name, $realParameterTypes)) {
 					throw new ShouldNotHappenException();
 				}
+
+				$paramType = $realParameterTypes[$param->var->name];
+				if ($param->variadic) {
+					$isVariadic = true;
+					$paramType = $this->getFunctionType($param->type, $this->isParameterValueNullable($param), false);
+				}
+
 				$parameters[] = new NativeParameterReflection(
 					$param->var->name,
 					$firstOptionalParameterIndex !== null && $i >= $firstOptionalParameterIndex,
-					$this->getFunctionType($param->type, $this->isParameterValueNullable($param), false),
+					$paramType,
 					$param->byRef
 						? PassedByReference::createCreatesNewVariable()
 						: PassedByReference::createNo(),
@@ -1212,7 +1217,7 @@ class MutatingScope implements Scope
 			}
 
 			if ($node instanceof Expr\ArrowFunction) {
-				$arrowScope = $this->enterArrowFunctionWithoutReflection($node, $callableParameters);
+				$arrowScope = $this->enterArrowFunctionWithoutReflection($node, $callableParameters, $realParameterTypes);
 
 				if ($node->expr instanceof Expr\Yield_ || $node->expr instanceof Expr\YieldFrom) {
 					$yieldNode = $node->expr;
@@ -1248,7 +1253,7 @@ class MutatingScope implements Scope
 					}
 				}
 			} else {
-				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
+				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters, $realParameterTypes);
 				$closureReturnStatements = [];
 				$closureYieldStatements = [];
 				$closureExecutionEnds = [];
@@ -2637,19 +2642,25 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @return Type[]
+	 * @return array<string, Type>
 	 */
-	private function getRealParameterTypes(Node\FunctionLike $functionLike): array
+	private function getRealParameterTypes(Node\FunctionLike $functionLike, bool $forceNonVariadic = true): array
 	{
 		$realParameterTypes = [];
 		foreach ($functionLike->getParams() as $parameter) {
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
 				throw new ShouldNotHappenException();
 			}
+
+			$variadic = false;
+			if (!$forceNonVariadic) {
+				$variadic = $parameter->variadic;
+			}
+
 			$realParameterTypes[$parameter->var->name] = $this->getFunctionType(
 				$parameter->type,
 				$this->isParameterValueNullable($parameter),
-				false,
+				$variadic,
 			);
 		}
 
@@ -2917,7 +2928,7 @@ class MutatingScope implements Scope
 			throw new ShouldNotHappenException();
 		}
 
-		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters);
+		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters, $this->getRealParameterTypes($closure, false));
 
 		return $this->scopeFactory->create(
 			$scope->context,
@@ -2941,21 +2952,22 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param ParameterReflection[]|null $callableParameters
+	 * @param array<string, Type> $realParameterTypes
 	 */
 	private function enterAnonymousFunctionWithoutReflection(
 		Expr\Closure $closure,
-		?array $callableParameters = null,
+		?array $callableParameters,
+		array $realParameterTypes,
 	): self
 	{
 		$expressionTypes = [];
 		$nativeTypes = [];
 		foreach ($closure->params as $i => $parameter) {
-			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
+			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name) || !array_key_exists($parameter->var->name, $realParameterTypes)) {
 				throw new ShouldNotHappenException();
 			}
 			$paramExprString = sprintf('$%s', $parameter->var->name);
-			$isNullable = $this->isParameterValueNullable($parameter);
-			$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
+			$parameterType = $realParameterTypes[$parameter->var->name];
 			if ($callableParameters !== null) {
 				if (isset($callableParameters[$i])) {
 					$parameterType = TypehintHelper::decideType($parameterType, $callableParameters[$i]->getType());
@@ -3096,7 +3108,7 @@ class MutatingScope implements Scope
 			throw new ShouldNotHappenException();
 		}
 
-		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction, $callableParameters);
+		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction, $callableParameters, $this->getRealParameterTypes($arrowFunction, false));
 
 		return $this->scopeFactory->create(
 			$scope->context,
@@ -3120,16 +3132,19 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param ParameterReflection[]|null $callableParameters
+	 * @param array<string, Type> $realParameterTypes
 	 */
-	private function enterArrowFunctionWithoutReflection(Expr\ArrowFunction $arrowFunction, ?array $callableParameters): self
+	private function enterArrowFunctionWithoutReflection(Expr\ArrowFunction $arrowFunction, ?array $callableParameters, array $realParameterTypes): self
 	{
 		$arrowFunctionScope = $this;
 		foreach ($arrowFunction->params as $i => $parameter) {
 			if ($parameter->type === null) {
 				$parameterType = new MixedType();
 			} else {
-				$isNullable = $this->isParameterValueNullable($parameter);
-				$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
+				if (!$parameter->var instanceof Variable || !is_string($parameter->var->name) || !array_key_exists($parameter->var->name, $realParameterTypes)) {
+					throw new ShouldNotHappenException();
+				}
+				$parameterType = $realParameterTypes[$parameter->var->name];
 			}
 
 			if ($callableParameters !== null) {

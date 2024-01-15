@@ -94,8 +94,8 @@ phpstan-generate-baseline-php:
 phpstan-pro:
 	php -d memory_limit=448M bin/phpstan --pro
 
-composer-require-checker:
-	php build/composer-require-checker.phar check --config-file $(CURDIR)/build/composer-require-checker.json
-
 name-collision:
 	php vendor/bin/detect-collisions --configuration build/collision-detector.json
+
+composer-dependency-analyser:
+	php vendor/bin/composer-dependency-analyser --config build/composer-dependency-analyser.php

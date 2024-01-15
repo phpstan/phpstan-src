@@ -2885,16 +2885,15 @@ class NodeScopeResolver
 					);
 				}
 
-				$filteringExprResult = $this->processExprNode($stmt, $filteringExpr, $matchScope, static function (): void {
-				}, $deepContext);
-				$truthyScope = $filteringExprResult->getTruthyScope();
-				$matchArmBody = new MatchExpressionArmBody($truthyScope, $arm->body);
+				$bodyScope = $this->processExprNode($stmt, $filteringExpr, $matchScope, static function (): void {
+				}, $deepContext)->getTruthyScope();
+				$matchArmBody = new MatchExpressionArmBody($bodyScope, $arm->body);
 				$armNodes[] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getLine());
 
 				$armResult = $this->processExprNode(
 					$stmt,
 					$arm->body,
-					$truthyScope,
+					$bodyScope,
 					$nodeCallback,
 					ExpressionContext::createTopLevel(),
 				);
@@ -2902,7 +2901,7 @@ class NodeScopeResolver
 				$scope = $scope->mergeWith($armScope);
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
-				$matchScope = $filteringExprResult->getFalseyScope();
+				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
 			}
 
 			$remainingType = $matchScope->getType($expr->cond);

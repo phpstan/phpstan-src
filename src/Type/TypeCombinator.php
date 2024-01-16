@@ -17,6 +17,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\TemplateArrayType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -699,11 +700,35 @@ class TypeCombinator
 		}
 
 		if ($generalArrayOccurred) {
+			$scopes = [];
+			$useTemplateArray = true;
+			foreach ($arrayTypes as $arrayType) {
+				if (!$arrayType instanceof TemplateArrayType) {
+					$useTemplateArray = false;
+					break;
+				}
+
+				$scopes[$arrayType->getScope()->describe()] = $arrayType;
+			}
+
+			$arrayType = new ArrayType(
+				self::union(...$keyTypesForGeneralArray),
+				self::union(...self::optimizeConstantArrays($valueTypesForGeneralArray)),
+			);
+
+			if ($useTemplateArray && count($scopes) === 1) {
+				$templateArray = array_values($scopes)[0];
+				$arrayType = new TemplateArrayType(
+					$templateArray->getScope(),
+					$templateArray->getStrategy(),
+					$templateArray->getVariance(),
+					$templateArray->getName(),
+					$arrayType,
+				);
+			}
+
 			return [
-				self::intersect(new ArrayType(
-					self::union(...$keyTypesForGeneralArray),
-					self::union(...self::optimizeConstantArrays($valueTypesForGeneralArray)),
-				), ...$accessoryTypes),
+				self::intersect($arrayType, ...$accessoryTypes),
 			];
 		}
 

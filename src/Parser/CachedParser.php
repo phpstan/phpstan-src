@@ -4,24 +4,22 @@ namespace PHPStan\Parser;
 
 use PhpParser\Node;
 use PHPStan\File\FileReader;
-use function array_slice;
 
 class CachedParser implements Parser
 {
 
-	/** @var array<string, Node\Stmt[]>*/
-	private array $cachedNodesByString = [];
-
-	private int $cachedNodesByStringCount = 0;
+	/** @var LRUCache<Node\Stmt[]>*/
+	private LRUCache $cache;
 
 	/** @var array<string, true> */
 	private array $parsedByString = [];
 
 	public function __construct(
 		private Parser $originalParser,
-		private int $cachedNodesByStringCountMax,
+		int $cacheCapacity,
 	)
 	{
+		$this->cache = new LRUCache($cacheCapacity);
 	}
 
 	/**
@@ -30,25 +28,13 @@ class CachedParser implements Parser
 	 */
 	public function parseFile(string $file): array
 	{
-		if ($this->cachedNodesByStringCountMax !== 0 && $this->cachedNodesByStringCount >= $this->cachedNodesByStringCountMax) {
-			$this->cachedNodesByString = array_slice(
-				$this->cachedNodesByString,
-				1,
-				null,
-				true,
-			);
-
-			--$this->cachedNodesByStringCount;
-		}
-
 		$sourceCode = FileReader::read($file);
-		if (!isset($this->cachedNodesByString[$sourceCode]) || isset($this->parsedByString[$sourceCode])) {
-			$this->cachedNodesByString[$sourceCode] = $this->originalParser->parseFile($file);
-			$this->cachedNodesByStringCount++;
+		if (!$this->cache->has($sourceCode) || isset($this->parsedByString[$sourceCode])) {
+			$this->cache->put($sourceCode, $this->originalParser->parseFile($file));
 			unset($this->parsedByString[$sourceCode]);
 		}
 
-		return $this->cachedNodesByString[$sourceCode];
+		return $this->cache->get($sourceCode);
 	}
 
 	/**
@@ -56,42 +42,22 @@ class CachedParser implements Parser
 	 */
 	public function parseString(string $sourceCode): array
 	{
-		if ($this->cachedNodesByStringCountMax !== 0 && $this->cachedNodesByStringCount >= $this->cachedNodesByStringCountMax) {
-			$this->cachedNodesByString = array_slice(
-				$this->cachedNodesByString,
-				1,
-				null,
-				true,
-			);
-
-			--$this->cachedNodesByStringCount;
-		}
-
-		if (!isset($this->cachedNodesByString[$sourceCode])) {
-			$this->cachedNodesByString[$sourceCode] = $this->originalParser->parseString($sourceCode);
-			$this->cachedNodesByStringCount++;
+		if (!$this->cache->has($sourceCode)) {
+			$this->cache->put($sourceCode, $this->originalParser->parseString($sourceCode));
 			$this->parsedByString[$sourceCode] = true;
 		}
 
-		return $this->cachedNodesByString[$sourceCode];
+		return $this->cache->get($sourceCode);
 	}
 
-	public function getCachedNodesByStringCount(): int
+	public function getCacheCapacity(): int
 	{
-		return $this->cachedNodesByStringCount;
+		return $this->cache->getCapacity();
 	}
 
-	public function getCachedNodesByStringCountMax(): int
+	public function getCachedItemsCount(): int
 	{
-		return $this->cachedNodesByStringCountMax;
-	}
-
-	/**
-	 * @return array<string, Node[]>
-	 */
-	public function getCachedNodesByString(): array
-	{
-		return $this->cachedNodesByString;
+		return $this->cache->getCount();
 	}
 
 }

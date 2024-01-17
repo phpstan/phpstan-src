@@ -1857,7 +1857,7 @@ services:
 		class: PHPStan\Parser\CachedParser
 		arguments:
 			originalParser: @pathRoutingParser
-			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
+			cacheCapacity: %cache.nodesByStringCountMax%
 		autowired: false
 
 	phpParserDecorator:

@@ -252,21 +252,28 @@ class TypeSpecifier
 					if ($context->truthy() && $argType->isArray()->maybe()) {
 						$countables = [];
 						if ($argType instanceof UnionType) {
+							$countableInterface = new ObjectType(\Countable::class);
 							foreach ($argType->getTypes() as $innerType) {
-								if (!$innerType->isArray()->yes()) {
-									continue;
+								if (
+									$innerType->isArray()->yes()
+								) {
+									$innerType = TypeCombinator::intersect(new NonEmptyArrayType(), $innerType);
+									if ($innerType->isList()->yes()) {
+										$innerType = AccessoryArrayListType::intersectWith($innerType);
+									}
+									$countables[] = $innerType;
 								}
-								$countables[] = $innerType;
+
+								if (
+									$countableInterface->isSuperTypeOf($innerType)->yes()
+								) {
+									$countables[] = $innerType;
+								}
 							}
 						}
 
 						if (count($countables) > 0) {
 							$countableType = TypeCombinator::union(...$countables);
-							$countableType = TypeCombinator::intersect(new NonEmptyArrayType(), $countableType);
-
-							if ($countableType->isList()->yes()) {
-								$countableType = AccessoryArrayListType::intersectWith($countableType);
-							}
 
 							return $this->create($expr->right->getArgs()[0]->value, $countableType, $context, false, $scope, $rootExpr);
 						}

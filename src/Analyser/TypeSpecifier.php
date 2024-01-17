@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use Countable;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -252,7 +253,7 @@ class TypeSpecifier
 					if ($context->truthy() && $argType->isArray()->maybe()) {
 						$countables = [];
 						if ($argType instanceof UnionType) {
-							$countableInterface = new ObjectType(\Countable::class);
+							$countableInterface = new ObjectType(Countable::class);
 							foreach ($argType->getTypes() as $innerType) {
 								if (
 									$innerType->isArray()->yes()
@@ -265,10 +266,12 @@ class TypeSpecifier
 								}
 
 								if (
-									$countableInterface->isSuperTypeOf($innerType)->yes()
+									!$countableInterface->isSuperTypeOf($innerType)->yes()
 								) {
-									$countables[] = $innerType;
+									continue;
 								}
+
+								$countables[] = $innerType;
 							}
 						}
 

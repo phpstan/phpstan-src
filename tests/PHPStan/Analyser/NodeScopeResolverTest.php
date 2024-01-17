@@ -161,6 +161,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		if (PHP_VERSION_ID >= 80000) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/minmax-php8.php');
 		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/count-maybe.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/classPhpDocs.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-array-key-type.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3133.php');
@@ -1423,6 +1424,12 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10302-interface-extends.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10302-trait-extends.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10302-trait-implements.php');
+		if (PHP_VERSION_ID < 80300) {
+			return;
+		}
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/str_increment.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/str_decrement.php');
 	}
 
 	/**

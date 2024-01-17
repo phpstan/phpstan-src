@@ -1,0 +1,115 @@
+<?php
+
+namespace CountMaybe;
+
+use function PHPStan\Testing\assertType;
+
+/**
+ * @param float|int[] $maybeCountable
+ */
+function doFoo1($maybeCountable, int $mode): void
+{
+	if (count($maybeCountable, $mode) > 0) {
+		assertType('non-empty-array<int>', $maybeCountable);
+	} else {
+		assertType('array<int>|float', $maybeCountable);
+	}
+}
+
+function doBar1(float $notCountable, int $mode): void
+{
+	if (count($notCountable, $mode) > 0) {
+		assertType('float', $notCountable);
+	} else {
+		assertType('float', $notCountable);
+	}
+}
+
+/**
+ * @param array|int $maybeMode
+ */
+function doBar2(float $notCountable, $maybeMode): void
+{
+	if (count($notCountable, $maybeMode) > 0) {
+		assertType('float', $notCountable);
+	} else {
+		assertType('float', $notCountable);
+	}
+}
+
+function doBar3(float $notCountable, float $invalidMode): void
+{
+	if (count($notCountable, $invalidMode) > 0) {
+		assertType('float', $notCountable);
+	} else {
+		assertType('float', $notCountable);
+	}
+}
+
+
+/**
+ * @param float|int[] $maybeCountable
+ */
+function doFoo1($maybeCountable, int $mode): void
+{
+	if (count($maybeCountable, $mode) > 0) {
+		assertType('non-empty-array<int>', $maybeCountable);
+	} else {
+		assertType('array<int>|float', $maybeCountable);
+	}
+}
+
+/**
+ * @param float|int[] $maybeCountable
+ * @param array|int $maybeMode
+ */
+function doFoo2($maybeCountable, $maybeMode): void
+{
+	if (count($maybeCountable, $maybeMode) > 0) {
+		assertType('non-empty-array<int>', $maybeCountable);
+	} else {
+		assertType('array<int>|float', $maybeCountable);
+	}
+}
+
+/**
+ * @param float|int[] $maybeCountable
+ */
+function doFoo3($maybeCountable, float $invalidMode): void
+{
+	if (count($maybeCountable, $invalidMode) > 0) {
+		assertType('non-empty-array<int>', $maybeCountable);
+	} else {
+		assertType('array<int>|float', $maybeCountable);
+	}
+}
+
+function doFooBar1(array $countable, int $mode): void
+{
+	if (count($countable, $mode) > 0) {
+		assertType('non-empty-array', $countable);
+	} else {
+		assertType('array{}', $countable);
+	}
+}
+
+/**
+ * @param array|int $maybeMode
+ */
+function doFooBar2(array $countable, $maybeMode): void
+{
+	if (count($countable, $maybeMode) > 0) {
+		assertType('non-empty-array', $countable);
+	} else {
+		assertType('array{}', $countable);
+	}
+}
+
+function doFooBar3(array $countable, float $invalidMode): void
+{
+	if (count($countable, $invalidMode) > 0) {
+		assertType('non-empty-array', $countable);
+	} else {
+		assertType('array{}', $countable);
+	}
+}

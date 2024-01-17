@@ -12,6 +12,7 @@ function doBar1(float $notCountable, int $mode): void
 	} else {
 		assertType('float', $notCountable);
 	}
+	assertType('float', $notCountable);
 }
 
 /**
@@ -24,6 +25,7 @@ function doBar2(float $notCountable, $maybeMode): void
 	} else {
 		assertType('float', $notCountable);
 	}
+	assertType('float', $notCountable);
 }
 
 function doBar3(float $notCountable, float $invalidMode): void
@@ -33,6 +35,7 @@ function doBar3(float $notCountable, float $invalidMode): void
 	} else {
 		assertType('float', $notCountable);
 	}
+	assertType('float', $notCountable);
 }
 
 /**
@@ -45,6 +48,7 @@ function doFoo1($maybeCountable, int $mode): void
 	} else {
 		assertType('array<int>|float', $maybeCountable);
 	}
+	assertType('array<int>|float', $maybeCountable);
 }
 
 /**
@@ -58,6 +62,7 @@ function doFoo2($maybeCountable, $maybeMode): void
 	} else {
 		assertType('array<int>|float', $maybeCountable);
 	}
+	assertType('array<int>|float', $maybeCountable);
 }
 
 /**
@@ -70,6 +75,7 @@ function doFoo3($maybeCountable, float $invalidMode): void
 	} else {
 		assertType('array<int>|float', $maybeCountable);
 	}
+	assertType('array<int>|float', $maybeCountable);
 }
 
 /**
@@ -82,6 +88,7 @@ function doFoo4($maybeCountable, int $mode): void
 	} else {
 		assertType('list<int>|float', $maybeCountable);
 	}
+	assertType('list<int>|float', $maybeCountable);
 }
 
 /**
@@ -95,6 +102,7 @@ function doFoo5($maybeCountable, $maybeMode): void
 	} else {
 		assertType('list<int>|float', $maybeCountable);
 	}
+	assertType('list<int>|float', $maybeCountable);
 }
 
 /**
@@ -107,6 +115,7 @@ function doFoo6($maybeCountable, float $invalidMode): void
 	} else {
 		assertType('list<int>|float', $maybeCountable);
 	}
+	assertType('list<int>|float', $maybeCountable);
 }
 
 /**
@@ -119,6 +128,7 @@ function doFoo7($maybeCountable, int $mode): void
 	} else {
 		assertType('list<int>|Countable|float', $maybeCountable);
 	}
+	assertType('list<int>|Countable|float', $maybeCountable);
 }
 
 /**
@@ -132,6 +142,7 @@ function doFoo8($maybeCountable, $maybeMode): void
 	} else {
 		assertType('list<int>|Countable|float', $maybeCountable);
 	}
+	assertType('list<int>|Countable|float', $maybeCountable);
 }
 
 /**
@@ -144,6 +155,7 @@ function doFoo9($maybeCountable, float $invalidMode): void
 	} else {
 		assertType('list<int>|Countable|float', $maybeCountable);
 	}
+	assertType('list<int>|Countable|float', $maybeCountable);
 }
 
 function doFooBar1(array $countable, int $mode): void
@@ -153,6 +165,7 @@ function doFooBar1(array $countable, int $mode): void
 	} else {
 		assertType('array{}', $countable);
 	}
+	assertType('array', $countable);
 }
 
 /**
@@ -165,6 +178,7 @@ function doFooBar2(array $countable, $maybeMode): void
 	} else {
 		assertType('array{}', $countable);
 	}
+	assertType('array', $countable);
 }
 
 function doFooBar3(array $countable, float $invalidMode): void
@@ -174,4 +188,5 @@ function doFooBar3(array $countable, float $invalidMode): void
 	} else {
 		assertType('array{}', $countable);
 	}
+	assertType('array', $countable);
 }

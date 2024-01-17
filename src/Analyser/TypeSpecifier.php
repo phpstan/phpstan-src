@@ -959,11 +959,9 @@ class TypeSpecifier
 					if (count($exprNode->getArgs()) === 1) {
 						$isNormalCount = true;
 					} else {
-						if (count($exprNode->getArgs()) > 1) {
-							$mode = $scope->getType($exprNode->getArgs()[1]->value);
-							if (!$mode->isInteger()->yes()) {
-								return new SpecifiedTypes();
-							}
+						$mode = $scope->getType($exprNode->getArgs()[1]->value);
+						if (!$mode->isInteger()->yes()) {
+							return new SpecifiedTypes();
 						}
 
 						$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->yes();

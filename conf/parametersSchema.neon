@@ -171,7 +171,6 @@ parametersSchema:
 	)
 	internalErrorsCountLimit: int()
 	cache: structure([
-		nodesByFileCountMax: int()
 		nodesByStringCountMax: int()
 	])
 	reportUnmatchedIgnoredErrors: bool()

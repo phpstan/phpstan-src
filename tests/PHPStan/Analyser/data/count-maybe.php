@@ -4,18 +4,6 @@ namespace CountMaybe;
 
 use function PHPStan\Testing\assertType;
 
-/**
- * @param float|int[] $maybeCountable
- */
-function doFoo1($maybeCountable, int $mode): void
-{
-	if (count($maybeCountable, $mode) > 0) {
-		assertType('non-empty-array<int>', $maybeCountable);
-	} else {
-		assertType('array<int>|float', $maybeCountable);
-	}
-}
-
 function doBar1(float $notCountable, int $mode): void
 {
 	if (count($notCountable, $mode) > 0) {
@@ -45,7 +33,6 @@ function doBar3(float $notCountable, float $invalidMode): void
 		assertType('float', $notCountable);
 	}
 }
-
 
 /**
  * @param float|int[] $maybeCountable
@@ -81,6 +68,43 @@ function doFoo3($maybeCountable, float $invalidMode): void
 		assertType('non-empty-array<int>', $maybeCountable);
 	} else {
 		assertType('array<int>|float', $maybeCountable);
+	}
+}
+
+/**
+ * @param float|list<int> $maybeCountable
+ */
+function doFoo4($maybeCountable, int $mode): void
+{
+	if (count($maybeCountable, $mode) > 0) {
+		assertType('non-empty-list<int>', $maybeCountable);
+	} else {
+		assertType('list<int>|float', $maybeCountable);
+	}
+}
+
+/**
+ * @param float|list<int> $maybeCountable
+ * @param array|int $maybeMode
+ */
+function doFoo5($maybeCountable, $maybeMode): void
+{
+	if (count($maybeCountable, $maybeMode) > 0) {
+		assertType('non-empty-list<int>', $maybeCountable);
+	} else {
+		assertType('list<int>|float', $maybeCountable);
+	}
+}
+
+/**
+ * @param float|list<int> $maybeCountable
+ */
+function doFoo6($maybeCountable, float $invalidMode): void
+{
+	if (count($maybeCountable, $invalidMode) > 0) {
+		assertType('non-empty-list<int>', $maybeCountable);
+	} else {
+		assertType('list<int>|float', $maybeCountable);
 	}
 }
 

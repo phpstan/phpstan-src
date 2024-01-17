@@ -26,11 +26,6 @@ class CachedParserTest extends PHPStanTestCase
 			$cachedNodesByStringCountMax
 		);
 
-		$this->assertEquals(
-			$cachedNodesByStringCountMax,
-			$parser->getCacheCapacity()
-		);
-
 		// Add strings to cache
 		for ($i = 0; $i <= $cachedNodesByStringCountMax; $i++) {
 			$parser->parseString('string' . $i);
@@ -52,6 +47,11 @@ class CachedParserTest extends PHPStanTestCase
 		yield 'odd' => [
 			'cachedNodesByStringCountMax' => 51,
 			'cachedNodesByStringCountExpected' => 51,
+		];
+
+		yield 'unlimited' => [
+			'cachedNodesByStringCountMax' => 0,
+			'cachedNodesByStringCountExpected' => 1,
 		];
 	}
 

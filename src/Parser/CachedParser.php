@@ -8,8 +8,8 @@ use PHPStan\File\FileReader;
 class CachedParser implements Parser
 {
 
-	/** @var LRUCache<Node\Stmt[]>*/
-	private LRUCache $cache;
+	/** @var ParserCache<Node\Stmt[]>*/
+	private ParserCache $cache;
 
 	/** @var array<string, true> */
 	private array $parsedByString = [];
@@ -19,7 +19,9 @@ class CachedParser implements Parser
 		int $cacheCapacity,
 	)
 	{
-		$this->cache = new LRUCache($cacheCapacity);
+		$this->cache = $cacheCapacity === 0
+			? new UnlimitedCache()
+			: new LRUCache($cacheCapacity);
 	}
 
 	/**
@@ -48,11 +50,6 @@ class CachedParser implements Parser
 		}
 
 		return $this->cache->get($sourceCode);
-	}
-
-	public function getCacheCapacity(): int
-	{
-		return $this->cache->getCapacity();
 	}
 
 	public function getCachedItemsCount(): int

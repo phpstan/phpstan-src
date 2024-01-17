@@ -3,7 +3,6 @@
 namespace PHPStan\Parser;
 
 use LogicException;
-use SplDoublyLinkedList;
 use function count;
 use function sprintf;
 
@@ -11,19 +10,15 @@ use function sprintf;
  * @template TValue
  * @implements ParserCache<TValue>
  */
-class LRUCache implements ParserCache
+class UnlimitedCache implements ParserCache
 {
 
 	/** @var array<string, TValue> */
 	private array $cache;
 
-	/** @var SplDoublyLinkedList<string> */
-	private SplDoublyLinkedList $list;
-
-	public function __construct(private int $capacity)
+	public function __construct()
 	{
 		$this->cache = [];
-		$this->list = new SplDoublyLinkedList();
 	}
 
 	/**
@@ -35,13 +30,6 @@ class LRUCache implements ParserCache
 			throw new LogicException(sprintf('Key %s was not found in the cache, use ->has() first', $key));
 		}
 
-		$this->list->rewind();
-		while ($this->list->current() !== $key) {
-			$this->list->next();
-		}
-		$this->list->rewind();
-		$this->list->unshift($this->list->pop());
-
 		return $this->cache[$key];
 	}
 
@@ -50,12 +38,6 @@ class LRUCache implements ParserCache
 	 */
 	public function put(string $key, $value): void
 	{
-		if (count($this->cache) >= $this->capacity) {
-			$removedKey = $this->list->pop();
-			unset($this->cache[$removedKey]);
-		}
-
-		$this->list->unshift($key);
 		$this->cache[$key] = $value;
 	}
 
@@ -67,11 +49,6 @@ class LRUCache implements ParserCache
 	public function getCount(): int
 	{
 		return count($this->cache);
-	}
-
-	public function getCapacity(): int
-	{
-		return $this->capacity;
 	}
 
 }

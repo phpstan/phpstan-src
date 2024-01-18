@@ -9,6 +9,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
 use function array_fill_keys;
+use function array_key_exists;
 use function array_merge;
 use function count;
 use function json_decode;
@@ -109,7 +110,12 @@ class Analyser
 		}
 
 		// verify serializability of collected data
+		$alreadyReported = [];
 		foreach ($collectedData as $collected) {
+			if (array_key_exists($collected->getCollectorType(), $alreadyReported)) {
+				continue;
+			}
+
 			$json = json_encode($collected->getData());
 			if ($json === false) {
 				$errors[] = $this->buildCollectedDataError(
@@ -119,7 +125,9 @@ class Analyser
 					),
 					$collected,
 				);
-				continue;
+				$alreadyReported[$collected->getCollectorType()] = true;
+
+				break;
 			}
 
 			$restored = json_decode($json);
@@ -134,6 +142,7 @@ class Analyser
 				),
 				$collected,
 			);
+			$alreadyReported[$collected->getCollectorType()] = true;
 		}
 
 		return new AnalyserResult(

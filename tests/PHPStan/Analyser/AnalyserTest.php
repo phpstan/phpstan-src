@@ -686,6 +686,7 @@ class AnalyserTest extends PHPStanTestCase
 			$collectorRegistry,
 			$nodeScopeResolver,
 			50,
+			$reflectionProvider,
 		);
 	}
 

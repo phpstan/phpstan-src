@@ -176,7 +176,7 @@ class ParametersAcceptorSelector
 							$arrayFilterParameters ?? [
 								new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
 							],
-							new MixedType(),
+							new BooleanType(),
 							false,
 						),
 						new NullType(),

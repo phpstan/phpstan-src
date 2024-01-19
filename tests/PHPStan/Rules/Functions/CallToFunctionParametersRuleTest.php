@@ -868,13 +868,13 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = $checkExplicitMixed;
 		$errors = [
 			[
-				'Parameter #2 $callback of function array_filter expects (callable(int): mixed)|null, Closure(string): true given.',
+				'Parameter #2 $callback of function array_filter expects (callable(int): bool)|null, Closure(string): true given.',
 				17,
 			],
 		];
 		if ($checkExplicitMixed) {
 			$errors[] = [
-				'Parameter #2 $callback of function array_filter expects (callable(mixed): mixed)|null, Closure(int): true given.',
+				'Parameter #2 $callback of function array_filter expects (callable(mixed): bool)|null, Closure(int): true given.',
 				20,
 				'Type #1 from the union: Type int of parameter #1 $i of passed callable needs to be same or wider than parameter type mixed of accepting callable.',
 			];
@@ -1607,6 +1607,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testBug9697(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9697.php'], []);
+	}
+
+	public function testDiscussion10454(): void
+	{
+		$this->analyse([__DIR__ . '/data/discussion-10454.php'], [
+			[
+				"Parameter #2 \$callback of function array_filter expects (callable('bar'|'baz'|'foo'|'quux'|'qux'): bool)|null, Closure(string): stdClass given.",
+				13,
+			],
+			[
+				"Parameter #2 \$callback of function array_filter expects (callable('bar'|'baz'|'foo'|'quux'|'qux'): bool)|null, Closure(string): stdClass given.",
+				23,
+			],
+		]);
 	}
 
 }

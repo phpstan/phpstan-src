@@ -1501,7 +1501,7 @@ return [
 'curl_multi_exec' => ['int', 'mh'=>'resource', '&w_still_running'=>'int'],
 'curl_multi_getcontent' => ['string', 'ch'=>'resource'],
 'curl_multi_info_read' => ['array|false', 'mh'=>'resource', '&w_msgs_in_queue='=>'int'],
-'curl_multi_init' => ['resource|false'],
+'curl_multi_init' => ['resource'],
 'curl_multi_remove_handle' => ['int', 'mh'=>'resource', 'ch'=>'resource'],
 'curl_multi_select' => ['int', 'mh'=>'resource', 'timeout='=>'float'],
 'curl_multi_setopt' => ['bool', 'mh'=>'resource', 'option'=>'int', 'value'=>'mixed'],

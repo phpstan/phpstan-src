@@ -212,6 +212,10 @@ jobs:
               cd e2e/baseline-uninit-prop-trait
               ../../bin/phpstan analyse --configuration test-no-baseline.neon --generate-baseline test-baseline.neon
               ../../bin/phpstan analyse --configuration test.neon
+          - script: |
+              cd e2e/json-deprecations
+              ../../bin/phpstan --error-format=json --no-progress > output.json 2> output.json
+              php -r 'if (!is_array(json_decode(file_get_contents("output.json"), true))) throw new Exception("Invalid JSON");'
 
     steps:
       - name: "Checkout"

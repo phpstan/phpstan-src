@@ -87,6 +87,7 @@ class CommandHelper
 		bool $allowXdebug,
 		bool $debugEnabled = false,
 		bool $cleanupContainerCache = true,
+		?string $errorFormat = null,
 	): InceptionResult
 	{
 		$stdOutput = new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle($input, $output)));
@@ -390,7 +391,7 @@ class CommandHelper
 		}
 
 		foreach ($container->getParameter('bootstrapFiles') as $bootstrapFileFromArray) {
-			self::executeBootstrapFile($bootstrapFileFromArray, $container, $errorOutput, $debugEnabled);
+			self::executeBootstrapFile($bootstrapFileFromArray, $container, $errorOutput, $debugEnabled, $errorFormat);
 		}
 
 		/** @var array<callable>|false $autoloadFunctionsAfter */
@@ -526,6 +527,7 @@ class CommandHelper
 		Container $container,
 		Output $errorOutput,
 		bool $debugEnabled,
+		?string $errorFormat,
 	): void
 	{
 		if (!is_file($file)) {
@@ -533,9 +535,16 @@ class CommandHelper
 			throw new InceptionNotSuccessfulException();
 		}
 		try {
-			(static function (string $file) use ($container): void {
+			$includer = (static function (string $file) use ($container): void {
 				require_once $file;
-			})($file);
+			});
+
+			if ($errorFormat === 'json') {
+				// drop output to not break JSON output
+				@$includer($file);
+			} else {
+				$includer($file);
+			}
 		} catch (Throwable $e) {
 			$errorOutput->writeLineFormatted(sprintf('%s thrown in %s on line %d while loading bootstrap file %s: %s', get_class($e), $e->getFile(), $e->getLine(), $file, $e->getMessage()));
 

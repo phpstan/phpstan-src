@@ -124,6 +124,7 @@ class AnalyseCommand extends Command
 		$debugEnabled = (bool) $input->getOption('debug');
 		$fix = (bool) $input->getOption('fix') || (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
 		$failWithoutResultCache = (bool) $input->getOption('fail-without-result-cache');
+		$errorFormat = $input->getOption('error-format');
 
 		/** @var string|false|null $generateBaselineFile */
 		$generateBaselineFile = $input->getOption('generate-baseline');
@@ -159,6 +160,8 @@ class AnalyseCommand extends Command
 				$level,
 				$allowXdebug,
 				$debugEnabled,
+				true,
+				$errorFormat,
 			);
 		} catch (InceptionNotSuccessfulException $e) {
 			return 1;

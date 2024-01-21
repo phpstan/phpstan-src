@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "df6c2c42501959b3ad03f0e6279de391",
+    "content-hash": "302fd2e83a6e2f6df9c2dc5c2d4ece87",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1362,11 +1362,10 @@
                 "shasum": ""
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "@stable",
-                "nikic/php-parser": "@stable",
-                "php": "^8.3",
-                "phpdocumentor/reflection-docblock": "@stable",
-                "phpunit/phpunit": "@stable"
+                "friendsofphp/php-cs-fixer": "v3.46.0",
+                "nikic/php-parser": "v5.0.0",
+                "phpdocumentor/reflection-docblock": "5.3.0",
+                "phpunit/phpunit": "10.5.5"
             },
             "default-branch": true,
             "type": "library",
@@ -1394,7 +1393,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2024-01-02T11:04:54+00:00"
+            "time": "2024-01-17T10:11:03+00:00"
         },
         {
             "name": "nette/bootstrap",

@@ -62,7 +62,7 @@ class RuleLevelHelper
 		}
 
 		return TypeTraverser::map($type, function (Type $type, callable $traverse) {
-			if ($type instanceof TemplateMixedType) {
+			if ($type instanceof TemplateMixedType && ($this->checkExplicitMixed || !$this->newRuleLevelHelper)) {
 				return $type->toStrictMixedType();
 			}
 			if (
@@ -302,21 +302,19 @@ class RuleLevelHelper
 		}
 
 		if (
-			$this->checkExplicitMixed
+			($this->checkExplicitMixed || $this->checkImplicitMixed)
 			&& $type instanceof MixedType
-			&& !$type instanceof TemplateMixedType
-			&& $type->isExplicitMixed()
+			&& ($type->isExplicitMixed() ? $this->checkExplicitMixed : $this->checkImplicitMixed)
+			&& ($this->newRuleLevelHelper || !$type instanceof TemplateMixedType)
 		) {
-			return new FoundTypeResult(new StrictMixedType(), [], [], null);
-		}
-
-		if (
-			$this->checkImplicitMixed
-			&& $type instanceof MixedType
-			&& !$type instanceof TemplateMixedType
-			&& !$type->isExplicitMixed()
-		) {
-			return new FoundTypeResult(new StrictMixedType(), [], [], null);
+			return new FoundTypeResult(
+				$type instanceof TemplateMixedType
+					? $type->toStrictMixedType()
+					: new StrictMixedType(),
+				[],
+				[],
+				null,
+			);
 		}
 
 		if ($type instanceof MixedType || $type instanceof NeverType) {

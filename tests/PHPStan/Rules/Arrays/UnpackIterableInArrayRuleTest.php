@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Arrays;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function array_merge;
+use function usort;
 use const PHP_VERSION_ID;
 
 /**
@@ -13,9 +15,13 @@ use const PHP_VERSION_ID;
 class UnpackIterableInArrayRuleTest extends RuleTestCase
 {
 
+	private bool $checkExplicitMixed = false;
+
+	private bool $checkImplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
-		return new UnpackIterableInArrayRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, true, false));
+		return new UnpackIterableInArrayRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false));
 	}
 
 	public function testRule(): void
@@ -48,6 +54,62 @@ class UnpackIterableInArrayRuleTest extends RuleTestCase
 				17,
 			],
 		]);
+	}
+
+	public function dataMixed(): array
+	{
+		$explicitOnlyErrors = [
+			[
+				'Only iterables can be unpacked, T of mixed given.',
+				11,
+			],
+			[
+				'Only iterables can be unpacked, mixed given.',
+				12,
+			],
+		];
+		$implicitOnlyErrors = [
+			[
+				'Only iterables can be unpacked, mixed given.',
+				13,
+			],
+		];
+		$combinedErrors = array_merge($explicitOnlyErrors, $implicitOnlyErrors);
+		usort($combinedErrors, static fn (array $a, array $b): int => $a[1] <=> $b[1]);
+
+		return [
+			[
+				true,
+				false,
+				$explicitOnlyErrors,
+			],
+			[
+				false,
+				true,
+				$implicitOnlyErrors,
+			],
+			[
+				true,
+				true,
+				$combinedErrors,
+			],
+			[
+				false,
+				false,
+				[],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataMixed
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
+	 */
+	public function testMixed(bool $checkExplicitMixed, bool $checkImplicitMixed, array $errors): void
+	{
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$this->checkImplicitMixed = $checkImplicitMixed;
+		$this->analyse([__DIR__ . '/data/unpack-mixed.php'], $errors);
 	}
 
 }

@@ -929,4 +929,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8629(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
+		$this->analyse([__DIR__ . '/data/bug-8629.php'], []);
+	}
+
 }

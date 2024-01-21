@@ -95,7 +95,9 @@
 			"jetbrains/phpstorm-stubs": [
 				"patches/PDO.patch",
 				"patches/ReflectionProperty.patch",
-				"patches/SessionHandler.patch"
+				"patches/SessionHandler.patch",
+				"patches/xmlreader.patch",
+				"patches/dom_c.patch"
 			]
 		}
 	},

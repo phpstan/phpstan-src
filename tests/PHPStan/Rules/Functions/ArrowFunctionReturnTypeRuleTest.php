@@ -60,4 +60,9 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8179.php'], []);
 	}
 
+	public function testBugSpaceship(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-spaceship.php'], []);
+	}
+
 }

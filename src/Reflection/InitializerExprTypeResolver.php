@@ -746,17 +746,13 @@ class InitializerExprTypeResolver
 
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
+		if ($leftTypesCount > 0 && $rightTypesCount > 0 && $leftTypesCount * $rightTypesCount <= self::CALCULATE_SCALARS_LIMIT) {
 			$resultTypes = [];
-			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
 			foreach ($leftTypes as $leftType) {
 				foreach ($rightTypes as $rightType) {
 					$leftValue = $leftType->getValue();
 					$rightValue = $rightType->getValue();
 					$resultType = $this->getTypeFromValue($leftValue <=> $rightValue);
-					if ($generalize) {
-						$resultType = $resultType->generalize(GeneralizePrecision::lessSpecific());
-					}
 					$resultTypes[] = $resultType;
 				}
 			}

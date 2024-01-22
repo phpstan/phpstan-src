@@ -10,6 +10,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use const NAN;
 
+/** @api */
 class ClassConstantReflection implements ConstantReflection
 {
 

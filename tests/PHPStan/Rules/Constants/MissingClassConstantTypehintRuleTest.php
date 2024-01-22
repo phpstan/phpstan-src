@@ -46,4 +46,24 @@ class MissingClassConstantTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8957.php'], []);
 	}
 
+	public function testRuleShouldNotApplyToNativeTypes(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('This test needs PHP 8.3');
+		}
+
+		$this->analyse([__DIR__ . '/data/class-constant-native-type.php'], [
+			[
+				'Constant ClassConstantNativeTypeForMissingTypehintRule\Foo::B type has no value type specified in iterable type array.',
+				19,
+				'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type',
+			],
+			[
+				'Constant ClassConstantNativeTypeForMissingTypehintRule\Foo::D with generic class ClassConstantNativeTypeForMissingTypehintRule\Bar does not specify its types: T',
+				24,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 }

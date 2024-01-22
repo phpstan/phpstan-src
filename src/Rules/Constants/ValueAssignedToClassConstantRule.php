@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Constants;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -58,10 +57,6 @@ class ValueAssignedToClassConstantRule implements Rule
 	private function processSingleConstant(ClassReflection $classReflection, string $constantName, Type $valueExprType, ?Type $nativeType): array
 	{
 		$constantReflection = $classReflection->getConstant($constantName);
-		if (!$constantReflection instanceof ClassConstantReflection) {
-			return [];
-		}
-
 		$phpDocType = $constantReflection->getPhpDocType();
 		if ($phpDocType === null) {
 			if ($nativeType === null) {

@@ -79,7 +79,7 @@ class ClassReflection
 	/** @var PropertyReflection[] */
 	private array $properties = [];
 
-	/** @var ConstantReflection[] */
+	/** @var ClassConstantReflection[] */
 	private array $constants = [];
 
 	/** @var int[]|null */
@@ -1021,7 +1021,7 @@ class ClassReflection
 		return $this->reflectionProvider->hasClass($reflectionConstant->getDeclaringClass()->getName());
 	}
 
-	public function getConstant(string $name): ConstantReflection
+	public function getConstant(string $name): ClassConstantReflection
 	{
 		if (!isset($this->constants[$name])) {
 			$reflectionConstant = $this->getNativeReflection()->getReflectionConstant($name);

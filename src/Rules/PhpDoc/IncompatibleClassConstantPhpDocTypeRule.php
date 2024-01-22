@@ -5,7 +5,6 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
-use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\IdentifierRuleError;
@@ -62,10 +61,6 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 	private function processSingleConstant(ClassReflection $classReflection, ?Type $nativeType, string $constantName): array
 	{
 		$constantReflection = $classReflection->getConstant($constantName);
-		if (!$constantReflection instanceof ClassConstantReflection) {
-			return [];
-		}
-
 		$phpDocType = $constantReflection->getPhpDocType();
 		if ($phpDocType === null) {
 			return [];

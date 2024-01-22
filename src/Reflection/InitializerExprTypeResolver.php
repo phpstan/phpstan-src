@@ -1906,8 +1906,7 @@ class InitializerExprTypeResolver
 
 			$constantReflection = $constantClassReflection->getConstant($constantName);
 			if (
-				$constantReflection instanceof ClassConstantReflection
-				&& !$constantClassReflection->isFinal()
+				!$constantClassReflection->isFinal()
 				&& !$constantReflection->hasPhpDocType()
 				&& !$constantReflection->hasNativeType()
 			) {
@@ -1915,19 +1914,13 @@ class InitializerExprTypeResolver
 				return new MixedType();
 			}
 
-			if (
-				!$constantReflection instanceof ClassConstantReflection
-				|| !$constantClassReflection->isFinal()
-			) {
+			if (!$constantClassReflection->isFinal()) {
 				$constantType = $constantReflection->getValueType();
 			} else {
 				$constantType = $this->getType($constantReflection->getValueExpr(), InitializerExprContext::fromClassReflection($constantReflection->getDeclaringClass()));
 			}
 
-			$nativeType = null;
-			if ($constantReflection instanceof ClassConstantReflection) {
-				$nativeType = $constantReflection->getNativeType();
-			}
+			$nativeType = $constantReflection->getNativeType();
 			$constantType = $this->constantResolver->resolveClassConstantType(
 				$constantClassReflection->getName(),
 				$constantName,

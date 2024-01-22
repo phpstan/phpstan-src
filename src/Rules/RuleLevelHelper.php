@@ -62,8 +62,14 @@ class RuleLevelHelper
 		}
 
 		return TypeTraverser::map($type, function (Type $type, callable $traverse) {
-			if ($type instanceof TemplateMixedType && ($this->checkExplicitMixed || !$this->newRuleLevelHelper)) {
-				return $type->toStrictMixedType();
+			if ($type instanceof TemplateMixedType) {
+				if (!$this->newRuleLevelHelper) {
+					return $type->toStrictMixedType();
+				}
+
+				if ($this->checkExplicitMixed) {
+					return $type->toStrictMixedType();
+				}
 			}
 			if (
 				$type instanceof MixedType
@@ -301,20 +307,39 @@ class RuleLevelHelper
 			$type = TypeCombinator::removeNull($type);
 		}
 
-		if (
-			($this->checkExplicitMixed || $this->checkImplicitMixed)
-			&& $type instanceof MixedType
-			&& ($type->isExplicitMixed() ? $this->checkExplicitMixed : $this->checkImplicitMixed)
-			&& ($this->newRuleLevelHelper || !$type instanceof TemplateMixedType)
-		) {
-			return new FoundTypeResult(
-				$type instanceof TemplateMixedType
-					? $type->toStrictMixedType()
-					: new StrictMixedType(),
-				[],
-				[],
-				null,
-			);
+		if ($this->newRuleLevelHelper) {
+			if (
+				($this->checkExplicitMixed || $this->checkImplicitMixed)
+				&& $type instanceof MixedType
+				&& ($type->isExplicitMixed() ? $this->checkExplicitMixed : $this->checkImplicitMixed)
+			) {
+				return new FoundTypeResult(
+					$type instanceof TemplateMixedType
+						? $type->toStrictMixedType()
+						: new StrictMixedType(),
+					[],
+					[],
+					null,
+				);
+			}
+		} else {
+			if (
+				$this->checkExplicitMixed
+				&& $type instanceof MixedType
+				&& !$type instanceof TemplateMixedType
+				&& $type->isExplicitMixed()
+			) {
+				return new FoundTypeResult(new StrictMixedType(), [], [], null);
+			}
+
+			if (
+				$this->checkImplicitMixed
+				&& $type instanceof MixedType
+				&& !$type instanceof TemplateMixedType
+				&& !$type->isExplicitMixed()
+			) {
+				return new FoundTypeResult(new StrictMixedType(), [], [], null);
+			}
 		}
 
 		if ($type instanceof MixedType || $type instanceof NeverType) {

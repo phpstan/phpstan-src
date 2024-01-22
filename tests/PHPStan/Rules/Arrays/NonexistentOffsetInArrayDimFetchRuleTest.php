@@ -15,11 +15,13 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	private bool $checkImplicitMixed = false;
+
 	private bool $bleedingEdge = false;
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false, true, false);
+		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false);
 
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,
@@ -743,6 +745,26 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Offset \'b\' does not exist on array<\'a\', string>.',
 				23,
+			],
+		]);
+	}
+
+	public function testMixed(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/offset-access-mixed.php'], [
+			[
+				'Cannot access offset 5 on T of mixed.',
+				11,
+			],
+			[
+				'Cannot access offset 5 on mixed.',
+				16,
+			],
+			[
+				'Cannot access offset 5 on mixed.',
+				21,
 			],
 		]);
 	}

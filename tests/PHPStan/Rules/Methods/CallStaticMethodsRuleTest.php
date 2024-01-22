@@ -11,6 +11,8 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function array_merge;
+use function usort;
 use const PHP_VERSION_ID;
 
 /**
@@ -23,10 +25,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	private bool $checkImplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, $this->checkExplicitMixed, false, true, false);
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false);
 		return new CallStaticMethodsRule(
 			new StaticMethodCallCheck($reflectionProvider, $ruleLevelHelper, new ClassCaseSensitivityCheck($reflectionProvider, true), true, true),
 			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
@@ -627,6 +631,100 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				45,
 			],
 		]);
+	}
+
+	public function dataMixed(): array
+	{
+		$explicitOnlyErrors = [
+			[
+				'Cannot call static method foo() on mixed.',
+				17,
+			],
+			[
+				'Cannot call static method foo() on T of mixed.',
+				26,
+			],
+			[
+				'Parameter #1 $i of static method CallStaticMethodMixed\Bar::doBar() expects int, mixed given.',
+				43,
+			],
+			[
+				'Only iterables can be unpacked, mixed given in argument #1.',
+				52,
+			],
+			[
+				'Parameter #1 $i of static method CallStaticMethodMixed\Bar::doBar() expects int, T given.',
+				81,
+			],
+			[
+				'Only iterables can be unpacked, T of mixed given in argument #1.',
+				84,
+			],
+			[
+				'Parameter #1 $cb of static method CallStaticMethodMixed\CallableMixed::callAcceptsExplicitMixed() expects callable(mixed): void, Closure(int): void given.',
+				134,
+				'Type int of parameter #1 $i of passed callable needs to be same or wider than parameter type mixed of accepting callable.',
+			],
+			[
+				'Parameter #1 $cb of static method CallStaticMethodMixed\CallableMixed::callReturnsInt() expects callable(): int, Closure(): mixed given.',
+				161,
+			],
+		];
+		$implicitOnlyErrors = [
+			[
+				'Cannot call static method foo() on mixed.',
+				16,
+			],
+			[
+				'Parameter #1 $i of static method CallStaticMethodMixed\Bar::doBar() expects int, mixed given.',
+				42,
+			],
+			[
+				'Only iterables can be unpacked, mixed given in argument #1.',
+				51,
+			],
+			[
+				'Parameter #1 $cb of static method CallStaticMethodMixed\CallableMixed::callReturnsInt() expects callable(): int, Closure(): mixed given.',
+				168,
+			],
+		];
+		$combinedErrors = array_merge($explicitOnlyErrors, $implicitOnlyErrors);
+		usort($combinedErrors, static fn (array $a, array $b): int => $a[1] <=> $b[1]);
+
+		return [
+			[
+				true,
+				false,
+				$explicitOnlyErrors,
+			],
+			[
+				false,
+				true,
+				$implicitOnlyErrors,
+			],
+			[
+				true,
+				true,
+				$combinedErrors,
+			],
+			[
+				false,
+				false,
+				[],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataMixed
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
+	 */
+	public function testMixed(bool $checkExplicitMixed, bool $checkImplicitMixed, array $errors): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$this->checkImplicitMixed = $checkImplicitMixed;
+		$this->analyse([__DIR__ . '/data/call-static-method-mixed.php'], $errors);
 	}
 
 }

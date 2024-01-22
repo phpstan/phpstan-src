@@ -1548,6 +1548,10 @@ class CallMethodsRuleTest extends RuleTestCase
 						17,
 					],
 					[
+						'Cannot call method foo() on T of mixed.',
+						26,
+					],
+					[
 						'Parameter #1 $i of method CheckExplicitMixedMethodCall\Bar::doBar() expects int, mixed given.',
 						43,
 					],
@@ -1599,10 +1603,6 @@ class CallMethodsRuleTest extends RuleTestCase
 					[
 						'Parameter #1 $i of method CheckImplicitMixedMethodCall\Bar::doBar() expects int, mixed given.',
 						42,
-					],
-					[
-						'Parameter #1 $i of method CheckImplicitMixedMethodCall\Bar::doBar() expects int, T given.',
-						65,
 					],
 					[
 						'Parameter #1 $cb of method CheckImplicitMixedMethodCall\CallableMixed::doBar2() expects callable(): int, Closure(): mixed given.',

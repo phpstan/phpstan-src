@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Arrays;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function array_merge;
+use function usort;
 use const PHP_VERSION_ID;
 
 /**
@@ -15,9 +17,11 @@ class IterableInForeachRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	private bool $checkImplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
-		return new IterableInForeachRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false, true, false));
+		return new IterableInForeachRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false));
 	}
 
 	public function testCheckWithMaybes(): void
@@ -78,6 +82,62 @@ class IterableInForeachRuleTest extends RuleTestCase
 	public function testBug4335(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4335.php'], []);
+	}
+
+	public function dataMixed(): array
+	{
+		$explicitOnlyErrors = [
+			[
+				'Argument of an invalid type T of mixed supplied for foreach, only iterables are supported.',
+				11,
+			],
+			[
+				'Argument of an invalid type mixed supplied for foreach, only iterables are supported.',
+				14,
+			],
+		];
+		$implicitOnlyErrors = [
+			[
+				'Argument of an invalid type mixed supplied for foreach, only iterables are supported.',
+				17,
+			],
+		];
+		$combinedErrors = array_merge($explicitOnlyErrors, $implicitOnlyErrors);
+		usort($combinedErrors, static fn (array $a, array $b): int => $a[1] <=> $b[1]);
+
+		return [
+			[
+				true,
+				false,
+				$explicitOnlyErrors,
+			],
+			[
+				false,
+				true,
+				$implicitOnlyErrors,
+			],
+			[
+				true,
+				true,
+				$combinedErrors,
+			],
+			[
+				false,
+				false,
+				[],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataMixed
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
+	 */
+	public function testMixed(bool $checkExplicitMixed, bool $checkImplicitMixed, array $errors): void
+	{
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$this->checkImplicitMixed = $checkImplicitMixed;
+		$this->analyse([__DIR__ . '/data/foreach-mixed.php'], $errors);
 	}
 
 }

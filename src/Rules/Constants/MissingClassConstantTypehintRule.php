@@ -51,7 +51,10 @@ final class MissingClassConstantTypehintRule implements Rule
 	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
 	{
 		$constantReflection = $classReflection->getConstant($constantName);
-		$constantType = $constantReflection->getValueType();
+		$constantType = $constantReflection->getPhpDocType();
+		if ($constantType === null) {
+			return [];
+		}
 
 		$errors = [];
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($constantType) as $iterableType) {

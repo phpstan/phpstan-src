@@ -861,6 +861,7 @@ return [
 	'dngettext' => ['hasSideEffects' => false],
 	'doubleval' => ['hasSideEffects' => false],
 	'error_get_last' => ['hasSideEffects' => false],
+	'error_log' => ['hasSideEffects' => true],
 	'escapeshellarg' => ['hasSideEffects' => false],
 	'escapeshellcmd' => ['hasSideEffects' => false],
 	'exp' => ['hasSideEffects' => false],

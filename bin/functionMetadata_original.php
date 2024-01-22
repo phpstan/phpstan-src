@@ -72,6 +72,7 @@ return [
 	'count' => ['hasSideEffects' => false],
 	'connection_aborted' => ['hasSideEffects' => true],
 	'connection_status' => ['hasSideEffects' => true],
+	'error_log' => ['hasSideEffects' => true],
 	'fclose' => ['hasSideEffects' => true],
 	'fflush' => ['hasSideEffects' => true],
 	'fgetc' => ['hasSideEffects' => true],

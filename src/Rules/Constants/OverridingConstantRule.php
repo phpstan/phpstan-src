@@ -58,10 +58,6 @@ class OverridingConstantRule implements Rule
 		}
 
 		$constantReflection = $classReflection->getConstant($constantName);
-		if (!$constantReflection instanceof ClassConstantReflection) {
-			return [];
-		}
-
 		$errors = [];
 		if ($prototype->isFinal()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(

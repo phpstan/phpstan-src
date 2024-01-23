@@ -18,7 +18,6 @@ use function count;
 use function date;
 use function is_numeric;
 use function str_pad;
-use function preg_match;
 use const STR_PAD_LEFT;
 
 class DateFunctionReturnTypeHelper
@@ -26,78 +25,72 @@ class DateFunctionReturnTypeHelper
 
 	public function getTypeFromFormatType(Type $formatType, bool $useMicrosec): ?Type
 	{
-		$constantStrings = $formatType->getConstantStrings();
-
-		if (count($constantStrings) === 0) {
-			return new StringType();
-		}
-
-		if (count($constantStrings) === 1) {
-			$constantString = $constantStrings[0]->getValue();
-
-			// see see https://www.php.net/manual/en/datetime.format.php
-			switch ($constantString) {
-				case 'd':
-					return $this->buildNumericRangeType(1, 31, true);
-				case 'j':
-					return $this->buildNumericRangeType(1, 31, false);
-				case 'N':
-					return $this->buildNumericRangeType(1, 7, false);
-				case 'w':
-					return $this->buildNumericRangeType(0, 6, false);
-				case 'm':
-					return $this->buildNumericRangeType(1, 12, true);
-				case 'n':
-					return $this->buildNumericRangeType(1, 12, false);
-				case 't':
-					return $this->buildNumericRangeType(28, 31, false);
-				case 'L':
-					return $this->buildNumericRangeType(0, 1, false);
-				case 'g':
-					return $this->buildNumericRangeType(1, 12, false);
-				case 'G':
-					return $this->buildNumericRangeType(0, 23, false);
-				case 'h':
-					return $this->buildNumericRangeType(1, 12, true);
-				case 'H':
-					return $this->buildNumericRangeType(0, 23, true);
-				case 'I':
-					return $this->buildNumericRangeType(0, 1, false);
-			}
-		}
-
 		$types = [];
-		foreach ($constantStrings as $constantString) {
-			$types[] = new ConstantStringType(date($constantString->getValue()));
+		foreach ($formatType->getConstantStrings() as $formatString) {
+			$types[] = $this->buildReturnTypeFromFormat($formatString->getValue(), $useMicrosec);
+		}
+
+		if (count($types) === 0) {
+			$types[] = $formatType->isNonEmptyString()->yes()
+				? new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()])
+				: new StringType();
 		}
 
 		$type = TypeCombinator::union(...$types);
-		if ($type->isNumericString()->yes()) {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNumericStringType(),
-			]);
+
+		if ($type->isNumericString()->no() && $formatType->isNonEmptyString()->yes()) {
+			$type = TypeCombinator::union($type, new IntersectionType([
+				new StringType(), new AccessoryNonEmptyStringType()
+			]));
 		}
 
-		if ($type->isNonFalsyString()->yes()) {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
+		return $type;
+	}
+
+	public function buildReturnTypeFromFormat(string $formatString, bool $useMicrosec): Type
+	{
+		// see see https://www.php.net/manual/en/datetime.format.php
+		switch ($formatString) {
+			case 'd':
+				return $this->buildNumericRangeType(1, 31, zeroPad: true);
+			case 'j':
+				return $this->buildNumericRangeType(1, 31, zeroPad: false);
+			case 'N':
+				return $this->buildNumericRangeType(1, 7, zeroPad: false);
+			case 'w':
+				return $this->buildNumericRangeType(0, 6, zeroPad: false);
+			case 'm':
+				return $this->buildNumericRangeType(1, 12, zeroPad: true);
+			case 'n':
+				return $this->buildNumericRangeType(1, 12, zeroPad: false);
+			case 't':
+				return $this->buildNumericRangeType(28, 31, zeroPad: false);
+			case 'L':
+				return $this->buildNumericRangeType(0, 1, zeroPad: false);
+			case 'g':
+				return $this->buildNumericRangeType(1, 12, zeroPad: false);
+			case 'G':
+				return $this->buildNumericRangeType(0, 23, zeroPad: false);
+			case 'h':
+				return $this->buildNumericRangeType(1, 12, zeroPad: true);
+			case 'H':
+				return $this->buildNumericRangeType(0, 23, zeroPad: true);
+			case 'I':
+				return $this->buildNumericRangeType(0, 1, zeroPad: false);
 		}
 
-		if ($type->isNonEmptyString()->yes()) {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonEmptyStringType(),
-			]);
+		$date = date($formatString);
+
+		// If parameter string is not included, returned as ConstantStringType
+		if ($date === $formatString) {
+			return new ConstantStringType($date);
 		}
 
-		if ($type->isNonEmptyString()->no()) {
-			return new ConstantStringType('');
+		if (is_numeric($date)) {
+			return new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 		}
 
-		return new StringType();
+		return new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
 	}
 
 	private function buildNumericRangeType(int $min, int $max, bool $zeroPad): Type

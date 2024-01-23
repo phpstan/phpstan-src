@@ -2,9 +2,6 @@
 
 namespace PHPStan\Type\Php;
 
-use PhpParser\Node\Expr\FuncCall;
-use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -40,7 +37,7 @@ class DateFunctionReturnTypeHelper
 
 		if ($type->isNumericString()->no() && $formatType->isNonEmptyString()->yes()) {
 			$type = TypeCombinator::union($type, new IntersectionType([
-				new StringType(), new AccessoryNonEmptyStringType()
+				new StringType(), new AccessoryNonEmptyStringType(),
 			]));
 		}
 

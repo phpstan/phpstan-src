@@ -3,9 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use DateTimeInterface;
-use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;

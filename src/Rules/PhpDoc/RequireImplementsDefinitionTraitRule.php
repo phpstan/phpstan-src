@@ -13,6 +13,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<Node\Stmt\Trait_>
@@ -49,19 +50,26 @@ class RequireImplementsDefinitionTraitRule implements Rule
 		foreach ($implementsTags as $implementsTag) {
 			$type = $implementsTag->getType();
 			if (!$type instanceof ObjectType) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))
+					->identifier('requireImplements.nonObject')
+					->build();
 				continue;
 			}
 
 			$class = $type->getClassName();
 			$referencedClassReflection = $type->getClassReflection();
 			if ($referencedClassReflection === null) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains unknown class %s.', $class))->discoveringSymbolsTip()->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains unknown class %s.', $class))
+					->discoveringSymbolsTip()
+					->identifier('class.notFound')
+					->build();
 				continue;
 			}
 
 			if (!$referencedClassReflection->isInterface()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements cannot contain non-interface type %s.', $class))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements cannot contain non-interface type %s.', $class))
+					->identifier(sprintf('requireImplements.%s', strtolower($referencedClassReflection->getClassTypeDescription())))
+					->build();
 			} elseif ($this->checkClassCaseSensitivity) {
 				$errors = array_merge(
 					$errors,

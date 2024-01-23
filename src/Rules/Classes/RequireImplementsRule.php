@@ -46,7 +46,9 @@ class RequireImplementsRule implements Rule
 						$type->describe(VerbosityLevel::typeOnly()),
 						$classReflection->getDisplayName(),
 					),
-				)->build();
+				)
+					->identifier('class.missingImplements')
+					->build();
 			}
 		}
 

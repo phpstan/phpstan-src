@@ -50,7 +50,9 @@ class RequireExtendsRule implements Rule
 						$type->describe(VerbosityLevel::typeOnly()),
 						$classReflection->getDisplayName(),
 					),
-				)->build();
+				)
+					->identifier('class.missingExtends')
+					->build();
 			}
 		}
 
@@ -73,7 +75,9 @@ class RequireExtendsRule implements Rule
 						$type->describe(VerbosityLevel::typeOnly()),
 						$classReflection->getDisplayName(),
 					),
-				)->build();
+				)
+					->identifier('class.missingExtends')
+					->build();
 			}
 		}
 

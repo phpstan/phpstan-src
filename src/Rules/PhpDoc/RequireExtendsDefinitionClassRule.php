@@ -8,6 +8,7 @@ use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;
+use function sprintf;
 
 /**
  * @implements Rule<InClassNode>
@@ -37,7 +38,9 @@ class RequireExtendsDefinitionClassRule implements Rule
 
 		if (!$classReflection->isInterface()) {
 			return [
-				RuleErrorBuilder::message('PHPDoc tag @phpstan-require-extends is only valid on trait or interface.')->build(),
+				RuleErrorBuilder::message('PHPDoc tag @phpstan-require-extends is only valid on trait or interface.')
+					->identifier(sprintf('requireExtends.on%s', $classReflection->getClassTypeDescription()))
+					->build(),
 			];
 		}
 

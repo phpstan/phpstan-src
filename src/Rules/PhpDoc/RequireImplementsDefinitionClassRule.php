@@ -8,6 +8,7 @@ use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;
+use function sprintf;
 
 /**
  * @implements Rule<InClassNode>
@@ -30,7 +31,9 @@ class RequireImplementsDefinitionClassRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message('PHPDoc tag @phpstan-require-implements is only valid on trait.')->build(),
+			RuleErrorBuilder::message('PHPDoc tag @phpstan-require-implements is only valid on trait.')
+				->identifier(sprintf('requireImplements.on%s', $classReflection->getClassTypeDescription()))
+				->build(),
 		];
 	}
 

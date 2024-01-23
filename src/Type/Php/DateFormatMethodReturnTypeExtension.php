@@ -16,6 +16,10 @@ use function count;
 class DateFormatMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
+	public function __construct(private DateFunctionReturnTypeHelper $dateFunctionReturnTypeHelper)
+	{
+	}
+
 	public function getClass(): string
 	{
 		return DateTimeInterface::class;
@@ -26,16 +30,15 @@ class DateFormatMethodReturnTypeExtension implements DynamicMethodReturnTypeExte
 		return $methodReflection->getName() === 'format';
 	}
 
-	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
+	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
 		if (count($methodCall->getArgs()) === 0) {
 			return new StringType();
 		}
 
-		return $scope->getType(
-			new FuncCall(new FullyQualified('date'), [
-				$methodCall->getArgs()[0],
-			]),
+		return $this->dateFunctionReturnTypeHelper->getTypeFromFormatType(
+			$scope->getType($methodCall->getArgs()[0]->value),
+			true,
 		);
 	}
 

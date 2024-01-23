@@ -52,31 +52,31 @@ class DateFunctionReturnTypeHelper
 		// see see https://www.php.net/manual/en/datetime.format.php
 		switch ($formatString) {
 			case 'd':
-				return $this->buildNumericRangeType(1, 31, zeroPad: true);
+				return $this->buildNumericRangeType(1, 31, true);
 			case 'j':
-				return $this->buildNumericRangeType(1, 31, zeroPad: false);
+				return $this->buildNumericRangeType(1, 31, false);
 			case 'N':
-				return $this->buildNumericRangeType(1, 7, zeroPad: false);
+				return $this->buildNumericRangeType(1, 7, false);
 			case 'w':
-				return $this->buildNumericRangeType(0, 6, zeroPad: false);
+				return $this->buildNumericRangeType(0, 6, false);
 			case 'm':
-				return $this->buildNumericRangeType(1, 12, zeroPad: true);
+				return $this->buildNumericRangeType(1, 12, true);
 			case 'n':
-				return $this->buildNumericRangeType(1, 12, zeroPad: false);
+				return $this->buildNumericRangeType(1, 12, false);
 			case 't':
-				return $this->buildNumericRangeType(28, 31, zeroPad: false);
+				return $this->buildNumericRangeType(28, 31, false);
 			case 'L':
-				return $this->buildNumericRangeType(0, 1, zeroPad: false);
+				return $this->buildNumericRangeType(0, 1, false);
 			case 'g':
-				return $this->buildNumericRangeType(1, 12, zeroPad: false);
+				return $this->buildNumericRangeType(1, 12, false);
 			case 'G':
-				return $this->buildNumericRangeType(0, 23, zeroPad: false);
+				return $this->buildNumericRangeType(0, 23, false);
 			case 'h':
-				return $this->buildNumericRangeType(1, 12, zeroPad: true);
+				return $this->buildNumericRangeType(1, 12, true);
 			case 'H':
-				return $this->buildNumericRangeType(0, 23, zeroPad: true);
+				return $this->buildNumericRangeType(0, 23, true);
 			case 'I':
-				return $this->buildNumericRangeType(0, 1, zeroPad: false);
+				return $this->buildNumericRangeType(0, 1, false);
 			case 'u':
 				return $useMicrosec
 					? new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()])

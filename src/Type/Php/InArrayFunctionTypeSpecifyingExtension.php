@@ -85,22 +85,21 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			|| $needleType->isEnum()->yes()
 			|| $arrayValueType->isEnum()->yes();
 
-		$specifiedTypes = new SpecifiedTypes();
-
 		if (!$isStrictComparison) {
-			if ($context->true() && $arrayType->isArray()->yes()) {
-				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+			if ($context->true() && $arrayType->isArray()->yes() && $arrayType->getIterableValueType()->isSuperTypeOf($needleType)->yes()) {
+				return $this->typeSpecifier->create(
 					$node->getArgs()[1]->value,
 					TypeCombinator::intersect($arrayType, new NonEmptyArrayType()),
 					$context,
 					false,
 					$scope,
-				));
+				);
 			}
 
-			return $specifiedTypes;
+			return new SpecifiedTypes();
 		}
 
+		$specifiedTypes = new SpecifiedTypes();
 		if (
 			$context->true()
 			|| (

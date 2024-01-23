@@ -11,13 +11,22 @@ use function PHPStan\Testing\assertType;
 function doFoo($a) {
 	if (in_array('foo', $a, true)) {
 		assertType('non-empty-array', $a);
+	} else {
+		assertType("array<mixed~'foo'>", $a);
 	}
+	assertType('array', $a);
 
 	if (in_array('foo', $a, false)) {
 		assertType('non-empty-array', $a);
+	} else {
+		assertType("array", $a);
 	}
+	assertType('array', $a);
 
 	if (in_array('foo', $a)) {
 		assertType('non-empty-array', $a);
+	} else {
+		assertType("array", $a);
 	}
+	assertType('array', $a);
 }

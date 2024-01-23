@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;

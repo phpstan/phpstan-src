@@ -32,8 +32,8 @@ class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtens
 		}
 
 		return $this->dateFunctionReturnTypeHelper->getTypeFromFormatType(
-			formatType: $scope->getType($functionCall->getArgs()[0]->value),
-			useMicrosec: false,
+			$scope->getType($functionCall->getArgs()[0]->value),
+			false,
 		);
 	}
 

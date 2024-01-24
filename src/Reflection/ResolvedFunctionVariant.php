@@ -176,7 +176,11 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 		$references = $type->getReferencedTemplateTypes($positionVariance);
 
 		$objectCb = function (Type $type, callable $traverse) use ($references): Type {
-			if ($type instanceof TemplateType && !$type->isArgument()) {
+			if (
+				$type instanceof TemplateType
+				&& !$type->isArgument()
+				&& $type->getScope()->getFunctionName() !== null
+			) {
 				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
 				if ($newType === null || $newType instanceof ErrorType) {
 					return $traverse($type);

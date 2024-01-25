@@ -532,11 +532,11 @@ public:
 		if (UNEXPECTED(leftScalarValues.isUndef())) return zv::Val();
 		zv::Val rightScalarValues = pt_type_op(Z_OBJ_P(rightType.raw()), PT_OP_GET_CONSTANT_SCALAR_VALUES, 0, NULL);
 		if (UNEXPECTED(rightScalarValues.isUndef())) return zv::Val();
-		if (countOf(leftScalarValues.raw()) == 1 && !isA(unwrappedRight, PT_CLASS_CONST_FETCH)) {
+		if (countOf(leftScalarValues.raw()) == 1 && constFetchLiteral(unwrappedRight) == LITERAL_NONE) {
 			zv::Val constantSideTypes = specifyEqualAgainstConstantSide(nodeScopeResolver, left, right, leftResult, rightResult, right, rightResult, firstOf(leftScalarValues.raw()), leftType.raw(), rightType.raw(), context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback.raw());
 			if (UNEXPECTED(constantSideTypes.isUndef())) return zv::Val();
 			if (!isFalseOutcome(constantSideTypes)) return constantSideTypes;
-		} else if (countOf(rightScalarValues.raw()) == 1 && !isA(unwrappedLeft, PT_CLASS_CONST_FETCH)) {
+		} else if (countOf(rightScalarValues.raw()) == 1 && constFetchLiteral(unwrappedLeft) == LITERAL_NONE) {
 			zv::Val constantSideTypes = specifyEqualAgainstConstantSide(nodeScopeResolver, left, right, leftResult, rightResult, left, leftResult, firstOf(rightScalarValues.raw()), rightType.raw(), leftType.raw(), context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback.raw());
 			if (UNEXPECTED(constantSideTypes.isUndef())) return zv::Val();
 			if (!isFalseOutcome(constantSideTypes)) return constantSideTypes;
@@ -1329,6 +1329,31 @@ private:
 			zv::Val union_ = newUnion(members);
 			if (UNEXPECTED(union_.isUndef())) return zv::Val();
 			return createSubjectTypes(evaluationScope, subject, subjectResult, union_.raw(), context);
+		}
+
+		// a variable or a constant equal to a value no other type loosely
+		// compares equal to (unlike null, booleans, 0, 1, floats, '', '0',
+		// '1' and [] - the ones not handled above are excluded here) narrows
+		// like the strict comparison
+		if (isA(unwrappedSubject, PT_CLASS_VARIABLE) || isA(unwrappedSubject, PT_CLASS_CONST_FETCH)) {
+			bool isTrue;
+			if (UNEXPECTED(!ctxTrue(context, isTrue))) return zv::Val();
+			bool loose;
+			switch (Z_TYPE_P(value)) {
+				case IS_DOUBLE:
+					loose = true;
+					break;
+				case IS_LONG:
+					loose = Z_LVAL_P(value) == 0 || Z_LVAL_P(value) == 1;
+					break;
+				case IS_STRING:
+					loose = zend_string_equals_literal(Z_STR_P(value), "0") || zend_string_equals_literal(Z_STR_P(value), "1");
+					break;
+				default:
+					loose = false;
+					break;
+			}
+			if (isTrue && !loose) return specifyIdentical(nodeScopeResolver, left, right, leftResult, rightResult, context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback);
 		}
 
 		// loose equals strict for these call results and class names

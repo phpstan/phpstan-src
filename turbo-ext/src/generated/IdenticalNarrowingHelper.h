@@ -90,8 +90,9 @@ inline constexpr char strings[] =
 	"captureFirstArgResult\0" /* 1087 */
 	"expr\0" /* 1109 */
 	"literalType\0" /* 1114 */
-	"isScalarLiteral\0" /* 1126 */
-	"isSubjectCoveredAgainstConstant"; /* 1142 */
+	"isNativeConstFetch\0" /* 1126 */
+	"isScalarLiteral\0" /* 1145 */
+	"isSubjectCoveredAgainstConstant"; /* 1161 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 23), /* __construct $defaultNarrowingHelper */
 	reg::packed(82, 0, 101), /* __construct $reflectionProvider */
@@ -194,6 +195,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(626, MAY_BE_NULL, 436), /* captureFirstArgResult return */
 	reg::packed(1109, 0, 399), /* literalType $expr */
 	reg::packed(626, MAY_BE_NULL, 776), /* literalType return */
+	reg::packed(1109, 0, 399), /* isNativeConstFetch $expr */
+	reg::packed(626, MAY_BE_BOOL), /* isNativeConstFetch return */
 	reg::packed(1109, 0, 399), /* isScalarLiteral $expr */
 	reg::packed(626, MAY_BE_BOOL), /* isScalarLiteral return */
 	reg::packed(676, 0, 399), /* isSubjectCoveredAgainstConstant $subject */
@@ -217,8 +220,9 @@ inline constexpr sigtab::Sig specifyEqualAgainstConstantSide = { { 933 /* specif
 inline constexpr sigtab::Sig specifyFuncCallFamilies = { { 1009 /* specifyFuncCallFamilies */, 8, 87, 8, 95, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig captureFirstArgResult = { { 1087 /* captureFirstArgResult */, 2, 96, 2, 98, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig literalType = { { 1114 /* literalType */, 1, 99, 1, 100, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isScalarLiteral = { { 1126 /* isScalarLiteral */, 1, 101, 1, 102, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isSubjectCoveredAgainstConstant = { { 1142 /* isSubjectCoveredAgainstConstant */, 1, 103, 1, 104, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isNativeConstFetch = { { 1126 /* isNativeConstFetch */, 1, 101, 1, 102, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isScalarLiteral = { { 1145 /* isScalarLiteral */, 1, 103, 1, 104, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isSubjectCoveredAgainstConstant = { { 1161 /* isSubjectCoveredAgainstConstant */, 1, 105, 1, 106, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::IdenticalNarrowingHelper

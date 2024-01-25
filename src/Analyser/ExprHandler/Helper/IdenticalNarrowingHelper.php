@@ -47,6 +47,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
+use function is_float;
 
 /**
  * New-world narrowing for `===` (and, via a negated context, `!==`): composed
@@ -580,12 +581,12 @@ final class IdenticalNarrowingHelper
 
 		$leftScalarValues = $leftType->getConstantScalarValues();
 		$rightScalarValues = $rightType->getConstantScalarValues();
-		if (count($leftScalarValues) === 1 && !$unwrappedRight instanceof Expr\ConstFetch) {
+		if (count($leftScalarValues) === 1 && !self::isNativeConstFetch($unwrappedRight)) {
 			$constantSideTypes = $this->specifyEqualAgainstConstantSide($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $right, $rightResult, $leftScalarValues[0], $leftType, $rightType, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
 			if ($constantSideTypes !== false) {
 				return $constantSideTypes;
 			}
-		} elseif (count($rightScalarValues) === 1 && !$unwrappedLeft instanceof Expr\ConstFetch) {
+		} elseif (count($rightScalarValues) === 1 && !self::isNativeConstFetch($unwrappedLeft)) {
 			$constantSideTypes = $this->specifyEqualAgainstConstantSide($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $left, $leftResult, $rightScalarValues[0], $rightType, $leftType, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
 			if ($constantSideTypes !== false) {
 				return $constantSideTypes;
@@ -789,6 +790,19 @@ final class IdenticalNarrowingHelper
 				: [new NullType(), new ConstantBooleanType(false), new ConstantStringType('')];
 
 			return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, new UnionType($trueTypes), $context);
+		}
+
+		// a variable or a constant equal to a value no other type loosely
+		// compares equal to (unlike null, booleans, 0, 1, floats, '', '0',
+		// '1' and [] - the ones not handled above are excluded here) narrows
+		// like the strict comparison
+		if (
+			$context->true()
+			&& ($unwrappedSubject instanceof Expr\Variable || $unwrappedSubject instanceof Expr\ConstFetch)
+			&& !is_float($value)
+			&& !in_array($value, [0, 1, '0', '1'], true)
+		) {
+			return $this->specifyIdentical($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
 		}
 
 		// loose equals strict for these call results and class names
@@ -1148,6 +1162,12 @@ final class IdenticalNarrowingHelper
 		}
 
 		return null;
+	}
+
+	/** The true / false / null literal, as opposed to a user-defined constant. */
+	private static function isNativeConstFetch(Expr $expr): bool
+	{
+		return $expr instanceof Expr\ConstFetch && in_array($expr->name->toLowerString(), ['null', 'true', 'false'], true);
 	}
 
 	private function isScalarLiteral(Expr $expr): bool

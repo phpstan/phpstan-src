@@ -63,7 +63,7 @@ class InvalidThrowsPhpDocValueRule implements Rule
 			return [];
 		}
 
-		if ($this->isThrowValid($phpDocThrowsType)) {
+		if ($this->isThrowsValid($phpDocThrowsType)) {
 			return [];
 		}
 
@@ -75,12 +75,12 @@ class InvalidThrowsPhpDocValueRule implements Rule
 		];
 	}
 
-	private function isThrowValid(Type $phpDocThrowsType): bool
+	private function isThrowsValid(Type $phpDocThrowsType): bool
 	{
 		$throwType = new ObjectType(Throwable::class);
 		if ($phpDocThrowsType instanceof UnionType) {
 			foreach ($phpDocThrowsType->getTypes() as $innerType) {
-				if (!$this->isThrowValid($innerType)) {
+				if (!$this->isThrowsValid($innerType)) {
 					return false;
 				}
 			}

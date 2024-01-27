@@ -250,7 +250,7 @@ function fooShuffle() {
 function fooSort() {
 	$array = ["foo" => 123, "bar" => 456];
 	sort($array);
-	assertType('array{foo: 123, bar: 456}', $array);
+	assertType('non-empty-list<123|456>', $array);
 
 	$emptyArray = [];
 	sort($emptyArray);

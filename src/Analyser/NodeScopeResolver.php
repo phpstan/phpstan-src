@@ -129,6 +129,7 @@ use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
@@ -2130,6 +2131,21 @@ class NodeScopeResolver
 
 			if (
 				$functionReflection !== null
+				&& (
+					(in_array($functionReflection->getName(), ['sort', 'rsort'], true) && count($expr->getArgs()) >= 1)
+					|| ($functionReflection->getName() === 'usort' && count($expr->getArgs()) >= 2)
+				)
+			) {
+				$arrayArg = $expr->getArgs()[0]->value;
+				$scope = $scope->assignExpression(
+					$arrayArg,
+					$this->getArraySortFunctionType($scope->getType($arrayArg)),
+					$this->getArraySortFunctionType($scope->getNativeType($arrayArg)),
+				);
+			}
+
+			if (
+				$functionReflection !== null
 				&& $functionReflection->getName() === 'extract'
 			) {
 				$extractedArg = $expr->getArgs()[0]->value;
@@ -3077,6 +3093,24 @@ class NodeScopeResolver
 		);
 
 		return $arrayType;
+	}
+
+	private function getArraySortFunctionType(Type $type): Type
+	{
+		if (!$type->isArray()->yes()) {
+			return new ErrorType();
+		}
+
+		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
+		if ($isIterableAtLeastOnce->no()) {
+			return new ConstantArrayType([], []);
+		}
+
+		$newArrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $type->getIterableValueType()));
+		if ($isIterableAtLeastOnce->yes()) {
+			$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
+		}
+		return $newArrayType;
 	}
 
 	private function getFunctionThrowPoint(

@@ -90,6 +90,9 @@ class InvalidThrowsPhpDocValueRule implements Rule
 
 		$toIntersectWith = [];
 		foreach ($phpDocThrowsType->getObjectClassReflections() as $classReflection) {
+			if (!$classReflection->isInterface()) {
+				continue;
+			}
 			foreach ($classReflection->getRequireExtendsTags() as $requireExtendsTag) {
 				$toIntersectWith[] = $requireExtendsTag->getType();
 			}

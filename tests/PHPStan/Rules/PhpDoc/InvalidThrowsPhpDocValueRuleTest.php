@@ -77,6 +77,28 @@ class InvalidThrowsPhpDocValueRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testThrowsWithRequireExtends(): void
+	{
+		$this->analyse([__DIR__ . '/data/throws-with-require.php'], [
+			[
+				'PHPDoc tag @throws with type ThrowsWithRequire\\RequiresExtendsStdClassInterface is not subtype of Throwable',
+				25,
+			],
+			[
+				'PHPDoc tag @throws with type DateTimeInterface|ThrowsWithRequire\\RequiresExtendsExceptionInterface is not subtype of Throwable',
+				39,
+			],
+			[
+				'PHPDoc tag @throws with type Exception|ThrowsWithRequire\\RequiresExtendsStdClassInterface is not subtype of Throwable',
+				46,
+			],
+			[
+				'PHPDoc tag @throws with type Iterator&ThrowsWithRequire\\RequiresExtendsStdClassInterface is not subtype of Throwable',
+				74,
+			],
+		]);
+	}
+
 	public function dataMergeInheritedPhpDocs(): array
 	{
 		return [

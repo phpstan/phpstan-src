@@ -8,6 +8,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use Throwable;
 use function sprintf;
@@ -60,8 +63,7 @@ class InvalidThrowsPhpDocValueRule implements Rule
 			return [];
 		}
 
-		$isThrowsSuperType = (new ObjectType(Throwable::class))->isSuperTypeOf($phpDocThrowsType);
-		if ($isThrowsSuperType->yes()) {
+		if ($this->isThrowsValid($phpDocThrowsType)) {
 			return [];
 		}
 
@@ -71,6 +73,31 @@ class InvalidThrowsPhpDocValueRule implements Rule
 				$phpDocThrowsType->describe(VerbosityLevel::typeOnly()),
 			))->build(),
 		];
+	}
+
+	private function isThrowsValid(Type $phpDocThrowsType): bool
+	{
+		$throwType = new ObjectType(Throwable::class);
+		if ($phpDocThrowsType instanceof UnionType) {
+			foreach ($phpDocThrowsType->getTypes() as $innerType) {
+				if (!$this->isThrowsValid($innerType)) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		$toIntersectWith = [];
+		foreach ($phpDocThrowsType->getObjectClassReflections() as $classReflection) {
+			foreach ($classReflection->getRequireExtendsTags() as $requireExtendsTag) {
+				$toIntersectWith[] = $requireExtendsTag->getType();
+			}
+		}
+
+		return $throwType->isSuperTypeOf(
+			TypeCombinator::intersect($phpDocThrowsType, ...$toIntersectWith),
+		)->yes();
 	}
 
 }

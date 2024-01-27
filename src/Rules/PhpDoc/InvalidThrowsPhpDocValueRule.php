@@ -9,6 +9,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use Throwable;
 use function sprintf;
@@ -76,8 +78,26 @@ class InvalidThrowsPhpDocValueRule implements Rule
 	private function isThrowValid(Type $phpDocThrowsType): bool
 	{
 		$throwType = new ObjectType(Throwable::class);
+		if ($phpDocThrowsType instanceof UnionType) {
+			foreach ($phpDocThrowsType->getTypes() as $innerType) {
+				if (!$this->isThrowValid($innerType)) {
+					return false;
+				}
+			}
 
-		return $throwType->isSuperTypeOf($phpDocThrowsType)->yes();
+			return true;
+		}
+
+		$toIntersectWith = [];
+		foreach ($phpDocThrowsType->getObjectClassReflections() as $classReflection) {
+			foreach ($classReflection->getRequireExtendsTags() as $requireExtendsTag) {
+				$toIntersectWith[] = $requireExtendsTag->getType();
+			}
+		}
+
+		return $throwType->isSuperTypeOf(
+			TypeCombinator::intersect($phpDocThrowsType, ...$toIntersectWith),
+		)->yes();
 	}
 
 }

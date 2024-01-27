@@ -8,6 +8,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use Throwable;
 use function sprintf;
@@ -60,8 +61,7 @@ class InvalidThrowsPhpDocValueRule implements Rule
 			return [];
 		}
 
-		$isThrowsSuperType = (new ObjectType(Throwable::class))->isSuperTypeOf($phpDocThrowsType);
-		if ($isThrowsSuperType->yes()) {
+		if ($this->isThrowValid($phpDocThrowsType)) {
 			return [];
 		}
 
@@ -71,6 +71,30 @@ class InvalidThrowsPhpDocValueRule implements Rule
 				$phpDocThrowsType->describe(VerbosityLevel::typeOnly()),
 			))->build(),
 		];
+	}
+
+	private function isThrowValid(Type $phpDocThrowsType): bool
+	{
+		$throwType = new ObjectType(Throwable::class);
+		if ($throwType->isSuperTypeOf($phpDocThrowsType)->yes()) {
+			return true;
+		}
+
+		foreach ($phpDocThrowsType->getObjectClassReflections() as $classReflection) {
+			foreach ($classReflection->getRequireExtendsTags() as $requireExtendsTag) {
+				if ($throwType->isSuperTypeOf($requireExtendsTag->getType())->yes()) {
+					return true;
+				}
+			}
+
+			foreach ($classReflection->getRequireImplementsTags() as $requireImplementsTag) {
+				if ($throwType->isSuperTypeOf($requireImplementsTag->getType())->yes()) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 }

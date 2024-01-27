@@ -76,25 +76,8 @@ class InvalidThrowsPhpDocValueRule implements Rule
 	private function isThrowValid(Type $phpDocThrowsType): bool
 	{
 		$throwType = new ObjectType(Throwable::class);
-		if ($throwType->isSuperTypeOf($phpDocThrowsType)->yes()) {
-			return true;
-		}
 
-		foreach ($phpDocThrowsType->getObjectClassReflections() as $classReflection) {
-			foreach ($classReflection->getRequireExtendsTags() as $requireExtendsTag) {
-				if ($throwType->isSuperTypeOf($requireExtendsTag->getType())->yes()) {
-					return true;
-				}
-			}
-
-			foreach ($classReflection->getRequireImplementsTags() as $requireImplementsTag) {
-				if ($throwType->isSuperTypeOf($requireImplementsTag->getType())->yes()) {
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return $throwType->isSuperTypeOf($phpDocThrowsType)->yes();
 	}
 
 }

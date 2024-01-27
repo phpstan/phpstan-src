@@ -77,40 +77,24 @@ class InvalidThrowsPhpDocValueRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testThrowsWithRequireExtendsImplements(): void
+	public function testThrowsWithRequireExtends(): void
 	{
 		$this->analyse([__DIR__ . '/data/throws-with-require.php'], [
 			[
 				'PHPDoc tag @throws with type ThrowsWithRequire\\RequiresExtendsStdClassInterface is not subtype of Throwable',
-				42,
-			],
-			[
-				'PHPDoc tag @throws with type ThrowsWithRequire\\RequiresImplementsDateTimeInterfaceTrait is not subtype of Throwable',
-				49,
+				25,
 			],
 			[
 				'PHPDoc tag @throws with type DateTimeInterface|ThrowsWithRequire\\RequiresExtendsExceptionInterface is not subtype of Throwable',
-				70,
-			],
-			[
-				'PHPDoc tag @throws with type DateTimeInterface|ThrowsWithRequire\\RequiresImplementsThrowableTrait is not subtype of Throwable',
-				77,
+				39,
 			],
 			[
 				'PHPDoc tag @throws with type Exception|ThrowsWithRequire\\RequiresExtendsStdClassInterface is not subtype of Throwable',
-				84,
-			],
-			[
-				'PHPDoc tag @throws with type Exception|ThrowsWithRequire\\RequiresImplementsDateTimeInterfaceTrait is not subtype of Throwable',
-				91,
+				46,
 			],
 			[
 				'PHPDoc tag @throws with type Iterator&ThrowsWithRequire\\RequiresExtendsStdClassInterface is not subtype of Throwable',
-				140,
-			],
-			[
-				'PHPDoc tag @throws with type Iterator&ThrowsWithRequire\\RequiresImplementsDateTimeInterfaceTrait is not subtype of Throwable',
-				147,
+				74,
 			],
 		]);
 	}

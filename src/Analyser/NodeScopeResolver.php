@@ -2131,10 +2131,8 @@ class NodeScopeResolver
 
 			if (
 				$functionReflection !== null
-				&& (
-					(in_array($functionReflection->getName(), ['sort', 'rsort'], true) && count($expr->getArgs()) >= 1)
-					|| ($functionReflection->getName() === 'usort' && count($expr->getArgs()) >= 2)
-				)
+				&& in_array($functionReflection->getName(), ['sort', 'rsort', 'usort'], true)
+				&& count($expr->getArgs()) >= 1
 			) {
 				$arrayArg = $expr->getArgs()[0]->value;
 				$scope = $scope->assignExpression(
@@ -3098,12 +3096,12 @@ class NodeScopeResolver
 	private function getArraySortFunctionType(Type $type): Type
 	{
 		if (!$type->isArray()->yes()) {
-			return new ErrorType();
+			return $type;
 		}
 
 		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
 		if ($isIterableAtLeastOnce->no()) {
-			return new ConstantArrayType([], []);
+			return $type;
 		}
 
 		$newArrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $type->getIterableValueType()));

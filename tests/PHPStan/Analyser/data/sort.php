@@ -107,24 +107,24 @@ class Foo
 	{
 		$arr1 = $arr;
 		sort($arr1);
-		assertType('*ERROR*', $arr1);
-		assertNativeType('*ERROR*', $arr1);
+		assertType('mixed', $arr1);
+		assertNativeType('mixed', $arr1);
 
 		$arr2 = $arr;
 		rsort($arr2);
-		assertType('*ERROR*', $arr2);
-		assertNativeType('*ERROR*', $arr2);
+		assertType('mixed', $arr2);
+		assertNativeType('mixed', $arr2);
 
 		$arr3 = $arr;
 		usort($arr3, fn(int $a, int $b) => $a <=> $b);
-		assertType('*ERROR*', $arr3);
-		assertNativeType('*ERROR*', $arr3);
+		assertType('mixed', $arr3);
+		assertNativeType('mixed', $arr3);
 	}
 
 	public function notArray(): void
 	{
-		$arr = 'This is not an array';
+		$arr = 'foo';
 		sort($arr);
-		assertType('*ERROR*', $arr);
+		assertType("'foo'", $arr);
 	}
 }

@@ -37,6 +37,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use function array_diff;
 use function count;
+use function filemtime;
 use function in_array;
 use function is_array;
 use function is_bool;
@@ -45,6 +46,7 @@ use function is_string;
 use function memory_get_peak_usage;
 use function React\Promise\resolve;
 use function sprintf;
+use function usort;
 use const JSON_INVALID_UTF8_IGNORE;
 
 class FixerWorkerCommand extends Command
@@ -187,10 +189,28 @@ class FixerWorkerCommand extends Command
 				],
 			]);
 
+			$filesToAnalyse = $resultCache->getFilesToAnalyse();
+			usort($filesToAnalyse, static function (string $a, string $b): int {
+				$aTime = @filemtime($a);
+				if ($aTime === false) {
+					return 1;
+				}
+
+				$bTime = @filemtime($b);
+				if ($bTime === false) {
+					return -1;
+				}
+
+				// files are sorted from the oldest
+				// because ParallelAnalyser reverses the scheduler jobs to do the smallest
+				// jobs first
+				return $aTime <=> $bTime;
+			});
+
 			$this->runAnalyser(
 				$loop,
 				$container,
-				$resultCache->getFilesToAnalyse(),
+				$filesToAnalyse,
 				$configuration,
 				$input,
 				function (array $errors, array $locallyIgnoredErrors, array $analysedFiles) use ($out, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles): void {

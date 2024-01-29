@@ -95,6 +95,7 @@ return [
 		'socket_addrinfo_lookup' => ['AddressInfo[]', 'node'=>'string', 'service='=>'mixed', 'hints='=>'array'],
 		'socket_select' => ['int|false', '&rw_read'=>'Socket[]|null', '&rw_write'=>'Socket[]|null', '&rw_except'=>'Socket[]|null', 'seconds'=>'int|null', 'microseconds='=>'int'],
 		'sodium_crypto_aead_chacha20poly1305_ietf_decrypt' => ['string|false', 'confidential_message'=>'string', 'public_message'=>'string', 'nonce'=>'string', 'key'=>'string'],
+		'spl_autoload_functions' => ['list<callable(string):void>'],
 		'str_contains' => ['bool', 'haystack'=>'string', 'needle'=>'string'],
 		'str_split' => ['non-empty-list<string>', 'str'=>'string', 'split_length='=>'positive-int'],
 		'str_ends_with' => ['bool', 'haystack'=>'string', 'needle'=>'string'],

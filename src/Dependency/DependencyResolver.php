@@ -46,22 +46,6 @@ class DependencyResolver
 	{
 		$dependenciesReflections = [];
 
-		if ($node instanceof InClassNode || $node instanceof InTraitNode) {
-			$docComment = $node->getDocComment();
-			if ($docComment !== null) {
-				$phpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-					$scope->getFile(),
-					$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
-					$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-					null,
-					$docComment->getText(),
-				);
-				foreach ($phpDoc->getTypeAliasImportTags() as $importTag) {
-					$this->addClassToDependencies($importTag->getImportedFrom(), $dependenciesReflections);
-				}
-			}
-		}
-
 		if ($node instanceof Node\Stmt\Class_) {
 			if ($node->namespacedName !== null) {
 				$this->addClassToDependencies($node->namespacedName->toString(), $dependenciesReflections);
@@ -383,19 +367,7 @@ class DependencyResolver
 			$node instanceof Node\Expr\New_
 			&& $node->class instanceof Node\Name
 		) {
-			$className = $scope->resolveName($node->class);
-			$this->addClassToDependencies($className, $dependenciesReflections);
-
-			if ($this->reflectionProvider->hasClass($className)) {
-				$classReflection = $this->reflectionProvider->getClass($className);
-
-				$phpDoc = $classReflection->getResolvedPhpDoc();
-				if ($phpDoc !== null) {
-					foreach ($phpDoc->getTypeAliasImportTags() as $importTag) {
-						$this->addClassToDependencies($importTag->getImportedFrom(), $dependenciesReflections);
-					}
-				}
-			}
+			$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
 		} elseif ($node instanceof Node\Stmt\Trait_ && $node->namespacedName !== null) {
 			try {
 				$classReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());
@@ -604,6 +576,13 @@ class DependencyResolver
 						continue;
 					}
 					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
+			}
+
+			$phpDoc = $classReflection->getResolvedPhpDoc();
+			if ($phpDoc !== null) {
+				foreach ($phpDoc->getTypeAliasImportTags() as $importTag) {
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($importTag->getImportedFrom());
 				}
 			}
 

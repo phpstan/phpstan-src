@@ -135,6 +135,20 @@ jobs:
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv
           - script: |
+              cd e2e/bug10449
+              ../../phpstan analyze
+              git apply patch.diff
+              rm phpstan-baseline.neon
+              mv after-phpstan-baseline.neon phpstan-baseline.neon
+              ../../phpstan analyze
+          - script: |
+              cd e2e/bug10449b
+              ../../phpstan analyze
+              git apply patch.diff
+              rm phpstan-baseline.neon
+              mv after-phpstan-baseline.neon phpstan-baseline.neon
+              ../../phpstan analyze
+          - script: |
               cd e2e/bug-9622
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv

@@ -405,10 +405,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				return $result;
 			}
 
-			return $result->and(
-				$this->getKeyType()->isSuperTypeOf($type->getKeyType()),
-				$this->getItemType()->isSuperTypeOf($type->getItemType()),
-			);
+			$isKeySuperType = $this->getKeyType()->isSuperTypeOf($type->getKeyType());
+			if ($isKeySuperType->no()) {
+				return TrinaryLogic::createNo();
+			}
+
+			return $result->and($isKeySuperType, $this->getItemType()->isSuperTypeOf($type->getItemType()));
 		}
 
 		if ($type instanceof CompoundType) {

@@ -1307,6 +1307,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug10509(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10509.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Method Bug10509\Foo::doFoo() has no return type specified.', $errors[0]->getMessage());
+		$this->assertSame('PHPDoc tag @return contains unresolvable type.', $errors[1]->getMessage());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

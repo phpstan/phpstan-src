@@ -65,6 +65,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Helper\GetTemplateTypeType;
 use PHPStan\Type\IntegerRangeType;
@@ -749,6 +750,9 @@ class TypeNodeResolver
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);
 		$mainTypeObjectClassNames = $mainType->getObjectClassNames();
 		if (count($mainTypeObjectClassNames) > 1) {
+			if ($mainType instanceof TemplateType) {
+				return new ErrorType();
+			}
 			throw new ShouldNotHappenException();
 		}
 		$mainTypeClassName = $mainTypeObjectClassNames[0] ?? null;

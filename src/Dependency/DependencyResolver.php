@@ -383,7 +383,19 @@ class DependencyResolver
 			$node instanceof Node\Expr\New_
 			&& $node->class instanceof Node\Name
 		) {
-			$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
+			$className = $scope->resolveName($node->class);
+			$this->addClassToDependencies($className, $dependenciesReflections);
+
+			if ($this->reflectionProvider->hasClass($className)) {
+				$classReflection = $this->reflectionProvider->getClass($className);
+
+				$phpDoc = $classReflection->getResolvedPhpDoc();
+				if ($phpDoc !== null) {
+					foreach ($phpDoc->getTypeAliasImportTags() as $importTag) {
+						$this->addClassToDependencies($importTag->getImportedFrom(), $dependenciesReflections);
+					}
+				}
+			}
 		} elseif ($node instanceof Node\Stmt\Trait_ && $node->namespacedName !== null) {
 			try {
 				$classReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());

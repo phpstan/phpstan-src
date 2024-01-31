@@ -88,7 +88,7 @@ class ImpossibleCheckTypeHelper
 					return null;
 				} elseif ($functionName === 'array_search') {
 					return null;
-				} elseif ($functionName === 'in_array' && $argsCount >= 3) {
+				} elseif ($functionName === 'in_array' && $argsCount >= 2) {
 					$haystackArg = $node->getArgs()[1]->value;
 					$haystackType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($haystackArg) : $scope->getNativeType($haystackArg));
 					if ($haystackType instanceof MixedType) {
@@ -101,6 +101,21 @@ class ImpossibleCheckTypeHelper
 
 					$needleArg = $node->getArgs()[0]->value;
 					$needleType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($needleArg) : $scope->getNativeType($needleArg));
+
+					$isStrictComparison = false;
+					if ($argsCount >= 3) {
+						$strictNodeType = $scope->getType($node->getArgs()[2]->value);
+						$isStrictComparison = $strictNodeType->isTrue()->yes();
+					}
+
+					$isStrictComparison = $isStrictComparison
+						|| $needleType->isEnum()->yes()
+						|| $haystackType->getIterableValueType()->isEnum()->yes();
+
+					if (!$isStrictComparison) {
+						return null;
+					}
+
 					$valueType = $haystackType->getIterableValueType();
 					$constantNeedleTypesCount = count($needleType->getFiniteTypes());
 					$constantHaystackTypesCount = count($valueType->getFiniteTypes());

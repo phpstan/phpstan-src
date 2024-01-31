@@ -3032,7 +3032,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'is_int($string)',
 			],
 			[
-				'true',
+				'bool',
 				'in_array(\'foo\', [\'foo\', \'bar\'])',
 			],
 			[

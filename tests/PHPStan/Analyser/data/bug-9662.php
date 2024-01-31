@@ -30,3 +30,26 @@ function doFoo($a) {
 	}
 	assertType('array', $a);
 }
+
+/**
+ * Add new delivery prices.
+ *
+ * @param array $price_list Prices list in multiple arrays (changed to array since 1.5.0)
+ * @param bool $delete
+ */
+function addDeliveryPrice($price_list, $delete = false): void
+{
+	if (!$price_list) {
+		return;
+	}
+
+	$keys = array_keys($price_list[0]);
+	if (!in_array('id_shop', $keys)) {
+		$keys[] = 'id_shop';
+	}
+	if (!in_array('id_shop_group', $keys)) {
+		$keys[] = 'id_shop_group';
+	}
+
+	var_dump($keys);
+}

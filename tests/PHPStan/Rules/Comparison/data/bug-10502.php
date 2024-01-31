@@ -11,7 +11,7 @@ function doFoo(?ArrayObject $x):void {
 
 	var_dump(
 		is_callable($callable1),
-		is_callable($callable2),
+		is_callable($callable2)
 	);
 }
 
@@ -21,6 +21,6 @@ function doBar():void {
 
 	var_dump(
 		is_callable($callable1),
-		is_callable($callable2),
+		is_callable($callable2)
 	);
 }

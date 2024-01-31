@@ -1050,7 +1050,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			[
 				"Call to function is_callable() with array{1: 'count', 0: ArrayObject<int, int>} will always evaluate to true.",
 				24,
-				$tipText
+				$tipText,
 			],
 		]);
 	}

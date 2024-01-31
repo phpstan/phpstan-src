@@ -503,23 +503,46 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $acceptors;
 	}
 
+	/**
+	 * @return array{Type, Type}|array{}
+	 */
+	private function getClassOrObjectAndMethods(): array
+	{
+		if (count($this->keyTypes) !== 2) {
+			return [];
+		}
+
+		$classOrObject = null;
+		$method = null;
+		foreach ($this->keyTypes as $i => $keyType) {
+			if ($keyType->isSuperTypeOf(new ConstantIntegerType(0))->yes()) {
+				$classOrObject = $this->valueTypes[$i];
+				continue;
+			}
+
+			if (!$keyType->isSuperTypeOf(new ConstantIntegerType(1))->yes()) {
+				continue;
+			}
+
+			$method = $this->valueTypes[$i];
+		}
+
+		if ($classOrObject === null || $method === null) {
+			return [];
+		}
+
+		return [$classOrObject, $method];
+	}
+
 	/** @deprecated Use findTypeAndMethodNames() instead  */
 	public function findTypeAndMethodName(): ?ConstantArrayTypeAndMethod
 	{
-		if (count($this->keyTypes) !== 2) {
+		$callableArray = $this->getClassOrObjectAndMethods();
+		if ($callableArray === []) {
 			return null;
 		}
 
-		if ($this->keyTypes[0]->isSuperTypeOf(new ConstantIntegerType(0))->no()) {
-			return null;
-		}
-
-		if ($this->keyTypes[1]->isSuperTypeOf(new ConstantIntegerType(1))->no()) {
-			return null;
-		}
-
-		[$classOrObject, $method] = $this->valueTypes;
-
+		[$classOrObject, $method] = $callableArray;
 		if (!$method instanceof ConstantStringType) {
 			return ConstantArrayTypeAndMethod::createUnknown();
 		}
@@ -544,19 +567,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	/** @return ConstantArrayTypeAndMethod[] */
 	public function findTypeAndMethodNames(): array
 	{
-		if (count($this->keyTypes) !== 2) {
+		$callableArray = $this->getClassOrObjectAndMethods();
+		if ($callableArray === []) {
 			return [];
 		}
 
-		if ($this->keyTypes[0]->isSuperTypeOf(new ConstantIntegerType(0))->no()) {
-			return [];
-		}
-
-		if ($this->keyTypes[1]->isSuperTypeOf(new ConstantIntegerType(1))->no()) {
-			return [];
-		}
-
-		[$classOrObject, $methods] = $this->valueTypes;
+		[$classOrObject, $methods] = $callableArray;
 		if (count($methods->getConstantStrings()) === 0) {
 			return [ConstantArrayTypeAndMethod::createUnknown()];
 		}

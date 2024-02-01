@@ -23,6 +23,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				self::getContainer(),
 				[
 					'MissingReadOnlyPropertyAssign\\TestCase::setUp',
+					'Bug10523\\Controller::init'
 				],
 			),
 		);
@@ -259,6 +260,11 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				11,
 			],
 		]);
+	}
+
+	public function testBug10523(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10523.php'], []);
 	}
 
 }

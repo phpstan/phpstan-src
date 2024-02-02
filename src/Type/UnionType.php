@@ -615,7 +615,7 @@ class UnionType implements CompoundType
 			return new BooleanType();
 		}
 
-		return $lastResult;
+		return $lastResult ?? new BooleanType();
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic

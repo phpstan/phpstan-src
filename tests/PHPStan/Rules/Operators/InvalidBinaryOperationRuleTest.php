@@ -8,6 +8,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function array_merge;
 use const PHP_VERSION_ID;
 
 /**

@@ -116,6 +116,61 @@ class InvalidBinaryOperationRule implements Rule
 					->identifier(sprintf('%s.invalid', $identifier))
 					->build(),
 			];
+		} else {
+			if ($node instanceof Node\Expr\BinaryOp\Mod) {
+				$callback = static fn (Type $type): bool => PHP_VERSION_ID >= 80100
+					? $type->toNumber()->isFloat()->no()
+					: $type->toNumber()->isInteger()->yes();
+
+				$leftType = $this->ruleLevelHelper->findTypeToCheck(
+					$scope,
+					$node->left,
+					'',
+					$callback,
+				)->getType();
+				if ($leftType instanceof ErrorType) {
+					return [];
+				}
+
+				$rightType = $this->ruleLevelHelper->findTypeToCheck(
+					$scope,
+					$node->right,
+					'',
+					$callback,
+				)->getType();
+				if ($rightType instanceof ErrorType) {
+					return [];
+				}
+
+				$leftNumberType = $leftType->toNumber();
+				$rightNumberType = $rightType->toNumber();
+				if ($leftNumberType->isFloat()->no() && $rightNumberType->isFloat()->no()) {
+					return [];
+				}
+
+				if (!$leftNumberType->isFloat()->no()) {
+					return [
+						RuleErrorBuilder::message(sprintf(
+							'Deprecated in PHP 8.1: Implicit conversion from %s to int loses precision.',
+							$leftType->describe(VerbosityLevel::value()),
+						))
+							->line($node->left->getStartLine())
+							->identifier('binaryOp.mod.implicitConversion')
+							->build(),
+					];
+				}
+				if (!$rightNumberType->isFloat()->no()) {
+					return [
+						RuleErrorBuilder::message(sprintf(
+							'Deprecated in PHP 8.1: Implicit conversion from %s to int loses precision.',
+							$rightType->describe(VerbosityLevel::value()),
+						))
+							->line($node->left->getStartLine())
+							->identifier('binaryOp.mod.implicitConversion')
+							->build(),
+					];
+				}
+			}
 		}
 
 		return [];

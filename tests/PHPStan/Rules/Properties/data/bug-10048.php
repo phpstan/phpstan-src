@@ -28,4 +28,6 @@ class Foo
 	}
 }
 
-(new Foo())->useCallback();
+function doFoo() {
+	(new Foo())->useCallback();
+}

@@ -353,6 +353,10 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 
+			if ($callScope->isInAnonymousFunction() && $callScope->getParentScope() !== null) {
+				$callScope = $callScope->getParentScope();
+			}
+
 			$methodName = $methodCallNode->name->toString();
 			if (array_key_exists($methodName, $initializedProperties)) {
 				foreach ($this->getInitializedProperties($callScope, $initializedProperties[$inMethod->getName()] ?? $initialInitializedProperties) as $propertyName => $isInitialized) {

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php // lint >= 8.1
 
 namespace Bug10048;
 

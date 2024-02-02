@@ -931,8 +931,12 @@ class ResolvedPhpDocBlock
 			$phpDocBlock = $parentPhpDocBlocks[$i];
 
 			return array_map(
-				static fn (AssertTag $assertTag) => $assertTag->withParameter(
-					$phpDocBlock->transformAssertTagParameterWithParameterNameMapping($assertTag->getParameter()),
+				static fn (AssertTag $assertTag) => self::resolveTemplateTypeInTag(
+					$assertTag->withParameter(
+						$phpDocBlock->transformAssertTagParameterWithParameterNameMapping($assertTag->getParameter()),
+					),
+					$phpDocBlock,
+					TemplateTypeVariance::createCovariant(),
 				),
 				$result,
 			);

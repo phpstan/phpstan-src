@@ -23,7 +23,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				self::getContainer(),
 				[
 					'MissingReadOnlyPropertyAssign\\TestCase::setUp',
-					'Bug10523\\Controller::init'
+					'Bug10523\\Controller::init',
 				],
 			),
 		);

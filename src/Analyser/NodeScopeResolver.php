@@ -78,6 +78,7 @@ use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
@@ -1510,9 +1511,32 @@ class NodeScopeResolver
 			$throwPoints = [];
 			foreach ($stmt->vars as $var) {
 				$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $var);
-				$scope = $this->processExprNode($stmt, $var, $scope, $nodeCallback, ExpressionContext::createDeep())->getScope();
+				$exprResult = $this->processExprNode($stmt, $var, $scope, $nodeCallback, ExpressionContext::createDeep());
+				$scope = $exprResult->getScope();
 				$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $var);
-				$scope = $scope->unsetExpression($var);
+				$hasYield = $hasYield || $exprResult->hasYield();
+				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
+				if ($var instanceof ArrayDimFetch && $var->dim !== null) {
+					$scope = $this->processAssignVar(
+						$scope,
+						$stmt,
+						$var->var,
+						new UnsetOffsetExpr($var->var, $var->dim),
+						static function (Node $node, Scope $scope) use ($nodeCallback): void {
+							if (!$node instanceof PropertyAssignNode) {
+								return;
+							}
+
+							$nodeCallback($node, $scope);
+						},
+						ExpressionContext::createDeep(),
+						static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, []),
+						false,
+					)->getScope();
+				} else {
+					$scope = $scope->invalidateExpression($var);
+				}
+
 			}
 		} elseif ($stmt instanceof Node\Stmt\Use_) {
 			$hasYield = false;

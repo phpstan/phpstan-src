@@ -37,6 +37,7 @@ use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ArrayMapArgVisitor;
@@ -638,6 +639,9 @@ class MutatingScope implements Scope
 		}
 		if ($node instanceof GetOffsetValueTypeExpr) {
 			return $this->getType($node->getVar())->getOffsetValueType($this->getType($node->getDim()));
+		}
+		if ($node instanceof UnsetOffsetExpr) {
+			return $this->getType($node->getVar())->unsetOffset($this->getType($node->getDim()));
 		}
 		if ($node instanceof SetOffsetValueTypeExpr) {
 			return $this->getType($node->getVar())->setOffsetValueType(

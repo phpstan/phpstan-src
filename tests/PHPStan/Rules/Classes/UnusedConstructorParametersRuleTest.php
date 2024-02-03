@@ -14,9 +14,7 @@ class UnusedConstructorParametersRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new UnusedConstructorParametersRule(new UnusedFunctionParametersCheck(
-			$this->createReflectionProvider(),
-		));
+		return new UnusedConstructorParametersRule(new UnusedFunctionParametersCheck());
 	}
 
 	public function testUnusedConstructorParameters(): void

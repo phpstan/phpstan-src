@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -15,6 +14,7 @@ use PHPStan\Type\VerbosityLevel;
 use function count;
 use function in_array;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -23,7 +23,6 @@ class ImplodeFunctionRule implements Rule
 {
 
 	public function __construct(
-		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
@@ -40,7 +39,7 @@ class ImplodeFunctionRule implements Rule
 			return [];
 		}
 
-		$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
+		$functionName = strtolower($node->name->toString());
 		if (!in_array($functionName, ['implode', 'join'], true)) {
 			return [];
 		}

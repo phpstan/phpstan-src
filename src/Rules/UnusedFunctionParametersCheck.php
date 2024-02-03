@@ -4,7 +4,6 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantStringType;
 use function array_fill_keys;
 use function array_keys;
@@ -12,13 +11,10 @@ use function array_merge;
 use function is_array;
 use function is_string;
 use function sprintf;
+use function strtolower;
 
 class UnusedFunctionParametersCheck
 {
-
-	public function __construct(private ReflectionProvider $reflectionProvider)
-	{
-	}
 
 	/**
 	 * @param string[] $parameterNames
@@ -62,7 +58,7 @@ class UnusedFunctionParametersCheck
 		$variableNames = [];
 		if ($node instanceof Node) {
 			if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {
-				$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
+				$functionName = strtolower($node->name->toString());
 				if ($functionName === 'func_get_args') {
 					return $scope->getDefinedVariables();
 				}

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\StaticTypeFactory;
@@ -21,7 +20,6 @@ class ArrayFilterRule implements Rule
 {
 
 	public function __construct(
-		private ReflectionProvider $reflectionProvider,
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
@@ -38,9 +36,8 @@ class ArrayFilterRule implements Rule
 			return [];
 		}
 
-		$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
-
-		if ($functionName === null || strtolower($functionName) !== 'array_filter') {
+		$functionName = strtolower($node->name->toString());
+		if ($functionName !== 'array_filter') {
 			return [];
 		}
 

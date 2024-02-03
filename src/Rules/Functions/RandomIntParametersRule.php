@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -14,6 +13,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_values;
 use function count;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -21,7 +21,7 @@ use function sprintf;
 class RandomIntParametersRule implements Rule
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider, private bool $reportMaybes)
+	public function __construct(private bool $reportMaybes)
 	{
 	}
 
@@ -36,7 +36,8 @@ class RandomIntParametersRule implements Rule
 			return [];
 		}
 
-		if ($this->reflectionProvider->resolveFunctionName($node->name, $scope) !== 'random_int') {
+		$functionName = strtolower($node->name->toString());
+		if ($functionName !== 'random_int') {
 			return [];
 		}
 

@@ -14,7 +14,7 @@ class RandomIntParametersRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new RandomIntParametersRule($this->createReflectionProvider(), true);
+		return new RandomIntParametersRule(true);
 	}
 
 	public function testFile(): void

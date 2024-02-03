@@ -586,4 +586,26 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7087.php'], []);
 	}
 
+	public function testUnset(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/property-type-after-unset.php'], [
+			[
+				'Property PropertyTypeAfterUnset\Foo::$nonEmpty (non-empty-array<int>) does not accept array<int>.',
+				19,
+				'array<int> might be empty.',
+			],
+			[
+				'Property PropertyTypeAfterUnset\Foo::$listProp (list<int>) does not accept array<int<0, max>, int>.',
+				20,
+				'array<int<0, max>, int> might not be a list.',
+			],
+			[
+				'Property PropertyTypeAfterUnset\Foo::$nestedListProp (array<list<int>>) does not accept non-empty-array<array<int<0, max>, int>>.',
+				21,
+				'array<int<0, max>, int> might not be a list.',
+			],
+		]);
+	}
+
 }

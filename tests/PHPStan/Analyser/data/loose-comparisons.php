@@ -519,4 +519,25 @@ class HelloWorld
 		assertType('false', $emptyStr == $phpStr);
 		assertType('true', $emptyStr == $emptyStr);
 	}
+
+	/**
+	 * @param true|1|"1" $looseOne
+	 * @param false|0|"0" $looseZero
+	 * @param false|1 $constMix
+	 */
+	public function sayConstUnion(
+		$looseOne,
+		$looseZero,
+		$constMix
+	): void
+	{
+		assertType('true', $looseOne == 1);
+		assertType('false', $looseOne == 0);
+
+		assertType('true', $looseZero == 0);
+		assertType('false', $looseZero == 1);
+
+		assertType('bool', $constMix == 0);
+		assertType('bool', $constMix == 1);
+	}
 }

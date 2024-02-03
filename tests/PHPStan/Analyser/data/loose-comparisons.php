@@ -533,11 +533,23 @@ class HelloWorld
 	{
 		assertType('true', $looseOne == 1);
 		assertType('false', $looseOne == 0);
+		assertType('true', $looseOne == true);
+		assertType('false', $looseOne == false);
+		assertType('true', $looseOne == "1");
+		assertType('false', $looseOne == "0");
 
-		assertType('true', $looseZero == 0);
 		assertType('false', $looseZero == 1);
+		assertType('true', $looseZero == 0);
+		assertType('false', $looseZero == true);
+		assertType('true', $looseZero == false);
+		assertType('false', $looseZero == "1");
+		assertType('true', $looseZero == "0");
 
 		assertType('bool', $constMix == 0);
 		assertType('bool', $constMix == 1);
+		assertType('bool', $constMix == true);
+		assertType('bool', $constMix == false);
+		assertType('bool', $constMix == "1");
+		assertType('bool', $constMix == "0");
 	}
 }

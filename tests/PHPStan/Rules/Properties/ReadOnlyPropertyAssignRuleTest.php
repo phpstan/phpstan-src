@@ -146,7 +146,12 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$this->analyse([__DIR__ . '/data/bug-6773.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-6773.php'], [
+			[
+				'Readonly property Bug6773\Repository::$data is assigned outside of the constructor.',
+				16,
+			],
+		]);
 	}
 
 }

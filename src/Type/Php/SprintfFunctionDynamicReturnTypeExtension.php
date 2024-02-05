@@ -85,13 +85,20 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$values = [];
+		$combinationsCount = 1;
 		foreach ($args as $arg) {
 			$argType = $scope->getType($arg->value);
 			if (count($argType->getConstantScalarValues()) === 0) {
 				return $returnType;
 			}
 
-			$values[] = $argType->getConstantScalarValues();
+			$constantScalarValues = $argType->getConstantScalarValues();
+			$values[] = $constantScalarValues;
+			$combinationsCount *= count($constantScalarValues);
+		}
+
+		if ($combinationsCount > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
+			return $returnType;
 		}
 
 		$combinations = CombinationsHelper::combinations($values);

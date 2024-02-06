@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b57905377a1dcaee17ff68979d488999",
+    "content-hash": "5e2a5c48b1ae8034ced24b2a99e9322d",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1478,16 +1478,16 @@
         },
         {
             "name": "nette/di",
-            "version": "v3.1.5",
+            "version": "v3.1.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/di.git",
-                "reference": "00ea0afa643b3b4383a5cd1a322656c989ade498"
+                "reference": "2645ec3eaa17fa2ab87c5eb4eaacb1fe6dd28284"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/di/zipball/00ea0afa643b3b4383a5cd1a322656c989ade498",
-                "reference": "00ea0afa643b3b4383a5cd1a322656c989ade498",
+                "url": "https://api.github.com/repos/nette/di/zipball/2645ec3eaa17fa2ab87c5eb4eaacb1fe6dd28284",
+                "reference": "2645ec3eaa17fa2ab87c5eb4eaacb1fe6dd28284",
                 "shasum": ""
             },
             "require": {
@@ -1495,7 +1495,7 @@
                 "nette/neon": "^3.3 || ^4.0",
                 "nette/php-generator": "^3.5.4 || ^4.0",
                 "nette/robot-loader": "^3.2 || ~4.0.0",
-                "nette/schema": "^1.2",
+                "nette/schema": "^1.2.5",
                 "nette/utils": "^3.2.5 || ~4.0.0",
                 "php": "7.2 - 8.3"
             },
@@ -1544,9 +1544,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/di/issues",
-                "source": "https://github.com/nette/di/tree/v3.1.5"
+                "source": "https://github.com/nette/di/tree/v3.1.10"
             },
-            "time": "2023-10-02T19:58:38+00:00"
+            "time": "2024-02-06T01:19:44+00:00"
         },
         {
             "name": "nette/finder",

@@ -147,6 +147,12 @@ class ContainerFactory
 		$configurator->setAllConfigFiles($allConfigFiles);
 
 		$container = $configurator->createContainer()->getByType(Container::class);
+
+		// initialize parameters that contain dynamic parameters
+		$container->getParameter('sysGetTempDir');
+		$container->getParameter('pro');
+		$container->getParameter('fixerTmpDir');
+
 		$this->validateParameters($container->getParameters(), $projectConfig['parametersSchema']);
 		self::postInitializeContainer($container);
 

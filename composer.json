@@ -14,7 +14,7 @@
 		"hoa/compiler": "3.17.08.08",
 		"hoa/exception": "^1.0",
 		"hoa/regex": "1.17.01.13",
-		"jetbrains/phpstorm-stubs": "dev-master#8ea3bf44722f76a3a32c89fe769b6144c253f8a6",
+		"jetbrains/phpstorm-stubs": "dev-master#26462cb5c09c983cfd9beb78ec47b75f5cb8c162",
 		"nette/bootstrap": "^3.0",
 		"nette/di": "^3.1.4",
 		"nette/finder": "^2.5",
@@ -23,9 +23,9 @@
 		"nette/utils": "^3.2.5",
 		"nikic/php-parser": "^4.17.1",
 		"ondram/ci-detector": "^3.4.0",
-		"ondrejmirtes/better-reflection": "6.21.0",
-		"phpstan/php-8-stubs": "0.3.82",
-		"phpstan/phpdoc-parser": "1.25.0",
+		"ondrejmirtes/better-reflection": "6.14.0.5",
+		"phpstan/php-8-stubs": "0.3.76",
+		"phpstan/phpdoc-parser": "1.24.2",
 		"react/async": "^3",
 		"react/child-process": "^0.6.4",
 		"react/dns": "^1.10",
@@ -53,13 +53,13 @@
 	"require-dev": {
 		"brianium/paratest": "^6.5",
 		"cweagans/composer-patches": "^1.7.3",
-		"ondrejmirtes/simple-downgrader": "^1.0",
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",
 		"phpstan/phpstan-deprecation-rules": "^1.0",
 		"phpstan/phpstan-nette": "^1.0",
 		"phpstan/phpstan-phpunit": "^1.0",
 		"phpstan/phpstan-strict-rules": "^1.5.1",
 		"phpunit/phpunit": "^9.5.4",
+		"rector/rector": "^0.17",
 		"shipmonk/name-collision-detector": "^2.0"
 	},
 	"config": {
@@ -94,10 +94,10 @@
 			],
 			"jetbrains/phpstorm-stubs": [
 				"patches/PDO.patch",
-				"patches/ReflectionProperty.patch",
-				"patches/SessionHandler.patch",
-				"patches/xmlreader.patch",
-				"patches/dom_c.patch"
+				"patches/SessionHandler.patch"
+			],
+			"rector/rector": [
+				"patches/NameNodeMapper.patch"
 			]
 		}
 	},

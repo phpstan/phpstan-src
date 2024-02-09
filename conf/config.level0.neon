@@ -49,6 +49,7 @@ rules:
 	- PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
 	- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
 	- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
+	- PHPStan\Rules\Classes\ForbiddenInterfacesInClassImplementsRule
 	- PHPStan\Rules\Classes\InstantiationRule
 	- PHPStan\Rules\Classes\InstantiationCallableRule
 	- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule

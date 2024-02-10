@@ -109,6 +109,11 @@ class TestGetClass
 			FinalFoo::class => assertType(FinalFoo::class, $class),
 			FinalBar::class => assertType(FinalBar::class, $class),
 		};
+
+		match (get_debug_type($class)) {
+			FinalFoo::class => assertType(FinalFoo::class, $class),
+			FinalBar::class => assertType(FinalBar::class, $class),
+		};
 	}
 
 }

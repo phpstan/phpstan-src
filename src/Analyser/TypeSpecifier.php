@@ -1812,17 +1812,7 @@ class TypeSpecifier
 			if (
 				$exprNode instanceof FuncCall
 				&& $exprNode->name instanceof Name
-				&& strtolower($exprNode->name->toString()) === 'gettype'
-				&& isset($exprNode->getArgs()[0])
-				&& $constantType->isString()->yes()
-			) {
-				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
-			}
-
-			if (
-				$exprNode instanceof FuncCall
-				&& $exprNode->name instanceof Name
-				&& strtolower($exprNode->name->toString()) === 'get_class'
+				&& in_array(strtolower($exprNode->name->toString()), ['gettype', 'get_class', 'get_debug_type'], true)
 				&& isset($exprNode->getArgs()[0])
 				&& $constantType->isString()->yes()
 			) {
@@ -1920,7 +1910,7 @@ class TypeSpecifier
 			$context->true()
 			&& $unwrappedLeftExpr instanceof FuncCall
 			&& $unwrappedLeftExpr->name instanceof Name
-			&& strtolower($unwrappedLeftExpr->name->toString()) === 'get_class'
+			&& in_array(strtolower($unwrappedLeftExpr->name->toString()), ['get_class', 'get_debug_type'], true)
 			&& isset($unwrappedLeftExpr->getArgs()[0])
 		) {
 			if ($rightType->getClassStringObjectType()->isObject()->yes()) {

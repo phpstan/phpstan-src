@@ -88,4 +88,10 @@ function () {
 
 	$i->addData(321);
 	assertType('SelfOut\\a<int>', $i);
+
+	$i->addData(random_bytes(3));
+	assertType('SelfOut\\a<int|non-empty-string>', $i);
+
+	$i->setData(true);
+	assertType('SelfOut\\a<true>', $i);
 };

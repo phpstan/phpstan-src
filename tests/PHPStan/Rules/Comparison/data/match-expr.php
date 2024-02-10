@@ -203,3 +203,15 @@ class TestGetClass
 	}
 
 }
+class TestGetDebugType
+{
+
+	public function doMatch(FinalFoo|FinalBar $class): void
+	{
+		match (get_debug_type($class)) {
+			FinalFoo::class => 1,
+			FinalBar::class => 2,
+		};
+	}
+
+}

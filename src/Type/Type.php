@@ -137,6 +137,8 @@ interface Type
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type;
 
+	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type;
+
 	public function unsetOffset(Type $offsetType): Type;
 
 	public function getKeysArray(): Type;

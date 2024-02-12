@@ -386,6 +386,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return parent::setOffsetValueType($offsetType, $valueType);
 	}
 
+	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
+	{
+		return parent::setOffsetValueType($offsetType, $valueType);
+	}
+
 	public function append(self $otherString): self
 	{
 		return new self($this->getValue() . $otherString->getValue());

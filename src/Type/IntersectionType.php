@@ -691,6 +691,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType, $unionValues));
 	}
 
+	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->setExistingOffsetValueType($offsetType, $valueType));
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));

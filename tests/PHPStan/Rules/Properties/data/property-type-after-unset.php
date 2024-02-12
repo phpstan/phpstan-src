@@ -22,3 +22,19 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	/** @var array<string, array<string, Foo>> */
+	private $prop;
+
+	/**
+	 * @param int|string $key
+	 */
+	public function doFoo($key): void
+	{
+		unset($this->prop[$key]['foo']);
+	}
+
+}

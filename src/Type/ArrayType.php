@@ -477,6 +477,14 @@ class ArrayType implements Type
 		);
 	}
 
+	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
+	{
+		return new self(
+			$this->keyType,
+			TypeCombinator::union($this->itemType, $valueType),
+		);
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		$offsetType = $offsetType->toArrayKey();

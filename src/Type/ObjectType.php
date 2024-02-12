@@ -1180,6 +1180,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this;
 	}
 
+	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
+	{
+		if ($this->isOffsetAccessible()->no()) {
+			return new ErrorType();
+		}
+
+		return $this;
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		if ($this->isOffsetAccessible()->no()) {

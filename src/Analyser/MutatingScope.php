@@ -30,11 +30,13 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
+use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
@@ -640,12 +642,21 @@ class MutatingScope implements Scope
 		if ($node instanceof GetOffsetValueTypeExpr) {
 			return $this->getType($node->getVar())->getOffsetValueType($this->getType($node->getDim()));
 		}
+		if ($node instanceof ExistingArrayDimFetch) {
+			return $this->getType(new Expr\ArrayDimFetch($node->getVar(), $node->getDim()));
+		}
 		if ($node instanceof UnsetOffsetExpr) {
 			return $this->getType($node->getVar())->unsetOffset($this->getType($node->getDim()));
 		}
 		if ($node instanceof SetOffsetValueTypeExpr) {
 			return $this->getType($node->getVar())->setOffsetValueType(
 				$node->getDim() !== null ? $this->getType($node->getDim()) : null,
+				$this->getType($node->getValue()),
+			);
+		}
+		if ($node instanceof SetExistingOffsetValueTypeExpr) {
+			return $this->getType($node->getVar())->setExistingOffsetValueType(
+				$this->getType($node->getDim()),
 				$this->getType($node->getValue()),
 			);
 		}

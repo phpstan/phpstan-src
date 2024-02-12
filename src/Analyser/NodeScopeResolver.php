@@ -1532,10 +1532,7 @@ class NodeScopeResolver
 					$traverser = new NodeTraverser();
 					$traverser->addVisitor(new class () extends NodeVisitorAbstract {
 
-						/**
-						 * @return ExistingArrayDimFetch|null
-						 */
-						public function leaveNode(Node $node)
+						public function leaveNode(Node $node): ?ExistingArrayDimFetch
 						{
 							if (!$node instanceof ArrayDimFetch || $node->dim === null) {
 								return null;

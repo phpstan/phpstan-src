@@ -5,6 +5,7 @@ namespace Sort;
 use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 use function sort;
+use function usort;
 
 class Foo
 {
@@ -127,4 +128,26 @@ class Foo
 		sort($arr);
 		assertType("'foo'", $arr);
 	}
+}
+
+class Bar
+{
+
+	/**
+	 * @template T
+	 * @param T&list<array{a: scalar, b: true}> $array
+	 * @return list<T>
+	 */
+	public function doFoo(array $array)
+	{
+		assertType('list<array{a: bool|float|int|string, b: true}>&T (method Sort\Bar::doFoo(), argument)', $array);
+		usort($array, function (array $a, array $b) {
+			return $a['a'] <=> $b['a'];
+		});
+
+		assertType('list<array{a: bool|float|int|string, b: true}>&T (method Sort\Bar::doFoo(), argument)', $array);
+
+		return $array;
+	}
+
 }

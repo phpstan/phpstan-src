@@ -146,6 +146,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -3119,20 +3120,27 @@ class NodeScopeResolver
 
 	private function getArraySortFunctionType(Type $type): Type
 	{
-		if (!$type->isArray()->yes()) {
-			return $type;
-		}
-
 		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
 		if ($isIterableAtLeastOnce->no()) {
 			return $type;
 		}
 
-		$newArrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $type->getIterableValueType()));
-		if ($isIterableAtLeastOnce->yes()) {
-			$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
-		}
-		return $newArrayType;
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($isIterableAtLeastOnce): Type {
+			if ($type instanceof UnionType || $type instanceof IntersectionType) {
+				return $traverse($type);
+			}
+
+			if (!$type instanceof ArrayType) {
+				return $type;
+			}
+
+			$newArrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $type->getIterableValueType()));
+			if ($isIterableAtLeastOnce->yes()) {
+				$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
+			}
+
+			return $newArrayType;
+		});
 	}
 
 	private function getFunctionThrowPoint(

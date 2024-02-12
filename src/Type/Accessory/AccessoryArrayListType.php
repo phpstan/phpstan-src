@@ -161,6 +161,15 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
+	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
+	{
+		if ((new ConstantIntegerType(0))->isSuperTypeOf($offsetType)->yes()) {
+			return $this;
+		}
+
+		return new ErrorType();
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		if ($this->hasOffsetValueType($offsetType)->no()) {

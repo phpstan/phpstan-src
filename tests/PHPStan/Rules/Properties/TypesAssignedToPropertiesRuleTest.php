@@ -601,7 +601,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				'array<int<0, max>, int> might not be a list.',
 			],
 			[
-				'Property PropertyTypeAfterUnset\Foo::$nestedListProp (array<list<int>>) does not accept non-empty-array<array<int<0, max>, int>>.',
+				'Property PropertyTypeAfterUnset\Foo::$nestedListProp (array<list<int>>) does not accept array<array<int<0, max>, int>>.',
 				21,
 				'array<int<0, max>, int> might not be a list.',
 			],

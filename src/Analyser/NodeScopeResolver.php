@@ -50,6 +50,9 @@ use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor\CloningVisitor;
+use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflector\Reflector;
@@ -72,11 +75,13 @@ use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
+use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\FinallyExitPointsNode;
@@ -1518,10 +1523,35 @@ class NodeScopeResolver
 				$hasYield = $hasYield || $exprResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				if ($var instanceof ArrayDimFetch && $var->dim !== null) {
+					$cloningTraverser = new NodeTraverser();
+					$cloningTraverser->addVisitor(new CloningVisitor());
+
+					/** @var Expr $clonedVar */
+					[$clonedVar] = $cloningTraverser->traverse([$var->var]);
+
+					$traverser = new NodeTraverser();
+					$traverser->addVisitor(new class () extends NodeVisitorAbstract {
+
+						/**
+						 * @return ExistingArrayDimFetch|null
+						 */
+						public function leaveNode(Node $node)
+						{
+							if (!$node instanceof ArrayDimFetch || $node->dim === null) {
+								return null;
+							}
+
+							return new ExistingArrayDimFetch($node->var, $node->dim);
+						}
+
+					});
+
+					/** @var Expr $clonedVar */
+					[$clonedVar] = $traverser->traverse([$clonedVar]);
 					$scope = $this->processAssignVar(
 						$scope,
 						$stmt,
-						$var->var,
+						$clonedVar,
 						new UnsetOffsetExpr($var->var, $var->dim),
 						static function (Node $node, Scope $scope) use ($nodeCallback): void {
 							if (!$node instanceof PropertyAssignNode) {
@@ -4208,6 +4238,72 @@ class NodeScopeResolver
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+			}
+		} elseif ($var instanceof ExistingArrayDimFetch) {
+			$dimFetchStack = [];
+			$assignedPropertyExpr = $assignedExpr;
+			while ($var instanceof ExistingArrayDimFetch) {
+				$varForSetOffsetValue = $var->getVar();
+				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
+					$varForSetOffsetValue = new OriginalPropertyTypeExpr($varForSetOffsetValue);
+				}
+				$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
+					$varForSetOffsetValue,
+					$var->getDim(),
+					$assignedPropertyExpr,
+				);
+				$dimFetchStack[] = $var;
+				$var = $var->getVar();
+			}
+
+			$offsetTypes = [];
+			$offsetNativeTypes = [];
+			foreach (array_reverse($dimFetchStack) as $dimFetch) {
+				$dimExpr = $dimFetch->getDim();
+				$offsetTypes[] = $scope->getType($dimExpr);
+				$offsetNativeTypes[] = $scope->getNativeType($dimExpr);
+			}
+
+			$valueToWrite = $scope->getType($assignedExpr);
+			$nativeValueToWrite = $scope->getNativeType($assignedExpr);
+			$varType = $scope->getType($var);
+			$varNativeType = $scope->getNativeType($var);
+
+			$offsetValueType = $varType;
+			$offsetNativeValueType = $varNativeType;
+			$offsetValueTypeStack = [$offsetValueType];
+			$offsetValueNativeTypeStack = [$offsetNativeValueType];
+			foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
+				$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+				$offsetValueTypeStack[] = $offsetValueType;
+			}
+			foreach (array_slice($offsetNativeTypes, 0, -1) as $offsetNativeType) {
+				$offsetNativeValueType = $offsetNativeValueType->getOffsetValueType($offsetNativeType);
+				$offsetValueNativeTypeStack[] = $offsetNativeValueType;
+			}
+
+			foreach (array_reverse($offsetTypes) as $offsetType) {
+				/** @var Type $offsetValueType */
+				$offsetValueType = array_pop($offsetValueTypeStack);
+				$valueToWrite = $offsetValueType->setExistingOffsetValueType($offsetType, $valueToWrite);
+			}
+			foreach (array_reverse($offsetNativeTypes) as $offsetNativeType) {
+				/** @var Type $offsetNativeValueType */
+				$offsetNativeValueType = array_pop($offsetValueNativeTypeStack);
+				$nativeValueToWrite = $offsetNativeValueType->setExistingOffsetValueType($offsetNativeType, $nativeValueToWrite);
+			}
+
+			if ($var instanceof Variable && is_string($var->name)) {
+				$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite);
+			} else {
+				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
+					$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
+				}
+				$scope = $scope->assignExpression(
+					$var,
+					$valueToWrite,
+					$nativeValueToWrite,
+				);
 			}
 		}
 

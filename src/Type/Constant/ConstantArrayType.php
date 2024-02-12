@@ -684,6 +684,21 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $builder->getArray();
 	}
 
+	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
+	{
+		$offsetType = $offsetType->toArrayKey();
+		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
+		foreach ($this->keyTypes as $keyType) {
+			if ($offsetType->isSuperTypeOf($keyType)->no()) {
+				continue;
+			}
+
+			$builder->setOffsetValueType($keyType, $valueType);
+		}
+
+		return $builder->getArray();
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		$offsetType = $offsetType->toArrayKey();

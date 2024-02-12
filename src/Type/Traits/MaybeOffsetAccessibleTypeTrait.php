@@ -29,6 +29,11 @@ trait MaybeOffsetAccessibleTypeTrait
 		return $this;
 	}
 
+	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
+	{
+		return $this;
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return $this;

@@ -34,6 +34,8 @@ class Foo
 			str_repeat('a', 99)
 		);
 		assertType('literal-string&non-falsy-string', str_repeat('a', 100));
+		assertType('literal-string&non-empty-string&numeric-string', str_repeat('0', 100));
+		assertType('literal-string&non-falsy-string&numeric-string', str_repeat('1', 100));
 		assertType("'?,?,?,'", str_repeat('?,', 3));
 		assertType("*NEVER*", str_repeat('?,', -3));
 

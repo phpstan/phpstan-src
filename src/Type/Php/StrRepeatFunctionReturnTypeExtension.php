@@ -8,6 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -72,6 +73,10 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 		if ($inputType->isLiteralString()->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
+		}
+
+		if ($inputType->isNumericString()->yes()) {
+			$accessoryTypes[] = new AccessoryNumericStringType();
 		}
 
 		if (count($accessoryTypes) > 0) {

@@ -36,6 +36,7 @@ parametersSchema:
 		explicitMixedViaIsArray: bool(),
 		arrayFilter: bool(),
 		arrayUnpacking: bool(),
+		arrayValues: bool(),
 		nodeConnectingVisitorCompatibility: bool(),
 		nodeConnectingVisitorRule: bool(),
 		illegalConstructorMethodCall: bool(),

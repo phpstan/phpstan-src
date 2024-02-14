@@ -2,6 +2,8 @@
 
 namespace Bug10577;
 
+use function PHPStan\Testing\assertType;
+
 class HelloWorld
 {
 	private const MAP = [
@@ -19,6 +21,8 @@ class HelloWorld
 		}
 
 		$value = self::MAP[$value] ?? $value;
+
+		assertType("'Test1'|'Test2'", self::MAP[$value]);
 
 		// ...
 	}

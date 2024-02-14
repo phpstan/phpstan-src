@@ -198,7 +198,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$keys = array_merge($requiredKeys, $combination);
 			sort($keys);
 
-			if ($this->isList->yes() && array_keys($keys) !== array_values($keys)) {
+			if ($this->isList->yes() && array_keys($keys) !== $keys) {
 				continue;
 			}
 

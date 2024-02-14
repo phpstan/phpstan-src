@@ -7,6 +7,7 @@ parameters:
 		explicitMixedViaIsArray: true
 		arrayFilter: true
 		arrayUnpacking: true
+		arrayValues: true
 		nodeConnectingVisitorCompatibility: false
 		nodeConnectingVisitorRule: true
 		disableCheckMissingIterableValueType: true

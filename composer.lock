@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5e2a5c48b1ae8034ced24b2a99e9322d",
+    "content-hash": "a68928e0d42f35320342039448734f6d",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1353,12 +1353,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "8ea3bf44722f76a3a32c89fe769b6144c253f8a6"
+                "reference": "be32b6125b9bcbd7deabe830c5935d4c47b9481c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/8ea3bf44722f76a3a32c89fe769b6144c253f8a6",
-                "reference": "8ea3bf44722f76a3a32c89fe769b6144c253f8a6",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/be32b6125b9bcbd7deabe830c5935d4c47b9481c",
+                "reference": "be32b6125b9bcbd7deabe830c5935d4c47b9481c",
                 "shasum": ""
             },
             "require-dev": {
@@ -1393,7 +1393,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2024-01-17T10:11:03+00:00"
+            "time": "2024-02-13T22:57:25+00:00"
         },
         {
             "name": "nette/bootstrap",
@@ -2167,16 +2167,16 @@
         },
         {
             "name": "phpstan/php-8-stubs",
-            "version": "0.3.82",
+            "version": "0.3.84",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/php-8-stubs.git",
-                "reference": "b9ba35e299a7ef357f0d9426edc4b3a65bf9421d"
+                "reference": "d713e9c3f6f8223d323efe9558b477ae92e989df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/b9ba35e299a7ef357f0d9426edc4b3a65bf9421d",
-                "reference": "b9ba35e299a7ef357f0d9426edc4b3a65bf9421d",
+                "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/d713e9c3f6f8223d323efe9558b477ae92e989df",
+                "reference": "d713e9c3f6f8223d323efe9558b477ae92e989df",
                 "shasum": ""
             },
             "type": "library",
@@ -2193,9 +2193,9 @@
             "description": "PHP stubs extracted from php-src",
             "support": {
                 "issues": "https://github.com/phpstan/php-8-stubs/issues",
-                "source": "https://github.com/phpstan/php-8-stubs/tree/0.3.82"
+                "source": "https://github.com/phpstan/php-8-stubs/tree/0.3.84"
             },
-            "time": "2023-12-04T00:15:44+00:00"
+            "time": "2023-12-30T11:29:15+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",

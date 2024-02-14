@@ -838,16 +838,11 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
-			count: 4
+			count: 3
 			path: src/Type/Constant/ConstantArrayType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
-			count: 1
-			path: src/Type/Constant/ConstantArrayType.php
-
-		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone and deprecated\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantArrayType.php
 

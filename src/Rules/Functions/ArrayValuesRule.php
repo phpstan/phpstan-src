@@ -4,7 +4,9 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -48,13 +50,28 @@ class ArrayValuesRule implements Rule
 			return [];
 		}
 
-		$args = $node->getArgs();
+		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$node->getArgs(),
+			$functionReflection->getVariants(),
+			null,
+		);
+
+		$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+
+		if ($normalizedFuncCall === null) {
+			return [];
+		}
+
+		$args = $normalizedFuncCall->getArgs();
 
 		if (count($args) !== 1) {
 			return [];
 		}
 
-		if ($this->treatPhpDocTypesAsCertain) {
+		if ($this->treatPhpDocTypesAsCertain === true) {
 			$arrayType = $scope->getType($args[0]->value);
 		} else {
 			$arrayType = $scope->getNativeType($args[0]->value);
@@ -71,7 +88,7 @@ class ArrayValuesRule implements Rule
 			];
 		}
 
-		if ($arrayType->isList()->yes() && $arrayType->isIterable()->yes()) {
+		if ($arrayType->isList()->yes()) {
 			$message = 'Parameter #1 $array (%s) of array_values is already a list, call has no effect.';
 
 			return [

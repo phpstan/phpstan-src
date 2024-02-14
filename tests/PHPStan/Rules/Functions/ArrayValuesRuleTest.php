@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ArrayValuesRule>
@@ -58,6 +59,13 @@ class ArrayValuesRuleTest extends RuleTestCase
 				21,
 			],
 		];
+
+		if (PHP_VERSION_ID >= 80000) {
+			$expectedErrors[] = [
+				'Parameter #1 $array (list<int>) of array_values is already a list, call has no effect.',
+				24,
+			];
+		}
 
 		$this->analyse([__DIR__ . '/data/array_values_list.php'], $expectedErrors);
 	}

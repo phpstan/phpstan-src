@@ -80,8 +80,38 @@ class ImpossibleCheckTypeHelper
 					'trait_exists',
 					'enum_exists',
 				], true)) {
+					if (count($node->getArgs()) < 1) {
+						return null;
+					}
+					$argType = $scope->getType($node->getArgs()[0]->value);
+					if (count($argType->getConstantStrings()) !== 1) {
+						return null;
+					}
+					$argConstantString = $argType->getConstantStrings()[0];
+					if (!$this->reflectionProvider->hasClass($argConstantString->getValue())) {
+						return null;
+					}
+					$reflection = $this->reflectionProvider->getClass($argConstantString->getValue());
+
+					if ($functionName === 'class_exists' && ($reflection->isInterface() || $reflection->isTrait())) {
+						return false;
+					}
+
+					if ($functionName === 'interface_exists' && ($reflection->isClass() || $reflection->isTrait() || $reflection->isEnum())) {
+						return false;
+					}
+
+					if ($functionName === 'trait_exists' && ($reflection->isClass() || $reflection->isInterface() || $reflection->isEnum())) {
+						return false;
+					}
+
+					if ($functionName === 'enum_exists' && ($reflection->isClass() || $reflection->isInterface() || $reflection->isTrait())) {
+						return false;
+					}
+
 					return null;
 				}
+
 				if (in_array($functionName, ['count', 'sizeof'], true)) {
 					return null;
 				} elseif ($functionName === 'defined') {

@@ -1,0 +1,15 @@
+diff --git a/composer.json b/composer.json
+index 6dde20b5f..ad0feef24 100644
+--- a/composer.json
++++ b/composer.json
+@@ -116,8 +116,8 @@
+ 			]
+ 		},
+ 		"classmap": [
+-			"tests/e2e",
+-			"tests/PHPStan"
++			"tests/PHPStan/Generics",
++			"tests/PHPStan/Levels"
+ 		]
+ 	},
+ 	"minimum-stability": "dev",

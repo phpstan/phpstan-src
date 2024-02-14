@@ -117,6 +117,9 @@ jobs:
           ini-file: development
           ini-values: memory_limit=1G
 
+      - name: "Speed optimize class-loading for levels tests"
+        run: "patch -b composer.json .github/workflows/test-levels-composer.patch"
+
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 

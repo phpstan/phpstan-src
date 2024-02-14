@@ -1003,7 +1003,7 @@ class TypeCombinator
 
 		if ($hasOffsetValueTypeCount > 32) {
 			$newTypes[] = new OversizedArrayType();
-			$types = array_values($newTypes);
+			$types = $newTypes;
 			$typesCount = count($types);
 		}
 

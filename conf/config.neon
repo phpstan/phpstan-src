@@ -41,6 +41,7 @@ parameters:
 		explicitMixedViaIsArray: false
 		arrayFilter: false
 		arrayUnpacking: false
+		arrayValues: false
 		nodeConnectingVisitorCompatibility: true
 		nodeConnectingVisitorRule: false
 		illegalConstructorMethodCall: false

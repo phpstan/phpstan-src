@@ -8,6 +8,8 @@ parameters:
 conditionalTags:
 	PHPStan\Rules\Functions\ArrayFilterRule:
 		phpstan.rules.rule: %featureToggles.arrayFilter%
+	PHPStan\Rules\Functions\ArrayValuesRule:
+		phpstan.rules.rule: %featureToggles.arrayValues%
 	PHPStan\Rules\Functions\CallUserFuncRule:
 		phpstan.rules.rule: %featureToggles.callUserFunc%
 
@@ -25,6 +27,11 @@ services:
 
 	-
 		class: PHPStan\Rules\Functions\ArrayFilterRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+
+	-
+		class: PHPStan\Rules\Functions\ArrayValuesRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 

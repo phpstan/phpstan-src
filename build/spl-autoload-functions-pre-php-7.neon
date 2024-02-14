@@ -4,3 +4,7 @@ parameters:
 			message: "#^PHPDoc tag @var with type array\\<callable\\(\\)\\: mixed\\>\\|false is not subtype of native type list\\<callable\\(string\\)\\: void\\>\\|false\\.$#"
 			count: 2
 			path: ../src/Command/CommandHelper.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list<PHPStan\\Type\\Type>\) of array_values is already a list, call has no effect\.$#'
+			path: ../src/Type/TypeCombinator.php

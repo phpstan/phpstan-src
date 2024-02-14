@@ -40,7 +40,6 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -619,8 +618,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		foreach ($this->keyTypes as $i => $keyType) {
 			if (
 				$keyType instanceof ConstantIntegerType
-				&& $offsetType instanceof StringType
-				&& !$offsetType instanceof ConstantStringType
+				&& !$offsetType->isString()->no()
+				&& $offsetType->isConstantScalarValue()->no()
 			) {
 				return TrinaryLogic::createMaybe();
 			}

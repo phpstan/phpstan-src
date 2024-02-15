@@ -4,7 +4,9 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -38,13 +40,28 @@ class ArrayFilterRule implements Rule
 			return [];
 		}
 
-		$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
-
-		if ($functionName === null || strtolower($functionName) !== 'array_filter') {
+		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
 			return [];
 		}
 
-		$args = $node->getArgs();
+		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
+		if ($functionReflection->getName() !== 'array_filter') {
+			return [];
+		}
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$node->getArgs(),
+			$functionReflection->getVariants(),
+			$functionReflection->getNamedArgumentsVariants(),
+		);
+
+		$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+		if ($normalizedFuncCall === null) {
+			return [];
+		}
+
+		$args = $normalizedFuncCall->getArgs();
 		if (count($args) !== 1) {
 			return [];
 		}

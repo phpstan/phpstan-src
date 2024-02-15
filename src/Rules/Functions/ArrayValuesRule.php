@@ -14,7 +14,6 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function sprintf;
-use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -44,13 +43,14 @@ class ArrayValuesRule implements Rule
 			return [];
 		}
 
-		$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
-
-		if ($functionName === null || strtolower($functionName) !== 'array_values') {
+		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
 			return [];
 		}
 
 		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
+		if ($functionReflection->getName() !== 'array_values') {
+			return [];
+		}
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$scope,

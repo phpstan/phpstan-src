@@ -14,7 +14,6 @@ use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function sprintf;
-use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>

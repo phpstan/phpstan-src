@@ -81,7 +81,7 @@ class ArrayValuesRule implements Rule
 			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				$message,
 				$arrayType->describe(VerbosityLevel::value()),
-			));
+			))->identifier('arrayValues.empty');
 			if ($this->treatPhpDocTypesAsCertain) {
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
 				if (!$nativeArrayType->isIterableAtLeastOnce()->no()) {
@@ -99,7 +99,7 @@ class ArrayValuesRule implements Rule
 			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				$message,
 				$arrayType->describe(VerbosityLevel::value()),
-			));
+			))->identifier('arrayValues.list');
 			if ($this->treatPhpDocTypesAsCertain) {
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
 				if (!$nativeArrayType->isList()->yes()) {

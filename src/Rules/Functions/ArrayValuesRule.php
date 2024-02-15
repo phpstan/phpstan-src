@@ -70,7 +70,7 @@ class ArrayValuesRule implements Rule
 			return [];
 		}
 
-		if ($this->treatPhpDocTypesAsCertain === true) {
+		if ($this->treatPhpDocTypesAsCertain) {
 			$arrayType = $scope->getType($args[0]->value);
 		} else {
 			$arrayType = $scope->getNativeType($args[0]->value);
@@ -78,23 +78,37 @@ class ArrayValuesRule implements Rule
 
 		if ($arrayType->isIterableAtLeastOnce()->no()) {
 			$message = 'Parameter #1 $array (%s) to function array_values is empty, call has no effect.';
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
+				$message,
+				$arrayType->describe(VerbosityLevel::value()),
+			));
+			if ($this->treatPhpDocTypesAsCertain) {
+				$nativeArrayType = $scope->getNativeType($args[0]->value);
+				if (!$nativeArrayType->isIterableAtLeastOnce()->no()) {
+					$errorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+				}
+			}
 
 			return [
-				RuleErrorBuilder::message(sprintf(
-					$message,
-					$arrayType->describe(VerbosityLevel::value()),
-				))->build(),
+				$errorBuilder->build(),
 			];
 		}
 
 		if ($arrayType->isList()->yes()) {
 			$message = 'Parameter #1 $array (%s) of array_values is already a list, call has no effect.';
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
+				$message,
+				$arrayType->describe(VerbosityLevel::value()),
+			));
+			if ($this->treatPhpDocTypesAsCertain) {
+				$nativeArrayType = $scope->getNativeType($args[0]->value);
+				if (!$nativeArrayType->isList()->yes()) {
+					$errorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+				}
+			}
 
 			return [
-				RuleErrorBuilder::message(sprintf(
-					$message,
-					$arrayType->describe(VerbosityLevel::value()),
-				))->build(),
+				$errorBuilder->build(),
 			];
 		}
 

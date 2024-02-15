@@ -20,5 +20,9 @@ array_values([null, null]);
 array_values([null, 0]);
 array_values([]);
 
+/** @var array{} $empty */
+$empty = doFoo();
+array_values($empty);
+
 array_values(unused: true, array: $array);
 array_values(unused: true, array: $list);

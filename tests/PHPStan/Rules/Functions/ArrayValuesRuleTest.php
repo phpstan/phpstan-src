@@ -21,6 +21,7 @@ class ArrayValuesRuleTest extends RuleTestCase
 
 	public function testFile(): void
 	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$expectedErrors = [
 			[
 				'Parameter #1 $array (array{0, 1, 3}) of array_values is already a list, call has no effect.',
@@ -41,6 +42,7 @@ class ArrayValuesRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $array (list<int>) of array_values is already a list, call has no effect.',
 				14,
+				$tipText,
 			],
 			[
 				'Parameter #1 $array (array{0}) of array_values is already a list, call has no effect.',
@@ -58,12 +60,18 @@ class ArrayValuesRuleTest extends RuleTestCase
 				'Parameter #1 $array (array{}) to function array_values is empty, call has no effect.',
 				21,
 			],
+			[
+				'Parameter #1 $array (array{}) to function array_values is empty, call has no effect.',
+				25,
+				$tipText,
+			],
 		];
 
 		if (PHP_VERSION_ID >= 80000) {
 			$expectedErrors[] = [
 				'Parameter #1 $array (list<int>) of array_values is already a list, call has no effect.',
-				24,
+				28,
+				$tipText,
 			];
 		}
 

@@ -56,7 +56,7 @@ class ArrayValuesRule implements Rule
 			$scope,
 			$node->getArgs(),
 			$functionReflection->getVariants(),
-			null,
+			$functionReflection->getNamedArgumentsVariants(),
 		);
 
 		$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
@@ -66,8 +66,7 @@ class ArrayValuesRule implements Rule
 		}
 
 		$args = $normalizedFuncCall->getArgs();
-
-		if (count($args) !== 1) {
+		if (count($args) === 0) {
 			return [];
 		}
 

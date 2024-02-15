@@ -20,5 +20,5 @@ array_values([null, null]);
 array_values([null, 0]);
 array_values([]);
 
-array_values(array: $array);
-array_values(array: $list);
+array_values(unused: true, array: $array);
+array_values(unused: true, array: $list);

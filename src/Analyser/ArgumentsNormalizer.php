@@ -209,7 +209,7 @@ final class ArgumentsNormalizer
 				);
 			} else {
 				if (!$hasVariadic) {
-					return null;
+					continue;
 				}
 
 				$attributes = $arg->getAttributes();

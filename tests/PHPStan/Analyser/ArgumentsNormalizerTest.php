@@ -202,6 +202,43 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 				new StringType(),
 			],
 		];
+
+		yield [
+			[
+				['one', true, false, new IntegerType()],
+				['two', true, false, new StringType()],
+				['three', true, false, new FloatType()],
+			],
+			[],
+			[],
+		];
+
+		yield [
+			[
+				['one', true, false, new IntegerType()],
+				['two', true, false, new StringType()],
+				['three', true, false, new FloatType()],
+			],
+			[
+				[new StringType(), 'onee'],
+			],
+			[],
+		];
+
+		yield [
+			[
+				['one', true, false, new IntegerType()],
+				['two', true, false, new StringType()],
+				['three', true, false, new FloatType()],
+			],
+			[
+				[new IntegerType(), null],
+				[new StringType(), 'onee'],
+			],
+			[
+				new IntegerType(),
+			],
+		];
 	}
 
 	/**
@@ -280,29 +317,6 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 			[
 				[new IntegerType(), null],
 				[new StringType(), 'three'],
-			],
-		];
-
-		yield [
-			[
-				['one', true, false, new IntegerType()],
-				['two', true, false, new StringType()],
-				['three', true, false, new FloatType()],
-			],
-			[
-				[new StringType(), 'onee'],
-			],
-		];
-
-		yield [
-			[
-				['one', true, false, new IntegerType()],
-				['two', true, false, new StringType()],
-				['three', true, false, new FloatType()],
-			],
-			[
-				[new IntegerType(), null],
-				[new StringType(), 'onee'],
 			],
 		];
 	}

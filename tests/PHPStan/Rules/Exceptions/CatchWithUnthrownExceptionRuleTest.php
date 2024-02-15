@@ -605,6 +605,10 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 
 	public function testBug9568(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-9568.php'], []);
 	}
 

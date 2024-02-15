@@ -20,6 +20,7 @@ class ArrayFilterRuleTest extends RuleTestCase
 
 	public function testFile(): void
 	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$expectedErrors = [
 			[
 				'Parameter #1 $array (array{1, 3}) to function array_filter does not contain falsy values, the array will always stay the same.',
@@ -40,6 +41,7 @@ class ArrayFilterRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $array (array<stdClass>) to function array_filter does not contain falsy values, the array will always stay the same.',
 				20,
+				$tipText,
 			],
 			[
 				'Parameter #1 $array (array{0}) to function array_filter contains falsy values only, the result will always be an empty array.',
@@ -60,6 +62,7 @@ class ArrayFilterRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $array (array<false|null>) to function array_filter contains falsy values only, the result will always be an empty array.',
 				27,
+				$tipText,
 			],
 			[
 				'Parameter #1 $array (array{}) to function array_filter is empty, call has no effect.',
@@ -72,10 +75,13 @@ class ArrayFilterRuleTest extends RuleTestCase
 
 	public function testBug2065WithPhpDocTypesAsCertain(): void
 	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
 		$expectedErrors = [
 			[
 				'Parameter #1 $array (array<class-string>) to function array_filter does not contain falsy values, the array will always stay the same.',
 				12,
+				$tipText,
 			],
 		];
 

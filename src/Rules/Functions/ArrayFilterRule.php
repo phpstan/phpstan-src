@@ -57,11 +57,18 @@ class ArrayFilterRule implements Rule
 
 		if ($arrayType->isIterableAtLeastOnce()->no()) {
 			$message = 'Parameter #1 $array (%s) to function array_filter is empty, call has no effect.';
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
+				$message,
+				$arrayType->describe(VerbosityLevel::value()),
+			));
+			if ($this->treatPhpDocTypesAsCertain) {
+				$nativeArrayType = $scope->getNativeType($args[0]->value);
+				if (!$nativeArrayType->isIterableAtLeastOnce()->no()) {
+					$errorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+				}
+			}
 			return [
-				RuleErrorBuilder::message(sprintf(
-					$message,
-					$arrayType->describe(VerbosityLevel::value()),
-				))->build(),
+				$errorBuilder->build(),
 			];
 		}
 
@@ -70,21 +77,41 @@ class ArrayFilterRule implements Rule
 
 		if ($isSuperType->no()) {
 			$message = 'Parameter #1 $array (%s) to function array_filter does not contain falsy values, the array will always stay the same.';
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
+				$message,
+				$arrayType->describe(VerbosityLevel::value()),
+			));
+
+			if ($this->treatPhpDocTypesAsCertain) {
+				$nativeArrayType = $scope->getNativeType($args[0]->value);
+				$isNativeSuperType = $falsyType->isSuperTypeOf($nativeArrayType->getIterableValueType());
+				if (!$isNativeSuperType->no()) {
+					$errorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+				}
+			}
+
 			return [
-				RuleErrorBuilder::message(sprintf(
-					$message,
-					$arrayType->describe(VerbosityLevel::value()),
-				))->build(),
+				$errorBuilder->build(),
 			];
 		}
 
 		if ($isSuperType->yes()) {
 			$message = 'Parameter #1 $array (%s) to function array_filter contains falsy values only, the result will always be an empty array.';
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
+				$message,
+				$arrayType->describe(VerbosityLevel::value()),
+			));
+
+			if ($this->treatPhpDocTypesAsCertain) {
+				$nativeArrayType = $scope->getNativeType($args[0]->value);
+				$isNativeSuperType = $falsyType->isSuperTypeOf($nativeArrayType->getIterableValueType());
+				if (!$isNativeSuperType->yes()) {
+					$errorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+				}
+			}
+
 			return [
-				RuleErrorBuilder::message(sprintf(
-					$message,
-					$arrayType->describe(VerbosityLevel::value()),
-				))->build(),
+				$errorBuilder->build(),
 			];
 		}
 

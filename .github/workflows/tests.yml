@@ -99,7 +99,7 @@ jobs:
         run: "make tests-integration"
 
   tests-levels-matrix:
-    name: "Determine Levels tests matrix"
+    name: "Determine levels tests matrix"
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -155,7 +155,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Tests"
-        run: "php vendor/bin/phpunit --filter=${{ matrix.test-filter }} --group levels"
+        run: "php vendor/bin/phpunit --filter '${{ matrix.test-filter }}' --group levels"
 
   tests-old-phpunit:
     name: "Tests with old PHPUnit"

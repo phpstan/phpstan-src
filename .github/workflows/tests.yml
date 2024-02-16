@@ -121,7 +121,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - id: set-matrix
-        run: echo "::set-output name=matrix::$(php .github/workflows/tests-levels-matrix.php)"
+        run: echo "matrix=$(php .github/workflows/tests-levels-matrix.php)" >> $GITHUB_OUTPUT
 
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}

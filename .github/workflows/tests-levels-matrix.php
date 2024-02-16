@@ -28,4 +28,4 @@ if ($testFilters === []) {
 	throw new RuntimeException('No tests found');
 }
 
-echo json_encode($testFilters, JSON_PRETTY_PRINT);
+echo json_encode($testFilters);

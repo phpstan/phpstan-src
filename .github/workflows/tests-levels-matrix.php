@@ -21,6 +21,8 @@ foreach(explode("\n", $testList) as $line) {
 		continue;
 	}
 
+	$cleanedLine = str_replace('\\', '\\\\', $cleanedLine);
+
 	$testFilters[] = $cleanedLine;
 }
 

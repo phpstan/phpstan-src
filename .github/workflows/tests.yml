@@ -118,7 +118,7 @@ jobs:
           ini-values: memory_limit=1G
 
       - name: "Install PHPUnit 10.x"
-        run: "composer remove --dev brianium/paratest && composer require --dev phpunit/phpunit:^10"
+        run: "composer remove --dev brianium/paratest && composer require --dev --with-all-dependencies phpunit/phpunit:^10"
 
       - id: set-matrix
         run: echo "matrix=$(php .github/workflows/tests-levels-matrix.php)" >> $GITHUB_OUTPUT

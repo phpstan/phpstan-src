@@ -19,7 +19,9 @@ foreach($simpleXml->testCaseClass as $testCaseClass) {
 		[$className, $testName] = explode('::', $testCaseName, 2);
 		$fileName = 'tests/'. str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
 
-		$testFilters[] = sprintf("%s --filter '%s'", escapeshellarg($fileName), escapeshellarg($testCaseName));
+		$filter = str_replace('\\', '\\\\', $testCaseName);
+
+		$testFilters[] = sprintf("%s --filter %s", escapeshellarg($fileName), escapeshellarg($filter));
 	}
 }
 

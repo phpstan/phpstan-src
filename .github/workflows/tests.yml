@@ -155,7 +155,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Tests"
-        run: "php vendor/bin/phpunit --group levels"
+        run: "php vendor/bin/phpunit ${{ matrix.test-filter }} --group levels"
 
   tests-old-phpunit:
     name: "Tests with old PHPUnit"

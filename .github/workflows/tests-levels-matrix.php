@@ -1,32 +1,28 @@
 <?php declare(strict_types = 1);
 
-$testList = shell_exec('php vendor/bin/phpunit --list-tests');
+shell_exec('php vendor/bin/phpunit --list-tests-xml test-list.xml');
 
-if (!is_string($testList)) {
-	throw new RuntimeException('Error while listing tests');
+$simpleXml = simplexml_load_file('test-list.xml');
+if ($simpleXml === false) {
+	throw new RuntimeException('Error loading test-list.xml');
 }
 
 $testFilters = [];
-foreach(explode("\n", $testList) as $line) {
-	$cleanedLine = trim($line, ' -');
+foreach($simpleXml->testCaseClass as $testCaseClass) {
+	foreach($testCaseClass->testCaseMethod as $testCaseMethod) {
+		if ((string) $testCaseMethod['groups'] !== 'levels') {
+			continue;
+		}
 
-	if ($cleanedLine === '') {
-		continue;
+		$testCaseName = (string) $testCaseMethod['id'];
+
+		[$className, $testName] = explode('::', $testCaseName, 2);
+		$fileName = 'tests/'. str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
+
+		$filter = str_replace('\\', '\\\\', $testCaseName);
+
+		$testFilters[] = sprintf("%s --filter '%s'", $fileName, $filter);
 	}
-
-	if (
-		!str_contains($cleanedLine, 'PHPStan\Generics\GenericsIntegrationTest') &&
-		!str_contains($cleanedLine, 'PHPStan\Levels\LevelsIntegrationTest')
-	) {
-		continue;
-	}
-
-	[$className, $testName] = explode('::', $cleanedLine, 2);
-	$fileName = 'tests/'. str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
-
-	$filter = str_replace('\\', '\\\\', $cleanedLine);
-
-	$testFilters[] = sprintf("%s --filter '%s'", $fileName, $filter);
 }
 
 if ($testFilters === []) {

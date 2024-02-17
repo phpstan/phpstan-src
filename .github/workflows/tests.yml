@@ -120,6 +120,9 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
+      - name: "Install PHPUnit 10.x"
+        run: "composer remove brianium/paratest --dev && composer require --dev phpunit/phpunit:^10"
+
       - id: set-matrix
         run: echo "matrix=$(php .github/workflows/tests-levels-matrix.php)" >> $GITHUB_OUTPUT
 

@@ -29,4 +29,12 @@ if ($testFilters === []) {
 	throw new RuntimeException('No tests found');
 }
 
-echo json_encode($testFilters);
+$chunkSize = (int) ceil(count($testFilters) / 10);
+$chunks = array_chunk($testFilters, $chunkSize);
+
+$commands = [];
+foreach ($chunks as $chunk) {
+	$commands[] = implode("\n", array_map(fn (string $ch) => sprintf('php vendor/bin/phpunit %s --group levels', $ch), $chunk));
+}
+
+echo json_encode($commands);

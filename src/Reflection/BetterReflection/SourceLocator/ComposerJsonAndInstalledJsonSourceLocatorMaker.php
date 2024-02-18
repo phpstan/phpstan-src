@@ -112,6 +112,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		foreach ($classMapPaths as $classMapPath) {
 			if (is_dir($classMapPath)) {
 				$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapPath);
+				continue;
 			}
 			if (!is_file($classMapPath)) {
 				continue;

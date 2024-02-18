@@ -134,6 +134,7 @@ jobs:
     timeout-minutes: 60
 
     strategy:
+      fail-fast: false
       matrix:
         script: "${{fromJson(needs.tests-levels-matrix.outputs.matrix)}}"
 
@@ -153,9 +154,6 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
-
-      - name: "Install PHPUnit 10.x"
-        run: "composer remove --dev brianium/paratest && composer require --dev --with-all-dependencies phpunit/phpunit:^10"
 
       - name: "Tests"
         run: "${{ matrix.script }}"

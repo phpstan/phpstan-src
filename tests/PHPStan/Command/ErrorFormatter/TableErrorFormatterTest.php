@@ -13,9 +13,6 @@ use function putenv;
 use function sprintf;
 use const PHP_VERSION_ID;
 
-/**
- * @runTestsInSeparateProcesses
- */
 class TableErrorFormatterTest extends ErrorFormatterTestCase
 {
 
@@ -27,6 +24,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	protected function tearDown(): void
 	{
 		putenv('COLUMNS');
+		putenv('TERM_PROGRAM');
 	}
 
 	public function dataFormatterOutputProvider(): iterable
@@ -198,6 +196,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		}
 		$formatter = $this->createErrorFormatter(null);
 
+		// NOTE: extra env vars need to be cleared in tearDown()
 		foreach ($extraEnvVars as $envVar) {
 			putenv($envVar);
 		}

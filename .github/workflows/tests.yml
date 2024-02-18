@@ -134,6 +134,7 @@ jobs:
     timeout-minutes: 60
 
     strategy:
+      fail-fast: false
       matrix:
         script: "${{fromJson(needs.tests-levels-matrix.outputs.matrix)}}"
 

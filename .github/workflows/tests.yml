@@ -135,7 +135,7 @@ jobs:
 
     strategy:
       matrix:
-        test-filter: "${{fromJson(needs.tests-levels-matrix.outputs.matrix)}}"
+        script: "${{fromJson(needs.tests-levels-matrix.outputs.matrix)}}"
 
     steps:
       - name: "Checkout"
@@ -155,7 +155,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Tests"
-        run: "php vendor/bin/phpunit ${{ matrix.test-filter }} --group levels"
+        run: "${{ matrix.script }}"
 
   tests-old-phpunit:
     name: "Tests with old PHPUnit"

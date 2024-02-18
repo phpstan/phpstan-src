@@ -13,6 +13,9 @@ use function putenv;
 use function sprintf;
 use const PHP_VERSION_ID;
 
+/**
+ * @runTestsInSeparateProcesses
+ */
 class TableErrorFormatterTest extends ErrorFormatterTestCase
 {
 

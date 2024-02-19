@@ -30,6 +30,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
@@ -428,6 +429,10 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		}
 		if ($this->isPure !== null) {
 			return TrinaryLogic::createFromBoolean(!$this->isPure);
+		}
+
+		if ((new ThisType($this->declaringClass))->isSuperTypeOf($this->getReturnType())->yes()) {
+			return TrinaryLogic::createYes();
 		}
 
 		return TrinaryLogic::createMaybe();

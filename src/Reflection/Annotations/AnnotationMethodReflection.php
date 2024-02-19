@@ -10,6 +10,7 @@ use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 
 class AnnotationMethodReflection implements ExtendedMethodReflection
@@ -119,6 +120,10 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 	public function hasSideEffects(): TrinaryLogic
 	{
 		if ($this->returnType->isVoid()->yes()) {
+			return TrinaryLogic::createYes();
+		}
+
+		if ((new ThisType($this->declaringClass))->isSuperTypeOf($this->returnType)->yes()) {
 			return TrinaryLogic::createYes();
 		}
 

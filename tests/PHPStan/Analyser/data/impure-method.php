@@ -4,6 +4,9 @@ namespace ImpureMethod;
 
 use function PHPStan\Testing\assertType;
 
+/**
+ * @method $this phpDocReturnThis()
+ */
 class Foo
 {
 
@@ -11,6 +14,14 @@ class Foo
 	private $fooProp;
 
 	public function voidMethod(): void
+	{
+		$this->fooProp = rand(0, 1);
+	}
+
+	/**
+	 * @return $this
+	 */
+	public function returnsThis()
 	{
 		$this->fooProp = rand(0, 1);
 	}
@@ -48,6 +59,24 @@ class Foo
 		assertType('1', $this->fooProp);
 
 		$this->voidMethod();
+		assertType('int', $this->fooProp);
+	}
+
+	public function doFluent(): void
+	{
+		$this->fooProp = 1;
+		assertType('1', $this->fooProp);
+
+		$this->returnsThis();
+		assertType('int', $this->fooProp);
+	}
+
+	public function doFluent2(): void
+	{
+		$this->fooProp = 1;
+		assertType('1', $this->fooProp);
+
+		$this->phpDocReturnThis();
 		assertType('int', $this->fooProp);
 	}
 

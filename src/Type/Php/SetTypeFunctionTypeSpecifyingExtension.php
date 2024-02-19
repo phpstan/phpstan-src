@@ -17,7 +17,6 @@ use PHPStan\Type\TypeCombinator;
 use stdClass;
 use function count;
 use function strtolower;
-use function var_dump;
 
 class SetTypeFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -79,7 +78,7 @@ class SetTypeFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			$value,
 			TypeCombinator::union(...$types),
 			TypeSpecifierContext::createTruthy(),
-			false,
+			true,
 			$scope,
 		);
 	}

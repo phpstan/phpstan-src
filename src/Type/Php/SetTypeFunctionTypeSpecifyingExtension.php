@@ -27,7 +27,8 @@ class SetTypeFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
 		return strtolower($functionReflection->getName()) === 'settype'
-			&& count($node->getArgs()) > 1;
+			&& count($node->getArgs()) > 1
+			&& $context->null();
 	}
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
@@ -47,37 +48,29 @@ class SetTypeFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			switch ($constantString->getValue()) {
 				case 'bool':
 				case 'boolean':
-					var_dump('converting to bool');
 					$types[] = $valueType->toBoolean();
 					break;
 				case 'int':
 				case 'integer':
-					var_dump('converting to int');
 					$types[] = $valueType->toInteger();
 					break;
 				case 'float':
 				case 'double':
-					var_dump('converting to float');
 					$types[] = $valueType->toFloat();
 					break;
 				case 'string':
-					var_dump('converting to string');
 					$types[] = $valueType->toString();
 					break;
 				case 'array':
-					var_dump('converting to array');
 					$types[] = $valueType->toArray();
 					break;
 				case 'object':
-					var_dump('converting to object');
 					$types[] = new ObjectType(stdClass::class);
 					break;
 				case 'null':
-					var_dump('converting to null');
 					$types[] = new NullType();
 					break;
 				default:
-					var_dump('defaulting');
 					$types[] = new ErrorType();
 			}
 		}
@@ -86,7 +79,7 @@ class SetTypeFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			$value,
 			TypeCombinator::union(...$types),
 			TypeSpecifierContext::createTruthy(),
-			true,
+			false,
 			$scope,
 		);
 	}

@@ -46,7 +46,7 @@ function doInteger(string $s, int $i, float $f, array $a, object $o)
 	settype($s, 'integer');
 	assertType('int', $s);
 
-	settype($i, 'int');
+	settype($i, 'integer');
 	assertType('int', $i);
 
 	settype($f, 'integer');

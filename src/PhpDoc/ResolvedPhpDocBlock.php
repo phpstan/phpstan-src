@@ -934,7 +934,7 @@ class ResolvedPhpDocBlock
 				static fn (AssertTag $assertTag) => self::resolveTemplateTypeInTag(
 					$assertTag->withParameter(
 						$phpDocBlock->transformAssertTagParameterWithParameterNameMapping($assertTag->getParameter()),
-					),
+					)->toImplicit(),
 					$phpDocBlock,
 					TemplateTypeVariance::createCovariant(),
 				),

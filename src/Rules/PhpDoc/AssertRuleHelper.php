@@ -51,6 +51,10 @@ class AssertRuleHelper
 				continue;
 			}
 
+			if (!$assert->isExplicit()) {
+				continue;
+			}
+
 			$assertedExpr = $assert->getParameter()->getExpr(new TypeExpr($parametersByName[$parameterName]));
 			$assertedExprType = $this->initializerExprTypeResolver->getType($assertedExpr, $context);
 			if ($assertedExprType instanceof ErrorType) {

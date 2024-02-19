@@ -18,7 +18,7 @@ final class AssertTag implements TypedTag
 	/**
 	 * @param self::NULL|self::IF_TRUE|self::IF_FALSE $if
 	 */
-	public function __construct(private string $if, private Type $type, private AssertTagParameter $parameter, private bool $negated, private bool $equality)
+	public function __construct(private string $if, private Type $type, private AssertTagParameter $parameter, private bool $negated, private bool $equality, private bool $isExplicit)
 	{
 	}
 
@@ -60,14 +60,14 @@ final class AssertTag implements TypedTag
 	 */
 	public function withType(Type $type): TypedTag
 	{
-		$tag = new self($this->if, $type, $this->parameter, $this->negated, $this->equality);
+		$tag = new self($this->if, $type, $this->parameter, $this->negated, $this->equality, $this->isExplicit);
 		$tag->originalType = $this->getOriginalType();
 		return $tag;
 	}
 
 	public function withParameter(AssertTagParameter $parameter): self
 	{
-		$tag = new self($this->if, $this->type, $parameter, $this->negated, $this->equality);
+		$tag = new self($this->if, $this->type, $parameter, $this->negated, $this->equality, $this->isExplicit);
 		$tag->originalType = $this->getOriginalType();
 		return $tag;
 	}
@@ -78,9 +78,19 @@ final class AssertTag implements TypedTag
 			throw new ShouldNotHappenException();
 		}
 
-		$tag = new self($this->if, $this->type, $this->parameter, !$this->negated, $this->equality);
+		$tag = new self($this->if, $this->type, $this->parameter, !$this->negated, $this->equality, $this->isExplicit);
 		$tag->originalType = $this->getOriginalType();
 		return $tag;
+	}
+
+	public function isExplicit(): bool
+	{
+		return $this->isExplicit;
+	}
+
+	public function toImplicit(): self
+	{
+		return new self($this->if, $this->type, $this->parameter, $this->negated, $this->equality, false);
 	}
 
 }

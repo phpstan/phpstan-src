@@ -57,4 +57,9 @@ class MethodAssertRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10573(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10573.php'], []);
+	}
+
 }

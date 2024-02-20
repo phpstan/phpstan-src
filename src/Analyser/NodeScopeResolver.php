@@ -124,6 +124,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -3457,8 +3458,39 @@ class NodeScopeResolver
 			}
 
 			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
-			if (count($acceptors) === 1) {
-				$callableParameters = $acceptors[0]->getParameters();
+			if (count($acceptors) > 0) {
+				foreach ($acceptors as $acceptor) {
+					if ($callableParameters === null) {
+						$callableParameters = array_map(static fn (ParameterReflection $callableParameter) => new NativeParameterReflection(
+							$callableParameter->getName(),
+							$callableParameter->isOptional(),
+							$callableParameter->getType(),
+							$callableParameter->passedByReference(),
+							$callableParameter->isVariadic(),
+							$callableParameter->getDefaultValue(),
+						), $acceptor->getParameters());
+						continue;
+					}
+
+					$newParameters = [];
+					foreach ($acceptor->getParameters() as $i => $callableParameter) {
+						if (!array_key_exists($i, $callableParameters)) {
+							$newParameters[] = $callableParameter;
+							continue;
+						}
+
+						$newParameters[] = $callableParameters[$i]->union(new NativeParameterReflection(
+							$callableParameter->getName(),
+							$callableParameter->isOptional(),
+							$callableParameter->getType(),
+							$callableParameter->passedByReference(),
+							$callableParameter->isVariadic(),
+							$callableParameter->getDefaultValue(),
+						));
+					}
+
+					$callableParameters = $newParameters;
+				}
 			}
 		}
 
@@ -3639,8 +3671,39 @@ class NodeScopeResolver
 			}
 
 			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
-			if (count($acceptors) === 1) {
-				$callableParameters = $acceptors[0]->getParameters();
+			if (count($acceptors) > 0) {
+				foreach ($acceptors as $acceptor) {
+					if ($callableParameters === null) {
+						$callableParameters = array_map(static fn (ParameterReflection $callableParameter) => new NativeParameterReflection(
+							$callableParameter->getName(),
+							$callableParameter->isOptional(),
+							$callableParameter->getType(),
+							$callableParameter->passedByReference(),
+							$callableParameter->isVariadic(),
+							$callableParameter->getDefaultValue(),
+						), $acceptor->getParameters());
+						continue;
+					}
+
+					$newParameters = [];
+					foreach ($acceptor->getParameters() as $i => $callableParameter) {
+						if (!array_key_exists($i, $callableParameters)) {
+							$newParameters[] = $callableParameter;
+							continue;
+						}
+
+						$newParameters[] = $callableParameters[$i]->union(new NativeParameterReflection(
+							$callableParameter->getName(),
+							$callableParameter->isOptional(),
+							$callableParameter->getType(),
+							$callableParameter->passedByReference(),
+							$callableParameter->isVariadic(),
+							$callableParameter->getDefaultValue(),
+						));
+					}
+
+					$callableParameters = $newParameters;
+				}
 			}
 		}
 

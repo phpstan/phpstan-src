@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 7.4
 
 namespace CallableInUnion;
 
@@ -15,3 +15,18 @@ acceptArrayOrCallable(function ($parameter) {
 	assertType('array<string, mixed>', $parameter);
 	return $parameter;
 });
+
+/**
+ * @param (callable(string): void)|callable(int): void $a
+ * @return void
+ */
+function acceptCallableOrCallableLikeArray($a): void
+{
+
+}
+
+acceptCallableOrCallableLikeArray(function ($p) {
+	assertType('int|string', $p);
+});
+
+acceptCallableOrCallableLikeArray(fn ($p) => assertType('int|string', $p));

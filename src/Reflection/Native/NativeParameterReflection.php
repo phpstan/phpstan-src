@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\Native;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 class NativeParameterReflection implements ParameterReflection
 {
@@ -48,6 +49,18 @@ class NativeParameterReflection implements ParameterReflection
 	public function getDefaultValue(): ?Type
 	{
 		return $this->defaultValue;
+	}
+
+	public function union(self $other): self
+	{
+		return new self(
+			$this->name,
+			$this->optional && $other->optional,
+			TypeCombinator::union($this->type, $other->type),
+			$this->passedByReference->combine($other->passedByReference),
+			$this->variadic && $other->variadic,
+			$this->optional && $other->optional ? $this->defaultValue : null,
+		);
 	}
 
 	/**

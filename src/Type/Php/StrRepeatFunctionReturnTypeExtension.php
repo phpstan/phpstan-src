@@ -20,6 +20,7 @@ use PHPStan\Type\Type;
 use function count;
 use function str_repeat;
 use function strlen;
+use function strpos;
 
 class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -76,7 +77,7 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 			if ($inputType->isNumericString()->yes()) {
 				$hasDecimalPoint = false;
-				foreach($inputType->getConstantStrings() as $constantString) {
+				foreach ($inputType->getConstantStrings() as $constantString) {
 					if (strpos($constantString->getValue(), '.') !== false) {
 						$hasDecimalPoint = true;
 						break;

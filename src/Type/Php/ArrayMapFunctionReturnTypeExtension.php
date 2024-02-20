@@ -39,10 +39,11 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$callableIsNull = $callableType->isNull()->yes();
 
 		if ($callableType->isCallable()->yes()) {
-			$valueType = new NeverType();
+			$valueTypes = [new NeverType()];
 			foreach ($callableType->getCallableParametersAcceptors($scope) as $parametersAcceptor) {
-				$valueType = TypeCombinator::union($valueType, $parametersAcceptor->getReturnType());
+				$valueTypes[] = $parametersAcceptor->getReturnType();
 			}
+			$valueType = TypeCombinator::union(...$valueTypes);
 		} elseif ($callableIsNull) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {

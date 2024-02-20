@@ -28,6 +28,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_map;
+use function array_merge;
 use function array_unique;
 use function array_values;
 use function count;
@@ -708,15 +709,21 @@ class UnionType implements CompoundType
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
+		$acceptors = [];
+
 		foreach ($this->types as $type) {
 			if ($type->isCallable()->no()) {
 				continue;
 			}
 
-			return $type->getCallableParametersAcceptors($scope);
+			$acceptors = array_merge($acceptors, $type->getCallableParametersAcceptors($scope));
 		}
 
-		throw new ShouldNotHappenException();
+		if (count($acceptors) === 0) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $acceptors;
 	}
 
 	public function isCloneable(): TrinaryLogic

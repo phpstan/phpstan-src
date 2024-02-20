@@ -135,4 +135,9 @@ class EnumCasesMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createNo();
 	}
 
+	public function isPure(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 }

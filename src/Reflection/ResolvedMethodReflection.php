@@ -155,6 +155,11 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->hasSideEffects();
 	}
 
+	public function isPure(): TrinaryLogic
+	{
+		return $this->reflection->hasSideEffects();
+	}
+
 	public function getAsserts(): Assertions
 	{
 		return $this->asserts ??= $this->reflection->getAsserts()->mapTypes(fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(

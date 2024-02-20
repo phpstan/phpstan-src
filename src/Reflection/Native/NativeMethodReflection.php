@@ -153,6 +153,15 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		return $this->hasSideEffects;
 	}
 
+	public function isPure(): TrinaryLogic
+	{
+		if ($this->hasSideEffects()->yes()) {
+			return TrinaryLogic::createNo();
+		}
+
+		return $this->hasSideEffects->negate();
+	}
+
 	private function isVoid(): bool
 	{
 		foreach ($this->variants as $variant) {

@@ -168,4 +168,9 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 		return $abstract;
 	}
 
+	public function isPure(): TrinaryLogic
+	{
+		return $this->nativeMethodReflection->isPure();
+	}
+
 }

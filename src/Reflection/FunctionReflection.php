@@ -43,4 +43,13 @@ interface FunctionReflection
 
 	public function returnsByReference(): TrinaryLogic;
 
+	/**
+	 * This indicates whether the function has phpstan-pure
+	 * or phpstan-impure annotation above it.
+	 *
+	 * In most cases asking hasSideEffects() is much more practical
+	 * as it also accounts for void return type (method being always impure).
+	 */
+	public function isPure(): TrinaryLogic;
+
 }

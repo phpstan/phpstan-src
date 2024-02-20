@@ -42,4 +42,13 @@ interface ExtendedMethodReflection extends MethodReflection
 
 	public function isAbstract(): TrinaryLogic|bool;
 
+	/**
+	 * This indicates whether the method has phpstan-pure
+	 * or phpstan-impure annotation above it.
+	 *
+	 * In most cases asking hasSideEffects() is much more practical
+	 * as it also accounts for void return type (method being always impure).
+	 */
+	public function isPure(): TrinaryLogic;
+
 }

@@ -171,3 +171,14 @@ class StaticMethod
 	}
 
 }
+
+class IgnoredByExtension
+{
+	private function foo(): void
+	{
+	}
+
+	private function bar(): void
+	{
+	}
+}

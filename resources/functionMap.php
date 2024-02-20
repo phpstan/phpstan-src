@@ -8699,7 +8699,7 @@ return [
 'PDO::query\'1' => ['PDOStatement|false', 'sql'=>'string', 'fetch_column'=>'int', 'colno'=>'int'],
 'PDO::query\'2' => ['PDOStatement|false', 'sql'=>'string', 'fetch_class'=>'int', 'classname'=>'string', 'ctorargs'=>'array'],
 'PDO::query\'3' => ['PDOStatement|false', 'sql'=>'string', 'fetch_into'=>'int', 'object'=>'object'],
-'PDO::quote' => ['string', 'string'=>'string', 'paramtype='=>'int'],
+'PDO::quote' => ['string|false', 'string'=>'string', 'paramtype='=>'int'],
 'PDO::rollBack' => ['bool'],
 'PDO::setAttribute' => ['bool', 'attribute'=>'int', 'value'=>''],
 'PDO::sqliteCreateAggregate' => ['bool', 'function_name'=>'string', 'step_func'=>'callable', 'finalize_func'=>'callable', 'num_args='=>'int'],

@@ -73,10 +73,20 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 		if ($inputType->isLiteralString()->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
-		}
 
-		if ($inputType->isNumericString()->yes()) {
-			$accessoryTypes[] = new AccessoryNumericStringType();
+			if ($inputType->isNumericString()->yes()) {
+				$hasDecimalPoint = false;
+				foreach($inputType->getConstantStrings() as $constantString) {
+					if (strpos($constantString->getValue(), '.') !== false) {
+						$hasDecimalPoint = true;
+						break;
+					}
+				}
+
+				if (!$hasDecimalPoint) {
+					$accessoryTypes[] = new AccessoryNumericStringType();
+				}
+			}
 		}
 
 		if (count($accessoryTypes) > 0) {

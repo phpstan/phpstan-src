@@ -2,6 +2,7 @@
 
 namespace ImpureMethod;
 
+use stdClass;
 use function PHPStan\Testing\assertType;
 
 /**
@@ -21,7 +22,16 @@ class Foo
 	/**
 	 * @return $this
 	 */
-	public function returnsThis()
+	public function returnsThis($arg)
+	{
+		$this->fooProp = rand(0, 1);
+	}
+
+	/**
+	 * @return $this
+	 * @phpstan-impure
+	 */
+	public function returnsThisImpure($arg)
 	{
 		$this->fooProp = rand(0, 1);
 	}
@@ -67,7 +77,7 @@ class Foo
 		$this->fooProp = 1;
 		assertType('1', $this->fooProp);
 
-		$this->returnsThis();
+		$this->returnsThis(new stdClass());
 		assertType('int', $this->fooProp);
 	}
 
@@ -105,6 +115,42 @@ class Foo
 
 		$this->impureMethod2();
 		assertType('int', $this->fooProp);
+	}
+
+}
+
+class Person
+{
+
+	public function getName(): ?string
+	{
+	}
+
+}
+
+class Bar
+{
+
+	public function doFoo(): void
+	{
+		$f = new Foo();
+
+		$p = new Person();
+		assert($p->getName() !== null);
+		assertType('string', $p->getName());
+		$f->returnsThis($p);
+		assertType('string', $p->getName());
+	}
+
+	public function doFoo2(): void
+	{
+		$f = new Foo();
+
+		$p = new Person();
+		assert($p->getName() !== null);
+		assertType('string', $p->getName());
+		$f->returnsThisImpure($p);
+		assertType('string|null', $p->getName());
 	}
 
 }

@@ -254,6 +254,15 @@ class PhpFunctionReflection implements FunctionReflection
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isPure(): TrinaryLogic
+	{
+		if ($this->isPure === null) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		return TrinaryLogic::createFromBoolean($this->isPure);
+	}
+
 	public function isBuiltin(): bool
 	{
 		return $this->reflection->isInternal();

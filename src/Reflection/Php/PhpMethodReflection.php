@@ -458,4 +458,13 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->returnsByReference();
 	}
 
+	public function isPure(): TrinaryLogic
+	{
+		if ($this->isPure === null) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		return TrinaryLogic::createFromBoolean($this->isPure);
+	}
+
 }

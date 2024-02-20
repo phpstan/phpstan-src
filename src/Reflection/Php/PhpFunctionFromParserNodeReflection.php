@@ -281,4 +281,13 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		return TrinaryLogic::createFromBoolean($this->functionLike->returnsByRef());
 	}
 
+	public function isPure(): TrinaryLogic
+	{
+		if ($this->isPure === null) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		return TrinaryLogic::createFromBoolean($this->isPure);
+	}
+
 }

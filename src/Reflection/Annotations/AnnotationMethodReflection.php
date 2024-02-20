@@ -155,4 +155,13 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createNo();
 	}
 
+	public function isPure(): TrinaryLogic
+	{
+		if ($this->hasSideEffects()->yes()) {
+			return TrinaryLogic::createNo();
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
 }

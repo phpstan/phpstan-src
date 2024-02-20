@@ -125,6 +125,11 @@ class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return $this->method->hasSideEffects();
 	}
 
+	public function isPure(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();

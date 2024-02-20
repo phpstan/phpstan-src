@@ -127,4 +127,9 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 		return $abstract;
 	}
 
+	public function isPure(): TrinaryLogic
+	{
+		return $this->reflection->isPure();
+	}
+
 }

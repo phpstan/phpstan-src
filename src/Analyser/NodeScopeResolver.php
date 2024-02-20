@@ -118,6 +118,7 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
@@ -160,6 +161,7 @@ use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
+use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
@@ -2080,7 +2082,7 @@ class NodeScopeResolver
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
 			}
-			$result = $this->processArgs($stmt, $functionReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
+			$result = $this->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -2298,7 +2300,16 @@ class NodeScopeResolver
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
 			}
-			$result = $this->processArgs($stmt, $methodReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
+			$result = $this->processArgs(
+				$stmt,
+				$methodReflection,
+				$methodReflection !== null ? $scope->getNakedMethod($calledOnType, $methodReflection->getName()) : null,
+				$parametersAcceptor,
+				$expr->getArgs(),
+				$scope,
+				$nodeCallback,
+				$context,
+			);
 			$scope = $result->getScope();
 
 			if ($methodReflection !== null) {
@@ -2457,7 +2468,7 @@ class NodeScopeResolver
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 			}
-			$result = $this->processArgs($stmt, $methodReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context, $closureBindScope ?? null);
+			$result = $this->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context, $closureBindScope ?? null);
 			$scope = $result->getScope();
 			$scopeFunction = $scope->getFunction();
 
@@ -2792,7 +2803,7 @@ class NodeScopeResolver
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
 			}
-			$result = $this->processArgs($stmt, $constructorReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
+			$result = $this->processArgs($stmt, $constructorReflection, null, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -3697,6 +3708,7 @@ class NodeScopeResolver
 	private function processArgs(
 		Node\Stmt $stmt,
 		$calleeReflection,
+		?ExtendedMethodReflection $nakedMethodReflection,
 		?ParametersAcceptor $parametersAcceptor,
 		array $args,
 		MutatingScope $scope,
@@ -3821,7 +3833,25 @@ class NodeScopeResolver
 				}
 			} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
 				$argType = $scope->getType($arg->value);
-				if (!$argType->isObject()->no() || !(new ResourceType())->isSuperTypeOf($argType)->no()) {
+				if (!$argType->isObject()->no()) {
+					$nakedReturnType = null;
+					if ($nakedMethodReflection !== null) {
+						$nakedParametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+							$scope,
+							$args,
+							$nakedMethodReflection->getVariants(),
+							$nakedMethodReflection->getNamedArgumentsVariants(),
+						);
+						$nakedReturnType = $nakedParametersAcceptor->getReturnType();
+					}
+					if (
+						$nakedReturnType === null
+						|| !(new ThisType($nakedMethodReflection->getDeclaringClass()))->isSuperTypeOf($nakedReturnType)->yes()
+						|| $nakedMethodReflection->isPure()->no()
+					) {
+						$scope = $scope->invalidateExpression($arg->value, true);
+					}
+				} elseif (!(new ResourceType())->isSuperTypeOf($argType)->no()) {
 					$scope = $scope->invalidateExpression($arg->value, true);
 				}
 			}

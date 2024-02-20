@@ -5156,6 +5156,17 @@ class MutatingScope implements Scope
 		return $type->getMethod($methodName, $this);
 	}
 
+	/** @api */
+	public function getNakedMethod(Type $typeWithMethod, string $methodName): ?ExtendedMethodReflection
+	{
+		$type = $this->filterTypeWithMethod($typeWithMethod, $methodName);
+		if ($type === null) {
+			return null;
+		}
+
+		return $type->getUnresolvedMethodPrototype($methodName, $this)->getNakedMethod();
+	}
+
 	/**
 	 * @param MethodCall|Node\Expr\StaticCall $methodCall
 	 */

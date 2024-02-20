@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\DeadCode;
 
+use PHPStan\Reflection\MethodReflection;
+use PHPStan\Rules\Methods\AlwaysUsedMethodExtension;
+use PHPStan\Rules\Methods\DirectAlwaysUsedMethodExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -14,7 +17,19 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new UnusedPrivateMethodRule();
+		return new UnusedPrivateMethodRule(
+			new DirectAlwaysUsedMethodExtensionProvider([
+				new class() implements AlwaysUsedMethodExtension {
+
+					public function isAlwaysUsed(MethodReflection $methodReflection): bool
+					{
+						return $methodReflection->getDeclaringClass()->is('UnusedPrivateMethod\IgnoredByExtension')
+							&& $methodReflection->getName() === 'foo';
+					}
+
+				},
+			]),
+		);
 	}
 
 	public function testRule(): void
@@ -39,6 +54,10 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 			[
 				'Method UnusedPrivateMethod\Lorem::doBaz() is unused.',
 				99,
+			],
+			[
+				'Method UnusedPrivateMethod\IgnoredByExtension::bar() is unused.',
+				181,
 			],
 		]);
 	}

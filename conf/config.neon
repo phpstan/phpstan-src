@@ -975,6 +975,9 @@ services:
 		class: PHPStan\Rules\Constants\LazyAlwaysUsedClassConstantsExtensionProvider
 
 	-
+		class: PHPStan\Rules\Methods\LazyAlwaysUsedMethodExtensionProvider
+
+	-
 		class: PHPStan\Rules\PhpDoc\ConditionalReturnTypeRuleHelper
 
 	-

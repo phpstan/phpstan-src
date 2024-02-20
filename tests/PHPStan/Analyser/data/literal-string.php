@@ -7,8 +7,11 @@ use function PHPStan\Testing\assertType;
 class Foo
 {
 
-	/** @param literal-string $literalString */
-	public function doFoo($literalString, string $string)
+	/**
+	 * @param literal-string $literalString
+	 * @param numeric-string $numericString
+	 */
+	public function doFoo($literalString, string $string, $numericString)
 	{
 		assertType('literal-string', $literalString);
 		assertType('literal-string', $literalString . '');
@@ -36,6 +39,10 @@ class Foo
 		assertType('literal-string&non-falsy-string', str_repeat('a', 100));
 		assertType('literal-string&non-empty-string&numeric-string', str_repeat('0', 100));
 		assertType('literal-string&non-falsy-string&numeric-string', str_repeat('1', 100));
+		// Repeating a numeric type multiple times can lead to a non-numeric type: 3v4l.org/aRBdZ
+		assertType('non-empty-string', str_repeat($numericString, 100));
+		assertType('literal-string&non-falsy-string', str_repeat('1.23', 100));
+
 		assertType("'?,?,?,'", str_repeat('?,', 3));
 		assertType("*NEVER*", str_repeat('?,', -3));
 

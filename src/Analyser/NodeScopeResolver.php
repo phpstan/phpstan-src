@@ -124,6 +124,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -2532,7 +2533,7 @@ class NodeScopeResolver
 		} elseif ($expr instanceof Expr\Closure) {
 			return $this->processClosureNode($stmt, $expr, $scope, $nodeCallback, $context, null);
 		} elseif ($expr instanceof Expr\ArrowFunction) {
-			return $this->processArrowFunctionNode($stmt, $expr, $scope, $nodeCallback, $context, null);
+			return $this->processArrowFunctionNode($stmt, $expr, $scope, $nodeCallback, null);
 		} elseif ($expr instanceof ErrorSuppress) {
 			$result = $this->processExprNode($stmt, $expr->expr, $scope, $nodeCallback, $context);
 			$hasYield = $result->hasYield();
@@ -3424,43 +3425,13 @@ class NodeScopeResolver
 
 		$byRefUses = [];
 
-		$callableParameters = null;
 		$closureCallArgs = $expr->getAttribute(ClosureArgVisitor::ATTRIBUTE_NAME);
-
-		if ($closureCallArgs !== null) {
-			$acceptors = $scope->getType($expr)->getCallableParametersAcceptors($scope);
-			if (count($acceptors) === 1) {
-				$callableParameters = $acceptors[0]->getParameters();
-
-				foreach ($callableParameters as $index => $callableParameter) {
-					if (!isset($closureCallArgs[$index])) {
-						continue;
-					}
-
-					$type = $scope->getType($closureCallArgs[$index]->value);
-					$callableParameters[$index] = new NativeParameterReflection(
-						$callableParameter->getName(),
-						$callableParameter->isOptional(),
-						$type,
-						$callableParameter->passedByReference(),
-						$callableParameter->isVariadic(),
-						$callableParameter->getDefaultValue(),
-					);
-				}
-			}
-		} elseif ($passedToType !== null && !$passedToType->isCallable()->no()) {
-			if ($passedToType instanceof UnionType) {
-				$passedToType = TypeCombinator::union(...array_filter(
-					$passedToType->getTypes(),
-					static fn (Type $type) => $type->isCallable()->yes(),
-				));
-			}
-
-			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
-			if (count($acceptors) === 1) {
-				$callableParameters = $acceptors[0]->getParameters();
-			}
-		}
+		$callableParameters = $this->createCallableParameters(
+			$scope,
+			$expr,
+			$closureCallArgs,
+			$passedToType,
+		);
 
 		$useScope = $scope;
 		foreach ($expr->uses as $use) {
@@ -3595,7 +3566,6 @@ class NodeScopeResolver
 		Expr\ArrowFunction $expr,
 		MutatingScope $scope,
 		callable $nodeCallback,
-		ExpressionContext $context,
 		?Type $passedToType,
 	): ExpressionResult
 	{
@@ -3606,20 +3576,41 @@ class NodeScopeResolver
 			$nodeCallback($expr->returnType, $scope);
 		}
 
-		$callableParameters = null;
 		$arrowFunctionCallArgs = $expr->getAttribute(ArrowFunctionArgVisitor::ATTRIBUTE_NAME);
+		$arrowFunctionScope = $scope->enterArrowFunction($expr, $this->createCallableParameters(
+			$scope,
+			$expr,
+			$arrowFunctionCallArgs,
+			$passedToType,
+		));
+		$arrowFunctionType = $arrowFunctionScope->getAnonymousFunctionReflection();
+		if (!$arrowFunctionType instanceof ClosureType) {
+			throw new ShouldNotHappenException();
+		}
+		$nodeCallback(new InArrowFunctionNode($arrowFunctionType, $expr), $arrowFunctionScope);
+		$this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
 
-		if ($arrowFunctionCallArgs !== null) {
-			$acceptors = $scope->getType($expr)->getCallableParametersAcceptors($scope);
+		return new ExpressionResult($scope, false, []);
+	}
+
+	/**
+	 * @param Node\Arg[] $args
+	 * @return ParameterReflection[]|null
+	 */
+	private function createCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $passedToType): ?array
+	{
+		$callableParameters = null;
+		if ($args !== null) {
+			$acceptors = $scope->getType($closureExpr)->getCallableParametersAcceptors($scope);
 			if (count($acceptors) === 1) {
 				$callableParameters = $acceptors[0]->getParameters();
 
 				foreach ($callableParameters as $index => $callableParameter) {
-					if (!isset($arrowFunctionCallArgs[$index])) {
+					if (!isset($args[$index])) {
 						continue;
 					}
 
-					$type = $scope->getType($arrowFunctionCallArgs[$index]->value);
+					$type = $scope->getType($args[$index]->value);
 					$callableParameters[$index] = new NativeParameterReflection(
 						$callableParameter->getName(),
 						$callableParameter->isOptional(),
@@ -3639,20 +3630,43 @@ class NodeScopeResolver
 			}
 
 			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
-			if (count($acceptors) === 1) {
-				$callableParameters = $acceptors[0]->getParameters();
+			if (count($acceptors) > 0) {
+				foreach ($acceptors as $acceptor) {
+					if ($callableParameters === null) {
+						$callableParameters = array_map(static fn (ParameterReflection $callableParameter) => new NativeParameterReflection(
+							$callableParameter->getName(),
+							$callableParameter->isOptional(),
+							$callableParameter->getType(),
+							$callableParameter->passedByReference(),
+							$callableParameter->isVariadic(),
+							$callableParameter->getDefaultValue(),
+						), $acceptor->getParameters());
+						continue;
+					}
+
+					$newParameters = [];
+					foreach ($acceptor->getParameters() as $i => $callableParameter) {
+						if (!array_key_exists($i, $callableParameters)) {
+							$newParameters[] = $callableParameter;
+							continue;
+						}
+
+						$newParameters[] = $callableParameters[$i]->union(new NativeParameterReflection(
+							$callableParameter->getName(),
+							$callableParameter->isOptional(),
+							$callableParameter->getType(),
+							$callableParameter->passedByReference(),
+							$callableParameter->isVariadic(),
+							$callableParameter->getDefaultValue(),
+						));
+					}
+
+					$callableParameters = $newParameters;
+				}
 			}
 		}
 
-		$arrowFunctionScope = $scope->enterArrowFunction($expr, $callableParameters);
-		$arrowFunctionType = $arrowFunctionScope->getAnonymousFunctionReflection();
-		if (!$arrowFunctionType instanceof ClosureType) {
-			throw new ShouldNotHappenException();
-		}
-		$nodeCallback(new InArrowFunctionNode($arrowFunctionType, $expr), $arrowFunctionScope);
-		$this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
-
-		return new ExpressionResult($scope, false, []);
+		return $callableParameters;
 	}
 
 	/**
@@ -3781,7 +3795,7 @@ class NodeScopeResolver
 				$result = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $context, $parameterType ?? null);
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $context);
-				$result = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $context, $parameterType ?? null);
+				$result = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $parameterType ?? null);
 			} else {
 				$result = $this->processExprNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $context->enterDeep());
 			}

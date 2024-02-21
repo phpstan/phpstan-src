@@ -108,16 +108,8 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				228,
 			],
 			[
-				'Offset string does not exist on array<int, mixed>.',
-				240,
-			],
-			[
 				'Cannot access offset \'a\' on Closure(): void.',
 				253,
-			],
-			[
-				'Offset string does not exist on array<int, string>.',
-				308,
 			],
 			[
 				'Offset null does not exist on array<int, string>.',
@@ -253,16 +245,8 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				228,
 			],
 			[
-				'Offset string does not exist on array<int, mixed>.',
-				240,
-			],
-			[
 				'Cannot access offset \'a\' on Closure(): void.',
 				253,
-			],
-			[
-				'Offset string does not exist on array<int, string>.',
-				308,
 			],
 			[
 				'Offset null does not exist on array<int, string>.',

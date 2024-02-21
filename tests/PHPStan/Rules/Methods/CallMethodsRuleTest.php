@@ -2541,6 +2541,18 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5869.php'], []);
 	}
 
+	public function testBug10484(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-10484.php'], []);
+	}
+
 	public function testGenericsEmptyArray(): void
 	{
 		$this->checkThisOnly = false;

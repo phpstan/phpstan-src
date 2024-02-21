@@ -410,7 +410,9 @@ class ArrayType implements Type
 	public function getOffsetValueType(Type $offsetType): Type
 	{
 		$offsetType = $offsetType->toArrayKey();
-		if ($this->getKeyType()->isSuperTypeOf($offsetType)->no()) {
+		if ($this->getKeyType()->isSuperTypeOf($offsetType)->no()
+			&& ($offsetType->isString()->no() || !$offsetType->isConstantScalarValue()->no())
+		) {
 			return new ErrorType();
 		}
 

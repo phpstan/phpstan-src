@@ -29,6 +29,7 @@ use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_map;
 use function array_merge;
+use function array_slice;
 use function array_unique;
 use function array_values;
 use function count;
@@ -290,6 +291,10 @@ class UnionType implements CompoundType
 				} else {
 					$typeNames[] = $type->describe($level);
 				}
+			}
+
+			if (count($typeNames) > 1024) {
+				return implode('|', array_slice($typeNames, 0, 1024)) . "|\u{2026}";
 			}
 
 			return implode('|', $typeNames);

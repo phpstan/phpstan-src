@@ -8,6 +8,12 @@ use function str_starts_with;
 class ClassForbiddenNameCheck
 {
 
+	private const INTERNAL_CLASS_PREFIXES = [
+		'PHPStan' => '_PHPStan_',
+		'Rector' => 'RectorPrefix',
+		'PHP-Scoper' => '_PhpScoper',
+	];
+
 	/**
 	 * @param ClassNameNodePair[] $pairs
 	 * @return RuleError[]
@@ -18,12 +24,21 @@ class ClassForbiddenNameCheck
 		foreach ($pairs as $pair) {
 			$className = $pair->getClassName();
 
-			if (!str_starts_with($className, '_PHPStan_')) {
+			$projectName = null;
+			foreach (self::INTERNAL_CLASS_PREFIXES as $project => $prefix) {
+				if (str_starts_with($className, $prefix)) {
+					$projectName = $project;
+					break;
+				}
+			}
+
+			if ($projectName === null) {
 				continue;
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Internal PHPStan Class cannot be referenced: %s.',
+				'Internal %s Class cannot be referenced: %s.',
+				$projectName,
 				$className,
 			))->line($pair->getNode()->getLine())->build();
 		}

@@ -103,6 +103,14 @@ class ExistingClassInClassExtendsRuleTest extends RuleTestCase
 				'Internal PHPStan Class cannot be referenced: _PHPStan_156ee64ba\AClass.',
 				34,
 			],
+			[
+				'Internal Rector Class cannot be referenced: RectorPrefix202302\AClass.',
+				52,
+			],
+			[
+				'Internal PHP-Scoper Class cannot be referenced: _PhpScoper19ae93be897e\AClass.',
+				55,
+			],
 		]);
 	}
 

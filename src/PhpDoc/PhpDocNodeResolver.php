@@ -185,12 +185,24 @@ class PhpDocNodeResolver
 					);
 				}
 
+				$templates = [];
+				foreach ($tagValue->templateTypes as $templateType) {
+					$templates[$templateType->name] = new TemplateTag(
+						$templateType->name,
+						$templateType->bound !== null
+							? $this->typeNodeResolver->resolve($templateType->bound, $nameScope)
+							: new MixedType(),
+						TemplateTypeVariance::createInvariant()
+					);
+				}
+
 				$resolved[$tagValue->methodName] = new MethodTag(
 					$tagValue->returnType !== null
 						? $this->typeNodeResolver->resolve($tagValue->returnType, $nameScope)
 						: new MixedType(),
 					$tagValue->isStatic,
 					$parameters,
+					$templates
 				);
 			}
 		}

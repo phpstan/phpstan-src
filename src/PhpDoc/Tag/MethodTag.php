@@ -10,11 +10,13 @@ class MethodTag
 
 	/**
 	 * @param array<string, MethodTagParameter> $parameters
+	 * @param array<string, TemplateTag> $templates
 	 */
 	public function __construct(
 		private Type $returnType,
 		private bool $isStatic,
 		private array $parameters,
+		private array $templates = [],
 	)
 	{
 	}
@@ -35,6 +37,14 @@ class MethodTag
 	public function getParameters(): array
 	{
 		return $this->parameters;
+	}
+
+	/**
+	 * @return array<string, TemplateTag>
+	 */
+	public function getTemplates(): array
+	{
+		return $this->templates;
 	}
 
 }

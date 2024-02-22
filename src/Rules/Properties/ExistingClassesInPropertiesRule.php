@@ -7,7 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
@@ -24,7 +24,7 @@ class ExistingClassesInPropertiesRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private PhpVersion $phpVersion,
 		private bool $checkClassCaseSensitivity,
@@ -72,12 +72,13 @@ class ExistingClassesInPropertiesRule implements Rule
 			))->discoveringSymbolsTip()->build();
 		}
 
-		if ($this->checkClassCaseSensitivity) {
-			$errors = array_merge(
-				$errors,
-				$this->classCaseSensitivityCheck->checkClassNames(array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $node), $referencedClasses)),
-			);
-		}
+		$errors = array_merge(
+			$errors,
+			$this->classCheck->checkClassNames(
+				array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $node), $referencedClasses),
+				$this->checkClassCaseSensitivity,
+			),
+		);
 
 		if (
 			$this->phpVersion->supportsPureIntersectionTypes()

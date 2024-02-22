@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Namespaces;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -14,8 +16,15 @@ class ExistingNamesInUseRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
-		return new ExistingNamesInUseRule($broker, new ClassCaseSensitivityCheck($broker, true), true);
+		$reflectionProvider = $this->createReflectionProvider();
+		return new ExistingNamesInUseRule(
+			$reflectionProvider,
+			new ClassNameCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassForbiddenNameCheck(),
+			),
+			true,
+		);
 	}
 
 	public function testRule(): void
@@ -43,6 +52,16 @@ class ExistingNamesInUseRuleTest extends RuleTestCase
 			[
 				'Class DateTime referenced with incorrect case: DATETIME.',
 				11,
+			],
+		]);
+	}
+
+	public function testPhpstanInternalClass(): void
+	{
+		$this->analyse([__DIR__ . '/../Classes/data/phpstan-internal-class.php'], [
+			[
+				'Internal PHPStan Class cannot be referenced: _PHPStan_156ee64ba\PrefixedRuntimeException.',
+				14,
 			],
 		]);
 	}

@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -19,10 +21,13 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$reflectionProvider = $this->createReflectionProvider();
 		return new ExistingClassesInPropertiesRule(
-			$broker,
-			new ClassCaseSensitivityCheck($broker, true),
+			$reflectionProvider,
+			new ClassNameCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassForbiddenNameCheck(),
+			),
 			new UnresolvableTypeHelper(),
 			new PhpVersion($this->phpVersion),
 			true,

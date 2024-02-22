@@ -9,7 +9,7 @@ use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
@@ -40,7 +40,7 @@ class AccessStaticPropertiesRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 	)
 	{
 	}
@@ -134,7 +134,7 @@ class AccessStaticPropertiesRule implements Rule
 					];
 				}
 
-				$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($class, $node->class)]);
+				$messages = $this->classCheck->checkClassNames([new ClassNameNodePair($class, $node->class)]);
 
 				$classType = $scope->resolveTypeByName($node->class);
 			}

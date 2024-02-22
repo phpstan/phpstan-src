@@ -16,7 +16,6 @@ use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Classes\DuplicateClassDeclarationRule;
 use PHPStan\Rules\Classes\DuplicateDeclarationRule;
 use PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule;
@@ -26,6 +25,7 @@ use PHPStan\Rules\Classes\ExistingClassInTraitUseRule;
 use PHPStan\Rules\Classes\LocalTypeAliasesCheck;
 use PHPStan\Rules\Classes\LocalTypeAliasesRule;
 use PHPStan\Rules\Classes\LocalTypeTraitAliasesRule;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\Functions\DuplicateFunctionDeclarationRule;
@@ -148,7 +148,7 @@ class StubValidator
 		$templateTypeCheck = $container->getByType(TemplateTypeCheck::class);
 		$varianceCheck = $container->getByType(VarianceCheck::class);
 		$reflectionProvider = $container->getByType(ReflectionProvider::class);
-		$classCaseSensitivityCheck = $container->getByType(ClassCaseSensitivityCheck::class);
+		$classNameCheck = $container->getByType(ClassNameCheck::class);
 		$functionDefinitionCheck = $container->getByType(FunctionDefinitionCheck::class);
 		$missingTypehintCheck = $container->getByType(MissingTypehintCheck::class);
 		$unresolvableTypeHelper = $container->getByType(UnresolvableTypeHelper::class);
@@ -159,13 +159,13 @@ class StubValidator
 
 		$rules = [
 			// level 0
-			new ExistingClassesInClassImplementsRule($classCaseSensitivityCheck, $reflectionProvider),
-			new ExistingClassesInInterfaceExtendsRule($classCaseSensitivityCheck, $reflectionProvider),
-			new ExistingClassInClassExtendsRule($classCaseSensitivityCheck, $reflectionProvider),
-			new ExistingClassInTraitUseRule($classCaseSensitivityCheck, $reflectionProvider),
+			new ExistingClassesInClassImplementsRule($classNameCheck, $reflectionProvider),
+			new ExistingClassesInInterfaceExtendsRule($classNameCheck, $reflectionProvider),
+			new ExistingClassInClassExtendsRule($classNameCheck, $reflectionProvider),
+			new ExistingClassInTraitUseRule($classNameCheck, $reflectionProvider),
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
-			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, $unresolvableTypeHelper, $phpVersion, true, false),
+			new ExistingClassesInPropertiesRule($reflectionProvider, $classNameCheck, $unresolvableTypeHelper, $phpVersion, true, false),
 			new OverridingMethodRule($phpVersion, new MethodSignatureRule($phpClassReflectionExtension, true, true, $container->getParameter('featureToggles')['abstractTraitMethod']), true, new MethodParameterComparisonHelper($phpVersion, $container->getParameter('featureToggles')['genericPrototypeMessage']), $phpClassReflectionExtension, $container->getParameter('featureToggles')['genericPrototypeMessage'], $container->getParameter('featureToggles')['finalByPhpDoc'], $container->getParameter('checkMissingOverrideMethodAttribute')),
 			new DuplicateDeclarationRule(),
 			new LocalTypeAliasesRule($localTypeAliasesCheck),

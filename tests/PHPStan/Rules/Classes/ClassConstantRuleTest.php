@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -19,8 +21,16 @@ class ClassConstantRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
-		return new ClassConstantRule($broker, new RuleLevelHelper($broker, true, false, true, false, false, true, false), new ClassCaseSensitivityCheck($broker, true), new PhpVersion($this->phpVersion));
+		$reflectionProvider = $this->createReflectionProvider();
+		return new ClassConstantRule(
+			$reflectionProvider,
+			new RuleLevelHelper($reflectionProvider, true, false, true, false, false, true, false),
+			new ClassNameCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassForbiddenNameCheck(),
+			),
+			new PhpVersion($this->phpVersion),
+		);
 	}
 
 	public function testClassConstant(): void
@@ -392,6 +402,17 @@ class ClassConstantRuleTest extends RuleTestCase
 			[
 				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
 				58,
+			],
+		]);
+	}
+
+	public function testPhpstanInternalClass(): void
+	{
+		$this->phpVersion = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/phpstan-internal-class.php'], [
+			[
+				'Internal PHPStan Class cannot be referenced: _PHPStan_156ee64ba\AClass.',
+				28,
 			],
 		]);
 	}

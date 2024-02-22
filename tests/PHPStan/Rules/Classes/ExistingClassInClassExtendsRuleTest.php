@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -15,10 +17,13 @@ class ExistingClassInClassExtendsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$reflectionProvider = $this->createReflectionProvider();
 		return new ExistingClassInClassExtendsRule(
-			new ClassCaseSensitivityCheck($broker, true),
-			$broker,
+			new ClassNameCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassForbiddenNameCheck(),
+			),
+			$reflectionProvider,
 		);
 	}
 
@@ -87,6 +92,16 @@ class ExistingClassInClassExtendsRuleTest extends RuleTestCase
 			[
 				'Anonymous class extends enum ClassExtendsEnum\FooEnum.',
 				16,
+			],
+		]);
+	}
+
+	public function testPhpstanInternalClass(): void
+	{
+		$this->analyse([__DIR__ . '/data/phpstan-internal-class.php'], [
+			[
+				'Internal PHPStan Class cannot be referenced: _PHPStan_156ee64ba\AClass.',
+				34,
 			],
 		]);
 	}

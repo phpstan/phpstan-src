@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
@@ -18,11 +20,14 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$reflectionProvider = $this->createReflectionProvider();
 		return new InvalidPhpDocVarTagTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			$broker,
-			new ClassCaseSensitivityCheck($broker, true),
+			$reflectionProvider,
+			new ClassNameCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassForbiddenNameCheck(),
+			),
 			new GenericObjectTypeCheck(),
 			new MissingTypehintCheck(true, true, true, true, []),
 			new UnresolvableTypeHelper(),

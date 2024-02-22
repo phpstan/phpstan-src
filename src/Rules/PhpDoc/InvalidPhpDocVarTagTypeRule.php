@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
@@ -29,7 +29,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 	public function __construct(
 		private FileTypeMapper $fileTypeMapper,
 		private ReflectionProvider $reflectionProvider,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private MissingTypehintCheck $missingTypehintCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
@@ -136,13 +136,12 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				))->discoveringSymbolsTip()->build();
 			}
 
-			if (!$this->checkClassCaseSensitivity) {
-				continue;
-			}
-
 			$errors = array_merge(
 				$errors,
-				$this->classCaseSensitivityCheck->checkClassNames(array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $node), $referencedClasses)),
+				$this->classCheck->checkClassNames(
+					array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $node), $referencedClasses),
+					$this->checkClassCaseSensitivity,
+				),
 			);
 		}
 

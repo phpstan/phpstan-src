@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
@@ -20,8 +22,20 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
-		return new ExistingClassesInTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker, true), new UnresolvableTypeHelper(), new PhpVersion($this->phpVersionId), true, false));
+		$reflectionProvider = $this->createReflectionProvider();
+		return new ExistingClassesInTypehintsRule(
+			new FunctionDefinitionCheck(
+				$reflectionProvider,
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassForbiddenNameCheck(),
+				),
+				new UnresolvableTypeHelper(),
+				new PhpVersion($this->phpVersionId),
+				true,
+				false,
+			),
+		);
 	}
 
 	public function testExistingClassInTypehint(): void

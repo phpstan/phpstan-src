@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -21,11 +23,14 @@ class InstantiationRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$reflectionProvider = $this->createReflectionProvider();
 		return new InstantiationRule(
-			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
-			new ClassCaseSensitivityCheck($broker, true),
+			$reflectionProvider,
+			new FunctionCallParametersCheck(new RuleLevelHelper($reflectionProvider, true, false, true, false, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
+			new ClassNameCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassForbiddenNameCheck(),
+			),
 		);
 	}
 
@@ -467,6 +472,16 @@ class InstantiationRuleTest extends RuleTestCase
 			[
 				'Parameter #3 $flags of class RecursiveIteratorIterator constructor expects 0|16, 2 given.',
 				23,
+			],
+		]);
+	}
+
+	public function testPhpstanInternalClass(): void
+	{
+		$this->analyse([__DIR__ . '/data/phpstan-internal-class.php'], [
+			[
+				'Internal PHPStan Class cannot be referenced: _PHPStan_156ee64ba\AClass.',
+				30,
 			],
 		]);
 	}

@@ -13,7 +13,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
-
+use function array_map;
 use function count;
 
 class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
@@ -67,7 +67,7 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 
 			$templateTypeMap = new TemplateTypeMap(array_map(
 				static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag),
-				$methodTags[$methodName]->getTemplateTags()
+				$methodTags[$methodName]->getTemplateTags(),
 			));
 
 			$isStatic = $methodTags[$methodName]->isStatic();

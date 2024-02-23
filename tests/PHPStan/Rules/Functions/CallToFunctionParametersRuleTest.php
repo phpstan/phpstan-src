@@ -297,6 +297,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #1 $array of function reset expects array|object, null given.',
 				39,
 			],
+			[
+				'Parameter #1 $s of function PassedByReference\bar expects string, int given.',
+				48,
+			],
 		]);
 	}
 
@@ -1623,4 +1627,17 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10626(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10626.php'], [
+			[
+				'Parameter #1 $value of function PassedByReference\intByValue expects int, string given.',
+				16,
+			],
+			[
+				'Parameter #1 $value of function PassedByReference\intByReference expects int, string given.',
+				17,
+			],
+		]);
+	}
 }

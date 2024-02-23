@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Namespaces;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -14,8 +16,15 @@ class ExistingNamesInGroupUseRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
-		return new ExistingNamesInGroupUseRule($broker, new ClassCaseSensitivityCheck($broker, true), true);
+		$reflectionProvider = $this->createReflectionProvider();
+		return new ExistingNamesInGroupUseRule(
+			$reflectionProvider,
+			new ClassNameCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassForbiddenNameCheck(),
+			),
+			true,
+		);
 	}
 
 	public function testRule(): void

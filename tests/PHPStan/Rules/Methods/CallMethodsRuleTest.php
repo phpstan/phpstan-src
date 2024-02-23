@@ -3172,4 +3172,23 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6371(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-6371.php'], [
+			[
+				'Parameter #1 $t of method Bug6371\HelloWorld<int,string>::compare() expects int, true given.',
+				24,
+			],
+			[
+				'Parameter #2 $k of method Bug6371\HelloWorld<int,string>::compare() expects string, false given.',
+				24,
+			],
+		]);
+	}
+
 }

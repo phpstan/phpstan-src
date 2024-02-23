@@ -7,7 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -41,7 +41,7 @@ class TemplateTypeCheck
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private TypeAliasResolver $typeAliasResolver,
 		private bool $checkClassCaseSensitivity,
@@ -100,10 +100,8 @@ class TemplateTypeCheck
 				))->identifier('generics.traitBound')->build();
 			}
 
-			if ($this->checkClassCaseSensitivity) {
-				$classNameNodePairs = array_map(static fn (string $referencedClass): ClassNameNodePair => new ClassNameNodePair($referencedClass, $node), $boundType->getReferencedClasses());
-				$messages = array_merge($messages, $this->classCaseSensitivityCheck->checkClassNames($classNameNodePairs));
-			}
+			$classNameNodePairs = array_map(static fn (string $referencedClass): ClassNameNodePair => new ClassNameNodePair($referencedClass, $node), $boundType->getReferencedClasses());
+			$messages = array_merge($messages, $this->classCheck->checkClassNames($classNameNodePairs, $this->checkClassCaseSensitivity));
 
 			$boundType = $templateTag->getBound();
 			$boundTypeClass = get_class($boundType);

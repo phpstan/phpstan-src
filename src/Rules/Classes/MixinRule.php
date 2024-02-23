@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
@@ -26,7 +26,7 @@ class MixinRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private MissingTypehintCheck $missingTypehintCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
@@ -94,12 +94,12 @@ class MixinRule implements Rule
 					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains invalid type %s.', $class))
 						->identifier('mixin.trait')
 						->build();
-				} elseif ($this->checkClassCaseSensitivity) {
+				} else {
 					$errors = array_merge(
 						$errors,
-						$this->classCaseSensitivityCheck->checkClassNames([
+						$this->classCheck->checkClassNames([
 							new ClassNameNodePair($class, $node),
-						]),
+						], $this->checkClassCaseSensitivity),
 					);
 				}
 			}

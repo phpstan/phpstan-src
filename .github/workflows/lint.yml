@@ -103,8 +103,8 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
-      - name: "Composer Require Checker"
-        run: "make composer-require-checker"
+      - name: "Composer Dependency Analyser"
+        run: "make composer-dependency-analyser"
 
   name-collision:
     name: "Name Collision Detector"

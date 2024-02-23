@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Generics;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -14,11 +16,20 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
-		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $broker);
+		$reflectionProvider = $this->createReflectionProvider();
+		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $reflectionProvider);
 
 		return new InterfaceTemplateTypeRule(
-			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker, true), new GenericObjectTypeCheck(), $typeAliasResolver, true),
+			new TemplateTypeCheck(
+				$reflectionProvider,
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassForbiddenNameCheck(),
+				),
+				new GenericObjectTypeCheck(),
+				$typeAliasResolver,
+				true,
+			),
 		);
 	}
 

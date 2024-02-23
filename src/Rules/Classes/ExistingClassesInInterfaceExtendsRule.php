@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -19,7 +19,7 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 {
 
 	public function __construct(
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private ReflectionProvider $reflectionProvider,
 	)
 	{
@@ -32,7 +32,7 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$messages = $this->classCaseSensitivityCheck->checkClassNames(
+		$messages = $this->classCheck->checkClassNames(
 			array_map(static fn (Node\Name $interfaceName): ClassNameNodePair => new ClassNameNodePair((string) $interfaceName, $interfaceName), $node->extends),
 		);
 

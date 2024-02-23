@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -15,10 +17,13 @@ class ExistingClassInTraitUseRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$reflectionProvider = $this->createReflectionProvider();
 		return new ExistingClassInTraitUseRule(
-			new ClassCaseSensitivityCheck($broker, true),
-			$broker,
+			new ClassNameCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassForbiddenNameCheck(),
+			),
+			$reflectionProvider,
 		);
 	}
 

@@ -20,7 +20,7 @@ class AttributesCheck
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private FunctionCallParametersCheck $functionCallParametersCheck,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private bool $deprecationRulesInstalled,
 	)
 	{
@@ -67,7 +67,7 @@ class AttributesCheck
 						->build();
 				}
 
-				foreach ($this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($name, $attribute)]) as $caseSensitivityError) {
+				foreach ($this->classCheck->checkClassNames([new ClassNameNodePair($name, $attribute)]) as $caseSensitivityError) {
 					$errors[] = $caseSensitivityError;
 				}
 

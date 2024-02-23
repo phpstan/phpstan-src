@@ -4,7 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\PhpDoc\Tag\RequireExtendsTag;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -19,7 +19,7 @@ final class RequireExtendsCheck
 {
 
 	public function __construct(
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private bool $checkClassCaseSensitivity,
 	)
 	{
@@ -67,12 +67,12 @@ final class RequireExtendsCheck
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends cannot contain final class %s.', $class))
 					->identifier('requireExtends.finalClass')
 					->build();
-			} elseif ($this->checkClassCaseSensitivity) {
+			} else {
 				$errors = array_merge(
 					$errors,
-					$this->classCaseSensitivityCheck->checkClassNames([
+					$this->classCheck->checkClassNames([
 						new ClassNameNodePair($class, $node),
-					]),
+					], $this->checkClassCaseSensitivity),
 				);
 			}
 		}

@@ -9,7 +9,7 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
@@ -32,7 +32,7 @@ class InstantiationRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private FunctionCallParametersCheck $check,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 	)
 	{
 	}
@@ -128,7 +128,7 @@ class InstantiationRule implements Rule
 				];
 			}
 
-			$messages = $this->classCaseSensitivityCheck->checkClassNames([
+			$messages = $this->classCheck->checkClassNames([
 				new ClassNameNodePair($class, $node->class),
 			]);
 

@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -20,7 +22,10 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 		return new AccessStaticPropertiesRule(
 			$reflectionProvider,
 			new RuleLevelHelper($reflectionProvider, true, false, true, false, false, true, false),
-			new ClassCaseSensitivityCheck($reflectionProvider, true),
+			new ClassNameCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassForbiddenNameCheck(),
+			),
 		);
 	}
 

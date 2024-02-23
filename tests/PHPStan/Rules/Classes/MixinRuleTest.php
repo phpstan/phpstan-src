@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -22,7 +24,10 @@ class MixinRuleTest extends RuleTestCase
 
 		return new MixinRule(
 			$reflectionProvider,
-			new ClassCaseSensitivityCheck($reflectionProvider, true),
+			new ClassNameCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassForbiddenNameCheck(),
+			),
 			new GenericObjectTypeCheck(),
 			new MissingTypehintCheck(true, true, true, true, []),
 			new UnresolvableTypeHelper(),

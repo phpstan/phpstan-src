@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Generics;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -15,13 +17,16 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
-		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $broker);
+		$reflectionProvider = $this->createReflectionProvider();
+		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $reflectionProvider);
 
 		return new ClassTemplateTypeRule(
 			new TemplateTypeCheck(
-				$broker,
-				new ClassCaseSensitivityCheck($broker, true),
+				$reflectionProvider,
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassForbiddenNameCheck(),
+				),
 				new GenericObjectTypeCheck(),
 				$typeAliasResolver,
 				true,

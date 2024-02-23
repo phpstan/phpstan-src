@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -19,7 +21,10 @@ class RequireExtendsDefinitionClassRuleTest extends RuleTestCase
 
 		return new RequireExtendsDefinitionClassRule(
 			new RequireExtendsCheck(
-				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassForbiddenNameCheck(),
+				),
 				true,
 			),
 		);

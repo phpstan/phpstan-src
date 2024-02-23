@@ -5,7 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -23,7 +23,7 @@ class RequireImplementsDefinitionTraitRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private bool $checkClassCaseSensitivity,
 	)
 	{
@@ -70,12 +70,12 @@ class RequireImplementsDefinitionTraitRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements cannot contain non-interface type %s.', $class))
 					->identifier(sprintf('requireImplements.%s', strtolower($referencedClassReflection->getClassTypeDescription())))
 					->build();
-			} elseif ($this->checkClassCaseSensitivity) {
+			} else {
 				$errors = array_merge(
 					$errors,
-					$this->classCaseSensitivityCheck->checkClassNames([
+					$this->classCheck->checkClassNames([
 						new ClassNameNodePair($class, $node),
-					]),
+					], $this->checkClassCaseSensitivity),
 				);
 			}
 		}

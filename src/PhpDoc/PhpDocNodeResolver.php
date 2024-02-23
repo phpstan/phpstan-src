@@ -30,6 +30,9 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -160,6 +163,24 @@ class PhpDocNodeResolver
 
 		foreach (['@method', '@psalm-method', '@phpstan-method'] as $tagName) {
 			foreach ($phpDocNode->getMethodTagValues($tagName) as $tagValue) {
+				$templateTags = [];
+
+				if (count($tagValue->templateTypes) > 0 && $nameScope->getClassName() !== null) {
+					foreach ($tagValue->templateTypes as $templateType) {
+						$templateTags[$templateType->name] = new TemplateTag(
+							$templateType->name,
+							$templateType->bound !== null
+								? $this->typeNodeResolver->resolve($templateType->bound, $nameScope)
+								: new MixedType(),
+							TemplateTypeVariance::createInvariant(),
+						);
+					}
+
+					$templateTypeScope = TemplateTypeScope::createWithMethod($nameScope->getClassName(), $tagValue->methodName);
+					$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
+					$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap);
+				}
+
 				$parameters = [];
 				foreach ($tagValue->parameters as $parameterNode) {
 					$parameterName = substr($parameterNode->parameterName, 1);
@@ -191,6 +212,7 @@ class PhpDocNodeResolver
 						: new MixedType(),
 					$tagValue->isStatic,
 					$parameters,
+					$templateTags,
 				);
 			}
 		}

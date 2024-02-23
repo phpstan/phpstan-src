@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Catch_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -22,7 +22,7 @@ class CaughtExceptionExistenceRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private bool $checkClassCaseSensitivity,
 	)
 	{
@@ -58,13 +58,12 @@ class CaughtExceptionExistenceRule implements Rule
 					->build();
 			}
 
-			if (!$this->checkClassCaseSensitivity) {
-				continue;
-			}
-
 			$errors = array_merge(
 				$errors,
-				$this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]),
+				$this->classCheck->checkClassNames(
+					[new ClassNameNodePair($className, $class)],
+					$this->checkClassCaseSensitivity,
+				),
 			);
 		}
 

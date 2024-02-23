@@ -13,7 +13,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -38,7 +38,7 @@ class StaticMethodCallCheck
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private bool $checkFunctionNameCase,
 		private bool $reportMagicMethods,
 	)
@@ -131,7 +131,7 @@ class StaticMethodCallCheck
 					];
 				}
 
-				$errors = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
+				$errors = $this->classCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 
 				$classType = $scope->resolveTypeByName($class);
 			}

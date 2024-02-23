@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Namespaces;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -23,7 +23,7 @@ class ExistingNamesInUseRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private bool $checkFunctionNameCase,
 	)
 	{
@@ -122,7 +122,7 @@ class ExistingNamesInUseRule implements Rule
 	 */
 	private function checkClasses(array $uses): array
 	{
-		return $this->classCaseSensitivityCheck->checkClassNames(
+		return $this->classCheck->checkClassNames(
 			array_map(static fn (Node\Stmt\UseUse $use): ClassNameNodePair => new ClassNameNodePair((string) $use->name, $use->name), $uses),
 		);
 	}

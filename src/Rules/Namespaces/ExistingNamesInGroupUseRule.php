@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Use_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -24,7 +24,7 @@ class ExistingNamesInGroupUseRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private bool $checkFunctionNameCase,
 	)
 	{
@@ -116,7 +116,7 @@ class ExistingNamesInGroupUseRule implements Rule
 
 	private function checkClass(Node\Name $name): ?IdentifierRuleError
 	{
-		$errors = $this->classCaseSensitivityCheck->checkClassNames([
+		$errors = $this->classCheck->checkClassNames([
 			new ClassNameNodePair((string) $name, $name),
 		]);
 		if (count($errors) === 0) {

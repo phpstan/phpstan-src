@@ -222,7 +222,9 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 			[
 				[new StringType(), 'onee'],
 			],
-			[],
+			[
+				new StringType(),
+			],
 		];
 
 		yield [
@@ -237,6 +239,7 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 			],
 			[
 				new IntegerType(),
+				new StringType(),
 			],
 		];
 	}

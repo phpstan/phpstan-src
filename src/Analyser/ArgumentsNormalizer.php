@@ -191,6 +191,7 @@ final class ArgumentsNormalizer
 
 		$reorderedArgs = [];
 		$additionalNamedArgs = [];
+		$appendArgs = [];
 		foreach ($callArgs as $i => $arg) {
 			if ($arg->name === null) {
 				// add regular args as is
@@ -209,6 +210,15 @@ final class ArgumentsNormalizer
 				);
 			} else {
 				if (!$hasVariadic) {
+					$attributes = $arg->getAttributes();
+					$attributes[self::ORIGINAL_ARG_ATTRIBUTE] = $arg;
+					$appendArgs[] = new Arg(
+						$arg->value,
+						$arg->byRef,
+						$arg->unpack,
+						$attributes,
+						null,
+					);
 					continue;
 				}
 
@@ -235,7 +245,10 @@ final class ArgumentsNormalizer
 		}
 
 		if (count($reorderedArgs) === 0) {
-			return [];
+			foreach ($appendArgs as $arg) {
+				$reorderedArgs[] = $arg;
+			}
+			return $reorderedArgs;
 		}
 
 		// fill up all wholes with default values until the last given argument
@@ -268,6 +281,10 @@ final class ArgumentsNormalizer
 		}
 
 		ksort($reorderedArgs);
+
+		foreach ($appendArgs as $arg) {
+			$reorderedArgs[] = $arg;
+		}
 
 		return $reorderedArgs;
 	}

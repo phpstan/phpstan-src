@@ -12,6 +12,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
+use function array_merge;
 use function sprintf;
 
 /**

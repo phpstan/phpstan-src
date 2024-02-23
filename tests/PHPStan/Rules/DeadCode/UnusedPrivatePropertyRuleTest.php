@@ -304,4 +304,15 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10059.php'], []);
 	}
 
+	public function testBug10628(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+		$this->analyse([__DIR__ . '/data/bug-10628.php'], []);
+	}
+
 }

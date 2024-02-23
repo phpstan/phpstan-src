@@ -23,7 +23,6 @@ function array_reduce(
  *
  * @param TArray $array
  * @param callable(T,T):int $callback
- * @param-out (TArray is non-empty-array ? non-empty-array<TKey,T> : array<TKey,T>) $array
  */
 function uasort(array &$array, callable $callback): bool
 {}
@@ -34,7 +33,6 @@ function uasort(array &$array, callable $callback): bool
  *
  * @param TArray $array
  * @param callable(T,T):int $callback
- * @param-out (TArray is non-empty-array ? non-empty-list<T> : list<T>) $array
  */
 function usort(array &$array, callable $callback): bool
 {}
@@ -46,7 +44,6 @@ function usort(array &$array, callable $callback): bool
  *
  * @param TArray $array
  * @param callable(TKey,TKey):int $callback
- * @param-out (TArray is non-empty-array ? non-empty-array<TKey,T> : array<TKey,T>) $array
  */
 function uksort(array &$array, callable $callback): bool
 {

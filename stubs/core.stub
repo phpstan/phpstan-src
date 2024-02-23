@@ -119,7 +119,6 @@ function passthru(string $command, &$result_code): ?bool {}
  * @template TArray as array<T>
  *
  * @param TArray $array
- * @param-out (TArray is non-empty-array ? non-empty-list<T> : list<T>) $array
  */
 function shuffle(array &$array): bool
 {
@@ -130,7 +129,6 @@ function shuffle(array &$array): bool
  * @template TArray as array<T>
  *
  * @param TArray $array
- * @param-out (TArray is non-empty-array ? non-empty-list<T> : list<T>) $array
  */
 function sort(array &$array, int $flags = SORT_REGULAR): bool
 {
@@ -141,7 +139,6 @@ function sort(array &$array, int $flags = SORT_REGULAR): bool
  * @template TArray as array<T>
  *
  * @param TArray $array
- * @param-out (TArray is non-empty-array ? non-empty-list<T> : list<T>) $array
  */
 function rsort(array &$array, int $flags = SORT_REGULAR): bool
 {

@@ -1123,6 +1123,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		if (PHP_VERSION_ID >= 70400) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/arrow-function-argument-type.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Functions/data/bug-anonymous-function-method-constant.php');
 		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/closure-argument-type.php');

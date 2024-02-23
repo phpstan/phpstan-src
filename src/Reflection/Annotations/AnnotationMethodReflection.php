@@ -30,6 +30,7 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 		private bool $isStatic,
 		private bool $isVariadic,
 		private ?Type $throwType,
+		private TemplateTypeMap $templateTypeMap,
 	)
 	{
 	}
@@ -69,7 +70,7 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 		if ($this->variants === null) {
 			$this->variants = [
 				new FunctionVariantWithPhpDocs(
-					TemplateTypeMap::createEmpty(),
+					$this->templateTypeMap,
 					null,
 					$this->parameters,
 					$this->isVariadic,

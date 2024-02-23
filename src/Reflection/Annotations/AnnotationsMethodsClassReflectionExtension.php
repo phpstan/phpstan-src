@@ -2,12 +2,18 @@
 
 namespace PHPStan\Reflection\Annotations;
 
+use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
+use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Type;
+use function array_map;
 use function count;
 
 class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
@@ -57,6 +63,13 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 				);
 			}
 
+			$templateTypeScope = TemplateTypeScope::createWithClass($classReflection->getName());
+
+			$templateTypeMap = new TemplateTypeMap(array_map(
+				static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag),
+				$methodTags[$methodName]->getTemplateTags(),
+			));
+
 			$isStatic = $methodTags[$methodName]->isStatic();
 			$nativeCallMethodName = $isStatic ? '__callStatic' : '__call';
 
@@ -75,6 +88,7 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 				$classReflection->hasNativeMethod($nativeCallMethodName)
 					? $classReflection->getNativeMethod($nativeCallMethodName)->getThrowType()
 					: null,
+				$templateTypeMap,
 			);
 		}
 

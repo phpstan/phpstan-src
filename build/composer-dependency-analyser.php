@@ -5,9 +5,33 @@ use ShipMonk\ComposerDependencyAnalyser\Config\ErrorType;
 
 $config = new Configuration();
 
+$polyfills = [
+	'symfony/polyfill-intl-grapheme',
+	'symfony/polyfill-intl-normalizer',
+	'symfony/polyfill-mbstring',
+	'symfony/polyfill-php73',
+	'symfony/polyfill-php74',
+	'symfony/polyfill-php80',
+	'symfony/polyfill-php81',
+];
+
+$pinnedToSupportPhp72 = [
+	'symfony/process',
+	'symfony/service-contracts',
+	'symfony/string',
+];
+
 return $config
 	->addPathToScan(__DIR__ . '/../bin', true)
-	->ignoreErrors([ErrorType::UNUSED_DEPENDENCY])
+	->ignoreErrorsOnPackages(
+		[
+			'hoa/regex', // used only via stream wrapper hoa://
+			'react/async', // function usage (https://github.com/shipmonk-rnd/composer-dependency-analyser/issues/67)
+			...$pinnedToSupportPhp72, // those are unused, but we need to pin them to support PHP 7.2
+			...$polyfills, // not detected by composer-dependency-analyser
+		],
+		[ErrorType::UNUSED_DEPENDENCY],
+	)
 	->ignoreErrorsOnPackage('phpunit/phpunit', [ErrorType::DEV_DEPENDENCY_IN_PROD]) // prepared test tooling
 	->ignoreErrorsOnPackage('jetbrains/phpstorm-stubs', [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV]) // there is no direct usage, but we need newer version then required by ondrejmirtes/BetterReflection
 	->ignoreErrorsOnPath(__DIR__ . '/../tests', [ErrorType::UNKNOWN_CLASS]) // to be able to test invalid symbols

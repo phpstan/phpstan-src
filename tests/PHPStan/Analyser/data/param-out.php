@@ -221,7 +221,7 @@ function foo15() {
 		$manifest,
 		"fooCompare"
 	);
-	assertType('non-empty-array<0|1|2, 1|2|3>', $manifest);
+	assertType('array{1, 2, 3}', $manifest);
 }
 
 function fooSpaceship (string $a, string $b): int {
@@ -234,7 +234,7 @@ function foo16() {
 		$array,
 		"fooSpaceship"
 	);
-	assertType('non-empty-array<0|1, 1|2>', $array);
+	assertType('array{1, 2}', $array);
 }
 
 function fooShuffle() {
@@ -251,6 +251,7 @@ function fooSort() {
 	$array = ["foo" => 123, "bar" => 456];
 	sort($array);
 	assertType('non-empty-list<123|456>', $array);
+	assertType('true', array_is_list($array));
 
 	$emptyArray = [];
 	sort($emptyArray);

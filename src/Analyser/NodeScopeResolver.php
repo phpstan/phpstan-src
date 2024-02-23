@@ -3207,6 +3207,22 @@ class NodeScopeResolver
 				return $traverse($type);
 			}
 
+			$constantArrays = $type->getConstantArrays();
+			if (count($constantArrays) > 0) {
+				$types = [];
+				foreach ($constantArrays as $constantArray) {
+					$types[] = new ConstantArrayType(
+						$constantArray->getKeyTypes(),
+						$constantArray->getValueTypes(),
+						$constantArray->getNextAutoIndexes(),
+						$constantArray->getOptionalKeys(),
+						TrinaryLogic::createMaybe(),
+					);
+				}
+
+				return TypeCombinator::union(...$types);
+			}
+
 			$newArrayType = new ArrayType($type->getIterableKeyType(), $type->getIterableValueType());
 			if ($isIterableAtLeastOnce->yes()) {
 				$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());

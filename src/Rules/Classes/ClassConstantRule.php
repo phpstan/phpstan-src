@@ -9,7 +9,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -34,7 +34,7 @@ class ClassConstantRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private PhpVersion $phpVersion,
 	)
 	{
@@ -101,7 +101,7 @@ class ClassConstantRule implements Rule
 					];
 				}
 
-				$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
+				$messages = $this->classCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 
 				$classType = $scope->resolveTypeByName($class);
 			}

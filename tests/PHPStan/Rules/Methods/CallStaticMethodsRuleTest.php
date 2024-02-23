@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -32,8 +34,28 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false);
 		return new CallStaticMethodsRule(
-			new StaticMethodCallCheck($reflectionProvider, $ruleLevelHelper, new ClassCaseSensitivityCheck($reflectionProvider, true), true, true),
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
+			new StaticMethodCallCheck(
+				$reflectionProvider,
+				$ruleLevelHelper,
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassForbiddenNameCheck(),
+				),
+				true,
+				true,
+			),
+			new FunctionCallParametersCheck(
+				$ruleLevelHelper,
+				new NullsafeCheck(),
+				new PhpVersion(80000),
+				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
+				true,
+				true,
+				true,
+				true,
+				true,
+			),
 		);
 	}
 

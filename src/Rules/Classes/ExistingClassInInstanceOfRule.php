@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Instanceof_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -24,7 +24,7 @@ class ExistingClassInInstanceOfRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private bool $checkClassCaseSensitivity,
 	)
 	{
@@ -69,12 +69,15 @@ class ExistingClassInInstanceOfRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf('Class %s not found.', $name))->line($class->getLine())->discoveringSymbolsTip()->build(),
 			];
-		} elseif ($this->checkClassCaseSensitivity) {
-			$errors = array_merge(
-				$errors,
-				$this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($name, $class)]),
-			);
 		}
+
+		$errors = array_merge(
+			$errors,
+			$this->classCheck->checkClassNames(
+				[new ClassNameNodePair($name, $class)],
+				$this->checkClassCaseSensitivity,
+			),
+		);
 
 		$classReflection = $this->reflectionProvider->getClass($name);
 

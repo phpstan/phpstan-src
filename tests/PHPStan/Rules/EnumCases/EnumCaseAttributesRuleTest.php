@@ -5,6 +5,8 @@ namespace PHPStan\Rules\EnumCases;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -37,7 +39,10 @@ class EnumCaseAttributesRuleTest extends RuleTestCase
 					true,
 					true,
 				),
-				new ClassCaseSensitivityCheck($reflectionProvider, false),
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, false),
+					new ClassForbiddenNameCheck(),
+				),
 				true,
 			),
 		);

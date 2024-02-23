@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -23,7 +25,16 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, false, false, true, false);
 
 		return new StaticMethodCallableRule(
-			new StaticMethodCallCheck($reflectionProvider, $ruleLevelHelper, new ClassCaseSensitivityCheck($reflectionProvider, true), true, true),
+			new StaticMethodCallCheck(
+				$reflectionProvider,
+				$ruleLevelHelper,
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassForbiddenNameCheck(),
+				),
+				true,
+				true,
+			),
 			new PhpVersion($this->phpVersion),
 		);
 	}

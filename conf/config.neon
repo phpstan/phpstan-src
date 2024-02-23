@@ -834,9 +834,15 @@ services:
 			bleedingEdge: %featureToggles.bleedingEdge%
 
 	-
+		class: PHPStan\Rules\ClassNameCheck
+
+	-
 		class: PHPStan\Rules\ClassCaseSensitivityCheck
 		arguments:
 			checkInternalClassCaseSensitivity: %checkInternalClassCaseSensitivity%
+
+	-
+		class: PHPStan\Rules\ClassForbiddenNameCheck
 
 	-
 		class: PHPStan\Rules\Classes\LocalTypeAliasesCheck

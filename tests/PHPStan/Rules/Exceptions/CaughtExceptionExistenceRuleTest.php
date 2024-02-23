@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -14,10 +16,13 @@ class CaughtExceptionExistenceRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$reflectionProvider = $this->createReflectionProvider();
 		return new CaughtExceptionExistenceRule(
-			$broker,
-			new ClassCaseSensitivityCheck($broker, true),
+			$reflectionProvider,
+			new ClassNameCheck(
+				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassForbiddenNameCheck(),
+			),
 			true,
 		);
 	}
@@ -50,6 +55,19 @@ class CaughtExceptionExistenceRuleTest extends RuleTestCase
 	public function testBug3690(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3690.php'], []);
+	}
+
+	public function testPhpstanInternalClass(): void
+	{
+		$tip = 'This is most likely unintentional. Did you mean to type \PrefixedRuntimeException?';
+
+		$this->analyse([__DIR__ . '/../Classes/data/phpstan-internal-class.php'], [
+			[
+				'Referencing prefixed PHPStan class: _PHPStan_156ee64ba\PrefixedRuntimeException.',
+				19,
+				$tip,
+			],
+		]);
 	}
 
 }

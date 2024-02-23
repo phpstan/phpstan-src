@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -18,7 +18,7 @@ class ExistingClassInClassExtendsRule implements Rule
 {
 
 	public function __construct(
-		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ClassNameCheck $classCheck,
 		private ReflectionProvider $reflectionProvider,
 	)
 	{
@@ -35,7 +35,7 @@ class ExistingClassInClassExtendsRule implements Rule
 			return [];
 		}
 		$extendedClassName = (string) $node->extends;
-		$messages = $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($extendedClassName, $node->extends)]);
+		$messages = $this->classCheck->checkClassNames([new ClassNameNodePair($extendedClassName, $node->extends)]);
 		$currentClassName = null;
 		if (isset($node->namespacedName)) {
 			$currentClassName = (string) $node->namespacedName;

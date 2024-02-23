@@ -6,6 +6,7 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ClosureReturnTypeRule>
@@ -126,6 +127,15 @@ class ClosureReturnTypeRuleTest extends RuleTestCase
 	public function testBug7220(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7220.php'], []);
+	}
+
+	public function testBugFunctionMethodConstants(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-anonymous-function-method-constant.php'], []);
 	}
 
 }

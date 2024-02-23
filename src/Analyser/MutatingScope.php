@@ -1802,7 +1802,7 @@ class MutatingScope implements Scope
 				if ($node->class instanceof Name) {
 					$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
 				} else {
-					$staticMethodCalledOnType = $this->getType($node->class)->getObjectTypeOrClassStringObjectType();
+					$staticMethodCalledOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
 				}
 
 				$returnType = $this->methodCallReturnType(
@@ -1894,7 +1894,7 @@ class MutatingScope implements Scope
 				if ($node->class instanceof Name) {
 					$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);
 				} else {
-					$staticPropertyFetchedOnType = $this->getType($node->class)->getObjectTypeOrClassStringObjectType();
+					$staticPropertyFetchedOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
 				}
 
 				$returnType = $this->propertyFetchType(

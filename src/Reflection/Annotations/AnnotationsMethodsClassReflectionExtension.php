@@ -67,7 +67,7 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 
 			$templateTypeMap = new TemplateTypeMap(array_map(
 				static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag),
-				$methodTags[$methodName]->getTemplates()
+				$methodTags[$methodName]->getTemplateTags()
 			));
 
 			$isStatic = $methodTags[$methodName]->isStatic();

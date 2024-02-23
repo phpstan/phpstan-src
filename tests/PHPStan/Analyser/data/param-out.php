@@ -221,7 +221,7 @@ function foo15() {
 		$manifest,
 		"fooCompare"
 	);
-	assertType('array{1, 2, 3}', $manifest);
+	assertType('non-empty-array<0|1|2, 1|2|3>', $manifest);
 }
 
 function fooSpaceship (string $a, string $b): int {
@@ -234,7 +234,7 @@ function foo16() {
 		$array,
 		"fooSpaceship"
 	);
-	assertType('array{1, 2}', $array);
+	assertType('non-empty-array<0|1, 1|2>', $array);
 }
 
 function fooShuffle() {

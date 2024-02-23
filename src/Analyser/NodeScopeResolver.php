@@ -2192,8 +2192,21 @@ class NodeScopeResolver
 				$arrayArg = $expr->getArgs()[0]->value;
 				$scope = $scope->assignExpression(
 					$arrayArg,
-					$this->getArraySortFunctionType($scope->getType($arrayArg)),
-					$this->getArraySortFunctionType($scope->getNativeType($arrayArg)),
+					$this->getArraySortPreserveListFunctionType($scope->getType($arrayArg)),
+					$this->getArraySortPreserveListFunctionType($scope->getNativeType($arrayArg)),
+				);
+			}
+
+			if (
+				$functionReflection !== null
+				&& in_array($functionReflection->getName(), ['natcasesort', 'natsort', 'arsort', 'asort', 'ksort', 'krsort', 'uasort', 'uksort'], true)
+				&& count($expr->getArgs()) >= 1
+			) {
+				$arrayArg = $expr->getArgs()[0]->value;
+				$scope = $scope->assignExpression(
+					$arrayArg,
+					$this->getArraySortDoNotPreserveListFunctionType($scope->getType($arrayArg)),
+					$this->getArraySortDoNotPreserveListFunctionType($scope->getNativeType($arrayArg)),
 				);
 			}
 
@@ -3157,7 +3170,7 @@ class NodeScopeResolver
 		return $arrayType;
 	}
 
-	private function getArraySortFunctionType(Type $type): Type
+	private function getArraySortPreserveListFunctionType(Type $type): Type
 	{
 		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
 		if ($isIterableAtLeastOnce->no()) {
@@ -3174,6 +3187,27 @@ class NodeScopeResolver
 			}
 
 			$newArrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $type->getIterableValueType()));
+			if ($isIterableAtLeastOnce->yes()) {
+				$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
+			}
+
+			return $newArrayType;
+		});
+	}
+
+	private function getArraySortDoNotPreserveListFunctionType(Type $type): Type
+	{
+		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
+		if ($isIterableAtLeastOnce->no()) {
+			return $type;
+		}
+
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($isIterableAtLeastOnce): Type {
+			if ($type instanceof UnionType) {
+				return $traverse($type);
+			}
+
+			$newArrayType = new ArrayType($type->getIterableKeyType(), $type->getIterableValueType());
 			if ($isIterableAtLeastOnce->yes()) {
 				$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
 			}

@@ -18,7 +18,7 @@ class ClassForbiddenNameCheck
 
 	/**
 	 * @param ClassNameNodePair[] $pairs
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function checkClassNames(array $pairs): array
 	{
@@ -42,7 +42,10 @@ class ClassForbiddenNameCheck
 				'Referencing prefixed %s class: %s.',
 				$projectName,
 				$className,
-			))->line($pair->getNode()->getLine())->nonIgnorable();
+			))
+				->line($pair->getNode()->getLine())
+				->identifier('class.prefixed')
+				->nonIgnorable();
 
 			if (strpos($className, '\\') !== false) {
 				$error->tip(sprintf(

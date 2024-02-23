@@ -14,7 +14,7 @@ class ClassNameCheck
 
 	/**
 	 * @param ClassNameNodePair[] $pairs
-	 * @return RuleError[]
+	 * @return list<IdentifierRuleError>
 	 */
 	public function checkClassNames(array $pairs, bool $checkClassCaseSensitivity = true): array
 	{

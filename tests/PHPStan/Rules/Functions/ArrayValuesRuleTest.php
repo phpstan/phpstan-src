@@ -73,6 +73,15 @@ class ArrayValuesRuleTest extends RuleTestCase
 				28,
 				$tipText,
 			];
+		} else {
+			$expectedErrors[] = [
+				'Parameter #1 $array (true) to function array_values is empty, call has no effect.',
+				27,
+			];
+			$expectedErrors[] = [
+				'Parameter #1 $array (true) to function array_values is empty, call has no effect.',
+				28,
+			];
 		}
 
 		$this->analyse([__DIR__ . '/data/array_values_list.php'], $expectedErrors);

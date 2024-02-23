@@ -24,6 +24,7 @@ rules:
 	- PHPStan\Rules\Generics\InterfaceAncestorsRule
 	- PHPStan\Rules\Generics\InterfaceTemplateTypeRule
 	- PHPStan\Rules\Generics\MethodTemplateTypeRule
+	- PHPStan\Rules\Generics\MethodTagTemplateTypeRule
 	- PHPStan\Rules\Generics\MethodSignatureVarianceRule
 	- PHPStan\Rules\Generics\TraitTemplateTypeRule
 	- PHPStan\Rules\Generics\UsedTraitsRule

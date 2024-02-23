@@ -3181,7 +3181,7 @@ class MutatingScope implements Scope
 			$arrowFunctionScope->nativeExpressionTypes,
 			$arrowFunctionScope->conditionalExpressions,
 			$arrowFunctionScope->inClosureBindScopeClasses,
-			null,
+			new TrivialParametersAcceptor(),
 			true,
 			[],
 			[],

@@ -4,6 +4,8 @@ namespace PHPStan\Rules;
 
 use function sprintf;
 use function str_starts_with;
+use function strpos;
+use function substr;
 
 class ClassForbiddenNameCheck
 {
@@ -36,11 +38,20 @@ class ClassForbiddenNameCheck
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Internal %s Class cannot be referenced: %s.',
+			$error = RuleErrorBuilder::message(sprintf(
+				'Referencing prefixed %s class: %s.',
 				$projectName,
 				$className,
-			))->line($pair->getNode()->getLine())->build();
+			))->line($pair->getNode()->getLine())->nonIgnorable();
+
+			if (strpos($className, '\\') !== false) {
+				$error->tip(sprintf(
+					'This is most likely unintentional. Did you mean to type %s?',
+					substr($className, strpos($className, '\\')),
+				));
+			}
+
+			$errors[] = $error->build();
 		}
 
 		return $errors;

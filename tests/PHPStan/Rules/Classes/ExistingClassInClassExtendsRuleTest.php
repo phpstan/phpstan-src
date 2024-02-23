@@ -98,18 +98,23 @@ class ExistingClassInClassExtendsRuleTest extends RuleTestCase
 
 	public function testPhpstanInternalClass(): void
 	{
+		$tip = 'This is most likely unintentional. Did you mean to type \AClass?';
+
 		$this->analyse([__DIR__ . '/data/phpstan-internal-class.php'], [
 			[
-				'Internal PHPStan Class cannot be referenced: _PHPStan_156ee64ba\AClass.',
+				'Referencing prefixed PHPStan class: _PHPStan_156ee64ba\AClass.',
 				34,
+				$tip,
 			],
 			[
-				'Internal Rector Class cannot be referenced: RectorPrefix202302\AClass.',
+				'Referencing prefixed Rector class: RectorPrefix202302\AClass.',
 				52,
+				$tip,
 			],
 			[
-				'Internal PHP-Scoper Class cannot be referenced: _PhpScoper19ae93be897e\AClass.',
+				'Referencing prefixed PHP-Scoper class: _PhpScoper19ae93be897e\AClass.',
 				55,
+				$tip,
 			],
 		]);
 	}

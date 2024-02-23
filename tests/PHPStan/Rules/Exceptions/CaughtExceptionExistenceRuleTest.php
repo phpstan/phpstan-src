@@ -59,10 +59,13 @@ class CaughtExceptionExistenceRuleTest extends RuleTestCase
 
 	public function testPhpstanInternalClass(): void
 	{
+		$tip = 'This is most likely unintentional. Did you mean to type \PrefixedRuntimeException?';
+
 		$this->analyse([__DIR__ . '/../Classes/data/phpstan-internal-class.php'], [
 			[
-				'Internal PHPStan Class cannot be referenced: _PHPStan_156ee64ba\PrefixedRuntimeException.',
+				'Referencing prefixed PHPStan class: _PHPStan_156ee64ba\PrefixedRuntimeException.',
 				19,
+				$tip,
 			],
 		]);
 	}

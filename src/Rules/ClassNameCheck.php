@@ -21,9 +21,13 @@ class ClassNameCheck
 		$errors = [];
 
 		if ($checkClassCaseSensitivity) {
-			$errors += $this->classCaseSensitivityCheck->checkClassNames($pairs);
+			foreach ($this->classCaseSensitivityCheck->checkClassNames($pairs) as $error) {
+				$errors[] = $error;
+			}
 		}
-		$errors += $this->classForbiddenNameCheck->checkClassNames($pairs);
+		foreach ($this->classForbiddenNameCheck->checkClassNames($pairs) as $error) {
+			$errors[] = $error;
+		}
 
 		return $errors;
 	}

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\NonAcceptingNeverType;
@@ -85,8 +86,35 @@ class TemplateTypeHelper
 	 */
 	public static function toArgument(Type $type): Type
 	{
+		$ownedTemplates = [];
+
 		/** @var T */
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$ownedTemplates): Type {
+			if ($type instanceof ParametersAcceptor) {
+				$templateTypeMap = $type->getTemplateTypeMap();
+
+				foreach ($type->getParameters() as $parameter) {
+					$parameterType = $parameter->getType();
+					if (!($parameterType instanceof TemplateType) || !$templateTypeMap->hasType($parameterType->getName())) {
+						continue;
+					}
+
+					$ownedTemplates[] = $parameterType;
+				}
+
+				$returnType = $type->getReturnType();
+
+				if ($returnType instanceof TemplateType && $templateTypeMap->hasType($returnType->getName())) {
+					$ownedTemplates[] = $returnType;
+				}
+			}
+
+			foreach ($ownedTemplates as $ownedTemplate) {
+				if ($ownedTemplate === $type) {
+					return $traverse($type);
+				}
+			}
+
 			if ($type instanceof TemplateType) {
 				return $traverse($type->toArgument());
 			}

@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use Closure;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -23,6 +24,7 @@ use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -618,10 +620,24 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			);
 		}
 
+		$templateTags = [];
+		foreach ($this->templateTypeMap->getTypes() as $templateName => $templateType) {
+			if (!$templateType instanceof TemplateType) {
+				throw new ShouldNotHappenException();
+			}
+
+			$templateTags[] = new TemplateTagValueNode(
+				$templateName,
+				$templateType->getBound()->toPhpDocNode(),
+				'',
+			);
+		}
+
 		return new CallableTypeNode(
 			new IdentifierTypeNode('Closure'),
 			$parameters,
 			$this->returnType->toPhpDocNode(),
+			$templateTags,
 		);
 	}
 

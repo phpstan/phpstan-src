@@ -2,6 +2,7 @@
 
 namespace Bug10627;
 
+use function array_is_list;
 use function PHPStan\Testing\assertType;
 
 class HelloWorld
@@ -10,35 +11,40 @@ class HelloWorld
 	{
 		$list = ['A', 'C', 'B'];
 		natcasesort($list);
-		assertType("non-empty-array<0|1|2, 'A'|'B'|'C'>", $list);
+		assertType("array{'A', 'C', 'B'}", $list);
+		assertType('bool', array_is_list($list));
 	}
 
 	public function sayHello2(): void
 	{
 		$list = ['A', 'C', 'B'];
 		natsort($list);
-		assertType("non-empty-array<0|1|2, 'A'|'B'|'C'>", $list);
+		assertType("array{'A', 'C', 'B'}", $list);
+		assertType('bool', array_is_list($list));
 	}
 
 	public function sayHello3(): void
 	{
 		$list = ['A', 'C', 'B'];
 		arsort($list);
-		assertType("non-empty-array<0|1|2, 'A'|'B'|'C'>", $list);
+		assertType("array{'A', 'C', 'B'}", $list);
+		assertType('bool', array_is_list($list));
 	}
 
 	public function sayHello4(): void
 	{
 		$list = ['A', 'C', 'B'];
 		asort($list);
-		assertType("non-empty-array<0|1|2, 'A'|'B'|'C'>", $list);
+		assertType("array{'A', 'C', 'B'}", $list);
+		assertType('bool', array_is_list($list));
 	}
 
 	public function sayHello5(): void
 	{
 		$list = ['A', 'C', 'B'];
 		ksort($list);
-		assertType("non-empty-array<0|1|2, 'A'|'B'|'C'>", $list);
+		assertType("array{'A', 'C', 'B'}", $list);
+		assertType('bool', array_is_list($list));
 	}
 
 	public function sayHello6(): void
@@ -47,7 +53,8 @@ class HelloWorld
 		uasort($list, function () {
 
 		});
-		assertType("non-empty-array<0|1|2, 'A'|'B'|'C'>", $list);
+		assertType("array{'A', 'C', 'B'}", $list);
+		assertType('bool', array_is_list($list));
 	}
 
 	public function sayHello7(): void
@@ -56,14 +63,16 @@ class HelloWorld
 		uksort($list, function () {
 
 		});
-		assertType("non-empty-array<0|1|2, 'A'|'B'|'C'>", $list);
+		assertType("array{'A', 'C', 'B'}", $list);
+		assertType('bool', array_is_list($list));
 	}
 
 	public function sayHello8(): void
 	{
 		$list = ['A', 'C', 'B'];
 		krsort($list);
-		assertType("non-empty-array<0|1|2, 'A'|'B'|'C'>", $list);
+		assertType("array{'A', 'C', 'B'}", $list);
+		assertType('bool', array_is_list($list));
 	}
 
 	/**
@@ -74,5 +83,13 @@ class HelloWorld
 	{
 		krsort($list);
 		assertType("array<int<0, max>, string>", $list);
+	}
+
+	public function sayHello10(): void
+	{
+		$list = ['a' => 'A', 'c' => 'C', 'b' => 'B'];
+		krsort($list);
+		assertType("array{a: 'A', c: 'C', b: 'B'}", $list);
+		assertType('false', array_is_list($list));
 	}
 }

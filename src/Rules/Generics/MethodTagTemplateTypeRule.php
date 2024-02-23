@@ -74,7 +74,9 @@ class MethodTagTemplateTypeRule implements Rule
 					continue;
 				}
 
-				$messages[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @method template %s for method %s::%s() shadows @template %s for class %s.', $name, $className, $methodName, $classTemplateTypes[$name]->describe(VerbosityLevel::typeOnly()), $classReflection->getDisplayName(false)))->build();
+				$messages[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @method template %s for method %s::%s() shadows @template %s for class %s.', $name, $className, $methodName, $classTemplateTypes[$name]->describe(VerbosityLevel::typeOnly()), $classReflection->getDisplayName(false)))
+					->identifier('methodTag.shadowTemplate')
+					->build();
 			}
 		}
 

@@ -165,7 +165,7 @@ class PhpDocNodeResolver
 			foreach ($phpDocNode->getMethodTagValues($tagName) as $tagValue) {
 				$templateTags = [];
 
-				if (count($tagValue->templateTypes) > 0) {
+				if (count($tagValue->templateTypes) > 0 && $nameScope->getClassName() !== null) {
 					foreach ($tagValue->templateTypes as $templateType) {
 						$templateTags[$templateType->name] = new TemplateTag(
 							$templateType->name,

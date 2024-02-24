@@ -500,6 +500,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
+				'Parameter #1 $other of method Test\CollectionWithStaticParam::add() expects static(Test\AppleCollection), Test\AppleCollection given.',
+				1512,
+			],
+			[
 				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): (array{\'foo\'}|null) given.',
 				1533,
 			],
@@ -818,6 +822,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Unable to resolve the template type T in call to method Test\ClassStringWithUpperBounds::doFoo()',
 				1490,
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+			[
+				'Parameter #1 $other of method Test\CollectionWithStaticParam::add() expects static(Test\AppleCollection), Test\AppleCollection given.',
+				1512,
 			],
 			[
 				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): (array{\'foo\'}|null) given.',
@@ -3189,6 +3197,47 @@ class CallMethodsRuleTest extends RuleTestCase
 				24,
 			],
 		]);
+	}
+
+	public function testBugTemplateMixedUnionIntersect(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-template-mixed-union-intersect.php'], [
+			[
+				'Call to an undefined method BugTemplateMixedUnionIntersect\FooInterface&T of mixed::bar().',
+				17,
+			],
+			[
+				'Call to an undefined method BugTemplateMixedUnionIntersect\FooInterface::bar().',
+				20,
+			],
+			[
+				'Cannot call method foo() on BugTemplateMixedUnionIntersect\FooInterface|T of mixed.',
+				23,
+			],
+			[
+				'Cannot call method foo() on mixed.',
+				25,
+			],
+		]);
+	}
+
+	public function testBug9009(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-9009.php'], []);
 	}
 
 }

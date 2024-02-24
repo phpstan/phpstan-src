@@ -10,6 +10,7 @@ use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateMixedType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -303,6 +304,20 @@ class RuleLevelHelper
 			return new FoundTypeResult(new ErrorType(), [], [], null);
 		}
 		$type = $scope->getType($var);
+
+		return $this->findTypeToCheckImplementation($scope, $var, $type, $unknownClassErrorPattern, $unionTypeCriteriaCallback, true);
+	}
+
+	/** @param callable(Type $type): bool $unionTypeCriteriaCallback */
+	private function findTypeToCheckImplementation(
+		Scope $scope,
+		Expr $var,
+		Type $type,
+		string $unknownClassErrorPattern,
+		callable $unionTypeCriteriaCallback,
+		bool $isTopLevel = false,
+	): FoundTypeResult
+	{
 		if (!$this->checkNullables && !$type->isNull()->yes()) {
 			$type = TypeCombinator::removeNull($type);
 		}
@@ -345,27 +360,33 @@ class RuleLevelHelper
 		if ($type instanceof MixedType || $type instanceof NeverType) {
 			return new FoundTypeResult(new ErrorType(), [], [], null);
 		}
-		if ($type instanceof StaticType) {
-			$type = $type->getStaticObjectType();
+		if (!$this->newRuleLevelHelper) {
+			if ($isTopLevel && $type instanceof StaticType) {
+				$type = $type->getStaticObjectType();
+			}
 		}
 
 		$errors = [];
-		$directClassNames = $type->getObjectClassNames();
 		$hasClassExistsClass = false;
-		foreach ($directClassNames as $referencedClass) {
-			if ($this->reflectionProvider->hasClass($referencedClass)) {
-				$classReflection = $this->reflectionProvider->getClass($referencedClass);
-				if (!$classReflection->isTrait()) {
+		$directClassNames = [];
+
+		if ($isTopLevel) {
+			$directClassNames = $type->getObjectClassNames();
+			foreach ($directClassNames as $referencedClass) {
+				if ($this->reflectionProvider->hasClass($referencedClass)) {
+					$classReflection = $this->reflectionProvider->getClass($referencedClass);
+					if (!$classReflection->isTrait()) {
+						continue;
+					}
+				}
+
+				if ($scope->isInClassExists($referencedClass)) {
+					$hasClassExistsClass = true;
 					continue;
 				}
-			}
 
-			if ($scope->isInClassExists($referencedClass)) {
-				$hasClassExistsClass = true;
-				continue;
+				$errors[] = RuleErrorBuilder::message(sprintf($unknownClassErrorPattern, $referencedClass))->line($var->getLine())->discoveringSymbolsTip()->build();
 			}
-
-			$errors[] = RuleErrorBuilder::message(sprintf($unknownClassErrorPattern, $referencedClass))->line($var->getLine())->discoveringSymbolsTip()->build();
 		}
 
 		if (count($errors) > 0 || $hasClassExistsClass) {
@@ -376,28 +397,76 @@ class RuleLevelHelper
 			return new FoundTypeResult(new ErrorType(), [], [], null);
 		}
 
-		if (
-			(
-				!$this->checkUnionTypes
-				&& $type instanceof UnionType
-				&& !$type instanceof BenevolentUnionType
-			) || (
-				!$this->checkBenevolentUnionTypes
-				&& $type instanceof BenevolentUnionType
-			)
-		) {
-			$newTypes = [];
+		if ($this->newRuleLevelHelper) {
+			if ($type instanceof UnionType) {
+				$shouldFilterUnion = (
+					!$this->checkUnionTypes
+					&& !$type instanceof BenevolentUnionType
+				) || (
+					!$this->checkBenevolentUnionTypes
+					&& $type instanceof BenevolentUnionType
+				);
 
-			foreach ($type->getTypes() as $innerType) {
-				if (!$unionTypeCriteriaCallback($innerType)) {
-					continue;
+				$newTypes = [];
+
+				foreach ($type->getTypes() as $innerType) {
+					if ($shouldFilterUnion && !$unionTypeCriteriaCallback($innerType)) {
+						continue;
+					}
+
+					$newTypes[] = $this->findTypeToCheckImplementation(
+						$scope,
+						$var,
+						$innerType,
+						$unknownClassErrorPattern,
+						$unionTypeCriteriaCallback,
+					)->getType();
 				}
 
-				$newTypes[] = $innerType;
+				if (count($newTypes) > 0) {
+					return new FoundTypeResult(TypeCombinator::union(...$newTypes), $directClassNames, [], null);
+				}
 			}
 
-			if (count($newTypes) > 0) {
-				return new FoundTypeResult(TypeCombinator::union(...$newTypes), $directClassNames, [], null);
+			if ($type instanceof IntersectionType) {
+				$newTypes = [];
+
+				foreach ($type->getTypes() as $innerType) {
+					$newTypes[] = $this->findTypeToCheckImplementation(
+						$scope,
+						$var,
+						$innerType,
+						$unknownClassErrorPattern,
+						$unionTypeCriteriaCallback,
+					)->getType();
+				}
+
+				return new FoundTypeResult(TypeCombinator::intersect(...$newTypes), $directClassNames, [], null);
+			}
+		} else {
+			if (
+				(
+					!$this->checkUnionTypes
+					&& $type instanceof UnionType
+					&& !$type instanceof BenevolentUnionType
+				) || (
+					!$this->checkBenevolentUnionTypes
+					&& $type instanceof BenevolentUnionType
+				)
+			) {
+				$newTypes = [];
+
+				foreach ($type->getTypes() as $innerType) {
+					if (!$unionTypeCriteriaCallback($innerType)) {
+						continue;
+					}
+
+					$newTypes[] = $innerType;
+				}
+
+				if (count($newTypes) > 0) {
+					return new FoundTypeResult(TypeCombinator::union(...$newTypes), $directClassNames, [], null);
+				}
 			}
 		}
 

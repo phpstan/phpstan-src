@@ -667,6 +667,11 @@ parameters:
 			path: src/Rules/RuleErrorBuilder.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Rules/RuleLevelHelper.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\NullType is error\\-prone and deprecated\\. Use Type\\:\\:isNull\\(\\) instead\\.$#"
 			count: 2
 			path: src/Rules/RuleLevelHelper.php

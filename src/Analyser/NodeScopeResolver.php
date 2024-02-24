@@ -3216,7 +3216,7 @@ class NodeScopeResolver
 						$constantArray->getValueTypes(),
 						$constantArray->getNextAutoIndexes(),
 						$constantArray->getOptionalKeys(),
-						TrinaryLogic::createMaybe(),
+						$constantArray->isList()->and(TrinaryLogic::createMaybe()),
 					);
 				}
 

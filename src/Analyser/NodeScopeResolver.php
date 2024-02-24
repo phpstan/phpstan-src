@@ -83,6 +83,7 @@ use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\FunctionCallableNode;
@@ -107,6 +108,7 @@ use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\UnreachableStatementNode;
+use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
@@ -1554,7 +1556,7 @@ class NodeScopeResolver
 						$clonedVar,
 						new UnsetOffsetExpr($var->var, $var->dim),
 						static function (Node $node, Scope $scope) use ($nodeCallback): void {
-							if (!$node instanceof PropertyAssignNode) {
+							if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
 								return;
 							}
 
@@ -2845,7 +2847,7 @@ class NodeScopeResolver
 				$expr->var,
 				$newExpr,
 				static function (Node $node, Scope $scope) use ($nodeCallback): void {
-					if (!$node instanceof PropertyAssignNode) {
+					if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
 						return;
 					}
 
@@ -3891,6 +3893,7 @@ class NodeScopeResolver
 			if ($assignByReference) {
 				$argValue = $arg->value;
 				if ($argValue instanceof Variable && is_string($argValue->name)) {
+					$nodeCallback(new VariableAssignNode($argValue, new TypeExpr($byRefType), false), $scope);
 					$scope = $scope->assignVariable($argValue->name, $byRefType, new MixedType());
 				} else {
 					$scope = $scope->invalidateExpression($argValue);
@@ -3987,6 +3990,7 @@ class NodeScopeResolver
 			$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 
+			$nodeCallback(new VariableAssignNode($var, $assignedExpr, $isAssignOp), $result->getScope());
 			$scope = $result->getScope()->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr));
 			foreach ($conditionalExpressions as $exprString => $holders) {
 				$scope = $scope->addConditionalExpressions($exprString, $holders);
@@ -4143,6 +4147,7 @@ class NodeScopeResolver
 
 			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				if ($var instanceof Variable && is_string($var->name)) {
+					$nodeCallback(new VariableAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
 					$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite);
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
@@ -4169,7 +4174,9 @@ class NodeScopeResolver
 					}
 				}
 			} else {
-				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
+				if ($var instanceof Variable) {
+					$nodeCallback(new VariableAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
+				} elseif ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 					$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
 					if ($var instanceof PropertyFetch && $var->name instanceof Node\Identifier && !$isAssignOp) {
 						$scope = $scope->assignInitializedProperty($scope->getType($var->var), $var->name->toString());
@@ -4385,6 +4392,7 @@ class NodeScopeResolver
 			}
 
 			if ($var instanceof Variable && is_string($var->name)) {
+				$nodeCallback(new VariableAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
 				$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite);
 			} else {
 				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {

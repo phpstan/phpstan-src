@@ -84,6 +84,7 @@ parameters:
 		callUserFunc: false
 		finalByPhpDoc: false
 		magicConstantOutOfContext: false
+		paramOutType: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

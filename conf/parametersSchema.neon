@@ -79,6 +79,7 @@ parametersSchema:
 		callUserFunc: bool()
 		finalByPhpDoc: bool()
 		magicConstantOutOfContext: bool()
+		paramOutType: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

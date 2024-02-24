@@ -3230,4 +3230,14 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9009(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-9009.php'], []);
+	}
+
 }

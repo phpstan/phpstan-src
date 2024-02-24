@@ -1640,4 +1640,5 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			],
 		]);
 	}
+
 }

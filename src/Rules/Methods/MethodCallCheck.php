@@ -12,6 +12,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function count;
@@ -50,13 +51,18 @@ class MethodCallCheck
 		if ($type instanceof ErrorType) {
 			return [$typeResult->getUnknownClassErrors(), null];
 		}
+
+		$typeForDescribe = $type;
+		if ($type instanceof StaticType) {
+			$typeForDescribe = $type->getStaticObjectType();
+		}
 		if (!$type->canCallMethods()->yes() || $type->isClassStringType()->yes()) {
 			return [
 				[
 					RuleErrorBuilder::message(sprintf(
 						'Cannot call method %s() on %s.',
 						$methodName,
-						$type->describe(VerbosityLevel::typeOnly()),
+						$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 					))->identifier('method.nonObject')->build(),
 				],
 				null,
@@ -105,7 +111,7 @@ class MethodCallCheck
 				[
 					RuleErrorBuilder::message(sprintf(
 						'Call to an undefined method %s::%s().',
-						$type->describe(VerbosityLevel::typeOnly()),
+						$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 						$methodName,
 					))->identifier('method.notFound')->build(),
 				],

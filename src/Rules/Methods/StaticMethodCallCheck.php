@@ -22,8 +22,8 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
-use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
@@ -169,7 +169,7 @@ class StaticMethodCallCheck
 		}
 
 		$typeForDescribe = $classType;
-		if ($classType instanceof ThisType) {
+		if ($classType instanceof StaticType) {
 			$typeForDescribe = $classType->getStaticObjectType();
 		}
 		$classType = TypeCombinator::remove($classType, new StringType());

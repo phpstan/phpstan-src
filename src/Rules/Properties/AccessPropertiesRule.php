@@ -15,6 +15,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
@@ -78,12 +79,17 @@ class AccessPropertiesRule implements Rule
 			return [];
 		}
 
+		$typeForDescribe = $type;
+		if ($type instanceof StaticType) {
+			$typeForDescribe = $type->getStaticObjectType();
+		}
+
 		if ($type->canAccessProperties()->no() || $type->canAccessProperties()->maybe() && !$scope->isUndefinedExpressionAllowed($node)) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access property $%s on %s.',
 					$name,
-					$type->describe(VerbosityLevel::typeOnly()),
+					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 				))->identifier('property.nonObject')->build(),
 			];
 		}
@@ -138,7 +144,7 @@ class AccessPropertiesRule implements Rule
 
 			$ruleErrorBuilder = RuleErrorBuilder::message(sprintf(
 				'Access to an undefined property %s::$%s.',
-				$type->describe(VerbosityLevel::typeOnly()),
+				$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 				$name,
 			))->identifier('property.notFound');
 			if ($typeResult->getTip() !== null) {

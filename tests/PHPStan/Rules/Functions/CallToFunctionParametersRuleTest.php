@@ -1631,11 +1631,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-10626.php'], [
 			[
-				'Parameter #1 $value of function PassedByReference\intByValue expects int, string given.',
+				'Parameter #1 $value of function Bug10626\intByValue expects int, string given.',
 				16,
 			],
 			[
-				'Parameter #1 $value of function PassedByReference\intByReference expects int, string given.',
+				'Parameter #1 $value of function Bug10626\intByReference expects int, string given.',
 				17,
 			],
 		]);

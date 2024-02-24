@@ -1,6 +1,6 @@
 <?php
 
-namespace PassedByReference;
+namespace Bug10626;
 
 function intByValue(int $value): void
 {

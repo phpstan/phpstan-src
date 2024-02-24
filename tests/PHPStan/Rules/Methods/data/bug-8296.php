@@ -1,5 +1,7 @@
 <?php
 
+namespace Bug8296;
+
 class VerifyLoginTask{
 
 	public static function dumpMemory() : void{

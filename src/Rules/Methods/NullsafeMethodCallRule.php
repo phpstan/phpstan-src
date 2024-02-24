@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\NullType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -23,13 +22,8 @@ class NullsafeMethodCallRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$nullType = new NullType();
 		$calledOnType = $scope->getType($node->var);
-		if ($calledOnType->equals($nullType)) {
-			return [];
-		}
-
-		if (!$calledOnType->isSuperTypeOf($nullType)->no()) {
+		if (!$calledOnType->isNull()->no()) {
 			return [];
 		}
 

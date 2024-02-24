@@ -629,6 +629,21 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8296(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-8296.php'], [
+			[
+				'Parameter #1 $objects of static method Bug8296\VerifyLoginTask::continueDump() expects array<string, object>, array<string, Bug8296\stdClass|true> given.',
+				12,
+			],
+			[
+				'Parameter #1 $string of static method Bug8296\VerifyLoginTask::stringByRef() expects string, int given.',
+				15,
+			],
+		]);
+	}
+
 	public function testRequireExtends(): void
 	{
 		$this->checkThisOnly = false;

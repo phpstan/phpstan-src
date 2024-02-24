@@ -297,6 +297,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #1 $array of function reset expects array|object, null given.',
 				39,
 			],
+			[
+				'Parameter #1 $s of function PassedByReference\bar expects string, int given.',
+				48,
+			],
 		]);
 	}
 
@@ -1619,6 +1623,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				"Parameter #2 \$callback of function array_filter expects (callable('bar'|'baz'|'foo'|'quux'|'qux'): bool)|null, Closure(string): stdClass given.",
 				23,
+			],
+		]);
+	}
+
+	public function testBug10626(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10626.php'], [
+			[
+				'Parameter #1 $value of function Bug10626\intByValue expects int, string given.',
+				16,
+			],
+			[
+				'Parameter #1 $value of function Bug10626\intByReference expects int, string given.',
+				17,
 			],
 		]);
 	}

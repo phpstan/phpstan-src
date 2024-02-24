@@ -250,7 +250,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'Call to an undefined static method static(CallStaticMethods\CallWithStatic)::nonexistent().',
+				'Call to an undefined static method CallStaticMethods\CallWithStatic::nonexistent().',
 				344,
 			],
 		]);
@@ -747,6 +747,36 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = $checkExplicitMixed;
 		$this->checkImplicitMixed = $checkImplicitMixed;
 		$this->analyse([__DIR__ . '/data/call-static-method-mixed.php'], $errors);
+	}
+
+	public function testBugWrongMethodNameWithTemplateMixed(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-wrong-method-name-with-template-mixed.php'], [
+			[
+				'Call to an undefined static method T of mixed&UnitEnum::from().',
+				14,
+			],
+			[
+				'Call to an undefined static method T of mixed&UnitEnum::from().',
+				25,
+			],
+			[
+				'Call to an undefined static method T of object&UnitEnum::from().',
+				36,
+			],
+			[
+				'Call to an undefined static method UnitEnum::from().',
+				43,
+			],
+		]);
 	}
 
 }

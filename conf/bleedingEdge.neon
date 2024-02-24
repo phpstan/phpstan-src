@@ -49,3 +49,4 @@ parameters:
 		callUserFunc: true
 		finalByPhpDoc: true
 		magicConstantOutOfContext: true
+		paramOutType: true

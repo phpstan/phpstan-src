@@ -6,6 +6,7 @@ use function PHPStan\Testing\assertType;
 
 /**
  * @method TVal doThing<TVal of mixed>(TVal $param)
+ * @method TVal doAnotherThing(int $param)
  */
 class Test
 {
@@ -20,4 +21,5 @@ function test(int $int, string $string): void
 
 	assertType('int', $test->doThing($int));
 	assertType('string', $test->doThing($string));
+	assertType(TVal::class, $test->doAnotherThing($int));
 }

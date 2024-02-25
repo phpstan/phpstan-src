@@ -160,9 +160,11 @@ class PhpDocNodeResolver
 	public function resolveMethodTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
 		$resolved = [];
+		$originalNameScope = $nameScope;
 
 		foreach (['@method', '@psalm-method', '@phpstan-method'] as $tagName) {
 			foreach ($phpDocNode->getMethodTagValues($tagName) as $tagValue) {
+				$nameScope = $originalNameScope;
 				$templateTags = [];
 
 				if (count($tagValue->templateTypes) > 0 && $nameScope->getClassName() !== null) {

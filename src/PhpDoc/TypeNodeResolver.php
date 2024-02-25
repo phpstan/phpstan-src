@@ -10,6 +10,7 @@ use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
+use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprArrayNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFalseNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
@@ -66,6 +67,9 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Helper\GetTemplateTypeType;
 use PHPStan\Type\IntegerRangeType;
@@ -873,7 +877,32 @@ class TypeNodeResolver
 
 	private function resolveCallableTypeNode(CallableTypeNode $typeNode, NameScope $nameScope): Type
 	{
+		$templateTags = [];
+
+		if (count($typeNode->templateTypes ?? []) > 0) {
+			foreach ($typeNode->templateTypes as $templateType) {
+				$templateTags[$templateType->name] = new TemplateTag(
+					$templateType->name,
+					$templateType->bound !== null
+						? $this->resolve($templateType->bound, $nameScope)
+						: new MixedType(),
+					TemplateTypeVariance::createInvariant(),
+				);
+			}
+			$templateTypeScope = TemplateTypeScope::createWithAnonymousFunction();
+
+			$templateTypeMap = new TemplateTypeMap(array_map(
+				static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag),
+				$templateTags,
+			));
+
+			$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap);
+		} else {
+			$templateTypeMap = TemplateTypeMap::createEmpty();
+		}
+
 		$mainType = $this->resolve($typeNode->identifier, $nameScope);
+
 		$isVariadic = false;
 		$parameters = array_map(
 			function (CallableTypeParameterNode $parameterNode) use ($nameScope, &$isVariadic): NativeParameterReflection {
@@ -882,6 +911,7 @@ class TypeNodeResolver
 				if (str_starts_with($parameterName, '$')) {
 					$parameterName = substr($parameterName, 1);
 				}
+
 				return new NativeParameterReflection(
 					$parameterName,
 					$parameterNode->isOptional || $parameterNode->isVariadic,
@@ -893,16 +923,17 @@ class TypeNodeResolver
 			},
 			$typeNode->parameters,
 		);
+
 		$returnType = $this->resolve($typeNode->returnType, $nameScope);
 
 		if ($mainType instanceof CallableType) {
-			return new CallableType($parameters, $returnType, $isVariadic);
+			return new CallableType($parameters, $returnType, $isVariadic, $templateTypeMap);
 
 		} elseif (
 			$mainType instanceof ObjectType
 			&& $mainType->getClassName() === Closure::class
 		) {
-			return new ClosureType($parameters, $returnType, $isVariadic);
+			return new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap);
 		}
 
 		return new ErrorType();

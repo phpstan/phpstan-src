@@ -56,4 +56,14 @@ class Foo
 		unset($p[1][2]);
 	}
 
+	function doNoParamOut(string &$p): void
+	{
+		$p = 1;
+	}
+
+	function doNoParamOut2(string &$p): void
+	{
+		$p = 'foo';
+	}
+
 }

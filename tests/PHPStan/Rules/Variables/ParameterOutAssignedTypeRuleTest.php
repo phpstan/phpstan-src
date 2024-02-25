@@ -23,28 +23,33 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/parameter-out-assigned-type.php'], [
 			[
-				'Parameter &$p out type of function ParameterOutAssignedType\foo() expects int, string given.',
+				'Parameter &$p @param-out type of function ParameterOutAssignedType\foo() expects int, string given.',
 				10,
 			],
 			[
-				'Parameter &$p out type of method ParameterOutAssignedType\Foo::doFoo() expects int, string given.',
+				'Parameter &$p @param-out type of method ParameterOutAssignedType\Foo::doFoo() expects int, string given.',
 				21,
 			],
 			[
-				'Parameter &$p out type of method ParameterOutAssignedType\Foo::doBar() expects string, int given.',
+				'Parameter &$p @param-out type of method ParameterOutAssignedType\Foo::doBar() expects string, int given.',
 				29,
 			],
 			[
-				'Parameter &$p out type of method ParameterOutAssignedType\Foo::doBaz() expects list<int>, array<0|int<2, max>, int> given.',
+				'Parameter &$p @param-out type of method ParameterOutAssignedType\Foo::doBaz() expects list<int>, array<0|int<2, max>, int> given.',
 				38,
 			],
 			[
-				'Parameter &$p out type of method ParameterOutAssignedType\Foo::doBaz2() expects list<int>, non-empty-list<\'str\'|int> given.',
+				'Parameter &$p @param-out type of method ParameterOutAssignedType\Foo::doBaz2() expects list<int>, non-empty-list<\'str\'|int> given.',
 				47,
 			],
 			[
-				'Parameter &$p out type of method ParameterOutAssignedType\Foo::doBaz3() expects list<list<int>>, array<int<0, max>, array<int<0, max>, int>> given.',
+				'Parameter &$p @param-out type of method ParameterOutAssignedType\Foo::doBaz3() expects list<list<int>>, array<int<0, max>, array<int<0, max>, int>> given.',
 				56,
+			],
+			[
+				'Parameter &$p by-ref type of method ParameterOutAssignedType\Foo::doNoParamOut() expects string, int given.',
+				61,
+				'You can change the parameter out type with @param-out PHPDoc tag.',
 			],
 		]);
 	}

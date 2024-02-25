@@ -68,15 +68,18 @@ class ParameterOutAssignedTypeRule implements Rule
 			return [];
 		}
 
-		if ($foundParameter->getOutType() === null) {
-			return [];
+		$isParamOutType = true;
+		$outType = $foundParameter->getOutType();
+		if ($outType === null) {
+			$isParamOutType = false;
+			$outType = $foundParameter->getType();
 		}
 
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->getAssignedExpr(),
 			'',
-			static fn (Type $type): bool => $foundParameter->getOutType()->isSuperTypeOf($type)->yes(),
+			static fn (Type $type): bool => $outType->isSuperTypeOf($type)->yes(),
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -84,7 +87,7 @@ class ParameterOutAssignedTypeRule implements Rule
 		}
 
 		$assignedExprType = $scope->getType($node->getAssignedExpr());
-		if ($foundParameter->getOutType()->isSuperTypeOf($assignedExprType)->yes()) {
+		if ($outType->isSuperTypeOf($assignedExprType)->yes()) {
 			return [];
 		}
 
@@ -94,16 +97,22 @@ class ParameterOutAssignedTypeRule implements Rule
 			$functionDescription = sprintf('function %s()', $inFunction->getName());
 		}
 
-		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($foundParameter->getOutType(), $assignedExprType);
+		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($outType, $assignedExprType);
+		$errorBuilder = RuleErrorBuilder::message(sprintf(
+			'Parameter &$%s %s of %s expects %s, %s given.',
+			$foundParameter->getName(),
+			$isParamOutType ? '@param-out type' : 'by-ref type',
+			$functionDescription,
+			$outType->describe($verbosityLevel),
+			$assignedExprType->describe($verbosityLevel),
+		));
+
+		if (!$isParamOutType) {
+			$errorBuilder->tip('You can change the parameter out type with @param-out PHPDoc tag.');
+		}
 
 		return [
-			RuleErrorBuilder::message(sprintf(
-				'Parameter &$%s out type of %s expects %s, %s given.',
-				$foundParameter->getName(),
-				$functionDescription,
-				$foundParameter->getOutType()->describe($verbosityLevel),
-				$assignedExprType->describe($verbosityLevel),
-			))->build(),
+			$errorBuilder->build(),
 		];
 	}
 

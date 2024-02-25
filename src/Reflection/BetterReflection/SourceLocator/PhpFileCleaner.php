@@ -101,7 +101,7 @@ class PhpFileCleaner
 					continue;
 				}
 
-				if ($char === '<' && $this->peek('<') && $this->match('{<<<[ \t]*+([\'"]?)([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+)\\1(?:\r\n|\n|\r)}A', $match)) {
+				if ($char === '<' && $this->peek('<') && $this->match('{<<<[ \t]*+([\'"]?)([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+)\\1(?:\r\n|\n|\r)}A', $match) && $match !== null) {
 					$this->index += strlen($match[0]);
 					$this->skipHeredoc($match[2]);
 					$clean .= 'null';
@@ -123,6 +123,7 @@ class PhpFileCleaner
 					$inType
 					&& $char === 'c'
 					&& $this->match('~.\b(?<![\$:>])const(\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+)~Ais', $match, $this->index - 1)
+					&& $match !== null
 				) {
 					// It's invalid PHP but it does not matter
 					$clean .= 'class_const' . $match[1];
@@ -130,7 +131,7 @@ class PhpFileCleaner
 					continue;
 				}
 
-				if ($char === 'd' && $this->match('~.\b(?<![\$:>])define\s*+\(~Ais', $match, $this->index - 1)) {
+				if ($char === 'd' && $this->match('~.\b(?<![\$:>])define\s*+\(~Ais', $match, $this->index - 1) && $match !== null) {
 					$inDefine = true;
 					$clean .= $match[0];
 					$this->index += strlen($match[0]) - 1;
@@ -141,7 +142,7 @@ class PhpFileCleaner
 					$type = $this->typeConfig[$char];
 
 					if (substr($this->contents, $this->index, $type['length']) === $type['name']) {
-						if ($maxMatches === 1 && $this->match($type['pattern'], $match, $this->index - 1)) {
+						if ($maxMatches === 1 && $this->match($type['pattern'], $match, $this->index - 1) && $match !== null) {
 							return $clean . $match[0];
 						}
 
@@ -150,7 +151,7 @@ class PhpFileCleaner
 				}
 
 				$this->index += 1;
-				if ($this->match($this->restPattern, $match)) {
+				if ($this->match($this->restPattern, $match) && $match !== null) {
 					$clean .= $char . $match[0];
 					$this->index += strlen($match[0]);
 				} else {

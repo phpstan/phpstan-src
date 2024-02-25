@@ -243,6 +243,7 @@ class NodeScopeResolver
 		private readonly bool $implicitThrows,
 		private readonly bool $treatPhpDocTypesAsCertain,
 		private readonly bool $detectDeadTypeInMultiCatch,
+		private readonly bool $paramOutType,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -3859,16 +3860,31 @@ class NodeScopeResolver
 
 			$byRefType = new MixedType();
 			$assignByReference = false;
+			$currentParameter = null;
 			if (isset($parameters[$i])) {
-				$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
-				if ($parameters[$i] instanceof ParameterReflectionWithPhpDocs && $parameters[$i]->getOutType() !== null) {
-					$byRefType = $parameters[$i]->getOutType();
-				}
+				$currentParameter = $parameters[$i];
 			} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
-				$lastParameter = $parameters[count($parameters) - 1];
-				$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
-				if ($lastParameter instanceof ParameterReflectionWithPhpDocs && $lastParameter->getOutType() !== null) {
-					$byRefType = $lastParameter->getOutType();
+				$currentParameter = $parameters[count($parameters) - 1];
+			}
+
+			if ($currentParameter !== null) {
+				$assignByReference = $currentParameter->passedByReference()->createsNewVariable();
+				if ($assignByReference) {
+					if ($currentParameter instanceof ParameterReflectionWithPhpDocs && $currentParameter->getOutType() !== null) {
+						$byRefType = $currentParameter->getOutType();
+					} elseif (
+						$calleeReflection instanceof MethodReflection
+						&& !$calleeReflection->getDeclaringClass()->isBuiltin()
+						&& $this->paramOutType
+					) {
+						$byRefType = $currentParameter->getType();
+					} elseif (
+						$calleeReflection instanceof FunctionReflection
+						&& !$calleeReflection->isBuiltin()
+						&& $this->paramOutType
+					) {
+						$byRefType = $currentParameter->getType();
+					}
 				}
 			}
 

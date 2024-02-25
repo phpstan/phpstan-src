@@ -446,3 +446,58 @@ function fooIsCallable($x, bool $b)
 	is_callable($x, $b, $name);
 	assertType('callable-string', $name);
 }
+
+function noParamOut(string &$s): void
+{
+
+}
+
+function noParamOutVariadic(string &...$s): void
+{
+
+}
+
+function ($s): void {
+	assertType('mixed', $s);
+	noParamOut($s);
+	assertType('string', $s);
+};
+
+function ($s, $t): void {
+	assertType('mixed', $s);
+	assertType('mixed', $t);
+	noParamOutVariadic($s, $t);
+	assertType('string', $s);
+	assertType('string', $t);
+};
+
+class NoParamOutClass
+{
+
+	function doFoo(string &$s): void
+	{
+
+	}
+
+	function doFooVariadic(string &...$s): void
+	{
+
+	}
+
+}
+
+function ($s): void {
+	assertType('mixed', $s);
+	$c = new NoParamOutClass();
+	$c->doFoo($s);
+	assertType('string', $s);
+};
+
+function ($s, $t): void {
+	assertType('mixed', $s);
+	assertType('mixed', $t);
+	$c = new NoParamOutClass();
+	$c->doFooVariadic($s, $t);
+	assertType('string', $s);
+	assertType('string', $t);
+};

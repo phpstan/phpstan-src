@@ -253,7 +253,12 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$this->analyse([__DIR__ . '/data/bug-10048.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-10048.php'], [
+			[
+				'Readonly property Foo::$bar is already assigned',
+				66,
+			],
+		]);
 	}
 
 	public function testAnonymousReadonlyClass(): void

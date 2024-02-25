@@ -31,3 +31,24 @@ class Foo
 function doFoo() {
 	(new Foo())->useCallback();
 }
+
+
+class Bar
+{
+	private readonly string $bar;
+	private readonly \Closure $callback;
+
+	public function __construct()
+	{
+		$this->bar = "hi";
+
+		$this->callback = function () {
+			$this->useBar();
+		};
+	}
+
+	private function useBar(): void
+	{
+		echo $this->bar;
+	}
+}

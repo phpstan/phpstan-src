@@ -56,3 +56,29 @@ final class MultipleWrites
 	}
 
 }
+
+
+final class SingleWriteInConstructorCalledMethod
+{
+	private readonly B $userAccount;
+
+	public function __construct()
+	{
+	}
+
+	public function init(): void
+	{
+		$this->redirectIfNkdeCheckoutNotAllowed();
+		$this->redirectIfNoShoppingBasketPresent();
+	}
+
+	private function redirectIfNkdeCheckoutNotAllowed(): void
+	{
+	}
+
+	private function redirectIfNoShoppingBasketPresent(): void
+	{
+		$this->userAccount = new B();
+	}
+
+}

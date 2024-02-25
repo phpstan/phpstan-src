@@ -192,6 +192,10 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 
+			if ($usageScope->isInAnonymousFunction() && $usageScope->getParentScope() !== null) {
+				$usageScope = $usageScope->getParentScope();
+			}
+
 			$propertyReflection = $usageScope->getPropertyReflection($fetchedOnType, $propertyName);
 			if ($propertyReflection === null) {
 				continue;

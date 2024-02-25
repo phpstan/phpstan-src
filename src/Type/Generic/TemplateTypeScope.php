@@ -7,6 +7,11 @@ use function sprintf;
 class TemplateTypeScope
 {
 
+	public static function createWithAnonymousFunction(): self
+	{
+		return new self(null, null);
+	}
+
 	public static function createWithFunction(string $functionName): self
 	{
 		return new self(null, $functionName);
@@ -48,6 +53,10 @@ class TemplateTypeScope
 	/** @api */
 	public function describe(): string
 	{
+		if ($this->className === null && $this->functionName === null) {
+			return 'anonymous function';
+		}
+
 		if ($this->className === null) {
 			return sprintf('function %s()', $this->functionName);
 		}

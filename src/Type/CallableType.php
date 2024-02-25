@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -54,6 +55,10 @@ class CallableType implements CompoundType, ParametersAcceptor
 
 	private bool $isCommonCallable;
 
+	private TemplateTypeMap $templateTypeMap;
+
+	private TemplateTypeMap $resolvedTemplateTypeMap;
+
 	/**
 	 * @api
 	 * @param array<int, ParameterReflection>|null $parameters
@@ -62,11 +67,15 @@ class CallableType implements CompoundType, ParametersAcceptor
 		?array $parameters = null,
 		?Type $returnType = null,
 		private bool $variadic = true,
+		?TemplateTypeMap $templateTypeMap = null,
+		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 	)
 	{
 		$this->parameters = $parameters ?? [];
 		$this->returnType = $returnType ?? new MixedType();
 		$this->isCommonCallable = $parameters === null && $returnType === null;
+		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
+		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 	}
 
 	/**
@@ -191,6 +200,8 @@ class CallableType implements CompoundType, ParametersAcceptor
 					), $this->parameters),
 					$this->returnType,
 					$this->variadic,
+					$this->templateTypeMap,
+					$this->resolvedTemplateTypeMap,
 				);
 
 				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
@@ -243,12 +254,12 @@ class CallableType implements CompoundType, ParametersAcceptor
 
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
-		return TemplateTypeMap::createEmpty();
+		return $this->templateTypeMap;
 	}
 
 	public function getResolvedTemplateTypeMap(): TemplateTypeMap
 	{
-		return TemplateTypeMap::createEmpty();
+		return $this->resolvedTemplateTypeMap;
 	}
 
 	public function getCallSiteVarianceMap(): TemplateTypeVarianceMap
@@ -356,6 +367,8 @@ class CallableType implements CompoundType, ParametersAcceptor
 			$parameters,
 			$cb($this->getReturnType()),
 			$this->isVariadic(),
+			$this->templateTypeMap,
+			$this->resolvedTemplateTypeMap,
 		);
 	}
 
@@ -402,6 +415,8 @@ class CallableType implements CompoundType, ParametersAcceptor
 			$parameters,
 			$cb($this->getReturnType(), $rightAcceptors[0]->getReturnType()),
 			$this->isVariadic(),
+			$this->templateTypeMap,
+			$this->resolvedTemplateTypeMap,
 		);
 	}
 
@@ -552,10 +567,24 @@ class CallableType implements CompoundType, ParametersAcceptor
 			);
 		}
 
+		$templateTags = [];
+		foreach ($this->templateTypeMap->getTypes() as $templateName => $templateType) {
+			if (!$templateType instanceof TemplateType) {
+				throw new ShouldNotHappenException();
+			}
+
+			$templateTags[] = new TemplateTagValueNode(
+				$templateName,
+				$templateType->getBound()->toPhpDocNode(),
+				'',
+			);
+		}
+
 		return new CallableTypeNode(
 			new IdentifierTypeNode('callable'),
 			$parameters,
 			$this->returnType->toPhpDocNode(),
+			$templateTags,
 		);
 	}
 

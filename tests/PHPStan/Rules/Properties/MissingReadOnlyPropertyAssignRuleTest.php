@@ -24,6 +24,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				[
 					'MissingReadOnlyPropertyAssign\\TestCase::setUp',
 					'Bug10523\\Controller::init',
+					'Bug10523\\MultipleWrites::init',
 				],
 			),
 		);
@@ -268,7 +269,12 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$this->analyse([__DIR__ . '/data/bug-10523.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-10523.php'], [
+			[
+				'Readonly property Bug10523\MultipleWrites::$userAccount is already assigned.',
+				55,
+			],
+		]);
 	}
 
 }

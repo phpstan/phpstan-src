@@ -41,7 +41,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.1"
+          php-version: "8.3"
 
       - name: "Install Issue Bot dependencies"
         working-directory: "issue-bot"
@@ -91,7 +91,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.1"
+          php-version: "8.3"
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress --no-dev"
@@ -133,7 +133,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.1"
+          php-version: "8.3"
 
       - name: "Install Issue Bot dependencies"
         working-directory: "issue-bot"

@@ -1,7 +1,7 @@
 {
-	"name": "phpstan/changelog-generator",
+	"name": "phpstan/issue-bot",
     "require": {
-		"php": "^8.1",
+		"php": "^8.3",
 		"guzzlehttp/guzzle": "^7.5",
 		"knplabs/github-api": "^3.9",
 		"league/commonmark": "^2.3",

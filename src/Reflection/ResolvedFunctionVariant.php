@@ -82,6 +82,16 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 						false,
 					);
 
+					$paramOutType = $param->getOutType();
+					if ($paramOutType !== null) {
+						$paramOutType = TemplateTypeHelper::resolveTemplateTypes(
+							$paramOutType,
+							$this->resolvedTemplateTypeMap,
+							$this->callSiteVarianceMap,
+							TemplateTypeVariance::createCovariant(),
+						);
+					}
+
 					return new DummyParameterWithPhpDocs(
 						$param->getName(),
 						$paramType,
@@ -91,7 +101,7 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 						$param->getDefaultValue(),
 						$param->getNativeType(),
 						$param->getPhpDocType(),
-						$param->getOutType(),
+						$paramOutType,
 					);
 				},
 				$this->parametersAcceptor->getParameters(),

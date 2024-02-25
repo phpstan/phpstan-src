@@ -3783,26 +3783,8 @@ class NodeScopeResolver
 		?MutatingScope $closureBindScope = null,
 	): ExpressionResult
 	{
-		$paramOutTypes = [];
 		if ($parametersAcceptor !== null) {
 			$parameters = $parametersAcceptor->getParameters();
-
-			foreach ($parameters as $parameter) {
-				if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
-					continue;
-				}
-
-				if ($parameter->getOutType() === null) {
-					continue;
-				}
-
-				$paramOutTypes[$parameter->getName()] = TemplateTypeHelper::resolveTemplateTypes(
-					$parameter->getOutType(),
-					$parametersAcceptor->getResolvedTemplateTypeMap(),
-					$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-					TemplateTypeVariance::createCovariant(),
-				);
-			}
 		}
 
 		$hasYield = false;
@@ -3879,14 +3861,14 @@ class NodeScopeResolver
 			$assignByReference = false;
 			if (isset($parameters[$i])) {
 				$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
-				if (isset($paramOutTypes[$parameters[$i]->getName()])) {
-					$byRefType = $paramOutTypes[$parameters[$i]->getName()];
+				if ($parameters[$i] instanceof ParameterReflectionWithPhpDocs && $parameters[$i]->getOutType() !== null) {
+					$byRefType = $parameters[$i]->getOutType();
 				}
 			} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
 				$lastParameter = $parameters[count($parameters) - 1];
 				$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
-				if (isset($paramOutTypes[$lastParameter->getName()])) {
-					$byRefType = $paramOutTypes[$lastParameter->getName()];
+				if ($lastParameter instanceof ParameterReflectionWithPhpDocs && $lastParameter->getOutType() !== null) {
+					$byRefType = $lastParameter->getOutType();
 				}
 			}
 

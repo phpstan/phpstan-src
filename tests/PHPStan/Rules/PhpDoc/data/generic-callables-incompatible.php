@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types=1); // lint > 8.0
 
 namespace GenericCallablesIncompatible;
 
@@ -190,4 +190,15 @@ function shadowsParamOutArray(array &$existingClasses): void
  */
 function shadowsReturnArray(): array
 {
+}
+
+/**
+ * @template T
+ */
+class Test3
+{
+	/**
+	 * @param Closure<T>(T): T $shadows
+	 */
+	public function __construct(private Closure $shadows) {}
 }

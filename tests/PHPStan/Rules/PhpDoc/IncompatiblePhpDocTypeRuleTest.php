@@ -417,6 +417,10 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @return template T of Closure<T of mixed>(T): T shadows @template T for function GenericCallablesIncompatible\shadowsReturnArray.',
 				191,
 			],
+			[
+				'PHPDoc tag @param for parameter $shadows template T of Closure<T of mixed>(T): T shadows @template T for class GenericCallablesIncompatible\Test3.',
+				203,
+			],
 		]);
 	}
 

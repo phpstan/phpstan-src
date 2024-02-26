@@ -24,6 +24,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 	public function __construct(
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private GenericCallableRuleHelper $genericCallableRuleHelper,
 	)
 	{
 	}
@@ -92,6 +93,18 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 
 		$className = SprintfHelper::escapeFormatString($classReflection->getDisplayName());
 		$escapedPropertyName = SprintfHelper::escapeFormatString($propertyName);
+
+		if ($node->isPromoted() === false) {
+			$messages = array_merge($messages, $this->genericCallableRuleHelper->check(
+				$node,
+				$scope,
+				'@var',
+				$phpDocType,
+				null,
+				[],
+				$classReflection,
+			));
+		}
 
 		$messages = array_merge($messages, $this->genericObjectTypeCheck->check(
 			$phpDocType,

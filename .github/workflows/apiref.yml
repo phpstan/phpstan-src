@@ -89,7 +89,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.APIREF_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.APIREF_AWS_SECRET_ACCESS_KEY }}
 
-      - uses: peter-evans/repository-dispatch@v2
+      - uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           repository: "phpstan/phpstan"

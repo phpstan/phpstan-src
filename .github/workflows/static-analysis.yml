@@ -102,7 +102,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Cache Result cache"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./tmp
           key: "result-cache-v11-${{ matrix.php-version }}-${{ github.run_id }}"

@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use Closure;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
@@ -24,7 +25,6 @@ use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -67,6 +67,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	/**
 	 * @api
 	 * @param array<int, ParameterReflection> $parameters
+	 * @param array<string, TemplateTag> $templateTags
 	 */
 	public function __construct(
 		private array $parameters,
@@ -75,12 +76,21 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		?TemplateTypeMap $templateTypeMap = null,
 		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 		?TemplateTypeVarianceMap $callSiteVarianceMap = null,
+		private array $templateTags = [],
 	)
 	{
 		$this->objectType = new ObjectType(Closure::class);
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->callSiteVarianceMap = $callSiteVarianceMap ?? TemplateTypeVarianceMap::createEmpty();
+	}
+
+	/**
+	 * @return array<string, TemplateTag>
+	 */
+	public function getTemplateTags(): array
+	{
+		return $this->templateTags;
 	}
 
 	public function getClassName(): string
@@ -194,6 +204,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 					$this->templateTypeMap,
 					$this->resolvedTemplateTypeMap,
 					$this->callSiteVarianceMap,
+					$this->templateTags,
 				);
 
 				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
@@ -452,6 +463,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			$this->templateTypeMap,
 			$this->resolvedTemplateTypeMap,
 			$this->callSiteVarianceMap,
+			$this->templateTags,
 		);
 	}
 
@@ -489,6 +501,10 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			$parameters,
 			$cb($this->getReturnType(), $right->getReturnType()),
 			$this->isVariadic(),
+			$this->templateTypeMap,
+			$this->resolvedTemplateTypeMap,
+			$this->callSiteVarianceMap,
+			$this->templateTags,
 		);
 	}
 
@@ -621,14 +637,10 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		}
 
 		$templateTags = [];
-		foreach ($this->templateTypeMap->getTypes() as $templateName => $templateType) {
-			if (!$templateType instanceof TemplateType) {
-				throw new ShouldNotHappenException();
-			}
-
+		foreach ($this->templateTags as $templateName => $templateTag) {
 			$templateTags[] = new TemplateTagValueNode(
 				$templateName,
-				$templateType->getBound()->toPhpDocNode(),
+				$templateTag->getBound()->toPhpDocNode(),
 				'',
 			);
 		}

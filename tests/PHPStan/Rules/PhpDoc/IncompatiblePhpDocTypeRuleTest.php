@@ -2,7 +2,11 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\Generics\TemplateTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -16,10 +20,25 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $reflectionProvider);
+
 		return new IncompatiblePhpDocTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
 			new GenericObjectTypeCheck(),
 			new UnresolvableTypeHelper(),
+			new GenericCallableRuleHelper(
+				new TemplateTypeCheck(
+					$reflectionProvider,
+					new ClassNameCheck(
+						new ClassCaseSensitivityCheck($reflectionProvider, true),
+						new ClassForbiddenNameCheck(),
+					),
+					new GenericObjectTypeCheck(),
+					$typeAliasResolver,
+					true,
+				),
+			),
 		);
 	}
 
@@ -289,6 +308,116 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 	public function testBug10097(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10097.php'], []);
+	}
+
+	public function testGenericCallables(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-callables-incompatible.php'], [
+			[
+				'PHPDoc tag @param for parameter $existingClass template of Closure<stdClass of mixed>(stdClass): stdClass cannot have existing class stdClass as its name.',
+				11,
+			],
+			[
+				'PHPDoc tag @param for parameter $existingTypeAlias template of Closure<TypeAlias of mixed>(TypeAlias): TypeAlias cannot have existing type alias TypeAlias as its name.',
+				18,
+			],
+			[
+				'PHPDoc tag @param for parameter $invalidBoundType template T of Closure<T of GenericCallablesIncompatible\Invalid>(T): T has invalid bound type GenericCallablesIncompatible\Invalid.',
+				25,
+			],
+			[
+				'PHPDoc tag @param for parameter $notSupported template T of Closure<T of null>(T): T with bound type null is not supported.',
+				32,
+			],
+			[
+				'PHPDoc tag @param for parameter $shadows template T of Closure<T of mixed>(T): T shadows @template T for function GenericCallablesIncompatible\testShadowFunction.',
+				40,
+			],
+			[
+				'PHPDoc tag @param-out for parameter $existingClass template of Closure<stdClass of mixed>(stdClass): stdClass cannot have existing class stdClass as its name.',
+				47,
+			],
+			[
+				'PHPDoc tag @param for parameter $shadows template T of Closure<T of mixed, U of mixed>(T): T shadows @template T for method GenericCallablesIncompatible\Test::testShadowMethod.',
+				60,
+			],
+			[
+				'PHPDoc tag @param for parameter $shadows template U of Closure<T of mixed, U of mixed>(T): T shadows @template U for class GenericCallablesIncompatible\Test.',
+				60,
+			],
+			[
+				'PHPDoc tag @return template T of Closure<T of mixed, U of mixed>(T): T shadows @template T for method GenericCallablesIncompatible\Test::testShadowMethodReturn.',
+				68,
+			],
+			[
+				'PHPDoc tag @return template U of Closure<T of mixed, U of mixed>(T): T shadows @template U for class GenericCallablesIncompatible\Test.',
+				68,
+			],
+			[
+				'PHPDoc tag @return template of Closure<stdClass of mixed>(stdClass): stdClass cannot have existing class stdClass as its name.',
+				76,
+			],
+			[
+				'PHPDoc tag @return template of Closure<TypeAlias of mixed>(TypeAlias): TypeAlias cannot have existing type alias TypeAlias as its name.',
+				83,
+			],
+			[
+				'PHPDoc tag @return template T of Closure<T of GenericCallablesIncompatible\Invalid>(T): T has invalid bound type GenericCallablesIncompatible\Invalid.',
+				90,
+			],
+			[
+				'PHPDoc tag @return template T of Closure<T of null>(T): T with bound type null is not supported.',
+				97,
+			],
+			[
+				'PHPDoc tag @return template T of Closure<T of mixed>(T): T shadows @template T for function GenericCallablesIncompatible\testShadowFunctionReturn.',
+				105,
+			],
+			[
+				'PHPDoc tag @param for parameter $existingClass template of Closure<stdClass of mixed>(stdClass): stdClass cannot have existing class stdClass as its name.',
+				117,
+			],
+			[
+				'PHPDoc tag @param for parameter $existingTypeAlias template of Closure<TypeAlias of mixed>(TypeAlias): TypeAlias cannot have existing type alias TypeAlias as its name.',
+				124,
+			],
+			[
+				'PHPDoc tag @param for parameter $invalidBoundType template T of Closure<T of GenericCallablesIncompatible\Invalid>(T): T has invalid bound type GenericCallablesIncompatible\Invalid.',
+				131,
+			],
+			[
+				'PHPDoc tag @param for parameter $notSupported template T of Closure<T of null>(T): T with bound type null is not supported.',
+				138,
+			],
+			[
+				'PHPDoc tag @return template of Closure<stdClass of mixed>(stdClass): stdClass cannot have existing class stdClass as its name.',
+				145,
+			],
+			[
+				'PHPDoc tag @return template of Closure<TypeAlias of mixed>(TypeAlias): TypeAlias cannot have existing type alias TypeAlias as its name.',
+				152,
+			],
+			[
+				'PHPDoc tag @return template T of Closure<T of GenericCallablesIncompatible\Invalid>(T): T has invalid bound type GenericCallablesIncompatible\Invalid.',
+				159,
+			],
+			[
+				'PHPDoc tag @return template T of Closure<T of null>(T): T with bound type null is not supported.',
+				166,
+			],
+			[
+				'PHPDoc tag @param-out for parameter $existingClass template T of Closure<T of mixed>(T): T shadows @template T for function GenericCallablesIncompatible\shadowsParamOut.',
+				175,
+			],
+			[
+				'PHPDoc tag @param-out for parameter $existingClasses template T of Closure<T of mixed>(T): T shadows @template T for function GenericCallablesIncompatible\shadowsParamOutArray.',
+				183,
+			],
+			[
+				'PHPDoc tag @return template T of Closure<T of mixed>(T): T shadows @template T for function GenericCallablesIncompatible\shadowsReturnArray.',
+				191,
+			],
+		]);
 	}
 
 }

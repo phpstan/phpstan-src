@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Comment PR
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@v4
         with:
           body: "You've opened the pull request against the latest branch 1.11.x. If your code is relevant on 1.10.x and you want it to be released sooner, please rebase your pull request and change its target to 1.10.x."
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}

@@ -39,7 +39,7 @@ jobs:
         run: "./bin/generate-function-metadata.php"
       - name: "Create Pull Request"
         id: create-pr
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           branch-suffix: random

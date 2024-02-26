@@ -216,7 +216,7 @@ jobs:
         run: "gpg --verify phpstan.phar.asc"
 
       - name: "Install lucky_commit"
-        uses: baptiste0928/cargo-install@v2
+        uses: baptiste0928/cargo-install@v3
         with:
           crate: lucky_commit
           args: --no-default-features

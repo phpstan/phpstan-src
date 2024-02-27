@@ -52,6 +52,7 @@ use PHPStan\Rules\Methods\MissingMethodParameterTypehintRule;
 use PHPStan\Rules\Methods\MissingMethodReturnTypehintRule;
 use PHPStan\Rules\Methods\OverridingMethodRule;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\PhpDoc\GenericCallableRuleHelper;
 use PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule;
@@ -185,6 +186,7 @@ class StubValidator
 				$fileTypeMapper,
 				$genericObjectTypeCheck,
 				$unresolvableTypeHelper,
+				$container->getByType(GenericCallableRuleHelper::class),
 			),
 			new IncompatiblePropertyPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper),
 			new InvalidPhpDocTagValueRule(

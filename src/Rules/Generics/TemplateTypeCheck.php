@@ -103,7 +103,6 @@ class TemplateTypeCheck
 			$classNameNodePairs = array_map(static fn (string $referencedClass): ClassNameNodePair => new ClassNameNodePair($referencedClass, $node), $boundType->getReferencedClasses());
 			$messages = array_merge($messages, $this->classCheck->checkClassNames($classNameNodePairs, $this->checkClassCaseSensitivity));
 
-			$boundType = $templateTag->getBound();
 			$boundTypeClass = get_class($boundType);
 			if (
 				$boundTypeClass !== MixedType::class

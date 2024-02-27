@@ -31,6 +31,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 		private FileTypeMapper $fileTypeMapper,
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private GenericCallableRuleHelper $genericCallableRuleHelper,
 	)
 	{
 	}
@@ -137,6 +138,16 @@ class IncompatiblePhpDocTypeRule implements Rule
 						),
 					));
 
+					$errors = array_merge($errors, $this->genericCallableRuleHelper->check(
+						$node,
+						$scope,
+						sprintf('%s for parameter $%s', $escapedTagName, $escapedParameterName),
+						$phpDocParamType,
+						$functionName,
+						$resolvedPhpDoc->getTemplateTags(),
+						$scope->isInClass() ? $scope->getClassReflection() : null,
+					));
+
 					if ($phpDocParamTag instanceof ParamOutTag) {
 						if (!$byRefParameters[$parameterName]) {
 							$errors[] = RuleErrorBuilder::message(sprintf(
@@ -215,6 +226,16 @@ class IncompatiblePhpDocTypeRule implements Rule
 
 					$errors[] = $errorBuilder->build();
 				}
+
+				$errors = array_merge($errors, $this->genericCallableRuleHelper->check(
+					$node,
+					$scope,
+					'@return',
+					$phpDocReturnType,
+					$functionName,
+					$resolvedPhpDoc->getTemplateTags(),
+					$scope->isInClass() ? $scope->getClassReflection() : null,
+				));
 			}
 		}
 

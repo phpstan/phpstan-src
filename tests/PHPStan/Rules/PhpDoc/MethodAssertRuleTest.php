@@ -67,4 +67,9 @@ class MethodAssertRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10214.php'], []);
 	}
 
+	public function testBug10594(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10594.php'], []);
+	}
+
 }

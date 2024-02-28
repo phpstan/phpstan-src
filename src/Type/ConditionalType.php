@@ -18,6 +18,14 @@ final class ConditionalType implements CompoundType, LateResolvableType
 	use LateResolvableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
+	private ?Type $normalizedIf = null;
+
+	private ?Type $normalizedElse = null;
+
+	private ?Type $subjectWithTargetIntersectedType = null;
+
+	private ?Type $subjectWithTargetRemovedType = null;
+
 	public function __construct(
 		private Type $subject,
 		private Type $target,
@@ -113,37 +121,33 @@ final class ConditionalType implements CompoundType, LateResolvableType
 	{
 		$isSuperType = $this->target->isSuperTypeOf($this->subject);
 
-		$intersectedType = TypeCombinator::intersect($this->subject, $this->target);
-		$removedType = TypeCombinator::remove($this->subject, $this->target);
-
-		$yesType = fn () => TypeTraverser::map(
-			!$this->negated ? $this->if : $this->else,
-			fn (Type $type, callable $traverse) => $type === $this->subject ? (!$this->negated ? $intersectedType : $removedType) : $traverse($type),
-		);
-		$noType = fn () => TypeTraverser::map(
-			!$this->negated ? $this->else : $this->if,
-			fn (Type $type, callable $traverse) => $type === $this->subject ? (!$this->negated ? $removedType : $intersectedType) : $traverse($type),
-		);
-
 		if ($isSuperType->yes()) {
-			return $yesType();
+			return !$this->negated ? $this->getNormalizedIf() : $this->getNormalizedElse();
 		}
 
 		if ($isSuperType->no()) {
-			return $noType();
+			return !$this->negated ? $this->getNormalizedElse() : $this->getNormalizedIf();
 		}
 
-		return TypeCombinator::union($yesType(), $noType());
+		return TypeCombinator::union(
+			$this->getNormalizedIf(),
+			$this->getNormalizedElse(),
+		);
 	}
 
 	public function traverse(callable $cb): Type
 	{
 		$subject = $cb($this->subject);
 		$target = $cb($this->target);
-		$if = $cb($this->if);
-		$else = $cb($this->else);
+		$if = $cb($this->getNormalizedIf());
+		$else = $cb($this->getNormalizedElse());
 
-		if ($this->subject === $subject && $this->target === $target && $this->if === $if && $this->else === $else) {
+		if (
+			$this->subject === $subject
+			&& $this->target === $target
+			&& $this->getNormalizedIf() === $if
+			&& $this->getNormalizedElse() === $else
+		) {
 			return $this;
 		}
 
@@ -158,10 +162,15 @@ final class ConditionalType implements CompoundType, LateResolvableType
 
 		$subject = $cb($this->subject, $right->subject);
 		$target = $cb($this->target, $right->target);
-		$if = $cb($this->if, $right->if);
-		$else = $cb($this->else, $right->else);
+		$if = $cb($this->getNormalizedIf(), $right->getNormalizedIf());
+		$else = $cb($this->getNormalizedElse(), $right->getNormalizedElse());
 
-		if ($this->subject === $subject && $this->target === $target && $this->if === $if && $this->else === $else) {
+		if (
+			$this->subject === $subject
+			&& $this->target === $target
+			&& $this->getNormalizedIf() === $if
+			&& $this->getNormalizedElse() === $else
+		) {
 			return $this;
 		}
 
@@ -191,6 +200,36 @@ final class ConditionalType implements CompoundType, LateResolvableType
 			$properties['else'],
 			$properties['negated'],
 		);
+	}
+
+	private function getNormalizedIf(): Type
+	{
+		return $this->normalizedIf ??= TypeTraverser::map(
+			$this->if,
+			fn (Type $type, callable $traverse) => $type === $this->subject
+				? (!$this->negated ? $this->getSubjectWithTargetIntersectedType() : $this->getSubjectWithTargetRemovedType())
+				: $traverse($type),
+		);
+	}
+
+	private function getNormalizedElse(): Type
+	{
+		return $this->normalizedElse ??= TypeTraverser::map(
+			$this->else,
+			fn (Type $type, callable $traverse) => $type === $this->subject
+				? (!$this->negated ? $this->getSubjectWithTargetRemovedType() : $this->getSubjectWithTargetIntersectedType())
+				: $traverse($type),
+		);
+	}
+
+	private function getSubjectWithTargetIntersectedType(): Type
+	{
+		return $this->subjectWithTargetIntersectedType ??= TypeCombinator::intersect($this->subject, $this->target);
+	}
+
+	private function getSubjectWithTargetRemovedType(): Type
+	{
+		return $this->subjectWithTargetRemovedType ??= TypeCombinator::remove($this->subject, $this->target);
 	}
 
 }

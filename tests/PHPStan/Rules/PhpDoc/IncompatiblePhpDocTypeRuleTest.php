@@ -420,4 +420,9 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10622(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10622.php'], []);
+	}
+
 }

@@ -50,6 +50,14 @@ class CallableTypeTest extends PHPStanTestCase
 				new CallableType([new NativeParameterReflection('foo', false, new MixedType(), PassedByReference::createNo(), false, null)], new MixedType(), false),
 				TrinaryLogic::createYes(),
 			],
+			[
+				new CallableType([
+					new NativeParameterReflection('foo', false, new StringType(), PassedByReference::createNo(), false, null),
+					new NativeParameterReflection('bar', false, new StringType(), PassedByReference::createNo(), false, null),
+				], new MixedType(), false),
+				new CallableType([new NativeParameterReflection('foo', false, new StringType(), PassedByReference::createNo(), false, null)], new MixedType(), false),
+				TrinaryLogic::createMaybe(),
+			],
 		];
 	}
 
@@ -336,6 +344,14 @@ class CallableTypeTest extends PHPStanTestCase
 					new GenericClassStringType(new ObjectType(Closure::class)),
 					new ConstantStringType('bind'),
 				]),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new CallableType([
+					new NativeParameterReflection('foo', false, new StringType(), PassedByReference::createNo(), false, null),
+					new NativeParameterReflection('bar', false, new StringType(), PassedByReference::createNo(), false, null),
+				], new MixedType(), false),
+				new CallableType([new NativeParameterReflection('foo', false, new StringType(), PassedByReference::createNo(), false, null)], new MixedType(), false),
 				TrinaryLogic::createYes(),
 			],
 		];

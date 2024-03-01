@@ -18,4 +18,15 @@ namespace ParamOut {
 		{
 		}
 	}
+
+    /**
+     * @template T
+     * @template TArray as array<T>
+     *
+     * @param TArray $array
+     * @param-out (TArray is non-empty-array ? non-empty-list<T> : list<T>) $array
+     */
+    function rsort(array &$array, int $flags = SORT_REGULAR): bool
+    {
+    }
 }

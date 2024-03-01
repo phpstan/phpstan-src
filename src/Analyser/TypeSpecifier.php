@@ -866,6 +866,34 @@ class TypeSpecifier
 
 			$nullSafeTypes = $this->handleDefaultTruthyOrFalseyContext($context, $rootExpr, $expr, $scope);
 			return $context->true() ? $types->unionWith($nullSafeTypes) : $types->normalize($scope)->intersectWith($nullSafeTypes->normalize($scope));
+		} elseif (
+			$expr instanceof Expr\New_
+			&& $expr->class instanceof Name
+			&& $this->reflectionProvider->hasClass($expr->class->toString())
+		) {
+			$classReflection = $this->reflectionProvider->getClass($expr->class->toString());
+
+			if ($classReflection->hasConstructor()) {
+				$methodReflection = $classReflection->getConstructor();
+				$asserts = $methodReflection->getAsserts();
+
+				if ($asserts->getAll() !== []) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+
+					$asserts = $asserts->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+						$type,
+						$parametersAcceptor->getResolvedTemplateTypeMap(),
+						$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						TemplateTypeVariance::createInvariant(),
+					));
+
+					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+
+					if ($specifiedTypes !== null) {
+						return $specifiedTypes;
+					}
+				}
+			}
 		} elseif (!$context->null()) {
 			return $this->handleDefaultTruthyOrFalseyContext($context, $rootExpr, $expr, $scope);
 		}

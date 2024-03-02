@@ -365,6 +365,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$constantName,
 			$constantValueType,
 			$fileName,
+			$constantReflection->getDocComment(),
 		);
 	}
 

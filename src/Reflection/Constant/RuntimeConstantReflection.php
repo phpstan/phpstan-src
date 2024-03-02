@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Constant;
 
+use PHPStan\BetterReflection\Reflection\Annotation\AnnotationHelper;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
@@ -13,6 +14,7 @@ class RuntimeConstantReflection implements GlobalConstantReflection
 		private string $name,
 		private Type $valueType,
 		private ?string $fileName,
+		private ?string $docComment,
 	)
 	{
 	}
@@ -34,12 +36,18 @@ class RuntimeConstantReflection implements GlobalConstantReflection
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createFromBoolean(AnnotationHelper::isDeprecated($this->getDocComment()));
 	}
 
 	public function getDeprecatedDescription(): ?string
 	{
 		return null;
+	}
+
+	/** @return non-empty-string|null */
+	public function getDocComment(): ?string
+	{
+		return $this->docComment;
 	}
 
 	public function isInternal(): TrinaryLogic

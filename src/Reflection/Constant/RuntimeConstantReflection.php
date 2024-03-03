@@ -10,6 +10,9 @@ use PHPStan\Type\Type;
 class RuntimeConstantReflection implements GlobalConstantReflection
 {
 
+	/**
+	 * @param non-empty-string|null $docComment
+	 */
 	public function __construct(
 		private string $name,
 		private Type $valueType,

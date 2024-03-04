@@ -5,28 +5,40 @@ namespace PHPStan\Reflection\Constant;
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use const PHP_VERSION_ID;
 
 class RuntimeConstantReflectionTest extends PHPStanTestCase
 {
 
-	public function dataDeprecatedConstants(): array
+	public function dataDeprecatedConstants(): iterable
 	{
-		return [
-			[
-				new Name('\DeprecatedConst\FINE'),
-				TrinaryLogic::createNo(),
-				null,
-			],
-			[
-				new Name('\DeprecatedConst\MY_CONST'),
+		if (PHP_VERSION_ID >= 80100) {
+			yield [
+				new Name('\FILTER_SANITIZE_STRING'),
 				TrinaryLogic::createYes(),
-				null,
-			],
-			[
-				new Name('\DeprecatedConst\MY_CONST2'),
-				TrinaryLogic::createYes(),
-				"don't use it!",
-			],
+				'8.1', // deprecation message used in e.g. https://github.com/JetBrains/phpstorm-stubs/blob/9608c953230b08f07b703ecfe459cc58d5421437/filter/filter.php#L478
+			];
+		}
+		yield [
+			new Name('\CURLOPT_FTP_SSL'),
+			TrinaryLogic::createYes(),
+			'use <b>CURLOPT_USE_SSL</b> instead.',
+		];
+
+		yield [
+			new Name('\DeprecatedConst\FINE'),
+			TrinaryLogic::createNo(),
+			null,
+		];
+		yield [
+			new Name('\DeprecatedConst\MY_CONST'),
+			TrinaryLogic::createYes(),
+			null,
+		];
+		yield [
+			new Name('\DeprecatedConst\MY_CONST2'),
+			TrinaryLogic::createYes(),
+			"don't use it!",
 		];
 	}
 

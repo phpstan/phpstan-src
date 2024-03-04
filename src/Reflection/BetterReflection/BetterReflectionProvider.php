@@ -43,6 +43,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
@@ -360,13 +361,25 @@ class BetterReflectionProvider implements ReflectionProvider
 		$constantReflection = $this->reflector->reflectConstant($constantName);
 		$fileName = $constantReflection->getFileName();
 		$constantValueType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpression(), InitializerExprContext::fromGlobalConstant($constantReflection));
+		$docComment = $constantReflection->getDocComment();
+
+		$isDeprecated = TrinaryLogic::createNo();
+		$deprecatedDescription = null;
+		if ($docComment !== null) {
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, null, $docComment);
+			$isDeprecated = TrinaryLogic::createFromBoolean($resolvedPhpDoc->isDeprecated());
+
+			if ($resolvedPhpDoc->isDeprecated() && $resolvedPhpDoc->getDeprecatedTag() !== null) {
+				$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag()->getMessage();
+			}
+		}
 
 		return $this->cachedConstants[$constantName] = new RuntimeConstantReflection(
 			$constantName,
 			$constantValueType,
 			$fileName,
-			$this->fileTypeMapper,
-			$constantReflection->getDocComment(),
+			$isDeprecated,
+			$deprecatedDescription,
 		);
 	}
 

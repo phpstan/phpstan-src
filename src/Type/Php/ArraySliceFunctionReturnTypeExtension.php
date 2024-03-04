@@ -22,7 +22,7 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		if (count($functionCall->getArgs()) < 2) {
 			return null;
 		}
 
@@ -31,13 +31,17 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 			return null;
 		}
 
-		$offsetType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : null;
-		$offset = $offsetType instanceof ConstantIntegerType ? $offsetType->getValue() : 0;
-
 		$constantArrays = $valueType->getConstantArrays();
 		if (count($constantArrays) > 0) {
+			$offsetType = $scope->getType($functionCall->getArgs()[1]->value);
+			$offset = $offsetType instanceof ConstantIntegerType ? $offsetType->getValue() : null;
+
 			$limitType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
 			$limit = $limitType instanceof ConstantIntegerType ? $limitType->getValue() : null;
+
+			if ($offset === null || ($limit === null && $limitType !== null && !$limitType->isNull()->yes())) {
+				return null;
+			}
 
 			$preserveKeysType = isset($functionCall->getArgs()[3]) ? $scope->getType($functionCall->getArgs()[3]->value) : null;
 			$preserveKeys = $preserveKeysType !== null && $preserveKeysType->isTrue()->yes();

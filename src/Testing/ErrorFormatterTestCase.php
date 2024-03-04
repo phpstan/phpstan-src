@@ -78,6 +78,7 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 			throw new ShouldNotHappenException();
 		}
 
+		/** @var list<Error> */
 		$fileErrors = array_slice([
 			new Error('Foo', self::DIRECTORY_PATH . '/folder with unicode 😃/file name with "spaces" and unicode 😃.php', 4),
 			new Error('Foo', self::DIRECTORY_PATH . '/foo.php', 1),
@@ -86,6 +87,7 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/foo.php', null),
 		], 0, $numFileErrors);
 
+		/** @var list<string> */
 		$genericErrors = array_slice([
 			'first generic error',
 			'second generic error',

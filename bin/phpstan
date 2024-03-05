@@ -35,50 +35,6 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	}
 	$devOrPharLoader->unregister();
 
-	$composerAutoloadFiles = $GLOBALS['__composer_autoload_files'];
-	if (
-		!array_key_exists('e88992873b7765f9b5710cab95ba5dd7', $composerAutoloadFiles)
-		|| !array_key_exists('3e76f7f02b41af8cea96018933f6b7e3', $composerAutoloadFiles)
-		|| !array_key_exists('a4a119a56e50fbb293281d9a48007e0e', $composerAutoloadFiles)
-		|| !array_key_exists('0e6d7bf4a5811bfa5cf40c5ccd6fae6a', $composerAutoloadFiles)
-		|| !array_key_exists('e69f7f6ee287b969198c3c9d6777bd38', $composerAutoloadFiles)
-		|| !array_key_exists('0d59ee240a4cd96ddbb4ff164fccea4d', $composerAutoloadFiles)
-		|| !array_key_exists('b686b8e46447868025a15ce5d0cb2634', $composerAutoloadFiles)
-		|| !array_key_exists('8825ede83f2f289127722d4e842cf7e8', $composerAutoloadFiles)
-		|| !array_key_exists('23c18046f52bef3eea034657bafda50f', $composerAutoloadFiles)
-	) {
-		echo "Composer autoloader changed\n";
-		exit(1);
-	}
-
-	// empty the global variable so that unprefixed functions from user-space can be loaded
-	$GLOBALS['__composer_autoload_files'] = [
-		// fix unprefixed Hoa namespace - files already loaded
-		'e88992873b7765f9b5710cab95ba5dd7' => true,
-		'3e76f7f02b41af8cea96018933f6b7e3' => true,
-
-		// vendor/symfony/polyfill-php80/bootstrap.php
-		'a4a119a56e50fbb293281d9a48007e0e' => true,
-
-		// vendor/symfony/polyfill-mbstring/bootstrap.php
-		'0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => true,
-
-		// vendor/symfony/polyfill-intl-normalizer/bootstrap.php
-		'e69f7f6ee287b969198c3c9d6777bd38' => true,
-
-		// vendor/symfony/polyfill-php73/bootstrap.php
-		'0d59ee240a4cd96ddbb4ff164fccea4d' => true,
-
-		// vendor/symfony/polyfill-php74/bootstrap.php
-		'b686b8e46447868025a15ce5d0cb2634' => true,
-
-		// vendor/symfony/polyfill-intl-grapheme/bootstrap.php
-		'8825ede83f2f289127722d4e842cf7e8' => true,
-
-		// vendor/symfony/polyfill-php81/bootstrap.php
-		'23c18046f52bef3eea034657bafda50f' => true,
-	];
-
 	$autoloaderInWorkingDirectory = $vendorDirectory . '/autoload.php';
 	$composerAutoloaderProjectPaths = [];
 

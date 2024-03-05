@@ -176,6 +176,8 @@ jobs:
           - script: |
               cd e2e/bug10483
               ../../bin/phpstan -vvv
+            php-version: "7.2"
+
 
     steps:
       - name: "Checkout"
@@ -185,7 +187,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.1"
+          php-version: ${{ matrix.php-version || "8.1"}}
           extensions: mbstring
           ini-values: memory_limit=256M
 

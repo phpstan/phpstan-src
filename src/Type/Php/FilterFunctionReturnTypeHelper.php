@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -240,7 +241,7 @@ final class FilterFunctionReturnTypeHelper
 		$constant = $this->reflectionProvider->getConstant(new Node\Name($constantName), null);
 		$valueType = $constant->getValueType();
 		if (!$valueType instanceof ConstantIntegerType) {
-			return self::UNKNOWN_CONSTANT;
+			throw new ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
 		}
 
 		return $valueType->getValue();

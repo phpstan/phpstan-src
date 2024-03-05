@@ -16,7 +16,7 @@ class RuntimeConstantReflectionTest extends PHPStanTestCase
 			yield [
 				new Name('\FILTER_SANITIZE_STRING'),
 				TrinaryLogic::createYes(),
-				'8.1', // deprecation message used in e.g. https://github.com/JetBrains/phpstorm-stubs/blob/9608c953230b08f07b703ecfe459cc58d5421437/filter/filter.php#L478
+				null,
 			];
 		}
 		yield [

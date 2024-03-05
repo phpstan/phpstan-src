@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection;
 
 use Closure;
+use Nette\Utils\Strings;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
@@ -370,7 +371,13 @@ class BetterReflectionProvider implements ReflectionProvider
 			$isDeprecated = TrinaryLogic::createFromBoolean($resolvedPhpDoc->isDeprecated());
 
 			if ($resolvedPhpDoc->isDeprecated() && $resolvedPhpDoc->getDeprecatedTag() !== null) {
-				$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag()->getMessage();
+				$deprecatedMessage = $resolvedPhpDoc->getDeprecatedTag()->getMessage();
+
+				// filter raw version number messages like in
+				// https://github.com/JetBrains/phpstorm-stubs/blob/9608c953230b08f07b703ecfe459cc58d5421437/filter/filter.php#L478
+				if (Strings::match($deprecatedMessage ?? '', '#^\d+\.\d+(\.\d+)?$#') === null) {
+					$deprecatedDescription = $deprecatedMessage;
+				}
 			}
 		}
 

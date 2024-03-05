@@ -63,8 +63,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.1"]
-
         include:
           - script: |
               cd e2e/result-cache-1
@@ -175,10 +173,6 @@ jobs:
               export PHPSTAN_SCOPE_CLASS=MyTestScope
               ACTUAL=$(../../bin/phpstan dump-parameters -c phpstan.neon --json -l 9 | jq --raw-output '.scopeClass')
               [[ "$ACTUAL" == "MyTestScope" ]];
-          - php-version: "7.2"
-            script: |
-              cd e2e/bug10483
-              ../../bin/phpstan -vvv
 
     steps:
       - name: "Checkout"
@@ -188,7 +182,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "${{ matrix.php-version }}"
+          php-version: "8.1"
           extensions: mbstring
           ini-values: memory_limit=256M
 
@@ -208,6 +202,8 @@ jobs:
 
     strategy:
       matrix:
+        php-version: ["8.1"]
+
         include:
           - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/timecop.php -c tests/e2e/data/empty.neon tests/e2e/data/timecop.php"
             tools: "pecl"
@@ -232,6 +228,10 @@ jobs:
               cd e2e/baseline-uninit-prop-trait
               ../../bin/phpstan analyse --configuration test-no-baseline.neon --generate-baseline test-baseline.neon
               ../../bin/phpstan analyse --configuration test.neon
+          - php-version: "7.2"
+            script: |
+              cd e2e/bug10483
+              ../../bin/phpstan -vvv
 
     steps:
       - name: "Checkout"
@@ -241,7 +241,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.1"
+          php-version: ${{ matrix.php-version }}
           tools: ${{ matrix.tools }}
           extensions: ${{ matrix.extensions }}
 

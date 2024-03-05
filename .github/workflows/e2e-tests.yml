@@ -173,6 +173,9 @@ jobs:
               export PHPSTAN_SCOPE_CLASS=MyTestScope
               ACTUAL=$(../../bin/phpstan dump-parameters -c phpstan.neon --json -l 9 | jq --raw-output '.scopeClass')
               [[ "$ACTUAL" == "MyTestScope" ]];
+          - script: |
+              cd e2e/bug10483
+              ../../bin/phpstan -vvv
 
     steps:
       - name: "Checkout"

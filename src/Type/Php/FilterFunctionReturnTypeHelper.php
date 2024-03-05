@@ -241,7 +241,7 @@ final class FilterFunctionReturnTypeHelper
 		$constant = $this->reflectionProvider->getConstant(new Node\Name($constantName), null);
 		$valueType = $constant->getValueType();
 		if (!$valueType instanceof ConstantIntegerType) {
-			throw new ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
+			return self::UNKNOWN_CONSTANT;
 		}
 
 		return $valueType->getValue();

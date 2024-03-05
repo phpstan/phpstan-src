@@ -13,6 +13,8 @@ class RuntimeConstantReflection implements GlobalConstantReflection
 		private string $name,
 		private Type $valueType,
 		private ?string $fileName,
+		private TrinaryLogic $isDeprecated,
+		private ?string $deprecatedDescription,
 	)
 	{
 	}
@@ -34,12 +36,12 @@ class RuntimeConstantReflection implements GlobalConstantReflection
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return TrinaryLogic::createNo();
+		return $this->isDeprecated;
 	}
 
 	public function getDeprecatedDescription(): ?string
 	{
-		return null;
+		return $this->deprecatedDescription;
 	}
 
 	public function isInternal(): TrinaryLogic

@@ -248,5 +248,10 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
+      - name: "Transform source code"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        shell: bash
+        run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
+
       - name: "Test"
         run: ${{ matrix.script }}

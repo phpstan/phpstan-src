@@ -59,9 +59,13 @@ jobs:
       - name: "Dump autoloader one more time for attributes"
         run: "composer dump"
 
+      - name: "Install Box dependencies"
+        working-directory: "compiler/box"
+        run: "composer install"
+
       - name: "Compile PHAR"
         working-directory: "compiler/build"
-        run: "php box.phar compile --no-parallel"
+        run: "php ../box/vendor/bin/box compile --no-parallel"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -85,7 +89,7 @@ jobs:
 
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"
-        run: "php box.phar compile --no-parallel"
+        run: "php ../box/vendor/bin/box compile --no-parallel"
         env:
           PHAR_CHECKSUM: "1"
           COMPOSER_ROOT_VERSION: "2.1.x-dev"
@@ -255,11 +259,15 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
+      - name: "Install Box dependencies"
+        working-directory: "compiler/box"
+        run: "composer install"
+
       - name: "Extract old phpstan.phar"
-        run: "php compiler/build/box.phar extract phar-file-checksum/phpstan.phar phar-old"
+        run: "php ../box/vendor/bin/box extract phar-file-checksum/phpstan.phar phar-old"
 
       - name: "Extract new phpstan.phar"
-        run: "php compiler/build/box.phar extract phpstan.phar phar-new"
+        run: "php ../box/vendor/bin/box extract phpstan.phar phar-new"
 
       - name: "List prefix locations in old PHAR"
         run: "php .github/scripts/listPrefix.php ${{ github.workspace }}/phar-old > phar-old.txt"

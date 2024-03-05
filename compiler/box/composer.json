@@ -1,0 +1,23 @@
+{
+	"require": {
+		"humbug/box": "^4.6",
+		"cweagans/composer-patches": "^1.7"
+	},
+	"config": {
+		"platform": {
+			"php": "8.2.99"
+		},
+		"allow-plugins": {
+			"vaimo/composer-patches": true,
+			"cweagans/composer-patches": true
+		}
+	},
+	"extra": {
+		"composer-exit-on-patch-failure": true,
+		"patches": {
+			"humbug/php-scoper": [
+				"patches/ScoperAutoloaderGenerator.patch"
+			]
+		}
+	}
+}

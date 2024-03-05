@@ -63,6 +63,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        php-version: 8.1
+
         include:
           - script: |
               cd e2e/result-cache-1
@@ -173,11 +175,10 @@ jobs:
               export PHPSTAN_SCOPE_CLASS=MyTestScope
               ACTUAL=$(../../bin/phpstan dump-parameters -c phpstan.neon --json -l 9 | jq --raw-output '.scopeClass')
               [[ "$ACTUAL" == "MyTestScope" ]];
-          - script: |
+          - php-version: "7.2"
+            script: |
               cd e2e/bug10483
               ../../bin/phpstan -vvv
-            php-version: "7.2"
-
 
     steps:
       - name: "Checkout"
@@ -187,7 +188,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: ${{ matrix.php-version || "8.1"}}
+          php-version: "${{ matrix.php-version }}"
           extensions: mbstring
           ini-values: memory_limit=256M
 

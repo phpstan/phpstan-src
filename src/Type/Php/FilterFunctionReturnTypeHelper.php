@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;

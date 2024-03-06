@@ -105,7 +105,7 @@ class ParameterOutAssignedTypeRule implements Rule
 			$functionDescription,
 			$outType->describe($verbosityLevel),
 			$assignedExprType->describe($verbosityLevel),
-		));
+		))->identifier(sprintf('%s.type', $isParamOutType ? 'paramOut' : 'parameterByRef'));
 
 		if (!$isParamOutType) {
 			$errorBuilder->tip('You can change the parameter out type with @param-out PHPDoc tag.');

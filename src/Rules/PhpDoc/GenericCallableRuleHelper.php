@@ -7,7 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Generics\TemplateTypeCheck;
-use PHPStan\Rules\RuleError;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
@@ -30,7 +30,7 @@ class GenericCallableRuleHelper
 	/**
 	 * @param array<string, TemplateTag> $functionTemplateTags
 	 *
-	 * @return array<RuleError>
+	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
 		Node $node,
@@ -87,7 +87,7 @@ class GenericCallableRuleHelper
 						$typeDescription,
 						$name,
 						$functionDescription,
-					))->build();
+					))->identifier('callable.shadowTemplate')->build();
 				}
 			}
 
@@ -104,7 +104,7 @@ class GenericCallableRuleHelper
 						$typeDescription,
 						$name,
 						$classDescription,
-					))->build();
+					))->identifier('callable.shadowTemplate')->build();
 				}
 			}
 

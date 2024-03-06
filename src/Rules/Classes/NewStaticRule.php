@@ -74,6 +74,19 @@ class NewStaticRule implements Rule
 			}
 		}
 
+		if ($scope->isInTrait()) {
+			$traitReflection = $scope->getTraitReflection();
+			if ($traitReflection->hasConstructor()) {
+				$traitConstructor = $traitReflection->getConstructor();
+
+				if ($traitConstructor instanceof PhpMethodReflection) {
+					if ($traitConstructor->isAbstract()) {
+						return [];
+					}
+				}
+			}
+		}
+
 		return $messages;
 	}
 

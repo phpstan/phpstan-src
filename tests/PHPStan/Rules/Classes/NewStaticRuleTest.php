@@ -39,4 +39,9 @@ class NewStaticRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/new-static-consistent-constructor.php'], []);
 	}
 
+	public function testBug9654(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9654.php'], []);
+	}
+
 }

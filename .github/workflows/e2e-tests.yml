@@ -202,36 +202,43 @@ jobs:
 
     strategy:
       matrix:
-        php-version: ["8.1"]
-
         include:
           - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/timecop.php -c tests/e2e/data/empty.neon tests/e2e/data/timecop.php"
             tools: "pecl"
             extensions: "timecop-beta"
+            php-version: "8.1"
           - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/soap.php -c tests/e2e/data/empty.neon tests/e2e/data/soap.php"
             extensions: "soap"
+            php-version: "8.1"
           - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/soap.php -c tests/e2e/data/empty.neon tests/e2e/data/soap.php"
             extensions: ""
+            php-version: "8.1"
           - script: "bin/phpstan analyse -l 8 tests/e2e/anon-class/Granularity.php"
             extensions: ""
+            php-version: "8.1"
           - script: "bin/phpstan analyse -l 8 e2e/phpstan-phpunit-190/test.php -c e2e/phpstan-phpunit-190/test.neon"
             extensions: ""
+            php-version: "8.1"
           - script: "bin/phpstan analyse e2e/only-files-not-analysed-trait/src -c e2e/only-files-not-analysed-trait/ignore.neon"
             extensions: ""
+            php-version: "8.1"
           - script: "bin/phpstan analyse e2e/only-files-not-analysed-trait/src/Foo.php e2e/only-files-not-analysed-trait/src/BarTrait.php -c e2e/only-files-not-analysed-trait/no-ignore.neon"
             extensions: ""
+            php-version: "8.1"
           - script: |
               cd e2e/baseline-uninit-prop-trait
               ../../bin/phpstan analyse --debug --configuration test-no-baseline.neon --generate-baseline test-baseline.neon
               ../../bin/phpstan analyse --debug --configuration test.neon
+            php-version: "8.1"
           - script: |
               cd e2e/baseline-uninit-prop-trait
               ../../bin/phpstan analyse --configuration test-no-baseline.neon --generate-baseline test-baseline.neon
               ../../bin/phpstan analyse --configuration test.neon
-          - php-version: "7.2"
-            script: |
+            php-version: "8.1"
+          - script: |
               cd e2e/bug10483
               ../../bin/phpstan -vvv
+            php-version: "7.2"
 
     steps:
       - name: "Checkout"

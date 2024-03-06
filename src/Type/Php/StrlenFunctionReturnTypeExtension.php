@@ -66,6 +66,7 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 		$isNonEmpty = $argType->isNonEmptyString();
 		$numeric = TypeCombinator::union(new IntegerType(), new FloatType());
+		$range = null;
 		if (count($lengths) > 0) {
 			$lengths = array_unique($lengths);
 			sort($lengths);

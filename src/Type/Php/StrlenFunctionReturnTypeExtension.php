@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -16,8 +15,11 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_map;
 use function array_unique;
 use function count;
+use function max;
+use function min;
 use function range;
 use function sort;
 use function strlen;
@@ -76,7 +78,7 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 				$range = TypeCombinator::union(...array_map(static fn ($l) => new ConstantIntegerType($l), $lengths));
 			}
 		} elseif ($argType->isBoolean()->yes()) {
-			$range = IntegerRangeType::fromInterval(0,1);
+			$range = IntegerRangeType::fromInterval(0, 1);
 		} elseif (
 			$isNonEmpty->yes()
 			|| $numeric->isSuperTypeOf($argType)->yes()

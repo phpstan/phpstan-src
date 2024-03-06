@@ -70,3 +70,16 @@ class Foo
 	}
 
 }
+
+/**
+ * @param-out string $p
+ */
+function foo2(?string &$p): void {
+	// should be reported, type can still be null after execution
+
+	if (rand(0, 1)) {
+
+	} else {
+
+	}
+}

@@ -38,6 +38,10 @@ class ParameterOutExecutionEndTypeRuleTest extends RuleTestCase
 				'Parameter &$p @param-out type of method ParameterOutExecutionEnd\Foo::foo6() expects int, string given.',
 				69,
 			],
+			[
+				'Parameter &$p @param-out type of function ParameterOutExecutionEnd\foo2() expects string, string|null given.',
+				80,
+			],
 		]);
 	}
 

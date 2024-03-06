@@ -13,7 +13,7 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new VarTagChangedExpressionTypeRule(new VarTagTypeRuleHelper(true));
+		return new VarTagChangedExpressionTypeRule(new VarTagTypeRuleHelper(true, true));
 	}
 
 	public function testRule(): void

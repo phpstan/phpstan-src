@@ -10,8 +10,8 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
@@ -64,7 +64,7 @@ class ParameterOutExecutionEndTypeRule implements Rule
 	}
 
 	/**
-	 * @return array<RuleError>
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processSingleParameter(
 		Scope $scope,

@@ -1,6 +1,6 @@
 <?php
 
-namespace Bug10622;
+namespace Bug10622B;
 
 /**
  * @template T of array<mixed>

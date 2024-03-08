@@ -39,7 +39,7 @@ class FooMap
      *     \WeakReference<(TValue is object ? TValue : FooBoxedArray<TValue>)>
      * }>
      */
-    protected array $weakKvByIndex = [];
+    protected $weakKvByIndex = [];
 
     /**
      * @template T of TKey|TValue

@@ -9,6 +9,7 @@ use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
@@ -79,6 +80,11 @@ class Printer extends Standard
 	protected function pPHPStan_Node_PropertyInitializationExpr(PropertyInitializationExpr $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanPropertyInitialization(%s)', $expr->getPropertyName());
+	}
+
+	protected function pPHPStan_Node_ParameterVariableOriginalValueExpr(ParameterVariableOriginalValueExpr $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanParameterVariableOriginalValue(%s)', $expr->getVariableName());
 	}
 
 	protected function pPHPStan_Node_IssetExpr(IssetExpr $expr): string // phpcs:ignore

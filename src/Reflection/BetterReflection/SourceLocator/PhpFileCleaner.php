@@ -101,7 +101,7 @@ class PhpFileCleaner
 					continue;
 				}
 
-				if ($char === '<' && $this->peek('<') && $this->match('{<<<[ \t]*+([\'"]?)([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+)\\1(?:\r\n|\n|\r)}A', $match) && $match !== null) {
+				if ($char === '<' && $this->peek('<') && $this->match('{<<<[ \t]*+([\'"]?)([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+)\\1(?:\r\n|\n|\r)}A', $match)) {
 					$this->index += strlen($match[0]);
 					$this->skipHeredoc($match[2]);
 					$clean .= 'null';
@@ -123,7 +123,6 @@ class PhpFileCleaner
 					$inType
 					&& $char === 'c'
 					&& $this->match('~.\b(?<![\$:>])const(\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+)~Ais', $match, $this->index - 1)
-					&& $match !== null
 				) {
 					// It's invalid PHP but it does not matter
 					$clean .= 'class_const' . $match[1];
@@ -131,7 +130,7 @@ class PhpFileCleaner
 					continue;
 				}
 
-				if ($char === 'd' && $this->match('~.\b(?<![\$:>])define\s*+\(~Ais', $match, $this->index - 1) && $match !== null) {
+				if ($char === 'd' && $this->match('~.\b(?<![\$:>])define\s*+\(~Ais', $match, $this->index - 1)) {
 					$inDefine = true;
 					$clean .= $match[0];
 					$this->index += strlen($match[0]) - 1;
@@ -142,7 +141,7 @@ class PhpFileCleaner
 					$type = $this->typeConfig[$char];
 
 					if (substr($this->contents, $this->index, $type['length']) === $type['name']) {
-						if ($maxMatches === 1 && $this->match($type['pattern'], $match, $this->index - 1) && $match !== null) {
+						if ($maxMatches === 1 && $this->match($type['pattern'], $match, $this->index - 1)) {
 							return $clean . $match[0];
 						}
 
@@ -151,7 +150,7 @@ class PhpFileCleaner
 				}
 
 				$this->index += 1;
-				if ($this->match($this->restPattern, $match) && $match !== null) {
+				if ($this->match($this->restPattern, $match)) {
 					$clean .= $char . $match[0];
 					$this->index += strlen($match[0]);
 				} else {
@@ -286,6 +285,7 @@ class PhpFileCleaner
 
 	/**
 	 * @param string[]|null $match
+	 * @param-out string[] $match
 	 */
 	private function match(string $regex, ?array &$match = null, ?int $offset = null): bool
 	{

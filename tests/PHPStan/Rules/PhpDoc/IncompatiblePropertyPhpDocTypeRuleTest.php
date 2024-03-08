@@ -2,7 +2,11 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\Generics\TemplateTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -14,9 +18,24 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $reflectionProvider);
+
 		return new IncompatiblePropertyPhpDocTypeRule(
 			new GenericObjectTypeCheck(),
 			new UnresolvableTypeHelper(),
+			new GenericCallableRuleHelper(
+				new TemplateTypeCheck(
+					$reflectionProvider,
+					new ClassNameCheck(
+						new ClassCaseSensitivityCheck($reflectionProvider, true),
+						new ClassForbiddenNameCheck(),
+					),
+					new GenericObjectTypeCheck(),
+					$typeAliasResolver,
+					true,
+				),
+			),
 		);
 	}
 
@@ -148,6 +167,32 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 	public function testBug7240(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7240.php'], []);
+	}
+
+	public function testGenericCallables(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-callable-properties.php'], [
+			[
+				'PHPDoc tag @var template T of Closure<T of mixed>(T): T shadows @template T for class GenericCallableProperties\Test.',
+				16,
+			],
+			[
+				'PHPDoc tag @var template of Closure<stdClass of mixed>(stdClass): stdClass cannot have existing class stdClass as its name.',
+				21,
+			],
+			[
+				'PHPDoc tag @var template of callable<TypeAlias of mixed>(TypeAlias): TypeAlias cannot have existing type alias TypeAlias as its name.',
+				26,
+			],
+			[
+				'PHPDoc tag @var template TNull of callable<TNull of null>(TNull): TNull with bound type null is not supported.',
+				31,
+			],
+			[
+				'PHPDoc tag @var template TInvalid of callable<TInvalid of GenericCallableProperties\Invalid>(TInvalid): TInvalid has invalid bound type GenericCallableProperties\Invalid.',
+				36,
+			],
+		]);
 	}
 
 }

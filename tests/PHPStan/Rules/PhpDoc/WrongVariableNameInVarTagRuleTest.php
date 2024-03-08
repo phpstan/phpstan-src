@@ -17,11 +17,13 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 
 	private bool $checkTypeAgainstPhpDocType = false;
 
+	private bool $strictWideningCheck = false;
+
 	protected function getRule(): Rule
 	{
 		return new WrongVariableNameInVarTagRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new VarTagTypeRuleHelper($this->checkTypeAgainstPhpDocType),
+			new VarTagTypeRuleHelper($this->checkTypeAgainstPhpDocType, $this->strictWideningCheck),
 			$this->checkTypeAgainstNativeType,
 		);
 	}
@@ -196,8 +198,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 
 	public function dataReportWrongType(): iterable
 	{
-		yield [false, false, []];
-		yield [true, false, [
+		$nativeCheckOnly = [
 			[
 				'PHPDoc tag @var with type string|null is not subtype of native type string.',
 				14,
@@ -250,9 +251,14 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @var with type PHPStan\Type\ObjectType|null is not subtype of type PHPStan\Type\Generic\GenericObjectType|null.',
 				204,
 			],
-		]];
-		yield [false, true, []];
-		yield [true, true, [
+		];
+
+		yield [false, false, false, []];
+		yield [true, false, false, $nativeCheckOnly];
+		yield [true, false, true, $nativeCheckOnly];
+		yield [false, true, false, []];
+		yield [false, true, true, []];
+		yield [true, true, false, [
 			[
 				'PHPDoc tag @var with type string|null is not subtype of native type string.',
 				14,
@@ -343,6 +349,121 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				204,
 			],
 		]];
+		yield [true, true, true, [
+			[
+				'PHPDoc tag @var with type string|null is not subtype of native type string.',
+				14,
+			],
+			[
+				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, mixed>.',
+				23,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type \'foo\'.',
+				26,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of type string.',
+				29,
+			],
+			[
+				'PHPDoc tag @var with type array<int> is not subtype of type list<int>.',
+				32,
+			],
+			[
+				'PHPDoc tag @var with type array<string> is not subtype of type list<int>.',
+				35,
+			],
+			[
+				'PHPDoc tag @var with type Iterator<mixed, int> is not subtype of native type array.',
+				38,
+			],
+			[
+				'PHPDoc tag @var with type Iterator<mixed, string> is not subtype of type Iterator<int, int>.',
+				44,
+			],
+			[
+				'PHPDoc tag @var with type array<int> is not subtype of type array<int, int>.',
+				47,
+			],
+			/*[
+				// reported by VarTagChangedExpressionTypeRule
+				'PHPDoc tag @var with type string is not subtype of type int.',
+				95,
+			],*/
+			[
+				'PHPDoc tag @var with type string is not subtype of native type 1.',
+				99,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type string.',
+				109,
+			],
+			[
+				'PHPDoc tag @var with type array<string> is not subtype of type array<int, string>.',
+				122,
+			],
+			[
+				'PHPDoc tag @var with type array<int> is not subtype of type array<int, string>.',
+				137,
+			],
+			[
+				'PHPDoc tag @var with type string is not subtype of type int.',
+				137,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of type string.',
+				137,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type \'foo\'.',
+				148,
+			],
+			[
+				'PHPDoc tag @var with type array<array<string>> is not subtype of type array<list<string|null>>.',
+				154,
+			],
+			[
+				'PHPDoc tag @var with type array<array<string>> is not subtype of type array<list<string|null>>.',
+				157,
+			],
+			[
+				'PHPDoc tag @var with type array<array<int>> is not subtype of type array<list<string|null>>.',
+				160,
+			],
+			[
+				'PHPDoc tag @var with type array<Traversable<mixed, string>> is not subtype of type array<list<string|null>>.',
+				163,
+			],
+			[
+				'PHPDoc tag @var with type stdClass is not subtype of native type PHPStan\Type\Type|null.',
+				186,
+			],
+			[
+				'PHPDoc tag @var assumes the expression with type PHPStan\Type\Type|null is always PHPStan\Type\ObjectType|null but it\'s error-prone and dangerous.',
+				189,
+			],
+			[
+				'PHPDoc tag @var assumes the expression with type PHPStan\Type\Type|null is always PHPStan\Type\ObjectType but it\'s error-prone and dangerous.',
+				192,
+			],
+			[
+				'PHPDoc tag @var assumes the expression with type PHPStan\Type\ObjectType|null is always PHPStan\Type\ObjectType but it\'s error-prone and dangerous.',
+				195,
+			],
+			[
+				'PHPDoc tag @var with type PHPStan\Type\Type|null is not subtype of native type PHPStan\Type\ObjectType|null.',
+				201,
+			],
+			[
+				'PHPDoc tag @var with type PHPStan\Type\ObjectType|null is not subtype of type PHPStan\Type\Generic\GenericObjectType|null.',
+				204,
+			],
+			[
+				'PHPDoc tag @var with type array|null is not subtype of type array{id: int}|null.',
+				235,
+			],
+		]];
 	}
 
 	/**
@@ -377,10 +498,16 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	 * @dataProvider dataReportWrongType
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
-	public function testReportWrongType(bool $checkTypeAgainstNativeType, bool $checkTypeAgainstPhpDocType, array $expectedErrors): void
+	public function testReportWrongType(
+		bool $checkTypeAgainstNativeType,
+		bool $checkTypeAgainstPhpDocType,
+		bool $strictWideningCheck,
+		array $expectedErrors,
+	): void
 	{
 		$this->checkTypeAgainstNativeType = $checkTypeAgainstNativeType;
 		$this->checkTypeAgainstPhpDocType = $checkTypeAgainstPhpDocType;
+		$this->strictWideningCheck = $strictWideningCheck;
 		$this->analyse([__DIR__ . '/data/wrong-var-native-type.php'], $expectedErrors);
 	}
 

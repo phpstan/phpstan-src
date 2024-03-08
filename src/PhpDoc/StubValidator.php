@@ -157,6 +157,7 @@ class StubValidator
 		$phpVersion = $container->getByType(PhpVersion::class);
 		$localTypeAliasesCheck = $container->getByType(LocalTypeAliasesCheck::class);
 		$phpClassReflectionExtension = $container->getByType(PhpClassReflectionExtension::class);
+		$genericCallableRuleHelper = $container->getByType(GenericCallableRuleHelper::class);
 
 		$rules = [
 			// level 0
@@ -182,13 +183,8 @@ class StubValidator
 			new MethodTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new MethodSignatureVarianceRule($varianceCheck),
 			new TraitTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
-			new IncompatiblePhpDocTypeRule(
-				$fileTypeMapper,
-				$genericObjectTypeCheck,
-				$unresolvableTypeHelper,
-				$container->getByType(GenericCallableRuleHelper::class),
-			),
-			new IncompatiblePropertyPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper),
+			new IncompatiblePhpDocTypeRule($fileTypeMapper, $genericObjectTypeCheck, $unresolvableTypeHelper, $genericCallableRuleHelper),
+			new IncompatiblePropertyPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper, $genericCallableRuleHelper),
 			new InvalidPhpDocTagValueRule(
 				$container->getByType(Lexer::class),
 				$container->getByType(PhpDocParser::class),

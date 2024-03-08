@@ -25,10 +25,12 @@ class CallableTypeHelper
 		foreach ($theirParameters as $theirParameter) {
 			$lastParameter = $theirParameter;
 		}
+		$theirParameterCount = count($theirParameters);
+		$ourParameterCount = count($ourParameters);
 		if (
 			$lastParameter !== null
 			&& $lastParameter->isVariadic()
-			&& count($theirParameters) < count($ourParameters)
+			&& $theirParameterCount < $ourParameterCount
 		) {
 			foreach ($ourParameters as $i => $ourParameter) {
 				if (array_key_exists($i, $theirParameters)) {
@@ -38,7 +40,7 @@ class CallableTypeHelper
 			}
 		}
 
-		$result = null;
+		$result = AcceptsResult::createYes();
 		foreach ($theirParameters as $i => $theirParameter) {
 			$parameterDescription = $theirParameter->getName() === '' ? sprintf('#%d', $i + 1) : sprintf('#%d $%s', $i + 1, $theirParameter->getName());
 			if (!isset($ourParameters[$i])) {
@@ -52,11 +54,7 @@ class CallableTypeHelper
 						$parameterDescription,
 					),
 				]);
-				if ($result === null) {
-					$result = $accepts;
-				} else {
-					$result = $result->and($accepts);
-				}
+				$result = $result->and($accepts);
 				continue;
 			}
 
@@ -70,11 +68,7 @@ class CallableTypeHelper
 						$parameterDescription,
 					),
 				]);
-				if ($result === null) {
-					$result = $accepts;
-				} else {
-					$result = $result->and($accepts);
-				}
+				$result = $result->and($accepts);
 			}
 
 			if ($treatMixedAsAny) {
@@ -95,11 +89,11 @@ class CallableTypeHelper
 				]));
 			}
 
-			if ($result === null) {
-				$result = $isSuperType;
-			} else {
-				$result = $result->and($isSuperType);
-			}
+			$result = $result->and($isSuperType);
+		}
+
+		if (!$treatMixedAsAny && $theirParameterCount < $ourParameterCount) {
+			$result = $result->and(AcceptsResult::createMaybe());
 		}
 
 		$theirReturnType = $theirs->getReturnType();
@@ -109,13 +103,7 @@ class CallableTypeHelper
 			$isReturnTypeSuperType = new AcceptsResult($ours->getReturnType()->isSuperTypeOf($theirReturnType), []);
 		}
 
-		if ($result === null) {
-			$result = $isReturnTypeSuperType;
-		} else {
-			$result = $result->and($isReturnTypeSuperType);
-		}
-
-		return $result;
+		return $result->and($isReturnTypeSuperType);
 	}
 
 }

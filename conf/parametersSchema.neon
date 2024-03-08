@@ -121,6 +121,7 @@ parametersSchema:
 	reportMaybesInPropertyPhpDocTypes: bool()
 	reportStaticMethodSignatures: bool()
 	reportWrongPhpDocTypeInVarTag: bool()
+	reportAnyTypeWideningInVarTag: bool()
 	checkMissingOverrideMethodAttribute: bool()
 	parallel: structure([
 		jobSize: int(),

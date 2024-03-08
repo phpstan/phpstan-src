@@ -8,14 +8,16 @@ use function strlen;
 class Foo
 {
 	/**
+	 * @param 'foo'|'foooooo' $constUnionString
 	 * @param 1|2|5|10|123|'1234'|false $constUnionMixed
 	 * @param int|float $intFloat
 	 * @param non-empty-string|int|float $nonEmptyStringIntFloat
 	 * @param ""|false|null $emptyStringFalseNull
 	 * @param ""|bool|null $emptyStringBoolNull
 	 */
-	public function strlenTests($constUnionMixed, float $float, $intFloat, $nonEmptyStringIntFloat, $emptyStringFalseNull, $emptyStringBoolNull): void
+	public function strlenTests(string $constUnionString, $constUnionMixed, float $float, $intFloat, $nonEmptyStringIntFloat, $emptyStringFalseNull, $emptyStringBoolNull): void
 	{
+		assertType('3|7', strlen($constUnionString));
 		assertType('int<0, 4>', strlen($constUnionMixed));
 		assertType('3', strlen(123));
 		assertType('1', strlen(true));

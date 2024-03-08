@@ -35,6 +35,7 @@ use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
@@ -2786,6 +2787,10 @@ class MutatingScope implements Scope
 			$parameterNode = new Variable($parameter->getName());
 			$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameterNode, $parameterType);
 
+			$parameterOriginalValueExpr = new ParameterVariableOriginalValueExpr($parameter->getName());
+			$parameterOriginalValueExprString = $this->getNodeKey($parameterOriginalValueExpr);
+			$expressionTypes[$parameterOriginalValueExprString] = ExpressionTypeHolder::createYes($parameterOriginalValueExpr, $parameterType);
+
 			$nativeParameterType = $parameter->getNativeType();
 			if ($parameter->isVariadic()) {
 				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()) {
@@ -2795,6 +2800,7 @@ class MutatingScope implements Scope
 				}
 			}
 			$nativeExpressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameterNode, $nativeParameterType);
+			$nativeExpressionTypes[$parameterOriginalValueExprString] = ExpressionTypeHolder::createYes($parameterOriginalValueExpr, $nativeParameterType);
 		}
 
 		if ($preserveThis && array_key_exists('$this', $this->expressionTypes)) {
@@ -3476,6 +3482,10 @@ class MutatingScope implements Scope
 				$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
 			}
 		}
+
+		$parameterOriginalValueExprString = $this->getNodeKey(new ParameterVariableOriginalValueExpr($variableName));
+		unset($scope->expressionTypes[$parameterOriginalValueExprString]);
+		unset($scope->nativeExpressionTypes[$parameterOriginalValueExprString]);
 
 		return $scope;
 	}

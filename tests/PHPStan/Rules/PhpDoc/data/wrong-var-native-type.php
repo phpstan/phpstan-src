@@ -223,3 +223,16 @@ class PHPStanType
 	}
 
 }
+
+class Ipsum
+{
+	/**
+	 * @param array{id: int}|null $b
+	 */
+	public function doFoo($b): void
+	{
+		/** @var mixed[]|null $a */
+		$a = $b;
+	}
+
+}

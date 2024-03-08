@@ -15,7 +15,13 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_map;
+use function array_unique;
 use function count;
+use function max;
+use function min;
+use function range;
+use function sort;
 use function strlen;
 
 class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -49,56 +55,41 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 			$constantScalars = $argType->getConstantScalarTypes();
 		}
 
-		$min = null;
-		$max = null;
+		$lengths = [];
 		foreach ($constantScalars as $constantScalar) {
 			$stringScalar = $constantScalar->toString();
 			if (!($stringScalar instanceof ConstantStringType)) {
-				$min = $max = null;
+				$lengths = [];
 				break;
 			}
-			$len = strlen($stringScalar->getValue());
-
-			if ($min === null) {
-				$min = $len;
-				$max = $len;
-			}
-
-			if ($len < $min) {
-				$min = $len;
-			}
-			if ($len <= $max) {
-				continue;
-			}
-
-			$max = $len;
-		}
-
-		// $max is always != null, when $min is != null
-		if ($min !== null) {
-			return IntegerRangeType::fromInterval($min, $max);
-		}
-
-		$bool = new BooleanType();
-		if ($bool->isSuperTypeOf($argType)->yes()) {
-			return IntegerRangeType::fromInterval(0, 1);
+			$length = strlen($stringScalar->getValue());
+			$lengths[] = $length;
 		}
 
 		$isNonEmpty = $argType->isNonEmptyString();
 		$numeric = TypeCombinator::union(new IntegerType(), new FloatType());
-		if (
+		$range = null;
+		if (count($lengths) > 0) {
+			$lengths = array_unique($lengths);
+			sort($lengths);
+			if ($lengths === range(min($lengths), max($lengths))) {
+				$range = IntegerRangeType::fromInterval(min($lengths), max($lengths));
+			} else {
+				$range = TypeCombinator::union(...array_map(static fn ($l) => new ConstantIntegerType($l), $lengths));
+			}
+		} elseif ($argType->isBoolean()->yes()) {
+			$range = IntegerRangeType::fromInterval(0, 1);
+		} elseif (
 			$isNonEmpty->yes()
 			|| $numeric->isSuperTypeOf($argType)->yes()
 			|| TypeCombinator::remove($argType, $numeric)->isNonEmptyString()->yes()
 		) {
-			return IntegerRangeType::fromInterval(1, null);
+			$range = IntegerRangeType::fromInterval(1, null);
+		} elseif ($argType->isString()->yes() && $isNonEmpty->no()) {
+			$range = new ConstantIntegerType(0);
 		}
 
-		if ($argType->isString()->yes() && $isNonEmpty->no()) {
-			return new ConstantIntegerType(0);
-		}
-
-		return null;
+		return $range;
 	}
 
 }

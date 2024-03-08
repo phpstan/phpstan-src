@@ -27,6 +27,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.notAnalysedTrait%
 	PHPStan\Rules\Comparison\LogicalXorConstantConditionRule:
 		phpstan.rules.rule: %featureToggles.logicalXor%
+	PHPStan\Rules\TooWideTypehints\TooWideParameterOutTypeRule:
+		phpstan.rules.rule: %featureToggles.paramOutType%
 
 parameters:
 	checkAdvancedIsset: true
@@ -237,3 +239,6 @@ services:
 			reportUncheckedExceptionDeadCatch: %exceptions.reportUncheckedExceptionDeadCatch%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\TooWideTypehints\TooWideParameterOutTypeRule

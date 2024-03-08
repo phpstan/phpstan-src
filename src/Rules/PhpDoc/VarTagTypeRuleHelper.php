@@ -24,7 +24,7 @@ use function sprintf;
 class VarTagTypeRuleHelper
 {
 
-	public function __construct(private bool $checkTypeAgainstPhpDocType)
+	public function __construct(private bool $checkTypeAgainstPhpDocType, private bool $strictWideningCheck)
 	{
 	}
 
@@ -156,6 +156,10 @@ class VarTagTypeRuleHelper
 
 	private function checkType(Type $type, Type $varTagType, int $depth = 0): bool
 	{
+		if ($this->strictWideningCheck) {
+			return !$type->isSuperTypeOf($varTagType)->yes();
+		}
+
 		if ($type->isConstantArray()->yes()) {
 			if ($type->isIterableAtLeastOnce()->no()) {
 				$type = new ArrayType(new MixedType(), new MixedType());

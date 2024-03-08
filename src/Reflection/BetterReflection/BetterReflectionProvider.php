@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection;
 
 use Closure;
+use Nette\Utils\Strings;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
@@ -43,6 +44,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
@@ -360,11 +362,31 @@ class BetterReflectionProvider implements ReflectionProvider
 		$constantReflection = $this->reflector->reflectConstant($constantName);
 		$fileName = $constantReflection->getFileName();
 		$constantValueType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpression(), InitializerExprContext::fromGlobalConstant($constantReflection));
+		$docComment = $constantReflection->getDocComment();
+
+		$isDeprecated = TrinaryLogic::createNo();
+		$deprecatedDescription = null;
+		if ($docComment !== null) {
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, null, $docComment);
+			$isDeprecated = TrinaryLogic::createFromBoolean($resolvedPhpDoc->isDeprecated());
+
+			if ($resolvedPhpDoc->isDeprecated() && $resolvedPhpDoc->getDeprecatedTag() !== null) {
+				$deprecatedMessage = $resolvedPhpDoc->getDeprecatedTag()->getMessage();
+
+				// filter raw version number messages like in
+				// https://github.com/JetBrains/phpstorm-stubs/blob/9608c953230b08f07b703ecfe459cc58d5421437/filter/filter.php#L478
+				if (Strings::match($deprecatedMessage ?? '', '#^\d+\.\d+(\.\d+)?$#') === null) {
+					$deprecatedDescription = $deprecatedMessage;
+				}
+			}
+		}
 
 		return $this->cachedConstants[$constantName] = new RuntimeConstantReflection(
 			$constantName,
 			$constantValueType,
 			$fileName,
+			$isDeprecated,
+			$deprecatedDescription,
 		);
 	}
 

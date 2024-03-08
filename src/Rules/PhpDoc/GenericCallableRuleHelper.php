@@ -37,7 +37,7 @@ class GenericCallableRuleHelper
 		Scope $scope,
 		string $location,
 		Type $callableType,
-		string $functionName,
+		?string $functionName,
 		array $functionTemplateTags,
 		?ClassReflection $classReflection,
 	): array
@@ -64,26 +64,31 @@ class GenericCallableRuleHelper
 
 			$templateTags = $type->getTemplateTags();
 
-			$functionDescription = sprintf('function %s', $functionName);
 			$classDescription = null;
 			if ($classReflection !== null) {
 				$classDescription = $classReflection->getDisplayName();
-				$functionDescription = sprintf('method %s::%s', $classDescription, $functionName);
 			}
 
-			foreach (array_keys($functionTemplateTags) as $name) {
-				if (!isset($templateTags[$name])) {
-					continue;
+			if ($functionName !== null) {
+				$functionDescription = sprintf('function %s', $functionName);
+				if ($classReflection !== null) {
+					$functionDescription = sprintf('method %s::%s', $classDescription, $functionName);
 				}
 
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'PHPDoc tag %s template %s of %s shadows @template %s for %s.',
-					$location,
-					$name,
-					$typeDescription,
-					$name,
-					$functionDescription,
-				))->build();
+				foreach (array_keys($functionTemplateTags) as $name) {
+					if (!isset($templateTags[$name])) {
+						continue;
+					}
+
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'PHPDoc tag %s template %s of %s shadows @template %s for %s.',
+						$location,
+						$name,
+						$typeDescription,
+						$name,
+						$functionDescription,
+					))->build();
+				}
 			}
 
 			if ($classReflection !== null) {

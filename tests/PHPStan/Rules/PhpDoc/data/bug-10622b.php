@@ -8,7 +8,7 @@ namespace Bug10622;
 class FooBoxedArray
 {
     /** @var T */
-    private array $value;
+    private $value;
 
     /**
      * @param T $value

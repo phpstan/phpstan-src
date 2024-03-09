@@ -56,6 +56,11 @@ class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function deprecatesRequiredParameterAfterOptionalNullableAndDefaultNull(): bool
+	{
+		return $this->versionId >= 80100;
+	}
+
 	public function supportsLessOverridenParametersWithVariadic(): bool
 	{
 		return $this->versionId >= 80000;

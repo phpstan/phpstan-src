@@ -227,6 +227,35 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
 						21,
 					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						25,
+					],
+				],
+			],
+			[
+				80100,
+				[
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						8,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						17,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						21,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						25,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						29,
+					],
 				],
 			],
 		];

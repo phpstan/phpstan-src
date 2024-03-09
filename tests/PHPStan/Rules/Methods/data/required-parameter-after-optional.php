@@ -22,4 +22,11 @@ class Foo
 	{
 	}
 
+	public function doDolor(?int $foo = 1, $bar): void // not OK
+	{
+	}
+
+	public function doSit(?int $foo = null, $bar): void // not OK
+	{
+	}
 }

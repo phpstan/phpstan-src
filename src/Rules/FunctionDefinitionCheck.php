@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
+use PhpParser\Node\NullableType;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
@@ -394,6 +395,12 @@ class FunctionDefinitionCheck
 
 			$constantName = $defaultValue->name->toLowerString();
 			if ($constantName === 'null') {
+				if ($this->phpVersion->deprecatesRequiredParameterAfterOptionalNullableAndDefaultNull()) {
+					if ($parameterNode->type instanceof NullableType) {
+						$optionalParameter = $parameterName;
+					}
+				}
+
 				continue;
 			}
 

@@ -22,3 +22,11 @@ function doLorem(bool $foo = true, $bar): void // not OK
 function doIpsum(bool $foo = true, ...$bar): void // OK
 {
 }
+
+function doDolor(?int $foo = 1, $bar): void // not OK
+{
+}
+
+function doSit(?int $foo = null, $bar): void // not OK
+{
+}

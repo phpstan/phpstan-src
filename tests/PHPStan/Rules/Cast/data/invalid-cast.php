@@ -4,7 +4,7 @@ function (
 	string $str
 ) {
 	(string) $str;
-	(string) new \stdClass();
+	(string) new \stdClass(); // error: Cannot cast stdClass to string.
 	(string) new \Test\ClassWithToString();
 
 	(object) new \stdClass();
@@ -20,8 +20,8 @@ function (
 	(int) "123"; // ok
 	(int) "blabla";
 
-	(int) new \stdClass();
-	(float) new \stdClass();
+	(int) new \stdClass(); // error: Cannot cast stdClass to int.
+	(float) new \stdClass(); // error: Cannot cast stdClass to float.
 
 	(string) fopen('php://memory', 'r');
 	(int) fopen('php://memory', 'r');
@@ -32,20 +32,20 @@ function (
 ) {
 	/** @var object $object */
 	$object = doFoo();
-	(string) $object;
+	(string) $object; // error: Cannot cast object to string.
 
 	if (method_exists($object, '__toString')) {
 		(string) $object;
 	}
 
-	(string) $foo;
+	(string) $foo; // error: Cannot cast Test\Foo to string.
 	if (method_exists($foo, '__toString')) {
 		(string) $foo;
 	}
 
 	/** @var array|float|int $arrayOrFloatOrInt */
 	$arrayOrFloatOrInt = doFoo();
-	(string) $arrayOrFloatOrInt;
+	(string) $arrayOrFloatOrInt; // error: Cannot cast array|float|int to string.
 };
 
 function (

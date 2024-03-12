@@ -29,6 +29,7 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
+use PHPStan\Reflection\Alias\ClassAliasProvider;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassNameHelper;
 use PHPStan\Reflection\ClassReflection;
@@ -90,6 +91,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private SignatureMapProvider $signatureMapProvider,
 		private array $universalObjectCratesClasses,
+		private ClassAliasProvider $classAliasProvider,
 	)
 	{
 	}
@@ -102,6 +104,10 @@ class BetterReflectionProvider implements ReflectionProvider
 
 		if (!ClassNameHelper::isValidClassName($className)) {
 			return false;
+		}
+
+		if ($this->classAliasProvider->hasAlias($className)) {
+			$className = $this->classAliasProvider->getClassName($className);
 		}
 
 		try {
@@ -118,6 +124,10 @@ class BetterReflectionProvider implements ReflectionProvider
 	{
 		if (isset(self::$anonymousClasses[$className])) {
 			return self::$anonymousClasses[$className];
+		}
+
+		if ($this->classAliasProvider->hasAlias($className)) {
+			$className = $this->classAliasProvider->getClassName($className);
 		}
 
 		try {

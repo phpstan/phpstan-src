@@ -213,6 +213,7 @@ parametersSchema:
 	])
 	env: arrayOf(string(), string())
 	sysGetTempDir: string()
+	classAliases: arrayOf(string(), string())
 
 	# irrelevant Nette parameters
 	debugMode: bool()

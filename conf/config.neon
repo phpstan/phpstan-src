@@ -247,6 +247,7 @@ parameters:
 	editorUrlTitle: null
 	errorFormat: null
 	sysGetTempDir: ::sys_get_temp_dir()
+	classAliases: []
 	pro:
 		dnsServers:
 			- '1.1.1.2'
@@ -1998,6 +1999,13 @@ services:
 		class: PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
 		autowired:
 			- PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
+
+	-
+		class: PHPStan\Reflection\Alias\UserClassAliasProvider
+		arguments:
+			classAliasMap: %classAliases%
+		autowired:
+			- PHPStan\Reflection\Alias\ClassAliasProvider
 
 	php8Lexer:
 		class: PhpParser\Lexer\Emulative

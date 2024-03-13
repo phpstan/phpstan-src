@@ -12,13 +12,12 @@ class RuntimeConstantReflectionTest extends PHPStanTestCase
 
 	public function dataDeprecatedConstants(): iterable
 	{
-		if (PHP_VERSION_ID >= 80100) {
-			yield [
-				new Name('\FILTER_SANITIZE_STRING'),
-				TrinaryLogic::createYes(),
-				null,
-			];
-		}
+		yield [
+			new Name('\FILTER_SANITIZE_STRING'),
+			PHP_VERSION_ID >= 80100 ? TrinaryLogic::createYes() : TrinaryLogic::createNo(),
+			null,
+		];
+
 		yield [
 			new Name('\CURLOPT_FTP_SSL'),
 			TrinaryLogic::createYes(),

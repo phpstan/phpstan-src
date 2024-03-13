@@ -1,0 +1,4 @@
+parameters:
+	level: 0
+	minPhpVersion: 80103
+	maxPhpVersion: 80304

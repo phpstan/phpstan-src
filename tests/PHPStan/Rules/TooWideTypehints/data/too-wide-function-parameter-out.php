@@ -38,3 +38,14 @@ function ipCheckData(string $host, ?\stdClass &$ipdata): bool
 
 	return true;
 }
+
+/**
+ * @param int $flags
+ * @param 10 $out
+ *
+ * @param-out ($flags is 2 ? 20 : 10) $out
+ */
+function bug10699(int $flags, &$out): void
+{
+
+}

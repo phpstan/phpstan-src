@@ -33,6 +33,10 @@ class TooWideMethodParameterOutTypeRuleTest extends RuleTestCase
 				26,
 				'You can narrow the parameter out type with @param-out PHPDoc tag.',
 			],
+			[
+				'Method TooWideMethodParameterOut\Foo::bug10699() never assigns 20 to &$out so it can be removed from the @param-out type.',
+				37,
+			],
 		]);
 	}
 

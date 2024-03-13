@@ -11,6 +11,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -85,6 +86,7 @@ class TooWideMethodParameterOutTypeRule implements Rule
 			$outType = $parameter->getType();
 		}
 
+		$outType = TypeUtils::resolveLateResolvableTypes($outType);
 		if (!$outType instanceof UnionType) {
 			return [];
 		}

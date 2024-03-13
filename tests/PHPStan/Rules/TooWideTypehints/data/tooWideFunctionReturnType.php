@@ -83,3 +83,11 @@ function dolor6() {
 
 	return 'bar';
 }
+
+/**
+ * @return ($flag is 1 ? string : int)
+ */
+function conditionalType(int $flag)
+{
+	return $flag;
+}

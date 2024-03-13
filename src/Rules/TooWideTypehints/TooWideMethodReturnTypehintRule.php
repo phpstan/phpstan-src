@@ -10,6 +10,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function count;
@@ -56,6 +57,7 @@ class TooWideMethodReturnTypehintRule implements Rule
 		}
 
 		$methodReturnType = ParametersAcceptorSelector::selectSingle($method->getVariants())->getReturnType();
+		$methodReturnType = TypeUtils::resolveLateResolvableTypes($methodReturnType);
 		if (!$methodReturnType instanceof UnionType) {
 			return [];
 		}

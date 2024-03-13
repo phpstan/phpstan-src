@@ -109,3 +109,17 @@ class UsesFooTrait
 	use FooTrait;
 
 }
+
+class ConditionalTypeClass
+{
+
+	/**
+	 * @return ($flag is 1 ? int : string)
+	 */
+	private function conditionalType(int $flag)
+	{
+		return $flag;
+	}
+
+
+}

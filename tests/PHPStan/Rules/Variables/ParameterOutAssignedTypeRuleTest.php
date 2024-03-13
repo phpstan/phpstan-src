@@ -54,4 +54,9 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10699(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-10699.php'], []);
+	}
+
 }

@@ -18,10 +18,13 @@ class ConstantResolverFactory
 
 	public function create(): ConstantResolver
 	{
+		$composerFactory = $this->container->getByType(ComposerMinPhpVersionFactory::class);
+
 		return new ConstantResolver(
 			$this->reflectionProviderProvider,
 			$this->container->getParameter('dynamicConstantNames'),
-			$this->container->getByType(ComposerMinPhpVersionFactory::class)->create(),
+			$composerFactory->getMinVersion(),
+			$composerFactory->getMaxVersion(),
 		);
 	}
 

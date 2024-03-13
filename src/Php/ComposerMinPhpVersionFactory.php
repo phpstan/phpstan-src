@@ -17,6 +17,10 @@ use function sprintf;
 class ComposerMinPhpVersionFactory
 {
 
+	private ?PhpVersion $minVersion = null;
+
+	private ?PhpVersion $maxVersion = null;
+
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
@@ -24,9 +28,32 @@ class ComposerMinPhpVersionFactory
 		private array $composerAutoloaderProjectPaths,
 	)
 	{
+		$composerPhpVersion = $this->getComposerRequireVersion();
+
+		if ($composerPhpVersion === null) {
+			$this->minVersion = null;
+			$this->maxVersion = null;
+			return;
+		}
+
+		$parser = new VersionParser();
+		$constraint = $parser->parseConstraints($composerPhpVersion);
+
+		$this->minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion());
+		$this->maxVersion = $this->buildVersion($constraint->getUpperBound()->getVersion());
 	}
 
-	public function create(): ?PhpVersion
+	public function getMinVersion(): ?PhpVersion
+	{
+		return $this->minVersion;
+	}
+
+	public function getMaxVersion(): ?PhpVersion
+	{
+		return $this->maxVersion;
+	}
+
+	private function getComposerRequireVersion(): ?string
 	{
 		$composerPhpVersion = null;
 		if (count($this->composerAutoloaderProjectPaths) > 0) {
@@ -44,15 +71,11 @@ class ComposerMinPhpVersionFactory
 				}
 			}
 		}
+		return $composerPhpVersion;
+	}
 
-		if ($composerPhpVersion === null) {
-			return null;
-		}
-
-		$parser = new VersionParser();
-		$constraint = $parser->parseConstraints($composerPhpVersion);
-		$minVersion = $constraint->getLowerBound()->getVersion();
-
+	private function buildVersion(string $minVersion): ?PhpVersion
+	{
 		$matches = Strings::match($minVersion, '#^(\d+)\.(\d+)(?:\.(\d+))?#');
 		if ($matches === null) {
 			return null;

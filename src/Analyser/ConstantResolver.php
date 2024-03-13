@@ -40,6 +40,7 @@ class ConstantResolver
 		private ReflectionProviderProvider $reflectionProviderProvider,
 		private array $dynamicConstantNames,
 		private ?PhpVersion $composerMinPhpVersion,
+		private ?PhpVersion $composerMaxPhpVersion,
 	)
 	{
 	}
@@ -93,10 +94,14 @@ class ConstantResolver
 		}
 		if ($resolvedConstantName === 'PHP_VERSION_ID') {
 			$minVersion = 50207;
+			$maxVersion = null;
 			if ($this->composerMinPhpVersion !== null) {
 				$minVersion = max($minVersion, $this->composerMinPhpVersion->getVersionId());
 			}
-			return IntegerRangeType::fromInterval($minVersion, null);
+			if ($this->composerMaxPhpVersion !== null) {
+				$maxVersion = $this->composerMaxPhpVersion->getVersionId();
+			}
+			return IntegerRangeType::fromInterval($minVersion, $maxVersion);
 		}
 		if ($resolvedConstantName === 'PHP_ZTS') {
 			return new UnionType([

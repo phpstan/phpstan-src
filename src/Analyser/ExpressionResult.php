@@ -17,6 +17,7 @@ class ExpressionResult
 
 	/**
 	 * @param ThrowPoint[] $throwPoints
+	 * @param ImpurePoint[] $impurePoints
 	 * @param (callable(): MutatingScope)|null $truthyScopeCallback
 	 * @param (callable(): MutatingScope)|null $falseyScopeCallback
 	 */
@@ -24,6 +25,7 @@ class ExpressionResult
 		private MutatingScope $scope,
 		private bool $hasYield,
 		private array $throwPoints,
+		private array $impurePoints,
 		?callable $truthyScopeCallback = null,
 		?callable $falseyScopeCallback = null,
 	)
@@ -48,6 +50,14 @@ class ExpressionResult
 	public function getThrowPoints(): array
 	{
 		return $this->throwPoints;
+	}
+
+	/**
+	 * @return ImpurePoint[]
+	 */
+	public function getImpurePoints(): array
+	{
+		return $this->impurePoints;
 	}
 
 	public function getTruthyScope(): MutatingScope

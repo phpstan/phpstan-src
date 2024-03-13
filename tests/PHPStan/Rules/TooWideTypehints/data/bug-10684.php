@@ -7,7 +7,10 @@ abstract class HookBreaker extends Exception
 	/**
 	 * @return mixed
 	 */
-	public function getReturnValue();
+	public function getReturnValue()
+	{
+		return 1;
+	}
 }
 
 class Foo

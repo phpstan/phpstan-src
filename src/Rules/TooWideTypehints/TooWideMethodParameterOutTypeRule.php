@@ -8,8 +8,8 @@ use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -70,7 +70,7 @@ class TooWideMethodParameterOutTypeRule implements Rule
 	}
 
 	/**
-	 * @return array<RuleError>
+	 * @return list<IdentifierRuleError>
 	 */
 	private function processSingleParameter(
 		Scope $scope,
@@ -105,7 +105,7 @@ class TooWideMethodParameterOutTypeRule implements Rule
 				$type->describe(VerbosityLevel::getRecommendedLevelByType($type)),
 				$parameter->getName(),
 				$isParamOutType ? '@param-out type' : 'by-ref type',
-			));
+			))->identifier(sprintf('%s.unusedType', $isParamOutType ? 'paramOut' : 'parameterByRef'));
 			if (!$isParamOutType) {
 				$errorBuilder->tip('You can narrow the parameter out type with @param-out PHPDoc tag.');
 			}

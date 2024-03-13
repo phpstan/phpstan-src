@@ -238,6 +238,14 @@ jobs:
               cd e2e/composer-min-version
               composer install
               ../../bin/phpstan analyze test.php
+          - script: |
+              cd e2e/composer-max-version
+              composer install
+              ../../bin/phpstan analyze test.php
+          - script: |
+              cd e2e/composer-min-max-version
+              composer install
+              ../../bin/phpstan analyze test.php
 
     steps:
       - name: "Checkout"

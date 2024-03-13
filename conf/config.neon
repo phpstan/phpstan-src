@@ -137,6 +137,8 @@ parameters:
 		minimumNumberOfJobsPerProcess: 2
 		buffer: 134217728 # 128 MB
 	phpVersion: null
+	minPhpVersion: null
+	maxPhpVersion: null
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
 	propertyAlwaysWrittenTags: []
@@ -381,6 +383,8 @@ services:
 		class: PHPStan\Php\ComposerPhpVersionFactory
 		arguments:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+			minVersion: %minPhpVersion%
+			maxVersion: %maxPhpVersion%
 
 	-
 		class: PHPStan\PhpDocParser\Lexer\Lexer

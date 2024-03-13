@@ -26,20 +26,37 @@ class ComposerPhpVersionFactory
 	 */
 	public function __construct(
 		private array $composerAutoloaderProjectPaths,
+		?int $minVersion,
+		?int $maxVersion,
 	)
 	{
-		$composerPhpVersion = $this->getComposerRequireVersion();
+		if ($minVersion !== null) {
+			$this->minVersion = new PhpVersion($minVersion);
+		}
+		if ($maxVersion !== null) {
+			$this->maxVersion = new PhpVersion($maxVersion);
+		}
 
+		if ($minVersion !== null && $maxVersion !== null) {
+			return; // use values from config files
+		}
+
+		// fallback to composer.json based php-version constraint
+		$composerPhpVersion = $this->getComposerRequireVersion();
 		if ($composerPhpVersion === null) {
-			$this->minVersion = null;
-			$this->maxVersion = null;
 			return;
 		}
 
 		$parser = new VersionParser();
 		$constraint = $parser->parseConstraints($composerPhpVersion);
 
-		$this->minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion());
+		if ($this->minVersion === null) {
+			$this->minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion());
+		}
+		if ($this->maxVersion !== null) {
+			return;
+		}
+
 		$this->maxVersion = $this->buildVersion($constraint->getUpperBound()->getVersion());
 	}
 

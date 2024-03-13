@@ -28,3 +28,22 @@ function (): void {
 	assertType('20', $res);
 	assertType('20', $out);
 };
+
+/**
+ * @param int $flags
+ * @param mixed $out
+ *
+ * @param-out ($flags is 2 ? 20 : 10) $out
+ */
+function test2(int $flags, &$out): void
+{
+	$out = $flags === 2 ? 20 : 10;
+}
+
+function (): void {
+	test2(1, $out);
+	assertType('10', $out);
+
+	test2(2, $out);
+	assertType('20', $out);
+};

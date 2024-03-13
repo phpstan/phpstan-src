@@ -72,6 +72,10 @@ class RichParser implements Parser
 			throw new ShouldNotHappenException();
 		}
 
+		$transformNodeTraverser = new NodeTraverser();
+		$transformNodeTraverser->addVisitor(new TransformElseIfToFlatElseIfVisitor());
+		$nodes = $transformNodeTraverser->traverse($nodes);
+
 		$nodeTraverser = new NodeTraverser();
 		$nodeTraverser->addVisitor($this->nameResolver);
 

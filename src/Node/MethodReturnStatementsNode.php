@@ -8,7 +8,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementResult;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use function count;
 
 /** @api */
@@ -29,7 +29,7 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		private StatementResult $statementResult,
 		private array $executionEnds,
 		private ClassReflection $classReflection,
-		private MethodReflection $methodReflection,
+		private ExtendedMethodReflection $methodReflection,
 	)
 	{
 		parent::__construct($method->getAttributes());
@@ -76,7 +76,7 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		return $this->classReflection;
 	}
 
-	public function getMethodReflection(): MethodReflection
+	public function getMethodReflection(): ExtendedMethodReflection
 	{
 		return $this->methodReflection;
 	}

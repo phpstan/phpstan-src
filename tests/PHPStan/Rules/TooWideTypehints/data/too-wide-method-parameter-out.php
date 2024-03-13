@@ -1,6 +1,6 @@
 <?php
 
-namespace TooWideParameterOut;
+namespace TooWideMethodParameterOut;
 
 class Foo
 {
@@ -23,9 +23,9 @@ class Foo
 		$p = 'foo';
 	}
 
-}
+	public function doLorem(?string &$p): void
+	{
+		$p = 'foo';
+	}
 
-function doFoo(?string &$p): void
-{
-	$p = 'foo';
 }

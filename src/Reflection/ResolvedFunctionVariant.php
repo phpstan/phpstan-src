@@ -84,11 +84,14 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 
 					$paramOutType = $param->getOutType();
 					if ($paramOutType !== null) {
-						$paramOutType = TemplateTypeHelper::resolveTemplateTypes(
-							$paramOutType,
-							$this->resolvedTemplateTypeMap,
-							$this->callSiteVarianceMap,
-							TemplateTypeVariance::createCovariant(),
+						$paramOutType = TypeUtils::resolveLateResolvableTypes(
+							TemplateTypeHelper::resolveTemplateTypes(
+								$this->resolveConditionalTypesForParameter($paramOutType),
+								$this->resolvedTemplateTypeMap,
+								$this->callSiteVarianceMap,
+								TemplateTypeVariance::createCovariant(),
+							),
+							false,
 						);
 					}
 

@@ -397,8 +397,16 @@ services:
 	-
 		class: PHPStan\Php\PhpVersionFactoryFactory
 		arguments:
-			versionId: %phpVersion%
+			phpVersion: %phpVersion%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+			bleedingEdge: %featureToggles.bleedingEdge%
+
+	-
+		class: PHPStan\Php\ComposerPhpVersionFactory
+		arguments:
+			phpVersion: %phpVersion%
+			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+			bleedingEdge: %featureToggles.bleedingEdge%
 
 	-
 		class: PHPStan\PhpDocParser\Lexer\Lexer

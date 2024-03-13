@@ -60,6 +60,11 @@ jobs:
         shell: bash
         run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
 
+      - name: "Downgrade composer/semver for brianium/paratest:4.0.0 compatibility"
+        if: matrix.php-version == '7.2'
+        run: composer require composer/semver:"3.4.0 as 1.7.2"
+        shell: bash
+
       - name: "Paratest patch"
         if: matrix.php-version == '7.2'
         run: composer config extra.patches.brianium/paratest --json --merge '["patches/paratest.patch"]'

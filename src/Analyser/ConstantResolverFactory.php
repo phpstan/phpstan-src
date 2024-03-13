@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Php\ComposerMinPhpVersionFactory;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 
 class ConstantResolverFactory
@@ -20,6 +21,7 @@ class ConstantResolverFactory
 		return new ConstantResolver(
 			$this->reflectionProviderProvider,
 			$this->container->getParameter('dynamicConstantNames'),
+			$this->container->getByType(ComposerMinPhpVersionFactory::class)->create(),
 		);
 	}
 

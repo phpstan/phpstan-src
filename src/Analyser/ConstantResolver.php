@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Name;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
@@ -20,6 +21,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function in_array;
+use function max;
 use function sprintf;
 use const INF;
 use const NAN;
@@ -34,7 +36,11 @@ class ConstantResolver
 	/**
 	 * @param string[] $dynamicConstantNames
 	 */
-	public function __construct(private ReflectionProviderProvider $reflectionProviderProvider, private array $dynamicConstantNames)
+	public function __construct(
+		private ReflectionProviderProvider $reflectionProviderProvider,
+		private array $dynamicConstantNames,
+		private ?PhpVersion $composerMinPhpVersion,
+	)
 	{
 	}
 
@@ -86,7 +92,11 @@ class ConstantResolver
 			return IntegerRangeType::fromInterval(0, null);
 		}
 		if ($resolvedConstantName === 'PHP_VERSION_ID') {
-			return IntegerRangeType::fromInterval(50207, null);
+			$minVersion = 50207;
+			if ($this->composerMinPhpVersion !== null) {
+				$minVersion = max($minVersion, $this->composerMinPhpVersion->getVersionId());
+			}
+			return IntegerRangeType::fromInterval($minVersion, null);
 		}
 		if ($resolvedConstantName === 'PHP_ZTS') {
 			return new UnionType([

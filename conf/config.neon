@@ -378,6 +378,11 @@ services:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 
 	-
+		class: PHPStan\Php\ComposerMinPhpVersionFactory
+		arguments:
+			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+
+	-
 		class: PHPStan\PhpDocParser\Lexer\Lexer
 
 	-

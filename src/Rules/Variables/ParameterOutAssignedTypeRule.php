@@ -12,6 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function is_string;
 use function sprintf;
@@ -74,6 +75,8 @@ class ParameterOutAssignedTypeRule implements Rule
 			$isParamOutType = false;
 			$outType = $foundParameter->getType();
 		}
+
+		$outType = TypeUtils::resolveLateResolvableTypes($outType);
 
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,

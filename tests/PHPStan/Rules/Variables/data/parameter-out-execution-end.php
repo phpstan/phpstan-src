@@ -83,3 +83,24 @@ function foo2(?string &$p): void {
 
 	}
 }
+
+class Bug10699
+{
+
+	/**
+	 * @param int $flags
+	 * @param 10|20 $out
+	 *
+	 * @param-out ($flags is 2 ? 20 : 10) $out
+	 */
+	function test2(int $flags, int &$out): void
+	{
+		if ($flags === 2) {
+			$out = 20;
+			return;
+		}
+
+
+	}
+
+}

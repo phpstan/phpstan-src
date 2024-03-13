@@ -702,6 +702,7 @@ return [
 					}
 
 					$allServiceFiles = $this->getAllDependencies($fileName, $dependencies);
+					$projectExtensionFiles[$fileName] = $this->getFileHash($fileName);
 					foreach ($allServiceFiles as $serviceFile) {
 						if (array_key_exists($serviceFile, $projectExtensionFiles)) {
 							continue;

@@ -51,7 +51,12 @@ class ComposerPhpVersionFactory
 		$constraint = $parser->parseConstraints($composerPhpVersion);
 
 		if ($this->minVersion === null && !$constraint->getLowerBound()->isZero()) {
-			$this->minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion());
+			$minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion());
+			// allow checks with < below lower bound to prevent errors like
+			// 'Comparison operation "<" between int<70205, 90000> and 70205 is always false.'
+			if ($minVersion !== null) {
+				$this->minVersion = new PhpVersion($minVersion->getVersionId() - 1);
+			}
 		}
 		if ($this->maxVersion !== null || $constraint->getUpperBound()->isPositiveInfinity()) {
 			return;

@@ -794,4 +794,27 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testConditionalParam(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/conditional-param.php'], [
+			[
+				'Parameter #1 $demoArg of static method ConditionalParam\HelloWorld::replaceCallback() expects string, true given.',
+				16,
+			],
+			[
+				'Parameter #1 $demoArg of static method ConditionalParam\HelloWorld::replaceCallback() expects bool, string given.',
+				20,
+			],
+			[
+				// wrong
+				'Parameter #1 $demoArg of static method ConditionalParam\HelloWorld::replaceCallback() expects string, true given.',
+				22,
+			],
+		]);
+	}
+
 }

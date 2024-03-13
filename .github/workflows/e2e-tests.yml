@@ -236,6 +236,7 @@ jobs:
               ../../bin/phpstan analyse --configuration test.neon
           - script: |
               cd e2e/composer-min-version
+              composer install
               ../../bin/phpstan analyze test.php
 
     steps:

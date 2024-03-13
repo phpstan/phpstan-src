@@ -1,0 +1,6 @@
+parameters:
+	scanFiles:
+		- class-alias.php
+	classAliases:
+		AliasName: ClassAliasTest\OriginalClass
+		ClassAliasTest\AliasName: ClassAliasTest\OriginalClass

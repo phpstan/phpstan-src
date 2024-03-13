@@ -44,6 +44,10 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 				'Function TooWideFunctionReturnType\dolor6() never returns null so it can be removed from the return type.',
 				79,
 			],
+			[
+				'Function TooWideFunctionReturnType\conditionalType() never returns string so it can be removed from the return type.',
+				90,
+			],
 		]);
 	}
 

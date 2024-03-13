@@ -53,9 +53,11 @@ class ComposerPhpVersionFactory
 		if ($this->minVersion === null && !$constraint->getLowerBound()->isZero()) {
 			$this->minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion());
 		}
-		if ($this->maxVersion === null && !$constraint->getUpperBound()->isPositiveInfinity()) {
-			$this->maxVersion = $this->buildVersion($constraint->getUpperBound()->getVersion());
+		if ($this->maxVersion !== null || $constraint->getUpperBound()->isPositiveInfinity()) {
+			return;
 		}
+
+		$this->maxVersion = $this->buildVersion($constraint->getUpperBound()->getVersion());
 	}
 
 	public function getMinVersion(): ?PhpVersion

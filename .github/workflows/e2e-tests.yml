@@ -235,15 +235,23 @@ jobs:
               ../../bin/phpstan analyse --configuration test-no-baseline.neon --generate-baseline test-baseline.neon
               ../../bin/phpstan analyse --configuration test.neon
           - script: |
-              cd e2e/composer-min-version
-              composer install
-              ../../bin/phpstan analyze test.php
-          - script: |
               cd e2e/composer-max-version
               composer install
               ../../bin/phpstan analyze test.php
           - script: |
               cd e2e/composer-min-max-version
+              composer install
+              ../../bin/phpstan analyze test.php
+          - script: |
+              cd e2e/composer-min-open-end-version
+              composer install
+              ../../bin/phpstan analyze test.php
+          - script: |
+              cd e2e/composer-min-version
+              composer install
+              ../../bin/phpstan analyze test.php
+          - script: |
+              cd e2e/composer-version-config
               composer install
               ../../bin/phpstan analyze test.php
 

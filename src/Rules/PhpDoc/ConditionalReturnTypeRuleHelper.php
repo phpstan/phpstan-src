@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
-use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ConditionalType;
@@ -23,7 +23,7 @@ class ConditionalReturnTypeRuleHelper
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	public function check(ParametersAcceptor $acceptor): array
+	public function check(ParametersAcceptorWithPhpDocs $acceptor): array
 	{
 		$conditionalTypes = [];
 		$parametersByName = [];
@@ -35,6 +35,16 @@ class ConditionalReturnTypeRuleHelper
 
 				return $traverse($type);
 			});
+
+			if ($parameter->getOutType() !== null) {
+				TypeTraverser::map($parameter->getOutType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+						$conditionalTypes[] = $type;
+					}
+
+					return $traverse($type);
+				});
+			}
 
 			$parametersByName[$parameter->getName()] = $parameter;
 		}

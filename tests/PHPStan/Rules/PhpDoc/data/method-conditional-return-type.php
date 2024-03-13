@@ -175,3 +175,15 @@ class ConditionalThis
 	}
 
 }
+
+class ParamOut
+{
+
+	/**
+	 * @param-out ($i is int ? 1 : 2) $out
+	 */
+	public function doFoo(int $i, &$out) {
+
+	}
+
+}

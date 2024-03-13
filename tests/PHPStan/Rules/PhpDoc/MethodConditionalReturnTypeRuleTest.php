@@ -63,6 +63,10 @@ class MethodConditionalReturnTypeRuleTest extends RuleTestCase
 				'Condition "array{foo: string} is array{foo: int}" in conditional return type is always false.',
 				156,
 			],
+			[
+				'Condition "int is int" in conditional return type is always true.',
+				185,
+			],
 		]);
 	}
 

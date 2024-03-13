@@ -378,7 +378,7 @@ services:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 
 	-
-		class: PHPStan\Php\ComposerMinPhpVersionFactory
+		class: PHPStan\Php\ComposerPhpVersionFactory
 		arguments:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 

@@ -14,7 +14,7 @@ use function is_file;
 use function is_string;
 use function sprintf;
 
-class ComposerMinPhpVersionFactory
+class ComposerPhpVersionFactory
 {
 
 	private ?PhpVersion $minVersion = null;

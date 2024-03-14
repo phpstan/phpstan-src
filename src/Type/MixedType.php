@@ -58,9 +58,6 @@ class MixedType implements CompoundType, SubtractableType
 		$this->subtractedType = $subtractedType;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return [];

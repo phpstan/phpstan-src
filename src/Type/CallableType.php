@@ -89,9 +89,6 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return $this->templateTags;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		$classes = [];

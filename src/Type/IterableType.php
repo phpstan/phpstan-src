@@ -52,9 +52,6 @@ class IterableType implements CompoundType
 		return $this->itemType;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return array_merge(

@@ -1304,6 +1304,11 @@ parameters:
 			path: src/Type/ObjectType.php
 
 		-
+			message: "#^Method PHPStan\\\\Type\\\\ObjectType\\:\\:getReferencedClasses\\(\\) should return array\\<class\\-string\\> but returns array\\<int, string\\>\\.$#"
+			count: 1
+			path: src/Type/ObjectType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectShapeType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) and Type\\:\\:hasProperty\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/ObjectWithoutClassType.php

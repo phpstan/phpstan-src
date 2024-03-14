@@ -91,9 +91,6 @@ class GenericObjectType extends ObjectType
 		return true;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		$classes = parent::getReferencedClasses();

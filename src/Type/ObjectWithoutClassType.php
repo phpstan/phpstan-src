@@ -34,9 +34,6 @@ class ObjectWithoutClassType implements SubtractableType
 		$this->subtractedType = $subtractedType;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return [];

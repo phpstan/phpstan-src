@@ -36,9 +36,6 @@ class NullType implements ConstantScalarType
 	{
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return [];

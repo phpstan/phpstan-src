@@ -41,9 +41,6 @@ class FloatType implements Type
 	{
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return [];

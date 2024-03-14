@@ -101,9 +101,6 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->staticObjectType;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return $this->getStaticObjectType()->getReferencedClasses();

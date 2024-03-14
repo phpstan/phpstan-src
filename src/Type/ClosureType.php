@@ -108,9 +108,6 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return $this->objectType->getAncestorWithClassName($className);
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		$classes = $this->objectType->getReferencedClasses();

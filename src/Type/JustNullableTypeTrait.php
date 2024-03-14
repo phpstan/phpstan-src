@@ -8,9 +8,6 @@ use function get_class;
 trait JustNullableTypeTrait
 {
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return [];

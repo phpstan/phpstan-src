@@ -49,6 +49,7 @@ class Bar implements DynamicMethodReturnTypeExtension
 		$p = class_parents($o);
 		$i = class_implements($o);
 		$t = class_uses($o);
+		$d = get_declared_classes();
 	}
 
 }

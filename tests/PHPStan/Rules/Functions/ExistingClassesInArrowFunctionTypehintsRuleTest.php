@@ -100,6 +100,10 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
 						19,
 					],
+					[
+						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
+						25,
+					],
 				],
 			],
 			[
@@ -128,6 +132,10 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 					[
 						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
 						21,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						25,
 					],
 				],
 			],
@@ -161,6 +169,14 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 					[
 						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
 						21,
+					],
+					[
+						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
+						25,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						25,
 					],
 				],
 			],
@@ -202,6 +218,18 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 					[
 						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
 						23,
+					],
+					[
+						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+						25,
+					],
+					[
+						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
+						25,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						25,
 					],
 				],
 			],

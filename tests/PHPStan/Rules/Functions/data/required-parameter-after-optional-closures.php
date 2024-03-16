@@ -41,3 +41,7 @@ function (mixed $foo = 1, $bar): void // not OK
 function (mixed $foo = null, $bar): void // not OK
 {
 };
+
+function (int|null $foo = null, $bar, ?int $baz = null, $qux, int $quux = 1, $quuz): void // not OK
+{
+};

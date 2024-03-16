@@ -917,11 +917,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID >= 80000) {
 			$expectedErrors = [
 				[
-					'Strict comparison using === between string and false will always evaluate to false.',
+					'Strict comparison using === between non-empty-string and false will always evaluate to false.',
 					7,
 				],
 				[
-					'Strict comparison using === between string and null will always evaluate to false.',
+					'Strict comparison using === between non-empty-string and null will always evaluate to false.',
 					7,
 				],
 			];

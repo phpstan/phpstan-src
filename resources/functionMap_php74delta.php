@@ -41,7 +41,6 @@ return [
 		'get_mangled_object_vars' => ['array', 'obj'=>'object'],
 		'mb_str_split' => ['list<string>|false', 'str'=>'string', 'split_length='=>'int', 'encoding='=>'string'],
 		'password_algos' => ['list<string>'],
-		'password_hash' => ['__benevolent<string|false|null>', 'password'=>'string', 'algo'=>'string|null', 'options='=>'array'],
 		'password_needs_rehash' => ['bool', 'hash'=>'string', 'algo'=>'string|null', 'options='=>'array'],
 		'preg_replace_callback' => ['string|array|null', 'regex'=>'string|array', 'callback'=>'callable(array<int|string, string>):string', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int', 'flags='=>'int'],
 		'preg_replace_callback_array' => ['string|array|null', 'pattern'=>'array<string,callable>', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int', 'flags='=>'int'],

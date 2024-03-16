@@ -4,6 +4,7 @@ namespace PHPStan\Node;
 
 use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
+use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
 
 /** @api */
@@ -21,6 +22,11 @@ interface ReturnStatementsNode extends VirtualNode
 	 * @return list<ExecutionEndNode>
 	 */
 	public function getExecutionEnds(): array;
+
+	/**
+	 * @return ImpurePoint[]
+	 */
+	public function getImpurePoints(): array;
 
 	public function returnsByRef(): bool;
 

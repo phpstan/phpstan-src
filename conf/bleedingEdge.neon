@@ -50,5 +50,6 @@ parameters:
 		finalByPhpDoc: true
 		magicConstantOutOfContext: true
 		paramOutType: true
+		pure: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Rule.stub

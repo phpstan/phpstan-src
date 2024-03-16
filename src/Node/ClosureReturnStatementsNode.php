@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\NodeAbstract;
+use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
 use function count;
 
@@ -20,6 +21,7 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 	 * @param list<ReturnStatement> $returnStatements
 	 * @param list<Yield_|YieldFrom> $yieldStatements
 	 * @param list<ExecutionEndNode> $executionEnds
+	 * @param ImpurePoint[] $impurePoints
 	 */
 	public function __construct(
 		Closure $closureExpr,
@@ -27,6 +29,7 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 		private array $yieldStatements,
 		private StatementResult $statementResult,
 		private array $executionEnds,
+		private array $impurePoints,
 	)
 	{
 		parent::__construct($closureExpr->getAttributes());
@@ -51,6 +54,11 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 	public function getExecutionEnds(): array
 	{
 		return $this->executionEnds;
+	}
+
+	public function getImpurePoints(): array
+	{
+		return $this->impurePoints;
 	}
 
 	public function getYieldStatements(): array

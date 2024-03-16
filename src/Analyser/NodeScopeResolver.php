@@ -503,12 +503,23 @@ class NodeScopeResolver
 			$gatheredReturnStatements = [];
 			$gatheredYieldStatements = [];
 			$executionEnds = [];
-			$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $functionScope, static function (Node $node, Scope $scope) use ($nodeCallback, $functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds): void {
+			$functionImpurePoints = [];
+			$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $functionScope, static function (Node $node, Scope $scope) use ($nodeCallback, $functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$functionImpurePoints): void {
 				$nodeCallback($node, $scope);
 				if ($scope->getFunction() !== $functionScope->getFunction()) {
 					return;
 				}
 				if ($scope->isInAnonymousFunction()) {
+					return;
+				}
+				if ($node instanceof PropertyAssignNode) {
+					$functionImpurePoints[] = new ImpurePoint(
+						$scope,
+						$node,
+						'propertyAssign',
+						'property assignment',
+						true,
+					);
 					return;
 				}
 				if ($node instanceof ExecutionEndNode) {
@@ -531,6 +542,7 @@ class NodeScopeResolver
 				$gatheredYieldStatements,
 				$statementResult,
 				$executionEnds,
+				array_merge($statementResult->getImpurePoints(), $functionImpurePoints),
 				$functionReflection,
 			), $functionScope);
 		} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
@@ -616,12 +628,23 @@ class NodeScopeResolver
 				$gatheredReturnStatements = [];
 				$gatheredYieldStatements = [];
 				$executionEnds = [];
-				$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $methodScope, static function (Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds): void {
+				$methodImpurePoints = [];
+				$statementResult = $this->processStmtNodes($stmt, $stmt->stmts, $methodScope, static function (Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
 					$nodeCallback($node, $scope);
 					if ($scope->getFunction() !== $methodScope->getFunction()) {
 						return;
 					}
 					if ($scope->isInAnonymousFunction()) {
+						return;
+					}
+					if ($node instanceof PropertyAssignNode) {
+						$methodImpurePoints[] = new ImpurePoint(
+							$scope,
+							$node,
+							'propertyAssign',
+							'property assignment',
+							true,
+						);
 						return;
 					}
 					if ($node instanceof ExecutionEndNode) {
@@ -651,6 +674,7 @@ class NodeScopeResolver
 					$gatheredYieldStatements,
 					$statementResult,
 					$executionEnds,
+					array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
 					$classReflection,
 					$methodReflection,
 				), $methodScope);
@@ -667,7 +691,7 @@ class NodeScopeResolver
 
 			$throwPoints = $overridingThrowPoints ?? $throwPoints;
 			$impurePoints = [
-				new ImpurePoint($scope, $stmt, true),
+				new ImpurePoint($scope, $stmt, 'echo', 'echo', true),
 			];
 		} elseif ($stmt instanceof Return_) {
 			if ($stmt->expr !== null) {
@@ -2624,6 +2648,11 @@ class NodeScopeResolver
 		} elseif ($expr instanceof Exit_) {
 			$hasYield = false;
 			$throwPoints = [];
+			$kind = $expr->getAttribute('kind', Exit_::KIND_EXIT);
+			$identifier = $kind === Exit_::KIND_DIE ? 'die' : 'exit';
+			$impurePoints = [
+				new ImpurePoint($scope, $expr, $identifier, $identifier, true),
+			];
 			if ($expr->expr !== null) {
 				$result = $this->processExprNode($stmt, $expr->expr, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $result->hasYield();
@@ -3624,9 +3653,20 @@ class NodeScopeResolver
 		$executionEnds = [];
 		$gatheredReturnStatements = [];
 		$gatheredYieldStatements = [];
-		$closureStmtsCallback = static function (Node $node, Scope $scope) use ($nodeCallback, &$executionEnds, &$gatheredReturnStatements, &$gatheredYieldStatements, &$closureScope): void {
+		$closureImpurePoints = [];
+		$closureStmtsCallback = static function (Node $node, Scope $scope) use ($nodeCallback, &$executionEnds, &$gatheredReturnStatements, &$gatheredYieldStatements, &$closureScope, &$closureImpurePoints): void {
 			$nodeCallback($node, $scope);
 			if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
+				return;
+			}
+			if ($node instanceof PropertyAssignNode) {
+				$closureImpurePoints[] = new ImpurePoint(
+					$scope,
+					$node,
+					'propertyAssign',
+					'property assignment',
+					true,
+				);
 				return;
 			}
 			if ($node instanceof ExecutionEndNode) {
@@ -3650,6 +3690,7 @@ class NodeScopeResolver
 				$gatheredYieldStatements,
 				$statementResult,
 				$executionEnds,
+				array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 			), $closureScope);
 
 			return new ExpressionResult($scope, false, [], []);
@@ -3683,6 +3724,7 @@ class NodeScopeResolver
 			$gatheredYieldStatements,
 			$statementResult,
 			$executionEnds,
+			array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureScope);
 
 		return new ExpressionResult($scope->processClosureScope($closureScope, null, $byRefUses), false, [], []);

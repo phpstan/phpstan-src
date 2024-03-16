@@ -3,33 +3,53 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PHPStan\Node\VirtualNode;
 
-/** @api */
+/**
+ * @phpstan-type ImpurePointIdentifier = 'echo'|'die'|'exit'|'propertyAssign'|'expr'
+ * @api
+ */
 class ImpurePoint
 {
 
 	/**
-	 * @param Node\Expr|Node\Stmt $node
+	 * @param Node\Expr|Node\Stmt|VirtualNode $node
+	 * @param ImpurePointIdentifier $identifier
 	 */
 	public function __construct(
-		private MutatingScope $scope,
+		private Scope $scope,
 		private Node $node,
+		private string $identifier,
+		private string $description,
 		private bool $certain,
 	)
 	{
 	}
 
-	public function getScope(): MutatingScope
+	public function getScope(): Scope
 	{
 		return $this->scope;
 	}
 
 	/**
-	 * @return Node\Expr|Node\Stmt
+	 * @return Node\Expr|Node\Stmt|VirtualNode
 	 */
 	public function getNode()
 	{
 		return $this->node;
+	}
+
+	/**
+	 * @return ImpurePointIdentifier
+	 */
+	public function getIdentifier(): string
+	{
+		return $this->identifier;
+	}
+
+	public function getDescription(): string
+	{
+		return $this->description;
 	}
 
 	public function isCertain(): bool

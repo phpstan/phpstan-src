@@ -2402,9 +2402,35 @@ class NodeScopeResolver
 				}
 			}
 
+			$impurePoints = [];
+			if ($methodReflection !== null) {
+				if (!$methodReflection->hasSideEffects()->no()) {
+					$certain = $methodReflection->isPure()->no();
+					if ($parametersAcceptor !== null) {
+						$certain = $certain || $parametersAcceptor->getReturnType()->isVoid()->yes();
+					}
+					$impurePoints[] = new ImpurePoint(
+						$scope,
+						$expr,
+						'methodCall',
+						sprintf('call to method %s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName()),
+						$certain,
+					);
+				}
+			} else {
+				$impurePoints[] = new ImpurePoint(
+					$scope,
+					$expr,
+					'methodCall',
+					'call to unknown method',
+					false,
+				);
+			}
+
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
 			}
+
 			$result = $this->processArgs(
 				$stmt,
 				$methodReflection,

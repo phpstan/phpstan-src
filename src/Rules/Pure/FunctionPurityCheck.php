@@ -59,7 +59,11 @@ class FunctionPurityCheck
 					lcfirst($functionDescription),
 				))
 					->line($impurePoint->getNode()->getStartLine())
-					->identifier(sprintf('impure.%s', $impurePoint->getIdentifier()))
+					->identifier(sprintf(
+						'%s.%s',
+						$impurePoint->isCertain() ? 'impure' : 'possiblyImpure',
+						$impurePoint->getIdentifier(),
+					))
 					->build();
 			}
 		}

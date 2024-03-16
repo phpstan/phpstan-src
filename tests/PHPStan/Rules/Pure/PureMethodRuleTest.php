@@ -39,6 +39,26 @@ class PureMethodRuleTest extends RuleTestCase
 				'Impure property assignment in pure method PureMethod\Foo::doFoo3().',
 				29,
 			],
+			[
+				'Impure call to method PureMethod\Foo::voidMethod() in pure method PureMethod\Foo::doFoo4().',
+				71,
+			],
+			[
+				'Impure call to method PureMethod\Foo::impureVoidMethod() in pure method PureMethod\Foo::doFoo4().',
+				72,
+			],
+			[
+				'Possibly impure call to method PureMethod\Foo::returningMethod() in pure method PureMethod\Foo::doFoo4().',
+				73,
+			],
+			[
+				'Impure call to method PureMethod\Foo::impureReturningMethod() in pure method PureMethod\Foo::doFoo4().',
+				75,
+			],
+			[
+				'Possibly impure call to unknown method in pure method PureMethod\Foo::doFoo4().',
+				76,
+			],
 		]);
 	}
 

@@ -5,7 +5,6 @@ namespace PHPStan\Analyser;
 use Bug4288\MyClass;
 use Bug4713\Service;
 use ExtendingKnownClassWithCheck\Foo;
-use PHPStan\File\FileHelper;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -1328,13 +1327,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	private function runAnalyse(string $file, ?array $allAnalysedFiles = null): array
 	{
 		$file = $this->getFileHelper()->normalizePath($file);
-		/** @var Analyser $analyser */
+
 		$analyser = self::getContainer()->getByType(Analyser::class);
-		/** @var FileHelper $fileHelper */
-		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		$errors = $analyser->analyse([$file], null, null, true, $allAnalysedFiles)->getErrors();
 		foreach ($errors as $error) {
-			$this->assertSame($fileHelper->normalizePath($file), $error->getFilePath());
+			$this->assertSame($file, $error->getFilePath());
 		}
 
 		return $errors;

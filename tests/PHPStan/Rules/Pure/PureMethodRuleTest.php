@@ -91,6 +91,10 @@ class PureMethodRuleTest extends RuleTestCase
 				'Possibly impure instantiation of unknown class in pure method PureMethod\TestConstructors::doFoo().',
 				142,
 			],
+			[
+				'Method PureMethod\ActuallyPure::doFoo() is marked as impure but does not contain any impure constructs.',
+				153,
+			],
 		]);
 	}
 

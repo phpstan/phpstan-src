@@ -9,6 +9,7 @@ use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
+use function count;
 use function lcfirst;
 use function sprintf;
 
@@ -31,7 +32,8 @@ class FunctionPurityCheck
 	): array
 	{
 		$errors = [];
-		if ($functionReflection->isPure()->yes()) {
+		$isPure = $functionReflection->isPure();
+		if ($isPure->yes()) {
 			foreach ($parameters as $parameter) {
 				if (!$parameter->passedByReference()->createsNewVariable()) {
 					continue;
@@ -73,6 +75,13 @@ class FunctionPurityCheck
 						$impurePoint->getIdentifier(),
 					))
 					->build();
+			}
+		} elseif ($isPure->no()) {
+			if (count($impurePoints) === 0) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s is marked as impure but does not contain any impure constructs.',
+					$functionDescription,
+				))->identifier(sprintf('impure%s.pure', $identifier))->build();
 			}
 		}
 

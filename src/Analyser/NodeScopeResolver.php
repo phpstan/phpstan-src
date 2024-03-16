@@ -2845,6 +2845,7 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
+			$impurePoints = $result->getImpurePoints();
 			$result = $this->processExprNode($stmt, $expr->right, $scope, $nodeCallback, $context->enterDeep());
 			if (
 				($expr instanceof BinaryOp\Div || $expr instanceof BinaryOp\Mod) &&
@@ -2855,6 +2856,7 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 		} elseif ($expr instanceof Expr\Include_) {
 			$result = $this->processExprNode($stmt, $expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$throwPoints = $result->getThrowPoints();
@@ -5209,7 +5211,7 @@ class NodeScopeResolver
 		$isDeprecated = false;
 		$isInternal = false;
 		$isFinal = false;
-		$isPure = false;
+		$isPure = null;
 		$isAllowedPrivateMutation = false;
 		$acceptsNamedArguments = true;
 		$isReadOnly = $scope->isInClass() && $scope->getClassReflection()->isImmutable();

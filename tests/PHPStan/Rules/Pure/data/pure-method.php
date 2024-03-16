@@ -39,7 +39,7 @@ class Foo
 	 */
 	public function impureVoidMethod(): void
 	{
-
+		echo '';
 	}
 
 	public function returningMethod(): int
@@ -60,7 +60,7 @@ class Foo
 	 */
 	public function impureReturningMethod(): int
 	{
-
+		echo '';
 	}
 
 	/**
@@ -113,7 +113,7 @@ class ImpureConstructor
 	 */
 	public function __construct()
 	{
-
+		echo '';
 	}
 
 }
@@ -140,6 +140,19 @@ class TestConstructors
 		new ImpureConstructor();
 		new PossiblyImpureConstructor();
 		new $s();
+	}
+
+}
+
+class ActuallyPure
+{
+
+	/**
+	 * @phpstan-impure
+	 */
+	public function doFoo()
+	{
+
 	}
 
 }

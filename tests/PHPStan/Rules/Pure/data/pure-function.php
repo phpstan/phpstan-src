@@ -39,7 +39,7 @@ function pureFunction()
  */
 function impureFunction()
 {
-
+	echo '';
 }
 
 function voidFunction(): void
@@ -63,4 +63,12 @@ function testThese(string $s)
 	voidFunction();
 	possiblyImpureFunction();
 	unknownFunction();
+}
+
+/**
+ * @phpstan-impure
+ */
+function actuallyPure()
+{
+
 }

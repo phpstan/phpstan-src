@@ -59,6 +59,10 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Possibly impure call to unknown function in pure function PureFunction\testThese().',
 				65,
 			],
+			[
+				'Function PureFunction\actuallyPure() is marked as impure but does not contain any impure constructs.',
+				71,
+			],
 		]);
 	}
 

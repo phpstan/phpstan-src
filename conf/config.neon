@@ -1028,6 +1028,9 @@ services:
 		class: PHPStan\Rules\UnusedFunctionParametersCheck
 
 	-
+		class: PHPStan\Rules\TooWideTypehints\TooWideParameterOutTypeCheck
+
+	-
 		class: PHPStan\Type\FileTypeMapper
 		arguments:
 			phpParser: @defaultAnalysisParser

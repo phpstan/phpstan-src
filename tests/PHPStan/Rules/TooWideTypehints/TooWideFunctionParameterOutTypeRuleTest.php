@@ -13,7 +13,7 @@ class TooWideFunctionParameterOutTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		return new TooWideFunctionParameterOutTypeRule();
+		return new TooWideFunctionParameterOutTypeRule(new TooWideParameterOutTypeCheck());
 	}
 
 	public function testRule(): void

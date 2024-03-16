@@ -385,13 +385,11 @@ class FunctionDefinitionCheck
 				$errors[] = RuleErrorBuilder::message(
 					sprintf(
 						'Deprecated in PHP %s: Required parameter $%s follows optional parameter $%s.',
-						$targetPhpVersion ??= '8.0',
+						$targetPhpVersion ?? '8.0',
 						$parameterName,
 						$optionalParameter,
 					),
 				)->line($parameterNode->getStartLine())->build();
-
-				$targetPhpVersion = null;
 				continue;
 			}
 			if ($parameterNode->default === null) {

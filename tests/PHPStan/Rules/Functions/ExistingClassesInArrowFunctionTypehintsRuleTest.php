@@ -91,7 +91,16 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 		return [
 			[
 				70400,
-				[],
+				[
+					[
+						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
+						17,
+					],
+					[
+						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
+						19,
+					],
+				],
 			],
 			[
 				80000,
@@ -111,6 +120,14 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 					[
 						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
 						13,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						17,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						21,
 					],
 				],
 			],
@@ -134,8 +151,57 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 						13,
 					],
 					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						'Deprecated in PHP 8.1: Required parameter $bar follows optional parameter $foo.',
 						15,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						17,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						21,
+					],
+				],
+			],
+			[
+				80300,
+				[
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						5,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						9,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						11,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						13,
+					],
+					[
+						'Deprecated in PHP 8.1: Required parameter $bar follows optional parameter $foo.',
+						15,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						17,
+					],
+					[
+						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+						19,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						21,
+					],
+					[
+						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+						23,
 					],
 				],
 			],

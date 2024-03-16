@@ -61,6 +61,11 @@ class PhpVersion
 		return $this->versionId >= 80100;
 	}
 
+	public function deprecatesRequiredParameterAfterOptionalUnionOrMixed(): bool
+	{
+		return $this->versionId >= 80300;
+	}
+
 	public function supportsLessOverridenParametersWithVariadic(): bool
 	{
 		return $this->versionId >= 80000;

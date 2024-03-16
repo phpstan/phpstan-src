@@ -6,6 +6,9 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\IntersectionType;
+use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -30,10 +33,12 @@ use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
+use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_merge;
 use function count;
+use function in_array;
 use function is_string;
 use function sprintf;
 
@@ -367,6 +372,7 @@ class FunctionDefinitionCheck
 		/** @var string|null $optionalParameter */
 		$optionalParameter = null;
 		$errors = [];
+		$targetPhpVersion = null;
 		foreach ($parameterNodes as $parameterNode) {
 			if (!$parameterNode->var instanceof Variable) {
 				throw new ShouldNotHappenException();
@@ -376,7 +382,16 @@ class FunctionDefinitionCheck
 			}
 			$parameterName = $parameterNode->var->name;
 			if ($optionalParameter !== null && $parameterNode->default === null && !$parameterNode->variadic) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Deprecated in PHP 8.0: Required parameter $%s follows optional parameter $%s.', $parameterName, $optionalParameter))->line($parameterNode->getStartLine())->build();
+				$errors[] = RuleErrorBuilder::message(
+					sprintf(
+						'Deprecated in PHP %s: Required parameter $%s follows optional parameter $%s.',
+						$targetPhpVersion ??= '8.0',
+						$parameterName,
+						$optionalParameter,
+					),
+				)->line($parameterNode->getStartLine())->build();
+
+				$targetPhpVersion = null;
 				continue;
 			}
 			if ($parameterNode->default === null) {
@@ -395,13 +410,35 @@ class FunctionDefinitionCheck
 
 			$constantName = $defaultValue->name->toLowerString();
 			if ($constantName === 'null') {
-				if ($this->phpVersion->deprecatesRequiredParameterAfterOptionalNullableAndDefaultNull()) {
-					if ($parameterNode->type instanceof NullableType) {
-						$optionalParameter = $parameterName;
+				if (!$this->phpVersion->deprecatesRequiredParameterAfterOptionalNullableAndDefaultNull()) {
+					continue;
+				}
+
+				$parameterNodeType = $parameterNode->type;
+
+				if ($parameterNodeType instanceof NullableType) {
+					$targetPhpVersion = '8.1';
+				}
+
+				if ($this->phpVersion->deprecatesRequiredParameterAfterOptionalUnionOrMixed()) {
+					$types = [];
+
+					if ($parameterNodeType instanceof UnionType) {
+						$types = $parameterNodeType->types;
+					} elseif ($parameterNodeType instanceof Identifier) {
+						$types = [$parameterNodeType];
+					}
+
+					$nullOrMixed = array_filter($types, static fn (Identifier|Name|IntersectionType $type): bool => $type instanceof Identifier && (in_array($type->name, ['null', 'mixed'], true)));
+
+					if (0 < count($nullOrMixed)) {
+						$targetPhpVersion = '8.3';
 					}
 				}
 
-				continue;
+				if ($targetPhpVersion === null) {
+					continue;
+				}
 			}
 
 			$optionalParameter = $parameterName;

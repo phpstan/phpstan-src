@@ -181,30 +181,30 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					631,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
+					'Call to function method_exists() with class-string<static(CheckTypeFunctionCall\MethodExistsWithTrait)> and \'method\' will always evaluate to true.',
 					634,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'someAnother\' will always evaluate to true.',
+					'Call to function method_exists() with class-string<static(CheckTypeFunctionCall\MethodExistsWithTrait)> and \'someAnother\' will always evaluate to true.',
 					637,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with class-string<static(CheckTypeFunctionCall\MethodExistsWithTrait)> and \'unknown\' will always evaluate to false.',
 					640,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
+					'Call to function method_exists() with class-string<static(CheckTypeFunctionCall\MethodExistsWithTrait)> and \'method\' will always evaluate to true.',
 					643,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'someAnother\' will always evaluate to true.',
+					'Call to function method_exists() with class-string<static(CheckTypeFunctionCall\MethodExistsWithTrait)> and \'someAnother\' will always evaluate to true.',
 					646,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with class-string<static(CheckTypeFunctionCall\MethodExistsWithTrait)> and \'unknown\' will always evaluate to false.',
 					649,
 				],
 				[
@@ -349,12 +349,12 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					631,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with class-string<static(CheckTypeFunctionCall\MethodExistsWithTrait)> and \'unknown\' will always evaluate to false.',
 					640,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
+					'Call to function method_exists() with class-string<static(CheckTypeFunctionCall\MethodExistsWithTrait)> and \'unknown\' will always evaluate to false.',
 					649,
 				],
 				[

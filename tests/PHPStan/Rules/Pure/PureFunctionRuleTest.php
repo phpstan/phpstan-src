@@ -60,7 +60,7 @@ class PureFunctionRuleTest extends RuleTestCase
 				65,
 			],
 			[
-				'Function PureFunction\actuallyPure() is marked as impure but does not contain any impure constructs.',
+				'Function PureFunction\actuallyPure() is marked as impure but does not have any side effects.',
 				71,
 			],
 		]);

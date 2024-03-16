@@ -79,7 +79,7 @@ class FunctionPurityCheck
 		} elseif ($isPure->no()) {
 			if (count($impurePoints) === 0) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'%s is marked as impure but does not contain any impure constructs.',
+					'%s is marked as impure but does not have any side effects.',
 					$functionDescription,
 				))->identifier(sprintf('impure%s.pure', $identifier))->build();
 			}

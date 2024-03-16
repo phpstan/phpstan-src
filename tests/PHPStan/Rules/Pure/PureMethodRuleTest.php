@@ -92,7 +92,7 @@ class PureMethodRuleTest extends RuleTestCase
 				142,
 			],
 			[
-				'Method PureMethod\ActuallyPure::doFoo() is marked as impure but does not contain any impure constructs.',
+				'Method PureMethod\ActuallyPure::doFoo() is marked as impure but does not have any side effects.',
 				153,
 			],
 		]);

@@ -1770,8 +1770,10 @@ class InitializerExprTypeResolver
 	public function getClassConstFetchTypeByReflection(Name|Expr $class, string $constantName, ?ClassReflection $classReflection, callable $getTypeCallback): Type
 	{
 		$isObject = false;
+		$loweredConstantName = strtolower($constantName);
 		if ($class instanceof Name) {
 			$constantClass = (string) $class;
+			$loweredConstantClass = strtolower($constantClass);
 			$constantClassType = new ObjectType($constantClass);
 			$namesToResolve = [
 				'self',
@@ -1780,8 +1782,8 @@ class InitializerExprTypeResolver
 			if ($classReflection !== null) {
 				if ($classReflection->isFinal()) {
 					$namesToResolve[] = 'static';
-				} elseif (strtolower($constantClass) === 'static') {
-					if (strtolower($constantName) === 'class') {
+				} elseif ($loweredConstantClass === 'static') {
+					if ($loweredConstantName === 'class') {
 						return new GenericClassStringType(new StaticType($classReflection));
 					}
 
@@ -1789,25 +1791,31 @@ class InitializerExprTypeResolver
 					$isObject = true;
 				}
 			}
-			if (in_array(strtolower($constantClass), $namesToResolve, true)) {
-				$resolvedName = $this->resolveName($class, $classReflection);
-				if (strtolower($resolvedName) === 'parent' && strtolower($constantName) === 'class') {
-					return new ClassStringType();
-				}
-				$constantClassType = $this->resolveTypeByName($class, $classReflection);
-			}
 
-			if (strtolower($constantName) === 'class') {
-				return new ConstantStringType($constantClassType->getClassName(), true);
+			// Exclude ::class to prevent infinite cycle.
+			if ($loweredConstantClass === 'static' && $loweredConstantName !== 'class') {
+				$constantClassType = $getTypeCallback(new ClassConstFetch(new Name('static'), 'class'))->getClassStringObjectType();
+			} else {
+				if (in_array($loweredConstantClass, $namesToResolve, true)) {
+					$resolvedName = $this->resolveName($class, $classReflection);
+					if (strtolower($resolvedName) === 'parent' && $loweredConstantName === 'class') {
+						return new ClassStringType();
+					}
+					$constantClassType = $this->resolveTypeByName($class, $classReflection);
+				}
+
+				if ($loweredConstantName === 'class') {
+					return new ConstantStringType($constantClassType->getClassName(), true);
+				}
 			}
-		} elseif ($class instanceof String_ && strtolower($constantName) === 'class') {
+		} elseif ($class instanceof String_ && $loweredConstantName === 'class') {
 			return new ConstantStringType($class->value, true);
 		} else {
 			$constantClassType = $getTypeCallback($class);
 			$isObject = true;
 		}
 
-		if (strtolower($constantName) === 'class') {
+		if ($loweredConstantName === 'class') {
 			return TypeTraverser::map(
 				$constantClassType,
 				function (Type $type, callable $traverse): Type {

@@ -420,4 +420,10 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBugInstanceofStaticVsThis(): void
+	{
+		$this->phpVersion = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/../Methods/data/bug-instanceof-static-vs-this.php'], []);
+	}
+
 }

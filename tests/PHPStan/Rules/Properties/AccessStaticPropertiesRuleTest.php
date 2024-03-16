@@ -463,4 +463,9 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBugInstanceofStaticVsThis(): void
+	{
+		$this->analyse([__DIR__ . '/../Methods/data/bug-instanceof-static-vs-this.php'], []);
+	}
+
 }

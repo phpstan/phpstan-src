@@ -184,7 +184,7 @@ class TypehintHelper
 					foreach ($phpDocType->getTypes() as $innerType) {
 						if ($innerType instanceof ArrayType) {
 							$innerTypes[] = new IterableType(
-								$innerType->getKeyType(),
+								$innerType->getIterableKeyType(),
 								$innerType->getItemType(),
 							);
 						} else {

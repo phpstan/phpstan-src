@@ -390,6 +390,7 @@ class FunctionDefinitionCheck
 						$optionalParameter,
 					),
 				)->line($parameterNode->getStartLine())->build();
+				$targetPhpVersion = null;
 				continue;
 			}
 			if ($parameterNode->default === null) {

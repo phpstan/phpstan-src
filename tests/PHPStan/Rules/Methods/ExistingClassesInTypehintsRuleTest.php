@@ -219,6 +219,10 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 						"Method RequiredAfterOptional\Foo::doConsectetur() uses native union types but they're supported only on PHP 8.0 and later.",
 						37,
 					],
+					[
+						"Method RequiredAfterOptional\Foo::doSed() uses native union types but they're supported only on PHP 8.0 and later.",
+						49,
+					],
 				],
 			],
 			[
@@ -247,6 +251,10 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 					[
 						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
 						41,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						49,
 					],
 				],
 			],
@@ -280,6 +288,14 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 					[
 						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
 						41,
+					],
+					[
+						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
+						49,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						49,
 					],
 				],
 			],
@@ -321,6 +337,18 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 					[
 						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
 						45,
+					],
+					[
+						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+						49,
+					],
+					[
+						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
+						49,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						49,
 					],
 				],
 			],

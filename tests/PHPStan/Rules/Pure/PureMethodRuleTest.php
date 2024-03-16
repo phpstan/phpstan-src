@@ -59,6 +59,38 @@ class PureMethodRuleTest extends RuleTestCase
 				'Possibly impure call to unknown method in pure method PureMethod\Foo::doFoo4().',
 				76,
 			],
+			[
+				'Impure call to method PureMethod\Foo::voidMethod() in pure method PureMethod\Foo::doFoo5().',
+				84,
+			],
+			[
+				'Impure call to method PureMethod\Foo::impureVoidMethod() in pure method PureMethod\Foo::doFoo5().',
+				85,
+			],
+			[
+				'Possibly impure call to method PureMethod\Foo::returningMethod() in pure method PureMethod\Foo::doFoo5().',
+				86,
+			],
+			[
+				'Impure call to method PureMethod\Foo::impureReturningMethod() in pure method PureMethod\Foo::doFoo5().',
+				88,
+			],
+			[
+				'Possibly impure call to unknown method in pure method PureMethod\Foo::doFoo5().',
+				89,
+			],
+			[
+				'Impure instantiation of class PureMethod\ImpureConstructor in pure method PureMethod\TestConstructors::doFoo().',
+				140,
+			],
+			[
+				'Possibly impure instantiation of class PureMethod\PossiblyImpureConstructor in pure method PureMethod\TestConstructors::doFoo().',
+				141,
+			],
+			[
+				'Possibly impure instantiation of unknown class in pure method PureMethod\TestConstructors::doFoo().',
+				142,
+			],
 		]);
 	}
 

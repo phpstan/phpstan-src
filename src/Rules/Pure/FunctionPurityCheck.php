@@ -44,7 +44,15 @@ class FunctionPurityCheck
 				))->identifier(sprintf('pure%s.parameterByRef', $identifier))->build();
 			}
 
-			if ($returnType->isVoid()->yes()) {
+			$isConstructor = false;
+			if (
+				$functionReflection instanceof ExtendedMethodReflection
+				&& $functionReflection->getDeclaringClass()->hasConstructor()
+				&& $functionReflection->getDeclaringClass()->getConstructor()->getName() === $functionReflection->getName()
+			) {
+				$isConstructor = true;
+			}
+			if ($returnType->isVoid()->yes() && !$isConstructor) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'%s is marked as pure but returns void.',
 					$functionDescription,

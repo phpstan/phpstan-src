@@ -39,6 +39,26 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure property assignment in pure function PureFunction\doFoo3().',
 				26,
 			],
+			[
+				'Possibly impure call to a callable in pure function PureFunction\testThese().',
+				60,
+			],
+			[
+				'Impure call to function PureFunction\impureFunction() in pure function PureFunction\testThese().',
+				62,
+			],
+			[
+				'Impure call to function PureFunction\voidFunction() in pure function PureFunction\testThese().',
+				63,
+			],
+			[
+				'Possibly impure call to function PureFunction\possiblyImpureFunction() in pure function PureFunction\testThese().',
+				64,
+			],
+			[
+				'Possibly impure call to unknown function in pure function PureFunction\testThese().',
+				65,
+			],
 		]);
 	}
 

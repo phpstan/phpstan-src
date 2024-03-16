@@ -2132,6 +2132,7 @@ class NodeScopeResolver
 			$parametersAcceptor = null;
 			$functionReflection = null;
 			$throwPoints = [];
+			$impurePoints = [];
 			if ($expr->name instanceof Expr) {
 				$nameType = $scope->getType($expr->name);
 				if ($nameType->isCallable()->yes()) {
@@ -2160,6 +2161,13 @@ class NodeScopeResolver
 					);
 					$throwPoints = array_merge($throwPoints, $invokeResult->getThrowPoints());
 				}
+				$impurePoints[] = new ImpurePoint(
+					$scope,
+					$expr,
+					'functionCall',
+					'call to a callable',
+					false,
+				);
 				$scope = $nameResult->getScope();
 			} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
@@ -2168,6 +2176,24 @@ class NodeScopeResolver
 					$expr->getArgs(),
 					$functionReflection->getVariants(),
 					$functionReflection->getNamedArgumentsVariants(),
+				);
+				if (!$functionReflection->hasSideEffects()->no()) {
+					$certain = $functionReflection->isPure()->no() || $parametersAcceptor->getReturnType()->isVoid()->yes();
+					$impurePoints[] = new ImpurePoint(
+						$scope,
+						$expr,
+						'functionCall',
+						sprintf('call to function %s()', $functionReflection->getName()),
+						$certain,
+					);
+				}
+			} else {
+				$impurePoints[] = new ImpurePoint(
+					$scope,
+					$expr,
+					'functionCall',
+					'call to unknown function',
+					false,
 				);
 			}
 
@@ -2597,6 +2623,31 @@ class NodeScopeResolver
 				}
 			}
 
+			$impurePoints = [];
+			if ($methodReflection !== null) {
+				if (!$methodReflection->hasSideEffects()->no()) {
+					$certain = $methodReflection->isPure()->no();
+					if ($parametersAcceptor !== null) {
+						$certain = $certain || $parametersAcceptor->getReturnType()->isVoid()->yes();
+					}
+					$impurePoints[] = new ImpurePoint(
+						$scope,
+						$expr,
+						'methodCall',
+						sprintf('call to method %s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName()),
+						$certain,
+					);
+				}
+			} else {
+				$impurePoints[] = new ImpurePoint(
+					$scope,
+					$expr,
+					'methodCall',
+					'call to unknown method',
+					false,
+				);
+			}
+
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 			}
@@ -2898,11 +2949,13 @@ class NodeScopeResolver
 			$constructorReflection = null;
 			$hasYield = false;
 			$throwPoints = [];
+			$className = null;
 			if ($expr->class instanceof Expr) {
 				$objectClasses = $scope->getType($expr)->getObjectClassNames();
 				if (count($objectClasses) === 1) {
 					$objectExprResult = $this->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, static function (): void {
 					}, $context->enterDeep());
+					$className = $objectClasses[0];
 					$additionalThrowPoints = $objectExprResult->getThrowPoints();
 				} else {
 					$additionalThrowPoints = [ThrowPoint::createImplicit($scope, $expr)];
@@ -2920,24 +2973,47 @@ class NodeScopeResolver
 				$this->processStmtNode($expr->class, $scope, $nodeCallback, StatementContext::createTopLevel());
 			} else {
 				$className = $scope->resolveName($expr->class);
-				if ($this->reflectionProvider->hasClass($className)) {
-					$classReflection = $this->reflectionProvider->getClass($className);
-					if ($classReflection->hasConstructor()) {
-						$constructorReflection = $classReflection->getConstructor();
-						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-							$scope,
-							$expr->getArgs(),
-							$constructorReflection->getVariants(),
-							$constructorReflection->getNamedArgumentsVariants(),
-						);
-						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, $expr->class, $expr->getArgs(), $scope);
-						if ($constructorThrowPoint !== null) {
-							$throwPoints[] = $constructorThrowPoint;
-						}
+			}
+
+			if ($className !== null && $this->reflectionProvider->hasClass($className)) {
+				$classReflection = $this->reflectionProvider->getClass($className);
+				if ($classReflection->hasConstructor()) {
+					$constructorReflection = $classReflection->getConstructor();
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+						$scope,
+						$expr->getArgs(),
+						$constructorReflection->getVariants(),
+						$constructorReflection->getNamedArgumentsVariants(),
+					);
+					$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, new Name\FullyQualified($className), $expr->getArgs(), $scope);
+					if ($constructorThrowPoint !== null) {
+						$throwPoints[] = $constructorThrowPoint;
 					}
-				} else {
-					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
+			} else {
+				$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
+			}
+
+			$impurePoints = [];
+			if ($constructorReflection !== null) {
+				if (!$constructorReflection->hasSideEffects()->no()) {
+					$certain = $constructorReflection->isPure()->no();
+					$impurePoints[] = new ImpurePoint(
+						$scope,
+						$expr,
+						'new',
+						sprintf('instantiation of class %s', $constructorReflection->getDeclaringClass()->getDisplayName()),
+						$certain,
+					);
+				}
+			} else {
+				$impurePoints[] = new ImpurePoint(
+					$scope,
+					$expr,
+					'new',
+					'instantiation of unknown class',
+					false,
+				);
 			}
 
 			if ($parametersAcceptor !== null) {

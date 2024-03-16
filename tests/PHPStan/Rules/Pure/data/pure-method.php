@@ -76,5 +76,70 @@ class Foo
 		$this->unknownMethod();
 	}
 
+	/**
+	 * @phpstan-pure
+	 */
+	public function doFoo5()
+	{
+		self::voidMethod();
+		self::impureVoidMethod();
+		self::returningMethod();
+		self::pureReturningMethod();
+		self::impureReturningMethod();
+		self::unknownMethod();
+	}
+
+
+}
+
+class PureConstructor
+{
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function __construct()
+	{
+
+	}
+
+}
+
+class ImpureConstructor
+{
+
+	/**
+	 * @phpstan-impure
+	 */
+	public function __construct()
+	{
+
+	}
+
+}
+
+class PossiblyImpureConstructor
+{
+
+	public function __construct()
+	{
+
+	}
+
+}
+
+class TestConstructors
+{
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function doFoo(string $s)
+	{
+		new PureConstructor();
+		new ImpureConstructor();
+		new PossiblyImpureConstructor();
+		new $s();
+	}
 
 }

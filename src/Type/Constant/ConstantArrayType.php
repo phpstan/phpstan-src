@@ -875,7 +875,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $valuesArray;
 		}
 
-		$generalizedArray = new ArrayType($valuesArray->getKeyType(), $valuesArray->getItemType());
+		$generalizedArray = new ArrayType($valuesArray->getIterableKeyType(), $valuesArray->getItemType());
 
 		if ($isIterableAtLeastOnce->yes()) {
 			$generalizedArray = TypeCombinator::intersect($generalizedArray, new NonEmptyArrayType());
@@ -1229,7 +1229,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		$arrayType = new ArrayType(
-			$this->getKeyType()->generalize($precision),
+			$this->getIterableKeyType()->generalize($precision),
 			$this->getItemType()->generalize($precision),
 		);
 
@@ -1281,7 +1281,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
-		$arrayType = new ArrayType($this->getKeyType(), $this->getItemType());
+		$arrayType = new ArrayType($this->getIterableKeyType(), $this->getItemType());
 
 		if ($isIterableAtLeastOnce->yes()) {
 			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());

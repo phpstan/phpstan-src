@@ -671,7 +671,7 @@ class TypeCombinator
 		foreach ($arrayTypes as $arrayType) {
 			if ($generalArrayOccurred || !$arrayType->isConstantArray()->yes()) {
 				foreach ($arrayType->getArrays() as $type) {
-					$keyTypesForGeneralArray[] = $type->getKeyType();
+					$keyTypesForGeneralArray[] = $type->getIterableKeyType();
 					$valueTypesForGeneralArray[] = $type->getItemType();
 					$generalArrayOccurred = true;
 				}
@@ -1200,7 +1200,7 @@ class TypeCombinator
 						($types[$i] instanceof ArrayType || $types[$i] instanceof IterableType) &&
 						($types[$j] instanceof ArrayType || $types[$j] instanceof IterableType)
 					) {
-						$keyType = self::intersect($types[$i]->getKeyType(), $types[$j]->getKeyType());
+						$keyType = self::intersect($types[$i]->getIterableKeyType(), $types[$j]->getKeyType());
 						$itemType = self::intersect($types[$i]->getItemType(), $types[$j]->getItemType());
 						if ($types[$i] instanceof IterableType && $types[$j] instanceof IterableType) {
 							$types[$j] = new IterableType($keyType, $itemType);

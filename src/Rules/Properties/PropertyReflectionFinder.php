@@ -98,7 +98,9 @@ class PropertyReflectionFinder
 		}
 
 		if ($propertyFetch->class instanceof Node\Name) {
-			$propertyHolderType = $scope->resolveTypeByName($propertyFetch->class);
+			$propertyHolderType = $propertyFetch->class->toLowerString() === 'static'
+				? $scope->getType(new Expr\ClassConstFetch($propertyFetch->class, 'class'))->getClassStringObjectType()
+				: $scope->resolveTypeByName($propertyFetch->class);
 		} else {
 			$propertyHolderType = $scope->getType($propertyFetch->class);
 		}

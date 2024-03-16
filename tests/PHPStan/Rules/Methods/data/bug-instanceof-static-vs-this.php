@@ -19,6 +19,12 @@ class FooBase
 			\PHPStan\Testing\assertType('int', $this::foo());
 			\PHPStan\Testing\assertType('int', $this->foo());
 			\PHPStan\Testing\assertType('int', static::foo());
+
+			\PHPStan\Testing\assertNativeType('$this(BugInstanceofStaticVsThis\FooBase)&BugInstanceofStaticVsThis\FooInterface', $this);
+			\PHPStan\Testing\assertNativeType('class-string<BugInstanceofStaticVsThis\FooInterface&static(BugInstanceofStaticVsThis\FooBase)>', static::class);
+			\PHPStan\Testing\assertNativeType('int', $this::foo());
+			\PHPStan\Testing\assertNativeType('int', $this->foo());
+			\PHPStan\Testing\assertNativeType('int', static::foo());
 		}
 
 		if (is_a(static::class, FooInterface::class, true)) {
@@ -27,6 +33,12 @@ class FooBase
 			\PHPStan\Testing\assertType('int', $this::foo());
 			\PHPStan\Testing\assertType('int', $this->foo());
 			\PHPStan\Testing\assertType('int', static::foo());
+
+			\PHPStan\Testing\assertNativeType('$this(BugInstanceofStaticVsThis\FooBase)&BugInstanceofStaticVsThis\FooInterface', $this);
+			\PHPStan\Testing\assertNativeType('class-string<BugInstanceofStaticVsThis\FooInterface&static(BugInstanceofStaticVsThis\FooBase)>', static::class);
+			\PHPStan\Testing\assertNativeType('int', $this::foo());
+			\PHPStan\Testing\assertNativeType('int', $this->foo());
+			\PHPStan\Testing\assertNativeType('int', static::foo());
 		}
 	}
 }
@@ -50,6 +62,14 @@ trait FooTrait
 			\PHPStan\Testing\assertType("int", $this::$staticProp);
 
 			\PHPStan\Testing\assertType("string", $this->prop);
+
+			\PHPStan\Testing\assertNativeType("'a'", static::CONSTANT);
+			\PHPStan\Testing\assertNativeType("'a'", $this::CONSTANT);
+
+			\PHPStan\Testing\assertNativeType("int", static::$staticProp);
+			\PHPStan\Testing\assertNativeType("int", $this::$staticProp);
+
+			\PHPStan\Testing\assertNativeType("string", $this->prop);
 		}
 
 		if (is_a(static::class, FooChild::class, true)) {
@@ -60,6 +80,14 @@ trait FooTrait
 			\PHPStan\Testing\assertType("int", $this::$staticProp);
 
 			\PHPStan\Testing\assertType("string", $this->prop);
+
+			\PHPStan\Testing\assertNativeType("'a'", static::CONSTANT);
+			\PHPStan\Testing\assertNativeType("'a'", $this::CONSTANT);
+
+			\PHPStan\Testing\assertNativeType("int", static::$staticProp);
+			\PHPStan\Testing\assertNativeType("int", $this::$staticProp);
+
+			\PHPStan\Testing\assertNativeType("string", $this->prop);
 		}
 	}
 }

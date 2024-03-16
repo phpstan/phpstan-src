@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ddd9c1daea7e6bee917b88353052a561",
+    "content-hash": "701509fb90aa06cc98352f3fbc2f1ba4",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1393,7 +1393,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2024-03-02T19:58:25+00:00"
+            "time": "2024-03-15T12:01:43+00:00"
         },
         {
             "name": "nette/bootstrap",
@@ -1478,16 +1478,16 @@
         },
         {
             "name": "nette/di",
-            "version": "v3.1.10",
+            "version": "v3.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/di.git",
-                "reference": "2645ec3eaa17fa2ab87c5eb4eaacb1fe6dd28284"
+                "reference": "00ea0afa643b3b4383a5cd1a322656c989ade498"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/di/zipball/2645ec3eaa17fa2ab87c5eb4eaacb1fe6dd28284",
-                "reference": "2645ec3eaa17fa2ab87c5eb4eaacb1fe6dd28284",
+                "url": "https://api.github.com/repos/nette/di/zipball/00ea0afa643b3b4383a5cd1a322656c989ade498",
+                "reference": "00ea0afa643b3b4383a5cd1a322656c989ade498",
                 "shasum": ""
             },
             "require": {
@@ -1495,7 +1495,7 @@
                 "nette/neon": "^3.3 || ^4.0",
                 "nette/php-generator": "^3.5.4 || ^4.0",
                 "nette/robot-loader": "^3.2 || ~4.0.0",
-                "nette/schema": "^1.2.5",
+                "nette/schema": "^1.2",
                 "nette/utils": "^3.2.5 || ~4.0.0",
                 "php": "7.2 - 8.3"
             },
@@ -1544,9 +1544,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/di/issues",
-                "source": "https://github.com/nette/di/tree/v3.1.10"
+                "source": "https://github.com/nette/di/tree/v3.1.5"
             },
-            "time": "2024-02-06T01:19:44+00:00"
+            "time": "2023-10-02T19:58:38+00:00"
         },
         {
             "name": "nette/finder",
@@ -6500,16 +6500,16 @@
         },
         {
             "name": "shipmonk/composer-dependency-analyser",
-            "version": "1.3.0",
+            "version": "1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/shipmonk-rnd/composer-dependency-analyser.git",
-                "reference": "e7db6877e70c22c146e5f4af1de0d2703102ad2b"
+                "reference": "b67036e64429bcddbbb65ba218f031d58ffda02e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shipmonk-rnd/composer-dependency-analyser/zipball/e7db6877e70c22c146e5f4af1de0d2703102ad2b",
-                "reference": "e7db6877e70c22c146e5f4af1de0d2703102ad2b",
+                "url": "https://api.github.com/repos/shipmonk-rnd/composer-dependency-analyser/zipball/b67036e64429bcddbbb65ba218f031d58ffda02e",
+                "reference": "b67036e64429bcddbbb65ba218f031d58ffda02e",
                 "shasum": ""
             },
             "require": {
@@ -6556,9 +6556,9 @@
             ],
             "support": {
                 "issues": "https://github.com/shipmonk-rnd/composer-dependency-analyser/issues",
-                "source": "https://github.com/shipmonk-rnd/composer-dependency-analyser/tree/1.3.0"
+                "source": "https://github.com/shipmonk-rnd/composer-dependency-analyser/tree/1.3.1"
             },
-            "time": "2024-03-04T17:51:44+00:00"
+            "time": "2024-03-05T20:19:03+00:00"
         },
         {
             "name": "shipmonk/name-collision-detector",

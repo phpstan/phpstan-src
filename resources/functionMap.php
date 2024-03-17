@@ -2628,7 +2628,7 @@ return [
 'Exception::getPrevious' => ['(?Throwable)|(?Exception)'],
 'Exception::getTrace' => ['array{function:string,line?:int,file?:string,class?:class-string,type?:\'::\'|\'->\',args?:mixed[],object?:object}'],
 'Exception::getTraceAsString' => ['string'],
-'exec' => ['string', 'command'=>'string', '&w_output='=>'array', '&w_return_value='=>'int'],
+'exec' => ['string|false', 'command'=>'string', '&w_output='=>'array', '&w_return_value='=>'int'],
 'exif_imagetype' => ['int|false', 'imagefile'=>'string'],
 'exif_read_data' => ['array|false', 'filename'=>'string|resource', 'sections_needed='=>'string', 'sub_arrays='=>'bool', 'read_thumbnail='=>'bool'],
 'exif_tagname' => ['string|false', 'index'=>'int'],

@@ -10,7 +10,7 @@ use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\PhpDocParser\Ast\ConstExpr\QuoteAwareConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\Reflection\Callable\FunctionCallableVariant;
+use PHPStan\Reflection\Callables\FunctionCallableVariant;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\InaccessibleMethod;

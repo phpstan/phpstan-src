@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Reflection\Callable;
+namespace PHPStan\Reflection\Callables;
 
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\Generic\TemplateTypeMap;

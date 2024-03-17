@@ -3,7 +3,7 @@
 namespace PHPStan\Rules\Api;
 
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\Callable\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;

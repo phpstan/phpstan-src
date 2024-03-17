@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\Reflection\Callable\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;

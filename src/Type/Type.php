@@ -4,7 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\Reflection\Callable\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;

@@ -26,4 +26,14 @@ class CallPrivateMethodThroughStaticRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testInstanceof(): void
+	{
+		$this->analyse([__DIR__ . '/data/call-private-method-static-instanceof.php'], [
+			[
+				'Unsafe call to private method CallPrivateMethodStaticInstanceof\FooBase::fooPrivate() through static::.',
+				27,
+			],
+		]);
+	}
+
 }

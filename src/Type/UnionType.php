@@ -293,6 +293,8 @@ class UnionType implements CompoundType
 				}
 			}
 
+			$typeNames = array_unique($typeNames);
+
 			if (count($typeNames) > 1024) {
 				return implode('|', array_slice($typeNames, 0, 1024)) . "|\u{2026}";
 			}

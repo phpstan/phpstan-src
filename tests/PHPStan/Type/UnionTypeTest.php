@@ -21,6 +21,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\data\QueryType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -914,6 +915,11 @@ class UnionTypeTest extends PHPStanTestCase
 				),
 				'(TFoo of TBar)|null',
 				'(TFoo of TBar)|null',
+			],
+			[
+				new UnionType([new QueryType('foo'), new QueryType('bar')]),
+				'Doctrine\ORM\Query<mixed, mixed>',
+				'Doctrine\ORM\Query<mixed, mixed>',
 			],
 		];
 	}

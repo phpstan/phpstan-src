@@ -14,10 +14,10 @@ use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\Callable\FunctionCallableVariant;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
@@ -471,9 +471,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return TrinaryLogic::createYes()->and(...$results);
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		$typeAndMethodNames = $this->findTypeAndMethodNames();
@@ -496,7 +493,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				continue;
 			}
 
-			array_push($acceptors, ...$method->getVariants());
+			array_push($acceptors, ...FunctionCallableVariant::createFromVariants($method->getVariants()));
 		}
 
 		return $acceptors;

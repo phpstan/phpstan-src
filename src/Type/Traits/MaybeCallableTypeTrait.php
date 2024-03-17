@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Traits;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 
@@ -15,9 +14,6 @@ trait MaybeCallableTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		return [new TrivialParametersAcceptor()];

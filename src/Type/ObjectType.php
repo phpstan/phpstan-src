@@ -18,11 +18,12 @@ use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\Callable\CallableParametersAcceptor;
+use PHPStan\Reflection\Callable\FunctionCallableVariant;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
@@ -1244,9 +1245,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return TrinaryLogic::createYes();
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		if ($this->className === Closure::class) {
@@ -1261,7 +1259,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	}
 
 	/**
-	 * @return ParametersAcceptor[]|null
+	 * @return CallableParametersAcceptor[]|null
 	 */
 	private function findCallableParametersAcceptors(): ?array
 	{
@@ -1271,7 +1269,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($classReflection->hasNativeMethod('__invoke')) {
-			return $this->getMethod('__invoke', new OutOfClassScope())->getVariants();
+			return FunctionCallableVariant::createFromVariants($this->getMethod('__invoke', new OutOfClassScope())->getVariants());
 		}
 
 		if (!$classReflection->getNativeReflection()->isFinal()) {

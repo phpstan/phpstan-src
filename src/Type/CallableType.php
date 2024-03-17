@@ -11,6 +11,7 @@ use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
+use PHPStan\Reflection\Callable\CallableParametersAcceptor;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -37,7 +38,7 @@ use function array_merge;
 use function count;
 
 /** @api */
-class CallableType implements CompoundType, ParametersAcceptor
+class CallableType implements CompoundType, CallableParametersAcceptor
 {
 
 	use MaybeArrayTypeTrait;
@@ -226,9 +227,6 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return TrinaryLogic::createYes();
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		return [$this];

@@ -12,6 +12,7 @@ use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
+use PHPStan\Reflection\Callable\CallableParametersAcceptor;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -45,7 +46,7 @@ use function array_merge;
 use function count;
 
 /** @api */
-class ClosureType implements TypeWithClassName, ParametersAcceptor
+class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 {
 
 	use NonArrayTypeTrait;
@@ -314,9 +315,6 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return [];
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		return [$this];

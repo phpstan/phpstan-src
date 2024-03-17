@@ -2,13 +2,14 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Reflection\Callable\CallableParametersAcceptor;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 /** @api */
-class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs
+class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, CallableParametersAcceptor
 {
 
 	/** @api */

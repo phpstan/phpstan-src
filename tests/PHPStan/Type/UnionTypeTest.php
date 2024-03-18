@@ -717,9 +717,11 @@ class UnionTypeTest extends PHPStanTestCase
 				new UnionType([new IntegerType(), new StringType()]),
 				'int|string',
 				'int|string',
+				'int|string',
 			],
 			[
 				new UnionType([new IntegerType(), new StringType(), new NullType()]),
+				'int|string|null',
 				'int|string|null',
 				'int|string|null',
 			],
@@ -742,6 +744,7 @@ class UnionTypeTest extends PHPStanTestCase
 					new ConstantStringType('1'),
 				]),
 				"1|2|2.2|10|'1'|'10'|'10aaa'|'11aaa'|'1aaa'|'2'|'2aaa'|'foo'|stdClass|true|null",
+				"1|2|2.2|10|'1'|'10'|'10aaa'|'11aaa'|'1aaa'|'2'|'2aaa'|'foo'|stdClass|true|null",
 				'float|int|stdClass|string|true|null',
 			],
 			[
@@ -762,6 +765,7 @@ class UnionTypeTest extends PHPStanTestCase
 					]),
 					new ConstantStringType('aaa'),
 				),
+				'\'aaa\'|array{a: int, b: float}|array{a: string, b: bool}',
 				'\'aaa\'|array{a: int, b: float}|array{a: string, b: bool}',
 				'array<string, bool|float|int|string>|string',
 			],
@@ -784,6 +788,7 @@ class UnionTypeTest extends PHPStanTestCase
 					new ConstantStringType('aaa'),
 				),
 				'\'aaa\'|array{a: string, b: bool}|array{b: int, c: float}',
+				'\'aaa\'|array{a: string, b: bool}|array{b: int, c: float}',
 				'array<string, bool|float|int|string>|string',
 			],
 			[
@@ -805,6 +810,7 @@ class UnionTypeTest extends PHPStanTestCase
 					new ConstantStringType('aaa'),
 				),
 				'\'aaa\'|array{a: string, b: bool}|array{c: int, d: float}',
+				'\'aaa\'|array{a: string, b: bool}|array{c: int, d: float}',
 				'array<string, bool|float|int|string>|string',
 			],
 			[
@@ -825,6 +831,7 @@ class UnionTypeTest extends PHPStanTestCase
 					]),
 				),
 				'array{int, bool, float}|array{string}',
+				'array{int, bool, float}|array{string}',
 				'array<int, bool|float|int|string>',
 			],
 			[
@@ -837,6 +844,7 @@ class UnionTypeTest extends PHPStanTestCase
 					]),
 				),
 				'array{}|array{foooo: \'barrr\'}',
+				'array{}|array{foooo: \'barrr\'}',
 				'array<string, string>',
 			],
 			[
@@ -848,6 +856,7 @@ class UnionTypeTest extends PHPStanTestCase
 					]),
 				),
 				'int|numeric-string',
+				'int|numeric-string',
 				'int|string',
 			],
 			[
@@ -855,6 +864,7 @@ class UnionTypeTest extends PHPStanTestCase
 					IntegerRangeType::fromInterval(0, 4),
 					IntegerRangeType::fromInterval(6, 10),
 				),
+				'int<0, 4>|int<6, 10>',
 				'int<0, 4>|int<6, 10>',
 				'int<0, 4>|int<6, 10>',
 			],
@@ -868,6 +878,7 @@ class UnionTypeTest extends PHPStanTestCase
 					),
 					new NullType(),
 				),
+				'TFoo of int (class foo, parameter)|null',
 				'(TFoo of int)|null',
 				'(TFoo of int)|null',
 			],
@@ -881,6 +892,7 @@ class UnionTypeTest extends PHPStanTestCase
 					),
 					new GenericClassStringType(new ObjectType('Abc')),
 				),
+				'class-string<Abc>|TFoo of int (class foo, parameter)',
 				'class-string<Abc>|TFoo of int',
 				'class-string<Abc>|TFoo of int',
 			],
@@ -894,6 +906,7 @@ class UnionTypeTest extends PHPStanTestCase
 					),
 					new NullType(),
 				),
+				'TFoo (class foo, parameter)|null',
 				'TFoo|null',
 				'TFoo|null',
 			],
@@ -912,8 +925,15 @@ class UnionTypeTest extends PHPStanTestCase
 					),
 					new NullType(),
 				),
+				'TFoo of TBar (class foo, parameter) (class foo, parameter)|null',
 				'(TFoo of TBar)|null',
 				'(TFoo of TBar)|null',
+			],
+			[
+				new UnionType([new ObjectType('Foo'), new ObjectType('Foo')]),
+				'Foo#1|Foo#2',
+				'Foo',
+				'Foo',
 			],
 		];
 	}
@@ -923,10 +943,12 @@ class UnionTypeTest extends PHPStanTestCase
 	 */
 	public function testDescribe(
 		Type $type,
+		string $expectedPreciseDescription,
 		string $expectedValueDescription,
 		string $expectedTypeOnlyDescription,
 	): void
 	{
+		$this->assertSame($expectedPreciseDescription, $type->describe(VerbosityLevel::precise()));
 		$this->assertSame($expectedValueDescription, $type->describe(VerbosityLevel::value()));
 		$this->assertSame($expectedTypeOnlyDescription, $type->describe(VerbosityLevel::typeOnly()));
 	}

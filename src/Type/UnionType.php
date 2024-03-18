@@ -26,6 +26,8 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use function array_diff_assoc;
+use function array_fill_keys;
 use function array_map;
 use function array_merge;
 use function array_slice;
@@ -290,6 +292,22 @@ class UnionType implements CompoundType
 				} else {
 					$typeNames[] = $type->describe($level);
 				}
+			}
+
+			if ($level->isPrecise()) {
+				$duplicates = array_diff_assoc($typeNames, array_unique($typeNames));
+				if (count($duplicates) > 0) {
+					$indexByDuplicate = array_fill_keys($duplicates, 0);
+					foreach ($typeNames as $key => $typeName) {
+						if (!isset($indexByDuplicate[$typeName])) {
+							continue;
+						}
+
+						$typeNames[$key] = $typeName . '#' . ++$indexByDuplicate[$typeName];
+					}
+				}
+			} else {
+				$typeNames = array_unique($typeNames);
 			}
 
 			if (count($typeNames) > 1024) {

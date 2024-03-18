@@ -78,6 +78,11 @@ class VerbosityLevel
 		return $this->value === self::VALUE;
 	}
 
+	public function isPrecise(): bool
+	{
+		return $this->value === self::PRECISE;
+	}
+
 	/** @api */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{

@@ -166,7 +166,9 @@ class ImmediatelyCalledCallback
 	 */
 	public function doFoo2(array $a): void
 	{
-		$cb = fn () => throw new \InvalidArgumentException();
+		$cb = function () {
+			throw new \InvalidArgumentException();
+		};
 	}
 
 	/**

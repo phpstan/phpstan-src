@@ -293,7 +293,19 @@ class UnionType implements CompoundType
 				}
 			}
 
-			$typeNames = array_unique($typeNames);
+			if ($level->isPrecise()) {
+				$duplicates = array_diff_assoc($typeNames, array_unique($typeNames));
+				if (count($duplicates) > 0) {
+					$indexByDuplicate = array_fill_keys($duplicates, 0);
+					foreach ($typeNames as $key => $typeName) {
+						if (isset($indexByDuplicate[$typeName])) {
+							$typeNames[$key] = $typeName.'#'.++$indexByDuplicate[$typeName];
+						}
+					}
+				}
+			} else {
+				$typeNames = array_unique($typeNames);
+			}
 
 			if (count($typeNames) > 1024) {
 				return implode('|', array_slice($typeNames, 0, 1024)) . "|\u{2026}";

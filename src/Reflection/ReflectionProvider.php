@@ -9,6 +9,7 @@ use PHPStan\Analyser\Scope;
 interface ReflectionProvider
 {
 
+	/** @phpstan-assert-if-true =class-string $className */
 	public function hasClass(string $className): bool;
 
 	public function getClass(string $className): ClassReflection;

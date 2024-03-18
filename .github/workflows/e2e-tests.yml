@@ -135,6 +135,16 @@ jobs:
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv
           - script: |
+              cd e2e/result-cache-8
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              patch -b CustomRule.php < patch-1.patch
+              cat baseline-1.neon > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              mv CustomRule.php.orig CustomRule.php
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+          - script: |
               cd e2e/bug10449
               ../../bin/phpstan analyze
               git apply patch.diff

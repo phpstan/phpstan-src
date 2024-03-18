@@ -1,0 +1,10 @@
+includes:
+	- phpstan-baseline.neon
+	- autoload.php
+rules:
+    - \TestResultCache8\CustomRule
+parameters:
+	level: 8
+	inferPrivatePropertyTypeFromConstructor: true
+	paths:
+		- src

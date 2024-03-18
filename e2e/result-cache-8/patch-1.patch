@@ -1,0 +1,12 @@
+--- CustomRule.php
++++ CustomRule.php
+@@ -16,6 +16,8 @@
+
+ 	public function processNode(Node $node, Scope $scope): array
+ 	{
+-		return [];
++		return [
++			RuleErrorBuilder::message('TestResultCache8')->build(),
++		];
+ 	}
+ }

@@ -944,12 +944,12 @@ class UnionTypeTest extends PHPStanTestCase
 	 */
 	public function testDescribe(
 		Type $type,
-		string $expectedDescribeDescription,
+		string $expectedPreciseDescription,
 		string $expectedValueDescription,
 		string $expectedTypeOnlyDescription,
 	): void
 	{
-		$this->assertSame($expectedDescribeDescription, $type->describe(VerbosityLevel::precise()));
+		$this->assertSame($expectedPreciseDescription, $type->describe(VerbosityLevel::precise()));
 		$this->assertSame($expectedValueDescription, $type->describe(VerbosityLevel::value()));
 		$this->assertSame($expectedTypeOnlyDescription, $type->describe(VerbosityLevel::typeOnly()));
 	}

@@ -53,4 +53,9 @@ class InaccessibleMethod implements CallableParametersAcceptor
 		return new MixedType();
 	}
 
+	public function getThrowPoints(): array
+	{
+		return [];
+	}
+
 }

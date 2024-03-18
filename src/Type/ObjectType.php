@@ -1269,7 +1269,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($classReflection->hasNativeMethod('__invoke')) {
-			return FunctionCallableVariant::createFromVariants($this->getMethod('__invoke', new OutOfClassScope())->getVariants());
+			$method = $this->getMethod('__invoke', new OutOfClassScope());
+			return FunctionCallableVariant::createFromVariants(
+				$method,
+				$method->getVariants(),
+			);
 		}
 
 		if (!$classReflection->getNativeReflection()->isFinal()) {

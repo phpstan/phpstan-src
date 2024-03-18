@@ -119,6 +119,8 @@ use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -2160,6 +2162,9 @@ class NodeScopeResolver
 						$context->enterDeep(),
 					);
 					$throwPoints = array_merge($throwPoints, $invokeResult->getThrowPoints());
+					$impurePoints = array_merge($impurePoints, $invokeResult->getImpurePoints());
+				} elseif ($parametersAcceptor instanceof CallableParametersAcceptor) {
+					$throwPoints = array_merge($throwPoints, array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $expr), $parametersAcceptor->getThrowPoints()));
 				}
 				$impurePoints[] = new ImpurePoint(
 					$scope,
@@ -2714,9 +2719,21 @@ class NodeScopeResolver
 				$scope = $result->getScope();
 			}
 		} elseif ($expr instanceof Expr\Closure) {
-			return $this->processClosureNode($stmt, $expr, $scope, $nodeCallback, $context, null);
+			$result = $this->processClosureNode($stmt, $expr, $scope, $nodeCallback, $context, null);
+			return new ExpressionResult(
+				$result->getScope(),
+				$result->hasYield(),
+				[],
+				[],
+			);
 		} elseif ($expr instanceof Expr\ArrowFunction) {
-			return $this->processArrowFunctionNode($stmt, $expr, $scope, $nodeCallback, null);
+			$result = $this->processArrowFunctionNode($stmt, $expr, $scope, $nodeCallback, null);
+			return new ExpressionResult(
+				$result->getScope(),
+				$result->hasYield(),
+				[],
+				[],
+			);
 		} elseif ($expr instanceof ErrorSuppress) {
 			$result = $this->processExprNode($stmt, $expr->expr, $scope, $nodeCallback, $context);
 			$hasYield = $result->hasYield();
@@ -3797,7 +3814,7 @@ class NodeScopeResolver
 				array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 			), $closureScope);
 
-			return new ExpressionResult($scope, false, [], []);
+			return new ExpressionResult($scope, false, $statementResult->getThrowPoints(), $statementResult->getImpurePoints());
 		}
 
 		$count = 0;
@@ -3831,7 +3848,7 @@ class NodeScopeResolver
 			array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureScope);
 
-		return new ExpressionResult($scope->processClosureScope($closureScope, null, $byRefUses), false, [], []);
+		return new ExpressionResult($scope->processClosureScope($closureScope, null, $byRefUses), false, $statementResult->getThrowPoints(), $statementResult->getImpurePoints());
 	}
 
 	/**
@@ -3864,9 +3881,9 @@ class NodeScopeResolver
 			throw new ShouldNotHappenException();
 		}
 		$nodeCallback(new InArrowFunctionNode($arrowFunctionType, $expr), $arrowFunctionScope);
-		$this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
+		$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
 
-		return new ExpressionResult($scope, false, [], []);
+		return new ExpressionResult($scope, false, $exprResult->getThrowPoints(), $exprResult->getImpurePoints());
 	}
 
 	/**
@@ -4052,11 +4069,23 @@ class NodeScopeResolver
 			if ($arg->value instanceof Expr\Closure) {
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $context);
 				$result = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $context, $parameterType ?? null);
+				if ($calleeReflection instanceof FunctionReflection) {
+					// immediately called
+					$throwPoints = array_merge($throwPoints, array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $result->getThrowPoints()));
+					$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+				}
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $context);
 				$result = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $parameterType ?? null);
+				if ($calleeReflection instanceof FunctionReflection) {
+					// immediately called
+					$throwPoints = array_merge($throwPoints, array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $result->getThrowPoints()));
+					$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+				}
 			} else {
 				$result = $this->processExprNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $context->enterDeep());
+				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 			}
 			$scope = $result->getScope();
 			if ($assignByReference) {
@@ -4070,8 +4099,6 @@ class NodeScopeResolver
 			}
 
 			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 			if ($i !== 0 || $closureBindScope === null) {
 				continue;
 			}

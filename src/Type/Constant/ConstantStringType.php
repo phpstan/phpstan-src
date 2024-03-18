@@ -243,7 +243,8 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		// 'my_function'
 		$functionName = new Name($this->value);
 		if ($reflectionProvider->hasFunction($functionName, null)) {
-			return FunctionCallableVariant::createFromVariants($reflectionProvider->getFunction($functionName, null)->getVariants());
+			$function = $reflectionProvider->getFunction($functionName, null);
+			return FunctionCallableVariant::createFromVariants($function, $function->getVariants());
 		}
 
 		// 'MyClass::myStaticFunction'
@@ -260,7 +261,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 					return [new InaccessibleMethod($method)];
 				}
 
-				return FunctionCallableVariant::createFromVariants($method->getVariants());
+				return FunctionCallableVariant::createFromVariants($method, $method->getVariants());
 			}
 
 			if (!$classReflection->getNativeReflection()->isFinal()) {

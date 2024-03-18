@@ -57,4 +57,9 @@ class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, Callab
 		return new MixedType();
 	}
 
+	public function getThrowPoints(): array
+	{
+		return [];
+	}
+
 }

@@ -232,6 +232,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return [$this];
 	}
 
+	public function getThrowPoints(): array
+	{
+		return [];
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

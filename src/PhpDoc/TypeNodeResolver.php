@@ -933,7 +933,7 @@ class TypeNodeResolver
 			$mainType instanceof ObjectType
 			&& $mainType->getClassName() === Closure::class
 		) {
-			return new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap, null, null, $templateTags);
+			return new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap, null, null, $templateTags, []);
 		}
 
 		return new ErrorType();

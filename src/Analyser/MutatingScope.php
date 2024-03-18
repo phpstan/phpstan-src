@@ -47,7 +47,10 @@ use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -1128,8 +1131,10 @@ class MutatingScope implements Scope
 			if ($node instanceof FuncCall) {
 				if ($node->name instanceof Name) {
 					if ($this->reflectionProvider->hasFunction($node->name, $this)) {
+						$function = $this->reflectionProvider->getFunction($node->name, $this);
 						return $this->createFirstClassCallable(
-							$this->reflectionProvider->getFunction($node->name, $this)->getVariants(),
+							$function,
+							$function->getVariants(),
 						);
 					}
 
@@ -1142,6 +1147,7 @@ class MutatingScope implements Scope
 				}
 
 				return $this->createFirstClassCallable(
+					null,
 					$callableType->getCallableParametersAcceptors($this),
 				);
 			}
@@ -1157,7 +1163,10 @@ class MutatingScope implements Scope
 					return new ObjectType(Closure::class);
 				}
 
-				return $this->createFirstClassCallable($method->getVariants());
+				return $this->createFirstClassCallable(
+					$method,
+					$method->getVariants(),
+				);
 			}
 
 			if ($node instanceof Expr\StaticCall) {
@@ -1175,7 +1184,11 @@ class MutatingScope implements Scope
 					return new ObjectType(Closure::class);
 				}
 
-				return $this->createFirstClassCallable($classType->getMethod($methodName, $this)->getVariants());
+				$method = $classType->getMethod($methodName, $this);
+				return $this->createFirstClassCallable(
+					$method,
+					$method->getVariants(),
+				);
 			}
 
 			if ($node instanceof New_) {
@@ -1263,12 +1276,22 @@ class MutatingScope implements Scope
 						$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
 					}
 				}
+
+				$arrowFunctionExprResult = $this->nodeScopeResolver->processExprNode(
+					new Node\Stmt\Expression($node->expr),
+					$node->expr,
+					$arrowScope,
+					static function (): void {
+					},
+					ExpressionContext::createDeep(),
+				);
+				$throwPoints = $arrowFunctionExprResult->getThrowPoints();
 			} else {
 				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
 				$closureReturnStatements = [];
 				$closureYieldStatements = [];
 				$closureExecutionEnds = [];
-				$this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds): void {
+				$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds): void {
 					if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
 						return;
 					}
@@ -1302,6 +1325,8 @@ class MutatingScope implements Scope
 
 					$closureYieldStatements[] = [$node, $scope];
 				}, StatementContext::createTopLevel());
+
+				$throwPoints = $closureStatementResult->getThrowPoints();
 
 				$returnTypes = [];
 				$hasNull = false;
@@ -1370,6 +1395,11 @@ class MutatingScope implements Scope
 				$parameters,
 				$returnType,
 				$isVariadic,
+				TemplateTypeMap::createEmpty(),
+				TemplateTypeMap::createEmpty(),
+				TemplateTypeVarianceMap::createEmpty(),
+				[],
+				array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? SimpleThrowPoint::createExplicit($throwPoint->getType(), $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(), $throwPoints),
 			);
 		} elseif ($node instanceof New_) {
 			if ($node->class instanceof Name) {
@@ -2192,14 +2222,54 @@ class MutatingScope implements Scope
 	/**
 	 * @param ParametersAcceptor[] $variants
 	 */
-	private function createFirstClassCallable(array $variants): Type
+	private function createFirstClassCallable(
+		FunctionReflection|ExtendedMethodReflection|null $function,
+		array $variants,
+	): Type
 	{
 		$closureTypes = [];
+
 		foreach ($variants as $variant) {
 			$returnType = $variant->getReturnType();
 			if ($variant instanceof ParametersAcceptorWithPhpDocs) {
 				$returnType = $this->nativeTypesPromoted ? $variant->getNativeReturnType() : $returnType;
 			}
+
+			$templateTags = [];
+			foreach ($variant->getTemplateTypeMap()->getTypes() as $templateType) {
+				if (!$templateType instanceof TemplateType) {
+					continue;
+				}
+				$templateTags[$templateType->getName()] = new TemplateTag(
+					$templateType->getName(),
+					$templateType->getBound(),
+					$templateType->getVariance(),
+				);
+			}
+
+			$throwPoints = [];
+			if ($variant instanceof CallableParametersAcceptor) {
+				$throwPoints = $variant->getThrowPoints();
+			} elseif ($function !== null) {
+				$returnTypeForThrow = $variant->getReturnType();
+				$throwType = $function->getThrowType();
+				if ($throwType === null) {
+					if ($returnTypeForThrow instanceof NeverType && $returnTypeForThrow->isExplicit()) {
+						$throwType = new ObjectType(Throwable::class);
+					}
+				}
+
+				if ($throwType !== null) {
+					if (!$throwType->isVoid()->yes()) {
+						$throwPoints[] = SimpleThrowPoint::createExplicit($throwType, true);
+					}
+				} else {
+					if (!(new ObjectType(Throwable::class))->isSuperTypeOf($returnTypeForThrow)->yes()) {
+						$throwPoints[] = SimpleThrowPoint::createImplicit();
+					}
+				}
+			}
+
 			$parameters = $variant->getParameters();
 			$closureTypes[] = new ClosureType(
 				$parameters,
@@ -2208,6 +2278,8 @@ class MutatingScope implements Scope
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),
 				$variant instanceof ParametersAcceptorWithPhpDocs ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+				$templateTags,
+				$throwPoints,
 			);
 		}
 

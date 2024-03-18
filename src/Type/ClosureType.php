@@ -13,6 +13,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -69,6 +70,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	 * @api
 	 * @param array<int, ParameterReflection> $parameters
 	 * @param array<string, TemplateTag> $templateTags
+	 * @param SimpleThrowPoint[] $throwPoints
 	 */
 	public function __construct(
 		private array $parameters,
@@ -78,6 +80,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 		?TemplateTypeVarianceMap $callSiteVarianceMap = null,
 		private array $templateTags = [],
+		private array $throwPoints = [],
 	)
 	{
 		$this->objectType = new ObjectType(Closure::class);
@@ -206,6 +209,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 					$this->resolvedTemplateTypeMap,
 					$this->callSiteVarianceMap,
 					$this->templateTags,
+					$this->throwPoints,
 				);
 
 				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
@@ -318,6 +322,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		return [$this];
+	}
+
+	public function getThrowPoints(): array
+	{
+		return $this->throwPoints;
 	}
 
 	public function isCloneable(): TrinaryLogic
@@ -462,6 +471,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->resolvedTemplateTypeMap,
 			$this->callSiteVarianceMap,
 			$this->templateTags,
+			$this->throwPoints,
 		);
 	}
 
@@ -503,6 +513,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->resolvedTemplateTypeMap,
 			$this->callSiteVarianceMap,
 			$this->templateTags,
+			$this->throwPoints,
 		);
 	}
 
@@ -663,6 +674,8 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$properties['templateTypeMap'],
 			$properties['resolvedTemplateTypeMap'],
 			$properties['callSiteVarianceMap'],
+			$properties['templateTags'],
+			$properties['throwPoints'],
 		);
 	}
 

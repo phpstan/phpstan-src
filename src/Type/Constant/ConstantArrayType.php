@@ -493,7 +493,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				continue;
 			}
 
-			array_push($acceptors, ...FunctionCallableVariant::createFromVariants($method->getVariants()));
+			array_push($acceptors, ...FunctionCallableVariant::createFromVariants($method, $method->getVariants()));
 		}
 
 		return $acceptors;

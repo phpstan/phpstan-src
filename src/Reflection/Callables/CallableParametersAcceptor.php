@@ -10,4 +10,9 @@ use PHPStan\Reflection\ParametersAcceptor;
 interface CallableParametersAcceptor extends ParametersAcceptor
 {
 
+	/**
+	 * @return SimpleThrowPoint[]
+	 */
+	public function getThrowPoints(): array;
+
 }

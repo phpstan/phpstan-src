@@ -24,7 +24,7 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 				$reflectionProvider,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(),
+					new ClassForbiddenNameCheck(self::getContainer()),
 				),
 				new GenericObjectTypeCheck(),
 				$typeAliasResolver,

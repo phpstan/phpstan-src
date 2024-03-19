@@ -27,7 +27,7 @@ class ClassConstantRuleTest extends RuleTestCase
 			new RuleLevelHelper($reflectionProvider, true, false, true, false, false, true, false),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(),
+				new ClassForbiddenNameCheck(self::getContainer()),
 			),
 			new PhpVersion($this->phpVersion),
 		);

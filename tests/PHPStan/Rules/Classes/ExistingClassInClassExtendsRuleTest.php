@@ -21,7 +21,7 @@ class ExistingClassInClassExtendsRuleTest extends RuleTestCase
 		return new ExistingClassInClassExtendsRule(
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(),
+				new ClassForbiddenNameCheck(self::getContainer()),
 			),
 			$reflectionProvider,
 		);

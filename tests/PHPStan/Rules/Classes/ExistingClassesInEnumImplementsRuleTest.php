@@ -22,7 +22,7 @@ class ExistingClassesInEnumImplementsRuleTest extends RuleTestCase
 		return new ExistingClassesInEnumImplementsRule(
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(),
+				new ClassForbiddenNameCheck(self::getContainer()),
 			),
 			$reflectionProvider,
 		);

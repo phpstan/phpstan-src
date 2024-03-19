@@ -41,6 +41,7 @@ use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
+use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ArrayMapArgVisitor;
@@ -1286,13 +1287,21 @@ class MutatingScope implements Scope
 					ExpressionContext::createDeep(),
 				);
 				$throwPoints = $arrowFunctionExprResult->getThrowPoints();
+				$invalidateExpressions = [];
+				$usedVariables = [];
 			} else {
 				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
 				$closureReturnStatements = [];
 				$closureYieldStatements = [];
 				$closureExecutionEnds = [];
-				$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds): void {
+				$invalidateExpressions = [];
+				$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds, &$invalidateExpressions): void {
 					if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
+						return;
+					}
+
+					if ($node instanceof InvalidateExprNode) {
+						$invalidateExpressions[] = $node;
 						return;
 					}
 
@@ -1389,6 +1398,15 @@ class MutatingScope implements Scope
 				} else {
 					$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
 				}
+
+				$usedVariables = [];
+				foreach ($node->uses as $use) {
+					if (!is_string($use->var->name)) {
+						continue;
+					}
+
+					$usedVariables[] = $use->var->name;
+				}
 			}
 
 			return new ClosureType(
@@ -1400,6 +1418,8 @@ class MutatingScope implements Scope
 				TemplateTypeVarianceMap::createEmpty(),
 				[],
 				array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? SimpleThrowPoint::createExplicit($throwPoint->getType(), $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(), $throwPoints),
+				$invalidateExpressions,
+				$usedVariables,
 			);
 		} elseif ($node instanceof New_) {
 			if ($node->class instanceof Name) {
@@ -2280,6 +2300,8 @@ class MutatingScope implements Scope
 				$variant instanceof ParametersAcceptorWithPhpDocs ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 				$templateTags,
 				$throwPoints,
+				[],
+				[],
 			);
 		}
 

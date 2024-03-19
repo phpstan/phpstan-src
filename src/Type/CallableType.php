@@ -237,6 +237,16 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return [];
 	}
 
+	public function getInvalidateExpressions(): array
+	{
+		return [];
+	}
+
+	public function getUsedVariables(): array
+	{
+		return [];
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

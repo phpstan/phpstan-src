@@ -62,4 +62,14 @@ class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, Callab
 		return [];
 	}
 
+	public function getInvalidateExpressions(): array
+	{
+		return [];
+	}
+
+	public function getUsedVariables(): array
+	{
+		return [];
+	}
+
 }

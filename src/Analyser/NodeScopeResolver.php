@@ -50,6 +50,7 @@ use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
+use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\CloningVisitor;
 use PhpParser\NodeVisitorAbstract;
@@ -96,6 +97,7 @@ use PHPStan\Node\InForeachNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\InTraitNode;
+use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\MatchExpressionArm;
@@ -2147,6 +2149,7 @@ class NodeScopeResolver
 				}
 
 				$nameResult = $this->processExprNode($stmt, $expr->name, $scope, $nodeCallback, $context->enterDeep());
+				$scope = $nameResult->getScope();
 				$throwPoints = $nameResult->getThrowPoints();
 				if (
 					$nameType->isObject()->yes()
@@ -2165,6 +2168,8 @@ class NodeScopeResolver
 					$impurePoints = array_merge($impurePoints, $invokeResult->getImpurePoints());
 				} elseif ($parametersAcceptor instanceof CallableParametersAcceptor) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $expr), $parametersAcceptor->getThrowPoints()));
+
+					$scope = $this->processImmediatelyCalledCallable($scope, $parametersAcceptor->getInvalidateExpressions(), $parametersAcceptor->getUsedVariables());
 				}
 				$impurePoints[] = new ImpurePoint(
 					$scope,
@@ -2173,7 +2178,6 @@ class NodeScopeResolver
 					'call to a callable',
 					false,
 				);
-				$scope = $nameResult->getScope();
 			} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
@@ -2477,6 +2481,7 @@ class NodeScopeResolver
 			if ($methodReflection !== null) {
 				$hasSideEffects = $methodReflection->hasSideEffects();
 				if ($hasSideEffects->yes() || $methodReflection->getName() === '__construct') {
+					$nodeCallback(new InvalidateExprNode($expr->var), $scope);
 					$scope = $scope->invalidateExpression($expr->var, true);
 				}
 				if ($parametersAcceptor !== null) {
@@ -2719,10 +2724,11 @@ class NodeScopeResolver
 				$scope = $result->getScope();
 			}
 		} elseif ($expr instanceof Expr\Closure) {
-			$result = $this->processClosureNode($stmt, $expr, $scope, $nodeCallback, $context, null);
+			$processClosureResult = $this->processClosureNode($stmt, $expr, $scope, $nodeCallback, $context, null);
+
 			return new ExpressionResult(
-				$result->getScope(),
-				$result->hasYield(),
+				$processClosureResult->getScope(),
+				false,
 				[],
 				[],
 			);
@@ -3697,7 +3703,7 @@ class NodeScopeResolver
 		callable $nodeCallback,
 		ExpressionContext $context,
 		?Type $passedToType,
-	): ExpressionResult
+	): ProcessClosureResult
 	{
 		foreach ($expr->params as $param) {
 			$this->processParamNode($stmt, $param, $scope, $nodeCallback);
@@ -3775,7 +3781,8 @@ class NodeScopeResolver
 		$gatheredReturnStatements = [];
 		$gatheredYieldStatements = [];
 		$closureImpurePoints = [];
-		$closureStmtsCallback = static function (Node $node, Scope $scope) use ($nodeCallback, &$executionEnds, &$gatheredReturnStatements, &$gatheredYieldStatements, &$closureScope, &$closureImpurePoints): void {
+		$invalidateExpressions = [];
+		$closureStmtsCallback = static function (Node $node, Scope $scope) use ($nodeCallback, &$executionEnds, &$gatheredReturnStatements, &$gatheredYieldStatements, &$closureScope, &$closureImpurePoints, &$invalidateExpressions): void {
 			$nodeCallback($node, $scope);
 			if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
 				return;
@@ -3792,6 +3799,10 @@ class NodeScopeResolver
 			}
 			if ($node instanceof ExecutionEndNode) {
 				$executionEnds[] = $node;
+				return;
+			}
+			if ($node instanceof InvalidateExprNode) {
+				$invalidateExpressions[] = $node;
 				return;
 			}
 			if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
@@ -3814,7 +3825,7 @@ class NodeScopeResolver
 				array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 			), $closureScope);
 
-			return new ExpressionResult($scope, false, $statementResult->getThrowPoints(), $statementResult->getImpurePoints());
+			return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
 		}
 
 		$count = 0;
@@ -3848,7 +3859,40 @@ class NodeScopeResolver
 			array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureScope);
 
-		return new ExpressionResult($scope->processClosureScope($closureScope, null, $byRefUses), false, $statementResult->getThrowPoints(), $statementResult->getImpurePoints());
+		return new ProcessClosureResult($scope->processClosureScope($closureScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
+	}
+
+	/**
+	 * @param InvalidateExprNode[] $invalidatedExpressions
+	 * @param string[] $uses
+	 */
+	private function processImmediatelyCalledCallable(MutatingScope $scope, array $invalidatedExpressions, array $uses): MutatingScope
+	{
+		if ($scope->isInClass()) {
+			$uses[] = 'this';
+		}
+
+		$finder = new NodeFinder();
+		foreach ($invalidatedExpressions as $invalidateExpression) {
+			$found = false;
+			foreach ($uses as $use) {
+				$result = $finder->findFirst([$invalidateExpression->getExpr()], static fn ($node) => $node instanceof Variable && $node->name === $use);
+				if ($result === null) {
+					continue;
+				}
+
+				$found = true;
+				break;
+			}
+
+			if (!$found) {
+				continue;
+			}
+
+			$scope = $scope->invalidateExpression($invalidateExpression->getExpr(), true);
+		}
+
+		return $scope;
 	}
 
 	/**
@@ -4068,26 +4112,60 @@ class NodeScopeResolver
 
 			if ($arg->value instanceof Expr\Closure) {
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $context);
-				$result = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $context, $parameterType ?? null);
+				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $context, $parameterType ?? null);
 				if ($calleeReflection instanceof FunctionReflection) {
 					// immediately called
-					$throwPoints = array_merge($throwPoints, array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $result->getThrowPoints()));
-					$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+					$throwPoints = array_merge($throwPoints, array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
+					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
 				}
+
+				$uses = [];
+				foreach ($arg->value->uses as $use) {
+					if (!is_string($use->var->name)) {
+						continue;
+					}
+
+					$uses[] = $use->var->name;
+				}
+
+				$originalScope = $scope;
+				$scope = $closureResult->getScope();
+				$scope = $this->processImmediatelyCalledCallable($scope, $closureResult->getInvalidateExpressions(), $uses);
+
+				if (!$calleeReflection instanceof FunctionReflection) {
+					// not immediately called
+					$scope = $scope->mergeWith($originalScope);
+				}
+
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $context);
-				$result = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $parameterType ?? null);
+				$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $parameterType ?? null);
 				if ($calleeReflection instanceof FunctionReflection) {
 					// immediately called
-					$throwPoints = array_merge($throwPoints, array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $result->getThrowPoints()));
-					$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+					$throwPoints = array_merge($throwPoints, array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));
+					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());
 				}
 			} else {
-				$result = $this->processExprNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $context->enterDeep());
-				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+				$exprType = $scope->getType($arg->value);
+				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $context->enterDeep());
+				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
+				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
+				$scope = $exprResult->getScope();
+				$hasYield = $hasYield || $exprResult->hasYield();
+
+				if ($exprType->isCallable()->yes()) {
+					$acceptors = $exprType->getCallableParametersAcceptors($scope);
+					if (count($acceptors) === 1) {
+						$afterScope = $this->processImmediatelyCalledCallable($scope, $acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables());
+						if (!$calleeReflection instanceof FunctionReflection) {
+							$scope = $scope->mergeWith($afterScope);
+						} else {
+							// immediately called
+							$scope = $afterScope;
+						}
+					}
+				}
 			}
-			$scope = $result->getScope();
 			if ($assignByReference) {
 				if ($arg->value instanceof Variable) {
 					$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $arg->value);
@@ -4098,7 +4176,6 @@ class NodeScopeResolver
 				$scope = $scope->popInFunctionCall();
 			}
 
-			$hasYield = $hasYield || $result->hasYield();
 			if ($i !== 0 || $closureBindScope === null) {
 				continue;
 			}
@@ -4166,9 +4243,11 @@ class NodeScopeResolver
 						|| !(new ThisType($nakedMethodReflection->getDeclaringClass()))->isSuperTypeOf($nakedReturnType)->yes()
 						|| $nakedMethodReflection->isPure()->no()
 					) {
+						$nodeCallback(new InvalidateExprNode($arg->value), $scope);
 						$scope = $scope->invalidateExpression($arg->value, true);
 					}
 				} elseif (!(new ResourceType())->isSuperTypeOf($argType)->no()) {
+					$nodeCallback(new InvalidateExprNode($arg->value), $scope);
 					$scope = $scope->invalidateExpression($arg->value, true);
 				}
 			}

@@ -111,4 +111,14 @@ class FunctionCallableVariant implements CallableParametersAcceptor, ParametersA
 		return $this->throwPoints = $throwPoints;
 	}
 
+	public function getInvalidateExpressions(): array
+	{
+		return [];
+	}
+
+	public function getUsedVariables(): array
+	{
+		return [];
+	}
+
 }

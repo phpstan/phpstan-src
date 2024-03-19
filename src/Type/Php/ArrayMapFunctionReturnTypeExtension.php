@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -38,25 +39,6 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$callableType = $scope->getType($functionCall->getArgs()[0]->value);
 		$callableIsNull = $callableType->isNull()->yes();
 
-		if ($callableType->isCallable()->yes()) {
-			$valueTypes = [new NeverType()];
-			foreach ($callableType->getCallableParametersAcceptors($scope) as $parametersAcceptor) {
-				$valueTypes[] = $parametersAcceptor->getReturnType();
-			}
-			$valueType = TypeCombinator::union(...$valueTypes);
-		} elseif ($callableIsNull) {
-			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
-				$arrayBuilder->setOffsetValueType(
-					new ConstantIntegerType($index),
-					$scope->getType($arg->value)->getIterableValueType(),
-				);
-			}
-			$valueType = $arrayBuilder->getArray();
-		} else {
-			$valueType = new MixedType();
-		}
-
 		$arrayType = $scope->getType($functionCall->getArgs()[1]->value);
 
 		if ($singleArrayArgument) {
@@ -69,9 +51,21 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 				foreach ($constantArrays as $constantArray) {
 					$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+						$offsetValueType = $constantArray->getOffsetValueType($keyType);
+
+						$valueTypes = [new NeverType()];
+						foreach ($callableType->getCallableParametersAcceptors($scope) as $parametersAcceptor) {
+							$parametersAcceptor = ParametersAcceptorSelector::selectFromTypes(
+								[$offsetValueType],
+								[$parametersAcceptor],
+								false,
+							);
+							$valueTypes[] = $parametersAcceptor->getReturnType();
+						}
+
 						$returnedArrayBuilder->setOffsetValueType(
 							$keyType,
-							$valueType,
+							TypeCombinator::union(...$valueTypes),
 							$constantArray->isOptionalKey($i),
 						);
 					}
@@ -86,18 +80,18 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			} elseif ($arrayType->isArray()->yes()) {
 				$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 					$arrayType->getIterableKeyType(),
-					$valueType,
+					$this->resolveValueType($scope, $callableType, $callableIsNull, $functionCall),
 				), ...TypeUtils::getAccessoryTypes($arrayType));
 			} else {
 				$mappedArrayType = new ArrayType(
 					new MixedType(),
-					$valueType,
+					$this->resolveValueType($scope, $callableType, $callableIsNull, $functionCall),
 				);
 			}
 		} else {
 			$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 				new IntegerType(),
-				$valueType,
+				$this->resolveValueType($scope, $callableType, $callableIsNull, $functionCall),
 			), ...TypeUtils::getAccessoryTypes($arrayType));
 		}
 
@@ -106,6 +100,44 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		return $mappedArrayType;
+	}
+
+	private function resolveValueType(
+		Scope $scope,
+		Type $callableType,
+		bool $callableIsNull,
+		FuncCall $functionCall,
+	): Type
+	{
+		if ($callableType->isCallable()->yes()) {
+			$argTypes = [];
+
+			foreach (array_slice($functionCall->getArgs(), 1) as $arrayArg) {
+				$argTypes[] = $scope->getType($arrayArg->value)->getIterableValueType();
+			}
+
+			$valueTypes = [new NeverType()];
+			foreach ($callableType->getCallableParametersAcceptors($scope) as $parametersAcceptor) {
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromTypes(
+					$argTypes,
+					[$parametersAcceptor],
+					false,
+				);
+				$valueTypes[] = $parametersAcceptor->getReturnType();
+			}
+			return TypeCombinator::union(...$valueTypes);
+		} elseif ($callableIsNull) {
+			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
+				$arrayBuilder->setOffsetValueType(
+					new ConstantIntegerType($index),
+					$scope->getType($arg->value)->getIterableValueType(),
+				);
+			}
+			return $arrayBuilder->getArray();
+		}
+
+		return new MixedType();
 	}
 
 }

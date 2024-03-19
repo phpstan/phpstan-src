@@ -47,6 +47,7 @@ use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
@@ -97,6 +98,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -2201,6 +2203,19 @@ class MutatingScope implements Scope
 				$returnType = $this->nativeTypesPromoted ? $variant->getNativeReturnType() : $returnType;
 			}
 			$parameters = $variant->getParameters();
+			$templateTags = [];
+			foreach ($variant->getTemplateTypeMap()->getTypes() as $name => $templateType) {
+				if (!$templateType instanceof TemplateType) {
+					throw new ShouldNotHappenException();
+				}
+
+				$templateTags[$name] = new TemplateTag(
+					$name,
+					$templateType->getBound(),
+					TemplateTypeVariance::createInvariant(),
+				);
+			}
+
 			$closureTypes[] = new ClosureType(
 				$parameters,
 				$returnType,
@@ -2208,6 +2223,7 @@ class MutatingScope implements Scope
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),
 				$variant instanceof ParametersAcceptorWithPhpDocs ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+				$templateTags,
 			);
 		}
 

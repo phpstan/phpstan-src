@@ -32,7 +32,7 @@ class GenericParametersAcceptorResolver
 		$namedArgTypes = [];
 		foreach ($argTypes as $i => $argType) {
 			if (is_int($i)) {
-				if (isset($parameters[$i])) {
+				if (isset($parameters[$i]) && $parameters[$i]->getName() !== '') {
 					$namedArgTypes[$parameters[$i]->getName()] = $argType;
 					continue;
 				}
@@ -47,15 +47,16 @@ class GenericParametersAcceptorResolver
 						$namedArgTypes[$parameterName] = $argType;
 					}
 				}
-				continue;
 			}
 
 			$namedArgTypes[$i] = $argType;
 		}
 
-		foreach ($parametersAcceptor->getParameters() as $param) {
-			if (isset($namedArgTypes[$param->getName()])) {
+		foreach ($parametersAcceptor->getParameters() as $i => $param) {
+			if ($param->getName() !== '' && isset($namedArgTypes[$param->getName()])) {
 				$argType = $namedArgTypes[$param->getName()];
+			} elseif (isset($namedArgTypes[$i])) {
+				$argType = $namedArgTypes[$i];
 			} elseif ($param->getDefaultValue() !== null) {
 				$argType = $param->getDefaultValue();
 			} else {

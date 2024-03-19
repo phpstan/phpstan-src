@@ -9,16 +9,20 @@ use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
+use PHPStan\DependencyInjection\ProjectConfigHelper;
 use PHPStan\File\CouldNotWriteFileException;
+use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Internal\BytesHelper;
+use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\ShouldNotHappenException;
+use ReflectionClass;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -31,6 +35,7 @@ use function array_intersect;
 use function array_map;
 use function array_unique;
 use function array_values;
+use function class_exists;
 use function count;
 use function dirname;
 use function filesize;
@@ -42,9 +47,11 @@ use function is_array;
 use function is_bool;
 use function is_file;
 use function is_string;
+use function natcasesort;
 use function pathinfo;
 use function rewind;
 use function sprintf;
+use function str_starts_with;
 use function stream_get_contents;
 use function strlen;
 use function substr;
@@ -243,6 +250,8 @@ class AnalyseCommand extends Command
 		}
 
 		$analysedConfigFiles = array_intersect($files, $container->getParameter('allConfigFiles'));
+		/** @var RelativePathHelper $relativePathHelper */
+		$relativePathHelper = $container->getService('relativePathHelper');
 		foreach ($analysedConfigFiles as $analysedConfigFile) {
 			$fileSize = @filesize($analysedConfigFile);
 			if ($fileSize === false) {
@@ -253,8 +262,6 @@ class AnalyseCommand extends Command
 				continue;
 			}
 
-			/** @var RelativePathHelper $relativePathHelper */
-			$relativePathHelper = $container->getService('relativePathHelper');
 			$inceptionResult->getErrorOutput()->getStyle()->warning(sprintf(
 				'Configuration file %s (%s) is too big and might slow down PHPStan. Consider adding it to excludePaths.',
 				$relativePathHelper->getRelativePath($analysedConfigFile),
@@ -262,6 +269,7 @@ class AnalyseCommand extends Command
 			));
 		}
 
+		/** @var AnalyseApplication $application */
 		$application = $container->getByType(AnalyseApplication::class);
 
 		$debug = $input->getOption('debug');
@@ -524,6 +532,89 @@ class AnalyseCommand extends Command
 		$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
 		if ($failWithoutResultCache && !$analysisResult->isResultCacheUsed()) {
 			$exitCode = 2;
+		}
+
+		if (
+			$analysisResult->isResultCacheUsed()
+			&& $analysisResult->isResultCacheSaved()
+			&& !$onlyFiles
+			&& $inceptionResult->getProjectConfigArray() !== null
+		) {
+			/** @var FileHelper $fileHelper */
+			$fileHelper = $container->getByType(FileHelper::class);
+
+			$vendorDirs = [];
+			foreach ($this->composerAutoloaderProjectPaths as $autoloaderProjectPath) {
+				$composer = ComposerHelper::getComposerConfig($autoloaderProjectPath);
+				if ($composer === null) {
+					continue;
+				}
+				$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig($autoloaderProjectPath, $composer);
+				$vendorDirs[] = $fileHelper->normalizePath($vendorDirectory);
+			}
+
+			$services = ProjectConfigHelper::getServiceClassNames($inceptionResult->getProjectConfigArray());
+			natcasesort($services);
+			$projectServicesNotInAnalysedPaths = [];
+			$projectServiceFileNamesNotInAnalysedPaths = [];
+			foreach ($services as $service) {
+				if (!class_exists($service, false)) {
+					continue;
+				}
+
+				$reflection = new ReflectionClass($service);
+				$fileName = $reflection->getFileName();
+				if ($fileName === false) {
+					continue;
+				}
+
+				$fileName = $fileHelper->normalizePath($fileName);
+				if (in_array($fileName, $files, true)) {
+					continue;
+				}
+
+				foreach ($vendorDirs as $vendorDir) {
+					if (str_starts_with($fileName, $vendorDir)) {
+						continue 2;
+					}
+				}
+
+				$projectServicesNotInAnalysedPaths[] = $service;
+				$projectServiceFileNamesNotInAnalysedPaths[] = $fileName;
+			}
+
+			if (count($projectServicesNotInAnalysedPaths) > 0) {
+				$one = count($projectServicesNotInAnalysedPaths) === 1;
+				$errorOutput->writeLineFormatted('<comment>Warning: Result cache might not behave correctly.</comment>');
+				$errorOutput->writeLineFormatted(sprintf('You\'re using custom %s in your project config', $one ? 'extension' : 'extensions'));
+				$errorOutput->writeLineFormatted(sprintf('but %s not part of analysed paths:', $one ? 'this extension is' : 'these extensions are'));
+				$errorOutput->writeLineFormatted('');
+				foreach ($projectServicesNotInAnalysedPaths as $service) {
+					$errorOutput->writeLineFormatted(sprintf('- %s', $service));
+				}
+
+				$errorOutput->writeLineFormatted('');
+
+				$errorOutput->writeLineFormatted('When you edit them and re-run PHPStan, the result cache will get stale.');
+
+				$directoriesToAdd = [];
+				foreach ($projectServiceFileNamesNotInAnalysedPaths as $path) {
+					$directoriesToAdd[] = dirname($relativePathHelper->getRelativePath($path));
+				}
+
+				$directoriesToAdd = array_unique($directoriesToAdd);
+				$oneDirectory = count($directoriesToAdd) === 1;
+
+				$errorOutput->writeLineFormatted(sprintf('Add %s to your analysed paths to get rid of this problem:', $oneDirectory ? 'this directory' : 'these directories'));
+
+				$errorOutput->writeLineFormatted('');
+
+				foreach ($directoriesToAdd as $directory) {
+					$errorOutput->writeLineFormatted(sprintf('- %s', $directory));
+				}
+
+				$errorOutput->writeLineFormatted('');
+			}
 		}
 
 		return $inceptionResult->handleReturn(

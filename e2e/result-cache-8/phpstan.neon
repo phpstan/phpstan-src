@@ -1,0 +1,17 @@
+includes:
+	- vendor/phpstan/phpstan-webmozart-assert/extension.neon
+
+parameters:
+	paths:
+		- src
+	level: 8
+
+rules:
+	- ResultCache8E2E\CustomRule
+	- ResultCache8E2E\CustomRule3
+
+services:
+	-
+		class: ResultCache8E2E\CustomRule2
+		tags:
+			- phpstan.rules.rule

@@ -3,3 +3,12 @@ includes:
 
 parameters:
 	checkNullables: true
+
+services:
+	-
+		class: PHPStan\Rules\Classes\NullableInstanceOfRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+

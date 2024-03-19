@@ -1,0 +1,5 @@
+services:
+	-
+		class: ForbiddenNameClassExtension\CGForbiddenNameClassExtension
+		tags:
+			- phpstan.forbiddenClassNamesExtension

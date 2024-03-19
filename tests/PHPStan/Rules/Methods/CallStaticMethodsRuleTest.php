@@ -39,7 +39,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				$ruleLevelHelper,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(),
+					new ClassForbiddenNameCheck(self::getContainer()),
 				),
 				true,
 				true,

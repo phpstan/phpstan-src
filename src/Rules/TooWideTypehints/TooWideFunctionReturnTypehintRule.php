@@ -9,6 +9,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function count;
@@ -30,6 +31,7 @@ class TooWideFunctionReturnTypehintRule implements Rule
 		$function = $node->getFunctionReflection();
 
 		$functionReturnType = ParametersAcceptorSelector::selectSingle($function->getVariants())->getReturnType();
+		$functionReturnType = TypeUtils::resolveLateResolvableTypes($functionReturnType);
 		if (!$functionReturnType instanceof UnionType) {
 			return [];
 		}

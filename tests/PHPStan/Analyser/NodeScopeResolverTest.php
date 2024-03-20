@@ -333,6 +333,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4500.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4504.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4436.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10699.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Properties/data/bug-3777.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2549.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-1945.php');
@@ -538,6 +539,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5219.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/strval.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-next.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10566.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-string.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-string-replace-functions.php');

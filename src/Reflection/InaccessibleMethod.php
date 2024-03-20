@@ -2,12 +2,13 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
-class InaccessibleMethod implements ParametersAcceptor
+class InaccessibleMethod implements CallableParametersAcceptor
 {
 
 	public function __construct(private MethodReflection $methodReflection)
@@ -50,6 +51,21 @@ class InaccessibleMethod implements ParametersAcceptor
 	public function getReturnType(): Type
 	{
 		return new MixedType();
+	}
+
+	public function getThrowPoints(): array
+	{
+		return [];
+	}
+
+	public function getInvalidateExpressions(): array
+	{
+		return [];
+	}
+
+	public function getUsedVariables(): array
+	{
+		return [];
 	}
 
 }

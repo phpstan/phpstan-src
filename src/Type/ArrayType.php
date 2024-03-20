@@ -7,7 +7,6 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -132,7 +131,7 @@ class ArrayType implements Type
 	{
 		if ($type instanceof self) {
 			return $this->getItemType()->isSuperTypeOf($type->getItemType())
-				->and($this->keyType->isSuperTypeOf($type->keyType));
+				->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
 		}
 
 		if ($type instanceof CompoundType) {
@@ -570,9 +569,6 @@ class ArrayType implements Type
 		return TrinaryLogic::createMaybe()->and($this->itemType->isString());
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		if ($this->isCallable()->no()) {
@@ -637,7 +633,7 @@ class ArrayType implements Type
 		}
 
 		if ($receivedType->isArray()->yes()) {
-			$keyTypeMap = $this->getKeyType()->inferTemplateTypes($receivedType->getIterableKeyType());
+			$keyTypeMap = $this->getIterableKeyType()->inferTemplateTypes($receivedType->getIterableKeyType());
 			$itemTypeMap = $this->getItemType()->inferTemplateTypes($receivedType->getIterableValueType());
 
 			return $keyTypeMap->union($itemTypeMap);
@@ -651,7 +647,7 @@ class ArrayType implements Type
 		$variance = $positionVariance->compose(TemplateTypeVariance::createCovariant());
 
 		return array_merge(
-			$this->getKeyType()->getReferencedTemplateTypes($variance),
+			$this->getIterableKeyType()->getReferencedTemplateTypes($variance),
 			$this->getItemType()->getReferencedTemplateTypes($variance),
 		);
 	}

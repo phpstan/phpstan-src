@@ -14,10 +14,10 @@ use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\Callables\FunctionCallableVariant;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
@@ -471,9 +471,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return TrinaryLogic::createYes()->and(...$results);
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		$typeAndMethodNames = $this->findTypeAndMethodNames();
@@ -496,7 +493,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				continue;
 			}
 
-			array_push($acceptors, ...$method->getVariants());
+			array_push($acceptors, ...FunctionCallableVariant::createFromVariants($method, $method->getVariants()));
 		}
 
 		return $acceptors;
@@ -875,7 +872,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $valuesArray;
 		}
 
-		$generalizedArray = new ArrayType($valuesArray->getKeyType(), $valuesArray->getItemType());
+		$generalizedArray = new ArrayType($valuesArray->getIterableKeyType(), $valuesArray->getItemType());
 
 		if ($isIterableAtLeastOnce->yes()) {
 			$generalizedArray = TypeCombinator::intersect($generalizedArray, new NonEmptyArrayType());
@@ -1229,7 +1226,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		$arrayType = new ArrayType(
-			$this->getKeyType()->generalize($precision),
+			$this->getIterableKeyType()->generalize($precision),
 			$this->getItemType()->generalize($precision),
 		);
 
@@ -1281,7 +1278,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
-		$arrayType = new ArrayType($this->getKeyType(), $this->getItemType());
+		$arrayType = new ArrayType($this->getIterableKeyType(), $this->getItemType());
 
 		if ($isIterableAtLeastOnce->yes()) {
 			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());

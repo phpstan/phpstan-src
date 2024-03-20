@@ -28,7 +28,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 				$reflectionProvider,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(),
+					new ClassForbiddenNameCheck(self::getContainer()),
 				),
 				new UnresolvableTypeHelper(),
 				new PhpVersion($this->phpVersionId),
@@ -135,7 +135,20 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		return [
 			[
 				70400,
-				[],
+				[
+					[
+						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
+						29,
+					],
+					[
+						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
+						33,
+					],
+					[
+						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
+						45,
+					],
+				],
 			],
 			[
 				80000,
@@ -151,6 +164,116 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 					[
 						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
 						17,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						21,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						29,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						37,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						45,
+					],
+				],
+			],
+			[
+				80100,
+				[
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						5,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						13,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						17,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						21,
+					],
+					[
+						'Deprecated in PHP 8.1: Required parameter $bar follows optional parameter $foo.',
+						25,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						29,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						37,
+					],
+					[
+						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
+						45,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						45,
+					],
+				],
+			],
+			[
+				80300,
+				[
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						5,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						13,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						17,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						21,
+					],
+					[
+						'Deprecated in PHP 8.1: Required parameter $bar follows optional parameter $foo.',
+						25,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						29,
+					],
+					[
+						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+						33,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+						37,
+					],
+					[
+						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+						41,
+					],
+					[
+						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+						45,
+					],
+					[
+						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
+						45,
+					],
+					[
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						45,
 					],
 				],
 			],

@@ -383,9 +383,17 @@ class BetterReflectionProvider implements ReflectionProvider
 			if ($resolvedPhpDoc->isDeprecated() && $resolvedPhpDoc->getDeprecatedTag() !== null) {
 				$deprecatedMessage = $resolvedPhpDoc->getDeprecatedTag()->getMessage();
 
-				// filter raw version number messages like in
-				// https://github.com/JetBrains/phpstorm-stubs/blob/9608c953230b08f07b703ecfe459cc58d5421437/filter/filter.php#L478
-				if (Strings::match($deprecatedMessage ?? '', '#^\d+\.\d+(\.\d+)?$#') === null) {
+				$matches = Strings::match($deprecatedMessage ?? '', '#^(\d+)\.(\d+)(?:\.(\d+))?$#');
+				if ($matches !== null) {
+					$major = $matches[1];
+					$minor = $matches[2];
+					$patch = $matches[3] ?? 0;
+					$versionId = sprintf('%d%02d%02d', $major, $minor, $patch);
+
+					$isDeprecated = TrinaryLogic::createFromBoolean($this->phpVersion->getVersionId() >= $versionId);
+				} else {
+					// filter raw version number messages like in
+					// https://github.com/JetBrains/phpstorm-stubs/blob/9608c953230b08f07b703ecfe459cc58d5421437/filter/filter.php#L478
 					$deprecatedDescription = $deprecatedMessage;
 				}
 			}

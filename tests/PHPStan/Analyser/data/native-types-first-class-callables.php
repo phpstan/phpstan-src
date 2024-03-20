@@ -51,6 +51,10 @@ class Test
 		$i = $h(...);
 		assertType('non-empty-string', $i());
 		assertNativeType('string', $i());
+
+		$j = [Foo::class, 'doBar'](...);
+		assertType('non-empty-string', $j());
+		assertNativeType('string', $j());
 	}
 
 }

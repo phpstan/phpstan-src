@@ -62,6 +62,10 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.varTagType%
 	PHPStan\Rules\Generics\PropertyVarianceRule:
 		phpstan.rules.rule: %featureToggles.propertyVariance%
+	PHPStan\Rules\Pure\PureFunctionRule:
+		phpstan.rules.rule: %featureToggles.pure%
+	PHPStan\Rules\Pure\PureMethodRule:
+		phpstan.rules.rule: %featureToggles.pure%
 
 services:
 	-
@@ -129,3 +133,8 @@ services:
 		class: PHPStan\Rules\Generics\PropertyVarianceRule
 		arguments:
 			readOnlyByPhpDoc: %featureToggles.readOnlyByPhpDoc%
+	-
+		class: PHPStan\Rules\Pure\PureFunctionRule
+
+	-
+		class: PHPStan\Rules\Pure\PureMethodRule

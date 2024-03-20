@@ -80,6 +80,7 @@ parametersSchema:
 		finalByPhpDoc: bool()
 		magicConstantOutOfContext: bool()
 		paramOutType: bool()
+		pure: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

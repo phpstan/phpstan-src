@@ -12,6 +12,7 @@ class StatementResult
 	/**
 	 * @param StatementExitPoint[] $exitPoints
 	 * @param ThrowPoint[] $throwPoints
+	 * @param ImpurePoint[] $impurePoints
 	 */
 	public function __construct(
 		private MutatingScope $scope,
@@ -19,6 +20,7 @@ class StatementResult
 		private bool $isAlwaysTerminating,
 		private array $exitPoints,
 		private array $throwPoints,
+		private array $impurePoints,
 	)
 	{
 	}
@@ -52,14 +54,14 @@ class StatementResult
 
 			$num = $statement->num;
 			if (!$num instanceof LNumber) {
-				return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints);
+				return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints);
 			}
 
 			if ($num->value !== 1) {
 				continue;
 			}
 
-			return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints);
+			return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints);
 		}
 
 		return $this;
@@ -153,6 +155,14 @@ class StatementResult
 	public function getThrowPoints(): array
 	{
 		return $this->throwPoints;
+	}
+
+	/**
+	 * @return ImpurePoint[]
+	 */
+	public function getImpurePoints(): array
+	{
+		return $this->impurePoints;
 	}
 
 }

@@ -8,7 +8,6 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -333,9 +332,6 @@ class NeverType implements CompoundType
 		return TrinaryLogic::createYes();
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		return [new TrivialParametersAcceptor()];

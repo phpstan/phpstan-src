@@ -41,7 +41,7 @@ class ClosureAttributesRuleTest extends RuleTestCase
 				),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, false),
-					new ClassForbiddenNameCheck(),
+					new ClassForbiddenNameCheck(self::getContainer()),
 				),
 				true,
 			),

@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeAbstract;
+use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
 use PHPStan\Reflection\FunctionReflection;
 use function count;
@@ -18,6 +19,7 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 	 * @param list<ReturnStatement> $returnStatements
 	 * @param list<Yield_|YieldFrom> $yieldStatements
 	 * @param list<ExecutionEndNode> $executionEnds
+	 * @param ImpurePoint[] $impurePoints
 	 */
 	public function __construct(
 		private Function_ $function,
@@ -25,6 +27,7 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 		private array $yieldStatements,
 		private StatementResult $statementResult,
 		private array $executionEnds,
+		private array $impurePoints,
 		private FunctionReflection $functionReflection,
 	)
 	{
@@ -44,6 +47,11 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 	public function getExecutionEnds(): array
 	{
 		return $this->executionEnds;
+	}
+
+	public function getImpurePoints(): array
+	{
+		return $this->impurePoints;
 	}
 
 	public function returnsByRef(): bool

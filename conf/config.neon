@@ -85,6 +85,7 @@ parameters:
 		finalByPhpDoc: false
 		magicConstantOutOfContext: false
 		paramOutType: false
+		pure: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -1017,6 +1018,9 @@ services:
 		class: PHPStan\Rules\Properties\PropertyReflectionFinder
 
 	-
+		class: PHPStan\Rules\Pure\FunctionPurityCheck
+
+	-
 		class: PHPStan\Rules\RuleLevelHelper
 		arguments:
 			checkNullables: %checkNullables%
@@ -1029,6 +1033,9 @@ services:
 
 	-
 		class: PHPStan\Rules\UnusedFunctionParametersCheck
+
+	-
+		class: PHPStan\Rules\TooWideTypehints\TooWideParameterOutTypeCheck
 
 	-
 		class: PHPStan\Type\FileTypeMapper

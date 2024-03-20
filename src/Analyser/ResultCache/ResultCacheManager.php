@@ -2,7 +2,6 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
-use Nette\DI\Definitions\Statement;
 use Nette\Neon\Neon;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
@@ -10,6 +9,7 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\Dependency\RootExportedNode;
+use PHPStan\DependencyInjection\ProjectConfigHelper;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileWriter;
@@ -23,7 +23,6 @@ use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
-use function array_merge;
 use function array_unique;
 use function array_values;
 use function count;
@@ -31,7 +30,6 @@ use function get_loaded_extensions;
 use function implode;
 use function is_array;
 use function is_file;
-use function is_string;
 use function ksort;
 use function sha1_file;
 use function sort;
@@ -674,68 +672,30 @@ return [
 		$this->alreadyProcessed = [];
 		$projectExtensionFiles = [];
 		if ($projectConfig !== null) {
-			$services = array_merge(
-				$projectConfig['services'] ?? [],
-				$projectConfig['rules'] ?? [],
-			);
-			foreach ($services as $service) {
-				$classes = $this->getClassesFromConfigDefinition($service);
-				if (is_array($service)) {
-					foreach (['class', 'factory', 'implement'] as $key) {
-						if (!isset($service[$key])) {
-							continue;
-						}
-
-						$classes = array_merge($classes, $this->getClassesFromConfigDefinition($service[$key]));
-					}
+			$classes = ProjectConfigHelper::getServiceClassNames($projectConfig);
+			foreach ($classes as $class) {
+				if (!$this->reflectionProvider->hasClass($class)) {
+					continue;
 				}
 
-				foreach (array_unique($classes) as $class) {
-					if (!$this->reflectionProvider->hasClass($class)) {
+				$classReflection = $this->reflectionProvider->getClass($class);
+				$fileName = $classReflection->getFileName();
+				if ($fileName === null) {
+					continue;
+				}
+
+				$allServiceFiles = $this->getAllDependencies($fileName, $dependencies);
+				foreach ($allServiceFiles as $serviceFile) {
+					if (array_key_exists($serviceFile, $projectExtensionFiles)) {
 						continue;
 					}
 
-					$classReflection = $this->reflectionProvider->getClass($class);
-					$fileName = $classReflection->getFileName();
-					if ($fileName === null) {
-						continue;
-					}
-
-					$allServiceFiles = $this->getAllDependencies($fileName, $dependencies);
-					foreach ($allServiceFiles as $serviceFile) {
-						if (array_key_exists($serviceFile, $projectExtensionFiles)) {
-							continue;
-						}
-
-						$projectExtensionFiles[$serviceFile] = $this->getFileHash($serviceFile);
-					}
+					$projectExtensionFiles[$serviceFile] = $this->getFileHash($serviceFile);
 				}
 			}
 		}
 
 		return $projectExtensionFiles;
-	}
-
-	/**
-	 * @param mixed $definition
-	 * @return string[]
-	 */
-	private function getClassesFromConfigDefinition($definition): array
-	{
-		if (is_string($definition)) {
-			return [$definition];
-		}
-
-		if ($definition instanceof Statement) {
-			$entity = $definition->entity;
-			if (is_string($entity)) {
-				return [$entity];
-			} elseif (is_array($entity) && isset($entity[0]) && is_string($entity[0])) {
-				return [$entity[0]];
-			}
-		}
-
-		return [];
 	}
 
 	/**

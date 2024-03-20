@@ -12,7 +12,6 @@ use PHPStan\Reflection\Dummy\DummyConstantReflection;
 use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
@@ -269,9 +268,6 @@ class MixedType implements CompoundType, SubtractableType
 		return [];
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		return [new TrivialParametersAcceptor()];

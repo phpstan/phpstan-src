@@ -21,7 +21,7 @@ class ExistingClassInTraitUseRuleTest extends RuleTestCase
 		return new ExistingClassInTraitUseRule(
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(),
+				new ClassForbiddenNameCheck(self::getContainer()),
 			),
 			$reflectionProvider,
 		);

@@ -16,6 +16,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -80,6 +81,8 @@ class ParameterOutExecutionEndTypeRule implements Rule
 		if ($scope->hasExpressionType(new ParameterVariableOriginalValueExpr($parameter->getName()))->no()) {
 			return [];
 		}
+
+		$outType = TypeUtils::resolveLateResolvableTypes($outType);
 
 		$variableExpr = new Node\Expr\Variable($parameter->getName());
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(

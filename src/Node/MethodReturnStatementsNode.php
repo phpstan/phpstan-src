@@ -6,9 +6,10 @@ use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeAbstract;
+use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use function count;
 
 /** @api */
@@ -21,6 +22,7 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 	 * @param list<ReturnStatement> $returnStatements
 	 * @param list<Yield_|YieldFrom> $yieldStatements
 	 * @param list<ExecutionEndNode> $executionEnds
+	 * @param ImpurePoint[] $impurePoints
 	 */
 	public function __construct(
 		ClassMethod $method,
@@ -28,8 +30,9 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		private array $yieldStatements,
 		private StatementResult $statementResult,
 		private array $executionEnds,
+		private array $impurePoints,
 		private ClassReflection $classReflection,
-		private MethodReflection $methodReflection,
+		private ExtendedMethodReflection $methodReflection,
 	)
 	{
 		parent::__construct($method->getAttributes());
@@ -49,6 +52,11 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 	public function getExecutionEnds(): array
 	{
 		return $this->executionEnds;
+	}
+
+	public function getImpurePoints(): array
+	{
+		return $this->impurePoints;
 	}
 
 	public function returnsByRef(): bool
@@ -76,7 +84,7 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		return $this->classReflection;
 	}
 
-	public function getMethodReflection(): MethodReflection
+	public function getMethodReflection(): ExtendedMethodReflection
 	{
 		return $this->methodReflection;
 	}

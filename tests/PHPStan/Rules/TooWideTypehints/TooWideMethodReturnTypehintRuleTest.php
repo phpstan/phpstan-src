@@ -48,6 +48,10 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 				'Method TooWideMethodReturnType\Foo::dolor6() never returns null so it can be removed from the return type.',
 				86,
 			],
+			[
+				'Method TooWideMethodReturnType\ConditionalTypeClass::conditionalType() never returns string so it can be removed from the return type.',
+				119,
+			],
 		]);
 	}
 

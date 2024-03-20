@@ -1,0 +1,14 @@
+{
+	"require-dev": {
+		"phpstan/phpstan": "^1.10",
+		"phpstan/phpstan-webmozart-assert": "^1.2"
+	},
+	"autoload": {
+		"classmap": ["src"]
+	},
+	"autoload-dev": {
+		"classmap": [
+			"build"
+		]
+	}
+}

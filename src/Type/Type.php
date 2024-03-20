@@ -4,11 +4,11 @@ namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
@@ -185,7 +185,7 @@ interface Type
 	public function isCallable(): TrinaryLogic;
 
 	/**
-	 * @return ParametersAcceptor[]
+	 * @return CallableParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array;
 

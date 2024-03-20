@@ -10,10 +10,10 @@ use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\PhpDocParser\Ast\ConstExpr\QuoteAwareConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\Callables\FunctionCallableVariant;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\InaccessibleMethod;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
@@ -236,9 +236,6 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TrinaryLogic::createNo();
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
@@ -246,7 +243,8 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		// 'my_function'
 		$functionName = new Name($this->value);
 		if ($reflectionProvider->hasFunction($functionName, null)) {
-			return $reflectionProvider->getFunction($functionName, null)->getVariants();
+			$function = $reflectionProvider->getFunction($functionName, null);
+			return FunctionCallableVariant::createFromVariants($function, $function->getVariants());
 		}
 
 		// 'MyClass::myStaticFunction'
@@ -263,7 +261,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 					return [new InaccessibleMethod($method)];
 				}
 
-				return $method->getVariants();
+				return FunctionCallableVariant::createFromVariants($method, $method->getVariants());
 			}
 
 			if (!$classReflection->getNativeReflection()->isFinal()) {

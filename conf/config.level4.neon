@@ -27,7 +27,9 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.notAnalysedTrait%
 	PHPStan\Rules\Comparison\LogicalXorConstantConditionRule:
 		phpstan.rules.rule: %featureToggles.logicalXor%
-	PHPStan\Rules\TooWideTypehints\TooWideParameterOutTypeRule:
+	PHPStan\Rules\TooWideTypehints\TooWideFunctionParameterOutTypeRule:
+		phpstan.rules.rule: %featureToggles.paramOutType%
+	PHPStan\Rules\TooWideTypehints\TooWideMethodParameterOutTypeRule:
 		phpstan.rules.rule: %featureToggles.paramOutType%
 
 parameters:
@@ -241,4 +243,7 @@ services:
 			- phpstan.rules.rule
 
 	-
-		class: PHPStan\Rules\TooWideTypehints\TooWideParameterOutTypeRule
+		class: PHPStan\Rules\TooWideTypehints\TooWideFunctionParameterOutTypeRule
+
+	-
+		class: PHPStan\Rules\TooWideTypehints\TooWideMethodParameterOutTypeRule

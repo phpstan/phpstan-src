@@ -157,7 +157,7 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 
 	public function isPure(): TrinaryLogic
 	{
-		return $this->reflection->hasSideEffects();
+		return $this->reflection->isPure();
 	}
 
 	public function getAsserts(): Assertions

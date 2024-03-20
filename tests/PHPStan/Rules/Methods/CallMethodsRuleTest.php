@@ -3240,4 +3240,15 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9009.php'], []);
 	}
 
+	public function testBuSplObjectStorageRemove(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-SplObjectStorage-remove.php'], [
+			// removeNoIntersect should be reported, but unfortunately it cannot be expressed by the type system.
+		]);
+	}
+
 }

@@ -9,7 +9,6 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
@@ -581,9 +580,6 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return new BooleanType();
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		return $this->getStaticObjectType()->getCallableParametersAcceptors($scope);

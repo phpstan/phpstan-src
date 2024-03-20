@@ -2,51 +2,65 @@
 
 namespace PHPStan\Rules\TooWideTypehints;
 
-use PhpParser\Node;
+use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ExecutionEndNode;
-use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Node\ReturnStatement;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\IdentifierRuleError;
-use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
-/**
- * @implements Rule<ExecutionEndNode>
- */
-class TooWideParameterOutTypeRule implements Rule
+class TooWideParameterOutTypeCheck
 {
 
-	public function getNodeType(): string
+	/**
+	 * @param list<ExecutionEndNode> $executionEnds
+	 * @param list<ReturnStatement> $returnStatements
+	 * @param ParameterReflectionWithPhpDocs[] $parameters
+	 * @return list<IdentifierRuleError>
+	 */
+	public function check(
+		array $executionEnds,
+		array $returnStatements,
+		array $parameters,
+		string $functionDescription,
+	): array
 	{
-		return ExecutionEndNode::class;
-	}
+		$finalScope = null;
+		foreach ($executionEnds as $executionEnd) {
+			$endScope = $executionEnd->getStatementResult()->getScope();
+			if ($finalScope === null) {
+				$finalScope = $endScope;
+				continue;
+			}
 
-	public function processNode(Node $node, Scope $scope): array
-	{
-		$inFunction = $scope->getFunction();
-		if ($inFunction === null) {
+			$finalScope = $finalScope->mergeWith($endScope);
+		}
+
+		foreach ($returnStatements as $statement) {
+			if ($finalScope === null) {
+				$finalScope = $statement->getScope();
+				continue;
+			}
+
+			$finalScope = $finalScope->mergeWith($statement->getScope());
+		}
+
+		if ($finalScope === null) {
 			return [];
 		}
 
-		if ($scope->isInAnonymousFunction()) {
-			return [];
-		}
-
-		$variant = ParametersAcceptorSelector::selectSingle($inFunction->getVariants());
-		$parameters = $variant->getParameters();
 		$errors = [];
 		foreach ($parameters as $parameter) {
 			if (!$parameter->passedByReference()->createsNewVariable()) {
 				continue;
 			}
 
-			foreach ($this->processSingleParameter($scope, $inFunction, $parameter) as $error) {
+			foreach ($this->processSingleParameter($finalScope, $functionDescription, $parameter) as $error) {
 				$errors[] = $error;
 			}
 		}
@@ -59,7 +73,7 @@ class TooWideParameterOutTypeRule implements Rule
 	 */
 	private function processSingleParameter(
 		Scope $scope,
-		FunctionReflection|ExtendedMethodReflection $inFunction,
+		string $functionDescription,
 		ParameterReflectionWithPhpDocs $parameter,
 	): array
 	{
@@ -70,18 +84,13 @@ class TooWideParameterOutTypeRule implements Rule
 			$outType = $parameter->getType();
 		}
 
+		$outType = TypeUtils::resolveLateResolvableTypes($outType);
 		if (!$outType instanceof UnionType) {
 			return [];
 		}
 
-		$variableExpr = new Node\Expr\Variable($parameter->getName());
+		$variableExpr = new Variable($parameter->getName());
 		$variableType = $scope->getType($variableExpr);
-
-		if ($inFunction instanceof ExtendedMethodReflection) {
-			$functionDescription = sprintf('Method %s::%s()', $inFunction->getDeclaringClass()->getDisplayName(), $inFunction->getName());
-		} else {
-			$functionDescription = sprintf('Function %s()', $inFunction->getName());
-		}
 
 		$messages = [];
 		foreach ($outType->getTypes() as $type) {

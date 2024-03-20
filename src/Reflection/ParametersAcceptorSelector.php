@@ -267,6 +267,14 @@ class ParametersAcceptorSelector
 		}
 
 		foreach ($acceptor->getParameters() as $parameter) {
+			if (
+				$parameter instanceof ParameterReflectionWithPhpDocs
+				&& $parameter->getOutType() !== null
+				&& self::hasTemplateOrLateResolvableType($parameter->getOutType())
+			) {
+				return true;
+			}
+
 			if (!self::hasTemplateOrLateResolvableType($parameter->getType())) {
 				continue;
 			}

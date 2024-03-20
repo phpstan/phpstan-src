@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 namespace RequiredAfterOptional;
 
@@ -20,5 +20,33 @@ function doLorem(bool $foo = true, $bar): void // not OK
 }
 
 function doIpsum(bool $foo = true, ...$bar): void // OK
+{
+}
+
+function doDolor(?int $foo = 1, $bar): void // not OK
+{
+}
+
+function doSit(?int $foo = null, $bar): void // not OK
+{
+}
+
+function doAmet(int|null $foo = 1, $bar): void // not OK
+{
+}
+
+function doConsectetur(int|null $foo = null, $bar): void // not OK
+{
+}
+
+function doAdipiscing(mixed $foo = 1, $bar): void // not OK
+{
+}
+
+function doElit(mixed $foo = null, $bar): void // not OK
+{
+}
+
+function doSed(int|null $foo = null, $bar, ?int $baz = null, $qux, int $quux = 1, $quuz): void // not OK
 {
 }

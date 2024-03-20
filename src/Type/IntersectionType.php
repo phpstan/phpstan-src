@@ -11,7 +11,6 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedMethodPrototypeReflection;
@@ -765,9 +764,6 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isCallable());
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		if ($this->isCallable()->no()) {

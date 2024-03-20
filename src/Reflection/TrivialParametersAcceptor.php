@@ -2,13 +2,14 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 /** @api */
-class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs
+class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, CallableParametersAcceptor
 {
 
 	/** @api */
@@ -54,6 +55,21 @@ class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs
 	public function getNativeReturnType(): Type
 	{
 		return new MixedType();
+	}
+
+	public function getThrowPoints(): array
+	{
+		return [];
+	}
+
+	public function getInvalidateExpressions(): array
+	{
+		return [];
+	}
+
+	public function getUsedVariables(): array
+	{
+		return [];
 	}
 
 }

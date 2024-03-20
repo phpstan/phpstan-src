@@ -1641,4 +1641,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testArgon2PasswordHash(): void
+	{
+		$this->analyse([__DIR__ . '/data/argon2id-password-hash.php'], []);
+	}
+
 }

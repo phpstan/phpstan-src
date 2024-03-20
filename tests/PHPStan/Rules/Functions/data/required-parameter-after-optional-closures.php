@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 namespace RequiredAfterOptional;
 
@@ -15,5 +15,33 @@ function (int $foo = 1, $bar): void // not OK
 };
 
 function(bool $foo = true, $bar): void // not OK
+{
+};
+
+function (?int $foo = 1, $bar): void // not OK
+{
+};
+
+function (?int $foo = null, $bar): void // not OK
+{
+};
+
+function (int|null $foo = 1, $bar): void // not OK
+{
+};
+
+function (int|null $foo = null, $bar): void // not OK
+{
+};
+
+function (mixed $foo = 1, $bar): void // not OK
+{
+};
+
+function (mixed $foo = null, $bar): void // not OK
+{
+};
+
+function (int|null $foo = null, $bar, ?int $baz = null, $qux, int $quux = 1, $quuz): void // not OK
 {
 };

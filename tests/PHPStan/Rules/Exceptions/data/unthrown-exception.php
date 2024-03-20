@@ -577,13 +577,34 @@ class TestCaseInsensitiveClassNames
 
 }
 
+/** @throws void */
+function acceptCallable(callable $cb): void
+{
+
+}
+
 class CallCallable
 {
 
+	/**
+	 * @throws void
+	 */
 	public function doFoo(callable $cb): void
 	{
 		try {
 			$cb();
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	/**
+	 * @param callable $cb
+	 */
+	public function passCallable(callable $cb): void
+	{
+		try {
+			acceptCallable($cb);
 		} catch (\Exception $e) {
 
 		}

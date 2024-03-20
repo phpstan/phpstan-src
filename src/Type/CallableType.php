@@ -12,6 +12,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -234,7 +235,9 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	public function getThrowPoints(): array
 	{
-		return [];
+		return [
+			SimpleThrowPoint::createImplicit(),
+		];
 	}
 
 	public function getInvalidateExpressions(): array

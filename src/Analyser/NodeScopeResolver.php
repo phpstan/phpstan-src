@@ -4161,6 +4161,7 @@ class NodeScopeResolver
 							$scope = $scope->mergeWith($afterScope);
 						} else {
 							// immediately called
+							$throwPoints = array_merge($throwPoints, array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints()));
 							$scope = $afterScope;
 						}
 					}

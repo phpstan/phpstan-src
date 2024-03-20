@@ -4128,14 +4128,8 @@ class NodeScopeResolver
 					$uses[] = $use->var->name;
 				}
 
-				$originalScope = $scope;
 				$scope = $closureResult->getScope();
 				$scope = $this->processImmediatelyCalledCallable($scope, $closureResult->getInvalidateExpressions(), $uses);
-
-				if (!$calleeReflection instanceof FunctionReflection) {
-					// not immediately called
-					$scope = $scope->mergeWith($originalScope);
-				}
 
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $context);
@@ -4156,13 +4150,10 @@ class NodeScopeResolver
 				if ($exprType->isCallable()->yes()) {
 					$acceptors = $exprType->getCallableParametersAcceptors($scope);
 					if (count($acceptors) === 1) {
-						$afterScope = $this->processImmediatelyCalledCallable($scope, $acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables());
-						if (!$calleeReflection instanceof FunctionReflection) {
-							$scope = $scope->mergeWith($afterScope);
-						} else {
+						$scope = $this->processImmediatelyCalledCallable($scope, $acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables());
+						if ($calleeReflection instanceof FunctionReflection) {
 							// immediately called
 							$throwPoints = array_merge($throwPoints, array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints()));
-							$scope = $afterScope;
 						}
 					}
 				}

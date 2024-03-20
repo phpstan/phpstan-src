@@ -2,8 +2,13 @@
 
 namespace PHPStan\Rules;
 
+use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\DependencyInjection\Container;
+use function array_map;
+use function array_merge;
 use function sprintf;
 use function str_starts_with;
+use function strlen;
 use function strpos;
 use function substr;
 
@@ -16,22 +21,45 @@ class ClassForbiddenNameCheck
 		'PHP-Scoper' => '_PhpScoper',
 	];
 
+	public function __construct(private Container $container)
+	{
+	}
+
 	/**
 	 * @param ClassNameNodePair[] $pairs
 	 * @return list<IdentifierRuleError>
 	 */
 	public function checkClassNames(array $pairs): array
 	{
+		$extensions = $this->container->getServicesByTag(ForbiddenClassNameExtension::EXTENSION_TAG);
+
+		$classPrefixes = array_merge(
+			self::INTERNAL_CLASS_PREFIXES,
+			...array_map(
+				static fn (ForbiddenClassNameExtension $extension): array => $extension->getClassPrefixes(),
+				$extensions,
+			),
+		);
+
 		$errors = [];
 		foreach ($pairs as $pair) {
 			$className = $pair->getClassName();
 
 			$projectName = null;
-			foreach (self::INTERNAL_CLASS_PREFIXES as $project => $prefix) {
-				if (str_starts_with($className, $prefix)) {
-					$projectName = $project;
-					break;
+			$withoutPrefixClassName = null;
+			foreach ($classPrefixes as $project => $prefix) {
+				if (!str_starts_with($className, $prefix)) {
+					continue;
 				}
+
+				$projectName = $project;
+				$withoutPrefixClassName = substr($className, strlen($prefix));
+
+				if (strpos($withoutPrefixClassName, '\\') === false) {
+					continue;
+				}
+
+				$withoutPrefixClassName = substr($withoutPrefixClassName, strpos($withoutPrefixClassName, '\\'));
 			}
 
 			if ($projectName === null) {
@@ -47,10 +75,10 @@ class ClassForbiddenNameCheck
 				->identifier('class.prefixed')
 				->nonIgnorable();
 
-			if (strpos($className, '\\') !== false) {
+			if ($withoutPrefixClassName !== null) {
 				$error->tip(sprintf(
 					'This is most likely unintentional. Did you mean to type %s?',
-					substr($className, strpos($className, '\\')),
+					$withoutPrefixClassName,
 				));
 			}
 

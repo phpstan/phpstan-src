@@ -46,3 +46,7 @@ function doAdipiscing(mixed $foo = 1, $bar): void // not OK
 function doElit(mixed $foo = null, $bar): void // not OK
 {
 }
+
+function doSed(int|null $foo = null, $bar, ?int $baz = null, $qux, int $quux = 1, $quuz): void // not OK
+{
+}

@@ -21,3 +21,5 @@ fn (int|null $foo = null, $bar): int => 1; // not OK
 fn (mixed $foo = 1, $bar): int => 1; // not OK
 
 fn (mixed $foo = null, $bar): int => 1; // not OK
+
+fn (int|null $foo = null, $bar, ?int $baz = null, $qux, int $quux = 1, $quuz): int => 1; // not OK

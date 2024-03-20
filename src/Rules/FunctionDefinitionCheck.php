@@ -486,10 +486,10 @@ class FunctionDefinitionCheck
 						$parameterName,
 						$optionalParameter,
 					),
-				)
-					->line($parameterNode->getStartLine())
+				)->line($parameterNode->getStartLine())
 					->identifier('parameter.requiredAfterOptional')
 					->build();
+				$targetPhpVersion = null;
 				continue;
 			}
 			if ($parameterNode->default === null) {

@@ -23,7 +23,7 @@ class RequireExtendsDefinitionClassRuleTest extends RuleTestCase
 			new RequireExtendsCheck(
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(),
+					new ClassForbiddenNameCheck(self::getContainer()),
 				),
 				true,
 			),

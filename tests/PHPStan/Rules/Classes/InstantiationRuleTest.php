@@ -29,7 +29,7 @@ class InstantiationRuleTest extends RuleTestCase
 			new FunctionCallParametersCheck(new RuleLevelHelper($reflectionProvider, true, false, true, false, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(),
+				new ClassForbiddenNameCheck(self::getContainer()),
 			),
 		);
 	}

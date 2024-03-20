@@ -576,3 +576,17 @@ class TestCaseInsensitiveClassNames
 	}
 
 }
+
+class CallCallable
+{
+
+	public function doFoo(callable $cb): void
+	{
+		try {
+			$cb();
+		} catch (\Exception $e) {
+
+		}
+	}
+
+}

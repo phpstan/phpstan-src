@@ -23,9 +23,11 @@ use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function count;
+use function is_file;
 use function is_string;
 use function memory_get_peak_usage;
 use function microtime;
+use function sha1_file;
 use function sprintf;
 
 class AnalyseApplication
@@ -74,6 +76,7 @@ class AnalyseApplication
 			if ($errorOutput->isDebug()) {
 				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
 			}
+			$changedProjectExtensionFilesOutsideOfAnalysedPaths = [];
 		} else {
 			$resultCache = $resultCacheManager->restore($files, $debug, $onlyFiles, $projectConfigArray, $errorOutput);
 			$intermediateAnalyserResult = $this->runAnalyser(
@@ -114,6 +117,32 @@ class AnalyseApplication
 			$memoryUsageBytes = $analyserResult->getPeakMemoryUsageBytes();
 			$isResultCacheUsed = !$resultCache->isFullAnalysis();
 
+			$changedProjectExtensionFilesOutsideOfAnalysedPaths = [];
+			if (
+				$isResultCacheUsed
+				&& $resultCacheResult->isSaved()
+				&& !$onlyFiles
+				&& $projectConfigArray !== null
+			) {
+				foreach ($resultCache->getProjectExtensionFiles() as $file => [$hash, $isAnalysed, $className]) {
+					if ($isAnalysed) {
+						continue;
+					}
+
+					if (!is_file($file)) {
+						$changedProjectExtensionFilesOutsideOfAnalysedPaths[$file] = $className;
+						continue;
+					}
+
+					$newHash = sha1_file($file);
+					if ($newHash === $hash) {
+						continue;
+					}
+
+					$changedProjectExtensionFilesOutsideOfAnalysedPaths[$file] = $className;
+				}
+			}
+
 			if (!$hasInternalErrors) {
 				foreach ($this->getCollectedDataErrors($analyserResult->getCollectedData(), $onlyFiles) as $error) {
 					$errors[] = $error;
@@ -150,6 +179,7 @@ class AnalyseApplication
 			$savedResultCache,
 			$memoryUsageBytes,
 			$isResultCacheUsed,
+			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
 		);
 	}
 

@@ -20,6 +20,7 @@ class AnalysisResult
 	 * @param list<string> $internalErrors
 	 * @param list<string> $warnings
 	 * @param list<CollectedData> $collectedData
+	 * @param array<string, string> $changedProjectExtensionFilesOutsideOfAnalysedPaths
 	 */
 	public function __construct(
 		array $fileSpecificErrors,
@@ -32,6 +33,7 @@ class AnalysisResult
 		private bool $savedResultCache,
 		private int $peakMemoryUsageBytes,
 		private bool $isResultCacheUsed,
+		private array $changedProjectExtensionFilesOutsideOfAnalysedPaths,
 	)
 	{
 		usort(
@@ -133,6 +135,14 @@ class AnalysisResult
 	public function isResultCacheUsed(): bool
 	{
 		return $this->isResultCacheUsed;
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function getChangedProjectExtensionFilesOutsideOfAnalysedPaths(): array
+	{
+		return $this->changedProjectExtensionFilesOutsideOfAnalysedPaths;
 	}
 
 }

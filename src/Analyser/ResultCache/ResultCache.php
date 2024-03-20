@@ -16,6 +16,7 @@ class ResultCache
 	 * @param array<string, array<CollectedData>> $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
+	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 */
 	public function __construct(
 		private array $filesToAnalyse,
@@ -26,6 +27,7 @@ class ResultCache
 		private array $collectedData,
 		private array $dependencies,
 		private array $exportedNodes,
+		private array $projectExtensionFiles,
 	)
 	{
 	}
@@ -86,6 +88,14 @@ class ResultCache
 	public function getExportedNodes(): array
 	{
 		return $this->exportedNodes;
+	}
+
+	/**
+	 * @return array<string, array{string, bool, string}>
+	 */
+	public function getProjectExtensionFiles(): array
+	{
+		return $this->projectExtensionFiles;
 	}
 
 }

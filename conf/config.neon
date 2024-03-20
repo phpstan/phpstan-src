@@ -81,6 +81,7 @@ parameters:
 		invalidPhpDocTagLine: false
 		detectDeadTypeInMultiCatch: false
 		zeroFiles: false
+		projectServicesNotInAnalysedPaths: false
 		callUserFunc: false
 		finalByPhpDoc: false
 		magicConstantOutOfContext: false

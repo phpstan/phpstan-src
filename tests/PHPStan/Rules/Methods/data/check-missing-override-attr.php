@@ -21,3 +21,31 @@ class Bar extends Foo
 	}
 
 }
+
+class ParentWithConstructor
+{
+
+	public function __construct() {}
+
+}
+
+
+class ChildOfParentWithConstructor extends ParentWithConstructor {
+
+	public function __construct() {}
+
+}
+
+abstract class ParentWithAbstractConstructor
+{
+
+	abstract public function __construct();
+
+}
+
+
+class ChildOfParentWithAbstractConstructor extends ParentWithAbstractConstructor {
+
+	public function __construct() {}
+
+}

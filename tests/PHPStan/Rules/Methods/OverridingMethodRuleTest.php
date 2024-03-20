@@ -770,6 +770,10 @@ class OverridingMethodRuleTest extends RuleTestCase
 				'Method OverrideAttribute\Bar::test2() has #[\Override] attribute but does not override any method.',
 				24,
 			],
+			[
+				'Method OverrideAttribute\ChildOfParentWithConstructor::__construct() has #[\Override] attribute but does not override any method.',
+				42,
+			],
 		]);
 	}
 
@@ -782,6 +786,10 @@ class OverridingMethodRuleTest extends RuleTestCase
 			[
 				'Method CheckMissingOverrideAttr\Bar::doFoo() overrides method CheckMissingOverrideAttr\Foo::doFoo() but is missing the #[\Override] attribute.',
 				18,
+			],
+			[
+				'Method CheckMissingOverrideAttr\ChildOfParentWithAbstractConstructor::__construct() overrides method CheckMissingOverrideAttr\ParentWithAbstractConstructor::__construct() but is missing the #[\Override] attribute.',
+				49,
 			],
 		]];
 	}

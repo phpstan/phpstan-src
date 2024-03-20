@@ -28,3 +28,33 @@ class Bar extends Foo
 	}
 
 }
+
+class ParentWithConstructor
+{
+
+	public function __construct() {}
+
+}
+
+
+class ChildOfParentWithConstructor extends ParentWithConstructor {
+
+	#[\Override]
+	public function __construct() {}
+
+}
+
+abstract class ParentWithAbstractConstructor
+{
+
+	abstract public function __construct();
+
+}
+
+
+class ChildOfParentWithAbstractConstructor extends ParentWithAbstractConstructor {
+
+	#[\Override]
+	public function __construct() {}
+
+}

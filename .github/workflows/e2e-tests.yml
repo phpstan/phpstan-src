@@ -177,6 +177,7 @@ jobs:
               cd e2e/result-cache-8
               composer install
               ../../bin/phpstan
+              echo -en '\n' >> build/CustomRule.php
               OUTPUT=$(../../bin/phpstan 2>&1)
               grep 'Warning: Result cache might not behave correctly' <<< "$OUTPUT"
               grep 'ResultCache8E2E\\CustomRule' <<< "$OUTPUT"

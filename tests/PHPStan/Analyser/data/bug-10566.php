@@ -150,4 +150,22 @@ final class StreamSelectLoop
 		}
 	}
 
+	function run8(): void
+	{
+		$s = new self();
+
+		while ($s->running) {
+			assertType('true', $s->running);
+			call_user_func(static function () use ($s) {
+				$s->stop();
+			});
+			assertType('bool', $s->running);
+
+			if (!$s->running) {
+				$timeout = 0;
+				break;
+			}
+		}
+	}
+
 }

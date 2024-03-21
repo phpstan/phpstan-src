@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -97,6 +98,7 @@ class GenericParametersAcceptorResolver
 					new MixedType(),
 					$parameter->getType(),
 					null,
+					TrinaryLogic::createMaybe(),
 				), $parametersAcceptor->getParameters()),
 				$parametersAcceptor->isVariadic(),
 				$parametersAcceptor->getReturnType(),

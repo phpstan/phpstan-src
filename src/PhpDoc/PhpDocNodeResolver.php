@@ -30,6 +30,8 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\CallableType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -339,6 +341,19 @@ class PhpDocNodeResolver
 	public function resolveParamTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
 		$resolved = [];
+		$immediatelyInvokedCallableParameters = [];
+		foreach (['@param-immediately-invoked-callable', '@phpstan-param-immediately-invoked-callable'] as $tagName) {
+			foreach ($phpDocNode->getParamImmediatelyInvokedCallableTagValues($tagName) as $tagValue) {
+				$parameterName = substr($tagValue->parameterName, 1);
+				$immediatelyInvokedCallableParameters[$parameterName] = TrinaryLogic::createYes();
+			}
+		}
+		foreach (['@param-later-invoked-callable', '@phpstan-param-later-invoked-callable'] as $tagName) {
+			foreach ($phpDocNode->getParamLaterInvokedCallableTagValues($tagName) as $tagValue) {
+				$parameterName = substr($tagValue->parameterName, 1);
+				$immediatelyInvokedCallableParameters[$parameterName] = TrinaryLogic::createNo();
+			}
+		}
 
 		foreach (['@param', '@psalm-param', '@phpstan-param'] as $tagName) {
 			foreach ($phpDocNode->getParamTagValues($tagName) as $tagValue) {
@@ -348,11 +363,27 @@ class PhpDocNodeResolver
 					continue;
 				}
 
+				if (array_key_exists($parameterName, $immediatelyInvokedCallableParameters)) {
+					$immediatelyInvokedCallable = $immediatelyInvokedCallableParameters[$parameterName];
+					unset($immediatelyInvokedCallableParameters[$parameterName]);
+				} else {
+					$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
+				}
+
 				$resolved[$parameterName] = new ParamTag(
 					$parameterType,
 					$tagValue->isVariadic,
+					$immediatelyInvokedCallable,
 				);
 			}
+		}
+
+		foreach ($immediatelyInvokedCallableParameters as $parameterName => $immediately) {
+			$resolved[$parameterName] = new ParamTag(
+				new CallableType(),
+				false,
+				$immediately,
+			);
 		}
 
 		return $resolved;

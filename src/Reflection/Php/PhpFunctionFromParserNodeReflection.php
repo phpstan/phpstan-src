@@ -41,6 +41,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $realParameterDefaultValues
 	 * @param Type[] $parameterOutTypes
+	 * @param array<string, bool> $immediatelyInvokedCallableParameters
 	 */
 	public function __construct(
 		FunctionLike $functionLike,
@@ -61,6 +62,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		private Assertions $assertions,
 		private ?string $phpDocComment,
 		private array $parameterOutTypes,
+		private array $immediatelyInvokedCallableParameters,
 	)
 	{
 		$this->functionLike = $functionLike;
@@ -133,6 +135,13 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
 				throw new ShouldNotHappenException();
 			}
+
+			if (isset($this->immediatelyInvokedCallableParameters[$parameter->var->name])) {
+				$immediatelyInvokedCallable = TrinaryLogic::createFromBoolean($this->immediatelyInvokedCallableParameters[$parameter->var->name]);
+			} else {
+				$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
+			}
+
 			$parameters[] = new PhpParameterFromParserNodeReflection(
 				$parameter->var->name,
 				$isOptional,
@@ -144,6 +153,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 				$this->realParameterDefaultValues[$parameter->var->name] ?? null,
 				$parameter->variadic,
 				$this->parameterOutTypes[$parameter->var->name] ?? null,
+				$immediatelyInvokedCallable,
 			);
 		}
 

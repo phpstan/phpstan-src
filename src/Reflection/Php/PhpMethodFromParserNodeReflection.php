@@ -33,6 +33,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	 * @param Type[] $realParameterTypes
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $realParameterDefaultValues
+	 * @param array<string, bool> $immediatelyInvokedCallableParameters
 	 */
 	public function __construct(
 		private ClassReflection $declaringClass,
@@ -55,6 +56,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		private ?Type $selfOutType,
 		?string $phpDocComment,
 		array $parameterOutTypes,
+		array $immediatelyInvokedCallableParameters,
 	)
 	{
 		$name = strtolower($classMethod->name->name);
@@ -109,6 +111,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$assertions,
 			$phpDocComment,
 			$parameterOutTypes,
+			$immediatelyInvokedCallableParameters,
 		);
 	}
 

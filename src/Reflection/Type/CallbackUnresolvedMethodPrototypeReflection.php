@@ -96,6 +96,7 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 					$parameter->getNativeType(),
 					$parameter->getPhpDocType(),
 					$parameter->getOutType(),
+					$parameter->isImmediatelyInvokedCallable(),
 				),
 				$acceptor->getParameters(),
 			),

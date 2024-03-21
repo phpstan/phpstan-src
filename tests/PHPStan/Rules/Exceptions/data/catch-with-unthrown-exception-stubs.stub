@@ -1,0 +1,49 @@
+<?php
+
+namespace Doctrine\ORM {
+	class EntityManager
+	{
+
+		/**
+		 * @param-immediately-invoked-callable $cb
+		 */
+		public function transactional(callable $cb): void {
+
+		}
+
+	}
+}
+
+namespace MyFunction {
+
+	/**
+	 * @param-later-invoked-callable $cb
+	 */
+	function doFoo(callable $cb): void {
+
+	}
+}
+
+namespace {
+
+	/**
+	 * @param-later-invoked-callable $cb
+	 */
+	function uksort($array, $cb)
+	{
+
+	}
+}
+
+namespace Ds {
+	class Deque {
+		/**
+		 * @param (callable(TValue): bool)|null $callback
+		 * @return Deque<TValue>
+		 * @param-immediately-invoked-callable $callback
+		 */
+		public function filter(callable $callback = null): Deque
+		{
+		}
+	}
+}

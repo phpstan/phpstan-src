@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Native;
 
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
 class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhpDocs
@@ -19,6 +20,7 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 		private bool $variadic,
 		private ?Type $defaultValue,
 		private ?Type $outType,
+		private TrinaryLogic $immediatelyInvokedCallable,
 	)
 	{
 	}
@@ -68,6 +70,11 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 		return $this->outType;
 	}
 
+	public function isImmediatelyInvokedCallable(): TrinaryLogic
+	{
+		return $this->immediatelyInvokedCallable;
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */
@@ -83,6 +90,7 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 			$properties['variadic'],
 			$properties['defaultValue'],
 			$properties['outType'],
+			$properties['immediatelyInvokedCallable'],
 		);
 	}
 

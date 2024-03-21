@@ -2677,6 +2677,7 @@ class MutatingScope implements Scope
 	 * @api
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $parameterOutTypes
+	 * @param array<string, bool> $immediatelyInvokedCallableParameters
 	 */
 	public function enterClassMethod(
 		Node\Stmt\ClassMethod $classMethod,
@@ -2694,6 +2695,7 @@ class MutatingScope implements Scope
 		?Type $selfOutType = null,
 		?string $phpDocComment = null,
 		array $parameterOutTypes = [],
+		array $immediatelyInvokedCallableParameters = [],
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -2722,6 +2724,7 @@ class MutatingScope implements Scope
 				$selfOutType,
 				$phpDocComment,
 				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $parameterOutTypes),
+				$immediatelyInvokedCallableParameters,
 			),
 			!$classMethod->isStatic(),
 		);
@@ -2789,6 +2792,7 @@ class MutatingScope implements Scope
 	 * @api
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $parameterOutTypes
+	 * @param array<string, bool> $immediatelyInvokedCallableParameters
 	 */
 	public function enterFunction(
 		Node\Stmt\Function_ $function,
@@ -2805,6 +2809,7 @@ class MutatingScope implements Scope
 		?Assertions $asserts = null,
 		?string $phpDocComment = null,
 		array $parameterOutTypes = [],
+		array $immediatelyInvokedCallableParameters = [],
 	): self
 	{
 		return $this->enterFunctionLike(
@@ -2827,6 +2832,7 @@ class MutatingScope implements Scope
 				$asserts ?? Assertions::createEmpty(),
 				$phpDocComment,
 				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $parameterOutTypes),
+				$immediatelyInvokedCallableParameters,
 			),
 			false,
 		);

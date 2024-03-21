@@ -105,6 +105,7 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 						$param->getNativeType(),
 						$param->getPhpDocType(),
 						$paramOutType,
+						$param->isImmediatelyInvokedCallable(),
 					);
 				},
 				$this->parametersAcceptor->getParameters(),

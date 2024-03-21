@@ -12,6 +12,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\Cache\Cache;
 use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
+use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
@@ -37,7 +38,7 @@ class PhpFunctionReflection implements FunctionReflection
 	private ?array $variants = null;
 
 	/**
-	 * @param Type[] $phpDocParameterTypes
+	 * @param array<string, ParamTag> $phpDocParameterTags
 	 * @param Type[] $phpDocParameterOutTypes
 	 */
 	public function __construct(
@@ -47,7 +48,7 @@ class PhpFunctionReflection implements FunctionReflection
 		private FunctionCallStatementFinder $functionCallStatementFinder,
 		private Cache $cache,
 		private TemplateTypeMap $templateTypeMap,
-		private array $phpDocParameterTypes,
+		private array $phpDocParameterTags,
 		private ?Type $phpDocReturnType,
 		private ?Type $phpDocThrowType,
 		private ?string $deprecatedDescription,
@@ -113,13 +114,25 @@ class PhpFunctionReflection implements FunctionReflection
 	 */
 	private function getParameters(): array
 	{
-		return array_map(fn (ReflectionParameter $reflection): PhpParameterReflection => new PhpParameterReflection(
-			$this->initializerExprTypeResolver,
-			$reflection,
-			$this->phpDocParameterTypes[$reflection->getName()] ?? null,
-			null,
-			$this->phpDocParameterOutTypes[$reflection->getName()] ?? null,
-		), $this->reflection->getParameters());
+		return array_map(function (ReflectionParameter $reflection): PhpParameterReflection {
+			$paramTag = $this->phpDocParameterTags[$reflection->getName()] ?? null;
+			if ($paramTag !== null) {
+				$phpDocType = $paramTag->getType();
+				$immediatelyInvokedCallable = $paramTag->isImmediatelyInvokedCallable();
+			} else {
+				$phpDocType = null;
+				$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
+			}
+
+			return new PhpParameterReflection(
+				$this->initializerExprTypeResolver,
+				$reflection,
+				$phpDocType,
+				null,
+				$this->phpDocParameterOutTypes[$reflection->getName()] ?? null,
+				$immediatelyInvokedCallable,
+			);
+		}, $this->reflection->getParameters());
 	}
 
 	private function isVariadic(): bool

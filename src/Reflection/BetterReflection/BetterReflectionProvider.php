@@ -28,7 +28,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
-use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassNameHelper;
 use PHPStan\Reflection\ClassReflection;
@@ -309,7 +308,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		return $this->functionReflectionFactory->create(
 			$reflectionFunction,
 			$templateTypeMap,
-			array_map(static fn (ParamTag $paramTag): Type => $paramTag->getType(), $phpDocParameterTags),
+			$phpDocParameterTags,
 			$phpDocReturnTag !== null ? $phpDocReturnTag->getType() : null,
 			$phpDocThrowsTag !== null ? $phpDocThrowsTag->getType() : null,
 			$deprecatedTag !== null ? $deprecatedTag->getMessage() : null,

@@ -96,10 +96,12 @@ class NativeFunctionReflectionProvider
 						$type = $parameterSignature->getType();
 
 						$phpDocType = null;
+						$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
 						if ($phpDoc !== null) {
 							$phpDocParam = $phpDoc->getParamTags()[$parameterSignature->getName()] ?? null;
 							if ($phpDocParam !== null) {
 								$phpDocType = $phpDocParam->getType();
+								$immediatelyInvokedCallable = $phpDocParam->isImmediatelyInvokedCallable();
 							}
 						}
 
@@ -113,6 +115,7 @@ class NativeFunctionReflectionProvider
 							$parameterSignature->isVariadic(),
 							$parameterSignature->getDefaultValue(),
 							$phpDoc !== null ? NativeFunctionReflectionProvider::getParamOutTypeFromPhpDoc($parameterSignature->getName(), $phpDoc) : null,
+							$immediatelyInvokedCallable,
 						);
 					}, $functionSignature->getParameters()),
 					$functionSignature->isVariadic(),

@@ -7,6 +7,7 @@ use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -25,6 +26,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 		private ?Type $phpDocType,
 		private ?string $declaringClassName,
 		private ?Type $outType,
+		private TrinaryLogic $immediatelyInvokedCallable,
 	)
 	{
 	}
@@ -117,6 +119,11 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 	public function getOutType(): ?Type
 	{
 		return $this->outType;
+	}
+
+	public function isImmediatelyInvokedCallable(): TrinaryLogic
+	{
+		return $this->immediatelyInvokedCallable;
 	}
 
 }

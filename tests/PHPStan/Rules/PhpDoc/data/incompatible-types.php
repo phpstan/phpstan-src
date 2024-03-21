@@ -320,3 +320,33 @@ function genericIncompatibleTypeProjection($foo)
 {
 
 }
+
+/**
+ * @param-immediately-invoked-callable $cb
+ */
+function callableParameterWithoutParamTag(callable $cb): void
+{
+
+}
+
+/**
+ * @param-immediately-invoked-callable $a
+ * @param-later-invoked-callable $b
+ */
+function paramInvokedCallableWithUnknownParameter(): void
+{
+
+}
+
+final class NotCallable
+{
+
+}
+
+/**
+ * @param-immediately-invoked-callable $a
+ */
+function paramInvokedCallableWithNotCallable(NotCallable $a): void
+{
+
+}

@@ -468,6 +468,7 @@ class ParametersAcceptorSelector
 						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getNativeType() : new MixedType(),
 						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getPhpDocType() : new MixedType(),
 						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getOutType() : null,
+						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->isImmediatelyInvokedCallable() : TrinaryLogic::createMaybe(),
 					);
 					continue;
 				}
@@ -494,10 +495,13 @@ class ParametersAcceptorSelector
 					} else {
 						$outType = null;
 					}
+
+					$immediatelyInvokedCallable = $parameter->isImmediatelyInvokedCallable();
 				} else {
 					$nativeType = new MixedType();
 					$phpDocType = $type;
 					$outType = null;
+					$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
 				}
 
 				$parameters[$i] = new DummyParameterWithPhpDocs(
@@ -510,6 +514,7 @@ class ParametersAcceptorSelector
 					$nativeType,
 					$phpDocType,
 					$outType,
+					$immediatelyInvokedCallable,
 				);
 
 				if ($isVariadic) {
@@ -564,6 +569,7 @@ class ParametersAcceptorSelector
 			new MixedType(),
 			$parameter->getType(),
 			null,
+			TrinaryLogic::createMaybe(),
 		);
 	}
 

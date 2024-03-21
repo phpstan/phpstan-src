@@ -1,0 +1,5 @@
+parameters:
+	exceptions:
+		implicitThrows: false
+	stubFiles:
+		- data/catch-with-unthrown-exception-stubs.stub

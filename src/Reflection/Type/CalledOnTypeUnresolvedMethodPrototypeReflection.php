@@ -91,6 +91,7 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 					$parameter->getNativeType(),
 					$parameter->getPhpDocType(),
 					$parameter->getOutType(),
+					$parameter->isImmediatelyInvokedCallable(),
 				),
 				$acceptor->getParameters(),
 			),

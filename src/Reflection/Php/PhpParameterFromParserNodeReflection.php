@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -23,6 +24,7 @@ class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhp
 		private ?Type $defaultValue,
 		private bool $variadic,
 		private ?Type $outType,
+		private TrinaryLogic $immediatelyInvokedCallable,
 	)
 	{
 	}
@@ -83,6 +85,11 @@ class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhp
 	public function getOutType(): ?Type
 	{
 		return $this->outType;
+	}
+
+	public function isImmediatelyInvokedCallable(): TrinaryLogic
+	{
+		return $this->immediatelyInvokedCallable;
 	}
 
 }

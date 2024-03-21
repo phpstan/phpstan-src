@@ -497,6 +497,8 @@ class PhpClassReflectionExtension
 					$stubPhpDocPair = null;
 					$stubPhpParameterOutTypes = [];
 					$phpDocParameterOutTypes = [];
+					$immediatelyInvokedCallableParameters = [];
+					$stubImmediatelyInvokedCallableParameters = [];
 					if (count($methodSignatures) === 1) {
 						$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
 						if ($stubPhpDocPair !== null) {
@@ -521,6 +523,7 @@ class PhpClassReflectionExtension
 									TemplateTypeVariance::createContravariant(),
 								);
 								$stubPhpDocParameterVariadicity[$name] = $paramTag->isVariadic();
+								$stubImmediatelyInvokedCallableParameters[$name] = $paramTag->isImmediatelyInvokedCallable();
 							}
 
 							$throwsTag = $stubPhpDoc->getThrowsTag();
@@ -569,6 +572,7 @@ class PhpClassReflectionExtension
 							}
 							foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
 								$phpDocParameterTypes[$name] = $paramTag->getType();
+								$immediatelyInvokedCallableParameters[$name] = $paramTag->isImmediatelyInvokedCallable();
 							}
 							$asserts = Assertions::createFromResolvedPhpDocBlock($phpDocBlock);
 
@@ -595,7 +599,7 @@ class PhpClassReflectionExtension
 							}
 						}
 					}
-					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes, $signatureType !== 'named');
+					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes, $stubImmediatelyInvokedCallableParameters, $immediatelyInvokedCallableParameters, $signatureType !== 'named');
 				}
 			}
 
@@ -719,8 +723,10 @@ class PhpClassReflectionExtension
 		}
 
 		$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
+		$immediatelyInvokedCallableParameters = [];
 
 		foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
+			$immediatelyInvokedCallableParameters[$paramName] = $paramTag->isImmediatelyInvokedCallable();
 			if (array_key_exists($paramName, $phpDocParameterTypes)) {
 				continue;
 			}
@@ -781,6 +787,7 @@ class PhpClassReflectionExtension
 			$selfOutType,
 			$phpDocComment,
 			$phpDocParameterOutTypes,
+			$immediatelyInvokedCallableParameters,
 		);
 	}
 
@@ -791,6 +798,8 @@ class PhpClassReflectionExtension
 	 * @param array<string, string> $phpDocParameterNameMapping
 	 * @param array<string, Type> $stubPhpDocParameterOutTypes
 	 * @param array<string, Type> $phpDocParameterOutTypes
+	 * @param array<string, TrinaryLogic> $stubImmediatelyInvokedCallableParameters
+	 * @param array<string, TrinaryLogic> $immediatelyInvokedCallableParameters
 	 */
 	private function createNativeMethodVariant(
 		FunctionSignature $methodSignature,
@@ -802,6 +811,8 @@ class PhpClassReflectionExtension
 		array $phpDocParameterNameMapping,
 		array $stubPhpDocParameterOutTypes,
 		array $phpDocParameterOutTypes,
+		array $stubImmediatelyInvokedCallableParameters,
+		array $immediatelyInvokedCallableParameters,
 		bool $usePhpDocParameterNames,
 	): FunctionVariantWithPhpDocs
 	{
@@ -826,6 +837,14 @@ class PhpClassReflectionExtension
 				$parameterOutType = $phpDocParameterOutTypes[$phpDocParameterName];
 			}
 
+			if (isset($stubImmediatelyInvokedCallableParameters[$parameterSignature->getName()])) {
+				$immediatelyInvoked = $stubImmediatelyInvokedCallableParameters[$parameterSignature->getName()];
+			} elseif (isset($immediatelyInvokedCallableParameters[$phpDocParameterName])) {
+				$immediatelyInvoked = $immediatelyInvokedCallableParameters[$phpDocParameterName];
+			} else {
+				$immediatelyInvoked = TrinaryLogic::createMaybe();
+			}
+
 			$parameters[] = new NativeParameterWithPhpDocsReflection(
 				$usePhpDocParameterNames
 					? $phpDocParameterName
@@ -838,6 +857,7 @@ class PhpClassReflectionExtension
 				$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
 				$parameterSignature->getDefaultValue(),
 				$parameterOutType ?? $parameterSignature->getOutType(),
+				$immediatelyInvoked,
 			);
 		}
 
@@ -950,7 +970,7 @@ class PhpClassReflectionExtension
 			$classScope = $classScope->enterNamespace($namespace);
 		}
 		$classScope = $classScope->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,

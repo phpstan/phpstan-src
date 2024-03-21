@@ -583,6 +583,15 @@ function acceptCallable(callable $cb): void
 
 }
 
+/**
+ * @throws void
+ * @param-later-invoked-callable $cb
+ */
+function acceptCallableAndCallLater(callable $cb): void
+{
+
+}
+
 class CallCallable
 {
 
@@ -598,14 +607,138 @@ class CallCallable
 		}
 	}
 
+	public function passCallableToFunction(): void
+	{
+		try {
+			// immediately called by default
+			acceptCallable(function () {
+				throw new \InvalidArgumentException();
+			});
+		} catch (\InvalidArgumentException $e) {
+
+		}
+	}
+
+	public function passCallableToFunction2(): void
+	{
+		try {
+			// later called thanks to @param-later-invoked-callable
+			acceptCallableAndCallLater(function () {
+				throw new \InvalidArgumentException();
+			});
+		} catch (\InvalidArgumentException $e) {
+
+		}
+	}
+
+	/** @throws void */
+	public function acceptCallable(callable $cb): void
+	{
+
+	}
+
+	public function passCallableToMethod(): void
+	{
+		try {
+			// later called by default
+			$this->acceptCallable(function () {
+				throw new \InvalidArgumentException();
+			});
+		} catch (\InvalidArgumentException $e) {
+
+		}
+	}
+
+	/**
+	 * @throws void
+	 * @param-immediately-invoked-callable $cb
+	 */
+	public function acceptAndCallCallable(callable $cb): void
+	{
+
+	}
+
+	public function passCallableToMethod2(): void
+	{
+		try {
+			// immediately called thanks to @param-immediately-invoked-callable
+			$this->acceptAndCallCallable(function () {
+				throw new \InvalidArgumentException();
+			});
+		} catch (\InvalidArgumentException $e) {
+
+		}
+	}
+
+}
+
+class ExtendsCallCallable extends CallCallable
+{
+
+	public function acceptAndCallCallable(callable $cb): void
+	{
+
+	}
+
+	public function passCallableToMethod2(): void
+	{
+		try {
+			// immediately called thanks to @param-immediately-invoked-callable
+			$this->acceptAndCallCallable(function () {
+				throw new \InvalidArgumentException();
+			});
+		} catch (\InvalidArgumentException $e) {
+
+		}
+	}
+
+}
+
+class ExtendsCallCallable2 extends CallCallable
+{
+
 	/**
 	 * @param callable $cb
 	 */
-	public function passCallable(callable $cb): void
+	public function acceptAndCallCallable(callable $cb): void
+	{
+
+	}
+
+	public function passCallableToMethod2(): void
 	{
 		try {
-			acceptCallable($cb);
-		} catch (\Exception $e) {
+			// immediately called thanks to @param-immediately-invoked-callable
+			$this->acceptAndCallCallable(function () {
+				throw new \InvalidArgumentException();
+			});
+		} catch (\InvalidArgumentException $e) {
+
+		}
+	}
+
+}
+
+class ExtendsCallCallable3 extends CallCallable
+{
+
+	/**
+	 * @param callable $cb
+	 * @param-later-invoked-callable $cb
+	 */
+	public function acceptAndCallCallable(callable $cb): void
+	{
+
+	}
+
+	public function passCallableToMethod2(): void
+	{
+		try {
+			// later called thanks to @param-later-invoked-callable
+			$this->acceptAndCallCallable(function () {
+				throw new \InvalidArgumentException();
+			});
+		} catch (\InvalidArgumentException $e) {
 
 		}
 	}

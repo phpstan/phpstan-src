@@ -191,6 +191,18 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				'Call-site variance of contravariant int in generic type InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int> in PHPDoc tag @return is in conflict with covariant template type T of class InvalidPhpDocDefinitions\FooCovariantGeneric.',
 				319,
 			],
+			[
+				'PHPDoc tag @param references unknown parameter: $a',
+				336,
+			],
+			[
+				'PHPDoc tag @param references unknown parameter: $b',
+				336,
+			],
+			[
+				'PHPDoc tag @param for parameter $a with type callable is incompatible with native type InvalidPhpDoc\NotCallable.',
+				349,
+			],
 		]);
 	}
 

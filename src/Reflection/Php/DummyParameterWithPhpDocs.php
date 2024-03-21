@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
 class DummyParameterWithPhpDocs extends DummyParameter implements ParameterReflectionWithPhpDocs
@@ -19,6 +20,7 @@ class DummyParameterWithPhpDocs extends DummyParameter implements ParameterRefle
 		private Type $nativeType,
 		private Type $phpDocType,
 		private ?Type $outType,
+		private TrinaryLogic $immediatelyInvokedCallable,
 	)
 	{
 		parent::__construct($name, $type, $optional, $passedByReference, $variadic, $defaultValue);
@@ -37,6 +39,11 @@ class DummyParameterWithPhpDocs extends DummyParameter implements ParameterRefle
 	public function getOutType(): ?Type
 	{
 		return $this->outType;
+	}
+
+	public function isImmediatelyInvokedCallable(): TrinaryLogic
+	{
+		return $this->immediatelyInvokedCallable;
 	}
 
 }

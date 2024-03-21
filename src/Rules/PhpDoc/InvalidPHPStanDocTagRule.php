@@ -55,6 +55,8 @@ class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-readonly-allow-private-mutation',
 		'@phpstan-require-extends',
 		'@phpstan-require-implements',
+		'@phpstan-param-immediately-invoked-callable',
+		'@phpstan-param-later-invoked-callable',
 	];
 
 	public function __construct(

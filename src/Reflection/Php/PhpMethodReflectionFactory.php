@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
@@ -13,6 +14,7 @@ interface PhpMethodReflectionFactory
 	/**
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $phpDocParameterOutTypes
+	 * @param array<string, TrinaryLogic> $immediatelyInvokedCallableParameters
 	 */
 	public function create(
 		ClassReflection $declaringClass,
@@ -31,6 +33,7 @@ interface PhpMethodReflectionFactory
 		?Type $selfOutType,
 		?string $phpDocComment,
 		array $phpDocParameterOutTypes,
+		array $immediatelyInvokedCallableParameters,
 	): PhpMethodReflection;
 
 }

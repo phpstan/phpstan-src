@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Annotations;
 
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
@@ -42,6 +43,11 @@ class AnnotationsMethodParameterReflection implements ParameterReflectionWithPhp
 	public function getOutType(): ?Type
 	{
 		return null;
+	}
+
+	public function isImmediatelyInvokedCallable(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function passedByReference(): PassedByReference

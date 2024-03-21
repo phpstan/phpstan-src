@@ -840,6 +840,9 @@ class ResolvedPhpDocBlock
 
 		foreach ($parentParamTags as $name => $parentParamTag) {
 			if (array_key_exists($name, $paramTags)) {
+				if ($paramTags[$name]->isImmediatelyInvokedCallable()->maybe()) {
+					$paramTags[$name] = $paramTags[$name]->withImmediatelyInvokedCallable($parentParamTag->isImmediatelyInvokedCallable());
+				}
 				continue;
 			}
 

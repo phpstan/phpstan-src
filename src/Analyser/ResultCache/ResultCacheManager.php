@@ -692,6 +692,10 @@ return [
 					continue;
 				}
 
+				if (str_starts_with($fileName, 'phar://')) {
+					continue;
+				}
+
 				$allServiceFiles = $this->getAllDependencies($fileName, $dependencies);
 				if (count($allServiceFiles) === 0) {
 					$normalizedFileName = $this->fileHelper->normalizePath($fileName);

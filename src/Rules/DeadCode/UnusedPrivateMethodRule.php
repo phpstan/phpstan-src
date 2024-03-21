@@ -7,6 +7,7 @@ use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Rules\Methods\AlwaysUsedMethodExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -21,6 +22,10 @@ use function strtolower;
  */
 class UnusedPrivateMethodRule implements Rule
 {
+
+	public function __construct(private AlwaysUsedMethodExtensionProvider $extensionProvider)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -54,6 +59,14 @@ class UnusedPrivateMethodRule implements Rule
 			if (strtolower($methodName) === '__clone') {
 				continue;
 			}
+
+			$methodReflection = $classType->getMethod($methodName, $scope);
+			foreach ($this->extensionProvider->getExtensions() as $extension) {
+				if ($extension->isAlwaysUsed($methodReflection)) {
+					continue 2;
+				}
+			}
+
 			$methods[strtolower($methodName)] = $method;
 		}
 

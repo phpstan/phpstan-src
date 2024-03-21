@@ -81,6 +81,7 @@ parameters:
 		invalidPhpDocTagLine: false
 		detectDeadTypeInMultiCatch: false
 		zeroFiles: false
+		projectServicesNotInAnalysedPaths: false
 		callUserFunc: false
 		finalByPhpDoc: false
 		magicConstantOutOfContext: false
@@ -985,6 +986,9 @@ services:
 
 	-
 		class: PHPStan\Rules\Constants\LazyAlwaysUsedClassConstantsExtensionProvider
+
+	-
+		class: PHPStan\Rules\Methods\LazyAlwaysUsedMethodExtensionProvider
 
 	-
 		class: PHPStan\Rules\PhpDoc\ConditionalReturnTypeRuleHelper

@@ -102,6 +102,7 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 			true,
 			0,
 			false,
+			[],
 		);
 	}
 

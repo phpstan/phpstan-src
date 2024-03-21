@@ -12,6 +12,7 @@ use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\ProjectConfigHelper;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileFinder;
+use PHPStan\File\FileHelper;
 use PHPStan\File\FileWriter;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
@@ -34,6 +35,7 @@ use function ksort;
 use function sha1_file;
 use function sort;
 use function sprintf;
+use function str_starts_with;
 use function time;
 use function unlink;
 use function var_export;
@@ -62,6 +64,7 @@ class ResultCacheManager
 		private FileFinder $scanFileFinder,
 		private ReflectionProvider $reflectionProvider,
 		private StubFilesProvider $stubFilesProvider,
+		private FileHelper $fileHelper,
 		private string $cacheFilePath,
 		private array $analysedPaths,
 		private array $composerAutoloaderProjectPaths,
@@ -85,13 +88,13 @@ class ResultCacheManager
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because of debug mode.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], []);
 		}
 		if ($onlyFiles) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because only files were passed as analysed paths.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], []);
 		}
 
 		$cacheFilePath = $this->cacheFilePath;
@@ -99,7 +102,7 @@ class ResultCacheManager
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the cache file does not exist.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], []);
 		}
 
 		try {
@@ -111,7 +114,7 @@ class ResultCacheManager
 
 			@unlink($cacheFilePath);
 
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], []);
 		}
 
 		if (!is_array($data)) {
@@ -120,7 +123,7 @@ class ResultCacheManager
 				$output->writeLineFormatted('Result cache not used because the cache file is corrupted.');
 			}
 
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], []);
 		}
 
 		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
@@ -129,7 +132,7 @@ class ResultCacheManager
 				$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
 				$output->writeLineFormatted('Result cache not used because the metadata do not match: ' . implode(', ', $diffs));
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], []);
 		}
 
 		if (time() - $data['lastFullAnalysisTime'] >= 60 * 60 * 24 * 7) {
@@ -137,15 +140,22 @@ class ResultCacheManager
 				$output->writeLineFormatted('Result cache not used because it\'s more than 7 days since last full analysis.');
 			}
 			// run full analysis if the result cache is older than 7 days
-			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], []);
 		}
 
-		foreach ($data['projectExtensionFiles'] as $extensionFile => $fileHash) {
+		/**
+		 * @var string $fileHash
+		 * @var bool $isAnalysed
+		 */
+		foreach ($data['projectExtensionFiles'] as $extensionFile => [$fileHash, $isAnalysed]) {
+			if (!$isAnalysed) {
+				continue;
+			}
 			if (!is_file($extensionFile)) {
 				if ($output->isDebug()) {
 					$output->writeLineFormatted(sprintf('Result cache not used because extension file %s was not found.', $extensionFile));
 				}
-				return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], []);
+				return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], []);
 			}
 
 			if ($this->getFileHash($extensionFile) === $fileHash) {
@@ -156,7 +166,7 @@ class ResultCacheManager
 				$output->writeLineFormatted(sprintf('Result cache not used because extension file %s hash does not match.', $extensionFile));
 			}
 
-			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], []);
 		}
 
 		$invertedDependencies = $data['dependencies'];
@@ -257,7 +267,7 @@ class ResultCacheManager
 			}
 		}
 
-		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $meta, $filteredErrors, $filteredLocallyIgnoredErrors, $filteredCollectedData, $invertedDependenciesToReturn, $filteredExportedNodes);
+		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $meta, $filteredErrors, $filteredLocallyIgnoredErrors, $filteredCollectedData, $invertedDependenciesToReturn, $filteredExportedNodes, $data['projectExtensionFiles']);
 	}
 
 	/**
@@ -362,7 +372,11 @@ class ResultCacheManager
 		}
 
 		$meta = $resultCache->getMeta();
-		$doSave = function (array $errorsByFile, array $locallyIgnoredErrorsByFile, $collectedDataByFile, ?array $dependencies, array $exportedNodes) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
+		$projectConfigArray = $meta['projectConfig'];
+		if ($projectConfigArray !== null) {
+			$meta['projectConfig'] = Neon::encode($projectConfigArray);
+		}
+		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $collectedDataByFile, ?array $dependencies, array $exportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isDebug()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -397,7 +411,7 @@ class ResultCacheManager
 				}
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $collectedDataByFile, $dependencies, $exportedNodes, $meta);
+			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $collectedDataByFile, $dependencies, $exportedNodes, $projectExtensionFiles, $meta);
 
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -408,8 +422,12 @@ class ResultCacheManager
 
 		if ($resultCache->isFullAnalysis()) {
 			$saved = false;
-			if ($save) {
-				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes());
+			if ($save !== false) {
+				$projectExtensionFiles = [];
+				if ($analyserResult->getDependencies() !== null) {
+					$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $analyserResult->getDependencies());
+				}
+				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes(), $projectExtensionFiles);
 			} else {
 				if ($output->isDebug()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
@@ -426,8 +444,28 @@ class ResultCacheManager
 		$exportedNodes = $this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes());
 
 		$saved = false;
-		if ($save) {
-			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $collectedDataByFile, $dependencies, $exportedNodes);
+		if ($save !== false) {
+			$projectExtensionFiles = [];
+			foreach ($resultCache->getProjectExtensionFiles() as $file => [$hash, $isAnalysed, $className]) {
+				if ($isAnalysed) {
+					continue;
+				}
+
+				// keep the same file hashes from the old run
+				// so that the message "When you edit them and re-run PHPStan, the result cache will get stale."
+				// keeps being shown on subsequent runs
+				$projectExtensionFiles[$file] = [$hash, false, $className];
+			}
+			if ($dependencies !== null) {
+				foreach ($this->getProjectExtensionFiles($projectConfigArray, $dependencies) as $file => [$hash, $isAnalysed, $className]) {
+					if (!$isAnalysed) {
+						continue;
+					}
+
+					$projectExtensionFiles[$file] = [$hash, true, $className];
+				}
+			}
+			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $collectedDataByFile, $dependencies, $exportedNodes, $projectExtensionFiles);
 		}
 
 		$flatErrors = [];
@@ -583,6 +621,7 @@ class ResultCacheManager
 	 * @param array<string, array<CollectedData>> $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
+	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param mixed[] $meta
 	 */
 	private function save(
@@ -592,6 +631,7 @@ class ResultCacheManager
 		array $collectedData,
 		array $dependencies,
 		array $exportedNodes,
+		array $projectExtensionFiles,
 		array $meta,
 	): void
 	{
@@ -639,10 +679,6 @@ class ResultCacheManager
 		ksort($exportedNodes);
 
 		$file = $this->cacheFilePath;
-		$projectConfigArray = $meta['projectConfig'];
-		if ($projectConfigArray !== null) {
-			$meta['projectConfig'] = Neon::encode($projectConfigArray);
-		}
 
 		FileWriter::write(
 			$file,
@@ -651,7 +687,7 @@ class ResultCacheManager
 return [
 	'lastFullAnalysisTime' => " . var_export($lastFullAnalysisTime, true) . ",
 	'meta' => " . var_export($meta, true) . ",
-	'projectExtensionFiles' => " . var_export($this->getProjectExtensionFiles($projectConfigArray, $dependencies), true) . ",
+	'projectExtensionFiles' => " . var_export($projectExtensionFiles, true) . ",
 	'errorsCallback' => static function (): array { return " . var_export($errors, true) . "; },
 	'locallyIgnoredErrorsCallback' => static function (): array { return " . var_export($locallyIgnoredErrors, true) . "; },
 	'collectedDataCallback' => static function (): array { return " . var_export($collectedData, true) . "; },
@@ -665,13 +701,23 @@ return [
 	/**
 	 * @param mixed[]|null $projectConfig
 	 * @param array<string, mixed> $dependencies
-	 * @return array<string, string>
+	 * @return array<string, array{string, bool, string}>
 	 */
 	private function getProjectExtensionFiles(?array $projectConfig, array $dependencies): array
 	{
 		$this->alreadyProcessed = [];
 		$projectExtensionFiles = [];
 		if ($projectConfig !== null) {
+			$vendorDirs = [];
+			foreach ($this->composerAutoloaderProjectPaths as $autoloaderProjectPath) {
+				$composer = ComposerHelper::getComposerConfig($autoloaderProjectPath);
+				if ($composer === null) {
+					continue;
+				}
+				$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig($autoloaderProjectPath, $composer);
+				$vendorDirs[] = $this->fileHelper->normalizePath($vendorDirectory);
+			}
+
 			$classes = ProjectConfigHelper::getServiceClassNames($projectConfig);
 			foreach ($classes as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {
@@ -684,13 +730,28 @@ return [
 					continue;
 				}
 
+				if (str_starts_with($fileName, 'phar://')) {
+					continue;
+				}
+
 				$allServiceFiles = $this->getAllDependencies($fileName, $dependencies);
+				if (count($allServiceFiles) === 0) {
+					$normalizedFileName = $this->fileHelper->normalizePath($fileName);
+					foreach ($vendorDirs as $vendorDir) {
+						if (str_starts_with($normalizedFileName, $vendorDir)) {
+							continue 2;
+						}
+					}
+					$projectExtensionFiles[$fileName] = [$this->getFileHash($fileName), false, $class];
+					continue;
+				}
+
 				foreach ($allServiceFiles as $serviceFile) {
 					if (array_key_exists($serviceFile, $projectExtensionFiles)) {
 						continue;
 					}
 
-					$projectExtensionFiles[$serviceFile] = $this->getFileHash($serviceFile);
+					$projectExtensionFiles[$serviceFile] = [$this->getFileHash($serviceFile), true, $class];
 				}
 			}
 		}

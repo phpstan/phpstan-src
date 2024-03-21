@@ -163,6 +163,7 @@ return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
 				true,
 				0,
 				true,
+				[],
 			),
 			$this->getOutput(),
 		);

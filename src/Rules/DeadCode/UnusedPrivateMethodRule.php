@@ -60,7 +60,7 @@ class UnusedPrivateMethodRule implements Rule
 				continue;
 			}
 
-			$methodReflection = $classType->getMethod($methodName, $scope);
+			$methodReflection = $classReflection->getNativeMethod($methodName);
 			foreach ($this->extensionProvider->getExtensions() as $extension) {
 				if ($extension->isAlwaysUsed($methodReflection)) {
 					continue 2;

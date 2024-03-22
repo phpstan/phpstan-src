@@ -1217,11 +1217,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$cases = [];
+		$className = $classReflection->getName();
 		foreach ($classReflection->getEnumCases() as $enumCase) {
 			if (array_key_exists($enumCase->getName(), $subtracted)) {
 				continue;
 			}
-			$cases[] = new EnumCaseObjectType($classReflection->getName(), $enumCase->getName(), $classReflection);
+			$cases[] = new EnumCaseObjectType($className, $enumCase->getName(), $classReflection);
 		}
 
 		return $cases;

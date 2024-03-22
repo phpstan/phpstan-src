@@ -688,7 +688,7 @@ class ClassReflection
 	 */
 	public function isEnum(): bool
 	{
-		return $this->reflection->isEnum() && $this->reflection instanceof ReflectionEnum;
+		return $this->reflection instanceof ReflectionEnum && $this->reflection->isEnum();
 	}
 
 	public function isReadOnly(): bool
@@ -737,10 +737,11 @@ class ClassReflection
 		}
 
 		$cases = [];
+		$initializerExprContext = InitializerExprContext::fromClassReflection($this);
 		foreach ($this->reflection->getCases() as $case) {
 			$valueType = null;
 			if ($case instanceof ReflectionEnumBackedCase) {
-				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
+				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), $initializerExprContext);
 			}
 			/** @var string $caseName */
 			$caseName = $case->getName();
@@ -982,10 +983,10 @@ class ClassReflection
 	public function getParentClassesNames(): array
 	{
 		$parentNames = [];
-		$currentClassReflection = $this;
-		while ($currentClassReflection->getParentClass() !== null) {
-			$parentNames[] = $currentClassReflection->getParentClass()->getName();
-			$currentClassReflection = $currentClassReflection->getParentClass();
+		$parentClass = $this->getParentClass();
+		while ($parentClass !== null) {
+			$parentNames[] = $parentClass->getName();
+			$parentClass = $parentClass->getParentClass();
 		}
 
 		return $parentNames;

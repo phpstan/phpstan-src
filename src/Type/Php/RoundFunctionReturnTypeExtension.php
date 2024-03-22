@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
@@ -39,21 +38,18 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		);
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
+		// PHP 7 can return either a float or false.
+		// PHP 8 can either return a float or fatal.
+		$defaultReturnType = null;
+
 		if ($this->phpVersion->hasStricterRoundFunctions()) {
 			// PHP 8 fatals with a missing parameter.
 			$noArgsReturnType = new NeverType(true);
-			// PHP 8 can either return a float or fatal.
-			$defaultReturnType = new FloatType();
 		} else {
 			// PHP 7 returns null with a missing parameter.
 			$noArgsReturnType = new NullType();
-			// PHP 7 can return either a float or false.
-			$defaultReturnType = new BenevolentUnionType([
-				new FloatType(),
-				new ConstantBooleanType(false),
-			]);
 		}
 
 		if (count($functionCall->getArgs()) < 1) {

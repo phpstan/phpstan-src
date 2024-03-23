@@ -3089,12 +3089,17 @@ class MutatingScope implements Scope
 			unset($nativeExpressionTypes['$this']);
 		}
 
+		$context = $this->context;
+
 		if ($scopeClasses === ['static'] && $this->isInClass()) {
 			$scopeClasses = [$this->getClassReflection()->getName()];
+		} elseif (count($scopeClasses) === 1 && $this->reflectionProvider->hasClass($scopeClasses[0])) {
+			$context = ScopeContext::create($this->context->getFile());
+			$context = $context->enterClass($this->reflectionProvider->getClass($scopeClasses[0]));
 		}
 
 		return $this->scopeFactory->create(
-			$this->context,
+			$context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),
@@ -3123,7 +3128,7 @@ class MutatingScope implements Scope
 		}
 
 		return $this->scopeFactory->create(
-			$this->context,
+			$originalScope->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2000d7dc836426c10da978f7dc7c971b",
+    "content-hash": "f7b028ca188b8e56ee4df69c6f306574",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2095,21 +2095,21 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "6.25.0.1",
+            "version": "6.25.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "7c9246bdc16c25fc1c32740fceafa7e85b698796"
+                "reference": "91b47ada43323f4c6f2508020afddf3a218cab24"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/7c9246bdc16c25fc1c32740fceafa7e85b698796",
-                "reference": "7c9246bdc16c25fc1c32740fceafa7e85b698796",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/91b47ada43323f4c6f2508020afddf3a218cab24",
+                "reference": "91b47ada43323f4c6f2508020afddf3a218cab24",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "jetbrains/phpstorm-stubs": "dev-master#7b055d8634d2143a909f2c5141ec70c82b8b9254",
+                "jetbrains/phpstorm-stubs": "dev-master#217ed9356d07ef89109d3cd7d8c5df10aab4b0d4",
                 "nikic/php-parser": "^4.18.0",
                 "php": "^7.2 || ^8.0"
             },
@@ -2161,9 +2161,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.25.0.1"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.25.0.2"
             },
-            "time": "2024-03-13T07:31:36+00:00"
+            "time": "2024-03-23T09:48:43+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",

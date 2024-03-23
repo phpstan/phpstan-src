@@ -2457,18 +2457,12 @@ class NodeScopeResolver
 							if (isset($expr->getArgs()[2])) {
 								$argValue = $expr->getArgs()[2]->value;
 								$argValueType = $scope->getType($argValue);
-
-								$directClassNames = $argValueType->getObjectClassNames();
-								if (count($directClassNames) > 0) {
-									$scopeClasses = $directClassNames;
-								} else {
-									$scopeObjectType = $argValueType->getClassStringObjectType();
-									$thisType = $thisType !== null
-										// $thisType could be mixed, error, ...
-										? TypeCombinator::intersect($thisType, $scopeObjectType)
-										: $scopeObjectType;
-									$scopeClasses = $scopeObjectType->getObjectClassNames();
-								}
+								$scopeObjectType = $argValueType->getObjectTypeOrClassStringObjectType();
+								$thisType = $thisType !== null
+									// $thisType could be mixed, error, ...
+									? TypeCombinator::intersect($thisType, $scopeObjectType)
+									: $scopeObjectType;
+								$scopeClasses = $scopeObjectType->getObjectClassNames();
 							}
 							$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
 						}

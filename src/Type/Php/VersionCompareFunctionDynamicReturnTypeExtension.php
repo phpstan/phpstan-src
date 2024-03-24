@@ -86,7 +86,7 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 	}
 
 	/**
-	 * @return Type[]
+	 * @return ConstantStringType[]
 	 */
 	private function getVersionStrings(Expr $expr, Scope $scope): array
 	{

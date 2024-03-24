@@ -40,7 +40,7 @@ class ComposerPhpVersionFactory
 
 		if (is_array($phpVersion)) {
 			if ($phpVersion['max'] < $phpVersion['min']) {
-				throw new ShouldNotHappenException('Invalid PHP version range: phpVersion.max should be great or equals to phpVersion.min.');
+				throw new ShouldNotHappenException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
 			}
 
 			$this->minVersion = new PhpVersion($phpVersion['min']);

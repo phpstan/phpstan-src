@@ -84,13 +84,48 @@ class ConstantResolver
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_MAJOR_VERSION') {
-			return IntegerRangeType::fromInterval(5, null);
+			$minMajor = 5;
+			$maxMajor = null;
+
+			if ($this->composerMinPhpVersion !== null) {
+				$minMajor = max($minMajor, $this->composerMinPhpVersion->getMajor());
+			}
+			if ($this->composerMaxPhpVersion !== null) {
+				$maxMajor = $this->composerMaxPhpVersion->getMajor();
+			}
+
+			return $this->createInteger($minMajor, $maxMajor);
 		}
 		if ($resolvedConstantName === 'PHP_MINOR_VERSION') {
-			return IntegerRangeType::fromInterval(0, null);
+			$minMinor = 0;
+			$maxMinor = null;
+
+			if (
+				$this->composerMinPhpVersion !== null
+				&& $this->composerMaxPhpVersion !== null
+				&& $this->composerMaxPhpVersion->getMajor() === $this->composerMinPhpVersion->getMajor()
+			) {
+				$minMinor = $this->composerMinPhpVersion->getMinor();
+				$maxMinor = $this->composerMaxPhpVersion->getMinor();
+			}
+
+			return $this->createInteger($minMinor, $maxMinor);
 		}
 		if ($resolvedConstantName === 'PHP_RELEASE_VERSION') {
-			return IntegerRangeType::fromInterval(0, null);
+			$minRelease = 0;
+			$maxRelease = null;
+
+			if (
+				$this->composerMinPhpVersion !== null
+				&& $this->composerMaxPhpVersion !== null
+				&& $this->composerMaxPhpVersion->getMajor() === $this->composerMinPhpVersion->getMajor()
+				&& $this->composerMaxPhpVersion->getMinor() === $this->composerMinPhpVersion->getMinor()
+			) {
+				$minRelease = $this->composerMinPhpVersion->getPatch();
+				$maxRelease = $this->composerMaxPhpVersion->getPatch();
+			}
+
+			return $this->createInteger($minRelease, $maxRelease);
 		}
 		if ($resolvedConstantName === 'PHP_VERSION_ID') {
 			$minVersion = 50207;
@@ -101,7 +136,8 @@ class ConstantResolver
 			if ($this->composerMaxPhpVersion !== null) {
 				$maxVersion = $this->composerMaxPhpVersion->getVersionId();
 			}
-			return IntegerRangeType::fromInterval($minVersion, $maxVersion);
+
+			return $this->createInteger($minVersion, $maxVersion);
 		}
 		if ($resolvedConstantName === 'PHP_ZTS') {
 			return new UnionType([
@@ -329,6 +365,14 @@ class ConstantResolver
 		}
 
 		return $constantType;
+	}
+
+	private function createInteger(?int $min, ?int $max): Type
+	{
+		if ($min !== null && $min === $max) {
+			return new ConstantIntegerType($min);
+		}
+		return IntegerRangeType::fromInterval($min, $max);
 	}
 
 	private function getReflectionProvider(): ReflectionProvider

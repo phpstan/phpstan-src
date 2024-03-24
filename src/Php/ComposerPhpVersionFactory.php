@@ -8,9 +8,12 @@ use Nette\Utils\JsonException;
 use Nette\Utils\Strings;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
+use PHPStan\ShouldNotHappenException;
 use function count;
 use function end;
+use function is_array;
 use function is_file;
+use function is_int;
 use function is_string;
 use function sprintf;
 
@@ -23,22 +26,31 @@ class ComposerPhpVersionFactory
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
+	 * @param int|array{min: int, max: int}|null $phpVersion
 	 */
 	public function __construct(
 		private array $composerAutoloaderProjectPaths,
-		?int $minVersion,
-		?int $maxVersion,
+		int|array|null $phpVersion,
+		bool $bleedingEdge,
 	)
 	{
-		if ($minVersion !== null) {
-			$this->minVersion = new PhpVersion($minVersion);
-		}
-		if ($maxVersion !== null) {
-			$this->maxVersion = new PhpVersion($maxVersion);
+		if (is_int($phpVersion)) {
+			return;
 		}
 
-		if ($minVersion !== null && $maxVersion !== null) {
-			return; // use values from config files
+		if (is_array($phpVersion)) {
+			if ($phpVersion['max'] < $phpVersion['min']) {
+				throw new ShouldNotHappenException('Invalid PHP version range: phpVersion.max should be great or equals to phpVersion.min.');
+			}
+
+			$this->minVersion = new PhpVersion($phpVersion['min']);
+			$this->maxVersion = new PhpVersion($phpVersion['max']);
+
+			return;
+		}
+
+		if (!$bleedingEdge) {
+			return;
 		}
 
 		// fallback to composer.json based php-version constraint

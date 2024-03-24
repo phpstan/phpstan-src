@@ -37,7 +37,5 @@ if (PHP_VERSION_ID < 80000) {
 $config = [];
 $config['includes'] = $includes;
 $config['parameters']['phpVersion'] = PHP_VERSION_ID;
-$config['parameters']['minPhpVersion'] = 70100;
-$config['parameters']['maxPhpVersion'] = 90000;
 
 return $config;

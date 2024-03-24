@@ -137,8 +137,6 @@ parameters:
 		minimumNumberOfJobsPerProcess: 2
 		buffer: 134217728 # 128 MB
 	phpVersion: null
-	minPhpVersion: null
-	maxPhpVersion: null
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
 	propertyAlwaysWrittenTags: []
@@ -376,15 +374,16 @@ services:
 	-
 		class: PHPStan\Php\PhpVersionFactoryFactory
 		arguments:
-			versionId: %phpVersion%
+			phpVersion: %phpVersion%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+			bleedingEdge: %featureToggles.bleedingEdge%
 
 	-
 		class: PHPStan\Php\ComposerPhpVersionFactory
 		arguments:
+			phpVersion: %phpVersion%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
-			minVersion: %minPhpVersion%
-			maxVersion: %maxPhpVersion%
+			bleedingEdge: %featureToggles.bleedingEdge%
 
 	-
 		class: PHPStan\PhpDocParser\Lexer\Lexer

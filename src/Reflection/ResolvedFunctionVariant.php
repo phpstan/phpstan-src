@@ -95,6 +95,19 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 						);
 					}
 
+					$closureThisType = $param->getClosureThisType();
+					if ($closureThisType !== null) {
+						$closureThisType = TypeUtils::resolveLateResolvableTypes(
+							TemplateTypeHelper::resolveTemplateTypes(
+								$this->resolveConditionalTypesForParameter($closureThisType),
+								$this->resolvedTemplateTypeMap,
+								$this->callSiteVarianceMap,
+								TemplateTypeVariance::createCovariant(),
+							),
+							false,
+						);
+					}
+
 					return new DummyParameterWithPhpDocs(
 						$param->getName(),
 						$paramType,
@@ -106,6 +119,7 @@ class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 						$param->getPhpDocType(),
 						$paramOutType,
 						$param->isImmediatelyInvokedCallable(),
+						$closureThisType,
 					);
 				},
 				$this->parametersAcceptor->getParameters(),

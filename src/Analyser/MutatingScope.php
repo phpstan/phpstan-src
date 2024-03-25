@@ -2678,6 +2678,7 @@ class MutatingScope implements Scope
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $parameterOutTypes
 	 * @param array<string, bool> $immediatelyInvokedCallableParameters
+	 * @param array<string, Type> $phpDocClosureThisTypeParameters
 	 */
 	public function enterClassMethod(
 		Node\Stmt\ClassMethod $classMethod,
@@ -2696,6 +2697,7 @@ class MutatingScope implements Scope
 		?string $phpDocComment = null,
 		array $parameterOutTypes = [],
 		array $immediatelyInvokedCallableParameters = [],
+		array $phpDocClosureThisTypeParameters = [],
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -2709,10 +2711,10 @@ class MutatingScope implements Scope
 				$this->getFile(),
 				$templateTypeMap,
 				$this->getRealParameterTypes($classMethod),
-				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $phpDocParameterTypes),
+				array_map(fn (Type $type): Type => $this->transformStaticType(TemplateTypeHelper::toArgument($type)), $phpDocParameterTypes),
 				$this->getRealParameterDefaultValues($classMethod),
 				$this->transformStaticType($this->getFunctionType($classMethod->returnType, false, false)),
-				$phpDocReturnType !== null ? TemplateTypeHelper::toArgument($phpDocReturnType) : null,
+				$phpDocReturnType !== null ? $this->transformStaticType(TemplateTypeHelper::toArgument($phpDocReturnType)) : null,
 				$throwType,
 				$deprecatedDescription,
 				$isDeprecated,
@@ -2723,8 +2725,9 @@ class MutatingScope implements Scope
 				$asserts ?? Assertions::createEmpty(),
 				$selfOutType,
 				$phpDocComment,
-				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $parameterOutTypes),
+				array_map(fn (Type $type): Type => $this->transformStaticType(TemplateTypeHelper::toArgument($type)), $parameterOutTypes),
 				$immediatelyInvokedCallableParameters,
+				array_map(fn (Type $type): Type => $this->transformStaticType(TemplateTypeHelper::toArgument($type)), $phpDocClosureThisTypeParameters),
 			),
 			!$classMethod->isStatic(),
 		);
@@ -2793,6 +2796,7 @@ class MutatingScope implements Scope
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $parameterOutTypes
 	 * @param array<string, bool> $immediatelyInvokedCallableParameters
+	 * @param array<string, Type> $phpDocClosureThisTypeParameters
 	 */
 	public function enterFunction(
 		Node\Stmt\Function_ $function,
@@ -2810,6 +2814,7 @@ class MutatingScope implements Scope
 		?string $phpDocComment = null,
 		array $parameterOutTypes = [],
 		array $immediatelyInvokedCallableParameters = [],
+		array $phpDocClosureThisTypeParameters = [],
 	): self
 	{
 		return $this->enterFunctionLike(
@@ -2833,6 +2838,7 @@ class MutatingScope implements Scope
 				$phpDocComment,
 				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $parameterOutTypes),
 				$immediatelyInvokedCallableParameters,
+				$phpDocClosureThisTypeParameters,
 			),
 			false,
 		);
@@ -2994,6 +3000,58 @@ class MutatingScope implements Scope
 			$this->conditionalExpressions,
 			$originalScope->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
+		);
+	}
+
+	public function restoreThis(self $restoreThisScope): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+
+		if ($restoreThisScope->isInClass()) {
+			$nodeFinder = new NodeFinder();
+			$cb = static fn ($expr) => $expr instanceof Variable && $expr->name === 'this';
+			foreach ($restoreThisScope->expressionTypes as $exprString => $expressionTypeHolder) {
+				$expr = $expressionTypeHolder->getExpr();
+				$thisExpr = $nodeFinder->findFirst([$expr], $cb);
+				if ($thisExpr === null) {
+					continue;
+				}
+
+				$expressionTypes[$exprString] = $expressionTypeHolder;
+			}
+
+			foreach ($restoreThisScope->nativeExpressionTypes as $exprString => $expressionTypeHolder) {
+				$expr = $expressionTypeHolder->getExpr();
+				$thisExpr = $nodeFinder->findFirst([$expr], $cb);
+				if ($thisExpr === null) {
+					continue;
+				}
+
+				$nativeExpressionTypes[$exprString] = $expressionTypeHolder;
+			}
+		} else {
+			unset($expressionTypes['$this']);
+			unset($nativeExpressionTypes['$this']);
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			[],
+			[],
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 

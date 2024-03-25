@@ -275,6 +275,14 @@ class ParametersAcceptorSelector
 				return true;
 			}
 
+			if (
+				$parameter instanceof ParameterReflectionWithPhpDocs
+				&& $parameter->getClosureThisType() !== null
+				&& self::hasTemplateOrLateResolvableType($parameter->getClosureThisType())
+			) {
+				return true;
+			}
+
 			if (!self::hasTemplateOrLateResolvableType($parameter->getType())) {
 				continue;
 			}
@@ -469,6 +477,7 @@ class ParametersAcceptorSelector
 						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getPhpDocType() : new MixedType(),
 						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getOutType() : null,
 						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->isImmediatelyInvokedCallable() : TrinaryLogic::createMaybe(),
+						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getClosureThisType() : null,
 					);
 					continue;
 				}
@@ -486,6 +495,8 @@ class ParametersAcceptorSelector
 				$nativeType = $parameters[$i]->getNativeType();
 				$phpDocType = $parameters[$i]->getPhpDocType();
 				$outType = $parameters[$i]->getOutType();
+				$immediatelyInvokedCallable = $parameters[$i]->isImmediatelyInvokedCallable();
+				$closureThisType = $parameters[$i]->getClosureThisType();
 				if ($parameter instanceof ParameterReflectionWithPhpDocs) {
 					$nativeType = TypeCombinator::union($nativeType, $parameter->getNativeType());
 					$phpDocType = TypeCombinator::union($phpDocType, $parameter->getPhpDocType());
@@ -496,12 +507,19 @@ class ParametersAcceptorSelector
 						$outType = null;
 					}
 
-					$immediatelyInvokedCallable = $parameter->isImmediatelyInvokedCallable();
+					if ($parameter->getClosureThisType() !== null && $closureThisType !== null) {
+						$closureThisType = TypeCombinator::union($closureThisType, $parameter->getClosureThisType());
+					} else {
+						$closureThisType = null;
+					}
+
+					$immediatelyInvokedCallable = $parameter->isImmediatelyInvokedCallable()->or($immediatelyInvokedCallable);
 				} else {
 					$nativeType = new MixedType();
 					$phpDocType = $type;
 					$outType = null;
 					$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
+					$closureThisType = null;
 				}
 
 				$parameters[$i] = new DummyParameterWithPhpDocs(
@@ -515,6 +533,7 @@ class ParametersAcceptorSelector
 					$phpDocType,
 					$outType,
 					$immediatelyInvokedCallable,
+					$closureThisType,
 				);
 
 				if ($isVariadic) {
@@ -570,6 +589,7 @@ class ParametersAcceptorSelector
 			$parameter->getType(),
 			null,
 			TrinaryLogic::createMaybe(),
+			null,
 		);
 	}
 

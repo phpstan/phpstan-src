@@ -1,0 +1,3 @@
+parameters:
+	stubFiles:
+		- data/param-closure-this-stubs.stub

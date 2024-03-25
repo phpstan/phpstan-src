@@ -1,0 +1,54 @@
+<?php
+
+namespace Doctrine\ORM {
+	class EntityManager
+	{
+
+		/**
+		 * @param-closure-this self $cb
+		 */
+		public function transactional(callable $cb): void {
+
+		}
+
+	}
+}
+
+namespace MyFunction {
+
+	class Foo
+	{
+
+	}
+
+	/**
+	 * @param-closure-this Foo $cb
+	 */
+	function doFoo(callable $cb): void {
+
+	}
+}
+
+namespace {
+
+	/**
+	 * @param-closure-this stdClass $cb
+	 */
+	function uksort($array, $cb)
+	{
+
+	}
+}
+
+namespace Ds {
+	class Deque {
+		/**
+		 * @param (callable(TValue): bool)|null $callback
+		 * @return Deque<TValue>
+		 * @param-closure-this $this $callback
+		 */
+		public function filter(callable $callback = null): Deque
+		{
+		}
+	}
+}

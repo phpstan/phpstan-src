@@ -63,6 +63,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $phpDocParameterOutTypes
 	 * @param array<string, TrinaryLogic> $immediatelyInvokedCallableParameters
+	 * @param array<string, Type> $phpDocClosureThisTypeParameters
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -87,6 +88,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		private ?string $phpDocComment,
 		private array $phpDocParameterOutTypes,
 		private array $immediatelyInvokedCallableParameters,
+		private array $phpDocClosureThisTypeParameters,
 	)
 	{
 	}
@@ -220,6 +222,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 				$this->getDeclaringClass()->getName(),
 				$this->phpDocParameterOutTypes[$reflection->getName()] ?? null,
 				$this->immediatelyInvokedCallableParameters[$reflection->getName()] ?? TrinaryLogic::createMaybe(),
+				$this->phpDocClosureThisTypeParameters[$reflection->getName()] ?? null,
 			), $this->reflection->getParameters());
 		}
 

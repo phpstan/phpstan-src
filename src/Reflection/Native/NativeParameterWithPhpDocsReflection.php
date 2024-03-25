@@ -21,6 +21,7 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 		private ?Type $defaultValue,
 		private ?Type $outType,
 		private TrinaryLogic $immediatelyInvokedCallable,
+		private ?Type $closureThisType,
 	)
 	{
 	}
@@ -75,6 +76,11 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 		return $this->immediatelyInvokedCallable;
 	}
 
+	public function getClosureThisType(): ?Type
+	{
+		return $this->closureThisType;
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */
@@ -91,6 +97,7 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 			$properties['defaultValue'],
 			$properties['outType'],
 			$properties['immediatelyInvokedCallable'],
+			$properties['closureThisType'],
 		);
 	}
 

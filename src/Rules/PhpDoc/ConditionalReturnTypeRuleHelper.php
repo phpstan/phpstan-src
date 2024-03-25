@@ -46,6 +46,16 @@ class ConditionalReturnTypeRuleHelper
 				});
 			}
 
+			if ($parameter->getClosureThisType() !== null) {
+				TypeTraverser::map($parameter->getClosureThisType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+						$conditionalTypes[] = $type;
+					}
+
+					return $traverse($type);
+				});
+			}
+
 			$parametersByName[$parameter->getName()] = $parameter;
 		}
 

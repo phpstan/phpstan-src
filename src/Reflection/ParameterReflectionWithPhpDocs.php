@@ -17,4 +17,6 @@ interface ParameterReflectionWithPhpDocs extends ParameterReflection
 
 	public function isImmediatelyInvokedCallable(): TrinaryLogic;
 
+	public function getClosureThisType(): ?Type;
+
 }

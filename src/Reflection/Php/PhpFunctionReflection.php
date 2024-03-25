@@ -119,9 +119,11 @@ class PhpFunctionReflection implements FunctionReflection
 			if ($paramTag !== null) {
 				$phpDocType = $paramTag->getType();
 				$immediatelyInvokedCallable = $paramTag->isImmediatelyInvokedCallable();
+				$closureThisType = $paramTag->getClosureThisType();
 			} else {
 				$phpDocType = null;
 				$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
+				$closureThisType = null;
 			}
 
 			return new PhpParameterReflection(
@@ -131,6 +133,7 @@ class PhpFunctionReflection implements FunctionReflection
 				null,
 				$this->phpDocParameterOutTypes[$reflection->getName()] ?? null,
 				$immediatelyInvokedCallable,
+				$closureThisType,
 			);
 		}, $this->reflection->getParameters());
 	}

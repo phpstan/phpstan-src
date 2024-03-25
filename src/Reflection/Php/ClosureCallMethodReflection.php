@@ -94,6 +94,7 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 					$parameter->getType(),
 					null,
 					TrinaryLogic::createMaybe(),
+					null,
 				), $parameters),
 				$this->closureType->isVariadic(),
 				$this->closureType->getReturnType(),

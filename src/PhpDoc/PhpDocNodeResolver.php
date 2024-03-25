@@ -37,6 +37,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
@@ -355,6 +356,18 @@ class PhpDocNodeResolver
 			}
 		}
 
+		$unusedImmediatelyInvokedCallableParameters = $immediatelyInvokedCallableParameters;
+
+		$closureThisTypes = [];
+		foreach (['@param-closure-this', '@phpstan-param-closure-this'] as $tagName) {
+			foreach ($phpDocNode->getParamClosureThisTagValues($tagName) as $tagValue) {
+				$parameterName = substr($tagValue->parameterName, 1);
+				$closureThisTypes[$parameterName] = TypeCombinator::intersect(new ObjectWithoutClassType(), $this->typeNodeResolver->resolve($tagValue->type, $nameScope));
+			}
+		}
+
+		$unusedClosureThisTypes = $closureThisTypes;
+
 		foreach (['@param', '@psalm-param', '@phpstan-param'] as $tagName) {
 			foreach ($phpDocNode->getParamTagValues($tagName) as $tagValue) {
 				$parameterName = substr($tagValue->parameterName, 1);
@@ -365,24 +378,48 @@ class PhpDocNodeResolver
 
 				if (array_key_exists($parameterName, $immediatelyInvokedCallableParameters)) {
 					$immediatelyInvokedCallable = $immediatelyInvokedCallableParameters[$parameterName];
-					unset($immediatelyInvokedCallableParameters[$parameterName]);
+					unset($unusedImmediatelyInvokedCallableParameters[$parameterName]);
 				} else {
 					$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
+				}
+
+				if (array_key_exists($parameterName, $closureThisTypes)) {
+					$closureThisType = $closureThisTypes[$parameterName];
+					unset($unusedClosureThisTypes[$parameterName]);
+				} else {
+					$closureThisType = null;
 				}
 
 				$resolved[$parameterName] = new ParamTag(
 					$parameterType,
 					$tagValue->isVariadic,
 					$immediatelyInvokedCallable,
+					$closureThisType,
 				);
 			}
 		}
 
-		foreach ($immediatelyInvokedCallableParameters as $parameterName => $immediately) {
+		foreach ($unusedImmediatelyInvokedCallableParameters as $parameterName => $immediately) {
+			if (array_key_exists($parameterName, $closureThisTypes)) {
+				$closureThisType = $closureThisTypes[$parameterName];
+				unset($unusedClosureThisTypes[$parameterName]);
+			} else {
+				$closureThisType = null;
+			}
 			$resolved[$parameterName] = new ParamTag(
 				new CallableType(),
 				false,
 				$immediately,
+				$closureThisType,
+			);
+		}
+
+		foreach ($unusedClosureThisTypes as $parameterName => $closureThisType) {
+			$resolved[$parameterName] = new ParamTag(
+				new CallableType(),
+				false,
+				TrinaryLogic::createMaybe(),
+				$closureThisType,
 			);
 		}
 

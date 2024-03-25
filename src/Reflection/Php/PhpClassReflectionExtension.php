@@ -498,7 +498,9 @@ class PhpClassReflectionExtension
 					$stubPhpParameterOutTypes = [];
 					$phpDocParameterOutTypes = [];
 					$immediatelyInvokedCallableParameters = [];
+					$closureThisParameters = [];
 					$stubImmediatelyInvokedCallableParameters = [];
+					$stubClosureThisParameters = [];
 					if (count($methodSignatures) === 1) {
 						$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
 						if ($stubPhpDocPair !== null) {
@@ -524,6 +526,11 @@ class PhpClassReflectionExtension
 								);
 								$stubPhpDocParameterVariadicity[$name] = $paramTag->isVariadic();
 								$stubImmediatelyInvokedCallableParameters[$name] = $paramTag->isImmediatelyInvokedCallable();
+
+								if ($paramTag->getClosureThisType() === null) {
+									continue;
+								}
+								$stubClosureThisParameters[$name] = $paramTag->getClosureThisType();
 							}
 
 							$throwsTag = $stubPhpDoc->getThrowsTag();
@@ -573,6 +580,11 @@ class PhpClassReflectionExtension
 							foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
 								$phpDocParameterTypes[$name] = $paramTag->getType();
 								$immediatelyInvokedCallableParameters[$name] = $paramTag->isImmediatelyInvokedCallable();
+
+								if ($paramTag->getClosureThisType() === null) {
+									continue;
+								}
+								$closureThisParameters[$name] = $paramTag->getClosureThisType();
 							}
 							$asserts = Assertions::createFromResolvedPhpDocBlock($phpDocBlock);
 
@@ -599,7 +611,7 @@ class PhpClassReflectionExtension
 							}
 						}
 					}
-					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes, $stubImmediatelyInvokedCallableParameters, $immediatelyInvokedCallableParameters, $signatureType !== 'named');
+					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes, $stubImmediatelyInvokedCallableParameters, $immediatelyInvokedCallableParameters, $stubClosureThisParameters, $closureThisParameters, $signatureType !== 'named');
 				}
 			}
 
@@ -724,9 +736,13 @@ class PhpClassReflectionExtension
 
 		$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
 		$immediatelyInvokedCallableParameters = [];
+		$closureThisParameters = [];
 
 		foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
 			$immediatelyInvokedCallableParameters[$paramName] = $paramTag->isImmediatelyInvokedCallable();
+			if ($paramTag->getClosureThisType() !== null) {
+				$closureThisParameters[$paramName] = $paramTag->getClosureThisType();
+			}
 			if (array_key_exists($paramName, $phpDocParameterTypes)) {
 				continue;
 			}
@@ -788,6 +804,7 @@ class PhpClassReflectionExtension
 			$phpDocComment,
 			$phpDocParameterOutTypes,
 			$immediatelyInvokedCallableParameters,
+			$closureThisParameters,
 		);
 	}
 
@@ -800,6 +817,8 @@ class PhpClassReflectionExtension
 	 * @param array<string, Type> $phpDocParameterOutTypes
 	 * @param array<string, TrinaryLogic> $stubImmediatelyInvokedCallableParameters
 	 * @param array<string, TrinaryLogic> $immediatelyInvokedCallableParameters
+	 * @param array<string, Type> $stubClosureThisParameters
+	 * @param array<string, Type> $closureThisParameters
 	 */
 	private function createNativeMethodVariant(
 		FunctionSignature $methodSignature,
@@ -813,6 +832,8 @@ class PhpClassReflectionExtension
 		array $phpDocParameterOutTypes,
 		array $stubImmediatelyInvokedCallableParameters,
 		array $immediatelyInvokedCallableParameters,
+		array $stubClosureThisParameters,
+		array $closureThisParameters,
 		bool $usePhpDocParameterNames,
 	): FunctionVariantWithPhpDocs
 	{
@@ -845,6 +866,13 @@ class PhpClassReflectionExtension
 				$immediatelyInvoked = TrinaryLogic::createMaybe();
 			}
 
+			$closureThisType = null;
+			if (isset($stubClosureThisParameters[$parameterSignature->getName()])) {
+				$closureThisType = $stubClosureThisParameters[$parameterSignature->getName()];
+			} elseif (isset($closureThisParameters[$phpDocParameterName])) {
+				$closureThisType = $closureThisParameters[$phpDocParameterName];
+			}
+
 			$parameters[] = new NativeParameterWithPhpDocsReflection(
 				$usePhpDocParameterNames
 					? $phpDocParameterName
@@ -858,6 +886,7 @@ class PhpClassReflectionExtension
 				$parameterSignature->getDefaultValue(),
 				$parameterOutType ?? $parameterSignature->getOutType(),
 				$immediatelyInvoked,
+				$closureThisType,
 			);
 		}
 
@@ -970,7 +999,7 @@ class PhpClassReflectionExtension
 			$classScope = $classScope->enterNamespace($namespace);
 		}
 		$classScope = $classScope->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,
@@ -987,6 +1016,8 @@ class PhpClassReflectionExtension
 			$selfOutType,
 			$phpDocComment,
 			$phpDocParameterOutTypes,
+			$phpDocImmediatelyInvokedCallableParameters,
+			$phpDocClosureThisTypeParameters,
 		);
 
 		$propertyTypes = [];

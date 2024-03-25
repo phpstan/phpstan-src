@@ -13,6 +13,7 @@ class ParamTag implements TypedTag
 		private Type $type,
 		private bool $isVariadic,
 		private TrinaryLogic $immediatelyInvokedCallable,
+		private ?Type $closureThisType,
 	)
 	{
 	}
@@ -37,7 +38,7 @@ class ParamTag implements TypedTag
 	 */
 	public function withType(Type $type): TypedTag
 	{
-		return new self($type, $this->isVariadic, $this->immediatelyInvokedCallable);
+		return new self($type, $this->isVariadic, $this->immediatelyInvokedCallable, $this->closureThisType);
 	}
 
 	/**
@@ -45,7 +46,12 @@ class ParamTag implements TypedTag
 	 */
 	public function withImmediatelyInvokedCallable(TrinaryLogic $immediatelyInvokedCallable): TypedTag
 	{
-		return new self($this->type, $this->isVariadic, $immediatelyInvokedCallable);
+		return new self($this->type, $this->isVariadic, $immediatelyInvokedCallable, $this->closureThisType);
+	}
+
+	public function getClosureThisType(): ?Type
+	{
+		return $this->closureThisType;
 	}
 
 }

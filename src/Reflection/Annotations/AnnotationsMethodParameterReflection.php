@@ -50,6 +50,11 @@ class AnnotationsMethodParameterReflection implements ParameterReflectionWithPhp
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getClosureThisType(): ?Type
+	{
+		return null;
+	}
+
 	public function passedByReference(): PassedByReference
 	{
 		return $this->passedByReference;

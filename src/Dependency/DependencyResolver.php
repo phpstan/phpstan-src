@@ -138,10 +138,15 @@ class DependencyResolver
 
 					foreach ($functionReflection->getVariants() as $functionVariant) {
 						foreach ($functionVariant->getParameters() as $parameter) {
-							if ($parameter->getOutType() === null) {
+							if ($parameter->getOutType() !== null) {
+								foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+								}
+							}
+							if ($parameter->getClosureThisType() === null) {
 								continue;
 							}
-							foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+							foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
 								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 							}
 						}
@@ -172,10 +177,15 @@ class DependencyResolver
 							if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
 								continue;
 							}
-							if ($parameter->getOutType() === null) {
+							if ($parameter->getOutType() !== null) {
+								foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+								}
+							}
+							if ($parameter->getClosureThisType() === null) {
 								continue;
 							}
-							foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+							foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
 								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 							}
 						}
@@ -205,10 +215,15 @@ class DependencyResolver
 					$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 					foreach ($methodReflection->getVariants() as $methodVariant) {
 						foreach ($methodVariant->getParameters() as $parameter) {
-							if ($parameter->getOutType() === null) {
+							if ($parameter->getOutType() !== null) {
+								foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+								}
+							}
+							if ($parameter->getClosureThisType() === null) {
 								continue;
 							}
-							foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+							foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
 								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 							}
 						}
@@ -272,10 +287,15 @@ class DependencyResolver
 							$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 							foreach ($methodReflection->getVariants() as $methodVariant) {
 								foreach ($methodVariant->getParameters() as $parameter) {
-									if ($parameter->getOutType() === null) {
+									if ($parameter->getOutType() !== null) {
+										foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+											$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+										}
+									}
+									if ($parameter->getClosureThisType() === null) {
 										continue;
 									}
-									foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+									foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
 										$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 									}
 								}
@@ -288,10 +308,15 @@ class DependencyResolver
 						$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 						foreach ($methodReflection->getVariants() as $methodVariant) {
 							foreach ($methodVariant->getParameters() as $parameter) {
-								if ($parameter->getOutType() === null) {
+								if ($parameter->getOutType() !== null) {
+									foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+										$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+									}
+								}
+								if ($parameter->getClosureThisType() === null) {
 									continue;
 								}
-								foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+								foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
 									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 								}
 							}
@@ -611,11 +636,15 @@ class DependencyResolver
 				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 			}
 
-			if ($parameter->getOutType() === null) {
+			if ($parameter->getOutType() !== null) {
+				foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+			}
+			if ($parameter->getClosureThisType() === null) {
 				continue;
 			}
-
-			foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+			foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
 				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 			}
 		}

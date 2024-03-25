@@ -99,6 +99,7 @@ class GenericParametersAcceptorResolver
 					$parameter->getType(),
 					null,
 					TrinaryLogic::createMaybe(),
+					null,
 				), $parametersAcceptor->getParameters()),
 				$parametersAcceptor->isVariadic(),
 				$parametersAcceptor->getReturnType(),

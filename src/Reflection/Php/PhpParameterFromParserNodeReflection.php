@@ -25,6 +25,7 @@ class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhp
 		private bool $variadic,
 		private ?Type $outType,
 		private TrinaryLogic $immediatelyInvokedCallable,
+		private ?Type $closureThisType,
 	)
 	{
 	}
@@ -90,6 +91,11 @@ class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhp
 	public function isImmediatelyInvokedCallable(): TrinaryLogic
 	{
 		return $this->immediatelyInvokedCallable;
+	}
+
+	public function getClosureThisType(): ?Type
+	{
+		return $this->closureThisType;
 	}
 
 }

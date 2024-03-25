@@ -74,6 +74,7 @@ class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 					$parameter->getType(),
 					null,
 					TrinaryLogic::createMaybe(),
+					null,
 				), $variant->getParameters()),
 				$variant->isVariadic(),
 				$variant->getReturnType(),

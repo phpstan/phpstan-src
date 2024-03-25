@@ -21,6 +21,7 @@ class DummyParameterWithPhpDocs extends DummyParameter implements ParameterRefle
 		private Type $phpDocType,
 		private ?Type $outType,
 		private TrinaryLogic $immediatelyInvokedCallable,
+		private ?Type $closureThisType,
 	)
 	{
 		parent::__construct($name, $type, $optional, $passedByReference, $variadic, $defaultValue);
@@ -44,6 +45,11 @@ class DummyParameterWithPhpDocs extends DummyParameter implements ParameterRefle
 	public function isImmediatelyInvokedCallable(): TrinaryLogic
 	{
 		return $this->immediatelyInvokedCallable;
+	}
+
+	public function getClosureThisType(): ?Type
+	{
+		return $this->closureThisType;
 	}
 
 }

@@ -27,6 +27,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 		private ?string $declaringClassName,
 		private ?Type $outType,
 		private TrinaryLogic $immediatelyInvokedCallable,
+		private ?Type $closureThisType,
 	)
 	{
 	}
@@ -124,6 +125,11 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 	public function isImmediatelyInvokedCallable(): TrinaryLogic
 	{
 		return $this->immediatelyInvokedCallable;
+	}
+
+	public function getClosureThisType(): ?Type
+	{
+		return $this->closureThisType;
 	}
 
 }

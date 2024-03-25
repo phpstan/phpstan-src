@@ -15,6 +15,7 @@ interface PhpMethodReflectionFactory
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $phpDocParameterOutTypes
 	 * @param array<string, TrinaryLogic> $immediatelyInvokedCallableParameters
+	 * @param array<string, Type> $phpDocClosureThisTypeParameters
 	 */
 	public function create(
 		ClassReflection $declaringClass,
@@ -34,6 +35,7 @@ interface PhpMethodReflectionFactory
 		?string $phpDocComment,
 		array $phpDocParameterOutTypes,
 		array $immediatelyInvokedCallableParameters = [],
+		array $phpDocClosureThisTypeParameters = [],
 	): PhpMethodReflection;
 
 }

@@ -33,7 +33,7 @@ interface PhpMethodReflectionFactory
 		?Type $selfOutType,
 		?string $phpDocComment,
 		array $phpDocParameterOutTypes,
-		array $immediatelyInvokedCallableParameters,
+		array $immediatelyInvokedCallableParameters = [],
 	): PhpMethodReflection;
 
 }

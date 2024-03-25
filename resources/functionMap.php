@@ -9549,7 +9549,7 @@ return [
 'Redis::georadiusbymember_ro' => ['__benevolent<Redis|array<int,mixed>>', 'key'=>'string', 'lng'=>'float', 'lat'=>'float', 'radius'=>'float', 'unit'=>'string', 'options='=>'array<string,mixed>'],
 'Redis::geosearch' => ['__benevolent<Redis|array<int,mixed>>', 'key'=>'string', 'position'=>'array<int,array{0:string,1:string}>|string', 'shape'=>'array<int,array{0:string,1:string}>|int|float', 'unit'=>'string', 'options='=>'array<string,mixed>'],
 'Redis::geosearchstore' => ['__benevolent<Redis|array<int,mixed>|int|false>', 'dst'=>'string', 'src'=>'string', 'position'=>'array<int,array{0:string,1:string}>|string', 'shape'=>'array<int,array{0:string,1:string}>|int|float', 'unit'=>'string', 'options='=>'array<string,mixed>'],
-'Redis::get' => ['string|false', 'key'=>'string'],
+'Redis::get' => ['mixed', 'key'=>'string'],
 'Redis::getAuth' => ['string|false|null'],
 'Redis::getBit' => ['__benevolent<Redis|int|false>', 'key'=>'string', 'idx'=>'int'],
 'Redis::getEx' => ['__benevolent<Redis|string|bool>', 'key'=>'string', 'options'=>'?array{EX?:int,PX?:int,EXAT?:int,PXAT?:int,PERSIST?:bool}'],

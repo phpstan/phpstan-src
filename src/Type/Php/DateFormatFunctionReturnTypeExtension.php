@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -14,6 +13,10 @@ use function count;
 class DateFormatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
+	public function __construct(private DateFunctionReturnTypeHelper $dateFunctionReturnTypeHelper)
+	{
+	}
+
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'date_format';
@@ -23,16 +26,15 @@ class DateFormatFunctionReturnTypeExtension implements DynamicFunctionReturnType
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		if (count($functionCall->getArgs()) < 2) {
 			return new StringType();
 		}
 
-		return $scope->getType(
-			new FuncCall(new FullyQualified('date'), [
-				$functionCall->getArgs()[1],
-			]),
+		return $this->dateFunctionReturnTypeHelper->getTypeFromFormatType(
+			$scope->getType($functionCall->getArgs()[1]->value),
+			true,
 		);
 	}
 

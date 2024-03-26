@@ -1,7 +1,7 @@
 <?php
 
 namespace Doctrine\ORM {
-	class EntityManager
+	class EntityManagerParamClosureThis
 	{
 
 		public function transactional(callable $cb): void {
@@ -11,7 +11,7 @@ namespace Doctrine\ORM {
 	}
 }
 
-namespace MyFunction {
+namespace MyFunctionClosureThis {
 	function doFoo(callable $cb): void {
 
 	}
@@ -20,22 +20,22 @@ namespace MyFunction {
 namespace ParamClosureThisStubs
 {
 
-	use Doctrine\ORM\EntityManager;
+	use Doctrine\ORM\EntityManagerParamClosureThis;
 	use function PHPStan\Testing\assertType;
 
 	class Foo
 	{
-		public function doFoo(EntityManager $em): void
+		public function doFoo(EntityManagerParamClosureThis $em): void
 		{
 			$em->transactional(function () {
-				assertType(EntityManager::class, $this);
+				assertType(EntityManagerParamClosureThis::class, $this);
 			});
 		}
 
 		public function doFoo2(): void
 		{
-			\MyFunction\doFoo(function () {
-				assertType(\MyFunction\Foo::class, $this);
+			\MyFunctionClosureThis\doFoo(function () {
+				assertType(\MyFunctionClosureThis\Foo::class, $this);
 			});
 		}
 

@@ -1,7 +1,7 @@
 <?php
 
 namespace Doctrine\ORM {
-	class EntityManager
+	class EntityManagerParamClosureThis
 	{
 
 		/**
@@ -14,7 +14,7 @@ namespace Doctrine\ORM {
 	}
 }
 
-namespace MyFunction {
+namespace MyFunctionClosureThis {
 
 	class Foo
 	{

@@ -79,6 +79,11 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 				215,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
+			[
+				'Method MissingMethodParameterTypehint\MissingParamClosureThisType::generics() has @param-closure-this PHPDoc tag for parameter $cb with generic class ReflectionClass but does not specify its types: T',
+				226,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
 		];
 
 		$this->analyse([__DIR__ . '/data/missing-method-parameter-typehint.php'], $errors);

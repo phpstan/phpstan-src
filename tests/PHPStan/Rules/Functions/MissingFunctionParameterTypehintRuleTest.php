@@ -92,6 +92,11 @@ class MissingFunctionParameterTypehintRuleTest extends RuleTestCase
 				181,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
+			[
+				'Function MissingParamClosureThisType\generics() has @param-closure-this PHPDoc tag for parameter $cb with generic class ReflectionClass but does not specify its types: T',
+				191,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
 		]);
 	}
 

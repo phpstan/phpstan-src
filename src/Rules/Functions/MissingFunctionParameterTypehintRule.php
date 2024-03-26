@@ -45,6 +45,12 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				$messages[] = $parameterMessage;
 			}
 
+			if ($parameterReflection->getClosureThisType() !== null) {
+				foreach ($this->checkFunctionParameter($functionReflection, sprintf('@param-closure-this PHPDoc tag for parameter $%s', $parameterReflection->getName()), $parameterReflection->getClosureThisType()) as $parameterMessage) {
+					$messages[] = $parameterMessage;
+				}
+			}
+
 			if (!$this->paramOut) {
 				continue;
 			}

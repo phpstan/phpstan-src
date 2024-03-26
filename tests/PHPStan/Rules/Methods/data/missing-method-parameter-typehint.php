@@ -216,3 +216,16 @@ class MissingParamOutType {
 
 	}
 }
+
+class MissingParamClosureThisType {
+
+	/**
+	 * @param-closure-this \ReflectionClass $cb
+	 * @param callable(): void $cb
+	 */
+	function generics(callable $cb): void
+	{
+
+	}
+
+}

@@ -194,9 +194,9 @@ class StubValidator
 			new InvalidThrowsPhpDocValueRule($fileTypeMapper),
 
 			// level 6
-			new MissingFunctionParameterTypehintRule($missingTypehintCheck),
+			new MissingFunctionParameterTypehintRule($missingTypehintCheck, $container->getParameter('featureToggles')['paramOutType']),
 			new MissingFunctionReturnTypehintRule($missingTypehintCheck),
-			new MissingMethodParameterTypehintRule($missingTypehintCheck),
+			new MissingMethodParameterTypehintRule($missingTypehintCheck, $container->getParameter('featureToggles')['paramOutType']),
 			new MissingMethodReturnTypehintRule($missingTypehintCheck),
 			new MissingPropertyTypehintRule($missingTypehintCheck),
 		];

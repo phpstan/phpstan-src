@@ -6,13 +6,13 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function implode;
 use function sprintf;
@@ -25,6 +25,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 
 	public function __construct(
 		private MissingTypehintCheck $missingTypehintCheck,
+		private bool $paramOut,
 	)
 	{
 	}
@@ -40,7 +41,18 @@ final class MissingFunctionParameterTypehintRule implements Rule
 		$messages = [];
 
 		foreach (ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters() as $parameterReflection) {
-			foreach ($this->checkFunctionParameter($functionReflection, $parameterReflection) as $parameterMessage) {
+			foreach ($this->checkFunctionParameter($functionReflection, sprintf('parameter $%s', $parameterReflection->getName()), $parameterReflection->getType()) as $parameterMessage) {
+				$messages[] = $parameterMessage;
+			}
+
+			if (!$this->paramOut) {
+				continue;
+			}
+			if ($parameterReflection->getOutType() === null) {
+				continue;
+			}
+
+			foreach ($this->checkFunctionParameter($functionReflection, sprintf('@param-out PHPDoc tag for parameter $%s', $parameterReflection->getName()), $parameterReflection->getOutType()) as $parameterMessage) {
 				$messages[] = $parameterMessage;
 			}
 		}
@@ -51,16 +63,14 @@ final class MissingFunctionParameterTypehintRule implements Rule
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	private function checkFunctionParameter(FunctionReflection $functionReflection, ParameterReflection $parameterReflection): array
+	private function checkFunctionParameter(FunctionReflection $functionReflection, string $parameterMessage, Type $parameterType): array
 	{
-		$parameterType = $parameterReflection->getType();
-
 		if ($parameterType instanceof MixedType && !$parameterType->isExplicitMixed()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Function %s() has parameter $%s with no type specified.',
+					'Function %s() has %s with no type specified.',
 					$functionReflection->getName(),
-					$parameterReflection->getName(),
+					$parameterMessage,
 				))->identifier('missingType.parameter')->build(),
 			];
 		}
@@ -69,9 +79,9 @@ final class MissingFunctionParameterTypehintRule implements Rule
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($parameterType) as $iterableType) {
 			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Function %s() has parameter $%s with no value type specified in iterable type %s.',
+				'Function %s() has %s with no value type specified in iterable type %s.',
 				$functionReflection->getName(),
-				$parameterReflection->getName(),
+				$parameterMessage,
 				$iterableTypeDescription,
 			))
 				->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
@@ -81,9 +91,9 @@ final class MissingFunctionParameterTypehintRule implements Rule
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($parameterType) as [$name, $genericTypeNames]) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Function %s() has parameter $%s with generic %s but does not specify its types: %s',
+				'Function %s() has %s with generic %s but does not specify its types: %s',
 				$functionReflection->getName(),
-				$parameterReflection->getName(),
+				$parameterMessage,
 				$name,
 				implode(', ', $genericTypeNames),
 			))
@@ -94,9 +104,9 @@ final class MissingFunctionParameterTypehintRule implements Rule
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($parameterType) as $callableType) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Function %s() has parameter $%s with no signature specified for %s.',
+				'Function %s() has %s with no signature specified for %s.',
 				$functionReflection->getName(),
-				$parameterReflection->getName(),
+				$parameterMessage,
 				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->identifier('missingType.callable')->build();
 		}

@@ -75,13 +75,13 @@ function str_shuffle(string $string): string {}
 
 /**
  * @param array<mixed> $result
- * @param-out array<int|string, array|string> $result
+ * @param-out array<int|string, array<mixed>|string> $result
  */
 function parse_str(string $string, array &$result): void {}
 
 /**
  * @param array<mixed> $result
- * @param-out array<string, array|string> $result
+ * @param-out array<string, array<mixed>|string> $result
  */
 function mb_parse_str(string $string, array &$result): bool {}
 
@@ -193,7 +193,7 @@ function sscanf(string $string, string $format, &$war, &...$vars) {}
  *                              ? list<array<?string>>
  *                              : (TFlags is 770
  *                                  ? list<array<array{?string, int}>>
- *                                  : array
+ *                                  : array<mixed>
  *                              )
  *                          )
  *                      )

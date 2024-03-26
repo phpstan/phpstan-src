@@ -6,13 +6,13 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function implode;
 use function sprintf;
@@ -23,7 +23,10 @@ use function sprintf;
 final class MissingMethodParameterTypehintRule implements Rule
 {
 
-	public function __construct(private MissingTypehintCheck $missingTypehintCheck)
+	public function __construct(
+		private MissingTypehintCheck $missingTypehintCheck,
+		private bool $paramOut,
+	)
 	{
 	}
 
@@ -38,7 +41,18 @@ final class MissingMethodParameterTypehintRule implements Rule
 		$messages = [];
 
 		foreach (ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getParameters() as $parameterReflection) {
-			foreach ($this->checkMethodParameter($methodReflection, $parameterReflection) as $parameterMessage) {
+			foreach ($this->checkMethodParameter($methodReflection, sprintf('parameter $%s', $parameterReflection->getName()), $parameterReflection->getType()) as $parameterMessage) {
+				$messages[] = $parameterMessage;
+			}
+
+			if (!$this->paramOut) {
+				continue;
+			}
+			if ($parameterReflection->getOutType() === null) {
+				continue;
+			}
+
+			foreach ($this->checkMethodParameter($methodReflection, sprintf('@param-out PHPDoc tag for parameter $%s', $parameterReflection->getName()), $parameterReflection->getOutType()) as $parameterMessage) {
 				$messages[] = $parameterMessage;
 			}
 		}
@@ -49,17 +63,15 @@ final class MissingMethodParameterTypehintRule implements Rule
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	private function checkMethodParameter(MethodReflection $methodReflection, ParameterReflection $parameterReflection): array
+	private function checkMethodParameter(MethodReflection $methodReflection, string $parameterMessage, Type $parameterType): array
 	{
-		$parameterType = $parameterReflection->getType();
-
 		if ($parameterType instanceof MixedType && !$parameterType->isExplicitMixed()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Method %s::%s() has parameter $%s with no type specified.',
+					'Method %s::%s() has %s with no type specified.',
 					$methodReflection->getDeclaringClass()->getDisplayName(),
 					$methodReflection->getName(),
-					$parameterReflection->getName(),
+					$parameterMessage,
 				))->identifier('missingType.parameter')->build(),
 			];
 		}
@@ -68,10 +80,10 @@ final class MissingMethodParameterTypehintRule implements Rule
 		foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($parameterType) as $iterableType) {
 			$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() has parameter $%s with no value type specified in iterable type %s.',
+				'Method %s::%s() has %s with no value type specified in iterable type %s.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
-				$parameterReflection->getName(),
+				$parameterMessage,
 				$iterableTypeDescription,
 			))
 				->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
@@ -81,10 +93,10 @@ final class MissingMethodParameterTypehintRule implements Rule
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($parameterType) as [$name, $genericTypeNames]) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() has parameter $%s with generic %s but does not specify its types: %s',
+				'Method %s::%s() has %s with generic %s but does not specify its types: %s',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
-				$parameterReflection->getName(),
+				$parameterMessage,
 				$name,
 				implode(', ', $genericTypeNames),
 			))
@@ -95,10 +107,10 @@ final class MissingMethodParameterTypehintRule implements Rule
 
 		foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($parameterType) as $callableType) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() has parameter $%s with no signature specified for %s.',
+				'Method %s::%s() has %s with no signature specified for %s.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
-				$parameterReflection->getName(),
+				$parameterMessage,
 				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->identifier('missingType.callable')->build();
 		}

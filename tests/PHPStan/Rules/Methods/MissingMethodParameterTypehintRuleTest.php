@@ -14,7 +14,7 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck(true, true, true, true, []));
+		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck(true, true, true, true, []), true);
 	}
 
 	public function testRule(): void
@@ -68,6 +68,16 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 			[
 				'Method MissingMethodParameterTypehint\CallableSignature::doFoo() has parameter $cb with no signature specified for callable.',
 				180,
+			],
+			[
+				'Method MissingMethodParameterTypehint\MissingParamOutType::oneArray() has @param-out PHPDoc tag for parameter $a with no value type specified in iterable type array.',
+				207,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Method MissingMethodParameterTypehint\MissingParamOutType::generics() has @param-out PHPDoc tag for parameter $a with generic class ReflectionClass but does not specify its types: T',
+				215,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		];
 

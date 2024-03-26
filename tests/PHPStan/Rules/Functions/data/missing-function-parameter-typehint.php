@@ -164,3 +164,21 @@ namespace MissingFunctionParameterTypehint
 	}
 
 }
+
+namespace MissingParamOutType {
+	/**
+	 * @param array<int> $a
+	 * @param-out array $a
+	 */
+	function oneArray(&$a): void {
+
+	}
+
+	/**
+	 * @param mixed $a
+	 * @param-out \ReflectionClass $a
+	 */
+	function generics(&$a): void {
+
+	}
+}

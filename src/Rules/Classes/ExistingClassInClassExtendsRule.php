@@ -81,6 +81,24 @@ class ExistingClassInClassExtendsRule implements Rule
 					$reflection->getDisplayName(),
 				))->build();
 			}
+
+			if ($reflection->isClass()) {
+				if ($node->isReadonly()) {
+					if (!$reflection->isReadOnly()) {
+						$messages[] = RuleErrorBuilder::message(sprintf(
+							'%s extends non-readonly class %s.',
+							$currentClassName !== null ? sprintf('Readonly class %s', $currentClassName) : 'Anonymous readonly class',
+							$reflection->getDisplayName(),
+						))->nonIgnorable()->build();
+					}
+				} elseif ($reflection->isReadOnly()) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'%s extends readonly class %s.',
+						$currentClassName !== null ? sprintf('Non-readonly class %s', $currentClassName) : 'Anonymous non-readonly class',
+						$reflection->getDisplayName(),
+					))->nonIgnorable()->build();
+				}
+			}
 		}
 
 		return $messages;

@@ -119,4 +119,30 @@ class ExistingClassInClassExtendsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testReadonly(): void
+	{
+		if (PHP_VERSION_ID < 80200) {
+			$this->markTestSkipped('This test needs PHP 8.2');
+		}
+
+		$this->analyse([__DIR__ . '/data/extends-readonly-class.php'], [
+			[
+				'Readonly class ExtendsReadOnlyClass\Foo extends non-readonly class ExtendsReadOnlyClass\Nonreadonly.',
+				25,
+			],
+			[
+				'Non-readonly class ExtendsReadOnlyClass\Bar extends readonly class ExtendsReadOnlyClass\ReadonlyClass.',
+				30,
+			],
+			[
+				'Anonymous non-readonly class extends readonly class ExtendsReadOnlyClass\ReadonlyClass.',
+				35,
+			],
+			[
+				'Anonymous readonly class extends non-readonly class ExtendsReadOnlyClass\Nonreadonly.',
+				39,
+			],
+		]);
+	}
+
 }

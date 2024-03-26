@@ -58,6 +58,16 @@ class Foo
 
 	}
 
+	/**
+	 * @template T of object
+	 * @param class-string<T> $class
+	 * @param-closure-this T $cb
+	 */
+	public function paramClosureGenerics(string $class, callable $cb): void
+	{
+
+	}
+
 	public function voidMethod(): void
 	{
 
@@ -83,6 +93,9 @@ class Foo
 		});
 		$this->paramClosureConditional(2, function () {
 			assertType(Some::class, $this);
+		});
+		$this->paramClosureGenerics(\stdClass::class, function () {
+			assertType(\stdClass::class, $this);
 		});
 	}
 

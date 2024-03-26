@@ -350,3 +350,11 @@ function paramInvokedCallableWithNotCallable(NotCallable $a): void
 {
 
 }
+
+/**
+ * @param-closure-this int $cb
+ */
+function paramClosureThisWithNonObject(callable $cb): void
+{
+
+}

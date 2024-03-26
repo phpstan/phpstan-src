@@ -203,6 +203,10 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @param for parameter $a with type callable is incompatible with native type InvalidPhpDoc\NotCallable.',
 				349,
 			],
+			[
+				'PHPDoc tag @param-closure-this for parameter $cb contains unresolvable type.',
+				357,
+			],
 		]);
 	}
 

@@ -1,4 +1,4 @@
-<?php // lint >= 8.2
+<?php
 
 namespace ExtendsReadOnlyClass;
 

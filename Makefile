@@ -72,6 +72,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Keywords/data/declare-strict-nonsense.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/declare-strict-nonsense-bool.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/declare-inline-html.php \
+		--exclude tests/PHPStan/Rules/Classes/data/extends-readonly-class.php \
 		src tests
 
 cs:

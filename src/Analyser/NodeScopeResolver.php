@@ -3298,6 +3298,11 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$impurePoints = [];
+		} elseif ($expr instanceof ConstFetch) {
+			$hasYield = false;
+			$throwPoints = [];
+			$impurePoints = [];
+			$nodeCallback($expr->name, $scope);
 		} else {
 			$hasYield = false;
 			$throwPoints = [];

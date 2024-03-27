@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\Node\VirtualNode;
 
 /**
- * @phpstan-type ImpurePointIdentifier = 'echo'|'die'|'exit'|'propertyAssign'|'methodCall'|'new'|'functionCall'
+ * @phpstan-type ImpurePointIdentifier = 'echo'|'die'|'exit'|'propertyAssign'|'methodCall'|'new'|'functionCall'|'include'|'require'|'print'|'eval'
  * @api
  */
 class ImpurePoint

@@ -7,6 +7,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -155,6 +156,12 @@ class TemplateTypeVariance
 
 		if ($b instanceof MixedType && !$b instanceof TemplateType) {
 			return AcceptsResult::createYes();
+		}
+
+		if ($b->isEnum()->yes()) {
+			if ($b->generalize(GeneralizePrecision::lessSpecific())->equals($a)) {
+				return AcceptsResult::createYes();
+			}
 		}
 
 		if ($this->invariant()) {

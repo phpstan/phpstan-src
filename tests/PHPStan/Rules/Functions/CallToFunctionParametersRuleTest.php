@@ -1646,4 +1646,22 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/argon2id-password-hash.php'], []);
 	}
 
+	public function testParamClosureThis(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/function-call-param-closure-this.php'], [
+			[
+				'Parameter #1 $cb of function FunctionCallParamClosureThis\acceptClosure expects bindable closure, static closure given.',
+				18,
+			],
+			[
+				'Parameter #1 $cb of function FunctionCallParamClosureThis\acceptClosure expects bindable closure, static closure given.',
+				23,
+			],
+		]);
+	}
+
 }

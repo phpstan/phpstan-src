@@ -7,6 +7,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -277,6 +278,7 @@ class FunctionCallParametersCheck
 
 			if ($this->checkArgumentTypes) {
 				$parameterType = TypeUtils::resolveLateResolvableTypes($parameter->getType());
+				$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 
 				if (
 					!$parameter->passedByReference()->createsNewVariable()
@@ -286,7 +288,6 @@ class FunctionCallParametersCheck
 
 					if (!$accepts->result) {
 						$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $argumentValueType);
-						$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							$messages[6],
 							$argumentName === null ? sprintf(
@@ -310,7 +311,6 @@ class FunctionCallParametersCheck
 					&& !$this->unresolvableTypeHelper->containsUnresolvableType($originalParameter->getType())
 					&& $this->unresolvableTypeHelper->containsUnresolvableType($parameterType)
 				) {
-					$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$messages[13],
 						$argumentName === null ? sprintf(
@@ -319,6 +319,27 @@ class FunctionCallParametersCheck
 							$parameterDescription,
 						) : $parameterDescription,
 					))->identifier('argument.unresolvableType')->line($argumentLine)->build();
+				}
+
+				if (
+					$parameter instanceof ParameterReflectionWithPhpDocs
+					&& $parameter->getClosureThisType() !== null
+					&& ($argumentValue instanceof Expr\Closure || $argumentValue instanceof Expr\ArrowFunction)
+					&& $argumentValue->static
+				) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						$messages[6],
+						$argumentName === null ? sprintf(
+							'#%d %s',
+							$i + 1,
+							$parameterDescription,
+						) : $parameterDescription,
+						'bindable closure',
+						'static closure',
+					))
+						->identifier('argument.staticClosure')
+						->line($argumentLine)
+						->build();
 				}
 			}
 

@@ -45,7 +45,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 			return true;
 		}
 
-		return $this->reflectionProvider->hasConstant(new FullyQualified('JSON_THROW_ON_ERROR'), null) && $functionReflection->getName() === 'json_encode';
+		return $functionReflection->getName() === 'json_encode' && $this->reflectionProvider->hasConstant(new FullyQualified('JSON_THROW_ON_ERROR'), null);
 	}
 
 	public function getTypeFromFunctionCall(

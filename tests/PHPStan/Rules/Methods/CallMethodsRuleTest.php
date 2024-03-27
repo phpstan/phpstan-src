@@ -3251,4 +3251,18 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClosureBindToParamClosureThis(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/closure-bind-to-param-closure-this.php'], [
+			[
+				'Parameter #1 $newThis of method Closure::bindTo() expects stdClass, ClosureBindToParamClosureThis\Foo given.',
+				23,
+			],
+		]);
+	}
+
 }

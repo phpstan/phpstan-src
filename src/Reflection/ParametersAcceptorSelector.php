@@ -2,11 +2,15 @@
 
 namespace PHPStan\Reflection;
 
+use Closure;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Parser\ArrayFilterArgVisitor;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\ArrayWalkArgVisitor;
+use PHPStan\Parser\ClosureBindArgVisitor;
+use PHPStan\Parser\ClosureBindToVarVisitor;
 use PHPStan\Parser\CurlSetOptArgVisitor;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
@@ -25,18 +29,21 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
+use function array_key_exists;
 use function array_key_last;
 use function array_map;
 use function array_slice;
 use function constant;
 use function count;
 use function defined;
+use function is_string;
 use function sprintf;
 use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
@@ -226,6 +233,97 @@ class ParametersAcceptorSelector
 						$acceptor instanceof ParametersAcceptorWithPhpDocs ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 					),
 				];
+			}
+
+			if (isset($args[0])) {
+				$closureBindToVar = $args[0]->getAttribute(ClosureBindToVarVisitor::ATTRIBUTE_NAME);
+				if (
+					$closureBindToVar !== null
+					&& $closureBindToVar instanceof Node\Expr\Variable
+					&& is_string($closureBindToVar->name)
+				) {
+					$varType = $scope->getType($closureBindToVar);
+					if ((new ObjectType(Closure::class))->isSuperTypeOf($varType)->yes()) {
+						$inFunction = $scope->getFunction();
+						if ($inFunction !== null) {
+							$inFunctionVariant = self::selectSingle($inFunction->getVariants());
+							$closureThisParameters = [];
+							foreach ($inFunctionVariant->getParameters() as $parameter) {
+								if ($parameter->getClosureThisType() === null) {
+									continue;
+								}
+								$closureThisParameters[$parameter->getName()] = $parameter->getClosureThisType();
+							}
+							if (array_key_exists($closureBindToVar->name, $closureThisParameters)) {
+								if ($scope->hasExpressionType(new ParameterVariableOriginalValueExpr($closureBindToVar->name))->yes()) {
+									$acceptor = $parametersAcceptors[0];
+									$parameters = $acceptor->getParameters();
+									$parameters[0] = new NativeParameterReflection(
+										$parameters[0]->getName(),
+										$parameters[0]->isOptional(),
+										$closureThisParameters[$closureBindToVar->name],
+										$parameters[0]->passedByReference(),
+										$parameters[0]->isVariadic(),
+										$parameters[0]->getDefaultValue(),
+									);
+									$parametersAcceptors = [
+										new FunctionVariant(
+											$acceptor->getTemplateTypeMap(),
+											$acceptor->getResolvedTemplateTypeMap(),
+											$parameters,
+											$acceptor->isVariadic(),
+											$acceptor->getReturnType(),
+											$acceptor instanceof ParametersAcceptorWithPhpDocs ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+										),
+									];
+								}
+							}
+						}
+					}
+				}
+
+				if (
+					$args[0]->getAttribute(ClosureBindArgVisitor::ATTRIBUTE_NAME) !== null
+					&& $args[0]->value instanceof Node\Expr\Variable
+					&& is_string($args[0]->value->name)
+				) {
+					$closureVarName = $args[0]->value->name;
+					$inFunction = $scope->getFunction();
+					if ($inFunction !== null) {
+						$inFunctionVariant = self::selectSingle($inFunction->getVariants());
+						$closureThisParameters = [];
+						foreach ($inFunctionVariant->getParameters() as $parameter) {
+							if ($parameter->getClosureThisType() === null) {
+								continue;
+							}
+							$closureThisParameters[$parameter->getName()] = $parameter->getClosureThisType();
+						}
+						if (array_key_exists($closureVarName, $closureThisParameters)) {
+							if ($scope->hasExpressionType(new ParameterVariableOriginalValueExpr($closureVarName))->yes()) {
+								$acceptor = $parametersAcceptors[0];
+								$parameters = $acceptor->getParameters();
+								$parameters[1] = new NativeParameterReflection(
+									$parameters[1]->getName(),
+									$parameters[1]->isOptional(),
+									$closureThisParameters[$closureVarName],
+									$parameters[1]->passedByReference(),
+									$parameters[1]->isVariadic(),
+									$parameters[1]->getDefaultValue(),
+								);
+								$parametersAcceptors = [
+									new FunctionVariant(
+										$acceptor->getTemplateTypeMap(),
+										$acceptor->getResolvedTemplateTypeMap(),
+										$parameters,
+										$acceptor->isVariadic(),
+										$acceptor->getReturnType(),
+										$acceptor instanceof ParametersAcceptorWithPhpDocs ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+									),
+								];
+							}
+						}
+					}
+				}
 			}
 		}
 

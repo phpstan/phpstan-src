@@ -315,6 +315,16 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\ClosureBindToVarVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
+		class: PHPStan\Parser\ClosureBindArgVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parser\CurlSetOptArgVisitor
 
 	-

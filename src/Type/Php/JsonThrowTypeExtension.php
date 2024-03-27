@@ -32,14 +32,14 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		FunctionReflection $functionReflection,
 	): bool
 	{
-		return $this->reflectionProvider->hasConstant(new Name\FullyQualified('JSON_THROW_ON_ERROR'), null) && in_array(
+		return in_array(
 			$functionReflection->getName(),
 			[
 				'json_encode',
 				'json_decode',
 			],
 			true,
-		);
+		) && $this->reflectionProvider->hasConstant(new Name\FullyQualified('JSON_THROW_ON_ERROR'), null);
 	}
 
 	public function getThrowTypeFromFunctionCall(

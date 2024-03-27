@@ -204,3 +204,115 @@ function (Bar $b): void {
 		assertType(Bar::class, $this);
 	});
 };
+
+class ImplicitInheritance extends Foo
+{
+
+	public function paramClosureClass(callable $cb)
+	{
+
+	}
+
+	public function paramClosureSelf(callable $cb)
+	{
+
+	}
+
+	public function paramClosureStatic(callable $cb)
+	{
+
+	}
+
+	public function paramClosureConditional(int $j, callable $ca)
+	{
+		// renamed parameter names
+	}
+
+	public function doFoo(): void
+	{
+		$this->paramClosureClass(function () {
+			assertType(Some::class, $this);
+		});
+		$this->paramClosureClass(static function () {
+			assertType('*ERROR*', $this);
+		});
+		$this->paramClosureSelf(function () use (&$a) {
+			assertType(Foo::class, $this);
+		});
+		$this->paramClosureStatic(function () use (&$a) {
+			assertType('static(ParamClosureThis\ImplicitInheritance)', $this);
+		});
+		$this->paramClosureConditional(1, function () {
+			assertType(Foo::class, $this);
+		});
+		$this->paramClosureConditional(2, function () {
+			assertType(Some::class, $this);
+		});
+		$this->paramClosureGenerics(\stdClass::class, function () {
+			assertType(\stdClass::class, $this);
+		});
+	}
+
+}
+
+class ImplicitInheritanceMoreComplicated extends Foo
+{
+
+	/**
+	 * @param callable $cb
+	 */
+	public function paramClosureClass(callable $cb)
+	{
+
+	}
+
+	/**
+	 * @param callable $cb
+	 */
+	public function paramClosureSelf(callable $cb)
+	{
+
+	}
+
+	/**
+	 * @param callable $cb
+	 */
+	public function paramClosureStatic(callable $cb)
+	{
+
+	}
+
+	/**
+	 * @param callable $ca
+	 */
+	public function paramClosureConditional(int $j, callable $ca)
+	{
+		// renamed parameter names
+	}
+
+	public function doFoo(): void
+	{
+		$this->paramClosureClass(function () {
+			assertType(Some::class, $this);
+		});
+		$this->paramClosureClass(static function () {
+			assertType('*ERROR*', $this);
+		});
+		$this->paramClosureSelf(function () use (&$a) {
+			assertType(Foo::class, $this);
+		});
+		$this->paramClosureStatic(function () use (&$a) {
+			assertType('static(ParamClosureThis\ImplicitInheritanceMoreComplicated)', $this);
+		});
+		$this->paramClosureConditional(1, function () {
+			assertType(Foo::class, $this);
+		});
+		$this->paramClosureConditional(2, function () {
+			assertType(Some::class, $this);
+		});
+		$this->paramClosureGenerics(\stdClass::class, function () {
+			assertType(\stdClass::class, $this);
+		});
+	}
+
+}

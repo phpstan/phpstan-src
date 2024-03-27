@@ -843,10 +843,25 @@ class ResolvedPhpDocBlock
 				if ($paramTags[$name]->isImmediatelyInvokedCallable()->maybe()) {
 					$paramTags[$name] = $paramTags[$name]->withImmediatelyInvokedCallable($parentParamTag->isImmediatelyInvokedCallable());
 				}
+				if (
+					$paramTags[$name]->getClosureThisType() === null
+					&& $parentParamTag->getClosureThisType() !== null
+				) {
+					$paramTags[$name] = $paramTags[$name]->withClosureThisType($phpDocBlock->transformConditionalReturnTypeWithParameterNameMapping($parentParamTag->getClosureThisType()));
+				}
 				continue;
 			}
 
-			$paramTags[$name] = self::resolveTemplateTypeInTag($parentParamTag, $phpDocBlock, TemplateTypeVariance::createContravariant());
+			$parentParamTag = $parentParamTag->withType($phpDocBlock->transformConditionalReturnTypeWithParameterNameMapping($parentParamTag->getType()));
+			if ($parentParamTag->getClosureThisType() !== null) {
+				$parentParamTag = $parentParamTag->withClosureThisType($phpDocBlock->transformConditionalReturnTypeWithParameterNameMapping($parentParamTag->getClosureThisType()));
+			}
+
+			$paramTags[$name] = self::resolveTemplateTypeInTag(
+				$parentParamTag,
+				$phpDocBlock,
+				TemplateTypeVariance::createContravariant(),
+			);
 		}
 
 		return $paramTags;

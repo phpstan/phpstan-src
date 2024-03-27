@@ -32,6 +32,7 @@ use function count;
 use function is_array;
 use function is_callable;
 use function is_file;
+use function is_null;
 use function ltrim;
 use function md5;
 use function sprintf;
@@ -422,7 +423,7 @@ class FileTypeMapper
 		$constUses = [];
 		$this->processNodes(
 			$this->phpParser->parseFile($fileName),
-			function (Node $node) use ($fileName, $lookForTrait, $phpDocNodeMap, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack, &$constUses): ?int {
+			function (Node $node) use ($fileName, $lookForTrait, $phpDocNodeMap, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack, &$constUses, &$classNode, &$classUseTags): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
 					if ($traitFound && $fileName === $originalClassFileName) {
 						return self::SKIP_NODE;
@@ -461,6 +462,8 @@ class FileTypeMapper
 						}
 						$classStack[] = $className;
 						$classNameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, null);
+						$classNode = $node;
+						$classUseTags = null;
 						if (array_key_exists($classNameScopeKey, $phpDocNodeMap)) {
 							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNodeMap[$classNameScopeKey]);
 						} else {
@@ -630,7 +633,7 @@ class FileTypeMapper
 						);
 						$finalTraitPhpDocMap = [];
 						foreach ($traitPhpDocMap as $nameScopeTraitKey => $callback) {
-							$finalTraitPhpDocMap[$nameScopeTraitKey] = function () use ($callback, $traitReflection, $fileName, $className, $lookForTrait, $useDocComment): NameScope {
+							$finalTraitPhpDocMap[$nameScopeTraitKey] = function () use ($callback, $traitReflection, $fileName, $className, $lookForTrait, $useDocComment, &$classNode, &$classUseTags): NameScope {
 								/** @var NameScope $original */
 								$original = $callback();
 								if (!$traitReflection->isGeneric()) {
@@ -640,27 +643,44 @@ class FileTypeMapper
 								$traitTemplateTypeMap = $traitReflection->getTemplateTypeMap();
 
 								$useType = null;
-								if ($useDocComment !== null) {
-									$useTags = $this->getResolvedPhpDoc(
+								if (is_null($classUseTags)) {
+									$classDocComment = null;
+									if (isset($classNode)) {
+										$classDocComment = $classNode->getDocComment();
+										if (isset($classDocComment)) {
+											$classDocComment = $classDocComment->getText();
+										}
+									}
+									$classUseTags = is_null($classDocComment) ? [] : $this->getResolvedPhpDoc(
+										$fileName,
+										$className,
+										null,
+										null,
+										$classDocComment,
+									)->getUsesTags();
+								}
+								$useTags = array_merge(
+									$classUseTags,
+									is_null($useDocComment) ? [] : $this->getResolvedPhpDoc(
 										$fileName,
 										$className,
 										$lookForTrait,
 										null,
 										$useDocComment,
-									)->getUsesTags();
-									foreach ($useTags as $useTag) {
-										$useTagType = $useTag->getType();
-										if (!$useTagType instanceof GenericObjectType) {
-											continue;
-										}
-
-										if ($useTagType->getClassName() !== $traitReflection->getName()) {
-											continue;
-										}
-
-										$useType = $useTagType;
-										break;
+									)->getUsesTags(),
+								);
+								foreach ($useTags as $useTag) {
+									$useTagType = $useTag->getType();
+									if (!$useTagType instanceof GenericObjectType) {
+										continue;
 									}
+
+									if ($useTagType->getClassName() !== $traitReflection->getName()) {
+										continue;
+									}
+
+									$useType = $useTagType;
+									break;
 								}
 
 								if ($useType === null) {

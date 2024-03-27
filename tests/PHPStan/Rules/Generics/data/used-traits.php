@@ -69,3 +69,25 @@ class Dolor
 	use GenericTrait;
 
 }
+
+/**
+ * @template T of object
+ * @use GenericTrait<T>
+ */
+class Sit
+{
+
+	use GenericTrait;
+
+}
+
+/**
+ * @template T of int
+ * @use GenericTrait<T>
+ */
+class Amet
+{
+
+	use GenericTrait;
+
+}

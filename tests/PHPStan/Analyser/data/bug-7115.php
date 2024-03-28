@@ -27,7 +27,7 @@ class Foo
 			array_push($d, $thing);
 		}
 
-		assertType('array<int<0, max>, array{a: int, b: string}>', $b);
+		assertType('list<array{a: int, b: string}>', $b);
 		assertType('list<array{a: int, b: string}>', $c);
 		assertType('list<array{a: int, b: string}>', $d);
 	}

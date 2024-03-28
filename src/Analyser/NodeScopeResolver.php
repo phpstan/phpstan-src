@@ -3460,9 +3460,13 @@ class NodeScopeResolver
 
 				if ($constantArray->isConstantArray()->yes() && $nonConstantArrayWasUnpacked) {
 					$array = new ArrayType($constantArray->generalize(GeneralizePrecision::lessSpecific())->getIterableKeyType(), $constantArray->getIterableValueType());
+					$isList = $constantArray->isList()->yes();
 					$constantArray = $constantArray->isIterableAtLeastOnce()->yes()
 						? TypeCombinator::intersect($array, new NonEmptyArrayType())
 						: $array;
+					$constantArray = $isList
+						? AccessoryArrayListType::intersectWith($constantArray)
+						: $constantArray;
 				}
 
 				$newArrayTypes[] = $constantArray;

@@ -6,20 +6,26 @@ use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
+use PHPStan\ShouldNotHappenException;
+use function array_key_exists;
 use function count;
 use function end;
+use function is_array;
 use function is_file;
+use function is_int;
 use function is_string;
 
 class PhpVersionFactoryFactory
 {
 
 	/**
+	 * @param int|array{min: int, max: int}|null $phpVersion
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		private ?int $versionId,
+		private int|array|null $phpVersion,
 		private array $composerAutoloaderProjectPaths,
+		private bool $bleedingEdge,
 	)
 	{
 	}
@@ -43,7 +49,20 @@ class PhpVersionFactoryFactory
 			}
 		}
 
-		return new PhpVersionFactory($this->versionId, $composerPhpVersion);
+		$versionId = null;
+
+		if (is_int($this->phpVersion)) {
+			$versionId = $this->phpVersion;
+		}
+
+		if ($this->bleedingEdge && is_array($this->phpVersion)) {
+			if (!array_key_exists('min', $this->phpVersion)) {
+				throw new ShouldNotHappenException();
+			}
+			$versionId = $this->phpVersion['min'];
+		}
+
+		return new PhpVersionFactory($versionId, $composerPhpVersion);
 	}
 
 }

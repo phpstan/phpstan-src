@@ -242,6 +242,26 @@ class TypeSpecifierTest extends PHPStanTestCase
 				['get_class($foo)' => '~\'Foo\''],
 			],
 			[
+				new Equal(
+					new FuncCall(new Name('get_debug_type'), [
+						new Arg(new Variable('foo')),
+					]),
+					new String_('Foo'),
+				),
+				['$foo' => 'Foo', 'get_debug_type($foo)' => '\'Foo\''],
+				['get_debug_type($foo)' => '~\'Foo\''],
+			],
+			[
+				new Equal(
+					new String_('Foo'),
+					new FuncCall(new Name('get_debug_type'), [
+						new Arg(new Variable('foo')),
+					]),
+				),
+				['$foo' => 'Foo', 'get_debug_type($foo)' => '\'Foo\''],
+				['get_debug_type($foo)' => '~\'Foo\''],
+			],
+			[
 				new BooleanNot(
 					new Expr\Instanceof_(
 						new Variable('foo'),

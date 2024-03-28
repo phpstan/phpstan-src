@@ -166,4 +166,16 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/loose-comparison-treat-phpdoc-types.php'], $expectedErrors);
 	}
 
+	public function testLooseUnion(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/loose-comparison-union.php'], [
+			[
+				'Loose comparison using == between 0|1|false and 2 will always evaluate to false.',
+				9,
+			],
+		]);
+	}
+
 }

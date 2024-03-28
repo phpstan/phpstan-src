@@ -31,7 +31,7 @@ class Foo
 
 	public function voidMethod(): void
 	{
-
+		echo '1';
 	}
 
 	/**
@@ -187,6 +187,23 @@ class ExtendingClass extends ToBeExtended
 	public function impure(): int
 	{
 		return 1;
+	}
+
+}
+
+class ClassWithVoidMethods
+{
+
+	function voidFunctionThatThrows(): void
+	{
+		if (rand(0, 1)) {
+			throw new \Exception();
+		}
+	}
+
+	function emptyVoidFunction(): void
+	{
+
 	}
 
 }

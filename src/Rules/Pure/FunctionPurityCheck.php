@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Pure;
 
 use PHPStan\Analyser\ImpurePoint;
+use PHPStan\Analyser\ThrowPoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
@@ -20,6 +21,7 @@ class FunctionPurityCheck
 	 * @param 'Function'|'Method' $identifier
 	 * @param ParameterReflectionWithPhpDocs[] $parameters
 	 * @param ImpurePoint[] $impurePoints
+	 * @param ThrowPoint[] $throwPoints
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
@@ -29,10 +31,20 @@ class FunctionPurityCheck
 		array $parameters,
 		Type $returnType,
 		array $impurePoints,
+		array $throwPoints,
 	): array
 	{
 		$errors = [];
 		$isPure = $functionReflection->isPure();
+		$isConstructor = false;
+		if (
+			$functionReflection instanceof ExtendedMethodReflection
+			&& $functionReflection->getDeclaringClass()->hasConstructor()
+			&& $functionReflection->getDeclaringClass()->getConstructor()->getName() === $functionReflection->getName()
+		) {
+			$isConstructor = true;
+		}
+
 		if ($isPure->yes()) {
 			foreach ($parameters as $parameter) {
 				if (!$parameter->passedByReference()->createsNewVariable()) {
@@ -46,14 +58,6 @@ class FunctionPurityCheck
 				))->identifier(sprintf('pure%s.parameterByRef', $identifier))->build();
 			}
 
-			$isConstructor = false;
-			if (
-				$functionReflection instanceof ExtendedMethodReflection
-				&& $functionReflection->getDeclaringClass()->hasConstructor()
-				&& $functionReflection->getDeclaringClass()->getConstructor()->getName() === $functionReflection->getName()
-			) {
-				$isConstructor = true;
-			}
 			if ($returnType->isVoid()->yes() && !$isConstructor) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'%s is marked as pure but returns void.',
@@ -82,6 +86,13 @@ class FunctionPurityCheck
 					'%s is marked as impure but does not have any side effects.',
 					$functionDescription,
 				))->identifier(sprintf('impure%s.pure', $identifier))->build();
+			}
+		} elseif ($returnType->isVoid()->yes()) {
+			if (count($throwPoints) === 0 && count($impurePoints) === 0 && !$isConstructor) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s returns void but does not have any side effects.',
+					$functionDescription,
+				))->identifier('void.pure')->build();
 			}
 		}
 

@@ -63,6 +63,10 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Function PureFunction\actuallyPure() is marked as impure but does not have any side effects.',
 				71,
 			],
+			[
+				'Function PureFunction\emptyVoidFunction() returns void but does not have any side effects.',
+				83,
+			],
 		]);
 	}
 

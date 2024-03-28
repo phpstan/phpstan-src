@@ -44,7 +44,7 @@ function impureFunction()
 
 function voidFunction(): void
 {
-
+	echo 'test';
 }
 
 function possiblyImpureFunction()
@@ -69,6 +69,18 @@ function testThese(string $s)
  * @phpstan-impure
  */
 function actuallyPure()
+{
+
+}
+
+function voidFunctionThatThrows(): void
+{
+	if (rand(0, 1)) {
+		throw new \Exception();
+	}
+}
+
+function emptyVoidFunction(): void
 {
 
 }

@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -31,7 +30,6 @@ use function hexdec;
 use function is_int;
 use function octdec;
 use function preg_match;
-use function sprintf;
 use const PHP_FLOAT_EPSILON;
 
 final class FilterFunctionReturnTypeHelper
@@ -39,6 +37,8 @@ final class FilterFunctionReturnTypeHelper
 
 	/** All validation filters match 0x100. */
 	private const VALIDATION_FILTER_BITMASK = 0x100;
+
+	private const UNKNOWN_CONSTANT = -9999999;
 
 	private ConstantStringType $flagsString;
 
@@ -240,7 +240,7 @@ final class FilterFunctionReturnTypeHelper
 		$constant = $this->reflectionProvider->getConstant(new Node\Name($constantName), null);
 		$valueType = $constant->getValueType();
 		if (!$valueType instanceof ConstantIntegerType) {
-			throw new ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
+			return self::UNKNOWN_CONSTANT;
 		}
 
 		return $valueType->getValue();

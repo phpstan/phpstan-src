@@ -874,6 +874,14 @@ class InitializerExprTypeResolver
 			}
 		}
 
+		$leftNumberType = $leftType->toNumber();
+		$rightNumberType = $rightType->toNumber();
+		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+			return new ErrorType();
+		} elseif ($leftNumberType->isInteger()->or($leftNumberType->isFloat())->no() && $rightNumberType->isInteger()->or($rightNumberType->isFloat())->no()) {
+			return new ErrorType();
+		}
+
 		$positiveInt = IntegerRangeType::fromInterval(0, null);
 		if ($rightType->isInteger()->yes()) {
 			$rangeMin = null;

@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -26,6 +27,7 @@ class InvalidBinaryOperationRule implements Rule
 	public function __construct(
 		private ExprPrinter $exprPrinter,
 		private RuleLevelHelper $ruleLevelHelper,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -116,6 +118,59 @@ class InvalidBinaryOperationRule implements Rule
 					->identifier(sprintf('%s.invalid', $identifier))
 					->build(),
 			];
+		} else {
+			if ($node instanceof Node\Expr\BinaryOp\Mod) {
+				$callback = static fn (Type $type): bool => !$type->isFloat()->no();
+
+				$leftType = $this->ruleLevelHelper->findTypeToCheck(
+					$scope,
+					$node->left,
+					'',
+					$callback,
+				)->getType();
+				if ($leftType instanceof ErrorType) {
+					return [];
+				}
+
+				$rightType = $this->ruleLevelHelper->findTypeToCheck(
+					$scope,
+					$node->right,
+					'',
+					$callback,
+				)->getType();
+				if ($rightType instanceof ErrorType) {
+					return [];
+				}
+
+				$leftNumberType = $leftType->toNumber();
+				$rightNumberType = $rightType->toNumber();
+				if ($leftNumberType->isFloat()->no() && $rightNumberType->isFloat()->no()) {
+					return [];
+				}
+
+				if (!$leftNumberType->isFloat()->no() && $this->phpVersion->deprecatesImplicitConversions()) {
+					return [
+						RuleErrorBuilder::message(sprintf(
+							'Deprecated in PHP 8.1: Implicit conversion from %s to int loses precision.',
+							$leftType->describe(VerbosityLevel::value()),
+						))
+							->line($node->left->getStartLine())
+							->identifier('binaryOp.mod.implicitConversion')
+							->build(),
+					];
+				}
+				if (!$rightNumberType->isFloat()->no() && $this->phpVersion->deprecatesImplicitConversions()) {
+					return [
+						RuleErrorBuilder::message(sprintf(
+							'Deprecated in PHP 8.1: Implicit conversion from %s to int loses precision.',
+							$rightType->describe(VerbosityLevel::value()),
+						))
+							->line($node->left->getStartLine())
+							->identifier('binaryOp.mod.implicitConversion')
+							->build(),
+					];
+				}
+			}
 		}
 
 		return [];

@@ -287,4 +287,9 @@ class PhpVersion
 		return $this->versionId >= 80200;
 	}
 
+	public function deprecatesImplicitConversions(): bool
+	{
+		return $this->versionId >= 80100;
+	}
+
 }

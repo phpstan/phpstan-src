@@ -125,3 +125,52 @@ class HelloWorld
 		assertType('9', max([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
 	}
 }
+
+/**
+ * @param int[] $ints
+ */
+function countMode(array $ints, int $mode): void
+{
+	if (count($ints, $mode) > 0) {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	} else {
+		assertType('false', min($ints));
+		assertType('false', max($ints));
+	}
+}
+
+/**
+ * @param int[] $ints
+ */
+function countNormal(array $ints): void
+{
+	if (count($ints, COUNT_NORMAL) > 0) {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	} else {
+		assertType('false', min($ints));
+		assertType('false', max($ints));
+	}
+}
+
+/**
+ * @param int[] $ints
+ */
+function countRecursive(array $ints): void
+{
+	if (count($ints, COUNT_RECURSIVE) <= 0) {
+		assertType('false', min($ints));
+		assertType('false', max($ints));
+	} else {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	}
+	if (count($ints, COUNT_RECURSIVE) < 1) {
+		assertType('false', min($ints));
+		assertType('false', max($ints));
+	} else {
+		assertType('int', min($ints));
+		assertType('int', max($ints));
+	}
+}

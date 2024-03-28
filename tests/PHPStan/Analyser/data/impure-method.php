@@ -154,3 +154,50 @@ class Bar
 	}
 
 }
+
+class ToBeExtended
+{
+
+	/** @phpstan-pure */
+	public function pure(): int
+	{
+
+	}
+
+	/** @phpstan-impure */
+	public function impure(): int
+	{
+		echo 'test';
+		return 1;
+	}
+
+}
+
+class ExtendingClass extends ToBeExtended
+{
+
+	/**
+	 * @return int
+	 */
+	public function pure(): int
+	{
+		echo 'test';
+		return 1;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function impure(): int
+	{
+		return 1;
+	}
+
+}
+
+function (ExtendingClass $e): void {
+	assert($e->pure() === 1);
+	assertType('1', $e->pure());
+	$e->impure();
+	assertType('int', $e->pure());
+};

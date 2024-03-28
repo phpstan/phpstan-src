@@ -95,6 +95,14 @@ class PureMethodRuleTest extends RuleTestCase
 				'Method PureMethod\ActuallyPure::doFoo() is marked as impure but does not have any side effects.',
 				153,
 			],
+			[
+				'Impure echo in pure method PureMethod\ExtendingClass::pure().',
+				183,
+			],
+			[
+				'Method PureMethod\ExtendingClass::impure() is marked as impure but does not have any side effects.',
+				187,
+			],
 		]);
 	}
 

@@ -156,3 +156,37 @@ class ActuallyPure
 	}
 
 }
+
+class ToBeExtended
+{
+
+	/** @phpstan-pure */
+	public function pure(): int
+	{
+
+	}
+
+	/** @phpstan-impure */
+	public function impure(): int
+	{
+		echo 'test';
+		return 1;
+	}
+
+}
+
+class ExtendingClass extends ToBeExtended
+{
+
+	public function pure(): int
+	{
+		echo 'test';
+		return 1;
+	}
+
+	public function impure(): int
+	{
+		return 1;
+	}
+
+}

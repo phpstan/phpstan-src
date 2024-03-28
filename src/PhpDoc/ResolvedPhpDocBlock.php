@@ -262,7 +262,7 @@ class ResolvedPhpDocBlock
 		$result->isNotDeprecated = $this->isNotDeprecated();
 		$result->isInternal = $this->isInternal();
 		$result->isFinal = $this->isFinal();
-		$result->isPure = $this->isPure();
+		$result->isPure = self::mergePureTags($this->isPure(), $parents);
 		$result->isReadOnly = $this->isReadOnly();
 		$result->isImmutable = $this->isImmutable();
 		$result->isAllowedPrivateMutation = $this->isAllowedPrivateMutation();
@@ -1059,6 +1059,27 @@ class ResolvedPhpDocBlock
 		}
 
 		return $paramOutTags;
+	}
+
+	/**
+	 * @param array<int, self> $parents
+	 */
+	private static function mergePureTags(?bool $isPure, array $parents): ?bool
+	{
+		if ($isPure !== null) {
+			return $isPure;
+		}
+
+		foreach ($parents as $parent) {
+			$parentIsPure = $parent->isPure();
+			if ($parentIsPure === null) {
+				continue;
+			}
+
+			return $parentIsPure;
+		}
+
+		return null;
 	}
 
 	/**

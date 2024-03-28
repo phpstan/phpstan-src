@@ -817,4 +817,18 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBugInstanceofStaticVsThis(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-instanceof-static-vs-this.php'], []);
+	}
+
+	public function testBug9465(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-9465.php'], []);
+	}
+
 }

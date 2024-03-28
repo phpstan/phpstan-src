@@ -146,6 +146,10 @@ class StaticMethodCallCheck
 					}
 				}
 			}
+
+			if ($lowercasedClassName === 'static') {
+				$classType = $scope->getType(new Expr\ClassConstFetch(new Name('static'), 'class'))->getClassStringObjectType();
+			}
 		} else {
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,

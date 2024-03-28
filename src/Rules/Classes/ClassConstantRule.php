@@ -64,7 +64,9 @@ class ClassConstantRule implements Rule
 					];
 				}
 
-				$classType = $scope->resolveTypeByName($class);
+				$classType = $lowercasedClassName === 'static'
+					? $scope->getType(new ClassConstFetch(new Node\Name('static'), 'class'))->getClassStringObjectType()
+					: $scope->resolveTypeByName($class);
 			} elseif ($lowercasedClassName === 'parent') {
 				if (!$scope->isInClass()) {
 					return [

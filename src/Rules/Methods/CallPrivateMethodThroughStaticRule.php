@@ -36,7 +36,7 @@ class CallPrivateMethodThroughStaticRule implements Rule
 			return [];
 		}
 
-		$classType = $scope->resolveTypeByName($className);
+		$classType = $scope->getType(new Node\Expr\ClassConstFetch(new Name('static'), 'class'))->getClassStringObjectType();
 		if (!$classType->hasMethod($methodName)->yes()) {
 			return [];
 		}

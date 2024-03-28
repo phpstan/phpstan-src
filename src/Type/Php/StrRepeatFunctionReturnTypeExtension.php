@@ -8,6 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -19,6 +20,7 @@ use PHPStan\Type\Type;
 use function count;
 use function str_repeat;
 use function strlen;
+use function strpos;
 
 class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -72,6 +74,20 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 		if ($inputType->isLiteralString()->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
+
+			if ($inputType->isNumericString()->yes()) {
+				$hasDecimalPoint = false;
+				foreach ($inputType->getConstantStrings() as $constantString) {
+					if (strpos($constantString->getValue(), '.') !== false) {
+						$hasDecimalPoint = true;
+						break;
+					}
+				}
+
+				if (!$hasDecimalPoint) {
+					$accessoryTypes[] = new AccessoryNumericStringType();
+				}
+			}
 		}
 
 		if (count($accessoryTypes) > 0) {

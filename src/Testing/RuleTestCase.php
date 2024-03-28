@@ -119,6 +119,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$collectorRegistry,
 				$nodeScopeResolver,
 				50,
+				$reflectionProvider,
 			);
 		}
 

@@ -712,6 +712,11 @@ parameters:
 			path: src/Testing/PHPStanTestCase.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
+			count: 2
+			path: src/Testing/TypeInferenceTestCase.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/Accessory/AccessoryArrayListType.php

@@ -16,8 +16,12 @@ function validateStringArray(array $arr) : void {
 	}
 }
 
-function takesString(string $s) : void {}
-function takesInt(int $s) : void {}
+function takesString(string $s) : void {
+	echo $s;
+}
+function takesInt(int $s) : void {
+	echo (string) $s;
+}
 
 /**
  * @param mixed[] $arr

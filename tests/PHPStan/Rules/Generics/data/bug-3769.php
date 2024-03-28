@@ -29,6 +29,7 @@ function foo(
 	$a = assertType('array<int, string>', stringValues($foo));
 	$a = assertType('array<string, string>', stringValues($bar));
 	$a = assertType('array<string>', stringValues($baz));
+	echo 'test';
 };
 
 /**
@@ -37,6 +38,7 @@ function foo(
  */
 function fooUnion($foo): void {
 	$a = assertType('T of Exception|stdClass (function Bug3769\fooUnion(), argument)', $foo);
+	echo 'test';
 }
 
 /**

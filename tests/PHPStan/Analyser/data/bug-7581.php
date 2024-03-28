@@ -110,4 +110,6 @@ function parse(array $parsed): void
 				break;
 		endswitch;
 	endforeach;
+
+	echo 'test';
 }

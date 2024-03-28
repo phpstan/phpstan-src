@@ -17,6 +17,7 @@ function bleh(): ?string
 
 function blih(string $blah, string $bleh): void
 {
+	echo 'test';
 }
 
 function () {

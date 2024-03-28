@@ -9,6 +9,7 @@ enum Foo
 
 function test(Foo $f = Foo::BAR): void
 {
+	echo 'test';
 }
 
 function test2(): void

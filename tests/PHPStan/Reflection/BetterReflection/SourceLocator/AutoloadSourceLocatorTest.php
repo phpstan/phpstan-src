@@ -14,7 +14,7 @@ use function class_alias;
 
 function testFunctionForLocator(): void // phpcs:disable
 {
-
+	echo 'test';
 }
 
 class AutoloadSourceLocatorTest extends PHPStanTestCase

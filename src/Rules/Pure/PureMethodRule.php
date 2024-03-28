@@ -36,6 +36,7 @@ class PureMethodRule implements Rule
 			$variant->getParameters(),
 			$variant->getReturnType(),
 			$node->getImpurePoints(),
+			$node->getStatementResult()->getThrowPoints(),
 		);
 	}
 

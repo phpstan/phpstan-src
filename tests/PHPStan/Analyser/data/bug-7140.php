@@ -41,5 +41,6 @@ function foo(array $arr): void
 
 		if (isset($arr['k_' . $i])) {
 		}
+		echo 'test';
 	}
 }

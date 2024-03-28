@@ -103,6 +103,10 @@ class PureMethodRuleTest extends RuleTestCase
 				'Method PureMethod\ExtendingClass::impure() is marked as impure but does not have any side effects.',
 				187,
 			],
+			[
+				'Method PureMethod\ClassWithVoidMethods::privateEmptyVoidFunction() returns void but does not have any side effects.',
+				214,
+			],
 		]);
 	}
 

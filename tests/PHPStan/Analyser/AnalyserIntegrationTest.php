@@ -1052,7 +1052,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7110.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Parameter #1 $s of function Bug7110\takesInt expects int, string given.', $errors[0]->getMessage());
-		$this->assertSame(30, $errors[0]->getLine());
+		$this->assertSame(34, $errors[0]->getLine());
 	}
 
 	public function testBug8376(): void

@@ -23,6 +23,9 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				self::getContainer(),
 				[
 					'MissingReadOnlyPropertyAssign\\TestCase::setUp',
+					'Bug10523\\Controller::init',
+					'Bug10523\\MultipleWrites::init',
+					'Bug10523\\SingleWriteInConstructorCalledMethod::init',
 				],
 			),
 		);
@@ -257,6 +260,20 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			[
 				'Class class@anonymous/tests/PHPStan/Rules/Properties/data/missing-readonly-anonymous-class-property-assign.php:10 has an uninitialized readonly property $foo. Assign it in the constructor.',
 				11,
+			],
+		]);
+	}
+
+	public function testBug10523(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-10523.php'], [
+			[
+				'Readonly property Bug10523\MultipleWrites::$userAccount is already assigned.',
+				55,
 			],
 		]);
 	}

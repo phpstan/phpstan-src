@@ -38,6 +38,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -1497,15 +1498,24 @@ class TypeSpecifier
 			$leftExpr = $leftExpr->getExpr();
 		}
 
+		$isNativeConstFetch = static function (Expr $expr): bool {
+			if (!$expr instanceof ConstFetch) {
+				return false;
+			}
+
+			$loweredConstName = strtolower($expr->name->toString());
+			return in_array($loweredConstName, ['true', 'false', 'null'], true);
+		};
+
 		if (
 			$leftType instanceof ConstantScalarType
-			&& !$rightExpr instanceof ConstFetch
+			&& !$isNativeConstFetch($rightExpr)
 			&& !$rightExpr instanceof ClassConstFetch
 		) {
 			return [$binaryOperation->right, $leftType];
 		} elseif (
 			$rightType instanceof ConstantScalarType
-			&& !$leftExpr instanceof ConstFetch
+			&& !$isNativeConstFetch($leftExpr)
 			&& !$leftExpr instanceof ClassConstFetch
 		) {
 			return [$binaryOperation->left, $rightType];
@@ -1835,6 +1845,26 @@ class TypeSpecifier
 					$context->true() ? TypeSpecifierContext::createTruthy() : TypeSpecifierContext::createTruthy()->negate(),
 					$rootExpr,
 				);
+			}
+
+			$looseyType = new UnionType([
+				new NullType(),
+				new ConstantBooleanType(true),
+				new ConstantBooleanType(false),
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+				new FloatType(), // equality on floats is not usefull
+				new ConstantStringType(''),
+				new ConstantStringType('0'),
+				new ConstantStringType('1'),
+				new ConstantArrayType([], []),
+			]);
+
+			if ($context->true()
+				&& ($exprNode instanceof Expr\Variable || $exprNode instanceof ConstFetch)
+				&& !$looseyType->isSuperTypeOf($constantType)->yes()
+			) {
+				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 			}
 
 			if (

@@ -2,10 +2,12 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function is_float;
 use function is_int;
+use function pow;
 
 final class ExponentiateHelper
 {
@@ -24,22 +26,9 @@ final class ExponentiateHelper
 			return new NeverType();
 		}
 
-		$allowedExponentTypes = new UnionType([
-			new IntegerType(),
-			new FloatType(),
-			new StringType(),
-			new BooleanType(),
-			new NullType(),
-		]);
-		if (!$allowedExponentTypes->isSuperTypeOf($exponent)->yes()) {
-			return new ErrorType();
-		}
-
-		if ($base instanceof ConstantScalarType) {
-			$result = self::exponentiateConstantScalar($base, $exponent);
-			if ($result !== null) {
-				return $result;
-			}
+		$result = self::exponentiateConstantScalar($base, $exponent);
+		if ($result !== null) {
+			return $result;
 		}
 
 		// exponentiation of a float, stays a float
@@ -77,16 +66,37 @@ final class ExponentiateHelper
 		]);
 	}
 
-	private static function exponentiateConstantScalar(ConstantScalarType $base, Type $exponent): ?Type
+	private static function exponentiateConstantScalar(Type $base, Type $exponent): ?Type
 	{
+		$allowedOperandTypes = new UnionType([
+			new IntegerType(),
+			new FloatType(),
+			new IntersectionType([
+				new StringType(),
+				new AccessoryNumericStringType(),
+			]),
+			new BooleanType(),
+			new NullType(),
+		]);
+		if (!$allowedOperandTypes->isSuperTypeOf($exponent)->yes()) {
+			return new ErrorType();
+		}
+		if (!$allowedOperandTypes->isSuperTypeOf($base)->yes()) {
+			return new ErrorType();
+		}
+
+		if (!$base instanceof ConstantScalarType) {
+			return null;
+		}
+
 		if ($exponent instanceof IntegerRangeType) {
 			$min = null;
 			$max = null;
 			if ($exponent->getMin() !== null) {
-				$min = $base->getValue() ** $exponent->getMin();
+				$min = self::pow($base->getValue(), $exponent->getMin());
 			}
 			if ($exponent->getMax() !== null) {
-				$max = $base->getValue() ** $exponent->getMax();
+				$max = self::pow($base->getValue(), $exponent->getMax());
 			}
 
 			if (!is_float($min) && !is_float($max)) {
@@ -95,7 +105,7 @@ final class ExponentiateHelper
 		}
 
 		if ($exponent instanceof ConstantScalarType) {
-			$result = $base->getValue() ** $exponent->getValue();
+			$result = self::pow($base->getValue(), $exponent->getValue());
 			if (is_int($result)) {
 				return new ConstantIntegerType($result);
 			}
@@ -103,6 +113,14 @@ final class ExponentiateHelper
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return float|int
+	 */
+	private static function pow(mixed $base, mixed $exp)
+	{
+		return pow($base, $exp);
 	}
 
 }

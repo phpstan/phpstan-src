@@ -192,6 +192,10 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 
+			if ($usageScope->isInAnonymousFunction() && $usageScope->getParentScope() !== null) {
+				$usageScope = $usageScope->getParentScope();
+			}
+
 			$propertyReflection = $usageScope->getPropertyReflection($fetchedOnType, $propertyName);
 			if ($propertyReflection === null) {
 				continue;
@@ -351,6 +355,10 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 			if (!in_array($inMethod->getName(), $methods, true)) {
 				continue;
+			}
+
+			if ($callScope->isInAnonymousFunction() && $callScope->getParentScope() !== null) {
+				$callScope = $callScope->getParentScope();
 			}
 
 			$methodName = $methodCallNode->name->toString();

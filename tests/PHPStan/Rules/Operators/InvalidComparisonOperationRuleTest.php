@@ -168,4 +168,10 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+
+	public function testRuleWithSimpleXml(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9456-xml.php'], []);
+	}
+
 }

@@ -501,3 +501,34 @@ function ($s, $t): void {
 	assertType('string', $s);
 	assertType('string', $t);
 };
+
+// typed via phpdoc in stub file
+function rsort(array &$array, int $flags = SORT_REGULAR): bool
+{
+}
+
+function ($a): void {
+	\ParamOut\rsort($a);
+	assertType('list<mixed>', $a);
+};
+/**
+ * @param string[] $a
+ */
+function ($a): void {
+	\ParamOut\rsort($a);
+	assertType('list<string>', $a);
+};
+/**
+ * @param non-empty-array<string> $a
+ */
+function ($a): void {
+	\ParamOut\rsort($a);
+	assertType('non-empty-list<string>', $a);
+};
+/**
+ * @param non-empty-list<string> $a
+ */
+function ($a): void {
+	\ParamOut\rsort($a);
+	assertType('non-empty-list<string>', $a);
+};

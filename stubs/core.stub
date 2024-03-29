@@ -193,7 +193,7 @@ function sscanf(string $string, string $format, &$war, &...$vars) {}
  *                              ? list<array<?string>>
  *                              : (TFlags is 770
  *                                  ? list<array<array{?string, int}>>
- *                                  : array<mixed>
+ *                                  : (TFlags is 0 ? array<list<string>> : array<mixed>)
  *                              )
  *                          )
  *                      )

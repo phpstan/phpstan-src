@@ -27,4 +27,10 @@ class Foo
 		assertType('array<int>', $c);
 	}
 
+	public function sayHello(string $row): void
+	{
+		preg_match_all('#// error:(.+)#', $row, $matches);
+		assertType('array<list<string>>', $matches);
+	}
+
 }

@@ -95,10 +95,22 @@ class FunctionPurityCheck
 				&& (!$functionReflection instanceof ExtendedMethodReflection || $functionReflection->isPrivate())
 				&& count($functionReflection->getAsserts()->getAll()) === 0
 			) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'%s returns void but does not have any side effects.',
-					$functionDescription,
-				))->identifier('void.pure')->build();
+				$hasByRef = false;
+				foreach ($parameters as $parameter) {
+					if (!$parameter->passedByReference()->createsNewVariable()) {
+						continue;
+					}
+
+					$hasByRef = true;
+					break;
+				}
+
+				if (!$hasByRef) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'%s returns void but does not have any side effects.',
+						$functionDescription,
+					))->identifier('void.pure')->build();
+				}
 			}
 		}
 

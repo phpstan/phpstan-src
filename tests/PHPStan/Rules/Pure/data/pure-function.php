@@ -103,3 +103,8 @@ function pureButAccessSuperGlobal(): int
 
 	return $_POST['test'];
 }
+
+function emptyVoidFunctionWithByRefParameter(&$a): void
+{
+
+}

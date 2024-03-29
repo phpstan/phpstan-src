@@ -18,18 +18,6 @@ use function sprintf;
 class InvalidLexicalVariablesInClosureUseRule implements Rule
 {
 
-	private const SUPERGLOBAL_NAMES = [
-		'_COOKIE',
-		'_ENV',
-		'_FILES',
-		'_GET',
-		'_POST',
-		'_REQUEST',
-		'_SERVER',
-		'_SESSION',
-		'GLOBALS',
-	];
-
 	public function getNodeType(): string
 	{
 		return Node\Expr\Closure::class;
@@ -72,7 +60,7 @@ class InvalidLexicalVariablesInClosureUseRule implements Rule
 				continue;
 			}
 
-			if (in_array($var, self::SUPERGLOBAL_NAMES, true)) {
+			if (in_array($var, Scope::SUPERGLOBAL_VARIABLES, true)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Cannot use superglobal variable $%s as lexical variable.', $var))
 					->line($use->getStartLine())
 					->identifier('closure.useSuperGlobal')

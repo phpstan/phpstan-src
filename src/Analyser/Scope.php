@@ -24,6 +24,18 @@ use PHPStan\Type\TypeWithClassName;
 interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 {
 
+	public const SUPERGLOBAL_VARIABLES = [
+		'GLOBALS',
+		'_SERVER',
+		'_GET',
+		'_POST',
+		'_FILES',
+		'_COOKIE',
+		'_SESSION',
+		'_REQUEST',
+		'_ENV',
+	];
+
 	public function getFile(): string;
 
 	public function getFileDescription(): string;

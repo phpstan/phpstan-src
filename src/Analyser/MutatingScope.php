@@ -568,17 +568,7 @@ class MutatingScope implements Scope
 
 	private function isGlobalVariable(string $variableName): bool
 	{
-		return in_array($variableName, [
-			'GLOBALS',
-			'_SERVER',
-			'_GET',
-			'_POST',
-			'_FILES',
-			'_COOKIE',
-			'_SESSION',
-			'_REQUEST',
-			'_ENV',
-		], true);
+		return in_array($variableName, self::SUPERGLOBAL_VARIABLES, true);
 	}
 
 	/** @api */

@@ -1289,6 +1289,9 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\DateFunctionReturnTypeHelper
+
+	-
 		class: PHPStan\Type\Php\DateFormatFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

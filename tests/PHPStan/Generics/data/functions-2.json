@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Function PHPStan\\Generics\\Functions\\passthru2() returns void but does not have any side effects.",
+        "line": 60,
+        "ignorable": true
+    }
+]

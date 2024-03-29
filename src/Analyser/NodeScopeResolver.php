@@ -4403,6 +4403,9 @@ class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
+			if (in_array($var->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
+				$impurePoints[] = new ImpurePoint($scope, $var, 'superglobal', 'assign to superglobal variable', true);
+			}
 			$assignedExpr = $this->unwrapAssign($assignedExpr);
 			$type = $scope->getType($assignedExpr);
 

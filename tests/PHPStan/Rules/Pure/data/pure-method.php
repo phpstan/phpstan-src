@@ -216,4 +216,21 @@ class ClassWithVoidMethods
 
 	}
 
+	private function setPostAndGet(array $post = [], array $get = []): void
+	{
+		$_POST = $post;
+		$_GET = $get;
+	}
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function purePostGetAssign(array $post = [], array $get = []): int
+	{
+		$_POST = $post;
+		$_GET = $get;
+
+		return 1;
+	}
+
 }

@@ -107,6 +107,14 @@ class PureMethodRuleTest extends RuleTestCase
 				'Method PureMethod\ClassWithVoidMethods::privateEmptyVoidFunction() returns void but does not have any side effects.',
 				214,
 			],
+			[
+				'Impure assign to superglobal variable in pure method PureMethod\ClassWithVoidMethods::purePostGetAssign().',
+				230,
+			],
+			[
+				'Impure assign to superglobal variable in pure method PureMethod\ClassWithVoidMethods::purePostGetAssign().',
+				231,
+			],
 		]);
 	}
 

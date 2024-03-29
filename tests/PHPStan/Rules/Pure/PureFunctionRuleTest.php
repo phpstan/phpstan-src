@@ -67,6 +67,18 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Function PureFunction\emptyVoidFunction() returns void but does not have any side effects.',
 				83,
 			],
+			[
+				'Impure access to superglobal variable in pure function PureFunction\pureButAccessSuperGlobal().',
+				101,
+			],
+			[
+				'Impure access to superglobal variable in pure function PureFunction\pureButAccessSuperGlobal().',
+				102,
+			],
+			[
+				'Impure access to superglobal variable in pure function PureFunction\pureButAccessSuperGlobal().',
+				104,
+			],
 		]);
 	}
 

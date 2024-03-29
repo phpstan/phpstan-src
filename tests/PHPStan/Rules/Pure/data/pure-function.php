@@ -92,3 +92,14 @@ function emptyVoidFunctionWithAssertTag(?int $a): void
 {
 
 }
+
+/**
+ * @phpstan-pure
+ */
+function pureButAccessSuperGlobal(): int
+{
+	$a = $_POST['bla'];
+	$_POST['test'] = 1;
+
+	return $_POST['test'];
+}

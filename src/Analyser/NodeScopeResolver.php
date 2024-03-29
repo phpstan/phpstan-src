@@ -2053,6 +2053,8 @@ class NodeScopeResolver
 			$impurePoints = [];
 			if ($expr->name instanceof Expr) {
 				return $this->processExprNode($stmt, $expr->name, $scope, $nodeCallback, $context->enterDeep());
+			} elseif (in_array($expr->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
+				$impurePoints[] = new ImpurePoint($scope, $expr, 'superglobal', 'access to superglobal variable', true);
 			}
 		} elseif ($expr instanceof Assign || $expr instanceof AssignRef) {
 			$result = $this->processAssignVar(

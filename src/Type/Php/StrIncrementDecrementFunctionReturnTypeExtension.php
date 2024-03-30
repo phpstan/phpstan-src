@@ -101,7 +101,7 @@ class StrIncrementDecrementFunctionReturnTypeExtension implements DynamicFunctio
 			}
 		}
 
-		return (string) ++$s;
+		return ++$s;
 	}
 
 	private function decrement(string $s): ?string

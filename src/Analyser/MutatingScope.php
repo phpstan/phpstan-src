@@ -2754,7 +2754,7 @@ class MutatingScope implements Scope
 			}
 			$realParameterTypes[$parameter->var->name] = $this->getFunctionType(
 				$parameter->type,
-				$this->isParameterValueNullable($parameter),
+				$this->isParameterValueNullable($parameter) && $parameter->flags === 0,
 				false,
 			);
 		}

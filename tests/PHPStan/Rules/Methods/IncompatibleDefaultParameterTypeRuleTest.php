@@ -66,6 +66,10 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 				'Default value of the parameter #2 $foo (string) of method DefaultValueForPromotedProperty\Foo::__construct() is incompatible with type int.',
 				10,
 			],
+			[
+				'Default value of the parameter #4 $intProp (null) of method DefaultValueForPromotedProperty\Foo::__construct() is incompatible with type int.',
+				12,
+			],
 		]);
 	}
 

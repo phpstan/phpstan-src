@@ -276,6 +276,10 @@ class InstantiationRuleTest extends RuleTestCase
 				'Parameter #2 $bar of class InstantiationPromotedProperties\Bar constructor expects array<string>, array<int, int> given.',
 				33,
 			],
+			[
+				'Parameter #1 $intProp of class InstantiationPromotedProperties\PromotedPropertyNotNullable constructor expects int, null given.',
+				46,
+			],
 		]);
 	}
 

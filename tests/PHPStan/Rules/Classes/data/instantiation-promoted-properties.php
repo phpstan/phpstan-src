@@ -1,4 +1,4 @@
-<?php // lint >= 8.0
+<?php
 
 namespace InstantiationPromotedProperties;
 
@@ -31,4 +31,17 @@ function () {
 
 	new Bar([], ['foo']);
 	new Bar([], [1]);
+};
+
+class PromotedPropertyNotNullable
+{
+
+	public function __construct(
+		private int $intProp = null,
+	) {}
+
+}
+
+function () {
+	new PromotedPropertyNotNullable(null);
 };

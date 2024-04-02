@@ -43,7 +43,8 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 			}
 
 			$defaultValueType = $scope->getType($param->default);
-			$parameterType = $parameters->getParameters()[$paramI]->getType();
+			$parameter = $parameters->getParameters()[$paramI];
+			$parameterType = $parameter->getType();
 			$parameterType = TemplateTypeHelper::resolveToBounds($parameterType);
 
 			$accepts = $parameterType->acceptsWithReason($defaultValueType, true);

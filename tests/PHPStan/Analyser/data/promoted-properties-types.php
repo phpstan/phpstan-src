@@ -103,3 +103,16 @@ function (Baz $baz): void {
 	assertType('array<int, string>', $baz->anotherPhpDocArray);
 	assertType('stdClass', $baz->templateProperty);
 };
+
+class PromotedPropertyNotNullable
+{
+
+	public function __construct(
+		public int $intProp = null,
+	) {}
+
+}
+
+function (PromotedPropertyNotNullable $p) {
+	assertType('int', $p->intProp);
+};

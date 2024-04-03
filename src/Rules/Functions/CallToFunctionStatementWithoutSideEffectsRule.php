@@ -20,10 +20,9 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 {
 
 	private const SIDE_EFFECT_FLIP_PARAMETERS = [
-		// functionName => [name, pos, testName, defaultHasSideEffect]
-		'file_get_contents' => ['context', 2, 'isNotNull', false],
-		'print_r' => ['return', 1, 'isTruthy', true],
-		'var_export' => ['return', 1, 'isTruthy', true],
+		// functionName => [name, pos, testName]
+		'print_r' => ['return', 1, 'isTruthy'],
+		'var_export' => ['return', 1, 'isTruthy'],
 	];
 
 	public function __construct(private ReflectionProvider $reflectionProvider)
@@ -68,7 +67,6 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 				$flipParameterName,
 				$flipParameterPosition,
 				$testName,
-				$defaultHasSideEffect,
 			] = self::SIDE_EFFECT_FLIP_PARAMETERS[$functionName];
 
 			$sideEffectFlipped = false;
@@ -102,7 +100,7 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 				}
 			}
 
-			if ($sideEffectFlipped xor $defaultHasSideEffect) {
+			if (!$sideEffectFlipped) {
 				return [];
 			}
 

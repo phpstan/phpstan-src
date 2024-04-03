@@ -79,6 +79,7 @@ return [
 	'fgetcsv' => ['hasSideEffects' => true],
 	'fgets' => ['hasSideEffects' => true],
 	'fgetss' => ['hasSideEffects' => true],
+	'file_get_contents' => ['hasSideEffects' => true],
 	'file_put_contents' => ['hasSideEffects' => true],
 	'flock' => ['hasSideEffects' => true],
 	'fopen' => ['hasSideEffects' => true],

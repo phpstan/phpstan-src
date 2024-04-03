@@ -59,7 +59,7 @@ class MoreTests
 	public function test4(string $path): void
 	{
 		if (file_get_contents($path) === 'data') {
-			assertType('\'data\'', file_get_contents($path));
+			assertType('string|false', file_get_contents($path));
 			file_put_contents($path, 'other');
 			assertType('string|false', file_get_contents($path));
 		}

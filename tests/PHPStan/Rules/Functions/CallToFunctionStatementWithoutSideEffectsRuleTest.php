@@ -25,14 +25,6 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Call to function file_get_contents() on a separate line has no effect.',
-				14,
-			],
-			[
-				'Call to function file_get_contents() on a separate line has no effect.',
-				22,
-			],
-			[
 				'Call to function var_export() on a separate line has no effect.',
 				24,
 			],
@@ -47,22 +39,6 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/function-call-statement-no-side-effects-8.0.php'], [
-			[
-				'Call to function file_get_contents() on a separate line has no effect.',
-				15,
-			],
-			[
-				'Call to function file_get_contents() on a separate line has no effect.',
-				16,
-			],
-			[
-				'Call to function file_get_contents() on a separate line has no effect.',
-				17,
-			],
-			[
-				'Call to function file_get_contents() on a separate line has no effect.',
-				18,
-			],
 			[
 				'Call to function var_export() on a separate line has no effect.',
 				19,

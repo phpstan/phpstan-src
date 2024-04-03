@@ -8,7 +8,7 @@ use PhpParser\NodeAbstract;
 class NoopExpressionNode extends NodeAbstract implements VirtualNode
 {
 
-	public function __construct(private Expr $originalExpr)
+	public function __construct(private Expr $originalExpr, private bool $hasAssign)
 	{
 		parent::__construct($this->originalExpr->getAttributes());
 	}
@@ -16,6 +16,11 @@ class NoopExpressionNode extends NodeAbstract implements VirtualNode
 	public function getOriginalExpr(): Expr
 	{
 		return $this->originalExpr;
+	}
+
+	public function hasAssign(): bool
+	{
+		return $this->hasAssign;
 	}
 
 	public function getType(): string

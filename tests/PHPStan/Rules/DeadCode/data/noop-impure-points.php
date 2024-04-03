@@ -38,4 +38,10 @@ class Foo
 		exit(1);
 	}
 
+	public function doAssign(bool $b): void
+	{
+		$b ? $a = 1 : '';
+		$b ? $this->foo = 1 : '';
+	}
+
 }

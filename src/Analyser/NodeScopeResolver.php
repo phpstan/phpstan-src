@@ -746,7 +746,15 @@ class NodeScopeResolver
 			], $overridingThrowPoints ?? $throwPoints, $impurePoints);
 		} elseif ($stmt instanceof Node\Stmt\Expression) {
 			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope);
-			$result = $this->processExprNode($stmt, $stmt->expr, $scope, $nodeCallback, ExpressionContext::createTopLevel());
+			$hasAssign = false;
+			$result = $this->processExprNode($stmt, $stmt->expr, $scope, static function (Node $node, Scope $scope) use ($nodeCallback, &$hasAssign): void {
+				$nodeCallback($node, $scope);
+				if (!$node instanceof VariableAssignNode && !$node instanceof PropertyAssignNode) {
+					return;
+				}
+
+				$hasAssign = true;
+			}, ExpressionContext::createTopLevel());
 			$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
 			if (
 				count($result->getImpurePoints()) === 0
@@ -756,7 +764,7 @@ class NodeScopeResolver
 				&& !$stmt->expr instanceof Expr\PostDec
 				&& !$stmt->expr instanceof Expr\PreDec
 			) {
-				$nodeCallback(new NoopExpressionNode($stmt->expr), $scope);
+				$nodeCallback(new NoopExpressionNode($stmt->expr, $hasAssign), $scope);
 			}
 			$scope = $result->getScope();
 			$scope = $scope->filterBySpecifiedTypes($this->typeSpecifier->specifyTypesInCondition(

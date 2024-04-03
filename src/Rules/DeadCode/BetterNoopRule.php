@@ -38,6 +38,7 @@ class BetterNoopRule implements Rule
 					->build(),
 			];
 		}
+
 		if ($expr instanceof Node\Expr\BinaryOp\LogicalAnd || $expr instanceof Node\Expr\BinaryOp\LogicalOr) {
 			$identifierType = $expr instanceof Node\Expr\BinaryOp\LogicalAnd ? 'logicalAnd' : 'logicalOr';
 
@@ -50,6 +51,10 @@ class BetterNoopRule implements Rule
 					->identifier(sprintf('%s.resultUnused', $identifierType))
 					->build(),
 			];
+		}
+
+		if ($node->hasAssign()) {
+			return [];
 		}
 
 		if ($expr instanceof Node\Expr\BinaryOp\BooleanAnd || $expr instanceof Node\Expr\BinaryOp\BooleanOr) {

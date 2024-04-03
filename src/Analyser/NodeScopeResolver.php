@@ -2800,7 +2800,7 @@ class NodeScopeResolver
 				$result = $this->processExprNode($stmt, $expr->expr, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $result->hasYield();
 				$throwPoints = $result->getThrowPoints();
-				$impurePoints = $result->getImpurePoints();
+				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 				$scope = $result->getScope();
 			}
 		} elseif ($expr instanceof Node\Scalar\Encapsed) {

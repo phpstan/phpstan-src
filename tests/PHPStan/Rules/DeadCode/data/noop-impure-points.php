@@ -33,4 +33,9 @@ class Foo
 		return true;
 	}
 
+	public function doExit(): void
+	{
+		exit(1);
+	}
+
 }

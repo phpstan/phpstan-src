@@ -7,5 +7,6 @@
  * @param-out ($read is not null ? array<resource> : null) $read
  * @param-out ($write is not null ? array<resource> : null) $write
  * @param-out ($except is not null ? array<resource> : null) $except
+ * @return int|false
  */
-function socket_select(?array &$read, ?array &$write, ?array &$except, ?int $seconds, int $microseconds = 0): int|false {}
+function socket_select(?array &$read, ?array &$write, ?array &$except, ?int $seconds, int $microseconds = 0) {}

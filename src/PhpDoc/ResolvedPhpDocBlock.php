@@ -281,6 +281,17 @@ class ResolvedPhpDocBlock
 			return $this;
 		}
 
+		$mapParameterCb = static function (Type $type, callable $traverse) use ($parameterNameMapping): Type {
+			if ($type instanceof ConditionalTypeForParameter) {
+				$parameterName = substr($type->getParameterName(), 1);
+				if (array_key_exists($parameterName, $parameterNameMapping)) {
+					$type = $type->changeParameterName('$' . $parameterNameMapping[$parameterName]);
+				}
+			}
+
+			return $traverse($type);
+		};
+
 		$paramTags = $this->getParamTags();
 
 		$newParamTags = [];
@@ -288,7 +299,8 @@ class ResolvedPhpDocBlock
 			if (!array_key_exists($key, $parameterNameMapping)) {
 				continue;
 			}
-			$newParamTags[$parameterNameMapping[$key]] = $paramTag;
+			$transformedType = TypeTraverser::map($paramTag->getType(), $mapParameterCb);
+			$newParamTags[$parameterNameMapping[$key]] = $paramTag->withType($transformedType);
 		}
 
 		$paramOutTags = $this->getParamOutTags();
@@ -298,21 +310,14 @@ class ResolvedPhpDocBlock
 			if (!array_key_exists($key, $parameterNameMapping)) {
 				continue;
 			}
-			$newParamOutTags[$parameterNameMapping[$key]] = $paramOutTag;
+
+			$transformedType = TypeTraverser::map($paramOutTag->getType(), $mapParameterCb);
+			$newParamOutTags[$parameterNameMapping[$key]] = $paramOutTag->withType($transformedType);
 		}
 
 		$returnTag = $this->getReturnTag();
 		if ($returnTag !== null) {
-			$transformedType = TypeTraverser::map($returnTag->getType(), static function (Type $type, callable $traverse) use ($parameterNameMapping): Type {
-				if ($type instanceof ConditionalTypeForParameter) {
-					$parameterName = substr($type->getParameterName(), 1);
-					if (array_key_exists($parameterName, $parameterNameMapping)) {
-						$type = $type->changeParameterName('$' . $parameterNameMapping[$parameterName]);
-					}
-				}
-
-				return $traverse($type);
-			});
+			$transformedType = TypeTraverser::map($returnTag->getType(), $mapParameterCb);
 			$returnTag = $returnTag->withType($transformedType);
 		}
 

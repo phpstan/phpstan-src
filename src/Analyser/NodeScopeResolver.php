@@ -648,6 +648,14 @@ class NodeScopeResolver
 						return;
 					}
 					if ($node instanceof PropertyAssignNode) {
+						if (
+							$node->getPropertyFetch() instanceof Expr\PropertyFetch
+							&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
+							&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
+							&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
+						) {
+							return;
+						}
 						$methodImpurePoints[] = new ImpurePoint(
 							$scope,
 							$node,
@@ -2933,6 +2941,27 @@ class NodeScopeResolver
 			$impurePoints = $result->getImpurePoints();
 			$impurePoints[] = new ImpurePoint($scope, $expr, 'print', 'print', true);
 			$hasYield = $result->hasYield();
+
+			$scope = $result->getScope();
+		} elseif ($expr instanceof Cast\String_) {
+			$result = $this->processExprNode($stmt, $expr->expr, $scope, $nodeCallback, $context->enterDeep());
+			$throwPoints = $result->getThrowPoints();
+			$impurePoints = $result->getImpurePoints();
+			$hasYield = $result->hasYield();
+
+			$exprType = $scope->getType($expr->expr);
+			$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
+			if ($toStringMethod !== null) {
+				if (!$toStringMethod->hasSideEffects()->no()) {
+					$impurePoints[] = new ImpurePoint(
+						$scope,
+						$expr,
+						'methodCall',
+						sprintf('call to method %s::%s()', $toStringMethod->getDeclaringClass()->getDisplayName(), $toStringMethod->getName()),
+						$toStringMethod->isPure()->no(),
+					);
+				}
+			}
 
 			$scope = $result->getScope();
 		} elseif (

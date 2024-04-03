@@ -234,3 +234,66 @@ class ClassWithVoidMethods
 	}
 
 }
+
+class NoMagicMethods
+{
+
+}
+
+class PureMagicMethods
+{
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function __toString(): string
+	{
+		return 'one';
+	}
+
+}
+
+class MaybePureMagicMethods
+{
+
+	public function __toString(): string
+	{
+		return 'one';
+	}
+
+}
+
+class ImpureMagicMethods
+{
+
+	/**
+	 * @phpstan-impure
+	 */
+	public function __toString(): string
+	{
+		sleep(1);
+		return 'one';
+	}
+
+}
+
+class TestMagicMethods
+{
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function doFoo(
+		NoMagicMethods $no,
+		PureMagicMethods $pure,
+		MaybePureMagicMethods $maybe,
+		ImpureMagicMethods $impure
+	)
+	{
+		(string) $no;
+		(string) $pure;
+		(string) $maybe;
+		(string) $impure;
+	}
+
+}

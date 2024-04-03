@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Pure;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<PureMethodRule>
@@ -114,6 +115,32 @@ class PureMethodRuleTest extends RuleTestCase
 			[
 				'Impure assign to superglobal variable in pure method PureMethod\ClassWithVoidMethods::purePostGetAssign().',
 				231,
+			],
+			[
+				'Possibly impure call to method PureMethod\MaybePureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doFoo().',
+				295,
+			],
+			[
+				'Impure call to method PureMethod\ImpureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doFoo().',
+				296,
+			],
+		]);
+	}
+
+	public function testPureConstructor(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/pure-constructor.php'], [
+			[
+				'Impure property assignment in pure method PureConstructor\Foo::__construct().',
+				19,
+			],
+			[
+				'Method PureConstructor\Bar::__construct() is marked as impure but does not have any side effects.',
+				30,
 			],
 		]);
 	}

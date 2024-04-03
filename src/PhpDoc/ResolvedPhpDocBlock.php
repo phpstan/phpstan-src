@@ -300,7 +300,12 @@ class ResolvedPhpDocBlock
 				continue;
 			}
 			$transformedType = TypeTraverser::map($paramTag->getType(), $mapParameterCb);
-			$newParamTags[$parameterNameMapping[$key]] = $paramTag->withType($transformedType);
+			$paramTag = $paramTag->withType($transformedType);
+			if ($paramTag->getClosureThisType() !== null) {
+				$transformedClosureThisType = TypeTraverser::map($paramTag->getClosureThisType(), $mapParameterCb);
+				$paramTag = $paramTag->withClosureThisType($transformedClosureThisType);
+			}
+			$newParamTags[$parameterNameMapping[$key]] = $paramTag;
 		}
 
 		$paramOutTags = $this->getParamOutTags();

@@ -108,3 +108,23 @@ function emptyVoidFunctionWithByRefParameter(&$a): void
 {
 
 }
+
+/**
+ * @phpstan-pure
+ */
+function functionWithGlobal(): int
+{
+	global $db;
+
+	return 1;
+}
+
+/**
+ * @phpstan-pure
+ */
+function functionWithStaticVariable(): int
+{
+	static $v = 1;
+
+	return $v;
+}

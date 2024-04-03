@@ -79,6 +79,14 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure access to superglobal variable in pure function PureFunction\pureButAccessSuperGlobal().',
 				104,
 			],
+			[
+				'Impure global variable in pure function PureFunction\functionWithGlobal().',
+				117,
+			],
+			[
+				'Impure static variable in pure function PureFunction\functionWithStaticVariable().',
+				127,
+			],
 		]);
 	}
 

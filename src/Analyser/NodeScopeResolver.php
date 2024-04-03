@@ -1691,7 +1691,15 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\Global_) {
 			$hasYield = false;
 			$throwPoints = [];
-			$impurePoints = [];
+			$impurePoints = [
+				new ImpurePoint(
+					$scope,
+					$stmt,
+					'global',
+					'global variable',
+					true,
+				),
+			];
 			$vars = [];
 			foreach ($stmt->vars as $var) {
 				if (!$var instanceof Variable) {
@@ -1713,7 +1721,15 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Static_) {
 			$hasYield = false;
 			$throwPoints = [];
-			$impurePoints = [];
+			$impurePoints = [
+				new ImpurePoint(
+					$scope,
+					$stmt,
+					'static',
+					'static variable',
+					true,
+				),
+			];
 
 			$vars = [];
 			foreach ($stmt->vars as $var) {

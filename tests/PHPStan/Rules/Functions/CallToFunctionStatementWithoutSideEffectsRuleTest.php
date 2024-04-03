@@ -67,8 +67,16 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				10,
 			],
 			[
-				'Call to function FunctionCallStatementNoSideEffectsPhpDoc\pureAndThrowsVoid() on a separate line has no effect.',
+				'Call to function FunctionCallStatementNoSideEffectsPhpDoc\pure4() on a separate line has no effect.',
 				11,
+			],
+			[
+				'Call to function FunctionCallStatementNoSideEffectsPhpDoc\pure5() on a separate line has no effect.',
+				12,
+			],
+			[
+				'Call to function FunctionCallStatementNoSideEffectsPhpDoc\pureAndThrowsVoid() on a separate line has no effect.',
+				13,
 			],
 		]);
 	}

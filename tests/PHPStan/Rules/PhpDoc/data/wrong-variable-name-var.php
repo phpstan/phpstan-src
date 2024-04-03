@@ -115,6 +115,7 @@ class Foo
 		 * @var int
 		 * @phpstan-var int
 		 * @psalm-var int
+		 * @phan-var int
 		 */
 		$test = doFoo(); // OK
 

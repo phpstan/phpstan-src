@@ -9,6 +9,7 @@ use function PHPStan\Testing\assertType;
  * @method array arrayOfStrings()
  * @psalm-method array<string> arrayOfStrings()
  * @phpstan-method array<string, int> arrayOfInts()
+ * @phan-method array<string> arrayOfStrings()
  * @method array arrayOfInts()
  * @method mixed overrodeMethod()
  * @method static mixed overrodeStaticMethod()

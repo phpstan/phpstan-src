@@ -29,16 +29,24 @@ class Foo
 	 */
 	public $psalm;
 
+	/**
+	 * @var int
+	 * @phan-read-only
+	 */
+	public $phan;
+
 	public function __construct(int $foo)
 	{
 		$this->foo = $foo; // constructor - fine
 		$this->psalm = $foo; // constructor - fine
+		$this->phan = $foo; // constructor - fine
 	}
 
 	public function setFoo(int $foo): void
 	{
 		$this->foo = $foo; // setter - report
 		$this->psalm = $foo; // do not report -allowed private mutation
+		$this->phan = $foo; // setter - report
 	}
 
 }
@@ -53,12 +61,14 @@ class Bar extends Foo
 		$this->bar = $bar; // report - not in declaring class
 		$this->baz = $baz; // report - not in declaring class
 		$this->psalm = $bar; // report - not in declaring class
+		$this->phan = $bar; // report - not in declaring class
 	}
 
 	public function setBar(int $bar): void
 	{
 		$this->bar = $bar; // report - not in declaring class
 		$this->psalm = $bar; // report - not in declaring class
+		$this->phan = $bar; // report - not in declaring class
 	}
 
 }

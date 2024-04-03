@@ -3620,6 +3620,23 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
+	/**
+	 * @dataProvider dataTypeFromFunctionPhpDocs
+	 * @dataProvider dataTypeFromFunctionPrefixedPhpDocs
+	 */
+	public function testTypeFromFunctionPhpDocsPhanPrefix(
+		string $description,
+		string $expression,
+	): void
+	{
+		require_once __DIR__ . '/data/functionPhpDocs-phanPrefix.php';
+		$this->assertTypes(
+			__DIR__ . '/data/functionPhpDocs-phanPrefix.php',
+			$description,
+			$expression,
+		);
+	}
+
 	public function dataTypeFromMethodPhpDocs(): array
 	{
 		return [
@@ -3824,6 +3841,31 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		}
 		$this->assertTypes(
 			__DIR__ . '/data/methodPhpDocs-phpstanPrefix.php',
+			$description,
+			$expression,
+		);
+	}
+
+	/**
+	 * @dataProvider dataTypeFromFunctionPhpDocs
+	 * @dataProvider dataTypeFromMethodPhpDocs
+	 */
+	public function testTypeFromMethodPhpDocsPhanPrefix(
+		string $description,
+		string $expression,
+		bool $replaceClass = true,
+	): void
+	{
+		$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooPhanPrefix)', $description);
+
+		if ($replaceClass && $expression !== '$this->doFoo()') {
+			$description = str_replace('$this(MethodPhpDocsNamespace\Foo)', '$this(MethodPhpDocsNamespace\FooPhanPrefix)', $description);
+			if ($description === 'MethodPhpDocsNamespace\Foo') {
+				$description = 'MethodPhpDocsNamespace\FooPhanPrefix';
+			}
+		}
+		$this->assertTypes(
+			__DIR__ . '/data/methodPhpDocs-phanPrefix.php',
 			$description,
 			$expression,
 		);

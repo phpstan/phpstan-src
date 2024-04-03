@@ -1176,6 +1176,7 @@ class PrefixedTemplateWins2
  * @template T of Foo
  * @phpstan-template T of Bar
  * @psalm-template T of Baz
+ * @phan-template T of Quux
  */
 class PrefixedTemplateWins3
 {
@@ -1209,12 +1210,25 @@ class PrefixedTemplateWins5
 
 }
 
+/**
+ * @phan-template T of Foo
+ * @phpstan-template T of Bar
+ */
+class PrefixedTemplateWins6
+{
+
+	/** @var T */
+	public $name;
+
+}
+
 function testPrefixed(
 	PrefixedTemplateWins $a,
 	PrefixedTemplateWins2 $b,
 	PrefixedTemplateWins3 $c,
 	PrefixedTemplateWins4 $d,
-	PrefixedTemplateWins5 $e
+	PrefixedTemplateWins5 $e,
+	PrefixedTemplateWins6 $f
 
 ) {
 	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $a->name);
@@ -1222,6 +1236,7 @@ function testPrefixed(
 	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $c->name);
 	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $d->name);
 	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $e->name);
+	assertType('PHPStan\Generics\FunctionsAssertType\Bar', $f->name);
 };
 
 /**

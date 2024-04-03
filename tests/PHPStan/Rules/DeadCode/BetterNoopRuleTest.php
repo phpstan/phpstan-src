@@ -8,14 +8,14 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<NoopRule>
+ * @extends RuleTestCase<BetterNoopRule>
  */
-class NoopRuleTest extends RuleTestCase
+class BetterNoopRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new NoopRule(new ExprPrinter(new Printer()), false);
+		return new BetterNoopRule(new ExprPrinter(new Printer()));
 	}
 
 	public function testRule(): void
@@ -77,6 +77,37 @@ class NoopRuleTest extends RuleTestCase
 				'Expression "(string) 1" on a separate line does not do anything.',
 				30,
 			],
+			[
+				'Unused result of "xor" operator.',
+				32,
+				'This operator has unexpected precedence, try disambiguating the logic with parentheses ().',
+			],
+			[
+				'Unused result of "and" operator.',
+				35,
+				'This operator has unexpected precedence, try disambiguating the logic with parentheses ().',
+			],
+			[
+				'Unused result of "or" operator.',
+				38,
+				'This operator has unexpected precedence, try disambiguating the logic with parentheses ().',
+			],
+			[
+				'Unused result of ternary operator.',
+				40,
+			],
+			[
+				'Unused result of ternary operator.',
+				41,
+			],
+			[
+				'Unused result of "||" operator.',
+				46,
+			],
+			[
+				'Unused result of "&&" operator.',
+				49,
+			],
 		]);
 	}
 
@@ -85,6 +116,16 @@ class NoopRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/nullsafe-property-fetch-noop.php'], [
 			[
 				'Expression "$ref?->name" on a separate line does not do anything.',
+				10,
+			],
+		]);
+	}
+
+	public function testRuleImpurePoints(): void
+	{
+		$this->analyse([__DIR__ . '/data/noop-impure-points.php'], [
+			[
+				'Unused result of "&&" operator.',
 				10,
 			],
 		]);

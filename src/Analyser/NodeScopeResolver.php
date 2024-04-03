@@ -106,6 +106,7 @@ use PHPStan\Node\MatchExpressionArmCondition;
 use PHPStan\Node\MatchExpressionNode;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodReturnStatementsNode;
+use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
@@ -746,6 +747,17 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\Expression) {
 			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope);
 			$result = $this->processExprNode($stmt, $stmt->expr, $scope, $nodeCallback, ExpressionContext::createTopLevel());
+			$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
+			if (
+				count($result->getImpurePoints()) === 0
+				&& count($throwPoints) === 0
+				&& !$stmt->expr instanceof Expr\PostInc
+				&& !$stmt->expr instanceof Expr\PreInc
+				&& !$stmt->expr instanceof Expr\PostDec
+				&& !$stmt->expr instanceof Expr\PreDec
+			) {
+				$nodeCallback(new NoopExpressionNode($stmt->expr), $scope);
+			}
 			$scope = $result->getScope();
 			$scope = $scope->filterBySpecifiedTypes($this->typeSpecifier->specifyTypesInCondition(
 				$scope,
@@ -2991,6 +3003,13 @@ class NodeScopeResolver
 			$throwPoints = $result->getThrowPoints();
 			$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 			$impurePoints = $result->getImpurePoints();
+			$impurePoints[] = new ImpurePoint(
+				$scope,
+				$expr,
+				'yieldFrom',
+				'yield from',
+				true,
+			);
 			$hasYield = true;
 
 			$scope = $result->getScope();
@@ -3226,12 +3245,20 @@ class NodeScopeResolver
 			$throwPoints = [
 				ThrowPoint::createImplicit($scope, $expr),
 			];
-			$impurePoints = [];
+			$impurePoints = [
+				new ImpurePoint(
+					$scope,
+					$expr,
+					'yield',
+					'yield',
+					true,
+				),
+			];
 			if ($expr->key !== null) {
 				$keyResult = $this->processExprNode($stmt, $expr->key, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $keyResult->getScope();
 				$throwPoints = $keyResult->getThrowPoints();
-				$impurePoints = $keyResult->getImpurePoints();
+				$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
 			}
 			if ($expr->value !== null) {
 				$valueResult = $this->processExprNode($stmt, $expr->value, $scope, $nodeCallback, $context->enterDeep());

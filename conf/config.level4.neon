@@ -27,6 +27,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.notAnalysedTrait%
 	PHPStan\Rules\Comparison\LogicalXorConstantConditionRule:
 		phpstan.rules.rule: %featureToggles.logicalXor%
+	PHPStan\Rules\DeadCode\BetterNoopRule:
+		phpstan.rules.rule: %featureToggles.betterNoop%
 	PHPStan\Rules\TooWideTypehints\TooWideFunctionParameterOutTypeRule:
 		phpstan.rules.rule: %featureToggles.paramOutType%
 	PHPStan\Rules\TooWideTypehints\TooWideMethodParameterOutTypeRule:
@@ -74,7 +76,7 @@ services:
 	-
 		class: PHPStan\Rules\DeadCode\NoopRule
 		arguments:
-			logicalXor: %featureToggles.logicalXor%
+			better: %featureToggles.betterNoop%
 		tags:
 			- phpstan.rules.rule
 
@@ -141,6 +143,9 @@ services:
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
+
+	-
+		class: PHPStan\Rules\DeadCode\BetterNoopRule
 
 	-
 		class: PHPStan\Rules\Comparison\MatchExpressionRule

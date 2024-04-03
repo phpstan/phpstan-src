@@ -15,7 +15,7 @@ use function sprintf;
 class NoopRule implements Rule
 {
 
-	public function __construct(private ExprPrinter $exprPrinter, private bool $logicalXor)
+	public function __construct(private ExprPrinter $exprPrinter, private bool $better)
 	{
 	}
 
@@ -26,6 +26,10 @@ class NoopRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($this->better) {
+			// disabled in bleeding edge
+			return [];
+		}
 		$originalExpr = $node->expr;
 		$expr = $originalExpr;
 		if (
@@ -36,70 +40,7 @@ class NoopRule implements Rule
 		) {
 			$expr = $expr->expr;
 		}
-		if ($this->logicalXor) {
-			if ($expr instanceof Node\Expr\BinaryOp\LogicalXor) {
-				return [
-					RuleErrorBuilder::message(
-						'Unused result of "xor" operator.',
-					)->line($expr->getStartLine())
-						->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
-						->identifier('logicalXor.resultUnused')
-						->build(),
-				];
-			}
-			if ($expr instanceof Node\Expr\BinaryOp\LogicalAnd || $expr instanceof Node\Expr\BinaryOp\LogicalOr) {
-				if (!$this->isNoopExpr($expr->right)) {
-					return [];
-				}
 
-				$identifierType = $expr instanceof Node\Expr\BinaryOp\LogicalAnd ? 'logicalAnd' : 'logicalOr';
-
-				return [
-					RuleErrorBuilder::message(sprintf(
-						'Unused result of "%s" operator.',
-						$expr->getOperatorSigil(),
-					))->line($expr->getStartLine())
-						->tip('This operator has unexpected precedence, try disambiguating the logic with parentheses ().')
-						->identifier(sprintf('%s.resultUnused', $identifierType))
-						->build(),
-				];
-			}
-
-			if ($expr instanceof Node\Expr\BinaryOp\BooleanAnd || $expr instanceof Node\Expr\BinaryOp\BooleanOr) {
-				if (!$this->isNoopExpr($expr->right)) {
-					return [];
-				}
-
-				$identifierType = $expr instanceof Node\Expr\BinaryOp\BooleanAnd ? 'booleanAnd' : 'booleanOr';
-
-				return [
-					RuleErrorBuilder::message(sprintf(
-						'Unused result of "%s" operator.',
-						$expr->getOperatorSigil(),
-					))->line($expr->getStartLine())
-						->identifier(sprintf('%s.resultUnused', $identifierType))
-						->build(),
-				];
-			}
-
-			if ($expr instanceof Node\Expr\Ternary) {
-				$if = $expr->if;
-				if ($if === null) {
-					$if = $expr->cond;
-				}
-
-				if (!$this->isNoopExpr($if) || !$this->isNoopExpr($expr->else)) {
-					return [];
-				}
-
-				return [
-					RuleErrorBuilder::message('Unused result of ternary operator.')
-						->line($expr->getStartLine())
-						->identifier('ternary.resultUnused')
-						->build(),
-				];
-			}
-		}
 		if (!$this->isNoopExpr($expr)) {
 			return [];
 		}

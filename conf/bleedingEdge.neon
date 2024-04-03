@@ -30,6 +30,7 @@ parameters:
 		alwaysCheckTooWideReturnTypeFinalMethods: true
 		duplicateStubs: true
 		logicalXor: true
+		betterNoop: true
 		invarianceComposition: true
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true

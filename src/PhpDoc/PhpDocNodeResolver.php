@@ -68,7 +68,7 @@ class PhpDocNodeResolver
 	{
 		$resolved = [];
 		$resolvedByTag = [];
-		foreach (['@var', '@psalm-var', '@phpstan-var', '@phan-var'] as $tagName) {
+		foreach (['@var', '@phan-var', '@psalm-var', '@phpstan-var'] as $tagName) {
 			$tagResolved = [];
 			foreach ($phpDocNode->getVarTagValues($tagName) as $tagValue) {
 				$type = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
@@ -165,7 +165,7 @@ class PhpDocNodeResolver
 		$resolved = [];
 		$originalNameScope = $nameScope;
 
-		foreach (['@method', '@psalm-method', '@phpstan-method', '@phan-method'] as $tagName) {
+		foreach (['@method', '@phan-method', '@psalm-method', '@phpstan-method'] as $tagName) {
 			foreach ($phpDocNode->getMethodTagValues($tagName) as $tagValue) {
 				$nameScope = $originalNameScope;
 				$templateTags = [];
@@ -232,7 +232,7 @@ class PhpDocNodeResolver
 	{
 		$resolved = [];
 
-		foreach (['@extends', '@template-extends', '@phpstan-extends', '@phan-extends', '@phan-inherits'] as $tagName) {
+		foreach (['@extends', '@phan-extends', '@phan-inherits', '@template-extends', '@phpstan-extends'] as $tagName) {
 			foreach ($phpDocNode->getExtendsTagValues($tagName) as $tagValue) {
 				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new ExtendsTag(
 					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
@@ -301,7 +301,7 @@ class PhpDocNodeResolver
 			}
 
 			$tagName = $phpDocTagNode->name;
-			if (in_array($tagName, ['@template', '@psalm-template', '@phpstan-template', '@phan-template'], true)) {
+			if (in_array($tagName, ['@template', '@phan-template', '@psalm-template', '@phpstan-template'], true)) {
 				$variance = TemplateTypeVariance::createInvariant();
 			} elseif (in_array($tagName, ['@template-covariant', '@psalm-template-covariant', '@phpstan-template-covariant'], true)) {
 				$variance = TemplateTypeVariance::createCovariant();
@@ -311,12 +311,12 @@ class PhpDocNodeResolver
 				continue;
 			}
 
-			if (str_starts_with($tagName, '@psalm-')) {
+			if (str_starts_with($tagName, '@phan-')) {
+				$prefix = 'phan';
+                        } elseif (str_starts_with($tagName, '@psalm-')) {
 				$prefix = 'psalm';
 			} elseif (str_starts_with($tagName, '@phpstan-')) {
 				$prefix = 'phpstan';
-			} elseif (str_starts_with($tagName, '@phan-')) {
-				$prefix = 'phan';
 			} else {
 				$prefix = '';
 			}
@@ -371,7 +371,7 @@ class PhpDocNodeResolver
 
 		$unusedClosureThisTypes = $closureThisTypes;
 
-		foreach (['@param', '@psalm-param', '@phpstan-param', '@phan-param'] as $tagName) {
+		foreach (['@param', '@phan-param', '@psalm-param', '@phpstan-param'] as $tagName) {
 			foreach ($phpDocNode->getParamTagValues($tagName) as $tagValue) {
 				$parameterName = substr($tagValue->parameterName, 1);
 				$parameterType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
@@ -461,7 +461,7 @@ class PhpDocNodeResolver
 	{
 		$resolved = null;
 
-		foreach (['@return', '@psalm-return', '@phpstan-return', '@phan-return', '@phan-real-return'] as $tagName) {
+		foreach (['@return', '@phan-return', '@phan-real-return', '@psalm-return', '@phpstan-return'] as $tagName) {
 			foreach ($phpDocNode->getReturnTagValues($tagName) as $tagValue) {
 				$type = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 				if ($this->shouldSkipType($tagName, $type)) {
@@ -549,7 +549,7 @@ class PhpDocNodeResolver
 	{
 		$resolved = [];
 
-		foreach (['@psalm-type', '@phpstan-type', '@phan-type'] as $tagName) {
+		foreach (['@phan-type', '@psalm-type', '@phpstan-type'] as $tagName) {
 			foreach ($phpDocNode->getTypeAliasTagValues($tagName) as $typeAliasTagValue) {
 				$alias = $typeAliasTagValue->alias;
 				$typeNode = $typeAliasTagValue->type;
@@ -685,7 +685,7 @@ class PhpDocNodeResolver
 	public function resolveIsPure(PhpDocNode $phpDocNode): bool
 	{
 		foreach ($phpDocNode->getTags() as $phpDocTagNode) {
-			if (in_array($phpDocTagNode->name, ['@pure', '@psalm-pure', '@phpstan-pure', '@phan-pure', '@phan-side-effect-free'], true)) {
+			if (in_array($phpDocTagNode->name, ['@pure', '@phan-pure', '@phan-side-effect-free', '@psalm-pure', '@phpstan-pure'], true)) {
 				return true;
 			}
 		}
@@ -706,7 +706,7 @@ class PhpDocNodeResolver
 
 	public function resolveIsReadOnly(PhpDocNode $phpDocNode): bool
 	{
-		foreach (['@readonly', '@psalm-readonly', '@phpstan-readonly', '@phpstan-readonly-allow-private-mutation', '@psalm-readonly-allow-private-mutation', '@phan-read-only'] as $tagName) {
+		foreach (['@readonly', '@phan-read-only', '@psalm-readonly', '@phpstan-readonly', '@phpstan-readonly-allow-private-mutation', '@psalm-readonly-allow-private-mutation'] as $tagName) {
 			$tags = $phpDocNode->getTagsByName($tagName);
 
 			if (count($tags) > 0) {
@@ -719,7 +719,7 @@ class PhpDocNodeResolver
 
 	public function resolveIsImmutable(PhpDocNode $phpDocNode): bool
 	{
-		foreach (['@immutable', '@psalm-immutable', '@phpstan-immutable', '@phan-immutable'] as $tagName) {
+		foreach (['@immutable', '@phan-immutable', '@psalm-immutable', '@phpstan-immutable'] as $tagName) {
 			$tags = $phpDocNode->getTagsByName($tagName);
 
 			if (count($tags) > 0) {

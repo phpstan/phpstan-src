@@ -255,6 +255,13 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/generics-do-not-generalize.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9985.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6294.php');
+
+		if (PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/discussion-10285-php8.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/discussion-10285.php');
+		}
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6462.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2580.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-9753.php');

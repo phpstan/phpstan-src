@@ -437,6 +437,11 @@ services:
 			- phpstan.stubFilesExtension
 
 	-
+		class: PHPStan\PhpDoc\SocketSelectStubFilesExtension
+		tags:
+			- phpstan.stubFilesExtension
+
+	-
 		class: PHPStan\PhpDoc\DefaultStubFilesProvider
 		arguments:
 			stubFiles: %stubFiles%

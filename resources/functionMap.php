@@ -10630,7 +10630,7 @@ return [
 'socket_recv' => ['int|false', 'socket'=>'resource', '&w_buf'=>'string', 'len'=>'int', 'flags'=>'int'],
 'socket_recvfrom' => ['int|false', 'socket'=>'resource', '&w_buf'=>'string', 'len'=>'int', 'flags'=>'int', '&w_name'=>'string', '&w_port='=>'int'],
 'socket_recvmsg' => ['int|false', 'socket'=>'resource', '&w_message'=>'string', 'flags='=>'int'],
-'socket_select' => ['int|false', '&rw_read_fds'=>'resource[]|null', '&rw_write_fds'=>'resource[]|null', '&rw_except_fds'=>'resource[]|null', 'tv_sec'=>'int|null', 'tv_usec='=>'int|null'],
+'socket_select' => ['int|false', '&w_read_fds'=>'resource[]|null', '&w_write_fds'=>'resource[]|null', '&w_except_fds'=>'resource[]|null', 'tv_sec'=>'int|null', 'tv_usec='=>'int|null'],
 'socket_send' => ['int|false', 'socket'=>'resource', 'buf'=>'string', 'len'=>'int', 'flags'=>'int'],
 'socket_sendmsg' => ['int|false', 'socket'=>'resource', 'message'=>'array', 'flags'=>'int'],
 'socket_sendto' => ['int|false', 'socket'=>'resource', 'buf'=>'string', 'len'=>'int', 'flags'=>'int', 'addr'=>'string', 'port='=>'int'],

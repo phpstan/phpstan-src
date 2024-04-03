@@ -313,7 +313,7 @@ class PhpDocNodeResolver
 
 			if (str_starts_with($tagName, '@phan-')) {
 				$prefix = 'phan';
-                        } elseif (str_starts_with($tagName, '@psalm-')) {
+			} elseif (str_starts_with($tagName, '@psalm-')) {
 				$prefix = 'psalm';
 			} elseif (str_starts_with($tagName, '@phpstan-')) {
 				$prefix = 'phpstan';

@@ -16,7 +16,7 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v4
         with:
-          ref: 1.10.x
+          ref: 1.11.x
           fetch-depth: '0'
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
       - name: "Install PHP"

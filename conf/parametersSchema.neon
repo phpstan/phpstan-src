@@ -207,7 +207,7 @@ parametersSchema:
 		dnsServers: schema(listOf(string()), min(1)),
 		tmpDir: string()
 	])
-	env: arrayOf(string(), string())
+	env: arrayOf(string(), anyOf(int(), string()))
 	sysGetTempDir: string()
 
 	# irrelevant Nette parameters

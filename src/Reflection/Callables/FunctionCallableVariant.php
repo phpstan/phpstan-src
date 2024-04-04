@@ -13,12 +13,16 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use Throwable;
 use function array_map;
+use function sprintf;
 
 class FunctionCallableVariant implements CallableParametersAcceptor, ParametersAcceptorWithPhpDocs
 {
 
 	/** @var SimpleThrowPoint[]|null  */
 	private ?array $throwPoints = null;
+
+	/** @var SimpleImpurePoint[]|null  */
+	private ?array $impurePoints = null;
 
 	public function __construct(
 		private FunctionReflection|ExtendedMethodReflection $function,
@@ -109,6 +113,42 @@ class FunctionCallableVariant implements CallableParametersAcceptor, ParametersA
 		}
 
 		return $this->throwPoints = $throwPoints;
+	}
+
+	public function getImpurePoints(): array
+	{
+		if ($this->impurePoints !== null) {
+			return $this->impurePoints;
+		}
+
+		if ($this->variant instanceof CallableParametersAcceptor) {
+			return $this->impurePoints = $this->variant->getImpurePoints();
+		}
+
+		$impurePoints = [];
+		if ($this->function instanceof ExtendedMethodReflection) {
+			if (!$this->function->hasSideEffects()->no()) {
+				$certain = $this->function->isPure()->no() || $this->variant->getReturnType()->isVoid()->yes();
+				$impurePoints[] = new SimpleImpurePoint(
+					'methodCall',
+					sprintf('call to method %s::%s()', $this->function->getDeclaringClass()->getDisplayName(), $this->function->getName()),
+					$certain,
+				);
+			}
+		}
+
+		if ($this->function instanceof FunctionReflection) {
+			if (!$this->function->hasSideEffects()->no()) {
+				$certain = $this->function->isPure()->no() || $this->variant->getReturnType()->isVoid()->yes();
+				$impurePoints[] = new SimpleImpurePoint(
+					'functionCall',
+					sprintf('call to function %s()', $this->function->getName()),
+					$certain,
+				);
+			}
+		}
+
+		return $this->impurePoints = $impurePoints;
 	}
 
 	public function getInvalidateExpressions(): array

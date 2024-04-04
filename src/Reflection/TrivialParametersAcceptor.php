@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
@@ -60,6 +61,17 @@ class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, Callab
 	public function getThrowPoints(): array
 	{
 		return [];
+	}
+
+	public function getImpurePoints(): array
+	{
+		return [
+			new SimpleImpurePoint(
+				'functionCall',
+				'call to a callable',
+				false,
+			),
+		];
 	}
 
 	public function getInvalidateExpressions(): array

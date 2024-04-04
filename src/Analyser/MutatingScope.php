@@ -51,6 +51,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
@@ -1277,6 +1278,7 @@ class MutatingScope implements Scope
 					ExpressionContext::createDeep(),
 				);
 				$throwPoints = $arrowFunctionExprResult->getThrowPoints();
+				$impurePoints = $arrowFunctionExprResult->getImpurePoints();
 				$invalidateExpressions = [];
 				$usedVariables = [];
 			} else {
@@ -1326,6 +1328,7 @@ class MutatingScope implements Scope
 				}, StatementContext::createTopLevel());
 
 				$throwPoints = $closureStatementResult->getThrowPoints();
+				$impurePoints = $closureStatementResult->getImpurePoints();
 
 				$returnTypes = [];
 				$hasNull = false;
@@ -1408,6 +1411,7 @@ class MutatingScope implements Scope
 				TemplateTypeVarianceMap::createEmpty(),
 				[],
 				array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? SimpleThrowPoint::createExplicit($throwPoint->getType(), $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(), $throwPoints),
+				array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints),
 				$invalidateExpressions,
 				$usedVariables,
 			);
@@ -2258,8 +2262,10 @@ class MutatingScope implements Scope
 			}
 
 			$throwPoints = [];
+			$impurePoints = [];
 			if ($variant instanceof CallableParametersAcceptor) {
 				$throwPoints = $variant->getThrowPoints();
+				$impurePoints = $variant->getImpurePoints();
 			} elseif ($function !== null) {
 				$returnTypeForThrow = $variant->getReturnType();
 				$throwType = $function->getThrowType();
@@ -2278,6 +2284,28 @@ class MutatingScope implements Scope
 						$throwPoints[] = SimpleThrowPoint::createImplicit();
 					}
 				}
+
+				if ($function instanceof ExtendedMethodReflection) {
+					if (!$function->hasSideEffects()->no()) {
+						$certain = $function->isPure()->no() || $variant->getReturnType()->isVoid()->yes();
+						$impurePoints[] = new SimpleImpurePoint(
+							'methodCall',
+							sprintf('call to method %s::%s()', $function->getDeclaringClass()->getDisplayName(), $function->getName()),
+							$certain,
+						);
+					}
+				}
+
+				if ($function instanceof FunctionReflection) {
+					if (!$function->hasSideEffects()->no()) {
+						$certain = $function->isPure()->no() || $variant->getReturnType()->isVoid()->yes();
+						$impurePoints[] = new SimpleImpurePoint(
+							'functionCall',
+							sprintf('call to function %s()', $function->getName()),
+							$certain,
+						);
+					}
+				}
 			}
 
 			$parameters = $variant->getParameters();
@@ -2290,6 +2318,7 @@ class MutatingScope implements Scope
 				$variant instanceof ParametersAcceptorWithPhpDocs ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 				$templateTags,
 				$throwPoints,
+				$impurePoints,
 				[],
 				[],
 			);

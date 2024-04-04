@@ -115,6 +115,7 @@ class RuleLevelHelper
 					$acceptedType->getCallSiteVarianceMap(),
 					$acceptedType->getTemplateTags(),
 					$acceptedType->getThrowPoints(),
+					$acceptedType->getImpurePoints(),
 				);
 			}
 

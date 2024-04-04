@@ -14,6 +14,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
@@ -72,6 +73,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	 * @param array<int, ParameterReflection> $parameters
 	 * @param array<string, TemplateTag> $templateTags
 	 * @param SimpleThrowPoint[] $throwPoints
+	 * @param SimpleImpurePoint[] $impurePoints
 	 * @param InvalidateExprNode[] $invalidateExpressions
 	 * @param string[] $usedVariables
 	 */
@@ -84,6 +86,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		?TemplateTypeVarianceMap $callSiteVarianceMap = null,
 		private array $templateTags = [],
 		private array $throwPoints = [],
+		private array $impurePoints = [],
 		private array $invalidateExpressions = [],
 		private array $usedVariables = [],
 	)
@@ -215,6 +218,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 					$this->callSiteVarianceMap,
 					$this->templateTags,
 					$this->throwPoints,
+					$this->impurePoints,
 					$this->invalidateExpressions,
 					$this->usedVariables,
 				);
@@ -334,6 +338,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function getThrowPoints(): array
 	{
 		return $this->throwPoints;
+	}
+
+	public function getImpurePoints(): array
+	{
+		return $this->impurePoints;
 	}
 
 	public function getInvalidateExpressions(): array
@@ -489,6 +498,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->callSiteVarianceMap,
 			$this->templateTags,
 			$this->throwPoints,
+			$this->impurePoints,
 			$this->invalidateExpressions,
 			$this->usedVariables,
 		);
@@ -533,6 +543,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->callSiteVarianceMap,
 			$this->templateTags,
 			$this->throwPoints,
+			$this->impurePoints,
 			$this->invalidateExpressions,
 			$this->usedVariables,
 		);
@@ -697,6 +708,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$properties['callSiteVarianceMap'],
 			$properties['templateTags'],
 			$properties['throwPoints'],
+			$properties['impurePoints'],
 			$properties['invalidateExpressions'],
 			$properties['usedVariables'],
 		);

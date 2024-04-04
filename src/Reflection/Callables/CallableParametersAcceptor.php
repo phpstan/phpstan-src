@@ -17,6 +17,11 @@ interface CallableParametersAcceptor extends ParametersAcceptor
 	public function getThrowPoints(): array;
 
 	/**
+	 * @return SimpleImpurePoint[]
+	 */
+	public function getImpurePoints(): array;
+
+	/**
 	 * @return InvalidateExprNode[]
 	 */
 	public function getInvalidateExpressions(): array;

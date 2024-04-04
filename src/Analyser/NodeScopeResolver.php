@@ -123,6 +123,7 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -2194,7 +2195,7 @@ class NodeScopeResolver
 			$impurePoints = [];
 			if ($expr->name instanceof Expr) {
 				$nameType = $scope->getType($expr->name);
-				if ($nameType->isCallable()->yes()) {
+				if (!$nameType->isCallable()->no()) {
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 						$scope,
 						$expr->getArgs(),
@@ -2206,6 +2207,7 @@ class NodeScopeResolver
 				$nameResult = $this->processExprNode($stmt, $expr->name, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $nameResult->getScope();
 				$throwPoints = $nameResult->getThrowPoints();
+				$impurePoints = $nameResult->getImpurePoints();
 				if (
 					$nameType->isObject()->yes()
 					&& $nameType->isCallable()->yes()
@@ -2223,16 +2225,10 @@ class NodeScopeResolver
 					$impurePoints = array_merge($impurePoints, $invokeResult->getImpurePoints());
 				} elseif ($parametersAcceptor instanceof CallableParametersAcceptor) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $expr), $parametersAcceptor->getThrowPoints()));
+					$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $parametersAcceptor->getImpurePoints()));
 
 					$scope = $this->processImmediatelyCalledCallable($scope, $parametersAcceptor->getInvalidateExpressions(), $parametersAcceptor->getUsedVariables());
 				}
-				$impurePoints[] = new ImpurePoint(
-					$scope,
-					$expr,
-					'functionCall',
-					'call to a callable',
-					false,
-				);
 			} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
@@ -4364,6 +4360,7 @@ class NodeScopeResolver
 						$scope = $this->processImmediatelyCalledCallable($scope, $acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables());
 						if ($callCallbackImmediately) {
 							$throwPoints = array_merge($throwPoints, array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints()));
+							$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $arg->value, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $acceptors[0]->getImpurePoints()));
 						}
 					}
 				}

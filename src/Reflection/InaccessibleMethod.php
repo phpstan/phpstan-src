@@ -58,6 +58,11 @@ class InaccessibleMethod implements CallableParametersAcceptor
 		return [];
 	}
 
+	public function getImpurePoints(): array
+	{
+		return [];
+	}
+
 	public function getInvalidateExpressions(): array
 	{
 		return [];

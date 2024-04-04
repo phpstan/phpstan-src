@@ -55,9 +55,10 @@ function possiblyImpureFunction()
 /**
  * @phpstan-pure
  */
-function testThese(string $s)
+function testThese(string $s, callable $cb)
 {
 	$s();
+	$cb();
 	pureFunction();
 	impureFunction();
 	voidFunction();

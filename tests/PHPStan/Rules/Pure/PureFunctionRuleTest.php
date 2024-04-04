@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Pure;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<PureFunctionRule>
@@ -44,32 +45,32 @@ class PureFunctionRuleTest extends RuleTestCase
 				60,
 			],
 			[
-				'Impure call to function PureFunction\impureFunction() in pure function PureFunction\testThese().',
-				62,
+				'Possibly impure call to a callable in pure function PureFunction\testThese().',
+				61,
 			],
 			[
-				'Impure call to function PureFunction\voidFunction() in pure function PureFunction\testThese().',
+				'Impure call to function PureFunction\impureFunction() in pure function PureFunction\testThese().',
 				63,
 			],
 			[
-				'Possibly impure call to function PureFunction\possiblyImpureFunction() in pure function PureFunction\testThese().',
+				'Impure call to function PureFunction\voidFunction() in pure function PureFunction\testThese().',
 				64,
 			],
 			[
-				'Possibly impure call to unknown function in pure function PureFunction\testThese().',
+				'Possibly impure call to function PureFunction\possiblyImpureFunction() in pure function PureFunction\testThese().',
 				65,
 			],
 			[
+				'Possibly impure call to unknown function in pure function PureFunction\testThese().',
+				66,
+			],
+			[
 				'Function PureFunction\actuallyPure() is marked as impure but does not have any side effects.',
-				71,
+				72,
 			],
 			[
 				'Function PureFunction\emptyVoidFunction() returns void but does not have any side effects.',
-				83,
-			],
-			[
-				'Impure access to superglobal variable in pure function PureFunction\pureButAccessSuperGlobal().',
-				101,
+				84,
 			],
 			[
 				'Impure access to superglobal variable in pure function PureFunction\pureButAccessSuperGlobal().',
@@ -77,15 +78,69 @@ class PureFunctionRuleTest extends RuleTestCase
 			],
 			[
 				'Impure access to superglobal variable in pure function PureFunction\pureButAccessSuperGlobal().',
-				104,
+				103,
+			],
+			[
+				'Impure access to superglobal variable in pure function PureFunction\pureButAccessSuperGlobal().',
+				105,
 			],
 			[
 				'Impure global variable in pure function PureFunction\functionWithGlobal().',
-				117,
+				118,
 			],
 			[
 				'Impure static variable in pure function PureFunction\functionWithStaticVariable().',
-				127,
+				128,
+			],
+		]);
+	}
+
+	public function testFirstClassCallable(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/first-class-callable-pure-function.php'], [
+			[
+				'Impure call to method FirstClassCallablePureFunction\Foo::impureFunction() in pure function FirstClassCallablePureFunction\testThese().',
+				61,
+			],
+			[
+				'Impure call to method FirstClassCallablePureFunction\Foo::voidFunction() in pure function FirstClassCallablePureFunction\testThese().',
+				64,
+			],
+			[
+				'Impure call to function FirstClassCallablePureFunction\impureFunction() in pure function FirstClassCallablePureFunction\testThese().',
+				70,
+			],
+			[
+				'Impure call to function FirstClassCallablePureFunction\voidFunction() in pure function FirstClassCallablePureFunction\testThese().',
+				73,
+			],
+			[
+				'Impure call to function FirstClassCallablePureFunction\voidFunction() in pure function FirstClassCallablePureFunction\testThese().',
+				75,
+			],
+			[
+				'Impure call to function FirstClassCallablePureFunction\impureFunction() in pure function FirstClassCallablePureFunction\testThese().',
+				81,
+			],
+			[
+				'Impure call to function FirstClassCallablePureFunction\voidFunction() in pure function FirstClassCallablePureFunction\testThese().',
+				84,
+			],
+			[
+				'Impure call to method FirstClassCallablePureFunction\Foo::impureFunction() in pure function FirstClassCallablePureFunction\testThese().',
+				90,
+			],
+			[
+				'Impure call to method FirstClassCallablePureFunction\Foo::voidFunction() in pure function FirstClassCallablePureFunction\testThese().',
+				93,
+			],
+			[
+				'Possibly impure call to a callable in pure function FirstClassCallablePureFunction\callCallbackImmediately().',
+				102,
 			],
 		]);
 	}

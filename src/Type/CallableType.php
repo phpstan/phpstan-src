@@ -12,6 +12,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -241,6 +242,17 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	{
 		return [
 			SimpleThrowPoint::createImplicit(),
+		];
+	}
+
+	public function getImpurePoints(): array
+	{
+		return [
+			new SimpleImpurePoint(
+				'functionCall',
+				'call to a callable',
+				false,
+			),
 		];
 	}
 

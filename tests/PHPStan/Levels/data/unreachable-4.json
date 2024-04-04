@@ -70,11 +70,6 @@
         "ignorable": true
     },
     {
-        "message": "Unused result of ternary operator.",
-        "line": 89,
-        "ignorable": true
-    },
-    {
         "message": "Ternary operator condition is always true.",
         "line": 94,
         "ignorable": true

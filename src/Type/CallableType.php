@@ -193,7 +193,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	public function equals(Type $type): bool
 	{
-		return $type instanceof self;
+		if (!$type instanceof self) {
+			return false;
+		}
+
+		return $this->describe(VerbosityLevel::precise()) === $type->describe(VerbosityLevel::precise());
 	}
 
 	public function describe(VerbosityLevel $level): string

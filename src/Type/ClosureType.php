@@ -190,7 +190,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			return false;
 		}
 
-		return $this->returnType->equals($type->returnType);
+		return $this->describe(VerbosityLevel::precise()) === $type->describe(VerbosityLevel::precise());
 	}
 
 	public function describe(VerbosityLevel $level): string

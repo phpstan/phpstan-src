@@ -2,9 +2,6 @@
 
 namespace Bug10822;
 
-
-namespace ScssPhp\ScssPhp\Evaluation;
-
 enum Deprecation: string
 {
 	case callString = 'call-string';

@@ -100,7 +100,6 @@ class InvalidPHPStanDocTagRule implements Rule
 			}
 		}
 
-		// todo
 		$docComment = $node->getDocComment();
 		if ($docComment === null) {
 			return [];

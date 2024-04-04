@@ -8,29 +8,29 @@ class Foo
 	private const FOO_CONST = 'foo';
 
 	/**
-     * @param \stdClass $object
+	 * @param \stdClass $object
 	 * @param int $int
-     * @param float $float
+	 * @param float $float
 	 * @param string $string
 	 * @param int|string $intOrString
 	 * @param int|\stdClass $intOrObject
 	 */
 	public function doFoo(
-	    \stdClass $object,
+		\stdClass $object,
 		int $int,
 		float $float,
 		string $string,
 		$intOrString,
-        $intOrObject
+		$intOrObject
 	)
 	{
-        $object == $int;
-        $object == $float;
-        $object == $string;
-        $object == $intOrString;
-        $object == $intOrObject;
+		$result = $object == $int;
+		$result = $object == $float;
+		$result = $object == $string;
+		$result = $object == $intOrString;
+		$result = $object == $intOrObject;
 
-        self::FOO_CONST === 'bar';
+		$result = self::FOO_CONST === 'bar';
 	}
 
 	public function doBar(\ffmpeg_movie $movie): void

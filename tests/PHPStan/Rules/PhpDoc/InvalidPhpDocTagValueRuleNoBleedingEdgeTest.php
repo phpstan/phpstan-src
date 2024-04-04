@@ -134,10 +134,6 @@ class InvalidPhpDocTagValueRuleNoBleedingEdgeTest extends RuleTestCase
 				'PHPDoc tag @phpstan-type InvalidFoo has invalid value: Unexpected token "{", expected TOKEN_PHPDOC_EOL at offset 65',
 				15,
 			],
-			[
-				'PHPDoc tag @phan-type InvalidFoo has invalid value: Unexpected token "{", expected TOKEN_PHPDOC_EOL at offset 193',
-				15,
-			],
 		]);
 	}
 

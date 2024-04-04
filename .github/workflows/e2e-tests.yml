@@ -181,6 +181,9 @@ jobs:
               OUTPUT=$(../../bin/phpstan 2>&1)
               grep 'Result cache might not behave correctly' <<< "$OUTPUT"
               grep 'ResultCache8E2E\\CustomRule' <<< "$OUTPUT"
+          - script: |
+              cd e2e/env-int-key
+              env 1=1 ../../bin/phpstan analyse test.php
 
     steps:
       - name: "Checkout"

@@ -19,6 +19,7 @@ class ClassForbiddenNameCheck
 		'PHPStan' => '_PHPStan_',
 		'Rector' => 'RectorPrefix',
 		'PHP-Scoper' => '_PhpScoper',
+		'PHPUnit' => 'PHPUnitPHAR',
 	];
 
 	public function __construct(private Container $container)

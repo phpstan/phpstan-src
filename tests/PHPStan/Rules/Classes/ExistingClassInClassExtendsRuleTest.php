@@ -108,13 +108,18 @@ class ExistingClassInClassExtendsRuleTest extends RuleTestCase
 			],
 			[
 				'Referencing prefixed Rector class: RectorPrefix202302\AClass.',
-				52,
+				56,
 				$tip,
 			],
 			[
 				'Referencing prefixed PHP-Scoper class: _PhpScoper19ae93be897e\AClass.',
-				55,
+				59,
 				$tip,
+			],
+			[
+				'Referencing prefixed PHPUnit class: PHPUnitPHAR\SebastianBergmann\Diff\Exception.',
+				62,
+				'This is most likely unintentional. Did you mean to type \SebastianBergmann\Diff\Exception?',
 			],
 		]);
 	}

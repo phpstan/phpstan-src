@@ -47,6 +47,10 @@ class AClass {
 	const Test = 1;
 }
 
+namespace PHPUnitPHAR\SebastianBergmann\Diff; // mimicks a prefixed class, as contained in PHPUnit phar
+
+class Exception{}
+
 namespace TestPhpstanInternalClass2;
 
 class FooBar extends \RectorPrefix202302\AClass
@@ -54,3 +58,7 @@ class FooBar extends \RectorPrefix202302\AClass
 
 class Baz extends \_PhpScoper19ae93be897e\AClass
 {}
+
+class BazBar extends \PHPUnitPHAR\SebastianBergmann\Diff\Exception
+{}
+

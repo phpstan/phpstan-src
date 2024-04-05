@@ -105,9 +105,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./tmp
-          key: "result-cache-v11-${{ matrix.php-version }}-${{ github.run_id }}"
+          key: "result-cache-v12-${{ matrix.php-version }}-${{ github.run_id }}"
           restore-keys: |
-            result-cache-v11-${{ matrix.php-version }}-
+            result-cache-v12-${{ matrix.php-version }}-
 
       - name: "PHPStan with result cache"
         run: |

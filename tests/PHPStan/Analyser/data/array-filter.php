@@ -11,7 +11,7 @@ function withoutAnyArgs(): void
 }
 
 /**
- * @param $var1 $mixed
+ * @param mixed $var1
  */
 function withMixedInsteadOfArray($var1): void
 {

@@ -222,7 +222,7 @@ class InstantiationRule implements Rule
 	}
 
 	/**
-	 * @param Node\Expr\New_ $node $node
+	 * @param Node\Expr\New_ $node
 	 * @return array<int, array{string, bool}>
 	 */
 	private function getClassNames(Node $node, Scope $scope): array

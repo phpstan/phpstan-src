@@ -96,6 +96,7 @@ use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ExpressionTypeResolverExtensionRegistry;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -1505,7 +1506,7 @@ class MutatingScope implements Scope
 		} elseif ($node instanceof Expr\PreInc || $node instanceof Expr\PreDec) {
 			$varType = $this->getType($node->var);
 			$varScalars = $varType->getConstantScalarValues();
-			$stringType = new StringType();
+
 			if (count($varScalars) > 0) {
 				$newTypes = [];
 
@@ -1521,9 +1522,24 @@ class MutatingScope implements Scope
 				return TypeCombinator::union(...$newTypes);
 			} elseif ($varType->isString()->yes()) {
 				if ($varType->isLiteralString()->yes()) {
-					return new IntersectionType([$stringType, new AccessoryLiteralStringType()]);
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryLiteralStringType(),
+					]);
 				}
-				return $stringType;
+
+				if ($varType->isNumericString()->yes()) {
+					return new BenevolentUnionType([
+						new IntegerType(),
+						new FloatType(),
+					]);
+				}
+
+				return new BenevolentUnionType([
+					new StringType(),
+					new IntegerType(),
+					new FloatType(),
+				]);
 			}
 
 			if ($node instanceof Expr\PreInc) {

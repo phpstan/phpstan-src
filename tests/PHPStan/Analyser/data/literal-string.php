@@ -57,7 +57,7 @@ class Foo
 		assertType('literal-string', $literalString);
 
 		$string++;
-		assertType('string', $string);
+		assertType('(float|int|string)', $string);
 	}
 
 }

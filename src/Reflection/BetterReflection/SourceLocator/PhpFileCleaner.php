@@ -233,7 +233,7 @@ class PhpFileCleaner
 	private function skipToNewline(): void
 	{
 		while ($this->index < $this->len) {
-			if ($this->contents[$this->index] === "\r" || $this->contents[$this->index] === "\n") {
+			if (in_array($this->contents[$this->index], ["\r", "\n"], true)) {
 				return;
 			}
 			$this->index += 1;

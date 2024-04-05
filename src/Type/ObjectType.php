@@ -375,12 +375,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		$thisClassReflection = $this->getClassReflection();
 
-		if ($this->getClassReflection() === null || !$reflectionProvider->hasClass($thatClassNames[0])) {
+		if ($thisClassReflection === null || !$reflectionProvider->hasClass($thatClassNames[0])) {
 			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createMaybe();
 		}
 
-		$thisClassReflection = $this->getClassReflection();
 		$thatClassReflection = $reflectionProvider->getClass($thatClassNames[0]);
 
 		if ($thisClassReflection->isTrait() || $thatClassReflection->isTrait()) {

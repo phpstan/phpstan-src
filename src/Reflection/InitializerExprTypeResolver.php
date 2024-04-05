@@ -790,7 +790,7 @@ class InitializerExprTypeResolver
 						throw new ShouldNotHappenException();
 					}
 
-					if ($rightNumberType->getValue() === 0 || $rightNumberType->getValue() === 0.0) {
+					if (in_array($rightNumberType->getValue(), [0, 0.0], true)) {
 						return new ErrorType();
 					}
 

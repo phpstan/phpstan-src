@@ -42,6 +42,7 @@ use function in_array;
 use function ksort;
 use function md5;
 use function sprintf;
+use function str_starts_with;
 use function strlen;
 use function substr;
 
@@ -388,7 +389,7 @@ class IntersectionType implements CompoundType
 			}
 
 			if (
-				substr($typeDescription, 0, strlen('array<')) === 'array<'
+				str_starts_with($typeDescription, 'array<')
 				&& in_array('array', $skipTypeNames, true)
 			) {
 				$nonEmpty = false;

@@ -9,6 +9,7 @@ use function implode;
 use function ltrim;
 use function preg_match;
 use function rtrim;
+use function str_ends_with;
 use function str_replace;
 use function str_starts_with;
 use function strlen;
@@ -36,14 +37,13 @@ class FileHelper
 	public function absolutizePath(string $path): string
 	{
 		if (DIRECTORY_SEPARATOR === '/') {
-			if (substr($path, 0, 1) === '/') {
+			if (str_starts_with($path, '/')) {
 				return $path;
 			}
-		} else {
-			if (substr($path, 1, 1) === ':') {
-				return $path;
-			}
+		} elseif (substr($path, 1, 1) === ':') {
+			return $path;
 		}
+
 		if (preg_match('~^[a-z0-9+\-.]+://~i', $path) === 1) {
 			return $path;
 		}
@@ -87,12 +87,10 @@ class FileHelper
 				continue;
 			}
 			if ($pathPart === '..') {
-				/** @var string $removedPart */
 				$removedPart = array_pop($normalizedPathParts);
-				if ($scheme === 'phar' && substr($removedPart, -5) === '.phar') {
+				if ($scheme === 'phar' && $removedPart !== null && str_ends_with($removedPart, '.phar')) {
 					$scheme = null;
 				}
-
 			} else {
 				$normalizedPathParts[] = $pathPart;
 			}

@@ -129,3 +129,13 @@ function functionWithStaticVariable(): int
 
 	return $v;
 }
+
+/**
+ * @phpstan-pure
+ * @param \Closure(): int $closure2
+ */
+function callsClosures(\Closure $closure1, \Closure $closure2): int
+{
+	$closure1();
+	return $closure2();
+}

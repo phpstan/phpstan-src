@@ -36,6 +36,7 @@ use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
+use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -933,7 +934,13 @@ class TypeNodeResolver
 			$mainType instanceof ObjectType
 			&& $mainType->getClassName() === Closure::class
 		) {
-			return new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap, null, null, $templateTags, [], []);
+			return new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap, null, null, $templateTags, [], [
+				new SimpleImpurePoint(
+					'functionCall',
+					'call to a Closure',
+					false,
+				),
+			]);
 		}
 
 		return new ErrorType();

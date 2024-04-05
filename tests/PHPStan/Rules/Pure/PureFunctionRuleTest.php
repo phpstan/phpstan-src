@@ -92,6 +92,14 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure static variable in pure function PureFunction\functionWithStaticVariable().',
 				128,
 			],
+			[
+				'Possibly impure call to a Closure in pure function PureFunction\callsClosures().',
+				139,
+			],
+			[
+				'Possibly impure call to a Closure in pure function PureFunction\callsClosures().',
+				140,
+			],
 		]);
 	}
 

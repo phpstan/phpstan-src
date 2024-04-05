@@ -1249,7 +1249,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		if ($this->className === Closure::class) {
-			return [new TrivialParametersAcceptor()];
+			return [new TrivialParametersAcceptor('Closure')];
 		}
 		$parametersAcceptors = $this->findCallableParametersAcceptors();
 		if ($parametersAcceptors === null) {

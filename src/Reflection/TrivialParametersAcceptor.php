@@ -8,13 +8,14 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use function sprintf;
 
 /** @api */
 class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, CallableParametersAcceptor
 {
 
 	/** @api */
-	public function __construct()
+	public function __construct(private string $callableName = 'callable')
 	{
 	}
 
@@ -68,7 +69,7 @@ class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, Callab
 		return [
 			new SimpleImpurePoint(
 				'functionCall',
-				'call to a callable',
+				sprintf('call to a %s', $this->callableName),
 				false,
 			),
 		];

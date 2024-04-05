@@ -15,7 +15,7 @@ class TabCreator
 {
 
 	/**
-	 * @param array<int, list<PlaygroundError>> $versionedErrors $versionedErrors
+	 * @param array<int, list<PlaygroundError>> $versionedErrors
 	 * @return list<PlaygroundResultTab>
 	 */
 	public function create(array $versionedErrors): array

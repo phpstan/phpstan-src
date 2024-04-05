@@ -32,6 +32,22 @@ class Bzz
 	{
 		return $a;
 	}
+
+	/**
+	 * @phan-pure
+	 */
+	function pure4(string $a): string
+	{
+		return $a;
+	}
+
+	/**
+	 * @phan-side-effect-free
+	 */
+	function pure5(string $a): string
+	{
+		return $a;
+	}
 }
 
 function(): void {
@@ -39,4 +55,6 @@ function(): void {
 	(new Bzz())->pure1('test');
 	(new Bzz())->pure2('test');
 	(new Bzz())->pure3('test');
+	(new Bzz())->pure4('test');
+	(new Bzz())->pure5('test');
 };

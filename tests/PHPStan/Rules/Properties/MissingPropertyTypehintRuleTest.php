@@ -39,21 +39,21 @@ class MissingPropertyTypehintRuleTest extends RuleTestCase
 			],
 			[
 				'Property MissingPropertyTypehint\Bar::$foo with generic interface MissingPropertyTypehint\GenericInterface does not specify its types: T, U',
-				74,
+				77,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Property MissingPropertyTypehint\Bar::$baz with generic class MissingPropertyTypehint\GenericClass does not specify its types: A, B',
-				80,
+				83,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Property MissingPropertyTypehint\CallableSignature::$cb type has no signature specified for callable.',
-				93,
+				96,
 			],
 			[
 				'Property MissingPropertyTypehint\NestedArrayInProperty::$args type has no value type specified in iterable type array.',
-				103,
+				106,
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 		]);

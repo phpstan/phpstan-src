@@ -44,19 +44,27 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/static-method-call-statement-no-side-effects-phpdoc.php'], [
 			[
 				'Call to static method StaticMethodCallStatementNoSideEffects\BzzStatic::pure1() on a separate line has no effect.',
-				39,
+				55,
 			],
 			[
 				'Call to static method StaticMethodCallStatementNoSideEffects\BzzStatic::pure2() on a separate line has no effect.',
-				40,
+				56,
 			],
 			[
 				'Call to static method StaticMethodCallStatementNoSideEffects\BzzStatic::pure3() on a separate line has no effect.',
-				41,
+				57,
+			],
+			[
+				'Call to static method StaticMethodCallStatementNoSideEffects\BzzStatic::pure4() on a separate line has no effect.',
+				58,
+			],
+			[
+				'Call to static method StaticMethodCallStatementNoSideEffects\BzzStatic::pure5() on a separate line has no effect.',
+				59,
 			],
 			[
 				'Call to static method StaticMethodCallStatementNoSideEffects\PureThrows::pureAndThrowsVoid() on a separate line has no effect.',
-				67,
+				85,
 			],
 		]);
 	}

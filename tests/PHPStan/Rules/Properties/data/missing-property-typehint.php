@@ -42,6 +42,9 @@ class PrefixedTags
 	/** @psalm-var int */
 	private $fooPsalm;
 
+	/** @phan-var int */
+	private $fooPhan;
+
 }
 
 /**

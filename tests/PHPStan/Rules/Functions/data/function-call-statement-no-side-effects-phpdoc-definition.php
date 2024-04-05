@@ -20,6 +20,16 @@ function pure2(string $a): string {return $a;}
 function pure3(string $a): string {return $a;}
 
 /**
+ * @phan-pure
+ */
+function pure4(string $a): string {return $a;}
+
+/**
+ * @phan-side-effect-free
+ */
+function pure5(string $a): string {return $a;}
+
+/**
  * @phpstan-pure
  * @throws void
  * @return string

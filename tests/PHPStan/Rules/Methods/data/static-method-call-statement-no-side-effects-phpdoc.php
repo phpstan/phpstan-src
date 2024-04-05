@@ -32,6 +32,22 @@ class BzzStatic
 	{
 		return $a;
 	}
+
+	/**
+	 * @phan-pure
+	 */
+	static function pure4(string $a): string
+	{
+		return $a;
+	}
+
+	/**
+	 * @phan-side-effect-free
+	 */
+	static function pure5(string $a): string
+	{
+		return $a;
+	}
 }
 
 function(): void {
@@ -39,6 +55,8 @@ function(): void {
 	BzzStatic::pure1('test');
 	BzzStatic::pure2('test');
 	BzzStatic::pure3('test');
+	BzzStatic::pure4('test');
+	BzzStatic::pure5('test');
 };
 
 class PureThrows

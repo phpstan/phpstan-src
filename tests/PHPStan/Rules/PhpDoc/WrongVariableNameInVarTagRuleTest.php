@@ -73,63 +73,63 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			],
 			[
 				'Multiple PHPDoc @var tags above single variable assignment are not supported.',
-				125,
+				126,
 			],
 			[
 				'Variable $b in PHPDoc tag @var does not exist.',
-				134,
+				135,
 			],
 			[
 				'PHPDoc tag @var does not specify variable name.',
-				155,
+				156,
 			],
 			[
 				'PHPDoc tag @var does not specify variable name.',
-				176,
+				177,
 			],
 			[
 				'Variable $foo in PHPDoc tag @var does not exist.',
-				210,
+				211,
 			],
 			[
 				'PHPDoc tag @var above foreach loop does not specify variable name.',
-				234,
+				235,
 			],
 			[
 				'Variable $foo in PHPDoc tag @var does not exist.',
-				248,
+				249,
 			],
 			[
 				'Variable $bar in PHPDoc tag @var does not exist.',
-				248,
+				249,
 			],
 			[
 				'Variable $slots in PHPDoc tag @var does not exist.',
-				262,
+				263,
 			],
 			[
 				'Variable $slots in PHPDoc tag @var does not exist.',
-				268,
+				269,
 			],
 			[
 				'PHPDoc tag @var above assignment does not specify variable name.',
-				274,
+				275,
 			],
 			[
 				'Variable $slots in PHPDoc tag @var does not match assigned variable $itemSlots.',
-				280,
+				281,
 			],
 			[
 				'PHPDoc tag @var above a class has no effect.',
-				300,
+				301,
 			],
 			[
 				'PHPDoc tag @var above a method has no effect.',
-				304,
+				305,
 			],
 			[
 				'PHPDoc tag @var above a function has no effect.',
-				312,
+				313,
 			],
 		]);
 	}

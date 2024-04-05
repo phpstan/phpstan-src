@@ -75,7 +75,7 @@ class InvalidPhpDocTagValueRule implements Rule
 
 		$errors = [];
 		foreach ($phpDocNode->getTags() as $phpDocTag) {
-			if (str_starts_with($phpDocTag->name, '@psalm-')) {
+			if (str_starts_with($phpDocTag->name, '@phan-') || str_starts_with($phpDocTag->name, '@psalm-')) {
 				continue;
 			}
 

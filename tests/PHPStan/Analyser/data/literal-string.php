@@ -37,11 +37,14 @@ class Foo
 			str_repeat('a', 99)
 		);
 		assertType('literal-string&non-falsy-string', str_repeat('a', 100));
-		assertType('literal-string&non-empty-string&numeric-string', str_repeat('0', 100));
+		assertType('literal-string&non-empty-string&numeric-string', str_repeat('0', 100)); // could be non-falsy-string
 		assertType('literal-string&non-falsy-string&numeric-string', str_repeat('1', 100));
 		// Repeating a numeric type multiple times can lead to a non-numeric type: 3v4l.org/aRBdZ
 		assertType('non-empty-string', str_repeat($numericString, 100));
-		assertType('literal-string&non-falsy-string', str_repeat('1.23', 100));
+		
+		assertType("''", str_repeat('1.23', 0));
+		assertType("''", str_repeat($string, 0));
+		assertType("''", str_repeat($numericString, 0));
 
 		assertType("'?,?,?,'", str_repeat('?,', 3));
 		assertType("*NEVER*", str_repeat('?,', -3));

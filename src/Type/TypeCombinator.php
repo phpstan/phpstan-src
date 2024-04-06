@@ -664,12 +664,19 @@ class TypeCombinator
 		$valueTypesForGeneralArray = [];
 		$generalArrayOccurred = false;
 		$constantKeyTypesNumbered = [];
+		$filledArrays = 0;
+		$overflowed = false;
 
 		/** @var int|float $nextConstantKeyTypeIndex */
 		$nextConstantKeyTypeIndex = 1;
 
 		foreach ($arrayTypes as $arrayType) {
-			if ($generalArrayOccurred || !$arrayType->isConstantArray()->yes()) {
+			$isConstantArray = $arrayType->isConstantArray()->yes();
+			if (!$isConstantArray || !$arrayType->isIterableAtLeastOnce()->no()) {
+				$filledArrays++;
+			}
+
+			if ($generalArrayOccurred || !$isConstantArray) {
 				foreach ($arrayType->getArrays() as $type) {
 					$keyTypesForGeneralArray[] = $type->getIterableKeyType();
 					$valueTypesForGeneralArray[] = $type->getItemType();
@@ -693,13 +700,14 @@ class TypeCombinator
 					$nextConstantKeyTypeIndex *= 2;
 					if (!is_int($nextConstantKeyTypeIndex)) {
 						$generalArrayOccurred = true;
+						$overflowed = true;
 						continue 2;
 					}
 				}
 			}
 		}
 
-		if ($generalArrayOccurred) {
+		if ($generalArrayOccurred && (!$overflowed || $filledArrays > 1)) {
 			$scopes = [];
 			$useTemplateArray = true;
 			foreach ($arrayTypes as $arrayType) {

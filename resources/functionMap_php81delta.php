@@ -21,7 +21,12 @@
  */
 return [
 	'new' => [
-
+		'mysqli_fetch_field' => ['(stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: 0, length: int, charsetnr: string, flags: int, type: int, decimals: int})|false', 'result'=>'mysqli_result'],
+		'mysqli_fetch_field_direct' => ['(stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: 0, length: int, charsetnr: string, flags: int, type: int, decimals: int})|false', 'result'=>'mysqli_result', 'fieldnr'=>'int'],
+		'mysqli_fetch_fields' => ['list<stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: 0, length: int, charsetnr: string, flags: int, type: int, decimals: int}>', 'result'=>'mysqli_result'],
+		'mysqli_result::fetch_field' => ['(stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: 0, length: int, charsetnr: string, flags: int, type: int, decimals: int})|false'],
+		'mysqli_result::fetch_field_direct' => ['(stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: 0, length: int, charsetnr: string, flags: int, type: int, decimals: int})|false', 'fieldnr'=>'int'],
+		'mysqli_result::fetch_fields' => ['list<stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: 0, length: int, charsetnr: string, flags: int, type: int, decimals: int}>'],
 	],
 	'old' => [
 		'pg_escape_bytea' => ['string', 'connection'=>'resource', 'data'=>'string'],

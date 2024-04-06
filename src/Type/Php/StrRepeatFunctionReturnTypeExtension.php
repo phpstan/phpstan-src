@@ -18,9 +18,9 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use function count;
+use function ctype_digit;
 use function str_repeat;
 use function strlen;
-use function strpos;
 
 class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

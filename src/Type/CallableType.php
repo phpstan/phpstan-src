@@ -63,6 +63,8 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	private TemplateTypeMap $resolvedTemplateTypeMap;
 
+	private TrinaryLogic $isPure;
+
 	/**
 	 * @api
 	 * @param array<int, ParameterReflection>|null $parameters
@@ -75,6 +77,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		?TemplateTypeMap $templateTypeMap = null,
 		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 		private array $templateTags = [],
+		?TrinaryLogic $isPure = null,
 	)
 	{
 		$this->parameters = $parameters ?? [];
@@ -82,6 +85,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		$this->isCommonCallable = $parameters === null && $returnType === null;
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
+		$this->isPure = $isPure ?? TrinaryLogic::createMaybe();
 	}
 
 	/**
@@ -90,6 +94,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	public function getTemplateTags(): array
 	{
 		return $this->templateTags;
+	}
+
+	public function isPure(): TrinaryLogic
+	{
+		return $this->isPure;
 	}
 
 	/**
@@ -146,13 +155,26 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny): AcceptsResult
 	{
 		$isCallable = new AcceptsResult($type->isCallable(), []);
-		if ($isCallable->no() || $this->isCommonCallable) {
+		if ($isCallable->no()) {
 			return $isCallable;
 		}
 
 		static $scope;
 		if ($scope === null) {
 			$scope = new OutOfClassScope();
+		}
+
+		if ($this->isCommonCallable) {
+			if ($this->isPure()->yes()) {
+				$typePure = TrinaryLogic::createYes();
+				foreach ($type->getCallableParametersAcceptors($scope) as $variant) {
+					$typePure = $typePure->and($variant->isPure());
+				}
+
+				return $isCallable->and(new AcceptsResult($typePure, []));
+			}
+
+			return $isCallable;
 		}
 
 		$variantsResult = null;
@@ -221,6 +243,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 					$this->templateTypeMap,
 					$this->resolvedTemplateTypeMap,
 					$this->templateTags,
+					$this->isPure,
 				);
 
 				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
@@ -247,11 +270,16 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	public function getImpurePoints(): array
 	{
+		$pure = $this->isPure();
+		if ($pure->yes()) {
+			return [];
+		}
+
 		return [
 			new SimpleImpurePoint(
 				'functionCall',
 				'call to a callable',
-				false,
+				$pure->no(),
 			),
 		];
 	}
@@ -414,6 +442,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			$this->templateTypeMap,
 			$this->resolvedTemplateTypeMap,
 			$this->templateTags,
+			$this->isPure,
 		);
 	}
 
@@ -463,6 +492,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			$this->templateTypeMap,
 			$this->resolvedTemplateTypeMap,
 			$this->templateTags,
+			$this->isPure,
 		);
 	}
 
@@ -599,7 +629,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	public function toPhpDocNode(): TypeNode
 	{
 		if ($this->isCommonCallable) {
-			return new IdentifierTypeNode('callable');
+			return new IdentifierTypeNode($this->isPure()->yes() ? 'pure-callable' : 'callable');
 		}
 
 		$parameters = [];
@@ -623,7 +653,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		}
 
 		return new CallableTypeNode(
-			new IdentifierTypeNode('callable'),
+			new IdentifierTypeNode($this->isPure->yes() ? 'pure-callable' : 'callable'),
 			$parameters,
 			$this->returnType->toPhpDocNode(),
 			$templateTags,
@@ -639,6 +669,10 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			(bool) $properties['isCommonCallable'] ? null : $properties['parameters'],
 			(bool) $properties['isCommonCallable'] ? null : $properties['returnType'],
 			$properties['variadic'],
+			$properties['templateTypeMap'],
+			$properties['resolvedTemplateTypeMap'],
+			$properties['templateTags'],
+			$properties['isPure'],
 		);
 	}
 

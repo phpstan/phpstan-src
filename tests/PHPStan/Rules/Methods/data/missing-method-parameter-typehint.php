@@ -229,3 +229,15 @@ class MissingParamClosureThisType {
 	}
 
 }
+
+class MissingPureClosureSignatureType {
+
+	/**
+	 * @param pure-Closure $cb
+	 */
+	function doFoo(\Closure $cb): void
+	{
+
+	}
+
+}

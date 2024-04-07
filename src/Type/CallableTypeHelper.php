@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use function array_key_exists;
 use function array_merge;
@@ -13,8 +13,8 @@ class CallableTypeHelper
 {
 
 	public static function isParametersAcceptorSuperTypeOf(
-		ParametersAcceptor $ours,
-		ParametersAcceptor $theirs,
+		CallableParametersAcceptor $ours,
+		CallableParametersAcceptor $theirs,
 		bool $treatMixedAsAny,
 	): AcceptsResult
 	{
@@ -101,6 +101,10 @@ class CallableTypeHelper
 			$isReturnTypeSuperType = $ours->getReturnType()->acceptsWithReason($theirReturnType, true);
 		} else {
 			$isReturnTypeSuperType = new AcceptsResult($ours->getReturnType()->isSuperTypeOf($theirReturnType), []);
+		}
+
+		if ($ours->isPure()->yes()) {
+			$result = $result->and(new AcceptsResult($theirs->isPure(), []));
 		}
 
 		return $result->and($isReturnTypeSuperType);

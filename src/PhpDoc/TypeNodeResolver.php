@@ -43,6 +43,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -352,8 +353,13 @@ class TypeNodeResolver
 				return new IterableType(new MixedType(), new MixedType());
 
 			case 'callable':
-			case 'pure-callable':
 				return new CallableType();
+
+			case 'pure-callable':
+				return new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes());
+
+			case 'pure-closure':
+				return new ClosureType();
 
 			case 'resource':
 				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
@@ -928,7 +934,12 @@ class TypeNodeResolver
 		$returnType = $this->resolve($typeNode->returnType, $nameScope);
 
 		if ($mainType instanceof CallableType) {
-			return new CallableType($parameters, $returnType, $isVariadic, $templateTypeMap, null, $templateTags);
+			$pure = $mainType->isPure();
+			if ($pure->yes() && $returnType->isVoid()->yes()) {
+				return new ErrorType();
+			}
+
+			return new CallableType($parameters, $returnType, $isVariadic, $templateTypeMap, null, $templateTags, $pure);
 
 		} elseif (
 			$mainType instanceof ObjectType
@@ -941,6 +952,13 @@ class TypeNodeResolver
 					false,
 				),
 			]);
+		} elseif ($mainType instanceof ClosureType) {
+			$closure = new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap, null, null, $templateTags, [], $mainType->getImpurePoints());
+			if ($closure->isPure()->yes() && $returnType->isVoid()->yes()) {
+				return new ErrorType();
+			}
+
+			return $closure;
 		}
 
 		return new ErrorType();

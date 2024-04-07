@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
@@ -62,6 +63,11 @@ class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, Callab
 	public function getThrowPoints(): array
 	{
 		return [];
+	}
+
+	public function isPure(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function getImpurePoints(): array

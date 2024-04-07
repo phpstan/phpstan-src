@@ -6,6 +6,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\NeverType;
@@ -13,6 +14,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use Throwable;
 use function array_map;
+use function count;
 use function sprintf;
 
 class FunctionCallableVariant implements CallableParametersAcceptor, ParametersAcceptorWithPhpDocs
@@ -113,6 +115,25 @@ class FunctionCallableVariant implements CallableParametersAcceptor, ParametersA
 		}
 
 		return $this->throwPoints = $throwPoints;
+	}
+
+	public function isPure(): TrinaryLogic
+	{
+		$impurePoints = $this->getImpurePoints();
+		if (count($impurePoints) === 0) {
+			return TrinaryLogic::createYes();
+		}
+
+		$certainCount = 0;
+		foreach ($impurePoints as $impurePoint) {
+			if (!$impurePoint->isCertain()) {
+				continue;
+			}
+
+			$certainCount++;
+		}
+
+		return $certainCount > 0 ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe();
 	}
 
 	public function getImpurePoints(): array

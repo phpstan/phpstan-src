@@ -3265,4 +3265,35 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPureCallable(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/pure-callable-accepts.php'], [
+			[
+				'Parameter #1 $cb of method PureCallableMethodAccepts\Foo::acceptsPureCallable() expects pure-callable(): mixed, callable(): mixed given.',
+				33,
+			],
+			[
+				'Parameter #1 $i of method PureCallableMethodAccepts\Foo::acceptsInt() expects int, callable given.',
+				35,
+			],
+			[
+				'Parameter #1 $i of method PureCallableMethodAccepts\Foo::acceptsInt() expects int, callable given.',
+				36,
+			],
+			[
+				'Parameter #1 $cb of method PureCallableMethodAccepts\Foo::acceptsPureCallable() expects pure-callable(): mixed, Closure(): 1 given.',
+				41,
+			],
+			[
+				'Parameter #1 $cb of method PureCallableMethodAccepts\Foo::acceptsPureClosure() expects pure-Closure, Closure(): 1 given.',
+				61,
+			],
+		]);
+	}
+
 }

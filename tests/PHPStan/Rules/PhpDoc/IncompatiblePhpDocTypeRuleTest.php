@@ -207,6 +207,14 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @param-closure-this for parameter $cb contains unresolvable type.',
 				357,
 			],
+			[
+				'PHPDoc tag @param for parameter $cb contains unresolvable type.',
+				366,
+			],
+			[
+				'PHPDoc tag @param for parameter $cl contains unresolvable type.',
+				366,
+			],
 		]);
 	}
 

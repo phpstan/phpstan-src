@@ -15,7 +15,9 @@ use InvalidArgumentException;
 use Iterator;
 use ObjectShapesAcceptance\ClassWithFooIntProperty;
 use PHPStan\Fixture\FinalClass;
+use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -2522,6 +2524,50 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ObjectWithoutClassType::class,
 			'object',
 		];
+		yield [
+			[
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+				new CallableType(),
+			],
+			CallableType::class,
+			'callable(): mixed',
+		];
+		yield [
+			[
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+				new ClosureType(),
+			],
+			CallableType::class,
+			'pure-callable(): mixed',
+		];
+		yield [
+			[
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createMaybe()),
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+			],
+			CallableType::class,
+			'callable(): mixed',
+		];
+		yield [
+			[
+				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
+					new SimpleImpurePoint('functionCall', 'foo', true),
+				]),
+				new ClosureType(),
+			],
+			ClosureType::class,
+			'Closure(): mixed', // different result might be okay too
+		];
+		yield [
+			[
+				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
+					new SimpleImpurePoint('functionCall', 'foo', false),
+				]),
+				new ClosureType(),
+			],
+			ClosureType::class,
+			'Closure(): mixed', // different result might be okay too
+		];
 	}
 
 	/**
@@ -4161,6 +4207,50 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			IntersectionType::class,
 			'array{a?: true, c?: true}&non-empty-array',
+		];
+		yield [
+			[
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+				new CallableType(),
+			],
+			CallableType::class,
+			'pure-callable(): mixed',
+		];
+		yield [
+			[
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+				new ClosureType(),
+			],
+			ClosureType::class,
+			'pure-Closure',
+		];
+		yield [
+			[
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createMaybe()),
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+			],
+			CallableType::class,
+			'pure-callable(): mixed',
+		];
+		yield [
+			[
+				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
+					new SimpleImpurePoint('functionCall', 'foo', true),
+				]),
+				new ClosureType(),
+			],
+			ClosureType::class,
+			'pure-Closure', // different result might be okay too
+		];
+		yield [
+			[
+				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
+					new SimpleImpurePoint('functionCall', 'foo', false),
+				]),
+				new ClosureType(),
+			],
+			ClosureType::class,
+			'pure-Closure', // different result might be okay too
 		];
 	}
 

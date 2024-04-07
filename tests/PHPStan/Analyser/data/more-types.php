@@ -30,7 +30,7 @@ class Foo
 		$nonEmptyMixed
 	): void
 	{
-		assertType('callable(): mixed', $pureCallable);
+		assertType('pure-callable(): mixed', $pureCallable);
 		assertType('array&callable(): mixed', $callableArray);
 		assertType('resource', $closedResource);
 		assertType('resource', $openResource);

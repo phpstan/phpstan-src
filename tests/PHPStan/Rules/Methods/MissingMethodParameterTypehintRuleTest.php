@@ -84,6 +84,10 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 				226,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
+			[
+				'Method MissingMethodParameterTypehint\MissingPureClosureSignatureType::doFoo() has parameter $cb with no signature specified for Closure.',
+				238,
+			],
 		];
 
 		$this->analyse([__DIR__ . '/data/missing-method-parameter-typehint.php'], $errors);

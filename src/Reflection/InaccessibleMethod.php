@@ -3,6 +3,8 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\SimpleImpurePoint;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
@@ -58,9 +60,20 @@ class InaccessibleMethod implements CallableParametersAcceptor
 		return [];
 	}
 
+	public function isPure(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function getImpurePoints(): array
 	{
-		return [];
+		return [
+			new SimpleImpurePoint(
+				'methodCall',
+				'call to unknown method',
+				false,
+			),
+		];
 	}
 
 	public function getInvalidateExpressions(): array

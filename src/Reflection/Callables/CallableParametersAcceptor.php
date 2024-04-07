@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Callables;
 
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\TrinaryLogic;
 
 /**
  * @api
@@ -15,6 +16,8 @@ interface CallableParametersAcceptor extends ParametersAcceptor
 	 * @return SimpleThrowPoint[]
 	 */
 	public function getThrowPoints(): array;
+
+	public function isPure(): TrinaryLogic;
 
 	/**
 	 * @return SimpleImpurePoint[]

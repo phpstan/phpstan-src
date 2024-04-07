@@ -354,6 +354,46 @@ class CallableTypeTest extends PHPStanTestCase
 				new CallableType([new NativeParameterReflection('foo', false, new StringType(), PassedByReference::createNo(), false, null)], new MixedType(), false),
 				TrinaryLogic::createYes(),
 			],
+			[
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createNo()),
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createNo()),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createNo()),
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+				new CallableType(null, null, true, null, null, [], TrinaryLogic::createNo()),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createNo()),
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createNo()),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createNo()),
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createYes()),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createYes()),
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createYes()),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createYes()),
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createNo()),
+				TrinaryLogic::createNo(),
+			],
 		];
 	}
 

@@ -95,17 +95,25 @@ class RuleLevelHelper
 		$acceptedType = TypeTraverser::map($acceptedType, function (Type $acceptedType, callable $traverse) use ($acceptingType, &$checkForUnion): Type {
 			if ($acceptedType instanceof CallableType) {
 				if ($acceptedType->isCommonCallable()) {
-					return new CallableType(null, null, $acceptedType->isVariadic());
+					return $acceptedType;
 				}
 
 				return new CallableType(
 					$acceptedType->getParameters(),
 					$traverse($this->transformCommonType($acceptedType->getReturnType())),
 					$acceptedType->isVariadic(),
+					$acceptedType->getTemplateTypeMap(),
+					$acceptedType->getResolvedTemplateTypeMap(),
+					$acceptedType->getTemplateTags(),
+					$acceptedType->isPure(),
 				);
 			}
 
 			if ($acceptedType instanceof ClosureType) {
+				if ($acceptedType->isCommonCallable()) {
+					return $acceptedType;
+				}
+
 				return new ClosureType(
 					$acceptedType->getParameters(),
 					$traverse($this->transformCommonType($acceptedType->getReturnType())),

@@ -358,3 +358,12 @@ function paramClosureThisWithNonObject(callable $cb): void
 {
 
 }
+
+/**
+ * @param pure-callable(): void $cb
+ * @param pure-Closure(): void $cl
+ */
+function pureCallableCannotReturnVoid(callable $cb, \Closure $cl): void
+{
+
+}

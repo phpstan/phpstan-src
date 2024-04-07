@@ -60,6 +60,13 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
+	/** @var array<int, ParameterReflection> */
+	private array $parameters;
+
+	private Type $returnType;
+
+	private bool $isCommonCallable;
+
 	private ObjectType $objectType;
 
 	private TemplateTypeMap $templateTypeMap;
@@ -70,7 +77,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	/**
 	 * @api
-	 * @param array<int, ParameterReflection> $parameters
+	 * @param array<int, ParameterReflection>|null $parameters
 	 * @param array<string, TemplateTag> $templateTags
 	 * @param SimpleThrowPoint[] $throwPoints
 	 * @param SimpleImpurePoint[] $impurePoints
@@ -78,9 +85,9 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	 * @param string[] $usedVariables
 	 */
 	public function __construct(
-		private array $parameters,
-		private Type $returnType,
-		private bool $variadic,
+		?array $parameters = null,
+		?Type $returnType = null,
+		private bool $variadic = true,
 		?TemplateTypeMap $templateTypeMap = null,
 		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 		?TemplateTypeVarianceMap $callSiteVarianceMap = null,
@@ -91,6 +98,9 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		private array $usedVariables = [],
 	)
 	{
+		$this->parameters = $parameters ?? [];
+		$this->returnType = $returnType ?? new MixedType();
+		$this->isCommonCallable = $parameters === null && $returnType === null;
 		$this->objectType = new ObjectType(Closure::class);
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
@@ -103,6 +113,25 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function getTemplateTags(): array
 	{
 		return $this->templateTags;
+	}
+
+	public function isPure(): TrinaryLogic
+	{
+		$impurePoints = $this->getImpurePoints();
+		if (count($impurePoints) === 0) {
+			return TrinaryLogic::createYes();
+		}
+
+		$certainCount = 0;
+		foreach ($impurePoints as $impurePoint) {
+			if (!$impurePoint->isCertain()) {
+				continue;
+			}
+
+			$certainCount++;
+		}
+
+		return $certainCount > 0 ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe();
 	}
 
 	public function getClassName(): string
@@ -201,6 +230,10 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $level->handle(
 			static fn (): string => 'Closure',
 			function (): string {
+				if ($this->isCommonCallable) {
+					return $this->isPure()->yes() ? 'pure-Closure' : 'Closure';
+				}
+
 				$printer = new Printer();
 				$selfWithoutParameterNames = new self(
 					array_map(static fn (ParameterReflection $p): ParameterReflection => new DummyParameter(
@@ -328,6 +361,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function getEnumCases(): array
 	{
 		return [];
+	}
+
+	public function isCommonCallable(): bool
+	{
+		return $this->isCommonCallable;
 	}
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
@@ -479,6 +517,10 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	public function traverse(callable $cb): Type
 	{
+		if ($this->isCommonCallable) {
+			return $this;
+		}
+
 		return new self(
 			array_map(static function (ParameterReflection $param) use ($cb): NativeParameterReflection {
 				$defaultValue = $param->getDefaultValue();
@@ -506,6 +548,10 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
 	{
+		if ($this->isCommonCallable) {
+			return $this;
+		}
+
 		if (!$right instanceof self) {
 			return $this;
 		}
@@ -666,6 +712,10 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	public function toPhpDocNode(): TypeNode
 	{
+		if ($this->isCommonCallable) {
+			return new IdentifierTypeNode($this->isPure()->yes() ? 'pure-Closure' : 'Closure');
+		}
+
 		$parameters = [];
 		foreach ($this->parameters as $parameter) {
 			$parameters[] = new CallableTypeParameterNode(

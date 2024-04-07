@@ -9,6 +9,7 @@ use IteratorAggregate;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -162,8 +163,10 @@ class MissingTypehintCheck
 		$result = [];
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$result): Type {
 			if (
-				($type instanceof CallableType && $type->isCommonCallable()) ||
-				($type instanceof ObjectType && $type->getClassName() === Closure::class)) {
+				($type instanceof CallableType && $type->isCommonCallable())
+				|| ($type instanceof ClosureType && $type->isCommonCallable())
+				|| ($type instanceof ObjectType && $type->getClassName() === Closure::class)
+			) {
 				$result[] = $type;
 			}
 			return $traverse($type);

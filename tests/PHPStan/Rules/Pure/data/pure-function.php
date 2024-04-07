@@ -139,3 +139,15 @@ function callsClosures(\Closure $closure1, \Closure $closure2): int
 	$closure1();
 	return $closure2();
 }
+
+/**
+ * @phpstan-pure
+ * @param pure-callable $cb
+ * @param pure-Closure $closure
+ * @return int
+ */
+function callsPureCallableIdentifierTypeNode(callable $cb, \Closure $closure): int
+{
+	$cb();
+	$closure();
+}

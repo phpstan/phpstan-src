@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use Nette\Utils\Strings;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
@@ -18,7 +19,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use function count;
-use function ctype_digit;
 use function str_repeat;
 use function strlen;
 
@@ -78,7 +78,7 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			if ($inputType->isNumericString()->yes()) {
 				$onlyNumbers = true;
 				foreach ($inputType->getConstantStrings() as $constantString) {
-					if (!ctype_digit($constantString->getValue())) {
+					if (Strings::match($constantString->getValue(), '#^[0-9]+$#') === null) {
 						$onlyNumbers = false;
 						break;
 					}

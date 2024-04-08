@@ -382,6 +382,21 @@ class CallableTypeTest extends PHPStanTestCase
 			[
 				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createNo()),
 				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createYes()),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createMaybe()),
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createYes()),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createMaybe()),
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createNo()),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createMaybe()),
+				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createMaybe()),
 				TrinaryLogic::createYes(),
 			],
 			[

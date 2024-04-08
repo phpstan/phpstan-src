@@ -103,8 +103,11 @@ class CallableTypeHelper
 			$isReturnTypeSuperType = new AcceptsResult($ours->getReturnType()->isSuperTypeOf($theirReturnType), []);
 		}
 
-		if ($ours->isPure()->yes()) {
+		$pure = $ours->isPure();
+		if ($pure->yes()) {
 			$result = $result->and(new AcceptsResult($theirs->isPure(), []));
+		} elseif ($pure->no()) {
+			$result = $result->and(new AcceptsResult($theirs->isPure()->negate(), []));
 		}
 
 		return $result->and($isReturnTypeSuperType);

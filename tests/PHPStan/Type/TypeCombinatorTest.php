@@ -2555,8 +2555,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				]),
 				new ClosureType(),
 			],
-			ClosureType::class,
-			'Closure(): mixed', // different result might be okay too
+			UnionType::class,
+			'(Closure(): mixed)|(pure-Closure)',
 		];
 		yield [
 			[
@@ -2566,7 +2566,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ClosureType(),
 			],
 			ClosureType::class,
-			'Closure(): mixed', // different result might be okay too
+			'Closure(): mixed',
 		];
 	}
 
@@ -4239,8 +4239,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				]),
 				new ClosureType(),
 			],
-			ClosureType::class,
-			'pure-Closure', // different result might be okay too
+			NeverType::class,
+			'*NEVER*=implicit',
 		];
 		yield [
 			[
@@ -4250,7 +4250,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ClosureType(),
 			],
 			ClosureType::class,
-			'pure-Closure', // different result might be okay too
+			'pure-Closure',
 		];
 	}
 

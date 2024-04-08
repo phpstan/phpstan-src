@@ -56,6 +56,11 @@ class Foo
 		assertType("literal-string&non-falsy-string", str_repeat('1e9', $x));
 		assertType("literal-string&non-falsy-string&numeric-string", str_repeat('19', $x));
 
+		$x = rand(0,2);
+		assertType("literal-string", str_repeat('19', $x));
+
+		$x = rand(-10,-1);
+		assertType("*NEVER*", str_repeat('19', $x));
 		assertType("'?,?,?,'", str_repeat('?,', 3));
 		assertType("*NEVER*", str_repeat('?,', -3));
 

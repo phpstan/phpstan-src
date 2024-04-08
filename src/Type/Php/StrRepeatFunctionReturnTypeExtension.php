@@ -41,17 +41,17 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			return new StringType();
 		}
 
-		$inputType = $scope->getType($args[0]->value);
 		$multiplierType = $scope->getType($args[1]->value);
 
 		if ((new ConstantIntegerType(0))->isSuperTypeOf($multiplierType)->yes()) {
 			return new ConstantStringType('');
 		}
 
-		if ($multiplierType instanceof ConstantIntegerType && $multiplierType->getValue() < 0) {
+		if (IntegerRangeType::fromInterval(null, 0)->isSuperTypeOf($multiplierType)->yes()) {
 			return new NeverType();
 		}
 
+		$inputType = $scope->getType($args[0]->value);
 		if (
 			$inputType instanceof ConstantStringType
 			&& $multiplierType instanceof ConstantIntegerType
@@ -75,7 +75,10 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 		if ($inputType->isLiteralString()->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
 
-			if ($inputType->isNumericString()->yes()) {
+			if (
+				$inputType->isNumericString()->yes()
+				&& IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($multiplierType)->yes()
+			) {
 				$onlyNumbers = true;
 				foreach ($inputType->getConstantStrings() as $constantString) {
 					if (Strings::match($constantString->getValue(), '#^[0-9]+$#') === null) {
@@ -94,7 +97,6 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			$accessoryTypes[] = new StringType();
 			return new IntersectionType($accessoryTypes);
 		}
-
 		return new StringType();
 	}
 

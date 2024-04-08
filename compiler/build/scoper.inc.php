@@ -219,6 +219,28 @@ return [
 
 			return str_replace(sprintf('use %s\\PhpParser;', $prefix), 'use PhpParser;', $content);
 		},
+		// Patch to mimic the expected solution result for https://github.com/humbug/php-scoper/issues/963
+		function (string $filePath, string $prefix, string $content): string {
+			return preg_replace_callback(
+				'/if \(\s*!\s*\\\?function_exists\(\'\\\?(?<functionFQN>.+)\'\)\)[\s\n]{/',
+				static function(array $matches) use ($prefix): string {
+					$matchedElement = $matches[0];
+					$functionFqn = $matches['functionFQN'];
+
+					if (str_starts_with($functionFqn, $prefix)) {
+						return $matchedElement;
+					}
+
+					return sprintf(
+						'if (!function_exists(\'%1$s\') && !function_exists(\'%2$s\%1$s\')) {',
+						$functionFqn,
+						$prefix,
+					);
+				},
+				$content,
+				-1
+			);
+		},
 	],
 	'exclude-namespaces' => [
 		'PHPStan',

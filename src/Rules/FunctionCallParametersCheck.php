@@ -26,6 +26,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_fill;
 use function array_key_exists;
 use function count;
+use function implode;
 use function is_string;
 use function max;
 use function sprintf;
@@ -260,14 +261,9 @@ class FunctionCallParametersCheck
 
 					if (!$accepts->result) {
 						$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $argumentValueType);
-						$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							$messages[6],
-							$argumentName === null ? sprintf(
-								'#%d %s',
-								$i + 1,
-								$parameterDescription,
-							) : $parameterDescription,
+							$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
 							$parameterType->describe($verbosityLevel),
 							$argumentValueType->describe($verbosityLevel),
 						))->line($argumentLine)->acceptsReasonsTip($accepts->reasons)->build();
@@ -280,14 +276,9 @@ class FunctionCallParametersCheck
 					&& !$this->unresolvableTypeHelper->containsUnresolvableType($originalParameter->getType())
 					&& $this->unresolvableTypeHelper->containsUnresolvableType($parameterType)
 				) {
-					$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$messages[13],
-						$argumentName === null ? sprintf(
-							'#%d %s',
-							$i + 1,
-							$parameterDescription,
-						) : $parameterDescription,
+						$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
 					))->line($argumentLine)->build();
 				}
 			}
@@ -300,10 +291,9 @@ class FunctionCallParametersCheck
 			}
 
 			if ($this->nullsafeCheck->containsNullSafe($argumentValue)) {
-				$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[8],
-					$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
+					$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
 				))->line($argumentLine)->build();
 				continue;
 			}
@@ -327,10 +317,9 @@ class FunctionCallParametersCheck
 						$propertyDescription = sprintf('readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
 					}
 
-					$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Parameter %s is passed by reference so it does not accept %s.',
-						$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
+						$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
 						$propertyDescription,
 					))->line($argumentLine)->build();
 				}
@@ -343,10 +332,9 @@ class FunctionCallParametersCheck
 				continue;
 			}
 
-			$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				$messages[8],
-				$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
+				$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
 			))->line($argumentLine)->build();
 		}
 
@@ -524,6 +512,21 @@ class FunctionCallParametersCheck
 		}
 
 		return [$errors, $newArguments];
+	}
+
+	private function describeParameter(ParameterReflection $parameter, ?int $position): string
+	{
+		$parts = [];
+		if ($position !== null) {
+			$parts[] = '#' . $position;
+		}
+
+		$name = $parameter->getName();
+		if ($name !== '') {
+			$parts[] = ($parameter->isVariadic() ? '...$' : '$') . $name;
+		}
+
+		return implode(' ', $parts);
 	}
 
 }

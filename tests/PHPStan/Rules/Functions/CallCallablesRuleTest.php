@@ -190,7 +190,7 @@ class CallCallablesRuleTest extends RuleTestCase
 				true,
 				[
 					[
-						'Parameter #1 $ of closure expects int, TMemberType given.',
+						'Parameter #1 of closure expects int, TMemberType given.',
 						29,
 					],
 				],
@@ -280,7 +280,7 @@ class CallCallablesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-6485.php'], [
 			[
-				'Parameter #1 $ of closure expects never, TBlockType of Bug6485\Block given.',
+				'Parameter #1 of closure expects never, TBlockType of Bug6485\Block given.',
 				33,
 			],
 		]);
@@ -304,6 +304,16 @@ class CallCallablesRuleTest extends RuleTestCase
 	public function testBug9614(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9614.php'], []);
+	}
+
+	public function testBug10814(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10814.php'], [
+			[
+				'Parameter #1 of closure expects DateTime, DateTimeImmutable given.',
+				10,
+			],
+		]);
 	}
 
 }

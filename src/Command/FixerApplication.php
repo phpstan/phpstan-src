@@ -67,6 +67,8 @@ class FixerApplication
 	/** @var (ExtendedPromiseInterface&CancellablePromiseInterface)|null */
 	private $processInProgress;
 
+	private bool $fileMonitorActive = true;
+
 	/**
 	 * @param string[] $analysedPaths
 	 * @param list<string> $dnsServers
@@ -119,12 +121,20 @@ class FixerApplication
 				'filesCount' => $filesCount,
 				'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
 			]]);
-			$decoder->on('data', static function (array $data) use (
+			$decoder->on('data', function (array $data) use (
 				$output,
 			): void {
 				if ($data['action'] === 'webPort') {
 					$output->writeln(sprintf('Open your web browser at: <fg=cyan>http://127.0.0.1:%d</>', $data['data']['port']));
 					$output->writeln('Press [Ctrl-C] to quit.');
+					return;
+				}
+				if ($data['action'] === 'resumeFileMonitor') {
+					$this->fileMonitorActive = true;
+					return;
+				}
+				if ($data['action'] === 'pauseFileMonitor') {
+					$this->fileMonitorActive = false;
 					return;
 				}
 			});
@@ -396,6 +406,10 @@ class FixerApplication
 	private function monitorFileChanges(LoopInterface $loop, callable $hasChangesCallback): void
 	{
 		$callback = function () use (&$callback, $loop, $hasChangesCallback): void {
+			if (!$this->fileMonitorActive) {
+				$loop->addTimer(1.0, $callback);
+				return;
+			}
 			$changes = $this->fileMonitor->getChanges();
 
 			if ($changes->hasAnyChanges()) {

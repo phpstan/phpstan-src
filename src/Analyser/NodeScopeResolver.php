@@ -4690,6 +4690,7 @@ class NodeScopeResolver
 		ExpressionContext $context,
 		Closure $processExprCallback,
 		bool $enterExpressionAssign,
+		?TrinaryLogic $certainty = null,
 	): ExpressionResult
 	{
 		$nodeCallback($var, $enterExpressionAssign ? $scope->enterExpressionAssign($var) : $scope);
@@ -4746,7 +4747,7 @@ class NodeScopeResolver
 			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 
 			$nodeCallback(new VariableAssignNode($var, $assignedExpr, $isAssignOp), $result->getScope());
-			$scope = $result->getScope()->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr));
+			$scope = $result->getScope()->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), $certainty);
 			foreach ($conditionalExpressions as $exprString => $holders) {
 				$scope = $scope->addConditionalExpressions($exprString, $holders);
 			}
@@ -5057,6 +5058,7 @@ class NodeScopeResolver
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 			$scope = $result->getScope();
+			$assignedExprType = $scope->getType($assignedExpr);
 			foreach ($var->items as $i => $arrayItem) {
 				if ($arrayItem === null) {
 					continue;
@@ -5083,8 +5085,19 @@ class NodeScopeResolver
 
 				if ($arrayItem->key === null) {
 					$dimExpr = new Node\Scalar\LNumber($i);
+
+					if (
+						$i === 0
+						&& $assignedExprType->isList()->yes()
+						&& $assignedExprType->isIterableAtLeastOnce()->yes()
+					) {
+						$certainty = TrinaryLogic::createYes();
+					} else {
+						$certainty = $assignedExprType->hasOffsetValueType($scope->getType($dimExpr));
+					}
 				} else {
 					$dimExpr = $arrayItem->key;
+					$certainty = $assignedExprType->hasOffsetValueType($scope->getType($dimExpr));
 				}
 				$result = $this->processAssignVar(
 					$scope,
@@ -5095,6 +5108,7 @@ class NodeScopeResolver
 					$context,
 					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, [], []),
 					$enterExpressionAssign,
+					$certainty,
 				);
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();

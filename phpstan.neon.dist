@@ -1,1 +1,4 @@
 includes: [ build/phpstan.neon ]
+
+parameters:
+	editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'

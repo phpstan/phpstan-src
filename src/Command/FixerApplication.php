@@ -88,6 +88,7 @@ class FixerApplication
 		private array $allConfigFiles,
 		private ?string $cliAutoloadFile,
 		private array $bootstrapFiles,
+		private ?string $editorUrl,
 	)
 	{
 	}
@@ -120,6 +121,7 @@ class FixerApplication
 				'projectConfigFile' => $projectConfigFile,
 				'filesCount' => $filesCount,
 				'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
+				'editorUrl' => $this->editorUrl,
 			]]);
 			$decoder->on('data', function (array $data) use (
 				$output,

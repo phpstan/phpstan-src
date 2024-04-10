@@ -576,6 +576,7 @@ services:
 			allConfigFiles: %allConfigFiles%
 			cliAutoloadFile: %cliAutoloadFile%
 			bootstrapFiles: %bootstrapFiles%
+			editorUrl: %editorUrl%
 
 	-
 		class: PHPStan\Dependency\DependencyResolver

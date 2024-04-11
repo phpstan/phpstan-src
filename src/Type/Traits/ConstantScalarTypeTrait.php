@@ -24,7 +24,7 @@ trait ConstantScalarTypeTrait
 	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof self) {
-			return AcceptsResult::createFromBoolean($this->value === $type->value);
+			return AcceptsResult::createFromBoolean($this->equals($type));
 		}
 
 		if ($type instanceof CompoundType) {
@@ -37,7 +37,7 @@ trait ConstantScalarTypeTrait
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof self) {
-			return $this->value === $type->value ? TrinaryLogic::createYes() : TrinaryLogic::createNo();
+			return TrinaryLogic::createFromBoolean($this->equals($type));
 		}
 
 		if ($type instanceof parent) {

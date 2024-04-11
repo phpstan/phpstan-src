@@ -73,4 +73,9 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10956(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10956.php'], []);
+	}
+
 }

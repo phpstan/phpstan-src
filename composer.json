@@ -62,7 +62,7 @@
 		"phpstan/phpstan-phpunit": "^1.0",
 		"phpstan/phpstan-strict-rules": "^1.5.1",
 		"phpunit/phpunit": "^9.5.4",
-		"shipmonk/composer-dependency-analyser": "^1.0",
+		"shipmonk/composer-dependency-analyser": "^1.5",
 		"shipmonk/name-collision-detector": "^2.0"
 	},
 	"config": {

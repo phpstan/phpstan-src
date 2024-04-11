@@ -479,6 +479,50 @@ class CommandHelper
 			$errorOutput->writeLineFormatted(sprintf('Please implement PHPStan\Type\ExpressionTypeResolverExtension interface instead and register it as a service.'));
 		}
 
+		if ($projectConfig !== null) {
+			$parameters = $projectConfig['parameters'] ?? [];
+			/** @var bool $checkMissingIterableValueType */
+			$checkMissingIterableValueType = $parameters['checkMissingIterableValueType'] ?? true;
+			if (!$checkMissingIterableValueType) {
+				$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>checkMissingIterableValueType</> ⚠️️');
+				$errorOutput->writeLineFormatted('');
+
+				$featureToggles = $container->getParameter('featureToggles');
+				if (!((bool) $featureToggles['bleedingEdge'])) {
+					$errorOutput->writeLineFormatted('It\'s strongly recommended to remove it from your configuration file');
+					$errorOutput->writeLineFormatted('and add the missing array typehints.');
+					$errorOutput->writeLineFormatted('');
+				}
+
+				$errorOutput->writeLineFormatted('If you want to continue ignoring missing typehints from arrays,');
+				$errorOutput->writeLineFormatted('add <fg=cyan>missingType.iterableValue</> error identifier to your <fg=cyan>ignoreErrors</>:');
+				$errorOutput->writeLineFormatted('');
+				$errorOutput->writeLineFormatted('parameters:');
+				$errorOutput->writeLineFormatted("\tignoreErrors:");
+				$errorOutput->writeLineFormatted("\t\t-");
+				$errorOutput->writeLineFormatted("\t\t\tidentifier: missingType.iterableValue");
+				$errorOutput->writeLineFormatted('');
+			}
+
+			/** @var bool $checkGenericClassInNonGenericObjectType */
+			$checkGenericClassInNonGenericObjectType = $parameters['checkGenericClassInNonGenericObjectType'] ?? true;
+			if (!$checkGenericClassInNonGenericObjectType) {
+				$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>checkGenericClassInNonGenericObjectType</> ⚠️️');
+				$errorOutput->writeLineFormatted('');
+				$errorOutput->writeLineFormatted('It\'s strongly recommended to remove it from your configuration file');
+				$errorOutput->writeLineFormatted('and add the missing generic typehints.');
+				$errorOutput->writeLineFormatted('');
+				$errorOutput->writeLineFormatted('If you want to continue ignoring missing typehints from generics,');
+				$errorOutput->writeLineFormatted('add <fg=cyan>missingType.generics</> error identifier to your <fg=cyan>ignoreErrors</>:');
+				$errorOutput->writeLineFormatted('');
+				$errorOutput->writeLineFormatted('parameters:');
+				$errorOutput->writeLineFormatted("\tignoreErrors:");
+				$errorOutput->writeLineFormatted("\t\t-");
+				$errorOutput->writeLineFormatted("\t\t\tidentifier: missingType.generics");
+				$errorOutput->writeLineFormatted('');
+			}
+		}
+
 		$tempResultCachePath = $container->getParameter('tempResultCachePath');
 		$createDir($tempResultCachePath);
 

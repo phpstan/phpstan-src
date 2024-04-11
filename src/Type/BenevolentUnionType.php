@@ -43,11 +43,18 @@ class BenevolentUnionType extends UnionType
 		return TypeUtils::toBenevolentUnion(TypeCombinator::union(...$resultTypes));
 	}
 
-	protected function pickFromTypes(callable $getValues): array
+	protected function pickFromTypes(
+		callable $getValues,
+		callable $criteria,
+	): array
 	{
 		$values = [];
 		foreach ($this->getTypes() as $type) {
 			$innerValues = $getValues($type);
+			if ($innerValues === [] && $criteria($type)) {
+				return [];
+			}
+
 			foreach ($innerValues as $innerType) {
 				$values[] = $innerType;
 			}

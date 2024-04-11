@@ -123,27 +123,42 @@ class UnionType implements CompoundType
 
 	public function getObjectClassNames(): array
 	{
-		return array_values(array_unique($this->pickFromTypes(static fn (Type $type) => $type->getObjectClassNames())));
+		return array_values(array_unique($this->pickFromTypes(
+			static fn (Type $type) => $type->getObjectClassNames(),
+			static fn (Type $type) => $type->isObject()->yes(),
+		)));
 	}
 
 	public function getObjectClassReflections(): array
 	{
-		return $this->pickFromTypes(static fn (Type $type) => $type->getObjectClassReflections());
+		return $this->pickFromTypes(
+			static fn (Type $type) => $type->getObjectClassReflections(),
+			static fn (Type $type) => $type->isObject()->yes(),
+		);
 	}
 
 	public function getArrays(): array
 	{
-		return $this->pickFromTypes(static fn (Type $type) => $type->getArrays());
+		return $this->pickFromTypes(
+			static fn (Type $type) => $type->getArrays(),
+			static fn (Type $type) => $type->isArray()->yes(),
+		);
 	}
 
 	public function getConstantArrays(): array
 	{
-		return $this->pickFromTypes(static fn (Type $type) => $type->getConstantArrays());
+		return $this->pickFromTypes(
+			static fn (Type $type) => $type->getConstantArrays(),
+			static fn (Type $type) => $type->isArray()->yes(),
+		);
 	}
 
 	public function getConstantStrings(): array
 	{
-		return $this->pickFromTypes(static fn (Type $type) => $type->getConstantStrings());
+		return $this->pickFromTypes(
+			static fn (Type $type) => $type->getConstantStrings(),
+			static fn (Type $type) => $type->isString()->yes(),
+		);
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
@@ -718,7 +733,10 @@ class UnionType implements CompoundType
 
 	public function getEnumCases(): array
 	{
-		return $this->pickFromTypes(static fn (Type $type) => $type->getEnumCases());
+		return $this->pickFromTypes(
+			static fn (Type $type) => $type->getEnumCases(),
+			static fn (Type $type) => $type->isObject()->yes(),
+		);
 	}
 
 	public function isCallable(): TrinaryLogic
@@ -1069,15 +1087,19 @@ class UnionType implements CompoundType
 	 */
 	protected function pickTypes(callable $getTypes): array
 	{
-		return $this->pickFromTypes($getTypes);
+		return $this->pickFromTypes($getTypes, static fn () => false);
 	}
 
 	/**
 	 * @template T
 	 * @param callable(Type $type): list<T> $getValues
+	 * @param callable(Type $type): bool $criteria
 	 * @return list<T>
 	 */
-	protected function pickFromTypes(callable $getValues): array
+	protected function pickFromTypes(
+		callable $getValues,
+		callable $criteria,
+	): array
 	{
 		$values = [];
 		foreach ($this->types as $type) {

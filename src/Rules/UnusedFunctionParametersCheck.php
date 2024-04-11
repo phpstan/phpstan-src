@@ -63,7 +63,7 @@ class UnusedFunctionParametersCheck
 		if ($node instanceof Node) {
 			if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {
 				$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
-				if ($functionName === 'func_get_args') {
+				if ($functionName === 'func_get_args' || $functionName === 'get_defined_vars') {
 					return $scope->getDefinedVariables();
 				}
 			}

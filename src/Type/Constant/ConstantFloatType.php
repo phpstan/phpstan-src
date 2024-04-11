@@ -5,8 +5,6 @@ namespace PHPStan\Type\Constant;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\TrinaryLogic;
-use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
@@ -14,12 +12,11 @@ use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
-use function abs;
 use function ini_get;
 use function ini_set;
 use function is_finite;
+use function is_nan;
 use function str_contains;
-use const PHP_FLOAT_EPSILON;
 
 /** @api */
 class ConstantFloatType extends FloatType implements ConstantScalarType
@@ -42,7 +39,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 
 	public function equals(Type $type): bool
 	{
-		return $type instanceof self && abs($this->value - $type->value) < PHP_FLOAT_EPSILON;
+		return $type instanceof self && ($this->value === $type->value || is_nan($this->value) && is_nan($type->value));
 	}
 
 	private function castFloatToString(float $value): string
@@ -67,31 +64,6 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 			static fn (): string => 'float',
 			fn (): string => $this->castFloatToString($this->value),
 		);
-	}
-
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		if ($type instanceof self) {
-			if (!$this->equals($type)) {
-				if (abs($this->value - $type->value) < PHP_FLOAT_EPSILON) {
-					return TrinaryLogic::createMaybe();
-				}
-
-				return TrinaryLogic::createNo();
-			}
-
-			return TrinaryLogic::createYes();
-		}
-
-		if ($type instanceof parent) {
-			return TrinaryLogic::createMaybe();
-		}
-
-		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
-		}
-
-		return TrinaryLogic::createNo();
 	}
 
 	public function toString(): Type

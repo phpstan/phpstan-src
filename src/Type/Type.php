@@ -32,7 +32,7 @@ interface Type
 	 */
 	public function getReferencedClasses(): array;
 
-	/** @return list<string> */
+	/** @return list<non-empty-string> */
 	public function getObjectClassNames(): array;
 
 	/**

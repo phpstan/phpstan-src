@@ -263,6 +263,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getObjectClassNames(): array
 	{
+		if ($this->className === '') {
+			return [];
+		}
 		return [$this->className];
 	}
 

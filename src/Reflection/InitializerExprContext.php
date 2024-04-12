@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
+use PHPStan\ShouldNotHappenException;
 use function array_slice;
 use function count;
 use function explode;
@@ -18,6 +19,9 @@ use function sprintf;
 class InitializerExprContext implements NamespaceAnswerer
 {
 
+	/**
+	 * @param non-empty-string|null $namespace
+	 */
 	private function __construct(
 		private ?string $file,
 		private ?string $namespace,
@@ -43,11 +47,18 @@ class InitializerExprContext implements NamespaceAnswerer
 		);
 	}
 
+	/**
+	 * @return non-empty-string|null
+	 */
 	private static function parseNamespace(string $name): ?string
 	{
 		$parts = explode('\\', $name);
 		if (count($parts) > 1) {
-			return implode('\\', array_slice($parts, 0, -1));
+			$ns = implode('\\', array_slice($parts, 0, -1));
+			if ($ns === '') {
+				throw new ShouldNotHappenException('Namespace cannot be empty.');
+			}
+			return $ns;
 		}
 
 		return null;
@@ -127,6 +138,10 @@ class InitializerExprContext implements NamespaceAnswerer
 
 	public static function fromGlobalConstant(ReflectionConstant $constant): self
 	{
+		if ($constant->getNamespaceName() === '') {
+			throw new ShouldNotHappenException('Namespace cannot be empty.');
+		}
+
 		return new self(
 			$constant->getFileName(),
 			$constant->getNamespaceName(),

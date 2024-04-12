@@ -173,6 +173,7 @@ class MutatingScope implements Scope
 	/** @var array<string, self> */
 	private array $falseyScopes = [];
 
+	/** @var non-empty-string|null */
 	private ?string $namespace;
 
 	private ?self $scopeOutOfFirstLevelStatement = null;

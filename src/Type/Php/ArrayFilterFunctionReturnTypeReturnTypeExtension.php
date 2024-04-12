@@ -33,8 +33,8 @@ use PHPStan\Type\TypeUtils;
 use function array_map;
 use function count;
 use function is_string;
+use function ltrim;
 use function strtolower;
-use function substr;
 
 class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -245,7 +245,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 	private static function createFunctionName(string $funcName): Name
 	{
 		if ($funcName[0] === '\\') {
-			$fqcn = ltrim($funcName[0], '\\');
+			$fqcn = ltrim($funcName, '\\');
 			if ($fqcn === '') {
 				throw new ShouldNotHappenException();
 			}

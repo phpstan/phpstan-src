@@ -482,6 +482,10 @@ class FileTypeMapper
 				$functionName = $functionStack[count($functionStack) - 1] ?? null;
 				$nameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, $functionName);
 
+				if ($namespace === '') {
+					throw new ShouldNotHappenException('Namespace cannot be empty.');
+				}
+
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					if (array_key_exists($nameScopeKey, $phpDocNodeMap)) {
 						$phpDocNode = $phpDocNodeMap[$nameScopeKey];

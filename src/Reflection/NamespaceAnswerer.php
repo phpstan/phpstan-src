@@ -6,6 +6,9 @@ namespace PHPStan\Reflection;
 interface NamespaceAnswerer
 {
 
+	/**
+	 * @return non-empty-string|null
+	 */
 	public function getNamespace(): ?string;
 
 }

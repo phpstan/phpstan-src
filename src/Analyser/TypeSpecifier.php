@@ -485,7 +485,7 @@ class TypeSpecifier
 			return $this->handleDefaultTruthyOrFalseyContext($context, $rootExpr, $expr, $scope);
 		} elseif ($expr instanceof StaticCall && $expr->name instanceof Node\Identifier) {
 			if ($expr->class instanceof Name) {
-				$calleeType = $scope->resolveTypeByName($expr->class);
+				$calleeType = $scope->getType(new ClassConstFetch($expr->class, 'class'))->getClassStringObjectType();
 			} else {
 				$calleeType = $scope->getType($expr->class);
 			}

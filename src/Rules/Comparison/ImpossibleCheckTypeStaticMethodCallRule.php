@@ -103,7 +103,7 @@ class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 	): MethodReflection
 	{
 		if ($class instanceof Node\Name) {
-			$calledOnType = $scope->resolveTypeByName($class);
+			$calledOnType = $scope->getType(new Expr\ClassConstFetch($class, 'class'))->getClassStringObjectType();
 		} else {
 			$calledOnType = $scope->getType($class);
 		}

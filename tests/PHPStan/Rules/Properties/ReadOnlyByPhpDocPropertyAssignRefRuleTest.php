@@ -68,4 +68,22 @@ class ReadOnlyByPhpDocPropertyAssignRefRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/readonly-assign-ref-phpdoc-and-native.php'], []);
 	}
 
+	public function testBugInstanceofStaticVsThis(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-instanceof-static-vs-this-property-assign.php'], [
+			[
+				'@readonly property BugInstanceofStaticVsThisPropertyAssign\FooChild::$phpdocReadonlyProp is assigned by reference.',
+				20,
+			],
+			[
+				'@readonly property BugInstanceofStaticVsThisPropertyAssign\FooChild::$phpdocReadonlyProp is assigned by reference.',
+				34,
+			],
+		]);
+	}
+
 }

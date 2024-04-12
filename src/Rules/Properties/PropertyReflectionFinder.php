@@ -49,7 +49,7 @@ class PropertyReflectionFinder
 		}
 
 		if ($propertyFetch->class instanceof Node\Name) {
-			$propertyHolderType = $scope->resolveTypeByName($propertyFetch->class);
+			$propertyHolderType = $scope->getType(new Expr\ClassConstFetch($propertyFetch->class, 'class'))->getClassStringObjectType();
 		} else {
 			$propertyHolderType = $scope->getType($propertyFetch->class);
 		}

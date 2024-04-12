@@ -160,4 +160,22 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/feature-7648.php'], []);
 	}
 
+	public function testBugInstanceofStaticVsThis(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-instanceof-static-vs-this-property-assign.php'], [
+			[
+				'@readonly property BugInstanceofStaticVsThisPropertyAssign\FooChild::$phpdocReadonlyProp is assigned outside of its declaring class.',
+				16,
+			],
+			[
+				'@readonly property BugInstanceofStaticVsThisPropertyAssign\FooChild::$phpdocReadonlyProp is assigned outside of its declaring class.',
+				30,
+			],
+		]);
+	}
+
 }

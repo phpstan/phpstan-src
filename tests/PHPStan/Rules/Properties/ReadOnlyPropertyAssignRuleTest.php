@@ -154,4 +154,22 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBugInstanceofStaticVsThis(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-instanceof-static-vs-this-property-assign.php'], [
+			[
+				'Readonly property BugInstanceofStaticVsThisPropertyAssign\FooChild::$nativeReadonlyProp is assigned outside of its declaring class.',
+				15,
+			],
+			[
+				'Readonly property BugInstanceofStaticVsThisPropertyAssign\FooChild::$nativeReadonlyProp is assigned outside of its declaring class.',
+				29,
+			],
+		]);
+	}
+
 }

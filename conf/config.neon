@@ -177,6 +177,7 @@ parameters:
 		- ../stubs/ext-ds.stub
 		- ../stubs/ImagickPixel.stub
 		- ../stubs/PDOStatement.stub
+		- ../stubs/PhpParserName.stub
 		- ../stubs/date.stub
 		- ../stubs/ibm_db2.stub
 		- ../stubs/mysqli.stub

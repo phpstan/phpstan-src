@@ -152,6 +152,9 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		return __DIR__ . '/data/golden/phpSymbols.txt';
 	}
 
+	/**
+	 * @param non-empty-string $functionName
+	 */
 	private static function generateFunctionDescription(string $functionName): string
 	{
 		$nameNode = new Name($functionName);

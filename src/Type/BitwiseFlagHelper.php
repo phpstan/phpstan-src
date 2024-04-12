@@ -18,6 +18,9 @@ final class BitwiseFlagHelper
 	{
 	}
 
+	/**
+	 * @param non-empty-string $constName
+	 */
 	public function bitwiseOrContainsConstant(Expr $expr, Scope $scope, string $constName): TrinaryLogic
 	{
 		if ($expr instanceof ConstFetch) {

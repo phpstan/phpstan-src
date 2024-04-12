@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
+use PHPStan\ShouldNotHappenException;
 use function count;
 use function explode;
 use function ltrim;
@@ -15,11 +16,19 @@ use function ltrim;
 class ConstantHelper
 {
 
+	/**
+	 * @param non-empty-string $constantName
+	 */
 	public function createExprFromConstantName(string $constantName): Expr
 	{
 		$classConstParts = explode('::', $constantName);
 		if (count($classConstParts) >= 2) {
-			$classConstName = new FullyQualified(ltrim($classConstParts[0], '\\'));
+			$fqcn = ltrim($classConstParts[0], '\\');
+			if ($fqcn === '') {
+				throw new ShouldNotHappenException();
+			}
+
+			$classConstName = new FullyQualified($fqcn);
 			if ($classConstName->isSpecialClassName()) {
 				$classConstName = new Name($classConstName->toString());
 			}

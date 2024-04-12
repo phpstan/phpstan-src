@@ -119,6 +119,8 @@ final class BitwiseFlagHelperTest extends PHPStanTestCase
 	/**
 	 * @dataProvider dataUnknownConstants
 	 * @dataProvider dataJsonExprContainsConst
+	 *
+	 * @param non-empty-string $constName
 	 */
 	public function testExprContainsConst(Expr $expr, string $constName, TrinaryLogic $expected): void
 	{

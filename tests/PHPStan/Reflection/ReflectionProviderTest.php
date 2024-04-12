@@ -51,6 +51,8 @@ class ReflectionProviderTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFunctionThrowType
+	 *
+	 * @param non-empty-string $functionName
 	 */
 	public function testFunctionThrowType(string $functionName, ?Type $expectedThrowType): void
 	{
@@ -96,6 +98,8 @@ class ReflectionProviderTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFunctionDeprecated
+	 *
+	 * @param non-empty-string $functionName
 	 */
 	public function testFunctionDeprecated(string $functionName, bool $isDeprecated): void
 	{

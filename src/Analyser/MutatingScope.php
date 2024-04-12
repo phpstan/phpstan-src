@@ -5230,6 +5230,9 @@ class MutatingScope implements Scope
 		return $descriptions;
 	}
 
+	/**
+	 * @param non-empty-string $className
+	 */
 	private function exactInstantiation(New_ $node, string $className): ?Type
 	{
 		$resolvedClassName = $this->resolveExactName(new Name($className));

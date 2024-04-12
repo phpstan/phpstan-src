@@ -2008,6 +2008,7 @@ class TypeSpecifier
 			$unwrappedLeftExpr->name instanceof Node\Identifier &&
 			$unwrappedRightExpr instanceof ClassConstFetch &&
 			$rightType instanceof ConstantStringType &&
+			$rightType->getValue() !== '' &&
 			strtolower($unwrappedLeftExpr->name->toString()) === 'class'
 		) {
 			return $this->specifyTypesInCondition(
@@ -2029,6 +2030,7 @@ class TypeSpecifier
 			$unwrappedRightExpr->name instanceof Node\Identifier &&
 			$unwrappedLeftExpr instanceof ClassConstFetch &&
 			$leftType instanceof ConstantStringType &&
+			$leftType->getValue() !== '' &&
 			strtolower($unwrappedRightExpr->name->toString()) === 'class'
 		) {
 			return $this->specifyTypesInCondition(

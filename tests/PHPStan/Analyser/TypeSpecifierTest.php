@@ -1344,11 +1344,17 @@ class TypeSpecifierTest extends PHPStanTestCase
 		return $descriptions;
 	}
 
+	/**
+	 * @param non-empty-string $className
+	 */
 	private function createInstanceOf(string $className, string $variableName = 'foo'): Expr\Instanceof_
 	{
 		return new Expr\Instanceof_(new Variable($variableName), new Name($className));
 	}
 
+	/**
+	 * @param non-empty-string $functionName
+	 */
 	private function createFunctionCall(string $functionName, string $variableName = 'foo'): FuncCall
 	{
 		return new FuncCall(new Name($functionName), [new Arg(new Variable($variableName))]);

@@ -11,6 +11,7 @@ use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -66,6 +67,10 @@ class TemplateTypeCheck
 	{
 		$messages = [];
 		foreach ($templateTags as $templateTag) {
+			if ($templateTag->getName() === '') {
+				throw new ShouldNotHappenException();
+			}
+
 			$templateTagName = $scope->resolveName(new Node\Name($templateTag->getName()));
 			if ($this->reflectionProvider->hasClass($templateTagName)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(

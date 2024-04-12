@@ -245,7 +245,16 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 	private static function createFunctionName(string $funcName): Name
 	{
 		if ($funcName[0] === '\\') {
-			return new Name\FullyQualified(substr($funcName, 1));
+			$fqcn = ltrim($funcName[0], '\\');
+			if ($fqcn === '') {
+				throw new ShouldNotHappenException();
+			}
+
+			return new Name\FullyQualified($fqcn);
+		}
+
+		if ($funcName === '') {
+			throw new ShouldNotHappenException();
 		}
 
 		return new Name($funcName);

@@ -36,6 +36,9 @@ class ConstantFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		$results = [];
 		foreach ($nameType->getConstantStrings() as $constantName) {
+			if ($constantName->getValue() === '') {
+				return null;
+			}
 			$results[] = $scope->getType($this->constantHelper->createExprFromConstantName($constantName->getValue()));
 		}
 

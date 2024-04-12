@@ -18,4 +18,8 @@ class Name extends NodeAbstract
     /** @return non-empty-string */
     public function toString() : string {
     }
+
+    /** @return non-empty-string */
+    public function toCodeString() : string {
+    }
 }

@@ -65,16 +65,6 @@ parameters:
 			path: src/Analyser/NodeScopeResolver.php
 
 		-
-			message: "#^Parameter \\#1 \\$name of class PhpParser\\\\Node\\\\Name constructor expects non\\-empty\\-array\\<string\\>\\|PhpParser\\\\Node\\\\Name\\|non\\-empty\\-string, string given\\.$#"
-			count: 3
-			path: src/Analyser/NodeScopeResolver.php
-
-		-
-			message: "#^Parameter \\#1 \\$name of class PhpParser\\\\Node\\\\Name\\\\FullyQualified constructor expects non\\-empty\\-array\\<string\\>\\|PhpParser\\\\Node\\\\Name\\|non\\-empty\\-string, string given\\.$#"
-			count: 1
-			path: src/Analyser/NodeScopeResolver.php
-
-		-
 			message: "#^Parameter \\#2 \\$node of method PHPStan\\\\BetterReflection\\\\SourceLocator\\\\Ast\\\\Strategy\\\\NodeToReflection\\:\\:__invoke\\(\\) expects PhpParser\\\\Node\\\\Expr\\\\ArrowFunction\\|PhpParser\\\\Node\\\\Expr\\\\Closure\\|PhpParser\\\\Node\\\\Expr\\\\FuncCall\\|PhpParser\\\\Node\\\\Stmt\\\\Class_\\|PhpParser\\\\Node\\\\Stmt\\\\Const_\\|PhpParser\\\\Node\\\\Stmt\\\\Enum_\\|PhpParser\\\\Node\\\\Stmt\\\\Function_\\|PhpParser\\\\Node\\\\Stmt\\\\Interface_\\|PhpParser\\\\Node\\\\Stmt\\\\Trait_, PhpParser\\\\Node\\\\Stmt\\\\ClassLike given\\.$#"
 			count: 1
 			path: src/Analyser/NodeScopeResolver.php
@@ -618,11 +608,6 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
-			count: 1
-			path: src/Rules/Generics/TemplateTypeCheck.php
-
-		-
-			message: "#^Parameter \\#1 \\$name of class PhpParser\\\\Node\\\\Name constructor expects non\\-empty\\-array\\<string\\>\\|PhpParser\\\\Node\\\\Name\\|non\\-empty\\-string, string given\\.$#"
 			count: 1
 			path: src/Rules/Generics/TemplateTypeCheck.php
 
@@ -1354,16 +1339,6 @@ parameters:
 			path: src/Type/Php/ArrayFilterFunctionReturnTypeReturnTypeExtension.php
 
 		-
-			message: "#^Parameter \\#1 \\$name of class PhpParser\\\\Node\\\\Name constructor expects non\\-empty\\-array\\<string\\>\\|PhpParser\\\\Node\\\\Name\\|non\\-empty\\-string, string given\\.$#"
-			count: 1
-			path: src/Type/Php/ArrayFilterFunctionReturnTypeReturnTypeExtension.php
-
-		-
-			message: "#^Parameter \\#1 \\$name of class PhpParser\\\\Node\\\\Name\\\\FullyQualified constructor expects non\\-empty\\-array\\<string\\>\\|PhpParser\\\\Node\\\\Name\\|non\\-empty\\-string, string given\\.$#"
-			count: 1
-			path: src/Type/Php/ArrayFilterFunctionReturnTypeReturnTypeExtension.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/ArrayKeyExistsFunctionTypeSpecifyingExtension.php
@@ -1809,11 +1784,6 @@ parameters:
 
 		-
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"
-			count: 1
-			path: tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$functionName of static method PHPStan\\\\Reflection\\\\ReflectionProviderGoldenTest\\:\\:generateFunctionDescription\\(\\) expects non\\-empty\\-string, string given\\.$#"
 			count: 1
 			path: tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php
 

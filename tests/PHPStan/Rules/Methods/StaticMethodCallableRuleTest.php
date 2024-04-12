@@ -115,4 +115,13 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Comparison/data/impossible-method-exists-on-generic-class-string.php'], []);
 	}
 
+	public function testBugInstanceofStaticVsThis1stClassCallable(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			self::markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-instanceof-static-vs-this-1st-class-callable.php'], []);
+	}
+
 }

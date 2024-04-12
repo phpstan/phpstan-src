@@ -1180,15 +1180,11 @@ class MutatingScope implements Scope
 			}
 
 			if ($node instanceof Expr\StaticCall) {
-				if (!$node->class instanceof Name) {
-					return new ObjectType(Closure::class);
-				}
-
 				if (!$node->name instanceof Node\Identifier) {
 					return new ObjectType(Closure::class);
 				}
 
-				$classType = $this->resolveTypeByName($node->class);
+				$classType = $this->getType(new Expr\ClassConstFetch($node->class, 'class'))->getClassStringObjectType();
 				$methodName = $node->name->toString();
 				if (!$classType->hasMethod($methodName)->yes()) {
 					return new ObjectType(Closure::class);

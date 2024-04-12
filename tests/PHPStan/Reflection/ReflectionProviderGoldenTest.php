@@ -73,6 +73,10 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	{
 		[$type, $name] = explode(' ', $symbol);
 
+		if ($name === '') {
+			throw new ShouldNotHappenException();
+		}
+
 		try {
 			switch ($type) {
 				case 'FUNCTION':

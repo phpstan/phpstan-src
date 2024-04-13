@@ -1649,7 +1649,7 @@ class TypeSpecifier
 		) {
 			$methodName = $expr->name->toString();
 			if ($expr->class instanceof Name) {
-				$calledOnType = $scope->resolveTypeByName($expr->class);
+				$calledOnType = $scope->getType(new ClassConstFetch($expr->class, 'class'))->getClassStringObjectType();
 			} else {
 				$calledOnType = $scope->getType($expr->class);
 			}

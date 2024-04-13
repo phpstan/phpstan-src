@@ -4871,7 +4871,7 @@ class NodeScopeResolver
 
 		} elseif ($var instanceof Expr\StaticPropertyFetch) {
 			if ($var->class instanceof Node\Name) {
-				$propertyHolderType = $scope->resolveTypeByName($var->class);
+				$propertyHolderType = $scope->getType(new Expr\ClassConstFetch($var->class, 'class'))->getClassStringObjectType();
 			} else {
 				$this->processExprNode($stmt, $var->class, $scope, $nodeCallback, $context);
 				$propertyHolderType = $scope->getType($var->class);

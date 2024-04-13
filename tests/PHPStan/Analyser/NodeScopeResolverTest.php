@@ -1477,6 +1477,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-instanceof-static-vs-this.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-instanceof-static-vs-this-type-specifier.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-instanceof-static-vs-this-early-termination.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-instanceof-static-vs-this-prop-assign-scope.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5987.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10468.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6613.php');

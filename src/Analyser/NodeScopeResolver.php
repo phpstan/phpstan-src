@@ -2051,7 +2051,7 @@ class NodeScopeResolver
 					$methodCalledOnType = $scope->getType($expr->var);
 				} else {
 					if ($expr->class instanceof Name) {
-						$methodCalledOnType = $scope->resolveTypeByName($expr->class);
+						$methodCalledOnType = $scope->getType(new Expr\ClassConstFetch($expr->class, 'class'))->getClassStringObjectType();
 					} else {
 						$methodCalledOnType = $scope->getType($expr->class);
 					}

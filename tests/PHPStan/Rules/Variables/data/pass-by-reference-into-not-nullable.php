@@ -34,3 +34,39 @@ class Foo
 	}
 
 }
+
+class FooPhpDocs
+{
+
+	/**
+	 * @param mixed $test
+	 */
+	public function doFooMixedType(&$test)
+	{
+
+	}
+
+	/**
+	 * @param int $test
+	 */
+	public function doFooIntType(&$test)
+	{
+
+	}
+
+	/**
+	 * @param int|null $test
+	 */
+	public function doFooNullableType(&$test)
+	{
+
+	}
+
+	public function test()
+	{
+		$this->doFooMixedType($two);
+		$this->doFooIntType($three);
+		$this->doFooNullableType($four);
+	}
+
+}

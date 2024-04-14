@@ -3798,15 +3798,24 @@ class NodeScopeResolver
 			$assignByReference = false;
 			$parameter = null;
 			$parameterType = null;
+			$parameterNativeType = null;
 			if (isset($parameters) && $parametersAcceptor !== null) {
 				if (isset($parameters[$i])) {
 					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
 					$parameterType = $parameters[$i]->getType();
+
+					if ($parameters[$i] instanceof ParameterReflectionWithPhpDocs) {
+						$parameterNativeType = $parameters[$i]->getNativeType();
+					}
 					$parameter = $parameters[$i];
 				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
 					$lastParameter = $parameters[count($parameters) - 1];
 					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
 					$parameterType = $lastParameter->getType();
+
+					if ($lastParameter instanceof ParameterReflectionWithPhpDocs) {
+						$parameterNativeType = $lastParameter->getNativeType();
+					}
 					$parameter = $lastParameter;
 				}
 			}
@@ -3822,7 +3831,7 @@ class NodeScopeResolver
 					}
 					if (
 						$isBuiltin
-						|| ($parameterType === null || !$parameterType->isNull()->no())
+						|| ($parameterNativeType === null || !$parameterNativeType->isNull()->no())
 					) {
 						$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $arg->value);
 						$lookForUnset = true;

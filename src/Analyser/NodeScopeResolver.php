@@ -4242,6 +4242,7 @@ class NodeScopeResolver
 		foreach ($args as $i => $arg) {
 			$assignByReference = false;
 			$parameter = null;
+			$parameterType = null;
 			if (isset($parameters) && $parametersAcceptor !== null) {
 				if (isset($parameters[$i])) {
 					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
@@ -4255,9 +4256,22 @@ class NodeScopeResolver
 				}
 			}
 
+			$lookForUnset = false;
 			if ($assignByReference) {
 				if ($arg->value instanceof Variable) {
-					$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $arg->value);
+					$isBuiltin = false;
+					if ($calleeReflection instanceof FunctionReflection && $calleeReflection->isBuiltin()) {
+						$isBuiltin = true;
+					} elseif ($calleeReflection instanceof ExtendedMethodReflection && $calleeReflection->getDeclaringClass()->isBuiltin()) {
+						$isBuiltin = true;
+					}
+					if (
+						$isBuiltin
+						|| ($parameterType === null || !$parameterType->isNull()->no())
+					) {
+						$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $arg->value);
+						$lookForUnset = true;
+					}
 				}
 			}
 
@@ -4365,10 +4379,9 @@ class NodeScopeResolver
 					}
 				}
 			}
-			if ($assignByReference) {
-				if ($arg->value instanceof Variable) {
-					$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $arg->value);
-				}
+
+			if ($assignByReference && $lookForUnset) {
+				$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $arg->value);
 			}
 
 			if ($calleeReflection !== null) {

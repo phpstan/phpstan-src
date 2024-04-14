@@ -1042,4 +1042,22 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10418.php'], []);
 	}
 
+	public function testPassByReferenceIntoNotNullable(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/pass-by-reference-into-not-nullable.php'], [
+			[
+				'Undefined variable: $three',
+				32,
+			],
+		]);
+	}
+
 }

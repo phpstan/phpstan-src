@@ -264,6 +264,164 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8827.php'], []);
 	}
 
+	public function testBug8288(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug8288.php'], [
+			[
+				'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
+				17
+			],
+			[
+				'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
+				18
+			],
+			[
+				'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
+				19
+			],
+			[
+				'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
+				20
+			],
+			[
+				'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
+				21
+			],
+			[
+				'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
+				22
+			],
+			[
+				'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
+				23
+			],
+			[
+				'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
+				24
+			],
+			[
+				'Binary operation "%" between int and string results in an error.',
+				26
+			],
+			[
+				'Binary operation "%" between int and Stringable results in an error.',
+				27
+			],
+			[
+				'Binary operation "%" between int and array results in an error.',
+				28
+			],
+			[
+				'Binary operation "%" between float and string results in an error.',
+				29
+			],
+			[
+				'Binary operation "%" between float and Stringable results in an error.',
+				30
+			],
+			[
+				'Binary operation "%" between float and array results in an error.',
+				31
+			],
+			[
+				'Binary operation "%" between string and int results in an error.',
+				32
+			],
+			[
+				'Binary operation "%" between string and float results in an error.',
+				33
+			],
+			[
+				'Binary operation "%" between string and string results in an error.',
+				34
+			],
+			[
+				'Binary operation "%" between string and numeric-string results in an error.',
+				35
+			],
+			[
+				'Binary operation "%" between string and Stringable results in an error.',
+				36
+			],
+			[
+				'Binary operation "%" between string and array results in an error.',
+				37
+			],
+			[
+				'Binary operation "%" between numeric-string and string results in an error.',
+				38
+			],
+			[
+				'Binary operation "%" between numeric-string and Stringable results in an error.',
+				39
+			],
+			[
+				'Binary operation "%" between numeric-string and array results in an error.',
+				40
+			],
+			[
+				'Binary operation "%" between Stringable and int results in an error.',
+				41
+			],
+			[
+				'Binary operation "%" between Stringable and float results in an error.',
+				42
+			],
+			[
+				'Binary operation "%" between Stringable and string results in an error.',
+				43
+			],
+			[
+				'Binary operation "%" between Stringable and numeric-string results in an error.',
+				44
+			],
+			[
+				'Binary operation "%" between Stringable and Stringable results in an error.',
+				45
+			],
+			[
+				'Binary operation "%" between Stringable and array results in an error.',
+				46
+			],
+			[
+				'Binary operation "%" between array and int results in an error.',
+				47
+			],
+			[
+				'Binary operation "%" between array and float results in an error.',
+				48
+			],
+			[
+				'Binary operation "%" between array and string results in an error.',
+				49
+			],
+			[
+				'Binary operation "%" between array and numeric-string results in an error.',
+				50
+			],
+			[
+				'Binary operation "%" between array and Stringable results in an error.',
+				51
+			],
+			[
+				'Binary operation "%" between array and array results in an error.',
+				52
+			],
+			[
+				'Deprecated in PHP 8.1: Implicit conversion from float|int<0, 15> to int loses precision.',
+				58
+			],
+			[
+				'Deprecated in PHP 8.1: Implicit conversion from 6.0625 to int loses precision.',
+				59
+			],
+			[
+				'Deprecated in PHP 8.1: Implicit conversion from 6.0625 to int loses precision.',
+				60
+			],
+		]);
+	}
+
 	public function testRuleWithNullsafeVariant(): void
 	{
 		if (PHP_VERSION_ID < 80000) {

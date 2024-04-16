@@ -268,39 +268,7 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 
 	public function testBug8288(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug8288.php'], [
-			[
-				'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
-				17,
-			],
-			[
-				'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
-				18,
-			],
-			[
-				'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
-				19,
-			],
-			[
-				'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
-				20,
-			],
-			[
-				'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
-				21,
-			],
-			[
-				'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
-				22,
-			],
-			[
-				'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
-				23,
-			],
-			[
-				'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
-				24,
-			],
+		$expectedErrors = [
 			[
 				'Binary operation "%" between int and string results in an error.',
 				26,
@@ -409,19 +377,57 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				'Binary operation "%" between array and array results in an error.',
 				52,
 			],
-			[
-				'Deprecated in PHP 8.1: Implicit conversion from float|int<0, 15> to int loses precision.',
-				58,
-			],
-			[
-				'Deprecated in PHP 8.1: Implicit conversion from 6.0625 to int loses precision.',
-				59,
-			],
-			[
-				'Deprecated in PHP 8.1: Implicit conversion from 6.0625 to int loses precision.',
-				60,
-			],
-		]);
+		];
+		if (PHP_VERSION_ID >= 80100) {
+			$expectedErrors = [
+				...$expectedErrors,
+				[
+					'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
+					17,
+				],
+				[
+					'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
+					18,
+				],
+				[
+					'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
+					19,
+				],
+				[
+					'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
+					20,
+				],
+				[
+					'Deprecated in PHP 8.1: Implicit conversion from float to int loses precision.',
+					21,
+				],
+				[
+					'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
+					22,
+				],
+				[
+					'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
+					23,
+				],
+				[
+					'Deprecated in PHP 8.1: Implicit conversion from numeric-string to int loses precision.',
+					24,
+				],
+				[
+					'Deprecated in PHP 8.1: Implicit conversion from float|int<0, 15> to int loses precision.',
+					58,
+				],
+				[
+					'Deprecated in PHP 8.1: Implicit conversion from 6.0625 to int loses precision.',
+					59,
+				],
+				[
+					'Deprecated in PHP 8.1: Implicit conversion from 6.0625 to int loses precision.',
+					60,
+				],
+			];
+		}
+		$this->analyse([__DIR__ . '/data/bug8288.php'], $expectedErrors);
 	}
 
 	public function testRuleWithNullsafeVariant(): void

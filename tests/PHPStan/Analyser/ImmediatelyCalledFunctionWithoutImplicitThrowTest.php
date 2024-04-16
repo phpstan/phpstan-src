@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use function array_merge;
 
 class ImmediatelyCalledFunctionWithoutImplicitThrowTest extends TypeInferenceTestCase
 {
@@ -29,7 +30,7 @@ class ImmediatelyCalledFunctionWithoutImplicitThrowTest extends TypeInferenceTes
 	{
 		return array_merge(
 			parent::getAdditionalConfigFiles(),
-			[__DIR__ . '/data/immediately-called-function-without-implicit-throw.neon']
+			[__DIR__ . '/data/immediately-called-function-without-implicit-throw.neon'],
 		);
 	}
 

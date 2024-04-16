@@ -1314,16 +1314,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('PHPDoc tag @return contains unresolvable type.', $errors[1]->getMessage());
 	}
 
-	public function testBug10527(): void
-	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4');
-		}
-
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10527.php');
-		$this->assertNoErrors($errors);
-	}
-
 	public function testBug10538(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10538.php');

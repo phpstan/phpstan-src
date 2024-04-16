@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Call to new PHPStan\\Generics\\Classes\\SomeRule() on a separate line has no effect.",
+        "line": 283,
+        "ignorable": true
+    }
+]

@@ -68,7 +68,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			static::getEarlyTerminatingMethodCalls(),
 			static::getEarlyTerminatingFunctionCalls(),
 			self::getContainer()->getParameter('universalObjectCratesClasses'),
-			true,
+			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			self::getContainer()->getParameter('treatPhpDocTypesAsCertain'),
 			self::getContainer()->getParameter('featureToggles')['detectDeadTypeInMultiCatch'],
 			self::getContainer()->getParameter('featureToggles')['paramOutType'],

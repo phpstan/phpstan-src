@@ -16,7 +16,10 @@ use function sprintf;
 class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private bool $reportNoConstructor,
+	)
 	{
 	}
 
@@ -43,12 +46,16 @@ class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 
 		$classReflection = $this->reflectionProvider->getClass($className);
 		if (!$classReflection->hasConstructor()) {
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'Call to new %s() on a separate line has no effect.',
-					$classReflection->getDisplayName(),
-				))->identifier('new.resultUnused')->build(),
-			];
+			if ($this->reportNoConstructor) {
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Call to new %s() on a separate line has no effect.',
+						$classReflection->getDisplayName(),
+					))->identifier('new.resultUnused')->build(),
+				];
+			}
+
+			return [];
 		}
 
 		$constructor = $classReflection->getConstructor();

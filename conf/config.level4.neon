@@ -8,7 +8,6 @@ rules:
 	- PHPStan\Rules\DeadCode\UnusedPrivateMethodRule
 	- PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
 	- PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule
-	- PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToMethodStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToStaticMethodStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\NullsafeMethodCallRule
@@ -214,6 +213,13 @@ services:
 		class: PHPStan\Rules\Comparison\WhileLoopAlwaysTrueConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
+		arguments:
+			reportNoConstructor: %featureToggles.pure%
 		tags:
 			- phpstan.rules.rule
 

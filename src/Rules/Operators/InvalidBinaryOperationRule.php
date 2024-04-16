@@ -118,9 +118,7 @@ class InvalidBinaryOperationRule implements Rule
 			];
 		} else {
 			if ($node instanceof Node\Expr\BinaryOp\Mod) {
-				$callback = static fn (Type $type): bool => PHP_VERSION_ID >= 80100
-					? $type->toNumber()->isFloat()->no()
-					: $type->toNumber()->isInteger()->yes();
+				$callback = static fn (Type $type): bool => !$type->isFloat()->no();
 
 				$leftType = $this->ruleLevelHelper->findTypeToCheck(
 					$scope,

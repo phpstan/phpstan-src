@@ -58,3 +58,12 @@ function(): void {
 	new ConstructorWithPureAndThrowsVoid();
 	new ConstructorWithPureAndThrowsException();
 };
+
+class NoConstructor
+{
+
+}
+
+function (): void {
+	new NoConstructor();
+};

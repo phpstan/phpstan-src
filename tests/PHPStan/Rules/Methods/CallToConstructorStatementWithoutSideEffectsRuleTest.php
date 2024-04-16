@@ -24,12 +24,24 @@ class CallToConstructorStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				6,
 			],
 			[
+				'Call to new PDOStatement() on a separate line has no effect.',
+				11,
+			],
+			[
+				'Call to new stdClass() on a separate line has no effect.',
+				12,
+			],
+			[
 				'Call to ConstructorStatementNoSideEffects\ConstructorWithPure::__construct() on a separate line has no effect.',
 				57,
 			],
 			[
 				'Call to ConstructorStatementNoSideEffects\ConstructorWithPureAndThrowsVoid::__construct() on a separate line has no effect.',
 				58,
+			],
+			[
+				'Call to new ConstructorStatementNoSideEffects\NoConstructor() on a separate line has no effect.',
+				68,
 			],
 		]);
 	}

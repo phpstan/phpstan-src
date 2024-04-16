@@ -43,7 +43,12 @@ class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 
 		$classReflection = $this->reflectionProvider->getClass($className);
 		if (!$classReflection->hasConstructor()) {
-			return [];
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'Call to new %s() on a separate line has no effect.',
+					$classReflection->getDisplayName(),
+				))->identifier('new.resultUnused')->build(),
+			];
 		}
 
 		$constructor = $classReflection->getConstructor();

@@ -297,3 +297,23 @@ class TestMagicMethods
 	}
 
 }
+
+class NoConstructor
+{
+
+}
+
+class TestNoConstructor
+{
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function doFoo(): int
+	{
+		new NoConstructor();
+
+		return 1;
+	}
+
+}

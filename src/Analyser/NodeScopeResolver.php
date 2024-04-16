@@ -3130,6 +3130,7 @@ class NodeScopeResolver
 				$className = $scope->resolveName($expr->class);
 			}
 
+			$classReflection = null;
 			if ($className !== null && $this->reflectionProvider->hasClass($className)) {
 				$classReflection = $this->reflectionProvider->getClass($className);
 				if ($classReflection->hasConstructor()) {
@@ -3160,7 +3161,7 @@ class NodeScopeResolver
 						$certain,
 					);
 				}
-			} else {
+			} elseif ($classReflection === null) {
 				$impurePoints[] = new ImpurePoint(
 					$scope,
 					$expr,

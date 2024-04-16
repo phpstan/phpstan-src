@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -26,6 +27,7 @@ class InvalidBinaryOperationRule implements Rule
 	public function __construct(
 		private ExprPrinter $exprPrinter,
 		private RuleLevelHelper $ruleLevelHelper,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -146,7 +148,7 @@ class InvalidBinaryOperationRule implements Rule
 					return [];
 				}
 
-				if (!$leftNumberType->isFloat()->no()) {
+				if (!$leftNumberType->isFloat()->no() && $this->phpVersion->deprecatesImplicitConversions()) {
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Deprecated in PHP 8.1: Implicit conversion from %s to int loses precision.',
@@ -157,7 +159,7 @@ class InvalidBinaryOperationRule implements Rule
 							->build(),
 					];
 				}
-				if (!$rightNumberType->isFloat()->no()) {
+				if (!$rightNumberType->isFloat()->no() && $this->phpVersion->deprecatesImplicitConversions()) {
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Deprecated in PHP 8.1: Implicit conversion from %s to int loses precision.',

@@ -3591,10 +3591,6 @@ class MutatingScope implements Scope
 
 	public function setAllowedUndefinedExpression(Expr $expr): self
 	{
-		if ($this->phpVersion->deprecatesDynamicProperties() && $expr instanceof Expr\StaticPropertyFetch) {
-			return $this;
-		}
-
 		$exprString = $this->getNodeKey($expr);
 		$currentlyAllowedUndefinedExpressions = $this->currentlyAllowedUndefinedExpressions;
 		$currentlyAllowedUndefinedExpressions[$exprString] = true;

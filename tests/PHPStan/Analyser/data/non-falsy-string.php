@@ -10,7 +10,7 @@ class Foo {
 	 * @param truthy-string $truthyString
 	 */
 	public function bar($nonFalseyString, $truthyString) {
-		assertType('int<min, -1>|int<1, max>', (int) $nonFalseyString);
+		assertType('int', (int) $nonFalseyString);
 		// truthy-string is an alias for non-falsy-string
 		assertType('non-falsy-string', $truthyString);
 	}

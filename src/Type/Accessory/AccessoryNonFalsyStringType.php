@@ -171,10 +171,7 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 
 	public function toInteger(): Type
 	{
-		return new UnionType([
-			IntegerRangeType::fromInterval(null, -1),
-			IntegerRangeType::fromInterval(1, null),
-		]);
+		return new IntegerType();
 	}
 
 	public function toFloat(): Type

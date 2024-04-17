@@ -18,6 +18,7 @@ class Foo
 		file_get_contents($url, context: $resourceOrNull);
 		var_export([], return: true);
 		print_r([], return: true);
+		highlight_string($url, return: true);
 	}
 
 	/**
@@ -29,6 +30,7 @@ class Foo
 		file_get_contents($url, context: $resource);
 		var_export(value: []);
 		print_r(value: []);
+		highlight_string($url);
 	}
 
 }

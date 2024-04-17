@@ -47,6 +47,10 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				'Call to function print_r() on a separate line has no effect.',
 				20,
 			],
+			[
+				'Call to function highlight_string() on a separate line has no effect.',
+				21,
+			],
 		]);
 	}
 

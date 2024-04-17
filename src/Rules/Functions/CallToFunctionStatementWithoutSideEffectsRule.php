@@ -23,6 +23,8 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		// functionName => [name, pos, testName]
 		'print_r' => ['return', 1, 'isTruthy'],
 		'var_export' => ['return', 1, 'isTruthy'],
+		'highlight_string' => ['return', 1, 'isTruthy'],
+
 	];
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

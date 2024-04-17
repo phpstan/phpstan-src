@@ -4831,7 +4831,7 @@ return [
 'Imagick::hasNextImage' => ['bool'],
 'Imagick::hasPreviousImage' => ['bool'],
 'Imagick::identifyFormat' => ['string|false', 'embedText'=>'string'],
-'Imagick::identifyImage' => ['array{width:0|positive-int,height:0|positive-int}', 'appendrawoutput='=>'bool'],
+'Imagick::identifyImage' => ['array{imageName:string,mimetype:string,format:string,units:string,colorSpace:string,type:string,compression:string,fileSize:string,geometry:array{width:0|positive-int,height:0|positive-int},resolution:array{x:float,y:float},signature:string}', 'appendrawoutput='=>'bool'],
 'Imagick::identifyImageType' => ['int'],
 'Imagick::implodeImage' => ['bool', 'radius'=>'float'],
 'Imagick::importImagePixels' => ['bool', 'x'=>'int', 'y'=>'int', 'width'=>'int', 'height'=>'int', 'map'=>'string', 'storage'=>'int', 'pixels'=>'array'],

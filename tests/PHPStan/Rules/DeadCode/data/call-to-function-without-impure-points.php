@@ -15,8 +15,20 @@ function funcWithRef(&$a)
 {
 }
 
+/** @phpstan-impure */
+function impureFunc()
+{
+}
+
+function callingImpureFunc()
+{
+	impureFunc();
+}
+
 function (): void {
 	myFunc();
 	throwingFunc();
 	funcWithRef();
+	impureFunc();
+	callingImpureFunc();
 };

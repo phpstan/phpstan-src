@@ -21,7 +21,7 @@ class CallToFunctionStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/call-to-function-without-impure-points.php'], [
 			[
 				'Call to function CallToFunctionWithoutImpurePoints\myFunc() on a separate line has no effect.',
-				19,
+				29,
 			],
 		]);
 	}

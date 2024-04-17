@@ -40,7 +40,7 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 		$pathBeginning = null;
 		$pathToTrimArray = null;
 		$trimBeginning = static function (string $path): array {
-			if (substr($path, 0, 1) === '/') {
+			if (str_starts_with($path, '/')) {
 				return [
 					'/',
 					substr($path, 1),

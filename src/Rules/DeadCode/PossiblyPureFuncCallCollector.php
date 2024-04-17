@@ -3,13 +3,13 @@
 namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\Reflection\ReflectionProvider;
 
 /**
- * @implements Collector<FuncCall, array{string, int}>
+ * @implements Collector<Node\Stmt\Expression, array{string, int}>
  */
 class PossiblyPureFuncCallCollector implements Collector
 {
@@ -20,20 +20,23 @@ class PossiblyPureFuncCallCollector implements Collector
 
 	public function getNodeType(): string
 	{
-		return FuncCall::class;
+		return Expression::class;
 	}
 
 	public function processNode(Node $node, Scope $scope)
 	{
-		if (!$node->name instanceof Node\Name) {
+		if (!$node->expr instanceof Node\Expr\FuncCall) {
+			return null;
+		}
+		if (!$node->expr->name instanceof Node\Name) {
 			return null;
 		}
 
-		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+		if (!$this->reflectionProvider->hasFunction($node->expr->name, $scope)) {
 			return null;
 		}
 
-		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
+		$functionReflection = $this->reflectionProvider->getFunction($node->expr->name, $scope);
 		if (!$functionReflection->isPure()->maybe()) {
 			return null;
 		}

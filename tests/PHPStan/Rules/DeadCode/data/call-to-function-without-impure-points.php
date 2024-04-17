@@ -31,4 +31,6 @@ function (): void {
 	funcWithRef();
 	impureFunc();
 	callingImpureFunc();
+
+	$a = myFunc();
 };

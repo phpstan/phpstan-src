@@ -32,6 +32,12 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.paramOutType%
 	PHPStan\Rules\TooWideTypehints\TooWideMethodParameterOutTypeRule:
 		phpstan.rules.rule: %featureToggles.paramOutType%
+	PHPStan\Rules\DeadCode\CallToConstructorStatementWithoutImpurePointsRule:
+		phpstan.rules.rule: %featureToggles.pure%
+	PHPStan\Rules\DeadCode\PossiblyPureNewCollector:
+		phpstan.collector: %featureToggles.pure%
+	PHPStan\Rules\DeadCode\ConstructorWithoutImpurePointsCollector:
+		phpstan.collector: %featureToggles.pure%
 
 parameters:
 	checkAdvancedIsset: true
@@ -78,6 +84,15 @@ services:
 			better: %featureToggles.betterNoop%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\DeadCode\CallToConstructorStatementWithoutImpurePointsRule
+
+	-
+		class: PHPStan\Rules\DeadCode\ConstructorWithoutImpurePointsCollector
+
+	-
+		class: PHPStan\Rules\DeadCode\PossiblyPureNewCollector
 
 	-
 		class: PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule

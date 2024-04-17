@@ -1,7 +1,0 @@
-[
-    {
-        "message": "Call to function PHPStan\\Generics\\Functions\\passthru2() on a separate line has no effect.",
-        "line": 50,
-        "ignorable": true
-    }
-]

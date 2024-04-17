@@ -26,6 +26,9 @@ class FunctionWithoutImpurePointsCollector implements Collector
 		if (!$function->isPure()->maybe()) {
 			return null;
 		}
+		if (!$function->hasSideEffects()->maybe()) {
+			return null;
+		}
 
 		if (count($node->getImpurePoints()) !== 0) {
 			return null;

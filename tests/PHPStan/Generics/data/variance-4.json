@@ -3,10 +3,5 @@
         "message": "Property PHPStan\\Generics\\Variance\\ConstructorAndStatic::$data is never read, only written.",
         "line": 134,
         "ignorable": true
-    },
-    {
-        "message": "Call to function PHPStan\\Generics\\Variance\\acceptInvariantIterOfDateTime() on a separate line has no effect.",
-        "line": 163,
-        "ignorable": true
     }
 ]

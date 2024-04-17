@@ -37,6 +37,9 @@ class PossiblyPureFuncCallCollector implements Collector
 		if (!$functionReflection->isPure()->maybe()) {
 			return null;
 		}
+		if (!$functionReflection->hasSideEffects()->maybe()) {
+			return null;
+		}
 
 		return [$functionReflection->getName(), $node->getStartLine()];
 	}

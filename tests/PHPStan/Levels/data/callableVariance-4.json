@@ -1,0 +1,27 @@
+[
+    {
+        "message": "Call to function Levels\\CallableVariance\\d() on a separate line has no effect.",
+        "line": 81,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function Levels\\CallableVariance\\d() on a separate line has no effect.",
+        "line": 82,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function Levels\\CallableVariance\\d() on a separate line has no effect.",
+        "line": 83,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function Levels\\CallableVariance\\d() on a separate line has no effect.",
+        "line": 84,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function Levels\\CallableVariance\\d() on a separate line has no effect.",
+        "line": 85,
+        "ignorable": true
+    }
+]

@@ -53,11 +53,11 @@ class CallToStaticMethodStatementWithoutImpurePointsRule implements Rule
 				$originalMethodName = $methods[$className][$lowerMethod];
 
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Call to method %s() on a separate line has no effect.',
+					'Call to %s() on a separate line has no effect.',
 					$originalMethodName,
 				))->file($filePath)
 					->line($line)
-					->identifier('method.resultUnused')
+					->identifier('staticMethod.resultUnused')
 					->build();
 			}
 		}

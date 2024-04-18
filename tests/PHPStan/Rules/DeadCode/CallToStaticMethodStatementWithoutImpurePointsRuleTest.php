@@ -2,9 +2,6 @@
 
 namespace PHPStan\Rules\DeadCode;
 
-use PHPStan\Rules\DeadCode\CallToMethodStatementWithoutImpurePointsRule;
-use PHPStan\Rules\DeadCode\MethodWithoutImpurePointsCollector;
-use PHPStan\Rules\DeadCode\PossiblyPureMethodCallCollector;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -23,43 +20,43 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 	{
 		$this->analyse([__DIR__ . '/data/call-to-static-method-without-impure-points.php'], [
 			[
-				'Call to method CallToStaticMethodWithoutImpurePoints\X::myFunc() on a separate line has no effect.',
+				'Call to CallToStaticMethodWithoutImpurePoints\X::myFunc() on a separate line has no effect.',
 				6,
 			],
 			[
-				'Call to method CallToStaticMethodWithoutImpurePoints\X::myFunc() on a separate line has no effect.',
+				'Call to CallToStaticMethodWithoutImpurePoints\X::myFunc() on a separate line has no effect.',
 				7,
 			],
 			[
-				'Call to method CallToStaticMethodWithoutImpurePoints\X::myFunc() on a separate line has no effect.',
+				'Call to CallToStaticMethodWithoutImpurePoints\X::myFunc() on a separate line has no effect.',
 				14,
 			],
 			[
-				'Call to method CallToStaticMethodWithoutImpurePoints\X::myFunc() on a separate line has no effect.',
+				'Call to CallToStaticMethodWithoutImpurePoints\X::myFunc() on a separate line has no effect.',
 				16,
 			],
 			[
-				'Call to method CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
+				'Call to CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
 				18,
 			],
 			[
-				'Call to method CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
+				'Call to CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
 				20,
 			],
 			[
-				'Call to method CallToStaticMethodWithoutImpurePoints\SubSubY::mySubSubFunc() on a separate line has no effect.',
+				'Call to CallToStaticMethodWithoutImpurePoints\SubSubY::mySubSubFunc() on a separate line has no effect.',
 				21,
 			],
 			[
-				'Call to method CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
+				'Call to CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
 				48,
 			],
 			[
-				'Call to method CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
+				'Call to CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
 				53,
 			],
 			[
-				'Call to method CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
+				'Call to CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
 				58,
 			],
 		]);

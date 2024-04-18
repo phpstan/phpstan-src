@@ -6,8 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
-use function count;
-use function strtolower;
 
 /**
  * @implements Collector<Node\Stmt\Expression, array{class-string, string, int}>
@@ -33,13 +31,14 @@ class PossiblyPureStaticCallCollector implements Collector
 			return null;
 		}
 
-		if ($node->expr->class instanceof Node\Name) {
-			$calledOnType = $scope->resolveTypeByName($node->expr->class);
-		} else {
-			$calledOnType = $scope->getType($node->expr->class);
+		if (!$node->expr->class instanceof Node\Name) {
+			return null;
 		}
+
 		$methodName = $node->expr->name->toString();
+		$calledOnType = $scope->resolveTypeByName($node->expr->class);
 		$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
+
 		if ($methodReflection === null) {
 			return null;
 		}

@@ -44,4 +44,17 @@ class Foo
 		$b ? $this->foo = 1 : '';
 	}
 
+	public function doClosures(): void
+	{
+		$a = static function () {
+			echo '1';
+		};
+		$a();
+
+		$b = static function () {
+			return 1 + 1;
+		};
+		$b();
+	}
+
 }

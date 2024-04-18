@@ -80,7 +80,7 @@ class BetterNoopRule implements Rule
 		}
 
 		if (
-			$expr instanceof Node\Expr\FuncCall
+			($expr instanceof Node\Expr\FuncCall && $expr->name instanceof Node\Name)
 			|| $expr instanceof Node\Expr\NullsafeMethodCall
 			|| $expr instanceof Node\Expr\MethodCall
 			|| $expr instanceof Node\Expr\New_

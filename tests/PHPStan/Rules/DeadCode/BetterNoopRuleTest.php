@@ -128,6 +128,10 @@ class BetterNoopRuleTest extends RuleTestCase
 				'Unused result of "&&" operator.',
 				10,
 			],
+			[
+				'Expression "$b()" on a separate line does not do anything.',
+				57,
+			],
 		]);
 	}
 

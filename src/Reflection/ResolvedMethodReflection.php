@@ -75,7 +75,7 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 	{
 		$result = [];
 		foreach ($variants as $variant) {
-			$result[] = new ResolvedFunctionVariant(
+			$result[] = new ResolvedFunctionVariantWithOriginal(
 				$variant,
 				$this->resolvedTemplateTypeMap,
 				$this->callSiteVarianceMap,

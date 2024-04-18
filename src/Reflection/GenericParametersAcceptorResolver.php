@@ -109,7 +109,7 @@ class GenericParametersAcceptorResolver
 			);
 		}
 
-		return new ResolvedFunctionVariant(
+		return new ResolvedFunctionVariantWithOriginal(
 			$parametersAcceptor,
 			$resolvedTemplateTypeMap,
 			$parametersAcceptor->getCallSiteVarianceMap(),

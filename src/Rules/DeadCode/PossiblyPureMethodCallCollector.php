@@ -41,6 +41,11 @@ class PossiblyPureMethodCallCollector implements Collector
 		if ($methodReflection === null) {
 			return null;
 		}
+		if (!$methodReflection->isFinal()->yes()) {
+			if (!$methodReflection->getDeclaringClass()->isFinal()) {
+				return null;
+			}
+		}
 		if (!$methodReflection->isPure()->maybe()) {
 			return null;
 		}

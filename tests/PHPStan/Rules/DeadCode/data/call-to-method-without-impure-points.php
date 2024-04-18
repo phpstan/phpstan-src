@@ -3,7 +3,7 @@
 namespace CallToMethodWithoutImpurePoints;
 
 function (): void {
-	$x = new x();
+	$x = new finalX();
 	$x->myFunc();
 	$x->myFUNC();
 	$x->throwingFUNC();
@@ -16,15 +16,28 @@ function (): void {
 
 	$xy = new y();
 	if (rand(0,1)) {
-		$xy = new x();
+		$xy = new finalX();
 	}
 	$xy->myFunc();
 
-	$xy = new Y();
+	$xy = new Y(); // case-insensitive class name
 	if (rand(0,1)) {
-		$xy = new X();
+		$xy = new finalX();
 	}
 	$xy->myFunc();
+
+	$foo = new Foo();
+	$foo->finalFunc();
+	$foo->finalThrowingFunc();
+	$foo->throwingFunc();
+
+	$subY = new subY();
+	$subY->myFunc();
+
+	$subSubY = new finalSubSubY();
+	$subSubY->myFunc();
+	$subSubY->mySubSubFunc();
+	$subSubY->myFinalBaseFunc();
 };
 
 class y
@@ -32,9 +45,21 @@ class y
 	function myFunc()
 	{
 	}
+	final function myFinalBaseFunc()
+	{
+	}
 }
 
-class x {
+class subY extends y {
+}
+
+final class finalSubSubY extends subY {
+	function mySubSubFunc()
+	{
+	}
+}
+
+final class finalX {
 	function myFunc()
 	{
 	}
@@ -56,5 +81,22 @@ class x {
 	function callingImpureFunc()
 	{
 		$this->impureFunc();
+	}
+}
+
+class foo
+{
+	final function finalFunc()
+	{
+	}
+
+	final function finalThrowingFunc()
+	{
+		throw new \Exception();
+	}
+
+	function throwingFunc()
+	{
+		throw new \Exception();
 	}
 }

@@ -2,6 +2,8 @@
 
 namespace ProcessCalledMethodInfiniteLoop;
 
+use function PHPStan\Testing\assertType;
+
 /**
  * @template TValue
  */
@@ -11,6 +13,13 @@ class Promise{
 
 	/** @param \Closure(TValue|null) : void $callback */
 	public function onResolve(\Closure $callback) : void{
+		$callback($this->value);
+	}
+	/** @param \Closure<T>(T|null): T $callback */
+	public function onResolve2(\Closure $callback) : void{
+		$r = $callback($this->value);
+		assertType('TValue (class ProcessCalledMethodInfiniteLoop\\Promise, argument)', $r);
+
 		$callback($this->value);
 	}
 }

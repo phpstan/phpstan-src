@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConditionalTypeForParameter;
@@ -84,6 +85,8 @@ class GenericParametersAcceptorResolver
 			$typeMap->getTypes(),
 		));
 
+		$originalParametersAcceptor = $parametersAcceptor;
+
 		if (!$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
 			$parametersAcceptor = new FunctionVariantWithPhpDocs(
 				$parametersAcceptor->getTemplateTypeMap(),
@@ -109,12 +112,24 @@ class GenericParametersAcceptorResolver
 			);
 		}
 
-		return new ResolvedFunctionVariantWithOriginal(
+		$result = new ResolvedFunctionVariantWithOriginal(
 			$parametersAcceptor,
 			$resolvedTemplateTypeMap,
 			$parametersAcceptor->getCallSiteVarianceMap(),
 			$passedArgs,
 		);
+		if ($originalParametersAcceptor instanceof CallableParametersAcceptor) {
+			return new ResolvedFunctionVariantWithCallable(
+				$result,
+				$originalParametersAcceptor->getThrowPoints(),
+				$originalParametersAcceptor->isPure(),
+				$originalParametersAcceptor->getImpurePoints(),
+				$originalParametersAcceptor->getInvalidateExpressions(),
+				$originalParametersAcceptor->getUsedVariables(),
+			);
+		}
+
+		return $result;
 	}
 
 }

@@ -27,30 +27,30 @@ class CallToStaticMethodStatementWithoutImpurePointsRule implements Rule
 		$methods = [];
 		foreach ($node->get(MethodWithoutImpurePointsCollector::class) as $collected) {
 			foreach ($collected as [$className, $methodName, $classDisplayName]) {
-				$className = strtolower($className);
+				$lowerClassName = strtolower($className);
 
-				if (!array_key_exists($className, $methods)) {
-					$methods[$className] = [];
+				if (!array_key_exists($lowerClassName, $methods)) {
+					$methods[$lowerClassName] = [];
 				}
-				$methods[$className][strtolower($methodName)] = $classDisplayName . '::' . $methodName;
+				$methods[$lowerClassName][strtolower($methodName)] = $classDisplayName . '::' . $methodName;
 			}
 		}
 
 		$errors = [];
 		foreach ($node->get(PossiblyPureStaticCallCollector::class) as $filePath => $data) {
 			foreach ($data as [$className, $method, $line]) {
-				$className = strtolower($className);
+				$lowerClassName = strtolower($className);
 
-				if (!array_key_exists($className, $methods)) {
+				if (!array_key_exists($lowerClassName, $methods)) {
 					continue;
 				}
 
 				$lowerMethod = strtolower($method);
-				if (!array_key_exists($lowerMethod, $methods[$className])) {
+				if (!array_key_exists($lowerMethod, $methods[$lowerClassName])) {
 					continue;
 				}
 
-				$originalMethodName = $methods[$className][$lowerMethod];
+				$originalMethodName = $methods[$lowerClassName][$lowerMethod];
 
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Call to %s() on a separate line has no effect.',

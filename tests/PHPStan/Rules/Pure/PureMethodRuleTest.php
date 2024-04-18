@@ -124,6 +124,14 @@ class PureMethodRuleTest extends RuleTestCase
 				'Impure call to method PureMethod\ImpureMagicMethods::__toString() in pure method PureMethod\TestMagicMethods::doFoo().',
 				296,
 			],
+			[
+				'Possibly impure call to a callable in pure method PureMethod\MaybeCallableFromUnion::doFoo().',
+				330,
+			],
+			[
+				'Possibly impure call to a callable in pure method PureMethod\MaybeCallableFromUnion::doFoo().',
+				330,
+			],
 		]);
 	}
 

@@ -317,3 +317,19 @@ class TestNoConstructor
 	}
 
 }
+
+class MaybeCallableFromUnion
+{
+
+	/**
+	 * @phpstan-pure
+	 * @param callable|string $p
+	 */
+	public function doFoo($p): int
+	{
+		$p();
+
+		return 1;
+	}
+
+}

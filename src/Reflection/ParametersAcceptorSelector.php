@@ -12,6 +12,7 @@ use PHPStan\Parser\ArrayWalkArgVisitor;
 use PHPStan\Parser\ClosureBindArgVisitor;
 use PHPStan\Parser\ClosureBindToVarVisitor;
 use PHPStan\Parser\CurlSetOptArgVisitor;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
@@ -39,6 +40,7 @@ use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_key_last;
 use function array_map;
+use function array_merge;
 use function array_slice;
 use function constant;
 use function count;
@@ -552,6 +554,12 @@ class ParametersAcceptorSelector
 		$returnTypes = [];
 		$phpDocReturnTypes = [];
 		$nativeReturnTypes = [];
+		$callableOccurred = false;
+		$throwPoints = [];
+		$isPure = TrinaryLogic::createNo();
+		$impurePoints = [];
+		$invalidateExpressions = [];
+		$usedVariables = [];
 
 		foreach ($acceptors as $acceptor) {
 			$returnTypes[] = $acceptor->getReturnType();
@@ -559,6 +567,14 @@ class ParametersAcceptorSelector
 			if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
 				$phpDocReturnTypes[] = $acceptor->getPhpDocReturnType();
 				$nativeReturnTypes[] = $acceptor->getNativeReturnType();
+			}
+			if ($acceptor instanceof CallableParametersAcceptor) {
+				$callableOccurred = true;
+				$throwPoints = array_merge($throwPoints, $acceptor->getThrowPoints());
+				$isPure = $isPure->or($acceptor->isPure());
+				$impurePoints = array_merge($impurePoints, $acceptor->getImpurePoints());
+				$invalidateExpressions = array_merge($invalidateExpressions, $acceptor->getInvalidateExpressions());
+				$usedVariables = array_merge($usedVariables, $acceptor->getUsedVariables());
 			}
 			$isVariadic = $isVariadic || $acceptor->isVariadic();
 
@@ -645,6 +661,24 @@ class ParametersAcceptorSelector
 		$phpDocReturnType = $phpDocReturnTypes === [] ? null : TypeCombinator::union(...$phpDocReturnTypes);
 		$nativeReturnType = $nativeReturnTypes === [] ? null : TypeCombinator::union(...$nativeReturnTypes);
 
+		if ($callableOccurred) {
+			return new CallableFunctionVariantWithPhpDocs(
+				TemplateTypeMap::createEmpty(),
+				null,
+				$parameters,
+				$isVariadic,
+				$returnType,
+				$phpDocReturnType ?? $returnType,
+				$nativeReturnType ?? new MixedType(),
+				null,
+				$throwPoints,
+				$isPure,
+				$impurePoints,
+				$invalidateExpressions,
+				$usedVariables,
+			);
+		}
+
 		return new FunctionVariantWithPhpDocs(
 			TemplateTypeMap::createEmpty(),
 			null,
@@ -660,6 +694,24 @@ class ParametersAcceptorSelector
 	{
 		if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
 			return $acceptor;
+		}
+
+		if ($acceptor instanceof CallableParametersAcceptor) {
+			return new CallableFunctionVariantWithPhpDocs(
+				$acceptor->getTemplateTypeMap(),
+				$acceptor->getResolvedTemplateTypeMap(),
+				array_map(static fn (ParameterReflection $parameter): ParameterReflectionWithPhpDocs => self::wrapParameter($parameter), $acceptor->getParameters()),
+				$acceptor->isVariadic(),
+				$acceptor->getReturnType(),
+				$acceptor->getReturnType(),
+				new MixedType(),
+				TemplateTypeVarianceMap::createEmpty(),
+				$acceptor->getThrowPoints(),
+				$acceptor->isPure(),
+				$acceptor->getImpurePoints(),
+				$acceptor->getInvalidateExpressions(),
+				$acceptor->getUsedVariables(),
+			);
 		}
 
 		return new FunctionVariantWithPhpDocs(

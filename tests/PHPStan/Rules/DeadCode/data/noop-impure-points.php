@@ -55,6 +55,12 @@ class Foo
 			return 1 + 1;
 		};
 		$b();
+
+		$ref = 1;
+		$c = static function () use (&$ref) {
+			$ref++;
+		};
+		$c();
 	}
 
 }

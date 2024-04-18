@@ -1401,6 +1401,21 @@ class MutatingScope implements Scope
 
 					$usedVariables[] = $use->var->name;
 				}
+
+				foreach ($node->uses as $use) {
+					if (!$use->byRef) {
+						continue;
+					}
+
+					$impurePoints[] = new ImpurePoint(
+						$this,
+						$node,
+						'functionCall',
+						'call to a Closure with by-ref use',
+						true,
+					);
+					break;
+				}
 			}
 
 			return new ClosureType(

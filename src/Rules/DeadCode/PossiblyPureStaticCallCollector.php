@@ -1,0 +1,56 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Rules\DeadCode;
+
+use PhpParser\Node;
+use PhpParser\Node\Stmt\Expression;
+use PHPStan\Analyser\Scope;
+use PHPStan\Collectors\Collector;
+use function count;
+use function strtolower;
+
+/**
+ * @implements Collector<Node\Stmt\Expression, array{class-string, string, int}>
+ */
+class PossiblyPureStaticCallCollector implements Collector
+{
+
+	public function __construct()
+	{
+	}
+
+	public function getNodeType(): string
+	{
+		return Expression::class;
+	}
+
+	public function processNode(Node $node, Scope $scope)
+	{
+		if (!$node->expr instanceof Node\Expr\StaticCall) {
+			return null;
+		}
+		if (!$node->expr->name instanceof Node\Identifier) {
+			return null;
+		}
+
+		if ($node->expr->class instanceof Node\Name) {
+			$calledOnType = $scope->resolveTypeByName($node->expr->class);
+		} else {
+			$calledOnType = $scope->getType($node->expr->class);
+		}
+		$methodName = $node->expr->name->toString();
+		$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
+		if ($methodReflection === null) {
+			return null;
+		}
+		if (!$methodReflection->isPure()->maybe()) {
+			return null;
+		}
+		if (!$methodReflection->hasSideEffects()->maybe()) {
+			return null;
+		}
+
+		return [$methodReflection->getDeclaringClass()->getName(), $methodReflection->getName(), $node->getStartLine()];
+	}
+
+}

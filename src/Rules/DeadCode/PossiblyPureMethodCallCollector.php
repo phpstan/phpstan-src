@@ -7,7 +7,6 @@ use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use function count;
-use function strtolower;
 
 /**
  * @implements Collector<Node\Stmt\Expression, array{class-string, string, int}>
@@ -34,10 +33,6 @@ class PossiblyPureMethodCallCollector implements Collector
 		}
 
 		$methodName = $node->expr->name->toString();
-		if (strtolower($methodName) === '__construct') {
-			return null;
-		}
-
 		$calledOnType = $scope->getType($node->expr->var);
 		$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
 		if ($methodReflection === null) {

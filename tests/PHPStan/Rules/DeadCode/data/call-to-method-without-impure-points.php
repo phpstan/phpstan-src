@@ -19,6 +19,12 @@ function (): void {
 		$xy = new x();
 	}
 	$xy->myFunc();
+
+	$xy = new Y();
+	if (rand(0,1)) {
+		$xy = new X();
+	}
+	$xy->myFunc();
 };
 
 class y

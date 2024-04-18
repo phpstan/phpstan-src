@@ -27,6 +27,8 @@ class CallToMethodStatementWithoutImpurePointsRule implements Rule
 		$methods = [];
 		foreach ($node->get(MethodWithoutImpurePointsCollector::class) as $collected) {
 			foreach ($collected as [$className, $methodName, $classDisplayName]) {
+				$className = strtolower($className);
+
 				if (!array_key_exists($className, $methods)) {
 					$methods[$className] = [];
 				}
@@ -37,6 +39,8 @@ class CallToMethodStatementWithoutImpurePointsRule implements Rule
 		$errors = [];
 		foreach ($node->get(PossiblyPureMethodCallCollector::class) as $filePath => $data) {
 			foreach ($data as [$className, $method, $line]) {
+				$className = strtolower($className);
+
 				if (!array_key_exists($className, $methods)) {
 					continue;
 				}

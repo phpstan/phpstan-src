@@ -51,6 +51,14 @@ class MethodWithoutImpurePointsCollector implements Collector
 			return null;
 		}
 
+		$declaringClass = $method->getDeclaringClass();
+		if (
+			$declaringClass->hasConstructor()
+			&& $declaringClass->getConstructor()->getName() === $method->getName()
+		) {
+			return null;
+		}
+
 		return [$method->getDeclaringClass()->getName(), $method->getName(), $method->getDeclaringClass()->getDisplayName()];
 	}
 

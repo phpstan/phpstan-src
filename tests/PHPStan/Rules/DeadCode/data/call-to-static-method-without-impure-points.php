@@ -102,3 +102,21 @@ class X {
 	}
 }
 
+
+class ParentWithConstructor
+{
+	private $i;
+
+	public function __construct()
+	{
+		$this->i = 1;
+	}
+}
+
+class ChildOfParentWithConstructor extends ParentWithConstructor
+{
+	public function __construct()
+	{
+		parent::__construct();
+	}
+}

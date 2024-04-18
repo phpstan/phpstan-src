@@ -58,7 +58,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		private bool $isDeprecated,
 		private bool $isInternal,
 		private bool $isFinal,
-		private ?bool $isPure,
+		protected ?bool $isPure,
 		private bool $acceptsNamedArguments,
 		private Assertions $assertions,
 		private ?string $phpDocComment,
@@ -180,7 +180,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		return false;
 	}
 
-	private function getReturnType(): Type
+	protected function getReturnType(): Type
 	{
 		return TypehintHelper::decideType($this->realReturnType, $this->phpDocReturnType);
 	}

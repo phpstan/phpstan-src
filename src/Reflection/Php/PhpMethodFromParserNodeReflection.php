@@ -174,4 +174,19 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		return TrinaryLogic::createFromBoolean($this->getClassMethod()->isAbstract());
 	}
 
+	public function hasSideEffects(): TrinaryLogic
+	{
+		if (
+			strtolower($this->getName()) !== '__construct'
+			&& $this->getReturnType()->isVoid()->yes()
+		) {
+			return TrinaryLogic::createYes();
+		}
+		if ($this->isPure !== null) {
+			return TrinaryLogic::createFromBoolean(!$this->isPure);
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
 }

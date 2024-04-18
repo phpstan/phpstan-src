@@ -50,6 +50,10 @@ conditionalTags:
 		phpstan.collector: %featureToggles.pure%
 	PHPStan\Rules\DeadCode\MethodWithoutImpurePointsCollector:
 		phpstan.collector: %featureToggles.pure%
+	PHPStan\Rules\DeadCode\CallToStaticMethodStatementWithoutImpurePointsRule:
+		phpstan.rules.rule: %featureToggles.pure%
+	PHPStan\Rules\DeadCode\PossiblyPureStaticCallCollector:
+		phpstan.collector: %featureToggles.pure%
 
 parameters:
 	checkAdvancedIsset: true

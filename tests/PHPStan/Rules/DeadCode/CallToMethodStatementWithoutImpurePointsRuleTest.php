@@ -21,11 +21,19 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/call-to-method-without-impure-points.php'], [
 			[
 				'Call to method CallToMethodWithoutImpurePoints\x::myFunc() on a separate line has no effect.',
-				33,
+				7,
 			],
 			[
 				'Call to method CallToMethodWithoutImpurePoints\x::myFunc() on a separate line has no effect.',
-				34,
+				8,
+			],
+			[
+				'Call to method CallToMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
+				21,
+			],
+			[
+				'Call to method CallToMethodWithoutImpurePoints\x::myFunc() on a separate line has no effect.',
+				21,
 			],
 		]);
 	}

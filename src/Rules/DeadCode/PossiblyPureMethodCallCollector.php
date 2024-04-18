@@ -9,7 +9,7 @@ use PHPStan\Collectors\Collector;
 use function strtolower;
 
 /**
- * @implements Collector<Node\Stmt\Expression, array{class-string, string, int}>
+ * @implements Collector<Node\Stmt\Expression, list<array{class-string, string, int}>>
  */
 class PossiblyPureMethodCallCollector implements Collector
 {
@@ -38,6 +38,7 @@ class PossiblyPureMethodCallCollector implements Collector
 		}
 
 		$classType = $scope->getType($node->expr->var);
+		$calls = [];
 		foreach ($classType->getObjectClassReflections() as $classReflection) {
 			if (!$classReflection->hasMethod($methodName)) {
 				continue;
@@ -51,7 +52,11 @@ class PossiblyPureMethodCallCollector implements Collector
 				return null;
 			}
 
-			return [$methodReflection->getDeclaringClass()->getName(), $methodReflection->getName(), $node->getStartLine()];
+			$calls[] = [$methodReflection->getDeclaringClass()->getName(), $methodReflection->getName(), $node->getStartLine()];
+		}
+
+		if ($calls !== []) {
+			return $calls;
 		}
 
 		return null;

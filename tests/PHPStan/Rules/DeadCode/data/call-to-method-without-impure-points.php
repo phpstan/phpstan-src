@@ -2,6 +2,32 @@
 
 namespace CallToMethodWithoutImpurePoints;
 
+function (): void {
+	$x = new x();
+	$x->myFunc();
+	$x->myFUNC();
+	$x->throwingFUNC();
+	$x->throwingFunc();
+	$x->funcWithRef();
+	$x->impureFunc();
+	$x->callingImpureFunc();
+
+	$a = $x->myFunc();
+
+	$xy = new y();
+	if (rand(0,1)) {
+		$xy = new x();
+	}
+	$xy->myFunc();
+};
+
+class y
+{
+	function myFunc()
+	{
+	}
+}
+
 class x {
 	function myFunc()
 	{
@@ -26,17 +52,3 @@ class x {
 		$this->impureFunc();
 	}
 }
-
-
-function (): void {
-	$x = new x();
-	$x->myFunc();
-	$x->myFUNC();
-	$x->throwingFUNC();
-	$x->throwingFunc();
-	$x->funcWithRef();
-	$x->impureFunc();
-	$x->callingImpureFunc();
-
-	$a = $x->myFunc();
-};

@@ -125,6 +125,12 @@ services:
 		class: PHPStan\Rules\DeadCode\PossiblyPureMethodCallCollector
 
 	-
+		class: PHPStan\Rules\DeadCode\CallToStaticMethodStatementWithoutImpurePointsRule
+
+	-
+		class: PHPStan\Rules\DeadCode\PossiblyPureStaticCallCollector
+
+	-
 		class: PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule
 		arguments:
 			alwaysWrittenTags: %propertyAlwaysWrittenTags%

@@ -29,10 +29,6 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 			],
 			[
 				'Call to CallToStaticMethodWithoutImpurePoints\X::myFunc() on a separate line has no effect.',
-				14,
-			],
-			[
-				'Call to CallToStaticMethodWithoutImpurePoints\X::myFunc() on a separate line has no effect.',
 				16,
 			],
 			[

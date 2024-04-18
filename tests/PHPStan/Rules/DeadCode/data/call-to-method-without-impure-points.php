@@ -33,6 +33,7 @@ function (): void {
 
 	$subY = new subY();
 	$subY->myFunc();
+	$subY->myFinalBaseFunc();
 
 	$subSubY = new finalSubSubY();
 	$subSubY->myFunc();

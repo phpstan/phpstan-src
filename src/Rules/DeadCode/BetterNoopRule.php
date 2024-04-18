@@ -79,9 +79,20 @@ class BetterNoopRule implements Rule
 			];
 		}
 
+		if ($expr instanceof Node\Expr\FuncCall) {
+			if ($expr->name instanceof Node\Name) {
+				// handled by CallToFunctionStatementWithoutSideEffectsRule
+				return [];
+			}
+
+			$nameType = $scope->getType($expr->name);
+			if (!$nameType->isCallable()->yes()) {
+				return [];
+			}
+		}
+
 		if (
-			($expr instanceof Node\Expr\FuncCall && $expr->name instanceof Node\Name)
-			|| $expr instanceof Node\Expr\NullsafeMethodCall
+			$expr instanceof Node\Expr\NullsafeMethodCall
 			|| $expr instanceof Node\Expr\MethodCall
 			|| $expr instanceof Node\Expr\New_
 			|| $expr instanceof Node\Expr\StaticCall

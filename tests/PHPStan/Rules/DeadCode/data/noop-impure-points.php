@@ -46,7 +46,7 @@ class Foo
 		$b ? $this->foo = 1 : '';
 	}
 
-	public function doClosures(): void
+	public function doClosures(int $i): void
 	{
 		$a = static function () {
 			echo '1';
@@ -73,6 +73,8 @@ class Foo
 			self::$staticProp = 1;
 		};
 		$e();
+
+		$i();
 	}
 
 }

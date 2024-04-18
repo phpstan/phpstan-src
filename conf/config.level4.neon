@@ -44,6 +44,12 @@ conditionalTags:
 		phpstan.collector: %featureToggles.pure%
 	PHPStan\Rules\DeadCode\FunctionWithoutImpurePointsCollector:
 		phpstan.collector: %featureToggles.pure%
+	PHPStan\Rules\DeadCode\CallToMethodStatementWithoutImpurePointsRule:
+		phpstan.rules.rule: %featureToggles.pure%
+	PHPStan\Rules\DeadCode\PossiblyPureMethodCallCollector:
+		phpstan.collector: %featureToggles.pure%
+	PHPStan\Rules\DeadCode\MethodWithoutImpurePointsCollector:
+		phpstan.collector: %featureToggles.pure%
 
 parameters:
 	checkAdvancedIsset: true
@@ -108,6 +114,15 @@ services:
 
 	-
 		class: PHPStan\Rules\DeadCode\PossiblyPureFuncCallCollector
+
+	-
+		class: PHPStan\Rules\DeadCode\CallToMethodStatementWithoutImpurePointsRule
+
+	-
+		class: PHPStan\Rules\DeadCode\MethodWithoutImpurePointsCollector
+
+	-
+		class: PHPStan\Rules\DeadCode\PossiblyPureMethodCallCollector
 
 	-
 		class: PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule

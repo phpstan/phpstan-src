@@ -77,4 +77,10 @@ class Foo
 		$i();
 	}
 
+	public function doFunctionWithByRef(bool $b, array $a): void
+	{
+		$func = $b ? 'array_unshift' : 'array_push';
+		$func($a, 1);
+	}
+
 }

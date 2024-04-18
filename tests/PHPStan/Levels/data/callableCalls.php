@@ -23,7 +23,7 @@ class Foo
 		$c();
 		$d();
 		$f = function (int $i) {
-
+			echo '1';
 		};
 		$f(1);
 		$f(1.1);

@@ -3,6 +3,10 @@
 namespace PHPStan\Reflection\Callables;
 
 use PHPStan\Analyser\ImpurePoint;
+use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptor;
+use function sprintf;
 
 /**
  * @phpstan-import-type ImpurePointIdentifier from ImpurePoint
@@ -19,6 +23,32 @@ class SimpleImpurePoint
 		private bool $certain,
 	)
 	{
+	}
+
+	public static function createFromVariant(FunctionReflection|ExtendedMethodReflection $function, ?ParametersAcceptor $variant): ?self
+	{
+		if (!$function->hasSideEffects()->no()) {
+			$certain = $function->isPure()->no();
+			if ($variant !== null) {
+				$certain = $certain || $variant->getReturnType()->isVoid()->yes();
+			}
+
+			if ($function instanceof FunctionReflection) {
+				return new SimpleImpurePoint(
+					'functionCall',
+					sprintf('call to function %s()', $function->getName()),
+					$certain,
+				);
+			}
+
+			return new SimpleImpurePoint(
+				'methodCall',
+				sprintf('call to method %s::%s()', $function->getDeclaringClass()->getDisplayName(), $function->getName()),
+				$certain,
+			);
+		}
+
+		return null;
 	}
 
 	/**

@@ -15,7 +15,6 @@ use PHPStan\Type\Type;
 use Throwable;
 use function array_map;
 use function count;
-use function sprintf;
 
 class FunctionCallableVariant implements CallableParametersAcceptor, ParametersAcceptorWithPhpDocs
 {
@@ -146,30 +145,12 @@ class FunctionCallableVariant implements CallableParametersAcceptor, ParametersA
 			return $this->impurePoints = $this->variant->getImpurePoints();
 		}
 
-		$impurePoints = [];
-		if ($this->function instanceof ExtendedMethodReflection) {
-			if (!$this->function->hasSideEffects()->no()) {
-				$certain = $this->function->isPure()->no() || $this->variant->getReturnType()->isVoid()->yes();
-				$impurePoints[] = new SimpleImpurePoint(
-					'methodCall',
-					sprintf('call to method %s::%s()', $this->function->getDeclaringClass()->getDisplayName(), $this->function->getName()),
-					$certain,
-				);
-			}
+		$impurePoint = SimpleImpurePoint::createFromVariant($this->function, $this->variant);
+		if ($impurePoint === null) {
+			return $this->impurePoints = [];
 		}
 
-		if ($this->function instanceof FunctionReflection) {
-			if (!$this->function->hasSideEffects()->no()) {
-				$certain = $this->function->isPure()->no() || $this->variant->getReturnType()->isVoid()->yes();
-				$impurePoints[] = new SimpleImpurePoint(
-					'functionCall',
-					sprintf('call to function %s()', $this->function->getName()),
-					$certain,
-				);
-			}
-		}
-
-		return $this->impurePoints = $impurePoints;
+		return $this->impurePoints = [$impurePoint];
 	}
 
 	public function getInvalidateExpressions(): array

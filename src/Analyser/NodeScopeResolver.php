@@ -2237,15 +2237,9 @@ class NodeScopeResolver
 					$functionReflection->getVariants(),
 					$functionReflection->getNamedArgumentsVariants(),
 				);
-				if (!$functionReflection->hasSideEffects()->no()) {
-					$certain = $functionReflection->isPure()->no() || $parametersAcceptor->getReturnType()->isVoid()->yes();
-					$impurePoints[] = new ImpurePoint(
-						$scope,
-						$expr,
-						'functionCall',
-						sprintf('call to function %s()', $functionReflection->getName()),
-						$certain,
-					);
+				$impurePoint = SimpleImpurePoint::createFromVariant($functionReflection, $parametersAcceptor);
+				if ($impurePoint !== null) {
+					$impurePoints[] = new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
 				}
 			} else {
 				$impurePoints[] = new ImpurePoint(
@@ -2491,18 +2485,9 @@ class NodeScopeResolver
 			}
 
 			if ($methodReflection !== null) {
-				if (!$methodReflection->hasSideEffects()->no()) {
-					$certain = $methodReflection->isPure()->no();
-					if ($parametersAcceptor !== null) {
-						$certain = $certain || $parametersAcceptor->getReturnType()->isVoid()->yes();
-					}
-					$impurePoints[] = new ImpurePoint(
-						$scope,
-						$expr,
-						'methodCall',
-						sprintf('call to method %s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName()),
-						$certain,
-					);
+				$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor);
+				if ($impurePoint !== null) {
+					$impurePoints[] = new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
 				}
 			} else {
 				$impurePoints[] = new ImpurePoint(
@@ -2690,18 +2675,9 @@ class NodeScopeResolver
 			}
 
 			if ($methodReflection !== null) {
-				if (!$methodReflection->hasSideEffects()->no()) {
-					$certain = $methodReflection->isPure()->no();
-					if ($parametersAcceptor !== null) {
-						$certain = $certain || $parametersAcceptor->getReturnType()->isVoid()->yes();
-					}
-					$impurePoints[] = new ImpurePoint(
-						$scope,
-						$expr,
-						'methodCall',
-						sprintf('call to method %s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName()),
-						$certain,
-					);
+				$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor);
+				if ($impurePoint !== null) {
+					$impurePoints[] = new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
 				}
 			} else {
 				$impurePoints[] = new ImpurePoint(

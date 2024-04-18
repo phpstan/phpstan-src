@@ -2329,26 +2329,9 @@ class MutatingScope implements Scope
 					}
 				}
 
-				if ($function instanceof ExtendedMethodReflection) {
-					if (!$function->hasSideEffects()->no()) {
-						$certain = $function->isPure()->no() || $variant->getReturnType()->isVoid()->yes();
-						$impurePoints[] = new SimpleImpurePoint(
-							'methodCall',
-							sprintf('call to method %s::%s()', $function->getDeclaringClass()->getDisplayName(), $function->getName()),
-							$certain,
-						);
-					}
-				}
-
-				if ($function instanceof FunctionReflection) {
-					if (!$function->hasSideEffects()->no()) {
-						$certain = $function->isPure()->no() || $variant->getReturnType()->isVoid()->yes();
-						$impurePoints[] = new SimpleImpurePoint(
-							'functionCall',
-							sprintf('call to function %s()', $function->getName()),
-							$certain,
-						);
-					}
+				$impurePoint = SimpleImpurePoint::createFromVariant($function, $variant);
+				if ($impurePoint !== null) {
+					$impurePoints[] = $impurePoint;
 				}
 			}
 

@@ -101,3 +101,20 @@ class foo
 		throw new \Exception();
 	}
 }
+
+abstract class AbstractFoo
+{
+
+	function myFunc()
+	{
+	}
+
+}
+final class FinalFoo extends AbstractFoo
+{
+
+}
+
+function (FinalFoo $foo): void {
+	$foo->myFunc();
+};

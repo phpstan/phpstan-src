@@ -36,12 +36,20 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 				36,
 			],
 			[
+				'Call to method CallToMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
+				39,
+			],
+			[
 				'Call to method CallToMethodWithoutImpurePoints\finalSubSubY::mySubSubFunc() on a separate line has no effect.',
 				40,
 			],
 			[
 				'Call to method CallToMethodWithoutImpurePoints\y::myFinalBaseFunc() on a separate line has no effect.',
 				41,
+			],
+			[
+				'Call to method CallToMethodWithoutImpurePoints\AbstractFoo::myFunc() on a separate line has no effect.',
+				119,
 			],
 		]);
 	}

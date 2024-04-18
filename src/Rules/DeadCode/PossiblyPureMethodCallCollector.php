@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
+use function count;
 use function strtolower;
 
 /**
@@ -37,13 +38,21 @@ class PossiblyPureMethodCallCollector implements Collector
 			return null;
 		}
 
-		$methodReflection = $scope->getMethodReflection($scope->getType($node->expr->var), $methodName);
+		$calledOnType = $scope->getType($node->expr->var);
+		$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
 		if ($methodReflection === null) {
 			return null;
 		}
 		if (!$methodReflection->isFinal()->yes()) {
 			if (!$methodReflection->getDeclaringClass()->isFinal()) {
-				return null;
+				$typeClassReflections = $calledOnType->getObjectClassReflections();
+				if (count($typeClassReflections) !== 1) {
+					return null;
+				}
+
+				if (!$typeClassReflections[0]->isFinal()) {
+					return null;
+				}
 			}
 		}
 		if (!$methodReflection->isPure()->maybe()) {

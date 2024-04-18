@@ -35,28 +35,26 @@ class CallToMethodStatementWithoutImpurePointsRule implements Rule
 		}
 
 		$errors = [];
-		foreach ($node->get(PossiblyPureMethodCallCollector::class) as $filePath => $collected) {
-			foreach ($collected as $data) {
-				foreach ($data as [$className, $method, $line]) {
-					if (!array_key_exists($className, $methods)) {
-						continue;
-					}
-
-					$lowerMethod = strtolower($method);
-					if (!array_key_exists($lowerMethod, $methods[$className])) {
-						continue;
-					}
-
-					$originalMethodName = $methods[$className][$lowerMethod];
-
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'Call to method %s() on a separate line has no effect.',
-						$originalMethodName,
-					))->file($filePath)
-						->line($line)
-						->identifier('method.resultUnused')
-						->build();
+		foreach ($node->get(PossiblyPureMethodCallCollector::class) as $filePath => $data) {
+			foreach ($data as [$className, $method, $line]) {
+				if (!array_key_exists($className, $methods)) {
+					continue;
 				}
+
+				$lowerMethod = strtolower($method);
+				if (!array_key_exists($lowerMethod, $methods[$className])) {
+					continue;
+				}
+
+				$originalMethodName = $methods[$className][$lowerMethod];
+
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Call to method %s() on a separate line has no effect.',
+					$originalMethodName,
+				))->file($filePath)
+					->line($line)
+					->identifier('method.resultUnused')
+					->build();
 			}
 		}
 

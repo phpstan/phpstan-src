@@ -9,7 +9,7 @@ use PHPStan\Collectors\Collector;
 use function strtolower;
 
 /**
- * @implements Collector<Node\Stmt\Expression, list<array{class-string, string, int}>>
+ * @implements Collector<Node\Stmt\Expression, array{class-string, string, int}>
  */
 class PossiblyPureMethodCallCollector implements Collector
 {
@@ -37,29 +37,18 @@ class PossiblyPureMethodCallCollector implements Collector
 			return null;
 		}
 
-		$classType = $scope->getType($node->expr->var);
-		$calls = [];
-		foreach ($classType->getObjectClassReflections() as $classReflection) {
-			if (!$classReflection->hasMethod($methodName)) {
-				continue;
-			}
-
-			$methodReflection = $classReflection->getMethod($methodName, $scope);
-			if (!$methodReflection->isPure()->maybe()) {
-				return null;
-			}
-			if (!$methodReflection->hasSideEffects()->maybe()) {
-				return null;
-			}
-
-			$calls[] = [$methodReflection->getDeclaringClass()->getName(), $methodReflection->getName(), $node->getStartLine()];
+		$methodReflection = $scope->getMethodReflection($scope->getType($node->expr->var), $methodName);
+		if ($methodReflection === null) {
+			return null;
+		}
+		if (!$methodReflection->isPure()->maybe()) {
+			return null;
+		}
+		if (!$methodReflection->hasSideEffects()->maybe()) {
+			return null;
 		}
 
-		if ($calls !== []) {
-			return $calls;
-		}
-
-		return null;
+		return [$methodReflection->getDeclaringClass()->getName(), $methodReflection->getName(), $node->getStartLine()];
 	}
 
 }

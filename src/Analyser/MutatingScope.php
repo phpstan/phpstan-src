@@ -44,6 +44,7 @@ use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
@@ -1287,14 +1288,26 @@ class MutatingScope implements Scope
 				$closureReturnStatements = [];
 				$closureYieldStatements = [];
 				$closureExecutionEnds = [];
+				$closureImpurePoints = [];
 				$invalidateExpressions = [];
-				$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds, &$invalidateExpressions): void {
+				$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds, &$closureImpurePoints, &$invalidateExpressions): void {
 					if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
 						return;
 					}
 
 					if ($node instanceof InvalidateExprNode) {
 						$invalidateExpressions[] = $node;
+						return;
+					}
+
+					if ($node instanceof PropertyAssignNode) {
+						$closureImpurePoints[] = new ImpurePoint(
+							$scope,
+							$node,
+							'propertyAssign',
+							'property assignment',
+							true,
+						);
 						return;
 					}
 
@@ -1329,7 +1342,7 @@ class MutatingScope implements Scope
 				}, StatementContext::createTopLevel());
 
 				$throwPoints = $closureStatementResult->getThrowPoints();
-				$impurePoints = $closureStatementResult->getImpurePoints();
+				$impurePoints = array_merge($closureImpurePoints, $closureStatementResult->getImpurePoints());
 
 				$returnTypes = [];
 				$hasNull = false;

@@ -5,6 +5,8 @@ namespace NoopImpurePoints;
 class Foo
 {
 
+	private static $staticProp = 1;
+
 	public function doFoo(bool $b): void
 	{
 		$b && $this->doBar();
@@ -61,6 +63,16 @@ class Foo
 			$ref++;
 		};
 		$c();
+
+		$d = function () {
+			self::$foo = 1;
+		};
+		$d();
+
+		$e = function () {
+			self::$staticProp = 1;
+		};
+		$e();
 	}
 
 }

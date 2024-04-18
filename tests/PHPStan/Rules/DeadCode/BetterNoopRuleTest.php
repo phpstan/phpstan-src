@@ -126,11 +126,11 @@ class BetterNoopRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/noop-impure-points.php'], [
 			[
 				'Unused result of "&&" operator.',
-				10,
+				12,
 			],
 			[
 				'Expression "$b()" on a separate line does not do anything.',
-				57,
+				59,
 			],
 		]);
 	}

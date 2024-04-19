@@ -95,7 +95,12 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 	 */
 	public function getStatements(): array
 	{
-		return $this->classMethod->getStmts();
+		$stmts = $this->classMethod->getStmts();
+		if ($stmts === null) {
+			return [];
+		}
+
+		return $stmts;
 	}
 
 	public function isGenerator(): bool

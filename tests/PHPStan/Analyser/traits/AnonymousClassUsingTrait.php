@@ -2,7 +2,7 @@
 
 namespace AnonymousTraitClass;
 
-new class implements FooInterface {
+$a = new class implements FooInterface {
 
 	use TraitWithTypeSpecification;
 

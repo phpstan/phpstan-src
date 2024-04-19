@@ -749,8 +749,15 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\Expression) {
 			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope);
 			$hasAssign = false;
-			$result = $this->processExprNode($stmt, $stmt->expr, $scope, static function (Node $node, Scope $scope) use ($nodeCallback, &$hasAssign): void {
+			$currentScope = $scope;
+			$result = $this->processExprNode($stmt, $stmt->expr, $scope, static function (Node $node, Scope $scope) use ($nodeCallback, $currentScope, &$hasAssign): void {
 				$nodeCallback($node, $scope);
+				if ($scope->getAnonymousFunctionReflection() !== $currentScope->getAnonymousFunctionReflection()) {
+					return;
+				}
+				if ($scope->getFunction() !== $currentScope->getFunction()) {
+					return;
+				}
 				if (!$node instanceof VariableAssignNode && !$node instanceof PropertyAssignNode) {
 					return;
 				}
@@ -3152,7 +3159,31 @@ class NodeScopeResolver
 
 			} else {
 				$classReflection = $this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
-				$this->processStmtNode($expr->class, $scope, $nodeCallback, StatementContext::createTopLevel());
+				$constructorResult = null;
+				$this->processStmtNode($expr->class, $scope, static function (Node $node, Scope $scope) use ($nodeCallback, $classReflection, &$constructorResult): void {
+					$nodeCallback($node, $scope);
+					if (!$node instanceof MethodReturnStatementsNode) {
+						return;
+					}
+					if ($constructorResult !== null) {
+						return;
+					}
+					$currentClassReflection = $node->getClassReflection();
+					if ($currentClassReflection->getName() !== $classReflection->getName()) {
+						return;
+					}
+					if (!$currentClassReflection->hasConstructor()) {
+						return;
+					}
+					if ($currentClassReflection->getConstructor()->getName() !== $node->getMethodReflection()->getName()) {
+						return;
+					}
+					$constructorResult = $node;
+				}, StatementContext::createTopLevel());
+				if ($constructorResult !== null) {
+					$throwPoints = array_merge($throwPoints, $constructorResult->getStatementResult()->getThrowPoints());
+					$impurePoints = array_merge($impurePoints, $constructorResult->getImpurePoints());
+				}
 				if ($classReflection->hasConstructor()) {
 					$constructorReflection = $classReflection->getConstructor();
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(

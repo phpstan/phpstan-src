@@ -83,4 +83,35 @@ class Foo
 		$func($a, 1);
 	}
 
+	public function anonymousClassWithSideEffect(): void
+	{
+		new class () {
+			public function __construct()
+			{
+				echo '1';
+			}
+		};
+	}
+
+	public function anonymousClassWithoutConstructor(): void
+	{
+		new class () {
+		};
+	}
+
+	public function anonymousClassWithPureConstructor(): void
+	{
+		new class () {
+
+			/** @var int */
+			private $i;
+
+			public function __construct()
+			{
+				$this->i = 1;
+			}
+
+		};
+	}
+
 }

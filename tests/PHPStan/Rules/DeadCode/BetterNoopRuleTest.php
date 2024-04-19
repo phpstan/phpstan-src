@@ -132,6 +132,14 @@ class BetterNoopRuleTest extends RuleTestCase
 				'Expression "$b()" on a separate line does not do anything.',
 				59,
 			],
+			[
+				'Expression "new class…" on a separate line does not do anything.',
+				98,
+			],
+			[
+				'Expression "new class…" on a separate line does not do anything.',
+				104,
+			],
 		]);
 	}
 

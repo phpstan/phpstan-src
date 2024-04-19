@@ -14,7 +14,7 @@ class Foo
 }
 
 function () {
-	new class (1, 2) extends Foo
+	$a = new class (1, 2) extends Foo
 	{
 
 	};
@@ -30,7 +30,7 @@ class Bar
 }
 
 function () {
-	new class (1, 2) extends Bar
+	$a = new class (1, 2) extends Bar
 	{
 
 	};

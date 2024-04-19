@@ -17,7 +17,7 @@ class B extends A
 	use T;
 }
 
-new class() extends B
+$a = new class() extends B
 {
 	use T;
 };

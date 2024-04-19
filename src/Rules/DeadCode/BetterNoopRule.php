@@ -93,10 +93,14 @@ class BetterNoopRule implements Rule
 			}
 		}
 
+		if ($expr instanceof Node\Expr\New_ && $expr->class instanceof Node\Name) {
+			// handled by CallToConstructorStatementWithoutSideEffectsRule
+			return [];
+		}
+
 		if (
 			$expr instanceof Node\Expr\NullsafeMethodCall
 			|| $expr instanceof Node\Expr\MethodCall
-			|| $expr instanceof Node\Expr\New_
 			|| $expr instanceof Node\Expr\StaticCall
 		) {
 			// handled by *WithoutSideEffectsRule rules

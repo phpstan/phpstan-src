@@ -1,7 +1,7 @@
 <?php
 
 // Test comment
-new class () {
+$a = new class () {
 
 	public function doFoo(): void
 	{
@@ -10,8 +10,7 @@ new class () {
 
 };
 
-/* Test comment */
-new class () {
+$a = /* Test comment */ new class () {
 
 	public function doFoo(): void
 	{
@@ -20,8 +19,7 @@ new class () {
 
 };
 
-/** Test comment */
-new class () {
+$a = /** Test comment */ new class () {
 
 	public function doFoo(): void
 	{

@@ -8,6 +8,8 @@ use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function count;
+use function preg_split;
 use function sprintf;
 
 /**
@@ -113,10 +115,16 @@ class BetterNoopRule implements Rule
 			return [];
 		}
 
+		$exprString = $this->exprPrinter->printExpr($expr);
+		$exprStringLines = preg_split('~\R~', $exprString, 2);
+		if ($exprStringLines !== false && count($exprStringLines) > 1) {
+			$exprString = $exprStringLines[0] . '…';
+		}
+
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Expression "%s" on a separate line does not do anything.',
-				$this->exprPrinter->printExpr($expr),
+				$exprString,
 			))->line($expr->getStartLine())
 				->identifier('expr.resultUnused')
 				->build(),

@@ -38,16 +38,18 @@ class PossiblyPureMethodCallCollector implements Collector
 		if ($methodReflection === null) {
 			return null;
 		}
-		if (!$methodReflection->isFinal()->yes()) {
-			if (!$methodReflection->getDeclaringClass()->isFinal()) {
-				$typeClassReflections = $calledOnType->getObjectClassReflections();
-				if (count($typeClassReflections) !== 1) {
-					return null;
-				}
+		if (
+			!$methodReflection->isPrivate()
+			&& !$methodReflection->isFinal()->yes()
+			&& !$methodReflection->getDeclaringClass()->isFinal()
+		) {
+			$typeClassReflections = $calledOnType->getObjectClassReflections();
+			if (count($typeClassReflections) !== 1) {
+				return null;
+			}
 
-				if (!$typeClassReflections[0]->isFinal()) {
-					return null;
-				}
+			if (!$typeClassReflections[0]->isFinal()) {
+				return null;
 			}
 		}
 		if (!$methodReflection->isPure()->maybe()) {

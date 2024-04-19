@@ -51,6 +51,10 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 				'Call to method CallToMethodWithoutImpurePoints\AbstractFoo::myFunc() on a separate line has no effect.',
 				119,
 			],
+			[
+				'Call to method CallToMethodWithoutImpurePoints\CallsPrivateMethodWithoutImpurePoints::doBar() on a separate line has no effect.',
+				127,
+			],
 		]);
 	}
 

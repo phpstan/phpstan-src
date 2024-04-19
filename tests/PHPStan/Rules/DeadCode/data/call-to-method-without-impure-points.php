@@ -118,3 +118,18 @@ final class FinalFoo extends AbstractFoo
 function (FinalFoo $foo): void {
 	$foo->myFunc();
 };
+
+class CallsPrivateMethodWithoutImpurePoints
+{
+
+	public function doFoo(): void
+	{
+		$this->doBar();
+	}
+
+	private function doBar(): int
+	{
+		return 1;
+	}
+
+}

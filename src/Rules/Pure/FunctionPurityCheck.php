@@ -2,15 +2,21 @@
 
 namespace PHPStan\Rules\Pure;
 
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
+use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\ThrowPoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
+use PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
+use function array_filter;
 use function count;
+use function in_array;
 use function lcfirst;
 use function sprintf;
 
@@ -22,6 +28,7 @@ class FunctionPurityCheck
 	 * @param ParameterReflectionWithPhpDocs[] $parameters
 	 * @param ImpurePoint[] $impurePoints
 	 * @param ThrowPoint[] $throwPoints
+	 * @param Stmt[] $statements
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
@@ -32,6 +39,7 @@ class FunctionPurityCheck
 		Type $returnType,
 		array $impurePoints,
 		array $throwPoints,
+		array $statements,
 	): array
 	{
 		$errors = [];
@@ -105,7 +113,25 @@ class FunctionPurityCheck
 					break;
 				}
 
-				if (!$hasByRef) {
+				$statements = array_filter($statements, static function (Stmt $stmt): bool {
+					if ($stmt instanceof Stmt\Nop) {
+						return false;
+					}
+
+					if (!$stmt instanceof Stmt\Expression) {
+						return true;
+					}
+					if (!$stmt->expr instanceof FuncCall) {
+						return true;
+					}
+					if (!$stmt->expr->name instanceof Name) {
+						return true;
+					}
+
+					return !in_array($stmt->expr->name->toString(), CallToFunctionStatementWithoutSideEffectsRule::PHPSTAN_TESTING_FUNCTIONS, true);
+				});
+
+				if (!$hasByRef && count($statements) > 0) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'%s returns void but does not have any side effects.',
 						$functionDescription,

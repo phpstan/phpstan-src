@@ -1,7 +1,0 @@
-[
-    {
-        "message": "Function PHPStan\\Generics\\Pick\\foo() returns void but does not have any side effects.",
-        "line": 20,
-        "ignorable": true
-    }
-]

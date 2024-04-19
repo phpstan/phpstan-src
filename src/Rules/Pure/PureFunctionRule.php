@@ -37,6 +37,7 @@ class PureFunctionRule implements Rule
 			$variant->getReturnType(),
 			$node->getImpurePoints(),
 			$node->getStatementResult()->getThrowPoints(),
+			$node->getStatements(),
 		);
 	}
 

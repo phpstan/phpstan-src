@@ -213,7 +213,7 @@ class ClassWithVoidMethods
 
 	private function privateEmptyVoidFunction(): void
 	{
-
+		$a = 1 + 1;
 	}
 
 	private function setPostAndGet(array $post = [], array $get = []): void
@@ -330,6 +330,33 @@ class MaybeCallableFromUnion
 		$p();
 
 		return 1;
+	}
+
+}
+
+class VoidMethods
+{
+
+	private function doFoo(): void
+	{
+
+	}
+
+	private function doBar(): void
+	{
+		\PHPStan\dumpType(1);
+	}
+
+	private function doBaz(): void
+	{
+		// nop
+		;
+
+		// nop
+		;
+
+		// nop
+		;
 	}
 
 }

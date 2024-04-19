@@ -4,6 +4,7 @@ namespace PHPStan\Node;
 
 use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
+use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ImpurePoint;
@@ -90,6 +91,14 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 	public function getFunctionReflection(): FunctionReflection
 	{
 		return $this->functionReflection;
+	}
+
+	/**
+	 * @return Stmt[]
+	 */
+	public function getStatements(): array
+	{
+		return $this->function->getStmts();
 	}
 
 }

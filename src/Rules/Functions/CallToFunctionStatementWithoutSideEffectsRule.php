@@ -27,6 +27,13 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 
 	];
 
+	public const PHPSTAN_TESTING_FUNCTIONS = [
+		'PHPStan\\dumpType',
+		'PHPStan\\Testing\\assertType',
+		'PHPStan\\Testing\\assertNativeType',
+		'PHPStan\\Testing\\assertVariableCertainty',
+	];
+
 	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
 	}
@@ -55,12 +62,7 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		$functionName = $function->getName();
 		$functionHasSideEffects = !$function->hasSideEffects()->no();
 
-		if (in_array($functionName, [
-			'PHPStan\\dumpType',
-			'PHPStan\\Testing\\assertType',
-			'PHPStan\\Testing\\assertNativeType',
-			'PHPStan\\Testing\\assertVariableCertainty',
-		], true)) {
+		if (in_array($functionName, self::PHPSTAN_TESTING_FUNCTIONS, true)) {
 			return [];
 		}
 

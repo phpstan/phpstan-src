@@ -83,7 +83,7 @@ function voidFunctionThatThrows(): void
 
 function emptyVoidFunction(): void
 {
-
+	$a = 1 + 1;
 }
 
 /**

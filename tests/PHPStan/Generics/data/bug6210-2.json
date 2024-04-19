@@ -1,7 +1,0 @@
-[
-    {
-        "message": "Method Generics\\Bug6210\\HelloWorld::show() returns void but does not have any side effects.",
-        "line": 26,
-        "ignorable": true
-    }
-]

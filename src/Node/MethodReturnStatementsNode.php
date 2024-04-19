@@ -4,6 +4,7 @@ namespace PHPStan\Node;
 
 use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
+use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ImpurePoint;
@@ -87,6 +88,14 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 	public function getMethodReflection(): ExtendedMethodReflection
 	{
 		return $this->methodReflection;
+	}
+
+	/**
+	 * @return Stmt[]
+	 */
+	public function getStatements(): array
+	{
+		return $this->classMethod->getStmts();
 	}
 
 	public function isGenerator(): bool

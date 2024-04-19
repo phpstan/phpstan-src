@@ -1,25 +1,5 @@
 [
     {
-        "message": "Function PHPStan\\Generics\\Variance\\acceptInvariantIterOfDateTime() returns void but does not have any side effects.",
-        "line": 19,
-        "ignorable": true
-    },
-    {
-        "message": "Function PHPStan\\Generics\\Variance\\acceptInvariantIterOfDateTimeInterface() returns void but does not have any side effects.",
-        "line": 23,
-        "ignorable": true
-    },
-    {
-        "message": "Function PHPStan\\Generics\\Variance\\acceptIterOfDateTime() returns void but does not have any side effects.",
-        "line": 27,
-        "ignorable": true
-    },
-    {
-        "message": "Function PHPStan\\Generics\\Variance\\acceptIterOfDateTimeInterface() returns void but does not have any side effects.",
-        "line": 31,
-        "ignorable": true
-    },
-    {
         "message": "Template type T is declared as covariant, but occurs in contravariant position in parameter a of method PHPStan\\Generics\\Variance\\Foo::x().",
         "line": 52,
         "ignorable": true

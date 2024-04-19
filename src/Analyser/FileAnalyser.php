@@ -20,6 +20,7 @@ use function array_keys;
 use function array_merge;
 use function array_unique;
 use function array_values;
+use function count;
 use function error_reporting;
 use function get_class;
 use function is_array;
@@ -70,6 +71,8 @@ class FileAnalyser
 
 		$fileDependencies = [];
 		$exportedNodes = [];
+		$linesToIgnore = [];
+		$unmatchedLineIgnores = [];
 		if (is_file($file)) {
 			try {
 				$this->collectErrors($analysedFiles);
@@ -199,7 +202,12 @@ class FileAnalyser
 							}
 
 							unset($identifiers[$i]);
-							$linesToIgnore[$tmpFileError->getFile()][$line] = array_values($identifiers);
+
+							if (count($identifiers) > 0) {
+								$linesToIgnore[$tmpFileError->getFile()][$line] = array_values($identifiers);
+							} else {
+								unset($linesToIgnore[$tmpFileError->getFile()][$line]);
+							}
 
 							if (
 								array_key_exists($tmpFileError->getFile(), $unmatchedLineIgnores)
@@ -213,7 +221,12 @@ class FileAnalyser
 										}
 
 										unset($unmatchedIgnoredIdentifiers[$j]);
-										$unmatchedLineIgnores[$tmpFileError->getFile()][$line] = array_values($unmatchedIgnoredIdentifiers);
+
+										if (count($unmatchedIgnoredIdentifiers) > 0) {
+											$unmatchedLineIgnores[$tmpFileError->getFile()][$line] = array_values($unmatchedIgnoredIdentifiers);
+										} else {
+											unset($unmatchedLineIgnores[$tmpFileError->getFile()][$line]);
+										}
 										break;
 									}
 								}
@@ -280,7 +293,7 @@ class FileAnalyser
 
 		$fileErrors = array_merge($fileErrors, $this->collectedErrors);
 
-		return new FileAnalyserResult($fileErrors, $locallyIgnoredErrors, $fileCollectedData, array_values(array_unique($fileDependencies)), $exportedNodes);
+		return new FileAnalyserResult($fileErrors, $locallyIgnoredErrors, $fileCollectedData, array_values(array_unique($fileDependencies)), $exportedNodes, $linesToIgnore, $unmatchedLineIgnores);
 	}
 
 	/**

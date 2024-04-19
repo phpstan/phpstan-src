@@ -1,0 +1,22 @@
+[
+    {
+        "message": "Call to method Levels\\AcceptTypes\\Baz::requireArray() on a separate line has no effect.",
+        "line": 531,
+        "ignorable": true
+    },
+    {
+        "message": "Call to method Levels\\AcceptTypes\\Baz::requireFoo() on a separate line has no effect.",
+        "line": 532,
+        "ignorable": true
+    },
+    {
+        "message": "Call to method Levels\\AcceptTypes\\Baz::requireArray() on a separate line has no effect.",
+        "line": 542,
+        "ignorable": true
+    },
+    {
+        "message": "Call to method Levels\\AcceptTypes\\Baz::requireFoo() on a separate line has no effect.",
+        "line": 543,
+        "ignorable": true
+    }
+]

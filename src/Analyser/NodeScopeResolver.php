@@ -3081,35 +3081,78 @@ class NodeScopeResolver
 			$throwPoints = [];
 			$impurePoints = [];
 			$className = null;
-			if ($expr->class instanceof Expr) {
-				$objectClasses = $scope->getType($expr)->getObjectClassNames();
-				if (count($objectClasses) === 1) {
-					$objectExprResult = $this->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, static function (): void {
-					}, $context->enterDeep());
-					$className = $objectClasses[0];
-					$additionalThrowPoints = $objectExprResult->getThrowPoints();
+			if ($expr->class instanceof Expr || $expr->class instanceof Name) {
+				if ($expr->class instanceof Expr) {
+					$objectClasses = $scope->getType($expr)->getObjectClassNames();
+					if (count($objectClasses) === 1) {
+						$objectExprResult = $this->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, static function (): void {
+						}, $context->enterDeep());
+						$className = $objectClasses[0];
+						$additionalThrowPoints = $objectExprResult->getThrowPoints();
+					} else {
+						$additionalThrowPoints = [ThrowPoint::createImplicit($scope, $expr)];
+					}
+
+					$result = $this->processExprNode($stmt, $expr->class, $scope, $nodeCallback, $context->enterDeep());
+					$scope = $result->getScope();
+					$hasYield = $result->hasYield();
+					$throwPoints = $result->getThrowPoints();
+					$impurePoints = $result->getImpurePoints();
+					foreach ($additionalThrowPoints as $throwPoint) {
+						$throwPoints[] = $throwPoint;
+					}
 				} else {
-					$additionalThrowPoints = [ThrowPoint::createImplicit($scope, $expr)];
+					$className = $scope->resolveName($expr->class);
 				}
 
-				$result = $this->processExprNode($stmt, $expr->class, $scope, $nodeCallback, $context->enterDeep());
-				$scope = $result->getScope();
-				$hasYield = $result->hasYield();
-				$throwPoints = $result->getThrowPoints();
-				$impurePoints = $result->getImpurePoints();
-				foreach ($additionalThrowPoints as $throwPoint) {
-					$throwPoints[] = $throwPoint;
+				$classReflection = null;
+				if ($className !== null && $this->reflectionProvider->hasClass($className)) {
+					$classReflection = $this->reflectionProvider->getClass($className);
+					if ($classReflection->hasConstructor()) {
+						$constructorReflection = $classReflection->getConstructor();
+						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+							$scope,
+							$expr->getArgs(),
+							$constructorReflection->getVariants(),
+							$constructorReflection->getNamedArgumentsVariants(),
+						);
+						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, new Name\FullyQualified($className), $expr->getArgs(), $scope);
+						if ($constructorThrowPoint !== null) {
+							$throwPoints[] = $constructorThrowPoint;
+						}
+					}
+				} else {
+					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
-			} elseif ($expr->class instanceof Class_) {
-				$this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
-				$this->processStmtNode($expr->class, $scope, $nodeCallback, StatementContext::createTopLevel());
+
+				if ($constructorReflection !== null) {
+					if (!$constructorReflection->hasSideEffects()->no()) {
+						$certain = $constructorReflection->isPure()->no();
+						$impurePoints[] = new ImpurePoint(
+							$scope,
+							$expr,
+							'new',
+							sprintf('instantiation of class %s', $constructorReflection->getDeclaringClass()->getDisplayName()),
+							$certain,
+						);
+					}
+				} elseif ($classReflection === null) {
+					$impurePoints[] = new ImpurePoint(
+						$scope,
+						$expr,
+						'new',
+						'instantiation of unknown class',
+						false,
+					);
+				}
+
+				if ($parametersAcceptor !== null) {
+					$expr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
+				}
+
 			} else {
-				$className = $scope->resolveName($expr->class);
-			}
-
-			$classReflection = null;
-			if ($className !== null && $this->reflectionProvider->hasClass($className)) {
-				$classReflection = $this->reflectionProvider->getClass($className);
+				$classReflection = $this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
+				$this->processStmtNode($expr->class, $scope, $nodeCallback, StatementContext::createTopLevel());
 				if ($classReflection->hasConstructor()) {
 					$constructorReflection = $classReflection->getConstructor();
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
@@ -3118,39 +3161,9 @@ class NodeScopeResolver
 						$constructorReflection->getVariants(),
 						$constructorReflection->getNamedArgumentsVariants(),
 					);
-					$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, new Name\FullyQualified($className), $expr->getArgs(), $scope);
-					if ($constructorThrowPoint !== null) {
-						$throwPoints[] = $constructorThrowPoint;
-					}
 				}
-			} else {
-				$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 			}
 
-			if ($constructorReflection !== null) {
-				if (!$constructorReflection->hasSideEffects()->no()) {
-					$certain = $constructorReflection->isPure()->no();
-					$impurePoints[] = new ImpurePoint(
-						$scope,
-						$expr,
-						'new',
-						sprintf('instantiation of class %s', $constructorReflection->getDeclaringClass()->getDisplayName()),
-						$certain,
-					);
-				}
-			} elseif ($classReflection === null) {
-				$impurePoints[] = new ImpurePoint(
-					$scope,
-					$expr,
-					'new',
-					'instantiation of unknown class',
-					false,
-				);
-			}
-
-			if ($parametersAcceptor !== null) {
-				$expr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
-			}
 			$result = $this->processArgs($stmt, $constructorReflection, null, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			$hasYield = $hasYield || $result->hasYield();

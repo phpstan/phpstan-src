@@ -655,6 +655,7 @@ class NodeScopeResolver
 							&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
 							&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
 							&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
+							&& TypeUtils::findThisType($scope->getType($node->getPropertyFetch()->var)) !== null
 						) {
 							return;
 						}

@@ -150,6 +150,10 @@ class PureMethodRuleTest extends RuleTestCase
 				'Method PureConstructor\Bar::__construct() is marked as impure but does not have any side effects.',
 				30,
 			],
+			[
+				'Impure property assignment in pure method PureConstructor\AssignOtherThanThis::__construct().',
+				49,
+			],
 		]);
 	}
 

@@ -36,3 +36,16 @@ class Bar
 	}
 
 }
+
+class AssignOtherThanThis
+{
+	private int $i = 0;
+
+	/** @phpstan-pure */
+	public function __construct(
+		self $other,
+	)
+	{
+		$other->i = 1;
+	}
+}

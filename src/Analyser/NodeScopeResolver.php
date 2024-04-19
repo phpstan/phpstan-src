@@ -2232,7 +2232,11 @@ class NodeScopeResolver
 					$throwPoints = array_merge($throwPoints, $invokeResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $invokeResult->getImpurePoints());
 				} elseif ($parametersAcceptor instanceof CallableParametersAcceptor) {
-					$throwPoints = array_merge($throwPoints, array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $expr), $parametersAcceptor->getThrowPoints()));
+					$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $expr), $parametersAcceptor->getThrowPoints());
+					if (!$this->implicitThrows) {
+						$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit()));
+					}
+					$throwPoints = array_merge($throwPoints, $callableThrowPoints);
 					$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $parametersAcceptor->getImpurePoints()));
 
 					$scope = $this->processImmediatelyCalledCallable($scope, $parametersAcceptor->getInvalidateExpressions(), $parametersAcceptor->getUsedVariables());
@@ -4404,7 +4408,11 @@ class NodeScopeResolver
 					if (count($acceptors) === 1) {
 						$scope = $this->processImmediatelyCalledCallable($scope, $acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables());
 						if ($callCallbackImmediately) {
-							$throwPoints = array_merge($throwPoints, array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints()));
+							$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints());
+							if (!$this->implicitThrows) {
+								$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit()));
+							}
+							$throwPoints = array_merge($throwPoints, $callableThrowPoints);
 							$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $arg->value, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $acceptors[0]->getImpurePoints()));
 						}
 					}

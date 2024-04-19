@@ -1407,12 +1407,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "1fa15546f2315f93e220485e370282706ebe4f94"
+                "reference": "7a2e524c7bdc18295d62b0ed598cec1166da80ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/1fa15546f2315f93e220485e370282706ebe4f94",
-                "reference": "1fa15546f2315f93e220485e370282706ebe4f94",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/7a2e524c7bdc18295d62b0ed598cec1166da80ab",
+                "reference": "7a2e524c7bdc18295d62b0ed598cec1166da80ab",
                 "shasum": ""
             },
             "require": {
@@ -1456,13 +1456,9 @@
                 {
                     "url": "https://github.com/phpstan",
                     "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/phpstan/phpstan",
-                    "type": "tidelift"
                 }
             ],
-            "time": "2024-02-24T19:43:34+00:00"
+            "time": "2024-04-19T14:55:18+00:00"
         },
         {
             "name": "phpstan/phpstan-strict-rules",
@@ -1470,12 +1466,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-                "reference": "2bc39672669f0493b3b3833f13273cbedaaa121b"
+                "reference": "c7b4d283fbffd23b9405c01d1f68124739d698f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/2bc39672669f0493b3b3833f13273cbedaaa121b",
-                "reference": "2bc39672669f0493b3b3833f13273cbedaaa121b",
+                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/c7b4d283fbffd23b9405c01d1f68124739d698f6",
+                "reference": "c7b4d283fbffd23b9405c01d1f68124739d698f6",
                 "shasum": ""
             },
             "require": {
@@ -1512,7 +1508,7 @@
                 "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
                 "source": "https://github.com/phpstan/phpstan-strict-rules/tree/1.6.x"
             },
-            "time": "2024-02-19T08:54:33+00:00"
+            "time": "2024-04-19T14:52:46+00:00"
         },
         {
             "name": "psr/cache",

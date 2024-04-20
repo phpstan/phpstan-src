@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\ResultCache;
 use Nette\Neon\Neon;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNodeFetcher;
@@ -41,6 +42,9 @@ use function unlink;
 use function var_export;
 use const PHP_VERSION_ID;
 
+/**
+ * @phpstan-import-type LinesToIgnore from FileAnalyserResult
+ */
 class ResultCacheManager
 {
 
@@ -630,8 +634,8 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $freshLinesToIgnore
-	 * @return array<string, array<string, array<int, non-empty-list<string>|null>>>
+	 * @param array<string, LinesToIgnore> $freshLinesToIgnore
+	 * @return array<string, LinesToIgnore>
 	 */
 	private function mergeLinesToIgnore(ResultCache $resultCache, array $freshLinesToIgnore): array
 	{
@@ -649,8 +653,8 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $freshUnmatchedLineIgnores
-	 * @return array<string, array<string, array<int, non-empty-list<string>|null>>>
+	 * @param array<string, LinesToIgnore> $freshUnmatchedLineIgnores
+	 * @return array<string, LinesToIgnore>
 	 */
 	private function mergeUnmatchedLineIgnores(ResultCache $resultCache, array $freshUnmatchedLineIgnores): array
 	{
@@ -670,8 +674,8 @@ class ResultCacheManager
 	/**
 	 * @param array<string, list<Error>> $errors
 	 * @param array<string, list<Error>> $locallyIgnoredErrors
-	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $linesToIgnore
-	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $unmatchedLineIgnores
+	 * @param array<string, LinesToIgnore> $linesToIgnore
+	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
 	 * @param array<string, array<CollectedData>> $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes

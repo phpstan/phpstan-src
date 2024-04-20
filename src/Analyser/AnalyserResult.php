@@ -6,6 +6,9 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\RootExportedNode;
 use function usort;
 
+/**
+ * @phpstan-import-type LinesToIgnore from FileAnalyserResult
+ */
 class AnalyserResult
 {
 
@@ -15,8 +18,8 @@ class AnalyserResult
 	/**
 	 * @param list<Error> $unorderedErrors
 	 * @param list<Error> $locallyIgnoredErrors
-	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $linesToIgnore
-	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $unmatchedLineIgnores
+	 * @param array<string, LinesToIgnore> $linesToIgnore
+	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
 	 * @param list<CollectedData> $collectedData
 	 * @param list<string> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
@@ -78,7 +81,7 @@ class AnalyserResult
 	}
 
 	/**
-	 * @return array<string, array<string, array<int, non-empty-list<string>|null>>>
+	 * @return array<string, LinesToIgnore>
 	 */
 	public function getLinesToIgnore(): array
 	{
@@ -86,7 +89,7 @@ class AnalyserResult
 	}
 
 	/**
-	 * @return array<string, array<string, array<int, non-empty-list<string>|null>>>
+	 * @return array<string, LinesToIgnore>
 	 */
 	public function getUnmatchedLineIgnores(): array
 	{

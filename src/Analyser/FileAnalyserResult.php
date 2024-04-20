@@ -5,6 +5,9 @@ namespace PHPStan\Analyser;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\RootExportedNode;
 
+/**
+ * @phpstan-type LinesToIgnore = array<string, array<int, non-empty-list<string>|null>>
+ */
 class FileAnalyserResult
 {
 
@@ -14,8 +17,8 @@ class FileAnalyserResult
 	 * @param list<CollectedData> $collectedData
 	 * @param list<string> $dependencies
 	 * @param list<RootExportedNode> $exportedNodes
-	 * @param array<string, array<int, non-empty-list<string>|null>> $linesToIgnore
-	 * @param array<string, array<int, non-empty-list<string>|null>> $unmatchedLineIgnores
+	 * @param LinesToIgnore $linesToIgnore
+	 * @param LinesToIgnore $unmatchedLineIgnores
 	 */
 	public function __construct(
 		private array $errors,
@@ -70,7 +73,7 @@ class FileAnalyserResult
 	}
 
 	/**
-	 * @return array<string, array<int, non-empty-list<string>|null>>
+	 * @return LinesToIgnore
 	 */
 	public function getLinesToIgnore(): array
 	{
@@ -78,7 +81,7 @@ class FileAnalyserResult
 	}
 
 	/**
-	 * @return array<string, array<int, non-empty-list<string>|null>>
+	 * @return LinesToIgnore
 	 */
 	public function getUnmatchedLineIgnores(): array
 	{

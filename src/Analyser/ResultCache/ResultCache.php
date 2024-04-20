@@ -3,9 +3,13 @@
 namespace PHPStan\Analyser\ResultCache;
 
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\RootExportedNode;
 
+/**
+ * @phpstan-import-type LinesToIgnore from FileAnalyserResult
+ */
 class ResultCache
 {
 
@@ -14,8 +18,8 @@ class ResultCache
 	 * @param mixed[] $meta
 	 * @param array<string, list<Error>> $errors
 	 * @param array<string, list<Error>> $locallyIgnoredErrors
-	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $linesToIgnore
-	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $unmatchedLineIgnores
+	 * @param array<string, LinesToIgnore> $linesToIgnore
+	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
 	 * @param array<string, array<CollectedData>> $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
@@ -81,7 +85,7 @@ class ResultCache
 	}
 
 	/**
-	 * @return array<string, array<string, array<int, non-empty-list<string>|null>>>
+	 * @return array<string, LinesToIgnore>
 	 */
 	public function getLinesToIgnore(): array
 	{
@@ -89,7 +93,7 @@ class ResultCache
 	}
 
 	/**
-	 * @return array<string, array<string, array<int, non-empty-list<string>|null>>>
+	 * @return array<string, LinesToIgnore>
 	 */
 	public function getUnmatchedLineIgnores(): array
 	{

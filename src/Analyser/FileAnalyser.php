@@ -200,10 +200,10 @@ class FileAnalyser
 							if ($identifiers === null) {
 								$fileErrors[] = (new Error(
 									sprintf('No error to ignore is reported on line %d.', $line),
-									$scope->getFileDescription(),
+									$file,
 									$line,
 									false,
-									$scope->getFile(),
+									$file,
 								))->withIdentifier('ignore.unmatchedLine');
 								continue;
 							}
@@ -211,10 +211,10 @@ class FileAnalyser
 							foreach ($identifiers as $identifier) {
 								$fileErrors[] = (new Error(
 									sprintf('No error with identifier %s is reported on line %d.', $identifier, $line),
-									$scope->getFileDescription(),
+									$file,
 									$line,
 									false,
-									$scope->getFile(),
+									$file,
 								))->withIdentifier('ignore.unmatchedIdentifier');
 							}
 						}

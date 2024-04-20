@@ -53,6 +53,9 @@ class Analyser
 		/** @var list<Error> $locallyIgnoredErrors */
 		$locallyIgnoredErrors = [];
 
+		$linesToIgnore = [];
+		$unmatchedLineIgnores = [];
+
 		/** @var list<CollectedData> $collectedData */
 		$collectedData = [];
 
@@ -75,6 +78,8 @@ class Analyser
 				);
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
 				$locallyIgnoredErrors = array_merge($locallyIgnoredErrors, $fileAnalyserResult->getLocallyIgnoredErrors());
+				$linesToIgnore[$file] = $fileAnalyserResult->getLinesToIgnore();
+				$unmatchedLineIgnores[$file] = $fileAnalyserResult->getUnmatchedLineIgnores();
 				$collectedData = array_merge($collectedData, $fileAnalyserResult->getCollectedData());
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
 
@@ -111,6 +116,8 @@ class Analyser
 		return new AnalyserResult(
 			$errors,
 			$locallyIgnoredErrors,
+			$linesToIgnore,
+			$unmatchedLineIgnores,
 			[],
 			$collectedData,
 			$internalErrorsCount === 0 ? $dependencies : null,

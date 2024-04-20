@@ -15,6 +15,8 @@ class AnalyserResult
 	/**
 	 * @param list<Error> $unorderedErrors
 	 * @param list<Error> $locallyIgnoredErrors
+	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $linesToIgnore
+	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $unmatchedLineIgnores
 	 * @param list<CollectedData> $collectedData
 	 * @param list<string> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
@@ -23,6 +25,8 @@ class AnalyserResult
 	public function __construct(
 		private array $unorderedErrors,
 		private array $locallyIgnoredErrors,
+		private array $linesToIgnore,
+		private array $unmatchedLineIgnores,
 		private array $internalErrors,
 		private array $collectedData,
 		private ?array $dependencies,
@@ -71,6 +75,22 @@ class AnalyserResult
 	public function getLocallyIgnoredErrors(): array
 	{
 		return $this->locallyIgnoredErrors;
+	}
+
+	/**
+	 * @return array<string, array<string, array<int, non-empty-list<string>|null>>>
+	 */
+	public function getLinesToIgnore(): array
+	{
+		return $this->linesToIgnore;
+	}
+
+	/**
+	 * @return array<string, array<string, array<int, non-empty-list<string>|null>>>
+	 */
+	public function getUnmatchedLineIgnores(): array
+	{
+		return $this->unmatchedLineIgnores;
 	}
 
 	/**

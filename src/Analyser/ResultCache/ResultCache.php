@@ -14,6 +14,8 @@ class ResultCache
 	 * @param mixed[] $meta
 	 * @param array<string, list<Error>> $errors
 	 * @param array<string, list<Error>> $locallyIgnoredErrors
+	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $linesToIgnore
+	 * @param array<string, array<string, array<int, non-empty-list<string>|null>>> $unmatchedLineIgnores
 	 * @param array<string, array<CollectedData>> $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
@@ -26,6 +28,8 @@ class ResultCache
 		private array $meta,
 		private array $errors,
 		private array $locallyIgnoredErrors,
+		private array $linesToIgnore,
+		private array $unmatchedLineIgnores,
 		private array $collectedData,
 		private array $dependencies,
 		private array $exportedNodes,
@@ -74,6 +78,22 @@ class ResultCache
 	public function getLocallyIgnoredErrors(): array
 	{
 		return $this->locallyIgnoredErrors;
+	}
+
+	/**
+	 * @return array<string, array<string, array<int, non-empty-list<string>|null>>>
+	 */
+	public function getLinesToIgnore(): array
+	{
+		return $this->linesToIgnore;
+	}
+
+	/**
+	 * @return array<string, array<string, array<int, non-empty-list<string>|null>>>
+	 */
+	public function getUnmatchedLineIgnores(): array
+	{
+		return $this->unmatchedLineIgnores;
 	}
 
 	/**

@@ -183,6 +183,8 @@ class WorkerCommand extends Command
 			$files = $json['files'];
 			$errors = [];
 			$locallyIgnoredErrors = [];
+			$linesToIgnore = [];
+			$unmatchedLineIgnores = [];
 			$collectedData = [];
 			$dependencies = [];
 			$exportedNodes = [];
@@ -190,6 +192,8 @@ class WorkerCommand extends Command
 				try {
 					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $ruleRegistry, $collectorRegistry, null);
 					$fileErrors = $fileAnalyserResult->getErrors();
+					$linesToIgnore[$file] = $fileAnalyserResult->getLinesToIgnore();
+					$unmatchedLineIgnores[$file] = $fileAnalyserResult->getUnmatchedLineIgnores();
 					$dependencies[$file] = $fileAnalyserResult->getDependencies();
 					$exportedNodes[$file] = $fileAnalyserResult->getExportedNodes();
 					foreach ($fileErrors as $fileError) {
@@ -224,6 +228,8 @@ class WorkerCommand extends Command
 				'result' => [
 					'errors' => $errors,
 					'locallyIgnoredErrors' => $locallyIgnoredErrors,
+					'linesToIgnore' => $linesToIgnore,
+					'unmatchedLineIgnores' => $unmatchedLineIgnores,
 					'collectedData' => $collectedData,
 					'memoryUsage' => memory_get_peak_usage(true),
 					'dependencies' => $dependencies,

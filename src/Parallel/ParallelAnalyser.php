@@ -71,6 +71,8 @@ class ParallelAnalyser
 		$someChildEnded = false;
 		$errors = [];
 		$locallyIgnoredErrors = [];
+		$linesToIgnore = [];
+		$unmatchedLineIgnores = [];
 		$peakMemoryUsages = [];
 		$internalErrors = [];
 		$internalErrorsCount = 0;
@@ -82,7 +84,7 @@ class ParallelAnalyser
 		$deferred = new Deferred();
 
 		$server = new TcpServer('127.0.0.1:0', $loop);
-		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$locallyIgnoredErrors, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages): void {
+		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages): void {
 			if (count($jobs) > 0 && $internalErrorsCount === 0) {
 				$internalErrors[] = 'Some parallel worker jobs have not finished.';
 				$internalErrorsCount++;
@@ -91,6 +93,8 @@ class ParallelAnalyser
 			$deferred->resolve(new AnalyserResult(
 				$errors,
 				$locallyIgnoredErrors,
+				$linesToIgnore,
+				$unmatchedLineIgnores,
 				$internalErrors,
 				$collectedData,
 				$internalErrorsCount === 0 ? $dependencies : null,
@@ -155,7 +159,7 @@ class ParallelAnalyser
 				$commandOptions,
 				$input,
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$locallyIgnoredErrors, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler): void {
 				$fileErrors = [];
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
@@ -193,6 +197,20 @@ class ParallelAnalyser
 				 */
 				foreach ($json['dependencies'] as $file => $fileDependencies) {
 					$dependencies[$file] = $fileDependencies;
+				}
+
+				foreach ($json['linesToIgnore'] as $file => $fileLinesToIgnore) {
+					if (count($fileLinesToIgnore) === 0) {
+						continue;
+					}
+					$linesToIgnore[$file] = $fileLinesToIgnore;
+				}
+
+				foreach ($json['unmatchedLineIgnores'] as $file => $fileUnmatchedLineIgnores) {
+					if (count($fileUnmatchedLineIgnores) === 0) {
+						continue;
+					}
+					$unmatchedLineIgnores[$file] = $fileUnmatchedLineIgnores;
 				}
 
 				/**

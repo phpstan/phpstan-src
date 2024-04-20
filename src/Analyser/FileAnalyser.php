@@ -293,6 +293,22 @@ class FileAnalyser
 
 		$fileErrors = array_merge($fileErrors, $this->collectedErrors);
 
+		foreach ($linesToIgnore as $fileKey => $lines) {
+			if (count($lines) > 0) {
+				continue;
+			}
+
+			unset($linesToIgnore[$fileKey]);
+		}
+
+		foreach ($unmatchedLineIgnores as $fileKey => $lines) {
+			if (count($lines) > 0) {
+				continue;
+			}
+
+			unset($unmatchedLineIgnores[$fileKey]);
+		}
+
 		return new FileAnalyserResult($fileErrors, $locallyIgnoredErrors, $fileCollectedData, array_values(array_unique($fileDependencies)), $exportedNodes, $linesToIgnore, $unmatchedLineIgnores);
 	}
 

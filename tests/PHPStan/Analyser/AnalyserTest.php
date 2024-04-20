@@ -628,7 +628,7 @@ class AnalyserTest extends PHPStanTestCase
 		bool $enableIgnoreErrorsWithinPhpDocs = true,
 	): array
 	{
-		$analyser = $this->createAnalyser($reportUnmatchedIgnoredErrors, $enableIgnoreErrorsWithinPhpDocs);
+		$analyser = $this->createAnalyser($enableIgnoreErrorsWithinPhpDocs);
 
 		if (is_string($filePaths)) {
 			$filePaths = [$filePaths];
@@ -648,6 +648,17 @@ class AnalyserTest extends PHPStanTestCase
 
 		$analyserResult = $analyser->analyse($normalizedFilePaths);
 
+		$finalizer = new AnalyserResultFinalizer(
+			new DirectRuleRegistry([]),
+			new RuleErrorTransformer(),
+			$this->createScopeFactory(
+				$this->createReflectionProvider(),
+				self::getContainer()->getService('typeSpecifier'),
+			),
+			$reportUnmatchedIgnoredErrors,
+		);
+		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles);
+
 		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
 		$errors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 		$errors = array_merge($errors, $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages());
@@ -661,7 +672,7 @@ class AnalyserTest extends PHPStanTestCase
 		);
 	}
 
-	private function createAnalyser(bool $reportUnmatchedIgnoredErrors, bool $enableIgnoreErrorsWithinPhpDocs): Analyser
+	private function createAnalyser(bool $enableIgnoreErrorsWithinPhpDocs): Analyser
 	{
 		$ruleRegistry = new DirectRuleRegistry([
 			new AlwaysFailRule(),
@@ -716,7 +727,6 @@ class AnalyserTest extends PHPStanTestCase
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new RuleErrorTransformer(),
 			new LocalIgnoresProcessor(),
-			$reportUnmatchedIgnoredErrors,
 		);
 
 		return new Analyser(

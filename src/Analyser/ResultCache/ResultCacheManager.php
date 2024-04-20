@@ -867,6 +867,7 @@ return [
 			unset($projectConfigArray['parameters']['editorUrlTitle']);
 			unset($projectConfigArray['parameters']['errorFormat']);
 			unset($projectConfigArray['parameters']['ignoreErrors']);
+			unset($projectConfigArray['parameters']['reportUnmatchedIgnoredErrors']);
 			unset($projectConfigArray['parameters']['tipsOfTheDay']);
 			unset($projectConfigArray['parameters']['parallel']);
 			unset($projectConfigArray['parameters']['internalErrorsCountLimit']);

@@ -18,6 +18,7 @@ class AnalyserResultFinalizer
 		private RuleRegistry $ruleRegistry,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private ScopeFactory $scopeFactory,
+		private bool $reportUnmatchedIgnoredErrors,
 	)
 	{
 	}
@@ -25,12 +26,12 @@ class AnalyserResultFinalizer
 	public function finalize(AnalyserResult $analyserResult, bool $onlyFiles): AnalyserResult
 	{
 		if (count($analyserResult->getCollectedData()) === 0) {
-			return $analyserResult;
+			return $this->addUnmatchedIgnoredErrors($analyserResult);
 		}
 
 		$hasInternalErrors = count($analyserResult->getInternalErrors()) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
 		if ($hasInternalErrors) {
-			return $analyserResult;
+			return $this->addUnmatchedIgnoredErrors($analyserResult);
 		}
 
 		$nodeType = CollectedDataNode::class;
@@ -55,6 +56,58 @@ class AnalyserResultFinalizer
 
 			foreach ($ruleErrors as $ruleError) {
 				$errors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
+			}
+		}
+
+		return $this->addUnmatchedIgnoredErrors(new AnalyserResult(
+			$errors,
+			$analyserResult->getLocallyIgnoredErrors(),
+			$analyserResult->getLinesToIgnore(),
+			$analyserResult->getUnmatchedLineIgnores(),
+			$analyserResult->getInternalErrors(),
+			$analyserResult->getCollectedData(),
+			$analyserResult->getDependencies(),
+			$analyserResult->getExportedNodes(),
+			$analyserResult->hasReachedInternalErrorsCountLimit(),
+			$analyserResult->getPeakMemoryUsageBytes(),
+		));
+	}
+
+	private function addUnmatchedIgnoredErrors(AnalyserResult $analyserResult): AnalyserResult
+	{
+		if (!$this->reportUnmatchedIgnoredErrors) {
+			return $analyserResult;
+		}
+
+		$errors = $analyserResult->getUnorderedErrors();
+		foreach ($analyserResult->getUnmatchedLineIgnores() as $file => $data) {
+			foreach ($data as $ignoredFile => $lines) {
+				if ($ignoredFile !== $file) {
+					continue;
+				}
+
+				foreach ($lines as $line => $identifiers) {
+					if ($identifiers === null) {
+						$errors[] = (new Error(
+							sprintf('No error to ignore is reported on line %d.', $line),
+							$file,
+							$line,
+							false,
+							$file,
+						))->withIdentifier('ignore.unmatchedLine');
+						continue;
+					}
+
+					foreach ($identifiers as $identifier) {
+						$errors[] = (new Error(
+							sprintf('No error with identifier %s is reported on line %d.', $identifier, $line),
+							$file,
+							$line,
+							false,
+							$file,
+						))->withIdentifier('ignore.unmatchedIdentifier');
+					}
+				}
 			}
 		}
 

@@ -112,7 +112,6 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::getContainer()->getByType(DependencyResolver::class),
 				new RuleErrorTransformer(),
 				new LocalIgnoresProcessor(),
-				true,
 			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,
@@ -184,6 +183,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			]),
 			new RuleErrorTransformer(),
 			$this->createScopeFactory($this->createReflectionProvider(), $this->getTypeSpecifier()),
+			true,
 		);
 
 		return $finalizer->finalize($analyserResult, false)->getUnorderedErrors();

@@ -478,12 +478,13 @@ services:
 
 	-
 		class: PHPStan\Analyser\AnalyserResultFinalizer
+		arguments:
+			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
 		class: PHPStan\Analyser\FileAnalyser
 		arguments:
 			parser: @defaultAnalysisParser
-			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
 		class: PHPStan\Analyser\LocalIgnoresProcessor

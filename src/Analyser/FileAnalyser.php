@@ -42,7 +42,6 @@ class FileAnalyser
 		private DependencyResolver $dependencyResolver,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
-		private bool $reportUnmatchedIgnoredErrors,
 	)
 	{
 	}
@@ -189,37 +188,6 @@ class FileAnalyser
 				}
 				$linesToIgnore = $localIgnoresProcessorResult->getLinesToIgnore();
 				$unmatchedLineIgnores = $localIgnoresProcessorResult->getUnmatchedLineIgnores();
-
-				if ($this->reportUnmatchedIgnoredErrors) {
-					foreach ($unmatchedLineIgnores as $ignoredFile => $lines) {
-						if ($ignoredFile !== $file) {
-							continue;
-						}
-
-						foreach ($lines as $line => $identifiers) {
-							if ($identifiers === null) {
-								$fileErrors[] = (new Error(
-									sprintf('No error to ignore is reported on line %d.', $line),
-									$file,
-									$line,
-									false,
-									$file,
-								))->withIdentifier('ignore.unmatchedLine');
-								continue;
-							}
-
-							foreach ($identifiers as $identifier) {
-								$fileErrors[] = (new Error(
-									sprintf('No error with identifier %s is reported on line %d.', $identifier, $line),
-									$file,
-									$line,
-									false,
-									$file,
-								))->withIdentifier('ignore.unmatchedIdentifier');
-							}
-						}
-					}
-				}
 			} catch (\PhpParser\Error $e) {
 				$fileErrors[] = (new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, $e))->withIdentifier('phpstan.parse');
 			} catch (ParserErrorsException $e) {

@@ -222,28 +222,29 @@ class FixerWorkerCommand extends Command
 					]);
 				},
 			)->then(function (AnalyserResult $intermediateAnalyserResult) use ($analyserResultFinalizer, $resultCacheManager, $resultCache, $inceptionResult, $isOnlyFiles, $ignoredErrorHelperResult, $inceptionFiles, $out): void {
-				$result = $resultCacheManager->process(
+				$analyserResult = $resultCacheManager->process(
 					$intermediateAnalyserResult,
 					$resultCache,
 					$inceptionResult->getErrorOutput(),
 					false,
 					true,
 				)->getAnalyserResult();
-				$result = $analyserResultFinalizer->finalize($result, $isOnlyFiles);
+				$finalizerResult = $analyserResultFinalizer->finalize($analyserResult, $isOnlyFiles);
 
-				$hasInternalErrors = count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit();
+				$hasInternalErrors = count($finalizerResult->getAnalyserResult()->getInternalErrors()) > 0 || $finalizerResult->getAnalyserResult()->hasReachedInternalErrorsCountLimit();
 
-				$collectorErrors = [];
-				$intermediateErrors = $result->getErrors();
 				if ($hasInternalErrors) {
 					$out->write(['action' => 'analysisCrash', 'data' => [
-						'errors' => count($result->getInternalErrors()) > 0 ? $result->getInternalErrors() : [
+						'errors' => count($finalizerResult->getAnalyserResult()->getInternalErrors()) > 0 ? $finalizerResult->getAnalyserResult()->getInternalErrors() : [
 							'Internal error occurred',
 						],
 					]]);
 				}
 
-				[$collectorErrors, $ignoredCollectorErrors] = $this->filterErrors($collectorErrors, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, $hasInternalErrors);
+				[$collectorErrors, $ignoredCollectorErrors] = $this->filterErrors($finalizerResult->getCollectorErrors(), $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, $hasInternalErrors);
+				foreach ($finalizerResult->getLocallyIgnoredCollectorErrors() as $locallyIgnoredCollectorError) {
+					$ignoredCollectorErrors[] = [$locallyIgnoredCollectorError, null];
+				}
 				$out->write([
 					'action' => 'analysisStream',
 					'result' => [
@@ -254,20 +255,17 @@ class FixerWorkerCommand extends Command
 				]);
 
 				$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process(
-					$intermediateErrors,
+					$finalizerResult->getErrors(),
 					$isOnlyFiles,
 					$inceptionFiles,
 					$hasInternalErrors,
 				);
-				$intermediateErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
-				$ignoreNotFileErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
-
 				$ignoreFileErrors = [];
-				foreach ($intermediateErrors as $error) {
+				foreach ($ignoredErrorHelperProcessedResult->getNotIgnoredErrors() as $error) {
 					if ($error->getIdentifier() === null) {
 						continue;
 					}
-					if (!in_array($error->getIdentifier(), ['ignore.count', 'ignore.unmatched'], true)) {
+					if (!in_array($error->getIdentifier(), ['ignore.count', 'ignore.unmatched', 'ignore.unmatchedLine', 'ignore.unmatchedIdentifier'], true)) {
 						continue;
 					}
 					$ignoreFileErrors[] = $error;
@@ -277,7 +275,7 @@ class FixerWorkerCommand extends Command
 					'action' => 'analysisEnd',
 					'result' => [
 						'ignoreFileErrors' => $ignoreFileErrors,
-						'ignoreNotFileErrors' => $ignoreNotFileErrors,
+						'ignoreNotFileErrors' => $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages(),
 					],
 				]);
 			});

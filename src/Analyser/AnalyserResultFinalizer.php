@@ -24,15 +24,15 @@ class AnalyserResultFinalizer
 	{
 	}
 
-	public function finalize(AnalyserResult $analyserResult, bool $onlyFiles): AnalyserResult
+	public function finalize(AnalyserResult $analyserResult, bool $onlyFiles): FinalizerResult
 	{
 		if (count($analyserResult->getCollectedData()) === 0) {
-			return $this->addUnmatchedIgnoredErrors($analyserResult);
+			return $this->addUnmatchedIgnoredErrors($analyserResult, [], []);
 		}
 
 		$hasInternalErrors = count($analyserResult->getInternalErrors()) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
 		if ($hasInternalErrors) {
-			return $this->addUnmatchedIgnoredErrors($analyserResult);
+			return $this->addUnmatchedIgnoredErrors($analyserResult, [], []);
 		}
 
 		$nodeType = CollectedDataNode::class;
@@ -40,23 +40,23 @@ class AnalyserResultFinalizer
 
 		$file = 'N/A';
 		$scope = $this->scopeFactory->create(ScopeContext::create($file));
-		$collectorErrors = [];
+		$tempCollectorErrors = [];
 		foreach ($this->ruleRegistry->getRules($nodeType) as $rule) {
 			try {
 				$ruleErrors = $rule->processNode($node, $scope);
 			} catch (AnalysedCodeException $e) {
-				$collectorErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
+				$tempCollectorErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
 				continue;
 			} catch (IdentifierNotFound $e) {
-				$collectorErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
+				$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
 				continue;
 			} catch (UnableToCompileNode | CircularReference $e) {
-				$collectorErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getStartLine(), $e))->withIdentifier('phpstan.reflection');
+				$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getStartLine(), $e))->withIdentifier('phpstan.reflection');
 				continue;
 			}
 
 			foreach ($ruleErrors as $ruleError) {
-				$collectorErrors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
+				$tempCollectorErrors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
 			}
 		}
 
@@ -64,20 +64,24 @@ class AnalyserResultFinalizer
 		$locallyIgnoredErrors = $analyserResult->getLocallyIgnoredErrors();
 		$allLinesToIgnore = $analyserResult->getLinesToIgnore();
 		$allUnmatchedLineIgnores = $analyserResult->getUnmatchedLineIgnores();
-		foreach ($collectorErrors as $collectorError) {
-			$file = $collectorError->getFilePath();
+		$collectorErrors = [];
+		$locallyIgnoredCollectorErrors = [];
+		foreach ($tempCollectorErrors as $tempCollectorError) {
+			$file = $tempCollectorError->getFilePath();
 			$linesToIgnore = $allLinesToIgnore[$file] ?? [];
 			$unmatchedLineIgnores = $allUnmatchedLineIgnores[$file] ?? [];
 			$localIgnoresProcessorResult = $this->localIgnoresProcessor->process(
-				[$collectorError],
+				[$tempCollectorError],
 				$linesToIgnore,
 				$unmatchedLineIgnores,
 			);
 			foreach ($localIgnoresProcessorResult->getFileErrors() as $error) {
 				$errors[] = $error;
+				$collectorErrors[] = $error;
 			}
 			foreach ($localIgnoresProcessorResult->getLocallyIgnoredErrors() as $locallyIgnoredError) {
 				$locallyIgnoredErrors[] = $locallyIgnoredError;
+				$locallyIgnoredCollectorErrors[] = $locallyIgnoredError;
 			}
 			$allLinesToIgnore[$file] = $localIgnoresProcessorResult->getLinesToIgnore();
 			$allUnmatchedLineIgnores[$file] = $localIgnoresProcessorResult->getUnmatchedLineIgnores();
@@ -94,13 +98,21 @@ class AnalyserResultFinalizer
 			$analyserResult->getExportedNodes(),
 			$analyserResult->hasReachedInternalErrorsCountLimit(),
 			$analyserResult->getPeakMemoryUsageBytes(),
-		));
+		), $collectorErrors, $locallyIgnoredCollectorErrors);
 	}
 
-	private function addUnmatchedIgnoredErrors(AnalyserResult $analyserResult): AnalyserResult
+	/**
+	 * @param list<Error> $collectorErrors
+	 * @param list<Error> $locallyIgnoredCollectorErrors
+	 */
+	private function addUnmatchedIgnoredErrors(
+		AnalyserResult $analyserResult,
+		array $collectorErrors,
+		array $locallyIgnoredCollectorErrors,
+	): FinalizerResult
 	{
 		if (!$this->reportUnmatchedIgnoredErrors) {
-			return $analyserResult;
+			return new FinalizerResult($analyserResult, $collectorErrors, $locallyIgnoredCollectorErrors);
 		}
 
 		$errors = $analyserResult->getUnorderedErrors();
@@ -135,17 +147,21 @@ class AnalyserResultFinalizer
 			}
 		}
 
-		return new AnalyserResult(
-			$errors,
-			$analyserResult->getLocallyIgnoredErrors(),
-			$analyserResult->getLinesToIgnore(),
-			$analyserResult->getUnmatchedLineIgnores(),
-			$analyserResult->getInternalErrors(),
-			$analyserResult->getCollectedData(),
-			$analyserResult->getDependencies(),
-			$analyserResult->getExportedNodes(),
-			$analyserResult->hasReachedInternalErrorsCountLimit(),
-			$analyserResult->getPeakMemoryUsageBytes(),
+		return new FinalizerResult(
+			new AnalyserResult(
+				$errors,
+				$analyserResult->getLocallyIgnoredErrors(),
+				$analyserResult->getLinesToIgnore(),
+				$analyserResult->getUnmatchedLineIgnores(),
+				$analyserResult->getInternalErrors(),
+				$analyserResult->getCollectedData(),
+				$analyserResult->getDependencies(),
+				$analyserResult->getExportedNodes(),
+				$analyserResult->hasReachedInternalErrorsCountLimit(),
+				$analyserResult->getPeakMemoryUsageBytes(),
+			),
+			$collectorErrors,
+			$locallyIgnoredCollectorErrors,
 		);
 	}
 

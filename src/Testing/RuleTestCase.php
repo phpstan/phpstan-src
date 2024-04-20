@@ -187,7 +187,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			true,
 		);
 
-		return $finalizer->finalize($analyserResult, false)->getUnorderedErrors();
+		return $finalizer->finalize($analyserResult, false)->getAnalyserResult()->getUnorderedErrors();
 	}
 
 	protected function shouldPolluteScopeWithLoopInitialAssignments(): bool

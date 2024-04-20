@@ -658,7 +658,7 @@ class AnalyserTest extends PHPStanTestCase
 			new LocalIgnoresProcessor(),
 			$reportUnmatchedIgnoredErrors,
 		);
-		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles);
+		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles)->getAnalyserResult();
 
 		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
 		$errors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();

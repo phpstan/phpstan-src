@@ -7,6 +7,7 @@ use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
+use PHPStan\Analyser\LocalIgnoresProcessor;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Analyser\TypeSpecifier;
@@ -110,6 +111,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$this->getParser(),
 				self::getContainer()->getByType(DependencyResolver::class),
 				new RuleErrorTransformer(),
+				new LocalIgnoresProcessor(),
 				true,
 			);
 			$this->analyser = new Analyser(

@@ -715,6 +715,7 @@ class AnalyserTest extends PHPStanTestCase
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new RuleErrorTransformer(),
+			new LocalIgnoresProcessor(),
 			$reportUnmatchedIgnoredErrors,
 		);
 

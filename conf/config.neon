@@ -486,6 +486,9 @@ services:
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
+		class: PHPStan\Analyser\LocalIgnoresProcessor
+
+	-
 		class: PHPStan\Analyser\RuleErrorTransformer
 
 	-

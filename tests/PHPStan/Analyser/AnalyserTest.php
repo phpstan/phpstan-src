@@ -655,6 +655,7 @@ class AnalyserTest extends PHPStanTestCase
 				$this->createReflectionProvider(),
 				self::getContainer()->getService('typeSpecifier'),
 			),
+			new LocalIgnoresProcessor(),
 			$reportUnmatchedIgnoredErrors,
 		);
 		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles);

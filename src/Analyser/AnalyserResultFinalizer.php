@@ -18,6 +18,7 @@ class AnalyserResultFinalizer
 		private RuleRegistry $ruleRegistry,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private ScopeFactory $scopeFactory,
+		private LocalIgnoresProcessor $localIgnoresProcessor,
 		private bool $reportUnmatchedIgnoredErrors,
 	)
 	{
@@ -39,31 +40,54 @@ class AnalyserResultFinalizer
 
 		$file = 'N/A';
 		$scope = $this->scopeFactory->create(ScopeContext::create($file));
-		$errors = $analyserResult->getUnorderedErrors();
+		$collectorErrors = [];
 		foreach ($this->ruleRegistry->getRules($nodeType) as $rule) {
 			try {
 				$ruleErrors = $rule->processNode($node, $scope);
 			} catch (AnalysedCodeException $e) {
-				$errors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
+				$collectorErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
 				continue;
 			} catch (IdentifierNotFound $e) {
-				$errors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
+				$collectorErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
 				continue;
 			} catch (UnableToCompileNode | CircularReference $e) {
-				$errors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getStartLine(), $e))->withIdentifier('phpstan.reflection');
+				$collectorErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getStartLine(), $e))->withIdentifier('phpstan.reflection');
 				continue;
 			}
 
 			foreach ($ruleErrors as $ruleError) {
-				$errors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
+				$collectorErrors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
 			}
+		}
+
+		$errors = $analyserResult->getUnorderedErrors();
+		$locallyIgnoredErrors = $analyserResult->getLocallyIgnoredErrors();
+		$allLinesToIgnore = $analyserResult->getLinesToIgnore();
+		$allUnmatchedLineIgnores = $analyserResult->getUnmatchedLineIgnores();
+		foreach ($collectorErrors as $collectorError) {
+			$file = $collectorError->getFilePath();
+			$linesToIgnore = $allLinesToIgnore[$file] ?? [];
+			$unmatchedLineIgnores = $allUnmatchedLineIgnores[$file] ?? [];
+			$localIgnoresProcessorResult = $this->localIgnoresProcessor->process(
+				[$collectorError],
+				$linesToIgnore,
+				$unmatchedLineIgnores,
+			);
+			foreach ($localIgnoresProcessorResult->getFileErrors() as $error) {
+				$errors[] = $error;
+			}
+			foreach ($localIgnoresProcessorResult->getLocallyIgnoredErrors() as $locallyIgnoredError) {
+				$locallyIgnoredErrors[] = $locallyIgnoredError;
+			}
+			$allLinesToIgnore[$file] = $localIgnoresProcessorResult->getLinesToIgnore();
+			$allUnmatchedLineIgnores[$file] = $localIgnoresProcessorResult->getUnmatchedLineIgnores();
 		}
 
 		return $this->addUnmatchedIgnoredErrors(new AnalyserResult(
 			$errors,
-			$analyserResult->getLocallyIgnoredErrors(),
-			$analyserResult->getLinesToIgnore(),
-			$analyserResult->getUnmatchedLineIgnores(),
+			$locallyIgnoredErrors,
+			$allLinesToIgnore,
+			$allUnmatchedLineIgnores,
 			$analyserResult->getInternalErrors(),
 			$analyserResult->getCollectedData(),
 			$analyserResult->getDependencies(),

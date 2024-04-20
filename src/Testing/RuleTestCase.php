@@ -183,6 +183,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			]),
 			new RuleErrorTransformer(),
 			$this->createScopeFactory($this->createReflectionProvider(), $this->getTypeSpecifier()),
+			new LocalIgnoresProcessor(),
 			true,
 		);
 

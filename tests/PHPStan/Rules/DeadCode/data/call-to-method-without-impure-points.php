@@ -133,3 +133,18 @@ class CallsPrivateMethodWithoutImpurePoints
 	}
 
 }
+
+class TestIgnoring
+{
+
+	public function doFoo(): void
+	{
+		$this->doBar(); // @phpstan-ignore method.resultUnused
+	}
+
+	private function doBar(): int
+	{
+		return 1;
+	}
+
+}

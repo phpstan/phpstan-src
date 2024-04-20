@@ -1339,7 +1339,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$file = $this->getFileHelper()->normalizePath($file);
 
 		$analyser = self::getContainer()->getByType(Analyser::class);
-		$errors = $analyser->analyse([$file], null, null, true, $allAnalysedFiles)->getErrors();
+		$finalizer = self::getContainer()->getByType(AnalyserResultFinalizer::class);
+		$errors = $finalizer->finalize(
+			$analyser->analyse([$file], null, null, true, $allAnalysedFiles),
+			false,
+		)->getErrors();
 		foreach ($errors as $error) {
 			$this->assertSame($file, $error->getFilePath());
 		}

@@ -2,23 +2,13 @@
 
 namespace PHPStan\Command;
 
-use PHPStan\AnalysedCodeException;
 use PHPStan\Analyser\AnalyserResult;
-use PHPStan\Analyser\Error;
+use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
-use PHPStan\Analyser\RuleErrorTransformer;
-use PHPStan\Analyser\ScopeContext;
-use PHPStan\Analyser\ScopeFactory;
-use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
-use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
-use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use PHPStan\Collectors\CollectedData;
 use PHPStan\Internal\BytesHelper;
-use PHPStan\Node\CollectedDataNode;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\PhpDoc\StubValidator;
-use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
@@ -34,14 +24,12 @@ class AnalyseApplication
 
 	public function __construct(
 		private AnalyserRunner $analyserRunner,
+		private AnalyserResultFinalizer $analyserResultFinalizer,
 		private StubValidator $stubValidator,
 		private ResultCacheManagerFactory $resultCacheManagerFactory,
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private int $internalErrorsCountLimit,
 		private StubFilesProvider $stubFilesProvider,
-		private RuleRegistry $ruleRegistry,
-		private ScopeFactory $scopeFactory,
-		private RuleErrorTransformer $ruleErrorTransformer,
 	)
 	{
 	}
@@ -114,7 +102,7 @@ class AnalyseApplication
 			}
 
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
-			$analyserResult = $resultCacheResult->getAnalyserResult();
+			$analyserResult = $this->analyserResultFinalizer->finalize($resultCacheResult->getAnalyserResult(), $onlyFiles);
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = $analyserResult->getErrors();
 			$hasInternalErrors = count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
@@ -147,11 +135,6 @@ class AnalyseApplication
 				}
 			}
 
-			if (!$hasInternalErrors) {
-				foreach ($this->getCollectedDataErrors($analyserResult->getCollectedData(), $onlyFiles) as $error) {
-					$errors[] = $error;
-				}
-			}
 			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
 			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
@@ -176,39 +159,6 @@ class AnalyseApplication
 			$isResultCacheUsed,
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
 		);
-	}
-
-	/**
-	 * @param CollectedData[] $collectedData
-	 * @return Error[]
-	 */
-	private function getCollectedDataErrors(array $collectedData, bool $onlyFiles): array
-	{
-		$nodeType = CollectedDataNode::class;
-		$node = new CollectedDataNode($collectedData, $onlyFiles);
-		$file = 'N/A';
-		$scope = $this->scopeFactory->create(ScopeContext::create($file));
-		$errors = [];
-		foreach ($this->ruleRegistry->getRules($nodeType) as $rule) {
-			try {
-				$ruleErrors = $rule->processNode($node, $scope);
-			} catch (AnalysedCodeException $e) {
-				$errors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
-				continue;
-			} catch (IdentifierNotFound $e) {
-				$errors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
-				continue;
-			} catch (UnableToCompileNode | CircularReference $e) {
-				$errors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getStartLine(), $e))->withIdentifier('phpstan.reflection');
-				continue;
-			}
-
-			foreach ($ruleErrors as $ruleError) {
-				$errors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
-			}
-		}
-
-		return $errors;
 	}
 
 	/**

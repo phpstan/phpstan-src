@@ -16,10 +16,10 @@ class HelloWorld
 
 	 public static function test(): void
 	 {
-		 self::split(94561); // should error
-		 self::split(PREG_SPLIT_NO_EMPTY); // should work
-		 self::split(PREG_SPLIT_DELIM_CAPTURE); // should work
-		 self::split(PREG_SPLIT_NO_EMPTY_COPY); // should work
-		 self::split("sdf"); // should error
+		 $a = self::split(94561); // should error
+		 $a = self::split(PREG_SPLIT_NO_EMPTY); // should work
+		 $a = self::split(PREG_SPLIT_DELIM_CAPTURE); // should work
+		 $a = self::split(PREG_SPLIT_NO_EMPTY_COPY); // should work
+		 $a = self::split("sdf"); // should error
 	 }
 }

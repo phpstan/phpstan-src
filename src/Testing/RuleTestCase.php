@@ -4,18 +4,17 @@ namespace PHPStan\Testing;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
+use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\RuleErrorTransformer;
-use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
-use PHPStan\Node\CollectedDataNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -177,26 +176,15 @@ abstract class RuleTestCase extends PHPStanTestCase
 			$this->fail(implode("\n", $analyserResult->getInternalErrors()));
 		}
 
-		$actualErrors = $analyserResult->getUnorderedErrors();
-		$ruleErrorTransformer = new RuleErrorTransformer();
-		if (count($analyserResult->getCollectedData()) > 0) {
-			$ruleRegistry = new DirectRuleRegistry([
+		$finalizer = new AnalyserResultFinalizer(
+			new DirectRuleRegistry([
 				$this->getRule(),
-			]);
+			]),
+			new RuleErrorTransformer(),
+			$this->createScopeFactory($this->createReflectionProvider(), $this->getTypeSpecifier()),
+		);
 
-			$nodeType = CollectedDataNode::class;
-			$node = new CollectedDataNode($analyserResult->getCollectedData(), false);
-			$scopeFactory = $this->createScopeFactory($this->createReflectionProvider(), $this->getTypeSpecifier());
-			$scope = $scopeFactory->create(ScopeContext::create('irrelevant'));
-			foreach ($ruleRegistry->getRules($nodeType) as $rule) {
-				$ruleErrors = $rule->processNode($node, $scope);
-				foreach ($ruleErrors as $ruleError) {
-					$actualErrors[] = $ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
-				}
-			}
-		}
-
-		return $actualErrors;
+		return $finalizer->finalize($analyserResult, false)->getUnorderedErrors();
 	}
 
 	protected function shouldPolluteScopeWithLoopInitialAssignments(): bool

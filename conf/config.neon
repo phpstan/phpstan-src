@@ -477,6 +477,9 @@ services:
 			internalErrorsCountLimit: %internalErrorsCountLimit%
 
 	-
+		class: PHPStan\Analyser\AnalyserResultFinalizer
+
+	-
 		class: PHPStan\Analyser\FileAnalyser
 		arguments:
 			parser: @defaultAnalysisParser

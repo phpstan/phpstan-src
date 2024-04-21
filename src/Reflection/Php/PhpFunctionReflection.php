@@ -12,7 +12,6 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\Cache\Cache;
 use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
-use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
@@ -25,6 +24,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
+use function array_key_exists;
 use function array_map;
 use function filemtime;
 use function is_file;
@@ -38,8 +38,10 @@ class PhpFunctionReflection implements FunctionReflection
 	private ?array $variants = null;
 
 	/**
-	 * @param array<string, ParamTag> $phpDocParameterTags
-	 * @param Type[] $phpDocParameterOutTypes
+	 * @param array<string, Type> $phpDocParameterTypes
+	 * @param array<string, Type> $phpDocParameterOutTypes
+	 * @param array<string, bool> $phpDocParameterImmediatelyInvokedCallable
+	 * @param array<string, Type> $phpDocParameterClosureThisTypes
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -48,7 +50,7 @@ class PhpFunctionReflection implements FunctionReflection
 		private FunctionCallStatementFinder $functionCallStatementFinder,
 		private Cache $cache,
 		private TemplateTypeMap $templateTypeMap,
-		private array $phpDocParameterTags,
+		private array $phpDocParameterTypes,
 		private ?Type $phpDocReturnType,
 		private ?Type $phpDocThrowType,
 		private ?string $deprecatedDescription,
@@ -60,6 +62,8 @@ class PhpFunctionReflection implements FunctionReflection
 		private Assertions $asserts,
 		private ?string $phpDocComment,
 		private array $phpDocParameterOutTypes,
+		private array $phpDocParameterImmediatelyInvokedCallable,
+		private array $phpDocParameterClosureThisTypes,
 	)
 	{
 	}
@@ -115,25 +119,19 @@ class PhpFunctionReflection implements FunctionReflection
 	private function getParameters(): array
 	{
 		return array_map(function (ReflectionParameter $reflection): PhpParameterReflection {
-			$paramTag = $this->phpDocParameterTags[$reflection->getName()] ?? null;
-			if ($paramTag !== null) {
-				$phpDocType = $paramTag->getType();
-				$immediatelyInvokedCallable = $paramTag->isImmediatelyInvokedCallable();
-				$closureThisType = $paramTag->getClosureThisType();
+			if (array_key_exists($reflection->getName(), $this->phpDocParameterImmediatelyInvokedCallable)) {
+				$immediatelyInvokedCallable = TrinaryLogic::createFromBoolean($this->phpDocParameterImmediatelyInvokedCallable[$reflection->getName()]);
 			} else {
-				$phpDocType = null;
 				$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
-				$closureThisType = null;
 			}
-
 			return new PhpParameterReflection(
 				$this->initializerExprTypeResolver,
 				$reflection,
-				$phpDocType,
+				$this->phpDocParameterTypes[$reflection->getName()] ?? null,
 				null,
 				$this->phpDocParameterOutTypes[$reflection->getName()] ?? null,
 				$immediatelyInvokedCallable,
-				$closureThisType,
+				$this->phpDocParameterClosureThisTypes[$reflection->getName()] ?? null,
 			);
 		}, $this->reflection->getParameters());
 	}

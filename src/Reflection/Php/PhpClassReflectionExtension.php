@@ -508,6 +508,7 @@ class PhpClassReflectionExtension
 							$templateTypeMap = $stubDeclaringClass->getActiveTemplateTypeMap();
 							$callSiteVarianceMap = $stubDeclaringClass->getCallSiteVarianceMap();
 							$returnTag = $stubPhpDoc->getReturnTag();
+							$stubImmediatelyInvokedCallableParameters = array_map(static fn (bool $immediate) => TrinaryLogic::createFromBoolean($immediate), $stubPhpDoc->getParamsImmediatelyInvokedCallable());
 							if ($returnTag !== null) {
 								$stubPhpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
 									$returnTag->getType(),
@@ -517,6 +518,7 @@ class PhpClassReflectionExtension
 								);
 							}
 
+							$stubClosureThisParameters = array_map(static fn ($tag) => $tag->getType(), $stubPhpDoc->getParamClosureThisTags());
 							foreach ($stubPhpDoc->getParamTags() as $name => $paramTag) {
 								$stubPhpDocParameterTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
 									$paramTag->getType(),
@@ -525,12 +527,6 @@ class PhpClassReflectionExtension
 									TemplateTypeVariance::createContravariant(),
 								);
 								$stubPhpDocParameterVariadicity[$name] = $paramTag->isVariadic();
-								$stubImmediatelyInvokedCallableParameters[$name] = $paramTag->isImmediatelyInvokedCallable();
-
-								if ($paramTag->getClosureThisType() === null) {
-									continue;
-								}
-								$stubClosureThisParameters[$name] = $paramTag->getClosureThisType();
 							}
 
 							$throwsTag = $stubPhpDoc->getThrowsTag();
@@ -577,14 +573,10 @@ class PhpClassReflectionExtension
 							if ($returnTag !== null && count($methodSignatures) === 1) {
 								$phpDocReturnType = $returnTag->getType();
 							}
+							$immediatelyInvokedCallableParameters = array_map(static fn ($immediate) => TrinaryLogic::createFromBoolean($immediate), $phpDocBlock->getParamsImmediatelyInvokedCallable());
+							$closureThisParameters = array_map(static fn ($tag) => $tag->getType(), $phpDocBlock->getParamClosureThisTags());
 							foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
 								$phpDocParameterTypes[$name] = $paramTag->getType();
-								$immediatelyInvokedCallableParameters[$name] = $paramTag->isImmediatelyInvokedCallable();
-
-								if ($paramTag->getClosureThisType() === null) {
-									continue;
-								}
-								$closureThisParameters[$name] = $paramTag->getClosureThisType();
 							}
 							$asserts = Assertions::createFromResolvedPhpDocBlock($phpDocBlock);
 
@@ -735,14 +727,10 @@ class PhpClassReflectionExtension
 		}
 
 		$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
-		$immediatelyInvokedCallableParameters = [];
-		$closureThisParameters = [];
+		$immediatelyInvokedCallableParameters = array_map(static fn (bool $immediate) => TrinaryLogic::createFromBoolean($immediate), $resolvedPhpDoc->getParamsImmediatelyInvokedCallable());
+		$closureThisParameters = array_map(static fn ($tag) => $tag->getType(), $resolvedPhpDoc->getParamClosureThisTags());
 
 		foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
-			$immediatelyInvokedCallableParameters[$paramName] = $paramTag->isImmediatelyInvokedCallable();
-			if ($paramTag->getClosureThisType() !== null) {
-				$closureThisParameters[$paramName] = $paramTag->getClosureThisType();
-			}
 			if (array_key_exists($paramName, $phpDocParameterTypes)) {
 				continue;
 			}

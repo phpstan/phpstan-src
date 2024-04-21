@@ -9,6 +9,7 @@ use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MixinTag;
+use PHPStan\PhpDoc\Tag\ParamClosureThisTag;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
@@ -88,6 +89,12 @@ class ResolvedPhpDocBlock
 
 	/** @var array<string, ParamOutTag>|false */
 	private array|false $paramOutTags = false;
+
+	/** @var array<string, bool>|false */
+	private array|false $paramsImmediatelyInvokedCallable = false;
+
+	/** @var array<string, ParamClosureThisTag>|false */
+	private array|false $paramClosureThisTags = false;
 
 	private ReturnTag|false|null $returnTag = false;
 
@@ -186,6 +193,8 @@ class ResolvedPhpDocBlock
 		$self->usesTags = [];
 		$self->paramTags = [];
 		$self->paramOutTags = [];
+		$self->paramsImmediatelyInvokedCallable = [];
+		$self->paramClosureThisTags = [];
 		$self->returnTag = null;
 		$self->throwsTag = null;
 		$self->mixinTags = [];
@@ -248,6 +257,8 @@ class ResolvedPhpDocBlock
 		$result->usesTags = $this->getUsesTags();
 		$result->paramTags = self::mergeParamTags($this->getParamTags(), $parents, $parentPhpDocBlocks);
 		$result->paramOutTags = self::mergeParamOutTags($this->getParamOutTags(), $parents, $parentPhpDocBlocks);
+		$result->paramsImmediatelyInvokedCallable = self::mergeParamsImmediatelyInvokedCallable($this->getParamsImmediatelyInvokedCallable(), $parents, $parentPhpDocBlocks);
+		$result->paramClosureThisTags = self::mergeParamClosureThisTags($this->getParamClosureThisTags(), $parents, $parentPhpDocBlocks);
 		$result->returnTag = self::mergeReturnTags($this->getReturnTag(), $classReflection, $parents, $parentPhpDocBlocks);
 		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), $parents);
 		$result->mixinTags = $this->getMixinTags();
@@ -292,32 +303,43 @@ class ResolvedPhpDocBlock
 			return $traverse($type);
 		};
 
-		$paramTags = $this->getParamTags();
-
 		$newParamTags = [];
-		foreach ($paramTags as $key => $paramTag) {
+		foreach ($this->getParamTags() as $key => $paramTag) {
 			if (!array_key_exists($key, $parameterNameMapping)) {
 				continue;
 			}
 			$transformedType = TypeTraverser::map($paramTag->getType(), $mapParameterCb);
-			$paramTag = $paramTag->withType($transformedType);
-			if ($paramTag->getClosureThisType() !== null) {
-				$transformedClosureThisType = TypeTraverser::map($paramTag->getClosureThisType(), $mapParameterCb);
-				$paramTag = $paramTag->withClosureThisType($transformedClosureThisType);
-			}
-			$newParamTags[$parameterNameMapping[$key]] = $paramTag;
+			$newParamTags[$parameterNameMapping[$key]] = $paramTag->withType($transformedType);
 		}
 
-		$paramOutTags = $this->getParamOutTags();
-
 		$newParamOutTags = [];
-		foreach ($paramOutTags as $key => $paramOutTag) {
+		foreach ($this->getParamOutTags() as $key => $paramOutTag) {
 			if (!array_key_exists($key, $parameterNameMapping)) {
 				continue;
 			}
 
 			$transformedType = TypeTraverser::map($paramOutTag->getType(), $mapParameterCb);
 			$newParamOutTags[$parameterNameMapping[$key]] = $paramOutTag->withType($transformedType);
+		}
+
+		$newParamsImmediatelyInvokedCallable = [];
+		foreach ($this->getParamsImmediatelyInvokedCallable() as $key => $immediatelyInvokedCallable) {
+			if (!array_key_exists($key, $parameterNameMapping)) {
+				continue;
+			}
+
+			$newParamsImmediatelyInvokedCallable[$parameterNameMapping[$key]] = $immediatelyInvokedCallable;
+		}
+
+		$paramClosureThisTags = $this->getParamClosureThisTags();
+		$newParamClosureThisTags = [];
+		foreach ($paramClosureThisTags as $key => $paramClosureThisTag) {
+			if (!array_key_exists($key, $parameterNameMapping)) {
+				continue;
+			}
+
+			$transformedType = TypeTraverser::map($paramClosureThisTag->getType(), $mapParameterCb);
+			$newParamClosureThisTags[$parameterNameMapping[$key]] = $paramClosureThisTag->withType($transformedType);
 		}
 
 		$returnTag = $this->getReturnTag();
@@ -355,6 +377,8 @@ class ResolvedPhpDocBlock
 		$self->usesTags = $this->usesTags;
 		$self->paramTags = $newParamTags;
 		$self->paramOutTags = $newParamOutTags;
+		$self->paramsImmediatelyInvokedCallable = $newParamsImmediatelyInvokedCallable;
+		$self->paramClosureThisTags = $newParamClosureThisTags;
 		$self->returnTag = $returnTag;
 		$self->throwsTag = $this->throwsTag;
 		$self->mixinTags = $this->mixinTags;
@@ -525,6 +549,33 @@ class ResolvedPhpDocBlock
 			);
 		}
 		return $this->paramOutTags;
+	}
+
+	/**
+	 * @return array<string, bool>
+	 */
+	public function getParamsImmediatelyInvokedCallable(): array
+	{
+		if ($this->paramsImmediatelyInvokedCallable === false) {
+			$this->paramsImmediatelyInvokedCallable = $this->phpDocNodeResolver->resolveParamImmediatelyInvokedCallable($this->phpDocNode);
+		}
+
+		return $this->paramsImmediatelyInvokedCallable;
+	}
+
+	/**
+	 * @return array<string, ParamClosureThisTag>
+	 */
+	public function getParamClosureThisTags(): array
+	{
+		if ($this->paramClosureThisTags === false) {
+			$this->paramClosureThisTags = $this->phpDocNodeResolver->resolveParamClosureThisTags(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+
+		return $this->paramClosureThisTags;
 	}
 
 	public function getReturnTag(): ?ReturnTag
@@ -812,7 +863,6 @@ class ResolvedPhpDocBlock
 	}
 
 	/**
-	 * @param ResolvedPhpDocBlock $parent
 	 * @return array<string|int, VarTag>|null
 	 */
 	private static function mergeOneParentVarTags(self $parent, PhpDocBlock $phpDocBlock): ?array
@@ -841,7 +891,6 @@ class ResolvedPhpDocBlock
 
 	/**
 	 * @param array<string, ParamTag> $paramTags
-	 * @param ResolvedPhpDocBlock $parent
 	 * @return array<string, ParamTag>
 	 */
 	private static function mergeOneParentParamTags(array $paramTags, self $parent, PhpDocBlock $phpDocBlock): array
@@ -850,25 +899,11 @@ class ResolvedPhpDocBlock
 
 		foreach ($parentParamTags as $name => $parentParamTag) {
 			if (array_key_exists($name, $paramTags)) {
-				if ($paramTags[$name]->isImmediatelyInvokedCallable()->maybe()) {
-					$paramTags[$name] = $paramTags[$name]->withImmediatelyInvokedCallable($parentParamTag->isImmediatelyInvokedCallable());
-				}
-				if (
-					$paramTags[$name]->getClosureThisType() === null
-					&& $parentParamTag->getClosureThisType() !== null
-				) {
-					$paramTags[$name] = $paramTags[$name]->withClosureThisType($phpDocBlock->transformConditionalReturnTypeWithParameterNameMapping($parentParamTag->getClosureThisType()));
-				}
 				continue;
 			}
 
-			$parentParamTag = $parentParamTag->withType($phpDocBlock->transformConditionalReturnTypeWithParameterNameMapping($parentParamTag->getType()));
-			if ($parentParamTag->getClosureThisType() !== null) {
-				$parentParamTag = $parentParamTag->withClosureThisType($phpDocBlock->transformConditionalReturnTypeWithParameterNameMapping($parentParamTag->getClosureThisType()));
-			}
-
 			$paramTags[$name] = self::resolveTemplateTypeInTag(
-				$parentParamTag,
+				$parentParamTag->withType($phpDocBlock->transformConditionalReturnTypeWithParameterNameMapping($parentParamTag->getType())),
 				$phpDocBlock,
 				TemplateTypeVariance::createContravariant(),
 			);
@@ -1053,7 +1088,6 @@ class ResolvedPhpDocBlock
 
 	/**
 	 * @param array<string, ParamOutTag> $paramOutTags
-	 * @param ResolvedPhpDocBlock $parent
 	 * @return array<string, ParamOutTag>
 	 */
 	private static function mergeOneParentParamOutTags(array $paramOutTags, self $parent, PhpDocBlock $phpDocBlock): array
@@ -1065,10 +1099,88 @@ class ResolvedPhpDocBlock
 				continue;
 			}
 
-			$paramOutTags[$name] = self::resolveTemplateTypeInTag($parentParamTag, $phpDocBlock, TemplateTypeVariance::createCovariant());
+			$paramOutTags[$name] = self::resolveTemplateTypeInTag(
+				$parentParamTag->withType($phpDocBlock->transformConditionalReturnTypeWithParameterNameMapping($parentParamTag->getType())),
+				$phpDocBlock,
+				TemplateTypeVariance::createCovariant(),
+			);
 		}
 
 		return $paramOutTags;
+	}
+
+	/**
+	 * @param array<string, bool> $paramsImmediatelyInvokedCallable
+	 * @param array<int, self> $parents
+	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
+	 * @return array<string, bool>
+	 */
+	private static function mergeParamsImmediatelyInvokedCallable(array $paramsImmediatelyInvokedCallable, array $parents, array $parentPhpDocBlocks): array
+	{
+		foreach ($parents as $i => $parent) {
+			$paramsImmediatelyInvokedCallable = self::mergeOneParentParamImmediatelyInvokedCallable($paramsImmediatelyInvokedCallable, $parent, $parentPhpDocBlocks[$i]);
+		}
+
+		return $paramsImmediatelyInvokedCallable;
+	}
+
+	/**
+	 * @param array<string, bool> $paramsImmediatelyInvokedCallable
+	 * @return array<string, bool>
+	 */
+	private static function mergeOneParentParamImmediatelyInvokedCallable(array $paramsImmediatelyInvokedCallable, self $parent, PhpDocBlock $phpDocBlock): array
+	{
+		$parentImmediatelyInvokedCallable = $phpDocBlock->transformArrayKeysWithParameterNameMapping($parent->getParamsImmediatelyInvokedCallable());
+
+		foreach ($parentImmediatelyInvokedCallable as $name => $parentIsImmediatelyInvokedCallable) {
+			if (array_key_exists($name, $paramsImmediatelyInvokedCallable)) {
+				continue;
+			}
+
+			$paramsImmediatelyInvokedCallable[$name] = $parentIsImmediatelyInvokedCallable;
+		}
+
+		return $paramsImmediatelyInvokedCallable;
+	}
+
+	/**
+	 * @param array<string, ParamClosureThisTag> $paramsClosureThisTags
+	 * @param array<int, self> $parents
+	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
+	 * @return array<string, ParamClosureThisTag>
+	 */
+	private static function mergeParamClosureThisTags(array $paramsClosureThisTags, array $parents, array $parentPhpDocBlocks): array
+	{
+		foreach ($parents as $i => $parent) {
+			$paramsClosureThisTags = self::mergeOneParentParamClosureThisTag($paramsClosureThisTags, $parent, $parentPhpDocBlocks[$i]);
+		}
+
+		return $paramsClosureThisTags;
+	}
+
+	/**
+	 * @param array<string, ParamClosureThisTag> $paramsClosureThisTags
+	 * @return array<string, ParamClosureThisTag>
+	 */
+	private static function mergeOneParentParamClosureThisTag(array $paramsClosureThisTags, self $parent, PhpDocBlock $phpDocBlock): array
+	{
+		$parentClosureThisTags = $phpDocBlock->transformArrayKeysWithParameterNameMapping($parent->getParamClosureThisTags());
+
+		foreach ($parentClosureThisTags as $name => $parentParamClosureThisTag) {
+			if (array_key_exists($name, $paramsClosureThisTags)) {
+				continue;
+			}
+
+			$paramsClosureThisTags[$name] = self::resolveTemplateTypeInTag(
+				$parentParamClosureThisTag->withType(
+					$phpDocBlock->transformConditionalReturnTypeWithParameterNameMapping($parentParamClosureThisTag->getType()),
+				),
+				$phpDocBlock,
+				TemplateTypeVariance::createContravariant(),
+			);
+		}
+
+		return $paramsClosureThisTags;
 	}
 
 	/**

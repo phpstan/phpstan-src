@@ -99,11 +99,14 @@ class NativeFunctionReflectionProvider
 						$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
 						$closureThisType = null;
 						if ($phpDoc !== null) {
-							$phpDocParam = $phpDoc->getParamTags()[$parameterSignature->getName()] ?? null;
-							if ($phpDocParam !== null) {
-								$phpDocType = $phpDocParam->getType();
-								$immediatelyInvokedCallable = $phpDocParam->isImmediatelyInvokedCallable();
-								$closureThisType = $phpDocParam->getClosureThisType();
+							if (array_key_exists($parameterSignature->getName(), $phpDoc->getParamTags())) {
+								$phpDocType = $phpDoc->getParamTags()[$parameterSignature->getName()]->getType();
+							}
+							if (array_key_exists($parameterSignature->getName(), $phpDoc->getParamsImmediatelyInvokedCallable())) {
+								$immediatelyInvokedCallable = TrinaryLogic::createFromBoolean($phpDoc->getParamsImmediatelyInvokedCallable()[$parameterSignature->getName()]);
+							}
+							if (array_key_exists($parameterSignature->getName(), $phpDoc->getParamClosureThisTags())) {
+								$closureThisType = $phpDoc->getParamClosureThisTags()[$parameterSignature->getName()]->getType();
 							}
 						}
 

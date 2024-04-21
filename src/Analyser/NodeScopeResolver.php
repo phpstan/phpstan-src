@@ -5660,6 +5660,7 @@ class NodeScopeResolver
 		$varTags = [];
 		if ($resolvedPhpDoc !== null) {
 			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
+			$phpDocImmediatelyInvokedCallableParameters = $resolvedPhpDoc->getParamsImmediatelyInvokedCallable();
 			foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
 				if (array_key_exists($paramName, $phpDocParameterTypes)) {
 					continue;
@@ -5668,20 +5669,19 @@ class NodeScopeResolver
 				if ($scope->isInClass()) {
 					$paramType = $this->transformStaticType($scope->getClassReflection(), $paramType);
 				}
-				$closureThisType = $paramTag->getClosureThisType();
-				if ($closureThisType !== null) {
-					if ($scope->isInClass()) {
-						$closureThisType = $this->transformStaticType($scope->getClassReflection(), $closureThisType);
-					}
-					$phpDocClosureThisTypeParameters[$paramName] = $closureThisType;
-				}
 				$phpDocParameterTypes[$paramName] = $paramType;
-				$immediatelyInvokedCallable = $paramTag->isImmediatelyInvokedCallable();
-				if ($immediatelyInvokedCallable->maybe()) {
+			}
+			foreach ($resolvedPhpDoc->getParamClosureThisTags() as $paramName => $paramClosureThisTag) {
+				if (array_key_exists($paramName, $phpDocClosureThisTypeParameters)) {
 					continue;
 				}
-				$phpDocImmediatelyInvokedCallableParameters[$paramName] = $immediatelyInvokedCallable->yes();
+				$paramClosureThisType = $paramClosureThisTag->getType();
+				if ($scope->isInClass()) {
+					$paramClosureThisType = $this->transformStaticType($scope->getClassReflection(), $paramClosureThisType);
+				}
+				$phpDocClosureThisTypeParameters[$paramName] = $paramClosureThisType;
 			}
+
 			foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
 				$phpDocParameterOutTypes[$paramName] = $paramOutTag->getType();
 			}

@@ -27,6 +27,7 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\PhpDoc\Tag\ParamClosureThisTag;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassNameHelper;
@@ -270,7 +271,7 @@ class BetterReflectionProvider implements ReflectionProvider
 	{
 		$reflectionFunction = new ReflectionFunction($this->reflector->reflectFunction($functionName));
 		$templateTypeMap = TemplateTypeMap::createEmpty();
-		$phpDocParameterTags = [];
+		$phpDocParameterTypes = [];
 		$phpDocReturnTag = null;
 		$phpDocThrowsTag = null;
 		$deprecatedTag = null;
@@ -281,6 +282,8 @@ class BetterReflectionProvider implements ReflectionProvider
 		$asserts = Assertions::createEmpty();
 		$phpDocComment = null;
 		$phpDocParameterOutTags = [];
+		$phpDocParameterImmediatelyInvokedCallable = [];
+		$phpDocParameterClosureThisTypeTags = [];
 
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
@@ -290,7 +293,7 @@ class BetterReflectionProvider implements ReflectionProvider
 
 		if ($resolvedPhpDoc !== null) {
 			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
-			$phpDocParameterTags = $resolvedPhpDoc->getParamTags();
+			$phpDocParameterTypes = array_map(static fn ($tag) => $tag->getType(), $resolvedPhpDoc->getParamTags());
 			$phpDocReturnTag = $resolvedPhpDoc->getReturnTag();
 			$phpDocThrowsTag = $resolvedPhpDoc->getThrowsTag();
 			$deprecatedTag = $resolvedPhpDoc->getDeprecatedTag();
@@ -303,12 +306,14 @@ class BetterReflectionProvider implements ReflectionProvider
 				$phpDocComment = $resolvedPhpDoc->getPhpDocString();
 			}
 			$phpDocParameterOutTags = $resolvedPhpDoc->getParamOutTags();
+			$phpDocParameterImmediatelyInvokedCallable = $resolvedPhpDoc->getParamsImmediatelyInvokedCallable();
+			$phpDocParameterClosureThisTypeTags = $resolvedPhpDoc->getParamClosureThisTags();
 		}
 
 		return $this->functionReflectionFactory->create(
 			$reflectionFunction,
 			$templateTypeMap,
-			$phpDocParameterTags,
+			$phpDocParameterTypes,
 			$phpDocReturnTag !== null ? $phpDocReturnTag->getType() : null,
 			$phpDocThrowsTag !== null ? $phpDocThrowsTag->getType() : null,
 			$deprecatedTag !== null ? $deprecatedTag->getMessage() : null,
@@ -320,6 +325,8 @@ class BetterReflectionProvider implements ReflectionProvider
 			$asserts,
 			$phpDocComment,
 			array_map(static fn (ParamOutTag $paramOutTag): Type => $paramOutTag->getType(), $phpDocParameterOutTags),
+			$phpDocParameterImmediatelyInvokedCallable,
+			array_map(static fn (ParamClosureThisTag $tag): Type => $tag->getType(), $phpDocParameterClosureThisTypeTags),
 		);
 	}
 

@@ -11,6 +11,7 @@ use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MethodTagParameter;
 use PHPStan\PhpDoc\Tag\MixinTag;
+use PHPStan\PhpDoc\Tag\ParamClosureThisTag;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
@@ -30,14 +31,11 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
-use PHPStan\TrinaryLogic;
-use PHPStan\Type\CallableType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
@@ -345,31 +343,6 @@ class PhpDocNodeResolver
 	public function resolveParamTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
 		$resolved = [];
-		$immediatelyInvokedCallableParameters = [];
-		foreach (['@param-immediately-invoked-callable', '@phpstan-param-immediately-invoked-callable'] as $tagName) {
-			foreach ($phpDocNode->getParamImmediatelyInvokedCallableTagValues($tagName) as $tagValue) {
-				$parameterName = substr($tagValue->parameterName, 1);
-				$immediatelyInvokedCallableParameters[$parameterName] = TrinaryLogic::createYes();
-			}
-		}
-		foreach (['@param-later-invoked-callable', '@phpstan-param-later-invoked-callable'] as $tagName) {
-			foreach ($phpDocNode->getParamLaterInvokedCallableTagValues($tagName) as $tagValue) {
-				$parameterName = substr($tagValue->parameterName, 1);
-				$immediatelyInvokedCallableParameters[$parameterName] = TrinaryLogic::createNo();
-			}
-		}
-
-		$unusedImmediatelyInvokedCallableParameters = $immediatelyInvokedCallableParameters;
-
-		$closureThisTypes = [];
-		foreach (['@param-closure-this', '@phpstan-param-closure-this'] as $tagName) {
-			foreach ($phpDocNode->getParamClosureThisTagValues($tagName) as $tagValue) {
-				$parameterName = substr($tagValue->parameterName, 1);
-				$closureThisTypes[$parameterName] = TypeCombinator::intersect(new ObjectWithoutClassType(), $this->typeNodeResolver->resolve($tagValue->type, $nameScope));
-			}
-		}
-
-		$unusedClosureThisTypes = $closureThisTypes;
 
 		foreach (['@param', '@phan-param', '@psalm-param', '@phpstan-param'] as $tagName) {
 			foreach ($phpDocNode->getParamTagValues($tagName) as $tagValue) {
@@ -379,51 +352,11 @@ class PhpDocNodeResolver
 					continue;
 				}
 
-				if (array_key_exists($parameterName, $immediatelyInvokedCallableParameters)) {
-					$immediatelyInvokedCallable = $immediatelyInvokedCallableParameters[$parameterName];
-					unset($unusedImmediatelyInvokedCallableParameters[$parameterName]);
-				} else {
-					$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
-				}
-
-				if (array_key_exists($parameterName, $closureThisTypes)) {
-					$closureThisType = $closureThisTypes[$parameterName];
-					unset($unusedClosureThisTypes[$parameterName]);
-				} else {
-					$closureThisType = null;
-				}
-
 				$resolved[$parameterName] = new ParamTag(
 					$parameterType,
 					$tagValue->isVariadic,
-					$immediatelyInvokedCallable,
-					$closureThisType,
 				);
 			}
-		}
-
-		foreach ($unusedImmediatelyInvokedCallableParameters as $parameterName => $immediately) {
-			if (array_key_exists($parameterName, $closureThisTypes)) {
-				$closureThisType = $closureThisTypes[$parameterName];
-				unset($unusedClosureThisTypes[$parameterName]);
-			} else {
-				$closureThisType = null;
-			}
-			$resolved[$parameterName] = new ParamTag(
-				new CallableType(),
-				false,
-				$immediately,
-				$closureThisType,
-			);
-		}
-
-		foreach ($unusedClosureThisTypes as $parameterName => $closureThisType) {
-			$resolved[$parameterName] = new ParamTag(
-				new CallableType(),
-				false,
-				TrinaryLogic::createMaybe(),
-				$closureThisType,
-			);
 		}
 
 		return $resolved;
@@ -455,6 +388,44 @@ class PhpDocNodeResolver
 		}
 
 		return $resolved;
+	}
+
+	/**
+	 * @return array<string, bool>
+	 */
+	public function resolveParamImmediatelyInvokedCallable(PhpDocNode $phpDocNode): array
+	{
+		$parameters = [];
+		foreach (['@param-immediately-invoked-callable', '@phpstan-param-immediately-invoked-callable'] as $tagName) {
+			foreach ($phpDocNode->getParamImmediatelyInvokedCallableTagValues($tagName) as $tagValue) {
+				$parameterName = substr($tagValue->parameterName, 1);
+				$parameters[$parameterName] = true;
+			}
+		}
+		foreach (['@param-later-invoked-callable', '@phpstan-param-later-invoked-callable'] as $tagName) {
+			foreach ($phpDocNode->getParamLaterInvokedCallableTagValues($tagName) as $tagValue) {
+				$parameterName = substr($tagValue->parameterName, 1);
+				$parameters[$parameterName] = false;
+			}
+		}
+
+		return $parameters;
+	}
+
+	/**
+	 * @return array<string, ParamClosureThisTag>
+	 */
+	public function resolveParamClosureThisTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$closureThisTypes = [];
+		foreach (['@param-closure-this', '@phpstan-param-closure-this'] as $tagName) {
+			foreach ($phpDocNode->getParamClosureThisTagValues($tagName) as $tagValue) {
+				$parameterName = substr($tagValue->parameterName, 1);
+				$closureThisTypes[$parameterName] = new ParamClosureThisTag($this->typeNodeResolver->resolve($tagValue->type, $nameScope));
+			}
+		}
+
+		return $closureThisTypes;
 	}
 
 	public function resolveReturnTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?ReturnTag

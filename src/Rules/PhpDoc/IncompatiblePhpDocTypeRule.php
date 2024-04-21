@@ -73,17 +73,6 @@ class IncompatiblePhpDocTypeRule implements Rule
 				$phpDocParamType = $phpDocParamTag->getType();
 				$tagName = $phpDocParamTag instanceof ParamTag ? '@param' : '@param-out';
 
-				if (
-					$phpDocParamTag instanceof ParamTag
-					&& $phpDocParamTag->getClosureThisType() !== null
-					&& $this->unresolvableTypeHelper->containsUnresolvableType($phpDocParamTag->getClosureThisType())
-				) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'PHPDoc tag @param-closure-this for parameter $%s contains unresolvable type.',
-						$parameterName,
-					))->identifier('parameterClosureThis.unresolvableType')->build();
-				}
-
 				if (!isset($nativeParameterTypes[$parameterName])) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag %s references unknown parameter: $%s',

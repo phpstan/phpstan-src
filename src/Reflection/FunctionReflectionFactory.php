@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
-use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
@@ -12,13 +11,15 @@ interface FunctionReflectionFactory
 {
 
 	/**
-	 * @param array<string, ParamTag> $phpDocParameterTags
-	 * @param Type[] $phpDocParameterOutTypes
+	 * @param array<string, Type> $phpDocParameterTypes
+	 * @param array<string, Type> $phpDocParameterOutTypes
+	 * @param array<string, bool> $phpDocParameterImmediatelyInvokedCallable
+	 * @param array<string, Type> $phpDocParameterClosureThisTypes
 	 */
 	public function create(
 		ReflectionFunction $reflection,
 		TemplateTypeMap $templateTypeMap,
-		array $phpDocParameterTags,
+		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		?Type $phpDocThrowType,
 		?string $deprecatedDescription,
@@ -30,6 +31,8 @@ interface FunctionReflectionFactory
 		Assertions $asserts,
 		?string $phpDocComment,
 		array $phpDocParameterOutTypes,
+		array $phpDocParameterImmediatelyInvokedCallable,
+		array $phpDocParameterClosureThisTypes,
 	): PhpFunctionReflection;
 
 }

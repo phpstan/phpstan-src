@@ -192,28 +192,12 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				319,
 			],
 			[
-				'PHPDoc tag @param references unknown parameter: $a',
-				336,
-			],
-			[
-				'PHPDoc tag @param references unknown parameter: $b',
-				336,
-			],
-			[
-				'PHPDoc tag @param for parameter $a with type callable is incompatible with native type InvalidPhpDoc\NotCallable.',
-				349,
-			],
-			[
-				'PHPDoc tag @param-closure-this for parameter $cb contains unresolvable type.',
-				357,
-			],
-			[
 				'PHPDoc tag @param for parameter $cb contains unresolvable type.',
-				366,
+				328,
 			],
 			[
 				'PHPDoc tag @param for parameter $cl contains unresolvable type.',
-				366,
+				328,
 			],
 		]);
 	}

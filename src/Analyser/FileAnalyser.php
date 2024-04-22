@@ -189,7 +189,7 @@ class FileAnalyser
 				$linesToIgnore = $localIgnoresProcessorResult->getLinesToIgnore();
 				$unmatchedLineIgnores = $localIgnoresProcessorResult->getUnmatchedLineIgnores();
 			} catch (\PhpParser\Error $e) {
-				$fileErrors[] = (new Error($e->getMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, $e))->withIdentifier('phpstan.parse');
+				$fileErrors[] = (new Error($e->getRawMessage(), $file, $e->getStartLine() !== -1 ? $e->getStartLine() : null, $e))->withIdentifier('phpstan.parse');
 			} catch (ParserErrorsException $e) {
 				foreach ($e->getErrors() as $error) {
 					$fileErrors[] = (new Error($error->getMessage(), $e->getParsedFile() ?? $file, $error->getLine() !== -1 ? $error->getStartLine() : null, $e))->withIdentifier('phpstan.parse');

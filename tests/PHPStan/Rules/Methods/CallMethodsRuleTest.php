@@ -968,6 +968,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Call to an undefined method CallClosureBind\Foo::nonexistentMethod().',
 				44,
 			],
+			[
+				'Parameter #2 $newScope of method Closure::bindTo() expects \'static\'|class-string|object|null, \'CallClosureBind\\\Bar3\' given.',
+				74,
+			],
 		]);
 	}
 

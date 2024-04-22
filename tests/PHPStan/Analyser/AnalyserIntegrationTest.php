@@ -1285,6 +1285,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug10358(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10358.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Cannot use Ns\Foo2 as Foo because the name is already in use', $errors[0]->getMessage());
+		$this->assertSame(6, $errors[0]->getLine());
+	}
+
 	public function testBug10509(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10509.php');

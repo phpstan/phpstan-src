@@ -67,12 +67,9 @@ abstract class RuleTestCase extends PHPStanTestCase
 		return self::getContainer()->getService('typeSpecifier');
 	}
 
-	private function getAnalyser(): Analyser
+	private function getAnalyser(DirectRuleRegistry $ruleRegistry): Analyser
 	{
 		if ($this->analyser === null) {
-			$ruleRegistry = new DirectRuleRegistry([
-				$this->getRule(),
-			]);
 			$collectorRegistry = new CollectorRegistry($this->getCollectors());
 
 			$reflectionProvider = $this->createReflectionProvider();
@@ -166,8 +163,11 @@ abstract class RuleTestCase extends PHPStanTestCase
 	 */
 	public function gatherAnalyserErrors(array $files): array
 	{
+		$ruleRegistry = new DirectRuleRegistry([
+			$this->getRule(),
+		]);
 		$files = array_map([$this->getFileHelper(), 'normalizePath'], $files);
-		$analyserResult = $this->getAnalyser()->analyse(
+		$analyserResult = $this->getAnalyser($ruleRegistry)->analyse(
 			$files,
 			null,
 			null,
@@ -178,9 +178,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 		}
 
 		$finalizer = new AnalyserResultFinalizer(
-			new DirectRuleRegistry([
-				$this->getRule(),
-			]),
+			$ruleRegistry,
 			new RuleErrorTransformer(),
 			$this->createScopeFactory($this->createReflectionProvider(), $this->getTypeSpecifier()),
 			new LocalIgnoresProcessor(),

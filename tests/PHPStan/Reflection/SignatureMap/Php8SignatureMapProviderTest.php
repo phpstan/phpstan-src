@@ -14,6 +14,7 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -189,7 +190,8 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						'optional' => true,
 						'type' => new UnionType([
 							new ObjectWithoutClassType(),
-							new StringType(),
+							new ClassStringType(),
+							new ConstantStringType('static'),
 							new NullType(),
 						]),
 						'nativeType' => new UnionType([

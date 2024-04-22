@@ -817,4 +817,15 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClosureBind(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/closure-bind.php'], [
+			[
+				'Parameter #3 $newScope of static method Closure::bind() expects \'static\'|class-string|object|null, \'CallClosureBind\\\Bar3\' given.',
+				68,
+			],
+		]);
+	}
+
 }

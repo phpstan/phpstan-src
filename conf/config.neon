@@ -128,6 +128,8 @@ parameters:
 	reportStaticMethodSignatures: false
 	reportWrongPhpDocTypeInVarTag: false
 	reportAnyTypeWideningInVarTag: false
+	reportPossiblyNonexistentGeneralArrayOffset: false
+	reportPossiblyNonexistentConstantArrayOffset: false
 	checkMissingOverrideMethodAttribute: false
 	mixinExcludeClasses: []
 	scanFiles: []
@@ -863,6 +865,8 @@ services:
 		arguments:
 			reportMaybes: %reportMaybes%
 			bleedingEdge: %featureToggles.bleedingEdge%
+			reportPossiblyNonexistentGeneralArrayOffset: %reportPossiblyNonexistentGeneralArrayOffset%
+			reportPossiblyNonexistentConstantArrayOffset: %reportPossiblyNonexistentConstantArrayOffset%
 
 	-
 		class: PHPStan\Rules\ClassNameCheck

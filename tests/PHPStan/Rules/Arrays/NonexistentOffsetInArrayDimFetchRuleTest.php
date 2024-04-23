@@ -19,13 +19,17 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	private bool $bleedingEdge = false;
 
+	private bool $reportPossiblyNonexistentGeneralArrayOffset = false;
+
+	private bool $reportPossiblyNonexistentConstantArrayOffset = false;
+
 	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false);
 
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,
-			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->bleedingEdge),
+			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->bleedingEdge, $this->reportPossiblyNonexistentGeneralArrayOffset, $this->reportPossiblyNonexistentConstantArrayOffset),
 			true,
 		);
 	}
@@ -751,6 +755,45 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				21,
 			],
 		]);
+	}
+
+	public function dataReportPossiblyNonexistentArrayOffset(): iterable
+	{
+		yield [false, false, []];
+		yield [false, true, [
+			[
+				"Offset string might not exist on array{foo: 1}.",
+				20,
+			],
+		]];
+		yield [true, false, [
+			[
+				"Offset 'foo' might not exist on array.",
+				9,
+			],
+		]];
+		yield [true, true, [
+			[
+				"Offset 'foo' might not exist on array.",
+				9,
+			],
+			[
+				'Offset string might not exist on array{foo: 1}.',
+				20,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataReportPossiblyNonexistentArrayOffset
+	 * @param list<array{0: string, 1: int, 2?: string|null}> $errors
+	 */
+	public function testReportPossiblyNonexistentArrayOffset(bool $reportPossiblyNonexistentGeneralArrayOffset, bool $reportPossiblyNonexistentConstantArrayOffset, array $errors): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = $reportPossiblyNonexistentGeneralArrayOffset;
+		$this->reportPossiblyNonexistentConstantArrayOffset = $reportPossiblyNonexistentConstantArrayOffset;
+
+		$this->analyse([__DIR__ . '/data/report-possibly-nonexistent-array-offset.php'], $errors);
 	}
 
 }

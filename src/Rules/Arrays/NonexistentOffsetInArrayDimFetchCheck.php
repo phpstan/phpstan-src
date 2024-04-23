@@ -23,6 +23,8 @@ class NonexistentOffsetInArrayDimFetchCheck
 		private RuleLevelHelper $ruleLevelHelper,
 		private bool $reportMaybes,
 		private bool $bleedingEdge,
+		private bool $reportPossiblyNonexistentGeneralArrayOffset,
+		private bool $reportPossiblyNonexistentConstantArrayOffset,
 	)
 	{
 	}
@@ -69,6 +71,21 @@ class NonexistentOffsetInArrayDimFetchCheck
 				$flattenedTypes = TypeUtils::flattenTypes($type);
 			}
 			foreach ($flattenedTypes as $innerType) {
+				if (
+					$this->reportPossiblyNonexistentGeneralArrayOffset
+					&& $innerType->isArray()->yes()
+					&& !$innerType->isConstantArray()->yes()
+				) {
+					$report = true;
+					break;
+				}
+				if (
+					$this->reportPossiblyNonexistentConstantArrayOffset
+					&& $innerType->isConstantArray()->yes()
+				) {
+					$report = true;
+					break;
+				}
 				if ($dimType instanceof UnionType) {
 					if ($innerType->hasOffsetValueType($dimType)->no()) {
 						$report = true;
@@ -85,7 +102,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 			}
 
 			if ($report) {
-				if ($this->bleedingEdge) {
+				if ($this->bleedingEdge || $this->reportPossiblyNonexistentGeneralArrayOffset || $this->reportPossiblyNonexistentConstantArrayOffset) {
 					return [
 						RuleErrorBuilder::message(sprintf('Offset %s might not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))
 							->identifier('offsetAccess.notFound')

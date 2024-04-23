@@ -75,6 +75,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 					$this->reportPossiblyNonexistentGeneralArrayOffset
 					&& $innerType->isArray()->yes()
 					&& !$innerType->isConstantArray()->yes()
+					&& !$innerType->hasOffsetValueType($dimType)->yes()
 				) {
 					$report = true;
 					break;
@@ -82,6 +83,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 				if (
 					$this->reportPossiblyNonexistentConstantArrayOffset
 					&& $innerType->isConstantArray()->yes()
+					&& !$innerType->hasOffsetValueType($dimType)->yes()
 				) {
 					$report = true;
 					break;

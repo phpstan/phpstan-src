@@ -19,4 +19,24 @@ class Feature7553
 		$a = ['foo' => 1];
 		echo $a[$s];
 	}
+
+	/**
+	 * @param array{bool|float|int|string|null} $a
+	 * @return void
+	 */
+	public function testConstantArray(array $a): void
+	{
+		echo $a[0];
+	}
+
+	/**
+	 * @param array<int, bool> $a
+	 * @return void
+	 */
+	public function testConstantArray2(array $a): void
+	{
+		if (isset($a[0])) {
+			echo $a[0];
+		}
+	}
 }

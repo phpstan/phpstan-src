@@ -940,19 +940,15 @@ class NodeScopeResolver
 			$exprType = $scope->getType($stmt->expr);
 			$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
 			if ($exprType->isIterable()->no() || $isIterableAtLeastOnce->maybe()) {
-				if ($this->polluteScopeWithAlwaysIterableForeach) {
-					$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(
-						new BinaryOp\Identical(
-							$stmt->expr,
-							new Array_([]),
-						),
-						new FuncCall(new Name\FullyQualified('is_object'), [
-							new Arg($stmt->expr),
-						]),
-					)));
-				} else {
-					$finalScope = $finalScope->mergeWith($scope);
-				}
+				$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(
+					new BinaryOp\Identical(
+						$stmt->expr,
+						new Array_([]),
+					),
+					new FuncCall(new Name\FullyQualified('is_object'), [
+						new Arg($stmt->expr),
+					]),
+				)));
 			} elseif ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
 				$finalScope = $scope;
 			} elseif (!$this->polluteScopeWithAlwaysIterableForeach) {

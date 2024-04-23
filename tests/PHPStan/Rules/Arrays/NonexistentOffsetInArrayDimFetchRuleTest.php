@@ -762,7 +762,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		yield [false, false, []];
 		yield [false, true, [
 			[
-				"Offset string might not exist on array{foo: 1}.",
+				'Offset string might not exist on array{foo: 1}.',
 				20,
 			],
 		]];

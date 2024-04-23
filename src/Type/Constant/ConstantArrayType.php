@@ -610,6 +610,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		$offsetType = $offsetType->toArrayKey();
+		if ($offsetType instanceof UnionType) {
+			$results = [];
+			foreach ($offsetType->getTypes() as $innerType) {
+				$results[] = $this->hasOffsetValueType($innerType);
+			}
+
+			return TrinaryLogic::extremeIdentity(...$results);
+		}
 
 		$result = TrinaryLogic::createNo();
 		foreach ($this->keyTypes as $i => $keyType) {

@@ -951,7 +951,10 @@ class NodeScopeResolver
 						]),
 					)));
 				} else {
-					$finalScope = $finalScope->mergeWith($scope);
+					$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BinaryOp\Identical(
+						$stmt->expr,
+						new Array_([]),
+					)));
 				}
 			} elseif ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
 				$finalScope = $scope;

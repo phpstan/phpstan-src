@@ -8,4 +8,15 @@ class Feature7553
 	{
 		return $array['foo'];
 	}
+
+	public function arrayAccessWithPossiblyUndefinedArrayOffset(\ArrayAccess $a): void
+	{
+		echo $a['test'];
+	}
+
+	public function constantArrayWithPossiblyUndefinedArrayOffset(string $s): void
+	{
+		$a = ['foo' => 1];
+		echo $a[$s];
+	}
 }

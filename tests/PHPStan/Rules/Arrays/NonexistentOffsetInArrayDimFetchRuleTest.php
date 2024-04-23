@@ -19,7 +19,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	private bool $bleedingEdge = false;
 
-	private bool $reportPossiblyNonexistentArrayOffset = false;
+	private bool $reportPossiblyNonexistentGeneralArrayOffset = false;
+
+	private bool $reportPossiblyNonexistentConstantArrayOffset = false;
 
 	protected function getRule(): Rule
 	{
@@ -27,7 +29,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,
-			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->bleedingEdge, $this->reportPossiblyNonexistentArrayOffset),
+			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->bleedingEdge, $this->reportPossiblyNonexistentGeneralArrayOffset, $this->reportPossiblyNonexistentConstantArrayOffset),
 			true,
 		);
 	}
@@ -755,16 +757,43 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testReportPossiblyNonexistentArrayOffset(): void
+	public function dataReportPossiblyNonexistentArrayOffset(): iterable
 	{
-		$this->reportPossiblyNonexistentArrayOffset = true;
-
-		$this->analyse([__DIR__ . '/data/report-possibly-nonexistent-array-offset.php'], [
+		yield [false, false, []];
+		yield [false, true, [
 			[
-				"Offset 'foo' does not exist on array.",
+				"Offset string might not exist on array{foo: 1}.",
+				20,
+			],
+		]];
+		yield [true, false, [
+			[
+				"Offset 'foo' might not exist on array.",
 				9,
 			],
-		]);
+		]];
+		yield [true, true, [
+			[
+				"Offset 'foo' might not exist on array.",
+				9,
+			],
+			[
+				'Offset string might not exist on array{foo: 1}.',
+				20,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataReportPossiblyNonexistentArrayOffset
+	 * @param list<array{0: string, 1: int, 2?: string|null}> $errors
+	 */
+	public function testReportPossiblyNonexistentArrayOffset(bool $reportPossiblyNonexistentGeneralArrayOffset, bool $reportPossiblyNonexistentConstantArrayOffset, array $errors): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = $reportPossiblyNonexistentGeneralArrayOffset;
+		$this->reportPossiblyNonexistentConstantArrayOffset = $reportPossiblyNonexistentConstantArrayOffset;
+
+		$this->analyse([__DIR__ . '/data/report-possibly-nonexistent-array-offset.php'], $errors);
 	}
 
 }

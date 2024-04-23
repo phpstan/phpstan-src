@@ -19,13 +19,15 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	private bool $bleedingEdge = false;
 
+	private bool $reportPossiblyNonexistentArrayOffset = false;
+
 	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false);
 
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,
-			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->bleedingEdge),
+			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->bleedingEdge, $this->reportPossiblyNonexistentArrayOffset),
 			true,
 		);
 	}
@@ -749,6 +751,18 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset 5 on mixed.',
 				21,
+			],
+		]);
+	}
+
+	public function testReportPossiblyNonexistentArrayOffset(): void
+	{
+		$this->reportPossiblyNonexistentArrayOffset = true;
+
+		$this->analyse([__DIR__ . '/data/report-possibly-nonexistent-array-offset.php'], [
+			[
+				"Offset 'foo' does not exist on array.",
+				9,
 			],
 		]);
 	}

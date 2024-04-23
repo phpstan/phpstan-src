@@ -23,6 +23,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 		private RuleLevelHelper $ruleLevelHelper,
 		private bool $reportMaybes,
 		private bool $bleedingEdge,
+		private bool $reportPossiblyNonexistentArrayOffset,
 	)
 	{
 	}
@@ -61,6 +62,14 @@ class NonexistentOffsetInArrayDimFetchCheck
 		}
 
 		if ($this->reportMaybes) {
+			if ($this->reportPossiblyNonexistentArrayOffset && !$type->hasOffsetValueType($dimType)->yes()) {
+				return [
+					RuleErrorBuilder::message(sprintf('Offset %s does not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))
+						->identifier('offsetAccess.notFound')
+						->build(),
+				];
+			}
+
 			$report = false;
 
 			if ($type instanceof BenevolentUnionType) {

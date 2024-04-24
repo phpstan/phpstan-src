@@ -41,7 +41,7 @@ class WarningEmittingRuleTest extends RuleTestCase
 			self::fail('Should throw an exception');
 
 		} catch (AssertionFailedError $e) {
-			self::assertStringContainsString('Undefined variable $undefined', $e->getMessage());
+			self::assertStringContainsString('Undefined variable', $e->getMessage()); // exact message differs between PHPStan versions
 		}
 	}
 

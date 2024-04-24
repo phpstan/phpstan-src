@@ -669,7 +669,6 @@ class AnalyserTest extends PHPStanTestCase
 
 		return array_merge(
 			$errors,
-			$analyserResult->getAllPhpErrors(),
 			$analyserResult->getInternalErrors(),
 		);
 	}

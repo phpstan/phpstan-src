@@ -23,6 +23,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 use function array_fill_keys;
+use function array_merge;
 use function defined;
 use function is_array;
 use function is_bool;
@@ -182,6 +183,8 @@ class WorkerCommand extends Command
 			$internalErrorsCount = 0;
 			$files = $json['files'];
 			$errors = [];
+			$filteredPhpErrors = [];
+			$allPhpErrors = [];
 			$locallyIgnoredErrors = [];
 			$linesToIgnore = [];
 			$unmatchedLineIgnores = [];
@@ -192,6 +195,8 @@ class WorkerCommand extends Command
 				try {
 					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $ruleRegistry, $collectorRegistry, null);
 					$fileErrors = $fileAnalyserResult->getErrors();
+					$filteredPhpErrors = array_merge($filteredPhpErrors, $fileAnalyserResult->getFilteredPhpErrors());
+					$allPhpErrors = array_merge($allPhpErrors, $fileAnalyserResult->getAllPhpErrors());
 					$linesToIgnore[$file] = $fileAnalyserResult->getLinesToIgnore();
 					$unmatchedLineIgnores[$file] = $fileAnalyserResult->getUnmatchedLineIgnores();
 					$dependencies[$file] = $fileAnalyserResult->getDependencies();
@@ -227,6 +232,8 @@ class WorkerCommand extends Command
 				'action' => 'result',
 				'result' => [
 					'errors' => $errors,
+					'filteredPhpErrors' => $filteredPhpErrors,
+					'allPhpErrors' => $allPhpErrors,
 					'locallyIgnoredErrors' => $locallyIgnoredErrors,
 					'linesToIgnore' => $linesToIgnore,
 					'unmatchedLineIgnores' => $unmatchedLineIgnores,

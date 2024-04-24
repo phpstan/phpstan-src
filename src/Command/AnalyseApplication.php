@@ -89,6 +89,8 @@ class AnalyseApplication
 				$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);
 				$intermediateAnalyserResult = new AnalyserResult(
 					array_merge($intermediateAnalyserResult->getUnorderedErrors(), $stubErrors),
+					$intermediateAnalyserResult->getFilteredPhpErrors(),
+					$intermediateAnalyserResult->getAllPhpErrors(),
 					$intermediateAnalyserResult->getLocallyIgnoredErrors(),
 					$intermediateAnalyserResult->getLinesToIgnore(),
 					$intermediateAnalyserResult->getUnmatchedLineIgnores(),
@@ -104,7 +106,10 @@ class AnalyseApplication
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
 			$analyserResult = $this->analyserResultFinalizer->finalize($resultCacheResult->getAnalyserResult(), $onlyFiles)->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
-			$errors = $analyserResult->getErrors();
+			$errors = array_merge(
+				$analyserResult->getErrors(),
+				$analyserResult->getFilteredPhpErrors(),
+			);
 			$hasInternalErrors = count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
 			$memoryUsageBytes = $analyserResult->getPeakMemoryUsageBytes();
 			$isResultCacheUsed = !$resultCache->isFullAnalysis();
@@ -181,7 +186,7 @@ class AnalyseApplication
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressFinish();
-			return new AnalyserResult([], [], [], [], [], [], [], [], false, memory_get_peak_usage(true));
+			return new AnalyserResult([], [], [], [], [], [], [], [], [], [], false, memory_get_peak_usage(true));
 		}
 
 		if (!$debug) {

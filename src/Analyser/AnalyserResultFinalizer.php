@@ -89,6 +89,8 @@ class AnalyserResultFinalizer
 
 		return $this->addUnmatchedIgnoredErrors(new AnalyserResult(
 			$errors,
+			$analyserResult->getFilteredPhpErrors(),
+			$analyserResult->getAllPhpErrors(),
 			$locallyIgnoredErrors,
 			$allLinesToIgnore,
 			$allUnmatchedLineIgnores,
@@ -150,6 +152,8 @@ class AnalyserResultFinalizer
 		return new FinalizerResult(
 			new AnalyserResult(
 				$errors,
+				$analyserResult->getFilteredPhpErrors(),
+				$analyserResult->getAllPhpErrors(),
 				$analyserResult->getLocallyIgnoredErrors(),
 				$analyserResult->getLinesToIgnore(),
 				$analyserResult->getUnmatchedLineIgnores(),

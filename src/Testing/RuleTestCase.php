@@ -177,6 +177,13 @@ abstract class RuleTestCase extends PHPStanTestCase
 			$this->fail(implode("\n", $analyserResult->getInternalErrors()));
 		}
 
+		if (count($analyserResult->getAllPhpErrors()) > 0) {
+			$this->fail(implode("\n", array_map(
+				static fn (Error $error): string => sprintf('Internal error: %s on %s:%d', $error->getMessage(), $error->getFile(), $error->getLine()),
+				$analyserResult->getAllPhpErrors(),
+			)));
+		}
+
 		$finalizer = new AnalyserResultFinalizer(
 			$ruleRegistry,
 			new RuleErrorTransformer(),

@@ -17,6 +17,8 @@ class AnalyserResult
 
 	/**
 	 * @param list<Error> $unorderedErrors
+	 * @param list<Error> $filteredPhpErrors
+	 * @param list<Error> $allPhpErrors
 	 * @param list<Error> $locallyIgnoredErrors
 	 * @param array<string, LinesToIgnore> $linesToIgnore
 	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
@@ -27,6 +29,8 @@ class AnalyserResult
 	 */
 	public function __construct(
 		private array $unorderedErrors,
+		private array $filteredPhpErrors,
+		private array $allPhpErrors,
 		private array $locallyIgnoredErrors,
 		private array $linesToIgnore,
 		private array $unmatchedLineIgnores,
@@ -70,6 +74,22 @@ class AnalyserResult
 		}
 
 		return $this->errors;
+	}
+
+	/**
+	 * @return list<Error>
+	 */
+	public function getFilteredPhpErrors(): array
+	{
+		return $this->filteredPhpErrors;
+	}
+
+	/**
+	 * @return list<Error>
+	 */
+	public function getAllPhpErrors(): array
+	{
+		return $this->allPhpErrors;
 	}
 
 	/**

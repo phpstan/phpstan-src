@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use function array_merge;
+
 class FinalizerResult
 {
 
@@ -22,7 +24,10 @@ class FinalizerResult
 	 */
 	public function getErrors(): array
 	{
-		return $this->analyserResult->getErrors();
+		return array_merge(
+			$this->analyserResult->getErrors(),
+			$this->analyserResult->getFilteredPhpErrors(),
+		);
 	}
 
 	public function getAnalyserResult(): AnalyserResult

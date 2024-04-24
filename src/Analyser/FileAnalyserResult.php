@@ -13,8 +13,9 @@ class FileAnalyserResult
 
 	/**
 	 * @param list<Error> $errors
+	 * @param list<Error> $filteredPhpErrors
+	 * @param list<Error> $allPhpErrors
 	 * @param list<Error> $locallyIgnoredErrors
-	 * @param list<Error> $internalErrors
 	 * @param list<CollectedData> $collectedData
 	 * @param list<string> $dependencies
 	 * @param list<RootExportedNode> $exportedNodes
@@ -23,8 +24,9 @@ class FileAnalyserResult
 	 */
 	public function __construct(
 		private array $errors,
+		private array $filteredPhpErrors,
+		private array $allPhpErrors,
 		private array $locallyIgnoredErrors,
-		private array $internalErrors,
 		private array $collectedData,
 		private array $dependencies,
 		private array $exportedNodes,
@@ -45,9 +47,17 @@ class FileAnalyserResult
 	/**
 	 * @return list<Error>
 	 */
-	public function getInternalErrors(): array
+	public function getFilteredPhpErrors(): array
 	{
-		return $this->internalErrors;
+		return $this->filteredPhpErrors;
+	}
+
+	/**
+	 * @return list<Error>
+	 */
+	public function getAllPhpErrors(): array
+	{
+		return $this->allPhpErrors;
 	}
 
 	/**

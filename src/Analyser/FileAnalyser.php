@@ -16,7 +16,6 @@ use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Rules\Registry as RuleRegistry;
 use function array_keys;
-use function array_merge;
 use function array_unique;
 use function array_values;
 use function count;
@@ -33,10 +32,10 @@ class FileAnalyser
 {
 
 	/** @var list<Error> */
-	private array $internalErrors = [];
+	private array $allPhpErrors = [];
 
 	/** @var list<Error> */
-	private array $collectedErrors = [];
+	private array $filteredPhpErrors = [];
 
 	public function __construct(
 		private ScopeFactory $scopeFactory,
@@ -212,8 +211,6 @@ class FileAnalyser
 
 		$this->restoreCollectErrorsHandler();
 
-		$fileErrors = array_merge($fileErrors, $this->collectedErrors);
-
 		foreach ($linesToIgnore as $fileKey => $lines) {
 			if (count($lines) > 0) {
 				continue;
@@ -230,7 +227,17 @@ class FileAnalyser
 			unset($unmatchedLineIgnores[$fileKey]);
 		}
 
-		return new FileAnalyserResult($fileErrors, $locallyIgnoredErrors, $this->internalErrors, $fileCollectedData, array_values(array_unique($fileDependencies)), $exportedNodes, $linesToIgnore, $unmatchedLineIgnores);
+		return new FileAnalyserResult(
+			$fileErrors,
+			$this->filteredPhpErrors,
+			$this->allPhpErrors,
+			$locallyIgnoredErrors,
+			$fileCollectedData,
+			array_values(array_unique($fileDependencies)),
+			$exportedNodes,
+			$linesToIgnore,
+			$unmatchedLineIgnores,
+		);
 	}
 
 	/**
@@ -252,24 +259,25 @@ class FileAnalyser
 	 */
 	private function collectErrors(array $analysedFiles): void
 	{
-		$this->collectedErrors = [];
-		$this->internalErrors = [];
+		$this->filteredPhpErrors = [];
+		$this->allPhpErrors = [];
 		set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($analysedFiles): bool {
 			if ((error_reporting() & $errno) === 0) {
 				// silence @ operator
 				return true;
 			}
 
+			$this->allPhpErrors[] = (new Error($errstr, $errfile, $errline, true))->withIdentifier('phpstan.php');
+
 			if ($errno === E_DEPRECATED) {
 				return true;
 			}
 
 			if (!isset($analysedFiles[$errfile])) {
-				$this->internalErrors[] = (new Error($errstr, $errfile, $errline, true))->withIdentifier('phpstan.internal');
 				return true;
 			}
 
-			$this->collectedErrors[] = (new Error($errstr, $errfile, $errline, true))->withIdentifier('phpstan.php');
+			$this->filteredPhpErrors[] = (new Error($errstr, $errfile, $errline, true))->withIdentifier('phpstan.php');
 
 			return true;
 		});

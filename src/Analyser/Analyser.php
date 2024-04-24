@@ -8,7 +8,6 @@ use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
 use function array_fill_keys;
-use function array_map;
 use function array_merge;
 use function count;
 use function memory_get_peak_usage;
@@ -50,7 +49,10 @@ class Analyser
 
 		/** @var list<Error> $errors */
 		$errors = [];
-		$internalErrors = [];
+		/** @var list<Error> $filteredPhpErrors */
+		$filteredPhpErrors = [];
+		/** @var list<Error> $allPhpErrors */
+		$allPhpErrors = [];
 
 		/** @var list<Error> $locallyIgnoredErrors */
 		$locallyIgnoredErrors = [];
@@ -79,7 +81,8 @@ class Analyser
 					null,
 				);
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
-				$internalErrors = array_map(static fn (Error $error): string => sprintf('Internal error \'%s\' at %s:%d', $error->getMessage(), $error->getFile(), $error->getLine() ?? -1), $fileAnalyserResult->getInternalErrors());
+				$filteredPhpErrors = array_merge($filteredPhpErrors, $fileAnalyserResult->getFilteredPhpErrors());
+				$allPhpErrors = array_merge($allPhpErrors, $fileAnalyserResult->getAllPhpErrors());
 
 				$locallyIgnoredErrors = array_merge($locallyIgnoredErrors, $fileAnalyserResult->getLocallyIgnoredErrors());
 				$linesToIgnore[$file] = $fileAnalyserResult->getLinesToIgnore();
@@ -119,10 +122,12 @@ class Analyser
 
 		return new AnalyserResult(
 			$errors,
+			$filteredPhpErrors,
+			$allPhpErrors,
 			$locallyIgnoredErrors,
 			$linesToIgnore,
 			$unmatchedLineIgnores,
-			$internalErrors,
+			[],
 			$collectedData,
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$exportedNodes,

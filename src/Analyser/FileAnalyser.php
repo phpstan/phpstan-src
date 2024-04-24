@@ -27,6 +27,14 @@ use function restore_error_handler;
 use function set_error_handler;
 use function sprintf;
 use const E_DEPRECATED;
+use const E_ERROR;
+use const E_NOTICE;
+use const E_PARSE;
+use const E_STRICT;
+use const E_USER_ERROR;
+use const E_USER_NOTICE;
+use const E_USER_WARNING;
+use const E_WARNING;
 
 class FileAnalyser
 {
@@ -267,7 +275,9 @@ class FileAnalyser
 				return true;
 			}
 
-			$this->allPhpErrors[] = (new Error($errstr, $errfile, $errline, true))->withIdentifier('phpstan.php');
+			$errorMessage = sprintf('%s: %s', $this->getErrorLabel($errno), $errstr);
+
+			$this->allPhpErrors[] = (new Error($errorMessage, $errfile, $errline, true))->withIdentifier('phpstan.php');
 
 			if ($errno === E_DEPRECATED) {
 				return true;
@@ -277,7 +287,7 @@ class FileAnalyser
 				return true;
 			}
 
-			$this->filteredPhpErrors[] = (new Error($errstr, $errfile, $errline, true))->withIdentifier('phpstan.php');
+			$this->filteredPhpErrors[] = (new Error($errorMessage, $errfile, $errline, true))->withIdentifier('phpstan.php');
 
 			return true;
 		});
@@ -286,6 +296,30 @@ class FileAnalyser
 	private function restoreCollectErrorsHandler(): void
 	{
 		restore_error_handler();
+	}
+
+	private function getErrorLabel(int $errno): string
+	{
+		switch ($errno) {
+			case E_ERROR:
+				return 'Fatal error';
+			case E_WARNING:
+				return 'Warning';
+			case E_PARSE:
+				return 'Parse error';
+			case E_NOTICE:
+				return 'Notice';
+			case E_USER_ERROR:
+				return 'User error (E_USER_ERROR)';
+			case E_USER_WARNING:
+				return 'User warning (E_USER_WARNING)';
+			case E_USER_NOTICE:
+				return 'User notice (E_USER_NOTICE)';
+			case E_STRICT:
+				return 'Strict error (E_STRICT)';
+		}
+
+		return 'Unknown PHP error';
 	}
 
 }

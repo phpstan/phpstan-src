@@ -26,6 +26,7 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -673,6 +674,13 @@ class IntersectionType implements CompoundType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
+		if ($this->isList()->yes() && $this->isIterableAtLeastOnce()->yes()) {
+			$arrayKeyOffsetType = $offsetType->toArrayKey();
+			if ((new ConstantIntegerType(0))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+				return TrinaryLogic::createYes();
+			}
+		}
+
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasOffsetValueType($offsetType));
 	}
 

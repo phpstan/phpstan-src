@@ -49,4 +49,12 @@ class Feature7553
 		echo $a[$dim];
 	}
 
+	/**
+	 * @param non-empty-list<string> $a
+	 */
+	public function nonEmpty(array $a): void
+	{
+		echo $a[0];
+	}
+
 }

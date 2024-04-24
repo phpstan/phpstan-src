@@ -4,8 +4,10 @@ namespace PHPStan\Type;
 
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use Throwable;
 use function is_float;
 use function is_int;
+use function pow;
 
 final class ExponentiateHelper
 {
@@ -95,7 +97,12 @@ final class ExponentiateHelper
 		}
 
 		if ($exponent instanceof ConstantScalarType) {
-			$result = $base->getValue() ** $exponent->getValue();
+			try {
+				// @ to avoid "Warning: A non-numeric value encountered"
+				$result = @pow($base->getValue(), $exponent->getValue()); // @phpstan-ignore-line
+			} catch (Throwable) {
+				return new ErrorType();
+			}
 			if (is_int($result)) {
 				return new ConstantIntegerType($result);
 			}

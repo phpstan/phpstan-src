@@ -47,7 +47,7 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
-			message: "#^Only numeric types are allowed in pre\\-increment, bool\\|float\\|int\\|string\\|null given\\.$#"
+			message: "#^Only numeric types are allowed in pre\\-increment, float\\|int\\|string\\|null given\\.$#"
 			count: 1
 			path: src/Analyser/MutatingScope.php
 

@@ -507,6 +507,8 @@ class ResultCacheManager
 
 		return new ResultCacheProcessResult(new AnalyserResult(
 			$flatErrors,
+			$analyserResult->getFilteredPhpErrors(),
+			$analyserResult->getAllPhpErrors(),
 			$flatLocallyIgnoredErrors,
 			$linesToIgnore,
 			$unmatchedLineIgnores,

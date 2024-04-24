@@ -13,6 +13,8 @@ class FileAnalyserResult
 
 	/**
 	 * @param list<Error> $errors
+	 * @param list<Error> $filteredPhpErrors
+	 * @param list<Error> $allPhpErrors
 	 * @param list<Error> $locallyIgnoredErrors
 	 * @param list<CollectedData> $collectedData
 	 * @param list<string> $dependencies
@@ -22,6 +24,8 @@ class FileAnalyserResult
 	 */
 	public function __construct(
 		private array $errors,
+		private array $filteredPhpErrors,
+		private array $allPhpErrors,
 		private array $locallyIgnoredErrors,
 		private array $collectedData,
 		private array $dependencies,
@@ -38,6 +42,22 @@ class FileAnalyserResult
 	public function getErrors(): array
 	{
 		return $this->errors;
+	}
+
+	/**
+	 * @return list<Error>
+	 */
+	public function getFilteredPhpErrors(): array
+	{
+		return $this->filteredPhpErrors;
+	}
+
+	/**
+	 * @return list<Error>
+	 */
+	public function getAllPhpErrors(): array
+	{
+		return $this->allPhpErrors;
 	}
 
 	/**

@@ -8,6 +8,7 @@ use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\Registry as RuleRegistry;
+use function array_merge;
 use function count;
 use function sprintf;
 
@@ -27,12 +28,12 @@ class AnalyserResultFinalizer
 	public function finalize(AnalyserResult $analyserResult, bool $onlyFiles): FinalizerResult
 	{
 		if (count($analyserResult->getCollectedData()) === 0) {
-			return $this->addUnmatchedIgnoredErrors($analyserResult, [], []);
+			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
 		}
 
 		$hasInternalErrors = count($analyserResult->getInternalErrors()) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
 		if ($hasInternalErrors) {
-			return $this->addUnmatchedIgnoredErrors($analyserResult, [], []);
+			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
 		}
 
 		$nodeType = CollectedDataNode::class;
@@ -88,7 +89,9 @@ class AnalyserResultFinalizer
 		}
 
 		return $this->addUnmatchedIgnoredErrors(new AnalyserResult(
-			$errors,
+			array_merge($errors, $analyserResult->getFilteredPhpErrors()),
+			[],
+			$analyserResult->getAllPhpErrors(),
 			$locallyIgnoredErrors,
 			$allLinesToIgnore,
 			$allUnmatchedLineIgnores,
@@ -99,6 +102,24 @@ class AnalyserResultFinalizer
 			$analyserResult->hasReachedInternalErrorsCountLimit(),
 			$analyserResult->getPeakMemoryUsageBytes(),
 		), $collectorErrors, $locallyIgnoredCollectorErrors);
+	}
+
+	private function mergeFilteredPhpErrors(AnalyserResult $analyserResult): AnalyserResult
+	{
+		return new AnalyserResult(
+			array_merge($analyserResult->getUnorderedErrors(), $analyserResult->getFilteredPhpErrors()),
+			[],
+			$analyserResult->getAllPhpErrors(),
+			$analyserResult->getLocallyIgnoredErrors(),
+			$analyserResult->getLinesToIgnore(),
+			$analyserResult->getUnmatchedLineIgnores(),
+			$analyserResult->getInternalErrors(),
+			$analyserResult->getCollectedData(),
+			$analyserResult->getDependencies(),
+			$analyserResult->getExportedNodes(),
+			$analyserResult->hasReachedInternalErrorsCountLimit(),
+			$analyserResult->getPeakMemoryUsageBytes(),
+		);
 	}
 
 	/**
@@ -150,6 +171,8 @@ class AnalyserResultFinalizer
 		return new FinalizerResult(
 			new AnalyserResult(
 				$errors,
+				$analyserResult->getFilteredPhpErrors(),
+				$analyserResult->getAllPhpErrors(),
 				$analyserResult->getLocallyIgnoredErrors(),
 				$analyserResult->getLinesToIgnore(),
 				$analyserResult->getUnmatchedLineIgnores(),

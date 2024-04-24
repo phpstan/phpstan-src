@@ -49,6 +49,10 @@ class Analyser
 
 		/** @var list<Error> $errors */
 		$errors = [];
+		/** @var list<Error> $filteredPhpErrors */
+		$filteredPhpErrors = [];
+		/** @var list<Error> $allPhpErrors */
+		$allPhpErrors = [];
 
 		/** @var list<Error> $locallyIgnoredErrors */
 		$locallyIgnoredErrors = [];
@@ -77,6 +81,9 @@ class Analyser
 					null,
 				);
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
+				$filteredPhpErrors = array_merge($filteredPhpErrors, $fileAnalyserResult->getFilteredPhpErrors());
+				$allPhpErrors = array_merge($allPhpErrors, $fileAnalyserResult->getAllPhpErrors());
+
 				$locallyIgnoredErrors = array_merge($locallyIgnoredErrors, $fileAnalyserResult->getLocallyIgnoredErrors());
 				$linesToIgnore[$file] = $fileAnalyserResult->getLinesToIgnore();
 				$unmatchedLineIgnores[$file] = $fileAnalyserResult->getUnmatchedLineIgnores();
@@ -115,6 +122,8 @@ class Analyser
 
 		return new AnalyserResult(
 			$errors,
+			$filteredPhpErrors,
+			$allPhpErrors,
 			$locallyIgnoredErrors,
 			$linesToIgnore,
 			$unmatchedLineIgnores,

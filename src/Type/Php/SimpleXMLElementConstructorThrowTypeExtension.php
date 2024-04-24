@@ -12,6 +12,7 @@ use PHPStan\Type\TypeCombinator;
 use SimpleXMLElement;
 use function count;
 use function extension_loaded;
+use function libxml_use_internal_errors;
 
 class SimpleXMLElementConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
@@ -32,14 +33,20 @@ class SimpleXMLElementConstructorThrowTypeExtension implements DynamicStaticMeth
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
 		$constantStrings = $valueType->getConstantStrings();
 
-		foreach ($constantStrings as $constantString) {
-			try {
-				new SimpleXMLElement($constantString->getValue());
-			} catch (\Exception $e) { // phpcs:ignore
-				return $methodReflection->getThrowType();
-			}
+		$internalErrorsOld = libxml_use_internal_errors(true);
 
-			$valueType = TypeCombinator::remove($valueType, $constantString);
+		try {
+			foreach ($constantStrings as $constantString) {
+				try {
+					new SimpleXMLElement($constantString->getValue());
+				} catch (\Exception $e) { // phpcs:ignore
+					return $methodReflection->getThrowType();
+				}
+
+				$valueType = TypeCombinator::remove($valueType, $constantString);
+			}
+		} finally {
+			libxml_use_internal_errors($internalErrorsOld);
 		}
 
 		if (!$valueType instanceof NeverType) {

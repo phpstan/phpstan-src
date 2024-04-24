@@ -321,7 +321,7 @@ class FixerWorkerCommand extends Command
 		$parallelAnalyser = $container->getByType(ParallelAnalyser::class);
 		$filesCount = count($files);
 		if ($filesCount === 0) {
-			return resolve(new AnalyserResult([], [], [], [], [], [], [], [], false, memory_get_peak_usage(true)));
+			return resolve(new AnalyserResult([], [], [], [], [], [], [], [], [], [], false, memory_get_peak_usage(true)));
 		}
 
 		/** @var Scheduler $scheduler */

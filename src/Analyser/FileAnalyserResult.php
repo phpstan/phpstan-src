@@ -14,6 +14,7 @@ class FileAnalyserResult
 	/**
 	 * @param list<Error> $errors
 	 * @param list<Error> $locallyIgnoredErrors
+	 * @param list<Error> $internalErrors
 	 * @param list<CollectedData> $collectedData
 	 * @param list<string> $dependencies
 	 * @param list<RootExportedNode> $exportedNodes
@@ -23,6 +24,7 @@ class FileAnalyserResult
 	public function __construct(
 		private array $errors,
 		private array $locallyIgnoredErrors,
+		private array $internalErrors,
 		private array $collectedData,
 		private array $dependencies,
 		private array $exportedNodes,
@@ -38,6 +40,14 @@ class FileAnalyserResult
 	public function getErrors(): array
 	{
 		return $this->errors;
+	}
+
+	/**
+	 * @return list<Error>
+	 */
+	public function getInternalErrors(): array
+	{
+		return $this->internalErrors;
 	}
 
 	/**

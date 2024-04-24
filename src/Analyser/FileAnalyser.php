@@ -33,6 +33,9 @@ class FileAnalyser
 {
 
 	/** @var list<Error> */
+	private array $internalErrors = [];
+
+	/** @var list<Error> */
 	private array $collectedErrors = [];
 
 	public function __construct(
@@ -227,7 +230,7 @@ class FileAnalyser
 			unset($unmatchedLineIgnores[$fileKey]);
 		}
 
-		return new FileAnalyserResult($fileErrors, $locallyIgnoredErrors, $fileCollectedData, array_values(array_unique($fileDependencies)), $exportedNodes, $linesToIgnore, $unmatchedLineIgnores);
+		return new FileAnalyserResult($fileErrors, $locallyIgnoredErrors, $this->internalErrors, $fileCollectedData, array_values(array_unique($fileDependencies)), $exportedNodes, $linesToIgnore, $unmatchedLineIgnores);
 	}
 
 	/**
@@ -250,6 +253,7 @@ class FileAnalyser
 	private function collectErrors(array $analysedFiles): void
 	{
 		$this->collectedErrors = [];
+		$this->internalErrors = [];
 		set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($analysedFiles): bool {
 			if ((error_reporting() & $errno) === 0) {
 				// silence @ operator
@@ -261,6 +265,7 @@ class FileAnalyser
 			}
 
 			if (!isset($analysedFiles[$errfile])) {
+				$this->internalErrors[] = (new Error($errstr, $errfile, $errline, true))->withIdentifier('phpstan.internal');
 				return true;
 			}
 

@@ -169,9 +169,6 @@ function doFoo(int $intA, int $intB, string $s, bool $bool, $numericS, float $fl
 	assertType('*ERROR*', $s ** $arr);
 	assertType('*ERROR*', $s ** []);
 
-	assertType('4', '4a' ** 1);
-	assertType('*ERROR*', 'a' ** 1);
-
 	assertType('1', pow($bool, 0));
 	assertType('1', $bool ** '0');
 	assertType('1', $bool ** false);

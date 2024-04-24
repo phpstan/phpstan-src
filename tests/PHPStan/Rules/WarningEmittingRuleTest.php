@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\AssertionFailedError;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<Rule>
@@ -36,6 +37,10 @@ class WarningEmittingRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
+		if (PHP_VERSION_ID < 70300) {
+			self::markTestSkipped('For some reason this test does not work on PHP 7.2 with old PHPUnit');
+		}
+
 		try {
 			$this->analyse([__DIR__ . '/data/empty-file.php'], []);
 			self::fail('Should throw an exception');

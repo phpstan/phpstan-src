@@ -35,17 +35,19 @@ class SimpleXMLElementConstructorThrowTypeExtension implements DynamicStaticMeth
 
 		$internalErrorsOld = libxml_use_internal_errors(true);
 
-		foreach ($constantStrings as $constantString) {
-			try {
-				new SimpleXMLElement($constantString->getValue());
-			} catch (\Exception $e) { // phpcs:ignore
-				return $methodReflection->getThrowType();
+		try {
+			foreach ($constantStrings as $constantString) {
+				try {
+					new SimpleXMLElement($constantString->getValue());
+				} catch (\Exception $e) { // phpcs:ignore
+					return $methodReflection->getThrowType();
+				}
+
+				$valueType = TypeCombinator::remove($valueType, $constantString);
 			}
-
-			$valueType = TypeCombinator::remove($valueType, $constantString);
+		} finally {
+			libxml_use_internal_errors($internalErrorsOld);
 		}
-
-		libxml_use_internal_errors($internalErrorsOld);
 
 		if (!$valueType instanceof NeverType) {
 			return $methodReflection->getThrowType();

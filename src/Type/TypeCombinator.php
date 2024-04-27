@@ -29,6 +29,7 @@ use function array_map;
 use function array_merge;
 use function array_slice;
 use function array_splice;
+use function array_unique;
 use function array_values;
 use function count;
 use function get_class;
@@ -643,7 +644,7 @@ class TypeCombinator
 	}
 
 	/**
-	 * @param Type[] $arrayTypes
+	 * @param list<Type> $arrayTypes
 	 * @return Type[]
 	 */
 	private static function processArrayTypes(array $arrayTypes): array
@@ -669,9 +670,14 @@ class TypeCombinator
 
 		/** @var int|float $nextConstantKeyTypeIndex */
 		$nextConstantKeyTypeIndex = 1;
+		$constantArraysMap = array_map(
+			static fn (Type $t) => $t->getConstantArrays(),
+			$arrayTypes,
+		);
 
-		foreach ($arrayTypes as $arrayType) {
-			$isConstantArray = $arrayType->isConstantArray()->yes();
+		foreach ($arrayTypes as $arrayIdx => $arrayType) {
+			$constantArrays = $constantArraysMap[$arrayIdx];
+			$isConstantArray = $constantArrays !== [];
 			if (!$isConstantArray || !$arrayType->isIterableAtLeastOnce()->no()) {
 				$filledArrays++;
 			}
@@ -708,6 +714,11 @@ class TypeCombinator
 		}
 
 		if ($generalArrayOccurred && (!$overflowed || $filledArrays > 1)) {
+			// Do this only for arrays which would be generalized, because this breaks tagged unions.
+			$singleConstantArray = self::unionConstantArrayTypesWithSameKeys($constantArraysMap);
+			if ($singleConstantArray !== null) {
+				return [$singleConstantArray];
+			}
 			$scopes = [];
 			$useTemplateArray = true;
 			foreach ($arrayTypes as $arrayType) {
@@ -745,6 +756,62 @@ class TypeCombinator
 		return array_map(
 			static fn (Type $arrayType) => self::intersect($arrayType, ...$accessoryTypes),
 			self::optimizeConstantArrays($reducedArrayTypes),
+		);
+	}
+
+	/**
+	 * @param non-empty-list<ConstantArrayType[]> $constantArraysMap
+	 */
+	private static function unionConstantArrayTypesWithSameKeys(array $constantArraysMap): ?ConstantArrayType
+	{
+		$singleConstantArrayList = [];
+		$constantArraySizes = [];
+
+		foreach ($constantArraysMap as $constantArrays) {
+			if (count($constantArrays) !== 1) {
+				return null;
+			}
+
+			$singleConstantArrayList[] = $constantArrays[0];
+			$constantArraySizes[] = count($constantArrays[0]->getKeyTypes());
+		}
+
+		if (count(array_unique($constantArraySizes)) !== 1) {
+			return null;
+		}
+
+		$finalKeyTypes = $singleConstantArrayList[0]->getKeyTypes();
+		$finalValueTypesMap = [];
+		for ($i = 0; $i < $constantArraySizes[0]; $i++) {
+			$finalValueTypesMap[$i] = [$singleConstantArrayList[0]->getValueTypes()[$i]];
+			for ($j = 1; $j < count($singleConstantArrayList); $j++) {
+				$otherArray = $singleConstantArrayList[$j];
+				if (! $finalKeyTypes[$i]->equals($otherArray->getKeyTypes()[$i])) {
+					return null;
+				}
+
+				$finalValueTypesMap[$i][] = $otherArray->getValueTypes()[$i];
+			}
+		}
+
+		$finalValueTypes = array_map(
+			static fn (array $types) => self::union(...$types),
+			$finalValueTypesMap,
+		);
+
+		$optionalKeys = array_unique(array_merge(
+			...array_map(
+				static fn (ConstantArrayType $t) => $t->getOptionalKeys(),
+				$singleConstantArrayList,
+			),
+		));
+
+		return new ConstantArrayType(
+			$finalKeyTypes,
+			$finalValueTypes,
+			$singleConstantArrayList[0]->getNextAutoIndexes(),
+			$optionalKeys,
+			$singleConstantArrayList[0]->isList(),
 		);
 	}
 

@@ -6,7 +6,7 @@
   "dependencyDashboard": true,
   "rangeStrategy": "update-lockfile",
   "rebaseWhen": "conflicted",
-  "baseBranches": ["1.11.x", "1.10.x"],
+  "baseBranches": ["1.11.x"],
   "packageRules": [
     {
       "matchPackagePatterns": ["*"],
@@ -15,7 +15,7 @@
     {
       "matchPaths": ["+(composer.json)"],
       "enabled": true,
-      "matchBaseBranches": ["1.10.x"]
+      "matchBaseBranches": ["1.11.x"]
     },
     {
       "matchPaths": ["build-cs/**"],

@@ -7482,7 +7482,7 @@ return [
 'mysqli_fetch_field_direct' => ['(stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: int, length: int, charsetnr: string, flags: int, type: int, decimals: int})|false', 'result'=>'mysqli_result', 'fieldnr'=>'int'],
 'mysqli_fetch_fields' => ['list<stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: int, length: int, charsetnr: string, flags: int, type: int, decimals: int}>', 'result'=>'mysqli_result'],
 'mysqli_fetch_lengths' => ['array|false', 'result'=>'mysqli_result'],
-'mysqli_fetch_object' => ['object|null', 'result'=>'mysqli_result', 'class_name='=>'string', 'params='=>'?array'],
+'mysqli_fetch_object' => ['object|false|null', 'result'=>'mysqli_result', 'class_name='=>'string', 'params='=>'?array'],
 'mysqli_fetch_row' => ['array|null', 'result'=>'mysqli_result'],
 'mysqli_field_count' => ['int', 'link'=>'mysqli'],
 'mysqli_field_seek' => ['bool', 'result'=>'mysqli_result', 'fieldnr'=>'int'],

@@ -50,7 +50,7 @@ class UnreachableTernaryElseBranchRule implements Rule
 					return $ruleErrorBuilder;
 				}
 
-				return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 			return [
 				$addTip(RuleErrorBuilder::message('Else branch is unreachable because ternary operator condition is always true.'))

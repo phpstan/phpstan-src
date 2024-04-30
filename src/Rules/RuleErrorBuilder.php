@@ -202,6 +202,15 @@ class RuleErrorBuilder
 	}
 
 	/**
+	 * @phpstan-this-out self<T&TipRuleError>
+	 * @return self<T&TipRuleError>
+	 */
+	public function treatPhpDocTypesAsCertainTip(): self
+	{
+		return $this->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+	}
+
+	/**
 	 * Sets an error identifier.
 	 *
 	 * List of all current error identifiers in PHPStan: https://phpstan.org/error-identifiers

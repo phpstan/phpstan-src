@@ -42,9 +42,8 @@ class BooleanAndConstantConditionRule implements Rule
 		$nodeText = $this->bleedingEdge ? $originalNode->getOperatorSigil() : '&&';
 		$leftType = $this->helper->getBooleanType($scope, $originalNode->left);
 		$identifierType = $originalNode instanceof Node\Expr\BinaryOp\BooleanAnd ? 'booleanAnd' : 'logicalAnd';
-		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		if ($leftType instanceof ConstantBooleanType) {
-			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $tipText, $originalNode): RuleErrorBuilder {
+			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
 					return $ruleErrorBuilder;
 				}
@@ -54,7 +53,7 @@ class BooleanAndConstantConditionRule implements Rule
 					return $ruleErrorBuilder;
 				}
 
-				return $ruleErrorBuilder->tip($tipText);
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -79,7 +78,7 @@ class BooleanAndConstantConditionRule implements Rule
 			$originalNode->right,
 		);
 		if ($rightType instanceof ConstantBooleanType && !$scope->isInFirstLevelStatement()) {
-			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($rightScope, $originalNode, $tipText): RuleErrorBuilder {
+			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($rightScope, $originalNode): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
 					return $ruleErrorBuilder;
 				}
@@ -92,7 +91,7 @@ class BooleanAndConstantConditionRule implements Rule
 					return $ruleErrorBuilder;
 				}
 
-				return $ruleErrorBuilder->tip($tipText);
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -114,7 +113,7 @@ class BooleanAndConstantConditionRule implements Rule
 		if (count($errors) === 0 && !$scope->isInFirstLevelStatement()) {
 			$nodeType = $this->treatPhpDocTypesAsCertain ? $scope->getType($originalNode) : $scope->getNativeType($originalNode);
 			if ($nodeType instanceof ConstantBooleanType) {
-				$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode, $tipText): RuleErrorBuilder {
+				$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode): RuleErrorBuilder {
 					if (!$this->treatPhpDocTypesAsCertain) {
 						return $ruleErrorBuilder;
 					}
@@ -124,7 +123,7 @@ class BooleanAndConstantConditionRule implements Rule
 						return $ruleErrorBuilder;
 					}
 
-					return $ruleErrorBuilder->tip($tipText);
+					return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 				};
 
 				$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);

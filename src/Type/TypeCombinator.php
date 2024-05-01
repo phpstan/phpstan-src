@@ -29,7 +29,6 @@ use function array_map;
 use function array_merge;
 use function array_slice;
 use function array_splice;
-use function array_unique;
 use function array_values;
 use function count;
 use function get_class;
@@ -714,10 +713,9 @@ class TypeCombinator
 		}
 
 		if ($generalArrayOccurred && (!$overflowed || $filledArrays > 1)) {
-			// Do this only for arrays which would be generalized, because this breaks tagged unions.
-			$singleConstantArray = self::unionConstantArrayTypesWithSameKeys($constantArraysMap);
-			if ($singleConstantArray !== null) {
-				return [$singleConstantArray];
+			$reducedArrayTypes = self::reduceArrays($arrayTypes, false);
+			if (count($reducedArrayTypes) === 1) {
+				return $reducedArrayTypes;
 			}
 			$scopes = [];
 			$useTemplateArray = true;
@@ -751,67 +749,11 @@ class TypeCombinator
 			];
 		}
 
-		$reducedArrayTypes = self::reduceArrays($arrayTypes);
+		$reducedArrayTypes = self::reduceArrays($arrayTypes, true);
 
 		return array_map(
 			static fn (Type $arrayType) => self::intersect($arrayType, ...$accessoryTypes),
 			self::optimizeConstantArrays($reducedArrayTypes),
-		);
-	}
-
-	/**
-	 * @param non-empty-list<ConstantArrayType[]> $constantArraysMap
-	 */
-	private static function unionConstantArrayTypesWithSameKeys(array $constantArraysMap): ?ConstantArrayType
-	{
-		$singleConstantArrayList = [];
-		$constantArraySizes = [];
-
-		foreach ($constantArraysMap as $constantArrays) {
-			if (count($constantArrays) !== 1) {
-				return null;
-			}
-
-			$singleConstantArrayList[] = $constantArrays[0];
-			$constantArraySizes[] = count($constantArrays[0]->getKeyTypes());
-		}
-
-		if (count(array_unique($constantArraySizes)) !== 1) {
-			return null;
-		}
-
-		$finalKeyTypes = $singleConstantArrayList[0]->getKeyTypes();
-		$finalValueTypesMap = [];
-		for ($i = 0; $i < $constantArraySizes[0]; $i++) {
-			$finalValueTypesMap[$i] = [$singleConstantArrayList[0]->getValueTypes()[$i]];
-			for ($j = 1; $j < count($singleConstantArrayList); $j++) {
-				$otherArray = $singleConstantArrayList[$j];
-				if (! $finalKeyTypes[$i]->equals($otherArray->getKeyTypes()[$i])) {
-					return null;
-				}
-
-				$finalValueTypesMap[$i][] = $otherArray->getValueTypes()[$i];
-			}
-		}
-
-		$finalValueTypes = array_map(
-			static fn (array $types) => self::union(...$types),
-			$finalValueTypesMap,
-		);
-
-		$optionalKeys = array_unique(array_merge(
-			...array_map(
-				static fn (ConstantArrayType $t) => $t->getOptionalKeys(),
-				$singleConstantArrayList,
-			),
-		));
-
-		return new ConstantArrayType(
-			$finalKeyTypes,
-			$finalValueTypes,
-			$singleConstantArrayList[0]->getNextAutoIndexes(),
-			$optionalKeys,
-			$singleConstantArrayList[0]->isList(),
 		);
 	}
 
@@ -900,16 +842,21 @@ class TypeCombinator
 	}
 
 	/**
-	 * @param Type[] $constantArrays
-	 * @return Type[]
+	 * @param list<Type> $constantArrays
+	 * @return list<Type>
 	 */
-	private static function reduceArrays(array $constantArrays): array
+	private static function reduceArrays(array $constantArrays, bool $preserveTaggedUnions): array
 	{
 		$newArrays = [];
 		$arraysToProcess = [];
 		$emptyArray = null;
 		foreach ($constantArrays as $constantArray) {
 			if (!$constantArray->isConstantArray()->yes()) {
+				// This is an optimization for current use-case of $preserveTaggedUnions=false, where we need
+				// one constant array as a result, or we generalize the $constantArrays.
+				if (!$preserveTaggedUnions) {
+					return $constantArrays;
+				}
 				$newArrays[] = $constantArray;
 				continue;
 			}
@@ -955,7 +902,8 @@ class TypeCombinator
 				}
 
 				if (
-					$overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())
+					$preserveTaggedUnions
+					&& $overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())
 					&& $arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])
 				) {
 					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
@@ -964,12 +912,24 @@ class TypeCombinator
 				}
 
 				if (
-					$overlappingKeysCount === count($arraysToProcess[$j]->getKeyTypes())
+					$preserveTaggedUnions
+					&& $overlappingKeysCount === count($arraysToProcess[$j]->getKeyTypes())
 					&& $arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])
 				) {
 					$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
 					unset($arraysToProcess[$j]);
 					continue 1;
+				}
+
+				if (
+					!$preserveTaggedUnions
+					// both arrays have same keys
+					&& $overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())
+					&& $overlappingKeysCount === count($arraysToProcess[$j]->getKeyTypes())
+				) {
+					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+					unset($arraysToProcess[$i]);
+					continue 2;
 				}
 			}
 		}

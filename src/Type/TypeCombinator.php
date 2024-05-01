@@ -715,7 +715,7 @@ class TypeCombinator
 		if ($generalArrayOccurred && (!$overflowed || $filledArrays > 1)) {
 			$reducedArrayTypes = self::reduceArrays($arrayTypes, false);
 			if (count($reducedArrayTypes) === 1) {
-				return $reducedArrayTypes;
+				return [self::intersect($reducedArrayTypes[0], ...$accessoryTypes)];
 			}
 			$scopes = [];
 			$useTemplateArray = true;

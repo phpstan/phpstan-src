@@ -1557,7 +1557,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function mergeWith(self $otherArray): self
 	{
-		// only call this after verifying isKeysSupersetOf
+		// only call this after verifying isKeysSupersetOf, or if losing tagged unions is not an issue
 		$valueTypes = $this->valueTypes;
 		$optionalKeys = $this->optionalKeys;
 		foreach ($this->keyTypes as $i => $keyType) {

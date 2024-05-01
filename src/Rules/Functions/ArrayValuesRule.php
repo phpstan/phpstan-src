@@ -85,7 +85,7 @@ class ArrayValuesRule implements Rule
 			if ($this->treatPhpDocTypesAsCertain) {
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
 				if (!$nativeArrayType->isIterableAtLeastOnce()->no()) {
-					$errorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}
 			}
 
@@ -103,7 +103,7 @@ class ArrayValuesRule implements Rule
 			if ($this->treatPhpDocTypesAsCertain) {
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
 				if (!$nativeArrayType->isList()->yes()) {
-					$errorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}
 			}
 

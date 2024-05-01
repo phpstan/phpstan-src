@@ -80,7 +80,7 @@ class ArrayFilterRule implements Rule
 			if ($this->treatPhpDocTypesAsCertain) {
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
 				if (!$nativeArrayType->isIterableAtLeastOnce()->no()) {
-					$errorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}
 			}
 			return [
@@ -102,7 +102,7 @@ class ArrayFilterRule implements Rule
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
 				$isNativeSuperType = $falsyType->isSuperTypeOf($nativeArrayType->getIterableValueType());
 				if (!$isNativeSuperType->no()) {
-					$errorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}
 			}
 
@@ -122,7 +122,7 @@ class ArrayFilterRule implements Rule
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
 				$isNativeSuperType = $falsyType->isSuperTypeOf($nativeArrayType->getIterableValueType());
 				if (!$isNativeSuperType->yes()) {
-					$errorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}
 			}
 

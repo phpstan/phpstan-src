@@ -56,7 +56,7 @@ class NumberComparisonOperatorsConstantConditionRule implements Rule
 					return $ruleErrorBuilder;
 				}
 
-				return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 
 			switch (get_class($node)) {

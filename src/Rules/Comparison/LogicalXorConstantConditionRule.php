@@ -34,9 +34,8 @@ class LogicalXorConstantConditionRule implements Rule
 	{
 		$errors = [];
 		$leftType = $this->helper->getBooleanType($scope, $node->left);
-		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		if ($leftType instanceof ConstantBooleanType) {
-			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $tipText, $node): RuleErrorBuilder {
+			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
 					return $ruleErrorBuilder;
 				}
@@ -46,7 +45,7 @@ class LogicalXorConstantConditionRule implements Rule
 					return $ruleErrorBuilder;
 				}
 
-				return $ruleErrorBuilder->tip($tipText);
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -66,7 +65,7 @@ class LogicalXorConstantConditionRule implements Rule
 
 		$rightType = $this->helper->getBooleanType($scope, $node->right);
 		if ($rightType instanceof ConstantBooleanType) {
-			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $tipText): RuleErrorBuilder {
+			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
 					return $ruleErrorBuilder;
 				}
@@ -79,7 +78,7 @@ class LogicalXorConstantConditionRule implements Rule
 					return $ruleErrorBuilder;
 				}
 
-				return $ruleErrorBuilder->tip($tipText);
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);

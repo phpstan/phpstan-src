@@ -156,3 +156,17 @@ class C12_1 extends B12_1 {
 		parent::__construct(15);
 	}
 }
+
+class A13 {
+	public function __construct(private readonly int $privateProp)
+	{
+	}
+}
+
+class B13 extends A13 {
+	// This is OK, A's prop is private
+	public function __construct(public readonly int $privateProp)
+	{
+		parent::__construct(15);
+	}
+}

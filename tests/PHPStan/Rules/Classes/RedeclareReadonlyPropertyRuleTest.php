@@ -56,6 +56,17 @@ class RedeclareReadonlyPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testReadonlyClass(): void
+	{
+		$this->phpVersion = 80200;
+		$this->analyse([__DIR__ . '/data/redeclare-property-of-readonly-class.php'], [
+			[
+				'Readonly property RedeclarePropertyOfReadonlyClass\B1::$nonPromotedProp cannot be redeclared, because you call the parent constructor.',
+				15,
+			],
+		]);
+	}
+
 	public function testBug8101(): void
 	{
 		$this->phpVersion = 80100;

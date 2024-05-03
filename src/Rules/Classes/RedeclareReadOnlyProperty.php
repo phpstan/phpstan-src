@@ -47,7 +47,7 @@ class RedeclareReadOnlyProperty implements Rule
 		}
 
 		$nodeTraverser = new NodeTraverser();
-		$visitor = new class () extends NodeVisitorAbstract {
+		$visitor = new class ($reflection->isReadOnly()) extends NodeVisitorAbstract {
 
 			private ?Node\Stmt\ClassMethod $constructorNode = null;
 
@@ -59,8 +59,13 @@ class RedeclareReadOnlyProperty implements Rule
 
 			private bool $enteredClass = false;
 
+			public function __construct(private bool $isReadonlyClass)
+			{
+			}
+
 			public function enterNode(Node $node): ?int
 			{
+				// Don't enter anonymous classes
 				if ($node instanceof Node\Stmt\Class_) {
 					if ($this->enteredClass) {
 						return NodeTraverser::DONT_TRAVERSE_CHILDREN;
@@ -71,7 +76,7 @@ class RedeclareReadOnlyProperty implements Rule
 				}
 				if ($node instanceof Node\Stmt\ClassMethod && $node->name->toLowerString() === '__construct') {
 					$this->constructorNode = $node;
-				} elseif ($node instanceof Node\Stmt\Property && !$node->isPrivate() && $node->isReadonly()) {
+				} elseif ($node instanceof Node\Stmt\Property && !$node->isPrivate() && ($node->isReadonly() || $this->isReadonlyClass)) {
 					$this->nonPrivateReadonlyPropertyNodes[] = $node;
 				} elseif ($node instanceof Node\Expr\StaticCall && $node->name instanceof Node\Identifier && $node->name->toLowerString() === '__construct') {
 					$this->constructorCalls[] = $node;
@@ -120,8 +125,11 @@ class RedeclareReadOnlyProperty implements Rule
 
 		foreach ($visitor->getConstructorNode()->params ?? [] as $param) {
 			if (
-				($param->flags & Node\Stmt\Class_::MODIFIER_READONLY) !== Node\Stmt\Class_::MODIFIER_READONLY
-				|| ($param->flags & Node\Stmt\Class_::MODIFIER_PRIVATE) === Node\Stmt\Class_::MODIFIER_PRIVATE
+				(!$reflection->isReadOnly() && ($param->flags & Node\Stmt\Class_::MODIFIER_READONLY) !== Node\Stmt\Class_::MODIFIER_READONLY)
+				|| (
+					($param->flags & Node\Stmt\Class_::MODIFIER_PUBLIC) !== Node\Stmt\Class_::MODIFIER_PUBLIC
+					&& ($param->flags & Node\Stmt\Class_::MODIFIER_PROTECTED) !== Node\Stmt\Class_::MODIFIER_PROTECTED
+				)
 				|| $param->var instanceof Node\Expr\Error
 				|| !is_string($param->var->name)
 			) {

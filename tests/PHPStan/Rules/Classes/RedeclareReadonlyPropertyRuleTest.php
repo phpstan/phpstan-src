@@ -78,4 +78,20 @@ class RedeclareReadonlyPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9863(): void
+	{
+		$this->phpVersion = 80100;
+		$this->analyse([__DIR__ . '/data/bug-9863.php'], [
+			[
+				'Readonly property Bug9863\ReadonlyChildWithoutIsset::$foo cannot be redeclared, because you call the parent constructor.',
+				15,
+			],
+			[
+				// This line doesn't actually cause an error, but we have to draw the line somewhere.
+				'Readonly property Bug9863\ReadonlyChildWithIsset::$foo cannot be redeclared, because you call the parent constructor.',
+				37,
+			],
+		]);
+	}
+
 }

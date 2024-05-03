@@ -49,6 +49,10 @@ class RedeclareReadonlyPropertyRuleTest extends RuleTestCase
 				'Readonly property AnonymousClassd46c4a7fade8fbe381fe74954f5c073f::$nonPromotedProp cannot be redeclared, because you call the parent constructor.',
 				118,
 			],
+			[
+				'Readonly property RedeclareReadonlyProperty\C12_1::$aProp cannot be redeclared, because you call the parent constructor.',
+				155,
+			],
 		]);
 	}
 

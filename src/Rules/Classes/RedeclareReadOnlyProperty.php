@@ -13,6 +13,7 @@ use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_key_exists;
+use function array_keys;
 use function is_string;
 use function sprintf;
 
@@ -112,7 +113,8 @@ class RedeclareReadOnlyProperty implements Rule
 					continue;
 				}
 
-				$redeclaredProperties[$propertyName] = $property;
+				$declaringClass = $parentProperty->getDeclaringClass();
+				$redeclaredProperties[$propertyName] = [$property, $declaringClass->getName()];
 			}
 		}
 
@@ -132,7 +134,8 @@ class RedeclareReadOnlyProperty implements Rule
 				continue;
 			}
 
-			$redeclaredProperties[$propertyName] = $param;
+			$declaringClass = $parentProperty->getDeclaringClass();
+			$redeclaredProperties[$propertyName] = [$param, $declaringClass->getName()];
 		}
 
 		if ($redeclaredProperties === []) {
@@ -144,29 +147,37 @@ class RedeclareReadOnlyProperty implements Rule
 			$parentAncestorMap[$ancestor->getName()] = $ancestor;
 		}
 
-		$callsParentConstructor = false;
+		$calledAncestorConstructorMap = [];
 		foreach ($visitor->getConstructorCalls() as $constructorCall) {
 			if ($constructorCall->class instanceof Node\Expr) {
 				continue;
 			}
 
-			// TODO: what if we call constructor from deeper ancestor which doesn't have the property yet?
 			$name = $scope->resolveName($constructorCall->class);
 			if (!array_key_exists($name, $parentAncestorMap)) {
 				continue;
 			}
 
-			$callsParentConstructor = true;
-			break;
+			$calledAncestorConstructorMap[$name] = true;
 		}
 
-		if (!$callsParentConstructor) {
+		if ($calledAncestorConstructorMap === []) {
 			return [];
 		}
 
 		$errors = [];
 
-		foreach ($redeclaredProperties as $propertyName => $propertyNode) {
+		foreach ($redeclaredProperties as $propertyName => [$propertyNode, $declaringClassName]) {
+			foreach (array_keys($parentAncestorMap) as $ancestorName) {
+				if (array_key_exists($ancestorName, $calledAncestorConstructorMap)) {
+					break;
+				}
+
+				if ($ancestorName === $declaringClassName) {
+					continue 2;
+				}
+			}
+
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Readonly property %s::$%s cannot be redeclared, because you call the parent constructor.',
 				$reflection->getName(),

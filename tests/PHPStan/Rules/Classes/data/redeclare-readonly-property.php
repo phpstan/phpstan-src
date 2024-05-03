@@ -122,3 +122,37 @@ class B11 extends A {
 		};
 	}
 }
+
+class A12 {
+	public function __construct(public readonly int $aProp)
+	{
+	}
+}
+
+class B12 extends A12 {
+	public function __construct(public readonly int $bProp)
+	{
+		parent::__construct(15);
+	}
+}
+
+class C12 extends B12 {
+	// This is OK, because we call A12's constructor, not B12's.
+	public function __construct(public readonly int $bProp) {
+		A12::__construct(15);
+	}
+}
+
+class B12_1 extends A12 {
+	public function __construct(public readonly int $bProp)
+	{
+		parent::__construct(15);
+	}
+}
+
+class C12_1 extends B12_1 {
+	// Error: we override A's readonly property and call the parent constructor, which may call A's constructor, ...
+	public function __construct(public readonly int $aProp) {
+		parent::__construct(15);
+	}
+}

@@ -210,11 +210,11 @@ class TypeSpecifier
 				$expr->left instanceof FuncCall
 				&& count($expr->left->getArgs()) === 1
 				&& $expr->left->name instanceof Name
-				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen'], true)
+				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen', 'mb_strlen'], true)
 				&& (
 					!$expr->right instanceof FuncCall
 					|| !$expr->right->name instanceof Name
-					|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen'], true)
+					|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen', 'mb_strlen'], true)
 				)
 			) {
 				$inverseOperator = $expr instanceof Node\Expr\BinaryOp\Smaller
@@ -265,7 +265,7 @@ class TypeSpecifier
 				&& $expr->right instanceof FuncCall
 				&& count($expr->right->getArgs()) === 1
 				&& $expr->right->name instanceof Name
-				&& strtolower((string) $expr->right->name) === 'strlen'
+				&& in_array(strtolower((string) $expr->right->name), ['strlen', 'mb_strlen'], true)
 				&& $leftType->isInteger()->yes()
 			) {
 				if (
@@ -977,7 +977,7 @@ class TypeSpecifier
 			&& $exprNode instanceof FuncCall
 			&& count($exprNode->getArgs()) === 1
 			&& $exprNode->name instanceof Name
-			&& strtolower((string) $exprNode->name) === 'strlen'
+			&& in_array(strtolower((string) $exprNode->name), ['strlen', 'mb_strlen'], true)
 			&& $constantType instanceof ConstantIntegerType
 		) {
 			if ($context->truthy() || $constantType->getValue() === 0) {

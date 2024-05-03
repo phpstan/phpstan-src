@@ -53,6 +53,10 @@ class Foo
 
 		assertType('string', mb_substr($s, 0, $positiveInt));
 		assertType('non-empty-string', mb_substr($nonEmpty, 0, $positiveInt));
+
+		assertType('non-falsy-string', mb_substr("déjà_vu", 0, $positiveInt));
+		assertType("'déjà_vu'", mb_substr("déjà_vu", 0));
+		assertType("'déj'", mb_substr("déjà_vu", 0, 3));
 	}
 
 }

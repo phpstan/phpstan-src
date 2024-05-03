@@ -19,6 +19,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 use function is_bool;
+use function mb_substr;
 use function substr;
 
 class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -63,16 +64,17 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 				$results = [];
 				foreach ($constantStrings as $constantString) {
 					if ($length !== null) {
-						$substr = substr(
-							$constantString->getValue(),
-							$offset->getValue(),
-							$length->getValue(),
-						);
+						if ($functionReflection->getName() === 'mb_substr') {
+							$substr = mb_substr($constantString->getValue(), $offset->getValue(), $length->getValue());
+						} else {
+							$substr = substr($constantString->getValue(), $offset->getValue(), $length->getValue());
+						}
 					} else {
-						$substr = substr(
-							$constantString->getValue(),
-							$offset->getValue(),
-						);
+						if ($functionReflection->getName() === 'mb_substr') {
+							$substr = mb_substr($constantString->getValue(), $offset->getValue());
+						} else {
+							$substr = substr($constantString->getValue(), $offset->getValue());
+						}
 					}
 
 					if (is_bool($substr)) {

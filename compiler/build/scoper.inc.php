@@ -8,6 +8,7 @@ $stubs = [
 	'../../resources/functionMap_php80delta.php',
 	'../../resources/functionMetadata.php',
 	'../../vendor/hoa/consistency/Prelude.php',
+	'../../vendor/hoa/protocol/Wrapper.php',
 	'../../vendor/composer/InstalledVersions.php',
 	'../../vendor/composer/installed.php',
 ];
@@ -16,13 +17,13 @@ foreach ($stubFinder->files()->name('*.php')->in([
 	'../../stubs',
 	'../../vendor/jetbrains/phpstorm-stubs',
 	'../../vendor/phpstan/php-8-stubs/stubs',
-	'../../vendor/symfony/polyfill-php80',
-	'../../vendor/symfony/polyfill-php81',
-	'../../vendor/symfony/polyfill-mbstring',
-	'../../vendor/symfony/polyfill-intl-normalizer',
-	'../../vendor/symfony/polyfill-php73',
-	'../../vendor/symfony/polyfill-php74',
-	'../../vendor/symfony/polyfill-intl-grapheme',
+//	'../../vendor/symfony/polyfill-php80',
+//	'../../vendor/symfony/polyfill-php81',
+//	'../../vendor/symfony/polyfill-mbstring',
+//	'../../vendor/symfony/polyfill-intl-normalizer',
+//	'../../vendor/symfony/polyfill-php73',
+//	'../../vendor/symfony/polyfill-php74',
+//	'../../vendor/symfony/polyfill-intl-grapheme',
 ]) as $file) {
 	if ($file->getPathName() === '../../vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php') {
 		continue;
@@ -218,19 +219,41 @@ return [
 
 			return str_replace(sprintf('use %s\\PhpParser;', $prefix), 'use PhpParser;', $content);
 		},
+		// Patch to mimic the expected solution result for https://github.com/humbug/php-scoper/issues/963
+		function (string $filePath, string $prefix, string $content): string {
+			return preg_replace_callback(
+				'/if \(\s*!\s*\\\?function_exists\(\'\\\?(?<functionFQN>.+)\'\)\)[\s\n]{/',
+				static function(array $matches) use ($prefix): string {
+					$matchedElement = $matches[0];
+					$functionFqn = $matches['functionFQN'];
+
+					if (str_starts_with($functionFqn, $prefix)) {
+						return $matchedElement;
+					}
+
+					return sprintf(
+						'if (!function_exists(\'%1$s\') && !function_exists(\'%2$s\%1$s\')) {',
+						$functionFqn,
+						$prefix,
+					);
+				},
+				$content,
+				-1
+			);
+		},
 	],
 	'exclude-namespaces' => [
 		'PHPStan',
 		'PHPUnit',
 		'PhpParser',
 		'Hoa',
-		'Symfony\Polyfill\Php80',
-		'Symfony\Polyfill\Php81',
-		'Symfony\Polyfill\Mbstring',
-		'Symfony\Polyfill\Intl\Normalizer',
-		'Symfony\Polyfill\Php73',
-		'Symfony\Polyfill\Php74',
-		'Symfony\Polyfill\Intl\Grapheme',
+//		'Symfony\Polyfill\Php80',
+//		'Symfony\Polyfill\Php81',
+//		'Symfony\Polyfill\Mbstring',
+//		'Symfony\Polyfill\Intl\Normalizer',
+//		'Symfony\Polyfill\Php73',
+//		'Symfony\Polyfill\Php74',
+//		'Symfony\Polyfill\Intl\Grapheme',
 	],
 	'expose-global-functions' => false,
 	'expose-global-classes' => false,

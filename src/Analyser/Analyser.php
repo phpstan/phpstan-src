@@ -5,11 +5,15 @@ namespace PHPStan\Analyser;
 use Closure;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
 use function array_fill_keys;
+use function array_key_exists;
 use function array_merge;
 use function count;
+use function json_decode;
+use function json_encode;
 use function memory_get_peak_usage;
 use function sprintf;
 
@@ -22,6 +26,7 @@ class Analyser
 		private CollectorRegistry $collectorRegistry,
 		private NodeScopeResolver $nodeScopeResolver,
 		private int $internalErrorsCountLimit,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}
@@ -104,6 +109,42 @@ class Analyser
 			$postFileCallback(1);
 		}
 
+		// verify serializability of collected data
+		$alreadyReported = [];
+		foreach ($collectedData as $collected) {
+			if (array_key_exists($collected->getCollectorType(), $alreadyReported)) {
+				continue;
+			}
+
+			$json = json_encode($collected->getData());
+			if ($json === false) {
+				$errors[] = $this->buildCollectedDataError(
+					sprintf(
+						'Data collected by %s is not JSON serializable.',
+						$collected->getCollectorType(),
+					),
+					$collected,
+				);
+				$alreadyReported[$collected->getCollectorType()] = true;
+
+				break;
+			}
+
+			$restored = json_decode($json);
+			if ($restored === $collected->getData()) {
+				continue;
+			}
+
+			$errors[] = $this->buildCollectedDataError(
+				sprintf(
+					'Data collected by %s is not JSON decodable and will not work in parallel analysis.',
+					$collected->getCollectorType(),
+				),
+				$collected,
+			);
+			$alreadyReported[$collected->getCollectorType()] = true;
+		}
+
 		return new AnalyserResult(
 			$errors,
 			[],
@@ -112,6 +153,30 @@ class Analyser
 			$exportedNodes,
 			$reachedInternalErrorsCountLimit,
 			memory_get_peak_usage(true),
+		);
+	}
+
+	private function buildCollectedDataError(string $message, CollectedData $collectedData): Error
+	{
+		if (!$this->reflectionProvider->hasClass($collectedData->getCollectorType())) {
+			return new Error(
+				sprintf('Unable to find class for collector of type %s', $collectedData->getCollectorType()),
+				'N/A',
+			);
+		}
+
+		$collectorClass = $this->reflectionProvider->getClass($collectedData->getCollectorType());
+		$fileName = $collectorClass->getFileName();
+		if ($fileName === null) {
+			return new Error(
+				sprintf('Missing filename for collector of type %s', $collectedData->getCollectorType()),
+				'N/A',
+			);
+		}
+
+		return new Error(
+			$message,
+			$fileName,
 		);
 	}
 

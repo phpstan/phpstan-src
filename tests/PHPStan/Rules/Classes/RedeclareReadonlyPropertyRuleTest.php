@@ -56,4 +56,15 @@ class RedeclareReadonlyPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8101(): void
+	{
+		$this->phpVersion = 80100;
+		$this->analyse([__DIR__ . '/data/bug-8101.php'], [
+			[
+				'Readonly property Bug8101\B::$myProp cannot be redeclared, because you call the parent constructor.',
+				11,
+			],
+		]);
+	}
+
 }

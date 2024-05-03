@@ -243,13 +243,13 @@ class TypeSpecifier
 				&& $leftType->isInteger()->yes()
 			) {
 				if (
-					$context->truthy() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
-					|| ($context->falsey() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
+					$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
+					|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
 				) {
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType->isArray()->yes()) {
 						$newType = new NonEmptyArrayType();
-						if ($context->truthy() && $argType->isList()->yes()) {
+						if ($context->true() && $argType->isList()->yes()) {
 							$newType = AccessoryArrayListType::intersectWith($newType);
 						}
 

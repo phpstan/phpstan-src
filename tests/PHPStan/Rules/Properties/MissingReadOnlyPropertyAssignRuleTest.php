@@ -287,4 +287,89 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10822.php'], []);
 	}
 
+	public function testRedeclaredReadonlyProperties(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/redeclare-readonly-property.php'], [
+			[
+				'Readonly property RedeclareReadonlyProperty\B1::$myProp is already assigned.',
+				16,
+			],
+			[
+				'Readonly property RedeclareReadonlyProperty\B5::$myProp is already assigned.',
+				50,
+			],
+			[
+				'Readonly property RedeclareReadonlyProperty\B7::$myProp is already assigned.',
+				70,
+			],
+			[
+				'Readonly property class@anonymous/tests/PHPStan/Rules/Properties/data/redeclare-readonly-property.php:117::$myProp is already assigned.',
+				121,
+			],
+		]);
+	}
+
+	public function testRedeclaredPropertiesOfReadonlyClass(): void
+	{
+		if (PHP_VERSION_ID < 80200) {
+			$this->markTestSkipped('Test requires PHP 8.2.');
+		}
+
+		$this->analyse([__DIR__ . '/data/redeclare-property-of-readonly-class.php'], [
+			[
+				'Readonly property RedeclarePropertyOfReadonlyClass\B1::$promotedProp is already assigned.',
+				15,
+			],
+		]);
+	}
+
+	public function testBug8101(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-8101.php'], [
+			[
+				'Readonly property Bug8101\B::$myProp is already assigned.',
+				12,
+			],
+		]);
+	}
+
+	public function testBug9863(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9863.php'], [
+			[
+				'Readonly property Bug9863\ReadonlyChildWithoutIsset::$foo is already assigned.',
+				17,
+			],
+			[
+				'Class Bug9863\ReadonlyParentWithIsset has an uninitialized readonly property $foo. Assign it in the constructor.',
+				23,
+			],
+			[
+				'Access to an uninitialized readonly property Bug9863\ReadonlyParentWithIsset::$foo.',
+				28,
+			],
+		]);
+	}
+
+	public function testBug9864(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9864.php'], []);
+	}
+
 }

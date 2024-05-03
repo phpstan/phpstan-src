@@ -177,6 +177,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use ReflectionProperty;
 use Throwable;
 use Traversable;
 use TypeError;
@@ -2608,6 +2609,7 @@ class NodeScopeResolver
 
 			$parametersAcceptor = null;
 			$methodReflection = null;
+			$ancestorPromotedPropertyInitializationExprs = [];
 			if ($expr->name instanceof Expr) {
 				$result = $this->processExprNode($stmt, $expr->name, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $result->hasYield();
@@ -2632,9 +2634,10 @@ class NodeScopeResolver
 						if ($methodThrowPoint !== null) {
 							$throwPoints[] = $methodThrowPoint;
 						}
+						$lowerMethodName = strtolower($methodName);
 						if (
 							$classReflection->getName() === 'Closure'
-							&& strtolower($methodName) === 'bind'
+							&& $lowerMethodName === 'bind'
 						) {
 							$thisType = null;
 							$nativeThisType = null;
@@ -2673,6 +2676,14 @@ class NodeScopeResolver
 								}
 							}
 							$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
+						} elseif ($lowerMethodName === '__construct') {
+							foreach ($classReflection->getNativeReflection()->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED) as $property) {
+								if (!$property->isPromoted() || $property->getDeclaringClass()->getName() !== $classReflection->getName()) {
+									continue;
+								}
+
+								$ancestorPromotedPropertyInitializationExprs[] = new PropertyInitializationExpr($property->getName());
+							}
 						}
 					} else {
 						$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
@@ -2720,6 +2731,10 @@ class NodeScopeResolver
 				)
 			) {
 				$scope = $scope->invalidateExpression(new Variable('this'), true);
+			}
+
+			foreach ($ancestorPromotedPropertyInitializationExprs as $propertyInitExpr) {
+				$scope = $scope->assignExpression($propertyInitExpr, new MixedType(), new MixedType());
 			}
 
 			$hasYield = $hasYield || $result->hasYield();

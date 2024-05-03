@@ -18,6 +18,7 @@ use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
+use ReflectionProperty;
 use function count;
 use function in_array;
 use function strtolower;
@@ -157,6 +158,9 @@ class ClassStatementsGatherer
 		}
 		if ($node instanceof MethodCall || $node instanceof StaticCall) {
 			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
+			if ($node instanceof StaticCall && $node->name instanceof Identifier && $node->name->toLowerString() === '__construct') {
+				$this->tryToApplyPropertyWritesFromAncestorConstructor($node, $scope);
+			}
 			return;
 		}
 		if ($node instanceof MethodCallableNode || $node instanceof StaticMethodCallableNode) {
@@ -248,6 +252,30 @@ class ClassStatementsGatherer
 			$this->propertyUsages[] = new PropertyRead(
 				new PropertyFetch(new Expr\Variable('this'), new Identifier($property->getName())),
 				$scope,
+			);
+		}
+	}
+
+	private function tryToApplyPropertyWritesFromAncestorConstructor(StaticCall $ancestorConstructorCall, Scope $scope): void
+	{
+		if (!$ancestorConstructorCall->class instanceof Node\Name) {
+			return;
+		}
+
+		$calledOnType = $scope->resolveTypeByName($ancestorConstructorCall->class);
+		if ($calledOnType->getClassReflection() === null || TypeUtils::findThisType($calledOnType) === null) {
+			return;
+		}
+
+		$classReflection = $calledOnType->getClassReflection()->getNativeReflection();
+		foreach ($classReflection->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED) as $property) {
+			if (!$property->isPromoted() || $property->getDeclaringClass()->getName() !== $classReflection->getName()) {
+				continue;
+			}
+			$this->propertyUsages[] = new PropertyWrite(
+				new PropertyFetch(new Expr\Variable('this'), new Identifier($property->getName()), $ancestorConstructorCall->getAttributes()),
+				$scope,
+				false,
 			);
 		}
 	}

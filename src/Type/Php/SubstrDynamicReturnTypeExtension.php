@@ -17,6 +17,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
+use function in_array;
 use function is_bool;
 use function substr;
 
@@ -25,7 +26,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'substr';
+		return in_array($functionReflection->getName(), ['substr', 'mb_substr'], true);
 	}
 
 	public function getTypeFromFunctionCall(

@@ -38,6 +38,11 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 		'stripos' => [0, 1],
 		'strripos' => [0, 1],
 		'strstr' => [0, 1],
+		'mb_strpos' => [0, 1],
+		'mb_strrpos' => [0, 1],
+		'mb_stripos' => [0, 1],
+		'mb_strripos' => [0, 1],
+		'mb_strstr' => [0, 1],
 	];
 
 	private TypeSpecifier $typeSpecifier;

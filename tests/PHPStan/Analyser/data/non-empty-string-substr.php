@@ -31,4 +31,28 @@ class Foo
 		assertType('non-empty-string', substr($nonEmpty, 0, $positiveInt));
 	}
 
+	/**
+	 * @param non-empty-string $nonEmpty
+	 * @param positive-int $positiveInt
+	 * @param 1|2|3 $postiveRange
+	 * @param -1|-2|-3 $negativeRange
+	 */
+	public function doMbSubstr(string $s, $nonEmpty, $positiveInt, $postiveRange, $negativeRange): void
+	{
+		assertType('string', mb_substr($s, 5));
+
+		assertType('string', mb_substr($s, -5));
+		assertType('non-empty-string', mb_substr($nonEmpty, -5));
+		assertType('non-empty-string', mb_substr($nonEmpty, $negativeRange));
+
+		assertType('string', mb_substr($s, 0, 5));
+		assertType('non-empty-string', mb_substr($nonEmpty, 0, 5));
+		assertType('non-empty-string', mb_substr($nonEmpty, 0, $postiveRange));
+
+		assertType('string', mb_substr($nonEmpty, 0, -5));
+
+		assertType('string', mb_substr($s, 0, $positiveInt));
+		assertType('non-empty-string', mb_substr($nonEmpty, 0, $positiveInt));
+	}
+
 }

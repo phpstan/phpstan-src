@@ -299,7 +299,7 @@ class RichParser implements Parser
 			if ($i === 0) {
 				throw new IgnoreParseException('First token is not an identifier', $tokenLine);
 			}
-			if ($tokenType === IgnoreLexer::TOKEN_COMMA) {
+			if ($tokenType === IgnoreLexer::TOKEN_COMMA && $depth === 0) {
 				throw new IgnoreParseException('Unexpected comma (,)', $tokenLine);
 			}
 			if ($tokenType === IgnoreLexer::TOKEN_CLOSE_PARENTHESIS) {

@@ -20,5 +20,11 @@ class HelloWorld
 		} else {
 			assertType("string", $string);
 		}
+
+		match (true) {
+			(strlen($string) > 1) => assertType('non-empty-string', $string),
+			default => assertType("string", $string),
+		};
+
 	}
 }

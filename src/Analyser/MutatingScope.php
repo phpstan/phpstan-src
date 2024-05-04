@@ -1965,6 +1965,14 @@ class MutatingScope implements Scope
 					return $this->getType($innerFuncCall);
 				}
 			}
+			if ($functionReflection->getName() === 'call_user_func_array') {
+				$result = ArgumentsNormalizer::reorderCallUserFuncArrayArguments($node, $this);
+				if ($result !== null) {
+					[, $innerFuncCall] = $result;
+
+					return $this->getType($innerFuncCall);
+				}
+			}
 
 			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 				$this,

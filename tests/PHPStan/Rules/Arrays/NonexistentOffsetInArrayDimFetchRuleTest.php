@@ -773,12 +773,36 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				11,
 			],
 			[
-				'Cannot access offset 5 on mixed.',
-				16,
+				'Cannot access offset 5 on T of mixed.',
+				12,
+			],
+			[
+				'Cannot access offset 5 on T of mixed.',
+				18,
 			],
 			[
 				'Cannot access offset 5 on mixed.',
-				21,
+				24,
+			],
+			[
+				'Cannot access offset 5 on mixed.',
+				25,
+			],
+			[
+				'Cannot access offset 5 on mixed.',
+				31,
+			],
+			[
+				'Cannot access offset 5 on mixed.',
+				37,
+			],
+			[
+				'Cannot access offset 5 on mixed.',
+				38,
+			],
+			[
+				'Cannot access offset 5 on mixed.',
+				44,
 			],
 		]);
 	}

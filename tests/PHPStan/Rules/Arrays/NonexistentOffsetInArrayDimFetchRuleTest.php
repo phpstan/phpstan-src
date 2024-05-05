@@ -745,6 +745,17 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10926(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-10926.php'], [
+			[
+				'Cannot access offset \'a\' on stdClass.',
+				10,
+			],
+		]);
+	}
+
 	public function testMixed(): void
 	{
 		$this->checkExplicitMixed = true;

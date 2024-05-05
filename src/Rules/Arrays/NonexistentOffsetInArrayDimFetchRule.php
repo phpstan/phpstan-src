@@ -68,23 +68,31 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 			return [];
 		}
 
+		$addIllegalTypeInclusionTip = static function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $isOffsetAccessibleType): RuleErrorBuilder {
+			if ($scope->isUndefinedExpressionAllowed($node) && $isOffsetAccessibleType->isOffsetAccessLegal()->maybe()) {
+				return $ruleErrorBuilder->tip('To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.');
+			}
+
+			return $ruleErrorBuilder;
+		};
+
 		if (!$isOffsetAccessible->yes()) {
 			if ($isOffsetAccessible->no() || $this->reportMaybes) {
 				if ($dimType !== null) {
 					return [
-						RuleErrorBuilder::message(sprintf(
+						$addIllegalTypeInclusionTip(RuleErrorBuilder::message(sprintf(
 							'Cannot access offset %s on %s.',
 							$dimType->describe(VerbosityLevel::value()),
 							$isOffsetAccessibleType->describe(VerbosityLevel::value()),
-						))->identifier('offsetAccess.nonOffsetAccessible')->build(),
+						)))->identifier('offsetAccess.nonOffsetAccessible')->build(),
 					];
 				}
 
 				return [
-					RuleErrorBuilder::message(sprintf(
+					$addIllegalTypeInclusionTip(RuleErrorBuilder::message(sprintf(
 						'Cannot access an offset on %s.',
 						$isOffsetAccessibleType->describe(VerbosityLevel::typeOnly()),
-					))->identifier('offsetAccess.nonOffsetAccessible')->build(),
+					)))->identifier('offsetAccess.nonOffsetAccessible')->build(),
 				];
 			}
 

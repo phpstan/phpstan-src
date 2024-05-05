@@ -118,6 +118,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset \'a\' on array{a: 1, b: 1}|(Closure(): void).',
 				258,
+				'To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.',
 			],
 			[
 				'Offset null does not exist on array<int, string>.',
@@ -259,6 +260,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset \'a\' on array{a: 1, b: 1}|(Closure(): void).',
 				258,
+				'To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.',
 			],
 			[
 				'Offset null does not exist on array<int, string>.',
@@ -756,6 +758,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset \'a\' on stdClass.',
 				10,
+				'To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.',
 			],
 		]);
 	}
@@ -791,14 +794,17 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset 0 on stdClass.',
 				12,
+				'To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.',
 			],
 			[
 				'Cannot access offset 0 on array{\'test\'}|stdClass.',
 				96,
+				'To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.',
 			],
 			[
 				'Cannot access offset 0 on array{\'test\'}|(Closure(): void).',
 				98,
+				'To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.',
 			],
 		]);
 	}

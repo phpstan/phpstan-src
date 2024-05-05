@@ -112,6 +112,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				253,
 			],
 			[
+				'Cannot access offset \'a\' on array{a: 1, b: 1}|(Closure(): void).',
+				258,
+			],
+			[
 				'Offset string does not exist on array<int, string>.',
 				308,
 			],
@@ -532,16 +536,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	public function testBug8097(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8097.php'], []);
-	}
-
-	public function testBug8068(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-8068.php'], [
-			[
-				"Cannot access offset 'path' on Closure.",
-				18,
-			],
-		]);
 	}
 
 }

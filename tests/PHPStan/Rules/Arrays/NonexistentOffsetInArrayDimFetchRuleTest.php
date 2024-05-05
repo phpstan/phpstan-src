@@ -776,6 +776,29 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testOffsetAccessLegal(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/offset-access-legal.php'], [
+			[
+				'Cannot access offset 0 on Closure(): void.',
+				7,
+			],
+			[
+				'Cannot access offset 0 on stdClass.',
+				12,
+			],
+			[
+				'Cannot access offset 0 on array{\'test\'}|stdClass.',
+				96,
+			],
+			[
+				'Cannot access offset 0 on array{\'test\'}|(Closure(): void).',
+				98,
+			],
+		]);
+	}
+
 	public function dataReportPossiblyNonexistentArrayOffset(): iterable
 	{
 		yield [false, false, []];

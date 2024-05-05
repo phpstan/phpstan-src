@@ -332,7 +332,7 @@ class StrictMixedType implements CompoundType, SubtractableType
 				return TrinaryLogic::createYes();
 			}
 		}
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic

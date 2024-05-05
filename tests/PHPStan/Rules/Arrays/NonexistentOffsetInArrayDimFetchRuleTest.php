@@ -551,6 +551,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset string on mixed.',
 				24,
+				'To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.',
 			],
 		]);
 	}
@@ -732,6 +733,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset \'title\' on mixed.',
 				9,
+				'To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.',
 			],
 		]);
 	}
@@ -775,6 +777,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset 5 on T of mixed.',
 				12,
+				'To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.',
 			],
 			[
 				'Cannot access offset 5 on T of mixed.',
@@ -787,6 +790,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset 5 on mixed.',
 				25,
+				'To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.',
 			],
 			[
 				'Cannot access offset 5 on mixed.',
@@ -799,6 +803,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset 5 on mixed.',
 				38,
+				'To offset access on this value, narrow down the type by filtering classes not implementing ArrayAccess::class.',
 			],
 			[
 				'Cannot access offset 5 on mixed.',

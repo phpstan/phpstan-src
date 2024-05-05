@@ -15,21 +15,13 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
-	private bool $checkImplicitMixed = false;
-
-	private bool $bleedingEdge = false;
-
-	private bool $reportPossiblyNonexistentGeneralArrayOffset = false;
-
-	private bool $reportPossiblyNonexistentConstantArrayOffset = false;
-
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false);
+		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false);
 
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,
-			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->bleedingEdge, $this->reportPossiblyNonexistentGeneralArrayOffset, $this->reportPossiblyNonexistentConstantArrayOffset),
+			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true),
 			true,
 		);
 	}
@@ -112,8 +104,16 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				228,
 			],
 			[
+				'Offset string does not exist on array<int, mixed>.',
+				240,
+			],
+			[
 				'Cannot access offset \'a\' on Closure(): void.',
 				253,
+			],
+			[
+				'Offset string does not exist on array<int, string>.',
+				308,
 			],
 			[
 				'Offset null does not exist on array<int, string>.',
@@ -161,143 +161,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			],
 			[
 				'Offset \'feature_pretty…\' does not exist on array{version: non-falsy-string, commit: string|null, pretty_version: string|null, feature_version: non-falsy-string, feature_pretty_version?: string|null}.',
-				504,
-			],
-			[
-				"Cannot access offset 'foo' on bool.",
-				517,
-			],
-		]);
-	}
-
-	public function testRuleBleedingEdge(): void
-	{
-		$this->bleedingEdge = true;
-		$this->analyse([__DIR__ . '/data/nonexistent-offset.php'], [
-			[
-				'Offset \'b\' does not exist on array{a: stdClass, 0: 2}.',
-				17,
-			],
-			[
-				'Offset 1 does not exist on array{a: stdClass, 0: 2}.',
-				18,
-			],
-			[
-				'Offset \'a\' does not exist on array{b: 1}.',
-				55,
-			],
-			[
-				'Access to offset \'bar\' on an unknown class NonexistentOffset\Bar.',
-				101,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
-			[
-				'Access to an offset on an unknown class NonexistentOffset\Bar.',
-				102,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
-			[
-				'Offset 0 does not exist on array<string, string>.',
-				111,
-			],
-			[
-				'Offset \'0\' does not exist on array<string, string>.',
-				112,
-			],
-			[
-				'Offset int does not exist on array<string, string>.',
-				114,
-			],
-			[
-				'Offset \'test\' does not exist on null.',
-				126,
-			],
-			[
-				'Cannot access offset 42 on int.',
-				142,
-			],
-			[
-				'Cannot access offset 42 on float.',
-				143,
-			],
-			[
-				'Cannot access offset 42 on bool.',
-				144,
-			],
-			[
-				'Cannot access offset 42 on resource.',
-				145,
-			],
-			[
-				'Offset \'c\' might not exist on array{c: false}|array{c: true}|array{e: true}.',
-				171,
-			],
-			[
-				'Offset int might not exist on array{}|array{1: 1, 2: 2}|array{3: 3, 4: 4}.',
-				190,
-			],
-			[
-				'Offset int might not exist on array{}|array{1: 1, 2: 2}|array{3: 3, 4: 4}.',
-				193,
-			],
-			[
-				'Offset \'b\' does not exist on array{a: \'blabla\'}.',
-				225,
-			],
-			[
-				'Offset \'b\' does not exist on array{a: \'blabla\'}.',
-				228,
-			],
-			[
-				'Cannot access offset \'a\' on Closure(): void.',
-				253,
-			],
-			[
-				'Offset null does not exist on array<int, string>.',
-				310,
-			],
-			[
-				'Offset int does not exist on array<string, string>.',
-				312,
-			],
-			[
-				'Offset \'baz\' might not exist on array{bar: 1, baz?: 2}.',
-				344,
-			],
-			[
-				'Offset \'foo\' does not exist on ArrayAccess<int, stdClass>.',
-				411,
-			],
-			[
-				'Cannot access offset \'foo\' on stdClass.',
-				423,
-			],
-			[
-				'Cannot access offset \'foo\' on true.',
-				426,
-			],
-			[
-				'Cannot access offset \'foo\' on false.',
-				429,
-			],
-			[
-				'Cannot access offset \'foo\' on resource.',
-				433,
-			],
-			[
-				'Cannot access offset \'foo\' on 42.',
-				436,
-			],
-			[
-				'Cannot access offset \'foo\' on 4.141.',
-				439,
-			],
-			[
-				'Cannot access offset \'foo\' on array|int.',
-				443,
-			],
-			[
-				'Offset \'feature_pretty…\' might not exist on array{version: non-falsy-string, commit: string|null, pretty_version: string|null, feature_version: non-falsy-string, feature_pretty_version?: string|null}.',
 				504,
 			],
 			[
@@ -541,6 +404,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset string on mixed.',
 				24,
+			],
+			[
+				'Cannot access offset string on mixed.',
+				29,
+			],
+			[
+				'Cannot access offset string on mixed.',
+				32,
 			],
 		]);
 	}

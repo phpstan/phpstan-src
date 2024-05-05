@@ -1059,6 +1059,53 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function dataSubstractedIsOffsetLegal(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new ArrayType(new MixedType(), new MixedType()),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new IntersectionType([
+					new ObjectWithoutClassType(),
+					new ObjectType(ArrayAccess::class),
+				]),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ObjectWithoutClassType(),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new MixedType(),
+				new UnionType([
+					new ObjectWithoutClassType(),
+					new StringType(),
+				]),
+				TrinaryLogic::createYes(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsOffsetLegal
+	 */
+	public function testSubstractedIsOffsetLegal(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isOffsetAccessLegal();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isOffsetAccessLegal()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
 	public function dataSubtractedHasOffsetValueType(): array
 	{
 		return [

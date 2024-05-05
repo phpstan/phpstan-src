@@ -569,12 +569,7 @@ class MixedType implements CompoundType, SubtractableType
 	public function isOffsetAccessLegal(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
-			$offsetAccessibles = new UnionType([
-				new ClosureType(),
-				new ObjectWithoutClassType(),
-			]);
-
-			if ($this->subtractedType->isSuperTypeOf($offsetAccessibles)->yes()) {
+			if ($this->subtractedType->isSuperTypeOf(new ObjectWithoutClassType())->yes()) {
 				return TrinaryLogic::createYes();
 			}
 		}

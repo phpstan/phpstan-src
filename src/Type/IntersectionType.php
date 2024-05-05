@@ -672,6 +672,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isOffsetAccessible());
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isOffsetAccessLegal());
+	}
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		if ($this->isList()->yes() && $this->isIterableAtLeastOnce()->yes()) {

@@ -1099,6 +1099,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		);
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return $this->isOffsetAccessible();
+	}
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {

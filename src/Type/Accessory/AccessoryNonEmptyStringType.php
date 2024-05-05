@@ -134,6 +134,11 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		return $offsetType->isInteger()->and(TrinaryLogic::createMaybe());

@@ -393,6 +393,11 @@ class ArrayType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		$offsetType = $offsetType->toArrayKey();

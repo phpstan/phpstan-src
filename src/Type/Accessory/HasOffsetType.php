@@ -138,6 +138,11 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		if ($offsetType->isConstantScalarValue()->yes() && $offsetType->equals($this->offsetType)) {

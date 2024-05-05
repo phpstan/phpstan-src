@@ -222,6 +222,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isOffsetAccessible();
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return $this->resolve()->isOffsetAccessLegal();
+	}
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		return $this->resolve()->hasOffsetValueType($offsetType);

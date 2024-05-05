@@ -116,6 +116,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				253,
 			],
 			[
+				'Cannot access offset \'a\' on array{a: 1, b: 1}|(Closure(): void).',
+				258,
+			],
+			[
 				'Offset null does not exist on array<int, string>.',
 				310,
 			],
@@ -251,6 +255,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset \'a\' on Closure(): void.',
 				253,
+			],
+			[
+				'Cannot access offset \'a\' on array{a: 1, b: 1}|(Closure(): void).',
+				258,
 			],
 			[
 				'Offset null does not exist on array<int, string>.',

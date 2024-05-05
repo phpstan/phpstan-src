@@ -79,7 +79,7 @@ class RuleLevelHelper
 					|| (!$type->isExplicitMixed() && $this->checkImplicitMixed)
 				)
 			) {
-				return new StrictMixedType();
+				return new StrictMixedType($type->getSubtractedType());
 			}
 
 			return $traverse($type);
@@ -189,7 +189,7 @@ class RuleLevelHelper
 					$type instanceof MixedType
 					&& $type->isExplicitMixed()
 				) {
-					return new StrictMixedType();
+					return new StrictMixedType($type->getSubtractedType());
 				}
 
 				return $traverse($type);
@@ -209,7 +209,7 @@ class RuleLevelHelper
 					$type instanceof MixedType
 					&& !$type->isExplicitMixed()
 				) {
-					return new StrictMixedType();
+					return new StrictMixedType($type->getSubtractedType());
 				}
 
 				return $traverse($type);
@@ -342,7 +342,7 @@ class RuleLevelHelper
 				return new FoundTypeResult(
 					$type instanceof TemplateMixedType
 						? $type->toStrictMixedType()
-						: new StrictMixedType(),
+						: new StrictMixedType($type->getSubtractedType()),
 					[],
 					[],
 					null,
@@ -355,7 +355,7 @@ class RuleLevelHelper
 				&& !$type instanceof TemplateMixedType
 				&& $type->isExplicitMixed()
 			) {
-				return new FoundTypeResult(new StrictMixedType(), [], [], null);
+				return new FoundTypeResult(new StrictMixedType($type->getSubtractedType()), [], [], null);
 			}
 
 			if (
@@ -364,7 +364,7 @@ class RuleLevelHelper
 				&& !$type instanceof TemplateMixedType
 				&& !$type->isExplicitMixed()
 			) {
-				return new FoundTypeResult(new StrictMixedType(), [], [], null);
+				return new FoundTypeResult(new StrictMixedType($type->getSubtractedType()), [], [], null);
 			}
 		}
 

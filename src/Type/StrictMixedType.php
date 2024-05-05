@@ -14,6 +14,7 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateMixedType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
@@ -22,7 +23,7 @@ use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
-class StrictMixedType implements CompoundType
+class StrictMixedType implements CompoundType, SubtractableType
 {
 
 	use UndecidedComparisonCompoundTypeTrait;
@@ -30,6 +31,20 @@ class StrictMixedType implements CompoundType
 	use NonIterableTypeTrait;
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
+
+	private ?Type $subtractedType;
+
+	/** @api */
+	public function __construct(
+		?Type $subtractedType = null,
+	)
+	{
+		if ($subtractedType instanceof NeverType) {
+			$subtractedType = null;
+		}
+
+		$this->subtractedType = $subtractedType;
+	}
 
 	public function getReferencedClasses(): array
 	{
@@ -312,6 +327,11 @@ class StrictMixedType implements CompoundType
 
 	public function isOffsetAccessLegal(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			if ($this->subtractedType->isSuperTypeOf(new ObjectWithoutClassType())->yes()) {
+				return TrinaryLogic::createYes();
+			}
+		}
 		return TrinaryLogic::createNo();
 	}
 
@@ -338,6 +358,33 @@ class StrictMixedType implements CompoundType
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return new ErrorType();
+	}
+
+	public function subtract(Type $type): Type
+	{
+		if ($type instanceof self && !$type instanceof TemplateType) {
+			return new NeverType();
+		}
+		if ($this->subtractedType !== null) {
+			$type = TypeCombinator::union($this->subtractedType, $type);
+		}
+
+		return new self($type);
+	}
+
+	public function getTypeWithoutSubtractedType(): Type
+	{
+		return new self();
+	}
+
+	public function changeSubtractedType(?Type $subtractedType): Type
+	{
+		return new self($subtractedType);
+	}
+
+	public function getSubtractedType(): ?Type
+	{
+		return $this->subtractedType;
 	}
 
 	public function isCallable(): TrinaryLogic

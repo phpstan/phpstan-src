@@ -2609,7 +2609,6 @@ class NodeScopeResolver
 
 			$parametersAcceptor = null;
 			$methodReflection = null;
-			$ancestorPromotedPropertyInitializationExprs = [];
 			if ($expr->name instanceof Expr) {
 				$result = $this->processExprNode($stmt, $expr->name, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $result->hasYield();
@@ -2634,10 +2633,9 @@ class NodeScopeResolver
 						if ($methodThrowPoint !== null) {
 							$throwPoints[] = $methodThrowPoint;
 						}
-						$lowerMethodName = strtolower($methodName);
 						if (
 							$classReflection->getName() === 'Closure'
-							&& $lowerMethodName === 'bind'
+							&& strtolower($methodName) === 'bind'
 						) {
 							$thisType = null;
 							$nativeThisType = null;
@@ -2676,14 +2674,6 @@ class NodeScopeResolver
 								}
 							}
 							$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
-						} elseif ($lowerMethodName === '__construct') {
-							foreach ($classReflection->getNativeReflection()->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED) as $property) {
-								if (!$property->isPromoted() || $property->getDeclaringClass()->getName() !== $classReflection->getName()) {
-									continue;
-								}
-
-								$ancestorPromotedPropertyInitializationExprs[] = new PropertyInitializationExpr($property->getName());
-							}
 						}
 					} else {
 						$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
@@ -2733,8 +2723,24 @@ class NodeScopeResolver
 				$scope = $scope->invalidateExpression(new Variable('this'), true);
 			}
 
-			foreach ($ancestorPromotedPropertyInitializationExprs as $propertyInitExpr) {
-				$scope = $scope->assignExpression($propertyInitExpr, new MixedType(), new MixedType());
+			if (
+				$methodReflection !== null
+				&& !$methodReflection->isStatic()
+				&& $methodReflection->getName() === '__construct'
+				&& $scopeFunction instanceof MethodReflection
+				&& !$scopeFunction->isStatic()
+				&& $scope->isInClass()
+				&& $scope->getClassReflection()->isSubclassOf($methodReflection->getDeclaringClass()->getName())
+			) {
+				$thisType = $scope->getType(new Variable('this'));
+				$methodClassReflection = $methodReflection->getDeclaringClass();
+				foreach ($methodClassReflection->getNativeReflection()->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED) as $property) {
+					if (!$property->isPromoted() || $property->getDeclaringClass()->getName() !== $methodClassReflection->getName()) {
+						continue;
+					}
+
+					$scope = $scope->assignInitializedProperty($thisType, $property->getName());
+				}
 			}
 
 			$hasYield = $hasYield || $result->hasYield();

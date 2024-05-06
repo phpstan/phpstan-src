@@ -171,3 +171,92 @@ class B13 extends A13 {
 		parent::__construct(15);
 	}
 }
+
+class B14 {
+	public function __construct(public readonly int $myProp) {
+		// Don't get confused by same property in non-parent's constructor.
+		A::__construct(7);
+	}
+}
+
+class B15 extends A {
+	public function __construct(public readonly int $myProp) {
+		self:foo();
+	}
+
+	public static function foo(): void
+	{
+		// Don't get confused by calling the parent constructor from static scope.
+		parent::__construct(7);
+	}
+}
+
+class B16 extends A {
+	public readonly int $myProp;
+
+	public function __construct(A $other) {
+		// Don't get confused by calling the constructor on other object.
+		$other::__construct(7);
+		$other->__construct(7);
+	}
+}
+
+class A17 {
+	public function __construct(public readonly int $aProp)
+	{
+	}
+}
+
+class B17 extends A17 {
+	public function __construct()
+	{
+	}
+}
+
+class C17 extends B17 {
+	// Error: $aProp may be unassigned, because B's constructor may not call A's
+	public readonly int $aProp;
+
+	public function __construct() {
+		parent::__construct();
+	}
+}
+
+class A18 {
+	public function __construct(private readonly int $aProp)
+	{
+	}
+}
+
+class B18 extends A18 {
+	// Make surer that we don't get confused by parent's private property.
+	public readonly int $aProp;
+
+	public function __construct()
+	{
+		parent::__construct(7);
+	}
+}
+
+class A19 {
+	public function __construct(public int $prop1, public int $prop2)
+	{
+	}
+}
+
+class B19 extends A19 {
+	public int $prop1;
+	public int $prop2;
+
+	public function __construct()
+	{
+		if (rand()) {
+			parent::__construct(5, 6);
+		} else {
+			$this->prop1 = 7;
+		}
+
+		// Error: this may not be assigned
+		var_dump($this->prop2);
+	}
+}

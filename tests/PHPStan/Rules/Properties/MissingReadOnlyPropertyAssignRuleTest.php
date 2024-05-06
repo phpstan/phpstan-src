@@ -310,6 +310,18 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				'Readonly property class@anonymous/tests/PHPStan/Rules/Properties/data/redeclare-readonly-property.php:117::$myProp is already assigned.',
 				121,
 			],
+			[
+				'Class RedeclareReadonlyProperty\B16 has an uninitialized readonly property $myProp. Assign it in the constructor.',
+				195,
+			],
+			[
+				'Class RedeclareReadonlyProperty\C17 has an uninitialized readonly property $aProp. Assign it in the constructor.',
+				218,
+			],
+			[
+				'Class RedeclareReadonlyProperty\B18 has an uninitialized readonly property $aProp. Assign it in the constructor.',
+				233,
+			],
 		]);
 	}
 

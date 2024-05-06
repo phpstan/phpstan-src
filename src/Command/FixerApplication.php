@@ -412,6 +412,10 @@ class FixerApplication
 				$loop->addTimer(1.0, $callback);
 				return;
 			}
+			if ($this->processInProgress !== null) {
+				$loop->addTimer(1.0, $callback);
+				return;
+			}
 			$changes = $this->fileMonitor->getChanges();
 
 			if ($changes->hasAnyChanges()) {

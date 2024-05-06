@@ -177,6 +177,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use ReflectionProperty;
 use Throwable;
 use Traversable;
 use TypeError;
@@ -2720,6 +2721,26 @@ class NodeScopeResolver
 				)
 			) {
 				$scope = $scope->invalidateExpression(new Variable('this'), true);
+			}
+
+			if (
+				$methodReflection !== null
+				&& !$methodReflection->isStatic()
+				&& $methodReflection->getName() === '__construct'
+				&& $scopeFunction instanceof MethodReflection
+				&& !$scopeFunction->isStatic()
+				&& $scope->isInClass()
+				&& $scope->getClassReflection()->isSubclassOf($methodReflection->getDeclaringClass()->getName())
+			) {
+				$thisType = $scope->getType(new Variable('this'));
+				$methodClassReflection = $methodReflection->getDeclaringClass();
+				foreach ($methodClassReflection->getNativeReflection()->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED) as $property) {
+					if (!$property->isPromoted() || $property->getDeclaringClass()->getName() !== $methodClassReflection->getName()) {
+						continue;
+					}
+
+					$scope = $scope->assignInitializedProperty($thisType, $property->getName());
+				}
 			}
 
 			$hasYield = $hasYield || $result->hasYield();

@@ -202,4 +202,18 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRedeclareReadonlyProperties(): void
+	{
+		$this->analyse([__DIR__ . '/data/redeclare-readonly-property.php'], [
+			[
+				'Class RedeclareReadonlyProperty\B19 has an uninitialized property $prop2. Give it default value or assign it in the constructor.',
+				249,
+			],
+			[
+				'Access to an uninitialized property RedeclareReadonlyProperty\B19::$prop2.',
+				260,
+			],
+		]);
+	}
+
 }

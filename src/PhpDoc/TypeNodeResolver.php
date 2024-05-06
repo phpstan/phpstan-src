@@ -80,6 +80,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\KeyOfType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NewObjectType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
@@ -753,6 +754,13 @@ class TypeNodeResolver
 				}
 
 				return TypeCombinator::union(...$result);
+			}
+
+			return new ErrorType();
+		} elseif ($mainTypeName === 'new') {
+			if (count($genericTypes) === 1) {
+				$type = new NewObjectType($genericTypes[0]);
+				return $type->isResolvable() ? $type->resolve() : $type;
 			}
 
 			return new ErrorType();

@@ -1825,6 +1825,22 @@ parameters:
 			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
 
 		-
+			message: """
+				#^Instantiation of deprecated class PHPStan\\\\Rules\\\\DeadCode\\\\NoopRule\\:
+				Replaced by PHPStan\\\\Rules\\\\DeadCode\\\\BetterNoopRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/DeadCode/NoopRuleTest.php
+
+		-
+			message: """
+				#^Return type of method PHPStan\\\\Rules\\\\DeadCode\\\\NoopRuleTest\\:\\:getRule\\(\\) has typehint with deprecated class PHPStan\\\\Rules\\\\DeadCode\\\\NoopRule\\:
+				Replaced by PHPStan\\\\Rules\\\\DeadCode\\\\BetterNoopRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/DeadCode/NoopRuleTest.php
+
+		-
 			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Generic\\\\TemplateType is always PHPStan\\\\Type\\\\Generic\\\\TemplateMixedType but it's error\\-prone and dangerous\\.$#"
 			count: 1
 			path: tests/PHPStan/Type/IterableTypeTest.php

@@ -10,6 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 
 /**
+ * @deprecated Replaced by PHPStan\Rules\DeadCode\BetterNoopRule
  * @implements Rule<Node\Stmt\Expression>
  */
 class NoopRule implements Rule

@@ -28,12 +28,12 @@ function arrayAccessibleObject()
 
 		public function offsetUnset($offset) {
 		}
-	})[0] ?? "error";
+	})[0] ?? "ok";
 }
 
 function array_(): void
 {
-	[0][0] ?? "error";
+	[0][0] ?? "ok";
 }
 
 function integer(): void
@@ -84,9 +84,9 @@ function offsetAccessibleMaybeAndLegal(): void
 		}
 	}) : false;
 
-	($arrayAccessible)[0] ?? "error";
+	($arrayAccessible)[0] ?? "ok";
 
-	(rand() ? "string" : true)[0] ?? "error";
+	(rand() ? "string" : true)[0] ?? "ok";
 }
 
 function offsetAccessibleMaybeAndIllegal(): void

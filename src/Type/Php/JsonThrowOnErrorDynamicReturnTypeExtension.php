@@ -75,17 +75,17 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 	private function narrowTypeForJsonDecode(FuncCall $funcCall, Scope $scope, Type $fallbackType): Type
 	{
 		$args = $funcCall->getArgs();
-		$isArrayWithoutStdClass = $this->isForceArrayWithoutStdClass($funcCall, $scope);
+		$isForceArray = $this->isForceArray($funcCall, $scope);
 		if (!isset($args[0])) {
 			return $fallbackType;
 		}
 
 		$firstValueType = $scope->getType($args[0]->value);
 		if ($firstValueType instanceof ConstantStringType) {
-			return $this->resolveConstantStringType($firstValueType, $isArrayWithoutStdClass);
+			return $this->resolveConstantStringType($firstValueType, $isForceArray);
 		}
 
-		if ($isArrayWithoutStdClass) {
+		if ($isForceArray) {
 			return TypeCombinator::remove($fallbackType, new ObjectWithoutClassType());
 		}
 
@@ -95,7 +95,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 	/**
 	 * Is "json_decode(..., true)"?
 	 */
-	private function isForceArrayWithoutStdClass(FuncCall $funcCall, Scope $scope): bool
+	private function isForceArray(FuncCall $funcCall, Scope $scope): bool
 	{
 		$args = $funcCall->getArgs();
 		if (!isset($args[1])) {

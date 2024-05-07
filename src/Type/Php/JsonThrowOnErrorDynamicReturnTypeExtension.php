@@ -14,10 +14,9 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use stdClass;
 use function is_bool;
 use function json_decode;
 
@@ -87,7 +86,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		}
 
 		if ($isArrayWithoutStdClass) {
-			return TypeCombinator::remove($fallbackType, new ObjectType(stdClass::class));
+			return TypeCombinator::remove($fallbackType, new ObjectWithoutClassType());
 		}
 
 		return $fallbackType;

@@ -800,6 +800,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Cannot access offset 0 on array{\'test\'}|(Closure(): void).',
 				98,
 			],
+			[
+				'Cannot access offset 0 on parent.',
+				105,
+			],
 		]);
 	}
 

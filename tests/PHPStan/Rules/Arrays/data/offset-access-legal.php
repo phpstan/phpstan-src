@@ -97,3 +97,11 @@ function offsetAccessibleMaybeAndIllegal(): void
 
 	(rand() ? function(){} : ['test'])[0] ?? "error";
 }
+
+class Foo
+{
+	public function doBar(): void
+	{
+		(new parent())[0] ?? 'error';
+	}
+}

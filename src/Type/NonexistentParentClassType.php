@@ -154,7 +154,7 @@ class NonexistentParentClassType implements Type
 
 	public function isOffsetAccessLegal(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createNo();
 	}
 
 	public function isScalar(): TrinaryLogic

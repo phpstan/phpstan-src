@@ -678,6 +678,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				"Cannot access offset 'path' on Closure.",
 				18,
 			],
+			[
+				"Cannot access offset 'path' on iterable<int|string, object>.",
+				26,
+			],
 		]);
 	}
 

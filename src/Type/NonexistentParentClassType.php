@@ -152,6 +152,11 @@ class NonexistentParentClassType implements Type
 		return new ErrorType();
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

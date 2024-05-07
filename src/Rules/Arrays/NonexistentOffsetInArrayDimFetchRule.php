@@ -64,7 +64,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 			return [];
 		}
 
-		if ($scope->isUndefinedExpressionAllowed($node) && !$isOffsetAccessible->no()) {
+		if ($scope->isUndefinedExpressionAllowed($node) && $isOffsetAccessibleType->isOffsetAccessLegal()->yes()) {
 			return [];
 		}
 

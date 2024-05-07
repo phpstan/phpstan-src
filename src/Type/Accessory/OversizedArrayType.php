@@ -135,6 +135,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

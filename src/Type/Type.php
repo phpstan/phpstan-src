@@ -131,6 +131,8 @@ interface Type
 
 	public function isOffsetAccessible(): TrinaryLogic;
 
+	public function isOffsetAccessLegal(): TrinaryLogic;
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic;
 
 	public function getOffsetValueType(Type $offsetType): Type;

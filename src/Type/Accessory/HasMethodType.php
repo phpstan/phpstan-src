@@ -120,6 +120,11 @@ class HasMethodType implements AccessoryType, CompoundType
 		return sprintf('hasMethod(%s)', $this->methodName);
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function hasMethod(string $methodName): TrinaryLogic
 	{
 		if ($this->getCanonicalMethodName() === strtolower($methodName)) {

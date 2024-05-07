@@ -142,6 +142,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		return $this->getIterableKeyType()->isSuperTypeOf($offsetType)->and(TrinaryLogic::createMaybe());

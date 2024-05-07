@@ -140,6 +140,11 @@ class ObjectWithoutClassType implements SubtractableType
 		);
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function getEnumCases(): array
 	{
 		return [];

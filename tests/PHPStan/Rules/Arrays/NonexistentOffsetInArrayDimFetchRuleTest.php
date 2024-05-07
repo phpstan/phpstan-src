@@ -116,6 +116,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				253,
 			],
 			[
+				'Cannot access offset \'a\' on array{a: 1, b: 1}|(Closure(): void).',
+				258,
+			],
+			[
 				'Offset null does not exist on array<int, string>.',
 				310,
 			],
@@ -251,6 +255,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset \'a\' on Closure(): void.',
 				253,
+			],
+			[
+				'Cannot access offset \'a\' on array{a: 1, b: 1}|(Closure(): void).',
+				258,
 			],
 			[
 				'Offset null does not exist on array<int, string>.',
@@ -670,6 +678,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				"Cannot access offset 'path' on Closure.",
 				18,
 			],
+			[
+				"Cannot access offset 'path' on iterable<int|string, object>.",
+				26,
+			],
 		]);
 	}
 
@@ -737,6 +749,17 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10926(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-10926.php'], [
+			[
+				'Cannot access offset \'a\' on stdClass.',
+				10,
+			],
+		]);
+	}
+
 	public function testMixed(): void
 	{
 		$this->checkExplicitMixed = true;
@@ -753,6 +776,40 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Cannot access offset 5 on mixed.',
 				21,
+			],
+		]);
+	}
+
+	public function testOffsetAccessLegal(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/offset-access-legal.php'], [
+			[
+				'Cannot access offset 0 on Closure(): void.',
+				7,
+			],
+			[
+				'Cannot access offset 0 on stdClass.',
+				12,
+			],
+			[
+				'Cannot access offset 0 on array{\'test\'}|stdClass.',
+				96,
+			],
+			[
+				'Cannot access offset 0 on array{\'test\'}|(Closure(): void).',
+				98,
+			],
+		]);
+	}
+
+	public function testNonExistentParentOffsetAccessLegal(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/offset-access-legal-non-existent-parent.php'], [
+			[
+				'Cannot access offset 0 on parent.',
+				9,
 			],
 		]);
 	}

@@ -14,11 +14,6 @@ trait MaybeOffsetAccessibleTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function isOffsetAccessLegal(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
-	}
-
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

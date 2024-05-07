@@ -800,9 +800,16 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Cannot access offset 0 on array{\'test\'}|(Closure(): void).',
 				98,
 			],
+		]);
+	}
+
+	public function testNonExistentParentOffsetAccessLegal(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/offset-access-legal-non-existent-parent.php'], [
 			[
 				'Cannot access offset 0 on parent.',
-				105,
+				9,
 			],
 		]);
 	}

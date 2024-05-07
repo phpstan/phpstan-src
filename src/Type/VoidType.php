@@ -122,6 +122,11 @@ class VoidType implements Type
 		return new ErrorType();
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

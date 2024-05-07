@@ -144,6 +144,11 @@ class FloatType implements Type
 		return new IntegerType();
 	}
 
+	public function isOffsetAccessLegal(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

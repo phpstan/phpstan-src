@@ -8,7 +8,6 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPUnit\Framework\TestCase;
-use function array_map;
 use function chdir;
 use function escapeshellarg;
 use function exec;
@@ -93,6 +92,7 @@ class ResultCacheEndToEndTest extends TestCase
 	private function runPhpstanWithErrors(): void
 	{
 		$result = $this->runPhpstan(1);
+		$this->assertIsArray($result['totals']);
 		$this->assertSame(3, $result['totals']['file_errors']);
 		$this->assertSame(0, $result['totals']['errors']);
 
@@ -117,6 +117,7 @@ class ResultCacheEndToEndTest extends TestCase
 		$fileHelper = new FileHelper(__DIR__);
 
 		$result = $this->runPhpstan(1);
+		$this->assertIsArray($result['totals']);
 		$this->assertSame(1, $result['totals']['file_errors'], Json::encode($result));
 		$this->assertSame(0, $result['totals']['errors'], Json::encode($result));
 
@@ -151,6 +152,7 @@ class ResultCacheEndToEndTest extends TestCase
 
 		try {
 			$json = Json::decode($output, Json::FORCE_ARRAY);
+			$this->assertIsArray($json);
 		} catch (JsonException $e) {
 			$this->fail(sprintf('%s: %s', $e->getMessage(), $output));
 		}
@@ -164,13 +166,22 @@ class ResultCacheEndToEndTest extends TestCase
 
 	/**
 	 * @param mixed[] $resultCache
-	 * @return mixed[]
+	 * @return array<string, array<int, string>>
 	 */
 	private function transformResultCache(array $resultCache): array
 	{
 		$new = [];
+		$this->assertIsArray($resultCache['dependencies']);
 		foreach ($resultCache['dependencies'] as $file => $data) {
-			$files = array_map(fn (string $file): string => $this->relativizePath($file), $data['dependentFiles']);
+			$this->assertIsString($file);
+			$this->assertIsArray($data);
+			$this->assertIsArray($data['dependentFiles']);
+
+			$files = [];
+			foreach ($data['dependentFiles'] as $filePath) {
+				$this->assertIsString($filePath);
+				$files[] = $this->relativizePath($filePath);
+			}
 			sort($files);
 			$new[$this->relativizePath($file)] = $files;
 		}

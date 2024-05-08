@@ -1991,11 +1991,16 @@ class TypeSpecifier
 			$exprNode = $expressions[0];
 			$constantType = $expressions[1];
 
-			$specifiedType = $this->specifyTypesForConstantBinaryExpression($exprNode, $constantType, $context, $scope, $rootExpr);
+			$unwrappedExprNode = $exprNode;
+			if ($exprNode instanceof AlwaysRememberedExpr) {
+				$unwrappedExprNode = $exprNode->getExpr();
+			}
+
+			$specifiedType = $this->specifyTypesForConstantBinaryExpression($unwrappedExprNode, $constantType, $context, $scope, $rootExpr);
 			if ($specifiedType !== null) {
-				if ($exprNode instanceof AlwaysRememberedExpr) {
-					$specifiedType->unionWith(
-						$this->create($exprNode->getExpr(), $constantType, $context, false, $scope, $rootExpr),
+				if ($exprNode !== $unwrappedExprNode) {
+					$specifiedType = $specifiedType->unionWith(
+						$this->create($exprNode, $constantType, $context, false, $scope, $rootExpr),
 					);
 				}
 				return $specifiedType;

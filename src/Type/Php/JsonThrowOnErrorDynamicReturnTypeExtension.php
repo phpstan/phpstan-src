@@ -14,10 +14,9 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use stdClass;
 use function is_bool;
 use function json_decode;
 
@@ -76,18 +75,18 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 	private function narrowTypeForJsonDecode(FuncCall $funcCall, Scope $scope, Type $fallbackType): Type
 	{
 		$args = $funcCall->getArgs();
-		$isArrayWithoutStdClass = $this->isForceArrayWithoutStdClass($funcCall, $scope);
+		$isForceArray = $this->isForceArray($funcCall, $scope);
 		if (!isset($args[0])) {
 			return $fallbackType;
 		}
 
 		$firstValueType = $scope->getType($args[0]->value);
 		if ($firstValueType instanceof ConstantStringType) {
-			return $this->resolveConstantStringType($firstValueType, $isArrayWithoutStdClass);
+			return $this->resolveConstantStringType($firstValueType, $isForceArray);
 		}
 
-		if ($isArrayWithoutStdClass) {
-			return TypeCombinator::remove($fallbackType, new ObjectType(stdClass::class));
+		if ($isForceArray) {
+			return TypeCombinator::remove($fallbackType, new ObjectWithoutClassType());
 		}
 
 		return $fallbackType;
@@ -96,7 +95,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 	/**
 	 * Is "json_decode(..., true)"?
 	 */
-	private function isForceArrayWithoutStdClass(FuncCall $funcCall, Scope $scope): bool
+	private function isForceArray(FuncCall $funcCall, Scope $scope): bool
 	{
 		$args = $funcCall->getArgs();
 		if (!isset($args[1])) {

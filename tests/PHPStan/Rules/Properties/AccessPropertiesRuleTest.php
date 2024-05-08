@@ -937,4 +937,16 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8629.php'], []);
 	}
 
+	public function testBug9694(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
+		$this->analyse([__DIR__ . '/data/bug-9694.php'], []);
+	}
+
 }

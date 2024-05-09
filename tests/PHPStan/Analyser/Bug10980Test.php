@@ -24,5 +24,5 @@ class Bug10980Test extends TypeInferenceTestCase
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);
 	}
-	
+
 }

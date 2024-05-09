@@ -9,6 +9,7 @@ This repository (`phpstan/phpstan-src`) is for PHPStan's development only. Head 
 
 ## Contributing
 
+
 Any contributions are welcome.
 
 ### Installation

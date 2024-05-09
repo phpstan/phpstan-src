@@ -1016,7 +1016,11 @@ class TypeSpecifier
 			$context->truthy()
 			&& $exprNode instanceof FuncCall
 			&& $exprNode->name instanceof Name
-			&& in_array(strtolower($exprNode->name->toString()), ['substr', 'strstr', 'stristr', 'strchr', 'strrchr', 'strtolower', 'strtoupper', 'mb_strtolower', 'mb_strtoupper', 'ucfirst', 'lcfirst', 'ucwords', 'mb_convert_case', 'mb_convert_kana'], true)
+			&& in_array(strtolower($exprNode->name->toString()), [
+				'substr', 'strstr', 'stristr', 'strchr', 'strrchr', 'strtolower', 'strtoupper',
+				'mb_substr', 'mb_strstr', 'mb_stristr', 'mb_strchr', 'mb_strrchr', 'mb_strtolower', 'mb_strtoupper',
+				'ucfirst', 'lcfirst', 'ucwords', 'mb_convert_case', 'mb_convert_kana',
+			], true)
 			&& isset($exprNode->getArgs()[0])
 			&& $constantType->getValue() !== ''
 		) {

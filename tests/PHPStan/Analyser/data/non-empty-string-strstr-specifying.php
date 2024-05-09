@@ -39,6 +39,10 @@ class Foo {
 			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
+		if (mb_strstr($s, $needle, $before_needle) === 'hallo') {
+			assertType('non-falsy-string', $s);
+		}
+		assertType('string', $s);
 
 		if (strstr($s, $needle, $before_needle) !== 'hallo') {
 			assertType('string', $s);
@@ -81,6 +85,10 @@ class Foo {
 		if ('hallo' === stristr($s, 'abc')) {
 			assertType('non-falsy-string', $s);
 		}
+		assertType('string', $s);
+		if ('hallo' === mb_stristr($s, 'abc')) {
+			assertType('non-falsy-string', $s);
+		}
 
 		if (stristr($s, $needle, $before_needle) == '') {
 			assertType('string', $s);
@@ -105,6 +113,10 @@ class Foo {
 		}
 		assertType('string', $s);
 		if ('hallo' === strchr($s, 'abc')) {
+			assertType('non-falsy-string', $s);
+		}
+		assertType('string', $s);
+		if ('hallo' === mb_strchr($s, 'abc')) {
 			assertType('non-falsy-string', $s);
 		}
 

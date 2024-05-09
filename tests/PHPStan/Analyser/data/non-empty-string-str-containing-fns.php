@@ -131,6 +131,58 @@ class Foo {
 			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
+
+		if (mb_strpos($s, ':') !== false) {
+			assertType('non-falsy-string', $s);
+		}
+		assertType('string', $s);
+		if (mb_strpos($s, ':') === false) {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+
+		if (mb_strpos($s, ':') === 5) {
+			assertType('string', $s); // could be non-empty-string
+		}
+		assertType('string', $s);
+		if (mb_strpos($s, ':') !== 5) {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+
+		if (mb_strrpos($s, ':') !== false) {
+			assertType('non-falsy-string', $s);
+		}
+		assertType('string', $s);
+
+		if (mb_stripos($s, ':') !== false) {
+			assertType('non-falsy-string', $s);
+		}
+		assertType('string', $s);
+
+		if (mb_strripos($s, ':') !== false) {
+			assertType('non-falsy-string', $s);
+		}
+		assertType('string', $s);
+
+		if (mb_strstr($s, ':') === 'hallo') {
+			assertType('non-falsy-string', $s);
+		}
+		assertType('string', $s);
+		if (mb_strstr($s, ':', true) === 'hallo') {
+			assertType('non-falsy-string', $s);
+		}
+		assertType('string', $s);
+		if (mb_strstr($s, ':', true) !== false) {
+			assertType('non-falsy-string', $s);
+		}
+		assertType('string', $s);
+		if (mb_strstr($s, ':', true) === false) {
+			assertType('string', $s);
+		} else {
+			assertType('non-falsy-string', $s);
+		}
+		assertType('string', $s);
 	}
 
 }

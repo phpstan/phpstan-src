@@ -84,6 +84,12 @@ class Foo
 			2, // Because of `$int` key, the key value cannot be known.
 			1 => 3,
 		];
+
+		$foo4 = [
+			1,
+			2,
+			3,
+		];
 	}
 
 }

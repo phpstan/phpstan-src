@@ -245,7 +245,7 @@ class ScopeTest extends PHPStanTestCase
 		$scope = $scopeFactory->create(ScopeContext::create(__DIR__ . '/data/compiler-halt-offset.php'));
 		$node = new ConstFetch(new FullyQualified('__COMPILER_HALT_OFFSET__'));
 		$type = $scope->getType($node);
-		$this->assertSame('int<0, max>', $type->describe(VerbosityLevel::precise()));
+		$this->assertSame('int<1, max>', $type->describe(VerbosityLevel::precise()));
 	}
 
 }

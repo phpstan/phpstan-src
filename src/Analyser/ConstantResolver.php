@@ -6,7 +6,7 @@ use PhpParser\Node\Name;
 use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
-use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -73,7 +73,7 @@ class ConstantResolver
 		if ($resolvedConstantName === 'PHP_VERSION') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_MAJOR_VERSION') {
@@ -106,7 +106,7 @@ class ConstantResolver
 		if ($resolvedConstantName === 'PHP_OS') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_OS_FAMILY') {
@@ -132,7 +132,7 @@ class ConstantResolver
 				new ConstantStringType('phpdbg'),
 				new IntersectionType([
 					new StringType(),
-					new AccessoryNonEmptyStringType(),
+					new AccessoryNonFalsyStringType(),
 				]),
 			]);
 		}
@@ -165,61 +165,61 @@ class ConstantResolver
 		if ($resolvedConstantName === 'PHP_EXTENSION_DIR') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_PREFIX') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_BINDIR') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_BINARY') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_MANDIR') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_LIBDIR') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_DATADIR') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_SYSCONFDIR') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_LOCALSTATEDIR') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_CONFIG_FILE_PATH') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_SHLIB_SUFFIX') {
@@ -232,7 +232,7 @@ class ConstantResolver
 			return IntegerRangeType::fromInterval(1, null);
 		}
 		if ($resolvedConstantName === '__COMPILER_HALT_OFFSET__') {
-			return IntegerRangeType::fromInterval(0, null);
+			return IntegerRangeType::fromInterval(1, null);
 		}
 		// core other, https://www.php.net/manual/en/info.constants.php
 		if ($resolvedConstantName === 'PHP_WINDOWS_VERSION_MAJOR') {
@@ -261,7 +261,7 @@ class ConstantResolver
 		if ($resolvedConstantName === 'ICONV_IMPL') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		// libxml, https://www.php.net/manual/en/libxml.constants.php
@@ -271,7 +271,7 @@ class ConstantResolver
 		if ($resolvedConstantName === 'LIBXML_DOTTED_VERSION') {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNonEmptyStringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 		// openssl, https://www.php.net/manual/en/openssl.constants.php

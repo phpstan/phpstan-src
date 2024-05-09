@@ -1104,19 +1104,23 @@ class NodeScopeResolver
 			$bodyScope = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
 			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);
-			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-				$finalScope = $finalScope->mergeWith($continueExitPoint->getScope());
+
+			$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScopeMaybeRan->getType($stmt->cond) : $bodyScopeMaybeRan->getNativeType($stmt->cond))->toBoolean();
+			$alwaysIterates = $condBooleanType->isTrue()->yes() && $context->isTopLevel();
+			$neverIterates = $condBooleanType->isFalse()->yes() && $context->isTopLevel();
+			if (!$alwaysIterates) {
+				foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+					$finalScope = $finalScope->mergeWith($continueExitPoint->getScope());
+				}
 			}
+
 			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
 			foreach ($breakExitPoints as $breakExitPoint) {
 				$finalScope = $finalScope->mergeWith($breakExitPoint->getScope());
 			}
 
 			$beforeCondBooleanType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($stmt->cond) : $scope->getNativeType($stmt->cond))->toBoolean();
-			$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScopeMaybeRan->getType($stmt->cond) : $bodyScopeMaybeRan->getNativeType($stmt->cond))->toBoolean();
 			$isIterableAtLeastOnce = $beforeCondBooleanType->isTrue()->yes();
-			$alwaysIterates = $condBooleanType->isTrue()->yes() && $context->isTopLevel();
-			$neverIterates = $condBooleanType->isFalse()->yes() && $context->isTopLevel();
 			$nodeCallback(new BreaklessWhileLoopNode($stmt, $finalScopeResult->getExitPoints()), $bodyScopeMaybeRan);
 
 			if ($alwaysIterates) {

@@ -6,6 +6,7 @@ use PHPStan\Testing\TypeInferenceTestCase;
 
 class Bug10980Test extends TypeInferenceTestCase
 {
+
 	public function dataFileAsserts(): iterable
 	{
 		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-10980.php');
@@ -23,4 +24,5 @@ class Bug10980Test extends TypeInferenceTestCase
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);
 	}
+	
 }

@@ -82,6 +82,9 @@ class ClassReflection
 	/** @var ClassConstantReflection[] */
 	private array $constants = [];
 
+	/** @var EnumCaseReflection[]|null  */
+	private ?array $enumCases = null;
+
 	/** @var int[]|null */
 	private ?array $classHierarchyDistances = null;
 
@@ -752,6 +755,10 @@ class ClassReflection
 			throw new ShouldNotHappenException();
 		}
 
+		if ($this->enumCases !== null) {
+			return $this->enumCases;
+		}
+
 		$cases = [];
 		$initializerExprContext = InitializerExprContext::fromClassReflection($this);
 		foreach ($this->reflection->getCases() as $case) {
@@ -764,7 +771,7 @@ class ClassReflection
 			$cases[$caseName] = new EnumCaseReflection($this, $caseName, $valueType);
 		}
 
-		return $cases;
+		return $this->enumCases = $cases;
 	}
 
 	public function getEnumCase(string $name): EnumCaseReflection
@@ -775,6 +782,10 @@ class ClassReflection
 
 		if (!$this->reflection instanceof ReflectionEnum) {
 			throw new ShouldNotHappenException();
+		}
+
+		if ($this->enumCases !== null && array_key_exists($name, $this->enumCases)) {
+			return $this->enumCases[$name];
 		}
 
 		$case = $this->reflection->getCase($name);

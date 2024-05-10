@@ -53,8 +53,8 @@ class EnumCaseObjectType extends ObjectType
 			return false;
 		}
 
-		return $this->getClassName() === $type->getClassName()
-			&& $this->enumCaseName === $type->enumCaseName;
+		return $this->enumCaseName === $type->enumCaseName &&
+			$this->getClassName() === $type->getClassName();
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
@@ -71,8 +71,7 @@ class EnumCaseObjectType extends ObjectType
 	{
 		if ($type instanceof self) {
 			return TrinaryLogic::createFromBoolean(
-				$this->getClassName() === $type->getClassName()
-				&& $this->enumCaseName === $type->enumCaseName,
+				$this->enumCaseName === $type->enumCaseName && $this->getClassName() === $type->getClassName(),
 			);
 		}
 

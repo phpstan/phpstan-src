@@ -17,8 +17,10 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function in_array;
 use function sprintf;
 
 /** @api */
@@ -80,8 +82,18 @@ class EnumCaseObjectType extends ObjectType
 			return $type->isSubTypeOf($this);
 		}
 
-		$parent = new parent($this->getClassName(), $this->getSubtractedType(), $this->getClassReflection());
+		// fast path to speedup comparisons of big enum-case unions
+		if (in_array($this->getClassName(), $type->getObjectClassNames(), true)) {
+			if ($type instanceof SubtractableType && $type->getSubtractedType() !== null) {
+				$isSuperType = $type->getSubtractedType()->isSuperTypeOf($this);
+				if ($isSuperType->yes()) {
+					return TrinaryLogic::createNo();
+				}
+			}
+			return TrinaryLogic::createMaybe();
+		}
 
+		$parent = new parent($this->getClassName(), $this->getSubtractedType(), $this->getClassReflection());
 		return $parent->isSuperTypeOf($type)->and(TrinaryLogic::createMaybe());
 	}
 

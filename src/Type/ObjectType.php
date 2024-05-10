@@ -94,6 +94,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	private ?string $cachedDescription = null;
 
+	/** @var array<string, list<EnumCaseObjectType>> */
+	private static array $enumCases = [];
+
 	/** @api */
 	public function __construct(
 		private string $className,
@@ -114,6 +117,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		self::$methods = [];
 		self::$properties = [];
 		self::$ancestors = [];
+		self::$enumCases = [];
 	}
 
 	private static function createFromReflection(ClassReflection $reflection): self
@@ -1215,23 +1219,31 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return [];
 		}
 
-		$subtracted = [];
-		if ($this->subtractedType !== null) {
-			foreach ($this->subtractedType->getEnumCases() as $enumCase) {
-				$subtracted[$enumCase->getEnumCaseName()] = true;
-			}
+		$cacheKey = $this->describeCache();
+		if (array_key_exists($cacheKey, self::$enumCases)) {
+			return self::$enumCases[$cacheKey];
 		}
 
-		$cases = [];
 		$className = $classReflection->getName();
+
+		$cases = [];
 		foreach ($classReflection->getEnumCases() as $enumCase) {
-			if (array_key_exists($enumCase->getName(), $subtracted)) {
-				continue;
-			}
 			$cases[] = new EnumCaseObjectType($className, $enumCase->getName(), $classReflection);
 		}
 
-		return $cases;
+		if ($this->subtractedType !== null) {
+			foreach ($cases as $i => $case) {
+				$caseName = $case->getEnumCaseName();
+				foreach ($this->subtractedType->getEnumCases() as $subtracedCase) {
+					if ($caseName === $subtracedCase->getEnumCaseName()) {
+						unset($cases[$i]);
+						continue 2;
+					}
+				}
+			}
+		}
+
+		return self::$enumCases[$cacheKey] = array_values($cases);
 	}
 
 	public function isCallable(): TrinaryLogic

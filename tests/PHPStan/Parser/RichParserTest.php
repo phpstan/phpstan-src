@@ -221,18 +221,6 @@ class RichParserTest extends PHPStanTestCase
 				3 => ['test'],
 			],
 		];
-
-		yield [
-			'<?php' . PHP_EOL .
-			PHP_EOL .
-			'/**' . PHP_EOL .
-			' * @phpstan-ignore return.ref,' . PHP_EOL .
-			' *                 return.non,' . PHP_EOL .
-			' */',
-			[
-				6 => ['return.ref', 'return.non'],
-			],
-		];
 	}
 
 	/**
@@ -245,8 +233,8 @@ class RichParserTest extends PHPStanTestCase
 		$parser = self::getContainer()->getService('currentPhpVersionRichParser');
 		$ast = $parser->parseString($code);
 		$lines = $ast[0]->getAttribute('linesToIgnore');
-		$this->assertSame($expectedLines, $lines);
 		$this->assertNull($ast[0]->getAttribute('linesToIgnoreParseErrors'));
+		$this->assertSame($expectedLines, $lines);
 	}
 
 	public function dataLinesToIgnoreParseErrors(): iterable
@@ -260,6 +248,50 @@ class RichParserTest extends PHPStanTestCase
 			' */',
 			[
 				4 => ['Unexpected comma (,)'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'/**' . PHP_EOL .
+			' * @phpstan-ignore return.ref,' . PHP_EOL .
+			' */',
+			[
+				3 => ['Unexpected trailing comma (,)'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'/**' . PHP_EOL .
+			' * @phpstan-ignore' . PHP_EOL .
+			' */',
+			[
+				3 => ['Missing identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore return.ref,' . PHP_EOL,
+			[
+				2 => ['Unexpected trailing comma (,)'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore test (comment),' . PHP_EOL,
+			[
+				2 => ['Unexpected trailing comma (,)'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore ,' . PHP_EOL,
+			[
+				2 => ['First token is not an identifier'],
 			],
 		];
 

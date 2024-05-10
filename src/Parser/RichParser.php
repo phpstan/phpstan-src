@@ -14,10 +14,8 @@ use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
 use function array_pop;
-use function array_values;
 use function count;
 use function implode;
-use function in_array;
 use function is_string;
 use function preg_match_all;
 use function sprintf;
@@ -278,8 +276,19 @@ class RichParser implements Parser
 	private function parseIdentifiers(string $text, int $ignorePos): array
 	{
 		$text = substr($text, $ignorePos + strlen('@phpstan-ignore'));
-		$tokens = $this->ignoreLexer->tokenize($text);
-		$tokens = array_values(array_filter($tokens, static fn (array $token) => !in_array($token[IgnoreLexer::TYPE_OFFSET], [IgnoreLexer::TOKEN_WHITESPACE, IgnoreLexer::TOKEN_EOL], true)));
+		$originalTokens = $this->ignoreLexer->tokenize($text);
+		$tokens = [];
+
+		foreach ($originalTokens as $originalToken) {
+			if ($originalToken[IgnoreLexer::TYPE_OFFSET] === IgnoreLexer::TOKEN_WHITESPACE) {
+				continue;
+			}
+			if ($originalToken[IgnoreLexer::TYPE_OFFSET] === IgnoreLexer::TOKEN_EOL) {
+				break;
+			}
+			$tokens[] = $originalToken;
+		}
+
 		$c = count($tokens);
 
 		$identifiers = [];
@@ -319,6 +328,10 @@ class RichParser implements Parser
 
 			$depth++;
 			$parenthesisStack[] = $tokenLine;
+		}
+
+		if (isset($tokens[$c - 1]) && $tokens[$c - 1][IgnoreLexer::TYPE_OFFSET] === IgnoreLexer::TOKEN_COMMA) {
+			throw new IgnoreParseException('Unexpected trailing comma (,)', $tokens[$c - 1][IgnoreLexer::LINE_OFFSET]);
 		}
 
 		if (count($parenthesisStack) > 0) {

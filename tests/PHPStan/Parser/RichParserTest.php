@@ -224,13 +224,65 @@ class RichParserTest extends PHPStanTestCase
 
 		yield [
 			'<?php' . PHP_EOL .
-			PHP_EOL .
-			'/**' . PHP_EOL .
-			' * @phpstan-ignore return.ref,' . PHP_EOL .
-			' *                 return.non,' . PHP_EOL .
-			' */',
+			'test(); // @phpstan-ignore https://example.com' . PHP_EOL,
 			[
-				6 => ['return.ref', 'return.non'],
+				2 => ['https'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier (comment), identifier2 (comment2)' . PHP_EOL,
+			[
+				2 => ['identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier (comment) (comment2)' . PHP_EOL,
+			[
+				2 => ['identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier (comment))' . PHP_EOL,
+			[
+				2 => ['identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier [comment]' . PHP_EOL,
+			[
+				2 => ['identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier -- comment' . PHP_EOL, // phpcs comment style
+			[
+				2 => ['identifier', 'comment'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore mečoun' . PHP_EOL,
+			[
+				2 => ['me'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore mečoun two' . PHP_EOL,
+			[
+				2 => ['me', 'two'],
 			],
 		];
 	}
@@ -265,6 +317,50 @@ class RichParserTest extends PHPStanTestCase
 
 		yield [
 			'<?php' . PHP_EOL .
+			'/**' . PHP_EOL .
+			' * @phpstan-ignore return.ref,' . PHP_EOL .
+			' */',
+			[
+				3 => ['Unexpected trailing comma (,)'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'/**' . PHP_EOL .
+			' * @phpstan-ignore' . PHP_EOL .
+			' */',
+			[
+				3 => ['Missing identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore return.ref,' . PHP_EOL,
+			[
+				2 => ['Unexpected trailing comma (,)'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore test (comment),' . PHP_EOL,
+			[
+				2 => ['Unexpected trailing comma (,)'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore ,' . PHP_EOL,
+			[
+				2 => ['First token is not an identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore return.ref, return.non )foo',
 			[
 				2 => ['Closing parenthesis ")" before opening parenthesis "("'],
@@ -274,6 +370,46 @@ class RichParserTest extends PHPStanTestCase
 		yield [
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore return.ref, return.non (foo',
+			[
+				2 => ['Unclosed opening parenthesis "(" without closing parenthesis ")"'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore ()' . PHP_EOL,
+			[
+				2 => ['First token is not an identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore ' . PHP_EOL,
+			[
+				2 => ['Missing identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore ,' . PHP_EOL,
+			[
+				2 => ['First token is not an identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore čumim' . PHP_EOL,
+			[
+				2 => ['First token is not an identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore test ((inner)' . PHP_EOL,
 			[
 				2 => ['Unclosed opening parenthesis "(" without closing parenthesis ")"'],
 			],

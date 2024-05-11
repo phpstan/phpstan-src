@@ -165,7 +165,7 @@ class EnumCaseObjectType extends ObjectType
 
 	public function generalize(GeneralizePrecision $precision): Type
 	{
-		return new parent($this->getClassName(), null, $this->getClassReflection());
+		return new parent($this->getClassName());
 	}
 
 	public function isSmallerThan(Type $otherType): TrinaryLogic

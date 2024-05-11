@@ -1479,6 +1479,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $classReflection;
 	}
 
+	protected function getClassReflectionOrNull(): ?ClassReflection
+	{
+		return $this->classReflection;
+	}
+
 	/**
 	 * @return self|null
 	 */

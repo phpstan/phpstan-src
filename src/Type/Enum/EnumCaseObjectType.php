@@ -79,7 +79,7 @@ class EnumCaseObjectType extends ObjectType
 			return $type->isSubTypeOf($this);
 		}
 
-		$parent = new parent($this->getClassName(), $this->getSubtractedType());
+		$parent = new parent($this->getClassName(), $this->getSubtractedType(), $this->getClassReflectionOrNull());
 
 		return $parent->isSuperTypeOf($type)->and(TrinaryLogic::createMaybe());
 	}
@@ -165,7 +165,7 @@ class EnumCaseObjectType extends ObjectType
 
 	public function generalize(GeneralizePrecision $precision): Type
 	{
-		return new parent($this->getClassName());
+		return new parent($this->getClassName(), null, $this->getClassReflectionOrNull());
 	}
 
 	public function isSmallerThan(Type $otherType): TrinaryLogic

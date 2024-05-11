@@ -21,6 +21,7 @@ use function is_float;
 use function max;
 use function min;
 use function range;
+use const PHP_VERSION_ID;
 
 /** @api */
 class ConstantArrayTypeBuilder
@@ -175,6 +176,14 @@ class ConstantArrayTypeBuilder
 						if (is_float($newAutoIndex)) {
 							$newAutoIndex = $max;
 						}
+						if (!$optional) {
+							$this->nextAutoIndexes = [$newAutoIndex];
+						} else {
+							$this->nextAutoIndexes[] = $newAutoIndex;
+						}
+					}
+					if (PHP_VERSION_ID >= 80300 && count($this->keyTypes) === 1 && $offsetType->getValue() < 0) {
+						$newAutoIndex = $offsetType->getValue() + 1;
 						if (!$optional) {
 							$this->nextAutoIndexes = [$newAutoIndex];
 						} else {

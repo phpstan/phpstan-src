@@ -1345,7 +1345,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		}
 
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10979.php');
-		$this->assertCount(80, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	/**

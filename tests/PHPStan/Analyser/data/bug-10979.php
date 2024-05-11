@@ -1,8 +1,59 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bug10979;
 
-use App\Enums\Production\LibraryRelationTypeEnum;
+enum LibraryRelationTypeEnum: int {
+	case LanguageTool = 1;
+	case Framework = 2;
+}
+
+enum FieldMasterEnum: int
+{
+	case ServerSide = 1;
+	case FrontEnd = 2;
+	case Database = 3;
+}
+
+enum LanguageToolMasterEnum: int
+{
+	case PHP = 1;
+	case Ruby = 2;
+	case Java = 3;
+	case Python = 4;
+	case Go = 5;
+	case NodeJS = 6;
+	case JavaScript = 7;
+	case TypeScript = 8;
+	case SQL = 9;
+	case MySQL = 10;
+	case PostgreSQL = 11;
+	case SQLite = 12;
+	case OracleDatabase = 13;
+	case Db2 = 14;
+	case SQLServer = 15;
+	case FirebirdSQL = 16;
+	case MongoDB = 17;
+	case ApacheCassandra = 18;
+	case Redis = 19;
+	case BigQuery = 20;
+	case AmazonDynamoDB = 21;
+	case MariaDB = 22;
+	case CockroachDB = 23;
+	case CPlusPlus = 24;
+}
+
+enum FrameworkMasterEnum: int
+{
+	case Laravel = 1;
+	case RubyOnRails = 2;
+	case React = 3;
+	case Vue = 4;
+	case Svelte = 5;
+	case TailwindCSS = 6;
+	case ReactNative = 7;
+}
 
 // ライブラリのenum(そのままDBに反映している)
 // NOTE 名前はライブラリだが、パッケージ系も含めていく予定

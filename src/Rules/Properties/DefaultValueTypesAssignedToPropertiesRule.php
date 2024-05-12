@@ -39,7 +39,7 @@ class DefaultValueTypesAssignedToPropertiesRule implements Rule
 		$propertyReflection = $classReflection->getNativeProperty($node->getName());
 		$propertyType = $propertyReflection->getWritableType();
 		if ($propertyReflection->getNativeType() instanceof MixedType) {
-			if ($default instanceof Node\Expr\ConstFetch && (string) $default->name === 'null') {
+			if ($default instanceof Node\Expr\ConstFetch && $default->name->toLowerString() === 'null') {
 				return [];
 			}
 		}

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersionFactory;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -21,7 +23,6 @@ use function is_float;
 use function max;
 use function min;
 use function range;
-use const PHP_VERSION_ID;
 
 /** @api */
 class ConstantArrayTypeBuilder
@@ -40,6 +41,7 @@ class ConstantArrayTypeBuilder
 	 * @param array<int> $optionalKeys
 	 */
 	private function __construct(
+		private readonly PhpVersion $phpVersion,
 		private array $keyTypes,
 		private array $valueTypes,
 		private array $nextAutoIndexes,
@@ -51,12 +53,13 @@ class ConstantArrayTypeBuilder
 
 	public static function createEmpty(): self
 	{
-		return new self([], [], [0], [], TrinaryLogic::createYes());
+		return new self((new PhpVersionFactory(null, null))->create(), [], [], [0], [], TrinaryLogic::createYes());
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
 	{
 		$builder = new self(
+			(new PhpVersionFactory(null, null))->create(),
 			$startArrayType->getKeyTypes(),
 			$startArrayType->getValueTypes(),
 			$startArrayType->getNextAutoIndexes(),
@@ -182,7 +185,7 @@ class ConstantArrayTypeBuilder
 							$this->nextAutoIndexes[] = $newAutoIndex;
 						}
 					}
-					if (PHP_VERSION_ID >= 80300 && count($this->keyTypes) === 1 && $offsetType->getValue() < 0) {
+					if ($this->phpVersion->supportsAssigningANegativeIndexToAnEmptyArray() && count($this->keyTypes) === 1 && $offsetType->getValue() < 0) {
 						$newAutoIndex = $offsetType->getValue() + 1;
 						if (!$optional) {
 							$this->nextAutoIndexes = [$newAutoIndex];

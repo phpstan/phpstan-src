@@ -287,4 +287,10 @@ class PhpVersion
 		return $this->versionId >= 80200;
 	}
 
+	// See https://www.php.net/manual/en/migration83.incompatible.php#migration83.incompatible.core.negative-index-to-empty-array
+	public function supportsAssigningANegativeIndexToAnEmptyArray(): bool
+	{
+		return $this->versionId >= 80300;
+	}
+
 }

@@ -16,8 +16,15 @@ class B extends A {
 		assertType('string', PARENT::doFoo());
 		assertType('string', parent::doFoo());
 
-		assertType('class-string', PARENT::class);
+		assertType("'CaseInsensitiveParent\\\\A'", PARENT::class);
 
 		return PARENT::doFoo();
 	}
+}
+
+class C extends UnknownParent {
+	public function doFoo():string {
+		assertType('class-string', PARENT::class);
+	}
+
 }

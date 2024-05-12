@@ -2024,12 +2024,14 @@ class InitializerExprTypeResolver
 	{
 		$originalClass = (string) $name;
 		if ($classReflection !== null) {
-			if (in_array(strtolower($originalClass), [
+			$lowerClass = strtolower($originalClass);
+
+			if (in_array($lowerClass, [
 				'self',
 				'static',
 			], true)) {
 				return $classReflection->getName();
-			} elseif ($originalClass === 'parent') {
+			} elseif ($lowerClass === 'parent') {
 				if ($classReflection->getParentClass() !== null) {
 					return $classReflection->getParentClass()->getName();
 				}

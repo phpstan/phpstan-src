@@ -2,8 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
-use PHPStan\Php\PhpVersion;
-use PHPStan\Php\PhpVersionFactory;
+use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -41,7 +40,6 @@ class ConstantArrayTypeBuilder
 	 * @param array<int> $optionalKeys
 	 */
 	private function __construct(
-		private readonly PhpVersion $phpVersion,
 		private array $keyTypes,
 		private array $valueTypes,
 		private array $nextAutoIndexes,
@@ -53,13 +51,12 @@ class ConstantArrayTypeBuilder
 
 	public static function createEmpty(): self
 	{
-		return new self((new PhpVersionFactory(null, null))->create(), [], [], [0], [], TrinaryLogic::createYes());
+		return new self([], [], [0], [], TrinaryLogic::createYes());
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
 	{
 		$builder = new self(
-			(new PhpVersionFactory(null, null))->create(),
 			$startArrayType->getKeyTypes(),
 			$startArrayType->getValueTypes(),
 			$startArrayType->getNextAutoIndexes(),
@@ -134,6 +131,7 @@ class ConstantArrayTypeBuilder
 				return;
 			}
 
+			$phpVersion = PhpVersionStaticAccessor::getInstance();
 			if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
 				/** @var ConstantIntegerType|ConstantStringType $keyType */
 				foreach ($this->keyTypes as $i => $keyType) {
@@ -185,7 +183,7 @@ class ConstantArrayTypeBuilder
 							$this->nextAutoIndexes[] = $newAutoIndex;
 						}
 					}
-					if ($this->phpVersion->supportsAssigningANegativeIndexToAnEmptyArray() && count($this->keyTypes) === 1 && $offsetType->getValue() < 0) {
+					if ($phpVersion->supportsAssigningANegativeIndexToAnEmptyArray() && count($this->keyTypes) === 1 && $offsetType->getValue() < 0) {
 						$newAutoIndex = $offsetType->getValue() + 1;
 						if (!$optional) {
 							$this->nextAutoIndexes = [$newAutoIndex];

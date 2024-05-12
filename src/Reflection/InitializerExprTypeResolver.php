@@ -1791,7 +1791,7 @@ class InitializerExprTypeResolver
 			}
 			if (in_array(strtolower($constantClass), $namesToResolve, true)) {
 				$resolvedName = $this->resolveName($class, $classReflection);
-				if ($resolvedName === 'parent' && strtolower($constantName) === 'class') {
+				if (strtolower($resolvedName) === 'parent' && strtolower($constantName) === 'class') {
 					return new ClassStringType();
 				}
 				$constantClassType = $this->resolveTypeByName($class, $classReflection);

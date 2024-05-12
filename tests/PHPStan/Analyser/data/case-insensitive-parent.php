@@ -16,6 +16,8 @@ class B extends A {
 		assertType('string', PARENT::doFoo());
 		assertType('string', parent::doFoo());
 
+		assertType('class-string', PARENT::class);
+
 		return PARENT::doFoo();
 	}
 }

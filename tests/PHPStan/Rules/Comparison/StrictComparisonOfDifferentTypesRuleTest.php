@@ -1016,4 +1016,10 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8366.php'], []);
 	}
 
+	public function testBug3300(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-3300.php'], []);
+	}
+
 }

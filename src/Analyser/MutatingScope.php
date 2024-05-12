@@ -2484,7 +2484,8 @@ class MutatingScope implements Scope
 	{
 		$originalClass = (string) $name;
 		if ($this->isInClass()) {
-			if (in_array(strtolower($originalClass), [
+			$lowerClass = strtolower($originalClass);
+			if (in_array($lowerClass, [
 				'self',
 				'static',
 			], true)) {
@@ -2492,7 +2493,7 @@ class MutatingScope implements Scope
 					return $this->inClosureBindScopeClasses[0];
 				}
 				return $this->getClassReflection()->getName();
-			} elseif ($originalClass === 'parent') {
+			} elseif ($lowerClass === 'parent') {
 				$currentClassReflection = $this->getClassReflection();
 				if ($currentClassReflection->getParentClass() !== null) {
 					return $currentClassReflection->getParentClass()->getName();

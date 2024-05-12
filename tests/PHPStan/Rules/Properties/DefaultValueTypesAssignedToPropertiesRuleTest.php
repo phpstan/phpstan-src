@@ -64,4 +64,9 @@ class DefaultValueTypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7933.php'], []);
 	}
 
+	public function testBug10987(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10987.php'], []);
+	}
+
 }

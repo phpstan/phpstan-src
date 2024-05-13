@@ -151,3 +151,15 @@ function callsPureCallableIdentifierTypeNode(callable $cb, \Closure $closure): i
 	$cb();
 	$closure();
 }
+
+
+function justContainsInlineHtml(): void
+{
+	?>
+	</td>
+	</tr>
+	</table></td>
+	</tr>
+	</table>
+	<?php
+}

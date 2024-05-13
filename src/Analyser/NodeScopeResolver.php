@@ -43,6 +43,7 @@ use PhpParser\Node\Stmt\Echo_;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
+use PhpParser\Node\Stmt\InlineHTML;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Static_;
 use PhpParser\Node\Stmt\Switch_;
@@ -1804,6 +1805,12 @@ class NodeScopeResolver
 				$exprResult = $this->processExprNode($stmt, $stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
 				$impurePoints = $exprResult->getImpurePoints();
 			}
+		} elseif ($stmt instanceof InlineHTML) {
+			$hasYield = false;
+			$throwPoints = [];
+			$impurePoints = [
+				new ImpurePoint($scope, $stmt, 'inlineHtml', 'inlineHtml', true),
+			];
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$hasYield = false;
 			$throwPoints = $overridingThrowPoints ?? [];

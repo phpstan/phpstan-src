@@ -616,6 +616,9 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return parent::exponentiate($exponent);
 	}
 
+	/**
+	 * @return list<ConstantIntegerType>
+	 */
 	public function getFiniteTypes(): array
 	{
 		if ($this->min === null || $this->max === null) {

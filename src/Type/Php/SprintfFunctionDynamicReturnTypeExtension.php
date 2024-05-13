@@ -11,6 +11,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -88,11 +89,20 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$combinationsCount = 1;
 		foreach ($args as $arg) {
 			$argType = $scope->getType($arg->value);
-			if (count($argType->getConstantScalarValues()) === 0) {
+			$constantScalarValues = $argType->getConstantScalarValues();
+
+			if (count($constantScalarValues) === 0) {
+				if ($argType instanceof IntegerRangeType) {
+					foreach ($argType->getFiniteTypes() as $finiteType) {
+						$constantScalarValues[] = $finiteType->getValue();
+					}
+				}
+			}
+
+			if (count($constantScalarValues) === 0) {
 				return $returnType;
 			}
 
-			$constantScalarValues = $argType->getConstantScalarValues();
 			$values[] = $constantScalarValues;
 			$combinationsCount *= count($constantScalarValues);
 		}

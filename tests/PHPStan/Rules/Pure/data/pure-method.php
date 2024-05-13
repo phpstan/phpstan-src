@@ -360,3 +360,18 @@ class VoidMethods
 	}
 
 }
+
+class AssertingImpureVoidMethod
+{
+
+	/**
+	 * @param mixed $value
+	 * @phpstan-assert array $value
+	 * @phpstan-impure
+	 */
+	public function assertSth($value): void
+	{
+
+	}
+
+}

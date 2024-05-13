@@ -89,7 +89,11 @@ class FunctionPurityCheck
 					->build();
 			}
 		} elseif ($isPure->no()) {
-			if (count($impurePoints) === 0) {
+			if (
+				count($throwPoints) === 0
+				&& count($impurePoints) === 0
+				&& count($functionReflection->getAsserts()->getAll()) === 0
+			) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'%s is marked as impure but does not have any side effects.',
 					$functionDescription,

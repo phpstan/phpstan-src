@@ -1809,7 +1809,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$impurePoints = [
-				new ImpurePoint($scope, $stmt, 'inlineHtml', 'inlineHtml', true),
+				new ImpurePoint($scope, $stmt, 'betweenPhpTags', 'output between PHP opening and closing tags', true),
 			];
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$hasYield = false;

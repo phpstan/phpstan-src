@@ -153,7 +153,8 @@ function callsPureCallableIdentifierTypeNode(callable $cb, \Closure $closure): i
 }
 
 
-function justContainsInlineHtml(): void
+/** @phpstan-pure */
+function justContainsInlineHtml()
 {
 	?>
 	</td>

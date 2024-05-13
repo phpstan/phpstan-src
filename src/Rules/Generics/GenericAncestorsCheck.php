@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
-use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -151,7 +150,6 @@ class GenericAncestorsCheck
 					$unusedName,
 					implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes())),
 				))
-					->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
 					->identifier('missingType.generics')
 					->build();
 			}

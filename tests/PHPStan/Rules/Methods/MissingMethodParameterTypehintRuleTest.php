@@ -48,22 +48,18 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 			[
 				'Method MissingMethodParameterTypehint\Bar::acceptsGenericInterface() has parameter $i with generic interface MissingMethodParameterTypehint\GenericInterface but does not specify its types: T, U',
 				91,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Method MissingMethodParameterTypehint\Bar::acceptsGenericClass() has parameter $c with generic class MissingMethodParameterTypehint\GenericClass but does not specify its types: A, B',
 				101,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Method MissingMethodParameterTypehint\CollectionIterableAndGeneric::acceptsCollection() has parameter $collection with generic interface DoctrineIntersectionTypeIsSupertypeOf\Collection but does not specify its types: TKey, T',
 				111,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Method MissingMethodParameterTypehint\CollectionIterableAndGeneric::acceptsCollection2() has parameter $collection with generic interface DoctrineIntersectionTypeIsSupertypeOf\Collection but does not specify its types: TKey, T',
 				119,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Method MissingMethodParameterTypehint\CallableSignature::doFoo() has parameter $cb with no signature specified for callable.',
@@ -77,12 +73,10 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 			[
 				'Method MissingMethodParameterTypehint\MissingParamOutType::generics() has @param-out PHPDoc tag for parameter $a with generic class ReflectionClass but does not specify its types: T',
 				215,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Method MissingMethodParameterTypehint\MissingParamClosureThisType::generics() has @param-closure-this PHPDoc tag for parameter $cb with generic class ReflectionClass but does not specify its types: T',
 				226,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Method MissingMethodParameterTypehint\MissingPureClosureSignatureType::doFoo() has parameter $cb with no signature specified for Closure.',
@@ -120,7 +114,6 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 			[
 				'Method DeepInspectTypes\Foo::doBar() has parameter $bars with generic class DeepInspectTypes\Bar but does not specify its types: T',
 				17,
-				MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP,
 			],
 		]);
 	}

@@ -29,7 +29,6 @@ class MissingClassConstantTypehintRuleTest extends RuleTestCase
 			[
 				'Constant MissingClassConstantTypehint\Foo::BAZ with generic class MissingClassConstantTypehint\Bar does not specify its types: T',
 				17,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Constant MissingClassConstantTypehint\Foo::LOREM type has no signature specified for callable.',
@@ -61,7 +60,6 @@ class MissingClassConstantTypehintRuleTest extends RuleTestCase
 			[
 				'Constant ClassConstantNativeTypeForMissingTypehintRule\Foo::D with generic class ClassConstantNativeTypeForMissingTypehintRule\Bar does not specify its types: T',
 				24,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}

@@ -61,7 +61,6 @@ class MixinRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @mixin contains generic class ReflectionClass but does not specify its types: T',
 				50,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'PHPDoc tag @mixin contains unknown class MixinRule\UnknownestClass.',

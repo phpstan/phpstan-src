@@ -40,7 +40,6 @@ class UsedTraitsRuleTest extends RuleTestCase
 			[
 				'Class UsedTraits\Baz uses generic trait UsedTraits\GenericTrait but does not specify its types: T',
 				38,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Generic type UsedTraits\GenericTrait<stdClass, Exception> in PHPDoc tag @use specifies 2 template types, but trait UsedTraits\GenericTrait supports only 1: T',
@@ -53,7 +52,6 @@ class UsedTraitsRuleTest extends RuleTestCase
 			[
 				'Trait UsedTraits\NestedTrait uses generic trait UsedTraits\GenericTrait but does not specify its types: T',
 				54,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Call-site variance annotation of covariant Throwable in generic type UsedTraits\GenericTrait<covariant Throwable> in PHPDoc tag @use is not allowed.',

@@ -32,8 +32,6 @@ class MissingTypehintCheck
 
 	public const MISSING_ITERABLE_VALUE_TYPE_TIP = 'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type';
 
-	public const TURN_OFF_NON_GENERIC_CHECK_TIP = 'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.';
-
 	private const ITERABLE_GENERIC_CLASS_NAMES = [
 		Traversable::class,
 		Iterator::class,

@@ -61,7 +61,6 @@ final class MissingFunctionReturnTypehintRule implements Rule
 				$name,
 				implode(', ', $genericTypeNames),
 			))
-				->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)
 				->identifier('missingType.generics')
 				->build();
 		}

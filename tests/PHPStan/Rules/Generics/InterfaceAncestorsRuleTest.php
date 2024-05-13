@@ -133,12 +133,10 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 			[
 				'Interface InterfaceAncestorsExtends\FooWrongClassImplemented extends generic interface InterfaceAncestorsExtends\FooGeneric but does not specify its types: T, U',
 				52,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Interface InterfaceAncestorsExtends\FooWrongClassImplemented extends generic interface InterfaceAncestorsExtends\FooGeneric3 but does not specify its types: T, W',
 				52,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Interface InterfaceAncestorsExtends\FooWrongTypeInImplementsTag @extends tag contains incompatible type class-string<InterfaceAncestorsExtends\T>.',
@@ -147,7 +145,6 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 			[
 				'Interface InterfaceAncestorsExtends\FooWrongTypeInImplementsTag extends generic interface InterfaceAncestorsExtends\FooGeneric but does not specify its types: T, U',
 				60,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Generic type InterfaceAncestorsExtends\FooGeneric<int> in PHPDoc tag @extends does not specify all template types of interface InterfaceAncestorsExtends\FooGeneric: T, U',
@@ -192,7 +189,6 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 			[
 				'Interface InterfaceAncestorsExtends\ExtendsGenericInterface extends generic interface InterfaceAncestorsExtends\FooGeneric but does not specify its types: T, U',
 				197,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Template type T is declared as covariant, but occurs in invariant position in extended type InterfaceAncestorsExtends\FooGeneric9<T, T> of interface InterfaceAncestorsExtends\FooGeneric10.',

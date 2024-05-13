@@ -44,7 +44,6 @@ class EnumAncestorsRuleTest extends RuleTestCase
 			[
 				'Enum EnumGenericAncestors\Foo4 implements generic interface EnumGenericAncestors\Generic but does not specify its types: T, U',
 				40,
-				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Generic type EnumGenericAncestors\Generic<stdClass> in PHPDoc tag @implements does not specify all template types of interface EnumGenericAncestors\Generic: T, U',

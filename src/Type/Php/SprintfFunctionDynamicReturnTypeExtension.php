@@ -7,11 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
-use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
@@ -96,9 +94,6 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			if (count($constantScalarValues) === 0) {
 				if ($argType instanceof IntegerRangeType) {
 					foreach ($argType->getFiniteTypes() as $finiteType) {
-						if (!$finiteType instanceof ConstantIntegerType) {
-							throw new ShouldNotHappenException();
-						}
 						$constantScalarValues[] = $finiteType->getValue();
 					}
 				}

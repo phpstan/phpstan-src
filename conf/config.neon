@@ -2037,9 +2037,12 @@ services:
 			- PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 
 	-
-		class: PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
+		factory: @PHPStan\Reflection\BetterReflection\SourceStubber\ReflectionSourceStubberFactory::create()
 		autowired:
 			- PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
+
+	-
+		class: PHPStan\Reflection\BetterReflection\SourceStubber\ReflectionSourceStubberFactory
 
 	php8Lexer:
 		class: PhpParser\Lexer\Emulative

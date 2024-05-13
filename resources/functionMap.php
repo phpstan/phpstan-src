@@ -12012,7 +12012,7 @@ return [
 'stream_get_contents' => ['string|false', 'source'=>'resource', 'maxlen='=>'int', 'offset='=>'int'],
 'stream_get_filters' => ['list<string>'],
 'stream_get_line' => ['string|false', 'stream'=>'resource', 'maxlen'=>'int', 'ending='=>'string'],
-'stream_get_meta_data' => ['array{timed_out:bool,blocked:bool,eof:bool,unread_bytes:int,stream_type:string,wrapper_type:string,wrapper_data:mixed,mode:string,seekable:bool,uri?:string,mediatype?:string,base64?:bool}', 'fp'=>'resource'],
+'stream_get_meta_data' => ['array{timed_out:bool,blocked:bool,eof:bool,unread_bytes:int,stream_type:string,wrapper_type:string,wrapper_data:mixed,mode:string,seekable:bool,uri:string,mediatype?:string,base64?:bool}', 'fp'=>'resource'],
 'stream_get_transports' => ['list<string>'],
 'stream_get_wrappers' => ['list<string>'],
 'stream_is_local' => ['bool', 'stream'=>'resource|string'],

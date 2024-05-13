@@ -24,6 +24,7 @@ return [
 		'str_decrement' => ['non-empty-string', 'string'=>'non-empty-string'],
 		'str_increment' => ['non-falsy-string', 'string'=>'non-empty-string'],
 		'gc_status' => ['array{running:bool,protected:bool,full:bool,runs:int,collected:int,threshold:int,buffer_size:int,roots:int,application_time:float,collector_time:float,destructor_time:float,free_time:float}'],
+		'stream_get_meta_data' => ['array{timed_out:bool,blocked:bool,eof:bool,unread_bytes:int,stream_type:string,wrapper_type:string,wrapper_data:mixed,mode:string,seekable:bool,uri:string,mediatype?:string,base64?:bool}', 'fp'=>'resource'],
 	],
 	'old' => [
 

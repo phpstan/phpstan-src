@@ -618,6 +618,17 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 			return TrinaryLogic::extremeIdentity(...$results);
 		}
+		if ($offsetType instanceof IntegerRangeType) {
+			$finiteTypes = $offsetType->getFiniteTypes();
+			if ($finiteTypes !== []) {
+				$results = [];
+				foreach ($finiteTypes as $innerType) {
+					$results[] = $this->hasOffsetValueType($innerType);
+				}
+
+				return TrinaryLogic::extremeIdentity(...$results);
+			}
+		}
 
 		$result = TrinaryLogic::createNo();
 		foreach ($this->keyTypes as $i => $keyType) {

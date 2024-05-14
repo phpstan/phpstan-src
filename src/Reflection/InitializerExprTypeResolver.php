@@ -1858,6 +1858,13 @@ class InitializerExprTypeResolver
 			);
 		}
 
+		if ($constantClassType->isClassStringType()->yes()) {
+			if ($constantClassType->isConstantScalarValue()->yes()) {
+				$isObject = false;
+			}
+			$constantClassType = $constantClassType->getClassStringObjectType();
+		}
+
 		$types = [];
 		foreach ($constantClassType->getObjectClassNames() as $referencedClass) {
 			if (!$this->getReflectionProvider()->hasClass($referencedClass)) {

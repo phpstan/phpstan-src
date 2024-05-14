@@ -1791,7 +1791,7 @@ class InitializerExprTypeResolver
 			}
 			if (in_array(strtolower($constantClass), $namesToResolve, true)) {
 				$resolvedName = $this->resolveName($class, $classReflection);
-				if ($resolvedName === 'parent' && strtolower($constantName) === 'class') {
+				if (strtolower($resolvedName) === 'parent' && strtolower($constantName) === 'class') {
 					return new ClassStringType();
 				}
 				$constantClassType = $this->resolveTypeByName($class, $classReflection);
@@ -2024,12 +2024,14 @@ class InitializerExprTypeResolver
 	{
 		$originalClass = (string) $name;
 		if ($classReflection !== null) {
-			if (in_array(strtolower($originalClass), [
+			$lowerClass = strtolower($originalClass);
+
+			if (in_array($lowerClass, [
 				'self',
 				'static',
 			], true)) {
 				return $classReflection->getName();
-			} elseif ($originalClass === 'parent') {
+			} elseif ($lowerClass === 'parent') {
 				if ($classReflection->getParentClass() !== null) {
 					return $classReflection->getParentClass()->getName();
 				}

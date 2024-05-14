@@ -1687,6 +1687,15 @@ class NodeScopeResolver
 						static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, [], []),
 						false,
 					)->getScope();
+				} elseif ($var instanceof PropertyFetch) {
+					$scope = $scope->invalidateExpression($var);
+					$impurePoints[] = new ImpurePoint(
+						$scope,
+						$var,
+						'propertyUnset',
+						'property unset',
+						true,
+					);
 				} else {
 					$scope = $scope->invalidateExpression($var);
 				}

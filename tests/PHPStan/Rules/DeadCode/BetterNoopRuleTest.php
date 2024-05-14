@@ -143,4 +143,9 @@ class BetterNoopRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11001(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11001.php'], []);
+	}
+
 }

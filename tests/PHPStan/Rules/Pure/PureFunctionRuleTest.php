@@ -100,6 +100,10 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Possibly impure call to a Closure in pure function PureFunction\callsClosures().',
 				140,
 			],
+			[
+				'Impure output between PHP opening and closing tags in pure function PureFunction\justContainsInlineHtml().',
+				160,
+			],
 		]);
 	}
 

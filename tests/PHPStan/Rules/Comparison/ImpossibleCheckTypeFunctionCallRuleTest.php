@@ -1025,9 +1025,30 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testNonStrictInArray(): void
 	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-9662.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-9662.php'], [
+			[
+				"Call to function in_array() with 'NotAnEnumCase' and array<Bug9662\Suit> will always evaluate to false.",
+				204,
+				$tipText,
+			],
+			[
+				"Call to function in_array() with 'NotAnEnumCase' and array<Bug9662\StringBackedSuit> will always evaluate to false.",
+				247,
+				$tipText,
+			],
+			[
+				'Call to function in_array() with string and array<Bug9662\StringBackedSuit> will always evaluate to false.',
+				262,
+			],
+			[
+				'Call to function in_array() with int and array<Bug9662\StringBackedSuit> will always evaluate to false.',
+				269,
+			],
+		]);
 	}
 
 	public function testLooseComparisonAgainstEnumsNoPhpdoc(): void

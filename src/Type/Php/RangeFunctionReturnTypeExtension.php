@@ -22,7 +22,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use function abs;
+use ValueError;
 use function count;
 use function range;
 
@@ -66,12 +66,11 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 						continue;
 					}
 
-					$rangeSpanned = abs($endConstant->getValue() - $startConstant->getValue());
-					if ($rangeSpanned <= $stepConstant->getValue()) {
+					try {
+						$rangeValues = range($startConstant->getValue(), $endConstant->getValue(), $stepConstant->getValue());
+					} catch (ValueError) {
 						continue;
 					}
-
-					$rangeValues = range($startConstant->getValue(), $endConstant->getValue(), $stepConstant->getValue());
 					if (count($rangeValues) > self::RANGE_LENGTH_THRESHOLD) {
 						if ($startConstant instanceof ConstantIntegerType && $endConstant instanceof ConstantIntegerType) {
 							if ($startConstant->getValue() > $endConstant->getValue()) {

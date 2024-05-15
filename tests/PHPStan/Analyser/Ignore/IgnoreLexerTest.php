@@ -3,6 +3,8 @@
 namespace PHPStan\Analyser\Ignore;
 
 use PHPStan\Testing\PHPStanTestCase;
+use function array_pop;
+use function substr_count;
 use const PHP_EOL;
 
 class IgnoreLexerTest extends PHPStanTestCase
@@ -69,7 +71,7 @@ class IgnoreLexerTest extends PHPStanTestCase
 			[
 				['return.ref', IgnoreLexer::TOKEN_IDENTIFIER, 1],
 				[' ', IgnoreLexer::TOKEN_WHITESPACE, 1],
-				[PHP_EOL . ' ', IgnoreLexer::TOKEN_EOL, 1],
+				[PHP_EOL . ' ', IgnoreLexer::TOKEN_END, 1],
 				['(', IgnoreLexer::TOKEN_OPEN_PARENTHESIS, 2],
 				['čičí', IgnoreLexer::TOKEN_OTHER, 2],
 				[')', IgnoreLexer::TOKEN_CLOSE_PARENTHESIS, 2],
@@ -84,7 +86,11 @@ class IgnoreLexerTest extends PHPStanTestCase
 	public function testTokenize(string $input, array $expectedTokens): void
 	{
 		$lexer = new IgnoreLexer();
-		$this->assertSame($expectedTokens, $lexer->tokenize($input));
+		$tokens = $lexer->tokenize($input);
+		$lastToken = array_pop($tokens);
+
+		$this->assertSame(['', IgnoreLexer::TOKEN_END, substr_count($input, PHP_EOL) + 1], $lastToken);
+		$this->assertSame($expectedTokens, $tokens);
 	}
 
 }

@@ -24,6 +24,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use ValueError;
 use function count;
+use function is_array;
 use function range;
 
 class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -71,6 +72,11 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 					} catch (ValueError) {
 						continue;
 					}
+
+					if (!is_array($rangeValues)) {
+						continue;
+					}
+
 					if (count($rangeValues) > self::RANGE_LENGTH_THRESHOLD) {
 						if ($startConstant instanceof ConstantIntegerType && $endConstant instanceof ConstantIntegerType) {
 							if ($startConstant->getValue() > $endConstant->getValue()) {

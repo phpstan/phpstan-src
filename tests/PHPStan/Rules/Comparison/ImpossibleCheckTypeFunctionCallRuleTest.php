@@ -1025,28 +1025,39 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testNonStrictInArray(): void
 	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-9662.php'], []);
+	}
+
+	public function testNonStrictInArrayEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-9662.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-9662-enums.php'], [
 			[
-				"Call to function in_array() with 'NotAnEnumCase' and array<Bug9662\Suit> will always evaluate to false.",
-				204,
+				"Call to function in_array() with 'NotAnEnumCase' and array<Bug9662Enums\Suit> will always evaluate to false.",
+				19,
 				$tipText,
 			],
 			[
-				"Call to function in_array() with 'NotAnEnumCase' and array<Bug9662\StringBackedSuit> will always evaluate to false.",
-				247,
+				"Call to function in_array() with 'NotAnEnumCase' and array<Bug9662Enums\StringBackedSuit> will always evaluate to false.",
+				62,
 				$tipText,
 			],
 			[
-				'Call to function in_array() with string and array<Bug9662\StringBackedSuit> will always evaluate to false.',
-				262,
+				'Call to function in_array() with string and array<Bug9662Enums\StringBackedSuit> will always evaluate to false.',
+				77,
 			],
 			[
-				'Call to function in_array() with int and array<Bug9662\StringBackedSuit> will always evaluate to false.',
-				269,
+				'Call to function in_array() with int and array<Bug9662Enums\StringBackedSuit> will always evaluate to false.',
+				84,
 			],
 		]);
 	}

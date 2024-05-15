@@ -6,10 +6,9 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
-use function count;
 
 /**
- * @implements Collector<Node\Stmt\Expression, array{class-string, string, int}>
+ * @implements Collector<Node\Stmt\Expression, array{non-empty-list<class-string>, string, int}>
  */
 class PossiblyPureMethodCallCollector implements Collector
 {
@@ -34,32 +33,42 @@ class PossiblyPureMethodCallCollector implements Collector
 
 		$methodName = $node->expr->name->toString();
 		$calledOnType = $scope->getType($node->expr->var);
-		$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
+		if (!$calledOnType->hasMethod($methodName)->yes()) {
+			return null;
+		}
+
+		$classNames = [];
+		$methodReflection = null;
+		foreach ($calledOnType->getObjectClassReflections() as $classReflection) {
+			if (!$classReflection->hasMethod($methodName)) {
+				return null;
+			}
+
+			$methodReflection = $classReflection->getMethod($methodName, $scope);
+			if (
+				!$methodReflection->isPrivate()
+				&& !$methodReflection->isFinal()->yes()
+				&& !$methodReflection->getDeclaringClass()->isFinal()
+			) {
+				if (!$classReflection->isFinal()) {
+					return null;
+				}
+			}
+			if (!$methodReflection->isPure()->maybe()) {
+				return null;
+			}
+			if (!$methodReflection->hasSideEffects()->maybe()) {
+				return null;
+			}
+
+			$classNames[] = $methodReflection->getDeclaringClass()->getName();
+		}
+
 		if ($methodReflection === null) {
 			return null;
 		}
-		if (
-			!$methodReflection->isPrivate()
-			&& !$methodReflection->isFinal()->yes()
-			&& !$methodReflection->getDeclaringClass()->isFinal()
-		) {
-			$typeClassReflections = $calledOnType->getObjectClassReflections();
-			if (count($typeClassReflections) !== 1) {
-				return null;
-			}
 
-			if (!$typeClassReflections[0]->isFinal()) {
-				return null;
-			}
-		}
-		if (!$methodReflection->isPure()->maybe()) {
-			return null;
-		}
-		if (!$methodReflection->hasSideEffects()->maybe()) {
-			return null;
-		}
-
-		return [$methodReflection->getDeclaringClass()->getName(), $methodReflection->getName(), $node->getStartLine()];
+		return [$classNames, $methodReflection->getName(), $node->getStartLine()];
 	}
 
 }

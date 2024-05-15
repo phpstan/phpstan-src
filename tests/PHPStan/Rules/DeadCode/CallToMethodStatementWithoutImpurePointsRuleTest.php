@@ -58,6 +58,16 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11011(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11011.php'], [
+			[
+				'Call to method Bug11011\AnotherPureImpl::doFoo() on a separate line has no effect.',
+				32,
+			],
+		]);
+	}
+
 	protected function getCollectors(): array
 	{
 		return [

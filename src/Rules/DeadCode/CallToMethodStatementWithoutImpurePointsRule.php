@@ -38,19 +38,22 @@ class CallToMethodStatementWithoutImpurePointsRule implements Rule
 
 		$errors = [];
 		foreach ($node->get(PossiblyPureMethodCallCollector::class) as $filePath => $data) {
-			foreach ($data as [$className, $method, $line]) {
-				$className = strtolower($className);
+			foreach ($data as [$classNames, $method, $line]) {
+				$originalMethodName = null;
+				foreach ($classNames as $className) {
+					$className = strtolower($className);
 
-				if (!array_key_exists($className, $methods)) {
-					continue;
+					if (!array_key_exists($className, $methods)) {
+						continue 2;
+					}
+
+					$lowerMethod = strtolower($method);
+					if (!array_key_exists($lowerMethod, $methods[$className])) {
+						continue 2;
+					}
+
+					$originalMethodName = $methods[$className][$lowerMethod];
 				}
-
-				$lowerMethod = strtolower($method);
-				if (!array_key_exists($lowerMethod, $methods[$className])) {
-					continue;
-				}
-
-				$originalMethodName = $methods[$className][$lowerMethod];
 
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Call to method %s() on a separate line has no effect.',

@@ -109,7 +109,10 @@ class UnionTypeHelper
 				return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
 			}
 
-			if ($a->isCallable()->yes() && $b->isCallable()->yes()) {
+			if (
+				($a instanceof CallableType || $a instanceof ClosureType)
+				&& ($b instanceof CallableType || $b instanceof ClosureType)
+			) {
 				return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
 			}
 

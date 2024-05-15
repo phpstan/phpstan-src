@@ -414,6 +414,18 @@ class RichParserTest extends PHPStanTestCase
 				2 => ["Unexpected token type T_OTHER '://example.com' after T_IDENTIFIER, expected T_COMMA or T_END or T_OPEN_PARENTHESIS"],
 			],
 		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			PHP_EOL .
+			'/**' . PHP_EOL .
+			' * @phpstan-ignore return.ref,' . PHP_EOL .
+			' *                 return.non,' . PHP_EOL .
+			' */',
+			[
+				4 => ['Unexpected token type T_END after T_COMMA, expected T_IDENTIFIER'],
+			],
+		];
 	}
 
 	/**

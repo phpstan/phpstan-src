@@ -213,6 +213,14 @@ class RichParserTest extends PHPStanTestCase
 				2 => ['identifier', 'identifier2'],
 			],
 		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			"test(); // @phpstan-ignore  identifier (comment1),\tidentifier2 ,  identifier3 (comment3) " . PHP_EOL,
+			[
+				2 => ['identifier', 'identifier2', 'identifier3'],
+			],
+		];
 	}
 
 	/**

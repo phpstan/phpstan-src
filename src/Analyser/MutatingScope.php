@@ -1272,17 +1272,38 @@ class MutatingScope implements Scope
 					}
 				}
 
+				$arrowFunctionImpurePoints = [];
+				$invalidateExpressions = [];
 				$arrowFunctionExprResult = $this->nodeScopeResolver->processExprNode(
 					new Node\Stmt\Expression($node->expr),
 					$node->expr,
 					$arrowScope,
-					static function (): void {
+					static function (Node $node, Scope $scope) use ($arrowScope, &$arrowFunctionImpurePoints, &$invalidateExpressions): void {
+						if ($scope->getAnonymousFunctionReflection() !== $arrowScope->getAnonymousFunctionReflection()) {
+							return;
+						}
+
+						if ($node instanceof InvalidateExprNode) {
+							$invalidateExpressions[] = $node;
+							return;
+						}
+
+						if (!$node instanceof PropertyAssignNode) {
+							return;
+						}
+
+						$arrowFunctionImpurePoints[] = new ImpurePoint(
+							$scope,
+							$node,
+							'propertyAssign',
+							'property assignment',
+							true,
+						);
 					},
 					ExpressionContext::createDeep(),
 				);
 				$throwPoints = $arrowFunctionExprResult->getThrowPoints();
-				$impurePoints = $arrowFunctionExprResult->getImpurePoints();
-				$invalidateExpressions = [];
+				$impurePoints = array_merge($arrowFunctionImpurePoints, $arrowFunctionExprResult->getImpurePoints());
 				$usedVariables = [];
 			} else {
 				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);

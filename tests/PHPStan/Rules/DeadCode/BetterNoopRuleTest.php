@@ -6,6 +6,7 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<BetterNoopRule>
@@ -145,6 +146,10 @@ class BetterNoopRuleTest extends RuleTestCase
 
 	public function testBug11001(): void
 	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-11001.php'], []);
 	}
 

@@ -299,8 +299,10 @@ class RichParser implements Parser
 
 			if ($expected !== null && !in_array($tokenType, $expected, true)) {
 				$tokenTypeLabel = $this->ignoreLexer->getLabel($tokenType);
-				$otherTokenContent = $tokenType === IgnoreLexer::TOKEN_OTHER ? " '$content'" : '';
-				throw new IgnoreParseException("Unexpected token type $tokenTypeLabel$otherTokenContent after $lastTokenTypeLabel, expected " . implode(' or ', array_map(fn ($token) => $this->ignoreLexer->getLabel($token), $expected)), $tokenLine);
+				$otherTokenContent = $tokenType === IgnoreLexer::TOKEN_OTHER ? sprintf(" '%s'", $content) : '';
+				$expectedLabels = implode(' or ', array_map(fn ($token) => $this->ignoreLexer->getLabel($token), $expected));
+
+				throw new IgnoreParseException(sprintf('Unexpected token type %s%s after %s, expected %s', $tokenTypeLabel, $otherTokenContent, $lastTokenTypeLabel, $expectedLabels), $tokenLine);
 			}
 
 			if ($tokenType === IgnoreLexer::TOKEN_OPEN_PARENTHESIS) {

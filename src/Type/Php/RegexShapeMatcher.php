@@ -37,7 +37,7 @@ final class RegexShapeMatcher
 		// add one capturing group to the end so all capture group keys
 		// are present in the $matches
 		// see https://3v4l.org/sOXbn, https://3v4l.org/3SdDM
-		$regex = preg_replace('~^(.)(.*)\K(\1\w*$)~', '|(?<phpstan_named_capture_group_last>)$3', $regex);
+		$regex = preg_replace('~.[a-z\s]*$~i', '|(?<phpstan_named_capture_group_last>)$0', $regex);
 
 		if (
 			$regex === null

@@ -73,6 +73,7 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 						continue;
 					}
 
+					// @phpstan-ignore function.alreadyNarrowedType
 					if (!is_array($rangeValues)) {
 						continue;
 					}

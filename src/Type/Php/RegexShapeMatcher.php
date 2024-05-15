@@ -37,7 +37,7 @@ final class RegexShapeMatcher
 		// add one capturing group to the end so all capture group keys
 		// are present in the $matches
 		// see https://3v4l.org/sOXbn, https://3v4l.org/3SdDM
-		$regex = preg_replace('~.[a-z\s]*$~i', '|(?<phpstan_named_capture_group_last>)$0', $regex);
+		$regex = preg_replace('~.[a-z\s]*$~i', '|(?<phpstanNamedCaptureGroupLast>)$0', $regex);
 
 		if (
 			$regex === null
@@ -46,7 +46,7 @@ final class RegexShapeMatcher
 			return new ArrayType(new MixedType(), new StringType());
 		}
 		unset($matches[array_key_last($matches)]);
-		unset($matches['phpstan_named_capture_group_last']);
+		unset($matches['phpstanNamedCaptureGroupLast']);
 
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		foreach (array_keys($matches) as $key) {

@@ -65,6 +65,11 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 						continue;
 					}
 
+					$rangeSpanned = abs($endConstant->getValue() - $startConstant->getValue());
+					if ($rangeSpanned <= $stepConstant->getValue()) {
+						continue;
+					}
+
 					$rangeValues = range($startConstant->getValue(), $endConstant->getValue(), $stepConstant->getValue());
 					if (count($rangeValues) > self::RANGE_LENGTH_THRESHOLD) {
 						if ($startConstant instanceof ConstantIntegerType && $endConstant instanceof ConstantIntegerType) {

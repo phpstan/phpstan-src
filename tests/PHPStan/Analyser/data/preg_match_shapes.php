@@ -15,6 +15,21 @@ function doMatch(string $s): void {
 	}
 	assertType('array<string>', $matches);
 
+	if (preg_match('  /Price: (£|€)\d+/ i u', $s, $matches)) {
+		assertType('array{0: string, 1?: string}', $matches);
+	}
+	assertType('array<string>', $matches);
+
+	if (preg_match('(Price: (£|€))i', $s, $matches)) {
+		assertType('array{0: string, 1?: string}', $matches);
+	}
+	assertType('array<string>', $matches);
+
+	if (preg_match('_foo(.)\_i_i', $s, $matches)) {
+		assertType('array{0: string, 1?: string}', $matches);
+	}
+	assertType('array<string>', $matches);
+
 	if (preg_match('/(a)(b)*(c)(d)*/', $s, $matches)) {
 		assertType('array{0: string, 1?: string, 2?: string, 3?: string, 4?: string}', $matches);
 	}

@@ -63,14 +63,6 @@ class RichParserTest extends PHPStanTestCase
 
 		yield [
 			'<?php' . PHP_EOL .
-			'test(); // @phpstan-ignore return.ref return.non',
-			[
-				2 => ['return.ref', 'return.non'],
-			],
-		];
-
-		yield [
-			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore return.ref, return.non',
 			[
 				2 => ['return.ref', 'return.non'],
@@ -88,14 +80,6 @@ class RichParserTest extends PHPStanTestCase
 		yield [
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore return.ref, return.non (foo, because...)',
-			[
-				2 => ['return.ref', 'return.non'],
-			],
-		];
-
-		yield [
-			'<?php' . PHP_EOL .
-			'test(); // @phpstan-ignore return.ref, return.non čičí',
 			[
 				2 => ['return.ref', 'return.non'],
 			],
@@ -221,6 +205,14 @@ class RichParserTest extends PHPStanTestCase
 				3 => ['test'],
 			],
 		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier (comment), identifier2 (comment2)' . PHP_EOL,
+			[
+				2 => ['identifier', 'identifier2'],
+			],
+		];
 	}
 
 	/**
@@ -247,7 +239,7 @@ class RichParserTest extends PHPStanTestCase
 			' *                 return.non,' . PHP_EOL .
 			' */',
 			[
-				4 => ['Unexpected comma (,)'],
+				4 => ['Unexpected token type T_COMMA after T_COMMA, expected T_IDENTIFIER'],
 			],
 		];
 
@@ -257,7 +249,7 @@ class RichParserTest extends PHPStanTestCase
 			' * @phpstan-ignore return.ref,' . PHP_EOL .
 			' */',
 			[
-				3 => ['Unexpected trailing comma (,)'],
+				3 => ['Unexpected token type T_END after T_COMMA, expected T_IDENTIFIER'],
 			],
 		];
 
@@ -267,7 +259,7 @@ class RichParserTest extends PHPStanTestCase
 			' * @phpstan-ignore' . PHP_EOL .
 			' */',
 			[
-				3 => ['Missing identifier'],
+				3 => ['Unexpected token type T_END after start, expected T_IDENTIFIER'],
 			],
 		];
 
@@ -275,7 +267,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore return.ref,' . PHP_EOL,
 			[
-				2 => ['Unexpected trailing comma (,)'],
+				2 => ['Unexpected token type T_END after T_COMMA, expected T_IDENTIFIER'],
 			],
 		];
 
@@ -283,7 +275,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore test (comment),' . PHP_EOL,
 			[
-				2 => ['Unexpected trailing comma (,)'],
+				2 => ['Unexpected token type T_END after T_COMMA, expected T_IDENTIFIER'],
 			],
 		];
 
@@ -291,7 +283,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore ,' . PHP_EOL,
 			[
-				2 => ['First token is not an identifier'],
+				2 => ['Unexpected token type T_COMMA after start, expected T_IDENTIFIER'],
 			],
 		];
 
@@ -299,7 +291,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore return.ref, return.non )foo',
 			[
-				2 => ['Closing parenthesis ")" before opening parenthesis "("'],
+				2 => ['Unexpected token type T_CLOSE_PARENTHESIS after T_IDENTIFIER, expected T_COMMA or T_END or T_OPEN_PARENTHESIS'],
 			],
 		];
 
@@ -307,7 +299,119 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore return.ref, return.non (foo',
 			[
-				2 => ['Unclosed opening parenthesis "(" without closing parenthesis ")"'],
+				2 => ['Unexpected token type T_END, unclosed opening parenthesis'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore ()' . PHP_EOL,
+			[
+				2 => ['Unexpected token type T_OPEN_PARENTHESIS after start, expected T_IDENTIFIER'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore ' . PHP_EOL,
+			[
+				2 => ['Unexpected token type T_END after start, expected T_IDENTIFIER'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore ,' . PHP_EOL,
+			[
+				2 => ['Unexpected token type T_COMMA after start, expected T_IDENTIFIER'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore čumim' . PHP_EOL,
+			[
+				2 => ["Unexpected token type T_OTHER 'čumim' after start, expected T_IDENTIFIER"],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore test ((inner)' . PHP_EOL,
+			[
+				2 => ['Unexpected token type T_END, unclosed opening parenthesis'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore return.ref return.non',
+			[
+				2 => ['Unexpected token type T_IDENTIFIER after T_IDENTIFIER, expected T_COMMA or T_END or T_OPEN_PARENTHESIS'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier (comment))' . PHP_EOL,
+			[
+				2 => ['Unexpected token type T_CLOSE_PARENTHESIS after T_CLOSE_PARENTHESIS, expected T_COMMA or T_END'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore mečoun two' . PHP_EOL,
+			[
+				2 => ["Unexpected token type T_OTHER 'čoun' after T_IDENTIFIER, expected T_COMMA or T_END or T_OPEN_PARENTHESIS"],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore mečoun' . PHP_EOL,
+			[
+				2 => ["Unexpected token type T_OTHER 'čoun' after T_IDENTIFIER, expected T_COMMA or T_END or T_OPEN_PARENTHESIS"],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore return.ref, return.non čičí',
+			[
+				2 => ["Unexpected token type T_OTHER 'čičí' after T_IDENTIFIER, expected T_COMMA or T_END or T_OPEN_PARENTHESIS"],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier -- comment' . PHP_EOL, // phpcs comment style
+			[
+				2 => ["Unexpected token type T_OTHER '--' after T_IDENTIFIER, expected T_COMMA or T_END or T_OPEN_PARENTHESIS"],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier [comment]' . PHP_EOL,
+			[
+				2 => ["Unexpected token type T_OTHER '[comment]' after T_IDENTIFIER, expected T_COMMA or T_END or T_OPEN_PARENTHESIS"],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier (comment) (comment2)' . PHP_EOL,
+			[
+				2 => ['Unexpected token type T_OPEN_PARENTHESIS after T_CLOSE_PARENTHESIS, expected T_COMMA or T_END'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore https://example.com' . PHP_EOL,
+			[
+				2 => ["Unexpected token type T_OTHER '://example.com' after T_IDENTIFIER, expected T_COMMA or T_END or T_OPEN_PARENTHESIS"],
 			],
 		];
 	}

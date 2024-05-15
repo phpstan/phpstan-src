@@ -13,9 +13,10 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
-use function array_pop;
+use function array_map;
 use function count;
 use function implode;
+use function in_array;
 use function is_string;
 use function preg_match_all;
 use function sprintf;
@@ -283,59 +284,55 @@ class RichParser implements Parser
 			if ($originalToken[IgnoreLexer::TYPE_OFFSET] === IgnoreLexer::TOKEN_WHITESPACE) {
 				continue;
 			}
-			if ($originalToken[IgnoreLexer::TYPE_OFFSET] === IgnoreLexer::TOKEN_EOL) {
-				break;
-			}
 			$tokens[] = $originalToken;
 		}
 
 		$c = count($tokens);
 
 		$identifiers = [];
-		$depth = 0;
-		$parenthesisStack = [];
+		$openParenthesisCount = 0;
+		$expected = [IgnoreLexer::TOKEN_IDENTIFIER];
+
 		for ($i = 0; $i < $c; $i++) {
+			$lastTokenTypeLabel = isset($tokenType) ? $this->ignoreLexer->getLabel($tokenType) : 'start';
 			[IgnoreLexer::VALUE_OFFSET => $content, IgnoreLexer::TYPE_OFFSET => $tokenType, IgnoreLexer::LINE_OFFSET => $tokenLine] = $tokens[$i];
-			if ($tokenType === IgnoreLexer::TOKEN_IDENTIFIER && $depth === 0) {
-				$identifiers[] = $content;
-				if (isset($tokens[$i + 1])) {
-					if ($tokens[$i + 1][IgnoreLexer::TYPE_OFFSET] === IgnoreLexer::TOKEN_COMMA) {
-						$i++;
-					}
-				}
+
+			if ($expected !== null && !in_array($tokenType, $expected, true)) {
+				$tokenTypeLabel = $this->ignoreLexer->getLabel($tokenType);
+				$otherTokenContent = $tokenType === IgnoreLexer::TOKEN_OTHER ? " '$content'" : '';
+				throw new IgnoreParseException("Unexpected token type $tokenTypeLabel$otherTokenContent after $lastTokenTypeLabel, expected " . implode(' or ', array_map(fn ($token) => $this->ignoreLexer->getLabel($token), $expected)), $tokenLine);
+			}
+
+			if ($tokenType === IgnoreLexer::TOKEN_OPEN_PARENTHESIS) {
+				$openParenthesisCount++;
+				$expected = null;
 				continue;
 			}
-			if ($i === 0) {
-				throw new IgnoreParseException('First token is not an identifier', $tokenLine);
-			}
-			if ($tokenType === IgnoreLexer::TOKEN_COMMA && $depth === 0) {
-				throw new IgnoreParseException('Unexpected comma (,)', $tokenLine);
-			}
+
 			if ($tokenType === IgnoreLexer::TOKEN_CLOSE_PARENTHESIS) {
-				if ($depth < 1) {
-					throw new IgnoreParseException('Closing parenthesis ")" before opening parenthesis "("', $tokenLine);
-				}
-
-				$depth--;
-				array_pop($parenthesisStack);
-				if ($depth === 0) {
-					break;
-				}
-			}
-			if ($tokenType !== IgnoreLexer::TOKEN_OPEN_PARENTHESIS) {
+				$openParenthesisCount--;
+				$expected = [IgnoreLexer::TOKEN_COMMA, IgnoreLexer::TOKEN_END];
 				continue;
 			}
 
-			$depth++;
-			$parenthesisStack[] = $tokenLine;
+			if ($openParenthesisCount > 0) {
+				continue; // waiting for comment end
+			}
+
+			if ($tokenType === IgnoreLexer::TOKEN_IDENTIFIER) {
+				$identifiers[] = $content;
+				$expected = [IgnoreLexer::TOKEN_COMMA, IgnoreLexer::TOKEN_END, IgnoreLexer::TOKEN_OPEN_PARENTHESIS];
+				continue;
+			}
+
+			if ($tokenType === IgnoreLexer::TOKEN_COMMA) {
+				$expected = [IgnoreLexer::TOKEN_IDENTIFIER];
+				continue;
+			}
 		}
 
-		if (isset($tokens[$c - 1]) && $tokens[$c - 1][IgnoreLexer::TYPE_OFFSET] === IgnoreLexer::TOKEN_COMMA) {
-			throw new IgnoreParseException('Unexpected trailing comma (,)', $tokens[$c - 1][IgnoreLexer::LINE_OFFSET]);
-		}
-
-		if (count($parenthesisStack) > 0) {
-			throw new IgnoreParseException('Unclosed opening parenthesis "(" without closing parenthesis ")"', $parenthesisStack[count($parenthesisStack) - 1]);
+		if ($openParenthesisCount > 0) {
+			throw new IgnoreParseException('Unexpected token type T_END, unclosed opening parenthesis', $tokenLine ?? 1);
 		}
 
 		if (count($identifiers) === 0) {

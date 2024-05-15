@@ -1703,6 +1703,11 @@ parameters:
 			path: src/Type/UnionTypeHelper.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\CallableType is error\\-prone and deprecated\\. Use Type\\:\\:isCallable\\(\\) and Type\\:\\:getCallableParametersAcceptors\\(\\) instead\\.$#"
+			count: 2
+			path: src/Type/UnionTypeHelper.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
 			count: 4
 			path: src/Type/UnionTypeHelper.php

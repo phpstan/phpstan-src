@@ -2636,67 +2636,63 @@ class NodeScopeResolver
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 				$scope = $result->getScope();
 			} elseif ($expr->class instanceof Name) {
-				$className = $scope->resolveName($expr->class);
-				if ($this->reflectionProvider->hasClass($className)) {
-					$classReflection = $this->reflectionProvider->getClass($className);
-					$methodName = $expr->name->name;
-					if ($classReflection->hasMethod($methodName)) {
-						$methodReflection = $classReflection->getMethod($methodName, $scope);
-						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-							$scope,
-							$expr->getArgs(),
-							$methodReflection->getVariants(),
-							$methodReflection->getNamedArgumentsVariants(),
-						);
+				$classType = $scope->resolveTypeByName($expr->class);
+				$methodName = $expr->name->name;
+				if ($classType->hasMethod($methodName)->yes()) {
+					$methodReflection = $classType->getMethod($methodName, $scope);
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+						$scope,
+						$expr->getArgs(),
+						$methodReflection->getVariants(),
+						$methodReflection->getNamedArgumentsVariants(),
+					);
 
-						$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
-						if ($methodThrowPoint !== null) {
-							$throwPoints[] = $methodThrowPoint;
-						}
-						if (
-							$classReflection->getName() === 'Closure'
-							&& strtolower($methodName) === 'bind'
-						) {
-							$thisType = null;
-							$nativeThisType = null;
-							if (isset($expr->getArgs()[1])) {
-								$argType = $scope->getType($expr->getArgs()[1]->value);
-								if ($argType->isNull()->yes()) {
-									$thisType = null;
-								} else {
-									$thisType = $argType;
-								}
+					$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
+					if ($methodThrowPoint !== null) {
+						$throwPoints[] = $methodThrowPoint;
+					}
 
-								$nativeArgType = $scope->getNativeType($expr->getArgs()[1]->value);
-								if ($nativeArgType->isNull()->yes()) {
-									$nativeThisType = null;
-								} else {
-									$nativeThisType = $nativeArgType;
-								}
+					$declaringClass = $methodReflection->getDeclaringClass();
+					if (
+						$declaringClass->getName() === 'Closure'
+						&& strtolower($methodName) === 'bind'
+					) {
+						$thisType = null;
+						$nativeThisType = null;
+						if (isset($expr->getArgs()[1])) {
+							$argType = $scope->getType($expr->getArgs()[1]->value);
+							if ($argType->isNull()->yes()) {
+								$thisType = null;
+							} else {
+								$thisType = $argType;
 							}
-							$scopeClasses = ['static'];
-							if (isset($expr->getArgs()[2])) {
-								$argValue = $expr->getArgs()[2]->value;
-								$argValueType = $scope->getType($argValue);
 
-								$scopeClasses = [];
-								$directClassNames = $argValueType->getObjectClassNames();
-								if (count($directClassNames) > 0) {
-									$scopeClasses = $directClassNames;
-									$thisTypes = [];
-									foreach ($directClassNames as $directClassName) {
-										$thisTypes[] = new ObjectType($directClassName);
-									}
-									$thisType = TypeCombinator::union(...$thisTypes);
-								} else {
-									$thisType = $argValueType->getClassStringObjectType();
-									$scopeClasses = $thisType->getObjectClassNames();
-								}
+							$nativeArgType = $scope->getNativeType($expr->getArgs()[1]->value);
+							if ($nativeArgType->isNull()->yes()) {
+								$nativeThisType = null;
+							} else {
+								$nativeThisType = $nativeArgType;
 							}
-							$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
 						}
-					} else {
-						$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
+						$scopeClasses = ['static'];
+						if (isset($expr->getArgs()[2])) {
+							$argValue = $expr->getArgs()[2]->value;
+							$argValueType = $scope->getType($argValue);
+
+							$directClassNames = $argValueType->getObjectClassNames();
+							if (count($directClassNames) > 0) {
+								$scopeClasses = $directClassNames;
+								$thisTypes = [];
+								foreach ($directClassNames as $directClassName) {
+									$thisTypes[] = new ObjectType($directClassName);
+								}
+								$thisType = TypeCombinator::union(...$thisTypes);
+							} else {
+								$thisType = $argValueType->getClassStringObjectType();
+								$scopeClasses = $thisType->getObjectClassNames();
+							}
+						}
+						$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
 					}
 				} else {
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);

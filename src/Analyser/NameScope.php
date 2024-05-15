@@ -171,6 +171,20 @@ class NameScope
 		);
 	}
 
+	public function withClassName(string $className): self
+	{
+		return new self(
+			$this->namespace,
+			$this->uses,
+			$className,
+			$this->functionName,
+			$this->templateTypeMap,
+			$this->typeAliasesMap,
+			$this->bypassTypeAliases,
+			$this->constUses,
+		);
+	}
+
 	public function unsetTemplateType(string $name): self
 	{
 		$map = $this->templateTypeMap;

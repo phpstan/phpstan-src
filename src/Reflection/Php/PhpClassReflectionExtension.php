@@ -502,7 +502,7 @@ class PhpClassReflectionExtension
 					$stubImmediatelyInvokedCallableParameters = [];
 					$stubClosureThisParameters = [];
 					if (count($methodSignatures) === 1) {
-						$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
+						$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
 						if ($stubPhpDocPair !== null) {
 							[$stubPhpDoc, $stubDeclaringClass] = $stubPhpDocPair;
 							$templateTypeMap = $stubDeclaringClass->getActiveTemplateTypeMap();
@@ -637,7 +637,7 @@ class PhpClassReflectionExtension
 	public function createUserlandMethodReflection(ClassReflection $fileDeclaringClass, ClassReflection $actualDeclaringClass, BuiltinMethodReflection $methodReflection, ?string $declaringTraitName): PhpMethodReflection
 	{
 		$resolvedPhpDoc = null;
-		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($fileDeclaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
+		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($fileDeclaringClass, $fileDeclaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
 		$phpDocBlockClassReflection = $fileDeclaringClass;
 
 		if ($methodReflection->getReflection() !== null) {
@@ -647,6 +647,7 @@ class PhpClassReflectionExtension
 				if (! $methodReflection->getDeclaringClass()->isTrait() || $methodDeclaringClass->getName() !== $methodReflection->getDeclaringClass()->getName()) {
 					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors(
 						$this->reflectionProviderProvider->getReflectionProvider()->getClass($methodDeclaringClass->getName()),
+						$this->reflectionProviderProvider->getReflectionProvider()->getClass($methodReflection->getDeclaringClass()->getName()),
 						$methodReflection->getName(),
 						array_map(
 							static fn (ReflectionParameter $parameter): string => $parameter->getName(),
@@ -1126,10 +1127,15 @@ class PhpClassReflectionExtension
 	 * @param array<int, string> $positionalParameterNames
 	 * @return array{ResolvedPhpDocBlock, ClassReflection}|null
 	 */
-	private function findMethodPhpDocIncludingAncestors(ClassReflection $declaringClass, string $methodName, array $positionalParameterNames): ?array
+	private function findMethodPhpDocIncludingAncestors(
+		ClassReflection $declaringClass,
+		ClassReflection $implementingClass,
+		string $methodName,
+		array $positionalParameterNames,
+	): ?array
 	{
 		$declaringClassName = $declaringClass->getName();
-		$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $methodName, $positionalParameterNames);
+		$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($declaringClassName, $implementingClass->getName(), $methodName, $positionalParameterNames);
 		if ($resolved !== null) {
 			return [$resolved, $declaringClass];
 		}
@@ -1146,7 +1152,7 @@ class PhpClassReflectionExtension
 				continue;
 			}
 
-			$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($ancestor->getName(), $methodName, $positionalParameterNames);
+			$resolved = $this->stubPhpDocProvider->findMethodPhpDoc($ancestor->getName(), $ancestor->getName(), $methodName, $positionalParameterNames);
 			if ($resolved === null) {
 				continue;
 			}

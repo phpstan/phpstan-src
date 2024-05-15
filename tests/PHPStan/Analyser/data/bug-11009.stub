@@ -1,0 +1,21 @@
+<?php
+
+namespace Bug11009;
+
+trait A {
+	/**
+	 * @param-closure-this static $cb
+	 */
+	public static function callbackStatic(callable $cb): void {}
+
+	/**
+	 * @param-closure-this self $cb
+	 */
+	public static function callbackSelf(callable $cb): void {}
+
+	/** @return static */
+	public function returnStatic() {}
+
+	/** @return self */
+	public function returnSelf() {}
+}

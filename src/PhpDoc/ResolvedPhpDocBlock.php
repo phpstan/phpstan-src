@@ -161,7 +161,7 @@ class ResolvedPhpDocBlock
 		ReflectionProvider $reflectionProvider,
 	): self
 	{
-		// new property also needs to be added to createEmpty() and merge()
+		// new property also needs to be added to withNameScope(), createEmpty() and merge()
 		$self = new self();
 		$self->phpDocNode = $phpDocNode;
 		$self->phpDocNodes = [$phpDocNode];
@@ -172,6 +172,22 @@ class ResolvedPhpDocBlock
 		$self->templateTags = $templateTags;
 		$self->phpDocNodeResolver = $phpDocNodeResolver;
 		$self->reflectionProvider = $reflectionProvider;
+
+		return $self;
+	}
+
+	public function withNameScope(NameScope $nameScope): self
+	{
+		$self = new self();
+		$self->phpDocNode = $this->phpDocNode;
+		$self->phpDocNodes = $this->phpDocNodes;
+		$self->phpDocString = $this->phpDocString;
+		$self->filename = $this->filename;
+		$self->nameScope = $nameScope;
+		$self->templateTypeMap = $this->templateTypeMap;
+		$self->templateTags = $this->templateTags;
+		$self->phpDocNodeResolver = $this->phpDocNodeResolver;
+		$self->reflectionProvider = $this->reflectionProvider;
 
 		return $self;
 	}

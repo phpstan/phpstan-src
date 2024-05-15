@@ -119,7 +119,7 @@ class PhpDocInheritanceResolver
 		$classReflection = $phpDocBlock->getClassReflection();
 		if ($functionName !== null && $classReflection->getNativeReflection()->hasMethod($functionName)) {
 			$methodReflection = $classReflection->getNativeReflection()->getMethod($functionName);
-			$stub = $this->stubPhpDocProvider->findMethodPhpDoc($classReflection->getName(), $functionName, array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
+			$stub = $this->stubPhpDocProvider->findMethodPhpDoc($classReflection->getName(), $classReflection->getName(), $functionName, array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
 			if ($stub !== null) {
 				return $stub;
 			}

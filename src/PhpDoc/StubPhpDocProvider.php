@@ -146,7 +146,12 @@ class StubPhpDocProvider
 	/**
 	 * @param array<int, string> $positionalParameterNames
 	 */
-	public function findMethodPhpDoc(string $className, string $methodName, array $positionalParameterNames): ?ResolvedPhpDocBlock
+	public function findMethodPhpDoc(
+		string $className,
+		string $implementingClassName,
+		string $methodName,
+		array $positionalParameterNames,
+	): ?ResolvedPhpDocBlock
 	{
 		if (!$this->isKnownClass($className)) {
 			return null;
@@ -168,6 +173,12 @@ class StubPhpDocProvider
 
 			if (!isset($this->knownMethodsParameterNames[$className][$methodName])) {
 				throw new ShouldNotHappenException();
+			}
+
+			if ($className !== $implementingClassName && $resolvedPhpDoc->getNullableNameScope() !== null) {
+				$resolvedPhpDoc = $resolvedPhpDoc->withNameScope(
+					$resolvedPhpDoc->getNullableNameScope()->withClassName($implementingClassName),
+				);
 			}
 
 			$methodParameterNames = $this->knownMethodsParameterNames[$className][$methodName];

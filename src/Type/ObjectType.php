@@ -1248,8 +1248,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function isCallable(): TrinaryLogic
 	{
-		$parametersAcceptors = $this->findCallableParametersAcceptors();
+		$parametersAcceptors = RecursionGuard::run($this, fn () => $this->findCallableParametersAcceptors());
 		if ($parametersAcceptors === null) {
+			return TrinaryLogic::createNo();
+		}
+		if ($parametersAcceptors instanceof ErrorType) {
 			return TrinaryLogic::createNo();
 		}
 

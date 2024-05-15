@@ -9,10 +9,11 @@ class RecursionGuard
 	private static array $context = [];
 
 	/**
-	 * @param callable(): Type $callback
-	 *
+	 * @template T
+	 * @param callable(): T $callback
+	 * @return T|ErrorType
 	 */
-	public static function run(Type $type, callable $callback): Type
+	public static function run(Type $type, callable $callback)
 	{
 		$key = $type->describe(VerbosityLevel::value());
 		if (isset(self::$context[$key])) {

@@ -78,3 +78,17 @@ function doUnknownFlags(string $s, int $flags): void {
 	}
 	assertType('array<array{string|null, int<-1, max>}|string|null>', $matches);
 }
+
+function doNonAutoCapturingFlag(string $s): void {
+	if (preg_match('/(\d+)/n', $s, $matches)) {
+		assertType('array{string}', $matches);
+	}
+	assertType('array<string>', $matches);
+}
+
+function doNonAutoCapturingModifier(string $s): void {
+	if (preg_match('/(?n)(\d+)/', $s, $matches)) {
+		assertType('array{string}', $matches);
+	}
+	assertType('array<string>', $matches);
+}

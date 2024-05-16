@@ -11,3 +11,13 @@ function doOnlyNamedSubpattern(string $s): void {
 	}
 	assertType('array<string>', $matches);
 }
+
+// n modifier captures only named groups
+// https://php.watch/versions/8.2/preg-n-no-capture-modifier
+function doNonAutoCapturingFlag(string $s): void {
+	if (preg_match('/(\d+)/n', $s, $matches)) {
+		assertType('array{string}', $matches);
+	}
+	assertType('array<string>', $matches);
+}
+

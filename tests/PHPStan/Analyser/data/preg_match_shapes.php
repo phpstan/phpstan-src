@@ -92,3 +92,17 @@ function doNonAutoCapturingModifier(string $s): void {
 	}
 	assertType('array<string>', $matches);
 }
+
+function doMultipleAlternativeCaptureGroupsWithSameNameWithModifier(string $s): void {
+	if (preg_match('/(?J)(?<Foo>[a-z]+)|(?<Foo>[0-9]+)/', $s, $matches)) {
+		assertType('array{0: string, Foo?: string, 1?: string, 2?: string}', $matches);
+	}
+	assertType('array<string>', $matches);
+}
+
+function doMultipleConsecutiveCaptureGroupsWithSameNameWithModifier(string $s): void {
+	if (preg_match('/(?J)(?<Foo>[a-z]+)|(?<Foo>[0-9]+)/', $s, $matches)) {
+		assertType('array{0: string, Foo?: string, 1?: string, 2?: string}', $matches);
+	}
+	assertType('array<string>', $matches);
+}

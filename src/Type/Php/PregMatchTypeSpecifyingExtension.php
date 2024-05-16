@@ -8,6 +8,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
@@ -23,7 +24,10 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 	private TypeSpecifier $typeSpecifier;
 
-	public function __construct(private RegexShapeMatcher $regexShapeMatcher)
+	public function __construct(
+		private RegexShapeMatcher $regexShapeMatcher,
+		private PhpVersion $phpVersion,
+	)
 	{
 	}
 
@@ -48,7 +52,7 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		$matchesArg = $args[2] ?? null;
 		$flagsArg = $args[3] ?? null;
 
-		if ($patternArg === null || $matchesArg === null) {
+		if ($patternArg === null || $matchesArg === null || !$this->phpVersion->returnsPregUnmatchedCapturingGroups()) {
 			return new SpecifiedTypes();
 		}
 

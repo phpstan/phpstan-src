@@ -2675,17 +2675,17 @@ class NodeScopeResolver
 							}
 						}
 						$scopeClasses = ['static'];
-							if (isset($expr->getArgs()[2])) {
-								$argValue = $expr->getArgs()[2]->value;
-								$argValueType = $scope->getType($argValue);
-								$scopeObjectType = $argValueType->getObjectTypeOrClassStringObjectType();
-								$thisType = $thisType !== null
-									// $thisType could be mixed, error, ...
-									? TypeCombinator::intersect($thisType, $scopeObjectType)
-									: $scopeObjectType;
-								$scopeClasses = $scopeObjectType->getObjectClassNames();
-							}
-							$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
+						if (isset($expr->getArgs()[2])) {
+							$argValue = $expr->getArgs()[2]->value;
+							$argValueType = $scope->getType($argValue);
+							$scopeObjectType = $argValueType->getObjectTypeOrClassStringObjectType();
+							$thisType = $thisType !== null
+								// $thisType could be mixed, error, ...
+								? TypeCombinator::intersect($thisType, $scopeObjectType)
+								: $scopeObjectType;
+							$scopeClasses = $scopeObjectType->getObjectClassNames();
+						}
+						$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
 					}
 				} else {
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);

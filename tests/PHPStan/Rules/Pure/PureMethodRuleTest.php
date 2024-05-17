@@ -157,4 +157,9 @@ class PureMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testImpureAssignRef(): void
+	{
+		$this->analyse([__DIR__ . '/data/impure-assign-ref.php'], []);
+	}
+
 }

@@ -157,7 +157,7 @@ final class ArgumentsNormalizer
 	 * @param Arg[] $callArgs
 	 * @return ?array<int, Arg>
 	 */
-	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, array $callArgs): ?array
+	public static function reorderArgs(ParametersAcceptor $parametersAcceptor, array $callArgs): ?array
 	{
 		if (count($callArgs) === 0) {
 			return [];

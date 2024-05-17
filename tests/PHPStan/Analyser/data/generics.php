@@ -159,7 +159,7 @@ function testF($arrayOfInt, $callableOrNull)
 	assertType('array<string>', f($arrayOfInt, function ($a): string {
 		return (string)$a;
 	}));
-	assertType('array', f($arrayOfInt, function ($a) {
+	assertType('array<int>', f($arrayOfInt, function ($a) {
 		return $a;
 	}));
 	assertType('array<string>', f($arrayOfInt, $callableOrNull));

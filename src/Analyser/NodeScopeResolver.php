@@ -4157,7 +4157,7 @@ class NodeScopeResolver
 	 * @param Node\Arg[] $args
 	 * @return ParameterReflection[]|null
 	 */
-	private function createCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $passedToType): ?array
+	public function createCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $passedToType): ?array
 	{
 		$callableParameters = null;
 		if ($args !== null) {

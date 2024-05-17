@@ -46,7 +46,7 @@ class DirectInternalScopeFactory implements InternalScopeFactory
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param list<array{FunctionReflection|MethodReflection, ParameterReflection|null}> $inFunctionCallsStack
+	 * @param list<array{FunctionReflection|MethodReflection|null, ParameterReflection|null}> $inFunctionCallsStack
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 */

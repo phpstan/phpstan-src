@@ -131,6 +131,7 @@ use PHPStan\Type\VoidType;
 use stdClass;
 use Throwable;
 use function abs;
+use function array_filter;
 use function array_key_exists;
 use function array_key_first;
 use function array_keys;
@@ -186,7 +187,7 @@ class MutatingScope implements Scope
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
-	 * @param list<array{MethodReflection|FunctionReflection, ParameterReflection|null}> $inFunctionCallsStack
+	 * @param list<array{MethodReflection|FunctionReflection|null, ParameterReflection|null}> $inFunctionCallsStack
 	 */
 	public function __construct(
 		private InternalScopeFactory $scopeFactory,
@@ -1232,6 +1233,14 @@ class MutatingScope implements Scope
 				$callableParameters = [];
 				foreach ($arrayMapArgs as $funcCallArg) {
 					$callableParameters[] = new DummyParameter('item', $this->getType($funcCallArg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
+				}
+			} else {
+				$inFunctionCallsStackCount = count($this->inFunctionCallsStack);
+				if ($inFunctionCallsStackCount > 0) {
+					[, $inParameter] = $this->inFunctionCallsStack[$inFunctionCallsStackCount - 1];
+					if ($inParameter !== null) {
+						$callableParameters = $this->nodeScopeResolver->createCallableParameters($this, $node, null, $inParameter->getType());
+					}
 				}
 			}
 
@@ -2590,14 +2599,14 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param MethodReflection|FunctionReflection $reflection
+	 * @param MethodReflection|FunctionReflection|null $reflection
 	 */
 	public function pushInFunctionCall($reflection, ?ParameterReflection $parameter): self
 	{
 		$stack = $this->inFunctionCallsStack;
 		$stack[] = [$reflection, $parameter];
 
-		$scope = $this->scopeFactory->create(
+		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -2615,11 +2624,6 @@ class MutatingScope implements Scope
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
-		$scope->resolvedTypes = $this->resolvedTypes;
-		$scope->truthyScopes = $this->truthyScopes;
-		$scope->falseyScopes = $this->falseyScopes;
-
-		return $scope;
 	}
 
 	public function popInFunctionCall(): self
@@ -2627,7 +2631,7 @@ class MutatingScope implements Scope
 		$stack = $this->inFunctionCallsStack;
 		array_pop($stack);
 
-		$scope = $this->scopeFactory->create(
+		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -2645,11 +2649,6 @@ class MutatingScope implements Scope
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
-		$scope->resolvedTypes = $this->resolvedTypes;
-		$scope->truthyScopes = $this->truthyScopes;
-		$scope->falseyScopes = $this->falseyScopes;
-
-		return $scope;
 	}
 
 	/** @api */
@@ -2677,12 +2676,18 @@ class MutatingScope implements Scope
 
 	public function getFunctionCallStack(): array
 	{
-		return array_map(static fn ($values) => $values[0], $this->inFunctionCallsStack);
+		return array_values(array_filter(
+			array_map(static fn ($values) => $values[0], $this->inFunctionCallsStack),
+			static fn (FunctionReflection|MethodReflection|null $reflection) => $reflection !== null,
+		));
 	}
 
 	public function getFunctionCallStackWithParameters(): array
 	{
-		return $this->inFunctionCallsStack;
+		return array_values(array_filter(
+			$this->inFunctionCallsStack,
+			static fn ($item) => $item[0] !== null,
+		));
 	}
 
 	/** @api */

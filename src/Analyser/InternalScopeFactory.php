@@ -17,7 +17,7 @@ interface InternalScopeFactory
 	 * @param list<string> $inClosureBindScopeClasses
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param list<array{MethodReflection|FunctionReflection, ParameterReflection|null}> $inFunctionCallsStack
+	 * @param list<array{MethodReflection|FunctionReflection|null, ParameterReflection|null}> $inFunctionCallsStack
 	 */
 	public function create(
 		ScopeContext $context,

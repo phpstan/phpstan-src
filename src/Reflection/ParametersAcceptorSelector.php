@@ -4,6 +4,8 @@ namespace PHPStan\Reflection;
 
 use Closure;
 use PhpParser\Node;
+use PHPStan\Analyser\ArgumentsNormalizer;
+use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Parser\ArrayFilterArgVisitor;
@@ -336,16 +338,44 @@ class ParametersAcceptorSelector
 			}
 		}
 
+		$reorderedArgs = $args;
+		$parameters = null;
+		$singleParametersAcceptor = null;
+		if (count($parametersAcceptors) === 1) {
+			$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptors[0], $args);
+			$singleParametersAcceptor = $parametersAcceptors[0];
+		}
+
 		$hasName = false;
-		foreach ($args as $i => $arg) {
-			$type = $scope->getType($arg->value);
-			if ($arg->name !== null) {
-				$index = $arg->name->toString();
+		foreach ($reorderedArgs ?? $args as $i => $arg) {
+			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
+			$parameter = null;
+			if ($singleParametersAcceptor !== null) {
+				$parameters = $singleParametersAcceptor->getParameters();
+				if (isset($parameters[$i])) {
+					$parameter = $parameters[$i];
+				} elseif (count($parameters) > 0 && $singleParametersAcceptor->isVariadic()) {
+					$parameter = $parameters[count($parameters) - 1];
+				}
+			}
+
+			if ($parameter !== null && $scope instanceof MutatingScope) {
+				$scope = $scope->pushInFunctionCall(null, $parameter);
+			}
+
+			$type = $scope->getType($originalArg->value);
+
+			if ($parameter !== null && $scope instanceof MutatingScope) {
+				$scope = $scope->popInFunctionCall();
+			}
+
+			if ($originalArg->name !== null) {
+				$index = $originalArg->name->toString();
 				$hasName = true;
 			} else {
 				$index = $i;
 			}
-			if ($arg->unpack) {
+			if ($originalArg->unpack) {
 				$unpack = true;
 				$types[$index] = $type->getIterableValueType();
 			} else {

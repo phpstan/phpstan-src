@@ -42,7 +42,7 @@ class LazyInternalScopeFactory implements InternalScopeFactory
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param list<array{FunctionReflection|MethodReflection, ParameterReflection|null}> $inFunctionCallsStack
+	 * @param list<array{FunctionReflection|MethodReflection|null, ParameterReflection|null}> $inFunctionCallsStack
 	 */
 	public function create(
 		ScopeContext $context,

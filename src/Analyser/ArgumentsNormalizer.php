@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Arg;
-use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
@@ -85,7 +84,7 @@ final class ArgumentsNormalizer
 		FuncCall $functionCall,
 	): ?FuncCall
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $functionCall);
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $functionCall->getArgs());
 
 		if ($reorderedArgs === null) {
 			return null;
@@ -103,7 +102,7 @@ final class ArgumentsNormalizer
 		MethodCall $methodCall,
 	): ?MethodCall
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $methodCall);
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $methodCall->getArgs());
 
 		if ($reorderedArgs === null) {
 			return null;
@@ -122,7 +121,7 @@ final class ArgumentsNormalizer
 		StaticCall $staticCall,
 	): ?StaticCall
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $staticCall);
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $staticCall->getArgs());
 
 		if ($reorderedArgs === null) {
 			return null;
@@ -141,7 +140,7 @@ final class ArgumentsNormalizer
 		New_ $new,
 	): ?New_
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $new);
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $new->getArgs());
 
 		if ($reorderedArgs === null) {
 			return null;
@@ -155,16 +154,16 @@ final class ArgumentsNormalizer
 	}
 
 	/**
+	 * @param Arg[] $callArgs
 	 * @return ?array<int, Arg>
 	 */
-	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, CallLike $callLike): ?array
+	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, array $callArgs): ?array
 	{
-		$signatureParameters = $parametersAcceptor->getParameters();
-		$callArgs = $callLike->getArgs();
-
 		if (count($callArgs) === 0) {
 			return [];
 		}
+
+		$signatureParameters = $parametersAcceptor->getParameters();
 
 		$hasNamedArgs = false;
 		foreach ($callArgs as $arg) {

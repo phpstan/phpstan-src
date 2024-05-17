@@ -1022,4 +1022,16 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-3300.php'], []);
 	}
 
+	public function testBug11035(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-11035.php'], [
+			[
+				"Strict comparison using === between '0' and non-falsy-string will always evaluate to false.",
+				39,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 }

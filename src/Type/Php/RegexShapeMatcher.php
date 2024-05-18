@@ -108,4 +108,61 @@ final class RegexShapeMatcher
 		return $valueType;
 	}
 
+	private function countNonOptionalGroups(string $regex):int {
+// 1. Read the grammar.
+		$grammar  = new Hoa\File\Read(__DIR__.'/conf/RegexGrammar.pp');
+
+// 2. Load the compiler.
+		$compiler = Hoa\Compiler\Llk\Llk::load($grammar);
+
+// 3. Lex, parse and produce the AST.
+		$ast      = $compiler->parse($regex);
+
+		echo "-------------------\n\n\n";
+
+		var_dump($regex);
+
+		// 4. Dump the result.
+		$dump     = new Hoa\Compiler\Visitor\Dump();
+		echo $dump->visit($ast);
+
+		$groups = [];
+		return $this->walk($ast, $groups, 0, 0);
+	}
+
+	private function walk(\Hoa\Compiler\Llk\TreeNode $ast, int $inAlternation, int $inOptionalQuantification): int
+	{
+		if (
+			$ast->getId() === '#capturing'
+			&& !($inAlternation > 0 || $inOptionalQuantification > 0)
+		) {
+			return 1;
+		}
+
+		if ($ast->getId() === '#alternation') {
+			$inAlternation++;
+		}
+
+		if ($ast->getId() === '#quantification') {
+			$lastChild = $ast->getChild($ast->getChildrenNumber() - 1);
+			$value = $lastChild->getValue();
+
+			if ($value['token'] === 'n_to_m' && str_contains($value['value'], '{0,')) {
+				$inOptionalQuantification++;
+			} elseif ($value['token'] === 'zero_or_one') {
+				$inOptionalQuantification++;
+			} elseif ($value['token'] === 'zero_or_more') {
+				$inOptionalQuantification++;
+			}
+		}
+
+		$count = 0;
+		foreach ($ast->getChildren() as $child) {
+			$count += $this->walk($child, $inAlternation, $inOptionalQuantification);
+		}
+
+		return $count;
+
+	}
+
 }

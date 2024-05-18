@@ -2,13 +2,13 @@
 
 namespace PHPStan\Type\Php;
 
+use Hoa\Compiler\Llk\TreeNode;
+use Hoa\Exception\Exception as HoaException;
 use PHPStan\Analyser\TypeSpecifierContext;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -26,7 +26,7 @@ final class RegexShapeMatcher
 	/**
 	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL>|null $flags
 	 */
-	public function matchType(string $regex, ?int $flags, TypeSpecifierContext $context): Type
+	public function matchType(string $regex, ?int $flags, TypeSpecifierContext $context): ?Type
 	{
 		if ($flags !== null) {
 			$trickFlags = PREG_UNMATCHED_AS_NULL | $flags;
@@ -37,28 +37,36 @@ final class RegexShapeMatcher
 		// add one capturing group to the end so all capture group keys
 		// are present in the $matches
 		// see https://3v4l.org/sOXbn, https://3v4l.org/3SdDM
-		$regex = preg_replace('~.[a-z\s]*$~i', '|(?<phpstanNamedCaptureGroupLast>)$0', $regex);
+		$captureGroupsRegex = preg_replace('~.[a-z\s]*$~i', '|(?<phpstanNamedCaptureGroupLast>)$0', $regex);
 
 		if (
-			$regex === null
-			|| @preg_match($regex, '', $matches, $trickFlags) === false
+			$captureGroupsRegex === null
+			|| @preg_match($captureGroupsRegex, '', $matches, $trickFlags) === false
 		) {
-			return new ArrayType(new MixedType(), new StringType());
+			return null;
 		}
 		unset($matches[array_key_last($matches)]);
 		unset($matches['phpstanNamedCaptureGroupLast']);
 
+		try {
+			// XXX hoa/regex throws on named capturing groups
+			$remainingNonOptionalGroupCount = $this->countNonOptionalGroups($regex);
+		} catch (HoaException $e) {
+			return null;
+		}
+
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		foreach (array_keys($matches) as $key) {
-			// atm we can't differentiate optional from mandatory groups based on the pattern.
-			// So we assume all are optional
-			$optional = true;
-
 			$keyType = $this->getKeyType($key);
 			$valueType = $this->getValueType($flags ?? 0);
 
-			if ($context->true() && $key === 0) {
-				$optional = false;
+			// first item in matches contains the overall match.
+			if ($key === 0) {
+				$optional = $context->true();
+				$valueType = TypeCombinator::removeNull($valueType);
+			} else {
+				$optional = $remainingNonOptionalGroupCount > 0;
+				$remainingNonOptionalGroupCount--;
 			}
 
 			$builder->setOffsetValueType(
@@ -108,29 +116,21 @@ final class RegexShapeMatcher
 		return $valueType;
 	}
 
+	/** @throws HoaException */
 	private function countNonOptionalGroups(string $regex):int {
 // 1. Read the grammar.
-		$grammar  = new Hoa\File\Read(__DIR__.'/conf/RegexGrammar.pp');
+		$grammar  = new \Hoa\File\Read('hoa://Library/Regex/Grammar.pp');
 
 // 2. Load the compiler.
-		$compiler = Hoa\Compiler\Llk\Llk::load($grammar);
+		$compiler = \Hoa\Compiler\Llk\Llk::load($grammar);
 
 // 3. Lex, parse and produce the AST.
 		$ast      = $compiler->parse($regex);
 
-		echo "-------------------\n\n\n";
-
-		var_dump($regex);
-
-		// 4. Dump the result.
-		$dump     = new Hoa\Compiler\Visitor\Dump();
-		echo $dump->visit($ast);
-
-		$groups = [];
-		return $this->walk($ast, $groups, 0, 0);
+		return $this->walk($ast, 0, 0);
 	}
 
-	private function walk(\Hoa\Compiler\Llk\TreeNode $ast, int $inAlternation, int $inOptionalQuantification): int
+	private function walk(TreeNode $ast, int $inAlternation, int $inOptionalQuantification): int
 	{
 		if (
 			$ast->getId() === '#capturing'

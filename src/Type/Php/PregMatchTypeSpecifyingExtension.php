@@ -10,8 +10,11 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
@@ -78,7 +81,12 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 		$matchedTypes = [];
 		foreach ($constantStrings as $constantString) {
-			$matchedTypes[] = $this->regexShapeMatcher->matchType($constantString->getValue(), $flags, $context);
+			$matched = $this->regexShapeMatcher->matchType($constantString->getValue(), $flags, $context);
+			if ($matched === null) {
+				return new SpecifiedTypes();
+			}
+
+			$matchedTypes[] = $matched;
 		}
 
 		return $this->typeSpecifier->create(

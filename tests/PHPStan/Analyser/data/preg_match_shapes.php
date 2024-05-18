@@ -4,24 +4,27 @@ namespace PregMatchShapes;
 
 use function PHPStan\Testing\assertType;
 
+
 function doMatch(string $s): void {
 	if (preg_match('/Price: (£|€)\d+/', $s, $matches)) {
-		assertType('array{0: string, 1?: string}', $matches);
+		assertType('array{0: string, 1: string}', $matches);
+	} else {
+		assertType('array<string>', $matches);
 	}
 	assertType('array<string>', $matches);
 
 	if (preg_match('/Price: (£|€)(\d+)/i', $s, $matches)) {
-		assertType('array{0: string, 1?: string, 2?: string}', $matches);
+		assertType('array{0: string, 1: string, 2: string}', $matches);
 	}
 	assertType('array<string>', $matches);
 
 	if (preg_match('  /Price: (£|€)\d+/ i u', $s, $matches)) {
-		assertType('array{0: string, 1?: string}', $matches);
+		assertType('array{0: string, 1: string}', $matches);
 	}
 	assertType('array<string>', $matches);
 
 	if (preg_match('(Price: (£|€))i', $s, $matches)) {
-		assertType('array{0: string, 1?: string}', $matches);
+		assertType('array{0: string, 1: string}', $matches);
 	}
 	assertType('array<string>', $matches);
 
@@ -95,7 +98,8 @@ function doMultipleAlternativeCaptureGroupsWithSameNameWithModifier(string $s): 
 
 function doMultipleConsecutiveCaptureGroupsWithSameNameWithModifier(string $s): void {
 	if (preg_match('/(?J)(?<Foo>[a-z]+)|(?<Foo>[0-9]+)/', $s, $matches)) {
-		assertType('array{0: string, Foo?: string, 1?: string, 2?: string}', $matches);
+		// could be assertType('array{0: string, Foo: string, 1: string}', $matches);
+		assertType('array<string>', $matches);
 	}
 	assertType('array<string>', $matches);
 }

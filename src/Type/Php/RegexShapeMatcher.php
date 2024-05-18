@@ -16,6 +16,8 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_last;
 use function array_keys;
+use function in_array;
+use function is_int;
 use function is_string;
 use function preg_match;
 use function preg_replace;
@@ -71,7 +73,10 @@ final class RegexShapeMatcher
 				$optional = true;
 			} else {
 				$optional = $remainingNonOptionalGroupCount <= 0;
-				$remainingNonOptionalGroupCount--;
+
+				if (is_int($key)) {
+					$remainingNonOptionalGroupCount--;
+				}
 			}
 
 			$builder->setOffsetValueType(
@@ -137,7 +142,7 @@ final class RegexShapeMatcher
 	private function walkRegexAst(TreeNode $ast, int $inAlternation, int $inOptionalQuantification): int
 	{
 		if (
-			$ast->getId() === '#capturing'
+			in_array($ast->getId(), ['#capturing', '#namedcapturing'], true)
 			&& !($inAlternation > 0 || $inOptionalQuantification > 0)
 		) {
 			return 1;

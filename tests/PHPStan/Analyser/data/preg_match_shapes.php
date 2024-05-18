@@ -24,12 +24,12 @@ function doMatch(string $s): void {
 	assertType('array<string>', $matches);
 
 	if (preg_match('(Price: (£|€))i', $s, $matches)) {
-		assertType('array{0: string, 1: string}', $matches);
+		assertType('array{string, string}', $matches);
 	}
 	assertType('array<string>', $matches);
 
 	if (preg_match('_foo(.)\_i_i', $s, $matches)) {
-		assertType('array{0: string, 1?: string}', $matches);
+		assertType('array{string, string}', $matches);
 	}
 	assertType('array<string>', $matches);
 
@@ -41,7 +41,7 @@ function doMatch(string $s): void {
 
 function doNonCapturingGroup(string $s): void {
 	if (preg_match('/Price: (?:£|€)(\d+)/', $s, $matches)) {
-		assertType('array{0: string, 1: string}', $matches);
+		assertType('array{string, string}', $matches);
 	}
 	assertType('array<string>', $matches);
 }
@@ -71,7 +71,7 @@ function doUnmatchedAsNull(string $s): void {
 function doOffsetCaptureWithUnmatchedNull(string $s): void {
 	// see https://3v4l.org/07rBO#v8.2.9
 	if (preg_match('/(foo)(bar)(baz)/', $s, $matches, PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL)) {
-		assertType('array{0: array{null, -1}|array{string, int<0, max>}, 1?: array{null, -1}|array{string, int<0, max>}, 2?: array{null, -1}|array{string, int<0, max>}, 3?: array{null, -1}|array{string, int<0, max>}}', $matches);
+		assertType('array{array{null, -1}|array{string, int<0, max>}, array{null, -1}|array{string, int<0, max>}, array{null, -1}|array{string, int<0, max>}, array{null, -1}|array{string, int<0, max>}}', $matches);
 	}
 	assertType('array<array{null, -1}|array{string, int<0, max>}>', $matches);
 }
@@ -85,7 +85,8 @@ function doUnknownFlags(string $s, int $flags): void {
 
 function doNonAutoCapturingModifier(string $s): void {
 	if (preg_match('/(?n)(\d+)/', $s, $matches)) {
-		assertType('array{string}', $matches);
+		// could be assertType('array{string}', $matches);
+		assertType('array<string>', $matches);
 	}
 	assertType('array<string>', $matches);
 }

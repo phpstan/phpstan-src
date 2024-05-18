@@ -62,7 +62,7 @@ final class RegexShapeMatcher
 		// first item in matches contains the overall match.
 		$builder->setOffsetValueType(
 			$this->getKeyType(0),
-			$valueType,
+			TypeCombinator::removeNull($valueType),
 			!$context->true()
 		);
 

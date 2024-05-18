@@ -92,6 +92,7 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			$context,
 			false,
 			$scope,
+			$node,
 		);
 	}
 

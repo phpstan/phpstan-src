@@ -31,15 +31,15 @@ class ClosureReturnTypeRuleTest extends RuleTestCase
 				28,
 			],
 			[
-				'Anonymous function should return ClosureReturnTypes\Foo but returns ClosureReturnTypes\Bar.',
+				'Anonymous function should return ClosureReturnTypes\Bar&ClosureReturnTypes\Foo but returns ClosureReturnTypes\Bar.',
 				35,
 			],
 			[
-				'Anonymous function should return SomeOtherNamespace\Foo but returns ClosureReturnTypes\Foo.',
+				'Anonymous function should return ClosureReturnTypes\Foo&SomeOtherNamespace\Foo but returns ClosureReturnTypes\Foo.',
 				39,
 			],
 			[
-				'Anonymous function should return SomeOtherNamespace\Baz but returns ClosureReturnTypes\Foo.',
+				'Anonymous function should return ClosureReturnTypes\Foo&SomeOtherNamespace\Baz but returns ClosureReturnTypes\Foo.',
 				46,
 			],
 			[

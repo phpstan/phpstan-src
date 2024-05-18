@@ -121,7 +121,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
@@ -1277,7 +1276,8 @@ class MutatingScope implements Scope
 				} else {
 					$returnType = $arrowScope->getKeepVoidType($node->expr);
 					if ($node->returnType !== null) {
-						$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
+						$nativeReturnType = $this->getFunctionType($node->returnType, false, false);
+						$returnType = self::intersectButNotNever($nativeReturnType, $returnType);
 					}
 				}
 
@@ -1434,7 +1434,10 @@ class MutatingScope implements Scope
 						$returnType,
 					]);
 				} else {
-					$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
+					if ($node->returnType !== null) {
+						$nativeReturnType = $this->getFunctionType($node->returnType, false, false);
+						$returnType = self::intersectButNotNever($nativeReturnType, $returnType);
+					}
 				}
 
 				$usedVariables = [];
@@ -3213,16 +3216,16 @@ class MutatingScope implements Scope
 			$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
 			if ($callableParameters !== null) {
 				if (isset($callableParameters[$i])) {
-					$parameterType = TypehintHelper::decideType($parameterType, $callableParameters[$i]->getType());
+					$parameterType = self::intersectButNotNever($parameterType, $callableParameters[$i]->getType());
 				} elseif (count($callableParameters) > 0) {
 					$lastParameter = $callableParameters[count($callableParameters) - 1];
 					if ($lastParameter->isVariadic()) {
-						$parameterType = TypehintHelper::decideType($parameterType, $lastParameter->getType());
+						$parameterType = self::intersectButNotNever($parameterType, $lastParameter->getType());
 					} else {
-						$parameterType = TypehintHelper::decideType($parameterType, new MixedType());
+						$parameterType = self::intersectButNotNever($parameterType, new MixedType());
 					}
 				} else {
-					$parameterType = TypehintHelper::decideType($parameterType, new MixedType());
+					$parameterType = self::intersectButNotNever($parameterType, new MixedType());
 				}
 			}
 			$holder = ExpressionTypeHolder::createYes($parameter->var, $parameterType);
@@ -3389,16 +3392,16 @@ class MutatingScope implements Scope
 
 			if ($callableParameters !== null) {
 				if (isset($callableParameters[$i])) {
-					$parameterType = TypehintHelper::decideType($parameterType, $callableParameters[$i]->getType());
+					$parameterType = self::intersectButNotNever($parameterType, $callableParameters[$i]->getType());
 				} elseif (count($callableParameters) > 0) {
 					$lastParameter = $callableParameters[count($callableParameters) - 1];
 					if ($lastParameter->isVariadic()) {
-						$parameterType = TypehintHelper::decideType($parameterType, $lastParameter->getType());
+						$parameterType = self::intersectButNotNever($parameterType, $lastParameter->getType());
 					} else {
-						$parameterType = TypehintHelper::decideType($parameterType, new MixedType());
+						$parameterType = self::intersectButNotNever($parameterType, new MixedType());
 					}
 				} else {
-					$parameterType = TypehintHelper::decideType($parameterType, new MixedType());
+					$parameterType = self::intersectButNotNever($parameterType, new MixedType());
 				}
 			}
 
@@ -3481,6 +3484,20 @@ class MutatingScope implements Scope
 		}
 
 		return ParserNodeTypeToPHPStanType::resolve($type, $this->isInClass() ? $this->getClassReflection() : null);
+	}
+
+	private static function intersectButNotNever(Type $nativeType, Type $inferredType): Type
+	{
+		if ($nativeType->isSuperTypeOf($inferredType)->no()) {
+			return $nativeType;
+		}
+
+		$result = TypeCombinator::intersect($nativeType, $inferredType);
+		if (TypeCombinator::containsNull($nativeType)) {
+			return TypeCombinator::addNull($result);
+		}
+
+		return $result;
 	}
 
 	public function enterMatch(Expr\Match_ $expr): self

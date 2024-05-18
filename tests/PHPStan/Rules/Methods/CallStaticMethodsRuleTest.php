@@ -706,6 +706,10 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $cb of static method CallStaticMethodMixed\CallableMixed::callReturnsInt() expects callable(): int, Closure(): mixed given.',
 				161,
 			],
+			[
+				'Parameter #1 $cb of static method CallStaticMethodMixed\CallableMixed::callReturnsInt() expects callable(): int, Closure(): mixed given.',
+				168,
+			],
 		];
 		$implicitOnlyErrors = [
 			[
@@ -719,10 +723,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			[
 				'Only iterables can be unpacked, mixed given in argument #1.',
 				51,
-			],
-			[
-				'Parameter #1 $cb of static method CallStaticMethodMixed\CallableMixed::callReturnsInt() expects callable(): int, Closure(): mixed given.',
-				168,
 			],
 		];
 		$combinedErrors = array_merge($explicitOnlyErrors, $implicitOnlyErrors);

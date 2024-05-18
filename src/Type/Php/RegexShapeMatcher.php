@@ -50,7 +50,6 @@ final class RegexShapeMatcher
 		unset($matches[array_key_last($matches)]);
 		unset($matches['phpstanNamedCaptureGroupLast']);
 
-		// XXX hoa/regex does not support named capturing groups
 		$remainingNonOptionalGroupCount = $this->countNonOptionalGroups($regex);
 		if ($remainingNonOptionalGroupCount === null) {
 			// regex could not be parsed by Hoa/Regex

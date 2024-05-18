@@ -123,6 +123,83 @@
 			"tests/PHPStan"
 		]
 	},
+	"repositories": [
+		{
+			"type": "package",
+			"package": {
+				"name": "nette/di",
+				"version": "v3.1.5",
+				"source": {
+					"type": "git",
+					"url": "https://github.com/nette/di.git",
+					"reference": "00ea0afa643b3b4383a5cd1a322656c989ade498"
+				},
+				"dist": {
+					"type": "zip",
+					"url": "https://api.github.com/repos/nette/di/zipball/00ea0afa643b3b4383a5cd1a322656c989ade498",
+					"reference": "00ea0afa643b3b4383a5cd1a322656c989ade498",
+					"shasum": ""
+				},
+				"require": {
+					"ext-tokenizer": "*",
+					"nette/neon": "^3.3 || ^4.0",
+					"nette/php-generator": "^3.5.4 || ^4.0",
+					"nette/robot-loader": "^3.2 || ~4.0.0",
+					"nette/schema": "^1.2",
+					"nette/utils": "^3.2.5 || ~4.0.0",
+					"php": "7.2 - 8.3"
+				},
+				"require-dev": {
+					"nette/tester": "^2.4",
+					"phpstan/phpstan": "^1.0",
+					"tracy/tracy": "^2.9"
+				},
+				"type": "library",
+				"extra": {
+					"branch-alias": {
+						"dev-master": "3.1-dev"
+					}
+				},
+				"autoload": {
+					"classmap": [
+						"src/"
+					]
+				},
+				"notification-url": "https://packagist.org/downloads/",
+				"license": [
+					"BSD-3-Clause",
+					"GPL-2.0-only",
+					"GPL-3.0-only"
+				],
+				"authors": [
+					{
+						"name": "David Grudl",
+						"homepage": "https://davidgrudl.com"
+					},
+					{
+						"name": "Nette Community",
+						"homepage": "https://nette.org/contributors"
+					}
+				],
+				"description": "💎 Nette Dependency Injection Container: Flexible, compiled and full-featured DIC with perfectly usable autowiring and support for all new PHP features.",
+				"homepage": "https://nette.org",
+				"keywords": [
+					"compiled",
+					"di",
+					"dic",
+					"factory",
+					"ioc",
+					"nette",
+					"static"
+				],
+				"support": {
+					"issues": "https://github.com/nette/di/issues",
+					"source": "https://github.com/nette/di/tree/v3.1.5"
+				},
+				"time": "2023-10-02T19:58:38+00:00"
+			}
+		}
+	],
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"bin": [

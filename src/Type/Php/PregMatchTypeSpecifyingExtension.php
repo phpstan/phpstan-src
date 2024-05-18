@@ -44,10 +44,6 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		$args = $node->getArgs();
-		if (count($args) < 2) {
-			return new SpecifiedTypes();
-		}
-
 		$patternArg = $args[0] ?? null;
 		$matchesArg = $args[2] ?? null;
 		$flagsArg = $args[3] ?? null;

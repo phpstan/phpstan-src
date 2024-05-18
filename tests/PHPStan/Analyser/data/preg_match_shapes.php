@@ -62,7 +62,7 @@ function doOffsetCapture(string $s): void {
 
 function doUnmatchedAsNull(string $s): void {
 	if (preg_match('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType('array{0: string|null, 1?: string|null, 2?: string|null, 3?: string|null}', $matches);
+		assertType('array{0: string, 1?: string|null, 2?: string|null, 3?: string|null}', $matches);
 	}
 	assertType('array<string|null>', $matches);
 }
@@ -91,7 +91,8 @@ function doNonAutoCapturingModifier(string $s): void {
 
 function doMultipleAlternativeCaptureGroupsWithSameNameWithModifier(string $s): void {
 	if (preg_match('/(?J)(?<Foo>[a-z]+)|(?<Foo>[0-9]+)/', $s, $matches)) {
-		assertType('array{0: string, Foo?: string, 1?: string, 2?: string}', $matches);
+		// could be assertType('array{0: string, Foo: string, 1: string}', $matches);
+		assertType('array<string>', $matches);
 	}
 	assertType('array<string>', $matches);
 }

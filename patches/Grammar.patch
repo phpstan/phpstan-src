@@ -1,0 +1,11 @@
+--- Grammar.pp  2017-01-13 17:10:24
++++ Grammar.pp  2024-05-18 08:49:19
+@@ -178,7 +178,7 @@
+     capturing()
+   | literal()
+
+-capturing:
++#capturing:
+     ::comment_:: <comment>? ::_comment:: #comment
+   | (
+         ::named_capturing_:: <capturing_name> ::_named_capturing:: #namedcapturing

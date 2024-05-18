@@ -43,10 +43,12 @@ class HelloWorld
 		$value = 1;
 	}
 
-	private function bar6(): void
+	/** @phpstan-pure */
+	private function bar6(): int
 	{
 		$value = &$this->objectArr[0]->foo;
-		$value = 1;
+
+		return 1;
 	}
 
 	public function foo(): void

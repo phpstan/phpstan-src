@@ -159,7 +159,12 @@ class PureMethodRuleTest extends RuleTestCase
 
 	public function testImpureAssignRef(): void
 	{
-		$this->analyse([__DIR__ . '/data/impure-assign-ref.php'], []);
+		$this->analyse([__DIR__ . '/data/impure-assign-ref.php'], [
+			[
+				'Possibly impure property assignment by reference in pure method ImpureAssignRef\HelloWorld::bar6().',
+				49,
+			],
+		]);
 	}
 
 }

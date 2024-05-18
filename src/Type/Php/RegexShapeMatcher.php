@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use Hoa\Compiler\Exception\Exception;
 use Hoa\Compiler\Llk\Llk;
+use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\File\Read;
 use PHPStan\Analyser\TypeSpecifierContext;
@@ -27,6 +28,8 @@ use const PREG_UNMATCHED_AS_NULL;
 
 final class RegexShapeMatcher
 {
+
+	private static ?Parser $parser = null;
 
 	/**
 	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL>|null $flags
@@ -128,10 +131,13 @@ final class RegexShapeMatcher
 
 	private function countNonOptionalGroups(string $regex): ?int
 	{
-		/** @throws void */
-		$parser = Llk::load(new Read('hoa://Library/Regex/Grammar.pp'));
+		if (self::$parser === null) {
+			/** @throws void */
+			self::$parser = Llk::load(new Read('hoa://Library/Regex/Grammar.pp'));
+		}
+
 		try {
-			$ast = $parser->parse($regex);
+			$ast = self::$parser->parse($regex);
 		} catch ( Exception) { // @phpstan-ignore catch.notThrowable
 			return null;
 		}

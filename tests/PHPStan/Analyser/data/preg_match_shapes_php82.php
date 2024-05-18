@@ -15,10 +15,10 @@ function doOnlyNamedSubpattern(string $s): void {
 
 // n modifier captures only named groups
 // https://php.watch/versions/8.2/preg-n-no-capture-modifier
-function doNonAutoCapturingFlag(string $s): void {
-	if (preg_match('/(\d+)/n', $s, $matches)) {
-		assertType('array{string}', $matches);
+function doOffsetCapture(string $s): void {
+	if (preg_match('/(foo)(bar)(baz)/', $s, $matches, PREG_OFFSET_CAPTURE)) {
+		assertType('array{array{string, int<0, max>}, array{string, int<0, max>}, array{string, int<0, max>}, array{string, int<0, max>}}', $matches);
 	}
-	assertType('array<string>', $matches);
+	assertType('array<array{string, int<-1, max>}>', $matches);
 }
 

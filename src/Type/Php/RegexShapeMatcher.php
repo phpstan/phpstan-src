@@ -33,6 +33,7 @@ final class RegexShapeMatcher
 		} else {
 			$trickFlags = PREG_UNMATCHED_AS_NULL;
 		}
+		$trickFlags = PREG_UNMATCHED_AS_NULL;
 
 		// add one capturing group to the end so all capture group keys
 		// are present in the $matches
@@ -56,21 +57,27 @@ final class RegexShapeMatcher
 		}
 
 		$builder = ConstantArrayTypeBuilder::createEmpty();
-		foreach (array_keys($matches) as $key) {
-			$keyType = $this->getKeyType($key);
-			$valueType = $this->getValueType($flags ?? 0);
+		$valueType = $this->getValueType($flags ?? 0);
 
-			// first item in matches contains the overall match.
-			if ($key === 0) {
-				$optional = $context->true();
-				$valueType = TypeCombinator::removeNull($valueType);
+		// first item in matches contains the overall match.
+		$builder->setOffsetValueType(
+			$this->getKeyType(0),
+			$valueType,
+			!$context->true()
+		);
+
+		foreach (array_keys($matches) as $key) {
+			if ($key === 0) continue;
+
+			if (!$context->true()) {
+				$optional = true;
 			} else {
-				$optional = $remainingNonOptionalGroupCount > 0;
+				$optional = $remainingNonOptionalGroupCount <= 0;
 				$remainingNonOptionalGroupCount--;
 			}
 
 			$builder->setOffsetValueType(
-				$keyType,
+				$this->getKeyType($key),
 				$valueType,
 				$optional,
 			);

@@ -55,15 +55,15 @@ final class RegexShapeMatcher
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		$valueType = $this->getValueType($flags ?? 0);
 
-		// first item in matches contains the overall match.
-		$builder->setOffsetValueType(
-			$this->getKeyType(0),
-			TypeCombinator::removeNull($valueType),
-			!$context->true(),
-		);
-
 		foreach (array_keys($matches) as $key) {
 			if ($key === 0) {
+				// first item in matches contains the overall match.
+				$builder->setOffsetValueType(
+					$this->getKeyType($key),
+					TypeCombinator::removeNull($valueType),
+					!$context->true(),
+				);
+
 				continue;
 			}
 
@@ -133,10 +133,10 @@ final class RegexShapeMatcher
 		// 3. Lex, parse and produce the AST.
 		$ast = $compiler->parse($regex);
 
-		return $this->walk($ast, 0, 0);
+		return $this->walkRegexAst($ast, 0, 0);
 	}
 
-	private function walk(TreeNode $ast, int $inAlternation, int $inOptionalQuantification): int
+	private function walkRegexAst(TreeNode $ast, int $inAlternation, int $inOptionalQuantification): int
 	{
 		if (
 			$ast->getId() === '#capturing'
@@ -164,7 +164,7 @@ final class RegexShapeMatcher
 
 		$count = 0;
 		foreach ($ast->getChildren() as $child) {
-			$count += $this->walk($child, $inAlternation, $inOptionalQuantification);
+			$count += $this->walkRegexAst($child, $inAlternation, $inOptionalQuantification);
 		}
 
 		return $count;

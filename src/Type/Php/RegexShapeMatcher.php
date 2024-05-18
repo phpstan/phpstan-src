@@ -2,8 +2,10 @@
 
 namespace PHPStan\Type\Php;
 
+use Hoa\Compiler\Llk\Llk;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\Exception\Exception as HoaException;
+use Hoa\File\Read;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -17,6 +19,7 @@ use function array_keys;
 use function is_string;
 use function preg_match;
 use function preg_replace;
+use function str_contains;
 use const PREG_OFFSET_CAPTURE;
 use const PREG_UNMATCHED_AS_NULL;
 
@@ -28,13 +31,6 @@ final class RegexShapeMatcher
 	 */
 	public function matchType(string $regex, ?int $flags, TypeSpecifierContext $context): ?Type
 	{
-		if ($flags !== null) {
-			$trickFlags = PREG_UNMATCHED_AS_NULL | $flags;
-		} else {
-			$trickFlags = PREG_UNMATCHED_AS_NULL;
-		}
-		$trickFlags = PREG_UNMATCHED_AS_NULL;
-
 		// add one capturing group to the end so all capture group keys
 		// are present in the $matches
 		// see https://3v4l.org/sOXbn, https://3v4l.org/3SdDM
@@ -42,7 +38,7 @@ final class RegexShapeMatcher
 
 		if (
 			$captureGroupsRegex === null
-			|| @preg_match($captureGroupsRegex, '', $matches, $trickFlags) === false
+			|| @preg_match($captureGroupsRegex, '', $matches, PREG_UNMATCHED_AS_NULL) === false
 		) {
 			return null;
 		}
@@ -52,7 +48,7 @@ final class RegexShapeMatcher
 		try {
 			// XXX hoa/regex throws on named capturing groups
 			$remainingNonOptionalGroupCount = $this->countNonOptionalGroups($regex);
-		} catch (HoaException $e) {
+		} catch (HoaException) {
 			return null;
 		}
 
@@ -63,11 +59,13 @@ final class RegexShapeMatcher
 		$builder->setOffsetValueType(
 			$this->getKeyType(0),
 			TypeCombinator::removeNull($valueType),
-			!$context->true()
+			!$context->true(),
 		);
 
 		foreach (array_keys($matches) as $key) {
-			if ($key === 0) continue;
+			if ($key === 0) {
+				continue;
+			}
 
 			if (!$context->true()) {
 				$optional = true;
@@ -124,15 +122,16 @@ final class RegexShapeMatcher
 	}
 
 	/** @throws HoaException */
-	private function countNonOptionalGroups(string $regex):int {
-// 1. Read the grammar.
-		$grammar  = new \Hoa\File\Read('hoa://Library/Regex/Grammar.pp');
+	private function countNonOptionalGroups(string $regex): int
+	{
+		// 1. Read the grammar.
+		$grammar = new Read('hoa://Library/Regex/Grammar.pp');
 
-// 2. Load the compiler.
-		$compiler = \Hoa\Compiler\Llk\Llk::load($grammar);
+		// 2. Load the compiler.
+		$compiler = Llk::load($grammar);
 
-// 3. Lex, parse and produce the AST.
-		$ast      = $compiler->parse($regex);
+		// 3. Lex, parse and produce the AST.
+		$ast = $compiler->parse($regex);
 
 		return $this->walk($ast, 0, 0);
 	}
@@ -169,7 +168,6 @@ final class RegexShapeMatcher
 		}
 
 		return $count;
-
 	}
 
 }

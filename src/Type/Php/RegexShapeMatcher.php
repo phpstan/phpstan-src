@@ -2,9 +2,9 @@
 
 namespace PHPStan\Type\Php;
 
+use Hoa\Compiler\Exception\Exception;
 use Hoa\Compiler\Llk\Llk;
 use Hoa\Compiler\Llk\TreeNode;
-use Hoa\Exception\Exception as HoaException;
 use Hoa\File\Read;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -45,10 +45,10 @@ final class RegexShapeMatcher
 		unset($matches[array_key_last($matches)]);
 		unset($matches['phpstanNamedCaptureGroupLast']);
 
-		try {
-			// XXX hoa/regex throws on named capturing groups
-			$remainingNonOptionalGroupCount = $this->countNonOptionalGroups($regex);
-		} catch (HoaException) {
+		// XXX hoa/regex does not support named capturing groups
+		$remainingNonOptionalGroupCount = $this->countNonOptionalGroups($regex);
+		if ($remainingNonOptionalGroupCount === null) {
+			// regex could not be parsed by Hoa/Regex
 			return null;
 		}
 
@@ -121,17 +121,15 @@ final class RegexShapeMatcher
 		return $valueType;
 	}
 
-	/** @throws HoaException */
-	private function countNonOptionalGroups(string $regex): int
+	private function countNonOptionalGroups(string $regex): ?int
 	{
-		// 1. Read the grammar.
-		$grammar = new Read('hoa://Library/Regex/Grammar.pp');
-
-		// 2. Load the compiler.
-		$compiler = Llk::load($grammar);
-
-		// 3. Lex, parse and produce the AST.
-		$ast = $compiler->parse($regex);
+		/** @throws void */
+		$parser = Llk::load(new Read('hoa://Library/Regex/Grammar.pp'));
+		try {
+			$ast = $parser->parse($regex);
+		} catch ( Exception) { // @phpstan-ignore catch.notThrowable
+			return null;
+		}
 
 		return $this->walkRegexAst($ast, 0, 0);
 	}

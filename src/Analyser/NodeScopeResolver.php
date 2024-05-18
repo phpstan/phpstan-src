@@ -2146,8 +2146,8 @@ class NodeScopeResolver
 							$impurePoints[] = new ImpurePoint(
 								$scope,
 								$expr,
-								'propertyAssign',
-								'property assignment',
+								'propertyAssignByRef',
+								'property assignment by reference',
 								false,
 							);
 						}

@@ -6,6 +6,11 @@ use function PHPStan\Testing\assertType;
 
 
 function doMatch(string $s): void {
+	if (preg_match('/Price: /i', $s, $matches)) {
+		assertType('array{string}', $matches);
+	}
+	assertType('array<string>', $matches);
+
 	if (preg_match('/Price: (£|€)\d+/', $s, $matches)) {
 		assertType('array{string, string}', $matches);
 	} else {
@@ -113,6 +118,14 @@ function doMultipleConsecutiveCaptureGroupsWithSameNameWithModifier(string $s): 
 	if (preg_match('/(?J)(?<Foo>[a-z]+)|(?<Foo>[0-9]+)/', $s, $matches)) {
 		// could be assertType('array{0: string, Foo: string, 1: string}', $matches);
 		assertType('array<string>', $matches);
+	}
+	assertType('array<string>', $matches);
+}
+
+// https://github.com/hoaproject/Regex/issues/31
+function hoaBug31(string $s): void {
+	if (preg_match('/([\w-])/', $s, $matches)) {
+		assertType('array{string, string}', $matches);
 	}
 	assertType('array<string>', $matches);
 }

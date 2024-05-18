@@ -92,7 +92,7 @@ function doOffsetCaptureWithUnmatchedNull(string $s): void {
 }
 
 function doUnknownFlags(string $s, int $flags): void {
-	if (preg_match('/(foo)(bar)(baz)/', $s, $matches, $flags)) {
+	if (preg_match('/(foo)(bar)(baz)/xyz', $s, $matches, $flags)) {
 		assertType('array<array{string|null, int<-1, max>}|string|null>', $matches);
 	}
 	assertType('array<array{string|null, int<-1, max>}|string|null>', $matches);

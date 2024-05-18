@@ -42,6 +42,36 @@ function doMatch(string $s): void {
 		assertType('array{0: string, 1: string, 2: string, 3?: string, 4?: string}', $matches);
 	}
 	assertType('array<string>', $matches);
+
+	if (preg_match('/(a|b)|(?:c)/', $s, $matches)) {
+		assertType('array{0: string, 1?: string}', $matches);
+	}
+	assertType('array<string>', $matches);
+
+	if (preg_match('/(foo)(bar)(baz)+/', $s, $matches)) {
+		assertType('array{string, string, string, string}', $matches);
+	}
+	assertType('array<string>', $matches);
+
+	if (preg_match('/(foo)(bar)(baz)*/', $s, $matches)) {
+		assertType('array{0: string, 1: string, 2: string, 3?: string}', $matches);
+	}
+	assertType('array<string>', $matches);
+
+	if (preg_match('/(foo)(bar)(baz)?/', $s, $matches)) {
+		assertType('array{0: string, 1: string, 2: string, 3?: string}', $matches);
+	}
+	assertType('array<string>', $matches);
+
+	if (preg_match('/(foo)(bar)(baz){0,3}/', $s, $matches)) {
+		assertType('array{0: string, 1: string, 2: string, 3?: string}', $matches);
+	}
+	assertType('array<string>', $matches);
+
+	if (preg_match('/(foo)(bar)(baz){2,3}/', $s, $matches)) {
+		assertType('array{string, string, string, string}', $matches);
+	}
+	assertType('array<string>', $matches);
 }
 
 function doNonCapturingGroup(string $s): void {

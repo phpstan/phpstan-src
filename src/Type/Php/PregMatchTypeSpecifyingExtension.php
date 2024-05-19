@@ -8,6 +8,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -48,7 +49,11 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		$matchesArg = $args[2] ?? null;
 		$flagsArg = $args[3] ?? null;
 
-		if ($patternArg === null || $matchesArg === null || !$this->phpVersion->returnsPregUnmatchedCapturingGroups()) {
+		if (
+			$patternArg === null || $matchesArg === null
+			|| !$this->phpVersion->returnsPregUnmatchedCapturingGroups()
+			|| !BleedingEdgeToggle::isBleedingEdge()
+		) {
 			return new SpecifiedTypes();
 		}
 

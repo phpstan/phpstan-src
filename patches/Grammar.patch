@@ -14,7 +14,7 @@
        | ::class_::
      )
 -    ( range() | literal() )+
-+    ( <class_> | range() | literal() )+ <range>?
++    ( <class_> | range() | literal() )+
      ::_class::
 
  #range:
@@ -27,3 +27,11 @@
      ::comment_:: <comment>? ::_comment:: #comment
    | (
          ::named_capturing_:: <capturing_name> ::_named_capturing:: #namedcapturing
+@@ -191,6 +191,7 @@
+
+ literal:
+     <character>
++  | <range>
+   | <dynamic_character>
+   | <character_type>
+   | <anchor>

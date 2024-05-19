@@ -158,6 +158,11 @@ function hoaBug31(string $s): void {
 		assertType('array{string, string}', $matches);
 	}
 	assertType('array<string>', $matches);
+
+	if (preg_match('/\w-(\d+)-(\w)/', $s, $matches)) {
+		assertType('array{string, string, string}', $matches);
+	}
+	assertType('array<string>', $matches);
 }
 
 // https://github.com/phpstan/phpstan/issues/10855#issuecomment-2044323638

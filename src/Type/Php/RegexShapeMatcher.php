@@ -7,6 +7,8 @@ use Hoa\Compiler\Llk\Llk;
 use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\File\Read;
+use Nette\Utils\RegexpException;
+use Nette\Utils\Strings;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -39,14 +41,17 @@ final class RegexShapeMatcher
 		// add one capturing group to the end so all capture group keys
 		// are present in the $matches
 		// see https://3v4l.org/sOXbn, https://3v4l.org/3SdDM
-		$captureGroupsRegex = preg_replace('~.[a-z\s]*$~i', '|(?<phpstanNamedCaptureGroupLast>)$0', $regex);
+		$captureGroupsRegex = Strings::replace($regex, '~.[a-z\s]*$~i', '|(?<phpstanNamedCaptureGroupLast>)$0');
 
-		if (
-			$captureGroupsRegex === null
-			|| @preg_match($captureGroupsRegex, '', $matches, PREG_UNMATCHED_AS_NULL) === false
-		) {
+		try {
+			$matches = Strings::match('', $captureGroupsRegex, PREG_UNMATCHED_AS_NULL);
+			if ($matches === null) {
+				return null;
+			}
+		} catch (RegexpException $e) {
 			return null;
 		}
+
 		unset($matches[array_key_last($matches)]);
 		unset($matches['phpstanNamedCaptureGroupLast']);
 

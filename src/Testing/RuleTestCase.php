@@ -15,6 +15,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
+use PHPStan\DependencyInjection\Type\DynamicParameterOutTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\File\FileHelper;
@@ -83,6 +84,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::getContainer()->getByType(InitializerExprTypeResolver::class),
 				self::getReflector(),
 				self::getClassReflectionExtensionRegistryProvider(),
+				self::getContainer()->getByType(DynamicParameterOutTypeExtensionProvider::class),
 				$this->getParser(),
 				self::getContainer()->getByType(FileTypeMapper::class),
 				self::getContainer()->getByType(StubPhpDocProvider::class),

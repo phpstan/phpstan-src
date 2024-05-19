@@ -634,6 +634,10 @@ services:
 		factory: PHPStan\DependencyInjection\Type\LazyDynamicReturnTypeExtensionRegistryProvider
 
 	-
+		class: PHPStan\DependencyInjection\Type\DynamicParameterOutTypeExtensionProvider
+		factory: PHPStan\DependencyInjection\Type\LazyParameterOutTypeExtensionProvider
+
+	-
 		class: PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider
 		factory: PHPStan\DependencyInjection\Type\LazyExpressionTypeResolverExtensionRegistryProvider
 

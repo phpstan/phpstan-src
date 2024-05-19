@@ -62,6 +62,7 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\DynamicParameterOutTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\File\FileHelper;
@@ -236,6 +237,7 @@ class NodeScopeResolver
 		private readonly InitializerExprTypeResolver $initializerExprTypeResolver,
 		private readonly Reflector $reflector,
 		private readonly ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
+		private readonly DynamicParameterOutTypeExtensionProvider $dynamicParameterOutTypeExtensionProvider,
 		private readonly Parser $parser,
 		private readonly FileTypeMapper $fileTypeMapper,
 		private readonly StubPhpDocProvider $stubPhpDocProvider,
@@ -4541,9 +4543,18 @@ class NodeScopeResolver
 			}
 
 			if ($assignByReference) {
+				if ($currentParameter === null) {
+					throw new ShouldNotHappenException();
+				}
+
 				$argValue = $arg->value;
 				if ($argValue instanceof Variable && is_string($argValue->name)) {
 					if ($argValue->name !== 'this') {
+						$paramOutType = $this->getParameterOutExtensionsTypes($callLike, $calleeReflection, $currentParameter, $scope);
+						if ($paramOutType !== null) {
+							$byRefType = $paramOutType;
+						}
+
 						$nodeCallback(new VariableAssignNode($argValue, new TypeExpr($byRefType), false), $scope);
 						$scope = $scope->assignVariable($argValue->name, $byRefType, new MixedType());
 					}
@@ -4606,6 +4617,61 @@ class NodeScopeResolver
 					}
 				}
 			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param MethodReflection|FunctionReflection|null $calleeReflection
+	 */
+	public function getParameterOutExtensionsTypes(CallLike $callLike, $calleeReflection, ParameterReflection $currentParameter, MutatingScope $scope): ?Type
+	{
+		$paramOutTypes = [];
+		if ($callLike instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
+			foreach ($this->dynamicParameterOutTypeExtensionProvider->getDynamicFunctionParameterOutTypeExtensions() as $dynamicFunctionParameterOutTypeExtension) {
+				if (!$dynamicFunctionParameterOutTypeExtension->isFunctionSupported($calleeReflection, $currentParameter)) {
+					continue;
+				}
+
+				$resolvedType = $dynamicFunctionParameterOutTypeExtension->getParameterOutTypeFromFunctionCall($calleeReflection, $callLike, $currentParameter, $scope);
+				if ($resolvedType === null) {
+					continue;
+				}
+				$paramOutTypes[] = $resolvedType;
+			}
+		} elseif ($callLike instanceof MethodCall && $calleeReflection instanceof MethodReflection) {
+			foreach ($this->dynamicParameterOutTypeExtensionProvider->getDynamicMethodParameterOutTypeExtensions() as $dynamicMethodParameterOutTypeExtension) {
+				if (!$dynamicMethodParameterOutTypeExtension->isMethodSupported($calleeReflection, $currentParameter)) {
+					continue;
+				}
+
+				$resolvedType = $dynamicMethodParameterOutTypeExtension->getParameterOutTypeFromMethodCall($calleeReflection, $callLike, $currentParameter, $scope);
+				if ($resolvedType === null) {
+					continue;
+				}
+				$paramOutTypes[] = $resolvedType;
+			}
+		} elseif ($callLike instanceof StaticCall && $calleeReflection instanceof MethodReflection) {
+			foreach ($this->dynamicParameterOutTypeExtensionProvider->getDynamicStaticMethodParameterOutTypeExtensions() as $dynamicStaticMethodParameterOutTypeExtension) {
+				if (!$dynamicStaticMethodParameterOutTypeExtension->isStaticMethodSupported($calleeReflection, $currentParameter)) {
+					continue;
+				}
+
+				$resolvedType = $dynamicStaticMethodParameterOutTypeExtension->getParameterOutTypeFromStaticMethodCall($calleeReflection, $callLike, $currentParameter, $scope);
+				if ($resolvedType === null) {
+					continue;
+				}
+				$paramOutTypes[] = $resolvedType;
+			}
+		}
+
+		if (count($paramOutTypes) === 1) {
+			return $paramOutTypes[0];
+		}
+
+		if (count($paramOutTypes) > 1) {
+			return TypeCombinator::union(...$paramOutTypes);
 		}
 
 		return null;

@@ -1,0 +1,26 @@
+<?php
+
+namespace PHPStan\Tests;
+
+use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\DynamicFunctionParameterOutTypeExtension;
+use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+
+class ParamOutFunctionExtension implements DynamicFunctionParameterOutTypeExtension {
+
+	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool
+	{
+		return $functionReflection->getName() === 'DynamicParameterOutTests\callWithOut' && $parameter->getName() === 'outParam';
+	}
+
+	public function getParameterOutTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, ParameterReflection $parameter, Scope $scope): ?Type
+	{
+		return new StringType();
+	}
+}

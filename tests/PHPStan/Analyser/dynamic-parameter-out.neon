@@ -1,0 +1,13 @@
+services:
+	-
+		class: PHPStan\Tests\ParamOutFunctionExtension
+		tags:
+			- phpstan.dynamicFunctionParameterOutTypeExtension
+	-
+		class: PHPStan\Tests\ParamOutMethodExtension
+		tags:
+			- phpstan.dynamicMethodParameterOutTypeExtension
+	-
+		class: PHPStan\Tests\ParamOutStaticMethodExtension
+		tags:
+			- phpstan.dynamicStaticMethodParameterOutTypeExtension

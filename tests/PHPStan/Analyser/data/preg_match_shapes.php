@@ -159,3 +159,11 @@ function hoaBug31(string $s): void {
 	}
 	assertType('array<string>', $matches);
 }
+
+// https://github.com/phpstan/phpstan/issues/10855#issuecomment-2044323638
+function testHoaUnsupportedRegexSyntax(string $s): void {
+	if (preg_match('#\QPHPDoc type array<string> of property App\Log::$fillable is not covariant with PHPDoc type array<int, string> of overridden property Illuminate\Database\E\\\\\QEloquent\Model::$fillable.\E#', $s, $matches)) {
+		assertType('array{string}', $matches);
+	}
+	assertType('array<string>', $matches);
+}

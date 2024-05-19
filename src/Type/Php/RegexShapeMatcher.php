@@ -10,6 +10,8 @@ use Hoa\File\Read;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -19,24 +21,71 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_last;
 use function array_keys;
+use function count;
 use function in_array;
 use function is_int;
 use function is_string;
-use function preg_match;
-use function preg_replace;
 use function str_contains;
 use const PREG_OFFSET_CAPTURE;
 use const PREG_UNMATCHED_AS_NULL;
 
+/**
+ * @api
+ */
 final class RegexShapeMatcher
 {
 
 	private static ?Parser $parser = null;
 
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
+
+	public function matchType(Type $patternType, ?Type $flagsType, TypeSpecifierContext $context): ?Type
+	{
+		if (
+			!$this->phpVersion->returnsPregUnmatchedCapturingGroups()
+			|| !BleedingEdgeToggle::isBleedingEdge()
+		) {
+			return null;
+		}
+
+		$constantStrings = $patternType->getConstantStrings();
+		if (count($constantStrings) === 0) {
+			return null;
+		}
+
+		$flags = null;
+		if ($flagsType !== null) {
+			if (
+				!$flagsType instanceof ConstantIntegerType
+				|| !in_array($flagsType->getValue(), [PREG_OFFSET_CAPTURE, PREG_UNMATCHED_AS_NULL, PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL], true)
+			) {
+				return null;
+			}
+
+			$flags = $flagsType->getValue();
+		}
+
+		$matchedTypes = [];
+		foreach ($constantStrings as $constantString) {
+			$matched = $this->matchRegex($constantString->getValue(), $flags, $context);
+			if ($matched === null) {
+				return null;
+			}
+
+			$matchedTypes[] = $matched;
+		}
+
+		return TypeCombinator::union(...$matchedTypes);
+	}
+
 	/**
 	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL>|null $flags
 	 */
-	public function matchType(string $regex, ?int $flags, TypeSpecifierContext $context): ?Type
+	private function matchRegex(string $regex, ?int $flags, TypeSpecifierContext $context): ?Type
 	{
 		// add one capturing group to the end so all capture group keys
 		// are present in the $matches
@@ -48,7 +97,7 @@ final class RegexShapeMatcher
 			if ($matches === null) {
 				return null;
 			}
-		} catch (RegexpException $e) {
+		} catch (RegexpException) {
 			return null;
 		}
 

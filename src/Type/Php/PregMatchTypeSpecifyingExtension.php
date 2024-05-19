@@ -8,17 +8,10 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
-use PHPStan\DependencyInjection\BleedingEdgeToggle;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\TypeCombinator;
-use function count;
 use function in_array;
 use function strtolower;
-use const PREG_OFFSET_CAPTURE;
-use const PREG_UNMATCHED_AS_NULL;
 
 final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -27,7 +20,6 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 	public function __construct(
 		private RegexShapeMatcher $regexShapeMatcher,
-		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -51,45 +43,24 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 		if (
 			$patternArg === null || $matchesArg === null
-			|| !$this->phpVersion->returnsPregUnmatchedCapturingGroups()
-			|| !BleedingEdgeToggle::isBleedingEdge()
 		) {
 			return new SpecifiedTypes();
 		}
 
 		$patternType = $scope->getType($patternArg->value);
-		$constantStrings = $patternType->getConstantStrings();
-		if (count($constantStrings) === 0) {
-			return new SpecifiedTypes();
-		}
-
-		$flags = null;
+		$flagsType = null;
 		if ($flagsArg !== null) {
 			$flagsType = $scope->getType($flagsArg->value);
-
-			if (
-				!$flagsType instanceof ConstantIntegerType
-				|| !in_array($flagsType->getValue(), [PREG_OFFSET_CAPTURE, PREG_UNMATCHED_AS_NULL, PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL], true)
-			) {
-				return new SpecifiedTypes();
-			}
-
-			$flags = $flagsType->getValue();
 		}
 
-		$matchedTypes = [];
-		foreach ($constantStrings as $constantString) {
-			$matched = $this->regexShapeMatcher->matchType($constantString->getValue(), $flags, $context);
-			if ($matched === null) {
-				return new SpecifiedTypes();
-			}
-
-			$matchedTypes[] = $matched;
+		$matchedType = $this->regexShapeMatcher->matchType($patternType, $flagsType, $context);
+		if ($matchedType === null) {
+			return new SpecifiedTypes();
 		}
 
 		return $this->typeSpecifier->create(
 			$matchesArg->value,
-			TypeCombinator::union(...$matchedTypes),
+			$matchedType,
 			$context,
 			false,
 			$scope,

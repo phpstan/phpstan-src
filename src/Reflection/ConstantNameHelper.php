@@ -19,7 +19,7 @@ class ConstantNameHelper
 			return $name;
 		}
 
-		$nameParts = array_filter(explode('\\', $name));
+		$nameParts = array_filter(explode('\\', $name), static fn ($part) => $part !== '');
 		return strtolower(implode('\\', array_slice($nameParts, 0, -1))) . '\\' . end($nameParts);
 	}
 

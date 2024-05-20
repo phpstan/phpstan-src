@@ -42,7 +42,7 @@ class InvalidLexicalVariablesInClosureUseRule implements Rule
 				return $param->var->name;
 			},
 			$node->getParams(),
-		));
+		), static fn ($name) => $name !== false);
 
 		foreach ($node->uses as $use) {
 			if (!is_string($use->var->name)) {

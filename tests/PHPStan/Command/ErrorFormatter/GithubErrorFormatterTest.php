@@ -45,7 +45,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			'::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=2,col=0::Bar%0ABar2
 ::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=4,col=0::Foo
-::error file=foo.php,line=1,col=0::Foo
+::error file=foo.php,line=1,col=0::Foo<Bar>
 ::error file=foo.php,line=5,col=0::Bar%0ABar2
 ',
 		];
@@ -56,7 +56,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			2,
 			'::error ::first generic error
-::error ::second generic error
+::error ::second generic<error>
 ',
 		];
 
@@ -67,10 +67,10 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			2,
 			'::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=2,col=0::Bar%0ABar2
 ::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=4,col=0::Foo
-::error file=foo.php,line=1,col=0::Foo
+::error file=foo.php,line=1,col=0::Foo<Bar>
 ::error file=foo.php,line=5,col=0::Bar%0ABar2
 ::error ::first generic error
-::error ::second generic error
+::error ::second generic<error>
 ',
 		];
 	}

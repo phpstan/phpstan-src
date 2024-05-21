@@ -74,7 +74,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 					'path' => 'foo.php',
 				],
 				[
-					'message' => '#^Foo$#',
+					'message' => '#^Foo\<Bar\>$#',
 					'count' => 1,
 					'path' => 'foo.php',
 				],
@@ -103,7 +103,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 					'path' => 'foo.php',
 				],
 				[
-					'message' => '#^Foo$#',
+					'message' => '#^Foo\<Bar\>$#',
 					'count' => 1,
 					'path' => 'foo.php',
 				],

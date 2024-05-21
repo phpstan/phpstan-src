@@ -94,7 +94,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
  ------ ----------
   Line   foo.php
  ------ ----------
-  1      Foo
+  1      Foo<Bar>
   5      Bar
          Bar2
          💡 a tip
@@ -115,7 +115,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
      Error
  -- ----------------------
      first generic error
-     second generic error
+     second generic<error>
  -- ----------------------
 
 
@@ -141,7 +141,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
  ------ ----------
   Line   foo.php
  ------ ----------
-  1      Foo
+  1      Foo<Bar>
   5      Bar
          Bar2
          💡 a tip
@@ -151,7 +151,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
      Error
  -- ----------------------
      first generic error
-     second generic error
+     second generic<error>
  -- ----------------------
 
  [ERROR] Found 6 errors

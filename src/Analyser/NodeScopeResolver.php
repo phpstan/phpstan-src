@@ -2051,7 +2051,7 @@ class NodeScopeResolver
 					$methodCalledOnType = $scope->getType($expr->var);
 				} else {
 					if ($expr->class instanceof Name) {
-						$methodCalledOnType = $scope->resolveTypeByName($expr->class);
+						$methodCalledOnType = $scope->getType(new Expr\ClassConstFetch($expr->class, 'class'))->getClassStringObjectType();
 					} else {
 						$methodCalledOnType = $scope->getType($expr->class);
 					}
@@ -2678,19 +2678,12 @@ class NodeScopeResolver
 						if (isset($expr->getArgs()[2])) {
 							$argValue = $expr->getArgs()[2]->value;
 							$argValueType = $scope->getType($argValue);
-
-							$directClassNames = $argValueType->getObjectClassNames();
-							if (count($directClassNames) > 0) {
-								$scopeClasses = $directClassNames;
-								$thisTypes = [];
-								foreach ($directClassNames as $directClassName) {
-									$thisTypes[] = new ObjectType($directClassName);
-								}
-								$thisType = TypeCombinator::union(...$thisTypes);
-							} else {
-								$thisType = $argValueType->getClassStringObjectType();
-								$scopeClasses = $thisType->getObjectClassNames();
-							}
+							$scopeObjectType = $argValueType->getObjectTypeOrClassStringObjectType();
+							$thisType = $thisType !== null
+								// $thisType could be mixed, error, ...
+								? TypeCombinator::intersect($thisType, $scopeObjectType)
+								: $scopeObjectType;
+							$scopeClasses = $scopeObjectType->getObjectClassNames();
 						}
 						$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
 					}
@@ -4878,7 +4871,7 @@ class NodeScopeResolver
 
 		} elseif ($var instanceof Expr\StaticPropertyFetch) {
 			if ($var->class instanceof Node\Name) {
-				$propertyHolderType = $scope->resolveTypeByName($var->class);
+				$propertyHolderType = $scope->getType(new Expr\ClassConstFetch($var->class, 'class'))->getClassStringObjectType();
 			} else {
 				$this->processExprNode($stmt, $var->class, $scope, $nodeCallback, $context);
 				$propertyHolderType = $scope->getType($var->class);
@@ -5128,9 +5121,10 @@ class NodeScopeResolver
 
 			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$scope->getFile(),
-				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
-				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-				$function !== null ? $function->getName() : null,
+				// Closure bind can be in different class which can prevent phpdoc resolving.
+				$scope->isInClass() && ! $scope->isInClosureBind() ? $scope->getClassReflection()->getName() : null,
+				$scope->isInTrait() && ! $scope->isInClosureBind() ? $scope->getTraitReflection()->getName() : null,
+				$function !== null && ! $scope->isInClosureBind() ? $function->getName() : null,
 				$comment->getText(),
 			);
 
@@ -5159,7 +5153,7 @@ class NodeScopeResolver
 					continue;
 				}
 
-				if ($scope->isInClass() && $scope->getFunction() === null) {
+				if ($scope->isInClass() && $scope->getFunction() === null && ! $scope->isInClosureBind()) {
 					continue;
 				}
 

@@ -608,4 +608,32 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBugInstanceofStaticVsThis(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$message = 'Static property BugInstanceofStaticVsThisPropertyAssign\FooChild::$staticStringProp (string) does not accept int.';
+		$this->analyse([__DIR__ . '/data/bug-instanceof-static-vs-this-property-assign.php'], [
+			[
+				$message,
+				22,
+			],
+			[
+				$message,
+				23,
+			],
+			[
+				$message,
+				36,
+			],
+			[
+				$message,
+				37,
+			],
+		]);
+	}
+
 }

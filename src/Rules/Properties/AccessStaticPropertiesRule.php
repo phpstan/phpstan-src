@@ -85,7 +85,9 @@ class AccessStaticPropertiesRule implements Rule
 						))->identifier(sprintf('outOfClass.%s', $lowercasedClass))->build(),
 					];
 				}
-				$classType = $scope->resolveTypeByName($node->class);
+				$classType = $lowercasedClass === 'static'
+					? $scope->getType(new Node\Expr\ClassConstFetch(new Name('static'), 'class'))->getClassStringObjectType()
+					: $scope->resolveTypeByName($node->class);
 			} elseif ($lowercasedClass === 'parent') {
 				if (!$scope->isInClass()) {
 					return [

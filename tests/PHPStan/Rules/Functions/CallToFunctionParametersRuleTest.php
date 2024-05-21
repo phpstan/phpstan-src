@@ -1646,6 +1646,40 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/argon2id-password-hash.php'], []);
 	}
 
+	public function testBugInstanceofStaticVsThis(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/../Properties/data/bug-instanceof-static-vs-this-property-assign.php'], [
+			[
+				'Parameter #1 $var is passed by reference so it does not accept readonly property BugInstanceofStaticVsThisPropertyAssign\FooChild::$nativeReadonlyProp.',
+				17,
+			],
+			[
+				'Parameter #1 $var of function BugInstanceofStaticVsThisPropertyAssign\set expects int, string given.',
+				24,
+			],
+			[
+				'Parameter #1 $var of function BugInstanceofStaticVsThisPropertyAssign\set expects int, string given.',
+				25,
+			],
+			[
+				'Parameter #1 $var is passed by reference so it does not accept readonly property BugInstanceofStaticVsThisPropertyAssign\FooChild::$nativeReadonlyProp.',
+				31,
+			],
+			[
+				'Parameter #1 $var of function BugInstanceofStaticVsThisPropertyAssign\set expects int, string given.',
+				38,
+			],
+			[
+				'Parameter #1 $var of function BugInstanceofStaticVsThisPropertyAssign\set expects int, string given.',
+				39,
+			],
+		]);
+	}
+
 	public function testParamClosureThis(): void
 	{
 		if (PHP_VERSION_ID < 70400) {

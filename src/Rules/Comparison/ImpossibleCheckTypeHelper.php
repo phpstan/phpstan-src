@@ -387,7 +387,7 @@ class ImpossibleCheckTypeHelper
 			}
 		} elseif ($node instanceof StaticCall && $node->name instanceof Node\Identifier) {
 			if ($node->class instanceof Node\Name) {
-				$calleeType = $scope->resolveTypeByName($node->class);
+				$calleeType = $scope->getType(new Expr\ClassConstFetch($node->class, 'class'))->getClassStringObjectType();
 			} else {
 				$calleeType = $scope->getType($node->class);
 			}

@@ -145,6 +145,35 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/impossible-static-method-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
+	public function testBugInstanceofStaticVsThis(): void
+	{
+		$message = 'Call to static method BugInstanceofStaticVsThisImpossibleCheck\FooInterface::isNull() with int will always evaluate to false.';
+		$tip = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-instanceof-static-vs-this-impossible-check.php'], [
+			[
+				$message,
+				18,
+				$tip,
+			],
+			[
+				$message,
+				19,
+				$tip,
+			],
+			[
+				$message,
+				24,
+				$tip,
+			],
+			[
+				$message,
+				25,
+				$tip,
+			],
+		]);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

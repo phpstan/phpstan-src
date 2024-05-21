@@ -546,7 +546,21 @@ class MutatingScope implements Scope
 			return new MixedType();
 		}
 
-		return TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$varExprString]->getType());
+		$result = TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$varExprString]->getType());
+
+		if ($variableName !== 'this') {
+			return $result;
+		}
+
+		$staticClassNode = new Expr\ClassConstFetch(new Name('static'), 'class');
+
+		if ($this->hasExpressionType($staticClassNode)->yes()) {
+			$staticType = $this->expressionTypes[$this->getNodeKey($staticClassNode)]->getType();
+
+			return TypeCombinator::intersect($result, $staticType->getClassStringObjectType());
+		}
+
+		return $result;
 	}
 
 	/**
@@ -1165,15 +1179,11 @@ class MutatingScope implements Scope
 			}
 
 			if ($node instanceof Expr\StaticCall) {
-				if (!$node->class instanceof Name) {
-					return new ObjectType(Closure::class);
-				}
-
 				if (!$node->name instanceof Node\Identifier) {
 					return new ObjectType(Closure::class);
 				}
 
-				$classType = $this->resolveTypeByName($node->class);
+				$classType = $this->getType(new Expr\ClassConstFetch($node->class, 'class'))->getClassStringObjectType();
 				$methodName = $node->name->toString();
 				if (!$classType->hasMethod($methodName)->yes()) {
 					return new ObjectType(Closure::class);
@@ -1785,6 +1795,9 @@ class MutatingScope implements Scope
 			if ($this->hasExpressionType($node)->yes()) {
 				return $this->expressionTypes[$exprString]->getType();
 			}
+			if ($node->name->toLowerString() === 'class' && $node->class instanceof Name && $node->class->toLowerString() === 'static') {
+				return new GenericClassStringType($this->resolveTypeByNameWithoutClassName($node->class));
+			}
 			return $this->initializerExprTypeResolver->getClassConstFetchTypeByReflection(
 				$node->class,
 				$node->name->name,
@@ -1900,7 +1913,7 @@ class MutatingScope implements Scope
 			if ($this->nativeTypesPromoted) {
 				$typeCallback = function () use ($node): Type {
 					if ($node->class instanceof Name) {
-						$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
+						$staticMethodCalledOnType = $this->resolveTypeByNameWithoutClassName($node->class);
 					} else {
 						$staticMethodCalledOnType = $this->getNativeType($node->class);
 					}
@@ -1925,7 +1938,7 @@ class MutatingScope implements Scope
 
 			$typeCallback = function () use ($node): Type {
 				if ($node->class instanceof Name) {
-					$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
+					$staticMethodCalledOnType = $this->resolveTypeByNameWithoutClassName($node->class);
 				} else {
 					$staticMethodCalledOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
 				}
@@ -2017,7 +2030,7 @@ class MutatingScope implements Scope
 
 			$typeCallback = function () use ($node): Type {
 				if ($node->class instanceof Name) {
-					$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);
+					$staticPropertyFetchedOnType = $this->resolveTypeByNameWithoutClassName($node->class);
 				} else {
 					$staticPropertyFetchedOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
 				}
@@ -2569,6 +2582,45 @@ class MutatingScope implements Scope
 		return new ObjectType($originalClass);
 	}
 
+	private function resolveTypeByNameWithoutClassName(Name $name): Type
+	{
+		$typeWithClassName = $this->resolveTypeByName($name);
+
+		if ($name->toLowerString() !== 'static' || ! $this->isInClass()) {
+			return $typeWithClassName;
+		}
+
+		$typesToIntersect = [$typeWithClassName];
+		$thisNode = new Variable('this');
+
+		if ($this->hasExpressionType($thisNode)->yes()) {
+			$thisType = $this->expressionTypes[$this->getNodeKey($thisNode)]->getType();
+			$typesToIntersect[] = TypeTraverser::map(
+				$thisType,
+				static function (Type $type, callable $traverse): Type {
+					if ($type instanceof UnionType || $type instanceof IntersectionType) {
+						return $traverse($type);
+					}
+
+					if ($type instanceof ThisType) {
+						return new StaticType($type->getClassReflection());
+					}
+
+					return $type;
+				},
+			);
+		}
+
+		$staticClassNode = new Expr\ClassConstFetch(new Name('static'), 'class');
+
+		if ($this->hasExpressionType($staticClassNode)->yes()) {
+			$typesToIntersect[] = $this->expressionTypes[$this->getNodeKey($staticClassNode)]->getType()
+				->getClassStringObjectType();
+		}
+
+		return TypeCombinator::intersect(...$typesToIntersect);
+	}
+
 	/**
 	 * @api
 	 * @param mixed $value
@@ -3036,12 +3088,17 @@ class MutatingScope implements Scope
 			unset($nativeExpressionTypes['$this']);
 		}
 
+		$context = $this->context;
+
 		if ($scopeClasses === ['static'] && $this->isInClass()) {
 			$scopeClasses = [$this->getClassReflection()->getName()];
+		} elseif (count($scopeClasses) === 1 && $this->reflectionProvider->hasClass($scopeClasses[0])) {
+			$context = ScopeContext::create($this->context->getFile());
+			$context = $context->enterClass($this->reflectionProvider->getClass($scopeClasses[0]));
 		}
 
 		return $this->scopeFactory->create(
-			$this->context,
+			$context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),
@@ -3070,7 +3127,7 @@ class MutatingScope implements Scope
 		}
 
 		return $this->scopeFactory->create(
-			$this->context,
+			$originalScope->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),

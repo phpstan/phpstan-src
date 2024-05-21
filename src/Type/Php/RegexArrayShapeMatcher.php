@@ -9,9 +9,9 @@ use Hoa\Compiler\Llk\TreeNode;
 use Hoa\File\Read;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
-use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Php\PhpVersion;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -32,7 +32,7 @@ use const PREG_UNMATCHED_AS_NULL;
 /**
  * @api
  */
-final class RegexShapeMatcher
+final class RegexArrayShapeMatcher
 {
 
 	private static ?Parser $parser = null;
@@ -43,7 +43,7 @@ final class RegexShapeMatcher
 	{
 	}
 
-	public function matchType(Type $patternType, ?Type $flagsType, TypeSpecifierContext $context): ?Type
+	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
 	{
 		if (
 			!$this->phpVersion->returnsPregUnmatchedCapturingGroups()
@@ -71,7 +71,7 @@ final class RegexShapeMatcher
 
 		$matchedTypes = [];
 		foreach ($constantStrings as $constantString) {
-			$matched = $this->matchRegex($constantString->getValue(), $flags, $context);
+			$matched = $this->matchRegex($constantString->getValue(), $flags, $wasMatched);
 			if ($matched === null) {
 				return null;
 			}
@@ -85,7 +85,7 @@ final class RegexShapeMatcher
 	/**
 	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL>|null $flags
 	 */
-	private function matchRegex(string $regex, ?int $flags, TypeSpecifierContext $context): ?Type
+	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched): ?Type
 	{
 		// add one capturing group to the end so all capture group keys
 		// are present in the $matches
@@ -119,13 +119,13 @@ final class RegexShapeMatcher
 				$builder->setOffsetValueType(
 					$this->getKeyType($key),
 					TypeCombinator::removeNull($valueType),
-					!$context->true(),
+					!$wasMatched->yes(),
 				);
 
 				continue;
 			}
 
-			if (!$context->true()) {
+			if (!$wasMatched->yes()) {
 				$optional = true;
 			} else {
 				$optional = $remainingNonOptionalGroupCount <= 0;

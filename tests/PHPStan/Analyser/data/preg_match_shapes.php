@@ -14,6 +14,7 @@ function doMatch(string $s): void {
 	if (preg_match('/Price: (£|€)\d+/', $s, $matches)) {
 		assertType('array{string, string}', $matches);
 	} else {
+		// could be assertType('array{}', $matches);
 		assertType('array<string>', $matches);
 	}
 	assertType('array<string>', $matches);

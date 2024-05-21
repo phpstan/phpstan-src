@@ -9,6 +9,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use function in_array;
 use function strtolower;
@@ -19,7 +20,7 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 	private TypeSpecifier $typeSpecifier;
 
 	public function __construct(
-		private RegexShapeMatcher $regexShapeMatcher,
+		private RegexArrayShapeMatcher $regexShapeMatcher,
 	)
 	{
 	}
@@ -53,7 +54,8 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			$flagsType = $scope->getType($flagsArg->value);
 		}
 
-		$matchedType = $this->regexShapeMatcher->matchType($patternType, $flagsType, $context);
+		$wasMatched = TrinaryLogic::createFromBoolean($context->true());
+		$matchedType = $this->regexShapeMatcher->matchType($patternType, $flagsType, $wasMatched);
 		if ($matchedType === null) {
 			return new SpecifiedTypes();
 		}

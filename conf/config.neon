@@ -1471,7 +1471,7 @@ services:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
-		class: PHPStan\Type\Php\RegexShapeMatcher
+		class: PHPStan\Type\Php\RegexArrayShapeMatcher
 
 	-
 		class: PHPStan\Type\Php\ReflectionClassConstructorThrowTypeExtension

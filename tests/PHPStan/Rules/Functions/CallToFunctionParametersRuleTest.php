@@ -39,8 +39,8 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testCallToFunctionWithIncorrectParameters(): void
 	{
 		$setErrorHandlerError = PHP_VERSION_ID < 80000
-			? 'Parameter #1 $callback of function set_error_handler expects (callable(int, string, string, int, array): bool)|null, Closure(mixed, mixed, mixed, mixed): void given.'
-			: 'Parameter #1 $callback of function set_error_handler expects (callable(int, string, string, int): bool)|null, Closure(mixed, mixed, mixed, mixed): void given.';
+			? 'Parameter #1 $callback of function set_error_handler expects (callable(int, string, string, int, array): bool)|null, Closure(int, string, string, int): void given.'
+			: 'Parameter #1 $callback of function set_error_handler expects (callable(int, string, string, int): bool)|null, Closure(int, string, string, int): void given.';
 
 		require_once __DIR__ . '/data/incorrect-call-to-function-definition.php';
 		$this->analyse([__DIR__ . '/data/incorrect-call-to-function.php'], [
@@ -558,14 +558,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				5,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(non-empty-string, 1|2|3): non-falsy-string given.',
 				13,
-				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
+				'Type non-empty-string of parameter #1 $foo of passed callable needs to be same or wider than parameter type non-empty-string|null of accepting callable.',
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(non-empty-string, 1|2|3): non-falsy-string given.',
 				22,
-				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
+				'Type non-empty-string of parameter #1 $foo of passed callable needs to be same or wider than parameter type non-empty-string|null of accepting callable.',
 			],
 		]);
 	}
@@ -578,14 +578,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				5,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(non-empty-string, 1|2|3): non-falsy-string given.',
 				11,
-				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
+				'Type non-empty-string of parameter #1 $foo of passed callable needs to be same or wider than parameter type non-empty-string|null of accepting callable.',
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-empty-string given.',
+				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(non-empty-string, 1|2|3): non-falsy-string given.',
 				18,
-				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
+				'Type non-empty-string of parameter #1 $foo of passed callable needs to be same or wider than parameter type non-empty-string|null of accepting callable.',
 			],
 		]);
 	}
@@ -598,11 +598,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				6,
 			],
 			[
-				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\', \'extra\'): mixed, Closure(int, string, int): \'\' given.',
+				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\', \'extra\'): mixed, Closure(1|2, \'bar\'|\'foo\', int): \'\' given.',
 				14,
 			],
 			[
-				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(int, string, int): \'\' given.',
+				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(1|2, \'bar\'|\'foo\', int): \'\' given.',
 				23,
 				'Parameter #3 $extra of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
 			],
@@ -617,11 +617,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				6,
 			],
 			[
-				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\', \'extra\'): mixed, Closure(int, string, int): \'\' given.',
+				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\', \'extra\'): mixed, Closure(1|2, \'bar\'|\'foo\', int): \'\' given.',
 				12,
 			],
 			[
-				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(int, string, int): \'\' given.',
+				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(1|2, \'bar\'|\'foo\', int): \'\' given.',
 				19,
 				'Parameter #3 $extra of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
 			],
@@ -636,7 +636,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				6,
 			],
 			[
-				'Parameter #3 $data_comp_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int, Closure(int, int): non-falsy-string given.',
+				'Parameter #3 $data_comp_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int, Closure(1|2|3|4|5|6, 1|2|3|4|5|6): (literal-string&non-falsy-string) given.',
 				14,
 			],
 			[
@@ -666,7 +666,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(array): void given.',
+				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(array<int|string, string>): void given.',
 				20,
 			],
 			[
@@ -688,7 +688,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Parameter #2 $callback of function mb_ereg_replace_callback expects callable(array<int|string, string>): string, Closure(array): void given.',
+				'Parameter #2 $callback of function mb_ereg_replace_callback expects callable(array<int|string, string>): string, Closure(array<int|string, string>): void given.',
 				20,
 			],
 			[
@@ -1617,11 +1617,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/discussion-10454.php'], [
 			[
-				"Parameter #2 \$callback of function array_filter expects (callable('bar'|'baz'|'foo'|'quux'|'qux'): bool)|null, Closure(string): stdClass given.",
+				"Parameter #2 \$callback of function array_filter expects (callable('bar'|'baz'|'foo'|'quux'|'qux'): bool)|null, Closure('bar'|'baz'|'foo'|'quux'|'qux'): stdClass given.",
 				13,
 			],
 			[
-				"Parameter #2 \$callback of function array_filter expects (callable('bar'|'baz'|'foo'|'quux'|'qux'): bool)|null, Closure(string): stdClass given.",
+				"Parameter #2 \$callback of function array_filter expects (callable('bar'|'baz'|'foo'|'quux'|'qux'): bool)|null, Closure('bar'|'baz'|'foo'|'quux'|'qux'): stdClass given.",
 				23,
 			],
 		]);

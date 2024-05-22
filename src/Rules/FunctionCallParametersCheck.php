@@ -4,6 +4,7 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ParameterReflection;
@@ -79,7 +80,7 @@ class FunctionCallParametersCheck
 			$functionParametersMaxCount = -1;
 		}
 
-		/** @var array<int, array{Expr, Type, bool, string|null, int}> $arguments */
+		/** @var array<int, array{Expr, Type|null, bool, string|null, int}> $arguments */
 		$arguments = [];
 		/** @var array<int, Node\Arg> $args */
 		$args = $funcCall->getArgs();
@@ -172,7 +173,7 @@ class FunctionCallParametersCheck
 
 			$arguments[] = [
 				$arg->value,
-				$type,
+				null,
 				false,
 				$argumentName,
 				$arg->getStartLine(),
@@ -275,6 +276,17 @@ class FunctionCallParametersCheck
 
 			if ($parameter === null) {
 				continue;
+			}
+
+			if ($argumentValueType === null) {
+				if ($scope instanceof MutatingScope) {
+					$scope = $scope->pushInFunctionCall(null, $parameter);
+				}
+				$argumentValueType = $scope->getType($argumentValue);
+
+				if ($scope instanceof MutatingScope) {
+					$scope = $scope->popInFunctionCall();
+				}
 			}
 
 			if ($this->checkArgumentTypes) {
@@ -464,8 +476,8 @@ class FunctionCallParametersCheck
 	}
 
 	/**
-	 * @param array<int, array{Expr, Type, bool, string|null, int}> $arguments
-	 * @return array{list<IdentifierRuleError>, array<int, array{Expr, Type, bool, (string|null), int, (ParameterReflection|null), (ParameterReflection|null)}>}
+	 * @param array<int, array{Expr, Type|null, bool, string|null, int}> $arguments
+	 * @return array{list<IdentifierRuleError>, array<int, array{Expr, Type|null, bool, (string|null), int, (ParameterReflection|null), (ParameterReflection|null)}>}
 	 */
 	private function processArguments(
 		ParametersAcceptor $parametersAcceptor,

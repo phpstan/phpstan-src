@@ -504,7 +504,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				1512,
 			],
 			[
-				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): (array{\'foo\'}|null) given.',
+				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array<string>): (array{\'foo\'}|null) given.',
 				1533,
 			],
 			[
@@ -828,7 +828,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				1512,
 			],
 			[
-				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array): (array{\'foo\'}|null) given.',
+				'Parameter #1 $a of method Test\\CallableWithMixedArray::doBar() expects callable(array<string>): array<string>, Closure(array<string>): (array{\'foo\'}|null) given.',
 				1533,
 			],
 			[
@@ -3298,6 +3298,16 @@ class CallMethodsRuleTest extends RuleTestCase
 				61,
 			],
 		]);
+	}
+
+	public function testClosureParameterGenerics(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/closure-parameter-generics.php'], []);
 	}
 
 }

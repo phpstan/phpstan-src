@@ -111,12 +111,12 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'numFileErrors' => 0,
 			'numGenericErrors' => 2,
 			'extraEnvVars' => [],
-			'expected' => ' -- ----------------------
+			'expected' => ' -- -----------------------
      Error
- -- ----------------------
+ -- -----------------------
      first generic error
      second generic<error>
- -- ----------------------
+ -- -----------------------
 
 
  [ERROR] Found 2 errors
@@ -147,12 +147,12 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
          💡 a tip
  ------ ----------
 
- -- ----------------------
+ -- -----------------------
      Error
- -- ----------------------
+ -- -----------------------
      first generic error
      second generic<error>
- -- ----------------------
+ -- -----------------------
 
  [ERROR] Found 6 errors
 

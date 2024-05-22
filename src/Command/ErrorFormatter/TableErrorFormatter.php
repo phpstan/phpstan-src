@@ -153,12 +153,12 @@ class TableErrorFormatter implements ErrorFormatter
 		}
 
 		if (count($analysisResult->getNotFileSpecificErrors()) > 0) {
-			$style->table(['', 'Error'], array_map(static fn (string $error): array => ['', $error], $analysisResult->getNotFileSpecificErrors()));
+			$style->table(['', 'Error'], array_map(static fn (string $error): array => ['', OutputFormatter::escape($error)], $analysisResult->getNotFileSpecificErrors()));
 		}
 
 		$warningsCount = count($analysisResult->getWarnings());
 		if ($warningsCount > 0) {
-			$style->table(['', 'Warning'], array_map(static fn (string $warning): array => ['', $warning], $analysisResult->getWarnings()));
+			$style->table(['', 'Warning'], array_map(static fn (string $warning): array => ['', OutputFormatter::escape($warning)], $analysisResult->getWarnings()));
 		}
 
 		$finalMessage = sprintf($analysisResult->getTotalErrorsCount() === 1 ? 'Found %d error' : 'Found %d errors', $analysisResult->getTotalErrorsCount());

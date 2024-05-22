@@ -1207,6 +1207,25 @@ class MutatingScope implements Scope
 				}
 			}
 
+			foreach ($node->params as $i => $param) {
+				if ($param->variadic) {
+					$isVariadic = true;
+				}
+				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
+					throw new ShouldNotHappenException();
+				}
+				$parameters[] = new NativeParameterReflection(
+					$param->var->name,
+					$firstOptionalParameterIndex !== null && $i >= $firstOptionalParameterIndex,
+					$this->getFunctionType($param->type, $this->isParameterValueNullable($param), false),
+					$param->byRef
+						? PassedByReference::createCreatesNewVariable()
+						: PassedByReference::createNo(),
+					$param->variadic,
+					$param->default !== null ? $this->getType($param->default) : null,
+				);
+			}
+
 			$callableParameters = null;
 			$arrayMapArgs = $node->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
 			if ($arrayMapArgs !== null) {
@@ -1226,28 +1245,6 @@ class MutatingScope implements Scope
 
 			if ($node instanceof Expr\ArrowFunction) {
 				$arrowScope = $this->enterArrowFunctionWithoutReflection($node, $callableParameters);
-				foreach ($node->params as $i => $param) {
-					if ($param->variadic) {
-						$isVariadic = true;
-					}
-					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-						throw new ShouldNotHappenException();
-					}
-					$parameterType = $arrowScope->getType($param->var);
-					if ($param->variadic) {
-						$parameterType = $parameterType->getIterableValueType();
-					}
-					$parameters[] = new NativeParameterReflection(
-						$param->var->name,
-						$firstOptionalParameterIndex !== null && $i >= $firstOptionalParameterIndex,
-						$parameterType,
-						$param->byRef
-							? PassedByReference::createCreatesNewVariable()
-							: PassedByReference::createNo(),
-						$param->variadic,
-						$param->default !== null ? $this->getType($param->default) : null,
-					);
-				}
 
 				if ($node->expr instanceof Expr\Yield_ || $node->expr instanceof Expr\YieldFrom) {
 					$yieldNode = $node->expr;
@@ -1319,28 +1316,6 @@ class MutatingScope implements Scope
 				$usedVariables = [];
 			} else {
 				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
-				foreach ($node->params as $i => $param) {
-					if ($param->variadic) {
-						$isVariadic = true;
-					}
-					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-						throw new ShouldNotHappenException();
-					}
-					$parameterType = $closureScope->getType($param->var);
-					if ($param->variadic) {
-						$parameterType = $parameterType->getIterableValueType();
-					}
-					$parameters[] = new NativeParameterReflection(
-						$param->var->name,
-						$firstOptionalParameterIndex !== null && $i >= $firstOptionalParameterIndex,
-						$parameterType,
-						$param->byRef
-							? PassedByReference::createCreatesNewVariable()
-							: PassedByReference::createNo(),
-						$param->variadic,
-						$param->default !== null ? $this->getType($param->default) : null,
-					);
-				}
 				$closureReturnStatements = [];
 				$closureYieldStatements = [];
 				$closureExecutionEnds = [];

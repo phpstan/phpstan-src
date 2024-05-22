@@ -20,11 +20,11 @@ class TestClosureTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/closure-passed-to-type.php'], [
 			[
-				'Closure type: Closure(1|2|3): (1|2|3)',
+				'Closure type: Closure(mixed): (1|2|3)',
 				25,
 			],
 			[
-				'Closure type: Closure(1|2|3): (1|2|3)',
+				'Closure type: Closure(mixed): (1|2|3)',
 				35,
 			],
 		]);

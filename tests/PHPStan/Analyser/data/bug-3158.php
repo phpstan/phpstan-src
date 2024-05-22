@@ -54,8 +54,7 @@ function (): void {
 	assertType(A::class, $proxy);
 
 	$proxy = createProxy2(function(A $a, B $o):void {});
-	// assertType(B::class, $proxy);
-	assertType('Bug3158\B&T of object (function Bug3158\createProxy2(), parameter)', $proxy);
+	assertType(B::class, $proxy);
 };
 
 function (): void {

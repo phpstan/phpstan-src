@@ -608,4 +608,10 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testGenericsInCallableInConstructor(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/generics-in-callable-in-constructor.php'], []);
+	}
+
 }

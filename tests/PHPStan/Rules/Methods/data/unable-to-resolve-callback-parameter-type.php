@@ -59,8 +59,7 @@ class Foo
 		$cb = $this->callback(function (int $i): bool {
 			return true;
 		});
-		// assertType(Callback::class . '<int>', $cb);
-		assertType('UnableToResolveCallbackParameterType\Callback<CallbackInput (method UnableToResolveCallbackParameterType\Foo::callback(), parameter)&int>', $cb);
+		assertType(Callback::class . '<int>', $cb);
 	}
 
 }

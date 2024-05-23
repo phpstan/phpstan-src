@@ -294,7 +294,7 @@ class RichParser implements Parser
 		$expected = [IgnoreLexer::TOKEN_IDENTIFIER];
 
 		for ($i = 0; $i < $c; $i++) {
-			$lastTokenTypeLabel = isset($tokenType) ? $this->ignoreLexer->getLabel($tokenType) : 'start';
+			$lastTokenTypeLabel = isset($tokenType) ? $this->ignoreLexer->getLabel($tokenType) : '@phpstan-ignore';
 			[IgnoreLexer::VALUE_OFFSET => $content, IgnoreLexer::TYPE_OFFSET => $tokenType, IgnoreLexer::LINE_OFFSET => $tokenLine] = $tokens[$i];
 
 			if ($expected !== null && !in_array($tokenType, $expected, true)) {
@@ -302,7 +302,7 @@ class RichParser implements Parser
 				$otherTokenContent = $tokenType === IgnoreLexer::TOKEN_OTHER ? sprintf(" '%s'", $content) : '';
 				$expectedLabels = implode(' or ', array_map(fn ($token) => $this->ignoreLexer->getLabel($token), $expected));
 
-				throw new IgnoreParseException(sprintf('Unexpected token type %s%s after %s, expected %s', $tokenTypeLabel, $otherTokenContent, $lastTokenTypeLabel, $expectedLabels), $tokenLine);
+				throw new IgnoreParseException(sprintf('Unexpected %s%s after %s, expected %s', $tokenTypeLabel, $otherTokenContent, $lastTokenTypeLabel, $expectedLabels), $tokenLine);
 			}
 
 			if ($tokenType === IgnoreLexer::TOKEN_OPEN_PARENTHESIS) {
@@ -334,7 +334,7 @@ class RichParser implements Parser
 		}
 
 		if ($openParenthesisCount > 0) {
-			throw new IgnoreParseException('Unexpected token type T_END, unclosed opening parenthesis', $tokenLine ?? 1);
+			throw new IgnoreParseException('Unexpected end, unclosed opening parenthesis', $tokenLine ?? 1);
 		}
 
 		if (count($identifiers) === 0) {

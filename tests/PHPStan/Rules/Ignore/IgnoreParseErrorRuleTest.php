@@ -20,23 +20,23 @@ class IgnoreParseErrorRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/ignore-parse-error.php'], [
 			[
-				'Parse error in @phpstan-ignore: Unexpected token type T_COMMA after T_COMMA, expected T_IDENTIFIER',
+				'Parse error in @phpstan-ignore: Unexpected comma (,) after comma (,), expected identifier',
 				10,
 			],
 			[
-				'Parse error in @phpstan-ignore: Unexpected token type T_CLOSE_PARENTHESIS after T_IDENTIFIER, expected T_COMMA or T_END or T_OPEN_PARENTHESIS',
+				'Parse error in @phpstan-ignore: Unexpected T_CLOSE_PARENTHESIS after identifier, expected comma (,) or end or T_OPEN_PARENTHESIS',
 				13,
 			],
 			[
-				'Parse error in @phpstan-ignore: Unexpected token type T_END, unclosed opening parenthesis',
+				'Parse error in @phpstan-ignore: Unexpected end, unclosed opening parenthesis',
 				19,
 			],
 			[
-				'Parse error in @phpstan-ignore: Unexpected token type T_OTHER \'čičí\' after start, expected T_IDENTIFIER',
+				'Parse error in @phpstan-ignore: Unexpected T_OTHER \'čičí\' after @phpstan-ignore, expected identifier',
 				23,
 			],
 			[
-				'Parse error in @phpstan-ignore: Unexpected token type T_END after start, expected T_IDENTIFIER',
+				'Parse error in @phpstan-ignore: Unexpected end after @phpstan-ignore, expected identifier',
 				27,
 			],
 		]);
@@ -46,7 +46,7 @@ class IgnoreParseErrorRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/ignore-parse-error-trait.php'], [
 			[
-				'Parse error in @phpstan-ignore: Unexpected token type T_COMMA after T_COMMA, expected T_IDENTIFIER',
+				'Parse error in @phpstan-ignore: Unexpected comma (,) after comma (,), expected identifier',
 				10,
 			],
 		]);

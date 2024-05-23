@@ -20,9 +20,9 @@ final class IgnoreLexer
 
 	private const LABELS = [
 		self::TOKEN_WHITESPACE => 'T_WHITESPACE',
-		self::TOKEN_END => 'T_END',
-		self::TOKEN_IDENTIFIER => 'T_IDENTIFIER',
-		self::TOKEN_COMMA => 'T_COMMA',
+		self::TOKEN_END => 'end',
+		self::TOKEN_IDENTIFIER => 'identifier',
+		self::TOKEN_COMMA => 'comma (,)',
 		self::TOKEN_OPEN_PARENTHESIS => 'T_OPEN_PARENTHESIS',
 		self::TOKEN_CLOSE_PARENTHESIS => 'T_CLOSE_PARENTHESIS',
 		self::TOKEN_OTHER => 'T_OTHER',

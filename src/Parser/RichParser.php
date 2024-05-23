@@ -313,7 +313,9 @@ class RichParser implements Parser
 
 			if ($tokenType === IgnoreLexer::TOKEN_CLOSE_PARENTHESIS) {
 				$openParenthesisCount--;
-				$expected = [IgnoreLexer::TOKEN_COMMA, IgnoreLexer::TOKEN_END];
+				if ($openParenthesisCount === 0) {
+					$expected = [IgnoreLexer::TOKEN_COMMA, IgnoreLexer::TOKEN_END];
+				}
 				continue;
 			}
 

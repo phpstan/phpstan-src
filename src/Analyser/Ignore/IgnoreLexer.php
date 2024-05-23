@@ -11,7 +11,7 @@ final class IgnoreLexer
 {
 
 	public const TOKEN_WHITESPACE = 1;
-	public const TOKEN_EOL = 2;
+	public const TOKEN_END = 2;
 	public const TOKEN_IDENTIFIER = 3;
 	public const TOKEN_COMMA = 4;
 	public const TOKEN_OPEN_PARENTHESIS = 5;
@@ -20,9 +20,9 @@ final class IgnoreLexer
 
 	private const LABELS = [
 		self::TOKEN_WHITESPACE => 'T_WHITESPACE',
-		self::TOKEN_EOL => 'T_EOL',
-		self::TOKEN_IDENTIFIER => 'T_IDENTIFIER',
-		self::TOKEN_COMMA => 'T_COMMA',
+		self::TOKEN_END => 'end',
+		self::TOKEN_IDENTIFIER => 'identifier',
+		self::TOKEN_COMMA => 'comma (,)',
 		self::TOKEN_OPEN_PARENTHESIS => 'T_OPEN_PARENTHESIS',
 		self::TOKEN_CLOSE_PARENTHESIS => 'T_CLOSE_PARENTHESIS',
 		self::TOKEN_OTHER => 'T_OTHER',
@@ -51,11 +51,15 @@ final class IgnoreLexer
 			/** @var self::TOKEN_* $type */
 			$type = (int) $match['MARK'];
 			$tokens[] = [$match[0], $type, $line];
-			if ($type !== self::TOKEN_EOL) {
+			if ($type !== self::TOKEN_END) {
 				continue;
 			}
 
 			$line++;
+		}
+
+		if (($type ?? null) !== self::TOKEN_END) {
+			$tokens[] = ['', self::TOKEN_END, $line]; // ensure ending token is present
 		}
 
 		return $tokens;
@@ -73,7 +77,7 @@ final class IgnoreLexer
 	{
 		$patterns = [
 			self::TOKEN_WHITESPACE => '[\\x09\\x20]++',
-			self::TOKEN_EOL => '\\r?+\\n[\\x09\\x20]*+(?:\\*(?!/)\\x20?+)?',
+			self::TOKEN_END => '(\\r?+\\n[\\x09\\x20]*+(?:\\*(?!/)\\x20?+)?|\\*/)',
 			self::TOKEN_IDENTIFIER => Error::PATTERN_IDENTIFIER,
 			self::TOKEN_COMMA => ',',
 			self::TOKEN_OPEN_PARENTHESIS => '\\(',

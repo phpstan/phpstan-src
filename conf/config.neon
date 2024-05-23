@@ -646,6 +646,10 @@ services:
 		factory: PHPStan\DependencyInjection\Type\LazyDynamicThrowTypeExtensionProvider
 
 	-
+		class: PHPStan\DependencyInjection\Type\ClosureTypeChangingExtensionProvider
+		factory: PHPStan\DependencyInjection\Type\LazyClosureTypeChangingExtensionProvider
+
+	-
 		class: PHPStan\File\FileHelper
 		arguments:
 			workingDirectory: %currentWorkingDirectory%

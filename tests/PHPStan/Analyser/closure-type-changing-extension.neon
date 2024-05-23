@@ -1,0 +1,16 @@
+services:
+	-
+		class: ClosureTypeChangingExtension\FunctionClosureTypeChangingExtension
+		tags:
+			- phpstan.functionClosureTypeChangingExtension
+
+	-
+		class: ClosureTypeChangingExtension\MethodClosureTypeChangingExtension
+		tags:
+			- phpstan.methodClosureTypeChangingExtension
+
+	-
+		class: ClosureTypeChangingExtension\StaticMethodClosureTypeChangingExtension
+		tags:
+			- phpstan.staticMethodClosureTypeChangingExtension
+

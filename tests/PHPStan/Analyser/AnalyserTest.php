@@ -10,6 +10,7 @@ use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
+use PHPStan\DependencyInjection\Type\ClosureTypeChangingExtensionProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
@@ -702,6 +703,7 @@ class AnalyserTest extends PHPStanTestCase
 			$typeSpecifier,
 			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
+			self::getContainer()->getByType(ClosureTypeChangingExtensionProvider::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			false,
 			true,

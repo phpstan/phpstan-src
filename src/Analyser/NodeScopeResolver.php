@@ -61,6 +61,7 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\ClosureTypeChangingExtensionProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
@@ -244,6 +245,7 @@ class NodeScopeResolver
 		private readonly TypeSpecifier $typeSpecifier,
 		private readonly DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private readonly ReadWritePropertiesExtensionProvider $readWritePropertiesExtensionProvider,
+		private readonly ClosureTypeChangingExtensionProvider $closureTypeChangingExtensionProvider,
 		private readonly ScopeFactory $scopeFactory,
 		private readonly bool $polluteScopeWithLoopInitialAssignments,
 		private readonly bool $polluteScopeWithAlwaysIterableForeach,
@@ -3928,6 +3930,49 @@ class NodeScopeResolver
 		?Type $passedToType,
 	): ProcessClosureResult
 	{
+		if ($stmt instanceof Node\Stmt\Expression && $stmt->expr instanceof Expr\CallLike) {
+			if ($stmt->expr instanceof FuncCall && $stmt->expr->name instanceof Name && $this->reflectionProvider->hasFunction($stmt->expr->name, $scope)) {
+				$functionReflection = $this->reflectionProvider->getFunction($stmt->expr->name, $scope);
+
+				foreach ($this->closureTypeChangingExtensionProvider->getFunctionClosureTypeChangingExtensions() as $functionClosureTypeChangingExtension) {
+					if ($functionClosureTypeChangingExtension->isFunctionSupported($functionReflection)) {
+						$passedToType = $functionClosureTypeChangingExtension->getTypeFromFunctionCall($functionReflection, $stmt->expr, $scope);
+						break;
+					}
+				}
+			} elseif ($stmt->expr instanceof MethodCall && $stmt->expr->name instanceof Node\Identifier) {
+				$methodReflection = $scope->getMethodReflection($scope->getType($stmt->expr->var), $stmt->expr->name->toString());
+
+				if ($methodReflection !== null) {
+					foreach ($this->closureTypeChangingExtensionProvider->getMethodClosureTypeChangingExtensions() as $methodClosureTypeChangingExtension) {
+						if ($methodClosureTypeChangingExtension->isMethodSupported($methodReflection)) {
+							$passedToType = $methodClosureTypeChangingExtension->getTypeFromMethodCall($methodReflection, $stmt->expr, $scope);
+							break;
+						}
+					}
+				}
+			} elseif ($stmt->expr instanceof StaticCall && $stmt->expr->name instanceof Node\Identifier) {
+				$methodName = $stmt->expr->name->toString();
+
+				if ($stmt->expr->class instanceof Name) {
+					$calledOnType = $scope->resolveTypeByName($stmt->expr->class);
+				} else {
+					$calledOnType = $scope->getType($stmt->expr->class)->getObjectTypeOrClassStringObjectType();
+				}
+
+				$staticMethodReflection = $scope->getMethodReflection($calledOnType, $methodName);
+
+				if ($staticMethodReflection !== null) {
+					foreach ($this->closureTypeChangingExtensionProvider->getStaticMethodClosureTypeChangingExtensions() as $staticMethodClosureTypeChangingExtension) {
+						if ($staticMethodClosureTypeChangingExtension->isStaticMethodSupported($staticMethodReflection)) {
+							$passedToType = $staticMethodClosureTypeChangingExtension->getTypeFromStaticMethodCall($staticMethodReflection, $stmt->expr, $scope);
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		foreach ($expr->params as $param) {
 			$this->processParamNode($stmt, $param, $scope, $nodeCallback);
 		}

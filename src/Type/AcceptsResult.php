@@ -14,6 +14,7 @@ class AcceptsResult
 {
 
 	/**
+	 * @api
 	 * @param list<string> $reasons
 	 */
 	public function __construct(
@@ -43,9 +44,12 @@ class AcceptsResult
 		return new self(TrinaryLogic::createYes(), []);
 	}
 
-	public static function createNo(): self
+	/**
+	 * @param list<string> $reasons
+	 */
+	public static function createNo(array $reasons = []): self
 	{
-		return new self(TrinaryLogic::createNo(), []);
+		return new self(TrinaryLogic::createNo(), $reasons);
 	}
 
 	public static function createMaybe(): self

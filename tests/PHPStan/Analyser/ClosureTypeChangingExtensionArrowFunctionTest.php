@@ -3,13 +3,18 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use const PHP_VERSION_ID;
 
-class ClosureTypeChangingExtensionTest extends TypeInferenceTestCase
+class ClosureTypeChangingExtensionArrowFunctionTest extends TypeInferenceTestCase
 {
 
 	public function dataFileAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/closure-type-changing-extension.php');
+		if (PHP_VERSION_ID < 70400) {
+			return [];
+		}
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/closure-type-changing-extension-arrow-function.php');
 	}
 
 	/**
@@ -22,13 +27,17 @@ class ClosureTypeChangingExtensionTest extends TypeInferenceTestCase
 		...$args,
 	): void
 	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
 		$this->assertFileAsserts($assertType, $file, ...$args);
 	}
 
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [
-			__DIR__ . '/closure-type-changing-extension.neon',
+			__DIR__ . '/closure-type-changing-extension-arrow-function.neon',
 		];
 	}
 

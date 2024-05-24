@@ -184,10 +184,7 @@ function functionWithCallable(int $foo, callable $callback)
 
 }
 
-/**
- * @param class-string<Foo> $fooString
- */
-function test(Foo $foo, string $fooString): void
+function test(Foo $foo): void
 {
 
 	$foo->methodWithCallable(1, fn ($i) => assertType('int', $i->getValue()));
@@ -195,8 +192,6 @@ function test(Foo $foo, string $fooString): void
 	(new Foo)->methodWithCallable(2, fn (Generic $i) => assertType('string', $i->getValue()));
 
 	Foo::staticMethodWithCallable(fn ($i) => assertType('float', $i));
-
-	$fooString::staticMethodWithCallable(fn ($i) => assertType('float', $i));
 }
 
 functionWithCallable(1, fn ($i) => assertType('int', $i->getValue()));

@@ -1,0 +1,16 @@
+services:
+	-
+		class: CallableTypeChangingExtensionArrowFunction\FunctionClosureTypeChangingExtension
+		tags:
+			- phpstan.functionClosureTypeChangingExtension
+
+	-
+		class: CallableTypeChangingExtensionArrowFunction\MethodClosureTypeChangingExtension
+		tags:
+			- phpstan.methodClosureTypeChangingExtension
+
+	-
+		class: CallableTypeChangingExtensionArrowFunction\StaticMethodClosureTypeChangingExtension
+		tags:
+			- phpstan.staticMethodClosureTypeChangingExtension
+

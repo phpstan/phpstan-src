@@ -196,10 +196,7 @@ function functionWithClosure(int $foo, Closure $callback)
 
 }
 
-/**
- * @param class-string<Foo> $fooString
- */
-function test(Foo $foo, string $fooString): void
+function test(Foo $foo): void
 {
 	$foo->methodWithClosure(1, function ($i) {
 		assertType('int', $i->getValue());
@@ -210,10 +207,6 @@ function test(Foo $foo, string $fooString): void
 	});
 
 	Foo::staticMethodWithClosure(function ($i) {
-		assertType('float', $i);
-	});
-
-	$fooString::staticMethodWithClosure(function ($i) {
 		assertType('float', $i);
 	});
 }

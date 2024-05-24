@@ -1,0 +1,16 @@
+services:
+	-
+		class: ParameterClosureTypeExtensionArrowFunction\FunctionParameterClosureTypeExtension
+		tags:
+			- phpstan.functionParameterClosureTypeExtension
+
+	-
+		class: ParameterClosureTypeExtensionArrowFunction\MethodParameterClosureTypeExtension
+		tags:
+			- phpstan.methodParameterClosureTypeExtension
+
+	-
+		class: ParameterClosureTypeExtensionArrowFunction\StaticMethodParameterClosureTypeExtension
+		tags:
+			- phpstan.staticMethodParameterClosureTypeExtension
+

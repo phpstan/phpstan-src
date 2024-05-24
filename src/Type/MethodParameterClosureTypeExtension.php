@@ -7,7 +7,22 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 
-interface MethodClosureTypeChangingExtension
+/**
+ * This is the interface for parameter closure type extensions for methods.
+ *
+ * To register it in the configuration file use the `phpstan.methodParameterClosureTypeExtension` service tag:
+ *
+ * ```
+ * services:
+ * 	-
+ *		class: App\PHPStan\MyExtension
+ *		tags:
+ *			- phpstan.methodParameterClosureTypeExtension
+ * ```
+ *
+ * @api
+ */
+interface MethodParameterClosureTypeExtension
 {
 
 	public function isMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool;

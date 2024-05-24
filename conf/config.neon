@@ -646,8 +646,8 @@ services:
 		factory: PHPStan\DependencyInjection\Type\LazyDynamicThrowTypeExtensionProvider
 
 	-
-		class: PHPStan\DependencyInjection\Type\ClosureTypeChangingExtensionProvider
-		factory: PHPStan\DependencyInjection\Type\LazyClosureTypeChangingExtensionProvider
+		class: PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider
+		factory: PHPStan\DependencyInjection\Type\LazyParameterClosureTypeExtensionProvider
 
 	-
 		class: PHPStan\File\FileHelper

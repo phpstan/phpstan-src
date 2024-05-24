@@ -1,6 +1,6 @@
 <?php
 
-namespace ClosureTypeChangingExtension;
+namespace ParameterClosureTypeExtension;
 
 use Closure;
 use PhpParser\Node\Expr\FuncCall;
@@ -23,12 +23,12 @@ use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
 use function PHPStan\Testing\assertType;
 
-class FunctionClosureTypeChangingExtension implements \PHPStan\Type\FunctionClosureTypeChangingExtension
+class FunctionParameterClosureTypeExtension implements \PHPStan\Type\FunctionParameterClosureTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool
 	{
-		return $functionReflection->getName() === 'ClosureTypeChangingExtension\functionWithClosure';
+		return $functionReflection->getName() === 'ParameterClosureTypeExtension\functionWithClosure';
 	}
 
 	public function getTypeFromFunctionCall(
@@ -63,7 +63,7 @@ class FunctionClosureTypeChangingExtension implements \PHPStan\Type\FunctionClos
 	}
 }
 
-class MethodClosureTypeChangingExtension implements \PHPStan\Type\MethodClosureTypeChangingExtension
+class MethodParameterClosureTypeExtension implements \PHPStan\Type\MethodParameterClosureTypeExtension
 {
 
 	public function isMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool
@@ -112,7 +112,7 @@ class MethodClosureTypeChangingExtension implements \PHPStan\Type\MethodClosureT
 	}
 }
 
-class StaticMethodClosureTypeChangingExtension implements \PHPStan\Type\StaticMethodClosureTypeChangingExtension
+class StaticMethodParameterClosureTypeExtension implements \PHPStan\Type\StaticMethodParameterClosureTypeExtension
 {
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool

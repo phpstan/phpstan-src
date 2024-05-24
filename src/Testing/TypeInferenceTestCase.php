@@ -8,8 +8,8 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
-use PHPStan\DependencyInjection\Type\ClosureTypeChangingExtensionProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -63,7 +63,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$typeSpecifier,
 			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
-			self::getContainer()->getByType(ClosureTypeChangingExtensionProvider::class),
+			self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			self::getContainer()->getParameter('polluteScopeWithLoopInitialAssignments'),
 			self::getContainer()->getParameter('polluteScopeWithAlwaysIterableForeach'),

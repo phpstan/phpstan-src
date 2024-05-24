@@ -7,7 +7,22 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 
-interface FunctionClosureTypeChangingExtension
+/**
+ * This is the interface for parameter closure type extensions for functions.
+ *
+ * To register it in the configuration file use the `phpstan.functionParameterClosureTypeExtension` service tag:
+ *
+ * ```
+ * services:
+ * 	-
+ *		class: App\PHPStan\MyExtension
+ *		tags:
+ *			- phpstan.functionParameterClosureTypeExtension
+ * ```
+ *
+ * @api
+ */
+interface FunctionParameterClosureTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool;

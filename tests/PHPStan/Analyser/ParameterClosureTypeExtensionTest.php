@@ -4,12 +4,12 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
 
-class ClosureTypeChangingExtensionTest extends TypeInferenceTestCase
+class ParameterClosureTypeExtensionTest extends TypeInferenceTestCase
 {
 
 	public function dataFileAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/closure-type-changing-extension.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/parameter-closure-type-extension.php');
 	}
 
 	/**
@@ -28,7 +28,7 @@ class ClosureTypeChangingExtensionTest extends TypeInferenceTestCase
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [
-			__DIR__ . '/closure-type-changing-extension.neon',
+			__DIR__ . '/parameter-closure-type-extension.neon',
 		];
 	}
 

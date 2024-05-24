@@ -62,8 +62,8 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\ClosureTypeChangingExtensionProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Node\BooleanAndNode;
@@ -246,7 +246,7 @@ class NodeScopeResolver
 		private readonly TypeSpecifier $typeSpecifier,
 		private readonly DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private readonly ReadWritePropertiesExtensionProvider $readWritePropertiesExtensionProvider,
-		private readonly ClosureTypeChangingExtensionProvider $closureTypeChangingExtensionProvider,
+		private readonly ParameterClosureTypeExtensionProvider $parameterClosureTypeExtensionProvider,
 		private readonly ScopeFactory $scopeFactory,
 		private readonly bool $polluteScopeWithLoopInitialAssignments,
 		private readonly bool $polluteScopeWithAlwaysIterableForeach,
@@ -4383,7 +4383,7 @@ class NodeScopeResolver
 				}
 
 				if ($parameter !== null) {
-					$overwritingParameterType = $this->getParameterTypeFromClosureTypeChangingExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
+					$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
 
 					if ($overwritingParameterType !== null) {
 						$parameterType = $overwritingParameterType;
@@ -4435,7 +4435,7 @@ class NodeScopeResolver
 				}
 
 				if ($parameter !== null) {
-					$overwritingParameterType = $this->getParameterTypeFromClosureTypeChangingExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
+					$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
 
 					if ($overwritingParameterType !== null) {
 						$parameterType = $overwritingParameterType;
@@ -4563,25 +4563,25 @@ class NodeScopeResolver
 	/**
 	 * @param MethodReflection|FunctionReflection|null $calleeReflection
 	 */
-	private function getParameterTypeFromClosureTypeChangingExtension(CallLike $callLike, $calleeReflection, ParameterReflection $parameter, MutatingScope $scope): ?Type
+	private function getParameterTypeFromParameterClosureTypeExtension(CallLike $callLike, $calleeReflection, ParameterReflection $parameter, MutatingScope $scope): ?Type
 	{
 		if ($callLike instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
-			foreach ($this->closureTypeChangingExtensionProvider->getFunctionClosureTypeChangingExtensions() as $functionClosureTypeChangingExtension) {
-				if ($functionClosureTypeChangingExtension->isFunctionSupported($calleeReflection, $parameter)) {
-					return $functionClosureTypeChangingExtension->getTypeFromFunctionCall($calleeReflection, $callLike, $parameter, $scope);
+			foreach ($this->parameterClosureTypeExtensionProvider->getFunctionParameterClosureTypeExtensions() as $functionParameterClosureTypeExtension) {
+				if ($functionParameterClosureTypeExtension->isFunctionSupported($calleeReflection, $parameter)) {
+					return $functionParameterClosureTypeExtension->getTypeFromFunctionCall($calleeReflection, $callLike, $parameter, $scope);
 				}
 			}
 		} elseif ($calleeReflection instanceof MethodReflection) {
 			if ($callLike instanceof StaticCall) {
-				foreach ($this->closureTypeChangingExtensionProvider->getStaticMethodClosureTypeChangingExtensions() as $staticMethodClosureTypeChangingExtension) {
-					if ($staticMethodClosureTypeChangingExtension->isStaticMethodSupported($calleeReflection, $parameter)) {
-						return $staticMethodClosureTypeChangingExtension->getTypeFromStaticMethodCall($calleeReflection, $callLike, $parameter, $scope);
+				foreach ($this->parameterClosureTypeExtensionProvider->getStaticMethodParameterClosureTypeExtensions() as $staticMethodParameterClosureTypeExtension) {
+					if ($staticMethodParameterClosureTypeExtension->isStaticMethodSupported($calleeReflection, $parameter)) {
+						return $staticMethodParameterClosureTypeExtension->getTypeFromStaticMethodCall($calleeReflection, $callLike, $parameter, $scope);
 					}
 				}
 			} elseif ($callLike instanceof MethodCall) {
-				foreach ($this->closureTypeChangingExtensionProvider->getMethodClosureTypeChangingExtensions() as $methodClosureTypeChangingExtension) {
-					if ($methodClosureTypeChangingExtension->isMethodSupported($calleeReflection, $parameter)) {
-						return $methodClosureTypeChangingExtension->getTypeFromMethodCall($calleeReflection, $callLike, $parameter, $scope);
+				foreach ($this->parameterClosureTypeExtensionProvider->getMethodParameterClosureTypeExtensions() as $methodParameterClosureTypeExtension) {
+					if ($methodParameterClosureTypeExtension->isMethodSupported($calleeReflection, $parameter)) {
+						return $methodParameterClosureTypeExtension->getTypeFromMethodCall($calleeReflection, $callLike, $parameter, $scope);
 					}
 				}
 			}

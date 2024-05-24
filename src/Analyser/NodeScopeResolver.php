@@ -20,6 +20,7 @@ use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\Coalesce;
 use PhpParser\Node\Expr\BooleanNot;
+use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\Cast;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\ErrorSuppress;
@@ -62,6 +63,7 @@ use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Node\BooleanAndNode;
@@ -244,6 +246,7 @@ class NodeScopeResolver
 		private readonly TypeSpecifier $typeSpecifier,
 		private readonly DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private readonly ReadWritePropertiesExtensionProvider $readWritePropertiesExtensionProvider,
+		private readonly ParameterClosureTypeExtensionProvider $parameterClosureTypeExtensionProvider,
 		private readonly ScopeFactory $scopeFactory,
 		private readonly bool $polluteScopeWithLoopInitialAssignments,
 		private readonly bool $polluteScopeWithAlwaysIterableForeach,
@@ -2283,7 +2286,7 @@ class NodeScopeResolver
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
 			}
-			$result = $this->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
+			$result = $this->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $expr, $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -2537,7 +2540,7 @@ class NodeScopeResolver
 				$methodReflection,
 				$methodReflection !== null ? $scope->getNakedMethod($calledOnType, $methodReflection->getName()) : null,
 				$parametersAcceptor,
-				$expr->getArgs(),
+				$expr,
 				$scope,
 				$nodeCallback,
 				$context,
@@ -2717,7 +2720,7 @@ class NodeScopeResolver
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 			}
-			$result = $this->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context, $closureBindScope ?? null);
+			$result = $this->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $expr, $scope, $nodeCallback, $context, $closureBindScope ?? null);
 			$scope = $result->getScope();
 			$scopeFunction = $scope->getFunction();
 
@@ -3232,7 +3235,7 @@ class NodeScopeResolver
 				}
 			}
 
-			$result = $this->processArgs($stmt, $constructorReflection, null, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
+			$result = $this->processArgs($stmt, $constructorReflection, null, $parametersAcceptor, $expr, $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -4276,7 +4279,6 @@ class NodeScopeResolver
 
 	/**
 	 * @param MethodReflection|FunctionReflection|null $calleeReflection
-	 * @param Node\Arg[] $args
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processArgs(
@@ -4284,13 +4286,15 @@ class NodeScopeResolver
 		$calleeReflection,
 		?ExtendedMethodReflection $nakedMethodReflection,
 		?ParametersAcceptor $parametersAcceptor,
-		array $args,
+		CallLike $callLike,
 		MutatingScope $scope,
 		callable $nodeCallback,
 		ExpressionContext $context,
 		?MutatingScope $closureBindScope = null,
 	): ExpressionResult
 	{
+		$args = $callLike->getArgs();
+
 		if ($parametersAcceptor !== null) {
 			$parameters = $parametersAcceptor->getParameters();
 		}
@@ -4378,6 +4382,14 @@ class NodeScopeResolver
 					$scopeToPass = $scopeToPass->assignVariable('this', $parameter->getClosureThisType(), new ObjectWithoutClassType());
 				}
 
+				if ($parameter !== null) {
+					$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
+
+					if ($overwritingParameterType !== null) {
+						$parameterType = $overwritingParameterType;
+					}
+				}
+
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $context);
 				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $context, $parameterType ?? null);
 				if ($callCallbackImmediately) {
@@ -4420,6 +4432,14 @@ class NodeScopeResolver
 					&& !$arg->value->static
 				) {
 					$scopeToPass = $scopeToPass->assignVariable('this', $parameter->getClosureThisType(), new ObjectWithoutClassType());
+				}
+
+				if ($parameter !== null) {
+					$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
+
+					if ($overwritingParameterType !== null) {
+						$parameterType = $overwritingParameterType;
+					}
 				}
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $context);
@@ -4538,6 +4558,36 @@ class NodeScopeResolver
 		}
 
 		return new ExpressionResult($scope, $hasYield, $throwPoints, $impurePoints);
+	}
+
+	/**
+	 * @param MethodReflection|FunctionReflection|null $calleeReflection
+	 */
+	private function getParameterTypeFromParameterClosureTypeExtension(CallLike $callLike, $calleeReflection, ParameterReflection $parameter, MutatingScope $scope): ?Type
+	{
+		if ($callLike instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
+			foreach ($this->parameterClosureTypeExtensionProvider->getFunctionParameterClosureTypeExtensions() as $functionParameterClosureTypeExtension) {
+				if ($functionParameterClosureTypeExtension->isFunctionSupported($calleeReflection, $parameter)) {
+					return $functionParameterClosureTypeExtension->getTypeFromFunctionCall($calleeReflection, $callLike, $parameter, $scope);
+				}
+			}
+		} elseif ($calleeReflection instanceof MethodReflection) {
+			if ($callLike instanceof StaticCall) {
+				foreach ($this->parameterClosureTypeExtensionProvider->getStaticMethodParameterClosureTypeExtensions() as $staticMethodParameterClosureTypeExtension) {
+					if ($staticMethodParameterClosureTypeExtension->isStaticMethodSupported($calleeReflection, $parameter)) {
+						return $staticMethodParameterClosureTypeExtension->getTypeFromStaticMethodCall($calleeReflection, $callLike, $parameter, $scope);
+					}
+				}
+			} elseif ($callLike instanceof MethodCall) {
+				foreach ($this->parameterClosureTypeExtensionProvider->getMethodParameterClosureTypeExtensions() as $methodParameterClosureTypeExtension) {
+					if ($methodParameterClosureTypeExtension->isMethodSupported($calleeReflection, $parameter)) {
+						return $methodParameterClosureTypeExtension->getTypeFromMethodCall($calleeReflection, $callLike, $parameter, $scope);
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**

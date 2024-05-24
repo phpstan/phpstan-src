@@ -1,0 +1,15 @@
+services:
+	-
+		class: ParameterClosureTypeExtension\FunctionParameterClosureTypeExtension
+		tags:
+			- phpstan.functionParameterClosureTypeExtension
+
+	-
+		class: ParameterClosureTypeExtension\MethodParameterClosureTypeExtension
+		tags:
+			- phpstan.methodParameterClosureTypeExtension
+
+	-
+		class: ParameterClosureTypeExtension\StaticMethodParameterClosureTypeExtension
+		tags:
+			- phpstan.staticMethodParameterClosureTypeExtension

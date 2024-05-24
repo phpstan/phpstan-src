@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use const PHP_VERSION_ID;
 
 class ClosureTypeChangingExtensionTest extends TypeInferenceTestCase
 {
@@ -10,6 +11,12 @@ class ClosureTypeChangingExtensionTest extends TypeInferenceTestCase
 	public function dataFileAsserts(): iterable
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/closure-type-changing-extension.php');
+
+		if (PHP_VERSION_ID < 80000) {
+			return;
+		}
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/closure-type-changing-extension-arrow-function.php');
 	}
 
 	/**

@@ -1,8 +1,7 @@
 <?php
 
-namespace ClosureTypeChangingExtension;
+namespace CallableTypeChangingExtensionArrowFunction;
 
-use Closure;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
@@ -13,14 +12,12 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\CallableType;
-use PHPStan\Type\ClosureType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\VoidType;
+use PHPStan\Type\MixedType;
 use function PHPStan\Testing\assertType;
 
 class FunctionClosureTypeChangingExtension implements \PHPStan\Type\FunctionClosureTypeChangingExtension
@@ -28,7 +25,7 @@ class FunctionClosureTypeChangingExtension implements \PHPStan\Type\FunctionClos
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool
 	{
-		return $functionReflection->getName() === 'ClosureTypeChangingExtension\functionWithClosure';
+		return $functionReflection->getName() === 'CallableTypeChangingExtensionArrowFunction\functionWithCallable';
 	}
 
 	public function getTypeFromFunctionCall(
@@ -46,19 +43,19 @@ class FunctionClosureTypeChangingExtension implements \PHPStan\Type\FunctionClos
 		$integer = $scope->getType($args[0]->value)->getConstantScalarValues()[0];
 
 		if ($integer === 1) {
-			return new ClosureType(
+			return new CallableType(
 				[
-					new NativeParameterReflection($parameter->getName(), $parameter->isOptional(), new GenericObjectType(Generic::class, [new IntegerType()]), $parameter->passedByReference(), $parameter->isVariadic(), $parameter->getDefaultValue()),
+					new NativeParameterReflection('test', false, new GenericObjectType(Generic::class, [new IntegerType()]), PassedByReference::createNo(), false, null),
 				],
-				new VoidType()
+				new MixedType()
 			);
 		}
 
-		return new ClosureType(
+		return new CallableType(
 			[
-				new NativeParameterReflection($parameter->getName(), $parameter->isOptional(), new GenericObjectType(Generic::class, [new StringType()]), $parameter->passedByReference(), $parameter->isVariadic(), $parameter->getDefaultValue()),
+				new NativeParameterReflection('test', false, new GenericObjectType(Generic::class, [new StringType()]), PassedByReference::createNo(), false, null),
 			],
-			new VoidType()
+			new MixedType()
 		);
 	}
 }
@@ -70,7 +67,7 @@ class MethodClosureTypeChangingExtension implements \PHPStan\Type\MethodClosureT
 	{
 		return $methodReflection->getDeclaringClass()->getName() === Foo::class &&
 			$parameter->getName() === 'callback' &&
-			$methodReflection->getName() === 'methodWithClosure';
+			$methodReflection->getName() === 'methodWithCallable';
 	}
 
 	public function getTypeFromMethodCall(
@@ -88,13 +85,6 @@ class MethodClosureTypeChangingExtension implements \PHPStan\Type\MethodClosureT
 		$integer = $scope->getType($args[0]->value)->getConstantScalarValues()[0];
 
 		if ($integer === 1) {
-			return new ClosureType(
-				[
-					new NativeParameterReflection('test', false, new GenericObjectType(Generic::class, [new IntegerType()]), PassedByReference::createNo(), false, null),
-				],
-				new VoidType()
-			);
-		} elseif ($integer === 5) {
 			return new CallableType(
 				[
 					new NativeParameterReflection('test', false, new GenericObjectType(Generic::class, [new IntegerType()]), PassedByReference::createNo(), false, null),
@@ -103,11 +93,11 @@ class MethodClosureTypeChangingExtension implements \PHPStan\Type\MethodClosureT
 			);
 		}
 
-		return new ClosureType(
+		return new CallableType(
 			[
 				new NativeParameterReflection('test', false, new GenericObjectType(Generic::class, [new StringType()]), PassedByReference::createNo(), false, null),
 			],
-			new VoidType()
+			new MixedType()
 		);
 	}
 }
@@ -117,7 +107,7 @@ class StaticMethodClosureTypeChangingExtension implements \PHPStan\Type\StaticMe
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool
 	{
-		return $methodReflection->getDeclaringClass()->getName() === Foo::class && $methodReflection->getName() === 'staticMethodWithClosure';
+		return $methodReflection->getDeclaringClass()->getName() === Foo::class && $methodReflection->getName() === 'staticMethodWithCallable';
 	}
 
 	public function getTypeFromStaticMethodCall(
@@ -126,11 +116,11 @@ class StaticMethodClosureTypeChangingExtension implements \PHPStan\Type\StaticMe
 		ParameterReflection $parameter,
 		Scope $scope
 	): ?Type {
-		return new ClosureType(
+		return new CallableType(
 			[
 				new NativeParameterReflection('test', false, new FloatType(), PassedByReference::createNo(), false, null),
 			],
-			new VoidType()
+			new MixedType()
 		);
 	}
 }
@@ -140,21 +130,19 @@ class Foo
 
 	/**
 	 * @param int $foo
-	 * @param Closure(Generic<array-key>): void $callback
+	 * @param callable(Generic<array-key>) $callback
 	 *
 	 * @return void
 	 */
-	public function methodWithClosure(int $foo, Closure $callback)
+	public function methodWithCallable(int $foo, callable $callback)
 	{
 
 	}
 
 	/**
-	 * @param Closure(): void $callback
-	 *
 	 * @return void
 	 */
-	public static function staticMethodWithClosure(Closure $callback)
+	public static function staticMethodWithCallable(callable $callback)
 	{
 
 	}
@@ -187,11 +175,11 @@ class Generic
 
 /**
  * @param int $foo
- * @param Closure(Generic<array-key>): void $callback
+ * @param callable(Generic<array-key>) $callback
  *
  * @return void
  */
-function functionWithClosure(int $foo, Closure $callback)
+function functionWithCallable(int $foo, callable $callback)
 {
 
 }
@@ -201,27 +189,16 @@ function functionWithClosure(int $foo, Closure $callback)
  */
 function test(Foo $foo, string $fooString): void
 {
-	$foo->methodWithClosure(1, function ($i) {
-		assertType('int', $i->getValue());
-	});
 
-	(new Foo)->methodWithClosure(2, function (Generic $i) {
-		assertType('string', $i->getValue());
-	});
+	$foo->methodWithCallable(1, fn ($i) => assertType('int', $i->getValue()));
 
-	Foo::staticMethodWithClosure(function ($i) {
-		assertType('float', $i);
-	});
+	(new Foo)->methodWithCallable(2, fn (Generic $i) => assertType('string', $i->getValue()));
 
-	$fooString::staticMethodWithClosure(function ($i) {
-		assertType('float', $i);
-	});
+	Foo::staticMethodWithCallable(fn ($i) => assertType('float', $i));
+
+	$fooString::staticMethodWithCallable(fn ($i) => assertType('float', $i));
 }
 
-functionWithClosure(1, function ($i) {
-	assertType('int', $i->getValue());
-});
+functionWithCallable(1, fn ($i) => assertType('int', $i->getValue()));
 
-functionWithClosure(2, function (Generic $i) {
-	assertType('string', $i->getValue());
-});
+functionWithCallable(2, fn (Generic $i) => assertType('string', $i->getValue()));

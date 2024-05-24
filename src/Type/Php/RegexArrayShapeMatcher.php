@@ -9,7 +9,6 @@ use Hoa\Compiler\Llk\TreeNode;
 use Hoa\File\Read;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
-use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -47,7 +46,6 @@ final class RegexArrayShapeMatcher
 	{
 		if (
 			!$this->phpVersion->returnsPregUnmatchedCapturingGroups()
-			|| !BleedingEdgeToggle::isBleedingEdge()
 		) {
 			return null;
 		}

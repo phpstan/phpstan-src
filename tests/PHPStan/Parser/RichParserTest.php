@@ -237,6 +237,30 @@ class RichParserTest extends PHPStanTestCase
 				2 => ['identifier'],
 			],
 		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier (var_export() is used intentionally)' . PHP_EOL,
+			[
+				2 => ['identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier (FileSystem::write() does not support LOCK_EX)' . PHP_EOL,
+			[
+				2 => ['identifier'],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore identifier (type ensured in self::createClient())' . PHP_EOL,
+			[
+				2 => ['identifier'],
+			],
+		];
 	}
 
 	/**

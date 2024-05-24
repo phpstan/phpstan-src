@@ -83,8 +83,8 @@ final class IgnoreLexer
 			self::TOKEN_OPEN_PARENTHESIS => '\\(',
 			self::TOKEN_CLOSE_PARENTHESIS => '\\)',
 
-			// everything except whitespaces, TOKEN_CLOSE_PARENTHESIS
-			self::TOKEN_OTHER => '(?:(?!\\))[^\\s])++',
+			// everything except whitespaces and parentheses
+			self::TOKEN_OTHER => '([^\\s\\)\\(])++',
 		];
 
 		foreach ($patterns as $type => &$pattern) {

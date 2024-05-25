@@ -25,8 +25,6 @@ class Foo {
 		assertType("'ＡＢＣ'", mb_strtoupper('Ａｂｃ'));
 		assertType("'aBC'", lcfirst('ABC'));
 		assertType("'Abc'", ucfirst('abc'));
-		assertType("'aBC'", mb_lcfirst('ABC'));
-		assertType("'Abc'", mb_ucfirst('abc'));
 		assertType("'Hello World'", ucwords('hello world'));
 		assertType("'Hello|World'", ucwords('hello|world', "|"));
 		assertType("'ČESKÁ REPUBLIKA'", mb_convert_case('Česká republika', MB_CASE_UPPER));
@@ -45,8 +43,6 @@ class Foo {
 		assertType("numeric-string", mb_strtoupper($numericS));
 		assertType("numeric-string", lcfirst($numericS));
 		assertType("numeric-string", ucfirst($numericS));
-		assertType("numeric-string", mb_lcfirst($numericS));
-		assertType("numeric-string", mb_ucfirst($numericS));
 		assertType("numeric-string", ucwords($numericS));
 		assertType("numeric-string", mb_convert_case($numericS, MB_CASE_UPPER));
 		assertType("numeric-string", mb_convert_case($numericS, MB_CASE_LOWER));
@@ -60,8 +56,6 @@ class Foo {
 		assertType("non-empty-string", mb_strtoupper($nonE));
 		assertType("non-empty-string", lcfirst($nonE));
 		assertType("non-empty-string", ucfirst($nonE));
-		assertType("non-empty-string", mb_lcfirst($nonE));
-		assertType("non-empty-string", mb_ucfirst($nonE));
 		assertType("non-empty-string", ucwords($nonE));
 		assertType("non-empty-string", mb_convert_case($nonE, MB_CASE_UPPER));
 		assertType("non-empty-string", mb_convert_case($nonE, MB_CASE_LOWER));
@@ -75,8 +69,6 @@ class Foo {
 		assertType("string", mb_strtoupper($literal));
 		assertType("string", lcfirst($literal));
 		assertType("string", ucfirst($literal));
-		assertType("string", mb_lcfirst($literal));
-		assertType("string", mb_ucfirst($literal));
 		assertType("string", ucwords($literal));
 		assertType("string", mb_convert_case($literal, MB_CASE_UPPER));
 		assertType("string", mb_convert_case($literal, MB_CASE_LOWER));

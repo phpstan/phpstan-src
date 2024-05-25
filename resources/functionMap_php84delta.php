@@ -17,6 +17,8 @@ return [
 	'new' => [
 		'http_get_last_response_header ' => ['list<string>'],
 		'http_clear_last_response_header' => ['void'],
+		'mb_lcfirst' => ['string', 'str'=>'string', 'encoding='=>'string'],
+		'mb_ucfirst' => ['string', 'str'=>'string', 'encoding='=>'string'],
 	],
 	'old' => [
 

@@ -1082,6 +1082,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		if (PHP_VERSION_ID >= 70300) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/str-casing.php');
 		}
+		if (PHP_VERSION_ID >= 80400) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/str-caseing-php84.php');
+		}
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-string-substr-specifying.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/unset-conditional-expressions.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/conditional-types-inference.php');

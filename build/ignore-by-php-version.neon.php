@@ -15,6 +15,9 @@ if (PHP_VERSION_ID >= 80100) {
 	$includes[] = __DIR__ . '/enums.neon';
 	$includes[] = __DIR__ . '/readonly-property.neon';
 }
+if (PHP_VERSION_ID >= 80300) {
+	$includes[] = __DIR__ . '/baseline-8.3.neon';
+}
 
 if (PHP_VERSION_ID >= 70400) {
 	$includes[] = __DIR__ . '/ignore-gte-php7.4-errors.neon';

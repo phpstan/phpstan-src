@@ -512,7 +512,13 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/DateTimeCreateDynamicReturnTypes.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/DateTimeDynamicReturnTypes.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/DateTimeModifyReturnTypes.php');
+
+		if (PHP_VERSION_ID < 80300) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/DateTimeModifyReturnTypes.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/DateTimeModifyReturnTypes-83.php');
+		}
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4821.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4838.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4879.php');
@@ -1058,7 +1064,12 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-string-str-containing-fns.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/fizz-buzz.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4875.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6609.php');
+
+		if (PHP_VERSION_ID < 80300) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6609.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6609-83.php');
+		}
 
 		//define('ALREADY_DEFINED_CONSTANT', true);
 		//yield from $this->gatherAssertTypes(__DIR__ . '/data/already-defined-constant.php');

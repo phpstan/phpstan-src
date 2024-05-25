@@ -46,14 +46,18 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
 		$constantStrings = $valueType->getConstantStrings();
 
+		/** @var bool $hasFalse */
 		$hasFalse = false;
+		/** @var bool $hasThrown */
+		$hasThrown = false;
+		/** @var bool $hasDateTime */
 		$hasDateTime = false;
 
 		foreach ($constantStrings as $constantString) {
 			try {
 				$result = @(new DateTime())->modify($constantString->getValue());
 			} catch (Throwable) {
-				$hasFalse = true;
+				$hasThrown = true;
 				$valueType = TypeCombinator::remove($valueType, $constantString);
 				continue;
 			}
@@ -71,10 +75,15 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 			return null;
 		}
 
-		if ($hasFalse && !$hasDateTime) {
-			return new ConstantBooleanType(false);
-		}
-		if ($hasDateTime && !$hasFalse) {
+		if (!$hasDateTime) {
+			if ($hasFalse) {
+				return new ConstantBooleanType(false);
+			}
+
+			if ($hasThrown) {
+				return new NeverType();
+			}
+		} elseif (!$hasFalse && !$hasThrown) {
 			return $scope->getType($methodCall->var);
 		}
 

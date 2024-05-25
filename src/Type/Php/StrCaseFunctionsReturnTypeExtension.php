@@ -34,6 +34,8 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		'mb_strtolower' => 1,
 		'lcfirst' => 1,
 		'ucfirst' => 1,
+		'mb_lcfirst' => 1,
+		'mb_ucfirst' => 1,
 		'ucwords' => 1,
 		'mb_convert_case' => 2,
 		'mb_convert_kana' => 1,

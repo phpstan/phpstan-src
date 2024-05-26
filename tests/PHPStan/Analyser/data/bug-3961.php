@@ -14,8 +14,8 @@ class Foo
 		assertType('list<string>', explode('.', $v, -2));
 		assertType('non-empty-list<string>', explode('.', $v, 0));
 		assertType('non-empty-list<string>', explode('.', $v, 1));
-		assertType('list<string>|false', explode($d, $v));
-		assertType('(list<string>|false)', explode($m, $v));
+		assertType('non-empty-list<string>|false', explode($d, $v));
+		assertType('(non-empty-list<string>|false)', explode($m, $v));
 	}
 
 }

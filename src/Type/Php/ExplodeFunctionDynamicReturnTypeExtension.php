@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -52,24 +51,21 @@ class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 				return new NeverType();
 			}
 			return new ConstantBooleanType(false);
-		} elseif ($isSuperset->no()) {
-			$arrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
-			if (
-				!isset($functionCall->getArgs()[2])
-				|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($functionCall->getArgs()[2]->value))->yes()
-			) {
-				return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
-			}
-
-			return $arrayType;
 		}
 
-		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		$arrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
+		if (
+			!isset($functionCall->getArgs()[2])
+			|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($functionCall->getArgs()[2]->value))->yes()
+		) {
+			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+		}
+
 		if ($delimiterType instanceof MixedType) {
-			return TypeUtils::toBenevolentUnion($returnType);
+			return TypeUtils::toBenevolentUnion($arrayType);
 		}
 
-		return $returnType;
+		return $arrayType;
 	}
 
 }

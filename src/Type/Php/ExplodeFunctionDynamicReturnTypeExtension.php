@@ -48,7 +48,7 @@ class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$delimiterType = $scope->getType($args[0]->value);
 		$isEmptyString = (new ConstantStringType(''))->isSuperTypeOf($delimiterType);
 		if ($isEmptyString->yes()) {
-			if ($this->phpVersion->getVersionId() >= 80000) {
+			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
 				return new NeverType();
 			}
 			return new ConstantBooleanType(false);
@@ -62,7 +62,7 @@ class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
 		}
 
-		if ($this->phpVersion->getVersionId() <= 80000 && $isEmptyString->maybe()) {
+		if (!$this->phpVersion->throwsValueErrorForInternalFunctions() && $isEmptyString->maybe()) {
 			$returnType = TypeCombinator::union($returnType, new ConstantBooleanType(false));
 		}
 

@@ -4524,8 +4524,10 @@ class NodeScopeResolver
 			if ($assignByReference) {
 				$argValue = $arg->value;
 				if ($argValue instanceof Variable && is_string($argValue->name)) {
-					$nodeCallback(new VariableAssignNode($argValue, new TypeExpr($byRefType), false), $scope);
-					$scope = $scope->assignVariable($argValue->name, $byRefType, new MixedType());
+					if ($argValue->name !== 'this') {
+						$nodeCallback(new VariableAssignNode($argValue, new TypeExpr($byRefType), false), $scope);
+						$scope = $scope->assignVariable($argValue->name, $byRefType, new MixedType());
+					}
 				} else {
 					$scope = $scope->invalidateExpression($argValue);
 				}

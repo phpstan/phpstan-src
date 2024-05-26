@@ -40,32 +40,37 @@ class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		Scope $scope,
 	): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
-		$delimiterType = $scope->getType($functionCall->getArgs()[0]->value);
-		$isSuperset = (new ConstantStringType(''))->isSuperTypeOf($delimiterType);
-		if ($isSuperset->yes()) {
+		$delimiterType = $scope->getType($args[0]->value);
+		$isEmptyString = (new ConstantStringType(''))->isSuperTypeOf($delimiterType);
+		if ($isEmptyString->yes()) {
 			if ($this->phpVersion->getVersionId() >= 80000) {
 				return new NeverType();
 			}
 			return new ConstantBooleanType(false);
 		}
 
-		$arrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
+		$returnType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
 		if (
-			!isset($functionCall->getArgs()[2])
-			|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($functionCall->getArgs()[2]->value))->yes()
+			!isset($args[2])
+			|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($args[2]->value))->yes()
 		) {
-			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+			$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
+		}
+
+		if ($this->phpVersion->getVersionId() <= 80000 && $isEmptyString->maybe()) {
+			$returnType = TypeCombinator::union($returnType, new ConstantBooleanType(false));
 		}
 
 		if ($delimiterType instanceof MixedType) {
-			return TypeUtils::toBenevolentUnion($arrayType);
+			$returnType = TypeUtils::toBenevolentUnion($returnType);
 		}
 
-		return $arrayType;
+		return $returnType;
 	}
 
 }

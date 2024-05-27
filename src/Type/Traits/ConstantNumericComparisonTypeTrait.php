@@ -23,7 +23,7 @@ trait ConstantNumericComparisonTypeTrait
 		if (!(bool) $this->value) {
 			$subtractedTypes[] = new NullType();
 			$subtractedTypes[] = new ConstantBooleanType(false);
-			$subtractedTypes[] = new ConstantFloatType(0.0);
+			$subtractedTypes[] = new ConstantFloatType(0.0); // subtract range when we support float-ranges
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
@@ -33,6 +33,7 @@ trait ConstantNumericComparisonTypeTrait
 	{
 		$subtractedTypes = [
 			IntegerRangeType::createAllGreaterThan($this->value),
+			// subtract range when we support float-ranges
 		];
 
 		if (!(bool) $this->value) {
@@ -47,7 +48,7 @@ trait ConstantNumericComparisonTypeTrait
 		$subtractedTypes = [
 			new NullType(),
 			new ConstantBooleanType(false),
-			new ConstantFloatType(0.0),
+			new ConstantFloatType(0.0), // subtract range when we support float-ranges
 			IntegerRangeType::createAllSmallerThanOrEqualTo($this->value),
 		];
 
@@ -67,7 +68,7 @@ trait ConstantNumericComparisonTypeTrait
 		if ((bool) $this->value) {
 			$subtractedTypes[] = new NullType();
 			$subtractedTypes[] = new ConstantBooleanType(false);
-			$subtractedTypes[] = new ConstantFloatType(0.0);
+			$subtractedTypes[] = new ConstantFloatType(0.0); // subtract range when we support float-ranges
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));

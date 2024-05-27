@@ -11579,7 +11579,7 @@ return [
 'SplFileObject::fgetc' => ['string|false'],
 // Do not believe https://www.php.net/manual/en/splfileobject.fgetcsv#refsect1-splfileobject.fgetcsv-returnvalues
 'SplFileObject::fgetcsv' => ['list<string>|array{0: null}|false|null', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
-'SplFileObject::fgets' => ['string|false'],
+'SplFileObject::fgets' => ['string'],
 'SplFileObject::fgetss' => ['string|false', 'allowable_tags='=>'string'],
 'SplFileObject::flock' => ['bool', 'operation'=>'int', '&w_wouldblock='=>'int'],
 'SplFileObject::fpassthru' => ['int'],
@@ -11593,7 +11593,7 @@ return [
 'SplFileObject::fwrite' => ['int', 'str'=>'string', 'length='=>'int'],
 'SplFileObject::getChildren' => ['null'],
 'SplFileObject::getCsvControl' => ['array'],
-'SplFileObject::getCurrentLine' => ['string|false'],
+'SplFileObject::getCurrentLine' => ['string'],
 'SplFileObject::getFlags' => ['int'],
 'SplFileObject::getMaxLineLen' => ['int'],
 'SplFileObject::hasChildren' => ['false'],

@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Traits;
 
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -22,6 +23,7 @@ trait ConstantNumericComparisonTypeTrait
 		if (!(bool) $this->value) {
 			$subtractedTypes[] = new NullType();
 			$subtractedTypes[] = new ConstantBooleanType(false);
+			$subtractedTypes[] = new ConstantFloatType(0.0);
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
@@ -45,6 +47,7 @@ trait ConstantNumericComparisonTypeTrait
 		$subtractedTypes = [
 			new NullType(),
 			new ConstantBooleanType(false),
+			new ConstantFloatType(0.0),
 			IntegerRangeType::createAllSmallerThanOrEqualTo($this->value),
 		];
 
@@ -64,6 +67,7 @@ trait ConstantNumericComparisonTypeTrait
 		if ((bool) $this->value) {
 			$subtractedTypes[] = new NullType();
 			$subtractedTypes[] = new ConstantBooleanType(false);
+			$subtractedTypes[] = new ConstantFloatType(0.0);
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));

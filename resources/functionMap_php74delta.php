@@ -38,6 +38,7 @@ return [
 		'FFI::string' => ['string', '&ptr'=>'FFI\CData', 'size='=>'int'],
 		'FFI::typeof' => ['FFI\CType', '&ptr'=>'FFI\CData'],
 		'FFI::type' => ['FFI\CType', 'type'=>'string'],
+		'fread' => ['string|false', 'fp'=>'resource', 'length'=>'positive-int'],
 		'get_mangled_object_vars' => ['array', 'obj'=>'object'],
 		'mb_str_split' => ['list<string>|false', 'str'=>'string', 'split_length='=>'int', 'encoding='=>'string'],
 		'password_algos' => ['list<string>'],

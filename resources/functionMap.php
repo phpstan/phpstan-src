@@ -3003,7 +3003,7 @@ return [
 'fprintf' => ['int', 'stream'=>'resource', 'format'=>'string', '...values='=>'__stringAndStringable|int|float|null|bool'],
 'fputcsv' => ['0|positive-int|false', 'fp'=>'resource', 'fields'=>'array<int|string, __stringAndStringable|int|float|null|bool>', 'delimiter='=>'string', 'enclosure='=>'string', 'escape_char='=>'string'],
 'fputs' => ['0|positive-int|false', 'fp'=>'resource', 'str'=>'string', 'length='=>'0|positive-int'],
-'fread' => ['string|false', 'fp'=>'resource', 'length'=>'0|positive-int'],
+'fread' => ['string', 'fp'=>'resource', 'length'=>'positive-int'],
 'frenchtojd' => ['int', 'month'=>'int', 'day'=>'int', 'year'=>'int'],
 'fribidi_log2vis' => ['string', 'str'=>'string', 'direction'=>'string', 'charset'=>'int'],
 'fscanf' => ['list<mixed>|int|false', 'stream'=>'resource', 'format'=>'string', '&...w_vars='=>'string|int|float|null'],

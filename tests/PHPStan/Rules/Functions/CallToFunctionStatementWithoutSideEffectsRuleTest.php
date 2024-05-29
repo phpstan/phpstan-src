@@ -32,6 +32,22 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				'Call to function print_r() on a separate line has no effect.',
 				26,
 			],
+			[
+				'Call to function array_filter() on a separate line has no effect.',
+				29,
+			],
+			[
+				'Call to function array_map() on a separate line has no effect.',
+				33,
+			],
+			[
+				'Call to function array_reduce() on a separate line has no effect.',
+				37,
+			],
+			[
+				'Call to function array_reduce() on a separate line has no effect.',
+				40,
+			],
 		]);
 
 		if (PHP_VERSION_ID < 80000) {
@@ -50,6 +66,26 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 			[
 				'Call to function highlight_string() on a separate line has no effect.',
 				21,
+			],
+			[
+				'Call to function array_filter() on a separate line has no effect.',
+				22,
+			],
+			[
+				'Call to function array_filter() on a separate line has no effect.',
+				23,
+			],
+			[
+				'Call to function array_map() on a separate line has no effect.',
+				24,
+			],
+			[
+				'Call to function array_map() on a separate line has no effect.',
+				25,
+			],
+			[
+				'Call to function array_reduce() on a separate line has no effect.',
+				26,
 			],
 		]);
 	}

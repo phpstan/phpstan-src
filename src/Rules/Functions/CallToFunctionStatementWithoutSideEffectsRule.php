@@ -10,6 +10,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use function count;
 use function in_array;
 use function sprintf;
 
@@ -21,10 +22,12 @@ final class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 
 	private const SIDE_EFFECT_FLIP_PARAMETERS = [
 		// functionName => [name, pos, testName]
+		'array_filter' => ['callback', 1, 'isPure'],
+		'array_map' => ['callback', 0, 'isPure'],
+		'array_reduce' => ['callback', 1, 'isPure'],
 		'print_r' => ['return', 1, 'isTruthy'],
 		'var_export' => ['return', 1, 'isTruthy'],
 		'highlight_string' => ['return', 1, 'isTruthy'],
-
 	];
 
 	public const PHPSTAN_TESTING_FUNCTIONS = [
@@ -76,6 +79,22 @@ final class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 			$sideEffectFlipped = false;
 			$hasNamedParameter = false;
 			$checker = [
+				'isPure' => static function (Type $type) use ($scope) {
+					if ($type->isCallable()->no()) {
+						return false;
+					}
+					$callableParametersAcceptors = $type->getCallableParametersAcceptors($scope);
+					if (count($callableParametersAcceptors) === 0) {
+						return false;
+					}
+					foreach ($callableParametersAcceptors as $callableParametersAcceptor) {
+						if (!$callableParametersAcceptor->isPure()->yes()) {
+							return false;
+						}
+					}
+
+					return true;
+				},
 				'isNotNull' => static fn (Type $type) => $type->isNull()->no(),
 				'isTruthy' => static fn (Type $type) => $type->toBoolean()->isTrue()->yes(),
 			][$testName];

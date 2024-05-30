@@ -2354,7 +2354,7 @@ class NodeScopeResolver
 				$functionReflection !== null
 				&& in_array($functionReflection->getName(), ['fopen', 'file_get_contents'], true)
 			) {
-				$scope = $scope->assignVariable('http_response_header', new ArrayType(new IntegerType(), new StringType()), new ArrayType(new IntegerType(), new StringType()));
+				$scope = $scope->assignVariable('http_response_header', AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType())), new ArrayType(new IntegerType(), new StringType()));
 			}
 
 			if (

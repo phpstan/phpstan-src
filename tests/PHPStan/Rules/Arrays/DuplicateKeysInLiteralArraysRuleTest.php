@@ -45,6 +45,22 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 				'Array has 2 duplicate keys with value 2 ($idx, $idx).',
 				55,
 			],
+			[
+				'Array has 2 duplicate keys with value 0 (0, 0).',
+				63,
+			],
+			[
+				'Array has 2 duplicate keys with value 101 (101, 101).',
+				67,
+			],
+			[
+				'Array has 2 duplicate keys with value 102 (102, 102).',
+				69,
+			],
+			[
+				'Array has 2 duplicate keys with value -41 (-41, -41).',
+				76,
+			],
 		]);
 	}
 

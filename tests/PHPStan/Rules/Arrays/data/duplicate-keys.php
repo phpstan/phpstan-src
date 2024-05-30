@@ -57,4 +57,39 @@ class Foo
 		];
 	}
 
+	public function doWithoutKeys(int $int)
+	{
+		$foo = [
+			1, // Key is 0
+			0 => 2,
+			100 => 3,
+			'This key is ignored' => 42,
+			4, // Key is 101
+			10 => 5,
+			6, // Key is 102
+			101 => 7,
+			102 => 8,
+		];
+
+		$foo2 = [
+			'-42' => 1,
+			2, // The key is -41
+			0 => 3,
+			-41 => 4,
+		];
+
+		$foo3 = [
+			$int => 33,
+			0 => 1,
+			2, // Because of `$int` key, the key value cannot be known.
+			1 => 3,
+		];
+
+		$foo4 = [
+			1,
+			2,
+			3,
+		];
+	}
+
 }

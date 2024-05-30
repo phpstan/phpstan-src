@@ -2,12 +2,14 @@
 
 namespace PHPStan\Type\Php;
 
+use Nette\Utils\Strings;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -39,17 +41,17 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			return new StringType();
 		}
 
-		$inputType = $scope->getType($args[0]->value);
 		$multiplierType = $scope->getType($args[1]->value);
 
 		if ((new ConstantIntegerType(0))->isSuperTypeOf($multiplierType)->yes()) {
 			return new ConstantStringType('');
 		}
 
-		if ($multiplierType instanceof ConstantIntegerType && $multiplierType->getValue() < 0) {
+		if (IntegerRangeType::fromInterval(null, 0)->isSuperTypeOf($multiplierType)->yes()) {
 			return new NeverType();
 		}
 
+		$inputType = $scope->getType($args[0]->value);
 		if (
 			$inputType instanceof ConstantStringType
 			&& $multiplierType instanceof ConstantIntegerType
@@ -72,13 +74,29 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 		if ($inputType->isLiteralString()->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
+
+			if (
+				$inputType->isNumericString()->yes()
+				&& IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($multiplierType)->yes()
+			) {
+				$onlyNumbers = true;
+				foreach ($inputType->getConstantStrings() as $constantString) {
+					if (Strings::match($constantString->getValue(), '#^[0-9]+$#') === null) {
+						$onlyNumbers = false;
+						break;
+					}
+				}
+
+				if ($onlyNumbers) {
+					$accessoryTypes[] = new AccessoryNumericStringType();
+				}
+			}
 		}
 
 		if (count($accessoryTypes) > 0) {
 			$accessoryTypes[] = new StringType();
 			return new IntersectionType($accessoryTypes);
 		}
-
 		return new StringType();
 	}
 

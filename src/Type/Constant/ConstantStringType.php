@@ -22,6 +22,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
@@ -405,19 +406,22 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		}
 
 		if ($this->getValue() !== '' && $precision->isMoreSpecific()) {
-			if ($this->getValue() !== '0') {
-				return new IntersectionType([
-					new StringType(),
-					new AccessoryNonFalsyStringType(),
-					new AccessoryLiteralStringType(),
-				]);
+			$accessories = [
+				new StringType(),
+				new AccessoryLiteralStringType(),
+			];
+
+			if (is_numeric($this->getValue())) {
+				$accessories[] = new AccessoryNumericStringType();
 			}
 
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonEmptyStringType(),
-				new AccessoryLiteralStringType(),
-			]);
+			if ($this->getValue() !== '0') {
+				$accessories[] = new AccessoryNonFalsyStringType();
+			} else {
+				$accessories[] = new AccessoryNonEmptyStringType();
+			}
+
+			return new IntersectionType($accessories);
 		}
 
 		if ($precision->isMoreSpecific()) {

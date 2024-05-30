@@ -37,16 +37,16 @@ class JunitErrorFormatter implements ErrorFormatter
 			$result .= $this->createTestCase(
 				sprintf('%s:%s', $fileName, (string) $fileSpecificError->getLine()),
 				'ERROR',
-				$this->escape($fileSpecificError->getMessage()),
+				$fileSpecificError->getMessage(),
 			);
 		}
 
 		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {
-			$result .= $this->createTestCase('General error', 'ERROR', $this->escape($notFileSpecificError));
+			$result .= $this->createTestCase('General error', 'ERROR', $notFileSpecificError);
 		}
 
 		foreach ($analysisResult->getWarnings() as $warning) {
-			$result .= $this->createTestCase('Warning', 'WARNING', $this->escape($warning));
+			$result .= $this->createTestCase('Warning', 'WARNING', $warning);
 		}
 
 		if (!$analysisResult->hasErrors()) {

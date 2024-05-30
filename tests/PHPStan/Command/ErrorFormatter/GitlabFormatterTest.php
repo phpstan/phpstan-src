@@ -88,8 +88,8 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         }
     },
     {
-        "description": "Foo",
-        "fingerprint": "93c79740ed8c6fbaac2087e54d6f6f67fc0918e3ff77840530f32e19857ef63c",
+        "description": "Foo<Bar>",
+        "fingerprint": "d7002959fc192c81d51fc41b0a3f240617a1aa35361867b5e924ae8d7fec39cb",
         "severity": "major",
         "location": {
             "path": "with space/and unicode \ud83d\ude03/project/foo.php",
@@ -152,8 +152,8 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         }
     },
     {
-        "description": "Foo",
-        "fingerprint": "93c79740ed8c6fbaac2087e54d6f6f67fc0918e3ff77840530f32e19857ef63c",
+        "description": "Foo<Bar>",
+        "fingerprint": "d7002959fc192c81d51fc41b0a3f240617a1aa35361867b5e924ae8d7fec39cb",
         "severity": "major",
         "location": {
             "path": "with space/and unicode \ud83d\ude03/project/foo.php",
@@ -194,8 +194,8 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         }
     },
     {
-        "description": "second generic error",
-        "fingerprint": "f49870714e8ce889212aefb50f718f88ae63d00dd01c775b7bac86c4466e96f0",
+        "description": "second generic<error>",
+        "fingerprint": "adc18b2c27b0ecad40aed7975b165cbe357f0cbba58582af91c0a2e7fa5d77ab",
         "severity": "major",
         "location": {
             "path": "",
@@ -236,8 +236,8 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         }
     },
     {
-        "description": "Foo",
-        "fingerprint": "93c79740ed8c6fbaac2087e54d6f6f67fc0918e3ff77840530f32e19857ef63c",
+        "description": "Foo<Bar>",
+        "fingerprint": "d7002959fc192c81d51fc41b0a3f240617a1aa35361867b5e924ae8d7fec39cb",
         "severity": "major",
         "location": {
             "path": "with space/and unicode \ud83d\ude03/project/foo.php",
@@ -269,8 +269,8 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
         }
     },
     {
-        "description": "second generic error",
-        "fingerprint": "f49870714e8ce889212aefb50f718f88ae63d00dd01c775b7bac86c4466e96f0",
+        "description": "second generic<error>",
+        "fingerprint": "adc18b2c27b0ecad40aed7975b165cbe357f0cbba58582af91c0a2e7fa5d77ab",
         "severity": "major",
         "location": {
             "path": "",

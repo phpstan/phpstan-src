@@ -74,7 +74,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
     <failure type="ERROR" message="Foo" />
   </testcase>
   <testcase name="foo.php:1">
-    <failure type="ERROR" message="Foo"/>
+    <failure type="ERROR" message="Foo&lt;Bar&gt;"/>
   </testcase>
   <testcase name="foo.php:5">
     <failure type="ERROR" message="Bar Bar2"/>
@@ -93,7 +93,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
     <failure type="ERROR" message="first generic error" />
   </testcase>
   <testcase name="General error">
-    <failure type="ERROR" message="second generic error"/>
+    <failure type="ERROR" message="second generic&lt;error&gt;"/>
   </testcase>
 </testsuite>
 ',
@@ -112,7 +112,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
     <failure type="ERROR" message="Foo" />
   </testcase>
   <testcase name="foo.php:1">
-    <failure type="ERROR" message="Foo"/>
+    <failure type="ERROR" message="Foo&lt;Bar&gt;"/>
   </testcase>
   <testcase name="foo.php:5">
     <failure type="ERROR" message="Bar Bar2"/>
@@ -121,7 +121,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
     <failure type="ERROR" message="first generic error" />
   </testcase>
   <testcase name="General error">
-    <failure type="ERROR" message="second generic error"/>
+    <failure type="ERROR" message="second generic&lt;error&gt;"/>
   </testcase>
 </testsuite>
 ',

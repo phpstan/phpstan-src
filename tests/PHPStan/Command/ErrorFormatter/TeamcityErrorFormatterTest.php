@@ -48,7 +48,7 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'Bar||nBar2\' file=\'folder with unicode 😃/file name with "spaces" and unicode 😃.php\' line=\'2\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'Foo\' file=\'folder with unicode 😃/file name with "spaces" and unicode 😃.php\' line=\'4\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
-##teamcity[inspection typeId=\'phpstan\' message=\'Foo\' file=\'foo.php\' line=\'1\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Foo<Bar>\' file=\'foo.php\' line=\'1\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'Bar||nBar2\' file=\'foo.php\' line=\'5\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'a tip\']
 ',
 		];
@@ -60,7 +60,7 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 			2,
 			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'first generic error\' file=\'.\' SEVERITY=\'ERROR\']
-##teamcity[inspection typeId=\'phpstan\' message=\'second generic error\' file=\'.\' SEVERITY=\'ERROR\']
+##teamcity[inspection typeId=\'phpstan\' message=\'second generic<error>\' file=\'.\' SEVERITY=\'ERROR\']
 ',
 		];
 
@@ -72,10 +72,10 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'Bar||nBar2\' file=\'folder with unicode 😃/file name with "spaces" and unicode 😃.php\' line=\'2\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'Foo\' file=\'folder with unicode 😃/file name with "spaces" and unicode 😃.php\' line=\'4\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
-##teamcity[inspection typeId=\'phpstan\' message=\'Foo\' file=\'foo.php\' line=\'1\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Foo<Bar>\' file=\'foo.php\' line=\'1\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'Bar||nBar2\' file=\'foo.php\' line=\'5\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'a tip\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'first generic error\' file=\'.\' SEVERITY=\'ERROR\']
-##teamcity[inspection typeId=\'phpstan\' message=\'second generic error\' file=\'.\' SEVERITY=\'ERROR\']
+##teamcity[inspection typeId=\'phpstan\' message=\'second generic<error>\' file=\'.\' SEVERITY=\'ERROR\']
 ',
 		];
 	}

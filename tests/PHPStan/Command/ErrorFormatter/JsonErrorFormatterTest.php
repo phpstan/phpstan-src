@@ -105,7 +105,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 			"errors":2,
 			"messages":[
 				{
-					"message": "Foo",
+					"message": "Foo<Bar>",
 					"line": 1,
 					"ignorable": true
 				},
@@ -136,7 +136,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 	"files":[],
 	"errors": [
 		"first generic error",
-		"second generic error"
+		"second generic<error>"
 	]
 }',
 		];
@@ -172,7 +172,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 			"errors":2,
 			"messages":[
 				{
-					"message": "Foo",
+					"message": "Foo<Bar>",
 					"line": 1,
 					"ignorable": true
 				},
@@ -187,7 +187,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 	},
 	"errors": [
 		"first generic error",
-		"second generic error"
+		"second generic<error>"
 	]
 }',
 		];

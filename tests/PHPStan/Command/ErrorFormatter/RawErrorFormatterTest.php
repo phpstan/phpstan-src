@@ -41,7 +41,7 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar' . "\nBar2\n" .
 			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . "\n" .
-			'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo' . "\n" .
+			'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo<Bar>' . "\n" .
 			'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . "\nBar2\n",
 		];
 
@@ -51,7 +51,7 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			2,
 			'?:?:first generic error' . "\n" .
-			'?:?:second generic error' . "\n",
+			'?:?:second generic<error>' . "\n",
 		];
 
 		yield [
@@ -60,10 +60,10 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			4,
 			2,
 			'?:?:first generic error' . "\n" .
-		'?:?:second generic error' . "\n" .
+		'?:?:second generic<error>' . "\n" .
 		'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar' . "\nBar2\n" .
 		'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . "\n" .
-		'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo' . "\n" .
+		'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo<Bar>' . "\n" .
 		'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . "\nBar2\n",
 		];
 	}

@@ -1047,7 +1047,6 @@ class DefinedVariableRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
-
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
@@ -1058,6 +1057,15 @@ class DefinedVariableRuleTest extends RuleTestCase
 				32,
 			],
 		]);
+	}
+
+	public function testBug10228(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-10228.php'], []);
 	}
 
 }

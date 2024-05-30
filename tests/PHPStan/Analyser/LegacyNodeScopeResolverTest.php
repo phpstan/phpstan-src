@@ -7292,15 +7292,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$sureFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
+				PHP_VERSION_ID < 80000 ? 'non-empty-list<string>|false' : 'non-empty-list<string>',
 				'$arrayOrFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
+				PHP_VERSION_ID < 80000 ? 'non-empty-list<string>|false' : 'non-empty-list<string>',
 				'$anotherArrayOrFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(list<string>|false)' : 'list<string>',
+				PHP_VERSION_ID < 80000 ? '(non-empty-list<string>|false)' : 'non-empty-list<string>',
 				'$benevolentArrayOrFalse',
 			],
 		];

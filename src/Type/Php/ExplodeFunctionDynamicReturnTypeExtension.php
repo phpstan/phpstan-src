@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -41,32 +40,34 @@ class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		Scope $scope,
 	): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
-		$delimiterType = $scope->getType($functionCall->getArgs()[0]->value);
-		$isSuperset = (new ConstantStringType(''))->isSuperTypeOf($delimiterType);
-		if ($isSuperset->yes()) {
-			if ($this->phpVersion->getVersionId() >= 80000) {
+		$delimiterType = $scope->getType($args[0]->value);
+		$isEmptyString = (new ConstantStringType(''))->isSuperTypeOf($delimiterType);
+		if ($isEmptyString->yes()) {
+			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
 				return new NeverType();
 			}
 			return new ConstantBooleanType(false);
-		} elseif ($isSuperset->no()) {
-			$arrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
-			if (
-				!isset($functionCall->getArgs()[2])
-				|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($functionCall->getArgs()[2]->value))->yes()
-			) {
-				return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
-			}
-
-			return $arrayType;
 		}
 
-		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		$returnType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
+		if (
+			!isset($args[2])
+			|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($args[2]->value))->yes()
+		) {
+			$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
+		}
+
+		if (!$this->phpVersion->throwsValueErrorForInternalFunctions() && $isEmptyString->maybe()) {
+			$returnType = TypeCombinator::union($returnType, new ConstantBooleanType(false));
+		}
+
 		if ($delimiterType instanceof MixedType) {
-			return TypeUtils::toBenevolentUnion($returnType);
+			$returnType = TypeUtils::toBenevolentUnion($returnType);
 		}
 
 		return $returnType;

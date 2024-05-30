@@ -49,10 +49,12 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			$zeroOffset = (new ConstantIntegerType(0))->isSuperTypeOf($offset)->yes();
 			$length = null;
 			$positiveLength = false;
+			$maybeOneLength = false;
 
 			if (count($args) === 3) {
 				$length = $scope->getType($args[2]->value);
 				$positiveLength = IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($length)->yes();
+				$maybeOneLength = !(new ConstantIntegerType(1))->isSuperTypeOf($length)->no();
 			}
 
 			$constantStrings = $string->getConstantStrings();
@@ -88,7 +90,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			}
 
 			if ($string->isNonEmptyString()->yes() && ($negativeOffset || $zeroOffset && $positiveLength)) {
-				if ($string->isNonFalsyString()->yes()) {
+				if ($string->isNonFalsyString()->yes() && !$maybeOneLength) {
 					return new IntersectionType([
 						new StringType(),
 						new AccessoryNonFalsyStringType(),

@@ -86,7 +86,7 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		if ($componentType->getValue() === -1) {
-			return $this->createAllComponentsReturnType();
+			return TypeCombinator::union($this->createComponentsArray(), new ConstantBooleanType(false));
 		}
 
 		return $this->componentTypesPairedConstants[$componentType->getValue()] ?? new ConstantBooleanType(false);
@@ -97,24 +97,31 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		if ($this->allComponentsTogetherType === null) {
 			$returnTypes = [
 				new ConstantBooleanType(false),
+				new NullType(),
+				IntegerRangeType::fromInterval(0, 65535),
+				new StringType(),
+				$this->createComponentsArray(),
 			];
-
-			$builder = ConstantArrayTypeBuilder::createEmpty();
-
-			if ($this->componentTypesPairedStrings === null) {
-				throw new ShouldNotHappenException();
-			}
-
-			foreach ($this->componentTypesPairedStrings as $componentName => $componentValueType) {
-				$builder->setOffsetValueType(new ConstantStringType($componentName), $componentValueType, true);
-			}
-
-			$returnTypes[] = $builder->getArray();
 
 			$this->allComponentsTogetherType = TypeCombinator::union(...$returnTypes);
 		}
 
 		return $this->allComponentsTogetherType;
+	}
+
+	private function createComponentsArray(): Type
+	{
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		if ($this->componentTypesPairedStrings === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		foreach ($this->componentTypesPairedStrings as $componentName => $componentValueType) {
+			$builder->setOffsetValueType(new ConstantStringType($componentName), $componentValueType, true);
+		}
+
+			return $builder->getArray();
 	}
 
 	private function cacheReturnTypes(): void

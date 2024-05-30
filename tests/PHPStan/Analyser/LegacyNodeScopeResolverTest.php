@@ -5500,7 +5500,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$parseUrlConstantUrlWithoutComponent2',
 			],
 			[
-				'array{scheme?: string, host?: string, port?: int<0, 65535>, user?: string, pass?: string, path?: string, query?: string, fragment?: string}|false',
+				'array{scheme?: string, host?: string, port?: int<0, 65535>, user?: string, pass?: string, path?: string, query?: string, fragment?: string}|int<0, 65535>|string|false|null',
 				'$parseUrlConstantUrlUnknownComponent',
 			],
 			[

@@ -2138,7 +2138,23 @@ class NodeScopeResolver
 				$nodeCallback,
 				$context,
 				function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context): ExpressionResult {
+					$impurePoints = [];
 					if ($expr instanceof AssignRef) {
+						$referencedExpr = $expr->expr;
+						while ($referencedExpr instanceof ArrayDimFetch) {
+							$referencedExpr = $referencedExpr->var;
+						}
+
+						if ($referencedExpr instanceof PropertyFetch || $referencedExpr instanceof StaticPropertyFetch) {
+							$impurePoints[] = new ImpurePoint(
+								$scope,
+								$expr,
+								'propertyAssignByRef',
+								'property assignment by reference',
+								false,
+							);
+						}
+
 						$scope = $scope->enterExpressionAssign($expr->expr);
 					}
 
@@ -2153,7 +2169,7 @@ class NodeScopeResolver
 					$result = $this->processExprNode($stmt, $expr->expr, $scope, $nodeCallback, $context->enterDeep());
 					$hasYield = $result->hasYield();
 					$throwPoints = $result->getThrowPoints();
-					$impurePoints = $result->getImpurePoints();
+					$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 					$scope = $result->getScope();
 
 					if ($expr instanceof AssignRef) {

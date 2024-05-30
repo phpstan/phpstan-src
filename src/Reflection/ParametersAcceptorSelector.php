@@ -103,7 +103,20 @@ class ParametersAcceptorSelector
 				$parameters = $acceptor->getParameters();
 				$callbackParameters = [];
 				foreach ($arrayMapArgs as $arg) {
-					$callbackParameters[] = new DummyParameter('item', $scope->getIterableValueType($scope->getType($arg->value)), false, PassedByReference::createNo(), false, null);
+					$argType = $scope->getType($arg->value);
+					if ($arg->unpack) {
+						$constantArrays = $argType->getConstantArrays();
+						if (count($constantArrays) > 0) {
+							foreach ($constantArrays as $constantArray) {
+								$valueTypes = $constantArray->getValueTypes();
+								foreach ($valueTypes as $valueType) {
+									$callbackParameters[] = new DummyParameter('item', $scope->getIterableValueType($valueType), false, PassedByReference::createNo(), false, null);
+								}
+							}
+						}
+					} else {
+						$callbackParameters[] = new DummyParameter('item', $scope->getIterableValueType($argType), false, PassedByReference::createNo(), false, null);
+					}
 				}
 				$parameters[0] = new NativeParameterReflection(
 					$parameters[0]->getName(),

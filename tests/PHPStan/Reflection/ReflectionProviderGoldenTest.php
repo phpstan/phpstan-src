@@ -31,6 +31,7 @@ use function implode;
 use function mkdir;
 use function sort;
 use function strpos;
+use function substr;
 use function trim;
 use const PHP_INT_MAX;
 use const PHP_VERSION_ID;
@@ -410,6 +411,8 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	private static function generateClassPropertyDescription(string $propertyName): string
 	{
 		[$className, $propertyName] = explode('::', $propertyName);
+		// remove $
+		$propertyName = substr($propertyName, 1);
 
 		$reflectionProvider = self::getContainer()->getByType(ReflectionProvider::class);
 

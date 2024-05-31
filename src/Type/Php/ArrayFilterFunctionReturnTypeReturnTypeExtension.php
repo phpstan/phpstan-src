@@ -34,8 +34,8 @@ use PHPStan\Type\TypeUtils;
 use function array_map;
 use function count;
 use function is_string;
-use function ltrim;
 use function strtolower;
+use function substr;
 
 class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

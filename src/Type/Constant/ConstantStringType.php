@@ -239,6 +239,10 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
+		if ($this->value === '') {
+			return [];
+		}
+
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
 		// 'my_function'

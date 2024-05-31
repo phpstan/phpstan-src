@@ -95,6 +95,8 @@ parameters:
 		- stubs/ReactChildProcess.stub
 		- stubs/ReactStreams.stub
 		- stubs/NetteDIContainer.stub
+		- stubs/PhpParserName.stub
+
 services:
 	-
 		class: PHPStan\Build\ServiceLocatorDynamicReturnTypeExtension

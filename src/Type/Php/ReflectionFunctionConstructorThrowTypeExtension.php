@@ -34,6 +34,10 @@ class ReflectionFunctionConstructorThrowTypeExtension implements DynamicStaticMe
 
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
 		foreach ($valueType->getConstantStrings() as $constantString) {
+			if ($constantString->getValue() === '') {
+				return null;
+			}
+
 			if (!$this->reflectionProvider->hasFunction(new Name($constantString->getValue()), $scope)) {
 				return $methodReflection->getThrowType();
 			}

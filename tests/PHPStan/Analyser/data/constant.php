@@ -38,3 +38,4 @@ assertType('Constant\Suit::Hearts', Suit::Hearts);
 assertType('Constant\Suit::Hearts', constant('\Constant\Suit::Hearts'));
 
 assertType('*ERROR*', constant('UNDEFINED'));
+assertType('*ERROR*', constant('::aa'));

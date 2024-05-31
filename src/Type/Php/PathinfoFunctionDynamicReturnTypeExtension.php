@@ -65,6 +65,9 @@ class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctionRetur
 		return TypeCombinator::union($arrayType, new StringType());
 	}
 
+	/**
+	 * @param non-empty-string $constantName
+	 */
 	private function getConstant(string $constantName): ?int
 	{
 		if (!$this->reflectionProvider->hasConstant(new Node\Name($constantName), null)) {

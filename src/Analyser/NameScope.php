@@ -24,6 +24,7 @@ class NameScope
 
 	/**
 	 * @api
+	 * @param non-empty-string|null $namespace
 	 * @param array<string, string> $uses alias(string) => fullName(string)
 	 * @param array<string, string> $constUses alias(string) => fullName(string)
 	 * @param array<string, true> $typeAliasesMap

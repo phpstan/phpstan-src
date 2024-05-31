@@ -37,6 +37,8 @@ class FunctionReflectionTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataPhpdocFunctions
+	 *
+	 * @param non-empty-string $functionName
 	 */
 	public function testFunctionHasPhpdoc(string $functionName, ?string $expectedDoc): void
 	{
@@ -139,6 +141,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFunctionReturnsByReference
+	 * @param non-empty-string $functionName
 	 */
 	public function testFunctionReturnsByReference(string $functionName, TrinaryLogic $expectedReturnsByRef): void
 	{

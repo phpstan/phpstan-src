@@ -23,6 +23,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -85,8 +86,13 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
 				return $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $arrayArgType, null, $callbackArg->expr);
 			} elseif ($callbackArg instanceof String_) {
+				$funcName = self::createFunctionName($callbackArg->value);
+				if ($funcName === null) {
+					return new ErrorType();
+				}
+
 				$itemVar = new Variable('item');
-				$expr = new FuncCall(self::createFunctionName($callbackArg->value), [new Arg($itemVar)]);
+				$expr = new FuncCall($funcName, [new Arg($itemVar)]);
 				return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, null, $expr);
 			}
 		}
@@ -100,8 +106,13 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
 				return $this->filterByTruthyValue($scope, null, $arrayArgType, $callbackArg->params[0]->var, $callbackArg->expr);
 			} elseif ($callbackArg instanceof String_) {
+				$funcName = self::createFunctionName($callbackArg->value);
+				if ($funcName === null) {
+					return new ErrorType();
+				}
+
 				$keyVar = new Variable('key');
-				$expr = new FuncCall(self::createFunctionName($callbackArg->value), [new Arg($keyVar)]);
+				$expr = new FuncCall($funcName, [new Arg($keyVar)]);
 				return $this->filterByTruthyValue($scope, null, $arrayArgType, $keyVar, $expr);
 			}
 		}
@@ -115,9 +126,14 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
 				return $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $arrayArgType, $callbackArg->params[1]->var ?? null, $callbackArg->expr);
 			} elseif ($callbackArg instanceof String_) {
+				$funcName = self::createFunctionName($callbackArg->value);
+				if ($funcName === null) {
+					return new ErrorType();
+				}
+
 				$itemVar = new Variable('item');
 				$keyVar = new Variable('key');
-				$expr = new FuncCall(self::createFunctionName($callbackArg->value), [new Arg($itemVar), new Arg($keyVar)]);
+				$expr = new FuncCall($funcName, [new Arg($itemVar), new Arg($keyVar)]);
 				return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $expr);
 			}
 		}
@@ -242,10 +258,20 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 		];
 	}
 
-	private static function createFunctionName(string $funcName): Name
+	private static function createFunctionName(string $funcName): ?Name
 	{
+		if ($funcName === '') {
+			return null;
+		}
+
 		if ($funcName[0] === '\\') {
-			return new Name\FullyQualified(substr($funcName, 1));
+			$funcName = substr($funcName, 1);
+
+			if ($funcName === '') {
+				return null;
+			}
+
+			return new Name\FullyQualified($funcName);
 		}
 
 		return new Name($funcName);

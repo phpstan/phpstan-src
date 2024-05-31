@@ -1,0 +1,25 @@
+<?php declare(strict_types=1);
+
+namespace PhpParser\Node;
+
+use PhpParser\NodeAbstract;
+
+class Name extends NodeAbstract
+{
+    /**
+     * Constructs a name node.
+     *
+     * @param non-empty-string|non-empty-array<string>|self $name       Name as string, part array or Name instance (copy ctor)
+     * @param array<mixed>                $attributes Additional attributes
+     */
+    public function __construct($name, array $attributes = []) {
+    }
+
+    /** @return non-empty-string */
+    public function toString() : string {
+    }
+
+    /** @return non-empty-string */
+    public function toCodeString() : string {
+    }
+}

@@ -74,6 +74,10 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	{
 		[$type, $name] = explode(' ', $symbol);
 
+		if ($name === '') {
+			throw new ShouldNotHappenException();
+		}
+
 		try {
 			switch ($type) {
 				case 'FUNCTION':
@@ -153,6 +157,9 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		return __DIR__ . '/data/golden/phpSymbols.txt';
 	}
 
+	/**
+	 * @param non-empty-string $functionName
+	 */
 	private static function generateFunctionDescription(string $functionName): string
 	{
 		$nameNode = new Name($functionName);

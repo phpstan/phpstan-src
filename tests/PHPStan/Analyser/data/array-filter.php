@@ -35,3 +35,8 @@ function withoutCallback(array $map1, array $map2, array $map3): void
 	$filtered3 = array_filter($map3, null, ARRAY_FILTER_USE_BOTH);
 	assertType('array<string, float|int<min, -1>|int<1, max>|non-falsy-string|true>', $filtered3);
 }
+
+function invalidCallableName(array $arr) {
+	assertType('*ERROR*', array_filter($arr, ''));
+	assertType('*ERROR*', array_filter($arr, '\\'));
+}

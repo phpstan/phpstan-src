@@ -235,6 +235,9 @@ final class FilterFunctionReturnTypeHelper
 		return $this->filterTypeOptions;
 	}
 
+	/**
+	 * @param non-empty-string $constantName
+	 */
 	private function getConstant(string $constantName): int
 	{
 		$constant = $this->reflectionProvider->getConstant(new Node\Name($constantName), null);

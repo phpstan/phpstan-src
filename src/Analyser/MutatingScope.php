@@ -173,6 +173,7 @@ class MutatingScope implements Scope
 	/** @var array<string, self> */
 	private array $falseyScopes = [];
 
+	/** @var non-empty-string|null */
 	private ?string $namespace;
 
 	private ?self $scopeOutOfFirstLevelStatement = null;
@@ -5230,6 +5231,9 @@ class MutatingScope implements Scope
 		return $descriptions;
 	}
 
+	/**
+	 * @param non-empty-string $className
+	 */
 	private function exactInstantiation(New_ $node, string $className): ?Type
 	{
 		$resolvedClassName = $this->resolveExactName(new Name($className));

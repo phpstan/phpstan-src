@@ -9,7 +9,6 @@ class Foo {
 	 * @param numeric-string $numericS
 	 * @param non-empty-string $nonE
 	 * @param literal-string $literal
-	 * @param 'foo'|'Foo' $edgeUnion
 	 */
 	public function bar($numericS, $nonE, $literal) {
 		assertType("'aBC'", mb_lcfirst('ABC'));

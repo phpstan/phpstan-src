@@ -3299,7 +3299,7 @@ return [
 'get_called_class' => ['class-string'],
 'get_cfg_var' => ['mixed', 'option_name'=>'string'],
 'get_class' => ['class-string', 'object='=>'object'],
-'get_class_methods' => ['list<string>', 'class'=>'mixed'],
+'get_class_methods' => ['list<non-falsy-string>', 'class'=>'mixed'],
 'get_class_vars' => ['array', 'class_name'=>'string'],
 'get_current_user' => ['string'],
 'get_declared_classes' => ['list<class-string>'],

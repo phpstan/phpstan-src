@@ -1364,6 +1364,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			$this->markTestSkipped('Test requires PHP 7.3.');
 		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11026.php');
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug10867(): void

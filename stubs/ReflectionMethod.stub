@@ -8,4 +8,9 @@ class ReflectionMethod
 	 */
 	public $class;
 
+	/**
+	 * @var non-falsy-string
+	 */
+	public $name;
+
 }

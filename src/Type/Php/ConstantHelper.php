@@ -15,11 +15,12 @@ use function ltrim;
 class ConstantHelper
 {
 
-	/**
-	 * @param non-empty-string $constantName
-	 */
 	public function createExprFromConstantName(string $constantName): ?Expr
 	{
+		if ($constantName === '') {
+			return null;
+		}
+
 		$classConstParts = explode('::', $constantName);
 		if (count($classConstParts) >= 2) {
 			$fqcn = ltrim($classConstParts[0], '\\');

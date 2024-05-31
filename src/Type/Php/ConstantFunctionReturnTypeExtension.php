@@ -37,10 +37,6 @@ class ConstantFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		$results = [];
 		foreach ($nameType->getConstantStrings() as $constantName) {
-			if ($constantName->getValue() === '') {
-				return null;
-			}
-
 			$expr = $this->constantHelper->createExprFromConstantName($constantName->getValue());
 			if ($expr === null) {
 				return new ErrorType();

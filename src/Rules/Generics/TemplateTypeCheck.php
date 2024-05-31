@@ -67,10 +67,6 @@ class TemplateTypeCheck
 	{
 		$messages = [];
 		foreach ($templateTags as $templateTag) {
-			if ($templateTag->getName() === '') {
-				throw new ShouldNotHappenException('Template tag name cannot be empty.');
-			}
-
 			$templateTagName = $scope->resolveName(new Node\Name($templateTag->getName()));
 			if ($this->reflectionProvider->hasClass($templateTagName)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(

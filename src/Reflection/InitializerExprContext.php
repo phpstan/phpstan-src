@@ -138,10 +138,6 @@ class InitializerExprContext implements NamespaceAnswerer
 
 	public static function fromGlobalConstant(ReflectionConstant $constant): self
 	{
-		if ($constant->getNamespaceName() === '') {
-			throw new ShouldNotHappenException('Namespace cannot be empty.');
-		}
-
 		return new self(
 			$constant->getFileName(),
 			$constant->getNamespaceName(),

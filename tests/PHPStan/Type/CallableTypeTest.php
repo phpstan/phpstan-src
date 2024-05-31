@@ -177,12 +177,15 @@ class CallableTypeTest extends PHPStanTestCase
 			null,
 		);
 
-		$templateType = static fn (string $name): Type => TemplateTypeFactory::create(
-			TemplateTypeScope::createWithFunction('a'),
-			$name,
-			new MixedType(),
-			TemplateTypeVariance::createInvariant(),
-		);
+		$templateType = static function (string $name): Type {
+			/** @var non-empty-string $name */
+			return TemplateTypeFactory::create(
+				TemplateTypeScope::createWithFunction('a'),
+				$name,
+				new MixedType(),
+				TemplateTypeVariance::createInvariant(),
+			);
+		};
 
 		return [
 			'template param' => [

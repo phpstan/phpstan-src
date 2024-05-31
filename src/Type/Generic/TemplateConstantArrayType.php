@@ -13,6 +13,9 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 	use TemplateTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
+	/**
+	 * @param non-empty-string $name
+	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,

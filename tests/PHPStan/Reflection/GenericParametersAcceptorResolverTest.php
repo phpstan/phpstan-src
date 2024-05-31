@@ -29,12 +29,15 @@ class GenericParametersAcceptorResolverTest extends PHPStanTestCase
 	 */
 	public function dataResolve(): array
 	{
-		$templateType = static fn (string $name, ?Type $type = null): Type => TemplateTypeFactory::create(
-			TemplateTypeScope::createWithFunction('a'),
-			$name,
-			$type,
-			TemplateTypeVariance::createInvariant(),
-		);
+		$templateType = static function (string $name, ?Type $type = null): Type {
+			/** @var non-empty-string $name */
+			return TemplateTypeFactory::create(
+				TemplateTypeScope::createWithFunction('a'),
+				$name,
+				$type,
+				TemplateTypeVariance::createInvariant(),
+			);
+		};
 
 		return [
 			'one param, one arg' => [

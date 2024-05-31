@@ -13,6 +13,9 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 	/** @use TemplateTypeTrait<ObjectType> */
 	use TemplateTypeTrait;
 
+	/**
+	 * @param non-empty-string $name
+	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,

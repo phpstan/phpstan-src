@@ -15,6 +15,9 @@ final class TemplateStrictMixedType extends StrictMixedType implements TemplateT
 	/** @use TemplateTypeTrait<StrictMixedType> */
 	use TemplateTypeTrait;
 
+	/**
+	 * @param non-empty-string $name
+	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,

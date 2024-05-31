@@ -610,15 +610,12 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 
 	public function dataInferTemplateTypes(): array
 	{
-		$templateType = static function (string $name): Type {
-			/** @var non-empty-string $name */
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				new MixedType(),
-				TemplateTypeVariance::createInvariant(),
-			);
-		};
+		$templateType = static fn ($name): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'receive constant array' => [

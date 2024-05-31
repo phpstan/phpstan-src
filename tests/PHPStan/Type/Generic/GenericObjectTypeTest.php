@@ -351,15 +351,12 @@ class GenericObjectTypeTest extends PHPStanTestCase
 	/** @return array<string,array{Type,Type,array<string,string>}> */
 	public function dataInferTemplateTypes(): array
 	{
-		$templateType = static function (string $name, ?Type $bound = null): Type {
-			/** @var non-empty-string $name */
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				$bound ?? new MixedType(),
-				TemplateTypeVariance::createInvariant(),
-			);
-		};
+		$templateType = static fn ($name, ?Type $bound = null): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			$bound ?? new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'simple' => [
@@ -467,15 +464,12 @@ class GenericObjectTypeTest extends PHPStanTestCase
 	/** @return array<array{TemplateTypeVariance,Type,bool,array<TemplateTypeReference>}> */
 	public function dataGetReferencedTypeArguments(): array
 	{
-		$templateType = static function (string $name, ?Type $bound = null): Type {
-			/** @var non-empty-string $name */
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				$bound ?? new MixedType(),
-				TemplateTypeVariance::createInvariant(),
-			);
-		};
+		$templateType = static fn ($name, ?Type $bound = null): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			$bound ?? new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'param: Invariant<T>' => [

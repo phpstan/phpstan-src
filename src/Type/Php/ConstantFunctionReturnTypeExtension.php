@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
@@ -39,7 +40,13 @@ class ConstantFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			if ($constantName->getValue() === '') {
 				return null;
 			}
-			$results[] = $scope->getType($this->constantHelper->createExprFromConstantName($constantName->getValue()));
+
+			$expr = $this->constantHelper->createExprFromConstantName($constantName->getValue());
+			if ($expr === null) {
+				return new ErrorType();
+			}
+
+			$results[] = $scope->getType($expr);
 		}
 
 		if (count($results) > 0) {

@@ -54,8 +54,13 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			return new SpecifiedTypes([], []);
 		}
 
+		$expr = $this->constantHelper->createExprFromConstantName($constantName->getValue());
+		if ($expr === null) {
+			return new SpecifiedTypes([], []);
+		}
+
 		return $this->typeSpecifier->create(
-			$this->constantHelper->createExprFromConstantName($constantName->getValue()),
+			$expr,
 			new MixedType(),
 			$context,
 			false,

@@ -12,6 +12,9 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 	/** @use TemplateTypeTrait<BenevolentUnionType> */
 	use TemplateTypeTrait;
 
+	/**
+	 * @param non-empty-string $name
+	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,

@@ -13,6 +13,9 @@ final class TemplateObjectShapeType extends ObjectShapeType implements TemplateT
 	use TemplateTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
+	/**
+	 * @param non-empty-string $name
+	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,

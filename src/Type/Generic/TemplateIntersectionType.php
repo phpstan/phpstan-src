@@ -11,6 +11,9 @@ final class TemplateIntersectionType extends IntersectionType implements Templat
 	/** @use TemplateTypeTrait<IntersectionType> */
 	use TemplateTypeTrait;
 
+	/**
+	 * @param non-empty-string $name
+	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,

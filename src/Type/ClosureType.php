@@ -78,7 +78,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	/**
 	 * @api
 	 * @param array<int, ParameterReflection>|null $parameters
-	 * @param array<string, TemplateTag> $templateTags
+	 * @param array<non-empty-string, TemplateTag> $templateTags
 	 * @param SimpleThrowPoint[] $throwPoints
 	 * @param SimpleImpurePoint[] $impurePoints
 	 * @param InvalidateExprNode[] $invalidateExpressions
@@ -108,7 +108,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	}
 
 	/**
-	 * @return array<string, TemplateTag>
+	 * @return array<non-empty-string, TemplateTag>
 	 */
 	public function getTemplateTags(): array
 	{

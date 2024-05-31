@@ -13,6 +13,9 @@ final class TemplateConstantStringType extends ConstantStringType implements Tem
 	use TemplateTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
+	/**
+	 * @param non-empty-string $name
+	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,

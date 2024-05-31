@@ -25,6 +25,9 @@ use function get_class;
 final class TemplateTypeFactory
 {
 
+	/**
+	 * @param non-empty-string $name
+	 */
 	public static function create(TemplateTypeScope $scope, string $name, ?Type $bound, TemplateTypeVariance $variance, ?TemplateTypeStrategy $strategy = null): TemplateType
 	{
 		$strategy ??= new TemplateTypeParameterStrategy();

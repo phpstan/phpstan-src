@@ -11,6 +11,9 @@ final class TemplateUnionType extends UnionType implements TemplateType
 	/** @use TemplateTypeTrait<UnionType> */
 	use TemplateTypeTrait;
 
+	/**
+	 * @param non-empty-string $name
+	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,

@@ -68,7 +68,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	/**
 	 * @api
 	 * @param array<int, ParameterReflection>|null $parameters
-	 * @param array<string, TemplateTag> $templateTags
+	 * @param array<non-empty-string, TemplateTag> $templateTags
 	 */
 	public function __construct(
 		?array $parameters = null,
@@ -89,7 +89,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	}
 
 	/**
-	 * @return array<string, TemplateTag>
+	 * @return array<non-empty-string, TemplateTag>
 	 */
 	public function getTemplateTags(): array
 	{

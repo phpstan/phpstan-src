@@ -25,6 +25,7 @@ use function sprintf;
 trait TemplateTypeTrait
 {
 
+	/** @var non-empty-string */
 	private string $name;
 
 	private TemplateTypeScope $scope;
@@ -36,6 +37,7 @@ trait TemplateTypeTrait
 	/** @var TBound */
 	private Type $bound;
 
+	/** @return non-empty-string */
 	public function getName(): string
 	{
 		return $this->name;

@@ -13,6 +13,9 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 	/** @use TemplateTypeTrait<ObjectWithoutClassType> */
 	use TemplateTypeTrait;
 
+	/**
+	 * @param non-empty-string $name
+	 */
 	public function __construct(
 		TemplateTypeScope $scope,
 		TemplateTypeStrategy $templateTypeStrategy,

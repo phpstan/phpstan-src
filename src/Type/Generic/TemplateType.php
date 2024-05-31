@@ -11,6 +11,7 @@ use PHPStan\Type\Type;
 interface TemplateType extends CompoundType
 {
 
+	/** @return non-empty-string */
 	public function getName(): string;
 
 	public function getScope(): TemplateTypeScope;

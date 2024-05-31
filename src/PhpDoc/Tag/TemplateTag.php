@@ -9,10 +9,16 @@ use PHPStan\Type\Type;
 class TemplateTag
 {
 
+	/**
+	 * @param non-empty-string $name
+	 */
 	public function __construct(private string $name, private Type $bound, private TemplateTypeVariance $variance)
 	{
 	}
 
+	/**
+	 * @return non-empty-string
+	 */
 	public function getName(): string
 	{
 		return $this->name;

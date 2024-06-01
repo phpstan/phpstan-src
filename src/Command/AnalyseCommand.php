@@ -264,6 +264,11 @@ class AnalyseCommand extends Command
 		}
 
 		if ($fix) {
+			if ($generateBaselineFile !== null) {
+				$inceptionResult->getStdOutput()->getStyle()->error('You cannot pass the --generate-baseline option when running PHPStan Pro.');
+				return $inceptionResult->handleReturn(1, null);
+			}
+
 			return $this->runFixer($inceptionResult, $container, $onlyFiles, $input, $output, $files);
 		}
 

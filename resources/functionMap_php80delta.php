@@ -21,7 +21,7 @@
  */
 return [
 	'new' => [
-		'array_combine' => ['associative-array', 'keys'=>'string[]|int[]', 'values'=>'array'],
+		'array_combine' => ['associative-array', 'keys'=>'array<array-key>', 'values'=>'array'],
 		'base64_decode' => ['string', 'string'=>'string', 'strict='=>'false'],
 		'base64_decode\'1' => ['string|false', 'string'=>'string', 'strict='=>'true'],
 		'bcdiv' => ['string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
@@ -161,7 +161,7 @@ return [
 		'xmlwriter_write_raw' => ['bool', 'xmlwriter'=>'XMLWriter', 'content'=>'string'],
 	],
 	'old' => [
-		'array_combine' => ['associative-array|false', 'keys'=>'string[]|int[]', 'values'=>'array'],
+		'array_combine' => ['associative-array|false', 'keys'=>'array<array-key>', 'values'=>'array'],
 		'bcdiv' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcmod' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcpowmod' => ['?string', 'base'=>'string', 'exponent'=>'string', 'modulus'=>'string', 'scale='=>'int'],

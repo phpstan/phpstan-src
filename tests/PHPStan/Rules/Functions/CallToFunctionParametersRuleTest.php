@@ -1687,4 +1687,22 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10974.php'], []);
 	}
 
+	public function testBug11111(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-11111.php'], [
+			[
+				'Parameter #1 $keys of function array_fill_keys expects array<(int|string)>, array<int, Bug11111\Language::DAN|Bug11111\Language::ENG|Bug11111\Language::GER> given.',
+				24,
+			],
+			[
+				'Parameter #1 $keys of function array_combine expects array<(int|string)>, array<int, Bug11111\Language::DAN|Bug11111\Language::ENG|Bug11111\Language::GER> given.',
+				28,
+			],
+		]);
+	}
+
 }

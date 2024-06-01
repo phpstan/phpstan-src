@@ -7,6 +7,7 @@ use Nette\DI\Config\Adapters\PhpAdapter;
 use Nette\DI\Definitions\Statement;
 use Nette\DI\Extensions\ExtensionsExtension;
 use Nette\DI\Helpers;
+use Nette\DI\InvalidConfigurationException;
 use Nette\Schema\Context as SchemaContext;
 use Nette\Schema\Elements\AnyOf;
 use Nette\Schema\Elements\Structure;
@@ -352,6 +353,17 @@ class ContainerFactory
 			$context->path = ['parameters'];
 		};
 		$processor->process($schema, $parameters);
+
+		if (
+			array_key_exists('phpVersion', $parameters)
+			&& is_array($parameters['phpVersion']))
+		{
+			$phpVersion = $parameters['phpVersion'];
+
+			if ($phpVersion['max'] < $phpVersion['min']) {
+				throw new InvalidPhpVersionException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
+			}
+		}
 	}
 
 	/**

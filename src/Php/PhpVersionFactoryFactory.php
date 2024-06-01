@@ -6,8 +6,6 @@ use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
-use PHPStan\ShouldNotHappenException;
-use function array_key_exists;
 use function count;
 use function end;
 use function is_array;
@@ -56,9 +54,6 @@ class PhpVersionFactoryFactory
 		}
 
 		if ($this->bleedingEdge && is_array($this->phpVersion)) {
-			if (!array_key_exists('min', $this->phpVersion)) {
-				throw new ShouldNotHappenException();
-			}
 			$versionId = $this->phpVersion['min'];
 		}
 

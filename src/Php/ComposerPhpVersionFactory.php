@@ -13,7 +13,6 @@ use function count;
 use function end;
 use function is_array;
 use function is_file;
-use function is_int;
 use function is_string;
 use function sprintf;
 
@@ -34,10 +33,6 @@ class ComposerPhpVersionFactory
 		bool $bleedingEdge,
 	)
 	{
-		if (is_int($phpVersion)) {
-			return;
-		}
-
 		if (is_array($phpVersion)) {
 			if ($phpVersion['max'] < $phpVersion['min']) {
 				throw new ShouldNotHappenException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
@@ -64,10 +59,9 @@ class ComposerPhpVersionFactory
 
 		if ($this->minVersion === null && !$constraint->getLowerBound()->isZero()) {
 			$minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion());
-			// allow checks with < below lower bound to prevent errors like
-			// 'Comparison operation "<" between int<70205, 90000> and 70205 is always false.'
+
 			if ($minVersion !== null) {
-				$this->minVersion = new PhpVersion($minVersion->getVersionId() - 1);
+				$this->minVersion = new PhpVersion($minVersion->getVersionId());
 			}
 		}
 		if ($this->maxVersion !== null || $constraint->getUpperBound()->isPositiveInfinity()) {

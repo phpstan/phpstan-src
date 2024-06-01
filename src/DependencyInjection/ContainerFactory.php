@@ -7,7 +7,6 @@ use Nette\DI\Config\Adapters\PhpAdapter;
 use Nette\DI\Definitions\Statement;
 use Nette\DI\Extensions\ExtensionsExtension;
 use Nette\DI\Helpers;
-use Nette\DI\InvalidConfigurationException;
 use Nette\Schema\Context as SchemaContext;
 use Nette\Schema\Elements\AnyOf;
 use Nette\Schema\Elements\Structure;
@@ -37,6 +36,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\ObjectType;
 use Symfony\Component\Finder\Finder;
 use function array_diff_key;
+use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function array_unique;
@@ -355,14 +355,15 @@ class ContainerFactory
 		$processor->process($schema, $parameters);
 
 		if (
-			array_key_exists('phpVersion', $parameters)
-			&& is_array($parameters['phpVersion']))
-		{
-			$phpVersion = $parameters['phpVersion'];
+			!array_key_exists('phpVersion', $parameters)
+			|| !is_array($parameters['phpVersion'])) {
+			return;
+		}
 
-			if ($phpVersion['max'] < $phpVersion['min']) {
-				throw new InvalidPhpVersionException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
-			}
+		$phpVersion = $parameters['phpVersion'];
+
+		if ($phpVersion['max'] < $phpVersion['min']) {
+			throw new InvalidPhpVersionException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
 		}
 	}
 

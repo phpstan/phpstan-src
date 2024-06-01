@@ -296,7 +296,7 @@ jobs:
               ../../bin/phpstan analyze test.php --level=0
           - script: |
               cd e2e/composer-version-config-invalid
-              OUTPUT=$(../../bin/phpstan 2>&1)
+              OUTPUT=$(../../bin/phpstan 2>&1 || true)
               grep 'Invalid configuration' <<< "$OUTPUT"
               grep 'Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.' <<< "$OUTPUT"
     steps:

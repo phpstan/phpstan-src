@@ -79,6 +79,7 @@ rules:
 	- PHPStan\Rules\Functions\PrintfParametersRule
 	- PHPStan\Rules\Functions\RedefinedParametersRule
 	- PHPStan\Rules\Functions\ReturnNullsafeByRefRule
+	- PHPStan\Rules\Functions\StringReplaceSubjectParameterRule
 	- PHPStan\Rules\Ignore\IgnoreParseErrorRule
 	- PHPStan\Rules\Functions\VariadicParametersDeclarationRule
 	- PHPStan\Rules\Keywords\ContinueBreakInLoopRule

@@ -19,13 +19,20 @@ class RawErrorFormatter implements ErrorFormatter
 			$output->writeLineFormatted('');
 		}
 
+		$outputIdentifiers = $output->isVerbose();
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+			$identifier = '';
+			if ($outputIdentifiers && $fileSpecificError->getIdentifier() !== null) {
+				$identifier = " [identifier:{$fileSpecificError->getIdentifier()}]";
+			}
+
 			$output->writeRaw(
 				sprintf(
-					'%s:%d:%s',
+					'%s:%d:%s%s',
 					$fileSpecificError->getFile(),
 					$fileSpecificError->getLine() ?? '?',
 					$fileSpecificError->getMessage(),
+					$identifier,
 				),
 			);
 			$output->writeLineFormatted('');

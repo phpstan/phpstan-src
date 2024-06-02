@@ -13,6 +13,7 @@ use function count;
 use function end;
 use function is_array;
 use function is_file;
+use function is_int;
 use function is_string;
 use function sprintf;
 
@@ -33,6 +34,10 @@ class ComposerPhpVersionFactory
 		bool $bleedingEdge,
 	)
 	{
+		if (is_int($phpVersion)) {
+			return;
+		}
+
 		if (is_array($phpVersion)) {
 			if ($phpVersion['max'] < $phpVersion['min']) {
 				throw new ShouldNotHappenException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');

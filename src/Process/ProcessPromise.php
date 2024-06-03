@@ -5,9 +5,8 @@ namespace PHPStan\Process;
 use PHPStan\ShouldNotHappenException;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
-use React\Promise\CancellablePromiseInterface;
 use React\Promise\Deferred;
-use React\Promise\ExtendedPromiseInterface;
+use React\Promise\PromiseInterface;
 use function fclose;
 use function rewind;
 use function stream_get_contents;
@@ -16,6 +15,7 @@ use function tmpfile;
 class ProcessPromise
 {
 
+	/** @var Deferred<string> */
 	private Deferred $deferred;
 
 	private ?Process $process = null;
@@ -33,9 +33,9 @@ class ProcessPromise
 	}
 
 	/**
-	 * @return ExtendedPromiseInterface&CancellablePromiseInterface
+	 * @return PromiseInterface<string>
 	 */
-	public function run(): CancellablePromiseInterface
+	public function run(): PromiseInterface
 	{
 		$tmpStdOutResource = tmpfile();
 		if ($tmpStdOutResource === false) {
@@ -72,6 +72,9 @@ class ProcessPromise
 			}
 
 			if ($exitCode === 0) {
+				if ($stdOut === false) {
+					$stdOut = '';
+				}
 				$this->deferred->resolve($stdOut);
 				return;
 			}
@@ -79,7 +82,6 @@ class ProcessPromise
 			$this->deferred->reject(new ProcessCrashedException($stdOut . $stdErr));
 		});
 
-		/** @var ExtendedPromiseInterface&CancellablePromiseInterface */
 		return $this->deferred->promise();
 	}
 

@@ -123,7 +123,7 @@ class FixerWorkerCommand extends Command
 
 		$loop = new StreamSelectLoop();
 		$tcpConnector = new TcpConnector($loop);
-		$tcpConnector->connect(sprintf('127.0.0.1:%d', $serverPort))->done(function (ConnectionInterface $connection) use ($container, $inceptionResult, $configuration, $input, $ignoredErrorHelperResult, $loop): void {
+		$tcpConnector->connect(sprintf('127.0.0.1:%d', $serverPort))->then(function (ConnectionInterface $connection) use ($container, $inceptionResult, $configuration, $input, $ignoredErrorHelperResult, $loop): void {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
@@ -314,6 +314,7 @@ class FixerWorkerCommand extends Command
 	/**
 	 * @param string[] $files
 	 * @param callable(list<Error>, list<Error>, string[]): void $onFileAnalysisHandler
+	 * @return PromiseInterface<AnalyserResult>
 	 */
 	private function runAnalyser(LoopInterface $loop, Container $container, array $files, ?string $configuration, InputInterface $input, callable $onFileAnalysisHandler): PromiseInterface
 	{

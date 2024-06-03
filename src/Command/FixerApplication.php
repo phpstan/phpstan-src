@@ -29,8 +29,7 @@ use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
 use React\Http\Browser;
-use React\Promise\CancellablePromiseInterface;
-use React\Promise\ExtendedPromiseInterface;
+use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\Connector;
 use React\Socket\TcpServer;
@@ -64,8 +63,8 @@ use const PHP_VERSION_ID;
 class FixerApplication
 {
 
-	/** @var (ExtendedPromiseInterface&CancellablePromiseInterface)|null */
-	private $processInProgress;
+	/** @var PromiseInterface<string>|null  */
+	private PromiseInterface|null $processInProgress = null;
 
 	private bool $fileMonitorActive = true;
 
@@ -348,7 +347,7 @@ class FixerApplication
 			throw new ShouldNotHappenException(sprintf('Could not open file %s for writing.', $pharPath));
 		}
 		$progressBar = new ProgressBar($output);
-		$client->requestStreaming('GET', $latestInfo['url'])->done(static function (ResponseInterface $response) use ($progressBar, $pharPathResource): void {
+		$client->requestStreaming('GET', $latestInfo['url'])->then(static function (ResponseInterface $response) use ($progressBar, $pharPathResource): void {
 			$body = $response->getBody();
 			if (!$body instanceof ReadableStreamInterface) {
 				throw new ShouldNotHappenException();
@@ -470,7 +469,7 @@ class FixerApplication
 		));
 		$this->processInProgress = $process->run();
 
-		$this->processInProgress->done(function () use ($server): void {
+		$this->processInProgress->then(function () use ($server): void {
 			$this->processInProgress = null;
 			$server->close();
 		}, function (Throwable $e) use ($server, $output, $phpstanFixerEncoder): void {

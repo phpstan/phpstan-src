@@ -54,6 +54,7 @@ class ParallelAnalyser
 	/**
 	 * @param Closure(int ): void|null $postFileCallback
 	 * @param (callable(list<Error>, list<Error>, string[]): void)|null $onFileAnalysisHandler
+	 * @return PromiseInterface<AnalyserResult>
 	 */
 	public function analyse(
 		LoopInterface $loop,
@@ -83,6 +84,7 @@ class ParallelAnalyser
 		$reachedInternalErrorsCountLimit = false;
 		$exportedNodes = [];
 
+		/** @var Deferred<AnalyserResult> $deferred */
 		$deferred = new Deferred();
 
 		$server = new TcpServer('127.0.0.1:0', $loop);

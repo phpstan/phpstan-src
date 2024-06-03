@@ -140,26 +140,6 @@ parameters:
 			path: src/Command/ErrorsConsoleStyle.php
 
 		-
-			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\<Psr\\\\Http\\\\Message\\\\ResponseInterface\\>\\:\\:done\\(\\)\\.$#"
-			count: 1
-			path: src/Command/FixerApplication.php
-
-		-
-			message: "#^Unable to resolve the template type T in call to function React\\\\Async\\\\await$#"
-			count: 1
-			path: src/Command/FixerApplication.php
-
-		-
-			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\<React\\\\Socket\\\\ConnectionInterface\\>\\:\\:done\\(\\)\\.$#"
-			count: 1
-			path: src/Command/FixerWorkerCommand.php
-
-		-
-			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\<React\\\\Socket\\\\ConnectionInterface\\>\\:\\:done\\(\\)\\.$#"
-			count: 1
-			path: src/Command/WorkerCommand.php
-
-		-
 			message: "#^Variable method call on Nette\\\\Schema\\\\Elements\\\\AnyOf\\|Nette\\\\Schema\\\\Elements\\\\Structure\\|Nette\\\\Schema\\\\Elements\\\\Type\\.$#"
 			count: 1
 			path: src/DependencyInjection/ContainerFactory.php

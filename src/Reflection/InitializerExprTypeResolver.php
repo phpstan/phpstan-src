@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use Nette\Utils\Strings;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp;
@@ -28,6 +29,7 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
@@ -78,6 +80,7 @@ use function in_array;
 use function is_finite;
 use function is_float;
 use function is_int;
+use function is_numeric;
 use function max;
 use function min;
 use function sprintf;
@@ -473,6 +476,32 @@ class InitializerExprTypeResolver
 
 		if ($leftStringType->isLiteralString()->and($rightStringType->isLiteralString())->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
+		}
+
+		$leftNumericStringNonEmpty = TypeCombinator::remove($leftStringType, new ConstantStringType(''));
+		if ($leftNumericStringNonEmpty->isNumericString()->yes()) {
+			$allRightConstantsZeroOrMore = false;
+			foreach ($rightConstantStrings as $rightConstantString) {
+				if ($rightConstantString->getValue() === '') {
+					continue;
+				}
+
+				if (
+					!is_numeric($rightConstantString->getValue())
+					|| Strings::match($rightConstantString->getValue(), '#^[0-9]+$#') === null
+				) {
+					$allRightConstantsZeroOrMore = false;
+					break;
+				}
+
+				$allRightConstantsZeroOrMore = true;
+			}
+
+			$zeroOrMoreInteger = IntegerRangeType::fromInterval(0, null);
+			$nonNegativeRight = $allRightConstantsZeroOrMore || $zeroOrMoreInteger->isSuperTypeOf($right)->yes();
+			if ($nonNegativeRight) {
+				$accessoryTypes[] = new AccessoryNumericStringType();
+			}
 		}
 
 		if (count($accessoryTypes) > 0) {

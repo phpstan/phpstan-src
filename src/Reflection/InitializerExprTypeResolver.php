@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use Nette\Utils\Strings;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp;
@@ -83,7 +84,6 @@ use function is_numeric;
 use function max;
 use function min;
 use function sprintf;
-use function str_contains;
 use function strtolower;
 use const INF;
 
@@ -488,8 +488,7 @@ class InitializerExprTypeResolver
 
 				if (
 					!is_numeric($rightConstantString->getValue())
-					|| str_contains($rightConstantString->getValue(), '.')
-					|| $rightConstantString->getValue() < 0
+					|| Strings::match($rightConstantString->getValue(), '#^[0-9]+$#') === null
 				) {
 					$allRightConstantsZeroOrMore = false;
 					break;

@@ -71,6 +71,13 @@ class HelloWorld
 		assertType('non-falsy-string', $i.$float); // could be 'non-falsy-string&numeric-string'
 		assertType('non-falsy-string', $numericString.$float);
 		assertType('non-falsy-string', $numericString.$maybeFloatConstStrings);
+
+		// https://3v4l.org/Ia4r0
+		$scientificFloatAsString = '3e4';
+		assertType('non-falsy-string', $numericString.$scientificFloatAsString);
+		assertType('non-falsy-string', $i.$scientificFloatAsString);
+		assertType('non-falsy-string', $scientificFloatAsString.$numericString);
+		assertType('non-falsy-string', $scientificFloatAsString.$i);
 	}
 
 }

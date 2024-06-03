@@ -2397,16 +2397,16 @@
         },
         {
             "name": "react/async",
-            "version": "v3.0.0",
+            "version": "v3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/async.git",
-                "reference": "3c3b812be77aec14bf8300b052ba589c9a5bc95b"
+                "reference": "bc3ef672b33e95bf814fe8377731e46888ed4b54"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/async/zipball/3c3b812be77aec14bf8300b052ba589c9a5bc95b",
-                "reference": "3c3b812be77aec14bf8300b052ba589c9a5bc95b",
+                "url": "https://api.github.com/repos/reactphp/async/zipball/bc3ef672b33e95bf814fe8377731e46888ed4b54",
+                "reference": "bc3ef672b33e95bf814fe8377731e46888ed4b54",
                 "shasum": ""
             },
             "require": {
@@ -2415,7 +2415,8 @@
                 "react/promise": "^3.0 || ^2.8 || ^1.2.1"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.3 || ^7.5"
+                "phpstan/phpstan": "1.10.39 || 1.4.10",
+                "phpunit/phpunit": "^9.6 || ^7.5"
             },
             "type": "library",
             "autoload": {
@@ -2456,19 +2457,15 @@
             ],
             "support": {
                 "issues": "https://github.com/reactphp/async/issues",
-                "source": "https://github.com/reactphp/async/tree/v3.0.0"
+                "source": "https://github.com/reactphp/async/tree/v3.2.0"
             },
             "funding": [
                 {
-                    "url": "https://github.com/WyriHaximus",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/clue",
-                    "type": "github"
+                    "url": "https://opencollective.com/reactphp",
+                    "type": "open_collective"
                 }
             ],
-            "time": "2022-07-11T14:17:23+00:00"
+            "time": "2023-11-22T16:21:11+00:00"
         },
         {
             "name": "react/cache",

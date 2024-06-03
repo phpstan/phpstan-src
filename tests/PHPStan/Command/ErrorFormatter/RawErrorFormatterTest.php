@@ -11,60 +11,73 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 	public function dataFormatterOutputProvider(): iterable
 	{
 		yield [
-			'No errors',
-			0,
-			0,
-			0,
-			'',
+			'message' => 'No errors',
+			'exitCode' => 0,
+			'numFileErrors' => 0,
+			'numGenericErrors' => 0,
+			'isVerbose' => false,
+			'expected' => '',
 		];
 
 		yield [
-			'One file error',
+			'message' => 'One file error',
+			'exitCode' => 1,
 			1,
-			1,
-			0,
-			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . "\n",
+			'numGenericErrors' => 0,
+			'isVerbose' => false,
+			'expected' => '/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . "\n",
 		];
 
 		yield [
-			'One generic error',
-			1,
-			0,
-			1,
+			'message' => 'One generic error',
+			'exitCode' => 1,
+			'numFileErrors' => 0,
+			'numGenericErrors' => 1,
+			'isVerbose' => false,
 			'?:?:first generic error' . "\n",
 		];
 
 		yield [
-			'Multiple file errors',
-			1,
-			4,
-			0,
-			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar' . "\nBar2\n" .
-			'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . "\n" .
-			'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo<Bar>' . "\n" .
-			'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . "\nBar2\n",
+			'message' => 'Multiple file errors',
+			'exitCode' => 1,
+			'numFileErrors' => 4,
+			'numGenericErrors' => 0,
+			'isVerbose' => false,
+			'expected' => '/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar
+Bar2
+/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo
+/data/folder/with space/and unicode 😃/project/foo.php:1:Foo<Bar>
+/data/folder/with space/and unicode 😃/project/foo.php:5:Bar
+Bar2
+',
 		];
 
 		yield [
-			'Multiple generic errors',
-			1,
-			0,
-			2,
-			'?:?:first generic error' . "\n" .
-			'?:?:second generic<error>' . "\n",
+			'message' => 'Multiple generic errors',
+			'exitCode' => 1,
+			'numFileErrors' => 0,
+			'numGenericErrors' => 2,
+			'isVerbose' => false,
+			'expected' => '?:?:first generic error
+?:?:second generic<error>
+',
 		];
 
 		yield [
-			'Multiple file, multiple generic errors',
-			1,
-			4,
-			2,
-			'?:?:first generic error' . "\n" .
-		'?:?:second generic<error>' . "\n" .
-		'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar' . "\nBar2\n" .
-		'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . "\n" .
-		'/data/folder/with space/and unicode 😃/project/foo.php:1:Foo<Bar>' . "\n" .
-		'/data/folder/with space/and unicode 😃/project/foo.php:5:Bar' . "\nBar2\n",
+			'message' => 'Multiple file, multiple generic errors',
+			'exitCode' => 1,
+			'numFileErrors' => 4,
+			'numGenericErrors' => 2,
+			'isVerbose' => false,
+			'expected' => '?:?:first generic error
+?:?:second generic<error>
+/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar
+Bar2
+/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo
+/data/folder/with space/and unicode 😃/project/foo.php:1:Foo<Bar>
+/data/folder/with space/and unicode 😃/project/foo.php:5:Bar
+Bar2
+',
 		];
 	}
 
@@ -77,6 +90,7 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
+		bool $isVerbose,
 		string $expected,
 	): void
 	{

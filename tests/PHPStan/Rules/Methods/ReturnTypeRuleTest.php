@@ -1024,4 +1024,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/array-push-preserves-list.php'], []);
 	}
 
+	public function testBug10721(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-10721.php'], []);
+	}
+
 }

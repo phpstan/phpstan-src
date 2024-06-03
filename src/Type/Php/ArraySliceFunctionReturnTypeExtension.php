@@ -8,6 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
@@ -22,24 +23,25 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		$valueType = $scope->getType($functionCall->getArgs()[0]->value);
+		$valueType = $scope->getType($args[0]->value);
 		if (!$valueType->isArray()->yes()) {
 			return null;
 		}
 
-		$offsetType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : null;
+		$offsetType = isset($args[1]) ? $scope->getType($args[1]->value) : null;
 		$offset = $offsetType instanceof ConstantIntegerType ? $offsetType->getValue() : 0;
+
+		$limitType = isset($args[2]) ? $scope->getType($args[2]->value) : null;
+		$limit = $limitType instanceof ConstantIntegerType ? $limitType->getValue() : null;
 
 		$constantArrays = $valueType->getConstantArrays();
 		if (count($constantArrays) > 0) {
-			$limitType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
-			$limit = $limitType instanceof ConstantIntegerType ? $limitType->getValue() : null;
-
-			$preserveKeysType = isset($functionCall->getArgs()[3]) ? $scope->getType($functionCall->getArgs()[3]->value) : null;
+			$preserveKeysType = isset($args[3]) ? $scope->getType($args[3]->value) : null;
 			$preserveKeys = $preserveKeysType !== null && $preserveKeysType->isTrue()->yes();
 
 			$results = [];
@@ -51,6 +53,13 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 		}
 
 		if ($valueType->isIterableAtLeastOnce()->yes()) {
+			if ($offsetType !== null
+				&& $valueType->hasOffsetValueType($offsetType)->yes()
+				&& ($limitType === null || IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($limitType)->yes())
+			) {
+				return $valueType;
+			}
+
 			return TypeCombinator::union($valueType, new ConstantArrayType([], []));
 		}
 

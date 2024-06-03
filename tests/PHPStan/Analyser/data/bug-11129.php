@@ -1,0 +1,57 @@
+<?php
+
+namespace Bug11129;
+
+use function PHPStan\Testing\assertType;
+
+class HelloWorld
+{
+	/**
+	 * @param positive-int $positiveInt
+	 * @param negative-int $negativeInt
+	 * @param 0|'0'|'1'|'2' $positiveConstStrings
+	 * @param 0|-1|'2' $maybeNegativeConstStrings
+	 * @param 0|1|'a' $maybeNonNumericConstStrings
+	 */
+	public function foo(int $i, $positiveInt, $negativeInt, $positiveConstStrings, $maybeNegativeConstStrings, $maybeNonNumericConstStrings, bool $bool): void {
+		assertType('non-falsy-string', '0'.$i);
+		assertType('non-falsy-string&numeric-string', $i.'0');
+
+		assertType('non-falsy-string&numeric-string', '0'.$positiveInt);
+		assertType('non-falsy-string&numeric-string', $positiveInt.'0');
+
+		assertType('non-falsy-string', '0'.$negativeInt);
+		assertType('non-falsy-string&numeric-string', $negativeInt.'0');
+
+		assertType("'00'|'01'|'02'", '0'.$positiveConstStrings);
+		assertType( "'00'|'10'|'20'", $positiveConstStrings.'0');
+
+		assertType("'0-1'|'00'|'02'", '0'.$maybeNegativeConstStrings);
+		assertType("'-10'|'00'|'20'", $maybeNegativeConstStrings.'0');
+
+		assertType("'00'|'01'|'0a'", '0'.$maybeNonNumericConstStrings);
+		assertType("'00'|'10'|'a0'", $maybeNonNumericConstStrings.'0');
+
+		assertType('non-falsy-string&numeric-string', $i.$positiveConstStrings);
+		assertType( 'non-falsy-string', $positiveConstStrings.$i);
+
+		assertType('non-falsy-string', $i.$maybeNegativeConstStrings);
+		assertType('non-falsy-string', $maybeNegativeConstStrings.$i);
+
+		assertType('non-falsy-string', $i.$maybeNonNumericConstStrings);
+		assertType('non-falsy-string', $maybeNonNumericConstStrings.$i);
+
+		assertType('non-empty-string&numeric-string', $i.$bool);
+		assertType('non-empty-string', $bool.$i);
+		assertType('non-empty-string&numeric-string', $positiveInt.$bool); // could be 'non-falsy-string&numeric-string'
+		assertType('non-empty-string&numeric-string', $bool.$positiveInt); // could be 'non-falsy-string&numeric-string'
+		assertType('non-empty-string&numeric-string', $negativeInt.$bool); // could be 'non-falsy-string&numeric-string'
+		assertType('non-empty-string', $bool.$negativeInt);
+
+		assertType('non-falsy-string', $i.$i);
+		assertType('non-falsy-string', $negativeInt.$negativeInt);
+		assertType('non-falsy-string', $maybeNegativeConstStrings.$negativeInt);
+		assertType('non-falsy-string', $negativeInt.$maybeNegativeConstStrings);
+	}
+
+}

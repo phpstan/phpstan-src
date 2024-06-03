@@ -83,6 +83,7 @@ use function is_numeric;
 use function max;
 use function min;
 use function sprintf;
+use function str_contains;
 use function strtolower;
 use const INF;
 
@@ -485,7 +486,11 @@ class InitializerExprTypeResolver
 					continue;
 				}
 
-				if (!is_numeric($rightConstantString->getValue()) || $rightConstantString->getValue() < 0) {
+				if (
+					!is_numeric($rightConstantString->getValue())
+					|| str_contains($rightConstantString->getValue(), '.')
+					|| $rightConstantString->getValue() < 0
+				) {
 					$allRightConstantsZeroOrMore = false;
 					break;
 				}

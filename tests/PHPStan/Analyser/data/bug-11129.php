@@ -12,8 +12,13 @@ class HelloWorld
 	 * @param 0|'0'|'1'|'2' $positiveConstStrings
 	 * @param 0|-1|'2' $maybeNegativeConstStrings
 	 * @param 0|1|'a' $maybeNonNumericConstStrings
+	 * @param 0|1|0.2 $maybeFloatConstStrings
 	 */
-	public function foo(int $i, $positiveInt, $negativeInt, $positiveConstStrings, $maybeNegativeConstStrings, $maybeNonNumericConstStrings, bool $bool): void {
+	public function foo(
+		int $i, $positiveInt, $negativeInt, $positiveConstStrings,
+		$maybeNegativeConstStrings, $maybeNonNumericConstStrings, $maybeFloatConstStrings,
+		bool $bool, float $float
+	): void {
 		assertType('non-falsy-string', '0'.$i);
 		assertType('non-falsy-string&numeric-string', $i.'0');
 
@@ -41,6 +46,9 @@ class HelloWorld
 		assertType('non-falsy-string', $i.$maybeNonNumericConstStrings);
 		assertType('non-falsy-string', $maybeNonNumericConstStrings.$i);
 
+		assertType('non-falsy-string&numeric-string', $i.$maybeFloatConstStrings);
+		assertType('non-falsy-string', $maybeFloatConstStrings.$i);
+
 		assertType('non-empty-string&numeric-string', $i.$bool);
 		assertType('non-empty-string', $bool.$i);
 		assertType('non-empty-string&numeric-string', $positiveInt.$bool); // could be 'non-falsy-string&numeric-string'
@@ -52,6 +60,16 @@ class HelloWorld
 		assertType('non-falsy-string', $negativeInt.$negativeInt);
 		assertType('non-falsy-string', $maybeNegativeConstStrings.$negativeInt);
 		assertType('non-falsy-string', $negativeInt.$maybeNegativeConstStrings);
+
+		assertType('non-falsy-string', $float.$float);
+		assertType('non-falsy-string&numeric-string', $float.$positiveInt);
+		assertType('non-falsy-string', $float.$negativeInt);
+		assertType('non-falsy-string', $float.$i);
+		assertType('non-falsy-string', $i.$float); // could be 'non-falsy-string&numeric-string'
+
+		// https://3v4l.org/BCS2K
+		assertType('true', is_numeric('0.2'));
+		assertType('false', is_numeric('123.23' . '0.2'));
 	}
 
 }

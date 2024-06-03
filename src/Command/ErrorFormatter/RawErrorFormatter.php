@@ -23,7 +23,7 @@ class RawErrorFormatter implements ErrorFormatter
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			$identifier = '';
 			if ($outputIdentifiers && $fileSpecificError->getIdentifier() !== null) {
-				$identifier = sprintf(' [identifier:%s]', $fileSpecificError->getIdentifier());
+				$identifier = sprintf(' [identifier=%s]', $fileSpecificError->getIdentifier());
 			}
 
 			$output->writeRaw(

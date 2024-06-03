@@ -11,7 +11,6 @@ use PHPStan\Testing\ErrorFormatterTestCase;
 use function getenv;
 use function putenv;
 use function sprintf;
-use const PHP_VERSION_ID;
 
 class TableErrorFormatterTest extends ErrorFormatterTestCase
 {
@@ -34,6 +33,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'exitCode' => 0,
 			'numFileErrors' => 0,
 			'numGenericErrors' => 0,
+			'verbose' => false,
 			'extraEnvVars' => [],
 			'expected' => '
  [OK] No errors
@@ -46,6 +46,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'exitCode' => 1,
 			'numFileErrors' => 1,
 			'numGenericErrors' => 0,
+			'verbose' => false,
 			'extraEnvVars' => [],
 			'expected' => ' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
@@ -64,6 +65,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'exitCode' => 1,
 			'numFileErrors' => 0,
 			'numGenericErrors' => 1,
+			'verbose' => false,
 			'extraEnvVars' => [],
 			'expected' => ' -- ---------------------
      Error
@@ -82,6 +84,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'exitCode' => 1,
 			'numFileErrors' => 4,
 			'numGenericErrors' => 0,
+			'verbose' => false,
 			'extraEnvVars' => [],
 			'expected' => ' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
@@ -110,6 +113,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'exitCode' => 1,
 			'numFileErrors' => 0,
 			'numGenericErrors' => 2,
+			'verbose' => false,
 			'extraEnvVars' => [],
 			'expected' => ' -- -----------------------
      Error
@@ -129,6 +133,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'exitCode' => 1,
 			'numFileErrors' => 4,
 			'numGenericErrors' => 2,
+			'verbose' => false,
 			'extraEnvVars' => [],
 			'expected' => ' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
@@ -164,6 +169,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'exitCode' => 1,
 			'numFileErrors' => 1,
 			'numGenericErrors' => 0,
+			'verbose' => false,
 			'extraEnvVars' => ['TERM_PROGRAM=vscode'],
 			'expected' => ' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
@@ -176,24 +182,64 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 ',
 		];
+
+		yield [
+			'message' => 'One file error with tip',
+			'exitCode' => 1,
+			'numFileErrors' => [5, 6],
+			'numGenericErrors' => 0,
+			'verbose' => false,
+			'extraEnvVars' => [],
+			'expected' => ' ------ ------------
+  Line   foo.php
+ ------ ------------
+  5      Foobar\Buz
+         💡 a tip
+ ------ ------------
+
+
+ [ERROR] Found 1 error
+
+',
+		];
+
+		yield [
+			'message' => 'One file error with tip and verbose',
+			'exitCode' => 1,
+			'numFileErrors' => [5, 6],
+			'numGenericErrors' => 0,
+			'verbose' => true,
+			'extraEnvVars' => [],
+			'expected' => ' ------ ----------------
+  Line   foo.php
+ ------ ----------------
+  5      Foobar\Buz
+         🪪  foobar.buz
+         💡 a tip
+ ------ ----------------
+
+
+ [ERROR] Found 1 error
+
+',
+		];
 	}
 
 	/**
 	 * @dataProvider dataFormatterOutputProvider
+	 * @param array{int, int}|int $numFileErrors
 	 * @param array<string> $extraEnvVars
 	 */
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
-		int $numFileErrors,
+		array|int $numFileErrors,
 		int $numGenericErrors,
+		bool $verbose,
 		array $extraEnvVars,
 		string $expected,
 	): void
 	{
-		if (PHP_VERSION_ID >= 80100) {
-			self::markTestSkipped('Skipped on PHP 8.1 because of different result');
-		}
 		$formatter = $this->createErrorFormatter(null);
 
 		// NOTE: extra env vars need to be cleared in tearDown()
@@ -203,10 +249,10 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getOutput(),
+			$this->getOutput(false, $verbose),
 		), sprintf('%s: response code do not match', $message));
 
-		$this->assertEquals($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));
+		$this->assertEquals($expected, $this->getOutputContent(false, $verbose), sprintf('%s: output do not match', $message));
 	}
 
 	public function testEditorUrlWithTrait(): void

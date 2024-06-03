@@ -15,16 +15,16 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			'exitCode' => 0,
 			'numFileErrors' => 0,
 			'numGenericErrors' => 0,
-			'isVerbose' => false,
+			'verbose' => false,
 			'expected' => '',
 		];
 
 		yield [
 			'message' => 'One file error',
 			'exitCode' => 1,
-			1,
+			'numFileErrors' => 1,
 			'numGenericErrors' => 0,
-			'isVerbose' => false,
+			'verbose' => false,
 			'expected' => '/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo' . "\n",
 		];
 
@@ -33,8 +33,8 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			'exitCode' => 1,
 			'numFileErrors' => 0,
 			'numGenericErrors' => 1,
-			'isVerbose' => false,
-			'?:?:first generic error' . "\n",
+			'verbose' => false,
+			'expected' => '?:?:first generic error' . "\n",
 		];
 
 		yield [
@@ -42,7 +42,7 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 			'exitCode' => 1,
 			'numFileErrors' => 4,
 			'numGenericErrors' => 0,
-			'isVerbose' => false,
+			'verbose' => false,
 			'expected' => '/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar
 Bar2
 /data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:4:Foo
@@ -57,7 +57,7 @@ Bar2
 			'exitCode' => 1,
 			'numFileErrors' => 0,
 			'numGenericErrors' => 2,
-			'isVerbose' => false,
+			'verbose' => false,
 			'expected' => '?:?:first generic error
 ?:?:second generic<error>
 ',
@@ -68,7 +68,7 @@ Bar2
 			'exitCode' => 1,
 			'numFileErrors' => 4,
 			'numGenericErrors' => 2,
-			'isVerbose' => false,
+			'verbose' => false,
 			'expected' => '?:?:first generic error
 ?:?:second generic<error>
 /data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php:2:Bar
@@ -79,18 +79,38 @@ Bar2
 Bar2
 ',
 		];
+
+		yield [
+			'message' => 'One file error with tip',
+			'exitCode' => 1,
+			'numFileErrors' => [5, 6],
+			'numGenericErrors' => 0,
+			'verbose' => false,
+			'expected' => '/data/folder/with space/and unicode 😃/project/foo.php:5:Foobar\Buz
+',
+		];
+
+		yield [
+			'message' => 'One file error with tip and verbose',
+			'exitCode' => 1,
+			'numFileErrors' => [5, 6],
+			'numGenericErrors' => 0,
+			'verbose' => true,
+			'expected' => '/data/folder/with space/and unicode 😃/project/foo.php:5:Foobar\Buz [identifier=foobar.buz]
+',
+		];
 	}
 
 	/**
 	 * @dataProvider dataFormatterOutputProvider
-	 *
+	 * @param array{int, int}|int $numFileErrors
 	 */
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
-		int $numFileErrors,
+		array|int $numFileErrors,
 		int $numGenericErrors,
-		bool $isVerbose,
+		bool $verbose,
 		string $expected,
 	): void
 	{
@@ -98,10 +118,10 @@ Bar2
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getOutput(),
+			$this->getOutput(false, $verbose),
 		), sprintf('%s: response code do not match', $message));
 
-		$this->assertEquals($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));
+		$this->assertEquals($expected, $this->getOutputContent(false, $verbose), sprintf('%s: output do not match', $message));
 	}
 
 }

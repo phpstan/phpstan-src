@@ -16,6 +16,9 @@ use function array_slice;
 use function explode;
 use function fopen;
 use function implode;
+use function in_array;
+use function is_int;
+use function range;
 use function rewind;
 use function rtrim;
 use function stream_get_contents;
@@ -27,6 +30,8 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 
 	private const KIND_DECORATED = 'decorated';
 	private const KIND_PLAIN = 'plain';
+	private const KIND_VERBOSE = '+verbose';
+	private const KIND_NOT_VERBOSE = '+not-verbose';
 
 	/** @var array<string, StreamOutput> */
 	private array $outputStream = [];
@@ -34,25 +39,30 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 	/** @var array<string, Output> */
 	private array $output = [];
 
-	private function getOutputStream(bool $decorated = false): StreamOutput
+	private function getOutputStream(bool $decorated = false, bool $verbose = false): StreamOutput
 	{
 		$kind = $decorated ? self::KIND_DECORATED : self::KIND_PLAIN;
+		$kind .= $verbose ? self::KIND_VERBOSE : self::KIND_NOT_VERBOSE;
+
 		if (!isset($this->outputStream[$kind])) {
 			$resource = fopen('php://memory', 'w', false);
 			if ($resource === false) {
 				throw new ShouldNotHappenException();
 			}
-			$this->outputStream[$kind] = new StreamOutput($resource, StreamOutput::VERBOSITY_NORMAL, $decorated);
+			$verbosity = $verbose ? StreamOutput::VERBOSITY_VERBOSE : StreamOutput::VERBOSITY_NORMAL;
+			$this->outputStream[$kind] = new StreamOutput($resource, $verbosity, $decorated);
 		}
 
 		return $this->outputStream[$kind];
 	}
 
-	protected function getOutput(bool $decorated = false): Output
+	protected function getOutput(bool $decorated = false, bool $verbose = false): Output
 	{
 		$kind = $decorated ? self::KIND_DECORATED : self::KIND_PLAIN;
+		$kind .= $verbose ? self::KIND_VERBOSE : self::KIND_NOT_VERBOSE;
+
 		if (!isset($this->output[$kind])) {
-			$outputStream = $this->getOutputStream($decorated);
+			$outputStream = $this->getOutputStream($decorated, $verbose);
 			$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $outputStream);
 			$this->output[$kind] = new SymfonyOutput($outputStream, new SymfonyStyle($errorConsoleStyle));
 		}
@@ -60,11 +70,11 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 		return $this->output[$kind];
 	}
 
-	protected function getOutputContent(bool $decorated = false): string
+	protected function getOutputContent(bool $decorated = false, bool $verbose = false): string
 	{
-		rewind($this->getOutputStream($decorated)->getStream());
+		rewind($this->getOutputStream($decorated, $verbose)->getStream());
 
-		$contents = stream_get_contents($this->getOutputStream($decorated)->getStream());
+		$contents = stream_get_contents($this->getOutputStream($decorated, $verbose)->getStream());
 		if ($contents === false) {
 			throw new ShouldNotHappenException();
 		}
@@ -72,9 +82,21 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 		return $this->rtrimMultiline($contents);
 	}
 
-	protected function getAnalysisResult(int $numFileErrors, int $numGenericErrors): AnalysisResult
+	/**
+	 * @param array{int, int}|int $numFileErrors
+	 */
+	protected function getAnalysisResult(array|int $numFileErrors, int $numGenericErrors): AnalysisResult
 	{
-		if ($numFileErrors > 5 || $numFileErrors < 0 || $numGenericErrors > 2 || $numGenericErrors < 0) {
+		if (is_int($numFileErrors)) {
+			$offsetFileErrors = 0;
+		} else {
+			[$offsetFileErrors, $numFileErrors] = $numFileErrors;
+		}
+
+		if (!in_array($numFileErrors, range(0, 6), true) ||
+			!in_array($offsetFileErrors, range(0, 6), true) ||
+			!in_array($numGenericErrors, range(0, 2), true)
+		) {
 			throw new ShouldNotHappenException();
 		}
 
@@ -84,7 +106,8 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/foo.php', 5, true, null, null, 'a tip'),
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/folder with unicode 😃/file name with "spaces" and unicode 😃.php', 2),
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/foo.php', null),
-		], 0, $numFileErrors);
+			new Error('Foobar\\Buz', self::DIRECTORY_PATH . '/foo.php', 5, true, null, null, 'a tip', null, null, 'foobar.buz'),
+		], $offsetFileErrors, $numFileErrors);
 
 		$genericErrors = array_slice([
 			'first generic error',

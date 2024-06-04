@@ -24,6 +24,11 @@ class ClosureTypeTest extends PHPStanTestCase
 				TrinaryLogic::createYes(),
 			],
 			[
+				new ClosureType([], new MixedType(), false, impurePoints: []),
+				new ClosureType([], new MixedType(), false),
+				TrinaryLogic::createMaybe(),
+			],
+			[
 				new ClosureType([], new UnionType([new IntegerType(), new StringType()]), false),
 				new ClosureType([], new IntegerType(), false),
 				TrinaryLogic::createYes(),

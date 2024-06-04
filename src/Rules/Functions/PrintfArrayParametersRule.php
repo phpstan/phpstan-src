@@ -51,11 +51,6 @@ class PrintfArrayParametersRule implements Rule
 		$formatArgumentPosition = $functionsArgumentPositions[$name];
 
 		$args = $node->getArgs();
-		foreach ($args as $arg) {
-			if ($arg->unpack) {
-				return [];
-			}
-		}
 		$argsCount = count($args);
 		if ($argsCount < $minimumNumberOfArguments[$name]) {
 			return []; // caught by CallToFunctionParametersRule

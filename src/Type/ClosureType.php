@@ -75,12 +75,15 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	private TemplateTypeVarianceMap $callSiteVarianceMap;
 
+	/** @var SimpleImpurePoint[] */
+	private array $impurePoints;
+
 	/**
 	 * @api
 	 * @param array<int, ParameterReflection>|null $parameters
 	 * @param array<non-empty-string, TemplateTag> $templateTags
 	 * @param SimpleThrowPoint[] $throwPoints
-	 * @param SimpleImpurePoint[] $impurePoints
+	 * @param ?SimpleImpurePoint[] $impurePoints
 	 * @param InvalidateExprNode[] $invalidateExpressions
 	 * @param string[] $usedVariables
 	 */
@@ -93,7 +96,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		?TemplateTypeVarianceMap $callSiteVarianceMap = null,
 		private array $templateTags = [],
 		private array $throwPoints = [],
-		private array $impurePoints = [],
+		?array $impurePoints = null,
 		private array $invalidateExpressions = [],
 		private array $usedVariables = [],
 	)
@@ -105,6 +108,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->callSiteVarianceMap = $callSiteVarianceMap ?? TemplateTypeVarianceMap::createEmpty();
+		$this->impurePoints = $impurePoints ?? [new SimpleImpurePoint('functionCall', 'call to an unknown Closure', false)];
 	}
 
 	/**
@@ -113,6 +117,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function getTemplateTags(): array
 	{
 		return $this->templateTags;
+	}
+
+	public static function createPure(): self
+	{
+		return new self(null, null, true, null, null, null, [], [], []);
 	}
 
 	public function isPure(): TrinaryLogic

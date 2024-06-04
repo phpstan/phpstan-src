@@ -360,7 +360,7 @@ class TypeNodeResolver
 				return new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes());
 
 			case 'pure-closure':
-				return new ClosureType();
+				return ClosureType::createPure();
 
 			case 'resource':
 				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);

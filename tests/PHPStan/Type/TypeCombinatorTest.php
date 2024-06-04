@@ -2535,7 +2535,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		yield [
 			[
 				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
-				new ClosureType(impurePoints: []),
+				new ClosureType(null, null, true, null, null, null, [], [], []),
 			],
 			CallableType::class,
 			'pure-callable(): mixed',
@@ -2553,7 +2553,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
 					new SimpleImpurePoint('functionCall', 'foo', true),
 				]),
-				new ClosureType(impurePoints: []),
+				new ClosureType(null, null, true, null, null, null, [], [], []),
 			],
 			UnionType::class,
 			'(Closure(): mixed)|(pure-Closure)',
@@ -2563,7 +2563,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
 					new SimpleImpurePoint('functionCall', 'foo', false),
 				]),
-				new ClosureType(impurePoints: []),
+				new ClosureType(null, null, true, null, null, null, [], [], []),
 			],
 			ClosureType::class,
 			'Closure(): mixed',
@@ -4219,7 +4219,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		yield [
 			[
 				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
-				new ClosureType(impurePoints: []),
+				new ClosureType(null, null, true, null, null, null, [], [], []),
 			],
 			ClosureType::class,
 			'pure-Closure',
@@ -4237,7 +4237,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
 					new SimpleImpurePoint('functionCall', 'foo', true),
 				]),
-				new ClosureType(impurePoints: []),
+				new ClosureType(null, null, true, null, null, null, [], [], []),
 			],
 			NeverType::class,
 			'*NEVER*=implicit',
@@ -4247,7 +4247,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
 					new SimpleImpurePoint('functionCall', 'foo', false),
 				]),
-				new ClosureType(impurePoints: []),
+				new ClosureType(null, null, true, null, null, null, [], [], []),
 			],
 			ClosureType::class,
 			'pure-Closure',

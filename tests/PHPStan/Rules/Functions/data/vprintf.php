@@ -15,3 +15,16 @@ vsprintf("%'.9d %1$'.9d %0.3f %d %d %d", [123, 456]); // five parameters require
 
 vsprintf('%-4s', ['foo']); // ok
 vsprintf('%%s %s', ['foo', 'bar']); // one parameter over
+
+
+if (rand(0,1)) {
+	$args = ['foo'];
+} else {
+	$args = ['foo', 'bar'];
+}
+vsprintf('%-4s', $args); // could be error
+
+
+vprintf('%s', ['foo']); // ok
+vprintf('%s %% %% %s', ['foo', 'bar']); // ok
+vprintf('%s %s', ['foo']); // one parameter missing

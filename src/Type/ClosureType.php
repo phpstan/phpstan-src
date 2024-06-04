@@ -119,10 +119,8 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->templateTags;
 	}
 
-	/**
-	 * @return self
-	 */
-	public static function createPure(): self {
+	public static function createPure(): self
+	{
 		return new self(null, null, true, null, null, null, [], [], []);
 	}
 

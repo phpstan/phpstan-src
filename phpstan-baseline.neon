@@ -341,11 +341,6 @@ parameters:
 			path: src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Parameter \\#2 \\$namespace of class PHPStan\\\\Reflection\\\\InitializerExprContext constructor expects non\\-empty\\-string\\|null, string\\|null given\\.$#"
-			count: 1
-			path: src/Reflection/InitializerExprContext.php
-
-		-
 			message: "#^Binary operation \"&\" between bool\\|float\\|int\\|string\\|null and bool\\|float\\|int\\|string\\|null results in an error\\.$#"
 			count: 1
 			path: src/Reflection/InitializerExprTypeResolver.php

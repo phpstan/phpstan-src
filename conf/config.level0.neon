@@ -79,6 +79,7 @@ rules:
 	- PHPStan\Rules\Functions\InvalidLexicalVariablesInClosureUseRule
 	- PHPStan\Rules\Functions\ParamAttributesRule
 	- PHPStan\Rules\Functions\PrintfParametersRule
+	- PHPStan\Rules\Functions\PrintfArrayParametersRule
 	- PHPStan\Rules\Functions\RedefinedParametersRule
 	- PHPStan\Rules\Functions\ReturnNullsafeByRefRule
 	- PHPStan\Rules\Ignore\IgnoreParseErrorRule
@@ -298,3 +299,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Functions\UselessFunctionReturnValueRule
+
+	-
+		class: PHPStan\Rules\Functions\PrintfHelper

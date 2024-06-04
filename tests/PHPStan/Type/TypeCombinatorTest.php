@@ -2535,7 +2535,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		yield [
 			[
 				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
-				new ClosureType(null, null, true, null, null, null, [], [], []),
+				ClosureType::createPure(),
 			],
 			CallableType::class,
 			'pure-callable(): mixed',
@@ -2553,7 +2553,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
 					new SimpleImpurePoint('functionCall', 'foo', true),
 				]),
-				new ClosureType(null, null, true, null, null, null, [], [], []),
+				ClosureType::createPure(),
 			],
 			UnionType::class,
 			'(Closure(): mixed)|(pure-Closure)',
@@ -2563,7 +2563,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
 					new SimpleImpurePoint('functionCall', 'foo', false),
 				]),
-				new ClosureType(null, null, true, null, null, null, [], [], []),
+				ClosureType::createPure(),
 			],
 			ClosureType::class,
 			'Closure(): mixed',
@@ -4219,7 +4219,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		yield [
 			[
 				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
-				new ClosureType(null, null, true, null, null, null, [], [], []),
+				ClosureType::createPure(),
 			],
 			ClosureType::class,
 			'pure-Closure',
@@ -4237,7 +4237,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
 					new SimpleImpurePoint('functionCall', 'foo', true),
 				]),
-				new ClosureType(null, null, true, null, null, null, [], [], []),
+				ClosureType::createPure(),
 			],
 			NeverType::class,
 			'*NEVER*=implicit',
@@ -4247,7 +4247,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ClosureType([], new MixedType(), true, null, null, null, [], [], [
 					new SimpleImpurePoint('functionCall', 'foo', false),
 				]),
-				new ClosureType(null, null, true, null, null, null, [], [], []),
+				ClosureType::createPure(),
 			],
 			ClosureType::class,
 			'pure-Closure',

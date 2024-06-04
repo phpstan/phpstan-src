@@ -119,6 +119,13 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->templateTags;
 	}
 
+	/**
+	 * @return self
+	 */
+	public static function createPure(): self {
+		return new self(null, null, true, null, null, null, [], [], []);
+	}
+
 	public function isPure(): TrinaryLogic
 	{
 		$impurePoints = $this->getImpurePoints();

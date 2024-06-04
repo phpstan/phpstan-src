@@ -20,4 +20,7 @@ function doFoo(string $s, int $i, $flag) {
 	if ($i === PATHINFO_ALL) {
 		assertType('array{dirname?: string, basename: string, extension?: string, filename: string}', pathinfo($s, $i));
 	}
+	if ($i === PATHINFO_ALL || $i === PATHINFO_DIRNAME) {
+		assertType('array{dirname?: string, basename: string, extension?: string, filename: string}|string', pathinfo($s, $i));
+	}
 }

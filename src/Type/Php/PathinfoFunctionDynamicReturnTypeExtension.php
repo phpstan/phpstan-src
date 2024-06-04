@@ -58,14 +58,20 @@ class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctionRetur
 		$scalarValues = $flagsType->getConstantScalarValues();
 		if ($scalarValues !== []) {
 			$pathInfoAll = $this->getConstant('PATHINFO_ALL');
+			if ($pathInfoAll === null) {
+				return null;
+			}
 
+			$result = [];
 			foreach ($scalarValues as $scalarValue) {
-				if ($pathInfoAll !== null && $scalarValue === $pathInfoAll) {
-					return $arrayType;
+				if ($scalarValue === $pathInfoAll) {
+					$result[] = $arrayType;
+				} else {
+					$result[] = new StringType();
 				}
 			}
 
-			return new StringType();
+			return TypeCombinator::union(...$result);
 		}
 
 		return TypeCombinator::union($arrayType, new StringType());

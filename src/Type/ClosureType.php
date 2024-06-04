@@ -75,6 +75,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	private TemplateTypeVarianceMap $callSiteVarianceMap;
 
+	/** @var SimpleImpurePoint[] */
 	private array $impurePoints;
 
 	/**

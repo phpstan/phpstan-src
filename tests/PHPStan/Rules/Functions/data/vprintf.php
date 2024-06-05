@@ -28,3 +28,5 @@ vsprintf('%-4s', $args); // could be error
 vprintf('%s', ['foo']); // ok
 vprintf('%s %% %% %s', ['foo', 'bar']); // ok
 vprintf('%s %s', ['foo']); // one parameter missing
+vprintf('abc'); // caught by CallToFunctionParametersRule
+vsprintf('abc', []); // ok

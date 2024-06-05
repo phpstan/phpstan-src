@@ -18,6 +18,14 @@ use function strtolower;
  */
 class PrintfArrayParametersRule implements Rule
 {
+	private const FORMAT_ARGUMENT_POSITIONS = [
+		'vprintf' => 0,
+		'vsprintf' => 0,
+	];
+	private const MINIMUM_NUMBER_OF_ARGUMENTS = [
+		'vprintf' => 1,
+		'vsprintf' => 1,
+	];
 
 	public function __construct(private PrintfHelper $printfHelper)
 	{
@@ -34,25 +42,16 @@ class PrintfArrayParametersRule implements Rule
 			return [];
 		}
 
-		$functionsArgumentPositions = [
-			'vprintf' => 0,
-			'vsprintf' => 0,
-		];
-		$minimumNumberOfArguments = [
-			'vprintf' => 1,
-			'vsprintf' => 1,
-		];
-
 		$name = strtolower((string) $node->name);
-		if (!array_key_exists($name, $functionsArgumentPositions)) {
+		if (!array_key_exists($name, self::FORMAT_ARGUMENT_POSITIONS)) {
 			return [];
 		}
 
-		$formatArgumentPosition = $functionsArgumentPositions[$name];
+		$formatArgumentPosition = self::FORMAT_ARGUMENT_POSITIONS[$name];
 
 		$args = $node->getArgs();
 		$argsCount = count($args);
-		if ($argsCount < $minimumNumberOfArguments[$name]) {
+		if ($argsCount < self::MINIMUM_NUMBER_OF_ARGUMENTS[$name]) {
 			return []; // caught by CallToFunctionParametersRule
 		}
 

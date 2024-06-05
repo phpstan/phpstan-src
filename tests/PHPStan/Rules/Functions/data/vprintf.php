@@ -34,8 +34,31 @@ function doFoo($message, array $arr) {
 	vprintf('%s %s', ['foo']); // one parameter missing
 	vprintf('abc'); // caught by CallToFunctionParametersRule
 	vsprintf('abc', []); // ok
+	vsprintf('abc', $arr); // ok
 
-	if ($arr !== []) {
-		vsprintf('no-placeholder', $arr); // at least one parameter over
+	if (rand(0,1)) {
+		$format = '%s';
+		$args = ['foo'];
+	} else {
+		$format = '%s%s';
+		$args = ['foo', 'bar'];
 	}
+	vsprintf($format, $args); // ok
+
+	if (rand(0,1)) {
+		$format = '%s';
+	} else {
+		$format = '%s%s';
+	}
+	vsprintf($format, $arr); // need at least non-empty-array
+
+	if (rand(0,1)) {
+		$format = '%s';
+	} else {
+		$format = '%s%s';
+	}
+	if ($arr !== []) {
+		vsprintf($format, $arr); // ok
+	}
+
 }

@@ -69,8 +69,8 @@ class PrintfArrayParametersRuleTest extends RuleTestCase
 				34,
 			],
 			[
-				'Call to vsprintf contains 0 placeholders, 1 or more values given.',
-				39,
+				'Call to vsprintf contains 1-2 placeholders, 0 or more values given.',
+				53,
 			],
 		]);
 	}

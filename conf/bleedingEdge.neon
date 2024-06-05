@@ -56,5 +56,6 @@ parameters:
 		checkParameterCastableToStringFunctions: true
 		narrowPregMatches: true
 		uselessReturnValue: true
+		printfArrayParameters: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Rule.stub

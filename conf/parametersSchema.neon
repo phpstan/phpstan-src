@@ -86,6 +86,7 @@ parametersSchema:
 		checkParameterCastableToStringFunctions: bool()
 		narrowPregMatches: bool()
 		uselessReturnValue: bool()
+		printfArrayParameters: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

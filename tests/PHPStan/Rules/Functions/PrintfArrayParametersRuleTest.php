@@ -23,43 +23,51 @@ class PrintfArrayParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/vprintf.php'], [
 			[
 				'Call to vsprintf contains 2 placeholders, 1 value given.',
-				6,
-			],
-			[
-				'Call to vsprintf contains 0 placeholders, 1 value given.',
-				7,
-			],
-			[
-				'Call to vsprintf contains 1 placeholder, 2 values given.',
-				8,
-			],
-			[
-				'Call to vsprintf contains 2 placeholders, 1 value given.',
-				9,
-			],
-			[
-				'Call to vsprintf contains 2 placeholders, 0 values given.',
 				10,
 			],
 			[
-				'Call to vsprintf contains 2 placeholders, 0 values given.',
+				'Call to vsprintf contains 0 placeholders, 1 value given.',
 				11,
 			],
 			[
-				'Call to vsprintf contains 4 placeholders, 0 values given.',
+				'Call to vsprintf contains 1 placeholder, 2 values given.',
 				12,
 			],
 			[
-				'Call to vsprintf contains 5 placeholders, 2 values given.',
+				'Call to vsprintf contains 2 placeholders, 1 value given.',
+				13,
+			],
+			[
+				'Call to vsprintf contains 2 placeholders, 0 values given.',
 				14,
 			],
 			[
+				'Call to vsprintf contains 2 placeholders, 0 values given.',
+				15,
+			],
+			[
+				'Call to vsprintf contains 4 placeholders, 0 values given.',
+				16,
+			],
+			[
+				'Call to vsprintf contains 5 placeholders, 2 values given.',
+				18,
+			],
+			[
 				'Call to vsprintf contains 1 placeholder, 2 values given.',
-				17,
+				21,
+			],
+			[
+				'Call to vsprintf contains 1 placeholder, 1-2 values given.',
+				29,
 			],
 			[
 				'Call to vprintf contains 2 placeholders, 1 value given.',
-				30,
+				34,
+			],
+			[
+				'Call to vsprintf contains 0 placeholders, 1 or more values given.',
+				39,
 			],
 		]);
 	}

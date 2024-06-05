@@ -15,7 +15,10 @@ class PrintfArrayParametersRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new PrintfArrayParametersRule(new PrintfHelper(new PhpVersion(PHP_VERSION_ID)));
+		return new PrintfArrayParametersRule(
+			new PrintfHelper(new PhpVersion(PHP_VERSION_ID)),
+			$this->createReflectionProvider(),
+		);
 	}
 
 	public function testFile(): void

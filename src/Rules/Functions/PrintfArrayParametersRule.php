@@ -5,15 +5,15 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
-use function array_key_exists;
 use function count;
+use function in_array;
 use function sprintf;
-use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -21,16 +21,10 @@ use function strtolower;
 class PrintfArrayParametersRule implements Rule
 {
 
-	private const FORMAT_ARGUMENT_POSITIONS = [
-		'vprintf' => 0,
-		'vsprintf' => 0,
-	];
-	private const MINIMUM_NUMBER_OF_ARGUMENTS = [
-		'vprintf' => 1,
-		'vsprintf' => 1,
-	];
-
-	public function __construct(private PrintfHelper $printfHelper)
+	public function __construct(
+		private PrintfHelper $printfHelper,
+		private ReflectionProvider $reflectionProvider,
+	)
 	{
 	}
 
@@ -45,20 +39,23 @@ class PrintfArrayParametersRule implements Rule
 			return [];
 		}
 
-		$name = strtolower((string) $node->name);
-		if (!array_key_exists($name, self::FORMAT_ARGUMENT_POSITIONS)) {
+		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
 			return [];
 		}
 
-		$formatArgumentPosition = self::FORMAT_ARGUMENT_POSITIONS[$name];
+		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
+		$name = $functionReflection->getName();
+		if (!in_array($name, ['vprintf', 'vsprintf'], true)) {
+			return [];
+		}
 
 		$args = $node->getArgs();
 		$argsCount = count($args);
-		if ($argsCount < self::MINIMUM_NUMBER_OF_ARGUMENTS[$name]) {
+		if ($argsCount < 1) {
 			return []; // caught by CallToFunctionParametersRule
 		}
 
-		$formatArgType = $scope->getType($args[$formatArgumentPosition]->value);
+		$formatArgType = $scope->getType($args[0]->value);
 		$maxPlaceHoldersCount = null;
 		foreach ($formatArgType->getConstantStrings() as $formatString) {
 			$format = $formatString->getValue();

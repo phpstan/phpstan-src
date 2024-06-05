@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Functions;
 
-use Hoa\Stream\Test\Unit\IStream\In;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
@@ -12,9 +11,12 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
+use function max;
+use function min;
 use function sprintf;
 
 /**
@@ -77,7 +79,6 @@ class PrintfArrayParametersRule implements Rule
 			$placeHoldersCount = IntegerRangeType::fromInterval($minCount, $maxCount);
 		}
 
-
 		$formatArgsCounts = [];
 		if (isset($args[1])) {
 			$formatArgsType = $scope->getType($args[1]->value);
@@ -137,7 +138,7 @@ class PrintfArrayParametersRule implements Rule
 		return [];
 	}
 
-	private function placeholdersMatchesArgsCount(IntegerRangeType|ConstantIntegerType $placeHoldersCount, IntegerRangeType|ConstantIntegerType $formatArgsCount): bool
+	private function placeholdersMatchesArgsCount(Type $placeHoldersCount, Type $formatArgsCount): bool
 	{
 		if ($placeHoldersCount instanceof ConstantIntegerType && $formatArgsCount instanceof ConstantIntegerType) {
 			return $placeHoldersCount->getValue() === $formatArgsCount->getValue();
@@ -153,29 +154,31 @@ class PrintfArrayParametersRule implements Rule
 
 		if ($placeHoldersCount instanceof IntegerRangeType
 			&& $formatArgsCount instanceof IntegerRangeType
-		    && IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($placeHoldersCount)->yes()
+			&& IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($placeHoldersCount)->yes()
 		) {
 			if ($formatArgsCount->getMin() !== null && $formatArgsCount->getMax() !== null) {
 				// constant array
 				return $placeHoldersCount->isSuperTypeOf($formatArgsCount)->yes();
 			}
 
+			// general array
 			return IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($formatArgsCount)->yes();
 		}
 
 		return false;
 	}
 
-	private function getIntegerRangeAsString(IntegerRangeType $range): string {
+	private function getIntegerRangeAsString(IntegerRangeType $range): string
+	{
 		if ($range->getMin() !== null && $range->getMax() !== null) {
 			return $range->getMin() . '-' . $range->getMax();
 		} elseif ($range->getMin() !== null) {
 			return $range->getMin() . ' or more';
 		} elseif ($range->getMax() !== null) {
 			return $range->getMax() . ' or less';
-		} else {
-			throw new ShouldNotHappenException();
 		}
+
+		throw new ShouldNotHappenException();
 	}
 
 }

@@ -3635,7 +3635,7 @@ return [
 'gnupg_getprotocol' => ['int', 'identifier'=>'resource'],
 'gnupg_gettrustlist' => ['array', 'identifier'=>'resource', 'pattern'=>'string'],
 'gnupg_import' => ['array|false', 'identifier'=>'resource', 'keydata'=>'string'],
-'gnupg_init' => ['resource', 'options'=>'?array{file_name?:string,home_dir?:string}'],
+'gnupg_init' => ['resource', 'options='=>'?array{file_name?:string,home_dir?:string}'],
 'gnupg_keyinfo' => ['array|false', 'identifier'=>'resource', 'pattern'=>'string'],
 'gnupg_listsignatures' => ['?array', 'identifier'=>'resource', 'keyid'=>'string'],
 'gnupg_setarmor' => ['bool', 'identifier'=>'resource', 'armor'=>'int'],

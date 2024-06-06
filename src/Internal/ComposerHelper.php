@@ -17,6 +17,8 @@ use function trim;
 final class ComposerHelper
 {
 
+	public const UNKNOWN_VERSION = 'Unknown version';
+
 	private static ?string $phpstanVersion = null;
 
 	/** @return array<string, mixed>|null */
@@ -75,7 +77,7 @@ final class ComposerHelper
 		$installed = require __DIR__ . '/../../vendor/composer/installed.php';
 		$rootPackage = $installed['root'] ?? null;
 		if ($rootPackage === null) {
-			return self::$phpstanVersion = 'Unknown version';
+			return self::$phpstanVersion = self::UNKNOWN_VERSION;
 		}
 
 		if (preg_match('/[^v\d.]/', $rootPackage['pretty_version']) === 0) {

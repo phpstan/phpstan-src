@@ -9,6 +9,7 @@
 		"composer-runtime-api": "^2.0",
 		"clue/ndjson-react": "^1.0",
 		"composer/ca-bundle": "^1.2",
+		"composer/semver": "^3.4",
 		"composer/xdebug-handler": "^3.0.3",
 		"fidry/cpu-core-counter": "^0.5.0",
 		"hoa/compiler": "3.17.08.08",

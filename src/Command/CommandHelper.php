@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command;
 
+use Composer\Semver\Semver;
 use Composer\XdebugHandler\XdebugHandler;
 use Nette\DI\Helpers;
 use Nette\DI\InvalidConfigurationException;
@@ -23,6 +24,8 @@ use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\FileExcluder;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
+use PHPStan\File\SimpleRelativePathHelper;
+use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\PhpDoc\StubFilesProvider;
@@ -277,6 +280,43 @@ class CommandHelper
 						throw new InceptionNotSuccessfulException();
 					}
 					$additionalConfigFiles[] = $includedFilePath;
+				}
+			}
+
+			if (
+				count($additionalConfigFiles) > 0
+				&& $generatedConfigReflection->hasConstant('PHPSTAN_VERSION_CONSTRAINT')
+			) {
+				$generatedConfigPhpStanVersionConstraint = $generatedConfigReflection->getConstant('PHPSTAN_VERSION_CONSTRAINT');
+				if ($generatedConfigPhpStanVersionConstraint !== null) {
+					$phpstanSemverVersion = ComposerHelper::getPhpStanVersion();
+					if (
+						$phpstanSemverVersion !== ComposerHelper::UNKNOWN_VERSION
+						&& !str_contains($phpstanSemverVersion, '@')
+						&& !Semver::satisfies($phpstanSemverVersion, $generatedConfigPhpStanVersionConstraint)
+					) {
+						$errorOutput->writeLineFormatted('<error>Running PHPStan with incompatible extensions</error>');
+						$errorOutput->writeLineFormatted('You\'re running PHPStan from a different Composer project');
+						$errorOutput->writeLineFormatted('than the one where you installed extensions.');
+						$errorOutput->writeLineFormatted('');
+						$errorOutput->writeLineFormatted(sprintf('Your PHPStan version is: <fg=red>%s</>', $phpstanSemverVersion));
+						$errorOutput->writeLineFormatted(sprintf('Installed PHPStan extensions support: %s', $generatedConfigPhpStanVersionConstraint));
+
+						$errorOutput->writeLineFormatted('');
+						if (isset($_SERVER['argv'][0]) && is_file($_SERVER['argv'][0])) {
+							$mainScript = $_SERVER['argv'][0];
+							$errorOutput->writeLineFormatted(sprintf('PHPStan is running from: %s', $currentWorkingDirectoryFileHelper->absolutizePath(dirname($mainScript))));
+						}
+
+						$errorOutput->writeLineFormatted(sprintf('Extensions were installed in: %s', dirname($generatedConfigDirectory, 3)));
+						$errorOutput->writeLineFormatted('');
+
+						$simpleRelativePathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
+						$errorOutput->writeLineFormatted(sprintf('Run PHPStan with <fg=green>%s</> to fix this problem.', $simpleRelativePathHelper->getRelativePath(dirname($generatedConfigDirectory, 3) . '/bin/phpstan')));
+
+						$errorOutput->writeLineFormatted('');
+						throw new InceptionNotSuccessfulException();
+					}
 				}
 			}
 		}

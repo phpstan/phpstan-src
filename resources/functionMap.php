@@ -9746,7 +9746,7 @@ return [
 'RedisArray::_hosts' => ['array'],
 'RedisArray::_rehash' => ['', 'callable='=>'callable'],
 'RedisArray::_target' => ['string', 'key'=>'string'],
-'RedisCluster::__construct' => ['void', 'name'=>'string|null', 'seeds'=>'array', 'timeout='=>'float', 'readTimeout='=>'float', 'persistent='=>'bool|false', 'auth='=>'string|array|null'],
+'RedisCluster::__construct' => ['void', 'name'=>'string|null', 'seeds='=>'string[]|null', 'timeout='=>'int|float', 'read_timeout='=>'int|float', 'persistent='=>'bool', 'auth='=>'mixed', 'context'=>'array|null'],
 'RedisCluster::_masters' => ['array'],
 'RedisCluster::_prefix' => ['string', 'value'=>'mixed'],
 'RedisCluster::_serialize' => ['mixed', 'value'=>'mixed'],

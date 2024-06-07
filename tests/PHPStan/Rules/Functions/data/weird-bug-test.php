@@ -10,7 +10,7 @@ class Model {
 	 */
 	public static function getBuilder(): Builder
 	{
-		return new Builder(new static()); // @phpstan-ignore-line
+		return new Builder(new static());
 	}
 }
 
@@ -24,7 +24,7 @@ class Builder {
 	/**
 	 * @param T $model
 	 */
-	public function __construct(private Model $model) // @phpstan-ignore-line
+	public function __construct(private Model $model)
 	{
 	}
 

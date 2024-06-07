@@ -1373,6 +1373,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug11147(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11147.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Method Bug11147\RedisAdapter::createConnection() has invalid return type Bug11147\NonExistentClass.', $errors[0]->getMessage());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

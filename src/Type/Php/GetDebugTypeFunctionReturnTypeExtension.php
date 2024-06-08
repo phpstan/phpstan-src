@@ -62,17 +62,15 @@ class GetDebugTypeFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		// "resources" type+state is skipped since we cannot infer the state
 
 		if ($type->isObject()->yes()) {
-			$classNames = $type->getObjectClassNames();
 			$reflections = $type->getObjectClassReflections();
-
 			$types = [];
-			foreach ($classNames as $index => $className) {
+			foreach ($reflections as $reflection) {
 				// if the class is not final, the actual returned string might be of a child class
-				if ($reflections[$index]->isFinal() && !$reflections[$index]->isAnonymous()) {
-					$types[] = new ConstantStringType($className);
+				if ($reflection->isFinal() && !$reflection->isAnonymous()) {
+					$types[] = new ConstantStringType($reflection->getName());
 				}
 
-				if ($reflections[$index]->isAnonymous()) { // phpcs:ignore
+				if ($reflection->isAnonymous()) { // phpcs:ignore
 					$types[] = new ConstantStringType('class@anonymous');
 				}
 			}

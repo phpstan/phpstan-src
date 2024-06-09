@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function str_replace;
 use const PHP_VERSION_ID;
 
 /**
@@ -21,7 +22,7 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions.php'], [
+		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions.php'], $this->hackParameterNames([
 			[
 				'Parameter #1 $array of function array_intersect expects an array of values castable to string, array<int, array> given.',
 				16,
@@ -86,11 +87,15 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 				'Parameter #1 $keys of function array_fill_keys expects an array of values castable to string, array<int, array<int, string>> given.',
 				34,
 			],
-		]);
+		]));
 	}
 
 	public function testNamedArguments(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-named-args.php'], [
 			[
 				'Parameter $array of function array_unique expects an array of values castable to string, array<int, array<int, string>> given.',
@@ -215,7 +220,7 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 
 	public function testImplode(): void
 	{
-		$this->analyse([__DIR__ . '/data/implode.php'], [
+		$this->analyse([__DIR__ . '/data/implode.php'], $this->hackParameterNames([
 			[
 				'Parameter #2 $array of function implode expects array<string>, array<int, array<int, string>|string> given.',
 				9,
@@ -240,7 +245,7 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 				'Parameter #2 $array of function join expects array<string>, array<int, array<int, string>> given.',
 				16,
 			],
-		]);
+		]));
 	}
 
 	public function testBug6000(): void
@@ -255,7 +260,7 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 
 	public function testBug5848(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-5848.php'], [
+		$this->analyse([__DIR__ . '/data/bug-5848.php'], $this->hackParameterNames([
 			[
 				'Parameter #1 $array of function array_diff expects an array of values castable to string, array<int, stdClass> given.',
 				8,
@@ -264,7 +269,7 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 				'Parameter #2 $arrays of function array_diff expects an array of values castable to string, array<int, stdClass> given.',
 				8,
 			],
-		]);
+		]));
 	}
 
 	public function testBug3946(): void
@@ -311,6 +316,55 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 				22,
 			],
 		]);
+	}
+
+	/**
+	 * @param list<array{0: string, 1: int, 2?: string|null}> $errors
+	 * @return list<array{0: string, 1: int, 2?: string|null}>
+	 */
+	private function hackParameterNames(array $errors): array
+	{
+		if (PHP_VERSION_ID >= 80000) {
+			return $errors;
+		}
+
+		foreach ($errors as $error) {
+			$error[0] = str_replace(
+				[
+					'$array of function array_diff',
+					'$array of function array_diff_assoc',
+					'$array of function array_intersect',
+					'$arrays of function array_intersect',
+					'$arrays of function array_diff',
+					'$arrays of function array_diff_assoc',
+					'$array of function sort',
+					'$array of function rsort',
+					'$array of function asort',
+					'$array of function arsort',
+					'$array of function natsort',
+					'$array of function natcasesort',
+					'$array of function array_count_values',
+				],
+				[
+					'$arr1 of function array_diff',
+					'$arr1 of function array_diff_assoc',
+					'$arr1 of function array_intersect',
+					'$arr2 of function array_intersect',
+					'$arr2 of function array_diff',
+					'$arr2 of function array_diff_assoc',
+					'$array_arg of function sort',
+					'$array_arg of function rsort',
+					'$array_arg of function asort',
+					'$array_arg of function arsort',
+					'$array_arg of function natsort',
+					'$array_arg of function natcasesort',
+					'$input of function array_count_values',
+				],
+				$error[0],
+			);
+		}
+
+		return $errors;
 	}
 
 }

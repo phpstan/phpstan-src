@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1); // lint >= 8.0
 
-namespace ParamCastableToStringFunctions;
+namespace ParamCastableToStringFunctionsNamedArgs;
 
 class ClassWithoutToString {}
 class ClassWithToString

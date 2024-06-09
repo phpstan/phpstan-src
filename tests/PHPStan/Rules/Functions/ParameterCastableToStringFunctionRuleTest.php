@@ -345,6 +345,7 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 					'$array of function natsort',
 					'$array of function natcasesort',
 					'$array of function array_count_values',
+					'#3 of function array_intersect',
 				],
 				[
 					'$arr1 of function array_diff',
@@ -360,6 +361,7 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 					'$array_arg of function natsort',
 					'$array_arg of function natcasesort',
 					'$input of function array_count_values',
+					'#3 $args of function array_intersect',
 				],
 				$error[0],
 			);

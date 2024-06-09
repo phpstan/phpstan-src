@@ -253,19 +253,19 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug11114(): void
+	public function testBug11141(): void
 	{
 		if (PHP_VERSION_ID < 80100) {
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$this->analyse([__DIR__ . '/data/bug-11114.php'], [
+		$this->analyse([__DIR__ . '/data/bug-11141.php'], [
 			[
-				'Parameter #1 of function array_diff expects an array of values castable to string, array<int, Bug11114\\Language::DAN|Bug11114\\Language::ENG|Bug11114\\Language::GER> given.',
+				'Parameter #1 of function array_diff expects an array of values castable to string, array<int, Bug11141\\Language::DAN|Bug11141\\Language::ENG|Bug11141\\Language::GER> given.',
 				22,
 			],
 			[
-				'Parameter #2 of function array_diff expects an array of values castable to string, array<int, Bug11114\\Language::DAN> given.',
+				'Parameter #2 of function array_diff expects an array of values castable to string, array<int, Bug11141\\Language::DAN> given.',
 				22,
 			],
 		]);

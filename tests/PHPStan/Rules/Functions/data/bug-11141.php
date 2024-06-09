@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1); // lint >= 8.1
 
-namespace Bug11114;
+namespace Bug11141;
 
 enum Language: string
 {

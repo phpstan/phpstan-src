@@ -328,4 +328,5 @@ class ConstantArrayTypeBuilder
 			$this->nextAutoIndexes = [0];
 		}
 	}
+
 }

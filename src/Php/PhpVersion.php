@@ -287,10 +287,16 @@ class PhpVersion
 		return $this->versionId >= 80200;
 	}
 
+	// https://www.php.net/manual/en/migration80.incompatible.php
+	// Any array that has a number n as its first numeric key will use n+1 for its next implicit key, even if n is negative.
+	public function supportsNegativeArrayIndexOnCreate(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 	// See https://www.php.net/manual/en/migration83.incompatible.php#migration83.incompatible.core.negative-index-to-empty-array
-	public function supportsAssigningANegativeIndexToAnEmptyArray(): bool
+	public function supportsNegativeArrayIndexOnAssign(): bool
 	{
 		return $this->versionId >= 80300;
 	}
-
 }

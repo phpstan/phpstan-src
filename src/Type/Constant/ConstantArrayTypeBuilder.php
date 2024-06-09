@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Constant;
 
-use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -131,7 +130,6 @@ class ConstantArrayTypeBuilder
 				return;
 			}
 
-			$phpVersion = PhpVersionStaticAccessor::getInstance();
 			if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
 				/** @var ConstantIntegerType|ConstantStringType $keyType */
 				foreach ($this->keyTypes as $i => $keyType) {
@@ -183,7 +181,7 @@ class ConstantArrayTypeBuilder
 							$this->nextAutoIndexes[] = $newAutoIndex;
 						}
 					}
-					if ($phpVersion->supportsAssigningANegativeIndexToAnEmptyArray() && count($this->keyTypes) === 1 && $offsetType->getValue() < 0) {
+					if (count($this->keyTypes) === 1 && $offsetType->getValue() < 0) {
 						$newAutoIndex = $offsetType->getValue() + 1;
 						if (!$optional) {
 							$this->nextAutoIndexes = [$newAutoIndex];
@@ -324,4 +322,10 @@ class ConstantArrayTypeBuilder
 		return $this->isList->yes();
 	}
 
+	public function resetNextAutoIndexToZeroIfNegative(): void
+	{
+		if (count($this->nextAutoIndexes) === 1 && $this->nextAutoIndexes[0] < 0) {
+			$this->nextAutoIndexes = [0];
+		}
+	}
 }

@@ -10,7 +10,13 @@ class Bug10862Test extends TypeInferenceTestCase
 
 	public function dataFileAsserts(): iterable
 	{
-		$path = PHP_VERSION_ID >= 80300 ? 'bug-10862-php8.3' : 'bug-10862';
+		$path = 'bug-10862-php8.3';
+		if (PHP_VERSION_ID < 80300) {
+			$path = 'bug-10862-php8.0';
+		}
+		if (PHP_VERSION_ID < 80000) {
+			$path = 'bug-10862';
+		}
 		yield from self::gatherAssertTypes(__DIR__ . '/data/' . $path . '.php');
 	}
 

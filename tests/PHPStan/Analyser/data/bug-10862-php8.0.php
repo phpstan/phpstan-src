@@ -12,14 +12,14 @@ $a = [];
 $a[-4] = 1;
 $a[] = 2;
 
-assertType('array{-4, -3}', array_keys($a));
+assertType('array{-4, 0}', array_keys($a));
 
 $a = [];
 $a[-4] = 1;
 $a[-2] = 1;
 $a[] = 2;
 
-assertType('array{-4, -2, -1}', array_keys($a));
+assertType('array{-4, -2, 0}', array_keys($a));
 
 $a = [];
 $a[-3] = 1;
@@ -27,7 +27,7 @@ $a[-4] = 1;
 $a[-2] = 1;
 $a[] = 2;
 
-assertType('array{-3, -4, -2, -1}', array_keys($a));
+assertType('array{-3, -4, -2, 0}', array_keys($a));
 
 $a = [];
 $a[-1] = 1;

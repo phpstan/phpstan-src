@@ -48,16 +48,39 @@ class ParameterCastableToStringFunctionRule implements Rule
 
 		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
 		$functionName = $functionReflection->getName();
-		$args = $node->getArgs();
-		$errorMessage = 'Parameter #%d of function %s expects an array of values castable to string, %s given.';
-		$getNormalizedArgs = static function () use ($scope, $node, $functionReflection): array {
-			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-				$scope,
-				$node->getArgs(),
-				$functionReflection->getVariants(),
-				$functionReflection->getNamedArgumentsVariants(),
-			);
+		$implodeFunctions = ['implode', 'join'];
+		$checkAllArgsFunctions = ['array_intersect', 'array_intersect_assoc', 'array_diff', 'array_diff_assoc'];
+		$checkFirstArgFunctions = [
+			'array_unique',
+			'array_combine',
+			'sort',
+			'rsort',
+			'asort',
+			'arsort',
+			'natcasesort',
+			'natsort',
+			'array_count_values',
+			'array_fill_keys',
+		];
 
+		if (
+			!in_array($functionName, $checkAllArgsFunctions, true)
+			&& !in_array($functionName, $checkFirstArgFunctions, true)
+			&& !in_array($functionName, $implodeFunctions, true)
+		) {
+			return [];
+		}
+
+		$origArgs = $node->getArgs();
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$origArgs,
+			$functionReflection->getVariants(),
+			$functionReflection->getNamedArgumentsVariants(),
+		);
+
+		$errorMessage = 'Parameter %s of function %s expects an array of values castable to string, %s given.';
+		$getNormalizedArgs = static function () use ($parametersAcceptor, $node): array {
 			$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
 
 			if ($normalizedFuncCall === null) {
@@ -66,9 +89,9 @@ class ParameterCastableToStringFunctionRule implements Rule
 
 			return $normalizedFuncCall->getArgs();
 		};
-		if (in_array($functionName, ['implode', 'join'], true)) {
+		if (in_array($functionName, $implodeFunctions, true)) {
 			$normalizedArgs = $getNormalizedArgs();
-			$errorMessage = 'Parameter #%d $array of function %s expects array<string>, %s given.';
+			$errorMessage = 'Parameter %s of function %s expects array<string>, %s given.';
 			if (count($normalizedArgs) === 1) {
 				$argsToCheck = [0 => $normalizedArgs[0]];
 			} elseif (count($normalizedArgs) === 2) {
@@ -76,26 +99,9 @@ class ParameterCastableToStringFunctionRule implements Rule
 			} else {
 				return [];
 			}
-		} elseif (in_array($functionName, ['array_intersect', 'array_intersect_assoc', 'array_diff', 'array_diff_assoc'], true)) {
-			$argsToCheck = $args;
-		} elseif (
-			in_array(
-				$functionName,
-				[
-					'array_unique',
-					'array_combine',
-					'sort',
-					'rsort',
-					'asort',
-					'arsort',
-					'natcasesort',
-					'natsort',
-					'array_count_values',
-					'array_fill_keys',
-				],
-				true,
-			)
-		) {
+		} elseif (in_array($functionName, $checkAllArgsFunctions, true)) {
+			$argsToCheck = $origArgs;
+		} elseif (in_array($functionName, $checkFirstArgFunctions, true)) {
 			$normalizedArgs = $getNormalizedArgs();
 			if ($normalizedArgs === []) {
 				return [];
@@ -105,7 +111,17 @@ class ParameterCastableToStringFunctionRule implements Rule
 			return [];
 		}
 
+		$origNamedArgs = [];
+		foreach ($origArgs as $arg) {
+			if ($arg->unpack || $arg->name === null) {
+				continue;
+			}
+
+			$origNamedArgs[$arg->name->toString()] = $arg;
+		}
+
 		$errors = [];
+		$functionParameters = $parametersAcceptor->getParameters();
 
 		foreach ($argsToCheck as $argIdx => $arg) {
 			if ($arg->unpack) {
@@ -124,8 +140,22 @@ class ParameterCastableToStringFunctionRule implements Rule
 				continue;
 			}
 
+			if (in_array($functionName, $implodeFunctions, true)) {
+				// implode has weird variants, so $array has to be fixed. It's especially weird with named arguments.
+				$argName = array_key_exists('separator', $origNamedArgs) || array_key_exists('array', $origNamedArgs)
+					? sprintf('$array', $argIdx + 1)
+					: sprintf('#%d $array', $argIdx + 1);
+			} elseif (array_key_exists($argIdx, $functionParameters)) {
+				$paramName = $functionParameters[$argIdx]->getName();
+				$argName = array_key_exists($paramName, $origNamedArgs)
+					? sprintf('$%s', $paramName)
+					: sprintf('#%d $%s', $argIdx + 1, $paramName);
+			} else {
+				$argName = sprintf('#%d', $argIdx + 1);
+			}
+
 			$errors[] = RuleErrorBuilder::message(
-				sprintf($errorMessage, $argIdx + 1, $functionName, $typeResult->getType()->describe(VerbosityLevel::typeOnly())),
+				sprintf($errorMessage, $argName, $functionName, $typeResult->getType()->describe(VerbosityLevel::typeOnly())),
 			)->identifier('argument.type')->build();
 		}
 

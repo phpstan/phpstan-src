@@ -21,6 +21,11 @@ function invalidUsages()
 	asort(flags: SORT_REGULAR, array: $arr1);
 	arsort(flags: SORT_REGULAR, array: $arr1);
 	array_fill_keys(value: 5, keys: $arr1);
+	// implode weirdness
+	implode(array: [['a']], separator: ',');
+	implode(separator: [['a']]);
+	implode(',', array: [['a']]);
+	implode(separator: ',', array: [['']]);
 }
 
 function validUsages()

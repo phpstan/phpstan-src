@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function array_map;
 use function str_replace;
 use const PHP_VERSION_ID;
 
@@ -328,7 +329,7 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 			return $errors;
 		}
 
-		foreach ($errors as $error) {
+		return array_map(static function (array $error): array {
 			$error[0] = str_replace(
 				[
 					'$array of function array_diff',
@@ -362,9 +363,9 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 				],
 				$error[0],
 			);
-		}
 
-		return $errors;
+			return $error;
+		}, $errors);
 	}
 
 }

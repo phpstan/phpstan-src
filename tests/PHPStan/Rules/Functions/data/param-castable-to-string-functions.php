@@ -58,4 +58,6 @@ function validUsages()
 
 	array_combine([true, null, 3.14], ['a', 'b', 'c']);
 	array_fill_keys([true, null, 3.14], 'a');
+
+	array_intersect(...[[1, 2], [2, 3]]);
 }

@@ -81,6 +81,10 @@ class ParameterCastableToStringFunctionRule implements Rule
 		$errors = [];
 
 		foreach ($argsToCheck as $argIdx => $arg) {
+			if (!$arg instanceof Node\Arg || $arg->unpack) {
+				continue;
+			}
+
 			$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
 				$arg->value,

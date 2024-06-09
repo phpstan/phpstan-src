@@ -15,7 +15,7 @@ conditionalTags:
 
 rules:
 	- PHPStan\Rules\DateTimeInstantiationRule
-	- PHPStan\Rules\Functions\ParameterCastableToStringFunctionRule
+	- PHPStan\Rules\Functions\ImplodeFunctionRule
 
 services:
 	-

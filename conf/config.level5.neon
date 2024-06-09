@@ -12,10 +12,11 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.arrayValues%
 	PHPStan\Rules\Functions\CallUserFuncRule:
 		phpstan.rules.rule: %featureToggles.callUserFunc%
+	PHPStan\Rules\Functions\ParameterCastableToStringFunctionRule:
+		phpstan.rules.rule: %featureToggles.checkParameterCastableToStringFunctions%
 
 rules:
 	- PHPStan\Rules\DateTimeInstantiationRule
-	- PHPStan\Rules\Functions\ImplodeFunctionRule
 
 services:
 	-
@@ -37,3 +38,11 @@ services:
 
 	-
 		class: PHPStan\Rules\Functions\CallUserFuncRule
+	-
+		class: PHPStan\Rules\Functions\ImplodeFunctionRule
+		arguments:
+			disabled: %featureToggles.checkParameterCastableToStringFunctions%
+		tags:
+			- phpstan.rules.rule
+	-
+		class: PHPStan\Rules\Functions\ParameterCastableToStringFunctionRule

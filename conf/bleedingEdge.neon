@@ -53,5 +53,6 @@ parameters:
 		magicConstantOutOfContext: true
 		paramOutType: true
 		pure: true
+		checkParameterCastableToStringFunctions: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Rule.stub

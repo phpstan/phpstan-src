@@ -125,7 +125,7 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 				25,
 			],
 			[
-				'Parameter $array of function implode expects array<string>, array<int, array<int, string>> given.',
+				'Parameter $separator of function implode expects array<string>, array<int, array<int, string>> given.',
 				26,
 			],
 			[

@@ -14,6 +14,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_key_exists;
 use function count;
 use function in_array;
 use function sprintf;
@@ -142,9 +143,13 @@ class ParameterCastableToStringFunctionRule implements Rule
 
 			if (in_array($functionName, $implodeFunctions, true)) {
 				// implode has weird variants, so $array has to be fixed. It's especially weird with named arguments.
-				$argName = array_key_exists('separator', $origNamedArgs) || array_key_exists('array', $origNamedArgs)
-					? sprintf('$array', $argIdx + 1)
-					: sprintf('#%d $array', $argIdx + 1);
+				if (array_key_exists('array', $origNamedArgs)) {
+					$argName = '$array';
+				} elseif (array_key_exists('separator', $origNamedArgs) && count($origArgs) === 1) {
+					$argName = '$separator';
+				} else {
+					$argName = sprintf('#%d $array', $argIdx + 1);
+				}
 			} elseif (array_key_exists($argIdx, $functionParameters)) {
 				$paramName = $functionParameters[$argIdx]->getName();
 				$argName = array_key_exists($paramName, $origNamedArgs)

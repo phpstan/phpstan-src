@@ -68,7 +68,6 @@ class ParameterCastableToStringFunctionRule implements Rule
 					'natsort',
 					'array_count_values',
 					'array_fill_keys',
-					'array_flip',
 				],
 				true,
 			)

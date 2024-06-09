@@ -86,10 +86,6 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 				'Parameter #1 of function array_fill_keys expects an array of values castable to string, array<int, array<int, string>> given.',
 				34,
 			],
-			[
-				'Parameter #1 of function array_flip expects an array of values castable to string, array<int, array<int, string>> given.',
-				35,
-			],
 		]);
 	}
 
@@ -159,10 +155,6 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 			[
 				'Parameter #1 of function array_fill_keys expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum> given.',
 				28,
-			],
-			[
-				'Parameter #1 of function array_flip expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum> given.',
-				29,
 			],
 			[
 				'Parameter #2 $array of function implode expects array<string>, array<int, ParamCastableToStringFunctionsEnum\FooEnum::A> given.',

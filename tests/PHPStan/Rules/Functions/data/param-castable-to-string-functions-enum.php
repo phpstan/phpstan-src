@@ -26,7 +26,7 @@ function invalidUsages()
 	natcasesort($arr1);
 	array_count_values($arr1);
 	array_fill_keys($arr1, 5);
-	array_flip($arr1);
+
 
 	implode(',', [FooEnum::A]);
 }

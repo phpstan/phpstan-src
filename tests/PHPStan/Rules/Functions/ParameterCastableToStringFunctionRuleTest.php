@@ -89,6 +89,40 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testNamedArguments(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-named-args.php'], [
+			[
+				'Parameter #1 of function array_unique expects an array of values castable to string, array<int, array<int, string>> given.',
+				16,
+			],
+			[
+				'Parameter #1 of function array_combine expects an array of values castable to string, array<int, array<int, string>> given.',
+				17,
+			],
+			[
+				'Parameter #1 of function sort expects an array of values castable to string, array<int, array<int, string>> given.',
+				19,
+			],
+			[
+				'Parameter #1 of function rsort expects an array of values castable to string, array<int, array<int, string>> given.',
+				20,
+			],
+			[
+				'Parameter #1 of function asort expects an array of values castable to string, array<int, array<int, string>> given.',
+				21,
+			],
+			[
+				'Parameter #1 of function arsort expects an array of values castable to string, array<int, array<int, string>> given.',
+				22,
+			],
+			[
+				'Parameter #1 of function array_fill_keys expects an array of values castable to string, array<int, array<int, string>> given.',
+				23,
+			],
+		]);
+	}
+
 	public function testEnum(): void
 	{
 		if (PHP_VERSION_ID < 80100) {

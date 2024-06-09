@@ -4,7 +4,9 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -40,15 +42,37 @@ class ParameterCastableToStringFunctionRule implements Rule
 			return [];
 		}
 
-		$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
+		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+			return [];
+		}
+
+		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
+		$functionName = $functionReflection->getName();
 		$args = $node->getArgs();
 		$errorMessage = 'Parameter #%d of function %s expects an array of values castable to string, %s given.';
+		$getNormalizedArgs = static function () use ($scope, $node, $functionReflection): array {
+			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$node->getArgs(),
+				$functionReflection->getVariants(),
+				$functionReflection->getNamedArgumentsVariants(),
+			);
+
+			$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+
+			if ($normalizedFuncCall === null) {
+				return [];
+			}
+
+			return $normalizedFuncCall->getArgs();
+		};
 		if (in_array($functionName, ['implode', 'join'], true)) {
+			$normalizedArgs = $getNormalizedArgs();
 			$errorMessage = 'Parameter #%d $array of function %s expects array<string>, %s given.';
-			if (count($args) === 1) {
-				$argsToCheck = [0 => $args[0]];
-			} elseif (count($args) === 2) {
-				$argsToCheck = [1 => $args[1]];
+			if (count($normalizedArgs) === 1) {
+				$argsToCheck = [0 => $normalizedArgs[0]];
+			} elseif (count($normalizedArgs) === 2) {
+				$argsToCheck = [1 => $normalizedArgs[1]];
 			} else {
 				return [];
 			}
@@ -72,7 +96,11 @@ class ParameterCastableToStringFunctionRule implements Rule
 				true,
 			)
 		) {
-			$argsToCheck = [0 => $args[0]];
+			$normalizedArgs = $getNormalizedArgs();
+			if ($normalizedArgs === []) {
+				return [];
+			}
+			$argsToCheck = [0 => $normalizedArgs[0]];
 		} else {
 			return [];
 		}

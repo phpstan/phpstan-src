@@ -11,7 +11,7 @@ class ClassWithToString
 	}
 }
 
-function invalidUsages()
+function invalidUsages(): void
 {
 	array_intersect([[]], ['a']);
 	array_intersect(['a'], [new ClassWithoutToString()]);
@@ -35,7 +35,27 @@ function invalidUsages()
 
 }
 
-function validUsages()
+function wrongNumberOfArguments(): void
+{
+	implode();
+	join();
+	array_intersect();
+	array_intersect_assoc();
+	array_diff();
+	array_diff_assoc();
+	array_unique();
+	array_combine();
+	sort();
+	rsort();
+	asort();
+	arsort();
+	natcasesort();
+	natsort();
+	array_count_values();
+	array_fill_keys();
+}
+
+function validUsages(): void
 {
 	array_intersect(['a'], ['a']);
 	array_intersect(['a'], [new ClassWithToString()]);

@@ -211,4 +211,64 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Arrays/data/bug-8467a.php'], []);
 	}
 
+	public function testBug5848(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5848.php'], [
+			[
+				'Parameter #1 of function array_diff expects an array of values castable to string, array<int, stdClass> given.',
+				8,
+			],
+			[
+				'Parameter #2 of function array_diff expects an array of values castable to string, array<int, stdClass> given.',
+				8,
+			],
+		]);
+	}
+
+	public function testBug3946(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3946.php'], [
+			[
+				'Parameter #1 of function array_combine expects an array of values castable to string, array<int, array<int, string>|Bug3946\stdClass|float|int|string> given.',
+				8,
+			],
+		]);
+	}
+
+	public function testBug11111(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-11111.php'], [
+			[
+				'Parameter #1 of function array_fill_keys expects an array of values castable to string, array<Bug11111\\Language> given.',
+				23,
+			],
+			[
+				'Parameter #1 of function array_fill_keys expects an array of values castable to string, array<int, Bug11111\\Language::DUT|Bug11111\\Language::ITA> given.',
+				26,
+			],
+		]);
+	}
+
+	public function testBug11114(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-11114.php'], [
+			[
+				'Parameter #1 of function array_diff expects an array of values castable to string, array<int, Bug11114\\Language::DAN|Bug11114\\Language::ENG|Bug11114\\Language::GER> given.',
+				22,
+			],
+			[
+				'Parameter #2 of function array_diff expects an array of values castable to string, array<int, Bug11114\\Language::DAN> given.',
+				22,
+			],
+		]);
+	}
+
 }

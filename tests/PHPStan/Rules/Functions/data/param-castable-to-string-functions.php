@@ -55,4 +55,7 @@ function validUsages()
 	array_count_values($arr1);
 	array_fill_keys($arr1, 5);
 	array_flip($arr1);
+
+	array_combine([true, null, 3.14], ['a', 'b', 'c']);
+	array_fill_keys([true, null, 3.14], 'a');
 }

@@ -65,7 +65,7 @@ assertType('array{4, 5}', array_keys($a));
 
 $a = [-4 => 1, 2];
 
-assertType('array{-4, -3}', array_keys($a));
+assertType('array{-4, 0}', array_keys($a));
 
 $a = [-4 => 1, -2 => 1, 2];
 

@@ -324,9 +324,10 @@ class ConstantArrayTypeBuilder
 
 	public function resetNextAutoIndexToZeroIfNegative(): void
 	{
-		if (count($this->nextAutoIndexes) === 1 && $this->nextAutoIndexes[0] < 0) {
-			$this->nextAutoIndexes = [0];
+		if (count($this->nextAutoIndexes) !== 1 || $this->nextAutoIndexes[0] >= 0) {
+			return;
 		}
+		$this->nextAutoIndexes = [0];
 	}
 
 }

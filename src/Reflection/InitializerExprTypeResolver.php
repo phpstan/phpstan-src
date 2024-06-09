@@ -563,7 +563,7 @@ class InitializerExprTypeResolver
 				}
 			} else {
 				if (!$this->phpVersion->supportsNegativeArrayIndexOnCreate()) {
-					$arrayBuilder->resetNextAutoIndexIfNegative();
+					$arrayBuilder->resetNextAutoIndexToZeroIfNegative();
 				}
 				$arrayBuilder->setOffsetValueType(
 					$arrayItem->key !== null ? $getTypeCallback($arrayItem->key) : null,

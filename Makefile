@@ -6,7 +6,7 @@ tests:
 	php vendor/bin/paratest --runner WrapperRunner --no-coverage
 
 tests-integration:
-	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group exec
+	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group exec --order-by default
 
 tests-levels:
 	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group levels

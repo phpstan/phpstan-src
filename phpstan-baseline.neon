@@ -361,16 +361,6 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
-			message: "#^Binary operation \"\\<\\<\" between bool\\|float\\|int\\|string\\|null and bool\\|float\\|int\\<0, max\\>\\|string\\|null results in an error\\.$#"
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			message: "#^Binary operation \"\\>\\>\" between bool\\|float\\|int\\|string\\|null and bool\\|float\\|int\\<0, max\\>\\|string\\|null results in an error\\.$#"
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
 			message: "#^Binary operation \"\\^\" between bool\\|float\\|int\\|string\\|null and bool\\|float\\|int\\|string\\|null results in an error\\.$#"
 			count: 1
 			path: src/Reflection/InitializerExprTypeResolver.php

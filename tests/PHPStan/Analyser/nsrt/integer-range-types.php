@@ -343,6 +343,92 @@ class X {
 	}
 
 	/**
+	 * @param int<-5, 5> $a
+	 * @param int<5, max> $b
+	 * @param int<min, -5> $c
+	 * @param 1|int<5, 10>|25|int<30, 40> $d
+	 * @param 1|3.0|"5" $e
+	 * @param 1|"ciao" $f
+	 */
+	public function shiftLeft($a, $b, $c, $d, $e, $f): void
+	{
+		assertType('int<-5, 5>', $a << 0);
+		assertType('int<5, max>', $b << 0);
+		assertType('int<min, -5>', $c << 0);
+		assertType('1|25|int<5, 10>|int<30, 40>', $d << 0);
+		assertType('1|3|5', $e << 0);
+		assertType('*ERROR*', $f << 0);
+
+		assertType('int<-10, 10>', $a << 1);
+		assertType('int<10, max>', $b << 1);
+		assertType('int<min, -10>', $c << 1);
+		assertType('2|50|int<10, 20>|int<60, 80>', $d << 1);
+		assertType('2|6|10', $e << 1);
+		assertType('*ERROR*', $f << 1);
+
+		assertType('*ERROR*', $a << -1);
+
+		assertType('int', $a << $b);
+
+		assertType('0', null << 1);
+		assertType('0', false << 1);
+		assertType('2', true << 1);
+		assertType('10', "10" << 0);
+		assertType('*ERROR*', "ciao" << 0);
+		assertType('30', 15.9 << 1);
+		assertType('*ERROR*', array(5) << 1);
+
+		assertType('8', 4.1 << 1.9);
+
+		/** @var float */
+		$float = 4.1;
+		assertType('int', $float << 1.9);
+	}
+
+	/**
+	 * @param int<-5, 5> $a
+	 * @param int<5, max> $b
+	 * @param int<min, -5> $c
+	 * @param 1|int<5, 10>|25|int<30, 40> $d
+	 * @param 1|3.0|"5" $e
+	 * @param 1|"ciao" $f
+	 */
+	public function shiftRight($a, $b, $c, $d, $e, $f): void
+	{
+		assertType('int<-5, 5>', $a >> 0);
+		assertType('int<5, max>', $b >> 0);
+		assertType('int<min, -5>', $c >> 0);
+		assertType('1|25|int<5, 10>|int<30, 40>', $d >> 0);
+		assertType('1|3|5', $e >> 0);
+		assertType('*ERROR*', $f >> 0);
+
+		assertType('int<-3, 2>', $a >> 1);
+		assertType('int<2, max>', $b >> 1);
+		assertType('int<min, -3>', $c >> 1);
+		assertType('0|12|int<2, 5>|int<15, 20>', $d >> 1);
+		assertType('0|1|2', $e >> 1);
+		assertType('*ERROR*', $f >> 1);
+
+		assertType('*ERROR*', $a >> -1);
+
+		assertType('int', $a >> $b);
+
+		assertType('0', null >> 1);
+		assertType('0', false >> 1);
+		assertType('0', true >> 1);
+		assertType('10', "10" >> 0);
+		assertType('*ERROR*', "ciao" >> 0);
+		assertType('7', 15.9 >> 1);
+		assertType('*ERROR*', array(5) >> 1);
+
+		assertType('2', 4.1 >> 1.9);
+
+		/** @var float */
+		$float = 4.1;
+		assertType('int', $float >> 1.9);
+	}
+
+	/**
 	 * @param int<0, max> $positive
 	 * @param int<min, 0> $negative
 	 */

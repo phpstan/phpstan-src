@@ -1692,11 +1692,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/count-array-shift.php'], [
 			[
 				'Parameter #1 $value of function count expects array|Countable, array|false given.',
-				10,
+				8,
 			],
 			[
 				'Parameter #1 $value of function count expects array|Countable, array|false given.',
-				18,
+				16,
 			],
 		]);
 	}

@@ -77,6 +77,7 @@ use function count;
 use function dirname;
 use function floor;
 use function in_array;
+use function intval;
 use function is_finite;
 use function is_float;
 use function is_int;
@@ -1255,7 +1256,7 @@ class InitializerExprTypeResolver
 						return new ErrorType();
 					}
 
-					$resultType = $this->getTypeFromValue($leftNumberType->getValue() << $rightNumberType->getValue());
+					$resultType = $this->getTypeFromValue(intval($leftNumberType->getValue()) << intval($rightNumberType->getValue()));
 					if ($generalize) {
 						$resultType = $resultType->generalize(GeneralizePrecision::lessSpecific());
 					}
@@ -1273,7 +1274,7 @@ class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		return new IntegerType();
+		return $this->resolveCommonMath(new Expr\BinaryOp\ShiftLeft($left, $right), $leftType, $rightType);
 	}
 
 	/**
@@ -1312,7 +1313,7 @@ class InitializerExprTypeResolver
 						return new ErrorType();
 					}
 
-					$resultType = $this->getTypeFromValue($leftNumberType->getValue() >> $rightNumberType->getValue());
+					$resultType = $this->getTypeFromValue(intval($leftNumberType->getValue()) >> intval($rightNumberType->getValue()));
 					if ($generalize) {
 						$resultType = $resultType->generalize(GeneralizePrecision::lessSpecific());
 					}
@@ -1330,7 +1331,7 @@ class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		return new IntegerType();
+		return $this->resolveCommonMath(new Expr\BinaryOp\ShiftRight($left, $right), $leftType, $rightType);
 	}
 
 	public function resolveIdenticalType(Type $leftType, Type $rightType): BooleanType
@@ -1469,7 +1470,7 @@ class InitializerExprTypeResolver
 	}
 
 	/**
-	 * @param BinaryOp\Plus|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Div $expr
+	 * @param BinaryOp\Plus|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Div|BinaryOp\ShiftLeft|BinaryOp\ShiftRight $expr
 	 */
 	private function resolveCommonMath(Expr\BinaryOp $expr, Type $leftType, Type $rightType): Type
 	{
@@ -1536,6 +1537,9 @@ class InitializerExprTypeResolver
 			$leftNumberType->isFloat()->yes()
 			|| $rightNumberType->isFloat()->yes()
 		) {
+			if ($expr instanceof Expr\BinaryOp\ShiftLeft || $expr instanceof Expr\BinaryOp\ShiftRight) {
+				return new IntegerType();
+			}
 			return new FloatType();
 		}
 
@@ -1560,7 +1564,7 @@ class InitializerExprTypeResolver
 
 	/**
 	 * @param ConstantIntegerType|IntegerRangeType $range
-	 * @param BinaryOp\Div|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Plus $node
+	 * @param BinaryOp\Div|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Plus|BinaryOp\ShiftLeft|BinaryOp\ShiftRight $node
 	 */
 	private function integerRangeMath(Type $range, BinaryOp $node, Type $operand): Type
 	{
@@ -1683,7 +1687,7 @@ class InitializerExprTypeResolver
 			if (!is_finite($max)) {
 				$max = null;
 			}
-		} else {
+		} elseif ($node instanceof Expr\BinaryOp\Div) {
 			if ($operand instanceof ConstantIntegerType) {
 				$min = $rangeMin !== null && $operand->getValue() !== 0 ? $rangeMin / $operand->getValue() : null;
 				$max = $rangeMax !== null && $operand->getValue() !== 0 ? $rangeMax / $operand->getValue() : null;
@@ -1781,6 +1785,26 @@ class InitializerExprTypeResolver
 
 				return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
 			}
+		} elseif ($node instanceof Expr\BinaryOp\ShiftLeft) {
+			if (!$operand instanceof ConstantIntegerType) {
+				return new IntegerType();
+			}
+			if ($operand->getValue() < 0) {
+				return new ErrorType();
+			}
+			$min = $rangeMin !== null ? intval($rangeMin) << $operand->getValue() : null;
+			$max = $rangeMax !== null ? intval($rangeMax) << $operand->getValue() : null;
+		} elseif ($node instanceof Expr\BinaryOp\ShiftRight) {
+			if (!$operand instanceof ConstantIntegerType) {
+				return new IntegerType();
+			}
+			if ($operand->getValue() < 0) {
+				return new ErrorType();
+			}
+			$min = $rangeMin !== null ? intval($rangeMin) >> $operand->getValue() : null;
+			$max = $rangeMax !== null ? intval($rangeMax) >> $operand->getValue() : null;
+		} else {
+			throw new ShouldNotHappenException();
 		}
 
 		if (is_float($min)) {

@@ -88,6 +88,18 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 				'Parameter #1 $keys of function array_fill_keys expects an array of values castable to string, array<int, array<int, string>> given.',
 				34,
 			],
+			[
+				'Parameter #1 $array of function sort expects an array of values castable to string, array<int, array<int, string>> given.',
+				36,
+			],
+			[
+				'Parameter #1 $array of function rsort expects an array of values castable to string, array<int, array<int, string>> given.',
+				37,
+			],
+			[
+				'Parameter #1 $array of function asort expects an array of values castable to string, array<int, array<int, string>> given.',
+				38,
+			],
 		]));
 	}
 
@@ -317,6 +329,11 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 				22,
 			],
 		]);
+	}
+
+	public function testBug11167(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11167.php'], []);
 	}
 
 	/**

@@ -11,6 +11,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -52,21 +53,24 @@ class ParameterCastableToStringFunctionRule implements Rule
 		$implodeFunctions = ['implode', 'join'];
 		$checkAllArgsFunctions = ['array_intersect', 'array_intersect_assoc', 'array_diff', 'array_diff_assoc'];
 		$checkFirstArgFunctions = [
-			'array_unique',
 			'array_combine',
-			'sort',
-			'rsort',
-			'asort',
-			'arsort',
 			'natcasesort',
 			'natsort',
 			'array_count_values',
 			'array_fill_keys',
 		];
+		$checkSortWithFlagsFunctions = [
+			'array_unique',
+			'sort',
+			'rsort',
+			'asort',
+			'arsort',
+		];
 
 		if (
 			!in_array($functionName, $checkAllArgsFunctions, true)
 			&& !in_array($functionName, $checkFirstArgFunctions, true)
+			&& !in_array($functionName, $checkSortWithFlagsFunctions, true)
 			&& !in_array($functionName, $implodeFunctions, true)
 		) {
 			return [];
@@ -90,6 +94,7 @@ class ParameterCastableToStringFunctionRule implements Rule
 
 			return $normalizedFuncCall->getArgs();
 		};
+		$functionParameters = $parametersAcceptor->getParameters();
 		if (in_array($functionName, $implodeFunctions, true)) {
 			$normalizedArgs = $getNormalizedArgs();
 			$errorMessage = 'Parameter %s of function %s expects array<string>, %s given.';
@@ -108,6 +113,23 @@ class ParameterCastableToStringFunctionRule implements Rule
 				return [];
 			}
 			$argsToCheck = [0 => $normalizedArgs[0]];
+		} elseif (in_array($functionName, $checkSortWithFlagsFunctions, true)) {
+			$normalizedArgs = $getNormalizedArgs();
+			if ($normalizedArgs === []) {
+				return [];
+			}
+
+			$argsToCheck = [0 => $normalizedArgs[0]];
+			$flags = null;
+			if (array_key_exists(1, $normalizedArgs)) {
+				$flags = $scope->getType($normalizedArgs[1]->value);
+			} elseif (array_key_exists(1, $functionParameters)) {
+				$flags = $functionParameters[1]->getDefaultValue();
+			}
+
+			if ($flags === null || $flags->equals(new ConstantIntegerType(SORT_REGULAR))) {
+				return [];
+			}
 		} else {
 			return [];
 		}
@@ -122,7 +144,6 @@ class ParameterCastableToStringFunctionRule implements Rule
 		}
 
 		$errors = [];
-		$functionParameters = $parametersAcceptor->getParameters();
 
 		foreach ($argsToCheck as $argIdx => $arg) {
 			if ($arg->unpack) {

@@ -18,10 +18,10 @@ function invalidUsages()
 	array_unique(['a', FooEnum::A]);
 	array_combine([FooEnum::A], [['b']]);
 	$arr1 = [FooEnum::A];
-	sort($arr1);
-	rsort($arr1);
-	asort($arr1);
-	arsort($arr1);
+	sort($arr1, SORT_STRING);
+	rsort($arr1, SORT_LOCALE_STRING);
+	asort($arr1, SORT_STRING | SORT_FLAG_CASE);
+	arsort($arr1, SORT_LOCALE_STRING | SORT_FLAG_CASE);
 	natsort($arr1);
 	natcasesort($arr1);
 	array_count_values($arr1);

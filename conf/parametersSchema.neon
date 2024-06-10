@@ -83,6 +83,7 @@ parametersSchema:
 		magicConstantOutOfContext: bool()
 		paramOutType: bool()
 		pure: bool()
+		checkParameterCastableToStringFunctions: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

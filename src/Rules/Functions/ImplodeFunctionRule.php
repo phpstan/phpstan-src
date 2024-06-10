@@ -17,6 +17,7 @@ use function in_array;
 use function sprintf;
 
 /**
+ * @deprecated Replaced by PHPStan\Rules\Functions\ParameterCastableToStringFunctionRule
  * @implements Rule<Node\Expr\FuncCall>
  */
 class ImplodeFunctionRule implements Rule
@@ -25,6 +26,7 @@ class ImplodeFunctionRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
+		private bool $disabled,
 	)
 	{
 	}
@@ -36,6 +38,10 @@ class ImplodeFunctionRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($this->disabled) {
+			return [];
+		}
+
 		if (!($node->name instanceof Node\Name)) {
 			return [];
 		}

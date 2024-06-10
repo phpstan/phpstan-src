@@ -167,7 +167,7 @@ return [
 'AMQPQueue::setArguments' => ['void', 'arguments'=>'array'],
 'AMQPQueue::setFlags' => ['void', 'flags'=>'int|null'],
 'AMQPQueue::setName' => ['void', 'name'=>'string'],
-'AMQPQueue::unbind' => ['void', 'exchangeName'=>'string', 'routingKey='=>'string', 'arguments='=>'array'],
+'AMQPQueue::unbind' => ['void', 'exchangeName'=>'string', 'routingKey='=>'string|null', 'arguments='=>'array'],
 'apache_child_terminate' => ['bool'],
 'apache_get_modules' => ['array'],
 'apache_get_version' => ['string|false'],

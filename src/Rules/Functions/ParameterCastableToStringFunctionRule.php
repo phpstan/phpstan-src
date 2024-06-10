@@ -112,13 +112,13 @@ class ParameterCastableToStringFunctionRule implements Rule
 			$argsToCheck = $origArgs;
 		} elseif (in_array($functionName, $checkFirstArgFunctions, true)) {
 			$normalizedArgs = $getNormalizedArgs();
-			if ($normalizedArgs === []) {
+			if (!array_key_exists(0, $normalizedArgs)) {
 				return [];
 			}
 			$argsToCheck = [0 => $normalizedArgs[0]];
 		} elseif (in_array($functionName, $checkSortWithFlagsFunctions, true)) {
 			$normalizedArgs = $getNormalizedArgs();
-			if ($normalizedArgs === []) {
+			if (!array_key_exists(0, $normalizedArgs)) {
 				return [];
 			}
 

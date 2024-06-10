@@ -28,6 +28,19 @@ function invalidUsages()
 	implode(separator: ',', array: [['']]);
 }
 
+function wrongNumberOfArguments(): void
+{
+	implode(array: ',');
+	join(array: ',');
+	array_combine(values: [[5]]);
+	array_fill_keys(value: [5]);
+	array_unique(flags: SORT_STRING);
+	sort(flags: SORT_STRING);
+	rsort(flags: SORT_STRING);
+	asort(flags: SORT_STRING);
+	arsort(flags: SORT_STRING);
+}
+
 function validUsages()
 {
 	array_unique(flags: SORT_STRING, array: ['a', 'b']);

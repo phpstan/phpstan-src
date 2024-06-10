@@ -2,8 +2,6 @@
 
 namespace CountArrayShift;
 
-use function PHPStan\Testing\assertType;
-
 /** @param array<mixed>|false $a */
 function foo($a): void
 {

@@ -150,7 +150,7 @@ return [
 'AMQPQueue::ack' => ['void', 'deliveryTag'=>'int', 'flags='=>'int|null'],
 'AMQPQueue::bind' => ['void', 'exchangeName'=>'string', 'routingKey='=>'string|null', 'arguments='=>'array'],
 'AMQPQueue::cancel' => ['void', 'consumerTag='=>'string'],
-'AMQPQueue::consume' => ['void', 'callback='=>'callable|null', 'flags='=>'int|null', 'consumerTag='=>'string|null'],
+'AMQPQueue::consume' => ['void', 'callback='=>'callable(AMQPEnvelope): mixed|callable(AMQPEnvelope, AMQPQueue): mixed|null', 'flags='=>'int|null', 'consumerTag='=>'string|null'],
 'AMQPQueue::declareQueue' => ['int'],
 'AMQPQueue::delete' => ['int', 'flags='=>'int|null'],
 'AMQPQueue::get' => ['AMQPEnvelope|null', 'flags='=>'int|null'],

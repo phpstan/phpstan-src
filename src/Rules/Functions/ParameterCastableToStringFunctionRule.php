@@ -95,6 +95,8 @@ class ParameterCastableToStringFunctionRule implements Rule
 			return $normalizedFuncCall->getArgs();
 		};
 		$functionParameters = $parametersAcceptor->getParameters();
+		$castFn = static fn (Type $t) => $t->toString();
+
 		if (in_array($functionName, $implodeFunctions, true)) {
 			$normalizedArgs = $getNormalizedArgs();
 			$errorMessage = 'Parameter %s of function %s expects array<string>, %s given.';
@@ -130,6 +132,11 @@ class ParameterCastableToStringFunctionRule implements Rule
 			if ($flags === null || $flags->equals(new ConstantIntegerType(SORT_REGULAR))) {
 				return [];
 			}
+
+			if ($flags->equals(new ConstantIntegerType(SORT_NUMERIC))) {
+				$castFn = static fn (Type $t) => $t->toFloat();
+				$errorMessage = 'Parameter %s of function %s expects an array of values castable to float, %s given.';
+			}
 		} else {
 			return [];
 		}
@@ -154,11 +161,11 @@ class ParameterCastableToStringFunctionRule implements Rule
 				$scope,
 				$arg->value,
 				'',
-				static fn (Type $type): bool => !$type->getIterableValueType()->toString() instanceof ErrorType,
+				static fn (Type $type): bool => !$castFn($type->getIterableValueType()) instanceof ErrorType,
 			);
 
 			if ($typeResult->getType() instanceof ErrorType
-				|| !$typeResult->getType()->getIterableValueType()->toString() instanceof ErrorType) {
+				|| !$castFn($typeResult->getType()->getIterableValueType()) instanceof ErrorType) {
 				continue;
 			}
 

@@ -20,6 +20,8 @@ use function array_key_exists;
 use function count;
 use function in_array;
 use function sprintf;
+use const SORT_NUMERIC;
+use const SORT_REGULAR;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>

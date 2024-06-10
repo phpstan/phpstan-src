@@ -1690,19 +1690,30 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testCountArrayShift(): void
 	{
 		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
+			$errors = [
+				[
+					'Parameter #1 $var of function count expects array|Countable, array|false given.',
+					8,
+				],
+				[
+					'Parameter #1 $var of function count expects array|Countable, array|false given.',
+					16,
+				],
+			];
+		} else {
+			$errors = [
+				[
+					'Parameter #1 $value of function count expects array|Countable, array|false given.',
+					8,
+				],
+				[
+					'Parameter #1 $value of function count expects array|Countable, array|false given.',
+					16,
+				],
+			];
 		}
 
-		$this->analyse([__DIR__ . '/data/count-array-shift.php'], [
-			[
-				'Parameter #1 $value of function count expects array|Countable, array|false given.',
-				8,
-			],
-			[
-				'Parameter #1 $value of function count expects array|Countable, array|false given.',
-				16,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/count-array-shift.php'], $errors);
 	}
 
 }

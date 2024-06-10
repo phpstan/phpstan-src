@@ -14,6 +14,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function count;
@@ -133,7 +134,11 @@ class ParameterCastableToStringFunctionRule implements Rule
 				return [];
 			}
 
-			if ($flags->equals(new ConstantIntegerType(SORT_NUMERIC))) {
+			foreach (TypeUtils::getConstantIntegers($flags) as $flag) {
+				if ($flag->getValue() !== SORT_NUMERIC) {
+					continue;
+				}
+
 				$castFn = static fn (Type $t) => $t->toFloat();
 				$errorMessage = 'Parameter %s of function %s expects an array of values castable to float, %s given.';
 			}

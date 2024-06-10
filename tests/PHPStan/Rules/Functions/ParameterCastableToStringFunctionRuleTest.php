@@ -104,6 +104,18 @@ class ParameterCastableToStringFunctionRuleTest extends RuleTestCase
 				'Parameter #1 $array of function arsort expects an array of values castable to float, array<int, ParamCastableToStringFunctions\ClassWithToString> given.',
 				42,
 			],
+			[
+				'Parameter #1 $array of function arsort expects an array of values castable to float, array<int, ParamCastableToStringFunctions\ClassWithToString> given.',
+				43,
+			],
+			[
+				'Parameter #1 $array of function sort expects an array of values castable to string, array<int, array<int, string>> given.',
+				44,
+			],
+			[
+				'Parameter #1 $array of function sort expects an array of values castable to string, array<int, array<int, string>> given.',
+				45,
+			],
 		]));
 	}
 

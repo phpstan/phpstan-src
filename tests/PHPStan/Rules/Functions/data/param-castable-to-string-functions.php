@@ -40,7 +40,9 @@ function invalidUsages(): void
 	// SORT_NUMERIC doesn't allow even __toString()
 	$arr3 = [new ClassWithToString()];
 	arsort($arr3, SORT_NUMERIC);
-
+	arsort($arr3, rand() ? SORT_NUMERIC : SORT_STRING);
+	sort($arr1, rand() ? SORT_STRING : SORT_REGULAR);
+	sort($arr1, rand());
 }
 
 function wrongNumberOfArguments(): void

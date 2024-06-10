@@ -1375,6 +1375,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug11147(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11147.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Method Bug11147\RedisAdapter::createConnection() has invalid return type Bug11147\NonExistentClass.', $errors[0]->getMessage());

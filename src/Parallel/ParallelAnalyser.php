@@ -8,6 +8,7 @@ use Clue\React\NDJson\Encoder;
 use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\InternalError;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\Process\ProcessHelper;
@@ -25,7 +26,6 @@ use function array_sum;
 use function count;
 use function defined;
 use function ini_get;
-use function is_string;
 use function max;
 use function memory_get_usage;
 use function parse_url;
@@ -90,7 +90,7 @@ class ParallelAnalyser
 		$server = new TcpServer('127.0.0.1:0', $loop);
 		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages): void {
 			if (count($jobs) > 0 && $internalErrorsCount === 0) {
-				$internalErrors[] = 'Some parallel worker jobs have not finished.';
+				$internalErrors[] = new InternalError('Some parallel worker jobs have not finished.');
 				$internalErrorsCount++;
 			}
 
@@ -139,7 +139,7 @@ class ParallelAnalyser
 		$serverPort = parse_url($serverAddress, PHP_URL_PORT);
 
 		$handleError = function (Throwable $error) use (&$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit): void {
-			$internalErrors[] = sprintf('Internal error: ' . $error->getMessage());
+			$internalErrors[] = new InternalError($error->getMessage());
 			$internalErrorsCount++;
 			$reachedInternalErrorsCountLimit = true;
 			$this->processPool->quitAll();
@@ -168,12 +168,10 @@ class ParallelAnalyser
 			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler): void {
 				$fileErrors = [];
 				foreach ($json['errors'] as $jsonError) {
-					if (is_string($jsonError)) {
-						$internalErrors[] = sprintf('Internal error: %s', $jsonError);
-						continue;
-					}
-
 					$fileErrors[] = Error::decode($jsonError);
+				}
+				foreach ($json['internalErrors'] as $internalJsonError) {
+					$internalErrors[] = InternalError::decode($internalJsonError);
 				}
 
 				foreach ($json['filteredPhpErrors'] as $filteredPhpError) {
@@ -280,13 +278,13 @@ class ParallelAnalyser
 				$memoryLimitMessage = 'PHPStan process crashed because it reached configured PHP memory limit';
 				if (str_contains($output, $memoryLimitMessage)) {
 					foreach ($internalErrors as $internalError) {
-						if (!str_contains($internalError, $memoryLimitMessage)) {
+						if (!str_contains($internalError->getMessage(), $memoryLimitMessage)) {
 							continue;
 						}
 
 						return;
 					}
-					$internalErrors[] = sprintf(sprintf(
+					$internalErrors[] = new InternalError(sprintf(
 						"<error>Child process error</error>: %s: %s\n%s\n",
 						$memoryLimitMessage,
 						ini_get('memory_limit'),
@@ -296,7 +294,7 @@ class ParallelAnalyser
 					return;
 				}
 
-				$internalErrors[] = sprintf('<error>Child process error</error> (exit code %d): %s', $exitCode, $output);
+				$internalErrors[] = new InternalError(sprintf('<error>Child process error</error> (exit code %d): %s', $exitCode, $output));
 				$internalErrorsCount++;
 			});
 			$this->processPool->attachProcess($processIdentifier, $process);

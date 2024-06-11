@@ -5,6 +5,7 @@ namespace PHPStan\Command;
 use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
 use PHPStan\Analyser\FileAnalyser;
+use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\DependencyInjection\Container;
@@ -162,8 +163,19 @@ class WorkerCommand extends Command
 			$out->write([
 				'action' => 'result',
 				'result' => [
-					'errors' => [$error->getMessage()],
+					'errors' => [],
+					'internalErrors' => [
+						new InternalError($error->getMessage()),
+					],
+					'filteredPhpErrors' => [],
+					'allPhpErrors' => [],
+					'locallyIgnoredErrors' => [],
+					'linesToIgnore' => [],
+					'unmatchedLineIgnores' => [],
+					'collectedData' => [],
+					'memoryUsage' => memory_get_peak_usage(true),
 					'dependencies' => [],
+					'exportedNodes' => [],
 					'files' => [],
 					'internalErrorsCount' => 1,
 				],
@@ -183,6 +195,7 @@ class WorkerCommand extends Command
 			$internalErrorsCount = 0;
 			$files = $json['files'];
 			$errors = [];
+			$internalErrors = [];
 			$filteredPhpErrors = [];
 			$allPhpErrors = [];
 			$locallyIgnoredErrors = [];
@@ -224,7 +237,7 @@ class WorkerCommand extends Command
 						$internalErrorMessage .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s', "\n", "\n", $bugReportUrl);
 					}
 
-					$errors[] = $internalErrorMessage;
+					$internalErrors[] = new InternalError($internalErrorMessage);
 				}
 			}
 
@@ -232,6 +245,7 @@ class WorkerCommand extends Command
 				'action' => 'result',
 				'result' => [
 					'errors' => $errors,
+					'internalErrors' => $internalErrors,
 					'filteredPhpErrors' => $filteredPhpErrors,
 					'allPhpErrors' => $allPhpErrors,
 					'locallyIgnoredErrors' => $locallyIgnoredErrors,

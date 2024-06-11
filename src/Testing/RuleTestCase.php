@@ -7,6 +7,7 @@ use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
+use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\LocalIgnoresProcessor;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\RuleErrorTransformer;
@@ -176,7 +177,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			true,
 		);
 		if (count($analyserResult->getInternalErrors()) > 0) {
-			$this->fail(implode("\n", $analyserResult->getInternalErrors()));
+			$this->fail(implode("\n", array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $analyserResult->getInternalErrors())));
 		}
 
 		if ($this->shouldFailOnPhpErrors() && count($analyserResult->getAllPhpErrors()) > 0) {

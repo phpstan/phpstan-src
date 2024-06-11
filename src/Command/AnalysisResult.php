@@ -3,7 +3,9 @@
 namespace PHPStan\Command;
 
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\InternalError;
 use PHPStan\Collectors\CollectedData;
+use function array_map;
 use function count;
 use function usort;
 
@@ -17,7 +19,7 @@ class AnalysisResult
 	/**
 	 * @param list<Error> $fileSpecificErrors
 	 * @param list<string> $notFileSpecificErrors
-	 * @param list<string> $internalErrors
+	 * @param list<InternalError> $internalErrors
 	 * @param list<string> $warnings
 	 * @param list<CollectedData> $collectedData
 	 * @param array<string, string> $changedProjectExtensionFilesOutsideOfAnalysedPaths
@@ -83,7 +85,7 @@ class AnalysisResult
 	 */
 	public function getInternalErrors(): array
 	{
-		return $this->internalErrors;
+		return array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $this->internalErrors);
 	}
 
 	/**

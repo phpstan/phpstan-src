@@ -23,7 +23,7 @@ class AnalyserResult
 	 * @param array<string, LinesToIgnore> $linesToIgnore
 	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
 	 * @param list<CollectedData> $collectedData
-	 * @param list<string> $internalErrors
+	 * @param list<InternalError> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 */
@@ -117,7 +117,7 @@ class AnalyserResult
 	}
 
 	/**
-	 * @return list<string>
+	 * @return list<InternalError>
 	 */
 	public function getInternalErrors(): array
 	{

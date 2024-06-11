@@ -5,12 +5,14 @@ namespace PHPStan\Command;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
+use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\PhpDoc\StubValidator;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
+use function array_map;
 use function array_merge;
 use function count;
 use function is_file;
@@ -148,7 +150,7 @@ class AnalyseApplication
 			if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
 				$notFileSpecificErrors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
 			}
-			$notFileSpecificErrors = array_merge($notFileSpecificErrors, $internalErrors);
+			$notFileSpecificErrors = array_merge($notFileSpecificErrors, array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $internalErrors));
 		}
 
 		return new AnalysisResult(

@@ -36,7 +36,7 @@ use function in_array;
 use function sprintf;
 
 /** @api */
-class ObjectShapeType implements Type
+class ObjectShapeType extends AbstractType implements Type
 {
 
 	use ObjectTypeTrait;

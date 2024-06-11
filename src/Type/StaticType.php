@@ -25,7 +25,7 @@ use function get_class;
 use function sprintf;
 
 /** @api */
-class StaticType implements TypeWithClassName, SubtractableType
+class StaticType extends AbstractType implements TypeWithClassName, SubtractableType
 {
 
 	use NonGenericTypeTrait;

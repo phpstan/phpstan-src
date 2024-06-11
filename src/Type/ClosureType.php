@@ -49,7 +49,7 @@ use function array_merge;
 use function count;
 
 /** @api */
-class ClosureType implements TypeWithClassName, CallableParametersAcceptor
+class ClosureType extends AbstractType implements TypeWithClassName, CallableParametersAcceptor
 {
 
 	use NonArrayTypeTrait;

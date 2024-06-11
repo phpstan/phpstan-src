@@ -20,7 +20,7 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 
 /** @api */
-class NullType implements ConstantScalarType
+class NullType extends AbstractType implements ConstantScalarType
 {
 
 	use NonArrayTypeTrait;

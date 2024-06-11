@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AbstractType;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -31,7 +32,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
+class AccessoryNonFalsyStringType extends AbstractType implements CompoundType, AccessoryType
 {
 
 	use MaybeCallableTypeTrait;

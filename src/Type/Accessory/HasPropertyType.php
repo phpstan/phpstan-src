@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AbstractType;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
@@ -21,7 +22,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
-class HasPropertyType implements AccessoryType, CompoundType
+class HasPropertyType extends AbstractType implements AccessoryType, CompoundType
 {
 
 	use ObjectTypeTrait;

@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AbstractType;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
@@ -31,7 +32,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
-class HasOffsetValueType implements CompoundType, AccessoryType
+class HasOffsetValueType extends AbstractType implements CompoundType, AccessoryType
 {
 
 	use MaybeArrayTypeTrait;

@@ -22,7 +22,7 @@ use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
-class StrictMixedType implements CompoundType
+class StrictMixedType extends AbstractType implements CompoundType
 {
 
 	use UndecidedComparisonCompoundTypeTrait;

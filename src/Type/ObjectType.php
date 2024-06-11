@@ -59,7 +59,7 @@ use function sprintf;
 use function strtolower;
 
 /** @api */
-class ObjectType implements TypeWithClassName, SubtractableType
+class ObjectType extends AbstractType implements TypeWithClassName, SubtractableType
 {
 
 	use MaybeIterableTypeTrait;

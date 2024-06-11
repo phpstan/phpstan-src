@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Type\AbstractType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\LateResolvableType;
@@ -18,7 +19,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /** @api */
-final class GetTemplateTypeType implements CompoundType, LateResolvableType
+final class GetTemplateTypeType extends AbstractType implements CompoundType, LateResolvableType
 {
 
 	use LateResolvableTypeTrait;

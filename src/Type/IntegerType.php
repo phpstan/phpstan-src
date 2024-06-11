@@ -20,7 +20,7 @@ use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 /** @api */
-class IntegerType implements Type
+class IntegerType extends AbstractType implements Type
 {
 
 	use JustNullableTypeTrait;

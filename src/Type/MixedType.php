@@ -35,7 +35,7 @@ use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use function sprintf;
 
 /** @api */
-class MixedType implements CompoundType, SubtractableType
+class MixedType extends AbstractType implements CompoundType, SubtractableType
 {
 
 	use NonGenericTypeTrait;

@@ -346,4 +346,6 @@ interface Type
 	 */
 	public static function __set_state(array $properties): self;
 
+	public function __toString(): string;
+
 }

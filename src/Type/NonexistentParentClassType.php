@@ -23,7 +23,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
-class NonexistentParentClassType implements Type
+class NonexistentParentClassType extends AbstractType implements Type
 {
 
 	use JustNullableTypeTrait;

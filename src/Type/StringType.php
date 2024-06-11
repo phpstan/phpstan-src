@@ -23,7 +23,7 @@ use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function count;
 
 /** @api */
-class StringType implements Type
+class StringType extends AbstractType implements Type
 {
 
 	use JustNullableTypeTrait;

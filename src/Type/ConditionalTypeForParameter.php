@@ -12,7 +12,7 @@ use function array_merge;
 use function sprintf;
 
 /** @api */
-final class ConditionalTypeForParameter implements CompoundType, LateResolvableType
+final class ConditionalTypeForParameter extends AbstractType implements CompoundType, LateResolvableType
 {
 
 	use LateResolvableTypeTrait;

@@ -20,7 +20,7 @@ use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 /** @api */
-class ResourceType implements Type
+class ResourceType extends AbstractType implements Type
 {
 
 	use JustNullableTypeTrait;

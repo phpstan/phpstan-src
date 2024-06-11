@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AbstractType;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
@@ -28,7 +29,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
 /** @api */
-class AccessoryArrayListType implements CompoundType, AccessoryType
+class AccessoryArrayListType extends AbstractType implements CompoundType, AccessoryType
 {
 
 	use MaybeCallableTypeTrait;

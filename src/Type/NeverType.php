@@ -21,7 +21,7 @@ use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
 /** @api */
-class NeverType implements CompoundType
+class NeverType extends AbstractType implements CompoundType
 {
 
 	use UndecidedBooleanTypeTrait;

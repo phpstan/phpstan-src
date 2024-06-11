@@ -90,7 +90,6 @@
 	<rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit">
 		<exclude name="SlevomatCodingStandard.ControlStructures.EarlyExit.UselessElseIf"/>
 	</rule>
-	<rule ref="SlevomatCodingStandard.Classes.SuperfluousAbstractClassNaming"/>
 	<rule ref="SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming"/>
 	<rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
 		<properties>

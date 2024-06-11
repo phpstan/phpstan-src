@@ -11,6 +11,7 @@ use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AbstractType;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
@@ -27,7 +28,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 use function strtolower;
 
-class HasMethodType implements AccessoryType, CompoundType
+class HasMethodType extends AbstractType implements AccessoryType, CompoundType
 {
 
 	use ObjectTypeTrait;

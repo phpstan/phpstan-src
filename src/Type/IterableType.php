@@ -23,7 +23,7 @@ use function array_merge;
 use function sprintf;
 
 /** @api */
-class IterableType implements CompoundType
+class IterableType extends AbstractType implements CompoundType
 {
 
 	use MaybeArrayTypeTrait;

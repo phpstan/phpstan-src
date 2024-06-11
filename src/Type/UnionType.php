@@ -40,7 +40,7 @@ use function sprintf;
 use function str_contains;
 
 /** @api */
-class UnionType implements CompoundType
+class UnionType extends AbstractType implements CompoundType
 {
 
 	use NonGeneralizableTypeTrait;

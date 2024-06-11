@@ -40,7 +40,7 @@ use function array_merge;
 use function count;
 
 /** @api */
-class CallableType implements CompoundType, CallableParametersAcceptor
+class CallableType extends AbstractType implements CompoundType, CallableParametersAcceptor
 {
 
 	use MaybeArrayTypeTrait;

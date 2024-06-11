@@ -11,7 +11,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function sprintf;
 
 /** @api */
-class NewObjectType implements CompoundType, LateResolvableType
+class NewObjectType extends AbstractType implements CompoundType, LateResolvableType
 {
 
 	use LateResolvableTypeTrait;

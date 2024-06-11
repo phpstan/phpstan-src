@@ -21,25 +21,25 @@ class Foo
 		/** @var 0|1|2 $offset */
 		$offset = doFoo();
 		$c[$offset] = true;
-		assertType('array{bool, bool, bool}', $c);
+		assertType('array{false, false, true}|array{false, true, false}|array{true, false, false}', $c);
 
 		$d = [false, false, false];
 		/** @var int<0, 2> $offset2 */
 		$offset2 = doFoo();
 		$d[$offset2] = true;
-		assertType('array{bool, bool, bool}', $d);
+		assertType('array{false, false, true}|array{false, true, false}|array{true, false, false}', $d);
 
 		$e = [false, false, false];
 		/** @var 0|1|2|3 $offset3 */
 		$offset3 = doFoo();
 		$e[$offset3] = true;
-		assertType('non-empty-array<0|1|2|3, bool>', $e);
+		assertType('array{false, false, false, true}|array{false, false, true}|array{false, true, false}|array{true, false, false}', $e);
 
 		$f = [false, false, false];
 		/** @var 0|1 $offset4 */
 		$offset4 = doFoo();
 		$f[$offset4] = true;
-		assertType('array{bool, bool, false}', $f);
+		assertType('array{false, true, false}|array{true, false, false}', $f);
 	}
 
 	/**
@@ -50,7 +50,7 @@ class Foo
 	{
 		$a = [false, false, false];
 		$a[$offset] = true;
-		assertType('array{bool, bool, false}', $a);
+		assertType('array{false, true, false}|array{true, false, false}', $a);
 	}
 
 	/**
@@ -61,7 +61,7 @@ class Foo
 	{
 		$a = [false, false, false, false, false];
 		$a[$offset] = true;
-		assertType('array{bool, bool, false, bool, bool}', $a);
+		assertType('array{false, false, false, false, true}|array{false, false, false, true, false}|array{false, true, false, false, false}|array{true, false, false, false, false}', $a);
 	}
 
 	/**
@@ -94,14 +94,14 @@ class Foo
 	{
 		$a = [false, false, false];
 		$a[$offset] = true;
-		assertType('non-empty-array<int<0, 4>, bool>', $a);
+		assertType('array{0: false, 1: false, 2: false, 4: true}|array{false, false, false, true}|array{false, false, true}|array{false, true, false}|array{true, false, false}', $a);
 	}
 
 	public function doBar6(bool $offset): void
 	{
 		$a = [false, false, false];
 		$a[$offset] = true;
-		assertType('array{bool, bool, false}', $a);
+		assertType('array{false, true, false}|array{true, false, false}', $a);
 	}
 
 	/**

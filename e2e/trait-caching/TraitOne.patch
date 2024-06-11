@@ -1,0 +1,13 @@
+diff --git a/e2e/trait-caching/data/TraitOne.php b/e2e/trait-caching/data/TraitOne.php
+index 395dc1333a..1641ad6e65 100644
+--- a/e2e/trait-caching/data/TraitOne.php
++++ b/e2e/trait-caching/data/TraitOne.php
+@@ -2,7 +2,7 @@
+ 
+ namespace TraitsCachingIssue;
+ 
+-use stdClass as Foo;
++use Exception as Foo;
+ 
+ trait TraitOne
+ {

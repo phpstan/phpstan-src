@@ -1349,9 +1349,9 @@ class InitializerExprTypeResolver
 			return new ConstantBooleanType($leftTypeFiniteTypes[0]->equals($rightTypeFiniteType[0]));
 		}
 
-		$isLeftSuperset = $leftType->isSuperTypeOf($rightType);
-		$isRightSuperset = $rightType->isSuperTypeOf($leftType);
-		if ($isLeftSuperset->no() && $isRightSuperset->no()) {
+		$isLeftSupertype = $leftType->isSuperTypeOf($rightType);
+		$isRightSupertype = $rightType->isSuperTypeOf($leftType);
+		if ($isLeftSupertype->no() && $isRightSupertype->no()) {
 			return new ConstantBooleanType(false);
 		}
 

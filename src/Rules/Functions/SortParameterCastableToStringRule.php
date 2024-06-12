@@ -19,8 +19,12 @@ use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function in_array;
 use function sprintf;
+use const SORT_FLAG_CASE;
+use const SORT_LOCALE_STRING;
+use const SORT_NATURAL;
 use const SORT_NUMERIC;
 use const SORT_REGULAR;
+use const SORT_STRING;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -65,9 +69,7 @@ class SortParameterCastableToStringRule implements Rule
 			$functionReflection->getNamedArgumentsVariants(),
 		);
 
-		$errorMessage = 'Parameter %s of function %s expects an array of values castable to string, %s given.';
 		$functionParameters = $parametersAcceptor->getParameters();
-		$castFn = static fn (Type $t) => $t->toString();
 
 		$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
 
@@ -92,13 +94,34 @@ class SortParameterCastableToStringRule implements Rule
 			return [];
 		}
 
-		foreach (TypeUtils::getConstantIntegers($flags) as $flag) {
-			if ($flag->getValue() !== SORT_NUMERIC) {
-				continue;
-			}
+		$constantIntFlags = TypeUtils::getConstantIntegers($flags);
+		$mustBeCastableToString = $mustBeCastableToFloat = $constantIntFlags === [];
 
-			$castFn = static fn (Type $t) => $t->toFloat();
+		foreach ($constantIntFlags as $flag) {
+			if ($flag->getValue() === SORT_NUMERIC) {
+				$mustBeCastableToFloat = true;
+			} elseif (in_array($flag->getValue() & (~SORT_FLAG_CASE), [SORT_STRING, SORT_LOCALE_STRING, SORT_NATURAL], true)) {
+				$mustBeCastableToString = true;
+			}
+		}
+
+		if ($mustBeCastableToString && !$mustBeCastableToFloat) {
+			$errorMessage = 'Parameter %s of function %s expects an array of values castable to string, %s given.';
+			$castFn = static fn (Type $t) => $t->toString();
+		} elseif ($mustBeCastableToString) {
+			$errorMessage = 'Parameter %s of function %s expects an array of values castable to string and float, %s given.';
+			$castFn = static function (Type $t): Type {
+				$float = $t->toFloat();
+
+				return $float instanceof ErrorType
+					? $float
+					: $t->toString();
+			};
+		} elseif ($mustBeCastableToFloat) {
 			$errorMessage = 'Parameter %s of function %s expects an array of values castable to float, %s given.';
+			$castFn = static fn (Type $t) => $t->toFloat();
+		} else {
+			return [];
 		}
 
 		$origNamedArgs = [];

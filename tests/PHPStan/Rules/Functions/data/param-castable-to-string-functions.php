@@ -98,6 +98,9 @@ function validUsages(): void
 	rsort($nonStringArray, SORT_REGULAR);
 	asort($nonStringArray, SORT_REGULAR);
 	arsort($nonStringArray, SORT_REGULAR);
+	// It seems that PHP handles invalid flag as SORT_REGULAR
+	arsort($nonStringArray, 128);
+	array_unique($nonStringArray, 128);
 
 	// Apparently, SORT_NUMERIC does allow arrays.
 	$numericArr = ['a', true, null, false, 3, 3.14, [new \stdClass()]];

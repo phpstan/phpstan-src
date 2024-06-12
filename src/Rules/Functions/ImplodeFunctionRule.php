@@ -17,7 +17,7 @@ use function in_array;
 use function sprintf;
 
 /**
- * @deprecated Replaced by PHPStan\Rules\Functions\ParameterCastableToStringFunctionRule
+ * @deprecated Replaced by PHPStan\Rules\Functions\ImplodeParameterCastableToStringRuleTest
  * @implements Rule<Node\Expr\FuncCall>
  */
 class ImplodeFunctionRule implements Rule

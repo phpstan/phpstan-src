@@ -1,0 +1,102 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Rules\Functions;
+
+use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
+
+/**
+ * @extends RuleTestCase<ImplodeParameterCastableToStringRule>
+ */
+class ImplodeParameterCastableToStringRuleTest extends RuleTestCase
+{
+
+	protected function getRule(): Rule
+	{
+		$broker = $this->createReflectionProvider();
+		return new ImplodeParameterCastableToStringRule($broker, new RuleLevelHelper($broker, true, false, true, false, false, true, false));
+	}
+
+	public function testNamedArguments(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-named-args.php'], [
+			[
+				'Parameter $array of function implode expects array<string>, array<int, array<int, string>> given.',
+				25,
+			],
+			[
+				'Parameter $separator of function implode expects array<string>, array<int, array<int, string>> given.',
+				26,
+			],
+			[
+				'Parameter $array of function implode expects array<string>, array<int, array<int, string>> given.',
+				27,
+			],
+			[
+				'Parameter $array of function implode expects array<string>, array<int, array<int, string>> given.',
+				28,
+			],
+		]);
+	}
+
+	public function testEnum(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-enum.php'], [
+			[
+				'Parameter #2 $array of function implode expects array<string>, array<int, ParamCastableToStringFunctionsEnum\\FooEnum::A> given.',
+				31,
+			],
+		]);
+	}
+
+	public function testImplode(): void
+	{
+		$this->analyse([__DIR__ . '/data/implode.php'], [
+			[
+				'Parameter #2 $array of function implode expects array<string>, array<int, array<int, string>|string> given.',
+				9,
+			],
+			[
+				'Parameter #1 $array of function implode expects array<string>, array<int, array<int, string>> given.',
+				11,
+			],
+			[
+				'Parameter #1 $array of function implode expects array<string>, array<int, array<int, int>> given.',
+				12,
+			],
+			[
+				'Parameter #1 $array of function implode expects array<string>, array<int, array<int, int|true>> given.',
+				13,
+			],
+			[
+				'Parameter #2 $array of function implode expects array<string>, array<int, array<int, string>> given.',
+				15,
+			],
+			[
+				'Parameter #2 $array of function join expects array<string>, array<int, array<int, string>> given.',
+				16,
+			],
+		]);
+	}
+
+	public function testBug6000(): void
+	{
+		$this->analyse([__DIR__ . '/../Arrays/data/bug-6000.php'], []);
+	}
+
+	public function testBug8467a(): void
+	{
+		$this->analyse([__DIR__ . '/../Arrays/data/bug-8467a.php'], []);
+	}
+
+}

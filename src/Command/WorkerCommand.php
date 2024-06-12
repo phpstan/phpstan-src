@@ -224,7 +224,6 @@ class WorkerCommand extends Command
 						$collectedData[] = $data;
 					}
 				} catch (Throwable $t) {
-					$this->errorCount++;
 					$internalErrorsCount++;
 					$internalErrorMessage = sprintf('Internal error: %s while analysing file %s', $t->getMessage(), $file);
 

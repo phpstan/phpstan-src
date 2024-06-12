@@ -288,9 +288,13 @@ class X {
 	/**
 	 * @param int<0, max> $a
 	 * @param int<0, max> $b
+	 * @param int<16, 32> $c
+	 * @param int<2, 4> $d
 	 */
-	function divisionLoosesInformation(int $a, int $b): void {
-		assertType('float|int<0, max>',$a/$b);
+	function divisionLoosesInformation(int $a, int $b, int $c, int $d): void {
+		assertType('float|int<0, max>', $a / $b);
+		assertType('float|int<8, 16>', $c / 2);
+		assertType('float|int<4, 16>', $c / $d);
 	}
 
 	/**

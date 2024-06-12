@@ -39,6 +39,10 @@ class RuntimeReflectionFunctionRuleTest extends RuleTestCase
 				'Function class_uses() is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
 				51,
 			],
+			[
+				'Function get_declared_classes() is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
+				52,
+			],
 		]);
 	}
 

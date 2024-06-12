@@ -1335,6 +1335,10 @@ class InitializerExprTypeResolver
 
 	public function resolveIdenticalType(Type $leftType, Type $rightType): BooleanType
 	{
+		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
+			return new ConstantBooleanType(false);
+		}
+
 		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
 			return new ConstantBooleanType($leftType->getValue() === $rightType->getValue());
 		}

@@ -1760,31 +1760,25 @@ class InitializerExprTypeResolver
 				[$min, $max] = [$max, $min];
 			}
 
-			if ($operand instanceof IntegerRangeType
-				|| ($rangeMin === null || $rangeMax === null)
-				|| is_float($min)
-				|| is_float($max)
-			) {
-				if (is_float($min)) {
-					$min = (int) ceil($min);
-				}
-				if (is_float($max)) {
-					$max = (int) floor($max);
-				}
-
-				// invert maximas on division with negative constants
-				if ((($range instanceof ConstantIntegerType && $range->getValue() < 0)
-						|| ($operand instanceof ConstantIntegerType && $operand->getValue() < 0))
-					&& ($min === null || $max === null)) {
-					[$min, $max] = [$max, $min];
-				}
-
-				if ($min === null && $max === null) {
-					return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-				}
-
-				return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
+			if (is_float($min)) {
+				$min = (int) ceil($min);
 			}
+			if (is_float($max)) {
+				$max = (int) floor($max);
+			}
+
+			// invert maximas on division with negative constants
+			if ((($range instanceof ConstantIntegerType && $range->getValue() < 0)
+					|| ($operand instanceof ConstantIntegerType && $operand->getValue() < 0))
+				&& ($min === null || $max === null)) {
+				[$min, $max] = [$max, $min];
+			}
+
+			if ($min === null && $max === null) {
+				return new BenevolentUnionType([new IntegerType(), new FloatType()]);
+			}
+
+			return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
 		} elseif ($node instanceof Expr\BinaryOp\ShiftLeft) {
 			if (!$operand instanceof ConstantIntegerType) {
 				return new IntegerType();

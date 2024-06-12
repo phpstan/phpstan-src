@@ -8,6 +8,7 @@ use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelperResult;
+use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\ResultCache\ResultCacheManager;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\DependencyInjection\Container;
@@ -235,8 +236,8 @@ class FixerWorkerCommand extends Command
 
 				if ($hasInternalErrors) {
 					$out->write(['action' => 'analysisCrash', 'data' => [
-						'errors' => count($finalizerResult->getAnalyserResult()->getInternalErrors()) > 0 ? $finalizerResult->getAnalyserResult()->getInternalErrors() : [
-							'Internal error occurred',
+						'internalErrors' => count($finalizerResult->getAnalyserResult()->getInternalErrors()) > 0 ? $finalizerResult->getAnalyserResult()->getInternalErrors() : [
+							new InternalError('Internal error occurred', []),
 						],
 					]]);
 				}

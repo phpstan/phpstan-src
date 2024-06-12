@@ -184,6 +184,30 @@ class Error implements JsonSerializable
 		);
 	}
 
+	/**
+	 * @param mixed[] $metadata
+	 */
+	public function withMetadata(array $metadata): self
+	{
+		if ($this->metadata !== []) {
+			throw new ShouldNotHappenException('Error already has metadata');
+		}
+
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath,
+			$this->traitFilePath,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$metadata,
+		);
+	}
+
 	public function getNodeLine(): ?int
 	{
 		return $this->nodeLine;

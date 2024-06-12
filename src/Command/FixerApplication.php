@@ -11,6 +11,7 @@ use DateTimeZone;
 use Nette\Utils\Json;
 use Phar;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
+use PHPStan\Analyser\InternalError;
 use PHPStan\File\FileMonitor;
 use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
@@ -297,7 +298,7 @@ class FixerApplication
 	): void
 	{
 		$currentVersion = null;
-		$branch = 'main';
+		$branch = '1.1.x';
 		if (is_file($pharPath) && is_file($infoPath)) {
 			/** @var array{version: string, date: string, branch?: string} $currentInfo */
 			$currentInfo = Json::decode(FileReader::read($infoPath), Json::FORCE_ARRAY);
@@ -479,7 +480,7 @@ class FixerApplication
 			$server->close();
 			$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
 			$phpstanFixerEncoder->write(['action' => 'analysisCrash', 'data' => [
-				'errors' => [$e->getMessage()],
+				'internalErrors' => [new InternalError($e->getMessage(), InternalError::prepareTrace($e))],
 			]]);
 			throw $e;
 		});

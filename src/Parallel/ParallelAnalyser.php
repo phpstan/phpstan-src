@@ -90,7 +90,7 @@ class ParallelAnalyser
 		$server = new TcpServer('127.0.0.1:0', $loop);
 		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages): void {
 			if (count($jobs) > 0 && $internalErrorsCount === 0) {
-				$internalErrors[] = new InternalError('Some parallel worker jobs have not finished.');
+				$internalErrors[] = new InternalError('Some parallel worker jobs have not finished.', []);
 				$internalErrorsCount++;
 			}
 
@@ -139,7 +139,7 @@ class ParallelAnalyser
 		$serverPort = parse_url($serverAddress, PHP_URL_PORT);
 
 		$handleError = function (Throwable $error) use (&$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit): void {
-			$internalErrors[] = new InternalError($error->getMessage());
+			$internalErrors[] = new InternalError($error->getMessage(), InternalError::prepareTrace($error));
 			$internalErrorsCount++;
 			$reachedInternalErrorsCountLimit = true;
 			$this->processPool->quitAll();
@@ -289,12 +289,12 @@ class ParallelAnalyser
 						$memoryLimitMessage,
 						ini_get('memory_limit'),
 						'Increase your memory limit in php.ini or run PHPStan with --memory-limit CLI option.',
-					));
+					), []);
 					$internalErrorsCount++;
 					return;
 				}
 
-				$internalErrors[] = new InternalError(sprintf('<error>Child process error</error> (exit code %d): %s', $exitCode, $output));
+				$internalErrors[] = new InternalError(sprintf('<error>Child process error</error> (exit code %d): %s', $exitCode, $output), []);
 				$internalErrorsCount++;
 			});
 			$this->processPool->attachProcess($processIdentifier, $process);

@@ -165,7 +165,7 @@ class WorkerCommand extends Command
 				'result' => [
 					'errors' => [],
 					'internalErrors' => [
-						new InternalError($error->getMessage()),
+						new InternalError($error->getMessage(), InternalError::prepareTrace($error)),
 					],
 					'filteredPhpErrors' => [],
 					'allPhpErrors' => [],
@@ -186,7 +186,7 @@ class WorkerCommand extends Command
 		$fileAnalyser = $container->getByType(FileAnalyser::class);
 		$ruleRegistry = $container->getByType(RuleRegistry::class);
 		$collectorRegistry = $container->getByType(CollectorRegistry::class);
-		$in->on('data', function (array $json) use ($fileAnalyser, $ruleRegistry, $collectorRegistry, $out, $analysedFiles, $output): void {
+		$in->on('data', static function (array $json) use ($fileAnalyser, $ruleRegistry, $collectorRegistry, $out, $analysedFiles, $output): void {
 			$action = $json['action'];
 			if ($action !== 'analyse') {
 				return;
@@ -236,7 +236,7 @@ class WorkerCommand extends Command
 						$internalErrorMessage .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s', "\n", "\n", $bugReportUrl);
 					}
 
-					$internalErrors[] = new InternalError($internalErrorMessage);
+					$internalErrors[] = new InternalError($internalErrorMessage, InternalError::prepareTrace($t));
 				}
 			}
 

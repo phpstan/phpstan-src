@@ -115,7 +115,11 @@ class FileAnalyser
 							}
 
 							$uniquedAnalysedCodeExceptionMessages[$e->getMessage()] = true;
-							$fileErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
+							$fileErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, null, null, $e->getTip()))
+								->withIdentifier('phpstan.internal')
+								->withMetadata([
+									InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+								]);
 							continue;
 						} catch (IdentifierNotFound $e) {
 							$fileErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
@@ -139,7 +143,11 @@ class FileAnalyser
 							}
 
 							$uniquedAnalysedCodeExceptionMessages[$e->getMessage()] = true;
-							$fileErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
+							$fileErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, null, null, $e->getTip()))
+								->withIdentifier('phpstan.internal')
+								->withMetadata([
+									InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+								]);
 							continue;
 						} catch (IdentifierNotFound $e) {
 							$fileErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
@@ -205,7 +213,11 @@ class FileAnalyser
 					$fileErrors[] = (new Error($error->getMessage(), $e->getParsedFile() ?? $file, $error->getLine() !== -1 ? $error->getStartLine() : null, $e))->withIdentifier('phpstan.parse');
 				}
 			} catch (AnalysedCodeException $e) {
-				$fileErrors[] = (new Error($e->getMessage(), $file, null, $e, null, null, $e->getTip()))->withIdentifier('phpstan.internal');
+				$fileErrors[] = (new Error($e->getMessage(), $file, null, $e, null, null, $e->getTip()))
+					->withIdentifier('phpstan.internal')
+					->withMetadata([
+						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+					]);
 			} catch (IdentifierNotFound $e) {
 				$fileErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
 			} catch (UnableToCompileNode | CircularReference $e) {

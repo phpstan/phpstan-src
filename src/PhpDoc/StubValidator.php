@@ -4,6 +4,7 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
+use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Broker\Broker;
 use PHPStan\Collectors\Registry as CollectorRegistry;
@@ -129,7 +130,11 @@ class StubValidator
 				}
 
 				$internalErrorMessage = sprintf('Internal error: %s', $e->getMessage());
-				$errors[] = (new Error($internalErrorMessage, $stubFile, null, $e))->withIdentifier('phpstan.internal');
+				$errors[] = (new Error($internalErrorMessage, $stubFile, null, $e))
+					->withIdentifier('phpstan.internal')
+					->withMetadata([
+						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+					]);
 			}
 		}
 

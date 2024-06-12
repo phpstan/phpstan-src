@@ -106,7 +106,11 @@ class Analyser
 					"\n",
 					'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml',
 				);
-				$errors[] = (new Error($internalErrorMessage, $file, null, $t))->withIdentifier('phpstan.internal');
+				$errors[] = (new Error($internalErrorMessage, $file, null, $t))
+					->withIdentifier('phpstan.internal')
+					->withMetadata([
+						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($t),
+					]);
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
 					break;

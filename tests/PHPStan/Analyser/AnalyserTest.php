@@ -230,7 +230,7 @@ class AnalyserTest extends PHPStanTestCase
 			__DIR__ . '/data/two-different-fails.php',
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, $filesToAnalyze, $onlyFiles);
-		$this->assertSame([], $result);
+		$this->assertNoErrors($result);
 	}
 
 	/**

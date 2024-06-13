@@ -68,9 +68,9 @@ class IgnoredErrorHelper
 				continue;
 			}
 
-			$key = '';
+			$key = $ignoreError['path'];
 			if (isset($ignoreError['message'])) {
-				$key = sprintf("%s\n%s", $ignoreError['message'], $ignoreError['path']);
+				$key = sprintf("%s\n%s", $key, $ignoreError['message']);
 			}
 			if (isset($ignoreError['identifier'])) {
 				$key = sprintf("%s\n%s", $key, $ignoreError['identifier']);

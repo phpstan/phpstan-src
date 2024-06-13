@@ -210,6 +210,32 @@ class AnalyserTest extends PHPStanTestCase
 	/**
 	 * @dataProvider dataTrueAndFalse
 	 */
+	public function testIgnoreErrorByPathAndIdentifierCountsCorrectly(bool $onlyFiles): void
+	{
+		$ignoreErrors = [
+			[
+				'identifier' => 'tests.alwaysFail',
+				'count' => 3,
+				'path' => __DIR__ . '/data/two-fails.php',
+			],
+			[
+				'identifier' => 'tests.alwaysFail',
+				'count' => 2,
+				'path' => __DIR__ . '/data/two-different-fails.php',
+			],
+		];
+
+		$filesToAnalyze = [
+			__DIR__ . '/data/two-fails.php',
+			__DIR__ . '/data/two-different-fails.php',
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, $filesToAnalyze, $onlyFiles);
+		$this->assertSame([], $result);
+	}
+
+	/**
+	 * @dataProvider dataTrueAndFalse
+	 */
 	public function testIgnoreErrorByPathAndCountMoreThanExpected(bool $onlyFiles): void
 	{
 		$ignoreErrors = [

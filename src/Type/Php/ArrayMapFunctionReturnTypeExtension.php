@@ -8,15 +8,12 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
@@ -26,6 +23,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_slice;
 use function count;
+use function preg_match;
 
 final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

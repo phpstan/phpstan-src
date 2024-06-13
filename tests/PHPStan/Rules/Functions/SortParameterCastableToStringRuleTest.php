@@ -24,58 +24,58 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions.php'], $this->hackParameterNames([
+		$this->analyse([__DIR__ . '/data/sort-param-castable-to-string-functions.php'], $this->hackParameterNames([
 			[
 				'Parameter #1 $array of function array_unique expects an array of values castable to string, array<int, array<int, string>> given.',
+				16,
+			],
+			[
+				'Parameter #1 $array of function sort expects an array of values castable to string, array<int, array<int, string>> given.',
+				19,
+			],
+			[
+				'Parameter #1 $array of function sort expects an array of values castable to string, array<int, SortParamCastableToStringFunctions\\ClassWithoutToString> given.',
+				20,
+			],
+			[
+				'Parameter #1 $array of function rsort expects an array of values castable to string, array<int, array<int, string>> given.',
+				21,
+			],
+			[
+				'Parameter #1 $array of function asort expects an array of values castable to string, array<int, array<int, string>> given.',
 				22,
 			],
 			[
+				'Parameter #1 $array of function arsort expects an array of values castable to string, array<int, array<int, string>> given.',
+				23,
+			],
+			[
 				'Parameter #1 $array of function sort expects an array of values castable to string, array<int, array<int, string>> given.',
+				25,
+			],
+			[
+				'Parameter #1 $array of function rsort expects an array of values castable to string, array<int, array<int, string>> given.',
 				26,
 			],
 			[
-				'Parameter #1 $array of function sort expects an array of values castable to string, array<int, ParamCastableToStringFunctions\\ClassWithoutToString> given.',
+				'Parameter #1 $array of function asort expects an array of values castable to string, array<int, array<int, string>> given.',
 				27,
 			],
 			[
-				'Parameter #1 $array of function rsort expects an array of values castable to string, array<int, array<int, string>> given.',
-				28,
+				'Parameter #1 $array of function arsort expects an array of values castable to float, array<int, SortParamCastableToStringFunctions\ClassWithToString> given.',
+				31,
 			],
 			[
-				'Parameter #1 $array of function asort expects an array of values castable to string, array<int, array<int, string>> given.',
-				29,
-			],
-			[
-				'Parameter #1 $array of function arsort expects an array of values castable to string, array<int, array<int, string>> given.',
-				30,
+				'Parameter #1 $array of function arsort expects an array of values castable to string and float, array<int, SortParamCastableToStringFunctions\ClassWithToString> given.',
+				32,
 			],
 			[
 				'Parameter #1 $array of function sort expects an array of values castable to string, array<int, array<int, string>> given.',
-				36,
-			],
-			[
-				'Parameter #1 $array of function rsort expects an array of values castable to string, array<int, array<int, string>> given.',
-				37,
-			],
-			[
-				'Parameter #1 $array of function asort expects an array of values castable to string, array<int, array<int, string>> given.',
-				38,
-			],
-			[
-				'Parameter #1 $array of function arsort expects an array of values castable to float, array<int, ParamCastableToStringFunctions\ClassWithToString> given.',
-				42,
-			],
-			[
-				'Parameter #1 $array of function arsort expects an array of values castable to string and float, array<int, ParamCastableToStringFunctions\ClassWithToString> given.',
-				43,
-			],
-			[
-				'Parameter #1 $array of function sort expects an array of values castable to string, array<int, array<int, string>> given.',
-				44,
+				33,
 			],
 			[
 				'Parameter #1 $array of function sort expects an array of values castable to string and float, array<int, array<int, string>> given.',
-				45,
+				34,
 			],
 		]));
 	}
@@ -86,26 +86,26 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-named-args.php'], [
+		$this->analyse([__DIR__ . '/data/sort-param-castable-to-string-functions-named-args.php'], [
 			[
 				'Parameter $array of function array_unique expects an array of values castable to string, array<int, array<int, string>> given.',
-				16,
+				7,
 			],
 			[
 				'Parameter $array of function sort expects an array of values castable to string, array<int, array<int, string>> given.',
-				19,
+				9,
 			],
 			[
 				'Parameter $array of function rsort expects an array of values castable to string, array<int, array<int, string>> given.',
-				20,
+				10,
 			],
 			[
 				'Parameter $array of function asort expects an array of values castable to string, array<int, array<int, string>> given.',
-				21,
+				11,
 			],
 			[
 				'Parameter $array of function arsort expects an array of values castable to string, array<int, array<int, string>> given.',
-				22,
+				12,
 			],
 		]);
 	}
@@ -116,26 +116,26 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-enum.php'], [
+		$this->analyse([__DIR__ . '/data/sort-param-castable-to-string-functions-enum.php'], [
 			[
-				'Parameter #1 $array of function array_unique expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum::A|string> given.',
-				18,
+				'Parameter #1 $array of function array_unique expects an array of values castable to string, array<int, SortParamCastableToStringFunctionsEnum\\FooEnum::A|string> given.',
+				12,
 			],
 			[
-				'Parameter #1 $array of function sort expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum::A> given.',
-				21,
+				'Parameter #1 $array of function sort expects an array of values castable to string, array<int, SortParamCastableToStringFunctionsEnum\\FooEnum::A> given.',
+				14,
 			],
 			[
-				'Parameter #1 $array of function rsort expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum> given.',
-				22,
+				'Parameter #1 $array of function rsort expects an array of values castable to string, array<int, SortParamCastableToStringFunctionsEnum\\FooEnum> given.',
+				15,
 			],
 			[
-				'Parameter #1 $array of function asort expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum> given.',
-				23,
+				'Parameter #1 $array of function asort expects an array of values castable to string, array<int, SortParamCastableToStringFunctionsEnum\\FooEnum> given.',
+				16,
 			],
 			[
-				'Parameter #1 $array of function arsort expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum> given.',
-				24,
+				'Parameter #1 $array of function arsort expects an array of values castable to string, array<int, SortParamCastableToStringFunctionsEnum\\FooEnum> given.',
+				17,
 			],
 		]);
 	}

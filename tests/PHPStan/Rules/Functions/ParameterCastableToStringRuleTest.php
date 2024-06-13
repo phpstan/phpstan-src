@@ -47,23 +47,23 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #1 $keys of function array_combine expects an array of values castable to string, array<int, array<int, string>> given.',
-				23,
+				22,
 			],
 			[
 				'Parameter #1 $array of function natsort expects an array of values castable to string, array<int, array<int, string>> given.',
-				31,
+				24,
 			],
 			[
 				'Parameter #1 $array of function natcasesort expects an array of values castable to string, array<int, array<int, string>> given.',
-				32,
+				25,
 			],
 			[
 				'Parameter #1 $array of function array_count_values expects an array of values castable to string, array<int, array<int, string>> given.',
-				33,
+				26,
 			],
 			[
 				'Parameter #1 $keys of function array_fill_keys expects an array of values castable to string, array<int, array<int, string>> given.',
-				34,
+				27,
 			],
 		]));
 	}
@@ -77,11 +77,11 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-named-args.php'], [
 			[
 				'Parameter $keys of function array_combine expects an array of values castable to string, array<int, array<int, string>> given.',
-				17,
+				7,
 			],
 			[
 				'Parameter $keys of function array_fill_keys expects an array of values castable to string, array<int, array<int, string>> given.',
-				23,
+				9,
 			],
 		]);
 	}
@@ -115,23 +115,23 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #1 $keys of function array_combine expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum::A> given.',
-				19,
+				18,
 			],
 			[
-				'Parameter #1 $array of function natsort expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum> given.',
-				25,
+				'Parameter #1 $array of function natsort expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum::A> given.',
+				20,
 			],
 			[
-				'Parameter #1 $array of function natcasesort expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum> given.',
-				26,
+				'Parameter #1 $array of function natcasesort expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum::A> given.',
+				21,
 			],
 			[
-				'Parameter #1 $array of function array_count_values expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum> given.',
-				27,
+				'Parameter #1 $array of function array_count_values expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum::A> given.',
+				22,
 			],
 			[
-				'Parameter #1 $keys of function array_fill_keys expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum> given.',
-				28,
+				'Parameter #1 $keys of function array_fill_keys expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum::A> given.',
+				23,
 			],
 		]);
 	}

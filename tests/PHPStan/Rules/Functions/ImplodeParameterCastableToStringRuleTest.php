@@ -26,22 +26,22 @@ class ImplodeParameterCastableToStringRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-named-args.php'], [
+		$this->analyse([__DIR__ . '/data/implode-param-castable-to-string-functions-named-args.php'], [
 			[
 				'Parameter $array of function implode expects array<string>, array<int, array<int, string>> given.',
-				25,
+				8,
 			],
 			[
 				'Parameter $separator of function implode expects array<string>, array<int, array<int, string>> given.',
-				26,
+				9,
 			],
 			[
 				'Parameter $array of function implode expects array<string>, array<int, array<int, string>> given.',
-				27,
+				10,
 			],
 			[
 				'Parameter $array of function implode expects array<string>, array<int, array<int, string>> given.',
-				28,
+				11,
 			],
 		]);
 	}
@@ -52,10 +52,10 @@ class ImplodeParameterCastableToStringRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-enum.php'], [
+		$this->analyse([__DIR__ . '/data/implode-param-castable-to-string-functions-enum.php'], [
 			[
-				'Parameter #2 $array of function implode expects array<string>, array<int, ParamCastableToStringFunctionsEnum\\FooEnum::A> given.',
-				31,
+				'Parameter #2 $array of function implode expects array<string>, array<int, ImplodeParamCastableToStringFunctionsEnum\\FooEnum::A> given.',
+				12,
 			],
 		]);
 	}

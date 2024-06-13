@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1); // lint >= 8.1
+<?php declare(strict_types = 1); // onlyif PHP_VERSION_ID >= 80100
 
 namespace Bug7176Types;
 

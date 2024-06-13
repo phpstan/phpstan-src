@@ -1,4 +1,4 @@
-<?php
+<?php // onlyif PHP_VERSION_ID < 80000
 
 \PHPStan\Testing\assertType('\'entity\'|\'long\'|\'none\'|int<1, 55295>|int<57344, 1114111>', mb_substitute_character());
 \PHPStan\Testing\assertType('true', mb_substitute_character(''));

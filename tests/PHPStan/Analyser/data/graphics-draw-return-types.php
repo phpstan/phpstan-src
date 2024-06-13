@@ -1,4 +1,4 @@
-<?php
+<?php // onlyif extension gd
 
 use function PHPStan\Testing\assertType;
 

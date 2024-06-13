@@ -1,4 +1,4 @@
-<?php // lint >= 7.4
+<?php // onlyif PHP_VERSION_ID < 80000
 
 namespace Bug4902;
 

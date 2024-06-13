@@ -1,4 +1,4 @@
-<?php
+<?php // onlyif PHP_VERSION_ID >= 70400
 
 use function PHPStan\Testing\assertType;
 

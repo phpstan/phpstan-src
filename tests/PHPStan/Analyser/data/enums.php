@@ -1,4 +1,4 @@
-<?php // lint >= 8.1
+<?php // onlyif PHP_VERSION_ID >= 80100
 
 namespace EnumTypeAssertions;
 

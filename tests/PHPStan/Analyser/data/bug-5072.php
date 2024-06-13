@@ -1,4 +1,4 @@
-<?php
+<?php // onlyif PHP_INT_SIZE == 8
 
 namespace Bug5072;
 

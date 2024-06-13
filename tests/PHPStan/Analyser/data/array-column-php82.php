@@ -1,4 +1,4 @@
-<?php
+<?php // onlyif PHP_VERSION_ID >= 80200
 
 namespace ArrayColumn82;
 

@@ -1,4 +1,4 @@
-<?php
+<?php // onlyif PHP_VERSION_ID < 80000
 
 // Verification for constant types: https://3v4l.org/96GSj
 

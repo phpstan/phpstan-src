@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types=1); // onlyif PHP_VERSION_ID < 70300
 
 namespace MbStrlenPhp72;
 

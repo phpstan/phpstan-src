@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1); // lint >= 7.4
+<?php declare(strict_types = 1); // onlyif PHP_VERSION_ID >= 70400
 
 namespace BugAnonymousFunctionMethodConstant;
 

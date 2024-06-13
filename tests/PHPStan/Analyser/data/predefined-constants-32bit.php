@@ -1,4 +1,4 @@
-<?php
+<?php // onlyif PHP_INT_SIZE == 4
 
 use function PHPStan\Testing\assertType;
 

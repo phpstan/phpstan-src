@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -16,7 +17,7 @@ class ImplodeParameterCastableToStringRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ImplodeParameterCastableToStringRule($broker, new RuleLevelHelper($broker, true, false, true, false, false, true, false));
+		return new ImplodeParameterCastableToStringRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, false, false, true, false)));
 	}
 
 	public function testNamedArguments(): void

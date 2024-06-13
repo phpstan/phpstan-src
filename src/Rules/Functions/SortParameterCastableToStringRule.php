@@ -8,14 +8,12 @@ use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function in_array;
 use function sprintf;
@@ -34,7 +32,7 @@ class SortParameterCastableToStringRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private RuleLevelHelper $ruleLevelHelper,
+		private ParameterCastableToStringCheck $parameterCastableToStringCheck,
 	)
 	{
 	}
@@ -136,22 +134,6 @@ class SortParameterCastableToStringRule implements Rule
 		$errors = [];
 
 		foreach ($argsToCheck as $argIdx => $arg) {
-			if ($arg->unpack) {
-				continue;
-			}
-
-			$typeResult = $this->ruleLevelHelper->findTypeToCheck(
-				$scope,
-				$arg->value,
-				'',
-				static fn (Type $type): bool => !$castFn($type->getIterableValueType()) instanceof ErrorType,
-			);
-
-			if ($typeResult->getType() instanceof ErrorType
-				|| !$castFn($typeResult->getType()->getIterableValueType()) instanceof ErrorType) {
-				continue;
-			}
-
 			if (array_key_exists($argIdx, $functionParameters)) {
 				$paramName = $functionParameters[$argIdx]->getName();
 				$argName = array_key_exists($paramName, $origNamedArgs)
@@ -161,9 +143,20 @@ class SortParameterCastableToStringRule implements Rule
 				$argName = sprintf('#%d', $argIdx + 1);
 			}
 
-			$errors[] = RuleErrorBuilder::message(
-				sprintf($errorMessage, $argName, $functionName, $typeResult->getType()->describe(VerbosityLevel::typeOnly())),
-			)->identifier('argument.type')->build();
+			$error = $this->parameterCastableToStringCheck->checkParameter(
+				$arg,
+				$scope,
+				$errorMessage,
+				$castFn,
+				$functionName,
+				$argName,
+			);
+
+			if ($error === null) {
+				continue;
+			}
+
+			$errors[] = $error;
 		}
 
 		return $errors;

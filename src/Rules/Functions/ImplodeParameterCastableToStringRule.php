@@ -8,12 +8,9 @@ use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
-use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function count;
 use function in_array;
@@ -27,7 +24,7 @@ class ImplodeParameterCastableToStringRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private RuleLevelHelper $ruleLevelHelper,
+		private ParameterCastableToStringCheck $parameterCastableToStringCheck,
 	)
 	{
 	}
@@ -89,22 +86,6 @@ class ImplodeParameterCastableToStringRule implements Rule
 		$errors = [];
 
 		foreach ($argsToCheck as $argIdx => $arg) {
-			if ($arg->unpack) {
-				continue;
-			}
-
-			$typeResult = $this->ruleLevelHelper->findTypeToCheck(
-				$scope,
-				$arg->value,
-				'',
-				static fn (Type $type): bool => !$type->getIterableValueType()->toString() instanceof ErrorType,
-			);
-
-			if ($typeResult->getType() instanceof ErrorType
-				|| !$typeResult->getType()->getIterableValueType()->toString() instanceof ErrorType) {
-				continue;
-			}
-
 			// implode has weird variants, so $array has to be fixed. It's especially weird with named arguments.
 			if (array_key_exists('array', $origNamedArgs)) {
 				$argName = '$array';
@@ -114,9 +95,20 @@ class ImplodeParameterCastableToStringRule implements Rule
 				$argName = sprintf('#%d $array', $argIdx + 1);
 			}
 
-			$errors[] = RuleErrorBuilder::message(
-				sprintf($errorMessage, $argName, $functionName, $typeResult->getType()->describe(VerbosityLevel::typeOnly())),
-			)->identifier('argument.type')->build();
+			$error = $this->parameterCastableToStringCheck->checkParameter(
+				$arg,
+				$scope,
+				$errorMessage,
+				static fn (Type $t) => $t->toString(),
+				$functionName,
+				$argName,
+			);
+
+			if ($error === null) {
+				continue;
+			}
+
+			$errors[] = $error;
 		}
 
 		return $errors;

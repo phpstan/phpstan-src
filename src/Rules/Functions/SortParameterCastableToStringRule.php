@@ -16,7 +16,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function in_array;
-use function sprintf;
 use const SORT_FLAG_CASE;
 use const SORT_LOCALE_STRING;
 use const SORT_NATURAL;
@@ -122,34 +121,20 @@ class SortParameterCastableToStringRule implements Rule
 			return [];
 		}
 
-		$origNamedArgs = [];
-		foreach ($origArgs as $arg) {
-			if ($arg->unpack || $arg->name === null) {
-				continue;
-			}
-
-			$origNamedArgs[$arg->name->toString()] = $arg;
-		}
-
 		$errors = [];
 
 		foreach ($argsToCheck as $argIdx => $arg) {
-			if (array_key_exists($argIdx, $functionParameters)) {
-				$paramName = $functionParameters[$argIdx]->getName();
-				$argName = array_key_exists($paramName, $origNamedArgs)
-					? sprintf('$%s', $paramName)
-					: sprintf('#%d $%s', $argIdx + 1, $paramName);
-			} else {
-				$argName = sprintf('#%d', $argIdx + 1);
-			}
-
 			$error = $this->parameterCastableToStringCheck->checkParameter(
 				$arg,
 				$scope,
 				$errorMessage,
 				$castFn,
 				$functionName,
-				$argName,
+				$this->parameterCastableToStringCheck->getParameterName(
+					$arg,
+					$argIdx,
+					$functionParameters[$argIdx] ?? null,
+				),
 			);
 
 			if ($error === null) {

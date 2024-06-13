@@ -13,7 +13,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Type\Type;
 use function array_key_exists;
 use function in_array;
-use function sprintf;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -90,34 +89,20 @@ class ParameterCastableToStringRule implements Rule
 			return [];
 		}
 
-		$origNamedArgs = [];
-		foreach ($origArgs as $arg) {
-			if ($arg->unpack || $arg->name === null) {
-				continue;
-			}
-
-			$origNamedArgs[$arg->name->toString()] = $arg;
-		}
-
 		$errors = [];
 
 		foreach ($argsToCheck as $argIdx => $arg) {
-			if (array_key_exists($argIdx, $functionParameters)) {
-				$paramName = $functionParameters[$argIdx]->getName();
-				$argName = array_key_exists($paramName, $origNamedArgs)
-					? sprintf('$%s', $paramName)
-					: sprintf('#%d $%s', $argIdx + 1, $paramName);
-			} else {
-				$argName = sprintf('#%d', $argIdx + 1);
-			}
-
 			$error = $this->parameterCastableToStringCheck->checkParameter(
 				$arg,
 				$scope,
 				$errorMessage,
 				static fn (Type $t) => $t->toString(),
 				$functionName,
-				$argName,
+				$this->parameterCastableToStringCheck->getParameterName(
+					$arg,
+					$argIdx,
+					$functionParameters[$argIdx] ?? null,
+				),
 			);
 
 			if ($error === null) {

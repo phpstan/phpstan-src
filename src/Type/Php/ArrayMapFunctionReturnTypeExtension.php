@@ -2,14 +2,21 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
@@ -37,6 +44,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		$singleArrayArgument = !isset($functionCall->getArgs()[2]);
 		$callableType = $scope->getType($functionCall->getArgs()[0]->value);
 		$callableIsNull = $callableType->isNull()->yes();
+		$callback = null;
 
 		if ($callableType->isCallable()->yes()) {
 			$valueTypes = [new NeverType()];
@@ -44,6 +52,19 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 				$valueTypes[] = $parametersAcceptor->getReturnType();
 			}
 			$valueType = TypeCombinator::union(...$valueTypes);
+			$callback = $functionCall->getArgs()[0]->value;
+			if ($callback instanceof String_) {
+				/** @var non-falsy-string $callName */
+				$callName = $callback->value;
+				$callback = new Name($callName);
+			} elseif ($callback instanceof FuncCall && $callback->isFirstClassCallable() &&
+				$callback->getAttribute('phpstan_cache_printer') !== null &&
+				preg_match('/\A(?<name>\\\\?[^()]+)\(...\)\z/', $callback->getAttribute('phpstan_cache_printer'), $m) === 1
+			) {
+				/** @var non-falsy-string $callName */
+				$callName = $m['name'];
+				$callback = new Name($callName);
+			}
 		} elseif ($callableIsNull) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
@@ -73,7 +94,11 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 							$returnedArrayBuilder->setOffsetValueType(
 								$keyType,
-								$valueType,
+								$callback === null
+									? $valueType
+									: $scope->getType(new FuncCall($callback, [
+										new Arg(new TypeExpr($constantArray->getValueTypes()[$i])),
+									])),
 								$constantArray->isOptionalKey($i),
 							);
 						}

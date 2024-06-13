@@ -2,6 +2,7 @@
 
 namespace PHPStan\Testing;
 
+use LogicException;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
@@ -24,9 +25,16 @@ use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
+use function constant;
 use function count;
+use function extension_loaded;
+use function file_get_contents;
 use function in_array;
+use function intval;
 use function is_string;
+use function preg_match;
+use function preg_match_all;
+use function preg_split;
 use function sprintf;
 use function stripos;
 use function strtolower;
@@ -126,12 +134,87 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		}
 	}
 
+	protected static function checkOnlyIfAnnotation(string $file): bool
+	{
+		$fileContents = file_get_contents($file);
+		if ($fileContents === false) {
+			throw new LogicException(sprintf('Cannot read file %s', $file));
+		}
+
+		if (preg_match_all('{^(?:<\?php[^/\n]+)?//\s*onlyif\s+(.+)\s*$}Um', $fileContents, $ma) > 0) {
+			$onlyIfConditions = [];
+			for ($i = 0; $i < count($ma[0]); $i++) {
+				foreach ((array) preg_split('/\s*&&\s*/', $ma[1][$i]) as $onlyIfCondition) {
+					$onlyIfConditions[] = (string) $onlyIfCondition;
+				}
+			}
+
+			foreach ($onlyIfConditions as $onlyIfCondition) {
+				if (preg_match('/^(PHP_VERSION_ID|PHP_INT_SIZE) (>|>=|<|<=|==) ([0-9]+)$/', $onlyIfCondition, $m) > 0) {
+					$onlyIfConditionConstant = constant($m[1]);
+					$onlyIfConditionOperator = $m[2];
+					$onlyIfConditionValue = intval($m[3]);
+
+					switch ($m[1]) {
+						case 'PHP_VERSION_ID':
+							if (($onlyIfConditionValue < 70000) || ($onlyIfConditionValue > 99999)) {
+								throw new LogicException(sprintf('File %s contains bad onlyif: %s', $file, $onlyIfCondition));
+							}
+							break;
+
+						case 'PHP_INT_SIZE':
+							if (!in_array($onlyIfConditionValue, [4, 8], true)) {
+								throw new LogicException(sprintf('File %s contains bad onlyif: %s', $file, $onlyIfCondition));
+							}
+							break;
+					}
+
+					switch ($onlyIfConditionOperator) {
+						case '>':
+							$onlyIfResult = $onlyIfConditionConstant > $onlyIfConditionValue;
+							break;
+						case '>=':
+							$onlyIfResult = $onlyIfConditionConstant >= $onlyIfConditionValue;
+							break;
+						case '<':
+							$onlyIfResult = $onlyIfConditionConstant < $onlyIfConditionValue;
+							break;
+						case '<=':
+							$onlyIfResult = $onlyIfConditionConstant <= $onlyIfConditionValue;
+							break;
+						default:
+							$onlyIfResult = $onlyIfConditionConstant === $onlyIfConditionValue;
+							break;
+					}
+				} elseif (preg_match('/^extension (\w+)$/', $onlyIfCondition, $m) > 0) {
+					$onlyIfConditionExtension = $m[1];
+
+					$onlyIfResult = extension_loaded($onlyIfConditionExtension);
+				} elseif (preg_match('/^ignore$/', $onlyIfCondition, $m) > 0) {
+					$onlyIfResult = false;
+				} else {
+					throw new LogicException(sprintf('File %s contains bad onlyif: %s', $file, $onlyIfCondition));
+				}
+
+				if (!$onlyIfResult) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
 	/**
 	 * @api
 	 * @return array<string, mixed[]>
 	 */
 	public static function gatherAssertTypes(string $file): array
 	{
+		if (!self::checkOnlyIfAnnotation($file)) {
+			return [];
+		}
+
 		$asserts = [];
 		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, $file): void {
 			if (!$node instanceof Node\Expr\FuncCall) {

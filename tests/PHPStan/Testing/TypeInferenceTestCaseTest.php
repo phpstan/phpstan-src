@@ -2,10 +2,48 @@
 
 namespace PHPStan\Testing;
 
+use LogicException;
 use PHPUnit\Framework\AssertionFailedError;
+use Throwable;
+use function is_string;
+use const PHP_VERSION_ID;
 
 final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 {
+
+	public static function dataCheckOnlyIfAnnotation(): iterable
+	{
+		yield 'data-annotation-1' => [
+			__DIR__ . '/data/data-annotation-1.php',
+			(PHP_VERSION_ID >= 80100 && PHP_VERSION_ID < 80300),
+		];
+		yield 'data-annotation-2' => [
+			__DIR__ . '/data/data-annotation-2.php',
+			(PHP_VERSION_ID >= 80100 && PHP_VERSION_ID < 80300),
+		];
+		yield 'data-annotation-3' => [
+			__DIR__ . '/data/data-annotation-3.php',
+			LogicException::class,
+		];
+		yield 'data-annotation-4' => [
+			__DIR__ . '/data/data-annotation-4.php',
+			LogicException::class,
+		];
+	}
+
+	/**
+	 * @dataProvider dataCheckOnlyIfAnnotation
+	 * @param bool|class-string<Throwable> $result
+	 */
+	public function testCheckOnlyIfAnnotation(string $file, $result): void
+	{
+		if (is_string($result)) {
+			$this->expectException($result);
+			$this->checkOnlyIfAnnotation($file);
+		} else {
+			$this->assertSame(parent::checkOnlyIfAnnotation($file), $result);
+		}
+	}
 
 	public static function dataFileAssertionFailedErrors(): iterable
 	{

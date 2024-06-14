@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types=1); // lint >= 7.2
 
 namespace MbStrlenPhp72;
 

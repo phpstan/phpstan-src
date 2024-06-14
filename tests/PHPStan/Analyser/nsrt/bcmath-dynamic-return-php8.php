@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 // Verification for constant types: https://3v4l.org/96GSj
 

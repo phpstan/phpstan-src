@@ -1,4 +1,6 @@
-<?php declare(strict_types = 1); // lint >= 8.1
+<?php // lint >= 8.1
+
+declare(strict_types = 1);
 
 namespace Bug7176Types;
 

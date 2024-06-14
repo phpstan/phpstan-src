@@ -30,6 +30,7 @@ use function is_string;
 use function sprintf;
 use function stripos;
 use function strtolower;
+use const PHP_VERSION;
 
 /** @api */
 abstract class TypeInferenceTestCase extends PHPStanTestCase
@@ -132,6 +133,27 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	 */
 	public static function gatherAssertTypes(string $file): array
 	{
+		$skip = false;
+		$f = @fopen($file, 'r');
+		if ($f) {
+			$firstLine = fgets($f);
+
+			// ignore shebang line
+			if (strpos($firstLine, '#!') === 0) {
+				$firstLine = fgets($f);
+			}
+
+			@fclose($f);
+
+			if (preg_match('~<?php\\s*\\/\\/\s*lint\s*([^\d\s]+)\s*([^\s]+)\s*~i', $firstLine, $m)) {
+				$skip = version_compare(PHP_VERSION, $m[2], $m[1]) === false;
+			}
+		}
+
+		if ($skip) {
+			self::fail(sprintf('File %s skips linting on %s', $file, PHP_VERSION));
+		}
+
 		$asserts = [];
 		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, $file): void {
 			if (!$node instanceof Node\Expr\FuncCall) {

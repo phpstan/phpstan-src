@@ -1,0 +1,205 @@
+<?php
+
+/**
+ * @param ?resource $context
+ * @return Directory|false
+ * @phpstan-assert-if-true =non-empty-string $directory
+ */
+function dir(string $directory, $context = null) {}
+
+/**
+ * @phpstan-assert-if-true =non-empty-string $directory
+ */
+function chdir(string $directory): bool {}
+
+/**
+ * @phpstan-assert-if-true =non-empty-string $directory
+ */
+function chroot(string $directory): bool {}
+
+/**
+ * @param ?resource $context
+ * @return resource|false
+ * @phpstan-assert-if-true =non-empty-string $directory
+ */
+function opendir(string $directory, $context = null) {}
+
+/**
+ * @param ?resource $context
+ * @phpstan-assert-if-true =non-empty-string $directory
+ * @return list<string>|false
+ */
+function scandir(string $directory, int $sorting_order = 0, $context = null) {}
+
+/**
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function file_exists(string $filename): bool {}
+
+/**
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function is_file(string $filename): bool {}
+
+/**
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function is_dir(string $filename): bool {}
+
+/**
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function is_writable(string $filename): bool {}
+
+/**
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function is_readable(string $filename): bool {}
+
+/**
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function is_executable(string $filename): bool {}
+
+/**
+ * @param ?resource $context
+ * @phpstan-assert-if-true =non-empty-string $filename
+ * @return list<string>|false
+ */
+function file(string $filename, int $flags = 0, $context = null) {}
+
+/**
+ * @param ?resource $context
+ * @return string|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function file_get_contents(string $filename, bool $use_include_path = false, $context = null, int $offset = 0, ?int $length = null) {}
+
+/**
+ * @param ?resource $context
+ * @return 0|positive-int|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function file_put_contents(string $filename, mixed $data, int $flags = 0, $context = null) {}
+
+/**
+ * @return 0|positive-int|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function fileatime(string $filename) {}
+
+/**
+ * @return 0|positive-int|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function filectime(string $filename) {}
+
+/**
+ * @return 0|positive-int|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function filegroup(string $filename) {}
+
+/**
+ * @return 0|positive-int|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function fileinode(string $filename) {}
+
+/**
+ * @return 0|positive-int|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function filemtime(string $filename) {}
+
+/**
+ * @return 0|positive-int|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function fileowner(string $filename) {}
+
+/**
+ * @return 0|positive-int|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function fileperms(string $filename) {}
+
+/**
+ * @return 0|positive-int|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function filesize(string $filename) {}
+
+/**
+ * @return string|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function filetype(string $filename) {}
+
+/**
+ * @param ?resource $context
+ * @return resource|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function fopen(string $filename, string $mode, bool $use_include_path = false, $context = null) {}
+
+/**
+ * @return int|false
+ * @phpstan-assert-if-true =non-empty-string $path
+ */
+function linkinfo(string $path) {}
+
+/**
+ * @return array<string, int>|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function lstat(string $filename) {}
+
+/**
+ * @param ?resource $context
+ * @phpstan-assert-if-true =non-empty-string $directory
+ */
+function mkdir(string $directory, int $permissions = 0777, bool $recursive = false, $context = null): bool {}
+
+/**
+ * @return 0|positive-int|false
+ * @param ?resource $context
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function readfile(string $filename, bool $use_include_path = false, $context = null) {}
+
+/**
+ * @return non-empty-string|false
+ * @phpstan-assert-if-true =non-empty-string $path
+ */
+function readlink(string $path) {}
+
+/**
+ * @return non-empty-string|false
+ * @phpstan-assert-if-true =non-empty-string $path
+ */
+function realpath(string $path) {}
+
+/**
+ * @param ?resource $context
+ * @phpstan-assert-if-true =non-empty-string $directory
+ */
+function rmdir(string $directory, $context): bool {}
+
+/**
+ * @return array<string, int>|false
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function stat(string $filename) {}
+
+/**
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function touch(string $filename, ?int $mtime, ?int $atime): bool {}
+
+/**
+ * @param ?resource $context
+ * @phpstan-assert-if-true =non-empty-string $filename
+ */
+function unlink(string $filename, $context = null): bool {}
+

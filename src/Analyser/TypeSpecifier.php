@@ -462,7 +462,7 @@ class TypeSpecifier
 						$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 						TemplateTypeVariance::createInvariant(),
 					));
-					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+					$specifiedTypes = $this->specifyTypesFromAsserts($context, $rootExpr, $expr, $asserts, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
@@ -510,7 +510,7 @@ class TypeSpecifier
 						$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 						TemplateTypeVariance::createInvariant(),
 					));
-					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+					$specifiedTypes = $this->specifyTypesFromAsserts($context, $rootExpr, $expr, $asserts, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
@@ -563,7 +563,7 @@ class TypeSpecifier
 						$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 						TemplateTypeVariance::createInvariant(),
 					));
-					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+					$specifiedTypes = $this->specifyTypesFromAsserts($context, $rootExpr, $expr, $asserts, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
@@ -922,7 +922,7 @@ class TypeSpecifier
 						TemplateTypeVariance::createInvariant(),
 					));
 
-					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
+					$specifiedTypes = $this->specifyTypesFromAsserts($context, $rootExpr, $expr, $asserts, $parametersAcceptor, $scope);
 
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
@@ -1293,7 +1293,7 @@ class TypeSpecifier
 		return $specifiedTypes;
 	}
 
-	private function specifyTypesFromAsserts(TypeSpecifierContext $context, Expr\CallLike $call, Assertions $assertions, ParametersAcceptor $parametersAcceptor, Scope $scope): ?SpecifiedTypes
+	private function specifyTypesFromAsserts(TypeSpecifierContext $context, ?Expr $rootExpr, Expr\CallLike $call, Assertions $assertions, ParametersAcceptor $parametersAcceptor, Scope $scope): ?SpecifiedTypes
 	{
 		if ($context->null()) {
 			$asserts = $assertions->getAsserts();
@@ -1334,8 +1334,7 @@ class TypeSpecifier
 			$argsMap['this'] = [$call->var];
 		}
 
-		/** @var SpecifiedTypes|null $types */
-		$types = null;
+		$types = $this->handleDefaultTruthyOrFalseyContext($context, $rootExpr, $call, $scope);
 
 		foreach ($asserts as $assert) {
 			foreach ($argsMap[substr($assert->getParameter()->getParameterName(), 1)] ?? [] as $parameterExpr) {
@@ -1378,7 +1377,7 @@ class TypeSpecifier
 					$scope,
 					$containsUnresolvedTemplate || $assert->isEquality() ? $call : null,
 				);
-				$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
+				$types = $types->unionWith($newTypes);
 
 				if (!$context->null() || !$assertedType instanceof ConstantBooleanType) {
 					continue;

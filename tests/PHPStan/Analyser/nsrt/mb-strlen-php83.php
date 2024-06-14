@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php // lint >= 8.3
+
+declare(strict_types=1);
 
 namespace MbStrlenPhp83;
 

@@ -47,7 +47,7 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-5172.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-5172.php'], []);
 	}
 
 	public function testBug7980(): void
@@ -61,12 +61,12 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 
 	public function testBug8517(): void
 	{
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8517.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8517.php'], []);
 	}
 
 	public function testBug9105(): void
 	{
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-9105.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9105.php'], []);
 	}
 
 	public function testBug6922(): void

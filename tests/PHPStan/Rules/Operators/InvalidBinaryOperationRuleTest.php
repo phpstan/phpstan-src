@@ -261,7 +261,7 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 
 	public function testBug8827(): void
 	{
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8827.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8827.php'], []);
 	}
 
 	public function testRuleWithNullsafeVariant(): void

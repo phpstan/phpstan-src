@@ -26,6 +26,7 @@ parameters:
 		- ../src/Reflection/SignatureMap/functionMetadata.php
 		- ../tests/*/data/*
 		- ../tests/tmp/*
+		- ../tests/PHPStan/Analyser/nsrt/*
 		- ../tests/PHPStan/Analyser/traits/*
 		- ../tests/notAutoloaded/*
 		- ../tests/PHPStan/Generics/functions.php

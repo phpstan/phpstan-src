@@ -10,6 +10,7 @@ return [
 		'tests/*/data/*',
 		'tests/*/Fixture/*',
 		'tests/PHPStan/Analyser/traits/*',
+		'tests/PHPStan/Analyser/nsrt/*',
 		'tests/PHPStan/Generics/functions.php',
 		'tests/e2e/resultCache_1.php',
 		'tests/e2e/resultCache_2.php',

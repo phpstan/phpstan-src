@@ -2009,7 +2009,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-4557.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-4557.php'], []);
 	}
 
 	public function testBug4209(): void
@@ -2017,7 +2017,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-4209.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-4209.php'], []);
 	}
 
 	public function testBug4209Two(): void
@@ -2025,7 +2025,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-4209-2.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-4209-2.php'], []);
 	}
 
 	public function testBug3321(): void
@@ -2033,7 +2033,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-3321.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-3321.php'], []);
 	}
 
 	public function testBug4498(): void
@@ -2041,7 +2041,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-4498.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-4498.php'], []);
 	}
 
 	public function testBug3922(): void
@@ -2049,7 +2049,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-3922.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-3922.php'], [
 			[
 				'Parameter #1 $query of method Bug3922\FooQueryHandler::handle() expects Bug3922\FooQuery, Bug3922\BarQuery given.',
 				63,
@@ -2062,7 +2062,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-4642.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-4642.php'], []);
 	}
 
 	public function testBug4008(): void
@@ -2165,7 +2165,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/generic-object-lower-bound.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/generic-object-lower-bound.php'], [
 			[
 				'Parameter #1 $c of method GenericObjectLowerBound\Foo::doFoo() expects GenericObjectLowerBound\Collection<GenericObjectLowerBound\Cat|GenericObjectLowerBound\Dog>, GenericObjectLowerBound\Collection<GenericObjectLowerBound\Dog> given.',
 				48,
@@ -2417,7 +2417,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-6293.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-6293.php'], []);
 	}
 
 	public function testBug6306(): void
@@ -2821,7 +2821,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8752.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8752.php'], [
 			[
 				'Cannot call method abc() on class-string.',
 				18,

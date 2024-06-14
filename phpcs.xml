@@ -205,6 +205,7 @@
 		</properties>
 	</rule>
 	<exclude-pattern>tests/*/data</exclude-pattern>
+	<exclude-pattern>tests/PHPStan/Analyser/nsrt</exclude-pattern>
 	<exclude-pattern>tests/*/Fixture</exclude-pattern>
 	<exclude-pattern>tests/e2e/resultCache_1.php</exclude-pattern>
 	<exclude-pattern>tests/e2e/resultCache_2.php</exclude-pattern>

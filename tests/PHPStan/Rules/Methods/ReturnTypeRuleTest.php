@@ -507,7 +507,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug4803(): void
 	{
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-4803.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-4803.php'], []);
 	}
 
 	public function testBug7020(): void
@@ -757,7 +757,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 	public function testBug7996(): void
 	{
 		$this->checkExplicitMixed = false;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-7996.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-7996.php'], []);
 	}
 
 	public function testBug6358(): void
@@ -1026,7 +1026,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug10721(): void
 	{
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-10721.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10721.php'], []);
 	}
 
 }

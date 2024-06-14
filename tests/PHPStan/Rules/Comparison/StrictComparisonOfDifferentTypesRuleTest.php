@@ -689,7 +689,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	public function testPhpUnitIntegration(): void
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/phpunit-integration.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/phpunit-integration.php'], []);
 	}
 
 	public function testBug8586(): void
@@ -794,7 +794,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	public function testBug3019(): void
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-3019.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-3019.php'], []);
 	}
 
 	public function testBug7578(): void
@@ -1013,7 +1013,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	public function testBug8366(): void
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8366.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8366.php'], []);
 	}
 
 	public function testBug3300(): void
@@ -1025,7 +1025,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	public function testBug11035(): void
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-11035.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-11035.php'], [
 			[
 				"Strict comparison using === between '0' and non-falsy-string will always evaluate to false.",
 				39,

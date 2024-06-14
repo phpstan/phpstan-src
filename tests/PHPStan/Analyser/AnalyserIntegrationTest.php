@@ -263,7 +263,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug3379(): void
 	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3379.php');
+		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-3379.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Constant SOME_UNKNOWN_CONST not found.', $errors[0]->getMessage());
 	}
@@ -442,7 +442,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug5529(): void
 	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5529.php');
+		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-5529.php');
 		$this->assertNoErrors($errors);
 	}
 
@@ -715,7 +715,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug7068(): void
 	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7068.php');
+		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-7068.php');
 		$this->assertNoErrors($errors);
 	}
 
@@ -725,7 +725,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6993.php');
+		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-6993.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Parameter #1 $specificable of method Bug6993\AndSpecificationValidator<Bug6993\TestSpecification,Bug6993\Foo>::isSatisfiedBy() expects Bug6993\Foo, Bug6993\Bar given.', $errors[0]->getMessage());
 	}
@@ -742,7 +742,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7078.php');
+		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-7078.php');
 		$this->assertNoErrors($errors);
 	}
 
@@ -758,7 +758,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug3853(): void
 	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3853.php');
+		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-3853.php');
 		$this->assertNoErrors($errors);
 	}
 
@@ -827,7 +827,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testOffsetAccess(): void
 	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/offset-access.php');
+		$errors = $this->runAnalyse(__DIR__ . '/nsrt/offset-access.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('PHPDoc tag @return contains unresolvable type.', $errors[0]->getMessage());
 		$this->assertSame(42, $errors[0]->getLine());
@@ -865,7 +865,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug7153(): void
 	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7153.php');
+		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-7153.php');
 		$this->assertNoErrors($errors);
 	}
 
@@ -1063,7 +1063,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testAssertDocblock(): void
 	{
-		$errors = $this->runAnalyse(__DIR__ . '/data/assert-docblock.php');
+		$errors = $this->runAnalyse(__DIR__ . '/nsrt/assert-docblock.php');
 		$this->assertCount(4, $errors);
 		$this->assertSame('Call to method AssertDocblock\A::testInt() with string will always evaluate to false.', $errors[0]->getMessage());
 		$this->assertSame(218, $errors[0]->getLine());

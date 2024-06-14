@@ -9049,7 +9049,7 @@ return [
 'posix_getpid' => ['int'],
 'posix_getppid' => ['int'],
 'posix_getpwnam' => ['array|false', 'groupname'=>'string'],
-'posix_getpwuid' => ['array|false', 'uid'=>'int'],
+'posix_getpwuid' => ['array{name: string, passwd: string, uid: int, gid: int, gecos: string, dir: string, shell: string}|false', 'uid'=>'int'],
 'posix_getrlimit' => ['array|false'],
 'posix_getsid' => ['int|false', 'pid'=>'int'],
 'posix_getuid' => ['int'],

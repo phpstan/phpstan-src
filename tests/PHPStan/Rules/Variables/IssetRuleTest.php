@@ -422,7 +422,7 @@ class IssetRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-7776.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-7776.php'], []);
 	}
 
 	public function testBug6008(): void
@@ -463,7 +463,7 @@ class IssetRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-3985.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-3985.php'], [
 			[
 				'Variable $foo in isset() is never defined.',
 				13,

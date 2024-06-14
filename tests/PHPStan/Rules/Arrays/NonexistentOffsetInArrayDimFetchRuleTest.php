@@ -587,7 +587,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testBug5223(): void
 	{
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-5223.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-5223.php'], [
 			[
 				'Offset \'something\' does not exist on array{categoryKeys: array<string>, tagNames: array<string>}.',
 				26,

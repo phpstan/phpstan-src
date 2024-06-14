@@ -273,7 +273,7 @@ class MissingReturnRuleTest extends RuleTestCase
 	{
 		$this->checkExplicitMixedMissingReturn = $checkExplicitMixedMissingReturn;
 		$this->checkPhpDocMissingReturn = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/model-mixin.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/model-mixin.php'], [
 			[
 				'Method ModelMixin\Model::__callStatic() should return mixed but return statement is missing.',
 				13,

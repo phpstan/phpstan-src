@@ -18,7 +18,7 @@ class TestClosureTypeRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/closure-passed-to-type.php'], [
+		$this->analyse([__DIR__ . '/nsrt/closure-passed-to-type.php'], [
 			[
 				'Closure type: Closure(mixed): (1|2|3)',
 				25,

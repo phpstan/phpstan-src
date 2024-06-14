@@ -612,7 +612,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/conditional-types-inference.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/conditional-types-inference.php'], [
 			[
 				'Call to function testIsInt() with string will always evaluate to false.',
 				49,
@@ -661,7 +661,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-7224.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-7224.php'], []);
 	}
 
 	public function testBug4708(): void
@@ -750,14 +750,14 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8752.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8752.php'], []);
 	}
 
 	public function testDiscussion9134(): void
 	{
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/discussion-9134.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/discussion-9134.php'], []);
 	}
 
 	public function testImpossibleMethodExistOnGenericClassString(): void
@@ -1027,7 +1027,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-9662.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9662.php'], []);
 	}
 
 	public function testNonStrictInArrayEnums(): void
@@ -1040,7 +1040,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-9662-enums.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9662-enums.php'], [
 			[
 				"Call to function in_array() with 'NotAnEnumCase' and array<Bug9662Enums\Suit> will always evaluate to false.",
 				19,

@@ -63,7 +63,7 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 
 	public function testArrayTypehintWithoutNullInPhpDoc(): void
 	{
-		$this->analyse([__DIR__ . '/../../Analyser/data/array-typehint-without-null-in-phpdoc.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/array-typehint-without-null-in-phpdoc.php'], []);
 	}
 
 	public function testBug4415(): void

@@ -29,7 +29,7 @@ class NullsafeMethodCallRuleTest extends RuleTestCase
 
 	public function testNullsafeVsScalar(): void
 	{
-		 $this->analyse([__DIR__ . '/../../Analyser/data/nullsafe-vs-scalar.php'], []);
+		 $this->analyse([__DIR__ . '/../../Analyser/nsrt/nullsafe-vs-scalar.php'], []);
 	}
 
 	public function testBug8664(): void
@@ -43,7 +43,7 @@ class NullsafeMethodCallRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-9293.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9293.php'], []);
 	}
 
 	public function testBug6922b(): void

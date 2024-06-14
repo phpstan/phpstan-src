@@ -378,7 +378,7 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 	public function testBug2231(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-2231.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-2231.php'], [
 			[
 				'Result of && is always false.',
 				21,

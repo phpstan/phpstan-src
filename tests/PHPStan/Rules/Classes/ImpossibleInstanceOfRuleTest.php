@@ -600,7 +600,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-10201.php'], [
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10201.php'], [
 			[
 				'Instanceof between string and Bug10201\Hello will always evaluate to false.',
 				13,

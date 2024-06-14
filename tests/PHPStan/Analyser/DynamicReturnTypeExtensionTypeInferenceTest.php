@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
-use const PHP_VERSION_ID;
 
 class DynamicReturnTypeExtensionTypeInferenceTest extends TypeInferenceTestCase
 {
@@ -12,9 +11,7 @@ class DynamicReturnTypeExtensionTypeInferenceTest extends TypeInferenceTestCase
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-types.php');
 
-		if (PHP_VERSION_ID >= 80000) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-types-named-args.php');
-		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-types-named-args.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-compound-types.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-getsingle-conditional.php');

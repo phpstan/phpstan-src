@@ -22,14 +22,23 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use Symfony\Component\Finder\Finder;
 use function array_map;
 use function array_merge;
 use function count;
+use function fclose;
+use function fgets;
+use function fopen;
 use function in_array;
+use function is_dir;
 use function is_string;
+use function preg_match;
 use function sprintf;
 use function stripos;
+use function strpos;
 use function strtolower;
+use function version_compare;
+use const PHP_VERSION;
 
 /** @api */
 abstract class TypeInferenceTestCase extends PHPStanTestCase
@@ -238,6 +247,64 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		}
 
 		return $asserts;
+	}
+
+	/**
+	 * @api
+	 * @return array<string, mixed[]>
+	 */
+	public static function gatherAssertTypesFromDirectory(string $directory): array
+	{
+		if (!is_dir($directory)) {
+			self::fail(sprintf('Directory %s does not exist.', $directory));
+		}
+
+		$finder = new Finder();
+		$finder->followLinks();
+		$asserts = [];
+		foreach ($finder->files()->name('*.php')->in($directory) as $fileInfo) {
+			$path = $fileInfo->getPathname();
+			if (self::isFileLintSkipped($path)) {
+				continue;
+			}
+			foreach (self::gatherAssertTypes($path) as $key => $assert) {
+				$asserts[$key] = $assert;
+			}
+		}
+
+		return $asserts;
+	}
+
+	/**
+	 * From https://github.com/php-parallel-lint/PHP-Parallel-Lint/blob/0c2706086ac36dce31967cb36062ff8915fe03f7/bin/skip-linting.php
+	 *
+	 * Copyright (c) 2012, Jakub Onderka
+	 */
+	private static function isFileLintSkipped(string $file): bool
+	{
+		$f = @fopen($file, 'r');
+		if ($f !== false) {
+			$firstLine = fgets($f);
+			if ($firstLine === false) {
+				return false;
+			}
+
+			// ignore shebang line
+			if (strpos($firstLine, '#!') === 0) {
+				$firstLine = fgets($f);
+				if ($firstLine === false) {
+					return false;
+				}
+			}
+
+			@fclose($f);
+
+			if (preg_match('~<?php\\s*\\/\\/\s*lint\s*([^\d\s]+)\s*([^\s]+)\s*~i', $firstLine, $m) === 1) {
+				return version_compare(PHP_VERSION, $m[2], $m[1]) === false;
+			}
+		}
+
+		return false;
 	}
 
 	/** @return string[] */

@@ -65,16 +65,6 @@ jobs:
       matrix:
         include:
           - script: |
-              cd e2e/result-cache-1
-              echo -n > phpstan-baseline.neon
-              ../../bin/phpstan -vvv
-              patch -b src/Bar.php < patch-1.patch
-              cat baseline-1.neon > phpstan-baseline.neon
-              ../../bin/phpstan -vvv
-              mv src/Bar.php.orig src/Bar.php
-              echo -n > phpstan-baseline.neon
-              ../../bin/phpstan -vvv
-          - script: |
               cd e2e/result-cache-2
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv
@@ -285,3 +275,36 @@ jobs:
 
       - name: "Test"
         run: ${{ matrix.script }}
+
+  result-cache-e2e-tests-bashunit:
+    name: "Result cache E2E tests"
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - script: |
+              cd e2e/result-cache-1
+              bashunit .
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+          extensions: mbstring
+          ini-values: memory_limit=256M
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Patch PHPStan"
+        run: "patch src/Analyser/Error.php < e2e/PHPStanErrorPatch.patch"
+
+      - name: "Test"
+        run: "${{ matrix.script }}"

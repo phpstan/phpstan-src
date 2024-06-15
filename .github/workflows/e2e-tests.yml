@@ -286,7 +286,7 @@ jobs:
         include:
           - script: |
               cd e2e/result-cache-1
-              bashunit .
+              ../bashunit .
 
     steps:
       - name: "Checkout"

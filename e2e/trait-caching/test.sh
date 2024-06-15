@@ -1,8 +1,7 @@
 #!/bin/bash
 
 function set_up() {
-    git restore . 2>&1
-    git clean -fd 2>&1
+    git restore data/
 }
 
 function test_trait_caching() {

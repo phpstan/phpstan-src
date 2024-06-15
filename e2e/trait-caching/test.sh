@@ -38,7 +38,7 @@ function test_trait_caching_two_changed() {
     [ $(echo "$OUTPUT" | wc -l) -eq 1 ]
     assert_successful_code
 
-    assert_contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
+    assert_contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
 } 2>&1
 
 function test_trait_caching_both_changed() {
@@ -54,5 +54,5 @@ function test_trait_caching_both_changed() {
     assert_successful_code
 
     assert_contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
-    assert_contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
+    assert_contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
 } 2>&1

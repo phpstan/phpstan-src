@@ -480,7 +480,12 @@ class FixerApplication
 			$server->close();
 			$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
 			$phpstanFixerEncoder->write(['action' => 'analysisCrash', 'data' => [
-				'internalErrors' => [new InternalError($e->getMessage(), InternalError::prepareTrace($e))],
+				'internalErrors' => [new InternalError(
+					$e->getMessage(),
+					'running PHPStan Pro worker',
+					InternalError::prepareTrace($e),
+					$e->getTraceAsString(),
+				)],
 			]]);
 			throw $e;
 		});

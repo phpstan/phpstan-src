@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
+use PHPStan\Analyser\InternalError;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
@@ -328,12 +329,107 @@ class AnalyseCommand extends Command
 			throw $t;
 		}
 
+		$internalErrors = [];
+		foreach ($analysisResult->getInternalErrorObjects() as $internalError) {
+			$internalErrors[$internalError->getMessage()] = new InternalError(
+				sprintf('Internal error: %s', $internalError->getMessage()),
+				$internalError->getContextDescription(),
+				$internalError->getTrace(),
+				$internalError->getTraceAsString(),
+			);
+		}
+		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+			if (!$fileSpecificError->hasNonIgnorableException()) {
+				continue;
+			}
+
+			$message = $fileSpecificError->getMessage();
+			if ($fileSpecificError->getIdentifier() === 'phpstan.internal') {
+				$message = sprintf('Internal error: %s', $message);
+			}
+
+			$metadata = $fileSpecificError->getMetadata();
+			$internalErrors[$fileSpecificError->getMessage()] = new InternalError(
+				$message,
+				sprintf('analysing file %s', $fileSpecificError->getTraitFilePath() ?? $fileSpecificError->getFilePath()),
+				$metadata[InternalError::STACK_TRACE_METADATA_KEY] ?? [],
+				$metadata[InternalError::STACK_TRACE_AS_STRING_METADATA_KEY] ?? null,
+			);
+		}
+
+		$internalErrors = array_values($internalErrors);
+		$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml';
+		foreach ($internalErrors as $i => $internalError) {
+			$message = sprintf('%s while %s', $internalError->getMessage(), $internalError->getContextDescription());
+			if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
+				$firstTraceItem = $internalError->getTrace()[0] ?? null;
+				$trace = '';
+				if ($firstTraceItem !== null && $firstTraceItem['file'] !== null && $firstTraceItem['line'] !== null) {
+					$trace = sprintf('## %s(%d)%s', $firstTraceItem['file'], $firstTraceItem['line'], "\n");
+				}
+				$trace .= $internalError->getTraceAsString();
+				$message .= sprintf('%sPost the following stack trace to %s: %s%s', "\n\n", $bugReportUrl, "\n", $trace);
+			} else {
+				$message .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s', "\n", "\n", $bugReportUrl);
+			}
+			$internalErrors[$i] = new InternalError(
+				$message,
+				$internalError->getContextDescription(),
+				$internalError->getTrace(),
+				$internalError->getTraceAsString(),
+			);
+		}
+
+		$internalErrors = array_values($internalErrors);
+
 		if ($generateBaselineFile !== null) {
+			if (count($internalErrors) > 0) {
+				foreach ($internalErrors as $internalError) {
+					$inceptionResult->getStdOutput()->writeLineFormatted($internalError->getMessage());
+					$inceptionResult->getStdOutput()->writeLineFormatted('');
+				}
+
+				$inceptionResult->getStdOutput()->getStyle()->error(sprintf(
+					'%s occurred. Baseline could not be generated.',
+					count($internalErrors) === 1 ? 'An internal error' : 'Internal errors',
+				));
+
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+			}
+
 			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension, $failWithoutResultCache);
 		}
 
 		/** @var ErrorFormatter $errorFormatter */
 		$errorFormatter = $container->getService($errorFormatterServiceName);
+
+		if (count($internalErrors) > 0) {
+			$analysisResult = new AnalysisResult(
+				[],
+				array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $internalErrors),
+				[],
+				[],
+				[],
+				$analysisResult->isDefaultLevelUsed(),
+				$analysisResult->getProjectConfigFile(),
+				$analysisResult->isResultCacheSaved(),
+				$analysisResult->getPeakMemoryUsageBytes(),
+				$analysisResult->isResultCacheUsed(),
+				$analysisResult->getChangedProjectExtensionFilesOutsideOfAnalysedPaths(),
+			);
+
+			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
+
+			$errorOutput->writeLineFormatted('⚠️  Result is incomplete because of internal errors. ⚠️');
+			$errorOutput->writeLineFormatted('   Fix these errors first and then re-run PHPStan');
+			$errorOutput->writeLineFormatted('   to get all reported errors.');
+			$errorOutput->writeLineFormatted('');
+
+			return $inceptionResult->handleReturn(
+				$exitCode,
+				$analysisResult->getPeakMemoryUsageBytes(),
+			);
+		}
 
 		$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
 		if ($failWithoutResultCache && !$analysisResult->isResultCacheUsed()) {
@@ -410,35 +506,6 @@ class AnalyseCommand extends Command
 		if (!$allowEmptyBaseline && !$analysisResult->hasErrors()) {
 			$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
 			$inceptionResult->getStdOutput()->writeLineFormatted('To allow generating empty baselines, pass <fg=cyan>--allow-empty-baseline</> option.');
-
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-		}
-		if ($analysisResult->hasInternalErrors()) {
-			$internalErrors = array_values(array_unique($analysisResult->getInternalErrors()));
-
-			foreach ($internalErrors as $internalError) {
-				$inceptionResult->getStdOutput()->writeLineFormatted($internalError);
-				$inceptionResult->getStdOutput()->writeLineFormatted('');
-			}
-
-			$inceptionResult->getStdOutput()->getStyle()->error(sprintf(
-				'%s occurred. Baseline could not be generated.',
-				count($internalErrors) === 1 ? 'An internal error' : 'Internal errors',
-			));
-
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
-		}
-
-		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-			if (!$fileSpecificError->hasNonIgnorableException()) {
-				continue;
-			}
-
-			$inceptionResult->getStdOutput()->getStyle()->error('An internal error occurred. Baseline could not be generated.');
-
-			$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getMessage());
-			$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getFile());
-			$inceptionResult->getStdOutput()->writeLineFormatted('');
 
 			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 		}

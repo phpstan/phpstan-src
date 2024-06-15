@@ -165,7 +165,12 @@ class WorkerCommand extends Command
 				'result' => [
 					'errors' => [],
 					'internalErrors' => [
-						new InternalError($error->getMessage(), InternalError::prepareTrace($error)),
+						new InternalError(
+							$error->getMessage(),
+							'communicating with main process in parallel worker',
+							InternalError::prepareTrace($error),
+							$error->getTraceAsString(),
+						),
 					],
 					'filteredPhpErrors' => [],
 					'allPhpErrors' => [],
@@ -186,7 +191,7 @@ class WorkerCommand extends Command
 		$fileAnalyser = $container->getByType(FileAnalyser::class);
 		$ruleRegistry = $container->getByType(RuleRegistry::class);
 		$collectorRegistry = $container->getByType(CollectorRegistry::class);
-		$in->on('data', static function (array $json) use ($fileAnalyser, $ruleRegistry, $collectorRegistry, $out, $analysedFiles, $output): void {
+		$in->on('data', static function (array $json) use ($fileAnalyser, $ruleRegistry, $collectorRegistry, $out, $analysedFiles): void {
 			$action = $json['action'];
 			if ($action !== 'analyse') {
 				return;
@@ -225,18 +230,12 @@ class WorkerCommand extends Command
 					}
 				} catch (Throwable $t) {
 					$internalErrorsCount++;
-					$internalErrorMessage = sprintf('Internal error: %s while analysing file %s', $t->getMessage(), $file);
-
-					$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml';
-					if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
-						$trace = sprintf('## %s(%d)%s', $t->getFile(), $t->getLine(), "\n");
-						$trace .= $t->getTraceAsString();
-						$internalErrorMessage .= sprintf('%sPost the following stack trace to %s: %s%s', "\n\n", $bugReportUrl, "\n", $trace);
-					} else {
-						$internalErrorMessage .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s', "\n", "\n", $bugReportUrl);
-					}
-
-					$internalErrors[] = new InternalError($internalErrorMessage, InternalError::prepareTrace($t));
+					$internalErrors[] = new InternalError(
+						$t->getMessage(),
+						sprintf('analysing file %s', $file),
+						InternalError::prepareTrace($t),
+						$t->getTraceAsString(),
+					);
 				}
 			}
 

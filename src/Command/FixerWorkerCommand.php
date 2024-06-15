@@ -237,7 +237,12 @@ class FixerWorkerCommand extends Command
 				if ($hasInternalErrors) {
 					$out->write(['action' => 'analysisCrash', 'data' => [
 						'internalErrors' => count($finalizerResult->getAnalyserResult()->getInternalErrors()) > 0 ? $finalizerResult->getAnalyserResult()->getInternalErrors() : [
-							new InternalError('Internal error occurred', []),
+							new InternalError(
+								'Internal error occurred',
+								'running analyser in PHPStan Pro worker',
+								[],
+								null,
+							),
 						],
 					]]);
 				}

@@ -23,7 +23,9 @@ class InternalError implements JsonSerializable
 	 */
 	public function __construct(
 		private string $message,
+		private string $contextDescription,
 		private array $trace,
+		private ?string $traceAsString,
 	)
 	{
 	}
@@ -51,6 +53,11 @@ class InternalError implements JsonSerializable
 		return $this->message;
 	}
 
+	public function getContextDescription(): string
+	{
+		return $this->contextDescription;
+	}
+
 	/**
 	 * @return Trace
 	 */
@@ -59,12 +66,17 @@ class InternalError implements JsonSerializable
 		return $this->trace;
 	}
 
+	public function getTraceAsString(): ?string
+	{
+		return $this->traceAsString;
+	}
+
 	/**
 	 * @param mixed[] $json
 	 */
 	public static function decode(array $json): self
 	{
-		return new self($json['message'], $json['trace']);
+		return new self($json['message'], $json['contextDescription'], $json['trace'], $json['traceAsString']);
 	}
 
 	/**
@@ -75,7 +87,9 @@ class InternalError implements JsonSerializable
 	{
 		return [
 			'message' => $this->message,
+			'contextDescription' => $this->contextDescription,
 			'trace' => $this->trace,
+			'traceAsString' => $this->traceAsString,
 		];
 	}
 

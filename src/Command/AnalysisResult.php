@@ -81,11 +81,20 @@ class AnalysisResult
 	}
 
 	/**
+	 * @deprecated Use getInternalErrorObjects
 	 * @return list<string>
 	 */
 	public function getInternalErrors(): array
 	{
 		return array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $this->internalErrors);
+	}
+
+	/**
+	 * @return list<InternalError>
+	 */
+	public function getInternalErrorObjects(): array
+	{
+		return $this->internalErrors;
 	}
 
 	/**

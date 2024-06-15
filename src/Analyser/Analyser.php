@@ -11,7 +11,6 @@ use function array_fill_keys;
 use function array_merge;
 use function count;
 use function memory_get_peak_usage;
-use function sprintf;
 
 class Analyser
 {
@@ -99,14 +98,7 @@ class Analyser
 					throw $t;
 				}
 				$internalErrorsCount++;
-				$internalErrorMessage = sprintf('Internal error: %s', $t->getMessage());
-				$internalErrorMessage .= sprintf(
-					'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
-					"\n",
-					"\n",
-					'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml',
-				);
-				$errors[] = (new Error($internalErrorMessage, $file, null, $t))
+				$errors[] = (new Error($t->getMessage(), $file, null, $t))
 					->withIdentifier('phpstan.internal')
 					->withMetadata([
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($t),

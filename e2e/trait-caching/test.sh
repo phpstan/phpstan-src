@@ -1,6 +1,7 @@
 #!/bin/bash
 
 function set_up() {
+    git restore .
     git clean -fd
 }
 

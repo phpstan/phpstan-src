@@ -2,7 +2,7 @@
 
 function set_up() {
     git clean -fd
-} 2>&1
+}
 
 function test_trait_caching() {
     ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/

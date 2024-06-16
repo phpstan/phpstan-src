@@ -23,7 +23,7 @@ set -e
 
 # the next line calls the function passed as the first parameter to the script.
 # the remaining script arguments can be passed to this function.
-"assert_$1" $2 $3 $4 $5 $6 $7 $8 $9
+"assert_$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
 
 # return non-zero exit code when assertion fails
 if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then

@@ -9,3 +9,4 @@
 /tests/.phpunit.result.cache
 /tests/PHPStan/Reflection/data/golden/
 tmp/.memory_limit
+e2e/bashunit

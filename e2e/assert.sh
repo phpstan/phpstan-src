@@ -8,12 +8,12 @@ unalias exit             # disable the alias...
 # the next line calls the function passed as the first parameter to the script.
 # the remaining script arguments can be passed to this function.
 
-"assert_$1" $2 $3 $4 $5 $6 $7 $8 $9
+set -e
 
-AsserExit=$?
+"assert_$1" $2 $3 $4 $5 $6 $7 $8 $9
 
 if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
     exit 1
 fi
 
-exit $AsserExit
+exit 0

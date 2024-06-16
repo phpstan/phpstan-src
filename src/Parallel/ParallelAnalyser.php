@@ -295,7 +295,7 @@ class ParallelAnalyser
 						return;
 					}
 					$internalErrors[] = new InternalError(sprintf(
-						"<error>Child process error</error>: %s: %s\n%s\n",
+						"Child process error: %s: %s\n%s\n",
 						$memoryLimitMessage,
 						ini_get('memory_limit'),
 						'Increase your memory limit in php.ini or run PHPStan with --memory-limit CLI option.',
@@ -304,7 +304,7 @@ class ParallelAnalyser
 					return;
 				}
 
-				$internalErrors[] = new InternalError(sprintf('<error>Child process error</error> (exit code %d): %s', $exitCode, $output), 'running parallel worker', [], null);
+				$internalErrors[] = new InternalError(sprintf('Child process error (exit code %d): %s', $exitCode, $output), 'running parallel worker', [], null, true);
 				$internalErrorsCount++;
 			});
 			$this->processPool->attachProcess($processIdentifier, $process);

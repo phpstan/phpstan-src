@@ -195,7 +195,7 @@ jobs:
               OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
               echo "$OUTPUT"
               [ $(echo "$OUTPUT" | wc -l) -eq 1 ]
-              ../assert.sh contains 'Method TraitsCachingIssue\\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
+              ../assert.sh contains 'Method TraitsCachingIssue\\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/trait-caching
               ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
@@ -203,7 +203,7 @@ jobs:
               OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
               echo "$OUTPUT"
               [ $(echo "$OUTPUT" | wc -l) -eq 1 ]
-              ../assert.sh contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
+              ../assert.sh contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/trait-caching
               ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
@@ -212,8 +212,8 @@ jobs:
               OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
               echo "$OUTPUT"
               [ $(echo "$OUTPUT" | wc -l) -eq 2 ]
-              ../assert.sh contains 'Method TraitsCachingIssue\\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
-              ../assert.sh contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
+              ../assert.sh contains 'Method TraitsCachingIssue\\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
+              ../assert.sh contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
 
     steps:
       - name: "Checkout"

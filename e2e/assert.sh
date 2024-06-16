@@ -1,8 +1,17 @@
 #!/bin/bash
 
+# Wrapper script around bashunit, to make assertion functions available for cli executable testing.
+#
+# Usage examples:
+#   ./assert.sh contains 'ab' "$VARIABLE"
+#   ./assert.sh equals 'ab' "$VARIABLE"
+#
+# Fin all supported bashunit assertions on https://bashunit.typeddevs.com/assertions
+
+
 shopt -s expand_aliases  # enable alias expansion (off by default in noninteractive shells)
 alias exit=return        # ...and alias 'exit' to 'return'
-source bashunit --version > /dev/null 2>&1;
+source bashunit --version;
 unalias exit             # disable the alias...
 
 # the next line calls the function passed as the first parameter to the script.

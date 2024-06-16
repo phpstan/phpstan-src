@@ -54,10 +54,20 @@ class AnalyserResultFinalizer
 					]);
 				continue;
 			} catch (IdentifierNotFound $e) {
-				$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');
+				$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))
+					->withIdentifier('phpstan.reflection')
+					->withMetadata([
+						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
+					]);
 				continue;
 			} catch (UnableToCompileNode | CircularReference $e) {
-				$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getStartLine(), $e))->withIdentifier('phpstan.reflection');
+				$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getStartLine(), $e))
+					->withIdentifier('phpstan.reflection')
+					->withMetadata([
+						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
+					]);
 				continue;
 			}
 

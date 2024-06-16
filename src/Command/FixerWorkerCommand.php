@@ -28,6 +28,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use function array_diff;
+use function array_key_exists;
 use function count;
 use function filemtime;
 use function in_array;
@@ -232,11 +233,45 @@ class FixerWorkerCommand extends Command
 				)->getAnalyserResult();
 				$finalizerResult = $analyserResultFinalizer->finalize($analyserResult, $isOnlyFiles);
 
-				$hasInternalErrors = count($finalizerResult->getAnalyserResult()->getInternalErrors()) > 0 || $finalizerResult->getAnalyserResult()->hasReachedInternalErrorsCountLimit();
+				$internalErrors = [];
+				foreach ($finalizerResult->getAnalyserResult()->getInternalErrors() as $internalError) {
+					$internalErrors[] = new InternalError(
+						$internalError->getTraceAsString() !== null ? sprintf('Internal error: %s', $internalError->getMessage()) : $internalError->getMessage(),
+						$internalError->getContextDescription(),
+						$internalError->getTrace(),
+						$internalError->getTraceAsString(),
+						$internalError->shouldReportBug(),
+					);
+				}
+
+				foreach ($finalizerResult->getAnalyserResult()->getUnorderedErrors() as $fileSpecificError) {
+					if (!$fileSpecificError->hasNonIgnorableException()) {
+						continue;
+					}
+
+					$message = $fileSpecificError->getMessage();
+					$metadata = $fileSpecificError->getMetadata();
+					if (
+						$fileSpecificError->getIdentifier() === 'phpstan.internal'
+						&& array_key_exists(InternalError::STACK_TRACE_AS_STRING_METADATA_KEY, $metadata)
+					) {
+						$message = sprintf('Internal error: %s', $message);
+					}
+
+					$internalErrors[] = new InternalError(
+						$message,
+						sprintf('analysing file %s', $fileSpecificError->getTraitFilePath() ?? $fileSpecificError->getFilePath()),
+						$metadata[InternalError::STACK_TRACE_METADATA_KEY] ?? [],
+						$metadata[InternalError::STACK_TRACE_AS_STRING_METADATA_KEY] ?? null,
+						true,
+					);
+				}
+
+				$hasInternalErrors = count($internalErrors) > 0 || $finalizerResult->getAnalyserResult()->hasReachedInternalErrorsCountLimit();
 
 				if ($hasInternalErrors) {
 					$out->write(['action' => 'analysisCrash', 'data' => [
-						'internalErrors' => count($finalizerResult->getAnalyserResult()->getInternalErrors()) > 0 ? $finalizerResult->getAnalyserResult()->getInternalErrors() : [
+						'internalErrors' => count($internalErrors) > 0 ? $internalErrors : [
 							new InternalError(
 								'Internal error occurred',
 								'running analyser in PHPStan Pro worker',

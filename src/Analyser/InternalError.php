@@ -16,6 +16,8 @@ class InternalError implements JsonSerializable
 
 	public const STACK_TRACE_METADATA_KEY = 'stackTrace';
 
+	public const STACK_TRACE_AS_STRING_METADATA_KEY = 'stackTraceAsString';
+
 	/**
 	 * @param Trace $trace
 	 */

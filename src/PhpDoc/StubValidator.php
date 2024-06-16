@@ -134,6 +134,7 @@ class StubValidator
 					->withIdentifier('phpstan.internal')
 					->withMetadata([
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
 					]);
 			}
 		}

@@ -110,6 +110,7 @@ class Analyser
 					->withIdentifier('phpstan.internal')
 					->withMetadata([
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($t),
+						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $t->getTraceAsString(),
 					]);
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;

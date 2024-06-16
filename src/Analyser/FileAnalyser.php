@@ -119,6 +119,7 @@ class FileAnalyser
 								->withIdentifier('phpstan.internal')
 								->withMetadata([
 									InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+									InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
 								]);
 							continue;
 						} catch (IdentifierNotFound $e) {
@@ -147,6 +148,7 @@ class FileAnalyser
 								->withIdentifier('phpstan.internal')
 								->withMetadata([
 									InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+									InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
 								]);
 							continue;
 						} catch (IdentifierNotFound $e) {
@@ -217,6 +219,7 @@ class FileAnalyser
 					->withIdentifier('phpstan.internal')
 					->withMetadata([
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
 					]);
 			} catch (IdentifierNotFound $e) {
 				$fileErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))->withIdentifier('phpstan.reflection');

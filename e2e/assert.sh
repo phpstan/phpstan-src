@@ -6,12 +6,13 @@
 #   ./assert.sh contains 'ab' "$VARIABLE"
 #   ./assert.sh equals 'ab' "$VARIABLE"
 #
-# Fin all supported bashunit assertions on https://bashunit.typeddevs.com/assertions
+# Find all supported bashunit assertions on https://bashunit.typeddevs.com/assertions
 
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 shopt -s expand_aliases  # enable alias expansion (off by default in noninteractive shells)
 alias exit=return        # ...and alias 'exit' to 'return'
-source bashunit --version;
+source ${__dir}/bashunit --version > /dev/null 2>&1;
 unalias exit             # disable the alias...
 
 # the next line calls the function passed as the first parameter to the script.

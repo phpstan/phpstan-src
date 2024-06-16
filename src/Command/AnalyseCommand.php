@@ -29,6 +29,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Throwable;
 use function array_intersect;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_unique;
@@ -332,10 +333,11 @@ class AnalyseCommand extends Command
 		$internalErrors = [];
 		foreach ($analysisResult->getInternalErrorObjects() as $internalError) {
 			$internalErrors[$internalError->getMessage()] = new InternalError(
-				sprintf('Internal error: %s', $internalError->getMessage()),
+				$internalError->getTraceAsString() !== null ? sprintf('Internal error: %s', $internalError->getMessage()) : $internalError->getMessage(),
 				$internalError->getContextDescription(),
 				$internalError->getTrace(),
 				$internalError->getTraceAsString(),
+				$internalError->shouldReportBug(),
 			);
 		}
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
@@ -344,16 +346,20 @@ class AnalyseCommand extends Command
 			}
 
 			$message = $fileSpecificError->getMessage();
-			if ($fileSpecificError->getIdentifier() === 'phpstan.internal') {
+			$metadata = $fileSpecificError->getMetadata();
+			if (
+				$fileSpecificError->getIdentifier() === 'phpstan.internal'
+				&& array_key_exists(InternalError::STACK_TRACE_AS_STRING_METADATA_KEY, $metadata)
+			) {
 				$message = sprintf('Internal error: %s', $message);
 			}
 
-			$metadata = $fileSpecificError->getMetadata();
 			$internalErrors[$fileSpecificError->getMessage()] = new InternalError(
 				$message,
 				sprintf('analysing file %s', $fileSpecificError->getTraitFilePath() ?? $fileSpecificError->getFilePath()),
 				$metadata[InternalError::STACK_TRACE_METADATA_KEY] ?? [],
 				$metadata[InternalError::STACK_TRACE_AS_STRING_METADATA_KEY] ?? null,
+				true,
 			);
 		}
 
@@ -361,22 +367,35 @@ class AnalyseCommand extends Command
 		$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml';
 		foreach ($internalErrors as $i => $internalError) {
 			$message = sprintf('%s while %s', $internalError->getMessage(), $internalError->getContextDescription());
-			if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
-				$firstTraceItem = $internalError->getTrace()[0] ?? null;
-				$trace = '';
-				if ($firstTraceItem !== null && $firstTraceItem['file'] !== null && $firstTraceItem['line'] !== null) {
-					$trace = sprintf('## %s(%d)%s', $firstTraceItem['file'], $firstTraceItem['line'], "\n");
+			if ($internalError->getTraceAsString() !== null) {
+				if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
+					$firstTraceItem = $internalError->getTrace()[0] ?? null;
+					$trace = '';
+					if ($firstTraceItem !== null && $firstTraceItem['file'] !== null && $firstTraceItem['line'] !== null) {
+						$trace = sprintf('## %s(%d)%s', $firstTraceItem['file'], $firstTraceItem['line'], "\n");
+					}
+					$trace .= $internalError->getTraceAsString();
+
+					if ($internalError->shouldReportBug()) {
+						$message .= sprintf('%sPost the following stack trace to %s: %s%s', "\n", $bugReportUrl, "\n", $trace);
+					} else {
+						$message .= sprintf('%s%s', "\n\n", $trace);
+					}
+				} else {
+					if ($internalError->shouldReportBug()) {
+						$message .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s%s', "\n\n", "\n", $bugReportUrl, "\n");
+					} else {
+						$message .= sprintf('%sRun PHPStan with -v option to see the stack trace', "\n");
+					}
 				}
-				$trace .= $internalError->getTraceAsString();
-				$message .= sprintf('%sPost the following stack trace to %s: %s%s', "\n\n", $bugReportUrl, "\n", $trace);
-			} else {
-				$message .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s', "\n", "\n", $bugReportUrl);
 			}
+
 			$internalErrors[$i] = new InternalError(
 				$message,
 				$internalError->getContextDescription(),
 				$internalError->getTrace(),
 				$internalError->getTraceAsString(),
+				$internalError->shouldReportBug(),
 			);
 		}
 

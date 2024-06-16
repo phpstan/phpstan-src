@@ -26,6 +26,7 @@ class InternalError implements JsonSerializable
 		private string $contextDescription,
 		private array $trace,
 		private ?string $traceAsString,
+		private bool $shouldReportBug,
 	)
 	{
 	}
@@ -71,12 +72,17 @@ class InternalError implements JsonSerializable
 		return $this->traceAsString;
 	}
 
+	public function shouldReportBug(): bool
+	{
+		return $this->shouldReportBug;
+	}
+
 	/**
 	 * @param mixed[] $json
 	 */
 	public static function decode(array $json): self
 	{
-		return new self($json['message'], $json['contextDescription'], $json['trace'], $json['traceAsString']);
+		return new self($json['message'], $json['contextDescription'], $json['trace'], $json['traceAsString'], $json['shouldReportBug']);
 	}
 
 	/**
@@ -90,6 +96,7 @@ class InternalError implements JsonSerializable
 			'contextDescription' => $this->contextDescription,
 			'trace' => $this->trace,
 			'traceAsString' => $this->traceAsString,
+			'shouldReportBug' => $this->shouldReportBug,
 		];
 	}
 

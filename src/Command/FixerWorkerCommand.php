@@ -242,6 +242,7 @@ class FixerWorkerCommand extends Command
 								'running analyser in PHPStan Pro worker',
 								[],
 								null,
+								false,
 							),
 						],
 					]]);

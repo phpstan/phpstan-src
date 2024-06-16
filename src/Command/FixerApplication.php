@@ -485,6 +485,7 @@ class FixerApplication
 					'running PHPStan Pro worker',
 					InternalError::prepareTrace($e),
 					$e->getTraceAsString(),
+					false,
 				)],
 			]]);
 			throw $e;

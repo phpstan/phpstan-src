@@ -95,6 +95,7 @@ class ParallelAnalyser
 					'running parallel worker',
 					[],
 					null,
+					true,
 				);
 				$internalErrorsCount++;
 			}
@@ -149,6 +150,7 @@ class ParallelAnalyser
 				'communicating with parallel worker',
 				InternalError::prepareTrace($error),
 				$error->getTraceAsString(),
+				!$error instanceof ProcessTimedOutException,
 			);
 			$internalErrorsCount++;
 			$reachedInternalErrorsCountLimit = true;
@@ -299,7 +301,7 @@ class ParallelAnalyser
 						$memoryLimitMessage,
 						ini_get('memory_limit'),
 						'Increase your memory limit in php.ini or run PHPStan with --memory-limit CLI option.',
-					), 'running parallel worker', [], null);
+					), 'running parallel worker', [], null, false);
 					$internalErrorsCount++;
 					return;
 				}

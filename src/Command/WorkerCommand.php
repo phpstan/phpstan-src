@@ -170,6 +170,7 @@ class WorkerCommand extends Command
 							'communicating with main process in parallel worker',
 							InternalError::prepareTrace($error),
 							$error->getTraceAsString(),
+							true,
 						),
 					],
 					'filteredPhpErrors' => [],
@@ -235,6 +236,7 @@ class WorkerCommand extends Command
 						sprintf('analysing file %s', $file),
 						InternalError::prepareTrace($t),
 						$t->getTraceAsString(),
+						true,
 					);
 				}
 			}

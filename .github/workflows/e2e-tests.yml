@@ -65,6 +65,16 @@ jobs:
       matrix:
         include:
           - script: |
+              cd e2e/result-cache-1
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              patch -b src/Bar.php < patch-1.patch
+              cat baseline-1.neon > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              mv src/Bar.php.orig src/Bar.php
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+          - script: |
               cd e2e/result-cache-2
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv
@@ -174,6 +184,36 @@ jobs:
           - script: |
               cd e2e/env-int-key
               env 1=1 ../../bin/phpstan analyse test.php
+          - script: |
+              cd e2e/trait-caching
+              ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
+              ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
+          - script: |
+              cd e2e/trait-caching
+              ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
+              patch -b data/TraitOne.php < TraitOne.patch
+              OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
+              echo "$OUTPUT"
+              [ $(echo "$OUTPUT" | wc -l) -eq 1 ]
+              grep 'Method TraitsCachingIssue\\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
+          - script: |
+              cd e2e/trait-caching
+              ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
+              patch -b data/TraitTwo.php < TraitTwo.patch
+              OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
+              echo "$OUTPUT"
+              [ $(echo "$OUTPUT" | wc -l) -eq 1 ]
+              grep 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
+          - script: |
+              cd e2e/trait-caching
+              ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
+              patch -b data/TraitOne.php < TraitOne.patch
+              patch -b data/TraitTwo.php < TraitTwo.patch
+              OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
+              echo "$OUTPUT"
+              [ $(echo "$OUTPUT" | wc -l) -eq 2 ]
+              grep 'Method TraitsCachingIssue\\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
+              grep 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
 
     steps:
       - name: "Checkout"
@@ -245,42 +285,3 @@ jobs:
 
       - name: "Test"
         run: ${{ matrix.script }}
-
-  result-cache-e2e-tests-bashunit:
-    name: "Result cache E2E tests"
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - script: |
-              cd e2e/result-cache-1
-              ../bashunit .
-          - script: |
-              cd e2e/trait-caching
-              ../bashunit .
-
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "none"
-          php-version: "8.1"
-          extensions: mbstring
-          ini-values: memory_limit=256M
-
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
-
-      - name: "Patch PHPStan"
-        run: "patch src/Analyser/Error.php < e2e/PHPStanErrorPatch.patch"
-
-      - name: "Install bashunit"
-        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ 0.12.0"
-
-      - name: "Test"
-        run: "${{ matrix.script }}"

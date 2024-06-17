@@ -1336,6 +1336,10 @@ class InitializerExprTypeResolver
 
 	public function resolveIdenticalType(Type $leftType, Type $rightType): BooleanType
 	{
+		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
+			return new ConstantBooleanType(false);
+		}
+
 		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
 			return new ConstantBooleanType($leftType->getValue() === $rightType->getValue());
 		}
@@ -1346,8 +1350,9 @@ class InitializerExprTypeResolver
 			return new ConstantBooleanType($leftTypeFiniteTypes[0]->equals($rightTypeFiniteType[0]));
 		}
 
-		$isSuperset = $leftType->isSuperTypeOf($rightType);
-		if ($isSuperset->no()) {
+		$isLeftSupertype = $leftType->isSuperTypeOf($rightType);
+		$isRightSupertype = $rightType->isSuperTypeOf($leftType);
+		if ($isLeftSupertype->no() && $isRightSupertype->no()) {
 			return new ConstantBooleanType(false);
 		}
 

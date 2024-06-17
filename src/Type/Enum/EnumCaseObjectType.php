@@ -17,6 +17,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -77,6 +78,16 @@ class EnumCaseObjectType extends ObjectType
 
 		if ($type instanceof CompoundType) {
 			return $type->isSubTypeOf($this);
+		}
+
+		if (
+			$type instanceof SubtractableType
+			&& $type->getSubtractedType() !== null
+		) {
+			$isSuperType = $type->getSubtractedType()->isSuperTypeOf($this);
+			if ($isSuperType->yes()) {
+				return TrinaryLogic::createNo();
+			}
 		}
 
 		$parent = new parent($this->getClassName(), $this->getSubtractedType(), $this->getClassReflection());

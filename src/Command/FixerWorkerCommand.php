@@ -210,6 +210,22 @@ class FixerWorkerCommand extends Command
 				$configuration,
 				$input,
 				function (array $errors, array $locallyIgnoredErrors, array $analysedFiles) use ($out, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles): void {
+					$internalErrors = [];
+					foreach ($errors as $fileSpecificError) {
+						if (!$fileSpecificError->hasNonIgnorableException()) {
+							continue;
+						}
+
+						$internalErrors[] = $this->transformErrorIntoInternalError($fileSpecificError);
+					}
+
+					if (count($internalErrors) > 0) {
+						$out->write(['action' => 'analysisCrash', 'data' => [
+							'internalErrors' => $internalErrors,
+						]]);
+						return;
+					}
+
 					[$errors, $ignoredErrors] = $this->filterErrors($errors, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, false);
 					foreach ($locallyIgnoredErrors as $locallyIgnoredError) {
 						$ignoredErrors[] = [$locallyIgnoredError, null];
@@ -249,22 +265,7 @@ class FixerWorkerCommand extends Command
 						continue;
 					}
 
-					$message = $fileSpecificError->getMessage();
-					$metadata = $fileSpecificError->getMetadata();
-					if (
-						$fileSpecificError->getIdentifier() === 'phpstan.internal'
-						&& array_key_exists(InternalError::STACK_TRACE_AS_STRING_METADATA_KEY, $metadata)
-					) {
-						$message = sprintf('Internal error: %s', $message);
-					}
-
-					$internalErrors[] = new InternalError(
-						$message,
-						sprintf('analysing file %s', $fileSpecificError->getTraitFilePath() ?? $fileSpecificError->getFilePath()),
-						$metadata[InternalError::STACK_TRACE_METADATA_KEY] ?? [],
-						$metadata[InternalError::STACK_TRACE_AS_STRING_METADATA_KEY] ?? null,
-						true,
-					);
+					$internalErrors[] = $this->transformErrorIntoInternalError($fileSpecificError);
 				}
 
 				$hasInternalErrors = count($internalErrors) > 0 || $finalizerResult->getAnalyserResult()->hasReachedInternalErrorsCountLimit();
@@ -325,6 +326,26 @@ class FixerWorkerCommand extends Command
 		$loop->run();
 
 		return 0;
+	}
+
+	private function transformErrorIntoInternalError(Error $error): InternalError
+	{
+		$message = $error->getMessage();
+		$metadata = $error->getMetadata();
+		if (
+			$error->getIdentifier() === 'phpstan.internal'
+			&& array_key_exists(InternalError::STACK_TRACE_AS_STRING_METADATA_KEY, $metadata)
+		) {
+			$message = sprintf('Internal error: %s', $message);
+		}
+
+		return new InternalError(
+			$message,
+			sprintf('analysing file %s', $error->getTraitFilePath() ?? $error->getFilePath()),
+			$metadata[InternalError::STACK_TRACE_METADATA_KEY] ?? [],
+			$metadata[InternalError::STACK_TRACE_AS_STRING_METADATA_KEY] ?? null,
+			true,
+		);
 	}
 
 	/**

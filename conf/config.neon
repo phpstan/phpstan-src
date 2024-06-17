@@ -569,8 +569,6 @@ services:
 
 	-
 		class: PHPStan\Command\AnalyseApplication
-		arguments:
-			internalErrorsCountLimit: %internalErrorsCountLimit%
 
 	-
 		class: PHPStan\Command\AnalyserRunner

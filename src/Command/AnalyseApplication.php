@@ -5,14 +5,12 @@ namespace PHPStan\Command;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
-use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\PhpDoc\StubValidator;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
-use function array_map;
 use function array_merge;
 use function count;
 use function is_file;
@@ -30,7 +28,6 @@ class AnalyseApplication
 		private StubValidator $stubValidator,
 		private ResultCacheManagerFactory $resultCacheManagerFactory,
 		private IgnoredErrorHelper $ignoredErrorHelper,
-		private int $internalErrorsCountLimit,
 		private StubFilesProvider $stubFilesProvider,
 	)
 	{
@@ -57,7 +54,6 @@ class AnalyseApplication
 
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		$fileSpecificErrors = [];
-		$notFileSpecificErrors = [];
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			$notFileSpecificErrors = $ignoredErrorHelperResult->getErrors();
 			$internalErrors = [];
@@ -147,10 +143,6 @@ class AnalyseApplication
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 			$collectedData = $analyserResult->getCollectedData();
 			$savedResultCache = $resultCacheResult->isSaved();
-			if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
-				$notFileSpecificErrors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
-			}
-			$notFileSpecificErrors = array_merge($notFileSpecificErrors, array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $internalErrors));
 		}
 
 		return new AnalysisResult(

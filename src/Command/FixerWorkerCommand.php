@@ -231,7 +231,7 @@ class FixerWorkerCommand extends Command
 					false,
 					true,
 				)->getAnalyserResult();
-				$finalizerResult = $analyserResultFinalizer->finalize($analyserResult, $isOnlyFiles);
+				$finalizerResult = $analyserResultFinalizer->finalize($analyserResult, $isOnlyFiles, false);
 
 				$internalErrors = [];
 				foreach ($finalizerResult->getAnalyserResult()->getInternalErrors() as $internalError) {

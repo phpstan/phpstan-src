@@ -102,7 +102,7 @@ class AnalyseApplication
 			}
 
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
-			$analyserResult = $this->analyserResultFinalizer->finalize($resultCacheResult->getAnalyserResult(), $onlyFiles)->getAnalyserResult();
+			$analyserResult = $this->analyserResultFinalizer->finalize($resultCacheResult->getAnalyserResult(), $onlyFiles, $debug)->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = array_merge(
 				$analyserResult->getErrors(),

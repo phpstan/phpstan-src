@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Method PHPStan\\\\Analyser\\\\AnalyserResultFinalizer\\:\\:finalize\\(\\) throws checked exception Throwable but it's missing from the PHPDoc @throws tag\\.$#"
+			count: 1
+			path: src/Analyser/AnalyserResultFinalizer.php
+
+		-
 			message: "#^Function is_a\\(\\) is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
 			count: 1
 			path: src/Analyser/DirectInternalScopeFactory.php

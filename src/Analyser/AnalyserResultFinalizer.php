@@ -8,8 +8,10 @@ use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\Registry as RuleRegistry;
+use Throwable;
 use function array_merge;
 use function count;
+use function get_class;
 use function sprintf;
 
 class AnalyserResultFinalizer
@@ -25,7 +27,7 @@ class AnalyserResultFinalizer
 	{
 	}
 
-	public function finalize(AnalyserResult $analyserResult, bool $onlyFiles): FinalizerResult
+	public function finalize(AnalyserResult $analyserResult, bool $onlyFiles, bool $debug): FinalizerResult
 	{
 		if (count($analyserResult->getCollectedData()) === 0) {
 			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
@@ -42,6 +44,7 @@ class AnalyserResultFinalizer
 		$file = 'N/A';
 		$scope = $this->scopeFactory->create(ScopeContext::create($file));
 		$tempCollectorErrors = [];
+		$internalErrors = $analyserResult->getInternalErrors();
 		foreach ($this->ruleRegistry->getRules($nodeType) as $rule) {
 			try {
 				$ruleErrors = $rule->processNode($node, $scope);
@@ -68,6 +71,19 @@ class AnalyserResultFinalizer
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
 						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
 					]);
+				continue;
+			} catch (Throwable $t) {
+				if ($debug) {
+					throw $t;
+				}
+
+				$internalErrors[] = new InternalError(
+					$t->getMessage(),
+					sprintf('running CollectedDataNode rule %s', get_class($rule)),
+					InternalError::prepareTrace($t),
+					$t->getTraceAsString(),
+					true,
+				);
 				continue;
 			}
 
@@ -110,7 +126,7 @@ class AnalyserResultFinalizer
 			$locallyIgnoredErrors,
 			$allLinesToIgnore,
 			$allUnmatchedLineIgnores,
-			$analyserResult->getInternalErrors(),
+			$internalErrors,
 			$analyserResult->getCollectedData(),
 			$analyserResult->getDependencies(),
 			$analyserResult->getExportedNodes(),

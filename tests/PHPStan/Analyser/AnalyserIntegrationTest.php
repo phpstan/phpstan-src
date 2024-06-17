@@ -1397,6 +1397,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $finalizer->finalize(
 			$analyser->analyse([$file], null, null, true, $allAnalysedFiles),
 			false,
+			true,
 		)->getErrors();
 		foreach ($errors as $error) {
 			$this->assertSame($file, $error->getFilePath());

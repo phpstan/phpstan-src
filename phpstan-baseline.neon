@@ -1823,7 +1823,7 @@ parameters:
 		-
 			message: """
 				#^Instantiation of deprecated class PHPStan\\\\Rules\\\\Functions\\\\ImplodeFunctionRule\\:
-				Replaced by PHPStan\\\\Rules\\\\Functions\\\\ParameterCastableToStringFunctionRule$#
+				Replaced by PHPStan\\\\Rules\\\\Functions\\\\ImplodeParameterCastableToStringRuleTest$#
 			"""
 			count: 1
 			path: tests/PHPStan/Rules/Functions/ImplodeFunctionRuleTest.php
@@ -1831,7 +1831,7 @@ parameters:
 		-
 			message: """
 				#^Return type of method PHPStan\\\\Rules\\\\Functions\\\\ImplodeFunctionRuleTest\\:\\:getRule\\(\\) has typehint with deprecated class PHPStan\\\\Rules\\\\Functions\\\\ImplodeFunctionRule\\:
-				Replaced by PHPStan\\\\Rules\\\\Functions\\\\ParameterCastableToStringFunctionRule$#
+				Replaced by PHPStan\\\\Rules\\\\Functions\\\\ImplodeParameterCastableToStringRuleTest$#
 			"""
 			count: 1
 			path: tests/PHPStan/Rules/Functions/ImplodeFunctionRuleTest.php

@@ -948,6 +948,8 @@ services:
 
 	-
 		class: PHPStan\Rules\FunctionReturnTypeCheck
+	-
+		class: PHPStan\Rules\ParameterCastableToStringCheck
 
 	-
 		class: PHPStan\Rules\Generics\CrossCheckInterfacesHelper

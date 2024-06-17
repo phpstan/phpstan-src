@@ -12,7 +12,11 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.arrayValues%
 	PHPStan\Rules\Functions\CallUserFuncRule:
 		phpstan.rules.rule: %featureToggles.callUserFunc%
-	PHPStan\Rules\Functions\ParameterCastableToStringFunctionRule:
+	PHPStan\Rules\Functions\ParameterCastableToStringRule:
+		phpstan.rules.rule: %featureToggles.checkParameterCastableToStringFunctions%
+	PHPStan\Rules\Functions\ImplodeParameterCastableToStringRule:
+		phpstan.rules.rule: %featureToggles.checkParameterCastableToStringFunctions%
+	PHPStan\Rules\Functions\SortParameterCastableToStringRule:
 		phpstan.rules.rule: %featureToggles.checkParameterCastableToStringFunctions%
 
 rules:
@@ -45,4 +49,8 @@ services:
 		tags:
 			- phpstan.rules.rule
 	-
-		class: PHPStan\Rules\Functions\ParameterCastableToStringFunctionRule
+		class: PHPStan\Rules\Functions\ParameterCastableToStringRule
+	-
+		class: PHPStan\Rules\Functions\ImplodeParameterCastableToStringRule
+	-
+		class: PHPStan\Rules\Functions\SortParameterCastableToStringRule

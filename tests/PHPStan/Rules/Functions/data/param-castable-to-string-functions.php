@@ -19,36 +19,21 @@ function invalidUsages(): void
 	array_diff(['a'], [new ClassWithoutToString()]);
 	array_diff_assoc(['a'], [new ClassWithoutToString()]);
 
-	array_unique([['a'], ['b']]);
 	array_combine([['a']], [['b']]);
 	$arr1 = [['a']];
-	$arr2 = [new ClassWithoutToString()];
-	sort($arr1);
-	sort($arr2);
-	rsort($arr1);
-	asort($arr1);
-	arsort($arr1);
 	natsort($arr1);
 	natcasesort($arr1);
 	array_count_values($arr1);
 	array_fill_keys($arr1, 5);
-
 }
 
 function wrongNumberOfArguments(): void
 {
-	implode();
-	join();
 	array_intersect();
 	array_intersect_assoc();
 	array_diff();
 	array_diff_assoc();
-	array_unique();
 	array_combine();
-	sort();
-	rsort();
-	asort();
-	arsort();
 	natcasesort();
 	natsort();
 	array_count_values();
@@ -63,13 +48,8 @@ function validUsages(): void
 	array_diff(['a'], [new ClassWithToString()]);
 	array_diff_assoc(['a'], [new ClassWithToString()]);
 
-	array_unique(['a', 'b']);
 	array_combine(['a'], [['b']]);
 	$arr1 = ['a', new ClassWithToString()];
-	sort($arr1);
-	rsort($arr1);
-	asort($arr1);
-	arsort($arr1);
 	natsort($arr1);
 	natcasesort($arr1);
 	array_count_values($arr1);

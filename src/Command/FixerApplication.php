@@ -488,17 +488,19 @@ class FixerApplication
 
 			if ($e instanceof ProcessCrashedException) {
 				$message = 'Analysis crashed';
-				$trace = $e->getMessage();
+				$traceAsString = $e->getMessage();
+				$trace = [];
 			} else {
 				$message = $e->getMessage();
-				$trace = $e->getTraceAsString();
+				$traceAsString = $e->getTraceAsString();
+				$trace = InternalError::prepareTrace($e);
 			}
 			$phpstanFixerEncoder->write(['action' => 'analysisCrash', 'data' => [
 				'internalErrors' => [new InternalError(
 					$message,
 					'running PHPStan Pro worker',
-					InternalError::prepareTrace($e),
 					$trace,
+					$traceAsString,
 					false,
 				)],
 			]]);

@@ -20,6 +20,8 @@ use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\PhpDoc\StubFilesProvider;
+use PHPStan\Process\ProcessCanceledException;
+use PHPStan\Process\ProcessCrashedException;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\ProcessPromise;
 use PHPStan\ShouldNotHappenException;
@@ -479,12 +481,24 @@ class FixerApplication
 			$this->processInProgress = null;
 			$server->close();
 			$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
+
+			if ($e instanceof ProcessCanceledException) {
+				return;
+			}
+
+			if ($e instanceof ProcessCrashedException) {
+				$message = 'Analysis crashed';
+				$trace = $e->getMessage();
+			} else {
+				$message = $e->getMessage();
+				$trace = $e->getTraceAsString();
+			}
 			$phpstanFixerEncoder->write(['action' => 'analysisCrash', 'data' => [
 				'internalErrors' => [new InternalError(
-					$e->getMessage(),
+					$message,
 					'running PHPStan Pro worker',
 					InternalError::prepareTrace($e),
-					$e->getTraceAsString(),
+					$trace,
 					false,
 				)],
 			]]);

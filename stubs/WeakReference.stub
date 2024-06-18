@@ -26,4 +26,9 @@ final class WeakReference
  */
 final class WeakMap implements \ArrayAccess, \Countable, \IteratorAggregate
 {
+	/**
+	 * @param TKey $offset
+	 * @return TValue
+	 */
+	public function offsetGet($offset) {}
 }

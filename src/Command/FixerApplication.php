@@ -477,10 +477,9 @@ class FixerApplication
 		$this->processInProgress->then(function () use ($server): void {
 			$this->processInProgress = null;
 			$server->close();
-		}, function (Throwable $e) use ($server, $output, $phpstanFixerEncoder): void {
+		}, function (Throwable $e) use ($server, $phpstanFixerEncoder): void {
 			$this->processInProgress = null;
 			$server->close();
-			$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
 
 			if ($e instanceof ProcessCanceledException) {
 				return;
@@ -504,7 +503,6 @@ class FixerApplication
 					false,
 				)],
 			]]);
-			throw $e;
 		});
 	}
 

@@ -191,7 +191,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testFileAsserts(string $file, ?array $requirement = null): void
 	{
-		if ($requirement && version_compare(PHP_VERSION, $requirement[1], $requirement[0]) === false) {
+		if ($requirement !== null && version_compare(PHP_VERSION, $requirement[1], $requirement[0]) === false) {
 			$this->markTestSkipped(sprintf('Requires php %s %s', $requirement[0], $requirement[1]));
 		}
 

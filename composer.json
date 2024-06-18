@@ -79,6 +79,9 @@
 	"extra": {
 		"composer-exit-on-patch-failure": true,
 		"patches": {
+			"composer/ca-bundle": [
+				"patches/cloudflare-ca.patch"
+			],
 			"hoa/iterator": [
 				"patches/Buffer.patch",
 				"patches/Lookahead.patch"

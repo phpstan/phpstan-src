@@ -6,7 +6,6 @@
 	<arg name="encoding" value="utf-8"/>
 	<arg name="tab-width" value="4"/>
 	<arg name="cache" value="tmp/cache/phpcs"/>
-	<arg name="ignore" value="compiler/tests/*/data,tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
 	<arg value="sp"/>
 	<file>bin</file>
 	<file>src</file>
@@ -204,15 +203,17 @@
 			<property name="enable" value="true"/>
 		</properties>
 	</rule>
-	<exclude-pattern>tests/*/data</exclude-pattern>
-	<exclude-pattern>tests/PHPStan/Analyser/nsrt</exclude-pattern>
-	<exclude-pattern>tests/*/Fixture</exclude-pattern>
+	<exclude-pattern>compiler/tests/*/data/</exclude-pattern>
+	<exclude-pattern>tests/*/Fixture/</exclude-pattern>
+	<exclude-pattern>tests/*/cache/</exclude-pattern>
+	<exclude-pattern>tests/*/data/</exclude-pattern>
+	<exclude-pattern>tests/*/traits/</exclude-pattern>
+	<exclude-pattern>tests/PHPStan/Analyser/nsrt/</exclude-pattern>
+	<exclude-pattern>tests/e2e/anon-class/</exclude-pattern>
+	<exclude-pattern>tests/e2e/magic-setter/</exclude-pattern>
 	<exclude-pattern>tests/e2e/resultCache_1.php</exclude-pattern>
 	<exclude-pattern>tests/e2e/resultCache_2.php</exclude-pattern>
 	<exclude-pattern>tests/e2e/resultCache_3.php</exclude-pattern>
-	<exclude-pattern>tests/*/traits</exclude-pattern>
-	<exclude-pattern>tests/tmp</exclude-pattern>
-	<exclude-pattern>tests/notAutoloaded</exclude-pattern>
-	<exclude-pattern>src/Reflection/SignatureMap/functionMap.php</exclude-pattern>
-	<exclude-pattern>src/Reflection/SignatureMap/functionMetadata.php</exclude-pattern>
+	<exclude-pattern>tests/notAutoloaded/</exclude-pattern>
+	<exclude-pattern>tests/tmp/</exclude-pattern>
 </ruleset>

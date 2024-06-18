@@ -2,6 +2,8 @@
 
 namespace PHPStan\Parser;
 
+use Generator;
+use PhpParser\Node;
 use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
@@ -13,22 +15,20 @@ class CachedParserTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataParseFileClearCache
-	 * @param int $cachedNodesByStringCountMax
-	 * @param int $cachedNodesByStringCountExpected
 	 */
 	public function testParseFileClearCache(
 		int $cachedNodesByStringCountMax,
-		int $cachedNodesByStringCountExpected
+		int $cachedNodesByStringCountExpected,
 	): void
 	{
 		$parser = new CachedParser(
 			$this->getParserMock(),
-			$cachedNodesByStringCountMax
+			$cachedNodesByStringCountMax,
 		);
 
 		$this->assertEquals(
 			$cachedNodesByStringCountMax,
-			$parser->getCachedNodesByStringCountMax()
+			$parser->getCachedNodesByStringCountMax(),
 		);
 
 		// Add strings to cache
@@ -38,16 +38,16 @@ class CachedParserTest extends PHPStanTestCase
 
 		$this->assertEquals(
 			$cachedNodesByStringCountExpected,
-			$parser->getCachedNodesByStringCount()
+			$parser->getCachedNodesByStringCount(),
 		);
 
 		$this->assertCount(
 			$cachedNodesByStringCountExpected,
-			$parser->getCachedNodesByString()
+			$parser->getCachedNodesByString(),
 		);
 	}
 
-	public function dataParseFileClearCache(): \Generator
+	public function dataParseFileClearCache(): Generator
 	{
 		yield 'even' => [
 			'cachedNodesByStringCountMax' => 50,
@@ -70,9 +70,9 @@ class CachedParserTest extends PHPStanTestCase
 		return $mock;
 	}
 
-	private function getPhpParserNodeMock(): \PhpParser\Node&MockObject
+	private function getPhpParserNodeMock(): Node&MockObject
 	{
-		return $this->createMock(\PhpParser\Node::class);
+		return $this->createMock(Node::class);
 	}
 
 	public function testParseTheSameFileWithDifferentMethod(): void

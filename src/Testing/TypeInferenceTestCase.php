@@ -252,7 +252,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 	/**
 	 * @api
-	 * @return array<string>
+	 * @return array<string, array{string, ?array{string, string}}>
 	 */
 	public static function gatherAssertFilesFromDirectory(string $base, string $path): array
 	{
@@ -283,6 +283,8 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	 * Copyright (c) 2012, Jakub Onderka
 	 *
 	 * Modified to return the parsed requirement instead of verifying it.
+	 *
+	 * @return ?array{string, string}
 	 */
 	private static function getFileLintRequirement(string $file): ?array
 	{

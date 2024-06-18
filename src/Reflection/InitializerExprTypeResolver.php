@@ -1350,9 +1350,7 @@ class InitializerExprTypeResolver
 			return new ConstantBooleanType($leftTypeFiniteTypes[0]->equals($rightTypeFiniteType[0]));
 		}
 
-		$isLeftSupertype = $leftType->isSuperTypeOf($rightType);
-		$isRightSupertype = $rightType->isSuperTypeOf($leftType);
-		if ($isLeftSupertype->no() && $isRightSupertype->no()) {
+		if ($leftType->isSuperTypeOf($rightType)->no() && $rightType->isSuperTypeOf($leftType)->no()) {
 			return new ConstantBooleanType(false);
 		}
 

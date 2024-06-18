@@ -35,10 +35,11 @@ use function is_string;
 use function preg_match;
 use function sprintf;
 use function stripos;
+use function strlen;
+use function strncmp;
 use function strpos;
 use function strtolower;
-use function version_compare;
-use const PHP_VERSION;
+use function substr;
 
 /** @api */
 abstract class TypeInferenceTestCase extends PHPStanTestCase
@@ -251,60 +252,63 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 	/**
 	 * @api
-	 * @return array<string, mixed[]>
+	 * @return array<string>
 	 */
-	public static function gatherAssertTypesFromDirectory(string $directory): array
+	public static function gatherAssertFilesFromDirectory(string $base, string $path): array
 	{
+		$directory = $base . '/' . $path;
+
 		if (!is_dir($directory)) {
 			self::fail(sprintf('Directory %s does not exist.', $directory));
 		}
 
 		$finder = new Finder();
 		$finder->followLinks();
-		$asserts = [];
-		foreach ($finder->files()->name('*.php')->in($directory) as $fileInfo) {
-			$path = $fileInfo->getPathname();
-			if (self::isFileLintSkipped($path)) {
-				continue;
+		$data = [];
+		foreach ($finder->files()->name('*.php')->in($directory)->sortByName() as $fileInfo) {
+			$file = $fileInfo->getPathname();
+			$key = $file;
+			if (strncmp($file, $base, strlen($base)) === 0) {
+				$key = substr($file, strlen($base) + 1);
 			}
-			foreach (self::gatherAssertTypes($path) as $key => $assert) {
-				$asserts[$key] = $assert;
-			}
+			$data[$key] = [$file, self::getFileLintRequirement($file)];
 		}
 
-		return $asserts;
+		return $data;
 	}
 
 	/**
 	 * From https://github.com/php-parallel-lint/PHP-Parallel-Lint/blob/0c2706086ac36dce31967cb36062ff8915fe03f7/bin/skip-linting.php
 	 *
 	 * Copyright (c) 2012, Jakub Onderka
+	 *
+	 * Modified to return the parsed requirement instead of verifying it.
 	 */
-	private static function isFileLintSkipped(string $file): bool
+	private static function getFileLintRequirement(string $file): ?array
 	{
 		$f = @fopen($file, 'r');
 		if ($f !== false) {
 			$firstLine = fgets($f);
 			if ($firstLine === false) {
-				return false;
+				return null;
 			}
 
 			// ignore shebang line
 			if (strpos($firstLine, '#!') === 0) {
 				$firstLine = fgets($f);
 				if ($firstLine === false) {
-					return false;
+					return null;
 				}
 			}
 
 			@fclose($f);
 
 			if (preg_match('~<?php\\s*\\/\\/\s*lint\s*([^\d\s]+)\s*([^\s]+)\s*~i', $firstLine, $m) === 1) {
-				return version_compare(PHP_VERSION, $m[2], $m[1]) === false;
+				return [$m[1], $m[2]];
 			}
 		}
 
-		return false;
+		return null;
 	}
 
 	/** @return string[] */

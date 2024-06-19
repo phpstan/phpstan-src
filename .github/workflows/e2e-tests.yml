@@ -194,16 +194,16 @@ jobs:
               patch -b data/TraitOne.php < TraitOne.patch
               OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
               echo "$OUTPUT"
-              [ $(echo "$OUTPUT" | wc -l) -eq 1 ]
-              grep 'Method TraitsCachingIssue\\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
+              ../bashunit -a line_count 1 "$OUTPUT"
+              ../bashunit -a contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/trait-caching
               ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
               patch -b data/TraitTwo.php < TraitTwo.patch
               OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
               echo "$OUTPUT"
-              [ $(echo "$OUTPUT" | wc -l) -eq 1 ]
-              grep 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
+              ../bashunit -a line_count 1 "$OUTPUT"
+              ../bashunit -a contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/trait-caching
               ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
@@ -211,9 +211,9 @@ jobs:
               patch -b data/TraitTwo.php < TraitTwo.patch
               OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
               echo "$OUTPUT"
-              [ $(echo "$OUTPUT" | wc -l) -eq 2 ]
-              grep 'Method TraitsCachingIssue\\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
-              grep 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
+              ../bashunit -a line_count 2 "$OUTPUT"
+              ../bashunit -a contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
+              ../bashunit -a contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
 
     steps:
       - name: "Checkout"
@@ -232,6 +232,9 @@ jobs:
 
       - name: "Patch PHPStan"
         run: "patch src/Analyser/Error.php < e2e/PHPStanErrorPatch.patch"
+
+      - name: "Install bashunit"
+        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ beta"
 
       - name: "Test"
         run: "${{ matrix.script }}"

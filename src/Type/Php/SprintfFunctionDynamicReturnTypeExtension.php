@@ -21,9 +21,11 @@ use function array_key_exists;
 use function array_shift;
 use function count;
 use function in_array;
+use function intval;
 use function is_string;
 use function preg_match;
 use function sprintf;
+use function substr;
 use function vsprintf;
 
 class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -46,28 +48,49 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$formatType = $scope->getType($args[0]->value);
+
 		if (count($formatType->getConstantStrings()) > 0) {
-			$skip = false;
+			$singlePlaceholderEarlyReturn = null;
 			foreach ($formatType->getConstantStrings() as $constantString) {
 				// The printf format is %[argnum$][flags][width][.precision]
-				if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*[bdeEfFgGhHouxX]$/', $constantString->getValue(), $matches) === 1) {
-					// invalid positional argument
-					if (array_key_exists(1, $matches) && $matches[1] === '0$') {
+				if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1) {
+					if (array_key_exists(1, $matches) && ($matches[1] !== '')) {
+						// invalid positional argument
+						if ($matches[1] === '0$') {
+							return null;
+						}
+						$checkArg = intval(substr($matches[1], 0, -1));
+					} else {
+						$checkArg = 1;
+					}
+
+					// constant string specifies a numbered argument that does not exist
+					if (!array_key_exists($checkArg, $args)) {
 						return null;
+					}
+
+					// if the format string is just a placeholder and specified an argument
+					// of stringy type, then the return value will be of the same type
+					$checkArgType = $scope->getType($args[$checkArg]->value);
+
+					if ($matches[2] === 's' && $checkArgType->isString()->yes()) {
+						$singlePlaceholderEarlyReturn = $checkArgType;
+					} elseif ($matches[2] !== 's') {
+						$singlePlaceholderEarlyReturn = new IntersectionType([
+							new StringType(),
+							new AccessoryNumericStringType(),
+						]);
 					}
 
 					continue;
 				}
 
-				$skip = true;
+				$singlePlaceholderEarlyReturn = null;
 				break;
 			}
 
-			if (!$skip) {
-				return new IntersectionType([
-					new StringType(),
-					new AccessoryNumericStringType(),
-				]);
+			if ($singlePlaceholderEarlyReturn !== null) {
+				return $singlePlaceholderEarlyReturn;
 			}
 		}
 

@@ -32,11 +32,11 @@ use function count;
 use function fclose;
 use function fgets;
 use function fopen;
+use function getcwd;
 use function in_array;
 use function is_dir;
 use function is_string;
 use function preg_match;
-use function realpath;
 use function sprintf;
 use function stripos;
 use function strpos;
@@ -146,11 +146,11 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	 */
 	public static function gatherAssertTypes(string $file): array
 	{
-		$projectRoot = realpath(__DIR__ . '/../../');
-		if ($projectRoot === false) {
+		$currentWorkingDirectory = getcwd();
+		if ($currentWorkingDirectory === false) {
 			throw new ShouldNotHappenException();
 		}
-		$pathHelper = new SimpleRelativePathHelper($projectRoot);
+		$pathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
 
 		$asserts = [];
 		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, $file, $pathHelper): void {

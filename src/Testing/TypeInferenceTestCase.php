@@ -146,9 +146,14 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	 */
 	public static function gatherAssertTypes(string $file): array
 	{
-		$asserts = [];
+		$projectRoot = realpath(__DIR__ . '/../../');
+		if ($projectRoot === false) {
+			throw new ShouldNotHappenException();
+		}
+		$pathHelper = new SimpleRelativePathHelper($projectRoot);
 
-		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, $file): void {
+		$asserts = [];
+		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, $file, $pathHelper): void {
 			if (!$node instanceof Node\Expr\FuncCall) {
 				return;
 			}
@@ -158,32 +163,35 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				return;
 			}
 
-			$projectRoot = realpath(__DIR__ . '/../../');
-			if ($projectRoot === false) {
-				throw new ShouldNotHappenException();
-			}
-			$pathHelper = new SimpleRelativePathHelper($projectRoot);
-			$relativeFile = $pathHelper->getRelativePath($file);
-
 			$functionName = $nameNode->toString();
 			if (in_array(strtolower($functionName), ['asserttype', 'assertnativetype', 'assertvariablecertainty'], true)) {
 				self::fail(sprintf(
 					'Missing use statement for %s() in %s on line %d.',
 					$functionName,
-					$relativeFile,
+					$pathHelper->getRelativePath($file),
 					$node->getStartLine(),
 				));
 			} elseif ($functionName === 'PHPStan\\Testing\\assertType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
 				if (!$expectedType instanceof ConstantScalarType) {
-					self::fail(sprintf('Expected type must be a literal string, %s given in %s on line %d.', $expectedType->describe(VerbosityLevel::precise()), $relativeFile, $node->getLine()));
+					self::fail(sprintf(
+						'Expected type must be a literal string, %s given in %s on line %d.',
+						$expectedType->describe(VerbosityLevel::precise()),
+						$pathHelper->getRelativePath($file),
+						$node->getLine(),
+					));
 				}
 				$actualType = $scope->getType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType->getValue(), $actualType->describe(VerbosityLevel::precise()), $node->getStartLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertNativeType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
 				if (!$expectedType instanceof ConstantScalarType) {
-					self::fail(sprintf('Expected type must be a literal string, %s given in %s on line %d.', $expectedType->describe(VerbosityLevel::precise()), $relativeFile, $node->getLine()));
+					self::fail(sprintf(
+						'Expected type must be a literal string, %s given in %s on line %d.',
+						$expectedType->describe(VerbosityLevel::precise()),
+						$pathHelper->getRelativePath($file),
+						$node->getLine(),
+					));
 				}
 
 				$actualType = $scope->getNativeType($node->getArgs()[1]->value);
@@ -241,7 +249,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 					'Function %s imported with wrong namespace %s called in %s on line %d.',
 					$correctFunction,
 					$functionName,
-					$relativeFile,
+					$pathHelper->getRelativePath($file),
 					$node->getStartLine(),
 				));
 			}
@@ -250,7 +258,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				self::fail(sprintf(
 					'ERROR: Wrong %s() call in %s on line %d.',
 					$functionName,
-					$relativeFile,
+					$pathHelper->getRelativePath($file),
 					$node->getStartLine(),
 				));
 			}

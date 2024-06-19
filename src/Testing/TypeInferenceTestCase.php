@@ -144,7 +144,8 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	 */
 	public static function gatherAssertTypes(string $file): array
 	{
-		$pathHelper = self::getContainer()->getByType(RelativePathHelper::class);
+		/** @var RelativePathHelper $pathHelper */
+		$pathHelper = self::getContainer()->getService('relativePathHelper');
 
 		$asserts = [];
 		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, $file, $pathHelper): void {

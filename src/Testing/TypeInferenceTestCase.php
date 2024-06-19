@@ -12,14 +12,13 @@ use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
-use PHPStan\File\SimpleRelativePathHelper;
+use PHPStan\File\RelativePathHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FileTypeMapper;
@@ -32,7 +31,6 @@ use function count;
 use function fclose;
 use function fgets;
 use function fopen;
-use function getcwd;
 use function in_array;
 use function is_dir;
 use function is_string;
@@ -146,11 +144,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	 */
 	public static function gatherAssertTypes(string $file): array
 	{
-		$currentWorkingDirectory = getcwd();
-		if ($currentWorkingDirectory === false) {
-			throw new ShouldNotHappenException();
-		}
-		$pathHelper = new SimpleRelativePathHelper($currentWorkingDirectory);
+		$pathHelper = self::getContainer()->getByType(RelativePathHelper::class);
 
 		$asserts = [];
 		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, $file, $pathHelper): void {

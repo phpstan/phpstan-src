@@ -9,6 +9,8 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function array_filter;
@@ -443,6 +445,23 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		}
 
 		return new ConstantBooleanType(false);
+	}
+
+	public function toString(): Type
+	{
+		$isZero = (new ConstantIntegerType(0))->isSuperTypeOf($this);
+		if ($isZero->no()) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNumericStringType(),
+				new AccessoryNonFalsyStringType(),
+			]);
+		}
+
+		return new IntersectionType([
+			new StringType(),
+			new AccessoryNumericStringType(),
+		]);
 	}
 
 	/**

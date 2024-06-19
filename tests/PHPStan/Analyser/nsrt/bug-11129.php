@@ -53,10 +53,10 @@ class HelloWorld
 
 		assertType('non-empty-string&numeric-string', $i.$bool);
 		assertType('non-empty-string', $bool.$i);
-		assertType('non-empty-string&numeric-string', $positiveInt.$bool); // could be 'non-falsy-string&numeric-string'
-		assertType('non-empty-string&numeric-string', $bool.$positiveInt); // could be 'non-falsy-string&numeric-string'
-		assertType('non-empty-string&numeric-string', $negativeInt.$bool); // could be 'non-falsy-string&numeric-string'
-		assertType('non-empty-string', $bool.$negativeInt);
+		assertType('non-falsy-string&numeric-string', $positiveInt.$bool);
+		assertType('non-falsy-string&numeric-string', $bool.$positiveInt);
+		assertType('non-falsy-string&numeric-string', $negativeInt.$bool); 
+		assertType('non-falsy-string', $bool.$negativeInt);
 
 		assertType('non-falsy-string', $i.$i);
 		assertType('non-falsy-string', $negativeInt.$negativeInt);

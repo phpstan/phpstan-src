@@ -12,12 +12,14 @@ use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
+use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FileTypeMapper;
@@ -34,6 +36,7 @@ use function in_array;
 use function is_dir;
 use function is_string;
 use function preg_match;
+use function realpath;
 use function sprintf;
 use function stripos;
 use function strpos;
@@ -144,6 +147,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	public static function gatherAssertTypes(string $file): array
 	{
 		$asserts = [];
+
 		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, $file): void {
 			if (!$node instanceof Node\Expr\FuncCall) {
 				return;
@@ -154,25 +158,32 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				return;
 			}
 
+			$projectRoot = realpath(__DIR__ . '/../../');
+			if ($projectRoot === false) {
+				throw new ShouldNotHappenException();
+			}
+			$pathHelper = new SimpleRelativePathHelper($projectRoot);
+			$relativeFile = $pathHelper->getRelativePath($file);
+
 			$functionName = $nameNode->toString();
 			if (in_array(strtolower($functionName), ['asserttype', 'assertnativetype', 'assertvariablecertainty'], true)) {
 				self::fail(sprintf(
 					'Missing use statement for %s() in %s on line %d.',
 					$functionName,
-					$file,
+					$relativeFile,
 					$node->getStartLine(),
 				));
 			} elseif ($functionName === 'PHPStan\\Testing\\assertType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
 				if (!$expectedType instanceof ConstantScalarType) {
-					self::fail(sprintf('Expected type must be a literal string, %s given in %s on line %d.', $expectedType->describe(VerbosityLevel::precise()), $file, $node->getLine()));
+					self::fail(sprintf('Expected type must be a literal string, %s given in %s on line %d.', $expectedType->describe(VerbosityLevel::precise()), $relativeFile, $node->getLine()));
 				}
 				$actualType = $scope->getType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType->getValue(), $actualType->describe(VerbosityLevel::precise()), $node->getStartLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertNativeType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
 				if (!$expectedType instanceof ConstantScalarType) {
-					self::fail(sprintf('Expected type must be a literal string, %s given in %s on line %d.', $expectedType->describe(VerbosityLevel::precise()), $file, $node->getLine()));
+					self::fail(sprintf('Expected type must be a literal string, %s given in %s on line %d.', $expectedType->describe(VerbosityLevel::precise()), $relativeFile, $node->getLine()));
 				}
 
 				$actualType = $scope->getNativeType($node->getArgs()[1]->value);
@@ -230,7 +241,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 					'Function %s imported with wrong namespace %s called in %s on line %d.',
 					$correctFunction,
 					$functionName,
-					$file,
+					$relativeFile,
 					$node->getStartLine(),
 				));
 			}
@@ -239,7 +250,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				self::fail(sprintf(
 					'ERROR: Wrong %s() call in %s on line %d.',
 					$functionName,
-					$file,
+					$relativeFile,
 					$node->getStartLine(),
 				));
 			}

@@ -61,7 +61,7 @@ class HelloWorld
 		assertType('numeric-string', sprintf('%2$14F', $mixed, $f));
 		assertType('numeric-string', sprintf('%2$14F', $mixed, $s));
 
-		assertType('numeric-string', sprintf('%10$14F', $mixed, $s));
+		assertType('string', sprintf('%10$14F', $mixed, $s));
 	}
 
 	public function invalidPositionalArgFormat($mixed, string $s) {

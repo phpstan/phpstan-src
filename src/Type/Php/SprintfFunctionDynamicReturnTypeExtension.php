@@ -102,14 +102,9 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 				continue;
 			}
 
-			if ($argType->isNonFalsyString()->yes() || $positiveInt->isSuperTypeOf($argType)->yes()) {
+			if ($argType->toString()->isNonFalsyString()->yes()) {
 				$isNonFalsy = true;
-			} elseif (
-				$argType->isNonEmptyString()->yes()
-				|| $argType->isInteger()->yes()
-				|| $argType->isFloat()->yes()
-				|| $argType->isTrue()->yes()
-			) {
+			} elseif ($argType->toString()->isNonEmptyString()->yes()) {
 				$isNonEmpty = true;
 			}
 		}

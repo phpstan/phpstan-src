@@ -22,11 +22,10 @@ use function array_key_exists;
 use function array_shift;
 use function count;
 use function in_array;
-use function intval;
 use function is_string;
 use function preg_match;
 use function sprintf;
-use function substr;
+use function str_contains;
 use function vsprintf;
 
 class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -49,74 +48,90 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$formatType = $scope->getType($args[0]->value);
+		if (count($args) === 1) {
+			return $formatType;
+		}
 
-		if (count($formatType->getConstantStrings()) > 0) {
-			$singlePlaceholderEarlyReturn = null;
-			foreach ($formatType->getConstantStrings() as $constantString) {
-				// The printf format is %[argnum$][flags][width][.precision]
-				if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1) {
-					if ($matches[1] !== '') {
-						// invalid positional argument
-						if ($matches[1] === '0$') {
-							return null;
-						}
-						$checkArg = intval(substr($matches[1], 0, -1));
-					} else {
-						$checkArg = 1;
-					}
+		$formatStrings = $formatType->getConstantStrings();
+		if (count($formatStrings) === 0) {
+			return null;
+		}
 
-					// constant string specifies a numbered argument that does not exist
-					if (!array_key_exists($checkArg, $args)) {
-						return null;
-					}
-
-					// if the format string is just a placeholder and specified an argument
-					// of stringy type, then the return value will be of the same type
-					$checkArgType = $scope->getType($args[$checkArg]->value);
-
-					if (!array_key_exists(2, $matches)) {
-						throw new ShouldNotHappenException();
-					}
-
-					if ($matches[2] === 's' && $checkArgType->isString()->yes()) {
-						$singlePlaceholderEarlyReturn = $checkArgType;
-					} elseif ($matches[2] !== 's') {
-						$singlePlaceholderEarlyReturn = new IntersectionType([
-							new StringType(),
-							new AccessoryNumericStringType(),
-						]);
-					}
-
-					continue;
-				}
-
-				$singlePlaceholderEarlyReturn = null;
-				break;
+		$isNonEmpty = false;
+		$isNonFalsy = false;
+		$isNumeric = false;
+		foreach ($formatStrings as $constantString) {
+			// The printf format is %[argnum$][flags][width][.precision]specifier.
+			if (preg_match('/^(?<!%)%(?P<argnum>[0-9]*\$)?(?P<width>[0-9])*\.?[0-9]*(?P<flags>[a-zA-Z])$/', $constantString->getValue(), $matches) !== 1) {
+				continue;
 			}
 
-			if ($singlePlaceholderEarlyReturn !== null) {
-				return $singlePlaceholderEarlyReturn;
+			// invalid positional argument
+			if (array_key_exists('argnum', $matches) && $matches['argnum'] === '0$') {
+				return null;
+			}
+
+			if (array_key_exists('width', $matches)) {
+				if ($matches['width'] > 1) {
+					$isNonFalsy = true;
+				} elseif ($matches['width'] > 0) {
+					$isNonEmpty = true;
+				}
+			}
+
+			if (array_key_exists('flags', $matches) && str_contains('bdeEfFgGhHouxX', $matches['flags'])) {
+				$isNumeric = true;
+				break;
 			}
 		}
 
-		if ($formatType->isNonFalsyString()->yes()) {
-			$returnType = new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
-		} elseif ($formatType->isNonEmptyString()->yes()) {
-			$returnType = new IntersectionType([
-				new StringType(),
-				new AccessoryNonEmptyStringType(),
-			]);
-		} else {
-			$returnType = new StringType();
+		$argTypes = [];
+		$positiveInt = IntegerRangeType::fromInterval(1, null);
+		foreach ($args as $i => $arg) {
+			$argType = $scope->getType($arg->value);
+			$argTypes[] = $argType;
+
+			if ($i === 0) { // skip format type
+				continue;
+			}
+
+			if ($functionReflection->getName() === 'vsprintf') {
+				if ($argType->isIterableAtLeastOnce()->yes()) {
+					$isNonEmpty = true;
+				}
+				continue;
+			}
+
+			if ($argType->isNonFalsyString()->yes() || $positiveInt->isSuperTypeOf($argType)->yes()) {
+				$isNonFalsy = true;
+			} elseif (
+				$argType->isNonEmptyString()->yes()
+				|| $argType->isInteger()->yes()
+				|| $argType->isFloat()->yes()
+				|| $argType->isTrue()->yes()
+			) {
+				$isNonEmpty = true;
+			}
+		}
+
+		$accessories = [];
+		if ($isNumeric) {
+			$accessories[] = new AccessoryNumericStringType();
+		}
+		if ($isNonFalsy) {
+			$accessories[] = new AccessoryNonFalsyStringType();
+		} elseif ($isNonEmpty) {
+			$accessories[] = new AccessoryNonEmptyStringType();
+		}
+		$returnType = new StringType();
+		if (count($accessories) > 0) {
+			$accessories[] = new StringType();
+			$returnType = new IntersectionType($accessories);
 		}
 
 		$values = [];
 		$combinationsCount = 1;
-		foreach ($args as $arg) {
-			$argType = $scope->getType($arg->value);
+		foreach ($argTypes as $argType) {
 			$constantScalarValues = $argType->getConstantScalarValues();
 
 			if (count($constantScalarValues) === 0) {

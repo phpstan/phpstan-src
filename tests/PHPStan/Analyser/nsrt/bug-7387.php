@@ -8,40 +8,40 @@ class HelloWorld
 {
 	public function inputTypes(int $i, float $f, string $s) {
 		// https://3v4l.org/iXaDX
-		assertType('numeric-string', sprintf('%.14F', $i));
-		assertType('numeric-string', sprintf('%.14F', $f));
+		assertType('non-empty-string&numeric-string', sprintf('%.14F', $i));
+		assertType('non-empty-string&numeric-string', sprintf('%.14F', $f));
 		assertType('numeric-string', sprintf('%.14F', $s));
 
-		assertType('numeric-string', sprintf('%1.14F', $i));
-		assertType('numeric-string', sprintf('%2.14F', $f));
-		assertType('numeric-string', sprintf('%3.14F', $s));
+		assertType('non-empty-string&numeric-string', sprintf('%1.14F', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%2.14F', $f));
+		assertType('non-falsy-string&numeric-string', sprintf('%3.14F', $s));
 
-		assertType('numeric-string', sprintf('%14F', $i));
-		assertType('numeric-string', sprintf('%14F', $f));
-		assertType('numeric-string', sprintf('%14F', $s));
+		assertType('non-falsy-string&numeric-string', sprintf('%14F', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14F', $f));
+		assertType('non-falsy-string&numeric-string', sprintf('%14F', $s));
 	}
 
 	public function specifiers(int $i) {
 		// https://3v4l.org/fmVIg
 		assertType('non-falsy-string', sprintf('%14s', $i));
 
-		assertType('numeric-string', sprintf('%d', $i));
+		assertType('non-empty-string&numeric-string', sprintf('%d', $i));
 
-		assertType('numeric-string', sprintf('%14b', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14b', $i));
 		assertType('non-falsy-string', sprintf('%14c', $i)); // binary string
-		assertType('numeric-string', sprintf('%14d', $i));
-		assertType('numeric-string', sprintf('%14e', $i));
-		assertType('numeric-string', sprintf('%14E', $i));
-		assertType('numeric-string', sprintf('%14f', $i));
-		assertType('numeric-string', sprintf('%14F', $i));
-		assertType('numeric-string', sprintf('%14g', $i));
-		assertType('numeric-string', sprintf('%14G', $i));
-		assertType('numeric-string', sprintf('%14h', $i));
-		assertType('numeric-string', sprintf('%14H', $i));
-		assertType('numeric-string', sprintf('%14o', $i));
-		assertType('numeric-string', sprintf('%14u', $i));
-		assertType('numeric-string', sprintf('%14x', $i));
-		assertType('numeric-string', sprintf('%14X', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14d', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14e', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14E', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14f', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14F', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14g', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14G', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14h', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14H', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14o', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14u', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14x', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%14X', $i));
 
 	}
 
@@ -49,19 +49,20 @@ class HelloWorld
 		// https://3v4l.org/vVL0c
 		assertType('non-falsy-string', sprintf('%2$14s', $mixed, $i));
 
-		assertType('numeric-string', sprintf('%2$.14F', $mixed, $i));
-		assertType('numeric-string', sprintf('%2$.14F', $mixed, $f));
+		assertType('non-empty-string&numeric-string', sprintf('%2$.14F', $mixed, $i));
+		assertType('non-empty-string&numeric-string', sprintf('%2$.14F', $mixed, $f));
 		assertType('numeric-string', sprintf('%2$.14F', $mixed, $s));
 
-		assertType('numeric-string', sprintf('%2$1.14F', $mixed, $i));
-		assertType('numeric-string', sprintf('%2$2.14F', $mixed, $f));
-		assertType('numeric-string', sprintf('%2$3.14F', $mixed, $s));
+		assertType('non-empty-string&numeric-string', sprintf('%2$1.14F', $mixed, $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$2.14F', $mixed, $f));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$3.14F', $mixed, $s));
 
-		assertType('numeric-string', sprintf('%2$14F', $mixed, $i));
-		assertType('numeric-string', sprintf('%2$14F', $mixed, $f));
-		assertType('numeric-string', sprintf('%2$14F', $mixed, $s));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$14F', $mixed, $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$14F', $mixed, $f));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$14F', $mixed, $s));
 
-		assertType('string', sprintf('%10$14F', $mixed, $s));
+		// XXX should be string because of invalid arguments count
+		assertType('non-falsy-string&numeric-string', sprintf('%10$14F', $mixed, $s));
 	}
 
 	public function invalidPositionalArgFormat($mixed, string $s) {
@@ -70,16 +71,41 @@ class HelloWorld
 
 	public function escapedPercent(int $i) {
 		// https://3v4l.org/2m50L
-		assertType('non-falsy-string', sprintf("%%d", $i));
+		assertType('non-empty-string', sprintf("%%d", $i)); // could be non-falsey-string
 	}
 
 	public function vsprintf(array $array)
 	{
-		assertType('numeric-string', vsprintf("%4d", explode('-', '1988-8-1')));
-		assertType('numeric-string', vsprintf("%4d", $array));
-		assertType('numeric-string', vsprintf("%4d", ['123']));
-		assertType('non-falsy-string', vsprintf("%s", ['123']));
+		assertType('non-falsy-string&numeric-string', vsprintf("%4d", explode('-', '1988-8-1')));
+		assertType('non-falsy-string&numeric-string', vsprintf("%4d", $array));
+		assertType('non-falsy-string&numeric-string', vsprintf("%4d", ['123']));
+		assertType('non-empty-string', vsprintf("%s", ['123'])); // could be 'non-falsy-string'
 		// too many arguments.. php silently allows it
-		assertType('numeric-string', vsprintf("%4d", ['123', '456']));
+		assertType('non-falsy-string&numeric-string', vsprintf("%4d", ['123', '456']));
+	}
+
+	/**
+	 * @param array<string> $arr
+	 */
+	public function bug11201($arr) {
+		assertType('string', sprintf("%s", implode(', ', array_map('intval', $arr))));
+		if (count($arr) > 0) {
+			assertType('non-falsy-string', sprintf("%s", implode(', ', array_map('intval', $arr))));
+		}
+	}
+
+	/**
+	 * @param positive-int $positiveInt
+	 */
+	public function testNonStrings(bool $bool, int $int, float $float, $positiveInt) {
+		assertType('string', sprintf('%s', $bool));
+		if ($bool) {
+			assertType("'1'", sprintf('%s', $bool));
+		} else {
+			assertType("''", sprintf('%s', $bool));
+		}
+		assertType('non-empty-string', sprintf('%s', $int));
+		assertType('non-falsy-string', sprintf('%s', $positiveInt));
+		assertType('non-empty-string', sprintf('%s', $float));
 	}
 }

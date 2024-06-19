@@ -157,21 +157,22 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$functionName = $nameNode->toString();
 			if (in_array(strtolower($functionName), ['asserttype', 'assertnativetype', 'assertvariablecertainty'], true)) {
 				self::fail(sprintf(
-					'Missing use statement for %s() on line %d.',
+					'Missing use statement for %s() in %s on line %d.',
 					$functionName,
+					$file,
 					$node->getStartLine(),
 				));
 			} elseif ($functionName === 'PHPStan\\Testing\\assertType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
 				if (!$expectedType instanceof ConstantScalarType) {
-					self::fail(sprintf('Expected type must be a literal string, %s given on line %d.', $expectedType->describe(VerbosityLevel::precise()), $node->getLine()));
+					self::fail(sprintf('Expected type must be a literal string, %s given in %s on line %d.', $expectedType->describe(VerbosityLevel::precise()), $file, $node->getLine()));
 				}
 				$actualType = $scope->getType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType->getValue(), $actualType->describe(VerbosityLevel::precise()), $node->getStartLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertNativeType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
 				if (!$expectedType instanceof ConstantScalarType) {
-					self::fail(sprintf('Expected type must be a literal string, %s given on line %d.', $expectedType->describe(VerbosityLevel::precise()), $node->getLine()));
+					self::fail(sprintf('Expected type must be a literal string, %s given in %s on line %d.', $expectedType->describe(VerbosityLevel::precise()), $file, $node->getLine()));
 				}
 
 				$actualType = $scope->getNativeType($node->getArgs()[1]->value);
@@ -226,17 +227,19 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				}
 
 				self::fail(sprintf(
-					'Function %s imported with wrong namespace %s called on line %d.',
+					'Function %s imported with wrong namespace %s called in %s on line %d.',
 					$correctFunction,
 					$functionName,
+					$file,
 					$node->getStartLine(),
 				));
 			}
 
 			if (count($node->getArgs()) !== 2) {
 				self::fail(sprintf(
-					'ERROR: Wrong %s() call on line %d.',
+					'ERROR: Wrong %s() call in %s on line %d.',
 					$functionName,
+					$file,
 					$node->getStartLine(),
 				));
 			}

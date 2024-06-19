@@ -71,6 +71,9 @@ assertType('non-falsy-string', LIBXML_DOTTED_VERSION);
 // openssl, https://www.php.net/manual/en/openssl.constants.php
 assertType('int<1, max>', OPENSSL_VERSION_NUMBER);
 
+// pcre, https://www.php.net/manual/en/pcre.constants.php
+assertType('non-falsy-string', PCRE_VERSION);
+
 // other
 assertType('bool', ZEND_DEBUG_BUILD);
 assertType('bool', ZEND_THREAD_SAFE);

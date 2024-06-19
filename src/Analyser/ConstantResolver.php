@@ -278,6 +278,15 @@ class ConstantResolver
 		if ($resolvedConstantName === 'OPENSSL_VERSION_NUMBER') {
 			return IntegerRangeType::fromInterval(1, null);
 		}
+
+		// pcre, https://www.php.net/manual/en/pcre.constants.php
+		if ($resolvedConstantName === 'PCRE_VERSION') {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNonFalsyStringType(),
+			]);
+		}
+
 		if (in_array($resolvedConstantName, ['STDIN', 'STDOUT', 'STDERR'], true)) {
 			return new ResourceType();
 		}

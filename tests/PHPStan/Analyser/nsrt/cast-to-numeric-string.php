@@ -18,8 +18,8 @@ function foo(int $a, float $b, $numeric, $numeric2, $number, $positive, $negativ
 	assertType('numeric-string', (string)$numeric);
 	assertType('numeric-string', (string)$numeric2);
 	assertType('numeric-string', (string)$number);
-	assertType('numeric-string', (string)$positive);
-	assertType('numeric-string', (string)$negative);
+	assertType('non-falsy-string&numeric-string', (string)$positive);
+	assertType('non-falsy-string&numeric-string', (string)$negative);
 	assertType("'1'", (string)$constantInt);
 }
 
@@ -37,8 +37,8 @@ function concatEmptyString(int $a, float $b, $numeric, $numeric2, $number, $posi
 	assertType('numeric-string', '' . $numeric);
 	assertType('numeric-string', '' . $numeric2);
 	assertType('numeric-string', '' . $number);
-	assertType('numeric-string', '' . $positive);
-	assertType('numeric-string', '' . $negative);
+	assertType('non-falsy-string&numeric-string', '' . $positive);
+	assertType('non-falsy-string&numeric-string', '' . $negative);
 	assertType("'1'", '' . $constantInt);
 
 	assertType('numeric-string', $a . '');
@@ -46,8 +46,8 @@ function concatEmptyString(int $a, float $b, $numeric, $numeric2, $number, $posi
 	assertType('numeric-string', $numeric . '');
 	assertType('numeric-string', $numeric2 . '');
 	assertType('numeric-string', $number . '');
-	assertType('numeric-string', $positive . '');
-	assertType('numeric-string', $negative . '');
+	assertType('non-falsy-string&numeric-string', $positive . '');
+	assertType('non-falsy-string&numeric-string', $negative . '');
 	assertType("'1'", $constantInt . '');
 }
 
@@ -58,4 +58,21 @@ function concatAssignEmptyString(int $i, float $f) {
 	$s = '';
 	$s .= $f;
 	assertType('numeric-string', $s);
+}
+
+/**
+ * @param int<0, max> $positive
+ * @param int<min, 0> $negative
+ */
+function integerRangeToString($positive, $negative)
+{
+	assertType('numeric-string', (string) $positive);
+	assertType('numeric-string', (string) $negative);
+
+	if ($positive !== 0) {
+		assertType('non-falsy-string&numeric-string', (string) $positive);
+	}
+	if ($negative !== 0) {
+		assertType('non-falsy-string&numeric-string', (string) $negative);
+	}
 }

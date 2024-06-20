@@ -52,6 +52,14 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			return $formatType;
 		}
 
+		if (
+			$functionReflection->getName() === 'vsprintf'
+			&& count($args) === 2
+			&& $scope->getType($args[1]->value)->isIterableAtLeastOnce()->no()
+		) {
+			return $formatType;
+		}
+
 		$formatStrings = $formatType->getConstantStrings();
 		if (count($formatStrings) === 0) {
 			return null;
@@ -86,7 +94,6 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$argTypes = [];
-		$positiveInt = IntegerRangeType::fromInterval(1, null);
 		foreach ($args as $i => $arg) {
 			$argType = $scope->getType($arg->value);
 			$argTypes[] = $argType;

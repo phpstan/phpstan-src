@@ -105,7 +105,7 @@ class Foo {
 		assertType('non-falsy-string', preg_quote($nonFalsey));
 
 		assertType('non-falsy-string', sprintf($nonFalsey));
-		assertType('string', vsprintf($nonFalsey, [])); // could be non-falsy-string
+		assertType('non-falsy-string', vsprintf($nonFalsey, []));
 
 		assertType('int<1, max>', strlen($nonFalsey));
 

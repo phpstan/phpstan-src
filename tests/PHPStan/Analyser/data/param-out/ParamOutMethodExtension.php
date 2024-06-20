@@ -2,7 +2,7 @@
 
 namespace PHPStan\Tests;
 
-use DynamicParameterOutTests\FooClass;
+use ParameterOutTests\FooClass;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;

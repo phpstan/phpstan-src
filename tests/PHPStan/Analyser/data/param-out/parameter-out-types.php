@@ -1,6 +1,6 @@
 <?php
 
-namespace DynamicParameterOutTests;
+namespace ParameterOutTests;
 
 use function PHPStan\Testing\assertType;
 

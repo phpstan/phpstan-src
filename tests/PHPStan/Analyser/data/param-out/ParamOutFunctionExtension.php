@@ -16,7 +16,7 @@ class ParamOutFunctionExtension implements FunctionParameterOutTypeExtension {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool
 	{
-		return $functionReflection->getName() === 'DynamicParameterOutTests\callWithOut' && $parameter->getName() === 'outParam';
+		return $functionReflection->getName() === 'ParameterOutTests\callWithOut' && $parameter->getName() === 'outParam';
 	}
 
 	public function getParameterOutTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, ParameterReflection $parameter, Scope $scope): ?Type

@@ -9,12 +9,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\BooleanType;
-use PHPStan\Type\DynamicMethodParameterOutTypeExtension;
-use PHPStan\Type\DynamicStaticMethodParameterOutTypeExtension;
+use PHPStan\Type\MethodParameterOutTypeExtension;
+use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 
-class ParamOutStaticMethodExtension implements DynamicStaticMethodParameterOutTypeExtension {
+class ParamOutStaticMethodExtension implements StaticMethodParameterOutTypeExtension {
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool
 	{

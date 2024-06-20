@@ -62,9 +62,9 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
-use PHPStan\DependencyInjection\Type\DynamicParameterOutTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Node\BooleanAndNode;
@@ -237,7 +237,7 @@ class NodeScopeResolver
 		private readonly InitializerExprTypeResolver $initializerExprTypeResolver,
 		private readonly Reflector $reflector,
 		private readonly ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
-		private readonly DynamicParameterOutTypeExtensionProvider $dynamicParameterOutTypeExtensionProvider,
+		private readonly ParameterOutTypeExtensionProvider $parameterOutTypeExtensionProvider,
 		private readonly Parser $parser,
 		private readonly FileTypeMapper $fileTypeMapper,
 		private readonly StubPhpDocProvider $stubPhpDocProvider,
@@ -4629,36 +4629,36 @@ class NodeScopeResolver
 	{
 		$paramOutTypes = [];
 		if ($callLike instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
-			foreach ($this->dynamicParameterOutTypeExtensionProvider->getDynamicFunctionParameterOutTypeExtensions() as $dynamicFunctionParameterOutTypeExtension) {
-				if (!$dynamicFunctionParameterOutTypeExtension->isFunctionSupported($calleeReflection, $currentParameter)) {
+			foreach ($this->parameterOutTypeExtensionProvider->getDynamicFunctionParameterOutTypeExtensions() as $functionParameterOutTypeExtension) {
+				if (!$functionParameterOutTypeExtension->isFunctionSupported($calleeReflection, $currentParameter)) {
 					continue;
 				}
 
-				$resolvedType = $dynamicFunctionParameterOutTypeExtension->getParameterOutTypeFromFunctionCall($calleeReflection, $callLike, $currentParameter, $scope);
+				$resolvedType = $functionParameterOutTypeExtension->getParameterOutTypeFromFunctionCall($calleeReflection, $callLike, $currentParameter, $scope);
 				if ($resolvedType === null) {
 					continue;
 				}
 				$paramOutTypes[] = $resolvedType;
 			}
 		} elseif ($callLike instanceof MethodCall && $calleeReflection instanceof MethodReflection) {
-			foreach ($this->dynamicParameterOutTypeExtensionProvider->getDynamicMethodParameterOutTypeExtensions() as $dynamicMethodParameterOutTypeExtension) {
-				if (!$dynamicMethodParameterOutTypeExtension->isMethodSupported($calleeReflection, $currentParameter)) {
+			foreach ($this->parameterOutTypeExtensionProvider->getDynamicMethodParameterOutTypeExtensions() as $methodParameterOutTypeExtension) {
+				if (!$methodParameterOutTypeExtension->isMethodSupported($calleeReflection, $currentParameter)) {
 					continue;
 				}
 
-				$resolvedType = $dynamicMethodParameterOutTypeExtension->getParameterOutTypeFromMethodCall($calleeReflection, $callLike, $currentParameter, $scope);
+				$resolvedType = $methodParameterOutTypeExtension->getParameterOutTypeFromMethodCall($calleeReflection, $callLike, $currentParameter, $scope);
 				if ($resolvedType === null) {
 					continue;
 				}
 				$paramOutTypes[] = $resolvedType;
 			}
 		} elseif ($callLike instanceof StaticCall && $calleeReflection instanceof MethodReflection) {
-			foreach ($this->dynamicParameterOutTypeExtensionProvider->getDynamicStaticMethodParameterOutTypeExtensions() as $dynamicStaticMethodParameterOutTypeExtension) {
-				if (!$dynamicStaticMethodParameterOutTypeExtension->isStaticMethodSupported($calleeReflection, $currentParameter)) {
+			foreach ($this->parameterOutTypeExtensionProvider->getDynamicStaticMethodParameterOutTypeExtensions() as $staticMethodParameterOutTypeExtension) {
+				if (!$staticMethodParameterOutTypeExtension->isStaticMethodSupported($calleeReflection, $currentParameter)) {
 					continue;
 				}
 
-				$resolvedType = $dynamicStaticMethodParameterOutTypeExtension->getParameterOutTypeFromStaticMethodCall($calleeReflection, $callLike, $currentParameter, $scope);
+				$resolvedType = $staticMethodParameterOutTypeExtension->getParameterOutTypeFromStaticMethodCall($calleeReflection, $callLike, $currentParameter, $scope);
 				if ($resolvedType === null) {
 					continue;
 				}

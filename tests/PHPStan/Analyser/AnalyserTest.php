@@ -10,9 +10,9 @@ use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
-use PHPStan\DependencyInjection\Type\DynamicParameterOutTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\RichParser;
@@ -720,7 +720,7 @@ class AnalyserTest extends PHPStanTestCase
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
 			self::getClassReflectionExtensionRegistryProvider(),
-			self::getContainer()->getByType(DynamicParameterOutTypeExtensionProvider::class),
+			self::getContainer()->getByType(ParameterOutTypeExtensionProvider::class),
 			$this->getParser(),
 			$fileTypeMapper,
 			self::getContainer()->getByType(StubPhpDocProvider::class),

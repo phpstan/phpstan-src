@@ -634,7 +634,7 @@ services:
 		factory: PHPStan\DependencyInjection\Type\LazyDynamicReturnTypeExtensionRegistryProvider
 
 	-
-		class: PHPStan\DependencyInjection\Type\DynamicParameterOutTypeExtensionProvider
+		class: PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider
 		factory: PHPStan\DependencyInjection\Type\LazyParameterOutTypeExtensionProvider
 
 	-

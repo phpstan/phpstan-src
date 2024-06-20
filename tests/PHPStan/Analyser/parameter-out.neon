@@ -2,12 +2,12 @@ services:
 	-
 		class: PHPStan\Tests\ParamOutFunctionExtension
 		tags:
-			- phpstan.dynamicFunctionParameterOutTypeExtension
+			- phpstan.functionParameterOutTypeExtension
 	-
 		class: PHPStan\Tests\ParamOutMethodExtension
 		tags:
-			- phpstan.dynamicMethodParameterOutTypeExtension
+			- phpstan.methodParameterOutTypeExtension
 	-
 		class: PHPStan\Tests\ParamOutStaticMethodExtension
 		tags:
-			- phpstan.dynamicStaticMethodParameterOutTypeExtension
+			- phpstan.staticMethodParameterOutTypeExtension

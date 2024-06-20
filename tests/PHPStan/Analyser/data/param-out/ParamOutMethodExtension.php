@@ -7,12 +7,12 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
-use PHPStan\Type\DynamicMethodParameterOutTypeExtension;
+use PHPStan\Type\MethodParameterOutTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 
-class ParamOutMethodExtension implements DynamicMethodParameterOutTypeExtension {
+class ParamOutMethodExtension implements MethodParameterOutTypeExtension {
 
 
 	public function isMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool

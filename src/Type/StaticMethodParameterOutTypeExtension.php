@@ -10,19 +10,19 @@ use PHPStan\Reflection\ParameterReflection;
 /**
  * This is the interface dynamic parameter out type extensions implement for static methods.
  *
- * To register it in the configuration file use the `phpstan.dynamicStaticMethodParameterOutTypeExtension` service tag:
+ * To register it in the configuration file use the `phpstan.staticMethodParameterOutTypeExtension` service tag:
  *
  * ```
  * services:
  * 	-
  *		class: App\PHPStan\MyExtension
  *		tags:
- *			- phpstan.dynamicStaticMethodParameterOutTypeExtension
+ *			- phpstan.staticMethodParameterOutTypeExtension
  * ```
  *
  * @api
  */
-interface DynamicStaticMethodParameterOutTypeExtension
+interface StaticMethodParameterOutTypeExtension
 {
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool;

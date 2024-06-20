@@ -4,12 +4,12 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
 
-class DynamicParameterOutTypeExtensionTest extends TypeInferenceTestCase
+class ParameterOutTypeExtensionTest extends TypeInferenceTestCase
 {
 
 	public function dataAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/param-out/dynamic-parameter-out-types.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/param-out/parameter-out-types.php');
 	}
 
 	/**
@@ -28,7 +28,7 @@ class DynamicParameterOutTypeExtensionTest extends TypeInferenceTestCase
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [
-			__DIR__ . '/dynamic-parameter-out.neon',
+			__DIR__ . '/parameter-out.neon',
 		];
 	}
 

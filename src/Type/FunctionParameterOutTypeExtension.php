@@ -10,19 +10,19 @@ use PHPStan\Reflection\ParameterReflection;
 /**
  * This is the interface dynamic parameter out type extensions implement for functions.
  *
- * To register it in the configuration file use the `phpstan.dynamicFunctionReturnTypeExtension` service tag:
+ * To register it in the configuration file use the `phpstan.functionParameterOutTypeExtension` service tag:
  *
  * ```
  * services:
  * 	-
  *		class: App\PHPStan\MyExtension
  *		tags:
- *			- phpstan.dynamicFunctionReturnTypeExtension
+ *			- phpstan.functionParameterOutTypeExtension
  * ```
  *
  * @api
  */
-interface DynamicFunctionParameterOutTypeExtension
+interface FunctionParameterOutTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool;

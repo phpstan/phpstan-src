@@ -14,21 +14,14 @@ use PHPStan\Type\Type;
 use function in_array;
 use function strtolower;
 
-final class PregMatchParameterOutTypeExtension implements FunctionParameterOutTypeExtension, TypeSpecifierAwareExtension
+final class PregMatchParameterOutTypeExtension implements FunctionParameterOutTypeExtension
 {
-
-	private TypeSpecifier $typeSpecifier;
 
 	public function __construct(
 		private RegexArrayShapeMatcher $regexShapeMatcher,
 		private bool $disabled,
 	)
 	{
-	}
-
-	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
-	{
-		$this->typeSpecifier = $typeSpecifier;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool

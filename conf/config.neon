@@ -1468,11 +1468,15 @@ services:
 
 	-
 		class: PHPStan\Type\Php\PregMatchTypeSpecifyingExtension
+		arguments:
+			disabled: %featureToggles.narrowPregMatches%
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
 		class: PHPStan\Type\Php\PregMatchParameterOutTypeExtension
+		arguments:
+			disabled: %featureToggles.narrowPregMatches%
 		tags:
 			- phpstan.functionParameterOutTypeExtension
 

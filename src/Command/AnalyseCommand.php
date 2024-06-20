@@ -331,6 +331,7 @@ class AnalyseCommand extends Command
 		}
 
 		$internalErrors = [];
+		$internalFileSpecificErrors = [];
 		foreach ($analysisResult->getInternalErrorObjects() as $internalError) {
 			$internalErrors[$internalError->getMessage()] = new InternalError(
 				$internalError->getTraceAsString() !== null ? sprintf('Internal error: %s', $internalError->getMessage()) : $internalError->getMessage(),
@@ -344,6 +345,8 @@ class AnalyseCommand extends Command
 			if (!$fileSpecificError->hasNonIgnorableException()) {
 				continue;
 			}
+
+			$internalFileSpecificErrors[] = $fileSpecificError;
 
 			$message = $fileSpecificError->getMessage();
 			$metadata = $fileSpecificError->getMetadata();
@@ -424,7 +427,7 @@ class AnalyseCommand extends Command
 
 		if (count($internalErrors) > 0) {
 			$analysisResult = new AnalysisResult(
-				[],
+				$internalFileSpecificErrors,
 				array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $internalErrors),
 				[],
 				[],

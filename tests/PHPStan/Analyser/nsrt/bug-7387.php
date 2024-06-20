@@ -21,6 +21,11 @@ class HelloWorld
 		assertType('non-falsy-string&numeric-string', sprintf('%14F', $s));
 
 		assertType('string', sprintf('%s%s', $s, $s));
+		assertType('non-empty-string', sprintf('0%s', $s));
+		assertType('non-falsy-string', sprintf('A%s', $s));
+		assertType('non-falsy-string', sprintf('ABC%s', $s));
+		assertType('non-falsy-string', sprintf('%sABC', $s));
+		assertType('non-falsy-string', sprintf('ABC%sABC', $s));
 		assertType('non-falsy-string', sprintf('{^/?%s(/\*?)?$}', preg_quote($s)));
 	}
 

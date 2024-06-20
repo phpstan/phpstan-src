@@ -10,12 +10,12 @@ interface ParameterOutTypeExtensionProvider
 {
 
 	/** @return FunctionParameterOutTypeExtension[] */
-	public function getDynamicFunctionParameterOutTypeExtensions(): array;
+	public function getFunctionParameterOutTypeExtensions(): array;
 
 	/** @return MethodParameterOutTypeExtension[] */
-	public function getDynamicMethodParameterOutTypeExtensions(): array;
+	public function getMethodParameterOutTypeExtensions(): array;
 
 	/** @return StaticMethodParameterOutTypeExtension[] */
-	public function getDynamicStaticMethodParameterOutTypeExtensions(): array;
+	public function getStaticMethodParameterOutTypeExtensions(): array;
 
 }

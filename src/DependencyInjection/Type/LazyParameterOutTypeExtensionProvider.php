@@ -15,17 +15,17 @@ class LazyParameterOutTypeExtensionProvider implements ParameterOutTypeExtension
 	{
 	}
 
-	public function getDynamicFunctionParameterOutTypeExtensions(): array
+	public function getFunctionParameterOutTypeExtensions(): array
 	{
 		return $this->container->getServicesByTag(self::FUNCTION_TAG);
 	}
 
-	public function getDynamicMethodParameterOutTypeExtensions(): array
+	public function getMethodParameterOutTypeExtensions(): array
 	{
 		return $this->container->getServicesByTag(self::METHOD_TAG);
 	}
 
-	public function getDynamicStaticMethodParameterOutTypeExtensions(): array
+	public function getStaticMethodParameterOutTypeExtensions(): array
 	{
 		return $this->container->getServicesByTag(self::STATIC_METHOD_TAG);
 	}

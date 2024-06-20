@@ -4629,7 +4629,7 @@ class NodeScopeResolver
 	{
 		$paramOutTypes = [];
 		if ($callLike instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
-			foreach ($this->parameterOutTypeExtensionProvider->getDynamicFunctionParameterOutTypeExtensions() as $functionParameterOutTypeExtension) {
+			foreach ($this->parameterOutTypeExtensionProvider->getFunctionParameterOutTypeExtensions() as $functionParameterOutTypeExtension) {
 				if (!$functionParameterOutTypeExtension->isFunctionSupported($calleeReflection, $currentParameter)) {
 					continue;
 				}
@@ -4641,7 +4641,7 @@ class NodeScopeResolver
 				$paramOutTypes[] = $resolvedType;
 			}
 		} elseif ($callLike instanceof MethodCall && $calleeReflection instanceof MethodReflection) {
-			foreach ($this->parameterOutTypeExtensionProvider->getDynamicMethodParameterOutTypeExtensions() as $methodParameterOutTypeExtension) {
+			foreach ($this->parameterOutTypeExtensionProvider->getMethodParameterOutTypeExtensions() as $methodParameterOutTypeExtension) {
 				if (!$methodParameterOutTypeExtension->isMethodSupported($calleeReflection, $currentParameter)) {
 					continue;
 				}
@@ -4653,7 +4653,7 @@ class NodeScopeResolver
 				$paramOutTypes[] = $resolvedType;
 			}
 		} elseif ($callLike instanceof StaticCall && $calleeReflection instanceof MethodReflection) {
-			foreach ($this->parameterOutTypeExtensionProvider->getDynamicStaticMethodParameterOutTypeExtensions() as $staticMethodParameterOutTypeExtension) {
+			foreach ($this->parameterOutTypeExtensionProvider->getStaticMethodParameterOutTypeExtensions() as $staticMethodParameterOutTypeExtension) {
 				if (!$staticMethodParameterOutTypeExtension->isStaticMethodSupported($calleeReflection, $currentParameter)) {
 					continue;
 				}

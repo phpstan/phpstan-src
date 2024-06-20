@@ -32,7 +32,7 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
-		return in_array(strtolower($functionReflection->getName()), ['preg_match'], true);
+		return in_array(strtolower($functionReflection->getName()), ['preg_match'], true) && $context->true();
 	}
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
@@ -54,8 +54,7 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			$flagsType = $scope->getType($flagsArg->value);
 		}
 
-		$wasMatched = TrinaryLogic::createFromBoolean($context->true());
-		$matchedType = $this->regexShapeMatcher->matchType($patternType, $flagsType, $wasMatched);
+		$matchedType = $this->regexShapeMatcher->matchType($patternType, $flagsType, TrinaryLogic::createYes());
 		if ($matchedType === null) {
 			return new SpecifiedTypes();
 		}

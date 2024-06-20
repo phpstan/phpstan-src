@@ -291,7 +291,7 @@ function fooMatch(string $input): void {
 	assertType('list<array<string>>', $matches);
 
 	preg_match('/@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}(?!\w)/', $input, $matches, PREG_UNMATCHED_AS_NULL);
-	assertType("array<string|null>", $matches);
+	assertType("array{0?: string}", $matches);
 }
 
 function fooParams(ExtendsFooBar $subX, float $x1, float $y1)
@@ -318,7 +318,7 @@ function fooDateTime(\SplFileObject $splFileObject, ?string $wouldBlock) {
 
 function testMatch() {
 	preg_match('#.*#', 'foo', $matches);
-	assertType('array<string>', $matches);
+	assertType('array{0?: string}', $matches);
 }
 
 function testParseStr() {

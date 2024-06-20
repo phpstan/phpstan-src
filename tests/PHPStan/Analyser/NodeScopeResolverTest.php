@@ -179,26 +179,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-9542.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Functions/data/bug-9803.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/PhpDoc/data/bug-10594.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/set-type-type-specifying.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/mysqli_fetch_object.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10468.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6613.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10187.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10834.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10952.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10952b.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/case-insensitive-parent.php');
-
-		if (PHP_VERSION_ID < 70400) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/preg_match_shapes_php73.php');
-		} else {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/preg_match_shapes.php');
-		}
-		if (PHP_VERSION_ID >= 80200) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/preg_match_shapes_php82.php');
-		}
-
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-10893.php');
 	}
 
 	/**

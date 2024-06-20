@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.2
 
 namespace PregMatchShapesPhp82;
 

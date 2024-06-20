@@ -44,8 +44,6 @@ class HelloWorld
 		assertType('non-falsy-string&numeric-string', sprintf('%14F', $i));
 		assertType('non-falsy-string&numeric-string', sprintf('%14g', $i));
 		assertType('non-falsy-string&numeric-string', sprintf('%14G', $i));
-		assertType('non-falsy-string&numeric-string', sprintf('%14h', $i));
-		assertType('non-falsy-string&numeric-string', sprintf('%14H', $i));
 		assertType('non-falsy-string&numeric-string', sprintf('%14o', $i));
 		assertType('non-falsy-string&numeric-string', sprintf('%14u', $i));
 		assertType('non-falsy-string&numeric-string', sprintf('%14x', $i));

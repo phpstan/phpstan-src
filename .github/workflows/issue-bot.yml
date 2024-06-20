@@ -163,7 +163,7 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "$(./console.php evaluate)" >> $GITHUB_STEP_SUMMARY
+        run: ./console.php evaluate >> $GITHUB_STEP_SUMMARY
 
       - name: "Evaluate results - push"
         working-directory: "issue-bot"
@@ -172,4 +172,4 @@ jobs:
           GITHUB_PAT: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           PHPSTAN_SRC_COMMIT_BEFORE: ${{ github.event.before }}
           PHPSTAN_SRC_COMMIT_AFTER: ${{ github.event.after }}
-        run: echo "$(./console.php evaluate --post-comments)" >> $GITHUB_STEP_SUMMARY
+        run: ./console.php evaluate --post-comments >> $GITHUB_STEP_SUMMARY

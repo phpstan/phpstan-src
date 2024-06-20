@@ -10,6 +10,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -62,6 +63,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
 			self::getClassReflectionExtensionRegistryProvider(),
+			self::getContainer()->getByType(ParameterOutTypeExtensionProvider::class),
 			self::getParser(),
 			self::getContainer()->getByType(FileTypeMapper::class),
 			self::getContainer()->getByType(StubPhpDocProvider::class),

@@ -1,0 +1,13 @@
+services:
+	-
+		class: PHPStan\Tests\ParamOutFunctionExtension
+		tags:
+			- phpstan.functionParameterOutTypeExtension
+	-
+		class: PHPStan\Tests\ParamOutMethodExtension
+		tags:
+			- phpstan.methodParameterOutTypeExtension
+	-
+		class: PHPStan\Tests\ParamOutStaticMethodExtension
+		tags:
+			- phpstan.staticMethodParameterOutTypeExtension

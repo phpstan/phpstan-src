@@ -8,17 +8,20 @@ class HelloWorld
 {
 	public function inputTypes(int $i, float $f, string $s) {
 		// https://3v4l.org/iXaDX
-		assertType('non-empty-string&numeric-string', sprintf('%.14F', $i));
-		assertType('non-empty-string&numeric-string', sprintf('%.14F', $f));
-		assertType('numeric-string', sprintf('%.14F', $s));
+		assertType('non-falsy-string&numeric-string', sprintf('%.14F', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%.14F', $f));
+		assertType('non-falsy-string&numeric-string', sprintf('%.14F', $s));
 
-		assertType('non-empty-string&numeric-string', sprintf('%1.14F', $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%1.14F', $i));
 		assertType('non-falsy-string&numeric-string', sprintf('%2.14F', $f));
 		assertType('non-falsy-string&numeric-string', sprintf('%3.14F', $s));
 
 		assertType('non-falsy-string&numeric-string', sprintf('%14F', $i));
 		assertType('non-falsy-string&numeric-string', sprintf('%14F', $f));
 		assertType('non-falsy-string&numeric-string', sprintf('%14F', $s));
+
+		assertType('string', sprintf('%s%s', $s, $s));
+		assertType('non-falsy-string', sprintf('{^/?%s(/\*?)?$}', preg_quote($s)));
 	}
 
 	public function specifiers(int $i) {
@@ -49,11 +52,11 @@ class HelloWorld
 		// https://3v4l.org/vVL0c
 		assertType('non-falsy-string', sprintf('%2$14s', $mixed, $i));
 
-		assertType('non-empty-string&numeric-string', sprintf('%2$.14F', $mixed, $i));
-		assertType('non-empty-string&numeric-string', sprintf('%2$.14F', $mixed, $f));
-		assertType('numeric-string', sprintf('%2$.14F', $mixed, $s));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$.14F', $mixed, $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$.14F', $mixed, $f));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$.14F', $mixed, $s));
 
-		assertType('non-empty-string&numeric-string', sprintf('%2$1.14F', $mixed, $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$1.14F', $mixed, $i));
 		assertType('non-falsy-string&numeric-string', sprintf('%2$2.14F', $mixed, $f));
 		assertType('non-falsy-string&numeric-string', sprintf('%2$3.14F', $mixed, $s));
 
@@ -71,7 +74,7 @@ class HelloWorld
 
 	public function escapedPercent(int $i) {
 		// https://3v4l.org/2m50L
-		assertType('non-empty-string', sprintf("%%d", $i)); // could be non-falsey-string
+		assertType('non-falsy-string', sprintf("%%d", $i));
 	}
 
 	public function vsprintf(array $array)
@@ -104,6 +107,11 @@ class HelloWorld
 		} else {
 			assertType("''", sprintf('%s', $bool));
 		}
+
+		assertType('non-falsy-string', sprintf('ABC%s', $bool));
+		assertType('non-falsy-string', sprintf('%sABC', $bool));
+		assertType('non-falsy-string', sprintf('ABC%sABC', $bool));
+
 		assertType('non-empty-string', sprintf('%s', $int));
 		assertType('non-falsy-string', sprintf('%s', $positiveInt));
 		assertType('non-empty-string', sprintf('%s', $float));

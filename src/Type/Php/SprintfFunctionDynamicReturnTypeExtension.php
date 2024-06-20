@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use ArgumentCountError;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\CombinationsHelper;
@@ -11,6 +12,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
@@ -30,6 +32,8 @@ use function vsprintf;
 
 class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	private const MAX_INTERPOLATION_RETRIES = 10;
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -69,8 +73,17 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$isNonFalsy = false;
 		$isNumeric = false;
 		foreach ($formatStrings as $constantString) {
+			$constantParts = $this->getFormatConstantParts($constantString->getValue());
+			if ($constantParts !== null) {
+				if ($constantParts->isNonFalsyString()->yes()) {
+					$isNonFalsy = true;
+				} elseif ($constantParts->isNonEmptyString()->yes()) {
+					$isNonEmpty = true;
+				}
+			}
+
 			// The printf format is %[argnum$][flags][width][.precision]specifier.
-			if (preg_match('/^(?<!%)%(?P<argnum>[0-9]*\$)?(?P<width>[0-9])*\.?[0-9]*(?P<flags>[a-zA-Z])$/', $constantString->getValue(), $matches) !== 1) {
+			if (preg_match('/^(?<!%)%(?P<argnum>[0-9]*\$)?[0-9]*\.?[0-9]*(?P<specifier>[a-zA-Z])$/', $constantString->getValue(), $matches) !== 1) {
 				continue;
 			}
 
@@ -79,15 +92,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 				return null;
 			}
 
-			if (array_key_exists('width', $matches)) {
-				if ($matches['width'] > 1) {
-					$isNonFalsy = true;
-				} elseif ($matches['width'] > 0) {
-					$isNonEmpty = true;
-				}
-			}
-
-			if (array_key_exists('flags', $matches) && str_contains('bdeEfFgGhHouxX', $matches['flags'])) {
+			if (array_key_exists('specifier', $matches) && str_contains('bdeEfFgGhHouxX', $matches['specifier'])) {
 				$isNumeric = true;
 				break;
 			}
@@ -134,6 +139,31 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		return $this->getConstantType($argTypes, $returnType, $functionReflection, $scope);
 	}
 
+	private function getFormatConstantParts(string $format): ?ConstantStringType
+	{
+		$dummyValues = [];
+		for ($i = 0; $i < self::MAX_INTERPOLATION_RETRIES; $i++) {
+			$dummyValues[] = '';
+
+			try {
+				$formatted = @sprintf($format, ...$dummyValues);
+				if ($formatted === false) {
+					continue;
+				}
+				return new ConstantStringType($formatted);
+			} catch (ArgumentCountError) {
+				continue;
+			} catch (Throwable) {
+				return null;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param Type[] $argTypes
+	 */
 	private function getConstantType(array $argTypes, Type $fallbackReturnType, FunctionReflection $functionReflection, Scope $scope): Type
 	{
 		$values = [];

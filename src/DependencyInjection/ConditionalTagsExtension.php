@@ -9,6 +9,8 @@ use PHPStan\Analyser\TypeSpecifierFactory;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\Collectors\RegistryFactory as CollectorRegistryFactory;
 use PHPStan\DependencyInjection\Type\LazyDynamicThrowTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\LazyParameterClosureTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\LazyParameterOutTypeExtensionProvider;
 use PHPStan\Parser\RichParser;
 use PHPStan\PhpDoc\StubFilesExtension;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
@@ -49,6 +51,12 @@ class ConditionalTagsExtension extends CompilerExtension
 			LazyDynamicThrowTypeExtensionProvider::FUNCTION_TAG => $bool,
 			LazyDynamicThrowTypeExtensionProvider::METHOD_TAG => $bool,
 			LazyDynamicThrowTypeExtensionProvider::STATIC_METHOD_TAG => $bool,
+			LazyParameterClosureTypeExtensionProvider::FUNCTION_TAG => $bool,
+			LazyParameterClosureTypeExtensionProvider::METHOD_TAG => $bool,
+			LazyParameterClosureTypeExtensionProvider::STATIC_METHOD_TAG => $bool,
+			LazyParameterOutTypeExtensionProvider::FUNCTION_TAG => $bool,
+			LazyParameterOutTypeExtensionProvider::METHOD_TAG => $bool,
+			LazyParameterOutTypeExtensionProvider::STATIC_METHOD_TAG => $bool,
 		])->min(1));
 	}
 

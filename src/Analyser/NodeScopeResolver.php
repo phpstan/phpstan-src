@@ -4550,7 +4550,7 @@ class NodeScopeResolver
 				$argValue = $arg->value;
 				if ($argValue instanceof Variable && is_string($argValue->name)) {
 					if ($argValue->name !== 'this') {
-						$paramOutType = $this->getParameterOutExtensionsTypes($callLike, $calleeReflection, $currentParameter, $scope);
+						$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);
 						if ($paramOutType !== null) {
 							$byRefType = $paramOutType;
 						}
@@ -4625,7 +4625,7 @@ class NodeScopeResolver
 	/**
 	 * @param MethodReflection|FunctionReflection|null $calleeReflection
 	 */
-	public function getParameterOutExtensionsTypes(CallLike $callLike, $calleeReflection, ParameterReflection $currentParameter, MutatingScope $scope): ?Type
+	private function getParameterOutExtensionsType(CallLike $callLike, $calleeReflection, ParameterReflection $currentParameter, MutatingScope $scope): ?Type
 	{
 		$paramOutTypes = [];
 		if ($callLike instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {

@@ -285,6 +285,10 @@ conditionalTags:
 		phpstan.parser.richParserNodeVisitor: %featureToggles.curlSetOptTypes%
 	PHPStan\Parser\TypeTraverserInstanceofVisitor:
 		phpstan.parser.richParserNodeVisitor: %featureToggles.instanceofType%
+	PHPStan\Type\Php\PregMatchTypeSpecifyingExtension:
+		phpstan.typeSpecifier.functionTypeSpecifyingExtension: %featureToggles.narrowPregMatches%
+	PHPStan\Type\Php\PregMatchParameterOutTypeExtension:
+		phpstan.functionParameterOutTypeExtension: %featureToggles.narrowPregMatches%
 
 services:
 	-
@@ -1468,17 +1472,9 @@ services:
 
 	-
 		class: PHPStan\Type\Php\PregMatchTypeSpecifyingExtension
-		arguments:
-			disabled: %featureToggles.narrowPregMatches%
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
 		class: PHPStan\Type\Php\PregMatchParameterOutTypeExtension
-		arguments:
-			disabled: %featureToggles.narrowPregMatches%
-		tags:
-			- phpstan.functionParameterOutTypeExtension
 
 	-
 		class: PHPStan\Type\Php\RegexArrayShapeMatcher

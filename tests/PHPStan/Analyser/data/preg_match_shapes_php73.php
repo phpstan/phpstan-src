@@ -10,5 +10,5 @@ function doUnmatchedAsNull(string $s): void {
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array<string|null>', $matches);
+	assertType('array<string|null>', $matches);
 }

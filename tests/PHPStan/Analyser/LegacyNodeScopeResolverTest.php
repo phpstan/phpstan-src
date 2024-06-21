@@ -361,7 +361,13 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches4',
 				TrinaryLogic::createMaybe(),
-				PHP_VERSION_ID <= 80000 ? 'array<string>' : 'array{}|array{string}',
+				PHP_VERSION_ID <= 80000 ?
+					(
+						PHP_VERSION_ID < 70400 ?
+							'array<string>' :
+							'array{}|array{string}'
+					)
+					: 'array{}|array{string}',
 			],
 			[
 				$testScope,

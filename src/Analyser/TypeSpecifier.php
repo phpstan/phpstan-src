@@ -1989,6 +1989,22 @@ class TypeSpecifier
 			$unwrappedRightExpr = $rightExpr->getExpr();
 		}
 		$rightType = $scope->getType($rightExpr);
+
+		if (
+			$context->true()
+			&& $unwrappedLeftExpr instanceof FuncCall
+			&& $unwrappedLeftExpr->name instanceof Name
+			&& $unwrappedLeftExpr->name->toLowerString() === 'preg_match'
+			&& (new ConstantIntegerType(1))->isSuperTypeOf($rightType)->yes()
+		) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				$leftExpr,
+				$context,
+				$rootExpr,
+			);
+		}
+
 		if (
 			$context->true()
 			&& $unwrappedLeftExpr instanceof FuncCall

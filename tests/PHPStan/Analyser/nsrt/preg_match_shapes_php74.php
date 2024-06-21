@@ -164,3 +164,34 @@ function testHoaUnsupportedRegexSyntax(string $s): void {
 	}
 	assertType('array{}|array{string}', $matches);
 }
+
+function testPregMatchSimpleCondition(string $value): void {
+	if (preg_match('/%env\((.*)\:.*\)%/U', $value, $matches)) {
+		assertType('array{string, string}', $matches);
+	}
+}
+
+
+function testPregMatchIdenticalToOne(string $value): void {
+	if (preg_match('/%env\((.*)\:.*\)%/U', $value, $matches) === 1) {
+		assertType('array{string, string}', $matches);
+	}
+}
+
+function testPregMatchIdenticalToOneFalseyContext(string $value): void {
+	if (!(preg_match('/%env\((.*)\:.*\)%/U', $value, $matches) !== 1)) {
+		assertType('array{string, string}', $matches);
+	}
+}
+
+function testPregMatchIdenticalToOneInverted(string $value): void {
+	if (1 === preg_match('/%env\((.*)\:.*\)%/U', $value, $matches)) {
+		assertType('array{string, string}', $matches);
+	}
+}
+
+function testPregMatchIdenticalToOneFalseyContextInverted(string $value): void {
+	if (!(1 !== preg_match('/%env\((.*)\:.*\)%/U', $value, $matches))) {
+		assertType('array{string, string}', $matches);
+	}
+}

@@ -15,3 +15,8 @@ function fooMatch(string $input): void {
 	assertType("array{0?: string}", $matches);
 }
 
+function testMatch() {
+	preg_match('#.*#', 'foo', $matches);
+	assertType('array{0?: string}', $matches);
+}
+

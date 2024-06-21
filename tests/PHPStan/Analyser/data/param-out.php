@@ -305,11 +305,6 @@ function fooDateTime(\SplFileObject $splFileObject, ?string $wouldBlock) {
 	assertType('string', $wouldBlock);
 }
 
-function testMatch() {
-	preg_match('#.*#', 'foo', $matches);
-	assertType('array{0?: string}', $matches);
-}
-
 function testParseStr() {
 	$str="first=value&arr[]=foo+bar&arr[]=baz";
 	parse_str($str, $output);

@@ -12,6 +12,12 @@ function fooMatch(string $input): void {
 	assertType('list<array<string>>', $matches);
 
 	preg_match('/@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}(?!\w)/', $input, $matches, PREG_UNMATCHED_AS_NULL);
-	assertType("array{0?: string}", $matches);
+	assertType("array<string|null>", $matches);
 }
+
+function testMatch() {
+	preg_match('#.*#', 'foo', $matches);
+	assertType('array<string>', $matches);
+}
+
 

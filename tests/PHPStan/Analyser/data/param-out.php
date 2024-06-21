@@ -283,17 +283,6 @@ function fooScanf(): void
 	assertType('float|int|string|null', $p2);
 }
 
-function fooMatch(string $input): void {
-	preg_match_all('/@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}(?!\w)/', $input, $matches, PREG_PATTERN_ORDER);
-	assertType('array<list<string>>', $matches);
-
-	preg_match_all('/@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}(?!\w)/', $input, $matches, PREG_SET_ORDER);
-	assertType('list<array<string>>', $matches);
-
-	preg_match('/@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}(?!\w)/', $input, $matches, PREG_UNMATCHED_AS_NULL);
-	assertType("array<string|null>", $matches);
-}
-
 function fooParams(ExtendsFooBar $subX, float $x1, float $y1)
 {
 	$subX->renamedParams($x1, $y1);
@@ -314,11 +303,6 @@ function fooDateTime(\SplFileObject $splFileObject, ?string $wouldBlock) {
 	$splFileObject->flock(1, $wouldBlock);
 
 	assertType('string', $wouldBlock);
-}
-
-function testMatch() {
-	preg_match('#.*#', 'foo', $matches);
-	assertType('array<string>', $matches);
 }
 
 function testParseStr() {

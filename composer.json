@@ -82,6 +82,9 @@
 			"composer/ca-bundle": [
 				"patches/cloudflare-ca.patch"
 			],
+			"hoa/regex": [
+				"patches/Grammar.patch"
+			],
 			"hoa/iterator": [
 				"patches/Buffer.patch",
 				"patches/Lookahead.patch"

@@ -1,0 +1,37 @@
+--- Grammar.pp  2024-05-18 12:15:53
++++ Grammar.pp.fix      2024-05-18 12:15:05
+@@ -109,7 +109,7 @@
+ // Please, see PCRESYNTAX(3), General Category properties, PCRE special category
+ // properties and script names for \p{} and \P{}.
+ %token character_type            \\([CdDhHNRsSvVwWX]|[pP]{[^}]+})
+-%token anchor                    \\(bBAZzG)|\^|\$
++%token anchor                    \\([bBAZzG])|\^|\$
+ %token match_point_reset         \\K
+ %token literal                   \\.|.
+
+@@ -168,7 +168,7 @@
+         ::negative_class_:: #negativeclass
+       | ::class_::
+     )
+-    ( range() | literal() )+
++    ( <class_> | range() | literal() )+
+     ::_class::
+
+ #range:
+@@ -178,7 +178,7 @@
+     capturing()
+   | literal()
+
+-capturing:
++#capturing:
+     ::comment_:: <comment>? ::_comment:: #comment
+   | (
+         ::named_capturing_:: <capturing_name> ::_named_capturing:: #namedcapturing
+@@ -191,6 +191,7 @@
+
+ literal:
+     <character>
++  | <range>
+   | <dynamic_character>
+   | <character_type>
+   | <anchor>

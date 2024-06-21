@@ -195,3 +195,27 @@ function testPregMatchIdenticalToOneFalseyContextInverted(string $value): void {
 		assertType('array{string, string}', $matches);
 	}
 }
+
+function testPregMatchEqualToOne(string $value): void {
+	if (preg_match('/%env\((.*)\:.*\)%/U', $value, $matches) == 1) {
+		assertType('array{string, string}', $matches);
+	}
+}
+
+function testPregMatchEqualToOneFalseyContext(string $value): void {
+	if (!(preg_match('/%env\((.*)\:.*\)%/U', $value, $matches) != 1)) {
+		assertType('array{string, string}', $matches);
+	}
+}
+
+function testPregMatchEqualToOneInverted(string $value): void {
+	if (1 == preg_match('/%env\((.*)\:.*\)%/U', $value, $matches)) {
+		assertType('array{string, string}', $matches);
+	}
+}
+
+function testPregMatchEqualToOneFalseyContextInverted(string $value): void {
+	if (!(1 != preg_match('/%env\((.*)\:.*\)%/U', $value, $matches))) {
+		assertType('array{string, string}', $matches);
+	}
+}

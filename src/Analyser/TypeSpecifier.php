@@ -1901,6 +1901,16 @@ class TypeSpecifier
 			) {
 				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 			}
+
+			if (
+				$context->true()
+				&& $exprNode instanceof FuncCall
+				&& $exprNode->name instanceof Name
+				&& $exprNode->name->toLowerString() === 'preg_match'
+				&& (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()
+			) {
+				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
+			}
 		}
 
 		$leftType = $scope->getType($expr->left);

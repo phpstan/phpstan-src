@@ -155,6 +155,19 @@ return [
 	'DateTimeImmutable::getTimestamp' => ['hasSideEffects' => false],
 	'DateTimeImmutable::getTimezone' => ['hasSideEffects' => false],
 
+	'SplFileObject::fflush' => ['hasSideEffects' => true],
+	'SplFileObject::fgetc' => ['hasSideEffects' => true],
+	'SplFileObject::fgetcsv' => ['hasSideEffects' => true],
+	'SplFileObject::fgets' => ['hasSideEffects' => true],
+	'SplFileObject::fgetss' => ['hasSideEffects' => true],
+	'SplFileObject::fpassthru' => ['hasSideEffects' => true],
+	'SplFileObject::fputcsv' => ['hasSideEffects' => true],
+	'SplFileObject::fread' => ['hasSideEffects' => true],
+	'SplFileObject::fscanf' => ['hasSideEffects' => true],
+	'SplFileObject::fseek' => ['hasSideEffects' => true],
+	'SplFileObject::ftruncate' => ['hasSideEffects' => true],
+	'SplFileObject::fwrite' => ['hasSideEffects' => true],
+
 	'XmlReader::next' => ['hasSideEffects' => true],
 	'XmlReader::read' => ['hasSideEffects' => true],
 ];

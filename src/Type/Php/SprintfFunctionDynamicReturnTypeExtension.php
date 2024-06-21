@@ -55,7 +55,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			foreach ($formatType->getConstantStrings() as $constantString) {
 				// The printf format is %[argnum$][flags][width][.precision]
 				if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1) {
-					if (array_key_exists(1, $matches) && ($matches[1] !== '')) {
+					if ($matches[1] !== '') {
 						// invalid positional argument
 						if ($matches[1] === '0$') {
 							return null;

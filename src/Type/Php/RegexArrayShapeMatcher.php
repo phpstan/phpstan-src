@@ -11,6 +11,7 @@ use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -44,6 +45,10 @@ final class RegexArrayShapeMatcher
 
 	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
 	{
+		if ($wasMatched->no()) {
+			return new ConstantArrayType([], []);
+		}
+
 		if (
 			!$this->phpVersion->returnsPregUnmatchedCapturingGroups()
 		) {

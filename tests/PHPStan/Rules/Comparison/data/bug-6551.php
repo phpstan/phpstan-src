@@ -46,7 +46,7 @@ function (): void {
 
 	foreach ($data as $key => $value) {
 		$match = [];
-		assertType('bool', preg_match('/^c(\d+)$/', $key, $match) || empty($match));
+		assertType('true', preg_match('/^c(\d+)$/', $key, $match) || empty($match));
 	}
 };
 
@@ -58,6 +58,6 @@ function (): void {
 	];
 
 	foreach ($data as $key => $value) {
-		assertType('bool', preg_match('/^c(\d+)$/', $key, $match) || empty($match));
+		assertType('true', preg_match('/^c(\d+)$/', $key, $match) || empty($match));
 	}
 };

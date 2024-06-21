@@ -302,7 +302,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches',
 				TrinaryLogic::createYes(),
-				'array{0?: string}',
+				PHP_VERSION_ID <= 80000 ? 'array<string>' : 'array{0?: string}',
 			],
 			[
 				$testScope,
@@ -343,7 +343,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches2',
 				TrinaryLogic::createMaybe(),
-				'array{0?: string}',
+				PHP_VERSION_ID <= 80000 ? 'array<string>' : 'array{0?: string}',
 			],
 			[
 				$testScope,
@@ -355,13 +355,13 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches3',
 				TrinaryLogic::createYes(),
-				'array{0?: string}',
+				PHP_VERSION_ID <= 80000 ? 'array<string>' : 'array{0?: string}',
 			],
 			[
 				$testScope,
 				'matches4',
 				TrinaryLogic::createMaybe(),
-				'array{}|array{string}',
+				PHP_VERSION_ID <= 80000 ? 'array<string>' : 'array{}|array{string}',
 			],
 			[
 				$testScope,
@@ -415,7 +415,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'ternaryMatches',
 				TrinaryLogic::createYes(),
-				'array{0?: string}',
+				PHP_VERSION_ID <= 80000 ? 'array<string>' : 'array{0?: string}',
 			],
 			[
 				$testScope,

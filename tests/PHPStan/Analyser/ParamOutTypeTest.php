@@ -3,12 +3,19 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use const PHP_VERSION_ID;
 
 class ParamOutTypeTest extends TypeInferenceTestCase
 {
 
 	public function dataFileAsserts(): iterable
 	{
+		if (PHP_VERSION_ID < 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/param-out-php7.php');
+		}
+		if (PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/param-out-php8.php');
+		}
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/param-out.php');
 	}
 

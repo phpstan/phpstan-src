@@ -18,12 +18,14 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use Symfony\Component\Finder\Finder;
+use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function count;
@@ -302,6 +304,9 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			@fclose($f);
 
 			if (preg_match('~<?php\\s*\\/\\/\s*lint\s*([^\d\s]+)\s*([^\s]+)\s*~i', $firstLine, $m) === 1) {
+				if (!array_key_exists(1, $m) || !array_key_exists(2, $m)) {
+					throw new ShouldNotHappenException();
+				}
 				return version_compare(PHP_VERSION, $m[2], $m[1]) === false;
 			}
 		}

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use Composer\Pcre\Preg;
 use Countable;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -1911,6 +1912,18 @@ class TypeSpecifier
 			) {
 				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 			}
+
+			if (
+				$context->true()
+				&& $exprNode instanceof StaticCall
+				&& $exprNode->class instanceof Name
+				&& $exprNode->class->toString() === Preg::class
+				&& $exprNode->name instanceof Node\Identifier
+				&& $exprNode->name->toLowerString() === 'match'
+				&& (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()
+			) {
+				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
+			}
 		}
 
 		$leftType = $scope->getType($expr->left);
@@ -2005,6 +2018,23 @@ class TypeSpecifier
 			&& $unwrappedLeftExpr instanceof FuncCall
 			&& $unwrappedLeftExpr->name instanceof Name
 			&& $unwrappedLeftExpr->name->toLowerString() === 'preg_match'
+			&& (new ConstantIntegerType(1))->isSuperTypeOf($rightType)->yes()
+		) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				$leftExpr,
+				$context,
+				$rootExpr,
+			);
+		}
+
+		if (
+			$context->true()
+			&& $unwrappedLeftExpr instanceof StaticCall
+			&& $unwrappedLeftExpr->class instanceof Name
+			&& $unwrappedLeftExpr->class->toString() === Preg::class
+			&& $unwrappedLeftExpr->name instanceof Node\Identifier
+			&& $unwrappedLeftExpr->name->toLowerString() === 'match'
 			&& (new ConstantIntegerType(1))->isSuperTypeOf($rightType)->yes()
 		) {
 			return $this->specifyTypesInCondition(

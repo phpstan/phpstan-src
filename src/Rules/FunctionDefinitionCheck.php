@@ -183,7 +183,7 @@ class FunctionDefinitionCheck
 		) {
 			$errors[] = RuleErrorBuilder::message($unionTypesMessage)
 				->line($returnTypeNode->getStartLine())
-				->identifier('reeturn.unionTypeNotSupported')
+				->identifier('return.unionTypeNotSupported')
 				->nonIgnorable()
 				->build();
 		}

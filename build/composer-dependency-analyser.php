@@ -37,4 +37,5 @@ return $config
 	->ignoreUnknownClasses([
 		'JetBrains\PhpStorm\Pure', // not present on composer's classmap
 		'PHPStan\ExtensionInstaller\GeneratedConfig', // generated
+		'Composer\Pcre\Preg', // reverse dependency on composer/pcre
 	]);

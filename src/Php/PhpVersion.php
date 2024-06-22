@@ -292,6 +292,7 @@ class PhpVersion
 	{
 		// When PREG_UNMATCHED_AS_NULL mode is used, trailing unmatched capturing groups will now also be set to null (or [null, -1] if offset capture is enabled).
 		// This means that the size of the $matches will always be the same.
+		// https://3v4l.org/dYdoO#v7.2.0
 		return $this->versionId >= 70400;
 	}
 

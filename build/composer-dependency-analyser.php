@@ -33,9 +33,9 @@ return $config
 	)
 	->ignoreErrorsOnPackage('phpunit/phpunit', [ErrorType::DEV_DEPENDENCY_IN_PROD]) // prepared test tooling
 	->ignoreErrorsOnPackage('jetbrains/phpstorm-stubs', [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV]) // there is no direct usage, but we need newer version then required by ondrejmirtes/BetterReflection
+	->ignoreErrorsOnPackage('composer/pcre', [ErrorType::SHADOW_DEPENDENCY]) // reverse dependency on composer/pcre to support https://github.com/composer/pcre/pull/24
 	->ignoreErrorsOnPath(__DIR__ . '/../tests', [ErrorType::UNKNOWN_CLASS, ErrorType::UNKNOWN_FUNCTION]) // to be able to test invalid symbols
 	->ignoreUnknownClasses([
 		'JetBrains\PhpStorm\Pure', // not present on composer's classmap
 		'PHPStan\ExtensionInstaller\GeneratedConfig', // generated
-		'Composer\Pcre\Preg', // reverse dependency on composer/pcre
 	]);

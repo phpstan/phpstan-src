@@ -92,7 +92,7 @@ class StubValidator
 
 		$originalBroker = Broker::getInstance();
 		$originalReflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-		$originalPhpVerison = PhpVersionStaticAccessor::getInstance();
+		$originalPhpVersion = PhpVersionStaticAccessor::getInstance();
 		$container = $this->derivativeContainerFactory->create([
 			__DIR__ . '/../../conf/config.stubValidator.neon',
 		]);
@@ -141,7 +141,7 @@ class StubValidator
 
 		Broker::registerInstance($originalBroker);
 		ReflectionProviderStaticAccessor::registerInstance($originalReflectionProvider);
-		PhpVersionStaticAccessor::registerInstance($originalPhpVerison);
+		PhpVersionStaticAccessor::registerInstance($originalPhpVersion);
 		ObjectType::resetCaches();
 
 		return $errors;

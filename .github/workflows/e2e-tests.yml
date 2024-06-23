@@ -234,7 +234,7 @@ jobs:
         run: "patch src/Analyser/Error.php < e2e/PHPStanErrorPatch.patch"
 
       - name: "Install bashunit"
-        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ beta"
+        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ 0.13.0"
 
       - name: "Test"
         run: "${{ matrix.script }}"

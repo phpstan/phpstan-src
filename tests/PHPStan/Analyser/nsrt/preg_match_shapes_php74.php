@@ -219,3 +219,16 @@ function testPregMatchEqualToOneFalseyContextInverted(string $value): void {
 		assertType('array{string, string}', $matches);
 	}
 }
+
+function testUnionPattern(string $s): void
+{
+	if (rand(0,1)) {
+		$pattern = '/Price: (\d+)/i';
+	} else {
+		$pattern = '/Price: (\d+)(\d+)(\d+)/';
+	}
+	if (preg_match($pattern, $s, $matches)) {
+		assertType('array{string, string, string, string}|array{string, string}', $matches);
+	}
+	assertType('array{}|array{string, string, string, string}|array{string, string}', $matches);
+}

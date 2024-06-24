@@ -459,7 +459,7 @@ class AnalyseCommand extends Command
 
 			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
 
-			$errorOutput->writeLineFormatted('⚠️  Result is incomplete because of internal errors. ⚠️');
+			$errorOutput->writeLineFormatted('⚠️  Result is incomplete because of severe errors. ⚠️');
 			$errorOutput->writeLineFormatted('   Fix these errors first and then re-run PHPStan');
 			$errorOutput->writeLineFormatted('   to get all reported errors.');
 			$errorOutput->writeLineFormatted('');

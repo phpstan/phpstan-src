@@ -7,7 +7,6 @@ use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\Exception\Exception;
 use Hoa\File\Read;
-use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -33,22 +32,10 @@ final class RegexArrayShapeMatcher
 
 	private static ?Parser $parser = null;
 
-	public function __construct(
-		private PhpVersion $phpVersion,
-	)
-	{
-	}
-
 	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
 	{
 		if ($wasMatched->no()) {
 			return new ConstantArrayType([], []);
-		}
-
-		if (
-			!$this->phpVersion->returnsPregUnmatchedCapturingGroups()
-		) {
-			return null;
 		}
 
 		$constantStrings = $patternType->getConstantStrings();

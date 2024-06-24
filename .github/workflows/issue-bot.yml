@@ -100,7 +100,7 @@ jobs:
         working-directory: "issue-bot"
         run: "composer install --no-interaction --no-progress"
 
-      - uses: Wandalen/wretry.action@v3.4.0
+      - uses: Wandalen/wretry.action@v3.5.0
         with:
           action: actions/download-artifact@v4
           with: |

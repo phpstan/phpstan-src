@@ -73,7 +73,7 @@ jobs:
           - "8.3"
 
     steps:
-      - uses: Wandalen/wretry.action@v3.4.0
+      - uses: Wandalen/wretry.action@v3.5.0
         with:
           action: actions/download-artifact@v4
           with: |

@@ -1,0 +1,11 @@
+--- Exception/Exception.php	2024-06-24 15:17:26
++++ Exception/Exception.php	2024-06-24 15:17:51
+@@ -37,7 +37,7 @@
+ namespace Hoa\Compiler\Exception;
+
+ use Hoa\Consistency;
+-use Hoa\Exception as HoaException;
++use Hoa\Exception\Exception as HoaException;
+
+ /**
+  * Class \Hoa\Compiler\Exception.

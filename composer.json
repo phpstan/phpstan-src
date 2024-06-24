@@ -90,6 +90,7 @@
 				"patches/Lookahead.patch"
 			],
 			"hoa/compiler": [
+				"patches/HoaException.patch",
 				"patches/Rule.patch"
 			],
 			"hoa/consistency": [

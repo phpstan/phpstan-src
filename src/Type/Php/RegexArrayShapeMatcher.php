@@ -2,10 +2,10 @@
 
 namespace PHPStan\Type\Php;
 
-use Hoa\Compiler\Exception\Exception;
 use Hoa\Compiler\Llk\Llk;
 use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
+use Hoa\Exception\Exception;
 use Hoa\File\Read;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
@@ -189,7 +189,7 @@ final class RegexArrayShapeMatcher
 
 		try {
 			$ast = self::$parser->parse($regex);
-		} catch ( Exception) { // @phpstan-ignore catch.notThrowable
+		} catch (Exception) {
 			return null;
 		}
 

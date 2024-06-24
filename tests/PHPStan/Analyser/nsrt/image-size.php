@@ -14,8 +14,8 @@ function imageFoo(): void
 
 	list($width, $height, $type, $attr) = $imagesize;
 
-	assertType('int<0, max>', $width);
-	assertType('int<0, max>', $height);
+	assertType('int<1, max>', $width);
+	assertType('int<1, max>', $height);
 	assertType('int', $type);
 	assertType('string', $attr);
 	assertType('string', $imagesize['mime']);
@@ -31,8 +31,8 @@ function imagesizeFoo(string $s): void
 	}
 	list($width, $height, $type, $attr) = $imagesize;
 
-	assertType('int<0, max>', $width);
-	assertType('int<0, max>', $height);
+	assertType('int<1, max>', $width);
+	assertType('int<1, max>', $height);
 	assertType('int', $type);
 	assertType('string', $attr);
 	assertType('string', $imagesize['mime']);

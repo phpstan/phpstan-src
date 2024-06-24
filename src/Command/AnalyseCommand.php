@@ -362,7 +362,9 @@ class AnalyseCommand extends Command
 			}
 
 			if (!$hasStackTrace) {
-				$internalFileSpecificErrors[] = $fileSpecificError;
+				if (!array_key_exists($fileSpecificError->getMessage(), $internalFileSpecificErrors)) {
+					$internalFileSpecificErrors[$fileSpecificError->getMessage()] = $fileSpecificError;
+				}
 			}
 
 			$internalErrorsTuples[$fileSpecificError->getMessage()] = [new InternalError(
@@ -442,7 +444,7 @@ class AnalyseCommand extends Command
 
 		if (count($internalErrorsTuples) > 0) {
 			$analysisResult = new AnalysisResult(
-				$internalFileSpecificErrors,
+				array_values($internalFileSpecificErrors),
 				array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $internalErrors),
 				[],
 				[],

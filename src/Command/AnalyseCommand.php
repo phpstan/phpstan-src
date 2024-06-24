@@ -330,45 +330,62 @@ class AnalyseCommand extends Command
 			throw $t;
 		}
 
-		$internalErrors = [];
+		/**
+		 * Variable $internalErrorsTuples contains both "internal errors"
+		 * and "errors with non-ignorable exception" as InternalError objects.
+		 */
+		$internalErrorsTuples = [];
 		$internalFileSpecificErrors = [];
 		foreach ($analysisResult->getInternalErrorObjects() as $internalError) {
-			$internalErrors[$internalError->getMessage()] = new InternalError(
+			$internalErrorsTuples[$internalError->getMessage()] = [new InternalError(
 				$internalError->getTraceAsString() !== null ? sprintf('Internal error: %s', $internalError->getMessage()) : $internalError->getMessage(),
 				$internalError->getContextDescription(),
 				$internalError->getTrace(),
 				$internalError->getTraceAsString(),
 				$internalError->shouldReportBug(),
-			);
+			), false];
 		}
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			if (!$fileSpecificError->hasNonIgnorableException()) {
 				continue;
 			}
 
-			$internalFileSpecificErrors[] = $fileSpecificError;
-
 			$message = $fileSpecificError->getMessage();
 			$metadata = $fileSpecificError->getMetadata();
+			$hasStackTrace = false;
 			if (
 				$fileSpecificError->getIdentifier() === 'phpstan.internal'
 				&& array_key_exists(InternalError::STACK_TRACE_AS_STRING_METADATA_KEY, $metadata)
 			) {
 				$message = sprintf('Internal error: %s', $message);
+				$hasStackTrace = true;
 			}
 
-			$internalErrors[$fileSpecificError->getMessage()] = new InternalError(
+			if (!$hasStackTrace) {
+				$internalFileSpecificErrors[] = $fileSpecificError;
+			}
+
+			$internalErrorsTuples[$fileSpecificError->getMessage()] = [new InternalError(
 				$message,
 				sprintf('analysing file %s', $fileSpecificError->getTraitFilePath() ?? $fileSpecificError->getFilePath()),
 				$metadata[InternalError::STACK_TRACE_METADATA_KEY] ?? [],
 				$metadata[InternalError::STACK_TRACE_AS_STRING_METADATA_KEY] ?? null,
 				true,
-			);
+			), !$hasStackTrace];
 		}
 
-		$internalErrors = array_values($internalErrors);
+		$internalErrorsTuples = array_values($internalErrorsTuples);
 		$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml';
-		foreach ($internalErrors as $i => $internalError) {
+
+		/**
+		 * Variable $internalErrors only contains non-file-specific "internal errors".
+		 */
+		$internalErrors = [];
+		foreach ($internalErrorsTuples as [$internalError, $isInFileSpecificErrors]) {
+			if ($isInFileSpecificErrors) {
+				continue;
+			}
+
 			$message = sprintf('%s while %s', $internalError->getMessage(), $internalError->getContextDescription());
 			if ($internalError->getTraceAsString() !== null) {
 				if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
@@ -393,7 +410,7 @@ class AnalyseCommand extends Command
 				}
 			}
 
-			$internalErrors[$i] = new InternalError(
+			$internalErrors[] = new InternalError(
 				$message,
 				$internalError->getContextDescription(),
 				$internalError->getTrace(),
@@ -402,11 +419,9 @@ class AnalyseCommand extends Command
 			);
 		}
 
-		$internalErrors = array_values($internalErrors);
-
 		if ($generateBaselineFile !== null) {
-			if (count($internalErrors) > 0) {
-				foreach ($internalErrors as $internalError) {
+			if (count($internalErrorsTuples) > 0) {
+				foreach ($internalErrorsTuples as [$internalError]) {
 					$inceptionResult->getStdOutput()->writeLineFormatted($internalError->getMessage());
 					$inceptionResult->getStdOutput()->writeLineFormatted('');
 				}
@@ -425,7 +440,7 @@ class AnalyseCommand extends Command
 		/** @var ErrorFormatter $errorFormatter */
 		$errorFormatter = $container->getService($errorFormatterServiceName);
 
-		if (count($internalErrors) > 0) {
+		if (count($internalErrorsTuples) > 0) {
 			$analysisResult = new AnalysisResult(
 				$internalFileSpecificErrors,
 				array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $internalErrors),

@@ -7,8 +7,7 @@ use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\Exception\Exception;
 use Hoa\File\Read;
-use Nette\Utils\RegexpException;
-use Nette\Utils\Strings;
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -18,14 +17,11 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_key_last;
-use function array_keys;
+use function array_reverse;
 use function count;
 use function in_array;
-use function is_int;
 use function is_string;
 use function str_contains;
-use const PHP_VERSION_ID;
 use const PREG_OFFSET_CAPTURE;
 use const PREG_UNMATCHED_AS_NULL;
 
@@ -37,16 +33,21 @@ final class RegexArrayShapeMatcher
 
 	private static ?Parser $parser = null;
 
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
+
 	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
 	{
 		if ($wasMatched->no()) {
 			return new ConstantArrayType([], []);
 		}
 
-		if (PHP_VERSION_ID < 70400) {
-			// see https://www.php.net/manual/en/migration74.incompatible.php#migration74.incompatible.pcre
-			// When PREG_UNMATCHED_AS_NULL mode is used, trailing unmatched capturing groups will now also be set to null (or [null, -1] if offset capture is enabled).
-			// This means that the size of the $matches will always be the same.
+		if (
+			!$this->phpVersion->returnsPregUnmatchedCapturingGroups()
+		) {
 			return null;
 		}
 
@@ -85,25 +86,8 @@ final class RegexArrayShapeMatcher
 	 */
 	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched): ?Type
 	{
-		// add one capturing group to the end so all capture group keys
-		// are present in the $matches
-		// see https://3v4l.org/sOXbn, https://3v4l.org/3SdDM
-		$captureGroupsRegex = Strings::replace($regex, '~.[a-z\s]*$~i', '|(?<phpstanNamedCaptureGroupLast>)$0');
-
-		try {
-			$matches = Strings::match('', $captureGroupsRegex, PREG_UNMATCHED_AS_NULL);
-			if ($matches === null) {
-				return null;
-			}
-		} catch (RegexpException) {
-			return null;
-		}
-
-		unset($matches[array_key_last($matches)]);
-		unset($matches['phpstanNamedCaptureGroupLast']);
-
-		$remainingNonOptionalGroupCount = $this->countNonOptionalGroups($regex);
-		if ($remainingNonOptionalGroupCount === null) {
+		$captureGroups = $this->parseGroups($regex);
+		if ($captureGroups === null) {
 			// regex could not be parsed by Hoa/Regex
 			return null;
 		}
@@ -111,30 +95,44 @@ final class RegexArrayShapeMatcher
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		$valueType = $this->getValueType($flags ?? 0);
 
-		foreach (array_keys($matches) as $key) {
-			if ($key === 0) {
-				// first item in matches contains the overall match.
-				$builder->setOffsetValueType(
-					$this->getKeyType($key),
-					TypeCombinator::removeNull($valueType),
-					!$wasMatched->yes(),
-				);
+		// first item in matches contains the overall match.
+		$builder->setOffsetValueType(
+			$this->getKeyType(0),
+			TypeCombinator::removeNull($valueType),
+			!$wasMatched->yes(),
+		);
 
-				continue;
+		$trailingOptionals = 0;
+		foreach (array_reverse($captureGroups) as $captureGroup) {
+			if (!$captureGroup->isOptional()) {
+				break;
 			}
+			$trailingOptionals++;
+		}
+
+		for ($i = 0; $i < count($captureGroups); $i++) {
+			$captureGroup = $captureGroups[$i];
 
 			if (!$wasMatched->yes()) {
 				$optional = true;
 			} else {
-				$optional = $remainingNonOptionalGroupCount <= 0;
-
-				if (is_int($key)) {
-					$remainingNonOptionalGroupCount--;
+				if ($i < count($captureGroups) - $trailingOptionals) {
+					$optional = false;
+				} else {
+					$optional = $captureGroup->isOptional();
 				}
 			}
 
+			if ($captureGroup->isNamed()) {
+				$builder->setOffsetValueType(
+					$this->getKeyType($captureGroup->getName()),
+					$valueType,
+					$optional,
+				);
+			}
+
 			$builder->setOffsetValueType(
-				$this->getKeyType($key),
+				$this->getKeyType($i + 1),
 				$valueType,
 				$optional,
 			);
@@ -180,7 +178,10 @@ final class RegexArrayShapeMatcher
 		return $valueType;
 	}
 
-	private function countNonOptionalGroups(string $regex): ?int
+	/**
+	 * @return list<RegexCapturingGroup>|null
+	 */
+	private function parseGroups(string $regex): ?array
 	{
 		if (self::$parser === null) {
 			/** @throws void */
@@ -193,17 +194,25 @@ final class RegexArrayShapeMatcher
 			return null;
 		}
 
-		return $this->walkRegexAst($ast, 0, 0);
+		$capturings = [];
+		$this->walkRegexAst($ast, 0, 0, $capturings);
+
+		return $capturings;
 	}
 
-	private function walkRegexAst(TreeNode $ast, int $inAlternation, int $inOptionalQuantification): int
+	/**
+	 * @param list<RegexCapturingGroup> $capturings
+	 */
+	private function walkRegexAst(TreeNode $ast, int $inAlternation, int $inOptionalQuantification, array &$capturings): void
 	{
-		$count = 0;
-		if (
-			in_array($ast->getId(), ['#capturing', '#namedcapturing'], true)
-			&& !($inAlternation > 0 || $inOptionalQuantification > 0)
-		) {
-			$count++;
+		if ($ast->getId() === '#capturing') {
+			$capturings[] = RegexCapturingGroup::unnamed($inAlternation > 0 || $inOptionalQuantification > 0);
+		} elseif ($ast->getId() === '#namedcapturing') {
+			$name = $ast->getChild(0)->getValue()['value'];
+			$capturings[] = RegexCapturingGroup::named(
+				$name,
+				$inAlternation > 0 || $inOptionalQuantification > 0,
+			);
 		}
 
 		if ($ast->getId() === '#alternation') {
@@ -224,10 +233,8 @@ final class RegexArrayShapeMatcher
 		}
 
 		foreach ($ast->getChildren() as $child) {
-			$count += $this->walkRegexAst($child, $inAlternation, $inOptionalQuantification);
+			$this->walkRegexAst($child, $inAlternation, $inOptionalQuantification, $capturings);
 		}
-
-		return $count;
 	}
 
 }

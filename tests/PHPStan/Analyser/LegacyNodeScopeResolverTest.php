@@ -8009,7 +8009,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arr',
 			],
 			[
-				'array<string>',
+				'array{0?: string}',
 				'$matches',
 			],
 			[

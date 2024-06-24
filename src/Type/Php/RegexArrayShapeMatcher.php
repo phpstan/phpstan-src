@@ -9,7 +9,6 @@ use Hoa\Compiler\Llk\TreeNode;
 use Hoa\File\Read;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
-use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -26,6 +25,7 @@ use function in_array;
 use function is_int;
 use function is_string;
 use function str_contains;
+use const PHP_VERSION_ID;
 use const PREG_OFFSET_CAPTURE;
 use const PREG_UNMATCHED_AS_NULL;
 
@@ -37,21 +37,16 @@ final class RegexArrayShapeMatcher
 
 	private static ?Parser $parser = null;
 
-	public function __construct(
-		private PhpVersion $phpVersion,
-	)
-	{
-	}
-
 	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
 	{
 		if ($wasMatched->no()) {
 			return new ConstantArrayType([], []);
 		}
 
-		if (
-			!$this->phpVersion->returnsPregUnmatchedCapturingGroups()
-		) {
+		if (PHP_VERSION_ID < 70400) {
+			// see https://www.php.net/manual/en/migration74.incompatible.php#migration74.incompatible.pcre
+			// When PREG_UNMATCHED_AS_NULL mode is used, trailing unmatched capturing groups will now also be set to null (or [null, -1] if offset capture is enabled).
+			// This means that the size of the $matches will always be the same.
 			return null;
 		}
 

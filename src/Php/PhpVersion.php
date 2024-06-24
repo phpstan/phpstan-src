@@ -287,12 +287,4 @@ class PhpVersion
 		return $this->versionId >= 80200;
 	}
 
-	// see https://www.php.net/manual/en/migration74.incompatible.php#migration74.incompatible.pcre
-	public function returnsPregUnmatchedCapturingGroups(): bool
-	{
-		// When PREG_UNMATCHED_AS_NULL mode is used, trailing unmatched capturing groups will now also be set to null (or [null, -1] if offset capture is enabled).
-		// This means that the size of the $matches will always be the same.
-		return $this->versionId >= 70400;
-	}
-
 }

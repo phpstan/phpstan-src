@@ -256,7 +256,6 @@ function doFoo(string $row): void
 	}
 }
 
-
 function doFoo2(string $row): void
 {
 	if (preg_match('~^((?<branchCode>\\d{1,6})-)?(?<accountNumber>\\d{1,10})/(?<bankCode>\\d{4})$~', $row, $matches) !== 1) {
@@ -264,4 +263,13 @@ function doFoo2(string $row): void
 	}
 
 	assertType('array{0: string, 1: string, branchCode: string, 2: string, accountNumber: string, 3: string, bankCode: string, 4: string}', $matches);
+}
+
+function doFoo3(string $row): void
+{
+	if (preg_match('~^(02,([\d.]{10}),(\d+),(\d+),(\d+),)(\d+)$~', $row, $matches) !== 1) {
+		return;
+	}
+
+	assertType('array{string, string, string, string, string, string, string}', $matches);
 }

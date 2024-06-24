@@ -232,3 +232,20 @@ function testUnionPattern(string $s): void
 	}
 	assertType('array{}|array{string, string, string, string}|array{string, string}', $matches);
 }
+
+function doFoo(string $row): void
+{
+	if (preg_match('~^(a(b))$~', $row, $matches) === 1) {
+		assertType('array{string, string, string}', $matches);
+	}
+}
+
+
+function doFoo2(string $row): void
+{
+	if (preg_match('~^((?<branchCode>\\d{1,6})-)?(?<accountNumber>\\d{1,10})/(?<bankCode>\\d{4})$~', $row, $matches) !== 1) {
+		return;
+	}
+
+	assertType('array{0: string, 1: string, branchCode: string, 2: string, accountNumber?: string, 3?: string, bankCode?: string, 4?: string}', $matches);
+}

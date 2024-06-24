@@ -198,11 +198,12 @@ final class RegexArrayShapeMatcher
 
 	private function walkRegexAst(TreeNode $ast, int $inAlternation, int $inOptionalQuantification): int
 	{
+		$count = 0;
 		if (
 			in_array($ast->getId(), ['#capturing', '#namedcapturing'], true)
 			&& !($inAlternation > 0 || $inOptionalQuantification > 0)
 		) {
-			return 1;
+			$count++;
 		}
 
 		if ($ast->getId() === '#alternation') {
@@ -222,7 +223,6 @@ final class RegexArrayShapeMatcher
 			}
 		}
 
-		$count = 0;
 		foreach ($ast->getChildren() as $child) {
 			$count += $this->walkRegexAst($child, $inAlternation, $inOptionalQuantification);
 		}

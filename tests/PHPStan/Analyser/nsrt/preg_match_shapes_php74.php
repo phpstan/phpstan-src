@@ -238,6 +238,12 @@ function doFoo(string $row): void
 	if (preg_match('~^(a(b))$~', $row, $matches) === 1) {
 		assertType('array{string, string, string}', $matches);
 	}
+	if (preg_match('~^(a(b)?)$~', $row, $matches) === 1) {
+		assertType('array{0: string, 1: string, 2?: string}', $matches);
+	}
+	if (preg_match('~^(a(b)?)?$~', $row, $matches) === 1) {
+		assertType('array{0: string, 1?: string, 2?: string}', $matches);
+	}
 }
 
 

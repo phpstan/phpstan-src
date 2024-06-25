@@ -49,50 +49,64 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$formatType = $scope->getType($args[0]->value);
+		if (count($args) === 1) {
+			return $formatType;
+		}
 
-		if (count($formatType->getConstantStrings()) > 0) {
-			$singlePlaceholderEarlyReturn = null;
-			foreach ($formatType->getConstantStrings() as $constantString) {
-				// The printf format is %[argnum$][flags][width][.precision]
-				if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1) {
-					if ($matches[1] !== '') {
-						// invalid positional argument
-						if ($matches[1] === '0$') {
-							return null;
-						}
-						$checkArg = intval(substr($matches[1], 0, -1));
-					} else {
-						$checkArg = 1;
-					}
+		if (
+			$functionReflection->getName() === 'vsprintf'
+			&& count($args) === 2
+			&& $scope->getType($args[1]->value)->isIterableAtLeastOnce()->no()
+		) {
+			return null;
+		}
 
-					// constant string specifies a numbered argument that does not exist
-					if (!array_key_exists($checkArg, $args)) {
+		$formatStrings = $formatType->getConstantStrings();
+		if (count($formatStrings) === 0) {
+			return null;
+		}
+
+		$singlePlaceholderEarlyReturn = null;
+		foreach ($formatType->getConstantStrings() as $constantString) {
+			// The printf format is %[argnum$][flags][width][.precision]
+			if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1) {
+				if ($matches[1] !== '') {
+					// invalid positional argument
+					if ($matches[1] === '0$') {
 						return null;
 					}
-
-					// if the format string is just a placeholder and specified an argument
-					// of stringy type, then the return value will be of the same type
-					$checkArgType = $scope->getType($args[$checkArg]->value);
-
-					if ($matches[2] === 's' && $checkArgType->isString()->yes()) {
-						$singlePlaceholderEarlyReturn = $checkArgType;
-					} elseif ($matches[2] !== 's') {
-						$singlePlaceholderEarlyReturn = new IntersectionType([
-							new StringType(),
-							new AccessoryNumericStringType(),
-						]);
-					}
-
-					continue;
+					$checkArg = intval(substr($matches[1], 0, -1));
+				} else {
+					$checkArg = 1;
 				}
 
-				$singlePlaceholderEarlyReturn = null;
-				break;
+				// constant string specifies a numbered argument that does not exist
+				if (!array_key_exists($checkArg, $args)) {
+					return null;
+				}
+
+				// if the format string is just a placeholder and specified an argument
+				// of stringy type, then the return value will be of the same type
+				$checkArgType = $scope->getType($args[$checkArg]->value);
+
+				if ($matches[2] === 's' && $checkArgType->isString()->yes()) {
+					$singlePlaceholderEarlyReturn = $checkArgType;
+				} elseif ($matches[2] !== 's') {
+					$singlePlaceholderEarlyReturn = new IntersectionType([
+						new StringType(),
+						new AccessoryNumericStringType(),
+					]);
+				}
+
+				continue;
 			}
 
-			if ($singlePlaceholderEarlyReturn !== null) {
-				return $singlePlaceholderEarlyReturn;
-			}
+			$singlePlaceholderEarlyReturn = null;
+			break;
+		}
+
+		if ($singlePlaceholderEarlyReturn !== null) {
+			return $singlePlaceholderEarlyReturn;
 		}
 
 		if ($formatType->isNonFalsyString()->yes()) {

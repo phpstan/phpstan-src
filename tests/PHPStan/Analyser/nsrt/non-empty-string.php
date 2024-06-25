@@ -351,7 +351,7 @@ class MoreNonEmptyStringFunctions
 		assertType('string', sprintf($s));
 		assertType('non-empty-string', sprintf($nonEmpty));
 		assertType('string', vsprintf($s, []));
-		assertType('non-empty-string', vsprintf($nonEmpty, []));
+		assertType('string', vsprintf($nonEmpty, []));
 
 		assertType('0', strlen(''));
 		assertType('5', strlen('hallo'));

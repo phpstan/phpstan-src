@@ -279,6 +279,15 @@ function allGroupsOptional(string $size): void
 	if (preg_match('~^a\.b(c(\d+))?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
+	assertType('array{string, string, string}|array{string}', $matches);
 
+	if (preg_match('~^a\.(b)?(c)?d~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{string, string, string}|array{string}', $matches);
+
+	if (preg_match('~^a\.(?:(b)|(c))?d~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
 	assertType('array{string, string, string}|array{string}', $matches);
 }

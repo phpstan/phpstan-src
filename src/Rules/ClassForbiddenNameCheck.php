@@ -20,6 +20,7 @@ class ClassForbiddenNameCheck
 		'Rector' => 'RectorPrefix',
 		'PHP-Scoper' => '_PhpScoper',
 		'PHPUnit' => 'PHPUnitPHAR',
+		'Box' => '_HumbugBox',
 	];
 
 	public function __construct(private Container $container)

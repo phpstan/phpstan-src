@@ -16,6 +16,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function array_reverse;
 use function count;
 use function in_array;
@@ -97,13 +98,14 @@ final class RegexArrayShapeMatcher
 			$trailingOptionals++;
 		}
 
-		for ($i = 0; $i < count($captureGroups); $i++) {
+		$countGroups = count($captureGroups);
+		for ($i = 0; $i < $countGroups; $i++) {
 			$captureGroup = $captureGroups[$i];
 
 			if (!$wasMatched->yes()) {
 				$optional = true;
 			} else {
-				if ($i < count($captureGroups) - $trailingOptionals) {
+				if ($i < $countGroups - $trailingOptionals) {
 					$optional = false;
 				} else {
 					$optional = $captureGroup->isOptional();
@@ -122,6 +124,16 @@ final class RegexArrayShapeMatcher
 				$this->getKeyType($i + 1),
 				$valueType,
 				$optional,
+			);
+		}
+
+		// when all groups are optional return a more precise union, instead of a shape with optional offsets
+		if ($countGroups === $trailingOptionals && $wasMatched->yes()) {
+			$overallType = $builder->getArray();
+			return TypeCombinator::union(
+				new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()]),
+				// same shape, but without optional keys
+				new ConstantArrayType($overallType->getKeyTypes(), $overallType->getValueTypes()),
 			);
 		}
 

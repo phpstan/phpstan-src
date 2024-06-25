@@ -118,9 +118,9 @@ function doOffsetCapture(string $s): void {
 
 function doUnmatchedAsNull(string $s): void {
 	if (preg_match('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType('array{0: string, 1?: string|null, 2?: string|null, 3?: string|null}', $matches);
+		assertType('array{string, string|null, string|null, string|null}|array{string}', $matches);
 	}
-	assertType('array{}|array{0: string, 1?: string|null, 2?: string|null, 3?: string|null}', $matches);
+	assertType('array{}|array{string, string|null, string|null, string|null}|array{string}', $matches);
 }
 
 function doUnknownFlags(string $s, int $flags): void {
@@ -252,7 +252,7 @@ function doFoo(string $row): void
 		assertType('array{0: string, 1: string, 2?: string}', $matches);
 	}
 	if (preg_match('~^(a(b)?)?$~', $row, $matches) === 1) {
-		assertType('array{0: string, 1?: string, 2?: string}', $matches);
+		assertType('array{string, string, string}|array{string}', $matches);
 	}
 }
 
@@ -272,4 +272,13 @@ function doFoo3(string $row): void
 	}
 
 	assertType('array{string, string, string, string, string, string, string}', $matches);
+}
+
+function allGroupsOptional(string $size): void
+{
+	if (preg_match('~^a\.b(c(\d+))?d~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+
+	assertType('array{string, string, string}|array{string}', $matches);
 }

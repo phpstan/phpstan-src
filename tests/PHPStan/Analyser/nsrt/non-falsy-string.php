@@ -106,11 +106,15 @@ class Foo {
 
 		assertType('string', sprintf($nonFalsey));
 		assertType("'foo'", sprintf('foo'));
+		assertType("string", sprintf(...$arr));
+		assertType("non-falsy-string", sprintf('%s', ...$arr)); // should be 'string'
 		assertType("string", sprintf('%s')); // error
 		assertType('string', vsprintf($nonFalsey, []));
 		assertType('string', vsprintf($nonFalsey, []));
-		assertType("string", vsprintf('foo', [])); // could be 'foo'
+		assertType("non-falsy-string", vsprintf('foo', [])); // should be 'foo'
 		assertType("string", vsprintf('%s')); // error
+		assertType("string", vsprintf(...$arr));
+		assertType("non-falsy-string", vsprintf('%s', ...$arr)); // should be 'string'
 
 		assertType('int<1, max>', strlen($nonFalsey));
 

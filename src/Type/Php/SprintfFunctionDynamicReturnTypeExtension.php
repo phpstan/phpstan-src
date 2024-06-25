@@ -53,14 +53,6 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			return $this->getConstantType($args, null, $functionReflection, $scope);
 		}
 
-		if (
-			$functionReflection->getName() === 'vsprintf'
-			&& count($args) === 2
-			&& $scope->getType($args[1]->value)->isIterableAtLeastOnce()->no()
-		) {
-			return $this->getConstantType($args, null, $functionReflection, $scope);
-		}
-
 		$formatStrings = $formatType->getConstantStrings();
 		if (count($formatStrings) === 0) {
 			return null;
@@ -134,6 +126,10 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$values = [];
 		$combinationsCount = 1;
 		foreach ($args as $arg) {
+			if ($arg->unpack) {
+				return $fallbackReturnType;
+			}
+
 			$argType = $scope->getType($arg->value);
 			$constantScalarValues = $argType->getConstantScalarValues();
 

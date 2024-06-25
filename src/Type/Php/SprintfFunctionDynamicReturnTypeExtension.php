@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\CombinationsHelper;
@@ -111,6 +112,9 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		return $this->getConstantType($args, $returnType, $functionReflection, $scope);
 	}
 
+	/**
+	 * @param Arg[] $args
+	 */
 	private function getConstantType(array $args, Type $fallbackReturnType, FunctionReflection $functionReflection, Scope $scope): Type
 	{
 		$values = [];

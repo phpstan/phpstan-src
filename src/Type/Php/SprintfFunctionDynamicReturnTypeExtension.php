@@ -50,7 +50,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 		$formatType = $scope->getType($args[0]->value);
 		if (count($args) === 1) {
-			return null;
+			return $this->getConstantType($args, null, $functionReflection, $scope);
 		}
 
 		if (
@@ -58,7 +58,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			&& count($args) === 2
 			&& $scope->getType($args[1]->value)->isIterableAtLeastOnce()->no()
 		) {
-			return null;
+			return $this->getConstantType($args, null, $functionReflection, $scope);
 		}
 
 		$formatStrings = $formatType->getConstantStrings();
@@ -129,7 +129,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 	/**
 	 * @param Arg[] $args
 	 */
-	private function getConstantType(array $args, Type $fallbackReturnType, FunctionReflection $functionReflection, Scope $scope): Type
+	private function getConstantType(array $args, ?Type $fallbackReturnType, FunctionReflection $functionReflection, Scope $scope): ?Type
 	{
 		$values = [];
 		$combinationsCount = 1;

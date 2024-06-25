@@ -1,6 +1,6 @@
 <?php // lint >= 8.0
 
-namespace NonFalseyStringPhp8;
+namespace PrintFErrorsPhp8;
 
 use function PHPStan\Testing\assertType;
 

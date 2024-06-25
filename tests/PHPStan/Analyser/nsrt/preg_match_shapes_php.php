@@ -1,4 +1,4 @@
-<?php // lint >= 7.4
+<?php // lint >= 7.2
 
 namespace PregMatchShapes;
 
@@ -29,9 +29,9 @@ function doMatch(string $s): void {
 	assertType('array{}|array{string, string}', $matches);
 
 	if (preg_match('(Price: (£|€))i', $s, $matches)) {
-		assertType('array{string, string}', $matches);
+		assertType('array{string, string, string}', $matches);
 	}
-	assertType('array{}|array{string, string}', $matches);
+	assertType('array{}|array{string, string, string}', $matches);
 
 	if (preg_match('_foo(.)\_i_i', $s, $matches)) {
 		assertType('array{string, string}', $matches);
@@ -39,9 +39,19 @@ function doMatch(string $s): void {
 	assertType('array{}|array{string, string}', $matches);
 
 	if (preg_match('/(a)(b)*(c)(d)*/', $s, $matches)) {
-		assertType('array{0: string, 1: string, 2: string, 3?: string, 4?: string}', $matches);
+		assertType('array{0: string, 1: string, 2: string, 3: string, 4?: string}', $matches);
 	}
-	assertType('array{}|array{0: string, 1: string, 2: string, 3?: string, 4?: string}', $matches);
+	assertType('array{}|array{0: string, 1: string, 2: string, 3: string, 4?: string}', $matches);
+
+	if (preg_match('/(a)(?<name>b)*(c)(d)*/', $s, $matches)) {
+		assertType('array{0: string, 1: string, name: string, 2: string, 3: string, 4?: string}', $matches);
+	}
+	assertType('array{}|array{0: string, 1: string, name: string, 2: string, 3: string, 4?: string}', $matches);
+
+	if (preg_match('/(a)(b)*(c)(?<name>d)*/', $s, $matches)) {
+		assertType('array{0: string, 1: string, 2: string, 3: string, name?: string, 4?: string}', $matches);
+	}
+	assertType('array{}|array{0: string, 1: string, 2: string, 3: string, name?: string, 4?: string}', $matches);
 
 	if (preg_match('/(a|b)|(?:c)/', $s, $matches)) {
 		assertType('array{0: string, 1?: string}', $matches);
@@ -231,4 +241,35 @@ function testUnionPattern(string $s): void
 		assertType('array{string, string, string, string}|array{string, string}', $matches);
 	}
 	assertType('array{}|array{string, string, string, string}|array{string, string}', $matches);
+}
+
+function doFoo(string $row): void
+{
+	if (preg_match('~^(a(b))$~', $row, $matches) === 1) {
+		assertType('array{string, string, string}', $matches);
+	}
+	if (preg_match('~^(a(b)?)$~', $row, $matches) === 1) {
+		assertType('array{0: string, 1: string, 2?: string}', $matches);
+	}
+	if (preg_match('~^(a(b)?)?$~', $row, $matches) === 1) {
+		assertType('array{0: string, 1?: string, 2?: string}', $matches);
+	}
+}
+
+function doFoo2(string $row): void
+{
+	if (preg_match('~^((?<branchCode>\\d{1,6})-)?(?<accountNumber>\\d{1,10})/(?<bankCode>\\d{4})$~', $row, $matches) !== 1) {
+		return;
+	}
+
+	assertType('array{0: string, 1: string, branchCode: string, 2: string, accountNumber: string, 3: string, bankCode: string, 4: string}', $matches);
+}
+
+function doFoo3(string $row): void
+{
+	if (preg_match('~^(02,([\d.]{10}),(\d+),(\d+),(\d+),)(\d+)$~', $row, $matches) !== 1) {
+		return;
+	}
+
+	assertType('array{string, string, string, string, string, string, string}', $matches);
 }

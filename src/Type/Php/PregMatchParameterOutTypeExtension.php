@@ -23,7 +23,9 @@ final class PregMatchParameterOutTypeExtension implements FunctionParameterOutTy
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool
 	{
-		return in_array(strtolower($functionReflection->getName()), ['preg_match'], true) && $parameter->getName() === 'matches';
+		return in_array(strtolower($functionReflection->getName()), ['preg_match'], true)
+			// the parameter is named different, depending on PHP version.
+			&& in_array($parameter->getName(), ['subpatterns', 'matches'], true);
 	}
 
 	public function getParameterOutTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, ParameterReflection $parameter, Scope $scope): ?Type

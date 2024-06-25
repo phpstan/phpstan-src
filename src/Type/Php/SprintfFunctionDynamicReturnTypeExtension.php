@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -73,10 +72,6 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 					// if the format string is just a placeholder and specified an argument
 					// of stringy type, then the return value will be of the same type
 					$checkArgType = $scope->getType($args[$checkArg]->value);
-
-					if (!array_key_exists(2, $matches)) {
-						throw new ShouldNotHappenException();
-					}
 
 					if ($matches[2] === 's' && $checkArgType->isString()->yes()) {
 						$singlePlaceholderEarlyReturn = $checkArgType;

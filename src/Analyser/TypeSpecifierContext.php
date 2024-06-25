@@ -17,18 +17,22 @@ class TypeSpecifierContext
 	public const CONTEXT_FALSE = 0b0100;
 	public const CONTEXT_FALSEY_BUT_NOT_FALSE = 0b1000;
 	public const CONTEXT_FALSEY = self::CONTEXT_FALSE | self::CONTEXT_FALSEY_BUT_NOT_FALSE;
-	public const CONTEXT_BITMASK = 0b1111;
+	public const CONTEXT_COMPARISON = 0b10000;
+	public const CONTEXT_BITMASK = 0b01111;
 
 	/** @var self[] */
 	private static array $registry;
 
-	private function __construct(private ?int $value)
+	private function __construct(
+		private ?int $value,
+		private ?TypeSpecifierComparisonContext $comparisonContext,
+	)
 	{
 	}
 
-	private static function create(?int $value): self
+	private static function create(?int $value, ?TypeSpecifierComparisonContext $comparisonContext = null): self
 	{
-		self::$registry[$value] ??= new self($value);
+		self::$registry[$value] ??= new self($value, $comparisonContext);
 		return self::$registry[$value];
 	}
 
@@ -50,6 +54,11 @@ class TypeSpecifierContext
 	public static function createFalsey(): self
 	{
 		return self::create(self::CONTEXT_FALSEY);
+	}
+
+	public static function createComparison(TypeSpecifierComparisonContext $comparisonContext): self
+	{
+		return self::create(self::CONTEXT_COMPARISON, $comparisonContext);
 	}
 
 	public static function createNull(): self
@@ -88,6 +97,11 @@ class TypeSpecifierContext
 	public function null(): bool
 	{
 		return $this->value === null;
+	}
+
+	public function comparison(): ?TypeSpecifierComparisonContext
+	{
+		return $this->comparisonContext;
 	}
 
 }

@@ -50,7 +50,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 		$formatType = $scope->getType($args[0]->value);
 		if (count($args) === 1) {
-			return $formatType;
+			return null;
 		}
 
 		if (

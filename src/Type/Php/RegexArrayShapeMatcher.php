@@ -127,19 +127,21 @@ final class RegexArrayShapeMatcher
 		}
 
 		$overallType = $builder->getArray();
-		$constantArrays = $overallType->getConstantArrays();
 
 		// when all groups are optional return a more precise union, instead of a shape with optional offsets
 		if (
 			$countGroups === $trailingOptionals
 			&& $wasMatched->yes()
-			&& count($constantArrays) > 0
 		) {
+			$constantArrays = $overallType->getConstantArrays();
+			if ($constantArrays === []) {
+				return $overallType;
+			}
+
 			$result = [
 				// first item in matches contains the overall match.
 				new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()]),
 			];
-
 			foreach ($constantArrays as $constantArray) {
 				// same shape, but without optional keys
 				$result[] = new ConstantArrayType(

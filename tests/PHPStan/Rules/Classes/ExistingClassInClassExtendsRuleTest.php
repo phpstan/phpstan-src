@@ -121,6 +121,11 @@ class ExistingClassInClassExtendsRuleTest extends RuleTestCase
 				62,
 				'This is most likely unintentional. Did you mean to type \SebastianBergmann\Diff\Exception?',
 			],
+			[
+				'Referencing prefixed Box class: _HumbugBox02f3b3909847\AClass.',
+				73,
+				$tip,
+			],
 		]);
 	}
 

@@ -108,6 +108,11 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			$returnType = new StringType();
 		}
 
+		return $this->getConstantType($args, $returnType, $functionReflection, $scope);
+	}
+
+	private function getConstantType(array $args, Type $fallbackReturnType, FunctionReflection $functionReflection, Scope $scope): Type
+	{
 		$values = [];
 		$combinationsCount = 1;
 		foreach ($args as $arg) {
@@ -123,7 +128,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			}
 
 			if (count($constantScalarValues) === 0) {
-				return $returnType;
+				return $fallbackReturnType;
 			}
 
 			$values[] = $constantScalarValues;
@@ -131,7 +136,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		if ($combinationsCount > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
-			return $returnType;
+			return $fallbackReturnType;
 		}
 
 		$combinations = CombinationsHelper::combinations($values);
@@ -139,7 +144,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		foreach ($combinations as $combination) {
 			$format = array_shift($combination);
 			if (!is_string($format)) {
-				return $returnType;
+				return $fallbackReturnType;
 			}
 
 			try {
@@ -149,12 +154,12 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 					$returnTypes[] = $scope->getTypeFromValue(@vsprintf($format, $combination));
 				}
 			} catch (Throwable) {
-				return $returnType;
+				return $fallbackReturnType;
 			}
 		}
 
 		if (count($returnTypes) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
-			return $returnType;
+			return $fallbackReturnType;
 		}
 
 		return TypeCombinator::union(...$returnTypes);

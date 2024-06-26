@@ -27,6 +27,7 @@ return [
 		'mysqli_result::fetch_field' => ['(stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: 0, length: int, charsetnr: string, flags: int, type: int, decimals: int})|false'],
 		'mysqli_result::fetch_field_direct' => ['(stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: 0, length: int, charsetnr: string, flags: int, type: int, decimals: int})|false', 'fieldnr'=>'int'],
 		'mysqli_result::fetch_fields' => ['list<stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: 0, length: int, charsetnr: string, flags: int, type: int, decimals: int}>'],
+		'UnitEnum::cases' => ['list<static>'],
 	],
 	'old' => [
 		'pg_escape_bytea' => ['string', 'connection'=>'resource', 'data'=>'string'],

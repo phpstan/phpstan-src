@@ -29,7 +29,7 @@ enum Test{
  * @phpstan-param TEnum $case
  */
 function dumpCases(\UnitEnum $case) : void{
-	assertType('array<TEnum of UnitEnum (function Bug7162\\dumpCases(), argument)>', $case::cases());
+	assertType('list<TEnum of UnitEnum (function Bug7162\\dumpCases(), argument)>', $case::cases());
 }
 
 function dumpCases2(Test $case) : void{

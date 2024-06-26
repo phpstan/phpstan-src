@@ -74,7 +74,7 @@ class Foo {
 	 * @param non-empty-array<non-falsy-string> $arrayOfNonFalsey
 	 * @param non-empty-array $nonEmptyArray
 	 */
-	function stringFunctions(string $s, $nonFalsey, $arrayOfNonFalsey, $nonEmptyArray)
+	function stringFunctions(string $s, $nonFalsey, $arrayOfNonFalsey, $nonEmptyArray, array $arr)
 	{
 		assertType('string', implode($nonFalsey, []));
 		assertType('non-falsy-string', implode($nonFalsey, $nonEmptyArray));
@@ -104,8 +104,15 @@ class Foo {
 
 		assertType('non-falsy-string', preg_quote($nonFalsey));
 
-		assertType('non-falsy-string', sprintf($nonFalsey));
-		assertType('non-falsy-string', vsprintf($nonFalsey, []));
+		assertType('string', sprintf($nonFalsey));
+		assertType("'foo'", sprintf('foo'));
+		assertType("string", sprintf(...$arr));
+		assertType("non-falsy-string", sprintf('%s', ...$arr)); // should be 'string'
+		assertType('string', vsprintf($nonFalsey, []));
+		assertType('string', vsprintf($nonFalsey, []));
+		assertType("non-falsy-string", vsprintf('foo', [])); // should be 'foo'
+		assertType("non-falsy-string", vsprintf('%s', ...$arr)); // should be 'string'
+		assertType("string", vsprintf(...$arr));
 
 		assertType('int<1, max>', strlen($nonFalsey));
 

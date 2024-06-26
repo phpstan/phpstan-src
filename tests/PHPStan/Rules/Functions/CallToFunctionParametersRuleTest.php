@@ -1716,4 +1716,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/count-array-shift.php'], $errors);
 	}
 
+	public function testCount(): void
+	{
+		$this->analyse([__DIR__ . '/data/count.php'], [
+			[
+				'Parameter #2 $mode of function count expects 0|1, -1 given.',
+				9,
+			],
+			[
+				'Parameter #2 $mode of function count expects 0|1, int given.',
+				10,
+			],
+		]);
+	}
+
 }

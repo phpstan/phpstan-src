@@ -23,7 +23,6 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_slice;
 use function count;
-use function preg_match;
 
 final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -51,18 +50,6 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			}
 			$valueType = TypeCombinator::union(...$valueTypes);
 			$callback = $functionCall->getArgs()[0]->value;
-			if ($callback instanceof String_) {
-				/** @var non-falsy-string $callName */
-				$callName = $callback->value;
-				$callback = new Name($callName);
-			} elseif ($callback instanceof FuncCall && $callback->isFirstClassCallable() &&
-				$callback->getAttribute('phpstan_cache_printer') !== null &&
-				preg_match('/\A(?<name>\\\\?[^()]+)\(...\)\z/', $callback->getAttribute('phpstan_cache_printer'), $m) === 1
-			) {
-				/** @var non-falsy-string $callName */
-				$callName = $m['name'];
-				$callback = new Name($callName);
-			}
 		} elseif ($callableIsNull) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {

@@ -13,6 +13,7 @@ use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\Callables\FunctionCallableVariant;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
@@ -1657,6 +1658,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			}
 			$valueType = $this->valueTypes[$i];
 
+			if ($valueType instanceof UnionType && $valueType->isNull()->maybe() && count($valueType->getTypes()) === 2) {
+				$valueTypePhpDocNode = new NullableTypeNode(TypeCombinator::removeNull($valueType)->toPhpDocNode());
+			} else {
+				$valueTypePhpDocNode = $valueType->toPhpDocNode();
+			}
+
 			/** @var ConstExprStringNode|ConstExprIntegerNode $keyNode */
 			$keyNode = $keyPhpDocNode->constExpr;
 			if ($keyNode instanceof ConstExprStringNode) {
@@ -1673,12 +1680,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$items[] = new ArrayShapeItemNode(
 				$keyNode,
 				$isOptional,
-				$valueType->toPhpDocNode(),
+				$valueTypePhpDocNode,
 			);
 			$values[] = new ArrayShapeItemNode(
 				null,
 				$isOptional,
-				$valueType->toPhpDocNode(),
+				$valueTypePhpDocNode,
 			);
 		}
 

@@ -303,6 +303,24 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			], [2], [1]),
 			"array{0: 'foo', 1?: 'bar'}",
 		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(0),
+			], [
+				new UnionType([new StringType(), new NullType()]),
+			]),
+			'array{?string}',
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+			], [
+				new UnionType([new StringType(), new NullType()]),
+			]),
+			'array{foo: ?string}',
+		];
 	}
 
 	/**

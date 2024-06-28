@@ -79,7 +79,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		foreach ($formatStrings as $constantString) {
 			$constantParts = $this->getFormatConstantParts($constantString->getValue());
 			if ($constantParts !== null) {
-				if ($constantParts->isNonFalsyString()->yes()) { // phpcs:ignore
+				if ($constantParts->isNonFalsyString()->yes()) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
 					// keep all bool flags as is
 				} elseif ($constantParts->isNonEmptyString()->yes()) {
 					$allPatternsNonFalsy = false;

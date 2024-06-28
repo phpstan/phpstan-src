@@ -38,12 +38,6 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 	private const MAX_INTERPOLATION_RETRIES = 5;
 
-	public function __construct(
-		private PhpVersion $phpVersion,
-	)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return in_array($functionReflection->getName(), ['sprintf', 'vsprintf'], true);

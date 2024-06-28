@@ -3507,12 +3507,14 @@ class MutatingScope implements Scope
 			return $this;
 		}
 		if ($expr->cond instanceof AlwaysRememberedExpr) {
-			return $this;
+			$cond = $expr->cond->expr;
+		} else {
+			$cond = $expr->cond;
 		}
 
-		$type = $this->getType($expr->cond);
-		$nativeType = $this->getNativeType($expr->cond);
-		$condExpr = new AlwaysRememberedExpr($expr->cond, $type, $nativeType);
+		$type = $this->getType($cond);
+		$nativeType = $this->getNativeType($cond);
+		$condExpr = new AlwaysRememberedExpr($cond, $type, $nativeType);
 		$expr->cond = $condExpr;
 
 		return $this->assignExpression($condExpr, $type, $nativeType);

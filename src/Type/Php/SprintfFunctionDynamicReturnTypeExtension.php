@@ -12,6 +12,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -122,7 +123,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		if (!$this->phpVersion->throwsTypeErrorForInternalFunctions()) {
-			$returnType = TypeCombinator::union($returnType, new ConstantBooleanType(false));
+			$returnType = new BenevolentUnionType([$returnType, new ConstantBooleanType(false)]);
 		}
 
 		return $this->getConstantType($args, $returnType, $functionReflection, $scope);

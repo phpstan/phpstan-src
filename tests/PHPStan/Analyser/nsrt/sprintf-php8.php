@@ -9,6 +9,6 @@ function noReturnFalseOnPhp8(string $format, array $arr): void
 	assertType('string', sprintf($format, ...$arr));
 	assertType('string', vsprintf($format, $arr));
 
-	assertType('string', sprintf("%s", ...$arr));
-	assertType('string', vsprintf("%s", $arr));
+	assertType('non-falsy-string', sprintf("%s", ...$arr)); // should be 'string'
+	assertType('non-falsy-string', vsprintf("%s", $arr)); // should be 'string'
 }

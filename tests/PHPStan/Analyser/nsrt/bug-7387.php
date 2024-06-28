@@ -88,7 +88,7 @@ class HelloWorld
 		assertType('numeric-string', vsprintf("%4d", explode('-', '1988-8-1')));
 		assertType('numeric-string', vsprintf("%4d", $array));
 		assertType('numeric-string', vsprintf("%4d", ['123']));
-		assertType('non-falsy-string', vsprintf("%s", ['123']));
+		assertType('string', vsprintf("%s", ['123'])); // could be '123'
 		// too many arguments.. php silently allows it
 		assertType('numeric-string', vsprintf("%4d", ['123', '456']));
 	}

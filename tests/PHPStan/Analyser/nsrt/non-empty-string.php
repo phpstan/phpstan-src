@@ -303,9 +303,10 @@ class MoreNonEmptyStringFunctions
 
 	/**
 	 * @param non-empty-string $nonEmpty
+	 * @param non-falsy-string $nonFalsy
 	 * @param '1'|'2'|'5'|'10' $constUnion
 	 */
-	public function doFoo(string $s, string $nonEmpty, int $i, bool $bool, $constUnion)
+	public function doFoo(string $s, string $nonEmpty, string $nonFalsy, int $i, bool $bool, $constUnion)
 	{
 		assertType('string', addslashes($s));
 		assertType('non-empty-string', addslashes($nonEmpty));
@@ -350,8 +351,19 @@ class MoreNonEmptyStringFunctions
 
 		assertType('string', sprintf($s));
 		assertType('string', sprintf($nonEmpty));
+		assertType('string', sprintf($s, $nonEmpty));
+		assertType('string', sprintf($nonEmpty, $s));
+		assertType('string', sprintf($s, $nonFalsy));
+		assertType('string', sprintf($nonFalsy, $s));
+		assertType('non-empty-string', sprintf($nonEmpty, $nonEmpty));
+		assertType('non-empty-string', sprintf($nonEmpty, $nonFalsy));
+		assertType('non-empty-string', sprintf($nonFalsy, $nonEmpty));
 		assertType('string', vsprintf($s, []));
 		assertType('string', vsprintf($nonEmpty, []));
+
+		assertType('non-empty-string', sprintf("%s0%s", $s, $s));
+		assertType('non-empty-string', sprintf("%s0%s%s%s%s", $s, $s, $s, $s, $s));
+		assertType('string', sprintf("%s0%s%s%s%s%s", $s, $s, $s, $s, $s, $s)); // max interpolation limit reached
 
 		assertType('0', strlen(''));
 		assertType('5', strlen('hallo'));

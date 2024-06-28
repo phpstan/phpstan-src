@@ -2,15 +2,19 @@
 
 namespace PHPStan\Type\Php;
 
+use ArgumentCountError;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\CombinationsHelper;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
@@ -31,6 +35,14 @@ use function vsprintf;
 
 class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	private const MAX_INTERPOLATION_RETRIES = 5;
+
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -53,14 +65,32 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			return $constantType;
 		}
 
+		$isNonEmpty = TrinaryLogic::createMaybe();
+		$isNonFalsy = TrinaryLogic::createMaybe();
+
 		$formatType = $scope->getType($args[0]->value);
 		$formatStrings = $formatType->getConstantStrings();
-		if (count($formatStrings) === 0) {
-			return null;
+		if (
+			count($formatStrings) === 0
+			&& $functionReflection->getName() === 'sprintf'
+			&& count($args) === 2
+			&& $formatType->isNonEmptyString()->yes()
+			&& $scope->getType($args[1]->value)->isNonEmptyString()->yes()
+		) {
+			$isNonEmpty = $isNonEmpty->or(TrinaryLogic::createYes());
 		}
 
 		$singlePlaceholderEarlyReturn = null;
 		foreach ($formatStrings as $constantString) {
+			$constantParts = $this->getFormatConstantParts($constantString->getValue());
+			if ($constantParts !== null) {
+				if ($constantParts->isNonFalsyString()->yes()) {
+					$isNonFalsy = $isNonFalsy->or(TrinaryLogic::createYes());
+				} elseif ($constantParts->isNonEmptyString()->yes()) {
+					$isNonEmpty = $isNonEmpty->or(TrinaryLogic::createYes());
+				}
+			}
+
 			// The printf format is %[argnum$][flags][width][.precision]
 			if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1) {
 				if ($matches[1] !== '') {
@@ -103,12 +133,12 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			return $singlePlaceholderEarlyReturn;
 		}
 
-		if ($formatType->isNonFalsyString()->yes()) {
+		if ($isNonFalsy->yes()) {
 			$returnType = new IntersectionType([
 				new StringType(),
 				new AccessoryNonFalsyStringType(),
 			]);
-		} elseif ($formatType->isNonEmptyString()->yes()) {
+		} elseif ($isNonEmpty->yes()) {
 			$returnType = new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),
@@ -118,6 +148,28 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		return $returnType;
+	}
+
+	private function getFormatConstantParts(string $format): ?ConstantStringType
+	{
+		$dummyValues = [];
+		for ($i = 0; $i < self::MAX_INTERPOLATION_RETRIES; $i++) {
+			$dummyValues[] = '';
+
+			try {
+				$formatted = @sprintf($format, ...$dummyValues);
+				if ($formatted === false) { // PHP 7.x
+					continue;
+				}
+				return new ConstantStringType($formatted);
+			} catch (ArgumentCountError) {
+				continue;
+			} catch (Throwable) {
+				return null;
+			}
+		}
+
+		return null;
 	}
 
 	/**

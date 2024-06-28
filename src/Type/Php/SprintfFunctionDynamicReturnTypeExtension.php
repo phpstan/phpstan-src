@@ -80,10 +80,9 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			$constantParts = $this->getFormatConstantParts($constantString->getValue());
 			if ($constantParts !== null) {
 				if ($constantParts->isNonFalsyString()->yes()) {
-					$allPatternsNonFalsy = $allPatternsNonFalsy && true;
+					// keep all bool flags as is
 				} elseif ($constantParts->isNonEmptyString()->yes()) {
 					$allPatternsNonFalsy = false;
-					$allPatternsNonEmpty = $allPatternsNonEmpty && true;
 				} else {
 					$allPatternsNonEmpty = false;
 					$allPatternsNonFalsy = false;

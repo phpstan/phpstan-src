@@ -152,7 +152,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 			try {
 				$formatted = @sprintf($format, ...$dummyValues);
-				if ($formatted === false) { // @phpstan-ignore identical.alwaysFalse PHP 7.x only
+				if ($formatted === false) { // @phpstan-ignore identical.alwaysFalse
 					continue;
 				}
 				return new ConstantStringType($formatted);

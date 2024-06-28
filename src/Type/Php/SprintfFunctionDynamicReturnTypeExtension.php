@@ -6,11 +6,13 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\CombinationsHelper;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
@@ -31,6 +33,10 @@ use function vsprintf;
 
 class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -113,6 +119,10 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			]);
 		} else {
 			$returnType = new StringType();
+		}
+
+		if (!$this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+			$returnType = TypeCombinator::union($returnType, new ConstantBooleanType(false));
 		}
 
 		return $this->getConstantType($args, $returnType, $functionReflection, $scope);

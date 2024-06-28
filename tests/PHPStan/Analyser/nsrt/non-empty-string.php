@@ -386,4 +386,22 @@ class MoreNonEmptyStringFunctions
 		assertType('string', str_repeat($s, $i));
 	}
 
+	function multiplesPrintfFormats(string $s) {
+		$maybeNonEmpty = '%s';
+		$maybeNonFalsy = '%s';
+		$nonEmpty = '%s0';
+		$nonFalsy = '%sAA';
+
+		if (rand(0,1)) {
+			$maybeNonEmpty = '%s0';
+			$maybeNonFalsy = '%sAA';
+			$nonEmpty = '0%s';
+			$nonFalsy = 'AA%s';
+		}
+
+		assertType('string', sprintf($maybeNonEmpty, $s));
+		assertType('string', sprintf($maybeNonFalsy, $s));
+		assertType('non-empty-string', sprintf($nonEmpty, $s));
+		assertType('non-falsy-string', sprintf($nonFalsy, $s));
+	}
 }

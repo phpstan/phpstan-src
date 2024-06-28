@@ -74,14 +74,23 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$singlePlaceholderEarlyReturn = null;
+		$allPatternsNonEmpty = count($formatStrings) !== 0;
+		$allPatternsNonFalsy = count($formatStrings) !== 0;
 		foreach ($formatStrings as $constantString) {
 			$constantParts = $this->getFormatConstantParts($constantString->getValue());
 			if ($constantParts !== null) {
 				if ($constantParts->isNonFalsyString()->yes()) {
-					$isNonFalsy = $isNonFalsy->or(TrinaryLogic::createYes());
+					$allPatternsNonFalsy = $allPatternsNonFalsy && true;
 				} elseif ($constantParts->isNonEmptyString()->yes()) {
-					$isNonEmpty = $isNonEmpty->or(TrinaryLogic::createYes());
+					$allPatternsNonFalsy = false;
+					$allPatternsNonEmpty = $allPatternsNonEmpty && true;
+				} else {
+					$allPatternsNonEmpty = false;
+					$allPatternsNonFalsy = false;
 				}
+			} else {
+				$allPatternsNonEmpty = false;
+				$allPatternsNonFalsy = false;
 			}
 
 			// The printf format is %[argnum$][flags][width][.precision]
@@ -124,6 +133,13 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 		if ($singlePlaceholderEarlyReturn !== null) {
 			return $singlePlaceholderEarlyReturn;
+		}
+
+		if ($allPatternsNonFalsy) {
+			$isNonFalsy = TrinaryLogic::createYes();
+		}
+		if ($allPatternsNonEmpty) {
+			$isNonEmpty = TrinaryLogic::createYes();
 		}
 
 		if ($isNonFalsy->yes()) {

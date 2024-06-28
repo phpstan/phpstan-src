@@ -70,7 +70,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			&& $formatType->isNonEmptyString()->yes()
 			&& $scope->getType($args[1]->value)->isNonEmptyString()->yes()
 		) {
-			$isNonEmpty = $isNonEmpty->or(TrinaryLogic::createYes());
+			$isNonEmpty = TrinaryLogic::createYes();
 		}
 
 		$singlePlaceholderEarlyReturn = null;

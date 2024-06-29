@@ -79,16 +79,6 @@ final class RegexArrayShapeMatcher
 			return null;
 		}
 
-		$builder = ConstantArrayTypeBuilder::createEmpty();
-		$valueType = $this->getValueType($flags ?? 0);
-
-		// first item in matches contains the overall match.
-		$builder->setOffsetValueType(
-			$this->getKeyType(0),
-			TypeCombinator::removeNull($valueType),
-			!$wasMatched->yes(),
-		);
-
 		$trailingOptionals = 0;
 		foreach (array_reverse($captureGroups) as $captureGroup) {
 			if (!$captureGroup->isOptional()) {
@@ -96,6 +86,25 @@ final class RegexArrayShapeMatcher
 			}
 			$trailingOptionals++;
 		}
+
+		$valueType = $this->getValueType($flags ?? 0);
+		return $this->buildArrayType($captureGroups, $valueType, $wasMatched, $trailingOptionals);
+	}
+
+	private function buildArrayType(
+		array $captureGroups,
+		Type $valueType,
+		TrinaryLogic $wasMatched,
+		int $trailingOptionals
+	): Type {
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		// first item in matches contains the overall match.
+		$builder->setOffsetValueType(
+			$this->getKeyType(0),
+			TypeCombinator::removeNull($valueType),
+			!$wasMatched->yes(),
+		);
 
 		for ($i = 0; $i < count($captureGroups); $i++) {
 			$captureGroup = $captureGroups[$i];

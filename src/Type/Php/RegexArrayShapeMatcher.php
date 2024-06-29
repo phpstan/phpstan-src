@@ -191,7 +191,7 @@ final class RegexArrayShapeMatcher
 		}
 
 		$capturings = [];
-		$this->walkRegexAst($ast, 0, 0, $capturings);
+		$this->walkRegexAst($ast, 0, 0, false, $capturings);
 
 		return $capturings;
 	}
@@ -199,17 +199,24 @@ final class RegexArrayShapeMatcher
 	/**
 	 * @param list<RegexCapturingGroup> $capturings
 	 */
-	private function walkRegexAst(TreeNode $ast, int $inAlternation, int $inOptionalQuantification, array &$capturings): void
+	private function walkRegexAst(TreeNode $ast, int $inAlternation, int $inOptionalQuantification, bool $inCapturing, array &$capturings): void
 	{
 		if ($ast->getId() === '#capturing') {
-			$capturings[] = RegexCapturingGroup::unnamed($inAlternation > 0, $inOptionalQuantification > 0);
+			$capturings[] = RegexCapturingGroup::unnamed(
+				$inAlternation > 0,
+				$inOptionalQuantification > 0,
+				!$inCapturing
+			);
+			$inCapturing = true;
 		} elseif ($ast->getId() === '#namedcapturing') {
 			$name = $ast->getChild(0)->getValue()['value'];
 			$capturings[] = RegexCapturingGroup::named(
 				$name,
 				$inAlternation > 0,
 				$inOptionalQuantification > 0,
+				!$inCapturing
 			);
+			$inCapturing = true;
 		}
 
 		if ($ast->getId() === '#alternation') {
@@ -230,7 +237,7 @@ final class RegexArrayShapeMatcher
 		}
 
 		foreach ($ast->getChildren() as $child) {
-			$this->walkRegexAst($child, $inAlternation, $inOptionalQuantification, $capturings);
+			$this->walkRegexAst($child, $inAlternation, $inOptionalQuantification, $inCapturing, $capturings);
 		}
 	}
 

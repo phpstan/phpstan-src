@@ -9,18 +9,19 @@ class RegexCapturingGroup
 		private ?string $name,
 		private bool $inAlternation,
 		private bool $inOptionalQuantification,
+		private bool $isTopLevel
 	)
 	{
 	}
 
-	public static function unnamed(bool $inAlternation, bool $inOptionalQuantification): self
+	public static function unnamed(bool $inAlternation, bool $inOptionalQuantification, bool $isTopLevel): self
 	{
-		return new self(null, $inAlternation, $inOptionalQuantification);
+		return new self(null, $inAlternation, $inOptionalQuantification, $isTopLevel);
 	}
 
-	public static function named(string $name, bool $inAlternation, bool $inOptionalQuantification): self
+	public static function named(string $name, bool $inAlternation, bool $inOptionalQuantification, bool $isTopLevel): self
 	{
-		return new self($name, $inAlternation, $inOptionalQuantification);
+		return new self($name, $inAlternation, $inOptionalQuantification, $isTopLevel);
 	}
 
 	public function isOptional(): bool
@@ -28,9 +29,9 @@ class RegexCapturingGroup
 		return $this->inAlternation || $this->inOptionalQuantification;
 	}
 
-	public function inAlternation(): bool
+	public function isTopLevel(): bool
 	{
-		return $this->inAlternation;
+		return $this->isTopLevel;
 	}
 
 	/** @phpstan-assert-if-true !null $this->getName() */

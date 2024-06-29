@@ -7,6 +7,7 @@ use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\Exception\Exception;
 use Hoa\File\Read;
+use PHPStan\Internal\CombinationsHelper;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -16,6 +17,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function array_reverse;
 use function count;
 use function in_array;
@@ -73,30 +75,79 @@ final class RegexArrayShapeMatcher
 	 */
 	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched): ?Type
 	{
-		$captureGroups = $this->parseGroups($regex);
-		if ($captureGroups === null) {
+		$parseResult = $this->parseGroups($regex);
+		if ($parseResult === null) {
 			// regex could not be parsed by Hoa/Regex
 			return null;
 		}
+		[$groupList, $combiGroupsIds] = $parseResult;
 
 		$trailingOptionals = 0;
-		foreach (array_reverse($captureGroups) as $captureGroup) {
+		foreach (array_reverse($groupList) as $captureGroup) {
 			if (!$captureGroup->isOptional()) {
 				break;
 			}
 			$trailingOptionals++;
 		}
 
+		$overallType = [];
 		$valueType = $this->getValueType($flags ?? 0);
-		return $this->buildArrayType($captureGroups, $valueType, $wasMatched, $trailingOptionals);
+		if (
+			count($groupList) === 1
+			&& !$groupList[0]->inAlternation()
+			&& $wasMatched->yes()
+		) {
+			$combiType = $this->buildArrayType(
+				$groupList,
+				$combiGroupsIds[0],
+				$valueType,
+				$wasMatched,
+				$trailingOptionals
+			);
+
+			$constantArrays = $combiType->getConstantArrays();
+			if ($constantArrays === []) {
+				return $combiType;
+			}
+
+			// first item in matches contains the overall match.
+			$overallType[] = new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()]);
+
+			foreach ($constantArrays as $constantArray) {
+				// same shape, but without optional keys
+				$overallType[] = new ConstantArrayType(
+					$constantArray->getKeyTypes(),
+					$constantArray->getValueTypes(),
+				);
+			}
+		} else {
+			foreach($combiGroupsIds as $combiIds) {
+				$combiType = $this->buildArrayType(
+					$groupList,
+					$combiIds,
+					$valueType,
+					$wasMatched,
+					$trailingOptionals
+				);
+				$overallType[] = $combiType;
+			}
+		}
+
+		return TypeCombinator::union(...$overallType);
 	}
 
+	/**
+	 * @param list<int> $combiIds
+	 * @param list<RegexCapturingGroup>|null $captureGroups
+	 */
 	private function buildArrayType(
 		array $captureGroups,
+		array $combiIds,
 		Type $valueType,
 		TrinaryLogic $wasMatched,
-		int $trailingOptionals
-	): Type {
+		int $trailingOptionals,
+	): Type
+	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
 		// first item in matches contains the overall match.
@@ -113,7 +164,10 @@ final class RegexArrayShapeMatcher
 			if (!$wasMatched->yes()) {
 				$optional = true;
 			} else {
-				if ($i < $countGroups - $trailingOptionals) {
+				if (
+					$i < $countGroups - $trailingOptionals
+					|| !in_array($captureGroup->getId(), $combiIds, true)
+				) {
 					$optional = false;
 				} else {
 					$optional = $captureGroup->isOptional();
@@ -176,7 +230,7 @@ final class RegexArrayShapeMatcher
 	}
 
 	/**
-	 * @return list<RegexCapturingGroup>|null
+	 * @return array{list<RegexCapturingGroup>, list<list<int>>}|null
 	 */
 	private function parseGroups(string $regex): ?array
 	{
@@ -191,37 +245,66 @@ final class RegexArrayShapeMatcher
 			return null;
 		}
 
-		$capturings = [];
-		$this->walkRegexAst($ast, 0, 0, false, $capturings);
+		$capturingGroups = [];
+		$groupCombinations = [];
+		$alternationIndex = -1;
+		$this->walkRegexAst(
+			$ast,
+			false,
+			false,
+			false,
+			$alternationIndex,
+			0,
+			$capturingGroups,
+			$groupCombinations
+		);
 
-		return $capturings;
+		$allCombinations = iterator_to_array(CombinationsHelper::combinations($groupCombinations));
+		$combiGroupsIds = [];
+		foreach($allCombinations as $combination) {
+			$combi = [];
+			foreach($combination as $groupIds) {
+				foreach($groupIds as $groupId) {
+					$combi[] = $groupId;
+				}
+			}
+			$combiGroupsIds[] = $combi;
+		}
+
+		return [$capturingGroups, $combiGroupsIds];
 	}
 
 	/**
-	 * @param list<RegexCapturingGroup> $capturings
+	 * @param list<RegexCapturingGroup> $capturingGroups
 	 */
-	private function walkRegexAst(TreeNode $ast, int $inAlternation, int $inOptionalQuantification, bool $inCapturing, array &$capturings): void
+	private function walkRegexAst(
+		TreeNode $ast,
+		bool $inAlternation,
+		bool $inOptionalQuantification,
+		bool $inCapturing,
+		int &$alternationIndex,
+		int $combinationIndex,
+		array &$capturingGroups,
+		array &$groupCombinations
+	): void
 	{
+		$group = null;
 		if ($ast->getId() === '#capturing') {
-			$capturings[] = RegexCapturingGroup::unnamed(
-				$inAlternation > 0,
-				$inOptionalQuantification > 0,
-				!$inCapturing
+			$group = RegexCapturingGroup::unnamed(
+				$inAlternation,
+				$inOptionalQuantification,
+				!$inCapturing,
 			);
 			$inCapturing = true;
 		} elseif ($ast->getId() === '#namedcapturing') {
 			$name = $ast->getChild(0)->getValue()['value'];
-			$capturings[] = RegexCapturingGroup::named(
+			$group = RegexCapturingGroup::named(
 				$name,
-				$inAlternation > 0,
-				$inOptionalQuantification > 0,
-				!$inCapturing
+				$inAlternation,
+				$inOptionalQuantification,
+				!$inCapturing,
 			);
 			$inCapturing = true;
-		}
-
-		if ($ast->getId() === '#alternation') {
-			$inAlternation++;
 		}
 
 		if ($ast->getId() === '#quantification') {
@@ -229,16 +312,46 @@ final class RegexArrayShapeMatcher
 			$value = $lastChild->getValue();
 
 			if ($value['token'] === 'n_to_m' && str_contains($value['value'], '{0,')) {
-				$inOptionalQuantification++;
+				$inOptionalQuantification = true;
 			} elseif ($value['token'] === 'zero_or_one') {
-				$inOptionalQuantification++;
+				$inOptionalQuantification = true;
 			} elseif ($value['token'] === 'zero_or_more') {
-				$inOptionalQuantification++;
+				$inOptionalQuantification = true;
 			}
 		}
 
+		if ($ast->getId() === '#alternation') {
+			$alternationIndex++;
+			$inAlternation = true;
+		}
+
+		if ($group !== null) {
+			$capturingGroups[] = $group;
+
+			if (!array_key_exists($alternationIndex, $groupCombinations)) {
+				$groupCombinations[$alternationIndex] = [];
+			}
+			if (!array_key_exists($combinationIndex, $groupCombinations[$alternationIndex])) {
+				$groupCombinations[$alternationIndex][$combinationIndex] = [];
+			}
+			$groupCombinations[$alternationIndex][$combinationIndex][] = $group->getId();
+		}
+
 		foreach ($ast->getChildren() as $child) {
-			$this->walkRegexAst($child, $inAlternation, $inOptionalQuantification, $inCapturing, $capturings);
+			$this->walkRegexAst(
+				$child,
+				$inAlternation,
+				$inOptionalQuantification,
+				$inCapturing,
+				$alternationIndex,
+				$combinationIndex,
+				$capturingGroups,
+				$groupCombinations,
+			);
+
+			if ($ast->getId() === '#alternation') {
+				$combinationIndex++;
+			}
 		}
 	}
 

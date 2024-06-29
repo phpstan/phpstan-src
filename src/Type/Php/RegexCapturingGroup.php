@@ -4,14 +4,19 @@ namespace PHPStan\Type\Php;
 
 class RegexCapturingGroup
 {
+	private int $id;
+
+	static private int $idGenerator = 1;
 
 	private function __construct(
 		private ?string $name,
 		private bool $inAlternation,
 		private bool $inOptionalQuantification,
-		private bool $isTopLevel
+		private bool $isTopLevel,
 	)
 	{
+		$this->id = self::$idGenerator;
+		self::$idGenerator++;
 	}
 
 	public static function unnamed(bool $inAlternation, bool $inOptionalQuantification, bool $isTopLevel): self
@@ -24,9 +29,19 @@ class RegexCapturingGroup
 		return new self($name, $inAlternation, $inOptionalQuantification, $isTopLevel);
 	}
 
+	public function getId(): int
+	{
+		return $this->id;
+	}
+
 	public function isOptional(): bool
 	{
 		return $this->inAlternation || $this->inOptionalQuantification;
+	}
+
+	public function inAlternation(): bool
+	{
+		return $this->inAlternation;
 	}
 
 	public function isTopLevel(): bool

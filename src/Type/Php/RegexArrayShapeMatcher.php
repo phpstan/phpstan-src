@@ -106,13 +106,14 @@ final class RegexArrayShapeMatcher
 			!$wasMatched->yes(),
 		);
 
-		for ($i = 0; $i < count($captureGroups); $i++) {
+		$countGroups = count($captureGroups);
+		for ($i = 0; $i < $countGroups; $i++) {
 			$captureGroup = $captureGroups[$i];
 
 			if (!$wasMatched->yes()) {
 				$optional = true;
 			} else {
-				if ($i < count($captureGroups) - $trailingOptionals) {
+				if ($i < $countGroups - $trailingOptionals) {
 					$optional = false;
 				} else {
 					$optional = $captureGroup->isOptional();

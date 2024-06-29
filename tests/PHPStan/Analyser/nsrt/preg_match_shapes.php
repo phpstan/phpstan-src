@@ -118,7 +118,7 @@ function doOffsetCapture(string $s): void {
 
 function doUnmatchedAsNull(string $s): void {
 	if (preg_match('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType('array{string, string|null, string|null, string|null}|array{string}', $matches);
+		assertType('array{0: string, 1?: string|null, 2?: string|null, 3?: string|null}', $matches);
 	}
 	assertType('array{}|array{string, string|null, string|null, string|null}|array{string}', $matches);
 }

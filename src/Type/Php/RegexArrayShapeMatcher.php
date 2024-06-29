@@ -97,14 +97,13 @@ final class RegexArrayShapeMatcher
 			$trailingOptionals++;
 		}
 
-		$countGroups = count($captureGroups);
-		for ($i = 0; $i < $countGroups; $i++) {
+		for ($i = 0; $i < count($captureGroups); $i++) {
 			$captureGroup = $captureGroups[$i];
 
 			if (!$wasMatched->yes()) {
 				$optional = true;
 			} else {
-				if ($i < $countGroups - $trailingOptionals) {
+				if ($i < count($captureGroups) - $trailingOptionals) {
 					$optional = false;
 				} else {
 					$optional = $captureGroup->isOptional();
@@ -126,34 +125,7 @@ final class RegexArrayShapeMatcher
 			);
 		}
 
-		$overallType = $builder->getArray();
-
-		// when all groups are optional return a more precise union, instead of a shape with optional offsets
-		if (
-			$countGroups === $trailingOptionals
-			&& $wasMatched->yes()
-		) {
-			$constantArrays = $overallType->getConstantArrays();
-			if ($constantArrays === []) {
-				return $overallType;
-			}
-
-			$result = [
-				// first item in matches contains the overall match.
-				new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()]),
-			];
-			foreach ($constantArrays as $constantArray) {
-				// same shape, but without optional keys
-				$result[] = new ConstantArrayType(
-					$constantArray->getKeyTypes(),
-					$constantArray->getValueTypes(),
-				);
-			}
-
-			return TypeCombinator::union(...$result);
-		}
-
-		return $overallType;
+		return $builder->getArray();
 	}
 
 	private function getKeyType(int|string $key): Type

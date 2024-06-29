@@ -193,12 +193,13 @@ final class RegexArrayShapeMatcher
 	private function walkRegexAst(TreeNode $ast, int $inAlternation, int $inOptionalQuantification, array &$capturings): void
 	{
 		if ($ast->getId() === '#capturing') {
-			$capturings[] = RegexCapturingGroup::unnamed($inAlternation > 0 || $inOptionalQuantification > 0);
+			$capturings[] = RegexCapturingGroup::unnamed($inAlternation > 0, $inOptionalQuantification > 0);
 		} elseif ($ast->getId() === '#namedcapturing') {
 			$name = $ast->getChild(0)->getValue()['value'];
 			$capturings[] = RegexCapturingGroup::named(
 				$name,
-				$inAlternation > 0 || $inOptionalQuantification > 0,
+				$inAlternation > 0,
+				$inOptionalQuantification > 0,
 			);
 		}
 

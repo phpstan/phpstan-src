@@ -75,12 +75,11 @@ final class RegexArrayShapeMatcher
 	 */
 	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched): ?Type
 	{
-		$parseResult = $this->parseGroups($regex);
-		if ($parseResult === null) {
+		$groupList = $this->parseGroups($regex);
+		if ($groupList === null) {
 			// regex could not be parsed by Hoa/Regex
 			return null;
 		}
-		[$groupList, $combiGroupsIds] = $parseResult;
 
 		$trailingOptionals = 0;
 		foreach (array_reverse($groupList) as $captureGroup) {
@@ -99,7 +98,6 @@ final class RegexArrayShapeMatcher
 		) {
 			$combiType = $this->buildArrayType(
 				$groupList,
-				$combiGroupsIds[0],
 				$valueType,
 				$wasMatched,
 				$trailingOptionals
@@ -120,20 +118,16 @@ final class RegexArrayShapeMatcher
 					$constantArray->getValueTypes(),
 				);
 			}
-		} else {
-			foreach($combiGroupsIds as $combiIds) {
-				$combiType = $this->buildArrayType(
-					$groupList,
-					$combiIds,
-					$valueType,
-					$wasMatched,
-					$trailingOptionals
-				);
-				$overallType[] = $combiType;
-			}
+
+			return TypeCombinator::union(...$overallType);
 		}
 
-		return TypeCombinator::union(...$overallType);
+		return $this->buildArrayType(
+			$groupList,
+			$valueType,
+			$wasMatched,
+			$trailingOptionals
+		);
 	}
 
 	/**
@@ -142,7 +136,6 @@ final class RegexArrayShapeMatcher
 	 */
 	private function buildArrayType(
 		array $captureGroups,
-		array $combiIds,
 		Type $valueType,
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
@@ -166,7 +159,6 @@ final class RegexArrayShapeMatcher
 			} else {
 				if (
 					$i < $countGroups - $trailingOptionals
-					|| !in_array($captureGroup->getId(), $combiIds, true)
 				) {
 					$optional = false;
 				} else {
@@ -246,32 +238,15 @@ final class RegexArrayShapeMatcher
 		}
 
 		$capturingGroups = [];
-		$groupCombinations = [];
-		$alternationIndex = -1;
 		$this->walkRegexAst(
 			$ast,
 			false,
 			false,
 			false,
-			$alternationIndex,
-			0,
-			$capturingGroups,
-			$groupCombinations
+			$capturingGroups
 		);
 
-		$allCombinations = iterator_to_array(CombinationsHelper::combinations($groupCombinations));
-		$combiGroupsIds = [];
-		foreach($allCombinations as $combination) {
-			$combi = [];
-			foreach($combination as $groupIds) {
-				foreach($groupIds as $groupId) {
-					$combi[] = $groupId;
-				}
-			}
-			$combiGroupsIds[] = $combi;
-		}
-
-		return [$capturingGroups, $combiGroupsIds];
+		return $capturingGroups;
 	}
 
 	/**
@@ -282,10 +257,7 @@ final class RegexArrayShapeMatcher
 		bool $inAlternation,
 		bool $inOptionalQuantification,
 		bool $inCapturing,
-		int &$alternationIndex,
-		int $combinationIndex,
 		array &$capturingGroups,
-		array &$groupCombinations
 	): void
 	{
 		$group = null;
@@ -321,20 +293,11 @@ final class RegexArrayShapeMatcher
 		}
 
 		if ($ast->getId() === '#alternation') {
-			$alternationIndex++;
 			$inAlternation = true;
 		}
 
 		if ($group !== null) {
 			$capturingGroups[] = $group;
-
-			if (!array_key_exists($alternationIndex, $groupCombinations)) {
-				$groupCombinations[$alternationIndex] = [];
-			}
-			if (!array_key_exists($combinationIndex, $groupCombinations[$alternationIndex])) {
-				$groupCombinations[$alternationIndex][$combinationIndex] = [];
-			}
-			$groupCombinations[$alternationIndex][$combinationIndex][] = $group->getId();
 		}
 
 		foreach ($ast->getChildren() as $child) {
@@ -343,15 +306,8 @@ final class RegexArrayShapeMatcher
 				$inAlternation,
 				$inOptionalQuantification,
 				$inCapturing,
-				$alternationIndex,
-				$combinationIndex,
 				$capturingGroups,
-				$groupCombinations,
 			);
-
-			if ($ast->getId() === '#alternation') {
-				$combinationIndex++;
-			}
 		}
 	}
 

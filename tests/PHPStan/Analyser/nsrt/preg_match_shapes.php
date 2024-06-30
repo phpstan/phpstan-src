@@ -104,9 +104,9 @@ function doNamedSubpattern(string $s): void {
 	assertType('array{}|array{0: string, name: string, 1: string}', $matches);
 
 	if (preg_match('/^(?<name>\S+::\S+)(?:(?<dataname> with data set (?:#\d+|"[^"]+"))\s\()?/', $s, $matches)) {
-		assertType('array{0: string, name: string, 1: string, dataname: string, 2: string}', $matches);
+		assertType('array{0: string, name: string, 1: string, dataname?: string, 2?: string}', $matches);
 	}
-	assertType('array{}|array{0: string, name: string, 1: string, dataname: string, 2: string}', $matches);
+	assertType('array{}|array{0: string, name: string, 1: string, dataname?: string, 2?: string}', $matches);
 }
 
 function doOffsetCapture(string $s): void {

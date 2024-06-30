@@ -267,7 +267,7 @@ final class RegexArrayShapeMatcher
 		TreeNode $ast,
 		bool $inAlternation,
 		bool $inOptionalQuantification,
-		?RegexCapturingGroup $inCapturing,
+		RegexCapturingGroup|RegexNonCapturingGroup|null $parentGroup,
 		array &$capturingGroups,
 	): void
 	{
@@ -276,18 +276,24 @@ final class RegexArrayShapeMatcher
 			$group = RegexCapturingGroup::unnamed(
 				$inAlternation,
 				$inOptionalQuantification,
-				$inCapturing,
+				$parentGroup,
 			);
-			$inCapturing = $group;
+			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
 			$name = $ast->getChild(0)->getValue()['value'];
 			$group = RegexCapturingGroup::named(
 				$name,
 				$inAlternation,
 				$inOptionalQuantification,
-				$inCapturing,
+				$parentGroup,
 			);
-			$inCapturing = $group;
+			$parentGroup = $group;
+		} elseif ($ast->getId() === '#noncapturing') {
+			$group = RegexNonCapturingGroup::create(
+				$inOptionalQuantification,
+				$parentGroup,
+			);
+			$parentGroup = $group;
 		}
 
 		$inOptionalQuantification = false;
@@ -308,7 +314,7 @@ final class RegexArrayShapeMatcher
 			$inAlternation = true;
 		}
 
-		if ($group !== null) {
+		if ($group instanceof RegexCapturingGroup) {
 			$capturingGroups[] = $group;
 		}
 
@@ -317,7 +323,7 @@ final class RegexArrayShapeMatcher
 				$child,
 				$inAlternation,
 				$inOptionalQuantification,
-				$inCapturing,
+				$parentGroup,
 				$capturingGroups,
 			);
 		}

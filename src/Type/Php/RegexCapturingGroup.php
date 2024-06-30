@@ -9,17 +9,26 @@ class RegexCapturingGroup
 		private ?string $name,
 		private bool $inAlternation,
 		private bool $inOptionalQuantification,
-		private ?RegexCapturingGroup $parent,
+		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
 	)
 	{
 	}
 
-	public static function unnamed(bool $inAlternation, bool $inOptionalQuantification, ?RegexCapturingGroup $parent): self
+	public static function unnamed(
+		bool $inAlternation,
+		bool $inOptionalQuantification,
+		RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
+	): self
 	{
 		return new self(null, $inAlternation, $inOptionalQuantification, $parent);
 	}
 
-	public static function named(string $name, bool $inAlternation, bool $inOptionalQuantification, ?RegexCapturingGroup $parent): self
+	public static function named(
+		string $name,
+		bool $inAlternation,
+		bool $inOptionalQuantification,
+		RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
+	): self
 	{
 		return new self($name, $inAlternation, $inOptionalQuantification, $parent);
 	}

@@ -1,7 +1,7 @@
 <?php
 
 namespace Doctrine\ORM {
-	class EntityManager
+	class EntityManagerPHPStanAlias
 	{
 
 		public function transactional(callable $cb): void {
@@ -20,11 +20,11 @@ namespace MyFunction {
 namespace CatchWithUnthrownExceptionStubs
 {
 
-	use Doctrine\ORM\EntityManager;
+	use Doctrine\ORM\EntityManagerPHPStanAlias;
 
 	class Foo
 	{
-		public function doFoo(EntityManager $em): void
+		public function doFoo(EntityManagerPHPStanAlias $em): void
 		{
 			try {
 				$em->transactional(function () {

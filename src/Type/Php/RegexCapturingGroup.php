@@ -4,9 +4,10 @@ namespace PHPStan\Type\Php;
 
 class RegexCapturingGroup
 {
+
 	private int $id;
 
-	static private int $idGenerator = 1;
+	private static int $idGenerator = 1;
 
 	private function __construct(
 		private ?string $name,
@@ -41,8 +42,7 @@ class RegexCapturingGroup
 
 	public function isOptional(): bool
 	{
-		return
-			$this->inAlternation
+		return $this->inAlternation
 			|| $this->inOptionalQuantification
 			|| ($this->parent !== null && $this->parent->isOptional());
 	}

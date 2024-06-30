@@ -7,7 +7,6 @@ use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\Exception\Exception;
 use Hoa\File\Read;
-use PHPStan\Internal\CombinationsHelper;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -17,7 +16,6 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
 use function array_reverse;
 use function count;
 use function in_array;
@@ -104,12 +102,12 @@ final class RegexArrayShapeMatcher
 				$groupList,
 				$valueType,
 				$wasMatched,
-				$trailingOptionals
+				$trailingOptionals,
 			);
 
 			return TypeCombinator::union(
 				new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()]),
-				$combiType
+				$combiType,
 			);
 		}
 
@@ -117,7 +115,7 @@ final class RegexArrayShapeMatcher
 			$groupList,
 			$valueType,
 			$wasMatched,
-			$trailingOptionals
+			$trailingOptionals,
 		);
 	}
 
@@ -147,8 +145,7 @@ final class RegexArrayShapeMatcher
 	}
 
 	/**
-	 * @param list<int> $combiIds
-	 * @param list<RegexCapturingGroup>|null $captureGroups
+	 * @param list<RegexCapturingGroup> $captureGroups
 	 */
 	private function buildArrayType(
 		array $captureGroups,
@@ -238,7 +235,7 @@ final class RegexArrayShapeMatcher
 	}
 
 	/**
-	 * @return array{list<RegexCapturingGroup>, list<list<int>>}|null
+	 * @return list<RegexCapturingGroup>|null
 	 */
 	private function parseGroups(string $regex): ?array
 	{
@@ -259,7 +256,7 @@ final class RegexArrayShapeMatcher
 			false,
 			false,
 			null,
-			$capturingGroups
+			$capturingGroups,
 		);
 
 		return $capturingGroups;
@@ -281,7 +278,7 @@ final class RegexArrayShapeMatcher
 			$group = RegexCapturingGroup::unnamed(
 				$inAlternation,
 				$inOptionalQuantification,
-				$inCapturing
+				$inCapturing,
 			);
 			$inCapturing = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
@@ -290,7 +287,7 @@ final class RegexArrayShapeMatcher
 				$name,
 				$inAlternation,
 				$inOptionalQuantification,
-				$inCapturing
+				$inCapturing,
 			);
 			$inCapturing = $group;
 		}

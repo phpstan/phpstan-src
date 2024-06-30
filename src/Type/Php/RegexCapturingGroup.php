@@ -5,10 +5,6 @@ namespace PHPStan\Type\Php;
 class RegexCapturingGroup
 {
 
-	private int $id;
-
-	private static int $idGenerator = 1;
-
 	private function __construct(
 		private ?string $name,
 		private bool $inAlternation,
@@ -16,8 +12,6 @@ class RegexCapturingGroup
 		private ?RegexCapturingGroup $parent,
 	)
 	{
-		$this->id = self::$idGenerator;
-		self::$idGenerator++;
 	}
 
 	public static function unnamed(bool $inAlternation, bool $inOptionalQuantification, ?RegexCapturingGroup $parent): self
@@ -35,21 +29,11 @@ class RegexCapturingGroup
 		$this->inOptionalQuantification = false;
 	}
 
-	public function getId(): int
-	{
-		return $this->id;
-	}
-
 	public function isOptional(): bool
 	{
 		return $this->inAlternation
 			|| $this->inOptionalQuantification
 			|| ($this->parent !== null && $this->parent->isOptional());
-	}
-
-	public function inAlternation(): bool
-	{
-		return $this->inAlternation;
 	}
 
 	public function isTopLevel(): bool

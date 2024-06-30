@@ -73,14 +73,88 @@ final class RegexArrayShapeMatcher
 	 */
 	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched): ?Type
 	{
-		$captureGroups = $this->parseGroups($regex);
-		if ($captureGroups === null) {
+		$groupList = $this->parseGroups($regex);
+		if ($groupList === null) {
 			// regex could not be parsed by Hoa/Regex
 			return null;
 		}
 
-		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$trailingOptionals = 0;
+		foreach (array_reverse($groupList) as $captureGroup) {
+			if (!$captureGroup->isOptional()) {
+				break;
+			}
+			$trailingOptionals++;
+		}
+
 		$valueType = $this->getValueType($flags ?? 0);
+		$onlyOptionalTopLevelGroup = $this->getOnlyOptionalTopLevelGroup($groupList);
+		if (
+			$wasMatched->yes()
+			&& $onlyOptionalTopLevelGroup !== null
+		) {
+			// if only one top level capturing optional group exists
+			// we build a more precise constant union of a empty-match and a match with the group
+
+			$onlyOptionalTopLevelGroup->removeOptionalQualification();
+
+			$combiType = $this->buildArrayType(
+				$groupList,
+				$valueType,
+				$wasMatched,
+				$trailingOptionals,
+			);
+
+			return TypeCombinator::union(
+				new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()]),
+				$combiType,
+			);
+		}
+
+		return $this->buildArrayType(
+			$groupList,
+			$valueType,
+			$wasMatched,
+			$trailingOptionals,
+		);
+	}
+
+	/**
+	 * @param list<RegexCapturingGroup> $captureGroups
+	 */
+	private function getOnlyOptionalTopLevelGroup(array $captureGroups): ?RegexCapturingGroup
+	{
+		$group = null;
+		foreach ($captureGroups as $captureGroup) {
+			if (!$captureGroup->isTopLevel()) {
+				continue;
+			}
+
+			if (!$captureGroup->isOptional()) {
+				return null;
+			}
+
+			if ($group !== null) {
+				return null;
+			}
+
+			$group = $captureGroup;
+		}
+
+		return $group;
+	}
+
+	/**
+	 * @param list<RegexCapturingGroup> $captureGroups
+	 */
+	private function buildArrayType(
+		array $captureGroups,
+		Type $valueType,
+		TrinaryLogic $wasMatched,
+		int $trailingOptionals,
+	): Type
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
 
 		// first item in matches contains the overall match.
 		$builder->setOffsetValueType(
@@ -89,21 +163,14 @@ final class RegexArrayShapeMatcher
 			!$wasMatched->yes(),
 		);
 
-		$trailingOptionals = 0;
-		foreach (array_reverse($captureGroups) as $captureGroup) {
-			if (!$captureGroup->isOptional()) {
-				break;
-			}
-			$trailingOptionals++;
-		}
-
-		for ($i = 0; $i < count($captureGroups); $i++) {
+		$countGroups = count($captureGroups);
+		for ($i = 0; $i < $countGroups; $i++) {
 			$captureGroup = $captureGroups[$i];
 
 			if (!$wasMatched->yes()) {
 				$optional = true;
 			} else {
-				if ($i < count($captureGroups) - $trailingOptionals) {
+				if ($i < $countGroups - $trailingOptionals) {
 					$optional = false;
 				} else {
 					$optional = $captureGroup->isOptional();
@@ -181,46 +248,84 @@ final class RegexArrayShapeMatcher
 			return null;
 		}
 
-		$capturings = [];
-		$this->walkRegexAst($ast, 0, 0, $capturings);
+		$capturingGroups = [];
+		$this->walkRegexAst(
+			$ast,
+			false,
+			false,
+			null,
+			$capturingGroups,
+		);
 
-		return $capturings;
+		return $capturingGroups;
 	}
 
 	/**
-	 * @param list<RegexCapturingGroup> $capturings
+	 * @param list<RegexCapturingGroup> $capturingGroups
 	 */
-	private function walkRegexAst(TreeNode $ast, int $inAlternation, int $inOptionalQuantification, array &$capturings): void
+	private function walkRegexAst(
+		TreeNode $ast,
+		bool $inAlternation,
+		bool $inOptionalQuantification,
+		RegexCapturingGroup|RegexNonCapturingGroup|null $parentGroup,
+		array &$capturingGroups,
+	): void
 	{
+		$group = null;
 		if ($ast->getId() === '#capturing') {
-			$capturings[] = RegexCapturingGroup::unnamed($inAlternation > 0 || $inOptionalQuantification > 0);
+			$group = RegexCapturingGroup::unnamed(
+				$inAlternation,
+				$inOptionalQuantification,
+				$parentGroup,
+			);
+			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
 			$name = $ast->getChild(0)->getValue()['value'];
-			$capturings[] = RegexCapturingGroup::named(
+			$group = RegexCapturingGroup::named(
 				$name,
-				$inAlternation > 0 || $inOptionalQuantification > 0,
+				$inAlternation,
+				$inOptionalQuantification,
+				$parentGroup,
 			);
+			$parentGroup = $group;
+		} elseif ($ast->getId() === '#noncapturing') {
+			$group = RegexNonCapturingGroup::create(
+				$inOptionalQuantification,
+				$parentGroup,
+			);
+			$parentGroup = $group;
 		}
 
-		if ($ast->getId() === '#alternation') {
-			$inAlternation++;
-		}
-
+		$inOptionalQuantification = false;
 		if ($ast->getId() === '#quantification') {
 			$lastChild = $ast->getChild($ast->getChildrenNumber() - 1);
 			$value = $lastChild->getValue();
 
 			if ($value['token'] === 'n_to_m' && str_contains($value['value'], '{0,')) {
-				$inOptionalQuantification++;
+				$inOptionalQuantification = true;
 			} elseif ($value['token'] === 'zero_or_one') {
-				$inOptionalQuantification++;
+				$inOptionalQuantification = true;
 			} elseif ($value['token'] === 'zero_or_more') {
-				$inOptionalQuantification++;
+				$inOptionalQuantification = true;
 			}
 		}
 
+		if ($ast->getId() === '#alternation') {
+			$inAlternation = true;
+		}
+
+		if ($group instanceof RegexCapturingGroup) {
+			$capturingGroups[] = $group;
+		}
+
 		foreach ($ast->getChildren() as $child) {
-			$this->walkRegexAst($child, $inAlternation, $inOptionalQuantification, $capturings);
+			$this->walkRegexAst(
+				$child,
+				$inAlternation,
+				$inOptionalQuantification,
+				$parentGroup,
+				$capturingGroups,
+			);
 		}
 	}
 

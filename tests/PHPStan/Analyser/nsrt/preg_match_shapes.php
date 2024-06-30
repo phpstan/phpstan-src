@@ -104,9 +104,9 @@ function doNamedSubpattern(string $s): void {
 	assertType('array{}|array{0: string, name: string, 1: string}', $matches);
 
 	if (preg_match('/^(?<name>\S+::\S+)(?:(?<dataname> with data set (?:#\d+|"[^"]+"))\s\()?/', $s, $matches)) {
-		assertType('array{0: string, name: string, 1: string, dataname?: string, 2?: string}', $matches);
+		assertType('array{0: string, name: string, 1: string, dataname: string, 2: string}', $matches);
 	}
-	assertType('array{}|array{0: string, name: string, 1: string, dataname?: string, 2?: string}', $matches);
+	assertType('array{}|array{0: string, name: string, 1: string, dataname: string, 2: string}', $matches);
 }
 
 function doOffsetCapture(string $s): void {
@@ -120,7 +120,7 @@ function doUnmatchedAsNull(string $s): void {
 	if (preg_match('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
 		assertType('array{0: string, 1?: string|null, 2?: string|null, 3?: string|null}', $matches);
 	}
-	assertType('array{}|array{string, string|null, string|null, string|null}|array{string}', $matches);
+	assertType('array{}|array{0: string, 1?: string|null, 2?: string|null, 3?: string|null}', $matches);
 }
 
 function doUnknownFlags(string $s, int $flags): void {
@@ -252,7 +252,7 @@ function doFoo(string $row): void
 		assertType('array{0: string, 1: string, 2?: string}', $matches);
 	}
 	if (preg_match('~^(a(b)?)?$~', $row, $matches) === 1) {
-		assertType('array{string, string, string}|array{string}', $matches);
+		assertType('array{0: string, 1?: string, 2?: string}', $matches);
 	}
 }
 
@@ -280,6 +280,11 @@ function allGroupsOptional(string $size): void
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
 	assertType('array{string, string, string}|array{string}', $matches);
+
+	if (preg_match('~^a\.b(c(\d+))d~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{string, string, string}', $matches);
 
 	if (preg_match('~^a\.(b)?(c)?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));

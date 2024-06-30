@@ -89,13 +89,17 @@ final class RegexArrayShapeMatcher
 			$trailingOptionals++;
 		}
 
-		$overallType = [];
 		$valueType = $this->getValueType($flags ?? 0);
+		$onlyOptionalTopLevelGroup = $this->getOnlyOptionalTopLevelGroup($groupList);
 		if (
-			count($groupList) === 1
-			&& !$groupList[0]->inAlternation()
-			&& $wasMatched->yes()
+			$wasMatched->yes()
+			&& $onlyOptionalTopLevelGroup !== null
 		) {
+			// if only one top level capturing optional group exists
+			// we build a more precise constant union of a empty-match and a match with the group
+
+			$onlyOptionalTopLevelGroup->removeOptionalQualification();
+
 			$combiType = $this->buildArrayType(
 				$groupList,
 				$valueType,
@@ -103,23 +107,10 @@ final class RegexArrayShapeMatcher
 				$trailingOptionals
 			);
 
-			$constantArrays = $combiType->getConstantArrays();
-			if ($constantArrays === []) {
-				return $combiType;
-			}
-
-			// first item in matches contains the overall match.
-			$overallType[] = new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()]);
-
-			foreach ($constantArrays as $constantArray) {
-				// same shape, but without optional keys
-				$overallType[] = new ConstantArrayType(
-					$constantArray->getKeyTypes(),
-					$constantArray->getValueTypes(),
-				);
-			}
-
-			return TypeCombinator::union(...$overallType);
+			return TypeCombinator::union(
+				new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()]),
+				$combiType
+			);
 		}
 
 		return $this->buildArrayType(
@@ -128,6 +119,31 @@ final class RegexArrayShapeMatcher
 			$wasMatched,
 			$trailingOptionals
 		);
+	}
+
+	/**
+	 * @param list<RegexCapturingGroup> $captureGroups
+	 */
+	private function getOnlyOptionalTopLevelGroup(array $captureGroups): ?RegexCapturingGroup
+	{
+		$group = null;
+		foreach ($captureGroups as $captureGroup) {
+			if (!$captureGroup->isTopLevel()) {
+				continue;
+			}
+
+			if (!$captureGroup->isOptional()) {
+				return null;
+			}
+
+			if ($group !== null) {
+				return null;
+			}
+
+			$group = $captureGroup;
+		}
+
+		return $group;
 	}
 
 	/**
@@ -242,7 +258,7 @@ final class RegexArrayShapeMatcher
 			$ast,
 			false,
 			false,
-			false,
+			null,
 			$capturingGroups
 		);
 
@@ -256,7 +272,7 @@ final class RegexArrayShapeMatcher
 		TreeNode $ast,
 		bool $inAlternation,
 		bool $inOptionalQuantification,
-		bool $inCapturing,
+		?RegexCapturingGroup $inCapturing,
 		array &$capturingGroups,
 	): void
 	{
@@ -265,20 +281,21 @@ final class RegexArrayShapeMatcher
 			$group = RegexCapturingGroup::unnamed(
 				$inAlternation,
 				$inOptionalQuantification,
-				!$inCapturing,
+				$inCapturing
 			);
-			$inCapturing = true;
+			$inCapturing = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
 			$name = $ast->getChild(0)->getValue()['value'];
 			$group = RegexCapturingGroup::named(
 				$name,
 				$inAlternation,
 				$inOptionalQuantification,
-				!$inCapturing,
+				$inCapturing
 			);
-			$inCapturing = true;
+			$inCapturing = $group;
 		}
 
+		$inOptionalQuantification = false;
 		if ($ast->getId() === '#quantification') {
 			$lastChild = $ast->getChild($ast->getChildrenNumber() - 1);
 			$value = $lastChild->getValue();

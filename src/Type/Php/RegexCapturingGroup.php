@@ -12,21 +12,26 @@ class RegexCapturingGroup
 		private ?string $name,
 		private bool $inAlternation,
 		private bool $inOptionalQuantification,
-		private bool $isTopLevel,
+		private ?RegexCapturingGroup $parent,
 	)
 	{
 		$this->id = self::$idGenerator;
 		self::$idGenerator++;
 	}
 
-	public static function unnamed(bool $inAlternation, bool $inOptionalQuantification, bool $isTopLevel): self
+	public static function unnamed(bool $inAlternation, bool $inOptionalQuantification, ?RegexCapturingGroup $parent): self
 	{
-		return new self(null, $inAlternation, $inOptionalQuantification, $isTopLevel);
+		return new self(null, $inAlternation, $inOptionalQuantification, $parent);
 	}
 
-	public static function named(string $name, bool $inAlternation, bool $inOptionalQuantification, bool $isTopLevel): self
+	public static function named(string $name, bool $inAlternation, bool $inOptionalQuantification, ?RegexCapturingGroup $parent): self
 	{
-		return new self($name, $inAlternation, $inOptionalQuantification, $isTopLevel);
+		return new self($name, $inAlternation, $inOptionalQuantification, $parent);
+	}
+
+	public function removeOptionalQualification(): void
+	{
+		$this->inOptionalQuantification = false;
 	}
 
 	public function getId(): int
@@ -36,7 +41,10 @@ class RegexCapturingGroup
 
 	public function isOptional(): bool
 	{
-		return $this->inAlternation || $this->inOptionalQuantification;
+		return
+			$this->inAlternation
+			|| $this->inOptionalQuantification
+			|| ($this->parent !== null && $this->parent->isOptional());
 	}
 
 	public function inAlternation(): bool
@@ -46,7 +54,7 @@ class RegexCapturingGroup
 
 	public function isTopLevel(): bool
 	{
-		return $this->isTopLevel;
+		return $this->parent === null;
 	}
 
 	/** @phpstan-assert-if-true !null $this->getName() */

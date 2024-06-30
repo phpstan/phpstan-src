@@ -274,12 +274,22 @@ function doFoo3(string $row): void
 	assertType('array{string, string, string, string, string, string, string}', $matches);
 }
 
-function allGroupsOptional(string $size): void
+function groupsOptional(string $size): void
 {
 	if (preg_match('~^a\.b(c(\d+))?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
 	assertType('array{string, string, string}|array{string}', $matches);
+
+	if (preg_match('~^a\.b(c(\d+)?)d~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{0: string, 1: string, 2?: string}', $matches);
+
+	if (preg_match('~^a\.b(c(\d+)?)?d~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{0: string, 1?: string, 2?: string}', $matches);
 
 	if (preg_match('~^a\.b(c(\d+))d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));

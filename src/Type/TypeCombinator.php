@@ -765,62 +765,62 @@ class TypeCombinator
 	{
 		$constantArrayValuesCount = self::countConstantArrayValueTypes($types);
 
-		if ($constantArrayValuesCount > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-			$results = [];
-			foreach ($types as $type) {
-				$results[] = TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
-					if ($type instanceof ConstantArrayType) {
-						if ($type->isIterableAtLeastOnce()->no()) {
-							return $type;
-						}
-
-						$isList = true;
-						$valueTypes = [];
-						$keyTypes = [];
-						$nextAutoIndex = 0;
-						foreach ($type->getKeyTypes() as $i => $innerKeyType) {
-							if (!$innerKeyType instanceof ConstantIntegerType) {
-								$isList = false;
-							} elseif ($innerKeyType->getValue() !== $nextAutoIndex) {
-								$isList = false;
-								$nextAutoIndex = $innerKeyType->getValue() + 1;
-							} else {
-								$nextAutoIndex++;
-							}
-
-							$generalizedKeyType = $innerKeyType->generalize(GeneralizePrecision::moreSpecific());
-							$keyTypes[$generalizedKeyType->describe(VerbosityLevel::precise())] = $generalizedKeyType;
-
-							$innerValueType = $type->getValueTypes()[$i];
-							$generalizedValueType = TypeTraverser::map($innerValueType, static function (Type $type, callable $innerTraverse) use ($traverse): Type {
-								if ($type instanceof ArrayType) {
-									return TypeCombinator::intersect($type, new OversizedArrayType());
-								}
-
-								return $traverse($type);
-							});
-							$valueTypes[$generalizedValueType->describe(VerbosityLevel::precise())] = $generalizedValueType;
-						}
-
-						$keyType = TypeCombinator::union(...array_values($keyTypes));
-						$valueType = TypeCombinator::union(...array_values($valueTypes));
-
-						$arrayType = new ArrayType($keyType, $valueType);
-						if ($isList) {
-							$arrayType = AccessoryArrayListType::intersectWith($arrayType);
-						}
-
-						return TypeCombinator::intersect($arrayType, new NonEmptyArrayType(), new OversizedArrayType());
-					}
-
-					return $traverse($type);
-				});
-			}
-
-			return $results;
+		if ($constantArrayValuesCount <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+			return $types;
 		}
 
-		return $types;
+		$results = [];
+		foreach ($types as $type) {
+			$results[] = TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+				if (!$type instanceof ConstantArrayType) {
+					return $traverse($type);
+				}
+
+				if ($type->isIterableAtLeastOnce()->no()) {
+					return $type;
+				}
+
+				$isList = true;
+				$valueTypes = [];
+				$keyTypes = [];
+				$nextAutoIndex = 0;
+				foreach ($type->getKeyTypes() as $i => $innerKeyType) {
+					if (!$innerKeyType instanceof ConstantIntegerType) {
+						$isList = false;
+					} elseif ($innerKeyType->getValue() !== $nextAutoIndex) {
+						$isList = false;
+						$nextAutoIndex = $innerKeyType->getValue() + 1;
+					} else {
+						$nextAutoIndex++;
+					}
+
+					$generalizedKeyType = $innerKeyType->generalize(GeneralizePrecision::moreSpecific());
+					$keyTypes[$generalizedKeyType->describe(VerbosityLevel::precise())] = $generalizedKeyType;
+
+					$innerValueType = $type->getValueTypes()[$i];
+					$generalizedValueType = TypeTraverser::map($innerValueType, static function (Type $type, callable $innerTraverse) use ($traverse): Type {
+						if ($type instanceof ArrayType) {
+							return TypeCombinator::intersect($type, new OversizedArrayType());
+						}
+
+						return $traverse($type);
+					});
+					$valueTypes[$generalizedValueType->describe(VerbosityLevel::precise())] = $generalizedValueType;
+				}
+
+				$keyType = TypeCombinator::union(...array_values($keyTypes));
+				$valueType = TypeCombinator::union(...array_values($valueTypes));
+
+				$arrayType = new ArrayType($keyType, $valueType);
+				if ($isList) {
+					$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+				}
+
+				return TypeCombinator::intersect($arrayType, new NonEmptyArrayType(), new OversizedArrayType());
+			});
+		}
+
+		return $results;
 	}
 
 	/**

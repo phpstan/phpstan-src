@@ -170,9 +170,7 @@ final class RegexArrayShapeMatcher
 			if (!$wasMatched->yes()) {
 				$optional = true;
 			} else {
-				if (
-					$i < $countGroups - $trailingOptionals
-				) {
+				if ($i < $countGroups - $trailingOptionals) {
 					$optional = false;
 				} else {
 					$optional = $captureGroup->isOptional();

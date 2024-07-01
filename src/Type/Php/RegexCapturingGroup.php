@@ -5,40 +5,16 @@ namespace PHPStan\Type\Php;
 class RegexCapturingGroup
 {
 
-	private int $id;
-
 	private bool $forceNonOptional = false;
 
-	private static int $idGenerator = 100;
-
-	private function __construct(
+	public function __construct(
+		private int $id,
 		private ?string $name,
 		private ?int $alternationId,
 		private bool $inOptionalQuantification,
 		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
 	)
 	{
-		$this->id = self::$idGenerator;
-		self::$idGenerator++;
-	}
-
-	public static function unnamed(
-		?int $alternationId,
-		bool $inOptionalQuantification,
-		RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
-	): self
-	{
-		return new self(null, $alternationId, $inOptionalQuantification, $parent);
-	}
-
-	public static function named(
-		string $name,
-		?int $alternationId,
-		bool $inOptionalQuantification,
-		RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
-	): self
-	{
-		return new self($name, $alternationId, $inOptionalQuantification, $parent);
 	}
 
 	public function getId(): int

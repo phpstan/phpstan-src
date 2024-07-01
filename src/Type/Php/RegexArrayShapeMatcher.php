@@ -327,14 +327,16 @@ final class RegexArrayShapeMatcher
 
 		$capturingGroups = [];
 		$groupCombinations = [];
-		$alternationID = -1;
+		$alternationId = -1;
+		$captureGroupId = 100;
 		$this->walkRegexAst(
 			$ast,
 			false,
-			$alternationID,
+			$alternationId,
 			0,
 			false,
 			null,
+			$captureGroupId,
 			$capturingGroups,
 			$groupCombinations,
 		);
@@ -353,13 +355,16 @@ final class RegexArrayShapeMatcher
 		int $combinationIndex,
 		bool $inOptionalQuantification,
 		RegexCapturingGroup|RegexNonCapturingGroup|null $parentGroup,
+		int &$captureGroupId,
 		array &$capturingGroups,
 		array &$groupCombinations,
 	): void
 	{
 		$group = null;
 		if ($ast->getId() === '#capturing') {
-			$group = RegexCapturingGroup::unnamed(
+			$group = new RegexCapturingGroup(
+				$captureGroupId++,
+				null,
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
@@ -367,7 +372,8 @@ final class RegexArrayShapeMatcher
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
 			$name = $ast->getChild(0)->getValue()['value'];
-			$group = RegexCapturingGroup::named(
+			$group = new RegexCapturingGroup(
+				$captureGroupId++,
 				$name,
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
@@ -375,7 +381,7 @@ final class RegexArrayShapeMatcher
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#noncapturing') {
-			$group = RegexNonCapturingGroup::create(
+			$group = new RegexNonCapturingGroup(
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
@@ -422,6 +428,7 @@ final class RegexArrayShapeMatcher
 				$combinationIndex,
 				$inOptionalQuantification,
 				$parentGroup,
+				$captureGroupId,
 				$capturingGroups,
 				$groupCombinations,
 			);

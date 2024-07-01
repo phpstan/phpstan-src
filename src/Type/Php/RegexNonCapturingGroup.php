@@ -5,21 +5,12 @@ namespace PHPStan\Type\Php;
 class RegexNonCapturingGroup
 {
 
-	private function __construct(
+	public function __construct(
 		private ?int $alternationId,
 		private bool $inOptionalQuantification,
 		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
 	)
 	{
-	}
-
-	public static function create(
-		?int $alternationId,
-		bool $inOptionalQuantification,
-		RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
-	): self
-	{
-		return new self($alternationId, $inOptionalQuantification, $parent);
 	}
 
 	/** @phpstan-assert-if-true !null $this->getAlternationId() */

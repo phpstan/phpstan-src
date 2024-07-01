@@ -200,7 +200,7 @@ final class RegexArrayShapeMatcher
 	 */
 	private function getOnlyTopLevelAlternationId(array $captureGroups): ?int
 	{
-		$alternationID = null;
+		$alternationId = null;
 		foreach ($captureGroups as $captureGroup) {
 			if (!$captureGroup->isTopLevel()) {
 				continue;
@@ -210,14 +210,14 @@ final class RegexArrayShapeMatcher
 				return null;
 			}
 
-			if ($alternationID === null) {
-				$alternationID = $captureGroup->getAlternationId();
-			} elseif ($alternationID !== $captureGroup->getAlternationId()) {
+			if ($alternationId === null) {
+				$alternationId = $captureGroup->getAlternationId();
+			} elseif ($alternationId !== $captureGroup->getAlternationId()) {
 				return null;
 			}
 		}
 
-		return $alternationID;
+		return $alternationId;
 	}
 
 	/**

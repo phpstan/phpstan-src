@@ -1532,6 +1532,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $keyTypesCount === 0;
 		}
 
+		if (!$this->isList->equals($otherArray->isList)) {
+			return false;
+		}
+
 		$failOnDifferentValueType = $keyTypesCount !== $otherKeyTypesCount || $keyTypesCount < 2;
 
 		$keyTypes = $this->keyTypes;

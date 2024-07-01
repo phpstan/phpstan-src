@@ -13,7 +13,7 @@ function foobar() {
 		}
 	}
 
-	assertType('array{0?: int<1, max>, 1?: 2|3, 2?: 3}', $x);
+	assertType('array{0?: 2|3, 1?: 2|3}|array{0?: int<1, max>, 2?: 3, 1?: 2|3}|array{1, 2, 3}', $x);
 
 	if ($x) {
 	}

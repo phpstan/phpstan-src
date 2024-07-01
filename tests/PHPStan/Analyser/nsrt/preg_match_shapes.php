@@ -54,9 +54,9 @@ function doMatch(string $s): void {
 	assertType('array{}|array{0: string, 1: string, 2: string, 3: string, name?: string, 4?: string}', $matches);
 
 	if (preg_match('/(a|b)|(?:c)/', $s, $matches)) {
-		assertType('array{0: string, 1?: string}', $matches);
+		assertType('array{0: string, 1?: string}|array{string}', $matches);
 	}
-	assertType('array{}|array{0: string, 1?: string}', $matches);
+	assertType('array{}|array{0: string, 1?: string}|array{string}', $matches);
 
 	if (preg_match('/(foo)(bar)(baz)+/', $s, $matches)) {
 		assertType('array{string, string, string, string}', $matches);
@@ -252,7 +252,7 @@ function doFoo(string $row): void
 		assertType('array{0: string, 1: string, 2?: string}', $matches);
 	}
 	if (preg_match('~^(a(b)?)?$~', $row, $matches) === 1) {
-		assertType('array{0: string, 1?: string, 2?: string}', $matches);
+		assertType('array{0: string, 1: string, 2?: string}|array{string}', $matches);
 	}
 }
 
@@ -294,7 +294,7 @@ function groupsOptional(string $size): void
 	if (preg_match('~^a\.b(c(\d+)?)?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1?: string, 2?: string}', $matches);
+	assertType('array{0: string, 1: string, 2?: string}|array{string}', $matches);
 
 	if (preg_match('~^a\.b(c(\d+))d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));

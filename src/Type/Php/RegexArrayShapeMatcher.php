@@ -130,7 +130,7 @@ final class RegexArrayShapeMatcher
 				$beforeCurrentCombo = true;
 				foreach ($comboList as $groupId => $group) {
 					if (in_array($groupId, $groupCombo, true)) {
-						$isOptionalAlternation = $group->isOptionalAlternation();
+						$isOptionalAlternation = $group->inOptionalAlternation();
 						$group->forceNonOptional();
 						$beforeCurrentCombo = false;
 					} elseif ($beforeCurrentCombo) {

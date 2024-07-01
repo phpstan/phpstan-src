@@ -78,7 +78,7 @@ class RegexCapturingGroup
 			|| $this->parent !== null && $this->parent->isOptional();
 	}
 
-	public function isOptionalAlternation(): bool
+	public function inOptionalAlternation(): bool
 	{
 		if (!$this->inAlternation()) {
 			return false;

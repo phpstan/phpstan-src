@@ -274,35 +274,66 @@ function doFoo3(string $row): void
 	assertType('array{string, string, string, string, string, string, string}', $matches);
 }
 
-function groupsOptional(string $size): void
-{
+function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)(\d+)(\s+))?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
 	assertType('array{string, string, string, string, string}|array{string}', $matches);
+};
 
+function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+))?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
 	assertType('array{string, string, string}|array{string}', $matches);
+};
 
+function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)?)d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
 	assertType('array{0: string, 1: string, 2?: string}', $matches);
+};
 
+function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)?)?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
 	assertType('array{0: string, 1?: string, 2?: string}', $matches);
+};
 
+function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+))d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
 	assertType('array{string, string, string}', $matches);
+};
 
+function (string $size): void {
 	if (preg_match('~^a\.(b)?(c)?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
 	assertType('array{0: string, 1?: string, 2?: string}', $matches);
-}
+};
+
+function (string $size): void {
+	if (preg_match('~^(?:(\\d+)x(\\d+)|(\\d+)|x(\\d+))$~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{0: string, 1: string, 2: string, 3?: string, 4?: string}', $matches);
+};
+
+function (string $size): void {
+	if (preg_match('~^(?:(\\d+)x(\\d+)|(\\d+)|x(\\d+))?$~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{0: string, 1: string, 2: string, 3?: string, 4?: string}|array{string}', $matches);
+};
+
+function (string $size): void {
+	if (preg_match('~\{(?:(include)\\s+(?:[$]?\\w+(?<!file))\\s)|(?:(include\\s+file)\\s+(?:[$]?\\w+)\\s)|(?:(include(?:Template|(?:\\s+file)))\\s+(?:\'?.*?\.latte\'?)\\s)~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{0: string, 1: string, 2?: string, 3?: string}', $matches);
+};
+

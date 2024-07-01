@@ -306,3 +306,21 @@ function groupsOptional(string $size): void
 	}
 	assertType('array{0: string, 1?: string, 2?: string}', $matches);
 }
+
+function topLevelAlternation(string $size): void
+{
+	if (preg_match('~^(?:(\\d+)x(\\d+)|(\\d+)|x(\\d+))$~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{0: string, 1: string, 2: string, 3?: string, 4?: string}', $matches);
+
+	if (preg_match('~^(?:(\\d+)x(\\d+)|(\\d+)|x(\\d+))?$~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{0: string, 1: string, 2: string, 3?: string, 4?: string}|array{string}', $matches);
+
+	if (preg_match('~\{(?:(include)\\s+(?:[$]?\\w+(?<!file))\\s)|(?:(include\\s+file)\\s+(?:[$]?\\w+)\\s)|(?:(include(?:Template|(?:\\s+file)))\\s+(?:\'?.*?\.latte\'?)\\s)~', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{0: string, 1: string, 2?: string, 3?: string}', $matches);
+}

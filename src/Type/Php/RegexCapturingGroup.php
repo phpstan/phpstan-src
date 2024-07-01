@@ -5,49 +5,99 @@ namespace PHPStan\Type\Php;
 class RegexCapturingGroup
 {
 
+	private int $id;
+
+	private bool $forceNonOptional = false;
+
+	private static int $idGenerator = 100;
+
 	private function __construct(
 		private ?string $name,
-		private bool $inAlternation,
+		private ?int $alternationId,
 		private bool $inOptionalQuantification,
 		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
 	)
 	{
+		$this->id = self::$idGenerator;
+		self::$idGenerator++;
 	}
 
 	public static function unnamed(
-		bool $inAlternation,
+		?int $alternationId,
 		bool $inOptionalQuantification,
 		RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
 	): self
 	{
-		return new self(null, $inAlternation, $inOptionalQuantification, $parent);
+		return new self(null, $alternationId, $inOptionalQuantification, $parent);
 	}
 
 	public static function named(
 		string $name,
-		bool $inAlternation,
+		?int $alternationId,
 		bool $inOptionalQuantification,
 		RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
 	): self
 	{
-		return new self($name, $inAlternation, $inOptionalQuantification, $parent);
+		return new self($name, $alternationId, $inOptionalQuantification, $parent);
 	}
 
-	public function removeOptionalQualification(): void
+	public function getId(): int
 	{
-		$this->inOptionalQuantification = false;
+		return $this->id;
+	}
+
+	public function forceNonOptional(): void
+	{
+		$this->forceNonOptional = true;
+	}
+
+	public function restoreNonOptional(): void
+	{
+		$this->forceNonOptional = false;
+	}
+
+	/** @phpstan-assert-if-true !null $this->getAlternationId() */
+	public function inAlternation(): bool
+	{
+		return $this->alternationId !== null;
+	}
+
+	public function getAlternationId(): ?int
+	{
+		return $this->alternationId;
 	}
 
 	public function isOptional(): bool
 	{
-		return $this->inAlternation
+		if ($this->forceNonOptional) {
+			return false;
+		}
+
+		return $this->inAlternation()
 			|| $this->inOptionalQuantification
-			|| ($this->parent !== null && $this->parent->isOptional());
+			|| $this->parent !== null && $this->parent->isOptional();
+	}
+
+	public function isOptionalAlternation(): bool
+	{
+		if (!$this->inAlternation()) {
+			return false;
+		}
+
+		$parent = $this->parent;
+		while ($parent !== null && $parent->getAlternationId() === $this->getAlternationId()) {
+			if (!$parent instanceof RegexNonCapturingGroup) {
+				return false;
+			}
+			$parent = $parent->getParent();
+		}
+		return $parent !== null && $parent->isOptional();
 	}
 
 	public function isTopLevel(): bool
 	{
-		return $this->parent === null;
+		return $this->parent === null
+			|| $this->parent instanceof RegexNonCapturingGroup && $this->parent->isTopLevel();
 	}
 
 	/** @phpstan-assert-if-true !null $this->getName() */

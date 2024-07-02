@@ -1375,20 +1375,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			if ($allowedSubTypesList !== null) {
 				$preciseVerbosity = VerbosityLevel::precise();
 
-				$allowedSubTypes = [];
-				foreach ($allowedSubTypesList as $allowedSubType) {
-					$allowedSubTypes[$allowedSubType->describe($preciseVerbosity)] = $allowedSubType;
-				}
-
-				$originalAllowedSubTypes = $allowedSubTypes;
+				$originalAllowedSubTypes = $allowedSubTypesList;
 				$subtractedSubTypes = [];
 
 				$subtractedTypesList = TypeUtils::flattenTypes($subtractedType);
 				foreach ($subtractedTypesList as $subType) {
-					foreach ($allowedSubTypes as $description => $allowedSubType) {
+					foreach ($allowedSubTypesList as $key => $allowedSubType) {
 						if ($subType->equals($allowedSubType)) {
+							$description = $allowedSubType->describe($preciseVerbosity);
 							$subtractedSubTypes[$description] = $subType;
-							unset($allowedSubTypes[$description]);
+							unset($allowedSubTypesList[$key]);
 							continue 2;
 						}
 					}
@@ -1396,8 +1392,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 					return new self($this->className, $subtractedType);
 				}
 
-				if (count($allowedSubTypes) === 1) {
-					return array_values($allowedSubTypes)[0];
+				if (count($allowedSubTypesList) === 1) {
+					return array_values($allowedSubTypesList)[0];
 				}
 
 				$subtractedSubTypes = array_values($subtractedSubTypes);

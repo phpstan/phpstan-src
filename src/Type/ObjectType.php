@@ -1384,12 +1384,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 				$subtractedSubTypes = [];
 
 				$subtractedTypesList = TypeUtils::flattenTypes($subtractedType);
-				$subtractedTypes = [];
-				foreach ($subtractedTypesList as $type) {
-					$subtractedTypes[] = $type;
-				}
-
-				foreach ($subtractedTypes as $subType) {
+				foreach ($subtractedTypesList as $subType) {
 					foreach ($allowedSubTypes as $description => $allowedSubType) {
 						if ($subType->equals($allowedSubType)) {
 							$subtractedSubTypes[$description] = $subType;

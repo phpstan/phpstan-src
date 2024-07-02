@@ -203,11 +203,13 @@ use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
+use function ksort;
 use function sprintf;
 use function str_starts_with;
 use function strtolower;
 use function trim;
 use const PHP_VERSION_ID;
+use const SORT_NUMERIC;
 
 class NodeScopeResolver
 {
@@ -3372,6 +3374,7 @@ class NodeScopeResolver
 			$hasYield = true;
 		} elseif ($expr instanceof Expr\Match_) {
 			$deepContext = $context->enterDeep();
+			$condType = $scope->getType($expr->cond);
 			$condResult = $this->processExprNode($stmt, $expr->cond, $scope, $nodeCallback, $deepContext);
 			$scope = $condResult->getScope();
 			$hasYield = $condResult->hasYield();
@@ -3381,11 +3384,137 @@ class NodeScopeResolver
 			$armNodes = [];
 			$hasDefaultCond = false;
 			$hasAlwaysTrueCond = false;
-			foreach ($expr->arms as $arm) {
+			$arms = $expr->arms;
+			if ($condType->isEnum()->yes()) {
+				// enum match analysis would work even without this if branch
+				// but would be much slower
+				// this avoids using ObjectType::$subtractedType which is slow for huge enums
+				// because of repeated union type normalization
+				$enumCases = $condType->getEnumCases();
+				if (count($enumCases) > 0) {
+					$indexedEnumCases = [];
+					foreach ($enumCases as $enumCase) {
+						$indexedEnumCases[strtolower($enumCase->getClassName())][$enumCase->getEnumCaseName()] = $enumCase;
+					}
+					$unusedIndexedEnumCases = $indexedEnumCases;
+					foreach ($arms as $i => $arm) {
+						if ($arm->conds === null) {
+							continue;
+						}
+
+						$condNodes = [];
+						$conditionCases = [];
+						foreach ($arm->conds as $cond) {
+							if (!$cond instanceof Expr\ClassConstFetch) {
+								continue 2;
+							}
+							if (!$cond->class instanceof Name) {
+								continue 2;
+							}
+							if (!$cond->name instanceof Node\Identifier) {
+								continue 2;
+							}
+							$fetchedClassName = $scope->resolveName($cond->class);
+							$loweredFetchedClassName = strtolower($fetchedClassName);
+							if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
+								continue 2;
+							}
+
+							if (!array_key_exists($loweredFetchedClassName, $unusedIndexedEnumCases)) {
+								throw new ShouldNotHappenException();
+							}
+
+							$caseName = $cond->name->toString();
+							if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
+								continue 2;
+							}
+
+							$enumCase = $indexedEnumCases[$loweredFetchedClassName][$caseName];
+							$conditionCases[] = $enumCase;
+							$armConditionScope = $matchScope;
+							if (!array_key_exists($caseName, $unusedIndexedEnumCases[$loweredFetchedClassName])) {
+								// force "always false"
+								$armConditionScope = $armConditionScope->removeTypeFromExpression(
+									$expr->cond,
+									$enumCase,
+								);
+							} elseif (count($unusedIndexedEnumCases[$loweredFetchedClassName]) === 1) {
+								$hasAlwaysTrueCond = true;
+
+								// force "always true"
+								$armConditionScope = $armConditionScope->addTypeToExpression(
+									$expr->cond,
+									$enumCase,
+								);
+							}
+
+							$this->processExprNode($stmt, $cond, $armConditionScope, $nodeCallback, $deepContext);
+
+							$condNodes[] = new MatchExpressionArmCondition(
+								$cond,
+								$armConditionScope,
+								$cond->getStartLine(),
+							);
+
+							unset($unusedIndexedEnumCases[$loweredFetchedClassName][$caseName]);
+						}
+
+						$conditionCasesCount = count($conditionCases);
+						if ($conditionCasesCount === 0) {
+							throw new ShouldNotHappenException();
+						} elseif ($conditionCasesCount === 1) {
+							$conditionCaseType = $conditionCases[0];
+						} else {
+							$conditionCaseType = new UnionType($conditionCases);
+						}
+
+						$matchArmBodyScope = $matchScope->addTypeToExpression(
+							$expr->cond,
+							$conditionCaseType,
+						);
+						$matchArmBody = new MatchExpressionArmBody($matchArmBodyScope, $arm->body);
+						$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
+
+						$armResult = $this->processExprNode(
+							$stmt,
+							$arm->body,
+							$matchArmBodyScope,
+							$nodeCallback,
+							ExpressionContext::createTopLevel(),
+						);
+						$armScope = $armResult->getScope();
+						$scope = $scope->mergeWith($armScope);
+						$hasYield = $hasYield || $armResult->hasYield();
+						$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
+						$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
+
+						unset($arms[$i]);
+					}
+
+					$remainingCases = [];
+					foreach ($unusedIndexedEnumCases as $cases) {
+						foreach ($cases as $case) {
+							$remainingCases[] = $case;
+						}
+					}
+
+					$remainingCasesCount = count($remainingCases);
+					if ($remainingCasesCount === 0) {
+						$remainingType = new NeverType();
+					} elseif ($remainingCasesCount === 1) {
+						$remainingType = $remainingCases[0];
+					} else {
+						$remainingType = new UnionType($remainingCases);
+					}
+
+					$matchScope = $matchScope->addTypeToExpression($expr->cond, $remainingType);
+				}
+			}
+			foreach ($arms as $i => $arm) {
 				if ($arm->conds === null) {
 					$hasDefaultCond = true;
 					$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
-					$armNodes[] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
+					$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
 					$armResult = $this->processExprNode($stmt, $arm->body, $matchScope, $nodeCallback, ExpressionContext::createTopLevel());
 					$matchScope = $armResult->getScope();
 					$hasYield = $hasYield || $armResult->hasYield();
@@ -3438,7 +3567,7 @@ class NodeScopeResolver
 				$bodyScope = $this->processExprNode($stmt, $filteringExpr, $matchScope, static function (): void {
 				}, $deepContext)->getTruthyScope();
 				$matchArmBody = new MatchExpressionArmBody($bodyScope, $arm->body);
-				$armNodes[] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
+				$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
 
 				$armResult = $this->processExprNode(
 					$stmt,
@@ -3460,7 +3589,9 @@ class NodeScopeResolver
 				$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(UnhandledMatchError::class), $expr, false);
 			}
 
-			$nodeCallback(new MatchExpressionNode($expr->cond, $armNodes, $expr, $matchScope), $scope);
+			ksort($armNodes, SORT_NUMERIC);
+
+			$nodeCallback(new MatchExpressionNode($expr->cond, array_values($armNodes), $expr, $matchScope), $scope);
 		} elseif ($expr instanceof AlwaysRememberedExpr) {
 			$result = $this->processExprNode($stmt, $expr->getExpr(), $scope, $nodeCallback, $context);
 			$hasYield = $result->hasYield();

@@ -1635,10 +1635,92 @@ class MutatingScope implements Scope
 			return $generatorReturnType;
 		} elseif ($node instanceof Expr\Match_) {
 			$cond = $node->cond;
+			$condType = $this->getType($cond);
 			$types = [];
 
 			$matchScope = $this;
-			foreach ($node->arms as $arm) {
+			$arms = $node->arms;
+			if ($condType->isEnum()->yes()) {
+				// enum match analysis would work even without this if branch
+				// but would be much slower
+				// this avoids using ObjectType::$subtractedType which is slow for huge enums
+				// because of repeated union type normalization
+				$enumCases = $condType->getEnumCases();
+				if (count($enumCases) > 0) {
+					$indexedEnumCases = [];
+					foreach ($enumCases as $enumCase) {
+						$indexedEnumCases[strtolower($enumCase->getClassName())][$enumCase->getEnumCaseName()] = $enumCase;
+					}
+					$unusedIndexedEnumCases = $indexedEnumCases;
+
+					foreach ($arms as $i => $arm) {
+						if ($arm->conds === null) {
+							continue;
+						}
+
+						$conditionCases = [];
+						foreach ($arm->conds as $armCond) {
+							if (!$armCond instanceof Expr\ClassConstFetch) {
+								continue 2;
+							}
+							if (!$armCond->class instanceof Name) {
+								continue 2;
+							}
+							if (!$armCond->name instanceof Node\Identifier) {
+								continue 2;
+							}
+							$fetchedClassName = $this->resolveName($armCond->class);
+							$loweredFetchedClassName = strtolower($fetchedClassName);
+							if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
+								continue 2;
+							}
+
+							$caseName = $armCond->name->toString();
+							if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
+								continue 2;
+							}
+
+							$conditionCases[] = $indexedEnumCases[$loweredFetchedClassName][$caseName];
+							unset($unusedIndexedEnumCases[$loweredFetchedClassName][$caseName]);
+						}
+
+						$conditionCasesCount = count($conditionCases);
+						if ($conditionCasesCount === 0) {
+							throw new ShouldNotHappenException();
+						} elseif ($conditionCasesCount === 1) {
+							$conditionCaseType = $conditionCases[0];
+						} else {
+							$conditionCaseType = new UnionType($conditionCases);
+						}
+
+						$types[] = $matchScope->addTypeToExpression(
+							$cond,
+							$conditionCaseType,
+						)->getType($arm->body);
+						unset($arms[$i]);
+					}
+
+					$remainingCases = [];
+					foreach ($unusedIndexedEnumCases as $cases) {
+						foreach ($cases as $case) {
+							$remainingCases[] = $case;
+						}
+					}
+
+					$remainingCasesCount = count($remainingCases);
+					if ($remainingCasesCount === 0) {
+						$remainingType = new NeverType();
+					} elseif ($remainingCasesCount === 1) {
+						$remainingType = $remainingCases[0];
+					} else {
+						$remainingType = new UnionType($remainingCases);
+					}
+
+					$matchScope = $matchScope->addTypeToExpression($cond, $remainingType);
+				}
+			}
+
+			foreach ($arms as $arm) {
 				if ($arm->conds === null) {
 					if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
 						$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
@@ -3842,7 +3924,7 @@ class MutatingScope implements Scope
 		$nativeTypes = $scope->nativeExpressionTypes;
 		$nativeTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
 
-		return $this->scopeFactory->create(
+		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -3860,6 +3942,12 @@ class MutatingScope implements Scope
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+
+		if ($expr instanceof AlwaysRememberedExpr) {
+			return $scope->specifyExpressionType($expr->expr, $type, $nativeType, $certainty);
+		}
+
+		return $scope;
 	}
 
 	public function assignExpression(Expr $expr, Type $type, ?Type $nativeType = null): self
@@ -4074,7 +4162,7 @@ class MutatingScope implements Scope
 		);
 	}
 
-	private function addTypeToExpression(Expr $expr, Type $type): self
+	public function addTypeToExpression(Expr $expr, Type $type): self
 	{
 		$originalExprType = $this->getType($expr);
 		$nativeType = $this->getNativeType($expr);

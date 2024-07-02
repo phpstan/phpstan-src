@@ -24,7 +24,7 @@ enum Operator: string
 	{
 		match ($this) {
 			self::None => 'baz',
-			default => assertType('$this(Bug8486\Operator~Bug8486\Operator::None)', $this),
+			default => assertType('($this(Bug8486\Operator)&Bug8486\Operator::Foo)|($this(Bug8486\Operator)&Bug8486\Operator::Bar)', $this),
 		};
 	}
 
@@ -56,7 +56,7 @@ class Foo
 	{
 		match ($operator) {
 			Operator::None => 'baz',
-			default => assertType('Bug8486\Operator~Bug8486\Operator::None', $operator),
+			default => assertType('Bug8486\Operator::Bar|Bug8486\Operator::Foo', $operator),
 		};
 	}
 

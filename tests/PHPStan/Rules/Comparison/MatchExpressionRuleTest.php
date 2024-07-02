@@ -179,7 +179,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 				85,
 			],
 			[
-				'Match arm comparison between MatchEnums\Foo and MatchEnums\DifferentEnum::ONE is always false.',
+				'Match arm comparison between *NEVER* and MatchEnums\DifferentEnum::ONE is always false.',
 				95,
 			],
 			[
@@ -187,7 +187,11 @@ class MatchExpressionRuleTest extends RuleTestCase
 				104,
 			],
 			[
-				'Match arm comparison between MatchEnums\Foo and MatchEnums\DifferentEnum::ONE is always false.',
+				'Match arm comparison between *NEVER* and MatchEnums\Foo::ONE is always false.',
+				113,
+			],
+			[
+				'Match arm comparison between *NEVER* and MatchEnums\DifferentEnum::ONE is always false.',
 				113,
 			],
 		]);
@@ -284,7 +288,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-8240.php'], [
 			[
-				'Match arm comparison between Bug8240\Foo and Bug8240\Foo::BAR is always true.',
+				'Match arm comparison between Bug8240\Foo::BAR and Bug8240\Foo::BAR is always true.',
 				13,
 				'Remove remaining cases below this one and this error will disappear too.',
 			],
@@ -344,7 +348,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 				42,
 			],
 			[
-				'Match arm comparison between $this(LastMatchArmAlwaysTrue\Bar) and LastMatchArmAlwaysTrue\Bar::ONE is always true.',
+				'Match arm comparison between $this(LastMatchArmAlwaysTrue\Bar)&LastMatchArmAlwaysTrue\Bar::ONE and LastMatchArmAlwaysTrue\Bar::ONE is always true.',
 				62,
 				$tipText,
 			],

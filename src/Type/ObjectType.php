@@ -1230,15 +1230,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$className = $classReflection->getName();
 
 		if ($this->subtractedType !== null) {
-			$subtracedEnumCaseNames = [];
+			$subtractedEnumCaseNames = [];
 
 			foreach ($this->subtractedType->getEnumCases() as $subtractedCase) {
-				$subtracedEnumCaseNames[$subtractedCase->getEnumCaseName()] = true;
+				$subtractedEnumCaseNames[$subtractedCase->getEnumCaseName()] = true;
 			}
 
 			$cases = [];
 			foreach ($classReflection->getEnumCases() as $enumCase) {
-				if (array_key_exists($enumCase->getName(), $subtracedEnumCaseNames)) {
+				if (array_key_exists($enumCase->getName(), $subtractedEnumCaseNames)) {
 					continue;
 				}
 				$cases[] = new EnumCaseObjectType($className, $enumCase->getName(), $classReflection);
@@ -1371,27 +1371,20 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	{
 		if ($subtractedType !== null) {
 			$classReflection = $this->getClassReflection();
-			$allowedSubTypesList = $classReflection !== null ? $classReflection->getAllowedSubTypes() : null;
-			if ($allowedSubTypesList !== null) {
-				$allowedSubTypes = [];
-				foreach ($allowedSubTypesList as $allowedSubType) {
-					$allowedSubTypes[$allowedSubType->describe(VerbosityLevel::precise())] = $allowedSubType;
-				}
+			$allowedSubTypes = $classReflection !== null ? $classReflection->getAllowedSubTypes() : null;
+			if ($allowedSubTypes !== null) {
+				$preciseVerbosity = VerbosityLevel::precise();
 
 				$originalAllowedSubTypes = $allowedSubTypes;
 				$subtractedSubTypes = [];
 
-				$subtractedTypesList = TypeUtils::flattenTypes($subtractedType);
-				$subtractedTypes = [];
-				foreach ($subtractedTypesList as $type) {
-					$subtractedTypes[$type->describe(VerbosityLevel::precise())] = $type;
-				}
-
+				$subtractedTypes = TypeUtils::flattenTypes($subtractedType);
 				foreach ($subtractedTypes as $subType) {
-					foreach ($allowedSubTypes as $description => $allowedSubType) {
+					foreach ($allowedSubTypes as $key => $allowedSubType) {
 						if ($subType->equals($allowedSubType)) {
+							$description = $allowedSubType->describe($preciseVerbosity);
 							$subtractedSubTypes[$description] = $subType;
-							unset($allowedSubTypes[$description]);
+							unset($allowedSubTypes[$key]);
 							continue 2;
 						}
 					}

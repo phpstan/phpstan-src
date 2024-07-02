@@ -1371,20 +1371,20 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	{
 		if ($subtractedType !== null) {
 			$classReflection = $this->getClassReflection();
-			$allowedSubTypesList = $classReflection !== null ? $classReflection->getAllowedSubTypes() : null;
-			if ($allowedSubTypesList !== null) {
+			$allowedSubTypes = $classReflection !== null ? $classReflection->getAllowedSubTypes() : null;
+			if ($allowedSubTypes !== null) {
 				$preciseVerbosity = VerbosityLevel::precise();
 
-				$originalAllowedSubTypes = $allowedSubTypesList;
+				$originalAllowedSubTypes = $allowedSubTypes;
 				$subtractedSubTypes = [];
 
-				$subtractedTypesList = TypeUtils::flattenTypes($subtractedType);
-				foreach ($subtractedTypesList as $subType) {
-					foreach ($allowedSubTypesList as $key => $allowedSubType) {
+				$subtractedTypes = TypeUtils::flattenTypes($subtractedType);
+				foreach ($subtractedTypes as $subType) {
+					foreach ($allowedSubTypes as $key => $allowedSubType) {
 						if ($subType->equals($allowedSubType)) {
 							$description = $allowedSubType->describe($preciseVerbosity);
 							$subtractedSubTypes[$description] = $subType;
-							unset($allowedSubTypesList[$key]);
+							unset($allowedSubTypes[$key]);
 							continue 2;
 						}
 					}
@@ -1392,8 +1392,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 					return new self($this->className, $subtractedType);
 				}
 
-				if (count($allowedSubTypesList) === 1) {
-					return array_values($allowedSubTypesList)[0];
+				if (count($allowedSubTypes) === 1) {
+					return array_values($allowedSubTypes)[0];
 				}
 
 				$subtractedSubTypes = array_values($subtractedSubTypes);

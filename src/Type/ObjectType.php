@@ -1235,9 +1235,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->subtractedType !== null) {
+			$subtracedEnumCases = $this->subtractedType->getEnumCases();
 			foreach ($cases as $i => $case) {
 				$caseName = $case->getEnumCaseName();
-				foreach ($this->subtractedType->getEnumCases() as $subtracedCase) {
+				foreach ($subtracedEnumCases as $subtracedCase) {
 					if ($caseName === $subtracedCase->getEnumCaseName()) {
 						unset($cases[$i]);
 						continue 2;

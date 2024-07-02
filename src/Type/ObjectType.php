@@ -1386,7 +1386,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 				$subtractedTypesList = TypeUtils::flattenTypes($subtractedType);
 				$subtractedTypes = [];
 				foreach ($subtractedTypesList as $type) {
-					$subtractedTypes[$type->describe($preciseVerbosity)] = $type;
+					$subtractedTypes[] = $type;
 				}
 
 				foreach ($subtractedTypes as $subType) {

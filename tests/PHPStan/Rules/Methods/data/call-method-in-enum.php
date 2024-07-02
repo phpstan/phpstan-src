@@ -70,3 +70,41 @@ enum FooCall {
 		$this->helloArray([true]);
 	}
 }
+
+enum TestPassingEnums {
+	case ONE;
+	case TWO;
+
+	/**
+	 * @param self::ONE $one
+	 * @return void
+	 */
+	public function requireOne(self $one): void
+	{
+
+	}
+
+	public function doFoo(): void
+	{
+		match ($this) {
+			self::ONE => $this->requireOne($this),
+			self::TWO => $this->requireOne($this),
+		};
+	}
+
+	public function doFoo2(): void
+	{
+		match ($this) {
+			self::ONE => $this->requireOne($this),
+			default => $this->requireOne($this),
+		};
+	}
+
+	public function doFoo3(): void
+	{
+		match ($this) {
+			self::TWO => $this->requireOne($this),
+			default => $this->requireOne($this),
+		};
+	}
+}

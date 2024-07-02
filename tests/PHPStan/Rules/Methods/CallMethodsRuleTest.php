@@ -2405,6 +2405,18 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $countryMap of method CallMethodInEnum\FooCall::helloArray() expects array<\'The Netherlands\'|\'United States\', bool>, array{true} given.',
 				70,
 			],
+			[
+				'Parameter #1 $one of method CallMethodInEnum\TestPassingEnums::requireOne() expects CallMethodInEnum\TestPassingEnums::ONE, $this(CallMethodInEnum\TestPassingEnums)&CallMethodInEnum\TestPassingEnums given.',
+				91,
+			],
+			[
+				'Parameter #1 $one of method CallMethodInEnum\TestPassingEnums::requireOne() expects CallMethodInEnum\TestPassingEnums::ONE, $this(CallMethodInEnum\TestPassingEnums)&CallMethodInEnum\TestPassingEnums given.',
+				99,
+			],
+			[
+				'Parameter #1 $one of method CallMethodInEnum\TestPassingEnums::requireOne() expects CallMethodInEnum\TestPassingEnums::ONE, $this(CallMethodInEnum\TestPassingEnums)&CallMethodInEnum\TestPassingEnums given.',
+				106,
+			],
 		]);
 	}
 

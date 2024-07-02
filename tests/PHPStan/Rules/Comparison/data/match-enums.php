@@ -78,4 +78,51 @@ class Bar
 		};
 	}
 
+	public function doFoo2(Foo $foo): int
+	{
+		return match ($foo) {
+			Foo::ONE => 'one',
+			Foo::ONE => 'one2',
+			Foo::TWO => 'two',
+			Foo::THREE => 'three',
+		};
+	}
+
+	public function doFoo3(Foo $foo): int
+	{
+		return match ($foo) {
+			Foo::ONE => 'one',
+			DifferentEnum::ONE => 'one2',
+			Foo::TWO => 'two',
+			Foo::THREE => 'three',
+		};
+	}
+
+	public function doFoo4(Foo $foo): int
+	{
+		return match ($foo) {
+			Foo::ONE, Foo::ONE => 'one',
+			Foo::TWO => 'two',
+			Foo::THREE => 'three',
+		};
+	}
+
+	public function doFoo5(Foo $foo): int
+	{
+		return match ($foo) {
+			Foo::ONE, DifferentEnum::ONE => 'one',
+			Foo::TWO => 'two',
+			Foo::THREE => 'three',
+		};
+	}
+
+}
+
+enum DifferentEnum: int
+{
+
+	case ONE = 1;
+	case TWO = 2;
+	case THREE = 3;
+
 }

@@ -174,6 +174,22 @@ class MatchExpressionRuleTest extends RuleTestCase
 				'Match arm is unreachable because previous comparison is always true.',
 				77,
 			],
+			[
+				'Match arm comparison between MatchEnums\Foo and MatchEnums\Foo::ONE is always false.',
+				85,
+			],
+			[
+				'Match arm comparison between MatchEnums\Foo and MatchEnums\DifferentEnum::ONE is always false.',
+				95,
+			],
+			[
+				'Match arm comparison between MatchEnums\Foo and MatchEnums\Foo::ONE is always false.',
+				104,
+			],
+			[
+				'Match arm comparison between MatchEnums\Foo and MatchEnums\DifferentEnum::ONE is always false.',
+				113,
+			],
 		]);
 	}
 

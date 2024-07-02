@@ -1250,7 +1250,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			}
 		}
 
-		return self::$enumCases[$cacheKey] = array_values($cases);
+		return self::$enumCases[$cacheKey] = $cases;
 	}
 
 	public function isCallable(): TrinaryLogic

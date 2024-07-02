@@ -1229,25 +1229,28 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		$className = $classReflection->getName();
 
-		$cases = [];
-		foreach ($classReflection->getEnumCases() as $enumCase) {
-			$cases[] = new EnumCaseObjectType($className, $enumCase->getName(), $classReflection);
-		}
-
 		if ($this->subtractedType !== null) {
-			$subtracedEnumCases = $this->subtractedType->getEnumCases();
-			foreach ($cases as $i => $case) {
-				$caseName = $case->getEnumCaseName();
-				foreach ($subtracedEnumCases as $subtracedCase) {
-					if ($caseName === $subtracedCase->getEnumCaseName()) {
-						unset($cases[$i]);
-						continue 2;
-					}
+			$subtracedEnumCaseNames = [];
+
+			foreach ($this->subtractedType->getEnumCases() as $subtractedCase) {
+				$subtracedEnumCaseNames[$subtractedCase->getEnumCaseName()] = true;
+			}
+
+			$cases = [];
+			foreach ($classReflection->getEnumCases() as $enumCase) {
+				if (array_key_exists($enumCase->getName(), $subtracedEnumCaseNames)) {
+					continue;
 				}
+				$cases[] = new EnumCaseObjectType($className, $enumCase->getName(), $classReflection);
+			}
+		} else {
+			$cases = [];
+			foreach ($classReflection->getEnumCases() as $enumCase) {
+				$cases[] = new EnumCaseObjectType($className, $enumCase->getName(), $classReflection);
 			}
 		}
 
-		return self::$enumCases[$cacheKey] = array_values($cases);
+		return self::$enumCases[$cacheKey] = $cases;
 	}
 
 	public function isCallable(): TrinaryLogic

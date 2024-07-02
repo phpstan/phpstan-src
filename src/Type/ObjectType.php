@@ -1230,15 +1230,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$className = $classReflection->getName();
 
 		if ($this->subtractedType !== null) {
-			$subtracedEnumCaseNames = [];
+			$subtractedEnumCaseNames = [];
 
 			foreach ($this->subtractedType->getEnumCases() as $subtractedCase) {
-				$subtracedEnumCaseNames[$subtractedCase->getEnumCaseName()] = true;
+				$subtractedEnumCaseNames[$subtractedCase->getEnumCaseName()] = true;
 			}
 
 			$cases = [];
 			foreach ($classReflection->getEnumCases() as $enumCase) {
-				if (array_key_exists($enumCase->getName(), $subtracedEnumCaseNames)) {
+				if (array_key_exists($enumCase->getName(), $subtractedEnumCaseNames)) {
 					continue;
 				}
 				$cases[] = new EnumCaseObjectType($className, $enumCase->getName(), $classReflection);
@@ -1373,9 +1373,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$classReflection = $this->getClassReflection();
 			$allowedSubTypesList = $classReflection !== null ? $classReflection->getAllowedSubTypes() : null;
 			if ($allowedSubTypesList !== null) {
+				$preciseVerbosity = VerbosityLevel::precise();
+
 				$allowedSubTypes = [];
 				foreach ($allowedSubTypesList as $allowedSubType) {
-					$allowedSubTypes[$allowedSubType->describe(VerbosityLevel::precise())] = $allowedSubType;
+					$allowedSubTypes[$allowedSubType->describe($preciseVerbosity)] = $allowedSubType;
 				}
 
 				$originalAllowedSubTypes = $allowedSubTypes;
@@ -1384,7 +1386,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 				$subtractedTypesList = TypeUtils::flattenTypes($subtractedType);
 				$subtractedTypes = [];
 				foreach ($subtractedTypesList as $type) {
-					$subtractedTypes[$type->describe(VerbosityLevel::precise())] = $type;
+					$subtractedTypes[$type->describe($preciseVerbosity)] = $type;
 				}
 
 				foreach ($subtractedTypes as $subType) {

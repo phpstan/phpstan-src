@@ -114,7 +114,7 @@ final class RegexArrayShapeMatcher
 			);
 
 			return TypeCombinator::union(
-				new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()]),
+				new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()], [0], [], true),
 				$combiType,
 			);
 		} elseif (
@@ -156,7 +156,7 @@ final class RegexArrayShapeMatcher
 			}
 
 			if ($isOptionalAlternation) {
-				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()]);
+				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()], [0], [], true);
 			}
 
 			return TypeCombinator::union(...$combiTypes);

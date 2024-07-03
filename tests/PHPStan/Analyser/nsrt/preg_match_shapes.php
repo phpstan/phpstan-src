@@ -337,3 +337,26 @@ function (string $size): void {
 	assertType('array{0: string, 1: string, 2?: string, 3?: string}', $matches);
 };
 
+
+function bug11277a(string $value): void
+{
+	if (preg_match('/^\[(.+,?)*\]$/', $value, $matches)) {
+		assertType('array{0: string, 1?: string}', $matches);
+		if (count($matches) === 2) {
+			assertType('array{string, string}', $matches);
+		}
+	}
+}
+
+function bug11277b(string $value): void
+{
+	if (preg_match('/^(?:(.+,?)|(x))*$/', $value, $matches)) {
+		assertType('array{0: string, 1?: string, 2?: string}', $matches);
+		if (count($matches) === 2) {
+			assertType('array{string, string}', $matches);
+		}
+		if (count($matches) === 3) {
+			assertType('array{string, string, string}', $matches);
+		}
+	}
+}

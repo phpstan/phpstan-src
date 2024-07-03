@@ -97,6 +97,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	/** @var array<string, list<EnumCaseObjectType>> */
 	private static array $enumCases = [];
 
+	/** @var array<int, string> */
+	private array $descriptions = [];
+
 	/** @api */
 	public function __construct(
 		private string $className,
@@ -475,6 +478,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function describe(VerbosityLevel $level): string
 	{
+		$levelValue = $level->getLevelValue();
+		if (array_key_exists($levelValue, $this->descriptions)) {
+			return $this->descriptions[$levelValue];
+		}
+
 		$preciseNameCallback = function (): string {
 			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 			if (!$reflectionProvider->hasClass($this->className)) {
@@ -493,7 +501,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return $description;
 		};
 
-		return $level->handle(
+		return $this->descriptions[$levelValue] = $level->handle(
 			$preciseNameCallback,
 			$preciseNameCallback,
 			$preciseWithSubtracted,

@@ -20,11 +20,15 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_key_exists;
 use function sprintf;
 
 /** @api */
 class EnumCaseObjectType extends ObjectType
 {
+
+	/** @var array<int, string> */
+	private array $descriptions = [];
 
 	/** @api */
 	public function __construct(
@@ -43,9 +47,11 @@ class EnumCaseObjectType extends ObjectType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		$parent = parent::describe($level);
-
-		return sprintf('%s::%s', $parent, $this->enumCaseName);
+		$value = $level->getLevelValue();
+		if (!array_key_exists($value, $this->descriptions)) {
+			$this->descriptions[$value] = sprintf('%s::%s', parent::describe($level), $this->enumCaseName);
+		}
+		return $this->descriptions[$value];
 	}
 
 	public function equals(Type $type): bool

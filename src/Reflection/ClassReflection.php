@@ -102,6 +102,8 @@ class ClassReflection
 
 	private ?bool $hasConsistentConstructor = null;
 
+	private ?bool $acceptsNamedArguments = null;
+
 	private ?TemplateTypeMap $templateTypeMap = null;
 
 	private ?TemplateTypeMap $activeTemplateTypeMap = null;
@@ -1241,6 +1243,16 @@ class ClassReflection
 		}
 
 		return $this->hasConsistentConstructor;
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		if ($this->acceptsNamedArguments === null) {
+			$resolvedPhpDoc = $this->getResolvedPhpDoc();
+			$this->acceptsNamedArguments = $resolvedPhpDoc === null || $resolvedPhpDoc->acceptsNamedArguments();
+		}
+
+		return $this->acceptsNamedArguments;
 	}
 
 	public function isFinalByKeyword(): bool

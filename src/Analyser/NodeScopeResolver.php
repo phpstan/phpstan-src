@@ -6005,6 +6005,9 @@ class NodeScopeResolver
 			$isPure = $resolvedPhpDoc->isPure();
 			$isAllowedPrivateMutation = $resolvedPhpDoc->isAllowedPrivateMutation();
 			$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
+			if ($acceptsNamedArguments && $scope->isInClass()) {
+				$acceptsNamedArguments = $scope->getClassReflection()->acceptsNamedArguments();
+			}
 			$isReadOnly = $isReadOnly || $resolvedPhpDoc->isReadOnly();
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 			$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;

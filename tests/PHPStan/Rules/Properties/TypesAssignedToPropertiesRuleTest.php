@@ -614,4 +614,20 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/generics-in-callable-in-constructor.php'], []);
 	}
 
+	public function testBug11275(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-11275.php'], [
+			[
+				'Property Bug11275\D::$b (list<Bug11275\B>) does not accept array<int|string, Bug11275\B>.',
+				50,
+				'array<int|string, Bug11275\B> might not be a list.',
+			],
+		]);
+	}
+
 }

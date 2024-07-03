@@ -616,8 +616,8 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	public function testBug11275(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
 		$this->checkExplicitMixed = true;

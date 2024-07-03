@@ -1379,6 +1379,11 @@ services:
 			- phpstan.dynamicStaticMethodThrowTypeExtension
 
 	-
+		class: PHPStan\Type\Php\DateTimeModifyMethodThrowTypeExtension
+		tags:
+			- phpstan.dynamicMethodThrowTypeExtension
+
+	-
 		class: PHPStan\Type\Php\DateTimeZoneConstructorThrowTypeExtension
 		tags:
 			- phpstan.dynamicStaticMethodThrowTypeExtension

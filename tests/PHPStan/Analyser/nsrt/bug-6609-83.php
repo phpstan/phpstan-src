@@ -1,6 +1,6 @@
-<?php // lint < 8.3
+<?php // lint >= 8.3
 
-namespace Bug6609;
+namespace Bug6609Php83;
 
 use function PHPStan\Testing\assertType;
 
@@ -34,7 +34,7 @@ class Foo
 	 */
 	function modify2(\DateTimeInterface $date) {
 		$date = $date->modify('invalidd');
-		assertType('false', $date);
+		assertType('*NEVER*', $date);
 
 		return $date;
 	}
@@ -50,7 +50,7 @@ class Foo
 	 */
 	function modify3(\DateTimeInterface $date, string $s) {
 		$date = $date->modify($s);
-		assertType('(DateTime|DateTimeImmutable|false)', $date);
+		assertType('DateTime|DateTimeImmutable', $date);
 
 		return $date;
 	}

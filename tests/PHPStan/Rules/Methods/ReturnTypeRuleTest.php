@@ -812,16 +812,21 @@ class ReturnTypeRuleTest extends RuleTestCase
 	public function testBug8223(): void
 	{
 		$this->checkBenevolentUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/bug-8223.php'], [
-			[
-				'Method Bug8223\HelloWorld::sayHello() should return DateTimeImmutable but returns (DateTimeImmutable|false).',
-				11,
-			],
-			[
-				'Method Bug8223\HelloWorld::sayHello2() should return array<DateTimeImmutable> but returns array<int, (DateTimeImmutable|false)>.',
-				21,
-			],
-		]);
+
+		$errors = [];
+		if (PHP_VERSION_ID < 80300) {
+			$errors = [
+				[
+					'Method Bug8223\HelloWorld::sayHello() should return DateTimeImmutable but returns (DateTimeImmutable|false).',
+					11,
+				],
+				[
+					'Method Bug8223\HelloWorld::sayHello2() should return array<DateTimeImmutable> but returns array<int, (DateTimeImmutable|false)>.',
+					21,
+				],
+			];
+		}
+		$this->analyse([__DIR__ . '/data/bug-8223.php'], $errors);
 	}
 
 	public function testBug8146bErrors(): void

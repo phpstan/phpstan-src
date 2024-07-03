@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeInterface;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
@@ -18,13 +19,12 @@ use function count;
 class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
-	/** @var class-string<DateTimeInterface> */
-	private $dateTimeClass;
-
 	/** @param class-string<DateTimeInterface> $dateTimeClass */
-	public function __construct(string $dateTimeClass = DateTime::class)
+	public function __construct(
+		private PhpVersion $phpVersion,
+		private string $dateTimeClass = DateTime::class,
+	)
 	{
-		$this->dateTimeClass = $dateTimeClass;
 	}
 
 	public function getClass(): string
@@ -53,7 +53,6 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 			try {
 				$result = @(new DateTime())->modify($constantString->getValue());
 			} catch (Throwable) {
-				$hasFalse = true;
 				$valueType = TypeCombinator::remove($valueType, $constantString);
 				continue;
 			}
@@ -71,11 +70,18 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 			return null;
 		}
 
-		if ($hasFalse && !$hasDateTime) {
-			return new ConstantBooleanType(false);
-		}
-		if ($hasDateTime && !$hasFalse) {
+		if ($hasFalse) {
+			if (!$hasDateTime) {
+				return new ConstantBooleanType(false);
+			}
+
+			return null;
+		} elseif ($hasDateTime) {
 			return $scope->getType($methodCall->var);
+		}
+
+		if ($this->phpVersion->hasDateTimeExceptions()) {
+			return new NeverType();
 		}
 
 		return null;

@@ -114,7 +114,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 			[
 				DateTime::class,
 				'__construct',
-				new ObjectType('Exception'),
+				new ObjectType('DateMalformedStringException'),
 			],
 			[
 				DateTime::class,

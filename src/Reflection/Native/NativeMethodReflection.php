@@ -72,6 +72,10 @@ class NativeMethodReflection implements ExtendedMethodReflection
 				$prototypeDeclaringClass = $this->reflectionProvider->getClass($prototypeMethod->getDeclaringClass()->getName());
 			}
 
+			if (!$prototypeDeclaringClass->hasNativeMethod($prototypeMethod->getName())) {
+				return $this;
+			}
+
 			$tentativeReturnType = null;
 			if ($prototypeMethod->getTentativeReturnType() !== null) {
 				$tentativeReturnType = TypehintHelper::decideTypeFromReflection($prototypeMethod->getTentativeReturnType());

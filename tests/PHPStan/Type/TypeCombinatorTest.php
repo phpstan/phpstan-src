@@ -19,6 +19,7 @@ use PHPStan\Fixture\FinalClass;
 use PHPStan\Generics\FunctionsAssertType\C;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -3243,6 +3244,36 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			ConstantArrayType::class,
 			'array{}',
+		];
+		yield [
+			[
+				new CallableType([
+					new DummyParameter('callback', new ObjectType('stdClass'), false, null, false, null),
+				], new VoidType(), false),
+				new CallableType([
+					new DummyParameter('callback', new UnionType([
+						new ObjectType('stdClass'),
+						new ObjectType('Exception'),
+					]), false, null, false, null),
+				], new VoidType(), false),
+			],
+			CallableType::class,
+			'callable(Exception|stdClass): void',
+		];
+		yield [
+			[
+				new CallableType([
+					new DummyParameter('callback', new ObjectType('stdClass'), false, null, false, null),
+				], new VoidType(), false),
+				new CallableType([
+					new DummyParameter('callback', new UnionType([
+						new IntegerType(),
+						new ObjectType('Exception'),
+					]), false, null, false, null),
+				], new VoidType(), false),
+			],
+			UnionType::class,
+			'(callable(Exception|int): void)|(callable(stdClass): void)',
 		];
 	}
 

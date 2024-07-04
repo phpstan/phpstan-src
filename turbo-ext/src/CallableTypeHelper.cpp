@@ -127,7 +127,7 @@ public:
 				if (UNEXPECTED(accepts.isUndef())) return zv::Val();
 				isSuperType = resultFrom(accepts.raw());
 			} else {
-				isSuperType = callObject(theirParameterType.raw(), PT_LC("issupertypeof"), 1, ourParameterType.raw());
+				isSuperType = callObject(ourParameterType.raw(), PT_LC("issupertypeof"), 1, theirParameterType.raw());
 			}
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 

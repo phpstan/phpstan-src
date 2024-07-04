@@ -79,7 +79,7 @@ final class CallableTypeHelper
 				$isSuperType = $theirParameter->getType()->accepts($ourParameterType, $strictTypes);
 				$isSuperType = new IsSuperTypeOfResult($isSuperType->result, $isSuperType->reasons);
 			} else {
-				$isSuperType = $theirParameter->getType()->isSuperTypeOf($ourParameterType);
+				$isSuperType = $ourParameterType->isSuperTypeOf($theirParameter->getType());
 			}
 
 			if ($isSuperType->maybe()) {

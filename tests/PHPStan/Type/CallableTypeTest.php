@@ -44,12 +44,12 @@ class CallableTypeTest extends PHPStanTestCase
 			[
 				new CallableType([new NativeParameterReflection('foo', false, new MixedType(), PassedByReference::createNo(), false, null)], new MixedType(), false),
 				new CallableType([new NativeParameterReflection('foo', false, new IntegerType(), PassedByReference::createNo(), false, null)], new MixedType(), false),
-				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createYes(),
 			],
 			[
 				new CallableType([new NativeParameterReflection('foo', false, new IntegerType(), PassedByReference::createNo(), false, null)], new MixedType(), false),
 				new CallableType([new NativeParameterReflection('foo', false, new MixedType(), PassedByReference::createNo(), false, null)], new MixedType(), false),
-				TrinaryLogic::createYes(),
+				TrinaryLogic::createMaybe(),
 			],
 			[
 				new CallableType([
@@ -432,8 +432,8 @@ class CallableTypeTest extends PHPStanTestCase
 		$accepting = new CallableType([new NativeParameterReflection('x', false, $acceptingParameterType, PassedByReference::createNo(), false, null)], new VoidType());
 		$passed = new CallableType([new NativeParameterReflection('x', false, $passedParameterType, PassedByReference::createNo(), false, null)], new VoidType());
 
-		// the passed parameter's isSuperTypeOf() is maybe, with a lazy reason from its array{b: int} member
-		$parameterResult = $passedParameterType->isSuperTypeOf($acceptingParameterType);
+		// the accepting parameter's isSuperTypeOf() is maybe, with a lazy reason from the passed array{b: int} member
+		$parameterResult = $acceptingParameterType->isSuperTypeOf($passedParameterType);
 		$this->assertTrue($parameterResult->maybe());
 		$this->assertNotSame([], $parameterResult->lazyReasons);
 
@@ -442,7 +442,7 @@ class CallableTypeTest extends PHPStanTestCase
 		$reasons = $result->getReasons();
 		$this->assertCount(2, $reasons);
 		$this->assertSame('Type array{a: int}|array{b: int} of parameter #1 $x of passed callable needs to be same or wider than parameter type array{a: int, b?: int} of accepting callable.', $reasons[0]);
-		$this->assertStringStartsWith('Sealed array shapes array{b: int} and array{a: int, b?: int} cannot be intersected.', $reasons[1]);
+		$this->assertStringStartsWith('Sealed array shapes array{a: int, b?: int} and array{b: int} cannot be intersected.', $reasons[1]);
 	}
 
 }

@@ -74,7 +74,7 @@ class CallableTypeHelper
 			if ($treatMixedAsAny) {
 				$isSuperType = $theirParameter->getType()->acceptsWithReason($ourParameterType, true);
 			} else {
-				$isSuperType = new AcceptsResult($theirParameter->getType()->isSuperTypeOf($ourParameterType), []);
+				$isSuperType = new AcceptsResult($ourParameterType->isSuperTypeOf($theirParameter->getType()), []);
 			}
 
 			if ($isSuperType->maybe()) {

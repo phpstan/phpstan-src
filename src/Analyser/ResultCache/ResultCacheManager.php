@@ -281,7 +281,18 @@ class ResultCacheManager
 			}
 		}
 
-		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $meta, $filteredErrors, $filteredLocallyIgnoredErrors, $filteredLinesToIgnore, $filteredUnmatchedLineIgnores, $filteredCollectedData, $invertedDependenciesToReturn, $filteredExportedNodes, $data['projectExtensionFiles']);
+		$filesToAnalyse = array_unique($filesToAnalyse);
+		$filesToAnalyseCount = count($filesToAnalyse);
+
+		if ($output->isDebug()) {
+			$output->writeLineFormatted(sprintf(
+				'Result cache restored. %d %s will be reanalysed.',
+				$filesToAnalyseCount,
+				$filesToAnalyseCount === 1 ? 'file' : 'files',
+			));
+		}
+
+		return new ResultCache($filesToAnalyse, false, $data['lastFullAnalysisTime'], $meta, $filteredErrors, $filteredLocallyIgnoredErrors, $filteredLinesToIgnore, $filteredUnmatchedLineIgnores, $filteredCollectedData, $invertedDependenciesToReturn, $filteredExportedNodes, $data['projectExtensionFiles']);
 	}
 
 	/**

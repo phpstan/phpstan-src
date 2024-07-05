@@ -11,6 +11,7 @@ use PHPStan\Collectors\RegistryFactory as CollectorRegistryFactory;
 use PHPStan\DependencyInjection\Type\LazyDynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\LazyParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\LazyParameterOutTypeExtensionProvider;
+use PHPStan\Diagnose\DiagnoseExtension;
 use PHPStan\Parser\RichParser;
 use PHPStan\PhpDoc\StubFilesExtension;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
@@ -57,6 +58,7 @@ class ConditionalTagsExtension extends CompilerExtension
 			LazyParameterOutTypeExtensionProvider::FUNCTION_TAG => $bool,
 			LazyParameterOutTypeExtensionProvider::METHOD_TAG => $bool,
 			LazyParameterOutTypeExtensionProvider::STATIC_METHOD_TAG => $bool,
+			DiagnoseExtension::EXTENSION_TAG => $bool,
 		])->min(1));
 	}
 

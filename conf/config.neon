@@ -2098,6 +2098,10 @@ services:
 			php8Parser: @php8Parser
 		autowired: false
 
+	phpstanDiagnoseExtension:
+		class: PHPStan\Diagnose\PHPStanDiagnoseExtension
+		autowired: false
+
 	# Error formatters
 
 	-

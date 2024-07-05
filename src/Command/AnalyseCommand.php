@@ -10,6 +10,8 @@ use PHPStan\Command\ErrorFormatter\ErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Diagnose\DiagnoseExtension;
+use PHPStan\Diagnose\PHPStanDiagnoseExtension;
 use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
@@ -225,14 +227,19 @@ class AnalyseCommand extends Command
 		try {
 			[$files, $onlyFiles] = $inceptionResult->getFiles();
 		} catch (PathNotFoundException $e) {
+			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput());
 			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
 			return 1;
 		} catch (InceptionNotSuccessfulException) {
+			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput());
 			return 1;
 		}
 
 		if (count($files) === 0) {
 			$bleedingEdge = (bool) $container->getParameter('featureToggles')['zeroFiles'];
+
+			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput());
+
 			if (!$bleedingEdge) {
 				$inceptionResult->getErrorOutput()->getStyle()->note('No files found to analyse.');
 				$inceptionResult->getErrorOutput()->getStyle()->warning('This will cause a non-zero exit code in PHPStan 2.0.');
@@ -422,6 +429,7 @@ class AnalyseCommand extends Command
 		}
 
 		if ($generateBaselineFile !== null) {
+			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput());
 			if (count($internalErrorsTuples) > 0) {
 				foreach ($internalErrorsTuples as [$internalError]) {
 					$inceptionResult->getStdOutput()->writeLineFormatted($internalError->getMessage());
@@ -458,6 +466,8 @@ class AnalyseCommand extends Command
 			);
 
 			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
+
+			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput());
 
 			$errorOutput->writeLineFormatted('⚠️  Result is incomplete because of severe errors. ⚠️');
 			$errorOutput->writeLineFormatted('   Fix these errors first and then re-run PHPStan');
@@ -524,6 +534,8 @@ class AnalyseCommand extends Command
 				$errorOutput->getStyle()->warning('This will cause a non-zero exit code in PHPStan 2.0.');
 			}
 		}
+
+		$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput());
 
 		return $inceptionResult->handleReturn(
 			$exitCode,
@@ -645,6 +657,24 @@ class AnalyseCommand extends Command
 			count($files),
 			$_SERVER['argv'][0],
 		);
+	}
+
+	private function runDiagnoseExtensions(Container $container, Output $errorOutput): void
+	{
+		if (!$errorOutput->isDebug()) {
+			return;
+		}
+
+		/** @var PHPStanDiagnoseExtension $phpstanDiagnoseExtension */
+		$phpstanDiagnoseExtension = $container->getService('phpstanDiagnoseExtension');
+
+		// not using tag for this extension to make sure it's always first
+		$phpstanDiagnoseExtension->print($errorOutput);
+
+		/** @var DiagnoseExtension $extension */
+		foreach ($container->getServicesByTag(DiagnoseExtension::EXTENSION_TAG) as $extension) {
+			$extension->print($errorOutput);
+		}
 	}
 
 }

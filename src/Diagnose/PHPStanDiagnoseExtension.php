@@ -11,12 +11,21 @@ use const PHP_VERSION_ID;
 class PHPStanDiagnoseExtension implements DiagnoseExtension
 {
 
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
+
 	public function print(Output $errorOutput): void
 	{
 		$phpRuntimeVersion = new PhpVersion(PHP_VERSION_ID);
 		$errorOutput->writeLineFormatted(sprintf(
 			'<info>PHP runtime version:</info> %s',
 			$phpRuntimeVersion->getVersionString(),
+		));
+		$errorOutput->writeLineFormatted(sprintf(
+			'<info>PHP version for analysis:</info> %s (from %s)',
+			$this->phpVersion->getVersionString(),
+			$this->phpVersion->getSourceLabel(),
 		));
 		$errorOutput->writeLineFormatted(sprintf(
 			'<info>PHPStan version:</info> %s',

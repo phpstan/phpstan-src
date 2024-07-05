@@ -8,8 +8,30 @@ use function floor;
 class PhpVersion
 {
 
-	public function __construct(private int $versionId)
+	public const SOURCE_RUNTIME = 1;
+	public const SOURCE_CONFIG = 2;
+	public const SOURCE_COMPOSER_PLATFORM_PHP = 3;
+	public const SOURCE_UNKNOWN = 4;
+
+	/**
+	 * @param self::SOURCE_* $source
+	 */
+	public function __construct(private int $versionId, private int $source = self::SOURCE_UNKNOWN)
 	{
+	}
+
+	public function getSourceLabel(): string
+	{
+		switch ($this->source) {
+			case self::SOURCE_RUNTIME:
+				return 'runtime';
+			case self::SOURCE_CONFIG:
+				return 'config';
+			case self::SOURCE_COMPOSER_PLATFORM_PHP:
+				return 'config.platform.php in composer.json';
+		}
+
+		return 'unknown';
 	}
 
 	public function getVersionId(): int

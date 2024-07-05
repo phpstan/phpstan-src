@@ -605,7 +605,7 @@ class AnalyseCommand extends Command
 			if (!$fileSpecificError->canBeIgnored()) {
 				$unignorableCount++;
 				if ($output->isVeryVerbose()) {
-					$inceptionResult->getStdOutput()->writeLineFormatted('Unignorable could not be added to the baseline:');
+					$inceptionResult->getStdOutput()->writeLineFormatted('<error>Unignorable errors could not be added to the baseline:</error>');
 					$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getMessage());
 					$inceptionResult->getStdOutput()->writeLineFormatted($fileSpecificError->getFile());
 					$inceptionResult->getStdOutput()->writeLineFormatted('');
@@ -624,7 +624,11 @@ class AnalyseCommand extends Command
 		) {
 			$inceptionResult->getStdOutput()->getStyle()->success($message);
 		} else {
-			$inceptionResult->getStdOutput()->getStyle()->warning($message . "\nSome errors could not be put into baseline. Re-run PHPStan and fix them.");
+			if ($output->isVeryVerbose()) {
+				$inceptionResult->getStdOutput()->getStyle()->warning($message . "\nSome errors could not be put into baseline.");
+			} else {
+				$inceptionResult->getStdOutput()->getStyle()->warning($message . "\nSome errors could not be put into baseline. Re-run PHPStan with \"-vv\" and fix them.");
+			}
 		}
 
 		$exitCode = 0;

@@ -1,0 +1,12 @@
+diff --git a/Llk/Lexer.php b/Llk/Lexer.php
+index 6851367..b8acf98 100644
+--- a/Llk/Lexer.php
++++ b/Llk/Lexer.php
+@@ -281,7 +281,7 @@ class Lexer
+             $offset
+         );
+
+-        if (0 === $preg) {
++        if (0 === $preg || $preg === false) {
+             return null;
+         }

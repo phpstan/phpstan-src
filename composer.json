@@ -91,7 +91,8 @@
 			],
 			"hoa/compiler": [
 				"patches/HoaException.patch",
-				"patches/Rule.patch"
+				"patches/Rule.patch",
+				"patches/Lexer.patch"
 			],
 			"hoa/consistency": [
 				"patches/Consistency.patch"

@@ -133,7 +133,7 @@ final class RegexArrayShapeMatcher
 						$isOptionalAlternation = $group->inOptionalAlternation();
 						$group->forceNonOptional();
 						$beforeCurrentCombo = false;
-					} elseif ($beforeCurrentCombo) {
+					} elseif ($beforeCurrentCombo && !$group->resetsGroupCounter()) {
 						$group->forceNonOptional();
 					} elseif ($group->getAlternationId() === $onlyTopLevelAlternationId) {
 						unset($comboList[$groupId]);
@@ -385,6 +385,15 @@ final class RegexArrayShapeMatcher
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
+				false,
+			);
+			$parentGroup = $group;
+		} elseif ($ast->getId() === '#noncapturingreset') {
+			$group = new RegexNonCapturingGroup(
+				$inAlternation ? $alternationId : null,
+				$inOptionalQuantification,
+				$parentGroup,
+				true,
 			);
 			$parentGroup = $group;
 		}

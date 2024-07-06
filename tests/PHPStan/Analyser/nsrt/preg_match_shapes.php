@@ -360,3 +360,14 @@ function bug11277b(string $value): void
 		}
 	}
 }
+
+// https://www.pcre.org/current/doc/html/pcre2pattern.html#dupgroupnumber
+// https://3v4l.org/09qdT
+function bug11291(string $s): void {
+	if (preg_match('/(?|(a)|(b)(c)|(d)(e)(f))/', $s, $matches)) {
+		assertType('array{0: string, 1: string, 2?: string, 3?: string}', $matches);
+	} else {
+		assertType('array{}', $matches);
+	}
+	assertType('array{}|array{0: string, 1: string, 2?: string, 3?: string}', $matches);
+}

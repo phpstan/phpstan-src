@@ -9,6 +9,7 @@ class RegexNonCapturingGroup
 		private ?int $alternationId,
 		private bool $inOptionalQuantification,
 		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
+		private bool $resetGroupCounter,
 	)
 	{
 	}
@@ -40,6 +41,11 @@ class RegexNonCapturingGroup
 	public function getParent(): RegexCapturingGroup|RegexNonCapturingGroup|null
 	{
 		return $this->parent;
+	}
+
+	public function resetsGroupCounter(): bool
+	{
+		return $this->resetGroupCounter;
 	}
 
 }

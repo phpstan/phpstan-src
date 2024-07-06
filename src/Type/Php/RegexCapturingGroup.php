@@ -32,6 +32,11 @@ class RegexCapturingGroup
 		$this->forceNonOptional = false;
 	}
 
+	public function resetsGroupCounter(): bool
+	{
+		return $this->parent instanceof RegexNonCapturingGroup && $this->parent->resetsGroupCounter();
+	}
+
 	/** @phpstan-assert-if-true !null $this->getAlternationId() */
 	public function inAlternation(): bool
 	{

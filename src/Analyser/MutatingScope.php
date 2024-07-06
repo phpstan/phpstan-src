@@ -148,6 +148,7 @@ use function is_bool;
 use function is_numeric;
 use function is_string;
 use function ltrim;
+use function md5;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -700,6 +701,30 @@ class MutatingScope implements Scope
 		}
 
 		return $key;
+	}
+
+	private function getClosureScopeCacheKey(): string
+	{
+		$parts = [];
+		foreach ($this->expressionTypes as $exprString => $expressionTypeHolder) {
+			$parts[] = sprintf('%s::%s', $exprString, $expressionTypeHolder->getType()->describe(VerbosityLevel::cache()));
+		}
+		$parts[] = '---';
+		foreach ($this->nativeExpressionTypes as $exprString => $expressionTypeHolder) {
+			$parts[] = sprintf('%s::%s', $exprString, $expressionTypeHolder->getType()->describe(VerbosityLevel::cache()));
+		}
+
+		$parts[] = sprintf(':%d', count($this->inFunctionCallsStack));
+		foreach ($this->inFunctionCallsStack as [$method, $parameter]) {
+			if ($parameter === null) {
+				$parts[] = ',null';
+				continue;
+			}
+
+			$parts[] = sprintf(',%s', $parameter->getType()->describe(VerbosityLevel::cache()));
+		}
+
+		return md5(implode("\n", $parts));
 	}
 
 	private function resolveType(string $exprString, Expr $node): Type
@@ -1318,6 +1343,25 @@ class MutatingScope implements Scope
 				$impurePoints = array_merge($arrowFunctionImpurePoints, $arrowFunctionExprResult->getImpurePoints());
 				$usedVariables = [];
 			} else {
+				$cachedTypes = $node->getAttribute('phpstanCachedTypes', []);
+				$cacheKey = $this->getClosureScopeCacheKey();
+				if (array_key_exists($cacheKey, $cachedTypes)) {
+					$cachedClosureData = $cachedTypes[$cacheKey];
+
+					return new ClosureType(
+						$parameters,
+						$cachedClosureData['returnType'],
+						$isVariadic,
+						TemplateTypeMap::createEmpty(),
+						TemplateTypeMap::createEmpty(),
+						TemplateTypeVarianceMap::createEmpty(),
+						[],
+						$cachedClosureData['throwPoints'],
+						$cachedClosureData['impurePoints'],
+						$cachedClosureData['invalidateExpressions'],
+						$cachedClosureData['usedVariables'],
+					);
+				}
 				if (self::$resolveClosureTypeDepth >= 2) {
 					return new ClosureType(
 						$parameters,
@@ -1483,6 +1527,19 @@ class MutatingScope implements Scope
 				}
 			}
 
+			$throwPointsForClosureType = array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? SimpleThrowPoint::createExplicit($throwPoint->getType(), $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(), $throwPoints);
+			$impurePointsForClosureType = array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints);
+
+			$cachedTypes = $node->getAttribute('phpstanCachedTypes', []);
+			$cachedTypes[$this->getClosureScopeCacheKey()] = [
+				'returnType' => $returnType,
+				'throwPoints' => $throwPointsForClosureType,
+				'impurePoints' => $impurePointsForClosureType,
+				'invalidateExpressions' => $invalidateExpressions,
+				'usedVariables' => $usedVariables,
+			];
+			$node->setAttribute('phpstanCachedTypes', $cachedTypes);
+
 			return new ClosureType(
 				$parameters,
 				$returnType,
@@ -1491,8 +1548,8 @@ class MutatingScope implements Scope
 				TemplateTypeMap::createEmpty(),
 				TemplateTypeVarianceMap::createEmpty(),
 				[],
-				array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? SimpleThrowPoint::createExplicit($throwPoint->getType(), $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(), $throwPoints),
-				array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints),
+				$throwPointsForClosureType,
+				$impurePointsForClosureType,
 				$invalidateExpressions,
 				$usedVariables,
 			);

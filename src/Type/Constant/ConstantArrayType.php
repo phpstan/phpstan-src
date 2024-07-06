@@ -694,6 +694,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
+		$phpVersion = PhpVersionStaticAccessor::getInstance();
+		if (!$phpVersion->supportsNegativeArrayIndexOnAssign()) {
+			$builder->resetNextAutoIndexToZeroIfNegative();
+		}
 		$builder->setOffsetValueType($offsetType, $valueType);
 
 		return $builder->getArray();

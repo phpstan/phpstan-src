@@ -181,6 +181,14 @@ class ConstantArrayTypeBuilder
 							$this->nextAutoIndexes[] = $newAutoIndex;
 						}
 					}
+					if (count($this->keyTypes) === 1 && $offsetType->getValue() < 0) {
+						$newAutoIndex = $offsetType->getValue() + 1;
+						if (!$optional) {
+							$this->nextAutoIndexes = [$newAutoIndex];
+						} else {
+							$this->nextAutoIndexes[] = $newAutoIndex;
+						}
+					}
 				} else {
 					$this->isList = TrinaryLogic::createNo();
 				}
@@ -312,6 +320,14 @@ class ConstantArrayTypeBuilder
 	public function isList(): bool
 	{
 		return $this->isList->yes();
+	}
+
+	public function resetNextAutoIndexToZeroIfNegative(): void
+	{
+		if (count($this->nextAutoIndexes) !== 1 || $this->nextAutoIndexes[0] >= 0) {
+			return;
+		}
+		$this->nextAutoIndexes = [0];
 	}
 
 }

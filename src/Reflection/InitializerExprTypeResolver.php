@@ -563,6 +563,9 @@ class InitializerExprTypeResolver
 					$arrayBuilder->setOffsetValueType($offsetType, $valueType->getIterableValueType(), !$valueType->isIterableAtLeastOnce()->yes());
 				}
 			} else {
+				if (!$this->phpVersion->supportsNegativeArrayIndexOnCreate()) {
+					$arrayBuilder->resetNextAutoIndexToZeroIfNegative();
+				}
 				$arrayBuilder->setOffsetValueType(
 					$arrayItem->key !== null ? $getTypeCallback($arrayItem->key) : null,
 					$valueType,

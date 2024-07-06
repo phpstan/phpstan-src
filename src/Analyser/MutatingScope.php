@@ -1318,12 +1318,6 @@ class MutatingScope implements Scope
 				$impurePoints = array_merge($arrowFunctionImpurePoints, $arrowFunctionExprResult->getImpurePoints());
 				$usedVariables = [];
 			} else {
-				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
-				$closureReturnStatements = [];
-				$closureYieldStatements = [];
-				$closureExecutionEnds = [];
-				$closureImpurePoints = [];
-				$invalidateExpressions = [];
 				if (self::$resolveClosureTypeDepth >= 2) {
 					return new ClosureType(
 						$parameters,
@@ -1333,6 +1327,14 @@ class MutatingScope implements Scope
 				}
 
 				self::$resolveClosureTypeDepth++;
+
+				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
+				$closureReturnStatements = [];
+				$closureYieldStatements = [];
+				$closureExecutionEnds = [];
+				$closureImpurePoints = [];
+				$invalidateExpressions = [];
+
 				try {
 					$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds, &$closureImpurePoints, &$invalidateExpressions): void {
 						if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {

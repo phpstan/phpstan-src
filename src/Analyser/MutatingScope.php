@@ -180,6 +180,8 @@ class MutatingScope implements Scope
 
 	private ?self $scopeWithPromotedNativeTypes = null;
 
+	private static int $resolveClosureTypeDepth = 0;
+
 	/**
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
@@ -1322,56 +1324,69 @@ class MutatingScope implements Scope
 				$closureExecutionEnds = [];
 				$closureImpurePoints = [];
 				$invalidateExpressions = [];
-				$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds, &$closureImpurePoints, &$invalidateExpressions): void {
-					if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
-						return;
-					}
+				if (self::$resolveClosureTypeDepth >= 2) {
+					return new ClosureType(
+						$parameters,
+						$this->getFunctionType($node->returnType, false, false),
+						$isVariadic,
+					);
+				}
 
-					if ($node instanceof InvalidateExprNode) {
-						$invalidateExpressions[] = $node;
-						return;
-					}
-
-					if ($node instanceof PropertyAssignNode) {
-						$closureImpurePoints[] = new ImpurePoint(
-							$scope,
-							$node,
-							'propertyAssign',
-							'property assignment',
-							true,
-						);
-						return;
-					}
-
-					if ($node instanceof ExecutionEndNode) {
-						if ($node->getStatementResult()->isAlwaysTerminating()) {
-							foreach ($node->getStatementResult()->getExitPoints() as $exitPoint) {
-								if ($exitPoint->getStatement() instanceof Node\Stmt\Return_) {
-									continue;
-								}
-
-								$closureExecutionEnds[] = $node;
-								break;
-							}
-
-							if (count($node->getStatementResult()->getExitPoints()) === 0) {
-								$closureExecutionEnds[] = $node;
-							}
+				self::$resolveClosureTypeDepth++;
+				try {
+					$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds, &$closureImpurePoints, &$invalidateExpressions): void {
+						if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
+							return;
 						}
 
-						return;
-					}
+						if ($node instanceof InvalidateExprNode) {
+							$invalidateExpressions[] = $node;
+							return;
+						}
 
-					if ($node instanceof Node\Stmt\Return_) {
-						$closureReturnStatements[] = [$node, $scope];
-					}
+						if ($node instanceof PropertyAssignNode) {
+							$closureImpurePoints[] = new ImpurePoint(
+								$scope,
+								$node,
+								'propertyAssign',
+								'property assignment',
+								true,
+							);
+							return;
+						}
 
-					if (!$node instanceof Expr\Yield_ && !$node instanceof Expr\YieldFrom) {
-						return;
-					}
+						if ($node instanceof ExecutionEndNode) {
+							if ($node->getStatementResult()->isAlwaysTerminating()) {
+								foreach ($node->getStatementResult()->getExitPoints() as $exitPoint) {
+									if ($exitPoint->getStatement() instanceof Node\Stmt\Return_) {
+										continue;
+									}
 
-					$closureYieldStatements[] = [$node, $scope];
-				}, StatementContext::createTopLevel());
+									$closureExecutionEnds[] = $node;
+									break;
+								}
+
+								if (count($node->getStatementResult()->getExitPoints()) === 0) {
+									$closureExecutionEnds[] = $node;
+								}
+							}
+
+							return;
+						}
+
+						if ($node instanceof Node\Stmt\Return_) {
+							$closureReturnStatements[] = [$node, $scope];
+						}
+
+						if (!$node instanceof Expr\Yield_ && !$node instanceof Expr\YieldFrom) {
+							return;
+						}
+
+						$closureYieldStatements[] = [$node, $scope];
+					}, StatementContext::createTopLevel());
+				} finally {
+					self::$resolveClosureTypeDepth--;
+				}
 
 				$throwPoints = $closureStatementResult->getThrowPoints();
 				$impurePoints = array_merge($closureImpurePoints, $closureStatementResult->getImpurePoints());

@@ -110,6 +110,9 @@
 				"patches/SessionHandler.patch",
 				"patches/xmlreader.patch",
 				"patches/dom_c.patch"
+			],
+			"nette/di": [
+				"patches/DependencyChecker.patch"
 			]
 		}
 	},

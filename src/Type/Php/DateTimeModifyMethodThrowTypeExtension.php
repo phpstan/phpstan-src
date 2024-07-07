@@ -4,11 +4,11 @@ namespace PHPStan\Type\Php;
 
 use DateTime;
 use DateTimeImmutable;
-use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
+use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -16,21 +16,25 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 
-class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
+final class DateTimeModifyMethodThrowTypeExtension implements DynamicMethodThrowTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)
 	{
 	}
 
-	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
+	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return $methodReflection->getName() === '__construct' && in_array($methodReflection->getDeclaringClass()->getName(), [DateTime::class, DateTimeImmutable::class], true);
+		return $methodReflection->getName() === 'modify' && in_array($methodReflection->getDeclaringClass()->getName(), [DateTime::class, DateTimeImmutable::class], true);
 	}
 
-	public function getThrowTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
+	public function getThrowTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
 		if (count($methodCall->getArgs()) === 0) {
+			return null;
+		}
+
+		if (!$this->phpVersion->hasDateTimeExceptions()) {
 			return null;
 		}
 
@@ -39,7 +43,8 @@ class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowT
 
 		foreach ($constantStrings as $constantString) {
 			try {
-				new DateTime($constantString->getValue());
+				$dateTime = new DateTime();
+				$dateTime->modify($constantString->getValue());
 			} catch (\Exception $e) { // phpcs:ignore
 				return $this->exceptionType();
 			}

@@ -100,4 +100,26 @@ class Foo
 		new \DaTetImezOnE('UTC');
 	}
 
+	public function dateIntervalDoesThrows(string $i): void
+	{
+		new \DateInterval($i);
+	}
+
+	public function dateIntervalDoeNotThrow(): void
+	{
+		new \DateInterval('P7D');
+	}
+
+	public function dateTimeModifyDoeNotThrow(\DateTime $dt, \DateTimeImmutable $dti): void
+	{
+		$dt->modify('+1 day');
+		$dti->modify('+1 day');
+	}
+
+	public function dateTimeModifyDoesThrows(\DateTime $dt, \DateTimeImmutable $dti, string $m): void
+	{
+		$dt->modify($m);
+		$dti->modify($m);
+	}
+
 }

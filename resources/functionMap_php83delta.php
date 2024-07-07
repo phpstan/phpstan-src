@@ -21,6 +21,8 @@
  */
 return [
 	'new' => [
+		'DateTime::modify' => ['static', 'modify'=>'string'],
+		'DateTimeImmutable::modify' => ['static', 'modify'=>'string'],
 		'str_decrement' => ['non-empty-string', 'string'=>'non-empty-string'],
 		'str_increment' => ['non-falsy-string', 'string'=>'non-empty-string'],
 		'gc_status' => ['array{running:bool,protected:bool,full:bool,runs:int,collected:int,threshold:int,buffer_size:int,roots:int,application_time:float,collector_time:float,destructor_time:float,free_time:float}'],

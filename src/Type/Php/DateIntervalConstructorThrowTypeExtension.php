@@ -5,15 +5,21 @@ namespace PHPStan\Type\Php;
 use DateInterval;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 
 class DateIntervalConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
 	{
@@ -33,17 +39,26 @@ class DateIntervalConstructorThrowTypeExtension implements DynamicStaticMethodTh
 			try {
 				new DateInterval($constantString->getValue());
 			} catch (\Exception $e) { // phpcs:ignore
-				return $methodReflection->getThrowType();
+				return $this->exceptionType();
 			}
 
 			$valueType = TypeCombinator::remove($valueType, $constantString);
 		}
 
 		if (!$valueType instanceof NeverType) {
-			return $methodReflection->getThrowType();
+			return $this->exceptionType();
 		}
 
 		return null;
+	}
+
+	private function exceptionType(): Type
+	{
+		if ($this->phpVersion->hasDateTimeExceptions()) {
+			return new ObjectType('DateMalformedIntervalStringException');
+		}
+
+		return new ObjectType('Exception');
 	}
 
 }

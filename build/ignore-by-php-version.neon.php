@@ -34,6 +34,10 @@ if (PHP_VERSION_ID < 80000) {
 	$includes[] = __DIR__ . '/spl-autoload-functions-php-8.neon';
 }
 
+if (PHP_VERSION_ID >= 80300) {
+	$includes[] = __DIR__ . '/datetime-php-83.neon';
+}
+
 $config = [];
 $config['includes'] = $includes;
 

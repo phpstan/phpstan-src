@@ -1,0 +1,13 @@
+--- src/DI/DependencyChecker.php	2023-10-02 21:58:38
++++ src/DI/DependencyChecker.php	2024-07-07 09:24:35
+@@ -147,7 +147,9 @@
+ 		$flip = array_flip($classes);
+ 		foreach ($functions as $name) {
+ 			if (strpos($name, '::')) {
+-				$method = new ReflectionMethod($name);
++				$method = PHP_VERSION_ID < 80300
++					? new ReflectionMethod($name)
++					: ReflectionMethod::createFromMethodName($name);
+ 				$class = $method->getDeclaringClass();
+ 				if (isset($flip[$class->name])) {
+ 					continue;

@@ -18,7 +18,7 @@ class Foo
 	 */
 	function modify(\DateTimeInterface $date) {
 		$date = $date->modify('+1 day');
-		assertType('T of DateTime|DateTimeImmutable (method Bug6609\Foo::modify(), argument)', $date);
+		assertType('T of DateTime|DateTimeImmutable (method Bug6609Php83\Foo::modify(), argument)', $date);
 
 		return $date;
 	}

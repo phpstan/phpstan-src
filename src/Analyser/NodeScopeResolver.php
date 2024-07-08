@@ -6064,7 +6064,7 @@ class NodeScopeResolver
 			if ($node instanceof Node\Stmt\Nop) {
 				continue;
 			}
-			if ($earlyBinding && ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike)) {
+			if ($earlyBinding && ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\HaltCompiler)) {
 				continue;
 			}
 			return $node;

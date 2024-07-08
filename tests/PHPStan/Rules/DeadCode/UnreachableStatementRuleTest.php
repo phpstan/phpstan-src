@@ -218,4 +218,10 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11179(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-11179.php'], []);
+	}
+
 }

@@ -163,7 +163,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				self::fail(sprintf(
 					'Missing use statement for %s() in %s on line %d.',
 					$functionName,
-					$pathHelper->getRelativePath($file),
+					$pathHelper->getRelativePath(strtr($file, '\\', '/')),
 					$node->getStartLine(),
 				));
 			} elseif ($functionName === 'PHPStan\\Testing\\assertType') {
@@ -172,7 +172,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 					self::fail(sprintf(
 						'Expected type must be a literal string, %s given in %s on line %d.',
 						$expectedType->describe(VerbosityLevel::precise()),
-						$pathHelper->getRelativePath($file),
+						$pathHelper->getRelativePath(strtr($file, '\\', '/')),
 						$node->getLine(),
 					));
 				}
@@ -184,7 +184,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 					self::fail(sprintf(
 						'Expected type must be a literal string, %s given in %s on line %d.',
 						$expectedType->describe(VerbosityLevel::precise()),
-						$pathHelper->getRelativePath($file),
+						$pathHelper->getRelativePath(strtr($file, '\\', '/')),
 						$node->getLine(),
 					));
 				}
@@ -244,7 +244,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 					'Function %s imported with wrong namespace %s called in %s on line %d.',
 					$correctFunction,
 					$functionName,
-					$pathHelper->getRelativePath($file),
+					$pathHelper->getRelativePath(strtr($file, '\\', '/')),
 					$node->getStartLine(),
 				));
 			}
@@ -253,7 +253,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				self::fail(sprintf(
 					'ERROR: Wrong %s() call in %s on line %d.',
 					$functionName,
-					$pathHelper->getRelativePath($file),
+					$pathHelper->getRelativePath(strtr($file, '\\', '/')),
 					$node->getStartLine(),
 				));
 			}

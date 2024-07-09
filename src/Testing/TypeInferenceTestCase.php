@@ -39,6 +39,7 @@ use function sprintf;
 use function stripos;
 use function strpos;
 use function strtolower;
+use function strtr;
 use function version_compare;
 use const PHP_VERSION;
 

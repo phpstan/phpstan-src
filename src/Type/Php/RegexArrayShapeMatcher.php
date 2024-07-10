@@ -7,6 +7,7 @@ use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\Exception\Exception;
 use Hoa\File\Read;
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -32,6 +33,12 @@ final class RegexArrayShapeMatcher
 {
 
 	private static ?Parser $parser = null;
+
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
 
 	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
 	{
@@ -111,6 +118,7 @@ final class RegexArrayShapeMatcher
 				$valueType,
 				$wasMatched,
 				$trailingOptionals,
+				$flags ?? 0,
 			);
 
 			return TypeCombinator::union(
@@ -145,6 +153,7 @@ final class RegexArrayShapeMatcher
 					$valueType,
 					$wasMatched,
 					$trailingOptionals,
+					$flags ?? 0,
 				);
 
 				$combiTypes[] = $combiType;
@@ -167,6 +176,7 @@ final class RegexArrayShapeMatcher
 			$valueType,
 			$wasMatched,
 			$trailingOptionals,
+			$flags ?? 0,
 		);
 	}
 
@@ -228,6 +238,7 @@ final class RegexArrayShapeMatcher
 		Type $valueType,
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
+		int $flags,
 	): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
@@ -242,10 +253,17 @@ final class RegexArrayShapeMatcher
 		$countGroups = count($captureGroups);
 		$i = 0;
 		foreach ($captureGroups as $captureGroup) {
+			$groupValueType = $valueType;
+
 			if (!$wasMatched->yes()) {
 				$optional = true;
 			} else {
 				if ($i < $countGroups - $trailingOptionals) {
+					$optional = false;
+					if ($this->containsUnmatchedAsNull($flags)) {
+						$groupValueType = TypeCombinator::removeNull($groupValueType);
+					}
+				} elseif ($this->containsUnmatchedAsNull($flags)) {
 					$optional = false;
 				} else {
 					$optional = $captureGroup->isOptional();
@@ -255,14 +273,14 @@ final class RegexArrayShapeMatcher
 			if ($captureGroup->isNamed()) {
 				$builder->setOffsetValueType(
 					$this->getKeyType($captureGroup->getName()),
-					$valueType,
+					$groupValueType,
 					$optional,
 				);
 			}
 
 			$builder->setOffsetValueType(
 				$this->getKeyType($i + 1),
-				$valueType,
+				$groupValueType,
 				$optional,
 			);
 
@@ -270,6 +288,11 @@ final class RegexArrayShapeMatcher
 		}
 
 		return $builder->getArray();
+	}
+
+	private function containsUnmatchedAsNull(int $flags): bool
+	{
+		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && $this->phpVersion->supportsPregUnmatchedAsNull();
 	}
 
 	private function getKeyType(int|string $key): Type
@@ -285,7 +308,7 @@ final class RegexArrayShapeMatcher
 	{
 		$valueType = new StringType();
 		$offsetType = IntegerRangeType::fromInterval(0, null);
-		if (($flags & PREG_UNMATCHED_AS_NULL) !== 0) {
+		if ($this->containsUnmatchedAsNull($flags)) {
 			$valueType = TypeCombinator::addNull($valueType);
 			// unmatched groups return -1 as offset
 			$offsetType = IntegerRangeType::fromInterval(-1, null);

@@ -13,6 +13,8 @@ use PHPStan\Type\ConstantScalarType;
 use function array_keys;
 use function count;
 use function implode;
+use function is_float;
+use function key;
 use function max;
 use function sprintf;
 use function var_export;
@@ -85,7 +87,7 @@ class DuplicateKeysInLiteralArraysRule implements Rule
 			}
 
 			$value = $keyType->getValue();
-			$index = (string) $value;
+			$index = is_float($value) ? (int) $value : key([$value => null]);
 			$printedValue = $key !== null
 				? $this->exprPrinter->printExpr($key)
 				: $value;

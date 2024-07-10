@@ -339,6 +339,10 @@ class NodeScopeResolver
 			|| $parentNode instanceof Node\Stmt\ClassMethod
 			|| $parentNode instanceof Expr\Closure;
 		foreach ($stmts as $i => $stmt) {
+			if ($alreadyTerminated && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike)) {
+				continue;
+			}
+
 			$isLast = $i === $stmtCount - 1;
 			$statementResult = $this->processStmtNode(
 				$stmt,
@@ -370,16 +374,16 @@ class NodeScopeResolver
 			$throwPoints = array_merge($throwPoints, $statementResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $statementResult->getImpurePoints());
 
-			if (!$statementResult->isAlwaysTerminating()) {
+			if ($alreadyTerminated || !$statementResult->isAlwaysTerminating()) {
 				continue;
 			}
 
 			$alreadyTerminated = true;
 			$nextStmt = $this->getFirstUnreachableNode(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
-			if ($nextStmt !== null) {
-				$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
+			if ($nextStmt === null) {
+				continue;
 			}
-			break;
+			$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
 		}
 
 		$statementResult = new StatementResult($scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints, $impurePoints);

@@ -82,4 +82,14 @@ class DumpTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11179(): void
+	{
+		$this->analyse([__DIR__ . '/../DeadCode/data/bug-11179.php'], [
+			[
+				'Dumped type: string',
+				9,
+			],
+		]);
+	}
+
 }

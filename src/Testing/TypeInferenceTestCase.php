@@ -145,8 +145,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	 */
 	public static function gatherAssertTypes(string $file): array
 	{
-		/** @var SimpleRelativePathHelper $pathHelper */
-		$pathHelper = self::getContainer()->getService('simpleRelativePathHelper');
+		$pathHelper = new SimpleRelativePathHelper(dirname(__DIR__, 2));
 
 		$asserts = [];
 		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, $file, $pathHelper): void {
@@ -164,7 +163,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				self::fail(sprintf(
 					'Missing use statement for %s() in %s on line %d.',
 					$functionName,
-					$pathHelper->getRelativePath(strtr($file, '\\', '/')),
+					$pathHelper->getRelativePath($file),
 					$node->getStartLine(),
 				));
 			} elseif ($functionName === 'PHPStan\\Testing\\assertType') {
@@ -173,7 +172,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 					self::fail(sprintf(
 						'Expected type must be a literal string, %s given in %s on line %d.',
 						$expectedType->describe(VerbosityLevel::precise()),
-						$pathHelper->getRelativePath(strtr($file, '\\', '/')),
+						$pathHelper->getRelativePath($file),
 						$node->getLine(),
 					));
 				}
@@ -185,7 +184,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 					self::fail(sprintf(
 						'Expected type must be a literal string, %s given in %s on line %d.',
 						$expectedType->describe(VerbosityLevel::precise()),
-						$pathHelper->getRelativePath(strtr($file, '\\', '/')),
+						$pathHelper->getRelativePath($file),
 						$node->getLine(),
 					));
 				}
@@ -245,7 +244,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 					'Function %s imported with wrong namespace %s called in %s on line %d.',
 					$correctFunction,
 					$functionName,
-					$pathHelper->getRelativePath(strtr($file, '\\', '/')),
+					$pathHelper->getRelativePath($file),
 					$node->getStartLine(),
 				));
 			}

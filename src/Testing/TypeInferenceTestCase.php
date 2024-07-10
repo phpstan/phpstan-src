@@ -40,7 +40,6 @@ use function sprintf;
 use function stripos;
 use function strpos;
 use function strtolower;
-use function strtr;
 use function version_compare;
 use const PHP_VERSION;
 
@@ -254,7 +253,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				self::fail(sprintf(
 					'ERROR: Wrong %s() call in %s on line %d.',
 					$functionName,
-					$pathHelper->getRelativePath(strtr($file, '\\', '/')),
+					$pathHelper->getRelativePath($file),
 					$node->getStartLine(),
 				));
 			}

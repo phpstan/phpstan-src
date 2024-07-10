@@ -7,7 +7,7 @@ use function PHPStan\Testing\assertType;
 function doFoo(string $s) {
 	if (1 === preg_match('/(?<major>\d+)\.(?<minor>\d+)(?:\.(?<patch>\d+))?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
 
-		assertType('array{0: string, major: string|null, 1: string|null, minor: string|null, 2: string|null, patch: string|null, 3: string|null}', $matches);
+		assertType('array{0: string, major: string, 1: string, minor: string, 2: string, patch: string|null, 3: string|null}', $matches);
 	}
 }
 

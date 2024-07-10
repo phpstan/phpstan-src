@@ -10,3 +10,10 @@ function doFoo(string $s) {
 		assertType('array{0: string, major: string|null, 1: string|null, minor: string|null, 2: string|null, patch: string|null, 3: string|null}', $matches);
 	}
 }
+
+function doUnmatchedAsNull(string $s): void {
+	if (preg_match('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType('array{string, string|null, string|null, string|null}', $matches);
+	}
+	assertType('array{}|array{string, string|null, string|null, string|null}', $matches);
+}

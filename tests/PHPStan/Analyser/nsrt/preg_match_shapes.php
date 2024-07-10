@@ -116,13 +116,6 @@ function doOffsetCapture(string $s): void {
 	assertType('array{}|array{array{string, int<0, max>}, array{string, int<0, max>}, array{string, int<0, max>}, array{string, int<0, max>}}', $matches);
 }
 
-function doUnmatchedAsNull(string $s): void {
-	if (preg_match('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType('array{0: string, 1?: string|null, 2?: string|null, 3?: string|null}', $matches);
-	}
-	assertType('array{}|array{0: string, 1?: string|null, 2?: string|null, 3?: string|null}', $matches);
-}
-
 function doUnknownFlags(string $s, int $flags): void {
 	if (preg_match('/(foo)(bar)(baz)/xyz', $s, $matches, $flags)) {
 		assertType('array<array{string|null, int<-1, max>}|string|null>', $matches);

@@ -33,7 +33,7 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 				'Invalid array key type array.',
 				8,
 			],
-			PHP_VERSION_ID >= 80_100
+			PHP_VERSION_ID >= 80100
 				? [
 					'Using float as array key emits deprecation notice.',
 					10,

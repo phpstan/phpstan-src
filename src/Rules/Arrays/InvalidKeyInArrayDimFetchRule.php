@@ -65,7 +65,7 @@ class InvalidKeyInArrayDimFetchRule implements Rule
 			];
 		}
 
-		if ($this->phpVersion->getVersionId() >= 80_100 && !$dimensionType->isFloat()->no()) {
+		if ($this->phpVersion->getVersionId() >= 80100 && !$dimensionType->isFloat()->no()) {
 			return [
 				RuleErrorBuilder::message(
 					'Using float as array key emits deprecation notice.',

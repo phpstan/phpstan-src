@@ -34,7 +34,7 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 				'Possibly invalid array key type stdClass|string.',
 				15,
 			],
-			PHP_VERSION_ID >= 80_100
+			PHP_VERSION_ID >= 80100
 				? [
 					'Using float as array key emits deprecation notice.',
 					16,

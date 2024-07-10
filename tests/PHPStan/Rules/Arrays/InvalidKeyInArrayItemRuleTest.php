@@ -2,8 +2,10 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function array_filter;
 use const PHP_VERSION_ID;
 
 /**
@@ -14,12 +16,12 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new InvalidKeyInArrayItemRule(true);
+		return new InvalidKeyInArrayItemRule(true, new PhpVersion(PHP_VERSION_ID));
 	}
 
 	public function testInvalidKey(): void
 	{
-		$this->analyse([__DIR__ . '/data/invalid-key-array-item.php'], [
+		$this->analyse([__DIR__ . '/data/invalid-key-array-item.php'], array_filter([
 			[
 				'Invalid array key type DateTimeImmutable.',
 				13,
@@ -32,7 +34,13 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 				'Possibly invalid array key type stdClass|string.',
 				15,
 			],
-		]);
+			PHP_VERSION_ID >= 80_100
+				? [
+					'Using float as array key emits deprecation notice.',
+					16,
+				]
+				: null,
+		]));
 	}
 
 	public function testInvalidKeyInList(): void

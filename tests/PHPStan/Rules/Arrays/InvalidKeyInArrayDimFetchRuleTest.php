@@ -2,9 +2,12 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function array_filter;
+use function array_values;
 use const PHP_VERSION_ID;
 
 /**
@@ -16,12 +19,12 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, true, false);
-		return new InvalidKeyInArrayDimFetchRule($ruleLevelHelper, true);
+		return new InvalidKeyInArrayDimFetchRule($ruleLevelHelper, true, new PhpVersion(PHP_VERSION_ID));
 	}
 
 	public function testInvalidKey(): void
 	{
-		$this->analyse([__DIR__ . '/data/invalid-key-array-dim-fetch.php'], [
+		$this->analyse([__DIR__ . '/data/invalid-key-array-dim-fetch.php'], array_values(array_filter([
 			[
 				'Invalid array key type DateTimeImmutable.',
 				7,
@@ -30,6 +33,12 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 				'Invalid array key type array.',
 				8,
 			],
+			PHP_VERSION_ID >= 80_100
+				? [
+					'Using float as array key emits deprecation notice.',
+					10,
+				]
+				: null,
 			[
 				'Possibly invalid array key type stdClass|string.',
 				24,
@@ -58,7 +67,7 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 				'Invalid array key type DateTimeImmutable.',
 				48,
 			],
-		]);
+		])));
 	}
 
 	public function testBug6315(): void

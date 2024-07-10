@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
@@ -16,7 +17,10 @@ use function sprintf;
 class InvalidKeyInArrayItemRule implements Rule
 {
 
-	public function __construct(private bool $reportMaybes)
+	public function __construct(
+		private bool $reportMaybes,
+		private PhpVersion $phpVersion,
+	)
 	{
 	}
 
@@ -43,6 +47,14 @@ class InvalidKeyInArrayItemRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Possibly invalid array key type %s.', $dimensionType->describe(VerbosityLevel::typeOnly())),
+				)->identifier('array.invalidKey')->build(),
+			];
+		}
+
+		if ($this->phpVersion->getVersionId() >= 80_100 && !$dimensionType->isFloat()->no()) {
+			return [
+				RuleErrorBuilder::message(
+					'Using float as array key emits deprecation notice.',
 				)->identifier('array.invalidKey')->build(),
 			];
 		}

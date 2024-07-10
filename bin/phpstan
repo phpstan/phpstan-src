@@ -3,6 +3,7 @@
 
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\ClearResultCacheCommand;
+use PHPStan\Command\DiagnoseCommand;
 use PHPStan\Command\DumpParametersCommand;
 use PHPStan\Command\FixerWorkerCommand;
 use PHPStan\Command\WorkerCommand;
@@ -166,5 +167,6 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	$application->add(new ClearResultCacheCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new FixerWorkerCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new DumpParametersCommand($reversedComposerAutoloaderProjectPaths));
+	$application->add(new DiagnoseCommand($reversedComposerAutoloaderProjectPaths));
 	$application->run();
 })();

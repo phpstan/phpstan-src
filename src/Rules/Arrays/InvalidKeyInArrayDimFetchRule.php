@@ -65,12 +65,22 @@ class InvalidKeyInArrayDimFetchRule implements Rule
 			];
 		}
 
-		if ($this->phpVersion->getVersionId() >= 80100 && !$dimensionType->isFloat()->no()) {
-			return [
-				RuleErrorBuilder::message(
-					'Using float as array key emits deprecation notice.',
-				)->identifier('array.invalidOffset')->build(),
-			];
+		if ($this->phpVersion->getVersionId() >= 80100) {
+			$isFloat = $dimensionType->isFloat();
+
+			if ($isFloat->yes()) {
+				return [
+					RuleErrorBuilder::message(
+						'Float used as array key, this emits deprecation notice.',
+					)->identifier('array.invalidOffset')->build(),
+				];
+			} elseif ($this->reportMaybes && $isFloat->maybe()) {
+				return [
+					RuleErrorBuilder::message(
+						'Float possibly used as array key, this emits deprecation notice.',
+					)->identifier('array.invalidOffset')->build(),
+				];
+			}
 		}
 
 		return [];

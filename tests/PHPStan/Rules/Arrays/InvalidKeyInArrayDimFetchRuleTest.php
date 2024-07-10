@@ -35,7 +35,7 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 			],
 			PHP_VERSION_ID >= 80100
 				? [
-					'Using float as array key emits deprecation notice.',
+					'Float used as array key, this emits deprecation notice.',
 					10,
 				]
 				: null,
@@ -67,6 +67,12 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 				'Invalid array key type DateTimeImmutable.',
 				48,
 			],
+			PHP_VERSION_ID >= 80100
+				? [
+					'Float possibly used as array key, this emits deprecation notice.',
+					52,
+				]
+				: null,
 		])));
 	}
 

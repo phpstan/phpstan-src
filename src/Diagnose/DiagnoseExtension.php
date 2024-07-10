@@ -26,6 +26,6 @@ interface DiagnoseExtension
 
 	public const EXTENSION_TAG = 'phpstan.diagnoseExtension';
 
-	public function print(Output $errorOutput): void;
+	public function print(Output $output): void;
 
 }

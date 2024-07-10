@@ -15,23 +15,23 @@ class PHPStanDiagnoseExtension implements DiagnoseExtension
 	{
 	}
 
-	public function print(Output $errorOutput): void
+	public function print(Output $output): void
 	{
 		$phpRuntimeVersion = new PhpVersion(PHP_VERSION_ID);
-		$errorOutput->writeLineFormatted(sprintf(
+		$output->writeLineFormatted(sprintf(
 			'<info>PHP runtime version:</info> %s',
 			$phpRuntimeVersion->getVersionString(),
 		));
-		$errorOutput->writeLineFormatted(sprintf(
+		$output->writeLineFormatted(sprintf(
 			'<info>PHP version for analysis:</info> %s (from %s)',
 			$this->phpVersion->getVersionString(),
 			$this->phpVersion->getSourceLabel(),
 		));
-		$errorOutput->writeLineFormatted(sprintf(
+		$output->writeLineFormatted(sprintf(
 			'<info>PHPStan version:</info> %s',
 			ComposerHelper::getPhpStanVersion(),
 		));
-		$errorOutput->writeLineFormatted('');
+		$output->writeLineFormatted('');
 	}
 
 }

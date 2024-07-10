@@ -7,6 +7,7 @@ use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\Exception\Exception;
 use Hoa\File\Read;
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -32,6 +33,12 @@ final class RegexArrayShapeMatcher
 {
 
 	private static ?Parser $parser = null;
+
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
 
 	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
 	{
@@ -111,6 +118,7 @@ final class RegexArrayShapeMatcher
 				$valueType,
 				$wasMatched,
 				$trailingOptionals,
+				$flags ?? 0,
 			);
 
 			return TypeCombinator::union(
@@ -145,6 +153,7 @@ final class RegexArrayShapeMatcher
 					$valueType,
 					$wasMatched,
 					$trailingOptionals,
+					$flags ?? 0,
 				);
 
 				$combiTypes[] = $combiType;
@@ -167,6 +176,7 @@ final class RegexArrayShapeMatcher
 			$valueType,
 			$wasMatched,
 			$trailingOptionals,
+			$flags ?? 0,
 		);
 	}
 
@@ -228,6 +238,7 @@ final class RegexArrayShapeMatcher
 		Type $valueType,
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
+		int $flags,
 	): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
@@ -246,6 +257,8 @@ final class RegexArrayShapeMatcher
 				$optional = true;
 			} else {
 				if ($i < $countGroups - $trailingOptionals) {
+					$optional = false;
+				} elseif (($flags & PREG_UNMATCHED_AS_NULL) !== 0 && $this->phpVersion->supportsPregUnmatchedAsNull()) {
 					$optional = false;
 				} else {
 					$optional = $captureGroup->isOptional();
@@ -285,7 +298,7 @@ final class RegexArrayShapeMatcher
 	{
 		$valueType = new StringType();
 		$offsetType = IntegerRangeType::fromInterval(0, null);
-		if (($flags & PREG_UNMATCHED_AS_NULL) !== 0) {
+		if (($flags & PREG_UNMATCHED_AS_NULL) !== 0 && $this->phpVersion->supportsPregUnmatchedAsNull()) {
 			$valueType = TypeCombinator::addNull($valueType);
 			// unmatched groups return -1 as offset
 			$offsetType = IntegerRangeType::fromInterval(-1, null);

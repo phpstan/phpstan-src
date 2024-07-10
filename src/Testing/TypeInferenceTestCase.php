@@ -28,6 +28,7 @@ use Symfony\Component\Finder\Finder;
 use function array_map;
 use function array_merge;
 use function count;
+use function dirname;
 use function fclose;
 use function fgets;
 use function fopen;

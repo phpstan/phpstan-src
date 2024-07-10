@@ -311,7 +311,7 @@ class PhpVersion
 
 	public function supportsPregUnmatchedAsNull(): bool
 	{
-		// while PREG_UNMATCHED_AS_NULL is defined in php-src since 7.2.x it starts working like described in the report with 7.4.x
+		// while PREG_UNMATCHED_AS_NULL is defined in php-src since 7.2.x it starts working as expected with 7.4.x
 		// https://3v4l.org/v3HE4
 		return $this->versionId >= 70400;
 	}

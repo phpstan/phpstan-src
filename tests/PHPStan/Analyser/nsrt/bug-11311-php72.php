@@ -1,6 +1,6 @@
 <?php // lint < 7.4
 
-namespace Bug11311;
+namespace Bug11311Php72;
 
 use function PHPStan\Testing\assertType;
 

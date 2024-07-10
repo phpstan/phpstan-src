@@ -309,6 +309,13 @@ class PhpVersion
 		return $this->versionId >= 80200;
 	}
 
+	public function supportsPregUnmatchedAsNull(): bool
+	{
+		// while PREG_UNMATCHED_AS_NULL is defined in php-src since 7.2.x it starts working as expected with 7.4.x
+		// https://3v4l.org/v3HE4
+		return $this->versionId >= 70400;
+	}
+
 	public function hasDateTimeExceptions(): bool
 	{
 		return $this->versionId >= 80300;

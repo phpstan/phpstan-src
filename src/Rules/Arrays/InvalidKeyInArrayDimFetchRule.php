@@ -69,7 +69,7 @@ class InvalidKeyInArrayDimFetchRule implements Rule
 			return [
 				RuleErrorBuilder::message(
 					'Using float as array key emits deprecation notice.',
-				)->identifier('array.invalidKey')->build(),
+				)->identifier('array.invalidOffset')->build(),
 			];
 		}
 

@@ -85,23 +85,24 @@ class DuplicateKeysInLiteralArraysRule implements Rule
 			}
 
 			$value = $keyType->getValue();
+			$index = (string) $value;
 			$printedValue = $key !== null
 				? $this->exprPrinter->printExpr($key)
 				: $value;
 
-			$printedValues[$value][] = $printedValue;
+			$printedValues[$index][] = $printedValue;
 
-			if (!isset($valueLines[$value])) {
-				$valueLines[$value] = $item->getStartLine();
+			if (!isset($valueLines[$index])) {
+				$valueLines[$index] = $item->getStartLine();
 			}
 
 			$previousCount = count($values);
-			$values[$value] = $printedValue;
+			$values[$index] = $printedValue;
 			if ($previousCount !== count($values)) {
 				continue;
 			}
 
-			$duplicateKeys[$value] = true;
+			$duplicateKeys[$index] = true;
 		}
 
 		$messages = [];

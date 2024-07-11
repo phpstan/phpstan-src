@@ -62,7 +62,7 @@ class UselessFunctionReturnValueRule implements Rule
 
 		if (count($reorderedArgs) === 1 || (count($reorderedArgs) >= 2 && $scope->getType($reorderedArgs[1]->value)->isFalse()->yes())) {
 			return [RuleErrorBuilder::message('Return value of call to function ' . $functionReflection->getName() . ' is useless.')
-				->identifier('functionReflection.uselessReturn')
+				->identifier('function.uselessReturnValue')
 				->line($funcCall->getStartLine())
 				->build(),
 			];

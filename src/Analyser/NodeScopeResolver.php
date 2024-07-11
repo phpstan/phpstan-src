@@ -292,24 +292,28 @@ class NodeScopeResolver
 		callable $nodeCallback,
 	): void
 	{
+		$alreadyTerminated = false;
 		foreach ($nodes as $i => $node) {
-			if (!$node instanceof Node\Stmt) {
+			if (
+				!$node instanceof Node\Stmt
+				|| ($alreadyTerminated && !($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike))
+			) {
 				continue;
 			}
 
 			$statementResult = $this->processStmtNode($node, $scope, $nodeCallback, StatementContext::createTopLevel());
 			$scope = $statementResult->getScope();
-			if (!$statementResult->isAlwaysTerminating()) {
+			if ($alreadyTerminated || !$statementResult->isAlwaysTerminating()) {
 				continue;
 			}
 
+			$alreadyTerminated = true;
 			$nextStmt = $this->getFirstUnreachableNode(array_slice($nodes, $i + 1), true);
 			if (!$nextStmt instanceof Node\Stmt) {
 				continue;
 			}
 
 			$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
-			break;
 		}
 	}
 

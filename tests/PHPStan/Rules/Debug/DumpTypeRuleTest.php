@@ -92,4 +92,14 @@ class DumpTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11179NoNamespace(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11179-no-namespace.php'], [
+			[
+				'Dumped type: string',
+				11,
+			],
+		]);
+	}
+
 }

@@ -1,5 +1,16 @@
---- Grammar.pp  2024-05-18 12:15:53
-+++ Grammar.pp.fix      2024-05-18 12:15:05
+diff --git a/Grammar.pp b/Grammar.pp
+index 5157084..8384417 100644
+--- a/Grammar.pp
++++ b/Grammar.pp
+@@ -73,7 +73,7 @@
+ %token  co:comment               .*?(?=(?<!\\)\))
+
+ // Capturing group.
+-%token  named_capturing_         \(\?<              -> nc
++%token  named_capturing_         \(\?P?<            -> nc
+ %token  nc:_named_capturing      >                  -> default
+ %token  nc:capturing_name        .+?(?=(?<!\\)>)
+ %token  non_capturing_           \(\?:
 @@ -109,7 +109,7 @@
  // Please, see PCRESYNTAX(3), General Category properties, PCRE special category
  // properties and script names for \p{} and \P{}.
@@ -9,7 +20,7 @@
  %token match_point_reset         \\K
  %token literal                   \\.|.
 
-@@ -168,7 +168,7 @@
+@@ -168,7 +168,7 @@ quantifier:
          ::negative_class_:: #negativeclass
        | ::class_::
      )
@@ -18,7 +29,7 @@
      ::_class::
 
  #range:
-@@ -178,7 +178,7 @@
+@@ -178,7 +178,7 @@ simple:
      capturing()
    | literal()
 
@@ -27,7 +38,7 @@
      ::comment_:: <comment>? ::_comment:: #comment
    | (
          ::named_capturing_:: <capturing_name> ::_named_capturing:: #namedcapturing
-@@ -191,6 +191,7 @@
+@@ -191,6 +191,7 @@ capturing:
 
  literal:
      <character>

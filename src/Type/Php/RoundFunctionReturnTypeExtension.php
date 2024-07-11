@@ -6,13 +6,17 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
@@ -67,6 +71,19 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 				new IntegerType(),
 				new FloatType(),
 			);
+
+			if (!$scope->isDeclareStrictTypes()) {
+				$allowed = TypeCombinator::union(
+					$allowed,
+					new IntersectionType([
+						new StringType(),
+						new AccessoryNumericStringType(),
+					]),
+					new NullType(),
+					new BooleanType(),
+				);
+			}
+
 			if ($allowed->isSuperTypeOf($firstArgType)->no()) {
 				// PHP 8 fatals if the parameter is not an integer or float.
 				return new NeverType(true);

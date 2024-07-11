@@ -12,7 +12,7 @@ use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
-use PHPStan\File\RelativePathHelper;
+use PHPStan\File\SystemAgnosticSimpleRelativePathHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -146,8 +146,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	{
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 
-		/** @var RelativePathHelper $relativePathHelper */
-		$relativePathHelper = self::getContainer()->getService('simpleRelativePathHelper');
+		$relativePathHelper = new SystemAgnosticSimpleRelativePathHelper($fileHelper);
 
 		$file = $fileHelper->normalizePath($file);
 

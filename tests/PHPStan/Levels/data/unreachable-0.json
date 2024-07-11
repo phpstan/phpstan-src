@@ -1,0 +1,12 @@
+[
+    {
+        "message": "Return value of call to function print_r is useless.",
+        "line": 38,
+        "ignorable": true
+    },
+    {
+        "message": "Return value of call to function print_r is useless.",
+        "line": 89,
+        "ignorable": true
+    }
+]

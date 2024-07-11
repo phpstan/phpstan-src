@@ -289,9 +289,13 @@ class ResultCacheManager
 
 		if ($output->isDebug()) {
 			$elapsed = microtime(true) - $startTime;
+			$elapsedString = $elapsed > 5
+				? sprintf(' in %f seconds', round($elapsed, 1))
+				: '';
+
 			$output->writeLineFormatted(sprintf(
-				'Result cache restored in %f seconds. %d %s will be reanalysed.',
-				round($elapsed, 1),
+				'Result cache restored%s. %d %s will be reanalysed.',
+				$elapsedString,
 				$filesToAnalyseCount,
 				$filesToAnalyseCount === 1 ? 'file' : 'files',
 			));

@@ -40,7 +40,7 @@ final class RegexArrayShapeMatcher
 	{
 	}
 
-	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
+	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched, bool $supportsUnmatchedAsNullOn72 = false): ?Type
 	{
 		if ($wasMatched->no()) {
 			return new ConstantArrayType([], []);
@@ -65,7 +65,7 @@ final class RegexArrayShapeMatcher
 
 		$matchedTypes = [];
 		foreach ($constantStrings as $constantString) {
-			$matched = $this->matchRegex($constantString->getValue(), $flags, $wasMatched);
+			$matched = $this->matchRegex($constantString->getValue(), $flags, $wasMatched, $supportsUnmatchedAsNullOn72);
 			if ($matched === null) {
 				return null;
 			}
@@ -83,7 +83,7 @@ final class RegexArrayShapeMatcher
 	/**
 	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL>|null $flags
 	 */
-	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched): ?Type
+	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched, bool $supportsUnmatchedAsNullOn72): ?Type
 	{
 		$parseResult = $this->parseGroups($regex);
 		if ($parseResult === null) {
@@ -100,7 +100,7 @@ final class RegexArrayShapeMatcher
 			$trailingOptionals++;
 		}
 
-		$valueType = $this->getValueType($flags ?? 0);
+		$valueType = $this->getValueType($flags ?? 0, $supportsUnmatchedAsNullOn72);
 		$onlyOptionalTopLevelGroup = $this->getOnlyOptionalTopLevelGroup($groupList);
 		$onlyTopLevelAlternationId = $this->getOnlyTopLevelAlternationId($groupList);
 
@@ -119,6 +119,7 @@ final class RegexArrayShapeMatcher
 				$wasMatched,
 				$trailingOptionals,
 				$flags ?? 0,
+				$supportsUnmatchedAsNullOn72,
 			);
 
 			return TypeCombinator::union(
@@ -154,6 +155,7 @@ final class RegexArrayShapeMatcher
 					$wasMatched,
 					$trailingOptionals,
 					$flags ?? 0,
+					$supportsUnmatchedAsNullOn72,
 				);
 
 				$combiTypes[] = $combiType;
@@ -177,6 +179,7 @@ final class RegexArrayShapeMatcher
 			$wasMatched,
 			$trailingOptionals,
 			$flags ?? 0,
+			$supportsUnmatchedAsNullOn72,
 		);
 	}
 
@@ -239,6 +242,7 @@ final class RegexArrayShapeMatcher
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
 		int $flags,
+		bool $supportsUnmatchedAsNullOn72,
 	): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
@@ -260,10 +264,10 @@ final class RegexArrayShapeMatcher
 			} else {
 				if ($i < $countGroups - $trailingOptionals) {
 					$optional = false;
-					if ($this->containsUnmatchedAsNull($flags)) {
+					if ($this->containsUnmatchedAsNull($flags, $supportsUnmatchedAsNullOn72)) {
 						$groupValueType = TypeCombinator::removeNull($groupValueType);
 					}
-				} elseif ($this->containsUnmatchedAsNull($flags)) {
+				} elseif ($this->containsUnmatchedAsNull($flags, $supportsUnmatchedAsNullOn72)) {
 					$optional = false;
 				} else {
 					$optional = $captureGroup->isOptional();
@@ -290,9 +294,9 @@ final class RegexArrayShapeMatcher
 		return $builder->getArray();
 	}
 
-	private function containsUnmatchedAsNull(int $flags): bool
+	private function containsUnmatchedAsNull(int $flags, bool $supportsUnmatchedAsNullOn72): bool
 	{
-		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && $this->phpVersion->supportsPregUnmatchedAsNull();
+		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && ($supportsUnmatchedAsNullOn72 || $this->phpVersion->supportsPregUnmatchedAsNull());
 	}
 
 	private function getKeyType(int|string $key): Type
@@ -304,11 +308,11 @@ final class RegexArrayShapeMatcher
 		return new ConstantIntegerType($key);
 	}
 
-	private function getValueType(int $flags): Type
+	private function getValueType(int $flags, bool $supportsUnmatchedAsNullOn72): Type
 	{
 		$valueType = new StringType();
 		$offsetType = IntegerRangeType::fromInterval(0, null);
-		if ($this->containsUnmatchedAsNull($flags)) {
+		if ($this->containsUnmatchedAsNull($flags, $supportsUnmatchedAsNullOn72)) {
 			$valueType = TypeCombinator::addNull($valueType);
 			// unmatched groups return -1 as offset
 			$offsetType = IntegerRangeType::fromInterval(-1, null);

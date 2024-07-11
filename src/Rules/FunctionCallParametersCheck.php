@@ -4,7 +4,6 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
@@ -30,7 +29,6 @@ use function array_fill;
 use function array_key_exists;
 use function count;
 use function implode;
-use function in_array;
 use function is_string;
 use function max;
 use function sprintf;
@@ -55,7 +53,7 @@ class FunctionCallParametersCheck
 
 	/**
 	 * @param Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall
-	 * @param array{0: string, 1: string, 2: string, 3: string, 4: string, 5: string, 6: string, 7: string, 8: string, 9: string, 10: string, 11: string, 12: string, 13?: string, 14?: string} $messages
+	 * @param array{0: string, 1: string, 2: string, 3: string, 4: string, 5: string, 6: string, 7: string, 8: string, 9: string, 10: string, 11: string, 12: string, 13?: string} $messages
 	 * @param 'attribute'|'callable'|'method'|'staticMethod'|'function'|'new' $nodeType
 	 * @return list<IdentifierRuleError>
 	 */
@@ -244,30 +242,6 @@ class FunctionCallParametersCheck
 				->identifier(sprintf('%s.void', $nodeType))
 				->line($funcCall->getStartLine())
 				->build();
-		}
-
-		if (
-			$funcCall instanceof Expr\FuncCall
-			&& isset($messages[14])
-			&& !$scope->isInFirstLevelStatement()
-			&& $funcCall->name instanceof Node\Name
-			&& in_array($funcCall->name->toString(), ['var_export', 'print_r', 'highlight_string', 'highlight_file'], true)
-		) {
-			$reorderedFuncCall = ArgumentsNormalizer::reorderFuncArguments(
-				$parametersAcceptor,
-				$funcCall,
-			);
-
-			if ($reorderedFuncCall !== null) {
-				$reorderedArgs = $reorderedFuncCall->getArgs();
-
-				if (count($reorderedArgs) === 1 || (count($reorderedArgs) >= 2 && $scope->getType($reorderedArgs[1]->value)->isFalse()->yes())) {
-					$errors[] = RuleErrorBuilder::message($messages[14])
-						->identifier(sprintf('%s.uselessReturn', $nodeType))
-						->line($funcCall->getStartLine())
-						->build();
-				}
-			}
 		}
 
 		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCall->getStartLine(), $isBuiltin, $arguments, $hasNamedArguments, $messages[10], $messages[11]);

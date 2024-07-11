@@ -70,6 +70,7 @@ rules:
 	- PHPStan\Rules\Functions\DefineParametersRule
 	- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
 	- PHPStan\Rules\Functions\CallToFunctionParametersRule
+	- PHPStan\Rules\Functions\UselessFunctionReturnValueRule
 	- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
 	- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Functions\FunctionAttributesRule

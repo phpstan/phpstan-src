@@ -17,3 +17,15 @@ function doUnmatchedAsNull(string $s): void {
 	}
 	assertType('array{}|array{string, string|null, string|null, string|null}', $matches);
 }
+
+// see https://3v4l.org/VeDob
+function unmatchedAsNullWithOptionalGroup(string $s): void {
+	if (preg_match('/Price: (£|€)?\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
+		// with PREG_UNMATCHED_AS_NULL the offset 1 will always exist. It is correct that it's nullable because it's optional though
+		assertType('array{string, string|null}', $matches);
+	} else {
+		assertType('array{}', $matches);
+	}
+	assertType('array{}|array{string, string|null}', $matches);
+}
+

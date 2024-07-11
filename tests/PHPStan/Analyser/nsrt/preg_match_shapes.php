@@ -353,17 +353,6 @@ function bug11277b(string $value): void
 	}
 }
 
-// see https://3v4l.org/VeDob
-function unmatchedAsNullWithOptionalGroup(string $s): void {
-	if (preg_match('/Price: (£|€)?\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		// with PREG_UNMATCHED_AS_NULL the offset 1 will always exist. It is correct that it's nullable because it's optional though
-		assertType('array{string, string|null}', $matches);
-	} else {
-		assertType('array{}', $matches);
-	}
-	assertType('array{}|array{string, string|null}', $matches);
-}
-
 // https://www.pcre.org/current/doc/html/pcre2pattern.html#dupgroupnumber
 // https://3v4l.org/09qdT
 function bug11291(string $s): void {

@@ -19,3 +19,12 @@ function doUnmatchedAsNull(string $s): void {
 	assertType('array{}|array{0: string, 1?: string, 2?: string, 3?: string}', $matches);
 }
 
+// see https://3v4l.org/VeDob#veol
+function unmatchedAsNullWithOptionalGroup(string $s): void {
+	if (preg_match('/Price: (£|€)?\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType('array{0: string, 1?: string}', $matches);
+	} else {
+		assertType('array{}', $matches);
+	}
+	assertType('array{}|array{0: string, 1?: string}', $matches);
+}

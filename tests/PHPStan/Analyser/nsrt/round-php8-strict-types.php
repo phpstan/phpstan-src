@@ -1,6 +1,8 @@
 <?php // lint >= 8.0
 
-namespace RoundFamilyTestPHP8;
+declare(strict_types=1);
+
+namespace RoundFamilyTestPHP8StrictTypes;
 
 use function PHPStan\Testing\assertType;
 
@@ -13,12 +15,12 @@ if (rand(0, 1)) {
 assertType('float', round(123));
 assertType('float', round(123.456));
 assertType('float', round($_GET['foo'] / 60));
-assertType('float', round('123'));
-assertType('float', round('123.456'));
-assertType('float', round(null));
+assertType('*NEVER*', round('123'));
+assertType('*NEVER*', round('123.456'));
+assertType('*NEVER*', round(null));
 assertType('float', round($maybeNull));
-assertType('float', round(true));
-assertType('float', round(false));
+assertType('*NEVER*', round(true));
+assertType('*NEVER*', round(false));
 assertType('*NEVER*', round(new \stdClass));
 assertType('*NEVER*', round(''));
 assertType('*NEVER*', round(array()));
@@ -30,12 +32,12 @@ assertType('float', round($_GET['foo']));
 assertType('float', ceil(123));
 assertType('float', ceil(123.456));
 assertType('float', ceil($_GET['foo'] / 60));
-assertType('float', ceil('123'));
-assertType('float', ceil('123.456'));
-assertType('float', ceil(null));
+assertType('*NEVER*', ceil('123'));
+assertType('*NEVER*', ceil('123.456'));
+assertType('*NEVER*', ceil(null));
 assertType('float', ceil($maybeNull));
-assertType('float', ceil(true));
-assertType('float', ceil(false));
+assertType('*NEVER*', ceil(true));
+assertType('*NEVER*', ceil(false));
 assertType('*NEVER*', ceil(new \stdClass));
 assertType('*NEVER*', ceil(''));
 assertType('*NEVER*', ceil(array()));
@@ -47,12 +49,12 @@ assertType('float', ceil($_GET['foo']));
 assertType('float', floor(123));
 assertType('float', floor(123.456));
 assertType('float', floor($_GET['foo'] / 60));
-assertType('float', floor('123'));
-assertType('float', floor('123.456'));
-assertType('float', floor(null));
+assertType('*NEVER*', floor('123'));
+assertType('*NEVER*', floor('123.456'));
+assertType('*NEVER*', floor(null));
 assertType('float', floor($maybeNull));
-assertType('float', floor(true));
-assertType('float', floor(false));
+assertType('*NEVER*', floor(true));
+assertType('*NEVER*', floor(false));
 assertType('*NEVER*', floor(new \stdClass));
 assertType('*NEVER*', floor(''));
 assertType('*NEVER*', floor(array()));

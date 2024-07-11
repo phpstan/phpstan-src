@@ -2,48 +2,80 @@
 
 namespace PHPStan\Testing;
 
+use PHPStan\File\FileHelper;
 use PHPUnit\Framework\AssertionFailedError;
+use function sprintf;
 
 final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 {
 
 	public static function dataFileAssertionFailedErrors(): iterable
 	{
+		/** @var FileHelper $fileHelper */
+		$fileHelper = self::getContainer()->getByType(FileHelper::class);
+
 		yield [
 			__DIR__ . '/data/assert-certainty-missing-namespace.php',
-			'Missing use statement for assertVariableCertainty() on line 8.',
+			sprintf(
+				'Missing use statement for assertVariableCertainty() in %s on line 8.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-certainty-missing-namespace.php'),
+			),
 		];
 		yield [
 			__DIR__ . '/data/assert-native-type-missing-namespace.php',
-			'Missing use statement for assertNativeType() on line 6.',
+			sprintf(
+				'Missing use statement for assertNativeType() in %s on line 6.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-native-type-missing-namespace.php'),
+			),
 		];
 		yield [
 			__DIR__ . '/data/assert-type-missing-namespace.php',
-			'Missing use statement for assertType() on line 6.',
+			sprintf(
+				'Missing use statement for assertType() in %s on line 6.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-type-missing-namespace.php'),
+			),
 		];
 		yield [
 			__DIR__ . '/data/assert-certainty-wrong-namespace.php',
-			'Function PHPStan\Testing\assertVariableCertainty imported with wrong namespace SomeWrong\Namespace\assertVariableCertainty called on line 9.',
+			sprintf(
+				'Function PHPStan\Testing\assertVariableCertainty imported with wrong namespace SomeWrong\Namespace\assertVariableCertainty called in %s on line 9.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-certainty-wrong-namespace.php'),
+			),
 		];
 		yield [
 			__DIR__ . '/data/assert-native-type-wrong-namespace.php',
-			'Function PHPStan\Testing\assertNativeType imported with wrong namespace SomeWrong\Namespace\assertNativeType called on line 8.',
+			sprintf(
+				'Function PHPStan\Testing\assertNativeType imported with wrong namespace SomeWrong\Namespace\assertNativeType called in %s on line 8.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-native-type-wrong-namespace.php'),
+			),
 		];
 		yield [
 			__DIR__ . '/data/assert-type-wrong-namespace.php',
-			'Function PHPStan\Testing\assertType imported with wrong namespace SomeWrong\Namespace\assertType called on line 8.',
+			sprintf(
+				'Function PHPStan\Testing\assertType imported with wrong namespace SomeWrong\Namespace\assertType called in %s on line 8.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-type-wrong-namespace.php'),
+			),
 		];
 		yield [
 			__DIR__ . '/data/assert-certainty-case-insensitive.php',
-			'Missing use statement for assertvariablecertainty() on line 8.',
+			sprintf(
+				'Missing use statement for assertvariablecertainty() in %s on line 8.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-certainty-case-insensitive.php'),
+			),
 		];
 		yield [
 			__DIR__ . '/data/assert-native-type-case-insensitive.php',
-			'Missing use statement for assertNATIVEType() on line 6.',
+			sprintf(
+				'Missing use statement for assertNATIVEType() in %s on line 6.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-native-type-case-insensitive.php'),
+			),
 		];
 		yield [
 			__DIR__ . '/data/assert-type-case-insensitive.php',
-			'Missing use statement for assertTYPe() on line 6.',
+			sprintf(
+				'Missing use statement for assertTYPe() in %s on line 6.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-type-case-insensitive.php'),
+			),
 		];
 	}
 

@@ -64,6 +64,7 @@ class CallToFunctionParametersRule implements Rule
 				'Unknown parameter $%s in call to function ' . $functionName . '.',
 				'Return type of call to function ' . $functionName . ' contains unresolvable type.',
 				'Parameter %s of function ' . $functionName . ' contains unresolvable type.',
+				'Return value of call to function ' . $functionName . ' is useless.',
 			],
 			'function',
 		);

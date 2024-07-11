@@ -33,6 +33,8 @@ use function implode;
 use function is_array;
 use function is_file;
 use function ksort;
+use function microtime;
+use function round;
 use function sha1_file;
 use function sort;
 use function sprintf;
@@ -88,6 +90,7 @@ class ResultCacheManager
 	 */
 	public function restore(array $allAnalysedFiles, bool $debug, bool $onlyFiles, ?array $projectConfigArray, Output $output): ResultCache
 	{
+		$startTime = microtime(true);
 		if ($debug) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because of debug mode.');
@@ -285,8 +288,14 @@ class ResultCacheManager
 		$filesToAnalyseCount = count($filesToAnalyse);
 
 		if ($output->isDebug()) {
+			$elapsed = microtime(true) - $startTime;
+			$elapsedString = $elapsed > 5
+				? sprintf(' in %f seconds', round($elapsed, 1))
+				: '';
+
 			$output->writeLineFormatted(sprintf(
-				'Result cache restored. %d %s will be reanalysed.',
+				'Result cache restored%s. %d %s will be reanalysed.',
+				$elapsedString,
 				$filesToAnalyseCount,
 				$filesToAnalyseCount === 1 ? 'file' : 'files',
 			));

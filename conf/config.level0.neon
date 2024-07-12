@@ -24,6 +24,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.missingMagicSerializationRule%
 	PHPStan\Rules\Constants\MagicConstantContextRule:
 		phpstan.rules.rule: %featureToggles.magicConstantOutOfContext%
+	PHPStan\Rules\Functions\UselessFunctionReturnValueRule:
+		phpstan.rules.rule: %featureToggles.uselessReturnValue%
 
 rules:
 	- PHPStan\Rules\Api\ApiInstantiationRule
@@ -70,7 +72,6 @@ rules:
 	- PHPStan\Rules\Functions\DefineParametersRule
 	- PHPStan\Rules\Functions\ExistingClassesInArrowFunctionTypehintsRule
 	- PHPStan\Rules\Functions\CallToFunctionParametersRule
-	- PHPStan\Rules\Functions\UselessFunctionReturnValueRule
 	- PHPStan\Rules\Functions\ExistingClassesInClosureTypehintsRule
 	- PHPStan\Rules\Functions\ExistingClassesInTypehintsRule
 	- PHPStan\Rules\Functions\FunctionAttributesRule
@@ -294,3 +295,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Constants\MagicConstantContextRule
+
+	-
+		class: PHPStan\Rules\Functions\UselessFunctionReturnValueRule

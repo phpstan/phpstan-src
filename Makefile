@@ -12,7 +12,7 @@ tests-levels:
 	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group levels
 
 tests-coverage:
-	php vendor/bin/paratest --runner WrapperRunner --verbose=VERBOSE
+	php vendor/bin/paratest --runner WrapperRunner
 
 tests-golden-reflection:
 	php vendor/bin/paratest --runner WrapperRunner --no-coverage tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php

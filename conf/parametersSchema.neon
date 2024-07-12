@@ -85,6 +85,7 @@ parametersSchema:
 		pure: bool()
 		checkParameterCastableToStringFunctions: bool()
 		narrowPregMatches: bool()
+		uselessReturnValue: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

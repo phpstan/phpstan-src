@@ -90,6 +90,7 @@ parameters:
 		pure: false
 		checkParameterCastableToStringFunctions: false
 		narrowPregMatches: false
+		uselessReturnValue: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

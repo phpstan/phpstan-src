@@ -40,7 +40,7 @@ class UselessFunctionReturnValueRuleTest extends RuleTestCase
 	public function testUselessReturnValuePhp8(): void
 	{
 		if (PHP_VERSION_ID < 80000) {
-			return;
+			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
 		$this->analyse([__DIR__ . '/data/useless-fn-return-php8.php'], [

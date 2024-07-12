@@ -588,4 +588,24 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7538(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7538.php'], [
+			[
+				'Binary operation "%" between stdClass and stdClass results in an error.',
+				7,
+			],
+		]);
+	}
+
+	public function testBug10440(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10440.php'], [
+			[
+				'Binary operation "%" between array{} and array{\'\'} results in an error.',
+				8,
+			],
+		]);
+	}
+
 }

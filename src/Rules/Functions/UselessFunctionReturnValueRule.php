@@ -64,7 +64,7 @@ class UselessFunctionReturnValueRule implements Rule
 		if (count($reorderedArgs) === 1 || (count($reorderedArgs) >= 2 && $scope->getType($reorderedArgs[1]->value)->isFalse()->yes())) {
 			return [RuleErrorBuilder::message(
 				sprintf(
-					'Return value of function %s is always true and the result is printed instead of being returned. Pass in true as parameter #%d $%s to return the output instead.',
+					'Return value of function %s() is always true and the result is printed instead of being returned. Pass in true as parameter #%d $%s to return the output instead.',
 					$functionReflection->getName(),
 					2,
 					$parametersAcceptor->getParameters()[1]->getName(),

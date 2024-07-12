@@ -1,11 +1,11 @@
 [
     {
-        "message": "Return value of function print_r is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.",
+        "message": "Return value of function print_r() is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.",
         "line": 38,
         "ignorable": true
     },
     {
-        "message": "Return value of function print_r is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.",
+        "message": "Return value of function print_r() is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.",
         "line": 89,
         "ignorable": true
     }

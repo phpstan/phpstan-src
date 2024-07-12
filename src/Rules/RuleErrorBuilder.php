@@ -221,7 +221,7 @@ class RuleErrorBuilder
 	public function identifier(string $identifier): self
 	{
 		if (!Error::validateIdentifier($identifier)) {
-			throw new ShouldNotHappenException(sprintf('Invalid identifier: %s', $identifier));
+			throw new ShouldNotHappenException(sprintf('Invalid identifier: %s, error identifiers must match /%s/', $identifier, Error::PATTERN_IDENTIFIER));
 		}
 
 		$this->properties['identifier'] = $identifier;

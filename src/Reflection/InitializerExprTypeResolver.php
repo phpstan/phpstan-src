@@ -856,6 +856,10 @@ class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
+		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
+			return new ErrorType();
+		}
+
 		$leftTypes = $leftType->getConstantScalarTypes();
 		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);

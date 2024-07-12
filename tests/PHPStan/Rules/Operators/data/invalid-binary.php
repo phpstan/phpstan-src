@@ -258,3 +258,15 @@ function benevolentPlus(array $a, int $i): void {
 function (int $int) {
 	$int + [];
 };
+
+function testMod(array $a, object $o): void {
+	echo 4 % 3;
+	echo '4' % 3;
+	echo 4 % '3';
+
+	echo $a % 3;
+	echo 3 % $a;
+
+	echo $o % 3;
+	echo 3 % $o;
+}

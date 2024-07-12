@@ -251,6 +251,22 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				'Binary operation "+" between int and array{} results in an error.',
 				259,
 			],
+			[
+				'Binary operation "%" between array and 3 results in an error.',
+				267,
+			],
+			[
+				'Binary operation "%" between 3 and array results in an error.',
+				268,
+			],
+			[
+				'Binary operation "%" between object and 3 results in an error.',
+				270,
+			],
+			[
+				'Binary operation "%" between 3 and object results in an error.',
+				271,
+			],
 		]);
 	}
 
@@ -313,7 +329,10 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				'Binary operation "/" between T and 2 results in an error.',
 				17,
 			],
-			// % is not handled yet
+			[
+				'Binary operation "%" between T and 2 results in an error.',
+				18,
+			],
 			[
 				'Binary operation "+" between T and 2 results in an error.',
 				19,
@@ -358,7 +377,10 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				'Binary operation "/=" between 5 and T results in an error.',
 				38,
 			],
-			// %= is not handled yet
+			[
+				'Binary operation "%=" between 5 and T results in an error.',
+				41,
+			],
 			[
 				'Binary operation "&=" between 5 and T results in an error.',
 				44,
@@ -398,6 +420,10 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 			[
 				'Binary operation "/" between mixed and 2 results in an error.',
 				67,
+			],
+			[
+				'Binary operation "%" between mixed and 2 results in an error.',
+				68,
 			],
 			[
 				'Binary operation "+" between mixed and 2 results in an error.',
@@ -444,6 +470,10 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				88,
 			],
 			[
+				'Binary operation "%=" between 5 and mixed results in an error.',
+				91,
+			],
+			[
 				'Binary operation "&=" between 5 and mixed results in an error.',
 				94,
 			],
@@ -482,6 +512,10 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 			[
 				'Binary operation "/" between mixed and 2 results in an error.',
 				117,
+			],
+			[
+				'Binary operation "%" between mixed and 2 results in an error.',
+				118,
 			],
 			[
 				'Binary operation "+" between mixed and 2 results in an error.',
@@ -526,6 +560,10 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 			[
 				'Binary operation "/=" between 5 and mixed results in an error.',
 				138,
+			],
+			[
+				'Binary operation "%=" between 5 and mixed results in an error.',
+				141,
 			],
 			[
 				'Binary operation "&=" between 5 and mixed results in an error.',

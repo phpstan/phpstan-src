@@ -365,6 +365,26 @@ function bug11291(string $s): void {
 	assertType('array{}|array{0: string, 1: string, 2?: string, 3?: string}', $matches);
 }
 
+function bug11323a(string $s): void
+{
+	if (preg_match('/Price: (?P<currency>£|€)\d+/', $s, $matches)) {
+		assertType('array{0: string, currency: string, 1: string}', $matches);
+	} else {
+		assertType('array{}', $matches);
+	}
+	assertType('array{}|array{0: string, currency: string, 1: string}', $matches);
+}
+
+function bug11323b(string $s): void
+{
+	if (preg_match('/Price: (?<currency>£|€)\d+/', $s, $matches)) {
+		assertType('array{0: string, currency: string, 1: string}', $matches);
+	} else {
+		assertType('array{}', $matches);
+	}
+	assertType('array{}|array{0: string, currency: string, 1: string}', $matches);
+}
+
 function unmatchedAsNullWithMandatoryGroup(string $s): void {
 	if (preg_match('/Price: (?<currency>£|€)\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
 		assertType('array{0: string, currency: string, 1: string}', $matches);

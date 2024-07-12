@@ -41,7 +41,7 @@ class UselessFunctionReturnValueRule implements Rule
 
 		$functionReflection = $this->reflectionProvider->getFunction($funcCall->name, $scope);
 
-		if (!in_array($functionReflection->getName(), ['var_export', 'print_r', 'highlight_string', 'highlight_file'], true)) {
+		if (!in_array($functionReflection->getName(), ['var_export', 'print_r', 'highlight_string', 'highlight_file', 'show_source'], true)) {
 			return [];
 		}
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(

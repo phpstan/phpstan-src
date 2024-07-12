@@ -383,3 +383,13 @@ function bug11323b(string $s): void
 	}
 	assertType('array{}|array{0: string, currency: string, 1: string}', $matches);
 }
+
+function unmatchedAsNullWithMandatoryGroup(string $s): void {
+	if (preg_match('/Price: (?<currency>£|€)\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType('array{0: string, currency: string, 1: string}', $matches);
+	} else {
+		assertType('array{}', $matches);
+	}
+	assertType('array{}|array{0: string, currency: string, 1: string}', $matches);
+}
+

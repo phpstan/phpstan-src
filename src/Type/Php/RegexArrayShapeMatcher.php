@@ -121,10 +121,13 @@ final class RegexArrayShapeMatcher
 				$flags ?? 0,
 			);
 
-			return TypeCombinator::union(
-				new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()], [0], [], true),
-				$combiType,
-			);
+			if (!$this->containsUnmatchedAsNull($flags ?? 0)) {
+				$combiType = TypeCombinator::union(
+					new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()], [0], [], true),
+					$combiType,
+				);
+			}
+			return $combiType;
 		} elseif (
 			$wasMatched->yes()
 			&& $onlyTopLevelAlternationId !== null

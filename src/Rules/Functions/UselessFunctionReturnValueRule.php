@@ -12,6 +12,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;
 use function in_array;
+use function sprintf;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -61,7 +62,14 @@ class UselessFunctionReturnValueRule implements Rule
 		$reorderedArgs = $reorderedFuncCall->getArgs();
 
 		if (count($reorderedArgs) === 1 || (count($reorderedArgs) >= 2 && $scope->getType($reorderedArgs[1]->value)->isFalse()->yes())) {
-			return [RuleErrorBuilder::message('Return value of call to function ' . $functionReflection->getName() . ' is useless.')
+			return [RuleErrorBuilder::message(
+				sprintf(
+					'Return value of function %s is always true and the result is printed instead of being returned. Pass in true as parameter #%d $%s to return the output instead.',
+					$functionReflection->getName(),
+					2,
+					$parametersAcceptor->getParameters()[1]->getName(),
+				),
+			)
 				->identifier('function.uselessReturnValue')
 				->line($funcCall->getStartLine())
 				->build(),

@@ -23,15 +23,15 @@ class UselessFunctionReturnValueRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/useless-fn-return.php'], [
 			[
-				'Return value of call to function print_r is useless.',
+				'Return value of function print_r is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.',
 				47,
 			],
 			[
-				'Return value of call to function var_export is useless.',
+				'Return value of function var_export is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.',
 				56,
 			],
 			[
-				'Return value of call to function print_r is useless.',
+				'Return value of function print_r is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.',
 				64,
 			],
 		]);
@@ -45,7 +45,7 @@ class UselessFunctionReturnValueRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/useless-fn-return-php8.php'], [
 			[
-				'Return value of call to function print_r is useless.',
+				'Return value of function print_r is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.',
 				18,
 			],
 		]);

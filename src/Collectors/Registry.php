@@ -35,7 +35,17 @@ class Registry
 	public function getCollectors(string $nodeType): array
 	{
 		if (!isset($this->cache[$nodeType])) {
-			$parentNodeTypes = [$nodeType] + class_parents($nodeType) + class_implements($nodeType);
+			$parents = class_parents($nodeType);
+			if ($parents === false) {
+				$parents = [];
+			}
+
+			$implements = class_implements($nodeType);
+			if ($implements === false) {
+				$implements = [];
+			}
+
+			$parentNodeTypes = [$nodeType] + $parents + $implements;
 
 			$collectors = [];
 			foreach ($parentNodeTypes as $parentNodeType) {

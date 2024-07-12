@@ -30,7 +30,6 @@ rules:
 	- PHPStan\Rules\Generics\UsedTraitsRule
 	- PHPStan\Rules\Methods\CallPrivateMethodThroughStaticRule
 	- PHPStan\Rules\Methods\IncompatibleDefaultParameterTypeRule
-	- PHPStan\Rules\Operators\InvalidBinaryOperationRule
 	- PHPStan\Rules\Operators\InvalidUnaryOperationRule
 	- PHPStan\Rules\Operators\InvalidComparisonOperationRule
 	- PHPStan\Rules\PhpDoc\FunctionConditionalReturnTypeRule
@@ -138,3 +137,9 @@ services:
 
 	-
 		class: PHPStan\Rules\Pure\PureMethodRule
+	-
+		class: PHPStan\Rules\Operators\InvalidBinaryOperationRule
+		arguments:
+			bleedingEdge: %featureToggles.bleedingEdge%
+		tags:
+			- phpstan.rules.rule

@@ -32,6 +32,11 @@ use const PREG_UNMATCHED_AS_NULL;
 final class RegexArrayShapeMatcher
 {
 
+	/**
+	 * Pass this into $flagsType as well if the library supports emulating PREG_UNMATCHED_AS_NULL on PHP 7.2 and 7.3
+	 */
+	public const PREG_UNMATCHED_AS_NULL_ON_72_73 = 2048;
+
 	private static ?Parser $parser = null;
 
 	public function __construct(
@@ -40,7 +45,7 @@ final class RegexArrayShapeMatcher
 	{
 	}
 
-	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched, bool $supportsUnmatchedAsNullOn72 = false): ?Type
+	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
 	{
 		if ($wasMatched->no()) {
 			return new ConstantArrayType([], []);
@@ -53,19 +58,22 @@ final class RegexArrayShapeMatcher
 
 		$flags = null;
 		if ($flagsType !== null) {
-			if (
-				!$flagsType instanceof ConstantIntegerType
-				|| !in_array($flagsType->getValue(), [PREG_OFFSET_CAPTURE, PREG_UNMATCHED_AS_NULL, PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL], true)
-			) {
+			if (!$flagsType instanceof ConstantIntegerType) {
 				return null;
 			}
 
-			$flags = $flagsType->getValue();
+			/** @var int-mask<PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL | self::PREG_UNMATCHED_AS_NULL_ON_72_73> $flags */
+			$flags = $flagsType->getValue() & (PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL | self::PREG_UNMATCHED_AS_NULL_ON_72_73);
+
+			// some other unsupported/unexpected flag was passed in
+			if ($flags !== $flagsType->getValue()) {
+				return null;
+			}
 		}
 
 		$matchedTypes = [];
 		foreach ($constantStrings as $constantString) {
-			$matched = $this->matchRegex($constantString->getValue(), $flags, $wasMatched, $supportsUnmatchedAsNullOn72);
+			$matched = $this->matchRegex($constantString->getValue(), $flags, $wasMatched);
 			if ($matched === null) {
 				return null;
 			}
@@ -81,9 +89,9 @@ final class RegexArrayShapeMatcher
 	}
 
 	/**
-	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL>|null $flags
+	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL|self::PREG_UNMATCHED_AS_NULL_ON_72_73>|null $flags
 	 */
-	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched, bool $supportsUnmatchedAsNullOn72): ?Type
+	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched): ?Type
 	{
 		$parseResult = $this->parseGroups($regex);
 		if ($parseResult === null) {
@@ -100,7 +108,7 @@ final class RegexArrayShapeMatcher
 			$trailingOptionals++;
 		}
 
-		$valueType = $this->getValueType($flags ?? 0, $supportsUnmatchedAsNullOn72);
+		$valueType = $this->getValueType($flags ?? 0);
 		$onlyOptionalTopLevelGroup = $this->getOnlyOptionalTopLevelGroup($groupList);
 		$onlyTopLevelAlternationId = $this->getOnlyTopLevelAlternationId($groupList);
 
@@ -119,7 +127,6 @@ final class RegexArrayShapeMatcher
 				$wasMatched,
 				$trailingOptionals,
 				$flags ?? 0,
-				$supportsUnmatchedAsNullOn72,
 			);
 
 			return TypeCombinator::union(
@@ -155,7 +162,6 @@ final class RegexArrayShapeMatcher
 					$wasMatched,
 					$trailingOptionals,
 					$flags ?? 0,
-					$supportsUnmatchedAsNullOn72,
 				);
 
 				$combiTypes[] = $combiType;
@@ -179,7 +185,6 @@ final class RegexArrayShapeMatcher
 			$wasMatched,
 			$trailingOptionals,
 			$flags ?? 0,
-			$supportsUnmatchedAsNullOn72,
 		);
 	}
 
@@ -242,7 +247,6 @@ final class RegexArrayShapeMatcher
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
 		int $flags,
-		bool $supportsUnmatchedAsNullOn72,
 	): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
@@ -264,10 +268,10 @@ final class RegexArrayShapeMatcher
 			} else {
 				if ($i < $countGroups - $trailingOptionals) {
 					$optional = false;
-					if ($this->containsUnmatchedAsNull($flags, $supportsUnmatchedAsNullOn72)) {
+					if ($this->containsUnmatchedAsNull($flags)) {
 						$groupValueType = TypeCombinator::removeNull($groupValueType);
 					}
-				} elseif ($this->containsUnmatchedAsNull($flags, $supportsUnmatchedAsNullOn72)) {
+				} elseif ($this->containsUnmatchedAsNull($flags)) {
 					$optional = false;
 				} else {
 					$optional = $captureGroup->isOptional();
@@ -294,9 +298,9 @@ final class RegexArrayShapeMatcher
 		return $builder->getArray();
 	}
 
-	private function containsUnmatchedAsNull(int $flags, bool $supportsUnmatchedAsNullOn72): bool
+	private function containsUnmatchedAsNull(int $flags): bool
 	{
-		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && ($supportsUnmatchedAsNullOn72 || $this->phpVersion->supportsPregUnmatchedAsNull());
+		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && (($flags & self::PREG_UNMATCHED_AS_NULL_ON_72_73) !== 0 || $this->phpVersion->supportsPregUnmatchedAsNull());
 	}
 
 	private function getKeyType(int|string $key): Type
@@ -308,11 +312,11 @@ final class RegexArrayShapeMatcher
 		return new ConstantIntegerType($key);
 	}
 
-	private function getValueType(int $flags, bool $supportsUnmatchedAsNullOn72): Type
+	private function getValueType(int $flags): Type
 	{
 		$valueType = new StringType();
 		$offsetType = IntegerRangeType::fromInterval(0, null);
-		if ($this->containsUnmatchedAsNull($flags, $supportsUnmatchedAsNullOn72)) {
+		if ($this->containsUnmatchedAsNull($flags)) {
 			$valueType = TypeCombinator::addNull($valueType);
 			// unmatched groups return -1 as offset
 			$offsetType = IntegerRangeType::fromInterval(-1, null);

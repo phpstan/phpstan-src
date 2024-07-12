@@ -32,6 +32,11 @@ use const PREG_UNMATCHED_AS_NULL;
 final class RegexArrayShapeMatcher
 {
 
+	/**
+	 * Pass this into $flagsType as well if the library supports emulating PREG_UNMATCHED_AS_NULL on PHP 7.2 and 7.3
+	 */
+	public const PREG_UNMATCHED_AS_NULL_ON_72_73 = 2048;
+
 	private static ?Parser $parser = null;
 
 	public function __construct(
@@ -53,14 +58,17 @@ final class RegexArrayShapeMatcher
 
 		$flags = null;
 		if ($flagsType !== null) {
-			if (
-				!$flagsType instanceof ConstantIntegerType
-				|| !in_array($flagsType->getValue(), [PREG_OFFSET_CAPTURE, PREG_UNMATCHED_AS_NULL, PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL], true)
-			) {
+			if (!$flagsType instanceof ConstantIntegerType) {
 				return null;
 			}
 
-			$flags = $flagsType->getValue();
+			/** @var int-mask<PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL | self::PREG_UNMATCHED_AS_NULL_ON_72_73> $flags */
+			$flags = $flagsType->getValue() & (PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL | self::PREG_UNMATCHED_AS_NULL_ON_72_73);
+
+			// some other unsupported/unexpected flag was passed in
+			if ($flags !== $flagsType->getValue()) {
+				return null;
+			}
 		}
 
 		$matchedTypes = [];
@@ -81,7 +89,7 @@ final class RegexArrayShapeMatcher
 	}
 
 	/**
-	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL>|null $flags
+	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL|self::PREG_UNMATCHED_AS_NULL_ON_72_73>|null $flags
 	 */
 	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched): ?Type
 	{
@@ -295,7 +303,7 @@ final class RegexArrayShapeMatcher
 
 	private function containsUnmatchedAsNull(int $flags): bool
 	{
-		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && $this->phpVersion->supportsPregUnmatchedAsNull();
+		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && (($flags & self::PREG_UNMATCHED_AS_NULL_ON_72_73) !== 0 || $this->phpVersion->supportsPregUnmatchedAsNull());
 	}
 
 	private function getKeyType(int|string $key): Type

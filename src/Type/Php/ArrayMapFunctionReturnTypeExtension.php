@@ -66,23 +66,31 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$constantArrays = $arrayType->getConstantArrays();
 			if (count($constantArrays) > 0) {
 				$arrayTypes = [];
-				foreach ($constantArrays as $constantArray) {
-					$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-					foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-						$returnedArrayBuilder->setOffsetValueType(
-							$keyType,
-							$valueType,
-							$constantArray->isOptionalKey($i),
-						);
+				$totalCount = TypeCombinator::countConstantArrayValueTypes($constantArrays) * TypeCombinator::countConstantArrayValueTypes([$valueType]);
+				if ($totalCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+					foreach ($constantArrays as $constantArray) {
+						$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+							$returnedArrayBuilder->setOffsetValueType(
+								$keyType,
+								$valueType,
+								$constantArray->isOptionalKey($i),
+							);
+						}
+						$returnedArray = $returnedArrayBuilder->getArray();
+						if ($constantArray->isList()->yes()) {
+							$returnedArray = AccessoryArrayListType::intersectWith($returnedArray);
+						}
+						$arrayTypes[] = $returnedArray;
 					}
-					$returnedArray = $returnedArrayBuilder->getArray();
-					if ($constantArray->isList()->yes()) {
-						$returnedArray = AccessoryArrayListType::intersectWith($returnedArray);
-					}
-					$arrayTypes[] = $returnedArray;
-				}
 
-				$mappedArrayType = TypeCombinator::union(...$arrayTypes);
+					$mappedArrayType = TypeCombinator::union(...$arrayTypes);
+				} else {
+					$mappedArrayType = TypeCombinator::intersect(new ArrayType(
+						$arrayType->getIterableKeyType(),
+						$valueType,
+					), ...TypeUtils::getAccessoryTypes($arrayType));
+				}
 			} elseif ($arrayType->isArray()->yes()) {
 				$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 					$arrayType->getIterableKeyType(),

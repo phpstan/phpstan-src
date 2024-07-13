@@ -826,7 +826,7 @@ class TypeCombinator
 	/**
 	 * @param Type[] $types
 	 */
-	private static function countConstantArrayValueTypes(array $types): int
+	public static function countConstantArrayValueTypes(array $types): int
 	{
 		$constantArrayValuesCount = 0;
 		foreach ($types as $type) {

@@ -82,4 +82,24 @@ class DumpTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11179(): void
+	{
+		$this->analyse([__DIR__ . '/../DeadCode/data/bug-11179.php'], [
+			[
+				'Dumped type: string',
+				9,
+			],
+		]);
+	}
+
+	public function testBug11179NoNamespace(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11179-no-namespace.php'], [
+			[
+				'Dumped type: string',
+				11,
+			],
+		]);
+	}
+
 }

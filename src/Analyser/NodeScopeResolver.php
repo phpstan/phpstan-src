@@ -292,24 +292,28 @@ class NodeScopeResolver
 		callable $nodeCallback,
 	): void
 	{
+		$alreadyTerminated = false;
 		foreach ($nodes as $i => $node) {
-			if (!$node instanceof Node\Stmt) {
+			if (
+				!$node instanceof Node\Stmt
+				|| ($alreadyTerminated && !($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike))
+			) {
 				continue;
 			}
 
 			$statementResult = $this->processStmtNode($node, $scope, $nodeCallback, StatementContext::createTopLevel());
 			$scope = $statementResult->getScope();
-			if (!$statementResult->isAlwaysTerminating()) {
+			if ($alreadyTerminated || !$statementResult->isAlwaysTerminating()) {
 				continue;
 			}
 
+			$alreadyTerminated = true;
 			$nextStmt = $this->getFirstUnreachableNode(array_slice($nodes, $i + 1), true);
 			if (!$nextStmt instanceof Node\Stmt) {
 				continue;
 			}
 
 			$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
-			break;
 		}
 	}
 
@@ -339,6 +343,10 @@ class NodeScopeResolver
 			|| $parentNode instanceof Node\Stmt\ClassMethod
 			|| $parentNode instanceof Expr\Closure;
 		foreach ($stmts as $i => $stmt) {
+			if ($alreadyTerminated && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike)) {
+				continue;
+			}
+
 			$isLast = $i === $stmtCount - 1;
 			$statementResult = $this->processStmtNode(
 				$stmt,
@@ -370,16 +378,16 @@ class NodeScopeResolver
 			$throwPoints = array_merge($throwPoints, $statementResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $statementResult->getImpurePoints());
 
-			if (!$statementResult->isAlwaysTerminating()) {
+			if ($alreadyTerminated || !$statementResult->isAlwaysTerminating()) {
 				continue;
 			}
 
 			$alreadyTerminated = true;
 			$nextStmt = $this->getFirstUnreachableNode(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
-			if ($nextStmt !== null) {
-				$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
+			if ($nextStmt === null) {
+				continue;
 			}
-			break;
+			$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
 		}
 
 		$statementResult = new StatementResult($scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints, $impurePoints);
@@ -6064,7 +6072,7 @@ class NodeScopeResolver
 			if ($node instanceof Node\Stmt\Nop) {
 				continue;
 			}
-			if ($earlyBinding && ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike)) {
+			if ($earlyBinding && ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\HaltCompiler)) {
 				continue;
 			}
 			return $node;

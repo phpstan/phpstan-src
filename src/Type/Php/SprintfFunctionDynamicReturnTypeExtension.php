@@ -83,7 +83,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 				if ($matches[2] === 's'
 					&& $checkArgType->isScalar()->yes()
-					&& $checkArgType->getFiniteTypes() === []
+					&& $checkArgType->getFiniteTypes() === [] // constant types will be handled in getConstantType()
 				) {
 					$singlePlaceholderEarlyReturn = $checkArgType->toString();
 				} elseif ($matches[2] !== 's') {

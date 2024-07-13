@@ -23,7 +23,7 @@ class HelloWorld
 
 	public function specifiers(int $i) {
 		// https://3v4l.org/fmVIg
-		assertType('non-falsy-string', sprintf('%14s', $i));
+		assertType('numeric-string', sprintf('%14s', $i));
 
 		assertType('numeric-string', sprintf('%d', $i));
 
@@ -45,9 +45,15 @@ class HelloWorld
 
 	}
 
-	public function positionalArgs($mixed, int $i, float $f, string $s) {
+	/**
+	 * @param positive-int $posInt
+	 * @param negative-int $negInt
+	 */
+	public function positionalArgs($mixed, int $i, float $f, string $s, int $posInt, int $negInt) {
 		// https://3v4l.org/vVL0c
-		assertType('non-falsy-string', sprintf('%2$14s', $mixed, $i));
+		assertType('numeric-string', sprintf('%2$14s', $mixed, $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$14s', $mixed, $posInt));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$14s', $mixed, $negInt));
 
 		assertType('numeric-string', sprintf('%2$.14F', $mixed, $i));
 		assertType('numeric-string', sprintf('%2$.14F', $mixed, $f));

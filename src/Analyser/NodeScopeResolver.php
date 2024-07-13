@@ -3446,14 +3446,20 @@ class NodeScopeResolver
 									$expr->cond,
 									$enumCase,
 								);
-							} elseif (count($unusedIndexedEnumCases[$loweredFetchedClassName]) === 1) {
-								$hasAlwaysTrueCond = true;
+							} else {
+								$unusedCasesCount = 0;
+								foreach ($unusedIndexedEnumCases as $cases) {
+									$unusedCasesCount += count($cases);
+								}
+								if ($unusedCasesCount === 1) {
+									$hasAlwaysTrueCond = true;
 
-								// force "always true"
-								$armConditionScope = $armConditionScope->addTypeToExpression(
-									$expr->cond,
-									$enumCase,
-								);
+									// force "always true"
+									$armConditionScope = $armConditionScope->addTypeToExpression(
+										$expr->cond,
+										$enumCase,
+									);
+								}
 							}
 
 							$this->processExprNode($stmt, $cond, $armConditionScope, $nodeCallback, $deepContext);

@@ -48,12 +48,16 @@ class HelloWorld
 	/**
 	 * @param positive-int $posInt
 	 * @param negative-int $negInt
+	 * @param int<1, 5>    $nonZeroIntRange
+	 * @param int<-1, 5>   $intRange
 	 */
-	public function positionalArgs($mixed, int $i, float $f, string $s, int $posInt, int $negInt) {
+	public function positionalArgs($mixed, int $i, float $f, string $s, int $posInt, int $negInt, int $nonZeroIntRange, int $intRange) {
 		// https://3v4l.org/vVL0c
 		assertType('numeric-string', sprintf('%2$14s', $mixed, $i));
 		assertType('non-falsy-string&numeric-string', sprintf('%2$14s', $mixed, $posInt));
 		assertType('non-falsy-string&numeric-string', sprintf('%2$14s', $mixed, $negInt));
+		assertType('non-falsy-string', sprintf('%2$14s', $mixed, $intRange)); // could be numeric-string
+		assertType('non-falsy-string', sprintf('%2$14s', $mixed, $nonZeroIntRange)); // could be non-falsy-string&numeric-string
 
 		assertType('numeric-string', sprintf('%2$.14F', $mixed, $i));
 		assertType('numeric-string', sprintf('%2$.14F', $mixed, $f));

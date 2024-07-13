@@ -81,7 +81,10 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 				// of stringy type, then the return value will be of the same type
 				$checkArgType = $scope->getType($args[$checkArg]->value);
 
-				if ($matches[2] === 's' && $checkArgType->isScalar()->yes()) {
+				if ($matches[2] === 's'
+					&& $checkArgType->isScalar()->yes()
+					&& $checkArgType->getFiniteTypes() === []
+				) {
 					$singlePlaceholderEarlyReturn = $checkArgType->toString();
 				} elseif ($matches[2] !== 's') {
 					$singlePlaceholderEarlyReturn = new IntersectionType([

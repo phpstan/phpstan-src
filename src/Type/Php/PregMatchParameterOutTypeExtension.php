@@ -41,13 +41,12 @@ final class PregMatchParameterOutTypeExtension implements FunctionParameterOutTy
 			return null;
 		}
 
-		$patternType = $scope->getType($patternArg->value);
 		$flagsType = null;
 		if ($flagsArg !== null) {
 			$flagsType = $scope->getType($flagsArg->value);
 		}
 
-		return $this->regexShapeMatcher->matchType($patternType, $flagsType, TrinaryLogic::createMaybe());
+		return $this->regexShapeMatcher->matchExpr($patternArg->value, $flagsType, TrinaryLogic::createMaybe(), $scope);
 	}
 
 }

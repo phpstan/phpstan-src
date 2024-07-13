@@ -393,3 +393,29 @@ function unmatchedAsNullWithMandatoryGroup(string $s): void {
 	assertType('array{}|array{0: string, currency: string, 1: string}', $matches);
 }
 
+function (string $s): void {
+	if (preg_match('{' . preg_quote('xxx') . '(z)}', $s, $matches)) {
+		assertType('array{string, string}', $matches);
+	} else {
+		assertType('array{}', $matches);
+	}
+	assertType('array{}|array{string, string}', $matches);
+};
+
+function (string $s): void {
+	if (preg_match('{' . preg_quote($s) . '(z)}', $s, $matches)) {
+		assertType('array{string, string}', $matches);
+	} else {
+		assertType('array{}', $matches);
+	}
+	assertType('array{}|array{string, string}', $matches);
+};
+
+function (string $s): void {
+	if (preg_match('{' . preg_quote($s) . '(z)' . preg_quote($s) . '(?:abc)(def)?}', $s, $matches)) {
+		assertType('array{0: string, 1: string, 2?: string}', $matches);
+	} else {
+		assertType('array{}', $matches);
+	}
+	assertType('array{}|array{0: string, 1: string, 2?: string}', $matches);
+};

@@ -48,13 +48,12 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			return new SpecifiedTypes();
 		}
 
-		$patternType = $scope->getType($patternArg->value);
 		$flagsType = null;
 		if ($flagsArg !== null) {
 			$flagsType = $scope->getType($flagsArg->value);
 		}
 
-		$matchedType = $this->regexShapeMatcher->matchType($patternType, $flagsType, TrinaryLogic::createFromBoolean($context->true()));
+		$matchedType = $this->regexShapeMatcher->matchExpr($patternArg->value, $flagsType, TrinaryLogic::createFromBoolean($context->true()), $scope);
 		if ($matchedType === null) {
 			return new SpecifiedTypes();
 		}

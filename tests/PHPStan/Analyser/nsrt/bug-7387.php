@@ -56,8 +56,8 @@ class HelloWorld
 		assertType('numeric-string', sprintf('%2$14s', $mixed, $i));
 		assertType('non-falsy-string&numeric-string', sprintf('%2$14s', $mixed, $posInt));
 		assertType('non-falsy-string&numeric-string', sprintf('%2$14s', $mixed, $negInt));
-		assertType('non-falsy-string', sprintf('%2$14s', $mixed, $intRange)); // could be numeric-string
-		assertType('non-falsy-string', sprintf('%2$14s', $mixed, $nonZeroIntRange)); // could be non-falsy-string&numeric-string
+		assertType('numeric-string', sprintf('%2$14s', $mixed, $intRange));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$14s', $mixed, $nonZeroIntRange));
 
 		assertType('numeric-string', sprintf('%2$.14F', $mixed, $i));
 		assertType('numeric-string', sprintf('%2$.14F', $mixed, $f));

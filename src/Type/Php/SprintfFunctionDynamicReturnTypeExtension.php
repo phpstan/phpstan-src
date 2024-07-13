@@ -81,10 +81,8 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 				// if the format string is just a placeholder and specified an argument
 				// of stringy type, then the return value will be of the same type
 				$checkArgType = $scope->getType($args[$checkArg]->value);
-
 				if ($matches[2] === 's'
-					&& $checkArgType->isScalar()->yes()
-					&& $checkArgType->getFiniteTypes() === [] // constant types will be handled in getConstantType()
+					&& ($checkArgType->isString()->yes() || $checkArgType->isInteger()->yes())
 				) {
 					$singlePlaceholderEarlyReturn = $checkArgType->toString();
 				} elseif ($matches[2] !== 's') {

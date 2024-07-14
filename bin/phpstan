@@ -92,34 +92,30 @@ use Symfony\Component\Console\Helper\ProgressBar;
 		require_once $autoloaderInWorkingDirectory;
 	}
 
-	$autoloadProjectAutoloaderFile = function (string $file) use (&$composerAutoloaderProjectPaths): void {
-		$path = dirname(__DIR__) . $file;
-		if (!extension_loaded('phar')) {
+	$path = dirname(__DIR__, 3) . '/autoload.php';
+	if (!extension_loaded('phar')) {
+		if (@is_file($path)) {
+			$composerAutoloaderProjectPaths[] = dirname($path, 2);
+
+			require_once $path;
+		}
+	} else {
+		$pharPath = \Phar::running(false);
+		if ($pharPath === '') {
 			if (@is_file($path)) {
 				$composerAutoloaderProjectPaths[] = dirname($path, 2);
 
 				require_once $path;
 			}
 		} else {
-			$pharPath = \Phar::running(false);
-			if ($pharPath === '') {
-				if (@is_file($path)) {
-					$composerAutoloaderProjectPaths[] = dirname($path, 2);
+			$path = dirname($pharPath, 3) . '/autoload.php';
+			if (@is_file($path)) {
+				$composerAutoloaderProjectPaths[] = dirname($path, 2);
 
-					require_once $path;
-				}
-			} else {
-				$path = dirname($pharPath) . $file;
-				if (@is_file($path)) {
-					$composerAutoloaderProjectPaths[] = dirname($path, 2);
-
-					require_once $path;
-				}
+				require_once $path;
 			}
 		}
-	};
-
-	$autoloadProjectAutoloaderFile('/../../autoload.php');
+	}
 
 	/** @var array<callable>|false $autoloadFunctionsAfter */
 	$autoloadFunctionsAfter = spl_autoload_functions();

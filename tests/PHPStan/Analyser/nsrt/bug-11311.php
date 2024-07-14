@@ -29,3 +29,39 @@ function unmatchedAsNullWithOptionalGroup(string $s): void {
 	assertType('array{}|array{string, string|null}', $matches);
 }
 
+function bug11331a(string $url):void {
+	// group a is actually optional as the entire (?:...) around it is optional
+	if (preg_match('{^
+	(?:
+		(?<a>.+)
+	)?
+	(?<b>.+)}mix', $url, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType('array{0: string, a: string|null, 1: string|null, b: string, 2: string}', $matches);
+	}
+}
+
+function bug11331b(string $url):void {
+	if (preg_match('{^
+	(?:
+		(?<a>.+)
+	)?
+	(?<b>.+)?}mix', $url, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType('array{0: string, a: string|null, 1: string|null, b: string|null, 2: string|null}', $matches);
+	}
+}
+
+function bug11331c(string $url):void {
+	if (preg_match('{^
+	(?:
+		(?:https?|git)://([^/]+)/ (?# group 1 here can be null if group 2 matches)
+		|                         (?# the alternation making it so that only either should match)
+		git@([^:]+):/?            (?# group 2 here can be null if group 1 matches)
+	)
+	([^/]+)
+	/
+	([^/]+?)
+	(?:\.git|/)?
+$}x', $url, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType('array{string, string|null, string|null, string, string}', $matches);
+	}
+}

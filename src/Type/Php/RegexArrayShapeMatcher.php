@@ -509,6 +509,13 @@ final class RegexArrayShapeMatcher
 		return $scope->getType($patternExpr);
 	}
 
+	/**
+	 * Ignores preg_quote() calls in the concatenation as these are not relevant for array-shape matching.
+	 *
+	 * This assumption only works for the ArrayShapeMatcher therefore it is not implemented for the common case in Scope.
+	 *
+	 * see https://github.com/phpstan/phpstan-src/pull/3233#discussion_r1676938085
+	 */
 	private function resolvePatternConcat(Expr\BinaryOp\Concat $concat, Scope $scope): Type
 	{
 		if (

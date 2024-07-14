@@ -57,7 +57,6 @@ function bug11331c(string $url):void {
 		|                         (?# the alternation making it so that only either should match)
 		git@([^:]+):/?            (?# group 2 here can be null if group 1 matches)
 	)
-	(?# removing what follows makes the two first groups nullable, although it then has group 2 unsettable which looks buggy too as PREG_UNMATCHED_AS_NULL is present)
 	([^/]+)
 	/
 	([^/]+?)

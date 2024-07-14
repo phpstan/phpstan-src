@@ -412,6 +412,15 @@ function (string $s): void {
 };
 
 function (string $s): void {
+	if (preg_match('/' . preg_quote($s, '/') . '(\d)/', $s, $matches)) {
+		assertType('array{string, string}', $matches);
+	} else {
+		assertType('array{}', $matches);
+	}
+	assertType('array{}|array{string, string}', $matches);
+};
+
+function (string $s): void {
 	if (preg_match('{' . preg_quote($s) . '(z)' . preg_quote($s) . '(?:abc)(def)?}', $s, $matches)) {
 		assertType('array{0: string, 1: string, 2?: string}', $matches);
 	} else {

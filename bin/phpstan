@@ -93,7 +93,11 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	}
 
 	$autoloadProjectAutoloaderFile = function (string $file) use (&$composerAutoloaderProjectPaths): void {
-		$path = dirname(__DIR__) . $file;
+		$path = realpath(dirname(__DIR__) . $file);
+		if ($path === false) {
+			return;
+		}
+
 		if (!extension_loaded('phar')) {
 			if (@is_file($path)) {
 				$composerAutoloaderProjectPaths[] = dirname($path, 2);
@@ -109,8 +113,8 @@ use Symfony\Component\Console\Helper\ProgressBar;
 					require_once $path;
 				}
 			} else {
-				$path = dirname($pharPath) . $file;
-				if (@is_file($path)) {
+				$path = realpath(dirname($pharPath) . $file);
+				if ($path !== false && @is_file($path)) {
 					$composerAutoloaderProjectPaths[] = dirname($path, 2);
 
 					require_once $path;

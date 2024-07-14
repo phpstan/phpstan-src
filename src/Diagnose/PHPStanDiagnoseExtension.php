@@ -71,8 +71,12 @@ class PHPStanDiagnoseExtension implements DiagnoseExtension
 		}
 		$output->writeLineFormatted('');
 
-		$output->writeLineFormatted('<info>Discovered Composer project roots:</info>');
-		if (count($this->composerAutoloaderProjectPaths) === 0) {
+		$composerAutoloaderProjectPathsCount = count($this->composerAutoloaderProjectPaths);
+		$output->writeLineFormatted(sprintf(
+			'<info>Discovered Composer project %s:</info>',
+			$composerAutoloaderProjectPathsCount === 1 ? 'root' : 'roots',
+		));
+		if ($composerAutoloaderProjectPathsCount === 0) {
 			$output->writeLineFormatted('None');
 		}
 		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {

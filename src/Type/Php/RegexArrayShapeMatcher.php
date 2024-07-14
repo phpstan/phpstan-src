@@ -271,7 +271,7 @@ final class RegexArrayShapeMatcher
 			} else {
 				if ($i < $countGroups - $trailingOptionals) {
 					$optional = false;
-					if ($this->containsUnmatchedAsNull($flags)) {
+					if ($this->containsUnmatchedAsNull($flags) && !$captureGroup->isOptional()) {
 						$groupValueType = TypeCombinator::removeNull($groupValueType);
 					}
 				} elseif ($this->containsUnmatchedAsNull($flags)) {

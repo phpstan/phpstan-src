@@ -353,6 +353,44 @@ function bug11277b(string $value): void
 	}
 }
 
+function bug11331a(string $url):void {
+	// group a is actually optional as the entire (?:...) around it is optional
+	if (preg_match('{^
+	(?:
+		(?<a>.+)
+	)?
+	(?<b>.+)}mix', $url, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType('array{0: string, a: string|null, 1: string|null, b: string, 2: string}', $matches);
+	}
+}
+
+function bug11331b(string $url):void {
+	if (preg_match('{^
+	(?:
+		(?<a>.+)
+	)?
+	(?<b>.+)?}mix', $url, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType('array{0: string, a: string|null, 1: string|null, b: string|null, 2: string|null}', $matches);
+	}
+}
+
+function bug11331c(string $url):void {
+	if (preg_match('{^
+	(?:
+		(?:https?|git)://([^/]+)/ (?# group 1 here can be null if group 2 matches)
+		|                         (?# the alternation making it so that only either should match)
+		git@([^:]+):/?            (?# group 2 here can be null if group 1 matches)
+	)
+	(?# removing what follows makes the two first groups nullable, although it then has group 2 unsettable which looks buggy too as PREG_UNMATCHED_AS_NULL is present)
+	([^/]+)
+	/
+	([^/]+?)
+	(?:\.git|/)?
+$}x', $url, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType('array{string, string|null, string|null, string, string}', $matches);
+	}
+}
+
 // https://www.pcre.org/current/doc/html/pcre2pattern.html#dupgroupnumber
 // https://3v4l.org/09qdT
 function bug11291(string $s): void {

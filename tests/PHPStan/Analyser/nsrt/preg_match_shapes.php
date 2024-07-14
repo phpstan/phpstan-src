@@ -419,3 +419,12 @@ function (string $s): void {
 	}
 	assertType('array{}|array{0: string, 1: string, 2?: string}', $matches);
 };
+
+function (string $s, $mixed): void {
+	if (preg_match('{' . preg_quote($s) . '(z)' . preg_quote($s) . '(?:abc)'. $mixed .'(def)?}', $s, $matches)) {
+		assertType('array<string>', $matches);
+	} else {
+		assertType('array{}', $matches);
+	}
+	assertType('array<string>', $matches);
+};

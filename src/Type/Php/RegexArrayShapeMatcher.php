@@ -7,6 +7,9 @@ use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\Exception\Exception;
 use Hoa\File\Read;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
+use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -45,7 +48,20 @@ final class RegexArrayShapeMatcher
 	{
 	}
 
+	public function matchExpr(Expr $patternExpr, ?Type $flagsType, TrinaryLogic $wasMatched, Scope $scope): ?Type
+	{
+		return $this->matchPatternType($this->getPatternType($patternExpr, $scope), $flagsType, $wasMatched);
+	}
+
+	/**
+	 * @deprecated use matchExpr() instead for a more precise result
+	 */
 	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
+	{
+		return $this->matchPatternType($patternType, $flagsType, $wasMatched);
+	}
+
+	private function matchPatternType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
 	{
 		if ($wasMatched->no()) {
 			return new ConstantArrayType([], []);
@@ -482,6 +498,58 @@ final class RegexArrayShapeMatcher
 
 			$combinationIndex++;
 		}
+	}
+
+	private function getPatternType(Expr $patternExpr, Scope $scope): Type
+	{
+		if ($patternExpr instanceof Expr\BinaryOp\Concat) {
+			return $this->resolvePatternConcat($patternExpr, $scope);
+		}
+
+		return $scope->getType($patternExpr);
+	}
+
+	/**
+	 * Ignores preg_quote() calls in the concatenation as these are not relevant for array-shape matching.
+	 *
+	 * This assumption only works for the ArrayShapeMatcher therefore it is not implemented for the common case in Scope.
+	 *
+	 * see https://github.com/phpstan/phpstan-src/pull/3233#discussion_r1676938085
+	 */
+	private function resolvePatternConcat(Expr\BinaryOp\Concat $concat, Scope $scope): Type
+	{
+		if (
+			$concat->left instanceof Expr\FuncCall
+			&& $concat->left->name instanceof Name
+			&& $concat->left->name->toLowerString() === 'preg_quote'
+		) {
+			$left = new ConstantStringType('');
+		} elseif ($concat->left instanceof Expr\BinaryOp\Concat) {
+			$left = $this->resolvePatternConcat($concat->left, $scope);
+		} else {
+			$left = $scope->getType($concat->left);
+		}
+
+		if (
+			$concat->right instanceof Expr\FuncCall
+			&& $concat->right->name instanceof Name
+			&& $concat->right->name->toLowerString() === 'preg_quote'
+		) {
+			$right = new ConstantStringType('');
+		} elseif ($concat->right instanceof Expr\BinaryOp\Concat) {
+			$right = $this->resolvePatternConcat($concat->right, $scope);
+		} else {
+			$right = $scope->getType($concat->right);
+		}
+
+		$strings = [];
+		foreach ($left->getConstantStrings() as $leftString) {
+			foreach ($right->getConstantStrings() as $rightString) {
+				$strings[] = new ConstantStringType($leftString->getValue() . $rightString->getValue());
+			}
+		}
+
+		return TypeCombinator::union(...$strings);
 	}
 
 }

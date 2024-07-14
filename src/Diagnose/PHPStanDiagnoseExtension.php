@@ -2,19 +2,28 @@
 
 namespace PHPStan\Diagnose;
 
+use Phar;
 use PHPStan\Command\Output;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
 use function class_exists;
 use function count;
+use function dirname;
+use function is_file;
 use function sprintf;
 use const PHP_VERSION_ID;
 
 class PHPStanDiagnoseExtension implements DiagnoseExtension
 {
 
-	public function __construct(private PhpVersion $phpVersion)
+	/**
+	 * @param string[] $composerAutoloaderProjectPaths
+	 */
+	public function __construct(
+		private PhpVersion $phpVersion,
+		private array $composerAutoloaderProjectPaths,
+	)
 	{
 	}
 
@@ -30,11 +39,25 @@ class PHPStanDiagnoseExtension implements DiagnoseExtension
 			$this->phpVersion->getVersionString(),
 			$this->phpVersion->getSourceLabel(),
 		));
+		$output->writeLineFormatted('');
+
 		$output->writeLineFormatted(sprintf(
 			'<info>PHPStan version:</info> %s',
 			ComposerHelper::getPhpStanVersion(),
 		));
+		$output->writeLineFormatted('<info>PHPStan running from:</info>');
+		$pharRunning = Phar::running(false);
+		if ($pharRunning !== '') {
+			$output->writeLineFormatted(dirname($pharRunning));
+		} else {
+			if (isset($_SERVER['argv'][0]) && is_file($_SERVER['argv'][0])) {
+				$output->writeLineFormatted($_SERVER['argv'][0]);
+			} else {
+				$output->writeLineFormatted('Unknown');
+			}
+		}
 		$output->writeLineFormatted('');
+
 		if (class_exists('PHPStan\ExtensionInstaller\GeneratedConfig')) {
 			$output->writeLineFormatted('<info>Extension installer:</info>');
 			if (count(GeneratedConfig::EXTENSIONS) === 0) {
@@ -45,6 +68,12 @@ class PHPStanDiagnoseExtension implements DiagnoseExtension
 			}
 		} else {
 			$output->writeLineFormatted('<info>Extension installer:</info> Not installed');
+		}
+		$output->writeLineFormatted('');
+
+		$output->writeLineFormatted('<info>Discovered Composer project roots:</info>');
+		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
+			$output->writeLineFormatted($composerAutoloaderProjectPath);
 		}
 		$output->writeLineFormatted('');
 	}

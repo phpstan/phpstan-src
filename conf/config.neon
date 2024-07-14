@@ -2106,6 +2106,8 @@ services:
 
 	phpstanDiagnoseExtension:
 		class: PHPStan\Diagnose\PHPStanDiagnoseExtension
+		arguments:
+			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 		autowired: false
 
 	# Error formatters

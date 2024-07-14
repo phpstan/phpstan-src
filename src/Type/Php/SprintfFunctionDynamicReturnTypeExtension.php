@@ -48,18 +48,19 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			return null;
 		}
 
-		$formatType = $scope->getType($args[0]->value);
-		if (count($args) === 1) {
-			return $this->getConstantType($args, null, $functionReflection, $scope);
+		$constantType = $this->getConstantType($args, $functionReflection, $scope);
+		if ($constantType !== null) {
+			return $constantType;
 		}
 
+		$formatType = $scope->getType($args[0]->value);
 		$formatStrings = $formatType->getConstantStrings();
 		if (count($formatStrings) === 0) {
 			return null;
 		}
 
 		$singlePlaceholderEarlyReturn = null;
-		foreach ($formatType->getConstantStrings() as $constantString) {
+		foreach ($formatStrings as $constantString) {
 			// The printf format is %[argnum$][flags][width][.precision]
 			if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1) {
 				if ($matches[1] !== '') {
@@ -80,9 +81,10 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 				// if the format string is just a placeholder and specified an argument
 				// of stringy type, then the return value will be of the same type
 				$checkArgType = $scope->getType($args[$checkArg]->value);
-
-				if ($matches[2] === 's' && $checkArgType->isString()->yes()) {
-					$singlePlaceholderEarlyReturn = $checkArgType;
+				if ($matches[2] === 's'
+					&& ($checkArgType->isString()->yes() || $checkArgType->isInteger()->yes())
+				) {
+					$singlePlaceholderEarlyReturn = $checkArgType->toString();
 				} elseif ($matches[2] !== 's') {
 					$singlePlaceholderEarlyReturn = new IntersectionType([
 						new StringType(),
@@ -115,19 +117,19 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			$returnType = new StringType();
 		}
 
-		return $this->getConstantType($args, $returnType, $functionReflection, $scope);
+		return $returnType;
 	}
 
 	/**
 	 * @param Arg[] $args
 	 */
-	private function getConstantType(array $args, ?Type $fallbackReturnType, FunctionReflection $functionReflection, Scope $scope): ?Type
+	private function getConstantType(array $args, FunctionReflection $functionReflection, Scope $scope): ?Type
 	{
 		$values = [];
 		$combinationsCount = 1;
 		foreach ($args as $arg) {
 			if ($arg->unpack) {
-				return $fallbackReturnType;
+				return null;
 			}
 
 			$argType = $scope->getType($arg->value);
@@ -142,7 +144,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			}
 
 			if (count($constantScalarValues) === 0) {
-				return $fallbackReturnType;
+				return null;
 			}
 
 			$values[] = $constantScalarValues;
@@ -150,7 +152,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		if ($combinationsCount > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
-			return $fallbackReturnType;
+			return null;
 		}
 
 		$combinations = CombinationsHelper::combinations($values);
@@ -158,7 +160,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		foreach ($combinations as $combination) {
 			$format = array_shift($combination);
 			if (!is_string($format)) {
-				return $fallbackReturnType;
+				return null;
 			}
 
 			try {
@@ -168,12 +170,12 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 					$returnTypes[] = $scope->getTypeFromValue(@vsprintf($format, $combination));
 				}
 			} catch (Throwable) {
-				return $fallbackReturnType;
+				return null;
 			}
 		}
 
 		if (count($returnTypes) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
-			return $fallbackReturnType;
+			return null;
 		}
 
 		return TypeCombinator::union(...$returnTypes);

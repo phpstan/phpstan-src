@@ -27,6 +27,10 @@ function returnsJustString(): string
 	return rand(0,1) === 1 ? 'foo' : '';
 }
 
+function returnsBool(): bool {
+	return true;
+}
+
 $s = sprintf("%s", returnsNonEmptyString());
 assertType('non-empty-string', $s);
 
@@ -41,3 +45,12 @@ assertType('string', $s);
 
 $s = sprintf('%2$s', 1234, returnsNonFalsyString());
 assertType('non-falsy-string', $s);
+
+$s = sprintf('%20s', 'abc');
+assertType("'                 abc'", $s);
+
+$s = sprintf('%20s', true);
+assertType("'                   1'", $s);
+
+$s = sprintf('%20s', returnsBool());
+assertType("non-falsy-string", $s);

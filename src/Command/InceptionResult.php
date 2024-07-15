@@ -86,7 +86,7 @@ class InceptionResult
 		return $this->generateBaselineFile;
 	}
 
-	public function handleReturn(int $exitCode, ?int $peakMemoryUsageBytes, ?float $analysisStartTime): int
+	public function handleReturn(int $exitCode, ?int $peakMemoryUsageBytes, float $analysisStartTime): int
 	{
 		if ($peakMemoryUsageBytes !== null && $this->getErrorOutput()->isVerbose()) {
 			$this->getErrorOutput()->writeLineFormatted(sprintf(
@@ -95,7 +95,7 @@ class InceptionResult
 			));
 		}
 
-		if ($analysisStartTime !== null && $this->getErrorOutput()->isDebug()) {
+		if ($this->getErrorOutput()->isDebug()) {
 			$this->getErrorOutput()->writeLineFormatted(sprintf(
 				'Analysis time: %0.1f seconds',
 				round(microtime(true) - $analysisStartTime, 1),

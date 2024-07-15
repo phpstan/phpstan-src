@@ -470,3 +470,10 @@ function (string $size): void {
 	}
 	assertType('array{string, numeric-string, numeric-string}', $matches);
 };
+
+function (string $size): void {
+	if (preg_match('/ab(?P<num>\d+)e?/', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{0: string, num: numeric-string, 1: numeric-string}', $matches);
+};

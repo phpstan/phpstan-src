@@ -437,3 +437,9 @@ function (string $s, $mixed): void {
 	}
 	assertType('array<string>', $matches);
 };
+
+function bug11323(string $s): void {
+	if (preg_match('/([*|+?{}()]+)([^*|+[:digit:]?{}()]+)/', $s, $matches)) {
+		assertType('array{string, string, string}', $matches);
+	}
+}

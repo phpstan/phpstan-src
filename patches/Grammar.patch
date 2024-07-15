@@ -1,8 +1,17 @@
 diff --git a/Grammar.pp b/Grammar.pp
-index 5157084..8384417 100644
+index 5157084..48959cb 100644
 --- a/Grammar.pp
 +++ b/Grammar.pp
-@@ -73,7 +73,7 @@
+@@ -50,6 +50,8 @@
+ %token  class_                   \[
+ %token _class                    \]
+ %token  range                    \-
++%token class_literal             [^\\\[\]-]
++%token posix_class               \[^?:[a-z]+:\]
+
+ // Internal options.
+ %token  internal_option          \(\?[\-+]?[imsx]\)
+@@ -73,7 +75,7 @@
  %token  co:comment               .*?(?=(?<!\\)\))
 
  // Capturing group.
@@ -11,7 +20,7 @@ index 5157084..8384417 100644
  %token  nc:_named_capturing      >                  -> default
  %token  nc:capturing_name        .+?(?=(?<!\\)>)
  %token  non_capturing_           \(\?:
-@@ -109,7 +109,7 @@
+@@ -109,7 +111,7 @@
  // Please, see PCRESYNTAX(3), General Category properties, PCRE special category
  // properties and script names for \p{} and \P{}.
  %token character_type            \\([CdDhHNRsSvVwWX]|[pP]{[^}]+})
@@ -20,16 +29,16 @@ index 5157084..8384417 100644
  %token match_point_reset         \\K
  %token literal                   \\.|.
 
-@@ -168,7 +168,7 @@ quantifier:
+@@ -168,7 +170,7 @@ quantifier:
          ::negative_class_:: #negativeclass
        | ::class_::
      )
 -    ( range() | literal() )+
-+    ( <class_> | range() | literal() )+
++    ( <posix_class> | <class_> | range() | literal() | <class_literal> )+ <range>?
      ::_class::
 
  #range:
-@@ -178,7 +178,7 @@ simple:
+@@ -178,7 +180,7 @@ simple:
      capturing()
    | literal()
 
@@ -38,7 +47,7 @@ index 5157084..8384417 100644
      ::comment_:: <comment>? ::_comment:: #comment
    | (
          ::named_capturing_:: <capturing_name> ::_named_capturing:: #namedcapturing
-@@ -191,6 +191,7 @@ capturing:
+@@ -191,6 +193,7 @@ capturing:
 
  literal:
      <character>

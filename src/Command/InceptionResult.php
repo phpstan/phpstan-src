@@ -5,6 +5,8 @@ namespace PHPStan\Command;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\Internal\BytesHelper;
+use function floor;
+use function implode;
 use function max;
 use function memory_get_peak_usage;
 use function microtime;
@@ -97,12 +99,29 @@ class InceptionResult
 
 		if ($this->getErrorOutput()->isDebug()) {
 			$this->getErrorOutput()->writeLineFormatted(sprintf(
-				'Analysis time: %0.1f seconds',
-				round(microtime(true) - $analysisStartTime, 1),
+				'Analysis time: %s',
+				$this->formatDuration((int) round(microtime(true) - $analysisStartTime)),
 			));
 		}
 
 		return $exitCode;
+	}
+
+	private function formatDuration(int $seconds): string
+	{
+		$minutes = (int) floor($seconds / 60);
+		$remainingSeconds = $seconds % 60;
+
+		$result = [];
+		if ($minutes > 0) {
+			$result[] = $minutes . ' minute' . ($minutes > 1 ? 's' : '');
+		}
+
+		if ($remainingSeconds > 0) {
+			$result[] = $remainingSeconds . ' second' . ($remainingSeconds > 1 ? 's' : '');
+		}
+
+		return implode(' ', $result);
 	}
 
 }

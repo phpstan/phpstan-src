@@ -73,6 +73,8 @@ class InvalidBinaryOperationRule implements Rule
 
 		if ($node instanceof Node\Expr\AssignOp\Concat || $node instanceof Node\Expr\BinaryOp\Concat) {
 			$callback = static fn (Type $type): bool => !$type->toString() instanceof ErrorType;
+		} elseif ($node instanceof Node\Expr\AssignOp\Plus || $node instanceof Node\Expr\BinaryOp\Plus) {
+			$callback = static fn (Type $type): bool => !$type->toNumber() instanceof ErrorType || $type->isArray()->yes();
 		} else {
 			$callback = static fn (Type $type): bool => !$type->toNumber() instanceof ErrorType;
 		}

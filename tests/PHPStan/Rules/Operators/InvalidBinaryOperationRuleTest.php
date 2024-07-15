@@ -608,4 +608,194 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBenevolentUnion(): void
+	{
+		$this->analyse([__DIR__ . '/data/binary-op-benevolent-union.php'], [
+			[
+				'Binary operation "+" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\Foo results in an error.',
+				12,
+			],
+			[
+				'Binary operation "+=" between BinaryOpBenevolentUnion\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				24,
+			],
+			[
+				'Binary operation "**" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				42,
+			],
+			[
+				'Binary operation "**" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				43,
+			],
+			[
+				'Binary operation "**=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				52,
+			],
+			[
+				'Binary operation "**=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				55,
+			],
+			[
+				'Binary operation "*" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				73,
+			],
+			[
+				'Binary operation "*" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				74,
+			],
+			[
+				'Binary operation "*=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				83,
+			],
+			[
+				'Binary operation "*=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				86,
+			],
+			[
+				'Binary operation "/" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				104,
+			],
+			[
+				'Binary operation "/" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				105,
+			],
+			[
+				'Binary operation "/=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				114,
+			],
+			[
+				'Binary operation "/=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				117,
+			],
+			[
+				'Binary operation "%" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				135,
+			],
+			[
+				'Binary operation "%" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				136,
+			],
+			[
+				'Binary operation "%=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				145,
+			],
+			[
+				'Binary operation "%=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				148,
+			],
+			[
+				'Binary operation "-" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				166,
+			],
+			[
+				'Binary operation "-" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				167,
+			],
+			[
+				'Binary operation "-=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				176,
+			],
+			[
+				'Binary operation "-=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				179,
+			],
+			[
+				'Binary operation "." between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				197,
+			],
+			[
+				'Binary operation "." between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				198,
+			],
+			[
+				'Binary operation ".=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				207,
+			],
+			[
+				'Binary operation ".=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				210,
+			],
+			[
+				'Binary operation "<<" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				228,
+			],
+			[
+				'Binary operation "<<" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				229,
+			],
+			[
+				'Binary operation "<<=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				238,
+			],
+			[
+				'Binary operation "<<=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				241,
+			],
+			[
+				'Binary operation ">>" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				259,
+			],
+			[
+				'Binary operation ">>" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				260,
+			],
+			[
+				'Binary operation ">>=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				269,
+			],
+			[
+				'Binary operation ">>=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				272,
+			],
+			[
+				'Binary operation "&" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				290,
+			],
+			[
+				'Binary operation "&" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				291,
+			],
+			[
+				'Binary operation "&=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				300,
+			],
+			[
+				'Binary operation "&=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				303,
+			],
+			[
+				'Binary operation "^" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				321,
+			],
+			[
+				'Binary operation "^" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				322,
+			],
+			[
+				'Binary operation "^=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				331,
+			],
+			[
+				'Binary operation "^=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				334,
+			],
+			[
+				'Binary operation "|" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				352,
+			],
+			[
+				'Binary operation "|" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				353,
+			],
+			[
+				'Binary operation "|=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				362,
+			],
+			[
+				'Binary operation "|=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				365,
+			],
+		]);
+	}
+
 }

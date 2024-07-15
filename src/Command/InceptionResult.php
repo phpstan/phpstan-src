@@ -7,6 +7,8 @@ use PHPStan\File\PathNotFoundException;
 use PHPStan\Internal\BytesHelper;
 use function max;
 use function memory_get_peak_usage;
+use function microtime;
+use function round;
 use function sprintf;
 
 class InceptionResult
@@ -84,12 +86,19 @@ class InceptionResult
 		return $this->generateBaselineFile;
 	}
 
-	public function handleReturn(int $exitCode, ?int $peakMemoryUsageBytes): int
+	public function handleReturn(int $exitCode, ?int $peakMemoryUsageBytes, float $analysisStartTime): int
 	{
 		if ($peakMemoryUsageBytes !== null && $this->getErrorOutput()->isVerbose()) {
 			$this->getErrorOutput()->writeLineFormatted(sprintf(
 				'Used memory: %s',
 				BytesHelper::bytes(max(memory_get_peak_usage(true), $peakMemoryUsageBytes)),
+			));
+		}
+
+		if ($this->getErrorOutput()->isDebug()) {
+			$this->getErrorOutput()->writeLineFormatted(sprintf(
+				'Analysis time: %0.1f seconds',
+				round(microtime(true) - $analysisStartTime, 1),
 			));
 		}
 

@@ -8,6 +8,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Throwable;
 use function chdir;
 use function getcwd;
+use function microtime;
 use function realpath;
 use function sprintf;
 use const DIRECTORY_SEPARATOR;
@@ -104,7 +105,7 @@ class AnalyseCommandTest extends PHPStanTestCase
 	 */
 	private function runCommand(int $expectedStatusCode, array $parameters = []): string
 	{
-		$commandTester = new CommandTester(new AnalyseCommand([]));
+		$commandTester = new CommandTester(new AnalyseCommand([], microtime(true)));
 
 		$commandTester->execute([
 			'paths' => [__DIR__ . DIRECTORY_SEPARATOR . 'test'],

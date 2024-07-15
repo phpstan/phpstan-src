@@ -65,3 +65,17 @@ $}x', $url, $matches, PREG_UNMATCHED_AS_NULL)) {
 		assertType('array{string, string|null, string|null, string, string}', $matches);
 	}
 }
+
+class UnmatchedAsNullWithTopLevelAlternation {
+	function doFoo(string $s): void {
+		if (preg_match('/Price: (?:(£)|(€))\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
+			assertType('array{string, string|null, string|null}', $matches); // could be array{0: string, 1: null, 2: string}|array{0: string, 1: string, 2: null}
+		}
+	}
+
+	function doBar(string $s): void {
+		if (preg_match('/Price: (?:(£)|(€))?\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
+			assertType('array{string, string|null, string|null}', $matches);
+		}
+	}
+}

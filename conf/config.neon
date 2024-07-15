@@ -720,6 +720,8 @@ services:
 			jobSize: %parallel.jobSize%
 			maximumNumberOfProcesses: %parallel.maximumNumberOfProcesses%
 			minimumNumberOfJobsPerProcess: %parallel.minimumNumberOfJobsPerProcess%
+		tags:
+			- phpstan.diagnoseExtension
 
 	-
 		class: PHPStan\Parser\FunctionCallStatementFinder

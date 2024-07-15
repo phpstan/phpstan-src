@@ -90,17 +90,17 @@ class InceptionResult
 
 	public function handleReturn(int $exitCode, ?int $peakMemoryUsageBytes, float $analysisStartTime): int
 	{
+		if ($this->getErrorOutput()->isVerbose()) {
+			$this->getErrorOutput()->writeLineFormatted(sprintf(
+				'Elapsed time: %s',
+				$this->formatDuration((int) round(microtime(true) - $analysisStartTime)),
+			));
+		}
+
 		if ($peakMemoryUsageBytes !== null && $this->getErrorOutput()->isVerbose()) {
 			$this->getErrorOutput()->writeLineFormatted(sprintf(
 				'Used memory: %s',
 				BytesHelper::bytes(max(memory_get_peak_usage(true), $peakMemoryUsageBytes)),
-			));
-		}
-
-		if ($this->getErrorOutput()->isDebug()) {
-			$this->getErrorOutput()->writeLineFormatted(sprintf(
-				'Analysis time: %s',
-				$this->formatDuration((int) round(microtime(true) - $analysisStartTime)),
 			));
 		}
 

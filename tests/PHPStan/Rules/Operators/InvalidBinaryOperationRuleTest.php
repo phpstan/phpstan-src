@@ -15,11 +15,16 @@ use const PHP_VERSION_ID;
 class InvalidBinaryOperationRuleTest extends RuleTestCase
 {
 
+	private bool $checkExplicitMixed = false;
+
+	private bool $checkImplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
 		return new InvalidBinaryOperationRule(
 			new ExprPrinter(new Printer()),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, true, false),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false),
+			true,
 		);
 	}
 
@@ -246,6 +251,22 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				'Binary operation "+" between int and array{} results in an error.',
 				259,
 			],
+			[
+				'Binary operation "%" between array and 3 results in an error.',
+				267,
+			],
+			[
+				'Binary operation "%" between 3 and array results in an error.',
+				268,
+			],
+			[
+				'Binary operation "%" between object and 3 results in an error.',
+				270,
+			],
+			[
+				'Binary operation "%" between 3 and object results in an error.',
+				271,
+			],
 		]);
 	}
 
@@ -281,6 +302,500 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 	public function testBug5309(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5309.php'], []);
+	}
+
+	public function testBinaryMixed(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/invalid-binary-mixed.php'], [
+			[
+				'Binary operation "." between T and \'a\' results in an error.',
+				11,
+			],
+			[
+				'Binary operation ".=" between \'a\' and T results in an error.',
+				13,
+			],
+			[
+				'Binary operation "**" between T and 2 results in an error.',
+				15,
+			],
+			[
+				'Binary operation "*" between T and 2 results in an error.',
+				16,
+			],
+			[
+				'Binary operation "/" between T and 2 results in an error.',
+				17,
+			],
+			[
+				'Binary operation "%" between T and 2 results in an error.',
+				18,
+			],
+			[
+				'Binary operation "+" between T and 2 results in an error.',
+				19,
+			],
+			[
+				'Binary operation "-" between T and 2 results in an error.',
+				20,
+			],
+			[
+				'Binary operation "<<" between T and 2 results in an error.',
+				21,
+			],
+			[
+				'Binary operation ">>" between T and 2 results in an error.',
+				22,
+			],
+			[
+				'Binary operation "&" between T and 2 results in an error.',
+				23,
+			],
+			[
+				'Binary operation "|" between T and 2 results in an error.',
+				24,
+			],
+			[
+				'Binary operation "+=" between 5 and T results in an error.',
+				26,
+			],
+			[
+				'Binary operation "-=" between 5 and T results in an error.',
+				29,
+			],
+			[
+				'Binary operation "*=" between 5 and T results in an error.',
+				32,
+			],
+			[
+				'Binary operation "**=" between 5 and T results in an error.',
+				35,
+			],
+			[
+				'Binary operation "/=" between 5 and T results in an error.',
+				38,
+			],
+			[
+				'Binary operation "%=" between 5 and T results in an error.',
+				41,
+			],
+			[
+				'Binary operation "&=" between 5 and T results in an error.',
+				44,
+			],
+			[
+				'Binary operation "|=" between 5 and T results in an error.',
+				47,
+			],
+			[
+				'Binary operation "^=" between 5 and T results in an error.',
+				50,
+			],
+			[
+				'Binary operation "<<=" between 5 and T results in an error.',
+				53,
+			],
+			[
+				'Binary operation ">>=" between 5 and T results in an error.',
+				56,
+			],
+			[
+				'Binary operation "." between mixed and \'a\' results in an error.',
+				61,
+			],
+			[
+				'Binary operation ".=" between \'a\' and mixed results in an error.',
+				63,
+			],
+			[
+				'Binary operation "**" between mixed and 2 results in an error.',
+				65,
+			],
+			[
+				'Binary operation "*" between mixed and 2 results in an error.',
+				66,
+			],
+			[
+				'Binary operation "/" between mixed and 2 results in an error.',
+				67,
+			],
+			[
+				'Binary operation "%" between mixed and 2 results in an error.',
+				68,
+			],
+			[
+				'Binary operation "+" between mixed and 2 results in an error.',
+				69,
+			],
+			[
+				'Binary operation "-" between mixed and 2 results in an error.',
+				70,
+			],
+			[
+				'Binary operation "<<" between mixed and 2 results in an error.',
+				71,
+			],
+			[
+				'Binary operation ">>" between mixed and 2 results in an error.',
+				72,
+			],
+			[
+				'Binary operation "&" between mixed and 2 results in an error.',
+				73,
+			],
+			[
+				'Binary operation "|" between mixed and 2 results in an error.',
+				74,
+			],
+			[
+				'Binary operation "+=" between 5 and mixed results in an error.',
+				76,
+			],
+			[
+				'Binary operation "-=" between 5 and mixed results in an error.',
+				79,
+			],
+			[
+				'Binary operation "*=" between 5 and mixed results in an error.',
+				82,
+			],
+			[
+				'Binary operation "**=" between 5 and mixed results in an error.',
+				85,
+			],
+			[
+				'Binary operation "/=" between 5 and mixed results in an error.',
+				88,
+			],
+			[
+				'Binary operation "%=" between 5 and mixed results in an error.',
+				91,
+			],
+			[
+				'Binary operation "&=" between 5 and mixed results in an error.',
+				94,
+			],
+			[
+				'Binary operation "|=" between 5 and mixed results in an error.',
+				97,
+			],
+			[
+				'Binary operation "^=" between 5 and mixed results in an error.',
+				100,
+			],
+			[
+				'Binary operation "<<=" between 5 and mixed results in an error.',
+				103,
+			],
+			[
+				'Binary operation ">>=" between 5 and mixed results in an error.',
+				106,
+			],
+			[
+				'Binary operation "." between mixed and \'a\' results in an error.',
+				111,
+			],
+			[
+				'Binary operation ".=" between \'a\' and mixed results in an error.',
+				113,
+			],
+			[
+				'Binary operation "**" between mixed and 2 results in an error.',
+				115,
+			],
+			[
+				'Binary operation "*" between mixed and 2 results in an error.',
+				116,
+			],
+			[
+				'Binary operation "/" between mixed and 2 results in an error.',
+				117,
+			],
+			[
+				'Binary operation "%" between mixed and 2 results in an error.',
+				118,
+			],
+			[
+				'Binary operation "+" between mixed and 2 results in an error.',
+				119,
+			],
+			[
+				'Binary operation "-" between mixed and 2 results in an error.',
+				120,
+			],
+			[
+				'Binary operation "<<" between mixed and 2 results in an error.',
+				121,
+			],
+			[
+				'Binary operation ">>" between mixed and 2 results in an error.',
+				122,
+			],
+			[
+				'Binary operation "&" between mixed and 2 results in an error.',
+				123,
+			],
+			[
+				'Binary operation "|" between mixed and 2 results in an error.',
+				124,
+			],
+			[
+				'Binary operation "+=" between 5 and mixed results in an error.',
+				126,
+			],
+			[
+				'Binary operation "-=" between 5 and mixed results in an error.',
+				129,
+			],
+			[
+				'Binary operation "*=" between 5 and mixed results in an error.',
+				132,
+			],
+			[
+				'Binary operation "**=" between 5 and mixed results in an error.',
+				135,
+			],
+			[
+				'Binary operation "/=" between 5 and mixed results in an error.',
+				138,
+			],
+			[
+				'Binary operation "%=" between 5 and mixed results in an error.',
+				141,
+			],
+			[
+				'Binary operation "&=" between 5 and mixed results in an error.',
+				144,
+			],
+			[
+				'Binary operation "|=" between 5 and mixed results in an error.',
+				147,
+			],
+			[
+				'Binary operation "^=" between 5 and mixed results in an error.',
+				150,
+			],
+			[
+				'Binary operation "<<=" between 5 and mixed results in an error.',
+				153,
+			],
+			[
+				'Binary operation ">>=" between 5 and mixed results in an error.',
+				156,
+			],
+		]);
+	}
+
+	public function testBug7538(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7538.php'], [
+			[
+				'Binary operation "%" between stdClass and stdClass results in an error.',
+				7,
+			],
+		]);
+	}
+
+	public function testBug10440(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10440.php'], [
+			[
+				'Binary operation "%" between array{} and array{\'\'} results in an error.',
+				8,
+			],
+		]);
+	}
+
+	public function testBenevolentUnion(): void
+	{
+		$this->analyse([__DIR__ . '/data/binary-op-benevolent-union.php'], [
+			[
+				'Binary operation "+" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\Foo results in an error.',
+				12,
+			],
+			[
+				'Binary operation "+=" between BinaryOpBenevolentUnion\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				24,
+			],
+			[
+				'Binary operation "**" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				42,
+			],
+			[
+				'Binary operation "**" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				43,
+			],
+			[
+				'Binary operation "**=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				52,
+			],
+			[
+				'Binary operation "**=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				55,
+			],
+			[
+				'Binary operation "*" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				73,
+			],
+			[
+				'Binary operation "*" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				74,
+			],
+			[
+				'Binary operation "*=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				83,
+			],
+			[
+				'Binary operation "*=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				86,
+			],
+			[
+				'Binary operation "/" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				104,
+			],
+			[
+				'Binary operation "/" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				105,
+			],
+			[
+				'Binary operation "/=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				114,
+			],
+			[
+				'Binary operation "/=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				117,
+			],
+			[
+				'Binary operation "%" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				135,
+			],
+			[
+				'Binary operation "%" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				136,
+			],
+			[
+				'Binary operation "%=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				145,
+			],
+			[
+				'Binary operation "%=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				148,
+			],
+			[
+				'Binary operation "-" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				166,
+			],
+			[
+				'Binary operation "-" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				167,
+			],
+			[
+				'Binary operation "-=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				176,
+			],
+			[
+				'Binary operation "-=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				179,
+			],
+			[
+				'Binary operation "." between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				197,
+			],
+			[
+				'Binary operation "." between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				198,
+			],
+			[
+				'Binary operation ".=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				207,
+			],
+			[
+				'Binary operation ".=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				210,
+			],
+			[
+				'Binary operation "<<" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				228,
+			],
+			[
+				'Binary operation "<<" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				229,
+			],
+			[
+				'Binary operation "<<=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				238,
+			],
+			[
+				'Binary operation "<<=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				241,
+			],
+			[
+				'Binary operation ">>" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				259,
+			],
+			[
+				'Binary operation ">>" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				260,
+			],
+			[
+				'Binary operation ">>=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				269,
+			],
+			[
+				'Binary operation ">>=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				272,
+			],
+			[
+				'Binary operation "&" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				290,
+			],
+			[
+				'Binary operation "&" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				291,
+			],
+			[
+				'Binary operation "&=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				300,
+			],
+			[
+				'Binary operation "&=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				303,
+			],
+			[
+				'Binary operation "^" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				321,
+			],
+			[
+				'Binary operation "^" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				322,
+			],
+			[
+				'Binary operation "^=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				331,
+			],
+			[
+				'Binary operation "^=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				334,
+			],
+			[
+				'Binary operation "|" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
+				352,
+			],
+			[
+				'Binary operation "|" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				353,
+			],
+			[
+				'Binary operation "|=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
+				362,
+			],
+			[
+				'Binary operation "|=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
+				365,
+			],
+		]);
 	}
 
 }

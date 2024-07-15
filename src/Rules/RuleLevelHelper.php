@@ -439,7 +439,15 @@ class RuleLevelHelper
 				}
 
 				if (count($newTypes) > 0) {
-					return new FoundTypeResult(TypeCombinator::union(...$newTypes), $directClassNames, [], null);
+					$newUnion = TypeCombinator::union(...$newTypes);
+					if (
+						!$this->checkBenevolentUnionTypes
+						&& $type instanceof BenevolentUnionType
+					) {
+						$newUnion = TypeUtils::toBenevolentUnion($newUnion);
+					}
+
+					return new FoundTypeResult($newUnion, $directClassNames, [], null);
 				}
 			}
 

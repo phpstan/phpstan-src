@@ -13,7 +13,7 @@ function doNonAutoCapturingFlag(string $s): void {
 	assertType('array{}|array{string, numeric-string}', $matches);
 
 	if (preg_match('/(\d+)(?P<num>\d+)/n', $s, $matches)) {
-		assertType('array{0: string, 1: numeric-string, num: string, 2: string}', $matches);
+		assertType('array{0: string, 1: numeric-string, num: numeric-string, 2: numeric-string}', $matches);
 	}
-	assertType('array{}|array{0: string, 1: numeric-string, num: string, 2: string}', $matches);
+	assertType('array{}|array{0: string, 1: numeric-string, num: numeric-string, 2: numeric-string}', $matches);
 }

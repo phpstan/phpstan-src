@@ -98,9 +98,9 @@ function doNonCapturingGroup(string $s): void {
 
 function doNamedSubpattern(string $s): void {
 	if (preg_match('/\w-(?P<num>\d+)-(\w)/', $s, $matches)) {
-		assertType('array{0: string, num: string, 1: string, 2: string}', $matches);
+		assertType('array{0: string, num: numeric-string, 1: numeric-string, 2: string}', $matches);
 	}
-	assertType('array{}|array{0: string, num: string, 1: string, 2: string}', $matches);
+	assertType('array{}|array{0: string, num: numeric-string, 1: numeric-string, 2: string}', $matches);
 
 	if (preg_match('/^(?<name>\S+::\S+)/', $s, $matches)) {
 		assertType('array{0: string, name: string, 1: string}', $matches);
@@ -259,7 +259,7 @@ function doFoo2(string $row): void
 		return;
 	}
 
-	assertType('array{0: string, 1: string, branchCode: string, 2: string, accountNumber: string, 3: string, bankCode: string, 4: string}', $matches);
+	assertType('array{0: string, 1: string, branchCode: numeric-string, 2: numeric-string, accountNumber: numeric-string, 3: numeric-string, bankCode: numeric-string, 4: numeric-string}', $matches);
 }
 
 function doFoo3(string $row): void

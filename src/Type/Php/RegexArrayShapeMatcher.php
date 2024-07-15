@@ -549,6 +549,12 @@ final class RegexArrayShapeMatcher
 	{
 		$children = $group->getChildren();
 
+		// remove capturing group name
+		if ($group->getId() === '#namedcapturing') {
+			$children = [$children[1]];
+		}
+
+		// #quantification is not relevant for the type of the group
 		if (count($children) === 1 && $children[0]->getId() === '#quantification') {
 			$quantification = $children[0];
 			if (count($quantification->getChildren()) === 2) {

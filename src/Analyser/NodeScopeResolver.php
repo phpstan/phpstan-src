@@ -4622,10 +4622,7 @@ class NodeScopeResolver
 				$scope = $exprResult->getScope();
 				$hasYield = $hasYield || $exprResult->hasYield();
 
-				if (
-					$exprType->isCallable()->yes()
-					&& (!$exprType instanceof NeverType || $exprType->isExplicit())
-				) {
+				if ($exprType->isCallable()->yes()) {
 					$acceptors = $exprType->getCallableParametersAcceptors($scope);
 					if (count($acceptors) === 1) {
 						$scope = $this->processImmediatelyCalledCallable($scope, $acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables());

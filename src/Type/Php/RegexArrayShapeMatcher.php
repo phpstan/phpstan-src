@@ -170,7 +170,7 @@ final class RegexArrayShapeMatcher
 						$beforeCurrentCombo = false;
 					} elseif ($beforeCurrentCombo && !$group->resetsGroupCounter()) {
 						$group->forceNonOptional();
-					} elseif ($group->getAlternationId() === $onlyTopLevelAlternationId) {
+					} elseif ($group->getAlternationId() === $onlyTopLevelAlternationId && !$this->containsUnmatchedAsNull($flags ?? 0)) {
 						unset($comboList[$groupId]);
 					}
 				}
@@ -191,7 +191,7 @@ final class RegexArrayShapeMatcher
 				}
 			}
 
-			if ($isOptionalAlternation) {
+			if ($isOptionalAlternation && !$this->containsUnmatchedAsNull($flags ?? 0)) {
 				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()], [0], [], true);
 			}
 

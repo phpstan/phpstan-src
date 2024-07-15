@@ -13,11 +13,13 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -126,7 +128,6 @@ final class RegexArrayShapeMatcher
 			$trailingOptionals++;
 		}
 
-		$valueType = $this->getValueType($flags ?? 0);
 		$onlyOptionalTopLevelGroup = $this->getOnlyOptionalTopLevelGroup($groupList);
 		$onlyTopLevelAlternationId = $this->getOnlyTopLevelAlternationId($groupList);
 
@@ -141,7 +142,6 @@ final class RegexArrayShapeMatcher
 
 			$combiType = $this->buildArrayType(
 				$groupList,
-				$valueType,
 				$wasMatched,
 				$trailingOptionals,
 				$flags ?? 0,
@@ -179,7 +179,6 @@ final class RegexArrayShapeMatcher
 
 				$combiType = $this->buildArrayType(
 					$comboList,
-					$valueType,
 					$wasMatched,
 					$trailingOptionals,
 					$flags ?? 0,
@@ -202,7 +201,6 @@ final class RegexArrayShapeMatcher
 
 		return $this->buildArrayType(
 			$groupList,
-			$valueType,
 			$wasMatched,
 			$trailingOptionals,
 			$flags ?? 0,
@@ -264,7 +262,6 @@ final class RegexArrayShapeMatcher
 	 */
 	private function buildArrayType(
 		array $captureGroups,
-		Type $valueType,
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
 		int $flags,
@@ -275,14 +272,14 @@ final class RegexArrayShapeMatcher
 		// first item in matches contains the overall match.
 		$builder->setOffsetValueType(
 			$this->getKeyType(0),
-			TypeCombinator::removeNull($valueType),
+			TypeCombinator::removeNull($this->getValueType(new StringType(), $flags)),
 			!$wasMatched->yes(),
 		);
 
 		$countGroups = count($captureGroups);
 		$i = 0;
 		foreach ($captureGroups as $captureGroup) {
-			$groupValueType = $valueType;
+			$groupValueType = $this->getValueType($captureGroup->getType(), $flags);
 
 			if (!$wasMatched->yes()) {
 				$optional = true;
@@ -333,9 +330,10 @@ final class RegexArrayShapeMatcher
 		return new ConstantIntegerType($key);
 	}
 
-	private function getValueType(int $flags): Type
+	private function getValueType(Type $baseType, int $flags): Type
 	{
-		$valueType = new StringType();
+		$valueType = $baseType;
+
 		$offsetType = IntegerRangeType::fromInterval(0, null);
 		if ($this->containsUnmatchedAsNull($flags)) {
 			$valueType = TypeCombinator::addNull($valueType);
@@ -420,6 +418,7 @@ final class RegexArrayShapeMatcher
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
+				$this->createGroupType($ast),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
@@ -430,6 +429,7 @@ final class RegexArrayShapeMatcher
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
+				$this->createGroupType($ast),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#noncapturing') {
@@ -532,6 +532,67 @@ final class RegexArrayShapeMatcher
 		}
 
 		return [$min, $max];
+	}
+
+	private function createGroupType(TreeNode $ast): Type {
+		if ($this->isNumericGroup($ast)) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNumericStringType()
+			]);
+		}
+
+		return new StringType();
+	}
+
+	private function isNumericGroup(TreeNode $group): bool
+	{
+		$children = $group->getChildren();
+
+		if (
+			count($children) === 1
+			&& $children[0]->getId() === 'token'
+			&& $children[0]->getValueToken() === 'character_type'
+			&& $children[0]->getValueValue() === '\d'
+		) {
+			return true;
+		}
+
+		if (
+			count($children) === 1
+			&& $children[0]->getId() === '#class'
+			&& count($children[0]->getChildren()) === 1
+			&& $this->isNumericRange($children[0]->getChildren()[0])
+		)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	private function isNumericRange(TreeNode $node) {
+		if (
+			$node->getId() === '#range'
+			&& count($node->getChildren()) === 2
+		) {
+			$start = $node->getChildren()[0];
+			$end = $node->getChildren()[1];
+
+			return is_numeric($this->getLiteralValue($start))
+				&& is_numeric($this->getLiteralValue($end));
+		}
+
+		return false;
+	}
+
+	private function getLiteralValue(TreeNode $node): ?string
+	{
+		if ($node->getId() === 'token' && $node->getValueToken() === 'literal') {
+			return $node->getValueValue();
+		}
+
+		return null;
 	}
 
 	private function getPatternType(Expr $patternExpr, Scope $scope): Type

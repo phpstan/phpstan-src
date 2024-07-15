@@ -418,11 +418,11 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('/' . preg_quote($s, '/') . '(\d)/', $s, $matches)) {
-		assertType('array{string, string}', $matches);
+		assertType('array{string, numeric-string}', $matches);
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array{string, string}', $matches);
+	assertType('array{}|array{string, numeric-string}', $matches);
 };
 
 function (string $s): void {
@@ -441,4 +441,25 @@ function (string $s, $mixed): void {
 		assertType('array{}', $matches);
 	}
 	assertType('array<string>', $matches);
+};
+
+function (string $size): void {
+	if (preg_match('/ab(\d){2,4}xx([0-9])?e?/', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{0: string, 1: numeric-string, 2?: numeric-string}', $matches);
+};
+
+function (string $size): void {
+	if (preg_match('/a(\dAB){2}b(\d){2,4}([1-5])([1-5a-z])e?/', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{string, string, numeric-string, numeric-string, string}', $matches);
+};
+
+function (string $size): void {
+	if (preg_match('/ab(ab(\d)){2,4}xx([0-9][a-c])?e?/', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{0: string, 1: string, 2: numeric-string, 3?: string}', $matches);
 };

@@ -25,6 +25,8 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	define('__PHPSTAN_RUNNING__', true);
 
+	$analysisStartTime = microtime(true);
+
 	$devOrPharLoader = require_once __DIR__ . '/../vendor/autoload.php';
 	require_once __DIR__ . '/../preload.php';
 	$composer = ComposerHelper::getComposerConfig(getcwd());
@@ -158,7 +160,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	ProgressBar::setFormatDefinition('file_download', ' [%bar%] %percent:3s%% %fileSize%');
 
 	$reversedComposerAutoloaderProjectPaths = array_values(array_unique(array_reverse($composerAutoloaderProjectPaths)));
-	$application->add(new AnalyseCommand($reversedComposerAutoloaderProjectPaths));
+	$application->add(new AnalyseCommand($reversedComposerAutoloaderProjectPaths, $analysisStartTime));
 	$application->add(new WorkerCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new ClearResultCacheCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new FixerWorkerCommand($reversedComposerAutoloaderProjectPaths));

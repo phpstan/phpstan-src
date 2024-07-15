@@ -70,6 +70,7 @@ class AnalyseCommand extends Command
 	 */
 	public function __construct(
 		private array $composerAutoloaderProjectPaths,
+		private float $analysisStartTime,
 	)
 	{
 		parent::__construct();
@@ -171,7 +172,7 @@ class AnalyseCommand extends Command
 
 		if ($generateBaselineFile === null && $allowEmptyBaseline) {
 			$inceptionResult->getStdOutput()->getStyle()->error('You must pass the --generate-baseline option alongside --allow-empty-baseline.');
-			return $inceptionResult->handleReturn(1, null);
+			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 		}
 
 		$errorOutput = $inceptionResult->getErrorOutput();
@@ -214,13 +215,13 @@ class AnalyseCommand extends Command
 			$baselineExtension = pathinfo($generateBaselineFile, PATHINFO_EXTENSION);
 			if ($baselineExtension === '') {
 				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('Baseline filename must have an extension, %s provided instead.', pathinfo($generateBaselineFile, PATHINFO_BASENAME)));
-				return $inceptionResult->handleReturn(1, null);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 
 			if (!in_array($baselineExtension, ['neon', 'php'], true)) {
 				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('Baseline filename extension must be .neon or .php, .%s was used instead.', $baselineExtension));
 
-				return $inceptionResult->handleReturn(1, null);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 		}
 
@@ -244,12 +245,12 @@ class AnalyseCommand extends Command
 				$inceptionResult->getErrorOutput()->getStyle()->note('No files found to analyse.');
 				$inceptionResult->getErrorOutput()->getStyle()->warning('This will cause a non-zero exit code in PHPStan 2.0.');
 
-				return $inceptionResult->handleReturn(0, null);
+				return $inceptionResult->handleReturn(0, null, $this->analysisStartTime);
 			}
 
 			$inceptionResult->getErrorOutput()->getStyle()->error('No files found to analyse.');
 
-			return $inceptionResult->handleReturn(1, null);
+			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 		}
 
 		$analysedConfigFiles = array_intersect($files, $container->getParameter('allConfigFiles'));
@@ -275,7 +276,7 @@ class AnalyseCommand extends Command
 		if ($fix) {
 			if ($generateBaselineFile !== null) {
 				$inceptionResult->getStdOutput()->getStyle()->error('You cannot pass the --generate-baseline option when running PHPStan Pro.');
-				return $inceptionResult->handleReturn(1, null);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 
 			return $this->runFixer($inceptionResult, $container, $onlyFiles, $input, $output, $files);
@@ -331,7 +332,7 @@ class AnalyseCommand extends Command
 					$previous = $previous->getPrevious();
 				}
 
-				return $inceptionResult->handleReturn(1, null);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 
 			throw $t;
@@ -441,7 +442,7 @@ class AnalyseCommand extends Command
 					count($internalErrors) === 1 ? 'An internal error' : 'Internal errors',
 				));
 
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
 			}
 
 			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension, $failWithoutResultCache);
@@ -477,6 +478,7 @@ class AnalyseCommand extends Command
 			return $inceptionResult->handleReturn(
 				$exitCode,
 				$analysisResult->getPeakMemoryUsageBytes(),
+				$this->analysisStartTime,
 			);
 		}
 
@@ -528,7 +530,7 @@ class AnalyseCommand extends Command
 
 				$bleedingEdge = (bool) $container->getParameter('featureToggles')['projectServicesNotInAnalysedPaths'];
 				if ($bleedingEdge) {
-					return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+					return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
 				}
 
 				$errorOutput->getStyle()->warning('This will cause a non-zero exit code in PHPStan 2.0.');
@@ -540,6 +542,7 @@ class AnalyseCommand extends Command
 		return $inceptionResult->handleReturn(
 			$exitCode,
 			$analysisResult->getPeakMemoryUsageBytes(),
+			$this->analysisStartTime,
 		);
 	}
 
@@ -558,7 +561,7 @@ class AnalyseCommand extends Command
 			$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
 			$inceptionResult->getStdOutput()->writeLineFormatted('To allow generating empty baselines, pass <fg=cyan>--allow-empty-baseline</> option.');
 
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
 		}
 
 		$streamOutput = $this->createStreamOutput();
@@ -588,7 +591,7 @@ class AnalyseCommand extends Command
 		} catch (DirectoryCreatorException $e) {
 			$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
 
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
 		}
 
 		try {
@@ -596,7 +599,7 @@ class AnalyseCommand extends Command
 		} catch (CouldNotWriteFileException $e) {
 			$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
 
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
 		}
 
 		$errorsCount = 0;
@@ -636,7 +639,7 @@ class AnalyseCommand extends Command
 			$exitCode = 2;
 		}
 
-		return $inceptionResult->handleReturn($exitCode, $analysisResult->getPeakMemoryUsageBytes());
+		return $inceptionResult->handleReturn($exitCode, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
 	}
 
 	/**
@@ -648,7 +651,7 @@ class AnalyseCommand extends Command
 		if ($ciDetector->isCiDetected()) {
 			$inceptionResult->getStdOutput()->writeLineFormatted('PHPStan Pro can\'t run in CI environment yet. Stay tuned!');
 
-			return $inceptionResult->handleReturn(1, null);
+			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 		}
 
 		/** @var FixerApplication $fixerApplication */

@@ -127,28 +127,18 @@ function doUnknownFlags(string $s, int $flags): void {
 	assertType('array<array{string|null, int<-1, max>}|string|null>', $matches);
 }
 
-function doNonAutoCapturingModifier(string $s): void {
-	if (preg_match('/(?n)(\d+)/', $s, $matches)) {
-		// could be assertType('array{string}', $matches);
-		assertType('array<string>', $matches);
-	}
-	assertType('array<string>', $matches);
-}
-
 function doMultipleAlternativeCaptureGroupsWithSameNameWithModifier(string $s): void {
 	if (preg_match('/(?J)(?<Foo>[a-z]+)|(?<Foo>[0-9]+)/', $s, $matches)) {
-		// could be assertType('array{0: string, Foo: string, 1: string}', $matches);
-		assertType('array<string>', $matches);
+		assertType('array{0: string, Foo: numeric-string|non-empty-string, 1: non-empty-string, 2?: numeric-string}', $matches);
 	}
-	assertType('array<string>', $matches);
+	assertType('array{}|array{0: string, Foo: numeric-string|non-empty-string, 1: non-empty-string, 2?: numeric-string}', $matches);
 }
 
 function doMultipleConsecutiveCaptureGroupsWithSameNameWithModifier(string $s): void {
 	if (preg_match('/(?J)(?<Foo>[a-z]+)|(?<Foo>[0-9]+)/', $s, $matches)) {
-		// could be assertType('array{0: string, Foo: string, 1: string}', $matches);
-		assertType('array<string>', $matches);
+		assertType('array{0: string, Foo: numeric-string|non-empty-string, 1: non-empty-string, 2?: numeric-string}', $matches);
 	}
-	assertType('array<string>', $matches);
+	assertType('array{}|array{0: string, Foo: numeric-string|non-empty-string, 1: non-empty-string, 2?: numeric-string}', $matches);
 }
 
 // https://github.com/hoaproject/Regex/issues/31
@@ -472,3 +462,57 @@ function (string $s): void {
 		assertType("array{string, non-empty-string}", $matches);
 	}
 };
+
+function bug11323(string $s): void {
+	if (preg_match('/([*|+?{}()]+)([^*|+[:digit:]?{}()]+)/', $s, $matches)) {
+		assertType('array{string, non-empty-string, non-empty-string}', $matches);
+	}
+	if (preg_match('/\p{L}[[\]]+([-*|+?{}(?:)]+)([^*|+[:digit:]?{a-z}(\p{L})\a-]+)/', $s, $matches)) {
+		assertType('array{string, non-empty-string, non-empty-string}', $matches);
+	}
+	if (preg_match('{([-\p{L}[\]*|\x03\a\b+?{}(?:)-]+[^[:digit:]?{}a-z0-9#-k]+)(a-z)}', $s, $matches)) {
+		assertType('array{string, non-empty-string, non-empty-string}', $matches);
+	}
+	if (preg_match('{(\d+)(?i)insensitive((?x-i)case SENSITIVE here(?i:insensitive non-capturing group))}', $s, $matches)) {
+		assertType('array{string, numeric-string, non-empty-string}', $matches);
+	}
+	if (preg_match('{([]] [^]])}', $s, $matches)) {
+		assertType('array{string, non-empty-string}', $matches);
+	}
+	if (preg_match('{([[:digit:]])}', $s, $matches)) {
+		assertType('array{string, numeric-string}', $matches);
+	}
+	if (preg_match('{([\d])(\d)}', $s, $matches)) {
+		assertType('array{string, numeric-string, numeric-string}', $matches);
+	}
+	if (preg_match('{([0-9])}', $s, $matches)) {
+		assertType('array{string, numeric-string}', $matches);
+	}
+	if (preg_match('{(\p{L})(\p{P})(\p{Po})}', $s, $matches)) {
+		assertType('array{string, non-empty-string, non-empty-string, non-empty-string}', $matches);
+	}
+	if (preg_match('{(a)??(b)*+(c++)(d)+?}', $s, $matches)) {
+		assertType('array{string, string, string, non-empty-string, non-empty-string}', $matches);
+	}
+	if (preg_match('{(.\d)}', $s, $matches)) {
+		assertType('array{string, non-empty-string}', $matches);
+	}
+	if (preg_match('{(\d.)}', $s, $matches)) {
+		assertType('array{string, non-empty-string}', $matches);
+	}
+	if (preg_match('{(\d\d)}', $s, $matches)) {
+		assertType('array{string, numeric-string}', $matches);
+	}
+	if (preg_match('{(.(\d))}', $s, $matches)) {
+		assertType('array{string, non-empty-string, numeric-string}', $matches);
+	}
+	if (preg_match('{((\d).)}', $s, $matches)) {
+		assertType('array{string, non-empty-string, numeric-string}', $matches);
+	}
+	if (preg_match('{(\d([1-4])\d)}', $s, $matches)) {
+		assertType('array{string, numeric-string, numeric-string}', $matches);
+	}
+	if (preg_match('{(x?([1-4])\d)}', $s, $matches)) {
+		assertType('array{string, non-empty-string, numeric-string}', $matches);
+	}
+}

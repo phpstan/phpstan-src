@@ -19,9 +19,9 @@ function doMatch(string $s): void {
 	assertType('array{}|array{string, string}', $matches);
 
 	if (preg_match('/Price: (£|€)(\d+)/i', $s, $matches)) {
-		assertType('array{string, string, string}', $matches);
+		assertType('array{string, string, numeric-string}', $matches);
 	}
-	assertType('array{}|array{string, string, string}', $matches);
+	assertType('array{}|array{string, string, numeric-string}', $matches);
 
 	if (preg_match('  /Price: (£|€)\d+/ i u', $s, $matches)) {
 		assertType('array{string, string}', $matches);
@@ -91,9 +91,9 @@ function doMatch(string $s): void {
 
 function doNonCapturingGroup(string $s): void {
 	if (preg_match('/Price: (?:£|€)(\d+)/', $s, $matches)) {
-		assertType('array{string, string}', $matches);
+		assertType('array{string, numeric-string}', $matches);
 	}
-	assertType('array{}|array{string, string}', $matches);
+	assertType('array{}|array{string, numeric-string}', $matches);
 }
 
 function doNamedSubpattern(string $s): void {
@@ -159,9 +159,9 @@ function hoaBug31(string $s): void {
 	assertType('array{}|array{string, string}', $matches);
 
 	if (preg_match('/\w-(\d+)-(\w)/', $s, $matches)) {
-		assertType('array{string, string, string}', $matches);
+		assertType('array{string, numeric-string, string}', $matches);
 	}
-	assertType('array{}|array{string, string, string}', $matches);
+	assertType('array{}|array{string, numeric-string, string}', $matches);
 }
 
 // https://github.com/phpstan/phpstan/issues/10855#issuecomment-2044323638
@@ -235,9 +235,9 @@ function testUnionPattern(string $s): void
 		$pattern = '/Price: (\d+)(\d+)(\d+)/';
 	}
 	if (preg_match($pattern, $s, $matches)) {
-		assertType('array{string, string, string, string}|array{string, string}', $matches);
+		assertType('array{string, numeric-string, numeric-string, numeric-string}|array{string, numeric-string}', $matches);
 	}
-	assertType('array{}|array{string, string, string, string}|array{string, string}', $matches);
+	assertType('array{}|array{string, numeric-string, numeric-string, numeric-string}|array{string, numeric-string}', $matches);
 }
 
 function doFoo(string $row): void
@@ -268,42 +268,42 @@ function doFoo3(string $row): void
 		return;
 	}
 
-	assertType('array{string, string, string, string, string, string, string}', $matches);
+	assertType('array{string, string, string, numeric-string, numeric-string, numeric-string, numeric-string}', $matches);
 }
 
 function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)(\d+)(\s+))?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, string, string, string, string}|array{string}', $matches);
+	assertType('array{string, string, numeric-string, numeric-string, string}|array{string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+))?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, string, string}|array{string}', $matches);
+	assertType('array{string, string, numeric-string}|array{string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)?)d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: string, 2?: string}', $matches);
+	assertType('array{0: string, 1: string, 2?: numeric-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)?)?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1?: string, 2?: string}', $matches);
+	assertType('array{0: string, 1?: string, 2?: numeric-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+))d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, string, string}', $matches);
+	assertType('array{string, string, numeric-string}', $matches);
 };
 
 function (string $size): void {
@@ -317,14 +317,14 @@ function (string $size): void {
 	if (preg_match('~^(?:(\\d+)x(\\d+)|(\\d+)|x(\\d+))$~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: string, 2: string, 3?: string, 4?: string}', $matches);
+	assertType('array{0: string, 1: numeric-string, 2: numeric-string, 3?: numeric-string, 4?: numeric-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^(?:(\\d+)x(\\d+)|(\\d+)|x(\\d+))?$~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: string, 2: string, 3?: string, 4?: string}|array{string}', $matches);
+	assertType('array{0: string, 1: numeric-string, 2: numeric-string, 3?: numeric-string, 4?: numeric-string}|array{string}', $matches);
 };
 
 function (string $size): void {
@@ -462,4 +462,11 @@ function (string $size): void {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
 	assertType('array{0: string, 1: string, 2: numeric-string, 3?: string}', $matches);
+};
+
+function (string $size): void {
+	if (preg_match('/ab(\d+)e(\d?)/', $size, $matches) !== 1) {
+		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
+	}
+	assertType('array{string, numeric-string, numeric-string}', $matches);
 };

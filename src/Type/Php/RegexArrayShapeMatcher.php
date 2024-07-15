@@ -549,6 +549,13 @@ final class RegexArrayShapeMatcher
 	{
 		$children = $group->getChildren();
 
+		if (count($children) === 1 && $children[0]->getId() === '#quantification') {
+			$quantification = $children[0];
+			if (count($quantification->getChildren()) === 2) {
+				$children = [$quantification->getChildren()[0]];
+			}
+		}
+
 		if (
 			count($children) === 1
 			&& $children[0]->getId() === 'token'

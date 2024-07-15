@@ -338,7 +338,7 @@ class NeverType implements CompoundType
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
-		return [];
+		throw new ShouldNotHappenException();
 	}
 
 	public function isCloneable(): TrinaryLogic

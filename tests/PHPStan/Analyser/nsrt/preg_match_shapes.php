@@ -82,6 +82,11 @@ function doMatch(string $s): void {
 		assertType('array{string, string, string, string}', $matches);
 	}
 	assertType('array{}|array{string, string, string, string}', $matches);
+
+	if (preg_match('/(foo)(bar)(baz){2}/', $s, $matches)) {
+		assertType('array{string, string, string, string}', $matches);
+	}
+	assertType('array{}|array{string, string, string, string}', $matches);
 }
 
 function doNonCapturingGroup(string $s): void {

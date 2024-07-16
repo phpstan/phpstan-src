@@ -11,6 +11,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -24,8 +25,9 @@ use function array_key_exists;
 use function array_reverse;
 use function count;
 use function in_array;
+use function is_int;
 use function is_string;
-use function str_contains;
+use function sscanf;
 use const PREG_OFFSET_CAPTURE;
 use const PREG_UNMATCHED_AS_NULL;
 
@@ -450,14 +452,9 @@ final class RegexArrayShapeMatcher
 
 		$inOptionalQuantification = false;
 		if ($ast->getId() === '#quantification') {
-			$lastChild = $ast->getChild($ast->getChildrenNumber() - 1);
-			$value = $lastChild->getValue();
+			[$min] = $this->getQuantificationRange($ast);
 
-			if ($value['token'] === 'n_to_m' && str_contains($value['value'], '{0,')) {
-				$inOptionalQuantification = true;
-			} elseif ($value['token'] === 'zero_or_one') {
-				$inOptionalQuantification = true;
-			} elseif ($value['token'] === 'zero_or_more') {
+			if ($min === 0) {
 				$inOptionalQuantification = true;
 			}
 		}
@@ -498,6 +495,43 @@ final class RegexArrayShapeMatcher
 
 			$combinationIndex++;
 		}
+	}
+
+	/** @return array{?int, ?int} */
+	private function getQuantificationRange(TreeNode $node): array
+	{
+		if ($node->getId() !== '#quantification') {
+			throw new ShouldNotHappenException();
+		}
+
+		$min = null;
+		$max = null;
+
+		$lastChild = $node->getChild($node->getChildrenNumber() - 1);
+		$value = $lastChild->getValue();
+
+		if ($value['token'] === 'n_to_m') {
+			if (sscanf($value['value'], '{%d,%d}', $n, $m) !== 2 || !is_int($n) || !is_int($m)) {
+				throw new ShouldNotHappenException();
+			}
+
+			$min = $n;
+			$max = $m;
+		} elseif ($value['token'] === 'exactly_n') {
+			if (sscanf($value['value'], '{%d}', $n) !== 1 || !is_int($n)) {
+				throw new ShouldNotHappenException();
+			}
+
+			$min = $n;
+			$max = $n;
+		} elseif ($value['token'] === 'zero_or_one') {
+			$min = 0;
+			$max = 1;
+		} elseif ($value['token'] === 'zero_or_more') {
+			$min = 0;
+		}
+
+		return [$min, $max];
 	}
 
 	private function getPatternType(Expr $patternExpr, Scope $scope): Type

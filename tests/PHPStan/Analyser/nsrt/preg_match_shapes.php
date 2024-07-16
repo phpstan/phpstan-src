@@ -340,7 +340,7 @@ function bug11277a(string $value): void
 	if (preg_match('/^\[(.+,?)*\]$/', $value, $matches)) {
 		assertType('array{0: string, 1?: non-empty-string}', $matches);
 		if (count($matches) === 2) {
-			assertType('array{string, non-empty-string}', $matches);
+			assertType('array{string, string}', $matches); // could be array{string, non-empty-string}
 		}
 	}
 }
@@ -350,10 +350,10 @@ function bug11277b(string $value): void
 	if (preg_match('/^(?:(.+,?)|(x))*$/', $value, $matches)) {
 		assertType('array{0: string, 1?: non-empty-string, 2?: non-empty-string}', $matches);
 		if (count($matches) === 2) {
-			assertType('array{string, non-empty-string}', $matches);
+			assertType('array{string, string}', $matches); // could be array{string, non-empty-string}
 		}
 		if (count($matches) === 3) {
-			assertType('array{string, non-empty-string, non-empty-string}', $matches);
+			assertType('array{string, string, string}', $matches); // could be array{string, non-empty-string, non-empty-string}
 		}
 	}
 }

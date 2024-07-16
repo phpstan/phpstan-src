@@ -1886,6 +1886,9 @@ services:
 	-
 		class: PHPStan\Type\Constant\OversizedArrayBuilder
 
+	-
+		class: PHPStan\Rules\Functions\PrintfHelper
+
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver
 		factory: @PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver

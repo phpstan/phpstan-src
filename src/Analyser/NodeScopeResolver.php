@@ -4330,7 +4330,13 @@ class NodeScopeResolver
 	{
 		$callableParameters = null;
 		if ($args !== null) {
-			$acceptors = $scope->getType($closureExpr)->getCallableParametersAcceptors($scope);
+			$closureType = $scope->getType($closureExpr);
+
+			if ($closureType->isCallable()->no()) {
+				return null;
+			}
+
+			$acceptors = $closureType->getCallableParametersAcceptors($scope);
 			if (count($acceptors) === 1) {
 				$callableParameters = $acceptors[0]->getParameters();
 
@@ -4356,6 +4362,10 @@ class NodeScopeResolver
 					$passedToType->getTypes(),
 					static fn (Type $type) => $type->isCallable()->yes(),
 				));
+
+				if ($passedToType->isCallable()->no()) {
+					return null;
+				}
 			}
 
 			$acceptors = $passedToType->getCallableParametersAcceptors($scope);

@@ -588,7 +588,7 @@ final class RegexArrayShapeMatcher
 
 		if ($ast->getId() === 'token') {
 			$literalValue = $this->getLiteralValue($ast);
-			if ($literalValue !== null && !Strings::match($literalValue, '/^\d+$/')) {
+			if ($literalValue !== null && Strings::match($literalValue, '/^\d+$/') === null) {
 				$isNumeric = TrinaryLogic::createNo();
 			}
 
@@ -609,7 +609,7 @@ final class RegexArrayShapeMatcher
 
 		if ($ast->getId() === '#range') {
 			if ($isNumeric->maybe()) {
-				$allNumeric = true;
+				$allNumeric = null;
 				foreach ($children as $child) {
 					$literalValue = $this->getLiteralValue($child);
 
@@ -617,13 +617,15 @@ final class RegexArrayShapeMatcher
 						break;
 					}
 
-					if (!Strings::match($literalValue, '/^\d+$/')) {
+					if (Strings::match($literalValue, '/^\d+$/') === null) {
 						$allNumeric = false;
 						break;
 					}
+
+					$allNumeric = true;
 				}
 
-				if ($allNumeric) {
+				if ($allNumeric === true) {
 					$isNumeric = TrinaryLogic::createYes();
 				}
 			}

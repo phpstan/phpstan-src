@@ -556,14 +556,15 @@ final class RegexArrayShapeMatcher
 		if ($accessories !== []) {
 			return new IntersectionType([
 				new StringType(),
-				...$accessories
+				...$accessories,
 			]);
 		}
 
 		return new StringType();
 	}
 
-	private function walkGroupAst(TreeNode $ast, TrinaryLogic &$isNonEmpty, TrinaryLogic &$isNumeric, bool &$inOptionalQuantification): void {
+	private function walkGroupAst(TreeNode $ast, TrinaryLogic &$isNonEmpty, TrinaryLogic &$isNumeric, bool &$inOptionalQuantification): void
+	{
 		$children = $ast->getChildren();
 
 		if (
@@ -592,7 +593,7 @@ final class RegexArrayShapeMatcher
 			}
 
 			if ($ast->getValueToken() === 'character_type') {
-				if ('\d' === $ast->getValueValue()) {
+				if ($ast->getValueValue() === '\d') {
 					if ($isNumeric->maybe()) {
 						$isNumeric = TrinaryLogic::createYes();
 					}
@@ -609,7 +610,7 @@ final class RegexArrayShapeMatcher
 		if ($ast->getId() === '#range') {
 			if ($isNumeric->maybe()) {
 				$allNumeric = true;
-				foreach($children as $child) {
+				foreach ($children as $child) {
 					$literalValue = $this->getLiteralValue($child);
 
 					if ($literalValue === null) {
@@ -632,12 +633,12 @@ final class RegexArrayShapeMatcher
 			}
 		}
 
-		foreach($children as $child) {
+		foreach ($children as $child) {
 			$this->walkGroupAst(
 				$child,
 				$isNonEmpty,
 				$isNumeric,
-				$inOptionalQuantification
+				$inOptionalQuantification,
 			);
 		}
 	}

@@ -259,7 +259,7 @@ function doFoo2(string $row): void
 		return;
 	}
 
-	assertType('array{0: string, 1: string, branchCode: numeric-string, 2: numeric-string, accountNumber: numeric-string, 3: numeric-string, bankCode: numeric-string, 4: numeric-string}', $matches);
+	assertType('array{0: string, 1: non-empty-string&numeric-string, branchCode: non-empty-string&numeric-string, 2: non-empty-string&numeric-string, accountNumber: non-empty-string&numeric-string, 3: non-empty-string&numeric-string, bankCode: non-empty-string&numeric-string, 4: non-empty-string&numeric-string}', $matches);
 }
 
 function doFoo3(string $row): void
@@ -289,7 +289,7 @@ function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)?)d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: string, 2?: numeric-string}', $matches);
+	assertType('array{0: string, 1: non-empty-string, 2?: non-empty-string&numeric-string}', $matches);
 };
 
 function (string $size): void {
@@ -303,7 +303,7 @@ function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+))d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, string, numeric-string}', $matches);
+	assertType('array{string, non-empty-string, non-empty-string&numeric-string}', $matches);
 };
 
 function (string $size): void {
@@ -376,7 +376,7 @@ function bug11323a(string $s): void
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array{0: string, currency: string, 1: string}', $matches);
+	assertType('array{}|array{0: string, currency: non-empty-string, 1: non-empty-string}', $matches);
 }
 
 function bug11323b(string $s): void
@@ -447,21 +447,21 @@ function (string $size): void {
 	if (preg_match('/ab(\d){2,4}xx([0-9])?e?/', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: non-empty-string&numeric-string, 2?: non-empty-string}', $matches);
+	assertType('array{0: string, 1: non-empty-string&numeric-string, 2?: non-empty-string&numeric-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('/a(\dAB){2}b(\d){2,4}([1-5])([1-5a-z])e?/', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, string, numeric-string, numeric-string, string}', $matches);
+	assertType('array{string, non-empty-string, non-empty-string&numeric-string, non-empty-string&numeric-string, non-empty-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('/ab(ab(\d)){2,4}xx([0-9][a-c])?e?/', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: string, 2: numeric-string, 3?: string}', $matches);
+	assertType('array{0: string, 1: non-empty-string, 2: non-empty-string&numeric-string, 3?: non-empty-string}', $matches);
 };
 
 function (string $size): void {
@@ -475,7 +475,7 @@ function (string $size): void {
 	if (preg_match('/ab(?P<num>\d+)e?/', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, num: numeric-string, 1: numeric-string}', $matches);
+	assertType('array{0: string, num: non-empty-string&numeric-string, 1: non-empty-string&numeric-string}', $matches);
 };
 
 function (string $size): void {

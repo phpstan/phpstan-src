@@ -7,12 +7,14 @@ use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\Exception\Exception;
 use Hoa\File\Read;
+use Nette\Utils\Strings;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -534,69 +536,110 @@ final class RegexArrayShapeMatcher
 		return [$min, $max];
 	}
 
-	private function createGroupType(TreeNode $ast): Type {
-		if ($this->isNumericGroup($ast)) {
+	private function createGroupType(TreeNode $group): Type
+	{
+		$isNonEmpty = TrinaryLogic::createMaybe();
+		$isNumeric = TrinaryLogic::createMaybe();
+		$inOptionalQuantification = false;
+
+		$this->walkGroupAst($group, $isNonEmpty, $isNumeric, $inOptionalQuantification);
+
+		$accessories = [];
+		if ($isNumeric->yes()) {
+			$accessories[] = new AccessoryNumericStringType();
+		}
+
+		if ($isNonEmpty->yes()) {
+			$accessories[] = new AccessoryNonEmptyStringType();
+		}
+
+		if ($accessories !== []) {
 			return new IntersectionType([
 				new StringType(),
-				new AccessoryNumericStringType()
+				...$accessories
 			]);
 		}
 
 		return new StringType();
 	}
 
-	private function isNumericGroup(TreeNode $group): bool
-	{
-		$children = $group->getChildren();
+	private function walkGroupAst(TreeNode $ast, TrinaryLogic &$isNonEmpty, TrinaryLogic &$isNumeric, bool &$inOptionalQuantification): void {
+		$children = $ast->getChildren();
 
-		// remove capturing group name
-		if ($group->getId() === '#namedcapturing') {
-			$children = [$children[1]];
+		if (
+			$ast->getId() === '#concatenation'
+			&& count($children) > 0
+		) {
+			$isNonEmpty = TrinaryLogic::createYes();
 		}
 
-		// #quantification is not relevant for the type of the group
-		if (count($children) === 1 && $children[0]->getId() === '#quantification') {
-			$quantification = $children[0];
-			if (count($quantification->getChildren()) === 2) {
-				$children = [$quantification->getChildren()[0]];
+		if ($ast->getId() === '#quantification') {
+			[$min] = $this->getQuantificationRange($ast);
+
+			if ($min === 0) {
+				$inOptionalQuantification = true;
+			}
+			if ($min >= 1) {
+				$isNonEmpty = TrinaryLogic::createYes();
+				$inOptionalQuantification = false;
 			}
 		}
 
-		if (
-			count($children) === 1
-			&& $children[0]->getId() === 'token'
-			&& $children[0]->getValueToken() === 'character_type'
-			&& $children[0]->getValueValue() === '\d'
-		) {
-			return true;
+		if ($ast->getId() === 'token') {
+			$literalValue = $this->getLiteralValue($ast);
+			if ($literalValue !== null && !Strings::match($literalValue, '/^\d+$/')) {
+				$isNumeric = TrinaryLogic::createNo();
+			}
+
+			if ($ast->getValueToken() === 'character_type') {
+				if ('\d' === $ast->getValueValue()) {
+					if ($isNumeric->maybe()) {
+						$isNumeric = TrinaryLogic::createYes();
+					}
+				} else {
+					$isNumeric = TrinaryLogic::createNo();
+				}
+			}
+
+			if (!$inOptionalQuantification) {
+				$isNonEmpty = TrinaryLogic::createYes();
+			}
 		}
 
-		if (
-			count($children) === 1
-			&& $children[0]->getId() === '#class'
-			&& count($children[0]->getChildren()) === 1
-			&& $this->isNumericRange($children[0]->getChildren()[0])
-		)
-		{
-			return true;
+		if ($ast->getId() === '#range') {
+			if ($isNumeric->maybe()) {
+				$allNumeric = true;
+				foreach($children as $child) {
+					$literalValue = $this->getLiteralValue($child);
+
+					if ($literalValue === null) {
+						break;
+					}
+
+					if (!Strings::match($literalValue, '/^\d+$/')) {
+						$allNumeric = false;
+						break;
+					}
+				}
+
+				if ($allNumeric) {
+					$isNumeric = TrinaryLogic::createYes();
+				}
+			}
+
+			if (!$inOptionalQuantification) {
+				$isNonEmpty = TrinaryLogic::createYes();
+			}
 		}
 
-		return false;
-	}
-
-	private function isNumericRange(TreeNode $node) {
-		if (
-			$node->getId() === '#range'
-			&& count($node->getChildren()) === 2
-		) {
-			$start = $node->getChildren()[0];
-			$end = $node->getChildren()[1];
-
-			return is_numeric($this->getLiteralValue($start))
-				&& is_numeric($this->getLiteralValue($end));
+		foreach($children as $child) {
+			$this->walkGroupAst(
+				$child,
+				$isNonEmpty,
+				$isNumeric,
+				$inOptionalQuantification
+			);
 		}
-
-		return false;
 	}
 
 	private function getLiteralValue(TreeNode $node): ?string

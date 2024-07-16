@@ -9,7 +9,6 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
@@ -334,12 +333,12 @@ class NeverType implements CompoundType
 
 	public function isCallable(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createNo();
 	}
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
-		return [new TrivialParametersAcceptor()];
+		throw new ShouldNotHappenException();
 	}
 
 	public function isCloneable(): TrinaryLogic

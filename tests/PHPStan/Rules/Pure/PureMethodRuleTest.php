@@ -12,13 +12,21 @@ use const PHP_VERSION_ID;
 class PureMethodRuleTest extends RuleTestCase
 {
 
+	private bool $treatPhpDocTypesAsCertain;
+
 	public function getRule(): Rule
 	{
 		return new PureMethodRule(new FunctionPurityCheck());
 	}
 
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
+	}
+
 	public function testRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/pure-method.php'], [
 			[
 				'Method PureMethod\Foo::doFoo() is marked as pure but parameter $p is passed by reference.',
@@ -141,6 +149,7 @@ class PureMethodRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/pure-constructor.php'], [
 			[
 				'Impure property assignment in pure method PureConstructor\Foo::__construct().',
@@ -159,12 +168,30 @@ class PureMethodRuleTest extends RuleTestCase
 
 	public function testImpureAssignRef(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/impure-assign-ref.php'], [
 			[
 				'Possibly impure property assignment by reference in pure method ImpureAssignRef\HelloWorld::bar6().',
 				49,
 			],
 		]);
+	}
+
+	/**
+	 * @dataProvider dataBug11207
+	 */
+	public function testBug11207(bool $treatPhpDocTypesAsCertain): void
+	{
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
+		$this->analyse([__DIR__ . '/data/bug-11207.php'], []);
+	}
+
+	public function dataBug11207(): array
+	{
+		return [
+			[true],
+			[false],
+		];
 	}
 
 }

@@ -16,6 +16,7 @@ use function count;
 use function in_array;
 use function max;
 use function min;
+use function PHPStan\dumpType;
 use function sprintf;
 
 /**
@@ -152,10 +153,12 @@ class PrintfArrayParametersRule implements Rule
 			if ($placeHoldersCount->getValue() === 0) {
 				return true;
 			}
+
+			return false;
 		}
 
-		if ($placeHoldersCount instanceof IntegerRangeType
-			&& $formatArgsCount instanceof IntegerRangeType
+		if (
+			$formatArgsCount instanceof IntegerRangeType
 			&& IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($placeHoldersCount)->yes()
 		) {
 			if ($formatArgsCount->getMin() !== null && $formatArgsCount->getMax() !== null) {

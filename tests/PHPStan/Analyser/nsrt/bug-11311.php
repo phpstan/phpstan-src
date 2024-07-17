@@ -69,7 +69,7 @@ $}x', $url, $matches, PREG_UNMATCHED_AS_NULL)) {
 class UnmatchedAsNullWithTopLevelAlternation {
 	function doFoo(string $s): void {
 		if (preg_match('/Price: (?:(£)|(€))\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-			assertType('array{string, non-empty-string|null, non-empty-string|null}', $matches); // could be array{0: string, 1: null, 2: string}|array{0: string, 1: string, 2: null}
+			assertType('array{string, non-empty-string|null, non-empty-string|null}', $matches); // could be array{0: string, 1: null, 2: non-empty-string}|array{0: string, 1: non-empty-string, 2: null}
 		}
 	}
 

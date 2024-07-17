@@ -76,6 +76,10 @@ class PrintfArrayParametersRule implements Rule
 			$placeHoldersCount = new ConstantIntegerType($minCount);
 		} else {
 			$placeHoldersCount = IntegerRangeType::fromInterval($minCount, $maxCount);
+
+			if (!$placeHoldersCount instanceof IntegerRangeType && !$placeHoldersCount instanceof ConstantIntegerType) {
+				return [];
+			}
 		}
 
 		$formatArgsCounts = [];
@@ -96,6 +100,10 @@ class PrintfArrayParametersRule implements Rule
 			$formatArgsCount = new ConstantIntegerType(0);
 		} else {
 			$formatArgsCount = TypeCombinator::union(...$formatArgsCounts);
+
+			if (!$formatArgsCount instanceof IntegerRangeType && !$formatArgsCount instanceof ConstantIntegerType) {
+				return [];
+			}
 		}
 
 		if (!$this->placeholdersMatchesArgsCount($placeHoldersCount, $formatArgsCount)) {
@@ -133,18 +141,17 @@ class PrintfArrayParametersRule implements Rule
 		return [];
 	}
 
-	private function placeholdersMatchesArgsCount(Type $placeHoldersCount, Type $formatArgsCount): bool
+	private function placeholdersMatchesArgsCount(ConstantIntegerType|IntegerRangeType $placeHoldersCount, ConstantIntegerType|IntegerRangeType $formatArgsCount): bool
 	{
-		if ($placeHoldersCount instanceof ConstantIntegerType && $formatArgsCount instanceof ConstantIntegerType) {
-			return $placeHoldersCount->getValue() === $formatArgsCount->getValue();
-		}
+		if ($placeHoldersCount instanceof ConstantIntegerType) {
+			if ($formatArgsCount instanceof ConstantIntegerType) {
+				return $placeHoldersCount->getValue() === $formatArgsCount->getValue();
+			}
 
-		// Zero placeholders + array
-		if ($placeHoldersCount instanceof ConstantIntegerType
-			&& $placeHoldersCount->getValue() === 0
-			&& $formatArgsCount instanceof IntegerRangeType
-		) {
-			return true;
+			// Zero placeholders + array
+			if ($placeHoldersCount->getValue() === 0) {
+				return true;
+			}
 		}
 
 		if ($placeHoldersCount instanceof IntegerRangeType

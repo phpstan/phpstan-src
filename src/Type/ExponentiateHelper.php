@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use Throwable;
 use function is_float;
 use function is_int;
 use function pow;
@@ -85,9 +86,15 @@ final class ExponentiateHelper
 			$max = null;
 			if ($exponent->getMin() !== null) {
 				$min = self::pow($base->getValue(), $exponent->getMin());
+				if ($min === null) {
+					return null;
+				}
 			}
 			if ($exponent->getMax() !== null) {
 				$max = self::pow($base->getValue(), $exponent->getMax());
+				if ($max === null) {
+					return null;
+				}
 			}
 
 			if (!is_float($min) && !is_float($max)) {
@@ -97,6 +104,11 @@ final class ExponentiateHelper
 
 		if ($exponent instanceof ConstantScalarType) {
 			$result = self::pow($base->getValue(), $exponent->getValue());
+
+			if ($result === null) {
+				return null;
+			}
+
 			if (is_int($result)) {
 				return new ConstantIntegerType($result);
 			}
@@ -106,12 +118,13 @@ final class ExponentiateHelper
 		return null;
 	}
 
-	/**
-	 * @return float|int
-	 */
-	private static function pow(mixed $base, mixed $exp)
+	private static function pow(mixed $base, mixed $exp): float|int|null
 	{
-		return pow($base, $exp);
+		try {
+			return pow($base, $exp);
+		} catch (Throwable) {
+			return null;
+		}
 	}
 
 }

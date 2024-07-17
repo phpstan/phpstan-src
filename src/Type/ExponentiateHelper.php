@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function is_float;
@@ -26,9 +25,22 @@ final class ExponentiateHelper
 			return new NeverType();
 		}
 
-		$result = self::exponentiateConstantScalar($base, $exponent);
-		if ($result !== null) {
-			return $result;
+		$allowedExponentTypes = new UnionType([
+			new IntegerType(),
+			new FloatType(),
+			new StringType(),
+			new BooleanType(),
+			new NullType(),
+		]);
+		if (!$allowedExponentTypes->isSuperTypeOf($exponent)->yes()) {
+			return new ErrorType();
+		}
+
+		if ($base instanceof ConstantScalarType) {
+			$result = self::exponentiateConstantScalar($base, $exponent);
+			if ($result !== null) {
+				return $result;
+			}
 		}
 
 		// exponentiation of a float, stays a float
@@ -66,29 +78,8 @@ final class ExponentiateHelper
 		]);
 	}
 
-	private static function exponentiateConstantScalar(Type $base, Type $exponent): ?Type
+	private static function exponentiateConstantScalar(ConstantScalarType $base, Type $exponent): ?Type
 	{
-		$allowedOperandTypes = new UnionType([
-			new IntegerType(),
-			new FloatType(),
-			new IntersectionType([
-				new StringType(),
-				new AccessoryNumericStringType(),
-			]),
-			new BooleanType(),
-			new NullType(),
-		]);
-		if (!$allowedOperandTypes->isSuperTypeOf($exponent)->yes()) {
-			return new ErrorType();
-		}
-		if (!$allowedOperandTypes->isSuperTypeOf($base)->yes()) {
-			return new ErrorType();
-		}
-
-		if (!$base instanceof ConstantScalarType) {
-			return null;
-		}
-
 		if ($exponent instanceof IntegerRangeType) {
 			$min = null;
 			$max = null;

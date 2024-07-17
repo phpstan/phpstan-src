@@ -4,9 +4,10 @@ namespace PHPStan\Type;
 
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use Throwable;
 use function is_float;
 use function is_int;
+use function is_numeric;
+use function is_string;
 use function pow;
 
 final class ExponentiateHelper
@@ -119,11 +120,13 @@ final class ExponentiateHelper
 
 	private static function pow(mixed $base, mixed $exp): float|int|null
 	{
-		try {
-			return pow($base, $exp);
-		} catch (Throwable) {
+		if (is_string($base) && !is_numeric($base)) {
 			return null;
 		}
+		if (is_string($exp) && !is_numeric($exp)) {
+			return null;
+		}
+		return pow($base, $exp);
 	}
 
 }

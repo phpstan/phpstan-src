@@ -298,6 +298,10 @@ final class RegexArrayShapeMatcher
 				}
 			}
 
+			if (!$optional && $captureGroup->isOptional() && !$this->containsUnmatchedAsNull($flags)) {
+				$groupValueType = TypeCombinator::union($groupValueType, new ConstantStringType(''));
+			}
+
 			if ($captureGroup->isNamed()) {
 				$builder->setOffsetValueType(
 					$this->getKeyType($captureGroup->getName()),

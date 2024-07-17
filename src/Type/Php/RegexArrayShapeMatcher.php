@@ -611,7 +611,7 @@ final class RegexArrayShapeMatcher
 			}
 		}
 
-		if ($ast->getId() === '#range') {
+		if ($ast->getId() === '#range' || $ast->getId() === '#class') {
 			if ($isNumeric->maybe()) {
 				$allNumeric = null;
 				foreach ($children as $child) {

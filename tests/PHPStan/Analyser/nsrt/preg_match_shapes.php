@@ -460,3 +460,15 @@ function (string $s): void {
 		assertType("array{string, non-empty-string, non-empty-string&numeric-string}", $matches);
 	}
 };
+
+function (string $s): void {
+	if (preg_match('~^([157])$~', $s, $matches) === 1) {
+		assertType("array{string, non-empty-string&numeric-string}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('~^([157XY])$~', $s, $matches) === 1) {
+		assertType("array{string, non-empty-string}", $matches);
+	}
+};

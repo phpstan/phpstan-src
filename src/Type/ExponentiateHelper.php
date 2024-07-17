@@ -6,6 +6,9 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function is_float;
 use function is_int;
+use function is_numeric;
+use function is_string;
+use function pow;
 
 final class ExponentiateHelper
 {
@@ -83,10 +86,16 @@ final class ExponentiateHelper
 			$min = null;
 			$max = null;
 			if ($exponent->getMin() !== null) {
-				$min = $base->getValue() ** $exponent->getMin();
+				$min = self::pow($base->getValue(), $exponent->getMin());
+				if ($min === null) {
+					return new ErrorType();
+				}
 			}
 			if ($exponent->getMax() !== null) {
-				$max = $base->getValue() ** $exponent->getMax();
+				$max = self::pow($base->getValue(), $exponent->getMax());
+				if ($max === null) {
+					return new ErrorType();
+				}
 			}
 
 			if (!is_float($min) && !is_float($max)) {
@@ -95,7 +104,11 @@ final class ExponentiateHelper
 		}
 
 		if ($exponent instanceof ConstantScalarType) {
-			$result = $base->getValue() ** $exponent->getValue();
+			$result = self::pow($base->getValue(), $exponent->getValue());
+			if ($result === null) {
+				return new ErrorType();
+			}
+
 			if (is_int($result)) {
 				return new ConstantIntegerType($result);
 			}
@@ -103,6 +116,17 @@ final class ExponentiateHelper
 		}
 
 		return null;
+	}
+
+	private static function pow(mixed $base, mixed $exp): float|int|null
+	{
+		if (is_string($base) && !is_numeric($base)) {
+			return null;
+		}
+		if (is_string($exp) && !is_numeric($exp)) {
+			return null;
+		}
+		return pow($base, $exp);
 	}
 
 }

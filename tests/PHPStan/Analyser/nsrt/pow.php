@@ -177,3 +177,23 @@ function doFoo(int $intA, int $intB, string $s, bool $bool, $numericS, float $fl
 	assertType('*ERROR*', $bool ** $arr);
 	assertType('*ERROR*', $bool ** []);
 };
+
+function invalidConstantOperands(): void {
+	assertType('*ERROR*', 'a' ** 1);
+	assertType('*ERROR*',  1 ** 'a');
+
+	assertType('*ERROR*', [] ** 1);
+	assertType('*ERROR*',  1 ** []);
+
+	assertType('*ERROR*', (new \stdClass()) ** 1);
+	assertType('*ERROR*',  1 ** (new \stdClass()));
+}
+
+function validConstantOperands(): void {
+	assertType('1', '1' ** 1);
+	assertType('1',  1 ** '1');
+	assertType('1',  '1' ** '1');
+
+	assertType('1', true ** 1);
+	assertType('1',  1 ** false);
+}

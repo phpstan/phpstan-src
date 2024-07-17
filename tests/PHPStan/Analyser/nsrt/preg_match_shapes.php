@@ -448,3 +448,15 @@ function (string $s): void {
 		assertType('array{string, string, non-empty-string}', $matches);
 	}
 };
+
+function (string $s): void {
+	if (preg_match('~^((\\d{1,6})-)$~', $s, $matches) === 1) {
+		assertType("array{string, non-empty-string, non-empty-string&numeric-string}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('~^((\\d{1,6}).)$~', $s, $matches) === 1) {
+		assertType("array{string, non-empty-string, non-empty-string&numeric-string}", $matches);
+	}
+};

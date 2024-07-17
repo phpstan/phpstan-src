@@ -655,6 +655,11 @@ final class RegexArrayShapeMatcher
 			return $node->getValueValue();
 		}
 
+		// literal "-" outside of a character class like '~^((\\d{1,6})-)$~'
+		if ($node->getId() === 'token' && $node->getValueToken() === 'range') {
+			return $node->getValueValue();
+		}
+
 		return null;
 	}
 

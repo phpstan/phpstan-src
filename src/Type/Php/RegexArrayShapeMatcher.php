@@ -7,17 +7,21 @@ use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\Exception\Exception;
 use Hoa\File\Read;
+use Nette\Utils\Strings;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -126,7 +130,6 @@ final class RegexArrayShapeMatcher
 			$trailingOptionals++;
 		}
 
-		$valueType = $this->getValueType($flags ?? 0);
 		$onlyOptionalTopLevelGroup = $this->getOnlyOptionalTopLevelGroup($groupList);
 		$onlyTopLevelAlternationId = $this->getOnlyTopLevelAlternationId($groupList);
 
@@ -141,7 +144,6 @@ final class RegexArrayShapeMatcher
 
 			$combiType = $this->buildArrayType(
 				$groupList,
-				$valueType,
 				$wasMatched,
 				$trailingOptionals,
 				$flags ?? 0,
@@ -179,7 +181,6 @@ final class RegexArrayShapeMatcher
 
 				$combiType = $this->buildArrayType(
 					$comboList,
-					$valueType,
 					$wasMatched,
 					$trailingOptionals,
 					$flags ?? 0,
@@ -202,7 +203,6 @@ final class RegexArrayShapeMatcher
 
 		return $this->buildArrayType(
 			$groupList,
-			$valueType,
 			$wasMatched,
 			$trailingOptionals,
 			$flags ?? 0,
@@ -264,7 +264,6 @@ final class RegexArrayShapeMatcher
 	 */
 	private function buildArrayType(
 		array $captureGroups,
-		Type $valueType,
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
 		int $flags,
@@ -275,14 +274,14 @@ final class RegexArrayShapeMatcher
 		// first item in matches contains the overall match.
 		$builder->setOffsetValueType(
 			$this->getKeyType(0),
-			TypeCombinator::removeNull($valueType),
+			TypeCombinator::removeNull($this->getValueType(new StringType(), $flags)),
 			!$wasMatched->yes(),
 		);
 
 		$countGroups = count($captureGroups);
 		$i = 0;
 		foreach ($captureGroups as $captureGroup) {
-			$groupValueType = $valueType;
+			$groupValueType = $this->getValueType($captureGroup->getType(), $flags);
 
 			if (!$wasMatched->yes()) {
 				$optional = true;
@@ -297,6 +296,10 @@ final class RegexArrayShapeMatcher
 				} else {
 					$optional = $captureGroup->isOptional();
 				}
+			}
+
+			if (!$optional && $captureGroup->isOptional() && !$this->containsUnmatchedAsNull($flags)) {
+				$groupValueType = TypeCombinator::union($groupValueType, new ConstantStringType(''));
 			}
 
 			if ($captureGroup->isNamed()) {
@@ -333,9 +336,10 @@ final class RegexArrayShapeMatcher
 		return new ConstantIntegerType($key);
 	}
 
-	private function getValueType(int $flags): Type
+	private function getValueType(Type $baseType, int $flags): Type
 	{
-		$valueType = new StringType();
+		$valueType = $baseType;
+
 		$offsetType = IntegerRangeType::fromInterval(0, null);
 		if ($this->containsUnmatchedAsNull($flags)) {
 			$valueType = TypeCombinator::addNull($valueType);
@@ -420,6 +424,7 @@ final class RegexArrayShapeMatcher
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
+				$this->createGroupType($ast),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
@@ -430,6 +435,7 @@ final class RegexArrayShapeMatcher
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
+				$this->createGroupType($ast),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#noncapturing') {
@@ -532,6 +538,131 @@ final class RegexArrayShapeMatcher
 		}
 
 		return [$min, $max];
+	}
+
+	private function createGroupType(TreeNode $group): Type
+	{
+		$isNonEmpty = TrinaryLogic::createMaybe();
+		$isNumeric = TrinaryLogic::createMaybe();
+		$inOptionalQuantification = false;
+
+		$this->walkGroupAst($group, $isNonEmpty, $isNumeric, $inOptionalQuantification);
+
+		$accessories = [];
+		if ($isNumeric->yes()) {
+			$accessories[] = new AccessoryNumericStringType();
+		} elseif ($isNonEmpty->yes()) {
+			$accessories[] = new AccessoryNonEmptyStringType();
+		}
+
+		if ($accessories !== []) {
+			$accessories[] = new StringType();
+			return new IntersectionType($accessories);
+		}
+
+		return new StringType();
+	}
+
+	private function walkGroupAst(TreeNode $ast, TrinaryLogic &$isNonEmpty, TrinaryLogic &$isNumeric, bool &$inOptionalQuantification): void
+	{
+		$children = $ast->getChildren();
+
+		if (
+			$ast->getId() === '#concatenation'
+			&& count($children) > 0
+		) {
+			$isNonEmpty = TrinaryLogic::createYes();
+		}
+
+		if ($ast->getId() === '#quantification') {
+			[$min] = $this->getQuantificationRange($ast);
+
+			if ($min === 0) {
+				$inOptionalQuantification = true;
+			}
+			if ($min >= 1) {
+				$isNonEmpty = TrinaryLogic::createYes();
+				$inOptionalQuantification = false;
+			}
+		}
+
+		if ($ast->getId() === 'token') {
+			$literalValue = $this->getLiteralValue($ast);
+			if ($literalValue !== null) {
+				if (Strings::match($literalValue, '/^\d+$/') === null) {
+					$isNumeric = TrinaryLogic::createNo();
+				}
+
+				if (!$inOptionalQuantification) {
+					$isNonEmpty = TrinaryLogic::createYes();
+				}
+			}
+
+			if ($ast->getValueToken() === 'character_type') {
+				if ($ast->getValueValue() === '\d') {
+					if ($isNumeric->maybe()) {
+						$isNumeric = TrinaryLogic::createYes();
+					}
+				} else {
+					$isNumeric = TrinaryLogic::createNo();
+				}
+
+				if (!$inOptionalQuantification) {
+					$isNonEmpty = TrinaryLogic::createYes();
+				}
+			}
+		}
+
+		if ($ast->getId() === '#range' || $ast->getId() === '#class') {
+			if ($isNumeric->maybe()) {
+				$allNumeric = null;
+				foreach ($children as $child) {
+					$literalValue = $this->getLiteralValue($child);
+
+					if ($literalValue === null) {
+						break;
+					}
+
+					if (Strings::match($literalValue, '/^\d+$/') === null) {
+						$allNumeric = false;
+						break;
+					}
+
+					$allNumeric = true;
+				}
+
+				if ($allNumeric === true) {
+					$isNumeric = TrinaryLogic::createYes();
+				}
+			}
+
+			if (!$inOptionalQuantification) {
+				$isNonEmpty = TrinaryLogic::createYes();
+			}
+		}
+
+		foreach ($children as $child) {
+			$this->walkGroupAst(
+				$child,
+				$isNonEmpty,
+				$isNumeric,
+				$inOptionalQuantification,
+			);
+		}
+	}
+
+	private function getLiteralValue(TreeNode $node): ?string
+	{
+		if ($node->getId() === 'token' && $node->getValueToken() === 'literal') {
+			return $node->getValueValue();
+		}
+
+		// literal "-" outside of a character class like '~^((\\d{1,6})-)$~'
+		if ($node->getId() === 'token' && $node->getValueToken() === 'range') {
+			return $node->getValueValue();
+		}
+
+		return null;
 	}
 
 	private function getPatternType(Expr $patternExpr, Scope $scope): Type

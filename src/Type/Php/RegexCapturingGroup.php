@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Php;
 
+use PHPStan\Type\Type;
+
 class RegexCapturingGroup
 {
 
@@ -13,6 +15,7 @@ class RegexCapturingGroup
 		private ?int $alternationId,
 		private bool $inOptionalQuantification,
 		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
+		private Type $type,
 	)
 	{
 	}
@@ -90,6 +93,11 @@ class RegexCapturingGroup
 	public function getName(): ?string
 	{
 		return $this->name;
+	}
+
+	public function getType(): Type
+	{
+		return $this->type;
 	}
 
 }

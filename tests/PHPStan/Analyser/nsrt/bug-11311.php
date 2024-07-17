@@ -181,3 +181,9 @@ function (string $s): void {
 		assertType('array{string, non-empty-string|null, non-empty-string}', $matches);
 	}
 };
+
+function (string $s): void {
+	if (preg_match('/(?<whitespace>\s*)(?<value>.*)/', $s, $matches, PREG_UNMATCHED_AS_NULL) === 1) {
+		assertType('array{0: string, whitespace: string, 1: string, value: string, 2: string}', $matches);
+	}
+};

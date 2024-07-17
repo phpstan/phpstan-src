@@ -588,8 +588,14 @@ final class RegexArrayShapeMatcher
 
 		if ($ast->getId() === 'token') {
 			$literalValue = $this->getLiteralValue($ast);
-			if ($literalValue !== null && Strings::match($literalValue, '/^\d+$/') === null) {
-				$isNumeric = TrinaryLogic::createNo();
+			if ($literalValue !== null) {
+				if (Strings::match($literalValue, '/^\d+$/') === null) {
+					$isNumeric = TrinaryLogic::createNo();
+				}
+
+				if (!$inOptionalQuantification) {
+					$isNonEmpty = TrinaryLogic::createYes();
+				}
 			}
 
 			if ($ast->getValueToken() === 'character_type') {
@@ -600,10 +606,10 @@ final class RegexArrayShapeMatcher
 				} else {
 					$isNumeric = TrinaryLogic::createNo();
 				}
-			}
 
-			if (!$inOptionalQuantification) {
-				$isNonEmpty = TrinaryLogic::createYes();
+				if (!$inOptionalQuantification) {
+					$isNonEmpty = TrinaryLogic::createYes();
+				}
 			}
 		}
 

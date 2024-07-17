@@ -87,13 +87,13 @@ final class ExponentiateHelper
 			if ($exponent->getMin() !== null) {
 				$min = self::pow($base->getValue(), $exponent->getMin());
 				if ($min === null) {
-					return null;
+					return new ErrorType();
 				}
 			}
 			if ($exponent->getMax() !== null) {
 				$max = self::pow($base->getValue(), $exponent->getMax());
 				if ($max === null) {
-					return null;
+					return new ErrorType();
 				}
 			}
 
@@ -104,9 +104,8 @@ final class ExponentiateHelper
 
 		if ($exponent instanceof ConstantScalarType) {
 			$result = self::pow($base->getValue(), $exponent->getValue());
-
 			if ($result === null) {
-				return null;
+				return new ErrorType();
 			}
 
 			if (is_int($result)) {

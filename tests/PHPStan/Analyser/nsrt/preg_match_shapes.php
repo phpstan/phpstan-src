@@ -19,9 +19,9 @@ function doMatch(string $s): void {
 	assertType('array{}|array{string, non-empty-string}', $matches);
 
 	if (preg_match('/Price: (£|€)(\d+)/i', $s, $matches)) {
-		assertType('array{string, non-empty-string, non-empty-string&numeric-string}', $matches);
+		assertType('array{string, non-empty-string, numeric-string}', $matches);
 	}
-	assertType('array{}|array{string, non-empty-string, non-empty-string&numeric-string}', $matches);
+	assertType('array{}|array{string, non-empty-string, numeric-string}', $matches);
 
 	if (preg_match('  /Price: (£|€)\d+/ i u', $s, $matches)) {
 		assertType('array{string, non-empty-string}', $matches);
@@ -91,16 +91,16 @@ function doMatch(string $s): void {
 
 function doNonCapturingGroup(string $s): void {
 	if (preg_match('/Price: (?:£|€)(\d+)/', $s, $matches)) {
-		assertType('array{string, non-empty-string&numeric-string}', $matches);
+		assertType('array{string, numeric-string}', $matches);
 	}
-	assertType('array{}|array{string, non-empty-string&numeric-string}', $matches);
+	assertType('array{}|array{string, numeric-string}', $matches);
 }
 
 function doNamedSubpattern(string $s): void {
 	if (preg_match('/\w-(?P<num>\d+)-(\w)/', $s, $matches)) {
-		assertType('array{0: string, num: non-empty-string&numeric-string, 1: non-empty-string&numeric-string, 2: non-empty-string}', $matches);
+		assertType('array{0: string, num: numeric-string, 1: numeric-string, 2: non-empty-string}', $matches);
 	}
-	assertType('array{}|array{0: string, num: non-empty-string&numeric-string, 1: non-empty-string&numeric-string, 2: non-empty-string}', $matches);
+	assertType('array{}|array{0: string, num: numeric-string, 1: numeric-string, 2: non-empty-string}', $matches);
 
 	if (preg_match('/^(?<name>\S+::\S+)/', $s, $matches)) {
 		assertType('array{0: string, name: non-empty-string, 1: non-empty-string}', $matches);
@@ -159,9 +159,9 @@ function hoaBug31(string $s): void {
 	assertType('array{}|array{string, non-empty-string}', $matches);
 
 	if (preg_match('/\w-(\d+)-(\w)/', $s, $matches)) {
-		assertType('array{string, non-empty-string&numeric-string, non-empty-string}', $matches);
+		assertType('array{string, numeric-string, non-empty-string}', $matches);
 	}
-	assertType('array{}|array{string, non-empty-string&numeric-string, non-empty-string}', $matches);
+	assertType('array{}|array{string, numeric-string, non-empty-string}', $matches);
 }
 
 // https://github.com/phpstan/phpstan/issues/10855#issuecomment-2044323638
@@ -235,9 +235,9 @@ function testUnionPattern(string $s): void
 		$pattern = '/Price: (\d+)(\d+)(\d+)/';
 	}
 	if (preg_match($pattern, $s, $matches)) {
-		assertType('array{string, non-empty-string&numeric-string, non-empty-string&numeric-string, non-empty-string&numeric-string}|array{string, non-empty-string&numeric-string}', $matches);
+		assertType('array{string, numeric-string, numeric-string, numeric-string}|array{string, numeric-string}', $matches);
 	}
-	assertType('array{}|array{string, non-empty-string&numeric-string, non-empty-string&numeric-string, non-empty-string&numeric-string}|array{string, non-empty-string&numeric-string}', $matches);
+	assertType('array{}|array{string, numeric-string, numeric-string, numeric-string}|array{string, numeric-string}', $matches);
 }
 
 function doFoo(string $row): void
@@ -259,7 +259,7 @@ function doFoo2(string $row): void
 		return;
 	}
 
-	assertType("array{0: string, 1: string, branchCode: ''|(non-empty-string&numeric-string), 2: ''|(non-empty-string&numeric-string), accountNumber: non-empty-string&numeric-string, 3: non-empty-string&numeric-string, bankCode: non-empty-string&numeric-string, 4: non-empty-string&numeric-string}", $matches);
+	assertType("array{0: string, 1: string, branchCode: ''|numeric-string, 2: ''|numeric-string, accountNumber: numeric-string, 3: numeric-string, bankCode: numeric-string, 4: numeric-string}", $matches);
 }
 
 function doFoo3(string $row): void
@@ -268,42 +268,42 @@ function doFoo3(string $row): void
 		return;
 	}
 
-	assertType('array{string, non-empty-string, non-empty-string, non-empty-string&numeric-string, non-empty-string&numeric-string, non-empty-string&numeric-string, non-empty-string&numeric-string}', $matches);
+	assertType('array{string, non-empty-string, non-empty-string, numeric-string, numeric-string, numeric-string, numeric-string}', $matches);
 }
 
 function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)(\d+)(\s+))?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string, non-empty-string&numeric-string, non-empty-string&numeric-string, non-empty-string}|array{string}', $matches);
+	assertType('array{string, non-empty-string, numeric-string, numeric-string, non-empty-string}|array{string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+))?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string, non-empty-string&numeric-string}|array{string}', $matches);
+	assertType('array{string, non-empty-string, numeric-string}|array{string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)?)d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: non-empty-string, 2?: non-empty-string&numeric-string}', $matches);
+	assertType('array{0: string, 1: non-empty-string, 2?: numeric-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)?)?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1?: non-empty-string, 2?: non-empty-string&numeric-string}', $matches);
+	assertType('array{0: string, 1?: non-empty-string, 2?: numeric-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+))d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string, non-empty-string&numeric-string}', $matches);
+	assertType('array{string, non-empty-string, numeric-string}', $matches);
 };
 
 function (string $size): void {
@@ -317,14 +317,14 @@ function (string $size): void {
 	if (preg_match('~^(?:(\\d+)x(\\d+)|(\\d+)|x(\\d+))$~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: non-empty-string&numeric-string, 2: non-empty-string&numeric-string, 3?: non-empty-string&numeric-string, 4?: non-empty-string&numeric-string}', $matches);
+	assertType('array{0: string, 1: numeric-string, 2: numeric-string, 3?: numeric-string, 4?: numeric-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^(?:(\\d+)x(\\d+)|(\\d+)|x(\\d+))?$~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: non-empty-string&numeric-string, 2: non-empty-string&numeric-string, 3?: non-empty-string&numeric-string, 4?: non-empty-string&numeric-string}|array{string}', $matches);
+	assertType('array{0: string, 1: numeric-string, 2: numeric-string, 3?: numeric-string, 4?: numeric-string}|array{string}', $matches);
 };
 
 function (string $size): void {
@@ -418,11 +418,11 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('/' . preg_quote($s, '/') . '(\d)/', $s, $matches)) {
-		assertType('array{string, non-empty-string&numeric-string}', $matches);
+		assertType('array{string, numeric-string}', $matches);
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array{string, non-empty-string&numeric-string}', $matches);
+	assertType('array{}|array{string, numeric-string}', $matches);
 };
 
 function (string $s): void {
@@ -451,19 +451,19 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('~^((\\d{1,6})-)$~', $s, $matches) === 1) {
-		assertType("array{string, non-empty-string, non-empty-string&numeric-string}", $matches);
+		assertType("array{string, non-empty-string, numeric-string}", $matches);
 	}
 };
 
 function (string $s): void {
 	if (preg_match('~^((\\d{1,6}).)$~', $s, $matches) === 1) {
-		assertType("array{string, non-empty-string, non-empty-string&numeric-string}", $matches);
+		assertType("array{string, non-empty-string, numeric-string}", $matches);
 	}
 };
 
 function (string $s): void {
 	if (preg_match('~^([157])$~', $s, $matches) === 1) {
-		assertType("array{string, non-empty-string&numeric-string}", $matches);
+		assertType("array{string, numeric-string}", $matches);
 	}
 };
 

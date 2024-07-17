@@ -551,9 +551,7 @@ final class RegexArrayShapeMatcher
 		$accessories = [];
 		if ($isNumeric->yes()) {
 			$accessories[] = new AccessoryNumericStringType();
-		}
-
-		if ($isNonEmpty->yes()) {
+		} elseif ($isNonEmpty->yes()) {
 			$accessories[] = new AccessoryNonEmptyStringType();
 		}
 

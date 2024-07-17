@@ -7,7 +7,7 @@ use function PHPStan\Testing\assertType;
 function doFoo(string $s) {
 	if (1 === preg_match('/(?<major>\d+)\.(?<minor>\d+)(?:\.(?<patch>\d+))?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
 
-		assertType('array{0: string, major: non-empty-string&numeric-string, 1: non-empty-string&numeric-string, minor: non-empty-string&numeric-string, 2: non-empty-string&numeric-string, patch: (non-empty-string&numeric-string)|null, 3: (non-empty-string&numeric-string)|null}', $matches);
+		assertType('array{0: string, major: numeric-string, 1: numeric-string, minor: numeric-string, 2: numeric-string, patch: numeric-string|null, 3: numeric-string|null}', $matches);
 	}
 }
 
@@ -84,42 +84,42 @@ function (string $size): void {
 	if (preg_match('/ab(\d){2,4}xx([0-9])?e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string&numeric-string, (non-empty-string&numeric-string)|null}', $matches);
+	assertType('array{string, numeric-string, numeric-string|null}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('/a(\dAB){2}b(\d){2,4}([1-5])([1-5a-z])e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string, non-empty-string&numeric-string, non-empty-string&numeric-string, non-empty-string}', $matches);
+	assertType('array{string, non-empty-string, numeric-string, numeric-string, non-empty-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('/ab(ab(\d)){2,4}xx([0-9][a-c])?e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string, non-empty-string&numeric-string, non-empty-string|null}', $matches);
+	assertType('array{string, non-empty-string, numeric-string, non-empty-string|null}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('/ab(\d+)e(\d?)/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string&numeric-string, numeric-string}', $matches);
+	assertType('array{string, numeric-string, numeric-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('/ab(?P<num>\d+)e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, num: non-empty-string&numeric-string, 1: non-empty-string&numeric-string}', $matches);
+	assertType('array{0: string, num: numeric-string, 1: numeric-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('/ab(\d\d)/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string&numeric-string}', $matches);
+	assertType('array{string, numeric-string}', $matches);
 };
 
 function (string $size): void {
@@ -161,12 +161,12 @@ function (string $size): void {
 	if (preg_match('/ab(\d+\d?)e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string&numeric-string}', $matches);
+	assertType('array{string, numeric-string}', $matches);
 };
 
 function (string $s): void {
 	if (preg_match('/Price: ([2-5])/i', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType('array{string, non-empty-string&numeric-string}', $matches);
+		assertType('array{string, numeric-string}', $matches);
 	}
 };
 

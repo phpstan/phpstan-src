@@ -558,10 +558,8 @@ final class RegexArrayShapeMatcher
 		}
 
 		if ($accessories !== []) {
-			return new IntersectionType([
-				new StringType(),
-				...$accessories,
-			]);
+			$accessories[] = new StringType();
+			return new IntersectionType($accessories);
 		}
 
 		return new StringType();

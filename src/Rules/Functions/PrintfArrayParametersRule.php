@@ -11,7 +11,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
@@ -104,21 +103,17 @@ class PrintfArrayParametersRule implements Rule
 			if ($placeHoldersCount instanceof IntegerRangeType) {
 				$placeholders = $this->getIntegerRangeAsString($placeHoldersCount);
 				$singlePlaceholder = false;
-			} elseif ($placeHoldersCount instanceof ConstantIntegerType) {
+			} else {
 				$placeholders = $placeHoldersCount->getValue();
 				$singlePlaceholder = $placeholders === 1;
-			} else {
-				throw new ShouldNotHappenException();
 			}
 
 			if ($formatArgsCount instanceof IntegerRangeType) {
 				$values = $this->getIntegerRangeAsString($formatArgsCount);
 				$singleValue = false;
-			} elseif ($formatArgsCount instanceof ConstantIntegerType) {
+			} else {
 				$values = $formatArgsCount->getValue();
 				$singleValue = $values === 1;
-			} else {
-				throw new ShouldNotHappenException();
 			}
 
 			return [

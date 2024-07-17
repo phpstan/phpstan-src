@@ -98,7 +98,7 @@ function (string $size): void {
 	if (preg_match('/ab(ab(\d)){2,4}xx([0-9][a-c])?e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: non-empty-string, 2: non-empty-string&numeric-string, 3?: non-empty-string}', $matches);
+	assertType('array{string, non-empty-string, non-empty-string&numeric-string, non-empty-string|null}', $matches);
 };
 
 function (string $size): void {
@@ -154,7 +154,7 @@ function (string $size): void {
 	if (preg_match('/ab(\S)?e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1?: non-empty-string}', $matches);
+	assertType('array{string, non-empty-string|null}', $matches);
 };
 
 function (string $size): void {

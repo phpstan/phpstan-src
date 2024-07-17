@@ -16,7 +16,6 @@ use function count;
 use function in_array;
 use function max;
 use function min;
-use function PHPStan\dumpType;
 use function sprintf;
 
 /**

@@ -303,5 +303,3 @@ services:
 
 	-
 		class: PHPStan\Rules\Functions\PrintfArrayParametersRule
-	-
-		class: PHPStan\Rules\Functions\PrintfHelper

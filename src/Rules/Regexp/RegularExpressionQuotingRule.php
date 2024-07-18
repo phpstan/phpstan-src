@@ -11,6 +11,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
+use function array_merge;
 use function count;
 use function in_array;
 use function sprintf;
@@ -84,7 +85,7 @@ class RegularExpressionQuotingRule implements Rule
 				$errors[] = $pregError;
 			}
 		} elseif ($concat->left instanceof Concat) {
-			$errors += $this->validateQuoteDelimiters($concat->left, $scope, $patternDelimiters);
+			$errors = array_merge($errors, $this->validateQuoteDelimiters($concat->left, $scope, $patternDelimiters));
 		}
 
 		if (
@@ -97,7 +98,7 @@ class RegularExpressionQuotingRule implements Rule
 				$errors[] = $pregError;
 			}
 		} elseif ($concat->right instanceof Concat) {
-			$errors += $this->validateQuoteDelimiters($concat->right, $scope, $patternDelimiters);
+			$errors = array_merge($errors, $this->validateQuoteDelimiters($concat->right, $scope, $patternDelimiters));
 		}
 
 		return $errors;

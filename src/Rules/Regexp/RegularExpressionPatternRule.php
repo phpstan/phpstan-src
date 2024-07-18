@@ -63,46 +63,44 @@ class RegularExpressionPatternRule implements Rule
 
 		$patternStrings = [];
 
-		foreach ($patternType->getConstantStrings() as $constantStringType) {
-			if (
-				!in_array($functionName, [
-					'preg_match',
-					'preg_match_all',
-					'preg_split',
-					'preg_grep',
-					'preg_replace',
-					'preg_replace_callback',
-					'preg_filter',
-				], true)
-			) {
-				continue;
+		if (
+			in_array($functionName, [
+				'preg_match',
+				'preg_match_all',
+				'preg_split',
+				'preg_grep',
+				'preg_replace',
+				'preg_replace_callback',
+				'preg_filter',
+			], true)
+		) {
+			foreach ($patternType->getConstantStrings() as $constantStringType) {
+				$patternStrings[] = $constantStringType->getValue();
 			}
-
-			$patternStrings[] = $constantStringType->getValue();
 		}
 
-		foreach ($patternType->getConstantArrays() as $constantArrayType) {
-			if (
-				in_array($functionName, [
-					'preg_replace',
-					'preg_replace_callback',
-					'preg_filter',
-				], true)
-			) {
+		if (
+			in_array($functionName, [
+				'preg_replace',
+				'preg_replace_callback',
+				'preg_filter',
+			], true)
+		) {
+			foreach ($patternType->getConstantArrays() as $constantArrayType) {
 				foreach ($constantArrayType->getValueTypes() as $arrayKeyType) {
 					foreach ($arrayKeyType->getConstantStrings() as $constantString) {
 						$patternStrings[] = $constantString->getValue();
 					}
 				}
 			}
+		}
 
-			if ($functionName !== 'preg_replace_callback_array') {
-				continue;
-			}
-
-			foreach ($constantArrayType->getKeyTypes() as $arrayKeyType) {
-				foreach ($arrayKeyType->getConstantStrings() as $constantString) {
-					$patternStrings[] = $constantString->getValue();
+		if ($functionName === 'preg_replace_callback_array') {
+			foreach ($patternType->getConstantArrays() as $constantArrayType) {
+				foreach ($constantArrayType->getKeyTypes() as $arrayKeyType) {
+					foreach ($arrayKeyType->getConstantStrings() as $constantString) {
+						$patternStrings[] = $constantString->getValue();
+					}
 				}
 			}
 		}

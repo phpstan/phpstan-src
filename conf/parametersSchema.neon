@@ -88,6 +88,7 @@ parametersSchema:
 		uselessReturnValue: bool()
 		printfArrayParameters: bool()
 		preciseMissingReturn: bool()
+		validatePregQuote: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

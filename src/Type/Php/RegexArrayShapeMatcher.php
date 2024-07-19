@@ -625,33 +625,6 @@ final class RegexArrayShapeMatcher
 			}
 		}
 
-		if ($ast->getId() === '#range' || $ast->getId() === '#class') {
-			if ($isNumeric->maybe()) {
-				$allNumeric = null;
-				foreach ($children as $child) {
-					$literalValue = $this->getLiteralValue($child);
-
-					if ($literalValue === null) {
-						break;
-					}
-
-					if (Strings::match($literalValue, '/^\d+$/') === null) {
-						break;
-					}
-
-					$allNumeric = true;
-				}
-
-				if ($allNumeric === true) {
-					$isNumeric = TrinaryLogic::createYes();
-				}
-			}
-
-			if (!$inOptionalQuantification) {
-				$isNonEmpty = TrinaryLogic::createYes();
-			}
-		}
-
 		foreach ($children as $child) {
 			$this->walkGroupAst(
 				$child,

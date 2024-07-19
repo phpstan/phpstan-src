@@ -46,13 +46,23 @@
 %skip   nl                       \n
 
 // Character classes.
-%token  negative_class_          \[\^
-%token  class_                   \[
-%token _class                    \]
-%token  range                    \-
+%token  negative_class_          \[\^               -> class
+%token  class_                   \[                 -> class
+%token class:posix_class         \[:\^?[a-z]+:\]
+%token class:class_              \[
+%token class:_class_literal      (?<=[^\\]\[|[^\\]\[\^)\]
+%token class:_class              \]                 -> default
+%token class:range               \-
+%token class:escaped_end_class   \\\]
+// taken over from literals but class:character has \b support on top (backspace in character classes)
+%token class:character           \\([aefnrtb]|c[\x00-\x7f])
+%token class:dynamic_character   \\([0-7]{3}|x[0-9a-zA-Z]{2}|x{[0-9a-zA-Z]+})
+%token class:character_type      \\([CdDhHNRsSvVwWX]|[pP]{[^}]+})
+%token class:literal             \\.|.
 
 // Internal options.
-%token  internal_option          \(\?[\-+]?[imsx]\)
+// See https://www.regular-expressions.info/refmodifiers.html
+%token  internal_option          \(\?([imsxnJUX^]|xx)?-?([imsxnJUX^]|xx)\)
 
 // Lookahead and lookbehind assertions.
 %token  lookahead_               \(\?=
@@ -77,6 +87,7 @@
 %token  nc:_named_capturing      >                  -> default
 %token  nc:capturing_name        .+?(?=(?<!\\)>)
 %token  non_capturing_           \(\?:
+%token  non_capturing_internal_option \(\?([imsxnJUX^]|xx)?-?([imsxnJUX^]|xx):
 %token  non_capturing_reset_     \(\?\|
 %token  atomic_group_            \(\?>
 %token  capturing_               \(
@@ -168,7 +179,7 @@ quantifier:
         ::negative_class_:: #negativeclass
       | ::class_::
     )
-    ( <class_> | range() | literal() )+
+    ( <range> | <_class_literal> )? ( <posix_class> | <class_> | range() | literal() | <escaped_end_class> )* <range>?
     ::_class::
 
 #range:
@@ -183,15 +194,18 @@ simple:
   | (
         ::named_capturing_:: <capturing_name> ::_named_capturing:: #namedcapturing
       | ::non_capturing_:: #noncapturing
+      | non_capturing_internal_options() #noncapturing
       | ::non_capturing_reset_:: #noncapturingreset
       | ::atomic_group_:: #atomicgroup
       | ::capturing_::
     )
     alternation() ::_capturing::
 
+non_capturing_internal_options:
+    <non_capturing_internal_option>
+
 literal:
     <character>
-  | <range>
   | <dynamic_character>
   | <character_type>
   | <anchor>

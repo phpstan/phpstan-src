@@ -11,3 +11,11 @@ function doOffsetCaptureWithUnmatchedNull(string $s): void {
 	}
 	assertType('array{}|array{array{string|null, int<-1, max>}, array{non-empty-string|null, int<-1, max>}, array{non-empty-string|null, int<-1, max>}, array{non-empty-string|null, int<-1, max>}}', $matches);
 }
+
+function doNonAutoCapturingModifier(string $s): void {
+	if (preg_match('/(?n)(\d+)/', $s, $matches)) {
+		// should be assertType('array{string}', $matches);
+		assertType('array{string, numeric-string}', $matches);
+	}
+	assertType('array{}|array{string, numeric-string}', $matches);
+}

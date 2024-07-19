@@ -7,6 +7,7 @@ use Hoa\Compiler\Llk\Parser;
 use Hoa\Compiler\Llk\TreeNode;
 use Hoa\Exception\Exception;
 use Hoa\File\Read;
+use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
@@ -31,7 +32,11 @@ use function count;
 use function in_array;
 use function is_int;
 use function is_string;
+use function rtrim;
 use function sscanf;
+use function str_replace;
+use function strlen;
+use function substr;
 use const PREG_OFFSET_CAPTURE;
 use const PREG_UNMATCHED_AS_NULL;
 
@@ -376,6 +381,13 @@ final class RegexArrayShapeMatcher
 		}
 
 		try {
+			Strings::match('', $regex);
+		} catch (RegexpException) {
+			// pattern is invalid, so let the RegularExpressionPatternRule report it
+			return null;
+		}
+
+		try {
 			$ast = self::$parser->parse($regex);
 		} catch (Exception) {
 			return null;
@@ -516,25 +528,37 @@ final class RegexArrayShapeMatcher
 		$lastChild = $node->getChild($node->getChildrenNumber() - 1);
 		$value = $lastChild->getValue();
 
-		if ($value['token'] === 'n_to_m') {
-			if (sscanf($value['value'], '{%d,%d}', $n, $m) !== 2 || !is_int($n) || !is_int($m)) {
+		// normalize away possessive and lazy quantifier-modifiers
+		$token = str_replace(['_possessive', '_lazy'], '', $value['token']);
+		$value = rtrim($value['value'], '+?');
+
+		if ($token === 'n_to_m') {
+			if (sscanf($value, '{%d,%d}', $n, $m) !== 2 || !is_int($n) || !is_int($m)) {
 				throw new ShouldNotHappenException();
 			}
 
 			$min = $n;
 			$max = $m;
-		} elseif ($value['token'] === 'exactly_n') {
-			if (sscanf($value['value'], '{%d}', $n) !== 1 || !is_int($n)) {
+		} elseif ($token === 'n_or_more') {
+			if (sscanf($value, '{%d,}', $n) !== 1 || !is_int($n)) {
+				throw new ShouldNotHappenException();
+			}
+
+			$min = $n;
+		} elseif ($token === 'exactly_n') {
+			if (sscanf($value, '{%d}', $n) !== 1 || !is_int($n)) {
 				throw new ShouldNotHappenException();
 			}
 
 			$min = $n;
 			$max = $n;
-		} elseif ($value['token'] === 'zero_or_one') {
+		} elseif ($token === 'zero_or_one') {
 			$min = 0;
 			$max = 1;
-		} elseif ($value['token'] === 'zero_or_more') {
+		} elseif ($token === 'zero_or_more') {
 			$min = 0;
+		} elseif ($token === 'one_or_more') {
+			$min = 1;
 		}
 
 		return [$min, $max];
@@ -591,20 +615,8 @@ final class RegexArrayShapeMatcher
 			if ($literalValue !== null) {
 				if (Strings::match($literalValue, '/^\d+$/') === null) {
 					$isNumeric = TrinaryLogic::createNo();
-				}
-
-				if (!$inOptionalQuantification) {
-					$isNonEmpty = TrinaryLogic::createYes();
-				}
-			}
-
-			if ($ast->getValueToken() === 'character_type') {
-				if ($ast->getValueValue() === '\d') {
-					if ($isNumeric->maybe()) {
-						$isNumeric = TrinaryLogic::createYes();
-					}
-				} else {
-					$isNumeric = TrinaryLogic::createNo();
+				} elseif ($isNumeric->maybe()) {
+					$isNumeric = TrinaryLogic::createYes();
 				}
 
 				if (!$inOptionalQuantification) {
@@ -613,32 +625,11 @@ final class RegexArrayShapeMatcher
 			}
 		}
 
-		if ($ast->getId() === '#range' || $ast->getId() === '#class') {
-			if ($isNumeric->maybe()) {
-				$allNumeric = null;
-				foreach ($children as $child) {
-					$literalValue = $this->getLiteralValue($child);
-
-					if ($literalValue === null) {
-						break;
-					}
-
-					if (Strings::match($literalValue, '/^\d+$/') === null) {
-						$allNumeric = false;
-						break;
-					}
-
-					$allNumeric = true;
-				}
-
-				if ($allNumeric === true) {
-					$isNumeric = TrinaryLogic::createYes();
-				}
-			}
-
-			if (!$inOptionalQuantification) {
-				$isNonEmpty = TrinaryLogic::createYes();
-			}
+		// [^0-9] should not parse as numeric-string, and [^list-everything-but-numbers] is technically
+		// doable but really silly compared to just \d so we can safely assume the string is not numeric
+		// for negative classes
+		if ($ast->getId() === '#negativeclass') {
+			$isNumeric = TrinaryLogic::createNo();
 		}
 
 		foreach ($children as $child) {
@@ -653,13 +644,65 @@ final class RegexArrayShapeMatcher
 
 	private function getLiteralValue(TreeNode $node): ?string
 	{
-		if ($node->getId() === 'token' && $node->getValueToken() === 'literal') {
-			return $node->getValueValue();
+		if ($node->getId() !== 'token') {
+			return null;
 		}
 
-		// literal "-" outside of a character class like '~^((\\d{1,6})-)$~'
-		if ($node->getId() === 'token' && $node->getValueToken() === 'range') {
-			return $node->getValueValue();
+		// token is the token name from grammar without the namespace so literal and class:literal are both called literal here
+		$token = $node->getValueToken();
+		$value = $node->getValueValue();
+
+		if (in_array($token, ['literal', 'escaped_end_class'], true)) {
+			if (strlen($node->getValueValue()) > 1 && $value[0] === '\\') {
+				return substr($value, 1);
+			}
+
+			return $value;
+		}
+
+		// literal "-" in front/back of a character class like '[-a-z]' or '[abc-]', not forming a range
+		if ($token === 'range') {
+			return $value;
+		}
+
+		// literal "[" or "]" inside character classes '[[]' or '[]]'
+		if (in_array($token, ['class_', '_class_literal'], true)) {
+			return $value;
+		}
+
+		// character escape sequences, just return a fixed string
+		if (in_array($token, ['character', 'dynamic_character', 'character_type'], true)) {
+			if ($token === 'character_type' && $value === '\d') {
+				return '0';
+			}
+
+			return $value;
+		}
+
+		// [:digit:] and the like, more support coming later
+		if ($token === 'posix_class') {
+			if ($value === '[:digit:]') {
+				return '0';
+			}
+			if (in_array($value, ['[:alpha:]', '[:alnum:]', '[:upper:]', '[:lower:]', '[:word:]', '[:ascii:]', '[:print:]', '[:xdigit:]', '[:graph:]'], true)) {
+				return 'a';
+			}
+			if ($value === '[:blank:]') {
+				return " \t";
+			}
+			if ($value === '[:cntrl:]') {
+				return "\x00\x1F";
+			}
+			if ($value === '[:space:]') {
+				return " \t\r\n\v\f";
+			}
+			if ($value === '[:punct:]') {
+				return '!"#$%&\'()*+,\-./:;<=>?@[\]^_`{|}~';
+			}
+		}
+
+		if ($token === 'anchor' || $token === 'match_point_reset') {
+			return '';
 		}
 
 		return null;

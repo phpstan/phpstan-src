@@ -625,6 +625,13 @@ final class RegexArrayShapeMatcher
 			}
 		}
 
+		// [^0-9] should not parse as numeric-string, and [^list-everything-but-numbers] is technically
+		// doable but really silly compared to just \d so we can safely assume the string is not numeric
+		// for negative classes
+		if ($ast->getId() === '#negativeclass') {
+			$isNumeric = TrinaryLogic::createNo();
+		}
+
 		foreach ($children as $child) {
 			$this->walkGroupAst(
 				$child,

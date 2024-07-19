@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Php;
 
-use ArgumentCountError;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;

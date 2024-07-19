@@ -108,9 +108,12 @@ class Foo {
 		assertType("'foo'", sprintf('foo'));
 		assertType("string", sprintf(...$arr));
 		assertType("string", sprintf('%s', ...$arr));
+
+		// empty array only works as long as no placeholder in the pattern
 		assertType('string', vsprintf($nonFalsey, []));
 		assertType('string', vsprintf($nonFalsey, []));
-		assertType("non-falsy-string", vsprintf('foo', [])); // should be 'foo'
+		assertType("string", vsprintf('foo', []));
+
 		assertType("string", vsprintf('%s', ...$arr));
 		assertType("string", vsprintf(...$arr));
 		assertType('non-falsy-string', vsprintf('%sAA%s', [$s, $s]));

@@ -190,7 +190,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$dummyValues = array_fill(0, $valuesCount, '');
-		if ($dummyValues === false) { // @phpstan-ignore identical.alwaysFalse (PHP7.2 compat)
+		if ($dummyValues === []) {
 			return null;
 		}
 

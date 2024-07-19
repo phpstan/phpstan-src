@@ -157,4 +157,14 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11361(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11361-pure.php'], [
+			[
+				'Impure call to a Closure with by-ref parameter in pure function Bug11361Pure\foo().',
+				14,
+			],
+		]);
+	}
+
 }

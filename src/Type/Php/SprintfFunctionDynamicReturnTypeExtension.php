@@ -37,8 +37,6 @@ use function vsprintf;
 class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	private const MAX_INTERPOLATION_RETRIES = 5;
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return in_array($functionReflection->getName(), ['sprintf', 'vsprintf'], true);
@@ -165,6 +163,9 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		return $returnType;
 	}
 
+	/**
+	 * Detect constant strings in the format which neither depend on placeholders nor on given value arguments.
+	 */
 	private function getFormatConstantParts(
 		string $format,
 		FunctionReflection $functionReflection,
@@ -196,8 +197,6 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 				return null;
 			}
 			return new ConstantStringType($formatted);
-		} catch (ArgumentCountError) {
-			return null;
 		} catch (Throwable) {
 			return null;
 		}

@@ -515,4 +515,7 @@ function bug11323(string $s): void {
 	if (preg_match('{(x?([1-4])\d)}', $s, $matches)) {
 		assertType('array{string, non-empty-string, numeric-string}', $matches);
 	}
+	if (preg_match('{([^1-4])}', $s, $matches)) {
+		assertType('array{string, non-empty-string}', $matches);
+	}
 }

@@ -1527,6 +1527,20 @@ class MutatingScope implements Scope
 				}
 			}
 
+			foreach ($parameters as $parameter) {
+				if ($parameter->passedByReference()->no()) {
+					continue;
+				}
+
+				$impurePoints[] = new ImpurePoint(
+					$this,
+					$node,
+					'functionCall',
+					'call to a Closure with by-ref parameter',
+					true,
+				);
+			}
+
 			$throwPointsForClosureType = array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? SimpleThrowPoint::createExplicit($throwPoint->getType(), $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(), $throwPoints);
 			$impurePointsForClosureType = array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints);
 

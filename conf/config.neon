@@ -91,6 +91,7 @@ parameters:
 		checkParameterCastableToStringFunctions: false
 		narrowPregMatches: false
 		uselessReturnValue: false
+		printfArrayParameters: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

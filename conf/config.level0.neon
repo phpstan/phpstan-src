@@ -26,6 +26,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.magicConstantOutOfContext%
 	PHPStan\Rules\Functions\UselessFunctionReturnValueRule:
 		phpstan.rules.rule: %featureToggles.uselessReturnValue%
+	PHPStan\Rules\Functions\PrintfArrayParametersRule:
+		phpstan.rules.rule: %featureToggles.printfArrayParameters%
 
 rules:
 	- PHPStan\Rules\Api\ApiInstantiationRule
@@ -298,3 +300,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Functions\UselessFunctionReturnValueRule
+
+	-
+		class: PHPStan\Rules\Functions\PrintfArrayParametersRule

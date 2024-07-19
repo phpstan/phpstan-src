@@ -8,7 +8,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -57,20 +56,8 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			return $constantType;
 		}
 
-		$isNonEmpty = TrinaryLogic::createMaybe();
-		$isNonFalsy = TrinaryLogic::createMaybe();
-
 		$formatType = $scope->getType($args[0]->value);
 		$formatStrings = $formatType->getConstantStrings();
-		if (
-			count($formatStrings) === 0
-			&& $functionReflection->getName() === 'sprintf'
-			&& count($args) === 2
-			&& $formatType->isNonEmptyString()->yes()
-			&& $scope->getType($args[1]->value)->isNonEmptyString()->yes()
-		) {
-			$isNonEmpty = TrinaryLogic::createYes();
-		}
 
 		$singlePlaceholderEarlyReturn = null;
 		$allPatternsNonEmpty = count($formatStrings) !== 0;
@@ -138,19 +125,23 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			return $singlePlaceholderEarlyReturn;
 		}
 
-		if ($allPatternsNonFalsy) {
-			$isNonFalsy = TrinaryLogic::createYes();
-		}
-		if ($allPatternsNonEmpty) {
-			$isNonEmpty = TrinaryLogic::createYes();
+		$isNonEmpty = $allPatternsNonEmpty;
+		if (
+			count($formatStrings) === 0
+			&& $functionReflection->getName() === 'sprintf'
+			&& count($args) === 2
+			&& $formatType->isNonEmptyString()->yes()
+			&& $scope->getType($args[1]->value)->isNonEmptyString()->yes()
+		) {
+			$isNonEmpty = true;
 		}
 
-		if ($isNonFalsy->yes()) {
+		if ($allPatternsNonFalsy) {
 			$returnType = new IntersectionType([
 				new StringType(),
 				new AccessoryNonFalsyStringType(),
 			]);
-		} elseif ($isNonEmpty->yes()) {
+		} elseif ($isNonEmpty) {
 			$returnType = new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),

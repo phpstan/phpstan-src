@@ -180,10 +180,10 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			return null;
 		}
 
-		$dummyValues = array_fill(0, $valuesCount, '');
-		if ($dummyValues === []) {
+		if ($valuesCount <= 0) {
 			return null;
 		}
+		$dummyValues = array_fill(0, $valuesCount, '');
 
 		try {
 			$formatted = @vsprintf($format, $dummyValues);

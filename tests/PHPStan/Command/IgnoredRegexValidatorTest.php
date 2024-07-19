@@ -126,7 +126,7 @@ class IgnoredRegexValidatorTest extends PHPStanTestCase
 		bool $expectAllErrorsIgnored,
 	): void
 	{
-		$grammar = new Read('hoa://Library/Regex/Grammar.pp');
+		$grammar = new Read(__DIR__ . '/../../../resources/RegexGrammar.pp');
 		$parser = Llk::load($grammar);
 		$validator = new IgnoredRegexValidator($parser, self::getContainer()->getByType(TypeStringResolver::class));
 

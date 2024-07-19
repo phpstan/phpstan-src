@@ -56,7 +56,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 		}
 
 		/** @throws void */
-		$parser = Llk::load(new Read('hoa://Library/Regex/Grammar.pp'));
+		$parser = Llk::load(new Read(__DIR__ . '/../../resources/RegexGrammar.pp'));
 		$reflectionProvider = new DummyReflectionProvider();
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
 		ReflectionProviderStaticAccessor::registerInstance($reflectionProvider);

@@ -25,7 +25,6 @@ return $config
 	->addPathToScan(__DIR__ . '/../bin', true)
 	->ignoreErrorsOnPackages(
 		[
-			'hoa/regex', // used only via stream wrapper hoa://
 			...$pinnedToSupportPhp72, // those are unused, but we need to pin them to support PHP 7.2
 			...$polyfills, // not detected by composer-dependency-analyser
 		],

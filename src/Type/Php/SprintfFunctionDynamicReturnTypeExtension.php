@@ -190,8 +190,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		try {
-			$dummyValues = array_fill(0, $valuesCount, '');
-			$formatted = @sprintf($format, ...$dummyValues);
+			$formatted = @vsprintf($format, array_fill(0, $valuesCount, ''));
 			if ($formatted === false) { // @phpstan-ignore identical.alwaysFalse
 				return null;
 			}

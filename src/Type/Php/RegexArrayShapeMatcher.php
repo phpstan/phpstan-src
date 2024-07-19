@@ -372,7 +372,7 @@ final class RegexArrayShapeMatcher
 	{
 		if (self::$parser === null) {
 			/** @throws void */
-			self::$parser = Llk::load(new Read(__DIR__ . '/../../resources/RegexGrammar.pp'));
+			self::$parser = Llk::load(new Read(__DIR__ . '/../../../resources/RegexGrammar.pp'));
 		}
 
 		try {

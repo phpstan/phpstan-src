@@ -363,7 +363,7 @@ class MoreNonEmptyStringFunctions
 
 		assertType('non-empty-string', sprintf("%s0%s", $s, $s));
 		assertType('non-empty-string', sprintf("%s0%s%s%s%s", $s, $s, $s, $s, $s));
-		assertType('string', sprintf("%s0%s%s%s%s%s", $s, $s, $s, $s, $s, $s)); // max interpolation limit reached
+		assertType('non-empty-string', sprintf("%s0%s%s%s%s%s", $s, $s, $s, $s, $s, $s));
 
 		assertType('0', strlen(''));
 		assertType('5', strlen('hallo'));

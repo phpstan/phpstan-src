@@ -13,6 +13,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -21,6 +22,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use Throwable;
+use function array_fill;
 use function array_key_exists;
 use function array_shift;
 use function count;
@@ -77,7 +79,12 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$allPatternsNonEmpty = count($formatStrings) !== 0;
 		$allPatternsNonFalsy = count($formatStrings) !== 0;
 		foreach ($formatStrings as $constantString) {
-			$constantParts = $this->getFormatConstantParts($constantString->getValue());
+			$constantParts = $this->getFormatConstantParts(
+				$constantString->getValue(),
+				$functionReflection,
+				$functionCall,
+				$scope,
+			);
 			if ($constantParts !== null) {
 				if ($constantParts->isNonFalsyString()->yes()) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
 					// keep all bool flags as is
@@ -158,26 +165,42 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		return $returnType;
 	}
 
-	private function getFormatConstantParts(string $format): ?ConstantStringType
+	private function getFormatConstantParts(
+		string $format,
+		FunctionReflection $functionReflection,
+		FuncCall $functionCall,
+		Scope $scope,
+	): ?ConstantStringType
 	{
-		$dummyValues = [];
-		for ($i = 0; $i < self::MAX_INTERPOLATION_RETRIES; $i++) {
-			$dummyValues[] = '';
-
-			try {
-				$formatted = @sprintf($format, ...$dummyValues);
-				if ($formatted === false) { // @phpstan-ignore identical.alwaysFalse
-					continue;
-				}
-				return new ConstantStringType($formatted);
-			} catch (ArgumentCountError) {
-				continue;
-			} catch (Throwable) {
+		$args = $functionCall->getArgs();
+		if ($functionReflection->getName() === 'sprintf') {
+			$valuesCount = count($args) - 1;
+		} elseif (
+			$functionReflection->getName() === 'vsprintf'
+			&& count($args) >= 2
+		) {
+			$arraySize = $scope->getType($args[1]->value)->getArraySize();
+			if (!($arraySize instanceof ConstantIntegerType)) {
 				return null;
 			}
+
+			$valuesCount = $arraySize->getValue();
+		} else {
+			return null;
 		}
 
-		return null;
+		try {
+			$dummyValues = array_fill(0, $valuesCount, '');
+			$formatted = @sprintf($format, ...$dummyValues);
+			if ($formatted === false) { // @phpstan-ignore identical.alwaysFalse
+				return null;
+			}
+			return new ConstantStringType($formatted);
+		} catch (ArgumentCountError) {
+			return null;
+		} catch (Throwable) {
+			return null;
+		}
 	}
 
 	/**

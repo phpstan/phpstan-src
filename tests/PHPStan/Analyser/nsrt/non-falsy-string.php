@@ -113,10 +113,13 @@ class Foo {
 		assertType("non-falsy-string", vsprintf('foo', [])); // should be 'foo'
 		assertType("string", vsprintf('%s', ...$arr));
 		assertType("string", vsprintf(...$arr));
+		assertType('non-falsy-string', vsprintf('%sAA%s', [$s, $s]));
+		assertType('non-falsy-string', vsprintf('%d%d', [$s, $s])); // could be non-falsy-string&numeric-string
 
 		assertType('non-falsy-string', sprintf("%sAA%s", $s, $s));
+		assertType('non-falsy-string', sprintf("%d%d", $s, $s)); // could be non-falsy-string&numeric-string
 		assertType('non-falsy-string', sprintf("%sAA%s%s%s%s", $s, $s, $s, $s, $s));
-		assertType('string', sprintf("%sAA%s%s%s%s%s", $s, $s, $s, $s, $s, $s)); // max interpolation limit reached
+		assertType('non-falsy-string', sprintf("%sAA%s%s%s%s%s", $s, $s, $s, $s, $s, $s));
 
 		assertType('int<1, max>', strlen($nonFalsey));
 

@@ -96,7 +96,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 				$allPatternsNonFalsy = false;
 			}
 
-			// The printf format is %[argnum$][flags][width][.precision]
+			// The printf format is %[argnum$][flags][width][.precision]specifier.
 			if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1) {
 				if ($matches[1] !== '') {
 					// invalid positional argument

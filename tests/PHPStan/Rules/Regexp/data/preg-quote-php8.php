@@ -1,6 +1,6 @@
 <?php // lint >= 8.0
 
-namespace PregQuoting;
+namespace PregQuotingPhp8;
 
 function doFoo(string $s, callable $cb): void { // errors
 	preg_split(subject: $s, pattern: '&' . preg_quote('&oops', '/') . 'pattern&');

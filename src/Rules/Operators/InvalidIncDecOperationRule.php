@@ -6,8 +6,17 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\FloatType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function get_class;
 use function sprintf;
@@ -18,7 +27,11 @@ use function sprintf;
 class InvalidIncDecOperationRule implements Rule
 {
 
-	public function __construct(private bool $checkThisOnly)
+	public function __construct(
+		private RuleLevelHelper $ruleLevelHelper,
+		private bool $bleedingEdge,
+		private bool $checkThisOnly,
+	)
 	{
 	}
 
@@ -74,7 +87,11 @@ class InvalidIncDecOperationRule implements Rule
 			];
 		}
 
-		if (!$this->checkThisOnly) {
+		if (!$this->bleedingEdge) {
+			if ($this->checkThisOnly) {
+				return [];
+			}
+
 			$varType = $scope->getType($node->var);
 			if (!$varType->toString() instanceof ErrorType) {
 				return [];
@@ -82,20 +99,30 @@ class InvalidIncDecOperationRule implements Rule
 			if (!$varType->toNumber() instanceof ErrorType) {
 				return [];
 			}
+		} else {
+			$allowedTypes = new UnionType([new BooleanType(), new FloatType(), new IntegerType(), new StringType(), new NullType(), new ObjectType('SimpleXMLElement')]);
+			$varType = $this->ruleLevelHelper->findTypeToCheck(
+				$scope,
+				$node->var,
+				'',
+				static fn (Type $type): bool => $allowedTypes->isSuperTypeOf($type)->yes(),
+			)->getType();
 
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'Cannot use %s on %s.',
-					$operatorString,
-					$varType->describe(VerbosityLevel::value()),
-				))
-					->line($node->var->getStartLine())
-					->identifier(sprintf('%s.type', $nodeType))
-					->build(),
-			];
+			if ($varType instanceof ErrorType || $allowedTypes->isSuperTypeOf($varType)->yes()) {
+				return [];
+			}
 		}
 
-		return [];
+		return [
+			RuleErrorBuilder::message(sprintf(
+				'Cannot use %s on %s.',
+				$operatorString,
+				$varType->describe(VerbosityLevel::value()),
+			))
+				->line($node->var->getStartLine())
+				->identifier(sprintf('%s.type', $nodeType))
+				->build(),
+		];
 	}
 
 }

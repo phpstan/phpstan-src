@@ -187,13 +187,13 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
-      - name: "Transform source code"
-        shell: bash
-        run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
-
       - name: "Downgrade composer/semver for brianium/paratest:4.0.0 compatibility"
         run: composer require composer/semver:"3.4.2 as 1.7.2"
         shell: bash
+
+      - name: "Transform source code"
+        shell: bash
+        run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
 
       - name: "Paratest patch"
         run: composer config extra.patches.brianium/paratest --json --merge '["patches/paratest.patch"]'

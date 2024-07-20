@@ -11,7 +11,7 @@ class ExecutionEndNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(
-		private Node $node,
+		private Node\Stmt $node,
 		private StatementResult $statementResult,
 		private bool $hasNativeReturnTypehint,
 	)
@@ -19,7 +19,7 @@ class ExecutionEndNode extends NodeAbstract implements VirtualNode
 		parent::__construct($node->getAttributes());
 	}
 
-	public function getNode(): Node
+	public function getNode(): Node\Stmt
 	{
 		return $this->node;
 	}

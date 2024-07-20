@@ -13,7 +13,7 @@ class RegularExpressionQuotingRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new RegularExpressionQuotingRule();
+		return new RegularExpressionQuotingRule($this->createReflectionProvider());
 	}
 
 	public function testValidRegexPatternBefore73(): void
@@ -22,44 +22,52 @@ class RegularExpressionQuotingRuleTest extends RuleTestCase
 			[__DIR__ . '/data/preg-quote.php'],
 			[
 				[
-					'Call to preg_quote() is missing delimiter parameter to be effective.',
+					'Call to preg_quote() is missing delimiter & to be effective.',
 					6,
 				],
 				[
-					'Call to preg_quote() uses invalid delimiter /.',
+					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
 					7,
 				],
 				[
-					'Call to preg_quote() uses invalid delimiter /.',
+					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
 					11,
 				],
 				[
-					'Call to preg_quote() is missing delimiter parameter to be effective.',
+					'Call to preg_quote() is missing delimiter & to be effective.',
 					12,
 				],
 				[
-					'Call to preg_quote() uses invalid delimiter /.',
+					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
 					18,
 				],
 				[
-					'Call to preg_quote() uses invalid delimiter /.',
+					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
 					20,
 				],
 				[
-					'Call to preg_quote() uses invalid delimiter /.',
+					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
 					21,
 				],
 				[
-					'Call to preg_quote() uses invalid delimiter /.',
+					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
 					22,
 				],
 				[
-					'Call to preg_quote() uses invalid delimiter /.',
+					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
 					23,
 				],
 				[
-					'Call to preg_quote() uses invalid delimiter /.',
+					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
 					24,
+				],
+				[
+					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
+					26,
+				],
+				[
+					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
+					27,
 				],
 			],
 		);

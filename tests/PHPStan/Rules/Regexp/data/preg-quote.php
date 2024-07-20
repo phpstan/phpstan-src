@@ -28,6 +28,13 @@ function ok(string $s): void { // ok
 	preg_match('&' . preg_quote('&oops', '&') . 'pattern&', $s);
 	preg_match('{' . preg_quote('&oops') . 'pattern}', $s);
 	preg_match($s, "string");
+
+	preg_match(
+		'{' .
+		preg_quote($s, '&') // unnecessary arg but not dangerous when delimiter is {
+		. 'pattern}',
+		$s
+	);
 }
 
 function notAnalyzable(string $s): void { // ok

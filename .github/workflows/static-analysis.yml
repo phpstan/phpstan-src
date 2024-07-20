@@ -55,11 +55,6 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
-      - name: "Downgrade composer/semver for brianium/paratest:4.0.0 compatibility"
-        if: matrix.php-version == '7.2'
-        run: composer require composer/semver:"3.4.2 as 1.7.2"
-        shell: bash
-
       - name: "Transform source code"
         if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
         shell: bash

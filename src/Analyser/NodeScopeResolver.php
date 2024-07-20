@@ -394,10 +394,14 @@ class NodeScopeResolver
 		if ($stmtCount === 0 && $shouldCheckLastStatement) {
 			/** @var Node\Stmt\Function_|Node\Stmt\ClassMethod|Expr\Closure $parentNode */
 			$parentNode = $parentNode;
+			$returnTypeNode = $parentNode->returnType;
+			if ($parentNode instanceof Expr\Closure) {
+				$parentNode = new Node\Stmt\Expression($parentNode, $parentNode->getAttributes());
+			}
 			$nodeCallback(new ExecutionEndNode(
 				$parentNode,
 				$statementResult,
-				$parentNode->returnType !== null,
+				$returnTypeNode !== null,
 			), $scope);
 		}
 

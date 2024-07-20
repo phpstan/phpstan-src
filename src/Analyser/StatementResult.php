@@ -13,6 +13,7 @@ class StatementResult
 	 * @param StatementExitPoint[] $exitPoints
 	 * @param ThrowPoint[] $throwPoints
 	 * @param ImpurePoint[] $impurePoints
+	 * @param EndStatementResult[] $endStatements
 	 */
 	public function __construct(
 		private MutatingScope $scope,
@@ -21,6 +22,7 @@ class StatementResult
 		private array $exitPoints,
 		private array $throwPoints,
 		private array $impurePoints,
+		private array $endStatements = [],
 	)
 	{
 	}
@@ -163,6 +165,27 @@ class StatementResult
 	public function getImpurePoints(): array
 	{
 		return $this->impurePoints;
+	}
+
+	/**
+	 * Top-level StatementResult represents the state of the code
+	 * at the end of control flow statements like If_ or TryCatch.
+	 *
+	 * It shows how Scope etc. looks like after If_ no matter
+	 * which code branch was executed.
+	 *
+	 * For If_, "end statements" contain the state of the code
+	 * at the end of each branch - if, elseifs, else, including the last
+	 * statement node in each branch.
+	 *
+	 * For nested ifs, end statements try to contain the last non-control flow
+	 * statement like Return_ or Throw_, instead of If_, TryCatch, or Foreach_.
+	 *
+	 * @return EndStatementResult[]
+	 */
+	public function getEndStatements(): array
+	{
+		return $this->endStatements;
 	}
 
 }

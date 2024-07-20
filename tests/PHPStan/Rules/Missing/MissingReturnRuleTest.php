@@ -40,7 +40,11 @@ class MissingReturnRuleTest extends RuleTestCase
 			],
 			[
 				'Method MissingReturn\Foo::doLorem() should return int but return statement is missing.',
-				36,
+				39,
+			],
+			[
+				'Method MissingReturn\Foo::doLorem() should return int but return statement is missing.',
+				47,
 			],
 			[
 				'Anonymous function should return int but return statement is missing.',
@@ -105,6 +109,18 @@ class MissingReturnRuleTest extends RuleTestCase
 			[
 				'Method MissingReturn\NeverReturn::doBaz2() should always throw an exception or terminate script execution but doesn\'t do that.',
 				481,
+			],
+			[
+				'Method MissingReturn\MorePreciseMissingReturnLines::doFoo() should return int but return statement is missing.',
+				514,
+			],
+			[
+				'Method MissingReturn\MorePreciseMissingReturnLines::doFoo() should return int but return statement is missing.',
+				515,
+			],
+			[
+				'Method MissingReturn\MorePreciseMissingReturnLines::doFoo2() should return int but return statement is missing.',
+				524,
 			],
 		]);
 	}

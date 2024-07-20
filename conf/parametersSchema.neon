@@ -87,6 +87,7 @@ parametersSchema:
 		narrowPregMatches: bool()
 		uselessReturnValue: bool()
 		printfArrayParameters: bool()
+		preciseMissingReturn: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

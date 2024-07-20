@@ -86,6 +86,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			self::getContainer()->getParameter('treatPhpDocTypesAsCertain'),
 			self::getContainer()->getParameter('featureToggles')['detectDeadTypeInMultiCatch'],
 			self::getContainer()->getParameter('featureToggles')['paramOutType'],
+			self::getContainer()->getParameter('featureToggles')['preciseMissingReturn'],
 		);
 		$resolver->setAnalysedFiles(array_map(static fn (string $file): string => $fileHelper->normalizePath($file), array_merge([$file], static::getAdditionalAnalysedFiles())));
 

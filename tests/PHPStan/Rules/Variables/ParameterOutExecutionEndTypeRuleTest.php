@@ -27,12 +27,16 @@ class ParameterOutExecutionEndTypeRuleTest extends RuleTestCase
 				21,
 			],
 			[
+				'Parameter &$p @param-out type of method ParameterOutExecutionEnd\Foo::foo2() expects string, string|null given.',
+				23,
+			],
+			[
 				'Parameter &$p @param-out type of method ParameterOutExecutionEnd\Foo::foo3() expects string, string|null given.',
 				34,
 			],
 			[
 				'Parameter &$p @param-out type of method ParameterOutExecutionEnd\Foo::foo4() expects string, string|null given.',
-				45,
+				47,
 			],
 			[
 				'Parameter &$p @param-out type of method ParameterOutExecutionEnd\Foo::foo6() expects int, string given.',
@@ -42,7 +46,16 @@ class ParameterOutExecutionEndTypeRuleTest extends RuleTestCase
 				'Parameter &$p @param-out type of function ParameterOutExecutionEnd\foo2() expects string, string|null given.',
 				80,
 			],
+			[
+				'Parameter &$p @param-out type of function ParameterOutExecutionEnd\foo2() expects string, string|null given.',
+				82,
+			],
 		]);
+	}
+
+	public function testBug11363(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11363.php'], []);
 	}
 
 }

@@ -16,7 +16,7 @@ class RegularExpressionQuotingRuleTest extends RuleTestCase
 		return new RegularExpressionQuotingRule($this->createReflectionProvider());
 	}
 
-	public function testValidRegexPatternBefore73(): void
+	public function testRule(): void
 	{
 		$this->analyse(
 			[__DIR__ . '/data/preg-quote.php'],
@@ -61,13 +61,22 @@ class RegularExpressionQuotingRuleTest extends RuleTestCase
 					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
 					24,
 				],
+			],
+		);
+	}
+
+	public function testRulePhp8(): void
+	{
+		$this->analyse(
+			[__DIR__ . '/data/preg-quote-php8.php'],
+			[
 				[
 					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
-					26,
+					6,
 				],
 				[
 					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
-					27,
+					7,
 				],
 			],
 		);

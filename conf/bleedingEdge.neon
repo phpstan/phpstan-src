@@ -57,5 +57,6 @@ parameters:
 		narrowPregMatches: true
 		uselessReturnValue: true
 		printfArrayParameters: true
+		preciseMissingReturn: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Rule.stub

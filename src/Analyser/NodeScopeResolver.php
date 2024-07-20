@@ -261,6 +261,7 @@ class NodeScopeResolver
 		private readonly bool $treatPhpDocTypesAsCertain,
 		private readonly bool $detectDeadTypeInMultiCatch,
 		private readonly bool $paramOutType,
+		private readonly bool $preciseMissingReturn,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -360,18 +361,38 @@ class NodeScopeResolver
 			if ($shouldCheckLastStatement && $isLast) {
 				/** @var Node\Stmt\Function_|Node\Stmt\ClassMethod|Expr\Closure $parentNode */
 				$parentNode = $parentNode;
-				$nodeCallback(new ExecutionEndNode(
-					$stmt,
-					new StatementResult(
-						$scope,
-						$hasYield,
-						$statementResult->isAlwaysTerminating(),
-						$statementResult->getExitPoints(),
-						$statementResult->getThrowPoints(),
-						$statementResult->getImpurePoints(),
-					),
-					$parentNode->returnType !== null,
-				), $scope);
+
+				$endStatements = $statementResult->getEndStatements();
+				if ($this->preciseMissingReturn && count($endStatements) > 0) {
+					foreach ($endStatements as $endStatement) {
+						$endStatementResult = $endStatement->getResult();
+						$nodeCallback(new ExecutionEndNode(
+							$endStatement->getStatement(),
+							new StatementResult(
+								$endStatementResult->getScope(),
+								$hasYield,
+								$endStatementResult->isAlwaysTerminating(),
+								$endStatementResult->getExitPoints(),
+								$endStatementResult->getThrowPoints(),
+								$endStatementResult->getImpurePoints(),
+							),
+							$parentNode->returnType !== null,
+						), $endStatementResult->getScope());
+					}
+				} else {
+					$nodeCallback(new ExecutionEndNode(
+						$stmt,
+						new StatementResult(
+							$scope,
+							$hasYield,
+							$statementResult->isAlwaysTerminating(),
+							$statementResult->getExitPoints(),
+							$statementResult->getThrowPoints(),
+							$statementResult->getImpurePoints(),
+						),
+						$parentNode->returnType !== null,
+					), $scope);
+				}
 			}
 
 			$exitPoints = array_merge($exitPoints, $statementResult->getExitPoints());
@@ -915,6 +936,7 @@ class NodeScopeResolver
 			$exitPoints = [];
 			$throwPoints = $overridingThrowPoints ?? $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
+			$endStatements = [];
 			$finalScope = null;
 			$alwaysTerminating = true;
 			$hasYield = $condResult->hasYield();
@@ -928,6 +950,13 @@ class NodeScopeResolver
 				$branchScope = $branchScopeStatementResult->getScope();
 				$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? null : $branchScope;
 				$alwaysTerminating = $branchScopeStatementResult->isAlwaysTerminating();
+				if (count($branchScopeStatementResult->getEndStatements()) > 0) {
+					$endStatements = array_merge($endStatements, $branchScopeStatementResult->getEndStatements());
+				} elseif (count($stmt->stmts) > 0) {
+					$endStatements[] = new EndStatementResult($stmt->stmts[count($stmt->stmts) - 1], $branchScopeStatementResult);
+				} else {
+					$endStatements[] = new EndStatementResult($stmt, $branchScopeStatementResult);
+				}
 				$hasYield = $branchScopeStatementResult->hasYield() || $hasYield;
 			}
 
@@ -960,6 +989,13 @@ class NodeScopeResolver
 					$branchScope = $branchScopeStatementResult->getScope();
 					$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? $finalScope : $branchScope->mergeWith($finalScope);
 					$alwaysTerminating = $alwaysTerminating && $branchScopeStatementResult->isAlwaysTerminating();
+					if (count($branchScopeStatementResult->getEndStatements()) > 0) {
+						$endStatements = array_merge($endStatements, $branchScopeStatementResult->getEndStatements());
+					} elseif (count($elseif->stmts) > 0) {
+						$endStatements[] = new EndStatementResult($elseif->stmts[count($elseif->stmts) - 1], $branchScopeStatementResult);
+					} else {
+						$endStatements[] = new EndStatementResult($elseif, $branchScopeStatementResult);
+					}
 					$hasYield = $hasYield || $branchScopeStatementResult->hasYield();
 				}
 
@@ -989,6 +1025,13 @@ class NodeScopeResolver
 					$branchScope = $branchScopeStatementResult->getScope();
 					$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? $finalScope : $branchScope->mergeWith($finalScope);
 					$alwaysTerminating = $alwaysTerminating && $branchScopeStatementResult->isAlwaysTerminating();
+					if (count($branchScopeStatementResult->getEndStatements()) > 0) {
+						$endStatements = array_merge($endStatements, $branchScopeStatementResult->getEndStatements());
+					} elseif (count($stmt->else->stmts) > 0) {
+						$endStatements[] = new EndStatementResult($stmt->else->stmts[count($stmt->else->stmts) - 1], $branchScopeStatementResult);
+					} else {
+						$endStatements[] = new EndStatementResult($stmt->else, $branchScopeStatementResult);
+					}
 					$hasYield = $hasYield || $branchScopeStatementResult->hasYield();
 				}
 			}
@@ -997,7 +1040,11 @@ class NodeScopeResolver
 				$finalScope = $scope;
 			}
 
-			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPoints, $throwPoints, $impurePoints);
+			if ($stmt->else === null && !$ifAlwaysTrue && !$lastElseIfConditionIsTrue) {
+				$endStatements[] = new EndStatementResult($stmt, new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPoints, $throwPoints, $impurePoints));
+			}
+
+			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPoints, $throwPoints, $impurePoints, $endStatements);
 		} elseif ($stmt instanceof Node\Stmt\TraitUse) {
 			$hasYield = false;
 			$throwPoints = [];

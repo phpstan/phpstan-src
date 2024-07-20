@@ -504,3 +504,28 @@ class ClosureWithMissingReturnWithoutTypehint
 	}
 
 }
+
+class MorePreciseMissingReturnLines
+{
+
+	public function doFoo(): int
+	{
+		if (doFoo()) {
+			echo 1;
+		} elseif (doBar()) {
+
+		} else {
+			return 1;
+		}
+	}
+
+	public function doFoo2(): int
+	{
+		if (doFoo()) {
+			return 1;
+		} elseif (doBar()) {
+			return 2;
+		}
+	}
+
+}

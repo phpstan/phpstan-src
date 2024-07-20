@@ -92,6 +92,7 @@ parameters:
 		narrowPregMatches: false
 		uselessReturnValue: false
 		printfArrayParameters: false
+		preciseMissingReturn: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -535,6 +536,7 @@ services:
 			detectDeadTypeInMultiCatch: %featureToggles.detectDeadTypeInMultiCatch%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 			paramOutType: %featureToggles.paramOutType%
+			preciseMissingReturn: %featureToggles.preciseMissingReturn%
 
 	-
 		class: PHPStan\Analyser\ConstantResolver

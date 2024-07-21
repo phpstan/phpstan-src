@@ -30,7 +30,7 @@ class Foo
 	public function sayHello(string $row): void
 	{
 		preg_match_all('#// error:(.+)#', $row, $matches);
-		assertType('array<list<string>>', $matches);
+		assertType('array{list<string>, list<non-empty-string>}', $matches);
 	}
 
 }

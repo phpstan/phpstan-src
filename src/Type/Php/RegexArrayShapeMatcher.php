@@ -14,17 +14,21 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_reverse;
 use function count;
@@ -60,9 +64,14 @@ final class RegexArrayShapeMatcher
 	{
 	}
 
+	public function matchAllExpr(Expr $patternExpr, ?Type $flagsType, TrinaryLogic $wasMatched, Scope $scope): ?Type
+	{
+		return $this->matchPatternType($this->getPatternType($patternExpr, $scope), $flagsType, $wasMatched, true);
+	}
+
 	public function matchExpr(Expr $patternExpr, ?Type $flagsType, TrinaryLogic $wasMatched, Scope $scope): ?Type
 	{
-		return $this->matchPatternType($this->getPatternType($patternExpr, $scope), $flagsType, $wasMatched);
+		return $this->matchPatternType($this->getPatternType($patternExpr, $scope), $flagsType, $wasMatched, false);
 	}
 
 	/**
@@ -70,10 +79,10 @@ final class RegexArrayShapeMatcher
 	 */
 	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
 	{
-		return $this->matchPatternType($patternType, $flagsType, $wasMatched);
+		return $this->matchPatternType($patternType, $flagsType, $wasMatched, false);
 	}
 
-	private function matchPatternType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
+	private function matchPatternType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched, bool $matchesAll): ?Type
 	{
 		if ($wasMatched->no()) {
 			return new ConstantArrayType([], []);
@@ -101,7 +110,7 @@ final class RegexArrayShapeMatcher
 
 		$matchedTypes = [];
 		foreach ($constantStrings as $constantString) {
-			$matched = $this->matchRegex($constantString->getValue(), $flags, $wasMatched);
+			$matched = $this->matchRegex($constantString->getValue(), $flags, $wasMatched, $matchesAll);
 			if ($matched === null) {
 				return null;
 			}
@@ -119,7 +128,7 @@ final class RegexArrayShapeMatcher
 	/**
 	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL|self::PREG_UNMATCHED_AS_NULL_ON_72_73>|null $flags
 	 */
-	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched): ?Type
+	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched, bool $matchesAll): ?Type
 	{
 		$parseResult = $this->parseGroups($regex);
 		if ($parseResult === null) {
@@ -154,6 +163,7 @@ final class RegexArrayShapeMatcher
 				$trailingOptionals,
 				$flags ?? 0,
 				$markVerbs,
+				$matchesAll
 			);
 
 			if (!$this->containsUnmatchedAsNull($flags ?? 0)) {
@@ -192,6 +202,7 @@ final class RegexArrayShapeMatcher
 					$trailingOptionals,
 					$flags ?? 0,
 					$markVerbs,
+					$matchesAll
 				);
 
 				$combiTypes[] = $combiType;
@@ -215,6 +226,7 @@ final class RegexArrayShapeMatcher
 			$trailingOptionals,
 			$flags ?? 0,
 			$markVerbs,
+			$matchesAll
 		);
 	}
 
@@ -272,13 +284,12 @@ final class RegexArrayShapeMatcher
 	 * @param array<RegexCapturingGroup> $captureGroups
 	 * @param list<string> $markVerbs
 	 */
-	private function buildArrayType(
+	private function buildMatchArrayType(
 		array $captureGroups,
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
 		int $flags,
-		array $markVerbs,
-	): Type
+	): ConstantArrayTypeBuilder
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
@@ -311,6 +322,78 @@ final class RegexArrayShapeMatcher
 			);
 
 			$i++;
+		}
+
+		return $builder;
+	}
+
+	/**
+	 * @param array<RegexCapturingGroup> $captureGroups
+	 */
+	private function buildMatchesAllArrayType(
+		array $captureGroups,
+		TrinaryLogic $wasMatched,
+		int $flags,
+	): ConstantArrayTypeBuilders
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags));
+		if (!$wasMatched->yes()) {
+			$subjectValueType = TypeCombinator::union($subjectValueType, new ConstantStringType(''));
+		}
+		$subjectValueType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $subjectValueType));
+
+		// first item in matches contains the overall match.
+		$builder->setOffsetValueType(
+			$this->getKeyType(0),
+			$subjectValueType,
+		);
+
+		$i = 0;
+		foreach ($captureGroups as $captureGroup) {
+			$groupValueType = $this->getValueType($captureGroup->getType(), $flags);
+
+			if (!$this->containsUnmatchedAsNull($flags) && $captureGroup->isOptional()) {
+				$groupValueType = TypeCombinator::removeNull($groupValueType);
+				$groupValueType = TypeCombinator::union($groupValueType, new ConstantStringType(''));
+			}
+
+			$groupValueType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $groupValueType));
+			if ($captureGroup->isNamed()) {
+				$builder->setOffsetValueType(
+					$this->getKeyType($captureGroup->getName()),
+					$groupValueType,
+				);
+			}
+
+			$builder->setOffsetValueType(
+				$this->getKeyType($i + 1),
+				$groupValueType,
+			);
+
+			$i++;
+		}
+
+		return $builder;
+	}
+
+	/**
+	 * @param array<RegexCapturingGroup> $captureGroups
+	 */
+	private function buildArrayType(
+		array $captureGroups,
+		TrinaryLogic $wasMatched,
+		int $trailingOptionals,
+		int $flags,
+		array $markVerbs,
+		bool $matchesAll,
+	): Type
+	{
+		if ($matchesAll) {
+			$builder = $this->buildMatchesAllArrayType($captureGroups, $wasMatched, $flags);
+		} else {
+			$builder = $this->buildMatchArrayType($captureGroups, $wasMatched, $trailingOptionals, $flags);
 		}
 
 		if (count($markVerbs) > 0) {

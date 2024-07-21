@@ -3,7 +3,7 @@
 namespace PregMatchShapes;
 
 use function PHPStan\Testing\assertType;
-
+use InvalidArgumentException;
 
 function doMatch(string $s): void {
 	if (preg_match('/Price: /i', $s, $matches)) {

@@ -3,6 +3,7 @@
 namespace Bug11311;
 
 use function PHPStan\Testing\assertType;
+use InvalidArgumentException;
 
 function doFoo(string $s) {
 	if (1 === preg_match('/(?<major>\d+)\.(?<minor>\d+)(?:\.(?<patch>\d+))?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {

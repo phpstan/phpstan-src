@@ -28,7 +28,6 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_reverse;
 use function count;
@@ -42,6 +41,7 @@ use function str_replace;
 use function strlen;
 use function substr;
 use const PREG_OFFSET_CAPTURE;
+use const PREG_PATTERN_ORDER;
 use const PREG_UNMATCHED_AS_NULL;
 
 /**
@@ -99,8 +99,8 @@ final class RegexArrayShapeMatcher
 				return null;
 			}
 
-			/** @var int-mask<PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL | self::PREG_UNMATCHED_AS_NULL_ON_72_73> $flags */
-			$flags = $flagsType->getValue() & (PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL | self::PREG_UNMATCHED_AS_NULL_ON_72_73);
+			/** @var int-mask<PREG_OFFSET_CAPTURE | PREG_PATTERN_ORDER | PREG_UNMATCHED_AS_NULL | self::PREG_UNMATCHED_AS_NULL_ON_72_73> $flags */
+			$flags = $flagsType->getValue() & (PREG_OFFSET_CAPTURE | PREG_PATTERN_ORDER | PREG_UNMATCHED_AS_NULL | self::PREG_UNMATCHED_AS_NULL_ON_72_73);
 
 			// some other unsupported/unexpected flag was passed in
 			if ($flags !== $flagsType->getValue()) {
@@ -126,7 +126,7 @@ final class RegexArrayShapeMatcher
 	}
 
 	/**
-	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL|self::PREG_UNMATCHED_AS_NULL_ON_72_73>|null $flags
+	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_PATTERN_ORDER|PREG_UNMATCHED_AS_NULL|self::PREG_UNMATCHED_AS_NULL_ON_72_73>|null $flags
 	 */
 	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched, bool $matchesAll): ?Type
 	{
@@ -202,7 +202,7 @@ final class RegexArrayShapeMatcher
 					$trailingOptionals,
 					$flags ?? 0,
 					$markVerbs,
-					$matchesAll
+					$matchesAll,
 				);
 
 				$combiTypes[] = $combiType;
@@ -226,7 +226,7 @@ final class RegexArrayShapeMatcher
 			$trailingOptionals,
 			$flags ?? 0,
 			$markVerbs,
-			$matchesAll
+			$matchesAll,
 		);
 	}
 

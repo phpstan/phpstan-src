@@ -15,6 +15,16 @@ function (string $size): void {
 };
 
 function (string $size): void {
+	preg_match_all('/ab(\d+)?/', $size, $matches, PREG_UNMATCHED_AS_NULL|PREG_PATTERN_ORDER);
+	assertType('array{list<string>, list<numeric-string|null>}', $matches);
+};
+
+function (string $size): void {
+	preg_match_all('/ab(?P<num>\d+)?/', $size, $matches, PREG_PATTERN_ORDER);
+	assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
+};
+
+function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)?/', $size, $matches)) {
 		assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
 		return;

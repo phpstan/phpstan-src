@@ -581,6 +581,9 @@ final class RegexArrayShapeMatcher
 
 		if ($accessories !== []) {
 			$accessories[] = new StringType();
+			if (!$isNonEmpty->yes()) {
+				return TypeCombinator::union(new ConstantStringType(''), new IntersectionType($accessories));
+			}
 			return new IntersectionType($accessories);
 		}
 

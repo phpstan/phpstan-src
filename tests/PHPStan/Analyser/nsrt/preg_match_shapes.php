@@ -519,3 +519,9 @@ function bug11323(string $s): void {
 		assertType('array{string, non-empty-string}', $matches);
 	}
 }
+
+function (string $s): void {
+	preg_match('/%a(\d*)/', $s, $matches);
+	assertType("array{0?: string, 1?: ''|numeric-string}", $matches);
+};
+

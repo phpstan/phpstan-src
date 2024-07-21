@@ -3,6 +3,7 @@
 namespace Bug11311;
 
 use function PHPStan\Testing\assertType;
+use InvalidArgumentException;
 
 function doFoo(string $s) {
 	if (1 === preg_match('/(?<major>\d+)\.(?<minor>\d+)(?:\.(?<patch>\d+))?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
@@ -105,7 +106,7 @@ function (string $size): void {
 	if (preg_match('/ab(\d+)e(\d?)/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, numeric-string, numeric-string}', $matches);
+	assertType("array{string, numeric-string, ''|numeric-string}", $matches);
 };
 
 function (string $size): void {
@@ -186,4 +187,14 @@ function (string $s): void {
 	if (preg_match('/(?<whitespace>\s*)(?<value>.*)/', $s, $matches, PREG_UNMATCHED_AS_NULL) === 1) {
 		assertType('array{0: string, whitespace: string, 1: string, value: string, 2: string}', $matches);
 	}
+};
+
+function (string $s): void {
+	preg_match('/%a(\d*)/', $s, $matches, PREG_UNMATCHED_AS_NULL);
+	assertType("array{0?: string, 1?: ''|numeric-string|null}", $matches); // could be array{0?: string, 1?: ''|numeric-string}
+};
+
+function (string $s): void {
+	preg_match('/%a(\d*)?/', $s, $matches, PREG_UNMATCHED_AS_NULL);
+	assertType("array{0?: string, 1?: ''|numeric-string|null}", $matches); // could be array{0?: string, 1?: ''|numeric-string}
 };

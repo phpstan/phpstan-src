@@ -572,16 +572,14 @@ final class RegexArrayShapeMatcher
 
 		$this->walkGroupAst($group, $isNonEmpty, $isNumeric, $inOptionalQuantification);
 
-		$accessories = [];
 		if ($isNumeric->yes()) {
-			$accessories[] = new AccessoryNumericStringType();
+			$result = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
+			if (!$isNonEmpty->yes()) {
+				return TypeCombinator::union(new ConstantStringType(''), $result);
+			}
+			return $result;
 		} elseif ($isNonEmpty->yes()) {
-			$accessories[] = new AccessoryNonEmptyStringType();
-		}
-
-		if ($accessories !== []) {
-			$accessories[] = new StringType();
-			return new IntersectionType($accessories);
+			return new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
 		}
 
 		return new StringType();

@@ -61,6 +61,10 @@ class RegularExpressionQuotingRuleTest extends RuleTestCase
 					'Call to preg_quote() uses invalid delimiter / while pattern uses &.',
 					24,
 				],
+				[
+					'Call to preg_quote() is missing delimiter parameter to be effective.',
+					77,
+				],
 			],
 		);
 	}

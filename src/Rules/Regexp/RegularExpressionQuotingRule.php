@@ -14,11 +14,15 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
+use function array_filter;
 use function array_merge;
+use function array_values;
 use function count;
 use function in_array;
 use function sprintf;
+use function strlen;
 use function substr;
 
 /**
@@ -132,6 +136,11 @@ class RegularExpressionQuotingRule implements Rule
 			return null;
 		}
 
+		$patternDelimiters = $this->removeDefaultEscapedDelimitiers($patternDelimiters);
+		if ($patternDelimiters === []) {
+			return null;
+		}
+
 		if (count($args) === 1) {
 			if (count($patternDelimiters) === 1) {
 				return RuleErrorBuilder::message(sprintf('Call to preg_quote() is missing delimiter %s to be effective.', $patternDelimiters[0]))
@@ -147,16 +156,29 @@ class RegularExpressionQuotingRule implements Rule
 		}
 
 		if (count($args) >= 2) {
+
 			foreach ($scope->getType($args[1]->value)->getConstantStrings() as $quoteDelimiterType) {
-				if (!in_array($quoteDelimiterType->getValue(), $patternDelimiters, true)) {
+				$quoteDelimiter = $quoteDelimiterType->getValue();
+
+				$quoteDelimiters = $this->removeDefaultEscapedDelimitiers([$quoteDelimiter]);
+				if ($quoteDelimiters === []) {
+					continue;
+				}
+
+				if (count($quoteDelimiters) !== 1) {
+					throw new ShouldNotHappenException();
+				}
+				$quoteDelimiter = $quoteDelimiters[0];
+
+				if (!in_array($quoteDelimiter, $patternDelimiters, true)) {
 					if (count($patternDelimiters) === 1) {
-						return RuleErrorBuilder::message(sprintf('Call to preg_quote() uses invalid delimiter %s while pattern uses %s.', $quoteDelimiterType->getValue(), $patternDelimiters[0]))
+						return RuleErrorBuilder::message(sprintf('Call to preg_quote() uses invalid delimiter %s while pattern uses %s.', $quoteDelimiter, $patternDelimiters[0]))
 							->line($pregQuote->getStartLine())
 							->identifier('argument.invalidPregQuote')
 							->build();
 					}
 
-					return RuleErrorBuilder::message(sprintf('Call to preg_quote() uses invalid delimiter %s.', $quoteDelimiterType->getValue()))
+					return RuleErrorBuilder::message(sprintf('Call to preg_quote() uses invalid delimiter %s.', $quoteDelimiter))
 						->line($pregQuote->getStartLine())
 						->identifier('argument.invalidPregQuote')
 						->build();
@@ -198,19 +220,31 @@ class RegularExpressionQuotingRule implements Rule
 			return null;
 		}
 
-		$firstChar = substr($string->getValue(), 0, 1);
+		return substr($string->getValue(), 0, 1);
+	}
 
-		// check for delimiters which get properly escaped by default
-		if (in_array(
-			$firstChar,
-			['.', '\\',  '+', '*', '?', '[', '^', ']', '$', '(', ')', '{', '}', '=', '!', '<', '>', '|', ':', '-', '#'],
-			true,
-		)
-		) {
-			return null;
+	/**
+	 * @param string[] $patternDelimiters
+	 *
+	 * @return list<string>
+	 */
+	private function removeDefaultEscapedDelimitiers(array $delimiters): array
+	{
+		return array_values(array_filter($delimiters, fn (string $delimiter): bool => !$this->isDefaultEscaped($delimiter)));
+	}
+
+	private function isDefaultEscaped(string $delimiter): bool
+	{
+		if (strlen($delimiter) !== 1) {
+			return false;
 		}
 
-		return $firstChar;
+		return in_array(
+			$delimiter,
+			// these delimiters are escaped, not matter what preg_quote() 2nd arg looks like
+			['.', '\\',  '+', '*', '?', '[', '^', ']', '$', '(', ')', '{', '}', '=', '!', '<', '>', '|', ':', '-', '#'],
+			true,
+		);
 	}
 
 	private function getNormalizedArgs(FuncCall $functionCall, Scope $scope, FunctionReflection $functionReflection): ?array

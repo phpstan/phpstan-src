@@ -126,6 +126,10 @@ class RegularExpressionQuotingRule implements Rule
 	 */
 	private function validatePregQuote(FuncCall $pregQuote, Scope $scope, array $patternDelimiters): ?IdentifierRuleError
 	{
+		if (!$pregQuote->name instanceof Node\Name) {
+			return null;
+		}
+
 		if (!$this->reflectionProvider->hasFunction($pregQuote->name, $scope)) {
 			return null;
 		}
@@ -136,7 +140,7 @@ class RegularExpressionQuotingRule implements Rule
 			return null;
 		}
 
-		$patternDelimiters = $this->removeDefaultEscapedDelimitiers($patternDelimiters);
+		$patternDelimiters = $this->removeDefaultEscapedDelimiters($patternDelimiters);
 		if ($patternDelimiters === []) {
 			return null;
 		}
@@ -160,7 +164,7 @@ class RegularExpressionQuotingRule implements Rule
 			foreach ($scope->getType($args[1]->value)->getConstantStrings() as $quoteDelimiterType) {
 				$quoteDelimiter = $quoteDelimiterType->getValue();
 
-				$quoteDelimiters = $this->removeDefaultEscapedDelimitiers([$quoteDelimiter]);
+				$quoteDelimiters = $this->removeDefaultEscapedDelimiters([$quoteDelimiter]);
 				if ($quoteDelimiters === []) {
 					continue;
 				}
@@ -224,11 +228,11 @@ class RegularExpressionQuotingRule implements Rule
 	}
 
 	/**
-	 * @param string[] $patternDelimiters
+	 * @param string[] $delimiters
 	 *
 	 * @return list<string>
 	 */
-	private function removeDefaultEscapedDelimitiers(array $delimiters): array
+	private function removeDefaultEscapedDelimiters(array $delimiters): array
 	{
 		return array_values(array_filter($delimiters, fn (string $delimiter): bool => !$this->isDefaultEscaped($delimiter)));
 	}
@@ -241,12 +245,15 @@ class RegularExpressionQuotingRule implements Rule
 
 		return in_array(
 			$delimiter,
-			// these delimiters are escaped, not matter what preg_quote() 2nd arg looks like
+			// these delimiters are escaped, no matter what preg_quote() 2nd arg looks like
 			['.', '\\',  '+', '*', '?', '[', '^', ']', '$', '(', ')', '{', '}', '=', '!', '<', '>', '|', ':', '-', '#'],
 			true,
 		);
 	}
 
+	/**
+	 * @return Node\Arg[]|null
+	 */
 	private function getNormalizedArgs(FuncCall $functionCall, Scope $scope, FunctionReflection $functionReflection): ?array
 	{
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(

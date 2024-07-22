@@ -25,7 +25,7 @@ function doFoo(string $s, callable $cb): void { // errors
 }
 
 
-function doFoo(string $s)
+function doFoo2(string $s)
 {
 	if (rand(0, 1) === 0) {
 		$prefix = '/\d*';

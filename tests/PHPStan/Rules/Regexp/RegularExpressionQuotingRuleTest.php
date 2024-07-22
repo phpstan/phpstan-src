@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Regexp;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<RegularExpressionQuotingRule>
@@ -71,6 +72,10 @@ class RegularExpressionQuotingRuleTest extends RuleTestCase
 
 	public function testRulePhp8(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse(
 			[__DIR__ . '/data/preg-quote-php8.php'],
 			[

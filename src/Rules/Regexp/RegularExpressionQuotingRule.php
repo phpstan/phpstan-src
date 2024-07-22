@@ -72,16 +72,18 @@ class RegularExpressionQuotingRule implements Rule
 			return [];
 		}
 
-		$patternDelimiter = $this->getDelimiterFromConcat($normalizedArgs[0]->value, $scope);
-		return $this->validateQuoteDelimiters($normalizedArgs[0]->value, $scope, $patternDelimiter);
+		$patternDelimiters = $this->getDelimitersFromConcat($normalizedArgs[0]->value, $scope);
+		return $this->validateQuoteDelimiters($normalizedArgs[0]->value, $scope, $patternDelimiters);
 	}
 
 	/**
+	 * @param string[] $patternDelimiters
+	 *
 	 * @return list<IdentifierRuleError>
 	 */
-	private function validateQuoteDelimiters(Concat $concat, Scope $scope, ?string $patternDelimiter): array
+	private function validateQuoteDelimiters(Concat $concat, Scope $scope, array $patternDelimiters): array
 	{
-		if ($patternDelimiter === null) {
+		if ($patternDelimiters === []) {
 			return [];
 		}
 
@@ -91,12 +93,12 @@ class RegularExpressionQuotingRule implements Rule
 			&& $concat->left->name instanceof Name
 			&& $concat->left->name->toLowerString() === 'preg_quote'
 		) {
-			$pregError = $this->validatePregQuote($concat->left, $scope, $patternDelimiter);
+			$pregError = $this->validatePregQuote($concat->left, $scope, $patternDelimiters);
 			if ($pregError !== null) {
 				$errors[] = $pregError;
 			}
 		} elseif ($concat->left instanceof Concat) {
-			$errors = array_merge($errors, $this->validateQuoteDelimiters($concat->left, $scope, $patternDelimiter));
+			$errors = array_merge($errors, $this->validateQuoteDelimiters($concat->left, $scope, $patternDelimiters));
 		}
 
 		if (
@@ -104,44 +106,57 @@ class RegularExpressionQuotingRule implements Rule
 			&& $concat->right->name instanceof Name
 			&& $concat->right->name->toLowerString() === 'preg_quote'
 		) {
-			$pregError = $this->validatePregQuote($concat->right, $scope, $patternDelimiter);
+			$pregError = $this->validatePregQuote($concat->right, $scope, $patternDelimiters);
 			if ($pregError !== null) {
 				$errors[] = $pregError;
 			}
 		} elseif ($concat->right instanceof Concat) {
-			$errors = array_merge($errors, $this->validateQuoteDelimiters($concat->right, $scope, $patternDelimiter));
+			$errors = array_merge($errors, $this->validateQuoteDelimiters($concat->right, $scope, $patternDelimiters));
 		}
 
 		return $errors;
 	}
 
-	private function validatePregQuote(FuncCall $pregQuote, Scope $scope, string $patternDelimiter): ?IdentifierRuleError
+	/**
+	 * @param string[] $patternDelimiters
+	 */
+	private function validatePregQuote(FuncCall $pregQuote, Scope $scope, array $patternDelimiters): ?IdentifierRuleError
 	{
-		if (!$pregQuote->name instanceof Node\Name) {
-			return null;
-		}
-
 		if (!$this->reflectionProvider->hasFunction($pregQuote->name, $scope)) {
 			return null;
 		}
 		$functionReflection = $this->reflectionProvider->getFunction($pregQuote->name, $scope);
 
-		$normalizedArgs = $this->getNormalizedArgs($pregQuote, $scope, $functionReflection);
-		if ($normalizedArgs === null) {
+		$args = $this->getNormalizedArgs($pregQuote, $scope, $functionReflection);
+		if ($args === null) {
 			return null;
 		}
 
-		if (!isset($normalizedArgs[1])) {
-			return RuleErrorBuilder::message(sprintf('Call to preg_quote() is missing delimiter %s to be effective.', $patternDelimiter))
+		if (count($args) === 1) {
+			if (count($patternDelimiters) === 1) {
+				return RuleErrorBuilder::message(sprintf('Call to preg_quote() is missing delimiter %s to be effective.', $patternDelimiters[0]))
+					->line($pregQuote->getStartLine())
+					->identifier('argument.invalidPregQuote')
+					->build();
+			}
+
+			return RuleErrorBuilder::message('Call to preg_quote() is missing delimiter parameter to be effective.')
 				->line($pregQuote->getStartLine())
 				->identifier('argument.invalidPregQuote')
 				->build();
 		}
 
-		if (count($normalizedArgs) >= 2) {
-			foreach ($scope->getType($normalizedArgs[1]->value)->getConstantStrings() as $quoteDelimiterType) {
-				if ($quoteDelimiterType->getValue() !== $patternDelimiter) {
-					return RuleErrorBuilder::message(sprintf('Call to preg_quote() uses invalid delimiter %s while pattern uses %s.', $quoteDelimiterType->getValue(), $patternDelimiter))
+		if (count($args) >= 2) {
+			foreach ($scope->getType($args[1]->value)->getConstantStrings() as $quoteDelimiterType) {
+				if (!in_array($quoteDelimiterType->getValue(), $patternDelimiters, true)) {
+					if (count($patternDelimiters) === 1) {
+						return RuleErrorBuilder::message(sprintf('Call to preg_quote() uses invalid delimiter %s while pattern uses %s.', $quoteDelimiterType->getValue(), $patternDelimiters[0]))
+							->line($pregQuote->getStartLine())
+							->identifier('argument.invalidPregQuote')
+							->build();
+					}
+
+					return RuleErrorBuilder::message(sprintf('Call to preg_quote() uses invalid delimiter %s.', $quoteDelimiterType->getValue()))
 						->line($pregQuote->getStartLine())
 						->identifier('argument.invalidPregQuote')
 						->build();
@@ -154,22 +169,27 @@ class RegularExpressionQuotingRule implements Rule
 
 	/**
 	 * Get delimiters from non-constant patterns, if possible.
+	 *
+	 * @return string[]
 	 */
-	private function getDelimiterFromConcat(Concat $concat, Scope $scope): ?string
+	private function getDelimitersFromConcat(Concat $concat, Scope $scope): array
 	{
 		if ($concat->left instanceof Concat) {
-			return $this->getDelimiterFromConcat($concat->left, $scope);
+			return $this->getDelimitersFromConcat($concat->left, $scope);
 		}
 
 		$left = $scope->getType($concat->left);
 
-		$constantStrings = $left->getConstantStrings();
-		// since we analyze a Expr directly given to a call, it can only ever resolve to a single constant string
-		if (count($constantStrings) === 1) {
-			return $this->getDelimiterFromString($constantStrings[0]);
-		}
+		$delimiters = [];
+		foreach ($left->getConstantStrings() as $leftString) {
+			$delimiter = $this->getDelimiterFromString($leftString);
+			if ($delimiter === null) {
+				continue;
+			}
 
-		return null;
+			$delimiters[] = $delimiter;
+		}
+		return $delimiters;
 	}
 
 	private function getDelimiterFromString(ConstantStringType $string): ?string
@@ -193,10 +213,6 @@ class RegularExpressionQuotingRule implements Rule
 		return $firstChar;
 	}
 
-	/**
-	 * @return Node\Arg[]|null
-
-	 */
 	private function getNormalizedArgs(FuncCall $functionCall, Scope $scope, FunctionReflection $functionReflection): ?array
 	{
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(

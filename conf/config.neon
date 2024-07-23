@@ -93,6 +93,7 @@ parameters:
 		uselessReturnValue: false
 		printfArrayParameters: false
 		preciseMissingReturn: false
+		validatePregQuote: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

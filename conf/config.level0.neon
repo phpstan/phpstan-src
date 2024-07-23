@@ -28,6 +28,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.uselessReturnValue%
 	PHPStan\Rules\Functions\PrintfArrayParametersRule:
 		phpstan.rules.rule: %featureToggles.printfArrayParameters%
+	PHPStan\Rules\Regexp\RegularExpressionQuotingRule:
+		phpstan.rules.rule: %featureToggles.validatePregQuote%
 
 rules:
 	- PHPStan\Rules\Api\ApiInstantiationRule
@@ -304,3 +306,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Functions\PrintfArrayParametersRule
+
+	-
+		class: PHPStan\Rules\Regexp\RegularExpressionQuotingRule

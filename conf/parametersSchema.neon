@@ -224,6 +224,9 @@ parametersSchema:
 	env: arrayOf(string(), anyOf(int(), string()))
 	sysGetTempDir: string()
 
+	# playground mode
+	sourceLocatorPlaygroundMode: bool()
+
 	# irrelevant Nette parameters
 	debugMode: bool()
 	productionMode: bool()

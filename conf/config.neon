@@ -257,6 +257,7 @@ parameters:
 	editorUrlTitle: null
 	errorFormat: null
 	sysGetTempDir: ::sys_get_temp_dir()
+	sourceLocatorPlaygroundMode: false
 	pro:
 		dnsServers:
 			- '1.1.1.2'
@@ -2063,6 +2064,7 @@ services:
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
+			playgroundMode: %sourceLocatorPlaygroundMode%
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory

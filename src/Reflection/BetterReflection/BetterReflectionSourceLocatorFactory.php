@@ -55,6 +55,7 @@ class BetterReflectionSourceLocatorFactory
 		private array $analysedPaths,
 		private array $composerAutoloaderProjectPaths,
 		private array $analysedPathsFromConfig,
+		private bool $playgroundMode, // makes all PHPStan classes in the PHAR discoverable with PSR-4
 	)
 	{
 	}
@@ -112,11 +113,16 @@ class BetterReflectionSourceLocatorFactory
 		if (extension_loaded('phar')) {
 			$pharProtocolPath = Phar::running();
 			if ($pharProtocolPath !== '') {
+				$mappings = [
+					'PHPStan\\BetterReflection\\' => [$pharProtocolPath . '/vendor/ondrejmirtes/better-reflection/src/'],
+				];
+				if ($this->playgroundMode) {
+					$mappings['PHPStan\\'] = [$pharProtocolPath . '/src/'];
+				} else {
+					$mappings['PHPStan\\Testing\\'] = [$pharProtocolPath . '/src/Testing/'];
+				}
 				$fileLocators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
-					Psr4Mapping::fromArrayMappings([
-						'PHPStan\\Testing\\' => [$pharProtocolPath . '/src/Testing/'],
-						'PHPStan\\BetterReflection\\' => [$pharProtocolPath . '/vendor/ondrejmirtes/better-reflection/src/'],
-					]),
+					Psr4Mapping::fromArrayMappings($mappings),
 				);
 			}
 		}

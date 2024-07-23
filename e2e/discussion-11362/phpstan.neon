@@ -1,0 +1,11 @@
+parameters:
+  excludePaths:
+    analyseAndScan:
+      - .git
+    analyse:
+      - vendor
+
+  level: 1
+
+  paths:
+    - .

@@ -184,35 +184,35 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		$signatureMap = array_change_key_case($signatureMap, CASE_LOWER);
 
 		if ($this->stricterFunctionMap) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, 'functionMap_bleedingEdge.php');
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_bleedingEdge.php');
 		}
 
 		if ($this->phpVersion->getVersionId() >= 70400) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, 'functionMap_php74delta.php');
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php74delta.php');
 		}
 
 		if ($this->phpVersion->getVersionId() >= 80000) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, 'functionMap_php80delta.php');
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php80delta.php');
 
 			if ($this->stricterFunctionMap) {
-				$signatureMap = $this->computeSignatureMapFile($signatureMap, 'functionMap_php80delta_bleedingEdge.php');
+				$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php80delta_bleedingEdge.php');
 			}
 		}
 
 		if ($this->phpVersion->getVersionId() >= 80100) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, 'functionMap_php81delta.php');
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php81delta.php');
 		}
 
 		if ($this->phpVersion->getVersionId() >= 80200) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, 'functionMap_php82delta.php');
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php82delta.php');
 		}
 
 		if ($this->phpVersion->getVersionId() >= 80300) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, 'functionMap_php83delta.php');
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php83delta.php');
 		}
 
 		if ($this->phpVersion->getVersionId() >= 80400) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, 'functionMap_php84delta.php');
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php84delta.php');
 		}
 
 		return self::$signatureMaps[$cacheKey] = $signatureMap;
@@ -224,7 +224,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 	 */
 	private function computeSignatureMapFile(array $signatureMap, string $file): array
 	{
-		$signatureMapDelta = include __DIR__ . '/../../../resources/' . $file;
+		$signatureMapDelta = include $file;
 		if (!is_array($signatureMapDelta)) {
 			throw new ShouldNotHappenException(sprintf('Signature map file "%s" could not be loaded.', $file));
 		}

@@ -270,6 +270,10 @@ jobs:
               cd e2e/baseline-uninit-prop-trait
               ../../bin/phpstan analyse --configuration test-no-baseline.neon --generate-baseline test-baseline.neon
               ../../bin/phpstan analyse --configuration test.neon
+          - script: |
+              cd e2e/discussion-11362
+              composer install
+              ../../bin/phpstan
 
     steps:
       - name: "Checkout"

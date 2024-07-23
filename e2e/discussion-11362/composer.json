@@ -1,0 +1,24 @@
+{
+  "config": {
+    "preferred-install": {
+      "*": "dist",
+      "repro/*": "source"
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "repositories": [
+    {
+      "type": "path",
+      "url": "./packages/*/"
+    }
+  ],
+  "require": {
+    "repro/site": "@dev",
+    "php": "^8.1"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "1.11.7"
+  }
+}

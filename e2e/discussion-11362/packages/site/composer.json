@@ -1,0 +1,11 @@
+{
+  "autoload": {
+    "psr-4": {
+      "Repro\\Site\\": "Classes"
+    }
+  },
+  "name": "repro/site",
+  "require": {
+    "php": "^8.1"
+  }
+}

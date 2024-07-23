@@ -184,78 +184,52 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		$signatureMap = array_change_key_case($signatureMap, CASE_LOWER);
 
 		if ($this->stricterFunctionMap) {
-			$stricterFunctionMap = require __DIR__ . '/../../../resources/functionMap_bleedingEdge.php';
-			if (!is_array($stricterFunctionMap)) {
-				throw new ShouldNotHappenException('Signature map could not be loaded.');
-			}
-
-			$signatureMap = $this->computeSignatureMap($signatureMap, $stricterFunctionMap);
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_bleedingEdge.php');
 		}
 
 		if ($this->phpVersion->getVersionId() >= 70400) {
-			$php74MapDelta = require __DIR__ . '/../../../resources/functionMap_php74delta.php';
-			if (!is_array($php74MapDelta)) {
-				throw new ShouldNotHappenException('Signature map could not be loaded.');
-			}
-
-			$signatureMap = $this->computeSignatureMap($signatureMap, $php74MapDelta);
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php74delta.php');
 		}
 
 		if ($this->phpVersion->getVersionId() >= 80000) {
-			$php80MapDelta = require __DIR__ . '/../../../resources/functionMap_php80delta.php';
-			if (!is_array($php80MapDelta)) {
-				throw new ShouldNotHappenException('Signature map could not be loaded.');
-			}
-
-			$signatureMap = $this->computeSignatureMap($signatureMap, $php80MapDelta);
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php80delta.php');
 
 			if ($this->stricterFunctionMap) {
-				$php80StricterFunctionMapDelta = require __DIR__ . '/../../../resources/functionMap_php80delta_bleedingEdge.php';
-				if (!is_array($php80StricterFunctionMapDelta)) {
-					throw new ShouldNotHappenException('Signature map could not be loaded.');
-				}
-
-				$signatureMap = $this->computeSignatureMap($signatureMap, $php80StricterFunctionMapDelta);
+				$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php80delta_bleedingEdge.php');
 			}
 		}
 
 		if ($this->phpVersion->getVersionId() >= 80100) {
-			$php81MapDelta = require __DIR__ . '/../../../resources/functionMap_php81delta.php';
-			if (!is_array($php81MapDelta)) {
-				throw new ShouldNotHappenException('Signature map could not be loaded.');
-			}
-
-			$signatureMap = $this->computeSignatureMap($signatureMap, $php81MapDelta);
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php81delta.php');
 		}
 
 		if ($this->phpVersion->getVersionId() >= 80200) {
-			$php82MapDelta = require __DIR__ . '/../../../resources/functionMap_php82delta.php';
-			if (!is_array($php82MapDelta)) {
-				throw new ShouldNotHappenException('Signature map could not be loaded.');
-			}
-
-			$signatureMap = $this->computeSignatureMap($signatureMap, $php82MapDelta);
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php82delta.php');
 		}
 
 		if ($this->phpVersion->getVersionId() >= 80300) {
-			$php83MapDelta = require __DIR__ . '/../../../resources/functionMap_php83delta.php';
-			if (!is_array($php83MapDelta)) {
-				throw new ShouldNotHappenException('Signature map could not be loaded.');
-			}
-
-			$signatureMap = $this->computeSignatureMap($signatureMap, $php83MapDelta);
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php83delta.php');
 		}
 
 		if ($this->phpVersion->getVersionId() >= 80400) {
-			$php84MapDelta = require __DIR__ . '/../../../resources/functionMap_php84delta.php';
-			if (!is_array($php84MapDelta)) {
-				throw new ShouldNotHappenException('Signature map could not be loaded.');
-			}
-
-			$signatureMap = $this->computeSignatureMap($signatureMap, $php84MapDelta);
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php84delta.php');
 		}
 
 		return self::$signatureMaps[$cacheKey] = $signatureMap;
+	}
+
+	/**
+	 * @param array<string, mixed> $signatureMap
+	 * @return array<string, mixed>
+	 */
+	private function computeSignatureMapFile(array $signatureMap, string $file): array
+	{
+		$signatureMapDelta = include $file;
+		if (!is_array($signatureMapDelta)) {
+			throw new ShouldNotHappenException(sprintf('Signature map file "%s" could not be loaded.', $file));
+		}
+
+		return $this->computeSignatureMap($signatureMap, $signatureMapDelta);
 	}
 
 	/**

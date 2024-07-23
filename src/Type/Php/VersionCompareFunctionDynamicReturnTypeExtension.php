@@ -2,12 +2,15 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -17,6 +20,10 @@ use function version_compare;
 
 class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private ComposerPhpVersionFactory $composerPhpVersionFactory)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -29,19 +36,20 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		Scope $scope,
 	): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
-		$version1Strings = $scope->getType($functionCall->getArgs()[0]->value)->getConstantStrings();
-		$version2Strings = $scope->getType($functionCall->getArgs()[1]->value)->getConstantStrings();
+		$version1Strings = $this->getVersionStrings($args[0]->value, $scope);
+		$version2Strings = $this->getVersionStrings($args[1]->value, $scope);
 		$counts = [
 			count($version1Strings),
 			count($version2Strings),
 		];
 
-		if (isset($functionCall->getArgs()[2])) {
-			$operatorStrings = $scope->getType($functionCall->getArgs()[2]->value)->getConstantStrings();
+		if (isset($args[2])) {
+			$operatorStrings = $scope->getType($args[2]->value)->getConstantStrings();
 			$counts[] = count($operatorStrings);
 			$returnType = new BooleanType();
 		} else {
@@ -75,6 +83,26 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			}
 		}
 		return TypeCombinator::union(...$types);
+	}
+
+	/**
+	 * @return ConstantStringType[]
+	 */
+	private function getVersionStrings(Expr $expr, Scope $scope): array
+	{
+		if (
+			$expr instanceof Expr\ConstFetch
+			&& $expr->name->toString() === 'PHP_VERSION'
+			&& $this->composerPhpVersionFactory->getMinVersion() !== null
+			&& $this->composerPhpVersionFactory->getMaxVersion() !== null
+		) {
+			return [
+				new ConstantStringType($this->composerPhpVersionFactory->getMinVersion()->getVersionString()),
+				new ConstantStringType($this->composerPhpVersionFactory->getMaxVersion()->getVersionString()),
+			];
+		}
+
+		return $scope->getType($expr)->getConstantStrings();
 	}
 
 }

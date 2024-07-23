@@ -166,7 +166,7 @@ abstract class PHPStanTestCase extends TestCase
 		}
 
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
-		$constantResolver = new ConstantResolver($reflectionProviderProvider, $dynamicConstantNames);
+		$constantResolver = new ConstantResolver($reflectionProviderProvider, $dynamicConstantNames, null, null);
 
 		return new ScopeFactory(
 			new DirectInternalScopeFactory(

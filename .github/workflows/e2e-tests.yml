@@ -270,7 +270,35 @@ jobs:
               cd e2e/baseline-uninit-prop-trait
               ../../bin/phpstan analyse --configuration test-no-baseline.neon --generate-baseline test-baseline.neon
               ../../bin/phpstan analyse --configuration test.neon
-
+          - script: |
+              cd e2e/composer-max-version
+              composer install
+              ../../bin/phpstan analyze test.php --level=0
+          - script: |
+              cd e2e/composer-min-max-version
+              composer install
+              ../../bin/phpstan analyze test.php --level=0
+          - script: |
+              cd e2e/composer-min-open-end-version
+              composer install
+              ../../bin/phpstan analyze test.php --level=0
+          - script: |
+              cd e2e/composer-min-version-bc
+              composer install
+              ../../bin/phpstan analyze test.php --level=0
+          - script: |
+              cd e2e/composer-min-version
+              composer install
+              ../../bin/phpstan analyze test.php --level=0
+          - script: |
+              cd e2e/composer-version-config
+              composer install
+              ../../bin/phpstan analyze test.php --level=0
+          - script: |
+              cd e2e/composer-version-config-invalid
+              OUTPUT=$(../../bin/phpstan 2>&1 || true)
+              grep 'Invalid configuration' <<< "$OUTPUT"
+              grep 'Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.' <<< "$OUTPUT"
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4

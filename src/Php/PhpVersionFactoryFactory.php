@@ -8,18 +8,22 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use function count;
 use function end;
+use function is_array;
 use function is_file;
+use function is_int;
 use function is_string;
 
 class PhpVersionFactoryFactory
 {
 
 	/**
+	 * @param int|array{min: int, max: int}|null $phpVersion
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		private ?int $versionId,
+		private int|array|null $phpVersion,
 		private array $composerAutoloaderProjectPaths,
+		private bool $bleedingEdge,
 	)
 	{
 	}
@@ -43,7 +47,17 @@ class PhpVersionFactoryFactory
 			}
 		}
 
-		return new PhpVersionFactory($this->versionId, $composerPhpVersion);
+		$versionId = null;
+
+		if (is_int($this->phpVersion)) {
+			$versionId = $this->phpVersion;
+		}
+
+		if ($this->bleedingEdge && is_array($this->phpVersion)) {
+			$versionId = $this->phpVersion['min'];
+		}
+
+		return new PhpVersionFactory($versionId, $composerPhpVersion);
 	}
 
 }

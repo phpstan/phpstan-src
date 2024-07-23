@@ -36,6 +36,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\ObjectType;
 use Symfony\Component\Finder\Finder;
 use function array_diff_key;
+use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function array_unique;
@@ -352,6 +353,18 @@ class ContainerFactory
 			$context->path = ['parameters'];
 		};
 		$processor->process($schema, $parameters);
+
+		if (
+			!array_key_exists('phpVersion', $parameters)
+			|| !is_array($parameters['phpVersion'])) {
+			return;
+		}
+
+		$phpVersion = $parameters['phpVersion'];
+
+		if ($phpVersion['max'] < $phpVersion['min']) {
+			throw new InvalidPhpVersionException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
+		}
 	}
 
 	/**

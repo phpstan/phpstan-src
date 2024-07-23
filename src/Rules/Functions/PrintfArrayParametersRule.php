@@ -11,6 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
@@ -87,12 +88,11 @@ class PrintfArrayParametersRule implements Rule
 			$formatArgsType = $scope->getType($args[1]->value);
 
 			$constantArrays = $formatArgsType->getConstantArrays();
+			if ($constantArrays === []) {
+				$formatArgsCounts[] = new IntegerType();
+			}
 			foreach ($constantArrays as $constantArray) {
 				$formatArgsCounts[] = $constantArray->getArraySize();
-			}
-
-			if ($constantArrays === []) {
-				$formatArgsCounts[] = $formatArgsType->getArraySize();
 			}
 		}
 

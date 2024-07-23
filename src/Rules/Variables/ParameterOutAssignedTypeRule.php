@@ -108,10 +108,15 @@ class ParameterOutAssignedTypeRule implements Rule
 			$functionDescription,
 			$outType->describe($verbosityLevel),
 			$assignedExprType->describe($verbosityLevel),
-		))->identifier(sprintf('%s.type', $isParamOutType ? 'paramOut' : 'parameterByRef'));
+		))->identifier($isParamOutType ? 'paramOut.type' : 'parameterByRef.type');
+
+		$accepts = $outType->acceptsWithReason($assignedExprType, true);
+		if (!$accepts->result->yes()) {
+			$errorBuilder->acceptsReasonsTip($accepts->reasons);
+		}
 
 		if (!$isParamOutType) {
-			$errorBuilder->tip('You can change the parameter out type with @param-out PHPDoc tag.');
+			$errorBuilder->addTip('You can change the parameter out type with @param-out PHPDoc tag.');
 		}
 
 		return [

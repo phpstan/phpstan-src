@@ -529,3 +529,17 @@ class MorePreciseMissingReturnLines
 	}
 
 }
+
+class AnonymousFunctionOnlySometimesThrowsException
+{
+
+	public function doFoo(): void
+	{
+		$cb = function (): void {
+			if (rand(0, 1)) {
+				throw new \Exception('bad luck');
+			}
+		};
+	}
+
+}

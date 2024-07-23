@@ -1375,12 +1375,12 @@ class MutatingScope implements Scope
 				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
 				$closureReturnStatements = [];
 				$closureYieldStatements = [];
-				$closureExecutionEnds = [];
+				$onlyNeverExecutionEnds = null;
 				$closureImpurePoints = [];
 				$invalidateExpressions = [];
 
 				try {
-					$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds, &$closureImpurePoints, &$invalidateExpressions): void {
+					$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$onlyNeverExecutionEnds, &$closureImpurePoints, &$invalidateExpressions): void {
 						if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
 							return;
 						}
@@ -1405,16 +1405,24 @@ class MutatingScope implements Scope
 							if ($node->getStatementResult()->isAlwaysTerminating()) {
 								foreach ($node->getStatementResult()->getExitPoints() as $exitPoint) {
 									if ($exitPoint->getStatement() instanceof Node\Stmt\Return_) {
+										$onlyNeverExecutionEnds = false;
 										continue;
 									}
 
-									$closureExecutionEnds[] = $node;
+									if ($onlyNeverExecutionEnds === null) {
+										$onlyNeverExecutionEnds = true;
+									}
+
 									break;
 								}
 
 								if (count($node->getStatementResult()->getExitPoints()) === 0) {
-									$closureExecutionEnds[] = $node;
+									if ($onlyNeverExecutionEnds === null) {
+										$onlyNeverExecutionEnds = true;
+									}
 								}
+							} else {
+								$onlyNeverExecutionEnds = false;
 							}
 
 							return;
@@ -1449,13 +1457,13 @@ class MutatingScope implements Scope
 				}
 
 				if (count($returnTypes) === 0) {
-					if (count($closureExecutionEnds) > 0 && !$hasNull) {
+					if ($onlyNeverExecutionEnds === true && !$hasNull) {
 						$returnType = new NonAcceptingNeverType();
 					} else {
 						$returnType = new VoidType();
 					}
 				} else {
-					if (count($closureExecutionEnds) > 0) {
+					if ($onlyNeverExecutionEnds === true) {
 						$returnTypes[] = new NonAcceptingNeverType();
 					}
 					if ($hasNull) {

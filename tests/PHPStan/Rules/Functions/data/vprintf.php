@@ -50,7 +50,7 @@ function doFoo($message, array $arr) {
 	} else {
 		$format = '%s%s';
 	}
-	vsprintf($format, $arr); // need at least non-empty-array
+	vsprintf($format, $arr); // do not report on general array, annoying in practice
 
 	if (rand(0,1)) {
 		$format = '%s';

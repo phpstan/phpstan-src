@@ -149,7 +149,8 @@ final class RegexArrayShapeMatcher
 		$onlyTopLevelAlternationId = $this->getOnlyTopLevelAlternationId($groupList);
 
 		if (
-			$wasMatched->yes()
+			!$matchesAll
+			&& $wasMatched->yes()
 			&& $onlyOptionalTopLevelGroup !== null
 		) {
 			// if only one top level capturing optional group exists
@@ -163,7 +164,7 @@ final class RegexArrayShapeMatcher
 				$trailingOptionals,
 				$flags ?? 0,
 				$markVerbs,
-				$matchesAll
+				$matchesAll,
 			);
 
 			if (!$this->containsUnmatchedAsNull($flags ?? 0)) {
@@ -172,9 +173,11 @@ final class RegexArrayShapeMatcher
 					$combiType,
 				);
 			}
+
 			return $combiType;
 		} elseif (
-			$wasMatched->yes()
+			!$matchesAll
+			&& $wasMatched->yes()
 			&& $onlyTopLevelAlternationId !== null
 			&& array_key_exists($onlyTopLevelAlternationId, $groupCombinations)
 		) {
@@ -282,7 +285,6 @@ final class RegexArrayShapeMatcher
 
 	/**
 	 * @param array<RegexCapturingGroup> $captureGroups
-	 * @param list<string> $markVerbs
 	 */
 	private function buildMatchArrayType(
 		array $captureGroups,
@@ -334,7 +336,7 @@ final class RegexArrayShapeMatcher
 		array $captureGroups,
 		TrinaryLogic $wasMatched,
 		int $flags,
-	): ConstantArrayTypeBuilders
+	): ConstantArrayTypeBuilder
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
@@ -380,6 +382,7 @@ final class RegexArrayShapeMatcher
 
 	/**
 	 * @param array<RegexCapturingGroup> $captureGroups
+	 * @param list<string> $markVerbs
 	 */
 	private function buildArrayType(
 		array $captureGroups,

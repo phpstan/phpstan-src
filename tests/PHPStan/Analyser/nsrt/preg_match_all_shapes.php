@@ -45,7 +45,7 @@ function (string $size): void {
 		assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
 		return;
 	}
-	assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
+	assertType("array{}", $matches);
 };
 
 function (string $size): void {

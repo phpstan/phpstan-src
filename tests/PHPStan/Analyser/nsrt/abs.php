@@ -121,19 +121,37 @@ class Foo
 		assertType('1.0', abs($float));
 	}
 
-	public function mixedUnion(float $float): void
+	public function string(string $string): void
 	{
-		/** @var 1.0|int<2, 3> $float */
-		assertType('1.0|int<2, 3>', abs($float));
+		/** @var string $string */
+		assertType('float|int<0, max>', abs($string));
 
-		/** @var -1.0|int<-3, -2> $float */
-		assertType('1.0|int<2, 3>', abs($float));
+		/** @var numeric-string $string */
+		assertType('float|int<0, max>', abs($string));
 
-		/** @var 2.0|int<1, 3> $float */
-		assertType('2.0|int<1, 3>', abs($float));
+		/** @var '-1' $string */
+		assertType('1', abs($string));
 
-		/** @var -2.0|int<-3, -1> $float */
-		assertType('2.0|int<1, 3>', abs($float));
+		/** @var '-1'|'-2.0'|'3.0'|'4' $string */
+		assertType('1|2.0|3.0|4', abs($string));
+	}
+
+	public function mixedUnion(mixed $value): void
+	{
+		/** @var 1.0|int<2, 3> $value */
+		assertType('1.0|int<2, 3>', abs($value));
+
+		/** @var -1.0|int<-3, -2> $value */
+		assertType('1.0|int<2, 3>', abs($value));
+
+		/** @var 2.0|int<1, 3> $value */
+		assertType('2.0|int<1, 3>', abs($value));
+
+		/** @var -2.0|int<-3, -1> $value */
+		assertType('2.0|int<1, 3>', abs($value));
+
+		/** @var -1.0|int<2, 3>|numeric-string $value */
+		assertType('float|int<0, max>', abs($value));
 	}
 
 	public function invalidType(mixed $nonInt): void

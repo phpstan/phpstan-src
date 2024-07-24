@@ -38,49 +38,53 @@ class AbsFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnType
 		$type = $scope->getType($args[0]->value);
 
 		if ($type instanceof UnionType) {
-			$ranges = [];
+			$absUnionTypes = [];
 
 			foreach ($type->getTypes() as $unionType) {
-				if (
-					!$unionType instanceof ConstantIntegerType
-					&& !$unionType instanceof IntegerRangeType
-					&& !$unionType instanceof ConstantFloatType
-				) {
+				$absUnionType = $this->tryAbsType($unionType);
+
+				if ($absUnionType === null) {
 					return null;
 				}
 
-				$absRange = $this->absType($unionType);
-
-				foreach ($ranges as $index => $range) {
-					if (!($range instanceof IntegerRangeType)) {
+				foreach ($absUnionTypes as $index => $otherAbsUnionType) {
+					if (!($otherAbsUnionType instanceof IntegerRangeType)) {
 						continue;
 					}
 
-					$unionRange = $range->tryUnion($absRange);
+					$unionRange = $otherAbsUnionType->tryUnion($absUnionType);
 
 					if ($unionRange !== null) {
-						$ranges[$index] = $unionRange;
+						$absUnionTypes[$index] = $unionRange;
 
 						continue 2;
 					}
 				}
 
-				$ranges[] = $absRange;
+				$absUnionTypes[] = $absUnionType;
 			}
 
-			if (count($ranges) === 1) {
-				return $ranges[0];
+			if (count($absUnionTypes) === 1) {
+				return $absUnionTypes[0];
 			}
 
-			return new UnionType($ranges);
+			return new UnionType($absUnionTypes);
 		}
 
+		return $this->tryAbsType($type);
+	}
+
+	private function tryAbsType(Type $type): ?Type
+	{
+		$numberType = $type->toNumber();
+
 		if (
-			$type instanceof ConstantIntegerType
-			|| $type instanceof IntegerRangeType
-			|| $type instanceof ConstantFloatType
+			$numberType instanceof IntegerRangeType
+			|| $numberType instanceof ConstantIntegerType
+			|| $numberType instanceof ConstantFloatType
+
 		) {
-			return $this->absType($type);
+			return $this->absType($numberType);
 		}
 
 		return null;

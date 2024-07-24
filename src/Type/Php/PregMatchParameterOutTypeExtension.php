@@ -23,7 +23,7 @@ final class PregMatchParameterOutTypeExtension implements FunctionParameterOutTy
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool
 	{
-		return in_array(strtolower($functionReflection->getName()), ['preg_match'], true)
+		return in_array(strtolower($functionReflection->getName()), ['preg_match', 'preg_match_all'], true)
 			// the parameter is named different, depending on PHP version.
 			&& in_array($parameter->getName(), ['subpatterns', 'matches'], true);
 	}
@@ -46,7 +46,10 @@ final class PregMatchParameterOutTypeExtension implements FunctionParameterOutTy
 			$flagsType = $scope->getType($flagsArg->value);
 		}
 
-		return $this->regexShapeMatcher->matchExpr($patternArg->value, $flagsType, TrinaryLogic::createMaybe(), $scope);
+		if ($functionReflection->getName() === 'preg_match') {
+			return $this->regexShapeMatcher->matchExpr($patternArg->value, $flagsType, TrinaryLogic::createMaybe(), $scope);
+		}
+		return $this->regexShapeMatcher->matchAllExpr($patternArg->value, $flagsType, TrinaryLogic::createMaybe(), $scope);
 	}
 
 }

@@ -295,8 +295,6 @@ conditionalTags:
 		phpstan.typeSpecifier.functionTypeSpecifyingExtension: %featureToggles.narrowPregMatches%
 	PHPStan\Type\Php\PregMatchParameterOutTypeExtension:
 		phpstan.functionParameterOutTypeExtension: %featureToggles.narrowPregMatches%
-	PHPStan\Type\Php\PregMatchAllParameterOutTypeExtension:
-		phpstan.functionParameterOutTypeExtension: %featureToggles.narrowPregMatches%
 
 services:
 	-
@@ -1498,9 +1496,6 @@ services:
 
 	-
 		class: PHPStan\Type\Php\PregMatchParameterOutTypeExtension
-
-	-
-		class: PHPStan\Type\Php\PregMatchAllParameterOutTypeExtension
 
 	-
 		class: PHPStan\Type\Php\RegexArrayShapeMatcher

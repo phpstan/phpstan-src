@@ -13,6 +13,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -55,6 +56,7 @@ final class RegexArrayShapeMatcher
 
 	public function __construct(
 		private PhpVersion $phpVersion,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
 	}
@@ -724,38 +726,33 @@ final class RegexArrayShapeMatcher
 	 */
 	private function resolvePatternConcat(Expr\BinaryOp\Concat $concat, Scope $scope): Type
 	{
-		if (
-			$concat->left instanceof Expr\FuncCall
-			&& $concat->left->name instanceof Name
-			&& $concat->left->name->toLowerString() === 'preg_quote'
-		) {
-			$left = new ConstantStringType('');
-		} elseif ($concat->left instanceof Expr\BinaryOp\Concat) {
-			$left = $this->resolvePatternConcat($concat->left, $scope);
-		} else {
-			$left = $scope->getType($concat->left);
-		}
-
-		if (
-			$concat->right instanceof Expr\FuncCall
-			&& $concat->right->name instanceof Name
-			&& $concat->right->name->toLowerString() === 'preg_quote'
-		) {
-			$right = new ConstantStringType('');
-		} elseif ($concat->right instanceof Expr\BinaryOp\Concat) {
-			$right = $this->resolvePatternConcat($concat->right, $scope);
-		} else {
-			$right = $scope->getType($concat->right);
-		}
-
-		$strings = [];
-		foreach ($left->getConstantStrings() as $leftString) {
-			foreach ($right->getConstantStrings() as $rightString) {
-				$strings[] = new ConstantStringType($leftString->getValue() . $rightString->getValue());
+		$resolveConcat = static function (Expr $expr) use (&$resolveConcat, $scope) {
+			if (
+				$expr instanceof Expr\FuncCall
+				&& $expr->name instanceof Name
+				&& $expr->name->toLowerString() === 'preg_quote'
+			) {
+				return new ConstantStringType('');
 			}
-		}
 
-		return TypeCombinator::union(...$strings);
+			if ($expr instanceof Expr\BinaryOp\Concat) {
+				$left = $resolveConcat($expr->left);
+				$right = $resolveConcat($expr->right);
+
+				$strings = [];
+				foreach ($left->toString()->getConstantStrings() as $leftString) {
+					foreach ($right->toString()->getConstantStrings() as $rightString) {
+						$strings[] = new ConstantStringType($leftString->getValue() . $rightString->getValue());
+					}
+				}
+
+				return TypeCombinator::union(...$strings);
+			}
+
+			return $scope->getType($expr);
+		};
+
+		return $this->initializerExprTypeResolver->getConcatType($concat->left, $concat->right, $resolveConcat);
 	}
 
 }

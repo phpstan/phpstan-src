@@ -10,8 +10,8 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function array_key_exists;
 use function count;
-use function in_array;
 use function sprintf;
 
 /**
@@ -19,6 +19,14 @@ use function sprintf;
  */
 class UselessFunctionReturnValueRule implements Rule
 {
+
+	private const USELESS_FUNCTIONS = [
+		'var_export' => 'null',
+		'print_r' => 'true',
+		'highlight_string' => 'bool',
+		'highlight_file' => 'bool',
+		'show_source' => 'bool',
+	];
 
 	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
@@ -41,7 +49,7 @@ class UselessFunctionReturnValueRule implements Rule
 
 		$functionReflection = $this->reflectionProvider->getFunction($funcCall->name, $scope);
 
-		if (!in_array($functionReflection->getName(), ['var_export', 'print_r', 'highlight_string', 'highlight_file', 'show_source'], true)) {
+		if (!array_key_exists($functionReflection->getName(), self::USELESS_FUNCTIONS)) {
 			return [];
 		}
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
@@ -64,8 +72,9 @@ class UselessFunctionReturnValueRule implements Rule
 		if (count($reorderedArgs) === 1 || (count($reorderedArgs) >= 2 && $scope->getType($reorderedArgs[1]->value)->isFalse()->yes())) {
 			return [RuleErrorBuilder::message(
 				sprintf(
-					'Return value of function %s() is always true and the result is printed instead of being returned. Pass in true as parameter #%d $%s to return the output instead.',
+					'Return value of function %s() is always %s and the result is printed instead of being returned. Pass in true as parameter #%d $%s to return the output instead.',
 					$functionReflection->getName(),
+					self::USELESS_FUNCTIONS[$functionReflection->getName()],
 					2,
 					$parametersAcceptor->getParameters()[1]->getName(),
 				),

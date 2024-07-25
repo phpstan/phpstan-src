@@ -78,6 +78,11 @@
 %token  co:_comment              \)                 -> default
 %token  co:comment               .*?(?=(?<!\\)\))
 
+// Marker verbs
+%token  marker_                  \(\*:              -> mark
+%token  mark:name                [^)]+
+%token  mark:_marker             \)                 -> default
+
 // Capturing group.
 %token  named_capturing_         \(\?P?<            -> nc
 %token  nc:_named_capturing      >                  -> default
@@ -186,7 +191,8 @@ simple:
   | literal()
 
 #capturing:
-    ::comment_:: <comment>? ::_comment:: #comment
+    ::marker_:: <name> ::_marker:: #mark
+  | ::comment_:: <comment>? ::_comment:: #comment
   | (
         ::named_capturing_:: <capturing_name> ::_named_capturing:: #namedcapturing
       | ::non_capturing_:: #noncapturing

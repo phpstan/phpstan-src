@@ -125,7 +125,7 @@ final class RegexArrayShapeMatcher
 			// regex could not be parsed by Hoa/Regex
 			return null;
 		}
-		[$groupList, $groupCombinations] = $parseResult;
+		[$groupList, $groupCombinations, $hasMark] = $parseResult;
 
 		$trailingOptionals = 0;
 		foreach (array_reverse($groupList) as $captureGroup) {
@@ -152,6 +152,7 @@ final class RegexArrayShapeMatcher
 				$wasMatched,
 				$trailingOptionals,
 				$flags ?? 0,
+				$hasMark,
 			);
 
 			if (!$this->containsUnmatchedAsNull($flags ?? 0)) {
@@ -189,6 +190,7 @@ final class RegexArrayShapeMatcher
 					$wasMatched,
 					$trailingOptionals,
 					$flags ?? 0,
+					$hasMark,
 				);
 
 				$combiTypes[] = $combiType;
@@ -211,6 +213,7 @@ final class RegexArrayShapeMatcher
 			$wasMatched,
 			$trailingOptionals,
 			$flags ?? 0,
+			$hasMark,
 		);
 	}
 
@@ -272,6 +275,7 @@ final class RegexArrayShapeMatcher
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
 		int $flags,
+		bool $hasMark,
 	): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
@@ -325,6 +329,14 @@ final class RegexArrayShapeMatcher
 			$i++;
 		}
 
+		if ($hasMark) {
+			$builder->setOffsetValueType(
+				$this->getKeyType('MARK'),
+				new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
+				true,
+			);
+		}
+
 		return $builder->getArray();
 	}
 
@@ -372,7 +384,7 @@ final class RegexArrayShapeMatcher
 	}
 
 	/**
-	 * @return array{array<int, RegexCapturingGroup>, array<int, array<int, int[]>>}|null
+	 * @return array{array<int, RegexCapturingGroup>, array<int, array<int, int[]>>, bool}|null
 	 */
 	private function parseGroups(string $regex): ?array
 	{
@@ -398,6 +410,7 @@ final class RegexArrayShapeMatcher
 		$groupCombinations = [];
 		$alternationId = -1;
 		$captureGroupId = 100;
+		$hasMark = false;
 		$this->walkRegexAst(
 			$ast,
 			false,
@@ -408,9 +421,10 @@ final class RegexArrayShapeMatcher
 			$captureGroupId,
 			$capturingGroups,
 			$groupCombinations,
+			$hasMark,
 		);
 
-		return [$capturingGroups, $groupCombinations];
+		return [$capturingGroups, $groupCombinations, $hasMark];
 	}
 
 	/**
@@ -427,6 +441,7 @@ final class RegexArrayShapeMatcher
 		int &$captureGroupId,
 		array &$capturingGroups,
 		array &$groupCombinations,
+		bool &$hasMark,
 	): void
 	{
 		$group = null;
@@ -483,6 +498,11 @@ final class RegexArrayShapeMatcher
 			$inAlternation = true;
 		}
 
+		if ($ast->getId() === '#mark') {
+			$hasMark = true;
+			return;
+		}
+
 		if ($group instanceof RegexCapturingGroup) {
 			$capturingGroups[$group->getId()] = $group;
 
@@ -506,6 +526,7 @@ final class RegexArrayShapeMatcher
 				$captureGroupId,
 				$capturingGroups,
 				$groupCombinations,
+				$hasMark,
 			);
 
 			if ($ast->getId() !== '#alternation') {

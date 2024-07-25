@@ -563,6 +563,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return new ErrorType();
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		return $this->toNumber()->toAbsoluteNumber();
+	}
+
 	public function toInteger(): Type
 	{
 		if ($this->isInstanceOf('SimpleXMLElement')->yes()) {

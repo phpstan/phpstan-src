@@ -15,6 +15,7 @@ use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function abs;
 use function sprintf;
 
 /** @api */
@@ -74,6 +75,11 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 	public function toFloat(): Type
 	{
 		return new ConstantFloatType($this->value);
+	}
+
+	public function toAbsoluteNumber(): Type
+	{
+		return new self(abs($this->value));
 	}
 
 	public function toString(): Type

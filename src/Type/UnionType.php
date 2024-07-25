@@ -878,6 +878,13 @@ class UnionType implements CompoundType
 		return $type;
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		$type = $this->unionTypes(static fn (Type $type): Type => $type->toAbsoluteNumber());
+
+		return $type;
+	}
+
 	public function toString(): Type
 	{
 		$type = $this->unionTypes(static fn (Type $type): Type => $type->toString());

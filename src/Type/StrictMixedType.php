@@ -365,6 +365,11 @@ class StrictMixedType implements CompoundType
 		return new ErrorType();
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function toInteger(): Type
 	{
 		return new ErrorType();

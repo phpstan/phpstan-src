@@ -154,12 +154,33 @@ class Foo
 		assertType('float|int<0, max>', abs($value));
 	}
 
+	public function intersection(mixed $value): void
+	{
+		/** @var int&int<-10, 10> $value */
+		assertType('int<0, 10>', abs($value));
+	}
+
 	public function invalidType(mixed $nonInt): void
 	{
 		/** @var string $nonInt */
 		assertType('float|int<0, max>', abs($nonInt));
 
 		/** @var string|positive-int $nonInt */
+		assertType('float|int<0, max>', abs($nonInt));
+
+		/** @var 'foo' $nonInt */
+		assertType('float|int<0, max>', abs($nonInt));
+
+		/** @var array $nonInt */
+		assertType('float|int<0, max>', abs($nonInt));
+
+		/** @var non-empty-list<object> $nonInt */
+		assertType('float|int<0, max>', abs($nonInt));
+
+		/** @var object $nonInt */
+		assertType('float|int<0, max>', abs($nonInt));
+
+		/** @var \DateTime $nonInt */
 		assertType('float|int<0, max>', abs($nonInt));
 	}
 

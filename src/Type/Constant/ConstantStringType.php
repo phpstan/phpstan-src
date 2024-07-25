@@ -292,6 +292,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return new ErrorType();
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		return $this->toNumber()->toAbsoluteNumber();
+	}
+
 	public function toInteger(): Type
 	{
 		return new ConstantIntegerType((int) $this->value);

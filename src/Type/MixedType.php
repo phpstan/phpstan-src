@@ -468,6 +468,11 @@ class MixedType implements CompoundType, SubtractableType
 		]);
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		return $this->toNumber()->toAbsoluteNumber();
+	}
+
 	public function toInteger(): Type
 	{
 		return new IntegerType();

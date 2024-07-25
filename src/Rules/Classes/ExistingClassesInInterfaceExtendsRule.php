@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Interface_>
  */
-class ExistingClassesInInterfaceExtendsRule implements Rule
+final class ExistingClassesInInterfaceExtendsRule implements Rule
 {
 
 	public function __construct(

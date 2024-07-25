@@ -23,7 +23,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
 
-class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

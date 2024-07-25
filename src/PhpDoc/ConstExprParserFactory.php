@@ -4,7 +4,7 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\PhpDocParser\Parser\ConstExprParser;
 
-class ConstExprParserFactory
+final class ConstExprParserFactory
 {
 
 	public function __construct(private bool $unescapeStrings)

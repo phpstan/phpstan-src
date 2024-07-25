@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
-class OverridingConstantRule implements Rule
+final class OverridingConstantRule implements Rule
 {
 
 	public function __construct(

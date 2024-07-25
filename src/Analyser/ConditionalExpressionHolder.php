@@ -8,7 +8,7 @@ use function count;
 use function implode;
 use function sprintf;
 
-class ConditionalExpressionHolder
+final class ConditionalExpressionHolder
 {
 
 	/**

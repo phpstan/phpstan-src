@@ -64,7 +64,7 @@ use const DIRECTORY_SEPARATOR;
 use const E_ERROR;
 use const PHP_VERSION_ID;
 
-class CommandHelper
+final class CommandHelper
 {
 
 	public const DEFAULT_LEVEL = '0';

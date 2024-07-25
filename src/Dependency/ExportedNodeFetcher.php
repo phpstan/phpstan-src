@@ -6,7 +6,7 @@ use PhpParser\NodeTraverser;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 
-class ExportedNodeFetcher
+final class ExportedNodeFetcher
 {
 
 	public function __construct(

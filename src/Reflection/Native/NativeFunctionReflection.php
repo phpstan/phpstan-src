@@ -8,7 +8,7 @@ use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-class NativeFunctionReflection implements FunctionReflection
+final class NativeFunctionReflection implements FunctionReflection
 {
 
 	private Assertions $assertions;

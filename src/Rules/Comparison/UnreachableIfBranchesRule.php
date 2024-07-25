@@ -11,7 +11,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 /**
  * @implements Rule<Node\Stmt\If_>
  */
-class UnreachableIfBranchesRule implements Rule
+final class UnreachableIfBranchesRule implements Rule
 {
 
 	public function __construct(

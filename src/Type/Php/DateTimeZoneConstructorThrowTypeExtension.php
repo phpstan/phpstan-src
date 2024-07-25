@@ -14,7 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 
-class DateTimeZoneConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
+final class DateTimeZoneConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

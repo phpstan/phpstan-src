@@ -8,7 +8,7 @@ use PhpParser\Node\Name;
 use function in_array;
 use function is_array;
 
-class FunctionCallStatementFinder
+final class FunctionCallStatementFinder
 {
 
 	/**

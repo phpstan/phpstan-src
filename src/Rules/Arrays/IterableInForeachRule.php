@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<InForeachNode>
  */
-class IterableInForeachRule implements Rule
+final class IterableInForeachRule implements Rule
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

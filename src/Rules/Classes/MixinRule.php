@@ -21,7 +21,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class MixinRule implements Rule
+final class MixinRule implements Rule
 {
 
 	public function __construct(

@@ -8,7 +8,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\BooleanType;
 
-class ConstantConditionRuleHelper
+final class ConstantConditionRuleHelper
 {
 
 	public function __construct(

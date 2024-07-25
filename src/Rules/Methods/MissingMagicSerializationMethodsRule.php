@@ -16,7 +16,7 @@ use function strtolower;
 /**
  * @implements Rule<InClassNode>
  */
-class MissingMagicSerializationMethodsRule implements Rule
+final class MissingMagicSerializationMethodsRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpversion)

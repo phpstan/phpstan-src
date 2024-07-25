@@ -5,7 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 
-class ConstantResolverFactory
+final class ConstantResolverFactory
 {
 
 	public function __construct(

@@ -5,7 +5,7 @@ namespace PHPStan\File;
 use function file_get_contents;
 use function stream_resolve_include_path;
 
-class FileReader
+final class FileReader
 {
 
 	/**

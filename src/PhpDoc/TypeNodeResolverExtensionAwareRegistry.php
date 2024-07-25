@@ -2,7 +2,7 @@
 
 namespace PHPStan\PhpDoc;
 
-class TypeNodeResolverExtensionAwareRegistry implements TypeNodeResolverExtensionRegistry
+final class TypeNodeResolverExtensionAwareRegistry implements TypeNodeResolverExtensionRegistry
 {
 
 	/**

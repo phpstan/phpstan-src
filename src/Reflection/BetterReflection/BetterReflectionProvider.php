@@ -55,7 +55,7 @@ use function sprintf;
 use function strtolower;
 use const PHP_VERSION_ID;
 
-class BetterReflectionProvider implements ReflectionProvider
+final class BetterReflectionProvider implements ReflectionProvider
 {
 
 	/** @var FunctionReflection[] */

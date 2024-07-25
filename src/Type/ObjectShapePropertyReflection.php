@@ -8,7 +8,7 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use stdClass;
 
-class ObjectShapePropertyReflection implements PropertyReflection
+final class ObjectShapePropertyReflection implements PropertyReflection
 {
 
 	public function __construct(private Type $type)

@@ -16,7 +16,7 @@ use PHPStan\Type\TypeUtils;
 use ReflectionMethod;
 use function count;
 
-class ReflectionMethodConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
+final class ReflectionMethodConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

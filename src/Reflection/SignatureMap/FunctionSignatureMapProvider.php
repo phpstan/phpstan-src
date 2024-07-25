@@ -19,7 +19,7 @@ use function sprintf;
 use function strtolower;
 use const CASE_LOWER;
 
-class FunctionSignatureMapProvider implements SignatureMapProvider
+final class FunctionSignatureMapProvider implements SignatureMapProvider
 {
 
 	/** @var array<string, mixed[]> */

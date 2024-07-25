@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Class_>
  */
-class ApiClassExtendsRule implements Rule
+final class ApiClassExtendsRule implements Rule
 {
 
 	public function __construct(

@@ -11,7 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
-class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDocs implements CallableParametersAcceptor
+final class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDocs implements CallableParametersAcceptor
 {
 
 	/**

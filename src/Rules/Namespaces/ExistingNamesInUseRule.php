@@ -18,7 +18,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Stmt\Use_>
  */
-class ExistingNamesInUseRule implements Rule
+final class ExistingNamesInUseRule implements Rule
 {
 
 	public function __construct(

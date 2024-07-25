@@ -5,7 +5,7 @@ namespace PHPStan\Parser;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 
-class MagicConstantParamDefaultVisitor extends NodeVisitorAbstract
+final class MagicConstantParamDefaultVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'isMagicConstantParamDefault';

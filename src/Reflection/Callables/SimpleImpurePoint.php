@@ -11,7 +11,7 @@ use function sprintf;
 /**
  * @phpstan-import-type ImpurePointIdentifier from ImpurePoint
  */
-class SimpleImpurePoint
+final class SimpleImpurePoint
 {
 
 	/**

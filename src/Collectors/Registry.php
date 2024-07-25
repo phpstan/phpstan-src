@@ -6,7 +6,7 @@ use PhpParser\Node;
 use function class_implements;
 use function class_parents;
 
-class Registry
+final class Registry
 {
 
 	/** @var Collector[][] */

@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class RandomIntParametersRule implements Rule
+final class RandomIntParametersRule implements Rule
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider, private bool $reportMaybes)

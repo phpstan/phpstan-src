@@ -9,7 +9,7 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
 use function array_key_exists;
 use function count;
 
-class JsonErrorFormatter implements ErrorFormatter
+final class JsonErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(private bool $pretty)

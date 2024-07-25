@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class ClassAncestorsRule implements Rule
+final class ClassAncestorsRule implements Rule
 {
 
 	public function __construct(

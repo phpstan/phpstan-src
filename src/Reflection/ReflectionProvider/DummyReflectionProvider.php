@@ -11,7 +11,7 @@ use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 
-class DummyReflectionProvider implements ReflectionProvider
+final class DummyReflectionProvider implements ReflectionProvider
 {
 
 	public function hasClass(string $className): bool

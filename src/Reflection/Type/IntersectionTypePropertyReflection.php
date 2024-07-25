@@ -11,7 +11,7 @@ use function array_map;
 use function count;
 use function implode;
 
-class IntersectionTypePropertyReflection implements PropertyReflection
+final class IntersectionTypePropertyReflection implements PropertyReflection
 {
 
 	/**

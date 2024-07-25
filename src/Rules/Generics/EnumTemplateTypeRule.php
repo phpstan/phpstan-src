@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class EnumTemplateTypeRule implements Rule
+final class EnumTemplateTypeRule implements Rule
 {
 
 	public function getNodeType(): string

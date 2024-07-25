@@ -12,7 +12,7 @@ use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
 use function is_string;
 
-class RuleErrorTransformer
+final class RuleErrorTransformer
 {
 
 	/**

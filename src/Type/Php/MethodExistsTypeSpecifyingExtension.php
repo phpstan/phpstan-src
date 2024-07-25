@@ -18,7 +18,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\UnionType;
 use function count;
 
-class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
+final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
 	private TypeSpecifier $typeSpecifier;

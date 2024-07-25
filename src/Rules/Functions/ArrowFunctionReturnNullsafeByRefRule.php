@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Expr\ArrowFunction>
  */
-class ArrowFunctionReturnNullsafeByRefRule implements Rule
+final class ArrowFunctionReturnNullsafeByRefRule implements Rule
 {
 
 	public function __construct(private NullsafeCheck $nullsafeCheck)

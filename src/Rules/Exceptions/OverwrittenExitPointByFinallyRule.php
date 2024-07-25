@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<FinallyExitPointsNode>
  */
-class OverwrittenExitPointByFinallyRule implements Rule
+final class OverwrittenExitPointByFinallyRule implements Rule
 {
 
 	public function getNodeType(): string

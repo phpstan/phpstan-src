@@ -5,7 +5,7 @@ namespace PHPStan\DependencyInjection;
 use Exception;
 use function implode;
 
-class InvalidIgnoredErrorPatternsException extends Exception
+final class InvalidIgnoredErrorPatternsException extends Exception
 {
 
 	/**

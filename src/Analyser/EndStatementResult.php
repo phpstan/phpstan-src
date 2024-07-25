@@ -4,7 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Stmt;
 
-class EndStatementResult
+final class EndStatementResult
 {
 
 	public function __construct(

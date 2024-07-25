@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
-class MethodNeverRule implements Rule
+final class MethodNeverRule implements Rule
 {
 
 	public function __construct(private NeverRuleHelper $helper)

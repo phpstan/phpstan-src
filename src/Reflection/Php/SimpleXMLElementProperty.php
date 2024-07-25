@@ -12,7 +12,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-class SimpleXMLElementProperty implements PropertyReflection
+final class SimpleXMLElementProperty implements PropertyReflection
 {
 
 	public function __construct(

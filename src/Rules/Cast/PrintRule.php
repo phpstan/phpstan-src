@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Print_>
  */
-class PrintRule implements Rule
+final class PrintRule implements Rule
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

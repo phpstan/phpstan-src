@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\BooleanNot>
  */
-class BooleanNotConstantConditionRule implements Rule
+final class BooleanNotConstantConditionRule implements Rule
 {
 
 	public function __construct(

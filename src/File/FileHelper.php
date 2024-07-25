@@ -18,7 +18,7 @@ use function substr;
 use function trim;
 use const DIRECTORY_SEPARATOR;
 
-class FileHelper
+final class FileHelper
 {
 
 	private string $workingDirectory;

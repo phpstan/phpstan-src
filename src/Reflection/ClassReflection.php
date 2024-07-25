@@ -69,7 +69,10 @@ use function reset;
 use function sprintf;
 use function strtolower;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ClassReflection
 {
 

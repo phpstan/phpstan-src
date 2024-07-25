@@ -10,7 +10,7 @@ use PHPStan\Rules\Rule;
 use function strtolower;
 
 /** @implements Rule<InClassMethodNode> */
-class ConsistentConstructorRule implements Rule
+final class ConsistentConstructorRule implements Rule
 {
 
 	public function __construct(

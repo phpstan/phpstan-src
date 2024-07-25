@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Catch_>
  */
-class CaughtExceptionExistenceRule implements Rule
+final class CaughtExceptionExistenceRule implements Rule
 {
 
 	public function __construct(

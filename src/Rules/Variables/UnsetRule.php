@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Unset_>
  */
-class UnsetRule implements Rule
+final class UnsetRule implements Rule
 {
 
 	public function getNodeType(): string

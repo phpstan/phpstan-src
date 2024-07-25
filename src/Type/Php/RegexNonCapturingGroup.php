@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
-class RegexNonCapturingGroup
+final class RegexNonCapturingGroup
 {
 
 	public function __construct(

@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<UnreachableStatementNode>
  */
-class UnreachableStatementRule implements Rule
+final class UnreachableStatementRule implements Rule
 {
 
 	public function getNodeType(): string

@@ -10,7 +10,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use function count;
 
-class PowFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class PowFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

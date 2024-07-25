@@ -5,7 +5,10 @@ namespace PHPStan\Analyser;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Stmt;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class StatementResult
 {
 

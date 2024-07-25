@@ -24,7 +24,7 @@ use function count;
 use function is_array;
 use function sprintf;
 
-class ConditionalTagsExtension extends CompilerExtension
+final class ConditionalTagsExtension extends CompilerExtension
 {
 
 	public function getConfigSchema(): Nette\Schema\Schema

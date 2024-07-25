@@ -88,7 +88,7 @@ use function sprintf;
 use function strtolower;
 use const INF;
 
-class InitializerExprTypeResolver
+final class InitializerExprTypeResolver
 {
 
 	public const CALCULATE_SCALARS_LIMIT = 128;

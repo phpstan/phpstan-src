@@ -5,7 +5,7 @@ namespace PHPStan\Broker;
 use PHPStan\AnalysedCodeException;
 use function sprintf;
 
-class ConstantNotFoundException extends AnalysedCodeException
+final class ConstantNotFoundException extends AnalysedCodeException
 {
 
 	public function __construct(private string $constantName)
@@ -18,7 +18,7 @@ class ConstantNotFoundException extends AnalysedCodeException
 		return $this->constantName;
 	}
 
-	public function getTip(): ?string
+	public function getTip(): string
 	{
 		return 'Learn more at https://phpstan.org/user-guide/discovering-symbols';
 	}

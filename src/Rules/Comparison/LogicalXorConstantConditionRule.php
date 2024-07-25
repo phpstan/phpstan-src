@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<LogicalXor>
  */
-class LogicalXorConstantConditionRule implements Rule
+final class LogicalXorConstantConditionRule implements Rule
 {
 
 	public function __construct(

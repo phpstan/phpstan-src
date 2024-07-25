@@ -9,7 +9,10 @@ use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function count;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class TemplateTypeMap
 {
 

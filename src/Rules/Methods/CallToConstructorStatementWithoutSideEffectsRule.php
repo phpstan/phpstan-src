@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Expression>
  */
-class CallToConstructorStatementWithoutSideEffectsRule implements Rule
+final class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 {
 
 	public function __construct(

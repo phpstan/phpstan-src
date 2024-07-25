@@ -47,7 +47,7 @@ use const PHP_VERSION_ID;
  *
  * Modified code from Roave/BetterReflection, Copyright (c) 2017 Roave, LLC.
  */
-class AutoloadSourceLocator implements SourceLocator
+final class AutoloadSourceLocator implements SourceLocator
 {
 
 	/** @var array{classes: array<string, string>, functions: array<string, string>, constants: array<string, string>} */

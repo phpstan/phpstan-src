@@ -5,7 +5,7 @@ namespace PHPStan\Parser;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 
-class NewAssignedToPropertyVisitor extends NodeVisitorAbstract
+final class NewAssignedToPropertyVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'assignedToProperty';

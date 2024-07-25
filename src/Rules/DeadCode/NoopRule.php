@@ -13,7 +13,7 @@ use function sprintf;
  * @deprecated Replaced by PHPStan\Rules\DeadCode\BetterNoopRule
  * @implements Rule<Node\Stmt\Expression>
  */
-class NoopRule implements Rule
+final class NoopRule implements Rule
 {
 
 	public function __construct(private ExprPrinter $exprPrinter, private bool $better)

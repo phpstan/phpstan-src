@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Throw_>
  */
-class ThrowTypeRule implements Rule
+final class ThrowTypeRule implements Rule
 {
 
 	public function __construct(

@@ -8,7 +8,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
-class AnnotationsMethodParameterReflection implements ParameterReflectionWithPhpDocs
+final class AnnotationsMethodParameterReflection implements ParameterReflectionWithPhpDocs
 {
 
 	public function __construct(private string $name, private Type $type, private PassedByReference $passedByReference, private bool $isOptional, private bool $isVariadic, private ?Type $defaultValue)

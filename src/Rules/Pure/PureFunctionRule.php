@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<FunctionReturnStatementsNode>
  */
-class PureFunctionRule implements Rule
+final class PureFunctionRule implements Rule
 {
 
 	public function __construct(private FunctionPurityCheck $check)

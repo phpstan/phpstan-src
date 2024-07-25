@@ -7,7 +7,10 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\NodeAbstract;
 use PHPStan\Type\ClosureType;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class InClosureNode extends NodeAbstract implements VirtualNode
 {
 

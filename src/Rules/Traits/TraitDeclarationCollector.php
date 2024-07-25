@@ -9,7 +9,7 @@ use PHPStan\Collectors\Collector;
 /**
  * @implements Collector<Node\Stmt\Trait_, array{string, int}>
  */
-class TraitDeclarationCollector implements Collector
+final class TraitDeclarationCollector implements Collector
 {
 
 	public function getNodeType(): string

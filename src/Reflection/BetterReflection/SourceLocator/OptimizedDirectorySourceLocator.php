@@ -27,7 +27,7 @@ use function strtolower;
 /**
  * @deprecated Use NewOptimizedDirectorySourceLocator
  */
-class OptimizedDirectorySourceLocator implements SourceLocator
+final class OptimizedDirectorySourceLocator implements SourceLocator
 {
 
 	private PhpFileCleaner $cleaner;

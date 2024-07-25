@@ -15,7 +15,7 @@ use function array_merge;
 /**
  * @implements Rule<Node\Expr\ArrowFunction>
  */
-class ExistingClassesInArrowFunctionTypehintsRule implements Rule
+final class ExistingClassesInArrowFunctionTypehintsRule implements Rule
 {
 
 	public function __construct(private FunctionDefinitionCheck $check, private PhpVersion $phpVersion)

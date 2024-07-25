@@ -4,7 +4,10 @@ namespace PHPStan\Reflection;
 
 use function array_key_exists;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class PassedByReference
 {
 

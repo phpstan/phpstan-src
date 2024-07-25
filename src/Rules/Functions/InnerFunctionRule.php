@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Stmt\Function_>
  */
-class InnerFunctionRule implements Rule
+final class InnerFunctionRule implements Rule
 {
 
 	public function getNodeType(): string

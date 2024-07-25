@@ -20,7 +20,7 @@ use function strtolower;
 /**
  * @implements Rule<FunctionCallableNode>
  */
-class FunctionCallableRule implements Rule
+final class FunctionCallableRule implements Rule
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider, private RuleLevelHelper $ruleLevelHelper, private PhpVersion $phpVersion, private bool $checkFunctionNameCase, private bool $reportMaybes)

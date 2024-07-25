@@ -7,7 +7,7 @@ use PHPStan\Dependency\ExportedNode;
 use ReturnTypeWillChange;
 use function count;
 
-class ExportedAttributeNode implements ExportedNode, JsonSerializable
+final class ExportedAttributeNode implements ExportedNode, JsonSerializable
 {
 
 	/**

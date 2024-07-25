@@ -15,7 +15,7 @@ use function ucfirst;
 /**
  * @implements Rule<FuncCall>
  */
-class CallUserFuncRule implements Rule
+final class CallUserFuncRule implements Rule
 {
 
 	public function __construct(

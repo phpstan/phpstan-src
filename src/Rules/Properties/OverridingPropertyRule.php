@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertyNode>
  */
-class OverridingPropertyRule implements Rule
+final class OverridingPropertyRule implements Rule
 {
 
 	public function __construct(

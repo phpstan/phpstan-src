@@ -4,7 +4,7 @@ namespace PHPStan\Type\Generic;
 
 use function sprintf;
 
-class TemplateTypeScope
+final class TemplateTypeScope
 {
 
 	public static function createWithAnonymousFunction(): self

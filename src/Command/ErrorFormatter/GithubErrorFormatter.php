@@ -14,7 +14,7 @@ use function str_replace;
  * Allow errors to be reported in pull-requests diff when run in a GitHub Action
  * @see https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-error-message
  */
-class GithubErrorFormatter implements ErrorFormatter
+final class GithubErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(

@@ -12,7 +12,7 @@ use function sprintf;
 use const ENT_COMPAT;
 use const ENT_XML1;
 
-class CheckstyleErrorFormatter implements ErrorFormatter
+final class CheckstyleErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(private RelativePathHelper $relativePathHelper)

@@ -32,7 +32,7 @@ use function is_string;
 use function memory_get_peak_usage;
 use function sprintf;
 
-class WorkerCommand extends Command
+final class WorkerCommand extends Command
 {
 
 	private const NAME = 'worker';

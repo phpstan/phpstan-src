@@ -14,7 +14,7 @@ use function count;
 use function extension_loaded;
 use function libxml_use_internal_errors;
 
-class SimpleXMLElementConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
+final class SimpleXMLElementConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool

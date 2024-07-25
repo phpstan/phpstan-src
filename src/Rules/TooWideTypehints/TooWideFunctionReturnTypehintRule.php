@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<FunctionReturnStatementsNode>
  */
-class TooWideFunctionReturnTypehintRule implements Rule
+final class TooWideFunctionReturnTypehintRule implements Rule
 {
 
 	public function getNodeType(): string

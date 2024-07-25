@@ -6,7 +6,7 @@ use Exception;
 use function implode;
 use function sprintf;
 
-class DuplicateIncludedFilesException extends Exception
+final class DuplicateIncludedFilesException extends Exception
 {
 
 	/**

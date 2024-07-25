@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<ClassPropertyNode>
  */
-class PropertiesInInterfaceRule implements Rule
+final class PropertiesInInterfaceRule implements Rule
 {
 
 	public function getNodeType(): string

@@ -10,7 +10,7 @@ use function file_exists;
 use function implode;
 use function is_file;
 
-class FileFinder
+final class FileFinder
 {
 
 	/**

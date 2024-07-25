@@ -18,7 +18,7 @@ use function array_merge;
 use function count;
 use function is_int;
 
-class GenericParametersAcceptorResolver
+final class GenericParametersAcceptorResolver
 {
 
 	/**

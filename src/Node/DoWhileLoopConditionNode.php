@@ -6,7 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementExitPoint;
 
-class DoWhileLoopConditionNode extends NodeAbstract implements VirtualNode
+final class DoWhileLoopConditionNode extends NodeAbstract implements VirtualNode
 {
 
 	/**

@@ -10,7 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Stmt\Foreach_>
  */
-class DeadForeachRule implements Rule
+final class DeadForeachRule implements Rule
 {
 
 	public function getNodeType(): string

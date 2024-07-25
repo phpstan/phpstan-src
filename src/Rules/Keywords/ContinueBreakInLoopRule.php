@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<Stmt>
  */
-class ContinueBreakInLoopRule implements Rule
+final class ContinueBreakInLoopRule implements Rule
 {
 
 	public function getNodeType(): string

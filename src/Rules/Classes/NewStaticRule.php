@@ -12,7 +12,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\New_>
  */
-class NewStaticRule implements Rule
+final class NewStaticRule implements Rule
 {
 
 	public function getNodeType(): string

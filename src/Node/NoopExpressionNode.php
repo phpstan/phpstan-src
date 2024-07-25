@@ -5,7 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 
-class NoopExpressionNode extends NodeAbstract implements VirtualNode
+final class NoopExpressionNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(private Expr $originalExpr, private bool $hasAssign)

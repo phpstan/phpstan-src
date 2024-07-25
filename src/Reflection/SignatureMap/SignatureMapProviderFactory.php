@@ -4,7 +4,7 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\Php\PhpVersion;
 
-class SignatureMapProviderFactory
+final class SignatureMapProviderFactory
 {
 
 	public function __construct(

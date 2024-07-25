@@ -12,7 +12,7 @@ use function interface_exists;
 use function PHPStan\autoloadFunctions;
 use function trait_exists;
 
-class AutoloadFunctionsSourceLocator implements SourceLocator
+final class AutoloadFunctionsSourceLocator implements SourceLocator
 {
 
 	public function __construct(

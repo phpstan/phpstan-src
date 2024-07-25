@@ -19,7 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<Expr>
  */
-class OffsetAccessValueAssignmentRule implements Rule
+final class OffsetAccessValueAssignmentRule implements Rule
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

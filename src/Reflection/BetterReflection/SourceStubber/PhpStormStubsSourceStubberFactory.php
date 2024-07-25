@@ -7,7 +7,7 @@ use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStub
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Php\PhpVersion;
 
-class PhpStormStubsSourceStubberFactory
+final class PhpStormStubsSourceStubberFactory
 {
 
 	public function __construct(private Parser $phpParser, private Printer $printer, private PhpVersion $phpVersion)

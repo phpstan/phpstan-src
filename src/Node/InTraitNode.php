@@ -5,7 +5,10 @@ namespace PHPStan\Node;
 use PhpParser\Node;
 use PHPStan\Reflection\ClassReflection;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class InTraitNode extends Node\Stmt implements VirtualNode
 {
 

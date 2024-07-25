@@ -7,7 +7,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 
-class UnresolvableTypeHelper
+final class UnresolvableTypeHelper
 {
 
 	public function containsUnresolvableType(Type $type): bool

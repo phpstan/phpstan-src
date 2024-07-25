@@ -5,7 +5,7 @@ namespace PHPStan\Reflection;
 use Nette\Utils\Strings;
 use function ltrim;
 
-class ClassNameHelper
+final class ClassNameHelper
 {
 
 	public static function isValidClassName(string $name): bool

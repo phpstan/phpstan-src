@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * Template type strategy suitable for return type acceptance contexts
  */
-class TemplateTypeArgumentStrategy implements TemplateTypeStrategy
+final class TemplateTypeArgumentStrategy implements TemplateTypeStrategy
 {
 
 	public function accepts(TemplateType $left, Type $right, bool $strictTypes): AcceptsResult

@@ -13,7 +13,7 @@ use PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExte
 use PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension;
 use function array_merge;
 
-class LazyClassReflectionExtensionRegistryProvider implements ClassReflectionExtensionRegistryProvider
+final class LazyClassReflectionExtensionRegistryProvider implements ClassReflectionExtensionRegistryProvider
 {
 
 	private ?ClassReflectionExtensionRegistry $registry = null;

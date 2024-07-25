@@ -5,7 +5,7 @@ namespace PHPStan\Reflection\ReflectionProvider;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
 
-class LazyReflectionProviderProvider implements ReflectionProviderProvider
+final class LazyReflectionProviderProvider implements ReflectionProviderProvider
 {
 
 	public function __construct(private Container $container)

@@ -12,7 +12,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use stdClass;
 
-class DummyMethodReflection implements ExtendedMethodReflection
+final class DummyMethodReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(private string $name)

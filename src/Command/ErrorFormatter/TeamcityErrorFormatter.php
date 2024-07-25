@@ -15,7 +15,7 @@ use const PHP_EOL;
 /**
  * @see https://www.jetbrains.com/help/teamcity/build-script-interaction-with-teamcity.html#Reporting+Inspections
  */
-class TeamcityErrorFormatter implements ErrorFormatter
+final class TeamcityErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(private RelativePathHelper $relativePathHelper)

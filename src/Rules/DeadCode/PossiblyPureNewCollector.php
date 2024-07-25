@@ -12,7 +12,7 @@ use function strtolower;
 /**
  * @implements Collector<Expression, array{string, int}>
  */
-class PossiblyPureNewCollector implements Collector
+final class PossiblyPureNewCollector implements Collector
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

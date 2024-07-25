@@ -26,7 +26,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\New_>
  */
-class InstantiationRule implements Rule
+final class InstantiationRule implements Rule
 {
 
 	public function __construct(

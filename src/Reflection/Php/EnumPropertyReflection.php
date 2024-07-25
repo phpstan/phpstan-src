@@ -7,7 +7,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-class EnumPropertyReflection implements PropertyReflection
+final class EnumPropertyReflection implements PropertyReflection
 {
 
 	public function __construct(private ClassReflection $declaringClass, private Type $type)

@@ -26,7 +26,7 @@ use function count;
 use function in_array;
 use function strtolower;
 
-class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper, private ReflectionProvider $reflectionProvider)

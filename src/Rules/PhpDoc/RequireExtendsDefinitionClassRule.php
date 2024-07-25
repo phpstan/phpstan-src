@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class RequireExtendsDefinitionClassRule implements Rule
+final class RequireExtendsDefinitionClassRule implements Rule
 {
 
 	public function __construct(

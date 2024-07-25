@@ -4,7 +4,7 @@ namespace PHPStan\Command;
 
 use Exception;
 
-class InceptionNotSuccessfulException extends Exception
+final class InceptionNotSuccessfulException extends Exception
 {
 
 }

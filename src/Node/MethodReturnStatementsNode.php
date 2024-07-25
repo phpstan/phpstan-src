@@ -13,7 +13,10 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use function count;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 

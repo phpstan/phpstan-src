@@ -7,7 +7,7 @@ use function str_starts_with;
 use function strlen;
 use function substr;
 
-class SimpleRelativePathHelper implements RelativePathHelper
+final class SimpleRelativePathHelper implements RelativePathHelper
 {
 
 	public function __construct(private string $currentWorkingDirectory)

@@ -13,7 +13,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
 
-class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	private const FUNCTION_NAMES = [

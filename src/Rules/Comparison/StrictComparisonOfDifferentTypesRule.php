@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\BinaryOp>
  */
-class StrictComparisonOfDifferentTypesRule implements Rule
+final class StrictComparisonOfDifferentTypesRule implements Rule
 {
 
 	public function __construct(

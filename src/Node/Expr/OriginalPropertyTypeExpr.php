@@ -5,7 +5,7 @@ namespace PHPStan\Node\Expr;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
 
-class OriginalPropertyTypeExpr extends Expr implements VirtualNode
+final class OriginalPropertyTypeExpr extends Expr implements VirtualNode
 {
 
 	public function __construct(private Expr\PropertyFetch|Expr\StaticPropertyFetch $propertyFetch)

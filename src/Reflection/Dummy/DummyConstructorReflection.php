@@ -13,7 +13,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
 
-class DummyConstructorReflection implements ExtendedMethodReflection
+final class DummyConstructorReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(private ClassReflection $declaringClass)

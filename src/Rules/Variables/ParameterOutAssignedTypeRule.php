@@ -20,7 +20,7 @@ use function sprintf;
 /**
  * @implements Rule<VariableAssignNode>
  */
-class ParameterOutAssignedTypeRule implements Rule
+final class ParameterOutAssignedTypeRule implements Rule
 {
 
 	public function __construct(

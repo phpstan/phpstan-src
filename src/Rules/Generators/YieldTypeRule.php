@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Yield_>
  */
-class YieldTypeRule implements Rule
+final class YieldTypeRule implements Rule
 {
 
 	public function __construct(

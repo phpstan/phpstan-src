@@ -20,7 +20,7 @@ use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
 
-class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(

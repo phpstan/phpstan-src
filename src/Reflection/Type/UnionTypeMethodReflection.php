@@ -17,7 +17,7 @@ use function count;
 use function implode;
 use function is_bool;
 
-class UnionTypeMethodReflection implements ExtendedMethodReflection
+final class UnionTypeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**

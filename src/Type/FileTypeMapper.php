@@ -38,7 +38,7 @@ use function sprintf;
 use function str_contains;
 use function strtolower;
 
-class FileTypeMapper
+final class FileTypeMapper
 {
 
 	private const SKIP_NODE = 1;

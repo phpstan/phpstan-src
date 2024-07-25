@@ -15,7 +15,7 @@ use PHPStan\Type\MethodTypeSpecifyingExtension;
 use PHPStan\Type\ObjectType;
 use ReflectionClass;
 
-class ReflectionClassIsSubclassOfTypeSpecifyingExtension implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExtension
+final class ReflectionClassIsSubclassOfTypeSpecifyingExtension implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
 	private TypeSpecifier $typeSpecifier;

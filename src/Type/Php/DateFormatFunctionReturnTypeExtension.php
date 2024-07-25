@@ -10,7 +10,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use function count;
 
-class DateFormatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class DateFormatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private DateFunctionReturnTypeHelper $dateFunctionReturnTypeHelper)
@@ -26,7 +26,7 @@ class DateFormatFunctionReturnTypeExtension implements DynamicFunctionReturnType
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): ?Type
+	): Type
 	{
 		if (count($functionCall->getArgs()) < 2) {
 			return new StringType();

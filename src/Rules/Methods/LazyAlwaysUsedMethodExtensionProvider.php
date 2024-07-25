@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\DependencyInjection\Container;
 
-class LazyAlwaysUsedMethodExtensionProvider implements AlwaysUsedMethodExtensionProvider
+final class LazyAlwaysUsedMethodExtensionProvider implements AlwaysUsedMethodExtensionProvider
 {
 
 	/** @var AlwaysUsedMethodExtension[]|null */

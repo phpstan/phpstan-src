@@ -4,7 +4,7 @@ namespace PHPStan\DependencyInjection\Type;
 
 use PHPStan\DependencyInjection\Container;
 
-class LazyParameterClosureTypeExtensionProvider implements ParameterClosureTypeExtensionProvider
+final class LazyParameterClosureTypeExtensionProvider implements ParameterClosureTypeExtensionProvider
 {
 
 	public const FUNCTION_TAG = 'phpstan.functionParameterClosureTypeExtension';

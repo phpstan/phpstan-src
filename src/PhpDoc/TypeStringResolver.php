@@ -8,7 +8,7 @@ use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\Type\Type;
 
-class TypeStringResolver
+final class TypeStringResolver
 {
 
 	public function __construct(private Lexer $typeLexer, private TypeParser $typeParser, private TypeNodeResolver $typeNodeResolver)

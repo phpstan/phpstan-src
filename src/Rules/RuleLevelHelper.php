@@ -28,7 +28,7 @@ use function count;
 use function sprintf;
 use function str_contains;
 
-class RuleLevelHelper
+final class RuleLevelHelper
 {
 
 	public function __construct(

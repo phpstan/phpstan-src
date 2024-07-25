@@ -12,7 +12,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 
-class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	/** @var string[] */

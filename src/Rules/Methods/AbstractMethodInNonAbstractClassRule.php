@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\ClassMethod>
  */
-class AbstractMethodInNonAbstractClassRule implements Rule
+final class AbstractMethodInNonAbstractClassRule implements Rule
 {
 
 	public function getNodeType(): string

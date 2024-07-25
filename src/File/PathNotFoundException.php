@@ -5,7 +5,7 @@ namespace PHPStan\File;
 use Exception;
 use function sprintf;
 
-class PathNotFoundException extends Exception
+final class PathNotFoundException extends Exception
 {
 
 	public function __construct(private string $path)

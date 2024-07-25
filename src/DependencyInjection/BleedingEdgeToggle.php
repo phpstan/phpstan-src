@@ -2,7 +2,7 @@
 
 namespace PHPStan\DependencyInjection;
 
-class BleedingEdgeToggle
+final class BleedingEdgeToggle
 {
 
 	private static bool $bleedingEdge = false;

@@ -7,7 +7,7 @@ use PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExte
 use PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension;
 use function array_merge;
 
-class ClassReflectionExtensionRegistry
+final class ClassReflectionExtensionRegistry
 {
 
 	/**

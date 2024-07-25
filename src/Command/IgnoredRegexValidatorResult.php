@@ -2,7 +2,7 @@
 
 namespace PHPStan\Command;
 
-class IgnoredRegexValidatorResult
+final class IgnoredRegexValidatorResult
 {
 
 	/**

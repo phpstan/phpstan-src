@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\BinaryOp>
  */
-class NumberComparisonOperatorsConstantConditionRule implements Rule
+final class NumberComparisonOperatorsConstantConditionRule implements Rule
 {
 
 	public function __construct(

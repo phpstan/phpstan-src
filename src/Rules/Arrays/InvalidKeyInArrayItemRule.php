@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\ArrayItem>
  */
-class InvalidKeyInArrayItemRule implements Rule
+final class InvalidKeyInArrayItemRule implements Rule
 {
 
 	public function __construct(private bool $reportMaybes)

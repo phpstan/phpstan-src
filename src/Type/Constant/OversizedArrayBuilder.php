@@ -18,7 +18,7 @@ use function array_splice;
 use function array_values;
 use function count;
 
-class OversizedArrayBuilder
+final class OversizedArrayBuilder
 {
 
 	/**

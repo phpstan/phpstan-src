@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use function count;
 
-class ArrowFunctionArgVisitor extends NodeVisitorAbstract
+final class ArrowFunctionArgVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'arrowFunctionCallArgs';

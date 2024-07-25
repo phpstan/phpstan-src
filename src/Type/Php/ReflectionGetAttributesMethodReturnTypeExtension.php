@@ -13,7 +13,7 @@ use PHPStan\Type\Type;
 use ReflectionAttribute;
 use function count;
 
-class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
+final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
 	/**

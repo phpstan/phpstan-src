@@ -4,7 +4,7 @@ namespace PHPStan\Analyser\Ignore;
 
 use Exception;
 
-class IgnoreParseException extends Exception
+final class IgnoreParseException extends Exception
 {
 
 	public function __construct(string $message, private int $phpDocLine)

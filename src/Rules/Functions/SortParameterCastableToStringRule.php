@@ -26,7 +26,7 @@ use const SORT_STRING;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class SortParameterCastableToStringRule implements Rule
+final class SortParameterCastableToStringRule implements Rule
 {
 
 	public function __construct(

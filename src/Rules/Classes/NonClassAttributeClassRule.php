@@ -15,7 +15,7 @@ use function strtolower;
 /**
  * @implements Rule<InClassNode>
  */
-class NonClassAttributeClassRule implements Rule
+final class NonClassAttributeClassRule implements Rule
 {
 
 	public function getNodeType(): string

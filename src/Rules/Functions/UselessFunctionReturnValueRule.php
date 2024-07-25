@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class UselessFunctionReturnValueRule implements Rule
+final class UselessFunctionReturnValueRule implements Rule
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

@@ -4,7 +4,7 @@ namespace PHPStan\Analyser\Ignore;
 
 use PHPStan\Analyser\Error;
 
-class IgnoredErrorHelperProcessedResult
+final class IgnoredErrorHelperProcessedResult
 {
 
 	/**

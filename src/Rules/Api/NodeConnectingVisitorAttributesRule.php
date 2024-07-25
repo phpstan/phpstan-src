@@ -21,7 +21,7 @@ use function str_starts_with;
 /**
  * @implements Rule<MethodCall>
  */
-class NodeConnectingVisitorAttributesRule implements Rule
+final class NodeConnectingVisitorAttributesRule implements Rule
 {
 
 	public function __construct(private Container $container)

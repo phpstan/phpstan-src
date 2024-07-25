@@ -18,7 +18,7 @@ use function array_key_exists;
 use function in_array;
 use function sprintf;
 
-class LocalTypeAliasesCheck
+final class LocalTypeAliasesCheck
 {
 
 	/**

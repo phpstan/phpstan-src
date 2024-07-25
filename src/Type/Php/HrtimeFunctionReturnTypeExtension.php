@@ -16,7 +16,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function count;
 
-class HrtimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class HrtimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

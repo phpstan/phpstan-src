@@ -5,7 +5,7 @@ namespace PHPStan\File;
 use PHPStan\AnalysedCodeException;
 use function sprintf;
 
-class CouldNotReadFileException extends AnalysedCodeException
+final class CouldNotReadFileException extends AnalysedCodeException
 {
 
 	public function __construct(string $fileName)

@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\TraitUse>
  */
-class ApiTraitUseRule implements Rule
+final class ApiTraitUseRule implements Rule
 {
 
 	public function __construct(

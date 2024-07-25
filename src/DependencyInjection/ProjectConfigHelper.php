@@ -9,7 +9,7 @@ use function array_values;
 use function is_array;
 use function is_string;
 
-class ProjectConfigHelper
+final class ProjectConfigHelper
 {
 
 	/**

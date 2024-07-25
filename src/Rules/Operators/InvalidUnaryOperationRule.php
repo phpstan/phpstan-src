@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr>
  */
-class InvalidUnaryOperationRule implements Rule
+final class InvalidUnaryOperationRule implements Rule
 {
 
 	public function __construct(

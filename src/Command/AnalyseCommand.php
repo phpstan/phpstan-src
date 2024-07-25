@@ -56,7 +56,7 @@ use function substr;
 use const PATHINFO_BASENAME;
 use const PATHINFO_EXTENSION;
 
-class AnalyseCommand extends Command
+final class AnalyseCommand extends Command
 {
 
 	private const NAME = 'analyse';

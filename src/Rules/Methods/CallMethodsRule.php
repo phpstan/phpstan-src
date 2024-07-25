@@ -14,7 +14,7 @@ use function array_merge;
 /**
  * @implements Rule<Node\Expr\MethodCall>
  */
-class CallMethodsRule implements Rule
+final class CallMethodsRule implements Rule
 {
 
 	public function __construct(

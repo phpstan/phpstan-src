@@ -21,7 +21,7 @@ use function gettype;
 use function min;
 use function strtotime;
 
-class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

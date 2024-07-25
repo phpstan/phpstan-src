@@ -11,7 +11,10 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function sprintf;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, CallableParametersAcceptor
 {
 

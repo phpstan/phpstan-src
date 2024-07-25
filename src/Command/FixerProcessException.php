@@ -4,7 +4,7 @@ namespace PHPStan\Command;
 
 use Exception;
 
-class FixerProcessException extends Exception
+final class FixerProcessException extends Exception
 {
 
 }

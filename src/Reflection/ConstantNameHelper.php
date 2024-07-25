@@ -10,7 +10,7 @@ use function implode;
 use function str_contains;
 use function strtolower;
 
-class ConstantNameHelper
+final class ConstantNameHelper
 {
 
 	public static function normalize(string $name): string

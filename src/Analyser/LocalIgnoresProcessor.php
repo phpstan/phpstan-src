@@ -10,7 +10,7 @@ use function is_array;
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
  */
-class LocalIgnoresProcessor
+final class LocalIgnoresProcessor
 {
 
 	/**

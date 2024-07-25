@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\ArrayDimFetch>
  */
-class OffsetAccessAssignmentRule implements Rule
+final class OffsetAccessAssignmentRule implements Rule
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

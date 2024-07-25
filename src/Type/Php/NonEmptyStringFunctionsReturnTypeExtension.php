@@ -14,7 +14,7 @@ use PHPStan\Type\Type;
 use function count;
 use function in_array;
 
-class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

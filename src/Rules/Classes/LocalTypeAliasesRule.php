@@ -10,7 +10,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<InClassNode>
  */
-class LocalTypeAliasesRule implements Rule
+final class LocalTypeAliasesRule implements Rule
 {
 
 	public function __construct(private LocalTypeAliasesCheck $check)

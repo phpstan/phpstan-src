@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use function is_bool;
 use function is_string;
 
-class ClearResultCacheCommand extends Command
+final class ClearResultCacheCommand extends Command
 {
 
 	private const NAME = 'clear-result-cache';

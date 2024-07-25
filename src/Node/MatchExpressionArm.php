@@ -2,7 +2,10 @@
 
 namespace PHPStan\Node;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class MatchExpressionArm
 {
 

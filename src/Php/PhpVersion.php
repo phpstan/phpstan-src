@@ -4,7 +4,10 @@ namespace PHPStan\Php;
 
 use function floor;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class PhpVersion
 {
 

@@ -6,7 +6,10 @@ use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class MatchExpressionNode extends NodeAbstract implements VirtualNode
 {
 

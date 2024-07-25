@@ -5,7 +5,10 @@ namespace PHPStan\Node;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class InvalidateExprNode extends NodeAbstract implements VirtualNode
 {
 

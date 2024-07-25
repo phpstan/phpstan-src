@@ -11,7 +11,7 @@ use function array_map;
 /**
  * @internal
  */
-class NetteContainer implements Container
+final class NetteContainer implements Container
 {
 
 	public function __construct(private \Nette\DI\Container $container)

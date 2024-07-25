@@ -17,7 +17,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function strtolower;
 
-class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
+final class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
 
 	public function getClass(): string

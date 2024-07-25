@@ -14,7 +14,7 @@ namespace PHPStan\Rules\RuleErrors;
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError%s implements %s
+final class RuleError%s implements %s
 {
 
 	%s

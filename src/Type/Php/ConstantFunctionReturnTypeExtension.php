@@ -11,7 +11,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 
-class ConstantFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ConstantFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private ConstantHelper $constantHelper)

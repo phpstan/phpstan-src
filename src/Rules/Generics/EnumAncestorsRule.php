@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class EnumAncestorsRule implements Rule
+final class EnumAncestorsRule implements Rule
 {
 
 	public function __construct(

@@ -5,7 +5,7 @@ namespace PHPStan\Parser;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 
-class CurlSetOptArgVisitor extends NodeVisitorAbstract
+final class CurlSetOptArgVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'isCurlSetOptArg';

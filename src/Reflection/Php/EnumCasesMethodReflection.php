@@ -13,7 +13,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
-class EnumCasesMethodReflection implements ExtendedMethodReflection
+final class EnumCasesMethodReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(private ClassReflection $declaringClass, private Type $returnType)

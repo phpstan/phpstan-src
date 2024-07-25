@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\FunctionLike>
  */
-class InvalidPromotedPropertiesRule implements Rule
+final class InvalidPromotedPropertiesRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpVersion)

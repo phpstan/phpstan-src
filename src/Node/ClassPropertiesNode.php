@@ -28,7 +28,10 @@ use function array_keys;
 use function in_array;
 use function strtolower;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 {
 

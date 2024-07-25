@@ -18,7 +18,7 @@ use function strlen;
 use function wordwrap;
 use const DIRECTORY_SEPARATOR;
 
-class ErrorsConsoleStyle extends SymfonyStyle
+final class ErrorsConsoleStyle extends SymfonyStyle
 {
 
 	public const OPTION_NO_PROGRESS = 'no-progress';

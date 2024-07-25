@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<InArrowFunctionNode>
  */
-class TooWideArrowFunctionReturnTypehintRule implements Rule
+final class TooWideArrowFunctionReturnTypehintRule implements Rule
 {
 
 	public function getNodeType(): string

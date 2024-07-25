@@ -12,7 +12,10 @@ use PHPStan\Analyser\StatementResult;
 use PHPStan\Reflection\FunctionReflection;
 use function count;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 

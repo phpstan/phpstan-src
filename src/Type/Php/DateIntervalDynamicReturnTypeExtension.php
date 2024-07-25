@@ -14,7 +14,7 @@ use Throwable;
 use function count;
 use function in_array;
 
-class DateIntervalDynamicReturnTypeExtension
+final class DateIntervalDynamicReturnTypeExtension
 implements DynamicStaticMethodReturnTypeExtension
 {
 

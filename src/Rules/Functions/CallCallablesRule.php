@@ -24,7 +24,7 @@ use function ucfirst;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class CallCallablesRule implements Rule
+final class CallCallablesRule implements Rule
 {
 
 	public function __construct(

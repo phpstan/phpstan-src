@@ -60,7 +60,7 @@ use function is_array;
 use function sprintf;
 use function strtolower;
 
-class PhpClassReflectionExtension
+final class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
 {
 

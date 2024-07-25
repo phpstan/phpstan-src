@@ -11,7 +11,7 @@ use PHPStan\Reflection\ReflectionProvider;
 /**
  * @implements Collector<Node\Stmt\Expression, array{string, int}>
  */
-class PossiblyPureFuncCallCollector implements Collector
+final class PossiblyPureFuncCallCollector implements Collector
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

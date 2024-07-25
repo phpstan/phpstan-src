@@ -4,7 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PHPStan\Type\Type;
 
-class RegexCapturingGroup
+final class RegexCapturingGroup
 {
 
 	private bool $forceNonOptional = false;

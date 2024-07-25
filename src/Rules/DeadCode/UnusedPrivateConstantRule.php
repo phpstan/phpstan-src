@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassConstantsNode>
  */
-class UnusedPrivateConstantRule implements Rule
+final class UnusedPrivateConstantRule implements Rule
 {
 
 	public function __construct(private AlwaysUsedClassConstantsExtensionProvider $extensionProvider)

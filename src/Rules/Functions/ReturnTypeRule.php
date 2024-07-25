@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Return_>
  */
-class ReturnTypeRule implements Rule
+final class ReturnTypeRule implements Rule
 {
 
 	public function __construct(

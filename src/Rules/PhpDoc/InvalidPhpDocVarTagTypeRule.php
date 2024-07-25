@@ -23,7 +23,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt>
  */
-class InvalidPhpDocVarTagTypeRule implements Rule
+final class InvalidPhpDocVarTagTypeRule implements Rule
 {
 
 	public function __construct(

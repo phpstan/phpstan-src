@@ -7,7 +7,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Type;
 use function array_map;
 
-class UnionTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
+final class UnionTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 
 	private ?ExtendedMethodReflection $transformedMethod = null;

@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\FunctionLike>
  */
-class RedefinedParametersRule implements Rule
+final class RedefinedParametersRule implements Rule
 {
 
 	public function getNodeType(): string

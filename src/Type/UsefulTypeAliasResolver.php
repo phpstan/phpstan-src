@@ -10,7 +10,7 @@ use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function sprintf;
 
-class UsefulTypeAliasResolver implements TypeAliasResolver
+final class UsefulTypeAliasResolver implements TypeAliasResolver
 {
 
 	/** @var array<string, Type> */

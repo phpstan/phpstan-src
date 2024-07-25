@@ -16,7 +16,7 @@ use PHPStan\Type\Type;
 /**
  * @implements Rule<InArrowFunctionNode>
  */
-class ArrowFunctionReturnTypeRule implements Rule
+final class ArrowFunctionReturnTypeRule implements Rule
 {
 
 	public function __construct(private FunctionReturnTypeCheck $returnTypeCheck)

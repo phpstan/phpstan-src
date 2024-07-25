@@ -11,7 +11,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<Node\Expr\Closure>
  */
-class ExistingClassesInClosureTypehintsRule implements Rule
+final class ExistingClassesInClosureTypehintsRule implements Rule
 {
 
 	public function __construct(private FunctionDefinitionCheck $check)

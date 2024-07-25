@@ -11,7 +11,7 @@ use function max;
 use function min;
 use function sprintf;
 
-class Scheduler implements DiagnoseExtension
+final class Scheduler implements DiagnoseExtension
 {
 
 	/** @var array{int, int, int, int}|null */

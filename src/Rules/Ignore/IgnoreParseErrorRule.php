@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<FileNode>
  */
-class IgnoreParseErrorRule implements Rule
+final class IgnoreParseErrorRule implements Rule
 {
 
 	public function getNodeType(): string

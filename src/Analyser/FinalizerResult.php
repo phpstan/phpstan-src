@@ -2,7 +2,7 @@
 
 namespace PHPStan\Analyser;
 
-class FinalizerResult
+final class FinalizerResult
 {
 
 	/**

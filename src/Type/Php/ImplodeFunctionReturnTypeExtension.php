@@ -20,7 +20,7 @@ use function count;
 use function implode;
 use function in_array;
 
-class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

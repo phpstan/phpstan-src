@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Expression>
  */
-class CallToMethodStatementWithoutSideEffectsRule implements Rule
+final class CallToMethodStatementWithoutSideEffectsRule implements Rule
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

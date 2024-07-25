@@ -2,7 +2,7 @@
 
 namespace PHPStan\File;
 
-class FileFinderResult
+final class FileFinderResult
 {
 
 	/**

@@ -11,7 +11,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\AssignRef>
  */
-class ReadOnlyPropertyAssignRefRule implements Rule
+final class ReadOnlyPropertyAssignRefRule implements Rule
 {
 
 	public function __construct(private PropertyReflectionFinder $propertyReflectionFinder)

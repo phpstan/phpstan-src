@@ -7,7 +7,7 @@ use function abs;
 use function end;
 use function round;
 
-class BytesHelper
+final class BytesHelper
 {
 
 	public static function bytes(int $bytes): string

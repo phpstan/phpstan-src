@@ -16,7 +16,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 
-class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
+final class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

@@ -9,7 +9,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_map;
 
-class WrappedExtendedMethodReflection implements ExtendedMethodReflection
+final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(private MethodReflection $method)

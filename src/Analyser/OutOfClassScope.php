@@ -8,7 +8,7 @@ use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 
-class OutOfClassScope implements ClassMemberAccessAnswerer
+final class OutOfClassScope implements ClassMemberAccessAnswerer
 {
 
 	/** @api */

@@ -9,7 +9,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\NeverType;
 
-class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
+final class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
 
 	/** @var PropertyReflection[][] */

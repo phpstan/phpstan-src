@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Instanceof_>
  */
-class ImpossibleInstanceOfRule implements Rule
+final class ImpossibleInstanceOfRule implements Rule
 {
 
 	public function __construct(

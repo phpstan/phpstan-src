@@ -5,7 +5,10 @@ namespace PHPStan\Node;
 use PhpParser\Node\Expr\ArrayItem;
 use PHPStan\Analyser\Scope;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class LiteralArrayItem
 {
 

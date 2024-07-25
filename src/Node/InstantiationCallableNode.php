@@ -5,7 +5,10 @@ namespace PHPStan\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class InstantiationCallableNode extends Expr implements VirtualNode
 {
 

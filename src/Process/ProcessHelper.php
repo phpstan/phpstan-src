@@ -13,7 +13,7 @@ use function php_ini_loaded_file;
 use function sprintf;
 use const PHP_BINARY;
 
-class ProcessHelper
+final class ProcessHelper
 {
 
 	/**

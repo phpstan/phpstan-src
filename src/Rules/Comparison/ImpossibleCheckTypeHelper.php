@@ -37,7 +37,7 @@ use function is_string;
 use function sprintf;
 use function strtolower;
 
-class ImpossibleCheckTypeHelper
+final class ImpossibleCheckTypeHelper
 {
 
 	/**

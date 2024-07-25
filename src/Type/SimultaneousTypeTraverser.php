@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-class SimultaneousTypeTraverser
+final class SimultaneousTypeTraverser
 {
 
 	/** @var callable(Type $left, Type $right, callable(Type, Type): Type $traverse): Type */

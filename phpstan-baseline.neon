@@ -213,31 +213,6 @@ parameters:
 			path: src/PhpDoc/StubValidator.php
 
 		-
-			message: "#^Return type \\(PHPStan\\\\PhpDoc\\\\Tag\\\\ParamOutTag\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\ParamOutTag\\:\\:withType\\(\\) should be covariant with return type \\(static\\(PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\)\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\:\\:withType\\(\\)$#"
-			count: 1
-			path: src/PhpDoc/Tag/ParamOutTag.php
-
-		-
-			message: "#^Return type \\(PHPStan\\\\PhpDoc\\\\Tag\\\\ParamTag\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\ParamTag\\:\\:withType\\(\\) should be covariant with return type \\(static\\(PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\)\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\:\\:withType\\(\\)$#"
-			count: 1
-			path: src/PhpDoc/Tag/ParamTag.php
-
-		-
-			message: "#^Return type \\(PHPStan\\\\PhpDoc\\\\Tag\\\\ReturnTag\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\ReturnTag\\:\\:withType\\(\\) should be covariant with return type \\(static\\(PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\)\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\:\\:withType\\(\\)$#"
-			count: 1
-			path: src/PhpDoc/Tag/ReturnTag.php
-
-		-
-			message: "#^Return type \\(PHPStan\\\\PhpDoc\\\\Tag\\\\SelfOutTypeTag\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\SelfOutTypeTag\\:\\:withType\\(\\) should be covariant with return type \\(static\\(PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\)\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\:\\:withType\\(\\)$#"
-			count: 1
-			path: src/PhpDoc/Tag/SelfOutTypeTag.php
-
-		-
-			message: "#^Return type \\(PHPStan\\\\PhpDoc\\\\Tag\\\\VarTag\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\VarTag\\:\\:withType\\(\\) should be covariant with return type \\(static\\(PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\)\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\:\\:withType\\(\\)$#"
-			count: 1
-			path: src/PhpDoc/Tag/VarTag.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/PhpDoc/TypeNodeResolver.php

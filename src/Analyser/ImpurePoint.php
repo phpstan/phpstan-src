@@ -8,6 +8,7 @@ use PHPStan\Node\VirtualNode;
 /**
  * @phpstan-type ImpurePointIdentifier = 'echo'|'die'|'exit'|'propertyAssign'|'propertyAssignByRef'|'propertyUnset'|'methodCall'|'new'|'functionCall'|'include'|'require'|'print'|'eval'|'superglobal'|'yield'|'yieldFrom'|'static'|'global'|'betweenPhpTags'
  * @api
+ * @final
  */
 class ImpurePoint
 {

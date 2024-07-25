@@ -10,7 +10,7 @@ use ReturnTypeWillChange;
 use function array_map;
 use function count;
 
-class ExportedEnumNode implements RootExportedNode, JsonSerializable
+final class ExportedEnumNode implements RootExportedNode, JsonSerializable
 {
 
 	/**
@@ -134,6 +134,9 @@ class ExportedEnumNode implements RootExportedNode, JsonSerializable
 		);
 	}
 
+	/**
+	 * @return self::TYPE_ENUM
+	 */
 	public function getType(): string
 	{
 		return self::TYPE_ENUM;

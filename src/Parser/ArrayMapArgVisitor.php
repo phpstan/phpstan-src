@@ -7,7 +7,7 @@ use PhpParser\NodeVisitorAbstract;
 use function array_slice;
 use function count;
 
-class ArrayMapArgVisitor extends NodeVisitorAbstract
+final class ArrayMapArgVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'arrayMapArgs';

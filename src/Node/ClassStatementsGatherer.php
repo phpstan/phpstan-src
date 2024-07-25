@@ -23,7 +23,7 @@ use function count;
 use function in_array;
 use function strtolower;
 
-class ClassStatementsGatherer
+final class ClassStatementsGatherer
 {
 
 	private const PROPERTY_ENUMERATING_FUNCTIONS = [

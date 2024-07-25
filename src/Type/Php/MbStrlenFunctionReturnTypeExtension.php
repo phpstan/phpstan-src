@@ -33,7 +33,7 @@ use function sort;
 use function sprintf;
 use function var_export;
 
-class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	private const UNSUPPORTED_ENCODING = 'unsupported';

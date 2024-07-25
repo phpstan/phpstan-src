@@ -17,7 +17,7 @@ use function array_key_exists;
 use function sprintf;
 use function substr;
 
-class AssertRuleHelper
+final class AssertRuleHelper
 {
 
 	public function __construct(private InitializerExprTypeResolver $initializerExprTypeResolver)

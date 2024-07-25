@@ -40,7 +40,10 @@ use function count;
 use function is_bool;
 use function substr;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ResolvedPhpDocBlock
 {
 

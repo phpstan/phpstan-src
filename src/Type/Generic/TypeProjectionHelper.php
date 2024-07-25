@@ -6,7 +6,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
-class TypeProjectionHelper
+final class TypeProjectionHelper
 {
 
 	public static function describe(

@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
-class MissingCheckedExceptionInMethodThrowsRule implements Rule
+final class MissingCheckedExceptionInMethodThrowsRule implements Rule
 {
 
 	public function __construct(private MissingCheckedExceptionInThrowsCheck $check)

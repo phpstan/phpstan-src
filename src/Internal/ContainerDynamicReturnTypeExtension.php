@@ -15,7 +15,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 
-class ContainerDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
+final class ContainerDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
 	public function getClass(): string

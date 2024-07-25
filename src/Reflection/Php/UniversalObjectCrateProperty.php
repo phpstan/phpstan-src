@@ -7,7 +7,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-class UniversalObjectCrateProperty implements PropertyReflection
+final class UniversalObjectCrateProperty implements PropertyReflection
 {
 
 	public function __construct(

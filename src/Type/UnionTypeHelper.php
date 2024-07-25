@@ -12,7 +12,7 @@ use function strcasecmp;
 use function usort;
 use const PHP_INT_MIN;
 
-class UnionTypeHelper
+final class UnionTypeHelper
 {
 
 	/**

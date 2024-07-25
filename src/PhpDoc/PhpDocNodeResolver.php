@@ -48,7 +48,7 @@ use function method_exists;
 use function str_starts_with;
 use function substr;
 
-class PhpDocNodeResolver
+final class PhpDocNodeResolver
 {
 
 	public function __construct(

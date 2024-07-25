@@ -119,7 +119,7 @@ use function str_starts_with;
 use function strtolower;
 use function substr;
 
-class TypeNodeResolver
+final class TypeNodeResolver
 {
 
 	/** @var array<string, true> */

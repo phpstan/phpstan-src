@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<PropertyAssignNode>
  */
-class WritingToReadOnlyPropertiesRule implements Rule
+final class WritingToReadOnlyPropertiesRule implements Rule
 {
 
 	public function __construct(

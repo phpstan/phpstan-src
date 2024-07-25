@@ -15,7 +15,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use const PHP_INT_MIN;
 
-class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtension
+final class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

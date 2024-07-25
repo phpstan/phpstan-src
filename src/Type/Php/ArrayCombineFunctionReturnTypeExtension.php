@@ -22,7 +22,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
 
-class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

@@ -9,7 +9,7 @@ use PhpParser\NodeVisitor\NameResolver;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 
-class SimpleParser implements Parser
+final class SimpleParser implements Parser
 {
 
 	public function __construct(

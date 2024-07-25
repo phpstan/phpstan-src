@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Closure>
  */
-class InvalidLexicalVariablesInClosureUseRule implements Rule
+final class InvalidLexicalVariablesInClosureUseRule implements Rule
 {
 
 	public function getNodeType(): string

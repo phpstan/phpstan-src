@@ -7,7 +7,7 @@ use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
 
-class PhpDocStringResolver
+final class PhpDocStringResolver
 {
 
 	public function __construct(private Lexer $phpDocLexer, private PhpDocParser $phpDocParser)

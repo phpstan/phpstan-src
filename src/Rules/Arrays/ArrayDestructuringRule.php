@@ -23,7 +23,7 @@ use function sprintf;
 /**
  * @implements Rule<Assign>
  */
-class ArrayDestructuringRule implements Rule
+final class ArrayDestructuringRule implements Rule
 {
 
 	public function __construct(

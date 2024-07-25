@@ -7,7 +7,7 @@ use PHPStan\Reflection\BrokerAwareExtension;
 use function array_filter;
 use function array_values;
 
-class OperatorTypeSpecifyingExtensionRegistry
+final class OperatorTypeSpecifyingExtensionRegistry
 {
 
 	/**

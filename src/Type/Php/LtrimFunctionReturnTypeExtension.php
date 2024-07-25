@@ -12,7 +12,7 @@ use PHPStan\Type\Type;
 use function count;
 use function ltrim;
 
-class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

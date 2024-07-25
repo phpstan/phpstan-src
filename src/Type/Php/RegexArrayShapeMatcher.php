@@ -286,12 +286,13 @@ final class RegexArrayShapeMatcher
 		$countGroups = count($captureGroups);
 		$i = 0;
 		foreach ($captureGroups as $captureGroup) {
+			$isTraillingOptional = $i >= $countGroups - $trailingOptionals;
 			$groupValueType = $this->getValueType($captureGroup->getType(), $flags);
 
 			if (!$wasMatched->yes()) {
 				$optional = true;
 			} else {
-				if ($i < $countGroups - $trailingOptionals) {
+				if (!$isTraillingOptional) {
 					$optional = false;
 					if ($this->containsUnmatchedAsNull($flags) && !$captureGroup->isOptional()) {
 						$groupValueType = TypeCombinator::removeNull($groupValueType);
@@ -303,7 +304,7 @@ final class RegexArrayShapeMatcher
 				}
 			}
 
-			if (!$optional && $captureGroup->isOptional() && !$this->containsUnmatchedAsNull($flags)) {
+			if (!$isTraillingOptional && $captureGroup->isOptional() && !$this->containsUnmatchedAsNull($flags)) {
 				$groupValueType = TypeCombinator::union($groupValueType, new ConstantStringType(''));
 			}
 

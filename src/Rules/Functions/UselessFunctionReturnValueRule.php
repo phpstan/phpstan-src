@@ -23,7 +23,7 @@ class UselessFunctionReturnValueRule implements Rule
 	private const USELESS_FUNCTIONS = [
 		'var_export' => 'null',
 		'print_r' => 'true',
-		'highlight_string' => 'bool',
+		'highlight_string' => 'true',
 		'highlight_file' => 'bool',
 		'show_source' => 'bool',
 	];

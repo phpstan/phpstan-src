@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\StaticCall>
  */
-class CallStaticMethodsRule implements Rule
+final class CallStaticMethodsRule implements Rule
 {
 
 	public function __construct(

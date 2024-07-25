@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassMethodNode>
  */
-class IncompatibleSelfOutTypeRule implements Rule
+final class IncompatibleSelfOutTypeRule implements Rule
 {
 
 	public function getNodeType(): string

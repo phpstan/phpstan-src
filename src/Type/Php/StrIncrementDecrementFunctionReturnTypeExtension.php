@@ -23,7 +23,7 @@ use function preg_match;
 use function str_split;
 use function stripos;
 
-class StrIncrementDecrementFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class StrIncrementDecrementFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

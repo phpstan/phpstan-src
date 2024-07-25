@@ -18,7 +18,7 @@ use function count;
 use function implode;
 use function is_bool;
 
-class IntersectionTypeMethodReflection implements ExtendedMethodReflection
+final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**

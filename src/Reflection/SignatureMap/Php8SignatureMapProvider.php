@@ -31,7 +31,7 @@ use function is_string;
 use function sprintf;
 use function strtolower;
 
-class Php8SignatureMapProvider implements SignatureMapProvider
+final class Php8SignatureMapProvider implements SignatureMapProvider
 {
 
 	private const DIRECTORY = __DIR__ . '/../../../vendor/phpstan/php-8-stubs';

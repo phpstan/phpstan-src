@@ -24,7 +24,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr>
  */
-class InvalidIncDecOperationRule implements Rule
+final class InvalidIncDecOperationRule implements Rule
 {
 
 	public function __construct(

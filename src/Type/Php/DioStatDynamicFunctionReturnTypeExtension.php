@@ -12,7 +12,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-class DioStatDynamicFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class DioStatDynamicFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

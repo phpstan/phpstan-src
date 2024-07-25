@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Ternary>
  */
-class TernaryOperatorConstantConditionRule implements Rule
+final class TernaryOperatorConstantConditionRule implements Rule
 {
 
 	public function __construct(

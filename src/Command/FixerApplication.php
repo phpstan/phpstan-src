@@ -63,7 +63,7 @@ use const PHP_BINARY;
 use const PHP_URL_PORT;
 use const PHP_VERSION_ID;
 
-class FixerApplication
+final class FixerApplication
 {
 
 	/** @var PromiseInterface<string>|null  */

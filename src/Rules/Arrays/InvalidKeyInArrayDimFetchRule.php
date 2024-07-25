@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\ArrayDimFetch>
  */
-class InvalidKeyInArrayDimFetchRule implements Rule
+final class InvalidKeyInArrayDimFetchRule implements Rule
 {
 
 	public function __construct(

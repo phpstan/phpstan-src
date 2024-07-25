@@ -19,7 +19,7 @@ use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_map;
 
-class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVariant
+final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVariant
 {
 
 	/** @var ParameterReflectionWithPhpDocs[]|null */

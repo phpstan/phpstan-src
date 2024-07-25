@@ -12,7 +12,7 @@ use function array_merge;
 use function count;
 use function memory_get_peak_usage;
 
-class Analyser
+final class Analyser
 {
 
 	public function __construct(

@@ -13,7 +13,7 @@ use PHPStan\Type\Type;
 use function array_merge;
 use function count;
 
-class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private bool $checkMaybeUndefinedVariables)

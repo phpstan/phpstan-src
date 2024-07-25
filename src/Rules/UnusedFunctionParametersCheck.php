@@ -13,7 +13,7 @@ use function is_array;
 use function is_string;
 use function sprintf;
 
-class UnusedFunctionParametersCheck
+final class UnusedFunctionParametersCheck
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

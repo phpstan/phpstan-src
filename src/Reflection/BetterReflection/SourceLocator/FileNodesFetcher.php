@@ -7,7 +7,7 @@ use PHPStan\File\FileReader;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 
-class FileNodesFetcher
+final class FileNodesFetcher
 {
 
 	public function __construct(

@@ -6,7 +6,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\Type\Type;
 
-class EnumUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
+final class EnumUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 
 	public function __construct(private EnumPropertyReflection $property)

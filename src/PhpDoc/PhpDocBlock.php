@@ -19,7 +19,7 @@ use function count;
 use function strtolower;
 use function substr;
 
-class PhpDocBlock
+final class PhpDocBlock
 {
 
 	/**

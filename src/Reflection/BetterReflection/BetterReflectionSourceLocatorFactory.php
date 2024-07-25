@@ -30,7 +30,7 @@ use function extension_loaded;
 use function is_dir;
 use function is_file;
 
-class BetterReflectionSourceLocatorFactory
+final class BetterReflectionSourceLocatorFactory
 {
 
 	/**

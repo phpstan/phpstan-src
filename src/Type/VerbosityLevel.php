@@ -11,7 +11,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 
-class VerbosityLevel
+final class VerbosityLevel
 {
 
 	private const TYPE_ONLY = 1;

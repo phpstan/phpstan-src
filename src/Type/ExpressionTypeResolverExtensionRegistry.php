@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-class ExpressionTypeResolverExtensionRegistry
+final class ExpressionTypeResolverExtensionRegistry
 {
 
 	/**

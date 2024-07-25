@@ -21,7 +21,7 @@ use function count;
 use function in_array;
 use function preg_match_all;
 
-class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

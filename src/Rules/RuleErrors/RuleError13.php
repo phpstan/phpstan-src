@@ -9,7 +9,7 @@ use PHPStan\Rules\TipRuleError;
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError13 implements RuleError, FileRuleError, TipRuleError
+final class RuleError13 implements RuleError, FileRuleError, TipRuleError
 {
 
 	public string $message;

@@ -8,7 +8,7 @@ use PHPStan\Type\FileTypeMapper;
 use function array_map;
 use function strtolower;
 
-class PhpDocInheritanceResolver
+final class PhpDocInheritanceResolver
 {
 
 	public function __construct(

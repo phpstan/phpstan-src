@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<InClosureNode>
  */
-class IncompatibleClosureDefaultParameterTypeRule implements Rule
+final class IncompatibleClosureDefaultParameterTypeRule implements Rule
 {
 
 	public function getNodeType(): string

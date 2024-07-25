@@ -14,7 +14,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class CallToFunctionParametersRule implements Rule
+final class CallToFunctionParametersRule implements Rule
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider, private FunctionCallParametersCheck $check)

@@ -4,7 +4,7 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PhpParser\Node;
 
-class FetchedNodesResult
+final class FetchedNodesResult
 {
 
 	/**

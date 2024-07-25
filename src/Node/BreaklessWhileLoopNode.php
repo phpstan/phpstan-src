@@ -6,7 +6,10 @@ use PhpParser\Node\Stmt\While_;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementExitPoint;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class BreaklessWhileLoopNode extends NodeAbstract implements VirtualNode
 {
 

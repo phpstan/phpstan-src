@@ -17,10 +17,10 @@ use function is_numeric;
 use function str_pad;
 use const STR_PAD_LEFT;
 
-class DateFunctionReturnTypeHelper
+final class DateFunctionReturnTypeHelper
 {
 
-	public function getTypeFromFormatType(Type $formatType, bool $useMicrosec): ?Type
+	public function getTypeFromFormatType(Type $formatType, bool $useMicrosec): Type
 	{
 		$types = [];
 		foreach ($formatType->getConstantStrings() as $formatString) {

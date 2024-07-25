@@ -14,7 +14,7 @@ use function str_contains;
 /**
  * @implements Rule<Node\Expr\MethodCall>
  */
-class ApiMethodCallRule implements Rule
+final class ApiMethodCallRule implements Rule
 {
 
 	public function __construct(private ApiRuleHelper $apiRuleHelper)

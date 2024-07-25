@@ -5,7 +5,10 @@ namespace PHPStan\PhpDoc\Tag;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class TemplateTag
 {
 

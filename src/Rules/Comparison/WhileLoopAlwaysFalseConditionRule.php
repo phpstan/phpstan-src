@@ -12,7 +12,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 /**
  * @implements Rule<While_>
  */
-class WhileLoopAlwaysFalseConditionRule implements Rule
+final class WhileLoopAlwaysFalseConditionRule implements Rule
 {
 
 	public function __construct(

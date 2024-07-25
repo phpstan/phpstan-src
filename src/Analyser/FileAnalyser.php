@@ -36,7 +36,7 @@ use const E_USER_NOTICE;
 use const E_USER_WARNING;
 use const E_WARNING;
 
-class FileAnalyser
+final class FileAnalyser
 {
 
 	/** @var list<Error> */

@@ -31,7 +31,7 @@ use function is_file;
 use function sprintf;
 use function time;
 
-class PhpFunctionReflection implements FunctionReflection
+final class PhpFunctionReflection implements FunctionReflection
 {
 
 	/** @var FunctionVariantWithPhpDocs[]|null */

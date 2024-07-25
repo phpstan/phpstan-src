@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Clone_>
  */
-class VariableCloningRule implements Rule
+final class VariableCloningRule implements Rule
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

@@ -8,14 +8,14 @@ use PHPStan\Php\PhpVersion;
 use function count;
 use function version_compare;
 
-class RemoveUnusedCodeByPhpVersionIdVisitor extends NodeVisitorAbstract
+final class RemoveUnusedCodeByPhpVersionIdVisitor extends NodeVisitorAbstract
 {
 
 	public function __construct(private string $phpVersionString)
 	{
 	}
 
-	public function enterNode(Node $node): Node|int|null
+	public function enterNode(Node $node): ?Node
 	{
 		if (!$node instanceof Node\Stmt\If_) {
 			return null;

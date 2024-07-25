@@ -70,7 +70,7 @@ use function array_fill_keys;
 use function count;
 use function sprintf;
 
-class StubValidator
+final class StubValidator
 {
 
 	public function __construct(

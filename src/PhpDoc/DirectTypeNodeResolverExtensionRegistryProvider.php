@@ -2,7 +2,7 @@
 
 namespace PHPStan\PhpDoc;
 
-class DirectTypeNodeResolverExtensionRegistryProvider implements TypeNodeResolverExtensionRegistryProvider
+final class DirectTypeNodeResolverExtensionRegistryProvider implements TypeNodeResolverExtensionRegistryProvider
 {
 
 	public function __construct(private TypeNodeResolverExtensionRegistry $registry)

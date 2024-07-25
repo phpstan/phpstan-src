@@ -18,7 +18,7 @@ use const E_USER_ERROR;
 use const E_USER_NOTICE;
 use const E_USER_WARNING;
 
-class TriggerErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class TriggerErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

@@ -4,7 +4,10 @@ namespace PHPStan\Type\Generic;
 
 use function array_key_exists;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class TemplateTypeVarianceMap
 {
 

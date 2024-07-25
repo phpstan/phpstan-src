@@ -18,7 +18,7 @@ use function ucfirst;
 /**
  * @implements Rule<Node\Stmt\TraitUse>
  */
-class UsedTraitsRule implements Rule
+final class UsedTraitsRule implements Rule
 {
 
 	public function __construct(

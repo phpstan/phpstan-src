@@ -42,7 +42,7 @@ use function sprintf;
 use function usort;
 use const JSON_INVALID_UTF8_IGNORE;
 
-class FixerWorkerCommand extends Command
+final class FixerWorkerCommand extends Command
 {
 
 	private const NAME = 'fixer:worker';

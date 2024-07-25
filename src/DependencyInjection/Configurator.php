@@ -15,7 +15,7 @@ use const E_USER_DEPRECATED;
 use const PHP_RELEASE_VERSION;
 use const PHP_VERSION_ID;
 
-class Configurator extends \Nette\Bootstrap\Configurator
+final class Configurator extends \Nette\Bootstrap\Configurator
 {
 
 	/** @var string[] */

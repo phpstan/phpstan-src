@@ -5,7 +5,10 @@ namespace PHPStan\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementExitPoint;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class FinallyExitPointsNode extends NodeAbstract implements VirtualNode
 {
 

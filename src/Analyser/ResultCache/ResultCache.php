@@ -10,7 +10,7 @@ use PHPStan\Dependency\RootExportedNode;
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
  */
-class ResultCache
+final class ResultCache
 {
 
 	/**

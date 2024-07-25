@@ -10,7 +10,7 @@ use function sprintf;
 use const ENT_COMPAT;
 use const ENT_XML1;
 
-class JunitErrorFormatter implements ErrorFormatter
+final class JunitErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(private RelativePathHelper $relativePathHelper)

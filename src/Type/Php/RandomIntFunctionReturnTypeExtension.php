@@ -17,7 +17,7 @@ use function in_array;
 use function max;
 use function min;
 
-class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

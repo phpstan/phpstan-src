@@ -6,7 +6,7 @@ use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Type\ExpressionTypeResolverExtensionRegistry;
 
-class LazyExpressionTypeResolverExtensionRegistryProvider implements ExpressionTypeResolverExtensionRegistryProvider
+final class LazyExpressionTypeResolverExtensionRegistryProvider implements ExpressionTypeResolverExtensionRegistryProvider
 {
 
 	private ?ExpressionTypeResolverExtensionRegistry $registry = null;

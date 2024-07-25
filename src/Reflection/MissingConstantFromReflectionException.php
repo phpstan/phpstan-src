@@ -5,7 +5,7 @@ namespace PHPStan\Reflection;
 use Exception;
 use function sprintf;
 
-class MissingConstantFromReflectionException extends Exception
+final class MissingConstantFromReflectionException extends Exception
 {
 
 	public function __construct(

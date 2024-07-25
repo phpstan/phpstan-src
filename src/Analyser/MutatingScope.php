@@ -158,7 +158,7 @@ use function usort;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
-class MutatingScope implements Scope
+final class MutatingScope implements Scope
 {
 
 	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;

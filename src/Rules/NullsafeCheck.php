@@ -4,7 +4,7 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node\Expr;
 
-class NullsafeCheck
+final class NullsafeCheck
 {
 
 	public function containsNullSafe(Expr $expr): bool

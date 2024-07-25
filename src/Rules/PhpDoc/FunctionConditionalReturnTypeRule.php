@@ -11,7 +11,7 @@ use function count;
 /**
  * @implements Rule<InFunctionNode>
  */
-class FunctionConditionalReturnTypeRule implements Rule
+final class FunctionConditionalReturnTypeRule implements Rule
 {
 
 	public function __construct(private ConditionalReturnTypeRuleHelper $helper)

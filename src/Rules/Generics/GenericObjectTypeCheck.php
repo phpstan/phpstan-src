@@ -21,7 +21,7 @@ use function implode;
 use function sprintf;
 use function strtolower;
 
-class GenericObjectTypeCheck
+final class GenericObjectTypeCheck
 {
 
 	/**

@@ -12,7 +12,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use stdClass;
 
-class DummyConstantReflection implements ConstantReflection
+final class DummyConstantReflection implements ConstantReflection
 {
 
 	public function __construct(private string $name)

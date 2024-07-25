@@ -12,7 +12,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 
-class CurlInitReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class CurlInitReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

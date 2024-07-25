@@ -20,7 +20,7 @@ use PHPStan\Type\TypeUtils;
 use function array_slice;
 use function count;
 
-class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

@@ -7,7 +7,10 @@ use OndraM\CiDetector\Exception\CiNotDetectedException;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class CiDetectedErrorFormatter implements ErrorFormatter
 {
 

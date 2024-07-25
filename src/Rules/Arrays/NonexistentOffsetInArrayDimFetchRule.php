@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\ArrayDimFetch>
  */
-class NonexistentOffsetInArrayDimFetchRule implements Rule
+final class NonexistentOffsetInArrayDimFetchRule implements Rule
 {
 
 	public function __construct(

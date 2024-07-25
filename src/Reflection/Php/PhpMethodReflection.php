@@ -45,7 +45,10 @@ use function strtolower;
 use function time;
 use const PHP_VERSION_ID;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class PhpMethodReflection implements ExtendedMethodReflection
 {
 

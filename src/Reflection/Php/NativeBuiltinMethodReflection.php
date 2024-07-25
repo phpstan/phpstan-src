@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
@@ -11,7 +10,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\TrinaryLogic;
 
-class NativeBuiltinMethodReflection implements BuiltinMethodReflection
+final class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 {
 
 	public function __construct(private ReflectionMethod $reflection)
@@ -23,7 +22,7 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->reflection->getName();
 	}
 
-	public function getReflection(): ?ReflectionMethod
+	public function getReflection(): ReflectionMethod
 	{
 		return $this->reflection;
 	}
@@ -38,7 +37,7 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $fileName;
 	}
 
-	public function getDeclaringClass(): ReflectionClass|ReflectionEnum
+	public function getDeclaringClass(): ReflectionClass
 	{
 		return $this->reflection->getDeclaringClass();
 	}

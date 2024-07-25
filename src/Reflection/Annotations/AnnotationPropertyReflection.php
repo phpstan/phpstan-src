@@ -7,7 +7,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-class AnnotationPropertyReflection implements PropertyReflection
+final class AnnotationPropertyReflection implements PropertyReflection
 {
 
 	public function __construct(

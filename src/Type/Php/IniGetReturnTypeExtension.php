@@ -13,7 +13,7 @@ use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
 use function count;
 
-class IniGetReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class IniGetReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

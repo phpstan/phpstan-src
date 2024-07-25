@@ -11,7 +11,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use function array_map;
 
-class PropertyReflectionFinder
+final class PropertyReflectionFinder
 {
 
 	/**

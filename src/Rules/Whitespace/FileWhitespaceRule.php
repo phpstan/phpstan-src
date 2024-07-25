@@ -15,7 +15,7 @@ use function count;
 /**
  * @implements Rule<FileNode>
  */
-class FileWhitespaceRule implements Rule
+final class FileWhitespaceRule implements Rule
 {
 
 	public function getNodeType(): string

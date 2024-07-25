@@ -25,7 +25,7 @@ use function str_starts_with;
 /**
  * @implements Rule<Node\Expr\New_>
  */
-class RuntimeReflectionInstantiationRule implements Rule
+final class RuntimeReflectionInstantiationRule implements Rule
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

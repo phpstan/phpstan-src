@@ -5,7 +5,7 @@ namespace PHPStan\Parser;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 
-class TypeTraverserInstanceofVisitor extends NodeVisitorAbstract
+final class TypeTraverserInstanceofVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'insideTypeTraverserMap';

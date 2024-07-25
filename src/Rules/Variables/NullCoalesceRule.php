@@ -11,7 +11,7 @@ use PHPStan\Type\Type;
 /**
  * @implements Rule<Node\Expr>
  */
-class NullCoalesceRule implements Rule
+final class NullCoalesceRule implements Rule
 {
 
 	public function __construct(private IssetCheck $issetCheck)

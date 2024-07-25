@@ -21,7 +21,7 @@ use function array_slice;
 use function count;
 use function sprintf;
 
-class MethodParameterComparisonHelper
+final class MethodParameterComparisonHelper
 {
 
 	public function __construct(private PhpVersion $phpVersion, private bool $genericPrototypeMessage)

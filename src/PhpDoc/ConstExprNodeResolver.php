@@ -19,7 +19,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
-class ConstExprNodeResolver
+final class ConstExprNodeResolver
 {
 
 	public function resolve(ConstExprNode $node): Type

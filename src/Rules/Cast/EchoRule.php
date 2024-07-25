@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Echo_>
  */
-class EchoRule implements Rule
+final class EchoRule implements Rule
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

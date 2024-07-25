@@ -7,7 +7,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-class ExpressionTypeHolder
+final class ExpressionTypeHolder
 {
 
 	public function __construct(private Expr $expr, private Type $type, private TrinaryLogic $certainty)

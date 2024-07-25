@@ -4,7 +4,10 @@ namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\Type\Type;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class MethodTag
 {
 

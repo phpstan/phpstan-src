@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @phpstan-type ErrorIdentifier = 'empty'|'isset'|'nullCoalesce'
  */
-class IssetCheck
+final class IssetCheck
 {
 
 	public function __construct(

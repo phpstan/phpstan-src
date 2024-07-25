@@ -14,7 +14,7 @@ use function count;
 use function sprintf;
 use function strtolower;
 
-class AttributesCheck
+final class AttributesCheck
 {
 
 	public function __construct(

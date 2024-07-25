@@ -53,7 +53,10 @@ use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
 use const CURLOPT_SSL_VERIFYHOST;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ParametersAcceptorSelector
 {
 

@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class ArrayFilterRule implements Rule
+final class ArrayFilterRule implements Rule
 {
 
 	public function __construct(

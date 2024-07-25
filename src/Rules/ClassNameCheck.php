@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules;
 
-class ClassNameCheck
+final class ClassNameCheck
 {
 
 	public function __construct(

@@ -10,7 +10,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
-class AllowedArrayKeysTypes
+final class AllowedArrayKeysTypes
 {
 
 	public static function getType(): Type

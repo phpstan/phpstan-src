@@ -11,7 +11,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<Node\Stmt\ClassLike>
  */
-class ClassAttributesRule implements Rule
+final class ClassAttributesRule implements Rule
 {
 
 	public function __construct(private AttributesCheck $attributesCheck)

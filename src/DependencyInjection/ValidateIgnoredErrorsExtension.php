@@ -37,7 +37,7 @@ use function is_array;
 use function sprintf;
 use const PHP_VERSION_ID;
 
-class ValidateIgnoredErrorsExtension extends CompilerExtension
+final class ValidateIgnoredErrorsExtension extends CompilerExtension
 {
 
 	/**

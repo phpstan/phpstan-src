@@ -9,7 +9,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function sprintf;
 
-class CrossCheckInterfacesHelper
+final class CrossCheckInterfacesHelper
 {
 
 	/**

@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
-class ValueAssignedToClassConstantRule implements Rule
+final class ValueAssignedToClassConstantRule implements Rule
 {
 
 	public function getNodeType(): string

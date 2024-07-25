@@ -19,7 +19,7 @@ use function sprintf;
 use function str_ends_with;
 use function strtolower;
 
-class TypehintHelper
+final class TypehintHelper
 {
 
 	private static function getTypeObjectFromTypehint(string $typeString, ClassReflection|string|null $selfClass): Type

@@ -6,7 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\PhpDoc\Tag\VarTag;
 
-class VarTagChangedExpressionTypeNode extends NodeAbstract implements VirtualNode
+final class VarTagChangedExpressionTypeNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(private VarTag $varTag, private Expr $expr)

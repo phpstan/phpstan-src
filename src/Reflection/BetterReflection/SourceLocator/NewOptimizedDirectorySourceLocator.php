@@ -16,7 +16,7 @@ use function array_values;
 use function current;
 use function strtolower;
 
-class NewOptimizedDirectorySourceLocator implements SourceLocator
+final class NewOptimizedDirectorySourceLocator implements SourceLocator
 {
 
 	/**

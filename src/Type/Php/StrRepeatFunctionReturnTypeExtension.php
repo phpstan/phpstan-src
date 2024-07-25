@@ -22,7 +22,7 @@ use function count;
 use function str_repeat;
 use function strlen;
 
-class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

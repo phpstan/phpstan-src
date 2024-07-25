@@ -11,7 +11,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
-class ClassConstantAttributesRule implements Rule
+final class ClassConstantAttributesRule implements Rule
 {
 
 	public function __construct(private AttributesCheck $attributesCheck)

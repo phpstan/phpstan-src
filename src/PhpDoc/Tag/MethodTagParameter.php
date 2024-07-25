@@ -5,7 +5,10 @@ namespace PHPStan\PhpDoc\Tag;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\Type;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class MethodTagParameter
 {
 

@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\DependencyInjection\Container;
 
-class LazyReadWritePropertiesExtensionProvider implements ReadWritePropertiesExtensionProvider
+final class LazyReadWritePropertiesExtensionProvider implements ReadWritePropertiesExtensionProvider
 {
 
 	/** @var ReadWritePropertiesExtension[]|null */

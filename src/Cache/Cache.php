@@ -2,7 +2,7 @@
 
 namespace PHPStan\Cache;
 
-class Cache
+final class Cache
 {
 
 	public function __construct(private CacheStorage $storage)

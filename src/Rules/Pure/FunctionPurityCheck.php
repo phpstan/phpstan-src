@@ -20,7 +20,7 @@ use function in_array;
 use function lcfirst;
 use function sprintf;
 
-class FunctionPurityCheck
+final class FunctionPurityCheck
 {
 
 	/**

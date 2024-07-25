@@ -5,7 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 
-class PropertyAssignNode extends NodeAbstract implements VirtualNode
+final class PropertyAssignNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(

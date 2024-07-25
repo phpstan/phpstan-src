@@ -22,7 +22,7 @@ use function is_bool;
 use function mb_substr;
 use function substr;
 
-class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

@@ -36,7 +36,10 @@ use function md5;
 use function sprintf;
 use function usort;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class TypeCombinator
 {
 

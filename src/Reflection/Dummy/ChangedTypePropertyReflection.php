@@ -8,7 +8,7 @@ use PHPStan\Reflection\WrapperPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-class ChangedTypePropertyReflection implements WrapperPropertyReflection
+final class ChangedTypePropertyReflection implements WrapperPropertyReflection
 {
 
 	public function __construct(private ClassReflection $declaringClass, private PropertyReflection $reflection, private Type $readableType, private Type $writableType)

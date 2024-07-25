@@ -8,7 +8,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\Type\Type;
 
-class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
+final class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 
 	/** @var callable(Type): Type */

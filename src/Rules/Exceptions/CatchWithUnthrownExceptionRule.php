@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<CatchWithUnthrownExceptionNode>
  */
-class CatchWithUnthrownExceptionRule implements Rule
+final class CatchWithUnthrownExceptionRule implements Rule
 {
 
 	public function __construct(

@@ -4,7 +4,7 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\Php\PhpVersion;
 
-class SocketSelectStubFilesExtension implements StubFilesExtension
+final class SocketSelectStubFilesExtension implements StubFilesExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

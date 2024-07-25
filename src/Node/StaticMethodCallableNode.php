@@ -6,7 +6,10 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class StaticMethodCallableNode extends Expr implements VirtualNode
 {
 

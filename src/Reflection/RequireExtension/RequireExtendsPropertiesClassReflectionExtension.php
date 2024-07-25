@@ -8,7 +8,7 @@ use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\ShouldNotHappenException;
 
-class RequireExtendsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
+final class RequireExtendsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool

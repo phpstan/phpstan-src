@@ -11,7 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 use function is_bool;
 
-class ResolvedMethodReflection implements ExtendedMethodReflection
+final class ResolvedMethodReflection implements ExtendedMethodReflection
 {
 
 	/** @var ParametersAcceptorWithPhpDocs[]|null */

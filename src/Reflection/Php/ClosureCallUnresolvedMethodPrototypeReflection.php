@@ -7,7 +7,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Type;
 
-class ClosureCallUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
+final class ClosureCallUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 
 	public function __construct(private UnresolvedMethodPrototypeReflection $prototype, private ClosureType $closure)

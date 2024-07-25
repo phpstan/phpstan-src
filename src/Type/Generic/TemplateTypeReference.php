@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
-class TemplateTypeReference
+final class TemplateTypeReference
 {
 
 	public function __construct(private TemplateType $type, private TemplateTypeVariance $positionVariance)

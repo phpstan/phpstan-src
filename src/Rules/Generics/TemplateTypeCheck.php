@@ -36,7 +36,7 @@ use function array_merge;
 use function get_class;
 use function sprintf;
 
-class TemplateTypeCheck
+final class TemplateTypeCheck
 {
 
 	public function __construct(

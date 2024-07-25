@@ -13,7 +13,7 @@ use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Type\Type;
 use function array_map;
 
-class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
+final class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 
 	/** @var callable(Type): Type */

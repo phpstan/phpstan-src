@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<ArrayItem>
  */
-class ArrayUnpackingRule implements Rule
+final class ArrayUnpackingRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpVersion, private RuleLevelHelper $ruleLevelHelper)

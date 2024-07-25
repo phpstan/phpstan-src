@@ -9,7 +9,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use function count;
 
-class FilterInputDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class FilterInputDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper)

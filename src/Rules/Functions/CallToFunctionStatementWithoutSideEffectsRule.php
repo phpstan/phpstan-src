@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Expression>
  */
-class CallToFunctionStatementWithoutSideEffectsRule implements Rule
+final class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 {
 
 	private const SIDE_EFFECT_FLIP_PARAMETERS = [

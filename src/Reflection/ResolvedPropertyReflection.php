@@ -10,7 +10,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
-class ResolvedPropertyReflection implements WrapperPropertyReflection
+final class ResolvedPropertyReflection implements WrapperPropertyReflection
 {
 
 	private ?Type $readableType = null;

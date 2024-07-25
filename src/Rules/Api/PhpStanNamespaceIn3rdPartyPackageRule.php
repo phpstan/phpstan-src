@@ -18,7 +18,7 @@ use function str_starts_with;
 /**
  * @implements Rule<Node\Stmt\Namespace_>
  */
-class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
+final class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
 {
 
 	public function __construct(private ApiRuleHelper $apiRuleHelper)

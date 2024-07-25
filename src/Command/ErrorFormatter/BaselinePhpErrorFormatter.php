@@ -16,7 +16,7 @@ use function sprintf;
 use function var_export;
 use const SORT_STRING;
 
-class BaselinePhpErrorFormatter
+final class BaselinePhpErrorFormatter
 {
 
 	public function __construct(private RelativePathHelper $relativePathHelper)

@@ -10,7 +10,7 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
-class InaccessibleMethod implements CallableParametersAcceptor
+final class InaccessibleMethod implements CallableParametersAcceptor
 {
 
 	public function __construct(private MethodReflection $methodReflection)

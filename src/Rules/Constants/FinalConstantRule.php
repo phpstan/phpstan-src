@@ -10,7 +10,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /** @implements Rule<ClassConst> */
-class FinalConstantRule implements Rule
+final class FinalConstantRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpVersion)

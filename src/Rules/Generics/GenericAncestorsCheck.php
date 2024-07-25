@@ -21,7 +21,7 @@ use function implode;
 use function in_array;
 use function sprintf;
 
-class GenericAncestorsCheck
+final class GenericAncestorsCheck
 {
 
 	/**

@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassConstFetch>
  */
-class DynamicClassConstantFetchRule implements Rule
+final class DynamicClassConstantFetchRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpVersion, private RuleLevelHelper $ruleLevelHelper)

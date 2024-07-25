@@ -2,7 +2,10 @@
 
 namespace PHPStan\Analyser;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ScopeFactory
 {
 

@@ -23,7 +23,7 @@ use function is_file;
 use function serialize;
 use function sha1;
 
-class TestCaseSourceLocatorFactory
+final class TestCaseSourceLocatorFactory
 {
 
 	/** @var array<string, list<SourceLocator>> */

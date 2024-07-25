@@ -4,7 +4,7 @@ namespace PHPStan\Reflection\ReflectionProvider;
 
 use PHPStan\Reflection\ReflectionProvider;
 
-class DirectReflectionProviderProvider implements ReflectionProviderProvider
+final class DirectReflectionProviderProvider implements ReflectionProviderProvider
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

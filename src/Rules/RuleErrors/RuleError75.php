@@ -10,7 +10,7 @@ use PHPStan\Rules\TipRuleError;
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError75 implements RuleError, LineRuleError, TipRuleError, NonIgnorableRuleError
+final class RuleError75 implements RuleError, LineRuleError, TipRuleError, NonIgnorableRuleError
 {
 
 	public string $message;

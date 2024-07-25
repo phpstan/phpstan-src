@@ -12,7 +12,7 @@ use function rewind;
 use function stream_get_contents;
 use function tmpfile;
 
-class ProcessPromise
+final class ProcessPromise
 {
 
 	/** @var Deferred<string> */

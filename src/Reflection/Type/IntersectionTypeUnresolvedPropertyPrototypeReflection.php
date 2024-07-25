@@ -6,7 +6,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Type\Type;
 use function array_map;
 
-class IntersectionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
+final class IntersectionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 
 	private ?PropertyReflection $transformedProperty = null;

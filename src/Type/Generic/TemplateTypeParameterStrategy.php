@@ -9,7 +9,7 @@ use PHPStan\Type\Type;
 /**
  * Template type strategy suitable for parameter type acceptance contexts
  */
-class TemplateTypeParameterStrategy implements TemplateTypeStrategy
+final class TemplateTypeParameterStrategy implements TemplateTypeStrategy
 {
 
 	public function accepts(TemplateType $left, Type $right, bool $strictTypes): AcceptsResult

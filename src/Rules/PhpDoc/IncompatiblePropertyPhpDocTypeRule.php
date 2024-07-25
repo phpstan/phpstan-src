@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertyNode>
  */
-class IncompatiblePropertyPhpDocTypeRule implements Rule
+final class IncompatiblePropertyPhpDocTypeRule implements Rule
 {
 
 	public function __construct(

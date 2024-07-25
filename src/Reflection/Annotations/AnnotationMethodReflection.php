@@ -13,7 +13,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 
-class AnnotationMethodReflection implements ExtendedMethodReflection
+final class AnnotationMethodReflection implements ExtendedMethodReflection
 {
 
 	/** @var FunctionVariantWithPhpDocs[]|null */

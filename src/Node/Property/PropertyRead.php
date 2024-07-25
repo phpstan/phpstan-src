@@ -6,7 +6,10 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PHPStan\Analyser\Scope;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class PropertyRead
 {
 

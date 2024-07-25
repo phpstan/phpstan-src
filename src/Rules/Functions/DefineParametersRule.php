@@ -14,7 +14,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class DefineParametersRule implements Rule
+final class DefineParametersRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpVersion)

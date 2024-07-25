@@ -11,7 +11,7 @@ use PHPStan\Type\Type;
 /**
  * @implements Rule<Node\Expr\Empty_>
  */
-class EmptyRule implements Rule
+final class EmptyRule implements Rule
 {
 
 	public function __construct(private IssetCheck $issetCheck)

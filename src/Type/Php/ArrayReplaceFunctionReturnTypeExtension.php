@@ -13,7 +13,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function strtolower;
 
-class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

@@ -211,7 +211,7 @@ use function trim;
 use const PHP_VERSION_ID;
 use const SORT_NUMERIC;
 
-class NodeScopeResolver
+final class NodeScopeResolver
 {
 
 	private const LOOP_SCOPE_ITERATIONS = 3;

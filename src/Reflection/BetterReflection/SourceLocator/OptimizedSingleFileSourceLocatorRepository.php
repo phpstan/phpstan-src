@@ -4,7 +4,7 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use function array_key_exists;
 
-class OptimizedSingleFileSourceLocatorRepository
+final class OptimizedSingleFileSourceLocatorRepository
 {
 
 	/** @var array<string, OptimizedSingleFileSourceLocator> */

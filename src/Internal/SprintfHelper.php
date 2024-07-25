@@ -4,7 +4,7 @@ namespace PHPStan\Internal;
 
 use function str_replace;
 
-class SprintfHelper
+final class SprintfHelper
 {
 
 	public static function escapeFormatString(string $format): string

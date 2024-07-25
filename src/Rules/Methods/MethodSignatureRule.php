@@ -37,7 +37,7 @@ use function strtolower;
 /**
  * @implements Rule<InClassMethodNode>
  */
-class MethodSignatureRule implements Rule
+final class MethodSignatureRule implements Rule
 {
 
 	public function __construct(

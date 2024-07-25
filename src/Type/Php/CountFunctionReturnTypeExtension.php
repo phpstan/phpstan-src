@@ -12,7 +12,7 @@ use function count;
 use function in_array;
 use const COUNT_RECURSIVE;
 
-class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

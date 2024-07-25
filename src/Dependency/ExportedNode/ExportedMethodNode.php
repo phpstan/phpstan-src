@@ -9,7 +9,7 @@ use ReturnTypeWillChange;
 use function array_map;
 use function count;
 
-class ExportedMethodNode implements ExportedNode, JsonSerializable
+final class ExportedMethodNode implements ExportedNode, JsonSerializable
 {
 
 	/**

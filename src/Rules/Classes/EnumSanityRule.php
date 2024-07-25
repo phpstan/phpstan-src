@@ -20,7 +20,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class EnumSanityRule implements Rule
+final class EnumSanityRule implements Rule
 {
 
 	private const ALLOWED_MAGIC_METHODS = [

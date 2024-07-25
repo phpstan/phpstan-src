@@ -2,7 +2,7 @@
 
 namespace PHPStan\Parallel;
 
-class Schedule
+final class Schedule
 {
 
 	/**

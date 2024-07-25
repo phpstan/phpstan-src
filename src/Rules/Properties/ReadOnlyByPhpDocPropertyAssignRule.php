@@ -18,7 +18,7 @@ use function strtolower;
 /**
  * @implements Rule<PropertyAssignNode>
  */
-class ReadOnlyByPhpDocPropertyAssignRule implements Rule
+final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 {
 
 	public function __construct(

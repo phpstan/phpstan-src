@@ -10,7 +10,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 
-class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhpDocs
+final class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhpDocs
 {
 
 	private ?Type $type = null;

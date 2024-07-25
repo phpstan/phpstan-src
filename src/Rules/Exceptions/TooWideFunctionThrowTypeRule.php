@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<FunctionReturnStatementsNode>
  */
-class TooWideFunctionThrowTypeRule implements Rule
+final class TooWideFunctionThrowTypeRule implements Rule
 {
 
 	public function __construct(private TooWideThrowTypeCheck $check)

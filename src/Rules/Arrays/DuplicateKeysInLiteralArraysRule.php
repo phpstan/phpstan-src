@@ -20,7 +20,7 @@ use function var_export;
 /**
  * @implements Rule<LiteralArrayNode>
  */
-class DuplicateKeysInLiteralArraysRule implements Rule
+final class DuplicateKeysInLiteralArraysRule implements Rule
 {
 
 	public function __construct(

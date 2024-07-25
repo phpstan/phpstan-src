@@ -16,7 +16,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
-class NonexistentOffsetInArrayDimFetchCheck
+final class NonexistentOffsetInArrayDimFetchCheck
 {
 
 	public function __construct(

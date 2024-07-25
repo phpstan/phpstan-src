@@ -12,7 +12,10 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use function sprintf;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class TemplateTypeVariance
 {
 

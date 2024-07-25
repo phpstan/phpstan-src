@@ -10,7 +10,7 @@ use PHPStan\Reflection\WrapperPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-class FoundPropertyReflection implements PropertyReflection
+final class FoundPropertyReflection implements PropertyReflection
 {
 
 	public function __construct(

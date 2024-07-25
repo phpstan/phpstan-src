@@ -19,7 +19,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Stmt\GroupUse>
  */
-class ExistingNamesInGroupUseRule implements Rule
+final class ExistingNamesInGroupUseRule implements Rule
 {
 
 	public function __construct(

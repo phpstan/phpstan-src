@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertyNode>
  */
-class InvalidCallablePropertyTypeRule implements Rule
+final class InvalidCallablePropertyTypeRule implements Rule
 {
 
 	public function getNodeType(): string

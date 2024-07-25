@@ -14,7 +14,7 @@ use function substr;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @see https://github.com/composer/composer/pull/10107
  */
-class PhpFileCleaner
+final class PhpFileCleaner
 {
 
 	/** @var array<array{name: string, length: int, pattern: string}> */

@@ -7,7 +7,7 @@ use PHPStan\Node\ReturnStatementsNode;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
-class NeverRuleHelper
+final class NeverRuleHelper
 {
 
 	/**

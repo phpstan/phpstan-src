@@ -10,7 +10,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\MixedType;
 
-class UniversalObjectCratesClassReflectionExtension
+final class UniversalObjectCratesClassReflectionExtension
 	implements PropertiesClassReflectionExtension
 {
 

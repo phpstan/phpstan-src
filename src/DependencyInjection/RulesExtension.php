@@ -7,7 +7,7 @@ use Nette\Schema\Expect;
 use Nette\Schema\Schema;
 use PHPStan\Rules\LazyRegistry;
 
-class RulesExtension extends CompilerExtension
+final class RulesExtension extends CompilerExtension
 {
 
 	public function getConfigSchema(): Schema

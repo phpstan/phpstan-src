@@ -4,7 +4,7 @@ namespace PHPStan\Cache;
 
 use function var_export;
 
-class MemoryCacheStorage implements CacheStorage
+final class MemoryCacheStorage implements CacheStorage
 {
 
 	/** @var array<string, CacheItem> */

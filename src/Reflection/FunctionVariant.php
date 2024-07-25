@@ -6,7 +6,9 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
-/** @api */
+/**
+ * @api
+ */
 class FunctionVariant implements ParametersAcceptor
 {
 

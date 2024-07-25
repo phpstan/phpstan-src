@@ -12,7 +12,7 @@ use function count;
 use function explode;
 use function ltrim;
 
-class ConstantHelper
+final class ConstantHelper
 {
 
 	public function createExprFromConstantName(string $constantName): ?Expr

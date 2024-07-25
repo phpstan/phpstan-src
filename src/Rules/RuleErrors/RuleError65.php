@@ -8,7 +8,7 @@ use PHPStan\Rules\RuleError;
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError65 implements RuleError, NonIgnorableRuleError
+final class RuleError65 implements RuleError, NonIgnorableRuleError
 {
 
 	public string $message;

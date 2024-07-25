@@ -10,7 +10,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use stdClass;
 
-class DummyPropertyReflection implements PropertyReflection
+final class DummyPropertyReflection implements PropertyReflection
 {
 
 	public function getDeclaringClass(): ClassReflection

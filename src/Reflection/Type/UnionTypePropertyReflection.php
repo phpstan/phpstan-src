@@ -11,7 +11,7 @@ use function array_map;
 use function count;
 use function implode;
 
-class UnionTypePropertyReflection implements PropertyReflection
+final class UnionTypePropertyReflection implements PropertyReflection
 {
 
 	/**

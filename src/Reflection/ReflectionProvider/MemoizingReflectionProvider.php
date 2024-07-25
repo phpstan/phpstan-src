@@ -11,7 +11,7 @@ use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use function strtolower;
 
-class MemoizingReflectionProvider implements ReflectionProvider
+final class MemoizingReflectionProvider implements ReflectionProvider
 {
 
 	/** @var array<string, bool> */

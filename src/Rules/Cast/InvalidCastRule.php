@@ -19,7 +19,7 @@ use function substr;
 /**
  * @implements Rule<Node\Expr\Cast>
  */
-class InvalidCastRule implements Rule
+final class InvalidCastRule implements Rule
 {
 
 	public function __construct(

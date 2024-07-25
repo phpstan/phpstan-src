@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<InFunctionNode>
  */
-class ExistingClassesInTypehintsRule implements Rule
+final class ExistingClassesInTypehintsRule implements Rule
 {
 
 	public function __construct(private FunctionDefinitionCheck $check)

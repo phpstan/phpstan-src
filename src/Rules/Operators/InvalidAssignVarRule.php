@@ -15,7 +15,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Expr>
  */
-class InvalidAssignVarRule implements Rule
+final class InvalidAssignVarRule implements Rule
 {
 
 	public function __construct(private NullsafeCheck $nullsafeCheck)

@@ -16,7 +16,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function count;
 
-class StrWordCountFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class StrWordCountFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

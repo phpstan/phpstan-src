@@ -16,7 +16,7 @@ use PHPStan\Type\TypehintHelper;
 use ReflectionException;
 use function strtolower;
 
-class NativeMethodReflection implements ExtendedMethodReflection
+final class NativeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**

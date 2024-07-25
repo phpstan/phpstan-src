@@ -9,7 +9,7 @@ use function usort;
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
  */
-class AnalyserResult
+final class AnalyserResult
 {
 
 	/** @var list<Error>|null */

@@ -8,7 +8,7 @@ use Symfony\Component\Console\Style\StyleInterface;
 /**
  * @internal
  */
-class SymfonyStyle implements OutputStyle
+final class SymfonyStyle implements OutputStyle
 {
 
 	public function __construct(private StyleInterface $symfonyStyle)

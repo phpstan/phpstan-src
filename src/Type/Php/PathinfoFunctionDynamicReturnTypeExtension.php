@@ -17,7 +17,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function sprintf;
 
-class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

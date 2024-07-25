@@ -14,7 +14,7 @@ use function strtolower;
 /**
  * @implements Rule<CollectedDataNode>
  */
-class CallToConstructorStatementWithoutImpurePointsRule implements Rule
+final class CallToConstructorStatementWithoutImpurePointsRule implements Rule
 {
 
 	public function getNodeType(): string

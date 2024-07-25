@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
-class DirectAlwaysUsedMethodExtensionProvider implements AlwaysUsedMethodExtensionProvider
+final class DirectAlwaysUsedMethodExtensionProvider implements AlwaysUsedMethodExtensionProvider
 {
 
 	/**

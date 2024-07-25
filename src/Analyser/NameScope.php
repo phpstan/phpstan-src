@@ -16,7 +16,10 @@ use function sprintf;
 use function str_starts_with;
 use function strtolower;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class NameScope
 {
 

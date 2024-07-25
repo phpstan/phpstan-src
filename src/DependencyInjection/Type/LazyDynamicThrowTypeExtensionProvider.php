@@ -4,7 +4,7 @@ namespace PHPStan\DependencyInjection\Type;
 
 use PHPStan\DependencyInjection\Container;
 
-class LazyDynamicThrowTypeExtensionProvider implements DynamicThrowTypeExtensionProvider
+final class LazyDynamicThrowTypeExtensionProvider implements DynamicThrowTypeExtensionProvider
 {
 
 	public const FUNCTION_TAG = 'phpstan.dynamicFunctionThrowTypeExtension';

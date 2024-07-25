@@ -24,7 +24,7 @@ use function trim;
 /**
  * @implements Rule<Node\FunctionLike>
  */
-class IncompatiblePhpDocTypeRule implements Rule
+final class IncompatiblePhpDocTypeRule implements Rule
 {
 
 	public function __construct(

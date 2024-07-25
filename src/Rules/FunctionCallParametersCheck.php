@@ -33,7 +33,7 @@ use function is_string;
 use function max;
 use function sprintf;
 
-class FunctionCallParametersCheck
+final class FunctionCallParametersCheck
 {
 
 	public function __construct(

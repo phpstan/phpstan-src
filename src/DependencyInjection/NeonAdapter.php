@@ -26,7 +26,7 @@ use function str_contains;
 use function str_starts_with;
 use function substr;
 
-class NeonAdapter implements Adapter
+final class NeonAdapter implements Adapter
 {
 
 	public const CACHE_KEY = 'v25-nette-di-again';

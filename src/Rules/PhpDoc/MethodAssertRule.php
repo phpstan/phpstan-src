@@ -11,7 +11,7 @@ use function count;
 /**
  * @implements Rule<InClassMethodNode>
  */
-class MethodAssertRule implements Rule
+final class MethodAssertRule implements Rule
 {
 
 	public function __construct(private AssertRuleHelper $helper)

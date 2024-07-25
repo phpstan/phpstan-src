@@ -10,7 +10,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-class ArrayKeyDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayKeyDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

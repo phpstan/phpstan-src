@@ -7,7 +7,7 @@ use Nette\DI\Definitions\Statement;
 use Nette\Schema\Expect;
 use Nette\Schema\Schema;
 
-class ParametersSchemaExtension extends CompilerExtension
+final class ParametersSchemaExtension extends CompilerExtension
 {
 
 	public function getConfigSchema(): Schema

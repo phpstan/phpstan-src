@@ -18,7 +18,7 @@ use PHPStan\Type\UnionType;
 use function array_map;
 use function count;
 
-class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

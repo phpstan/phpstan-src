@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use function count;
 
-class ClosureArgVisitor extends NodeVisitorAbstract
+final class ClosureArgVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'closureCallArgs';

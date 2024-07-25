@@ -7,7 +7,7 @@ use function max;
 use function min;
 use const PHP_VERSION_ID;
 
-class PhpVersionFactory
+final class PhpVersionFactory
 {
 
 	public function __construct(

@@ -15,7 +15,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 /**
  * @implements Rule<BreaklessWhileLoopNode>
  */
-class WhileLoopAlwaysTrueConditionRule implements Rule
+final class WhileLoopAlwaysTrueConditionRule implements Rule
 {
 
 	public function __construct(

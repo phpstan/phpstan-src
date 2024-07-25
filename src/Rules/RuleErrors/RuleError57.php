@@ -10,7 +10,7 @@ use PHPStan\Rules\TipRuleError;
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError57 implements RuleError, TipRuleError, IdentifierRuleError, MetadataRuleError
+final class RuleError57 implements RuleError, TipRuleError, IdentifierRuleError, MetadataRuleError
 {
 
 	public string $message;

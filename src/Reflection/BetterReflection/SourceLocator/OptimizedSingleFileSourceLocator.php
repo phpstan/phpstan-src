@@ -18,7 +18,7 @@ use function array_key_exists;
 use function array_keys;
 use function strtolower;
 
-class OptimizedSingleFileSourceLocator implements SourceLocator
+final class OptimizedSingleFileSourceLocator implements SourceLocator
 {
 
 	/** @var array{classes: array<string, true>, functions: array<string, true>, constants: array<string, true>}|null */

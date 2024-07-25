@@ -5,7 +5,7 @@ namespace PHPStan\Reflection\SignatureMap;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\Type;
 
-class ParameterSignature
+final class ParameterSignature
 {
 
 	public function __construct(

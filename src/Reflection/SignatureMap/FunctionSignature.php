@@ -4,7 +4,7 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\Type\Type;
 
-class FunctionSignature
+final class FunctionSignature
 {
 
 	/**

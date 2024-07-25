@@ -6,7 +6,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 
-class SoapClientMethodsClassReflectionExtension implements MethodsClassReflectionExtension
+final class SoapClientMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 
 	public function hasMethod(ClassReflection $classReflection, string $methodName): bool

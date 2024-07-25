@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-class TypeTraverser
+final class TypeTraverser
 {
 
 	/** @var callable(Type $type, callable(Type): Type $traverse): Type */

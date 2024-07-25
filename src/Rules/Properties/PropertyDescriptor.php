@@ -9,7 +9,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
-class PropertyDescriptor
+final class PropertyDescriptor
 {
 
 	/**

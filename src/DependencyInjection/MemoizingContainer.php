@@ -4,7 +4,7 @@ namespace PHPStan\DependencyInjection;
 
 use function array_key_exists;
 
-class MemoizingContainer implements Container
+final class MemoizingContainer implements Container
 {
 
 	/** @var array<string, mixed> */

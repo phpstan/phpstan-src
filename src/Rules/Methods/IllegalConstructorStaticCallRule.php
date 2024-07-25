@@ -15,7 +15,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\StaticCall>
  */
-class IllegalConstructorStaticCallRule implements Rule
+final class IllegalConstructorStaticCallRule implements Rule
 {
 
 	public function getNodeType(): string

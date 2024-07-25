@@ -10,7 +10,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<Node\Stmt\Trait_>
  */
-class RequireExtendsDefinitionTraitRule implements Rule
+final class RequireExtendsDefinitionTraitRule implements Rule
 {
 
 	public function __construct(

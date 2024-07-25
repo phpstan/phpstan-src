@@ -726,33 +726,42 @@ final class RegexArrayShapeMatcher
 	 */
 	private function resolvePatternConcat(Expr\BinaryOp\Concat $concat, Scope $scope): Type
 	{
-		$resolveConcat = static function (Expr $expr) use (&$resolveConcat, $scope) {
-			if (
-				$expr instanceof Expr\FuncCall
-				&& $expr->name instanceof Name
-				&& $expr->name->toLowerString() === 'preg_quote'
-			) {
-				return new ConstantStringType('');
+		$resolver = new class($scope) {
+
+			public function __construct(private Scope $scope)
+			{
 			}
 
-			if ($expr instanceof Expr\BinaryOp\Concat) {
-				$left = $resolveConcat($expr->left);
-				$right = $resolveConcat($expr->right);
-
-				$strings = [];
-				foreach ($left->toString()->getConstantStrings() as $leftString) {
-					foreach ($right->toString()->getConstantStrings() as $rightString) {
-						$strings[] = new ConstantStringType($leftString->getValue() . $rightString->getValue());
-					}
+			public function resolve(Expr $expr): Type
+			{
+				if (
+					$expr instanceof Expr\FuncCall
+					&& $expr->name instanceof Name
+					&& $expr->name->toLowerString() === 'preg_quote'
+				) {
+					return new ConstantStringType('');
 				}
 
-				return TypeCombinator::union(...$strings);
+				if ($expr instanceof Expr\BinaryOp\Concat) {
+					$left = $this->resolve($expr->left);
+					$right = $this->resolve($expr->right);
+
+					$strings = [];
+					foreach ($left->toString()->getConstantStrings() as $leftString) {
+						foreach ($right->toString()->getConstantStrings() as $rightString) {
+							$strings[] = new ConstantStringType($leftString->getValue() . $rightString->getValue());
+						}
+					}
+
+					return TypeCombinator::union(...$strings);
+				}
+
+				return $this->scope->getType($expr);
 			}
 
-			return $scope->getType($expr);
 		};
 
-		return $this->initializerExprTypeResolver->getConcatType($concat->left, $concat->right, $resolveConcat);
+		return $this->initializerExprTypeResolver->getConcatType($concat->left, $concat->right, static fn (Expr $expr): Type => $resolver->resolve($expr));
 	}
 
 }

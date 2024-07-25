@@ -518,6 +518,9 @@ function bug11323(string $s): void {
 	if (preg_match('{([^1-4])}', $s, $matches)) {
 		assertType('array{string, non-empty-string}', $matches);
 	}
+	if (preg_match("{([\r\n]+)(\n)([\n])}", $s, $matches)) {
+		assertType('array{string, non-empty-string, non-empty-string, non-empty-string}', $matches);
+	}
 }
 
 function (string $s): void {

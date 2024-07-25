@@ -41,10 +41,6 @@
 // @license    New BSD License
 //
 
-
-// Skip.
-%skip   nl                       \n
-
 // Character classes.
 %token  negative_class_          \[\^               -> class
 %token  class_                   \[                 -> class
@@ -58,7 +54,7 @@
 %token class:character           \\([aefnrtb]|c[\x00-\x7f])
 %token class:dynamic_character   \\([0-7]{3}|x[0-9a-zA-Z]{2}|x{[0-9a-zA-Z]+})
 %token class:character_type      \\([CdDhHNRsSvVwWX]|[pP]{[^}]+})
-%token class:literal             \\.|.
+%token class:literal             \\.|.|\n
 
 // Internal options.
 // See https://www.regular-expressions.info/refmodifiers.html
@@ -122,7 +118,7 @@
 %token character_type            \\([CdDhHNRsSvVwWX]|[pP]{[^}]+})
 %token anchor                    \\([bBAZzG])|\^|\$
 %token match_point_reset         \\K
-%token literal                   \\.|.
+%token literal                   \\.|.|\n
 
 
 // Rules.

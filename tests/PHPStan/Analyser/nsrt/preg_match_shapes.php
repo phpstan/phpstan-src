@@ -525,3 +525,18 @@ function (string $s): void {
 	assertType("array{0?: string, 1?: ''|numeric-string}", $matches);
 };
 
+class Bug11376
+{
+	public function test(string $str): void
+	{
+		preg_match('~^(?:(\w+)::)?(\w+)$~', $str, $matches);
+		assertType('array{0?: string, 1?: string, 2?: non-empty-string}', $matches);
+	}
+
+	public function test2(string $str): void
+	{
+		if (preg_match('~^(?:(\w+)::)?(\w+)$~', $str, $matches) === 1) {
+			assertType('array{string, string, non-empty-string}', $matches);
+		}
+	}
+}

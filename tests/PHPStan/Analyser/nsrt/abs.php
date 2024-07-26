@@ -92,6 +92,10 @@ class Foo
 
 		/** @var -1 $int */
 		assertType('1', abs($int));
+
+		assertType('123', abs(123));
+
+		assertType('123', abs(-123));
 	}
 
 	public function mixedIntegerUnion(int $int): void
@@ -119,6 +123,10 @@ class Foo
 
 		/** @var -1.0 $float */
 		assertType('1.0', abs($float));
+
+		assertType('123.4', abs(123.4));
+
+		assertType('123.4', abs(-123.4));
 	}
 
 	public function string(string $string): void
@@ -134,6 +142,19 @@ class Foo
 
 		/** @var '-1'|'-2.0'|'3.0'|'4' $string */
 		assertType('1|2.0|3.0|4', abs($string));
+
+		/** @var literal-string $string */
+		assertType('float|int<0, max>', abs($string));
+
+		assertType('123', abs('123'));
+
+		assertType('123', abs('-123'));
+
+		assertType('123.0', abs('123.0'));
+
+		assertType('123.0', abs('-123.0'));
+
+		assertType('float|int<0, max>', abs('foo'));
 	}
 
 	public function mixedUnion(mixed $value): void
@@ -182,6 +203,13 @@ class Foo
 
 		/** @var \DateTime $nonInt */
 		assertType('float|int<0, max>', abs($nonInt));
+
+		/** @var null $nonInt */
+		assertType('0', abs($nonInt));
+
+		assertType('float|int<0, max>', abs('foo'));
+
+		assertType('0', abs(null));
 	}
 
 }

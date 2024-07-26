@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Regexp;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\Php\RegexExpressionHelper;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -15,7 +16,9 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new RegularExpressionPatternRule();
+		return new RegularExpressionPatternRule(
+			self::getContainer()->getByType(RegexExpressionHelper::class),
+		);
 	}
 
 	public function testValidRegexPatternBefore73(): void
@@ -114,6 +117,30 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 				[
 					'Regex pattern is invalid: Compilation failed: missing ) at offset 1 in pattern: ~(~',
 					43,
+				],
+				[
+					'Regex pattern is invalid: Delimiter must not be alphanumeric, backslash, or NUL in pattern: nok',
+					57,
+				],
+				[
+					'Regex pattern is invalid: Delimiter must not be alphanumeric, backslash, or NUL in pattern: nok',
+					58,
+				],
+				[
+					'Regex pattern is invalid: Compilation failed: missing closing parenthesis at offset 1 in pattern: ~(~',
+					59,
+				],
+				[
+					'Regex pattern is invalid: Delimiter must not be alphanumeric, backslash, or NUL in pattern: noknono',
+					61,
+				],
+				[
+					'Regex pattern is invalid: Delimiter must not be alphanumeric, backslash, or NUL in pattern: noknope',
+					62,
+				],
+				[
+					'Regex pattern is invalid: Compilation failed: missing closing parenthesis at offset 1 in pattern: ~(~',
+					63,
 				],
 			],
 		);
@@ -220,6 +247,30 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 				[
 					'Regex pattern is invalid: Compilation failed: missing closing parenthesis at offset 1 in pattern: ~(~',
 					43,
+				],
+				[
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
+					57,
+				],
+				[
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
+					58,
+				],
+				[
+					'Regex pattern is invalid: Compilation failed: missing closing parenthesis at offset 1 in pattern: ~(~',
+					59,
+				],
+				[
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: noknono', $messagePart),
+					61,
+				],
+				[
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: noknope', $messagePart),
+					62,
+				],
+				[
+					'Regex pattern is invalid: Compilation failed: missing closing parenthesis at offset 1 in pattern: ~(~',
+					63,
 				],
 			],
 		);

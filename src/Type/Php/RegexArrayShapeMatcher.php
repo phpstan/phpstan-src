@@ -125,7 +125,7 @@ final class RegexArrayShapeMatcher
 			// regex could not be parsed by Hoa/Regex
 			return null;
 		}
-		[$groupList, $groupCombinations, $hasMark] = $parseResult;
+		[$groupList, $groupCombinations, $markVerbs] = $parseResult;
 
 		$trailingOptionals = 0;
 		foreach (array_reverse($groupList) as $captureGroup) {
@@ -152,7 +152,7 @@ final class RegexArrayShapeMatcher
 				$wasMatched,
 				$trailingOptionals,
 				$flags ?? 0,
-				$hasMark,
+				$markVerbs,
 			);
 
 			if (!$this->containsUnmatchedAsNull($flags ?? 0)) {
@@ -190,7 +190,7 @@ final class RegexArrayShapeMatcher
 					$wasMatched,
 					$trailingOptionals,
 					$flags ?? 0,
-					$hasMark,
+					$markVerbs,
 				);
 
 				$combiTypes[] = $combiType;
@@ -213,7 +213,7 @@ final class RegexArrayShapeMatcher
 			$wasMatched,
 			$trailingOptionals,
 			$flags ?? 0,
-			$hasMark,
+			$markVerbs,
 		);
 	}
 
@@ -269,13 +269,14 @@ final class RegexArrayShapeMatcher
 
 	/**
 	 * @param array<RegexCapturingGroup> $captureGroups
+	 * @param list<string> $markVerbs
 	 */
 	private function buildArrayType(
 		array $captureGroups,
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
 		int $flags,
-		bool $hasMark,
+		array $markVerbs,
 	): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
@@ -329,10 +330,14 @@ final class RegexArrayShapeMatcher
 			$i++;
 		}
 
-		if ($hasMark) {
+		if (count($markVerbs) > 0) {
+			$markTypes = [];
+			foreach ($markVerbs as $mark) {
+				$markTypes[] = new ConstantStringType($mark);
+			}
 			$builder->setOffsetValueType(
 				$this->getKeyType('MARK'),
-				new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
+				TypeCombinator::union(...$markTypes),
 				true,
 			);
 		}
@@ -384,7 +389,7 @@ final class RegexArrayShapeMatcher
 	}
 
 	/**
-	 * @return array{array<int, RegexCapturingGroup>, array<int, array<int, int[]>>, bool}|null
+	 * @return array{array<int, RegexCapturingGroup>, array<int, array<int, int[]>>, list<string>}|null
 	 */
 	private function parseGroups(string $regex): ?array
 	{
@@ -410,7 +415,7 @@ final class RegexArrayShapeMatcher
 		$groupCombinations = [];
 		$alternationId = -1;
 		$captureGroupId = 100;
-		$hasMark = false;
+		$markVerbs = [];
 		$this->walkRegexAst(
 			$ast,
 			false,
@@ -421,15 +426,16 @@ final class RegexArrayShapeMatcher
 			$captureGroupId,
 			$capturingGroups,
 			$groupCombinations,
-			$hasMark,
+			$markVerbs,
 		);
 
-		return [$capturingGroups, $groupCombinations, $hasMark];
+		return [$capturingGroups, $groupCombinations, $markVerbs];
 	}
 
 	/**
 	 * @param array<int, RegexCapturingGroup> $capturingGroups
 	 * @param array<int, array<int, int[]>> $groupCombinations
+	 * @param list<string> $markVerbs
 	 */
 	private function walkRegexAst(
 		TreeNode $ast,
@@ -441,7 +447,7 @@ final class RegexArrayShapeMatcher
 		int &$captureGroupId,
 		array &$capturingGroups,
 		array &$groupCombinations,
-		bool &$hasMark,
+		array &$markVerbs,
 	): void
 	{
 		$group = null;
@@ -456,7 +462,7 @@ final class RegexArrayShapeMatcher
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
-			$name = $ast->getChild(0)->getValue()['value'];
+			$name = $ast->getChild(0)->getValueValue();
 			$group = new RegexCapturingGroup(
 				$captureGroupId++,
 				$name,
@@ -499,7 +505,7 @@ final class RegexArrayShapeMatcher
 		}
 
 		if ($ast->getId() === '#mark') {
-			$hasMark = true;
+			$markVerbs[] = $ast->getChild(0)->getValueValue();
 			return;
 		}
 
@@ -526,7 +532,7 @@ final class RegexArrayShapeMatcher
 				$captureGroupId,
 				$capturingGroups,
 				$groupCombinations,
-				$hasMark,
+				$markVerbs,
 			);
 
 			if ($ast->getId() !== '#alternation') {

@@ -518,6 +518,12 @@ function bug11323(string $s): void {
 	if (preg_match('{([^1-4])}', $s, $matches)) {
 		assertType('array{string, non-empty-string}', $matches);
 	}
+	if (preg_match("{([\r\n]+)(\n)([\n])}", $s, $matches)) {
+		assertType('array{string, non-empty-string, non-empty-string, non-empty-string}', $matches);
+	}
+	if (preg_match('/foo(*:first)|bar(*:second)([x])/', $s, $matches)) {
+		assertType("array{0: string, 1?: non-empty-string, MARK?: 'first'|'second'}", $matches);
+	}
 }
 
 function (string $s): void {

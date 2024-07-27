@@ -144,6 +144,11 @@ class NullType implements ConstantScalarType
 		return new ConstantIntegerType(0);
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		return $this->toNumber()->toAbsoluteNumber();
+	}
+
 	public function toString(): Type
 	{
 		return new ConstantStringType('');

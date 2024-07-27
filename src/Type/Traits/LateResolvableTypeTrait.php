@@ -327,6 +327,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->toNumber();
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		return $this->resolve()->toAbsoluteNumber();
+	}
+
 	public function toInteger(): Type
 	{
 		return $this->resolve()->toInteger();

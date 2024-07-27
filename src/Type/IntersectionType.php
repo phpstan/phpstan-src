@@ -914,6 +914,13 @@ class IntersectionType implements CompoundType
 		return $type;
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		$type = $this->intersectTypes(static fn (Type $type): Type => $type->toAbsoluteNumber());
+
+		return $type;
+	}
+
 	public function toString(): Type
 	{
 		$type = $this->intersectTypes(static fn (Type $type): Type => $type->toString());

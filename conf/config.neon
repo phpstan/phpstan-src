@@ -1110,6 +1110,11 @@ services:
 		class: PHPStan\Type\BitwiseFlagHelper
 
 	-
+		class: PHPStan\Type\Php\AbsFunctionDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\ArgumentBasedFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

@@ -56,6 +56,11 @@ class BooleanType implements Type
 		return $this->toInteger();
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		return $this->toNumber()->toAbsoluteNumber();
+	}
+
 	public function toString(): Type
 	{
 		return TypeCombinator::union(

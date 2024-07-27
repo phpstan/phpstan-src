@@ -313,6 +313,8 @@ interface Type
 	 */
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array;
 
+	public function toAbsoluteNumber(): Type;
+
 	/**
 	 * Traverses inner types
 	 *

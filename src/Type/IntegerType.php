@@ -62,6 +62,11 @@ class IntegerType implements Type
 		return $this;
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		return IntegerRangeType::createAllGreaterThanOrEqualTo(0);
+	}
+
 	public function toFloat(): Type
 	{
 		return new FloatType();

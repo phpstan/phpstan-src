@@ -447,6 +447,21 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return new ConstantBooleanType(false);
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		if ($this->min !== null && $this->min >= 0) {
+			return $this;
+		}
+
+		if ($this->max === null || $this->max >= 0) {
+			$inversedMin = $this->min !== null ? $this->min * -1 : null;
+
+			return self::fromInterval(0, $inversedMin !== null && $this->max !== null ? max($inversedMin, $this->max) : null);
+		}
+
+		return self::fromInterval($this->max * -1, $this->min !== null ? $this->min * -1 : null);
+	}
+
 	public function toString(): Type
 	{
 		$isZero = (new ConstantIntegerType(0))->isSuperTypeOf($this);

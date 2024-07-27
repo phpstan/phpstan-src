@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Regexp;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\Php\RegexExpressionHelper;
 use const PHP_VERSION_ID;
 
 /**
@@ -14,7 +15,10 @@ class RegularExpressionQuotingRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new RegularExpressionQuotingRule($this->createReflectionProvider());
+		return new RegularExpressionQuotingRule(
+			$this->createReflectionProvider(),
+			self::getContainer()->getByType(RegexExpressionHelper::class),
+		);
 	}
 
 	public function testRule(): void

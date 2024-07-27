@@ -406,8 +406,9 @@ final class RegexArrayShapeMatcher
 			return null;
 		}
 
+		$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);
 		try {
-			$ast = self::$parser->parse($regex);
+			$ast = self::$parser->parse($rawRegex);
 		} catch (Exception) {
 			return null;
 		}

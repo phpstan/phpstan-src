@@ -39,3 +39,8 @@ function (string $s): void {
 		assertType('array{0: string, num: numeric-string, 1: numeric-string}', $matches);
 	}
 };
+function (string $s): void {
+	if (preg_match('[(\d+)(?P<num>\d+)]n', $s, $matches)) {
+		assertType('array{0: string, num: numeric-string, 1: numeric-string}', $matches);
+	}
+};

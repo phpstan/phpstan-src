@@ -10,6 +10,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_key_exists;
 use function strrpos;
 use function substr;
 
@@ -76,8 +77,15 @@ final class RegexExpressionHelper
 			return null;
 		}
 
-		if ($delimiter === '{') {
-			$endDelimiterPos = strrpos($pattern, '}');
+		// delimiter variants, see https://www.php.net/manual/en/regexp.reference.delimiters.php
+		$bracketStyleDelimiters = [
+			'{' => '}',
+			'(' => ')',
+			'[' => ']',
+			'<' => '>',
+		];
+		if (array_key_exists($delimiter, $bracketStyleDelimiters)) {
+			$endDelimiterPos = strrpos($pattern, $bracketStyleDelimiters[$delimiter]);
 		} else {
 			// same start and end delimiter
 			$endDelimiterPos = strrpos($pattern, $delimiter);

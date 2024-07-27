@@ -3,12 +3,14 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function substr;
 
 final class RegexExpressionHelper
 {
@@ -26,7 +28,7 @@ final class RegexExpressionHelper
 	 *
 	 * see https://github.com/phpstan/phpstan-src/pull/3233#discussion_r1676938085
 	 */
-	public function resolvePatternConcat(Expr\BinaryOp\Concat $concat, Scope $scope): Type
+	public function resolvePatternConcat(Concat $concat, Scope $scope): Type
 	{
 		$resolver = new class($scope) {
 
@@ -44,7 +46,7 @@ final class RegexExpressionHelper
 					return new ConstantStringType('');
 				}
 
-				if ($expr instanceof Expr\BinaryOp\Concat) {
+				if ($expr instanceof Concat) {
 					$left = $this->resolve($expr->left);
 					$right = $this->resolve($expr->right);
 
@@ -64,6 +66,40 @@ final class RegexExpressionHelper
 		};
 
 		return $this->initializerExprTypeResolver->getConcatType($concat->left, $concat->right, static fn (Expr $expr): Type => $resolver->resolve($expr));
+	}
+
+	/**
+	 * Get delimiters from non-constant patterns, if possible.
+	 *
+	 * @return string[]
+	 */
+	public function getPatternDelimiters(Concat $concat, Scope $scope): array
+	{
+		if ($concat->left instanceof Concat) {
+			return $this->getPatternDelimiters($concat->left, $scope);
+		}
+
+		$left = $scope->getType($concat->left);
+
+		$delimiters = [];
+		foreach ($left->getConstantStrings() as $leftString) {
+			$delimiter = $this->getDelimiterFromString($leftString);
+			if ($delimiter === null) {
+				continue;
+			}
+
+			$delimiters[] = $delimiter;
+		}
+		return $delimiters;
+	}
+
+	private function getDelimiterFromString(ConstantStringType $string): ?string
+	{
+		if ($string->getValue() === '') {
+			return null;
+		}
+
+		return substr($string->getValue(), 0, 1);
 	}
 
 }

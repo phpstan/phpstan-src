@@ -1,4 +1,4 @@
-<?php
+<?php namespace RegexExpressionPatterns;
 
 $string = (function (): string {})();
 
@@ -48,3 +48,17 @@ preg_replace_callback_array(
 	],
 	''
 );
+
+function doFoo(string $s) {
+	preg_match('~ok'. preg_quote($s, '~') .'~', '');
+	preg_match('~ok'. preg_quote($s) .'~', '');
+
+	// invalid preg_quote delimiters will be reported by RegularExpressionQuotingRule
+	preg_match('nok'. preg_quote($s), '');
+	preg_match('nok'. preg_quote($s), '');
+	preg_match('~('. preg_quote($s, '~') .'~', '');
+
+	preg_replace('nok'. preg_quote($s).'nono', '');
+	preg_replace('nok'. preg_quote($s).'nope', '');
+	preg_replace('~('. preg_quote($s, '~') .'~', '');
+}

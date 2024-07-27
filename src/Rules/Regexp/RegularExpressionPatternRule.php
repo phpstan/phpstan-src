@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Php\RegexExpressionHelper;
 use function in_array;
 use function sprintf;
 use function str_starts_with;
@@ -19,6 +20,12 @@ use function strtolower;
  */
 final class RegularExpressionPatternRule implements Rule
 {
+
+	public function __construct(
+		private RegexExpressionHelper $regexExpressionHelper,
+	)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -74,6 +81,9 @@ final class RegularExpressionPatternRule implements Rule
 				'preg_filter',
 			], true)
 		) {
+			if ($patternNode instanceof Node\Expr\BinaryOp\Concat) {
+				$patternType = $this->regexExpressionHelper->resolvePatternConcat($patternNode, $scope);
+			}
 			foreach ($patternType->getConstantStrings() as $constantStringType) {
 				$patternStrings[] = $constantStringType->getValue();
 			}

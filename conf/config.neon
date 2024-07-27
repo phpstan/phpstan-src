@@ -1493,6 +1493,9 @@ services:
 		class: PHPStan\Type\Php\RegexArrayShapeMatcher
 
 	-
+		class: PHPStan\Type\Php\RegexExpressionHelper
+
+	-
 		class: PHPStan\Type\Php\ReflectionClassConstructorThrowTypeExtension
 		tags:
 			- phpstan.dynamicStaticMethodThrowTypeExtension

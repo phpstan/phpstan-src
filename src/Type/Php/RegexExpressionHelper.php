@@ -10,6 +10,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function strrpos;
 use function substr;
 
 final class RegexExpressionHelper
@@ -66,6 +67,27 @@ final class RegexExpressionHelper
 		};
 
 		return $this->initializerExprTypeResolver->getConcatType($concat->left, $concat->right, static fn (Expr $expr): Type => $resolver->resolve($expr));
+	}
+
+	public function getPatternModifiers(string $pattern): ?string
+	{
+		$delimiter = $this->getDelimiterFromString(new ConstantStringType($pattern));
+		if ($delimiter === null) {
+			return null;
+		}
+
+		if ($delimiter === '{') {
+			$endDelimiterPos = strrpos($pattern, '}');
+		} else {
+			// same start and end delimiter
+			$endDelimiterPos = strrpos($pattern, $delimiter);
+		}
+
+		if ($endDelimiterPos === false) {
+			return null;
+		}
+
+		return substr($pattern, $endDelimiterPos + 1);
 	}
 
 	/**

@@ -33,6 +33,7 @@ use function is_int;
 use function is_string;
 use function rtrim;
 use function sscanf;
+use function str_contains;
 use function str_replace;
 use function strlen;
 use function substr;
@@ -411,6 +412,12 @@ final class RegexArrayShapeMatcher
 			return null;
 		}
 
+		$captureOnlyNamed = false;
+		if ($this->phpVersion->supportsPregCaptureOnlyNamedGroups()) {
+			$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex);
+			$captureOnlyNamed = str_contains($modifiers ?? '', 'n');
+		}
+
 		$capturingGroups = [];
 		$groupCombinations = [];
 		$alternationId = -1;
@@ -427,6 +434,7 @@ final class RegexArrayShapeMatcher
 			$capturingGroups,
 			$groupCombinations,
 			$markVerbs,
+			$captureOnlyNamed,
 		);
 
 		return [$capturingGroups, $groupCombinations, $markVerbs];
@@ -448,6 +456,7 @@ final class RegexArrayShapeMatcher
 		array &$capturingGroups,
 		array &$groupCombinations,
 		array &$markVerbs,
+		bool $captureOnlyNamed,
 	): void
 	{
 		$group = null;
@@ -509,7 +518,10 @@ final class RegexArrayShapeMatcher
 			return;
 		}
 
-		if ($group instanceof RegexCapturingGroup) {
+		if (
+			$group instanceof RegexCapturingGroup &&
+			(!$captureOnlyNamed || $group->isNamed())
+		) {
 			$capturingGroups[$group->getId()] = $group;
 
 			if (!array_key_exists($alternationId, $groupCombinations)) {
@@ -533,6 +545,7 @@ final class RegexArrayShapeMatcher
 				$capturingGroups,
 				$groupCombinations,
 				$markVerbs,
+				$captureOnlyNamed,
 			);
 
 			if ($ast->getId() !== '#alternation') {

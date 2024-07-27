@@ -15,7 +15,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Php\RegexExpressionHelper;
 use function array_filter;
 use function array_merge;
 use function array_values;
@@ -23,7 +23,6 @@ use function count;
 use function in_array;
 use function sprintf;
 use function strlen;
-use function substr;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -31,7 +30,10 @@ use function substr;
 final class RegularExpressionQuotingRule implements Rule
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private RegexExpressionHelper $regexExpressionHelper,
+	)
 	{
 	}
 
@@ -76,7 +78,7 @@ final class RegularExpressionQuotingRule implements Rule
 			return [];
 		}
 
-		$patternDelimiters = $this->getDelimitersFromConcat($normalizedArgs[0]->value, $scope);
+		$patternDelimiters = $this->regexExpressionHelper->getPatternDelimiters($normalizedArgs[0]->value, $scope);
 		return $this->validateQuoteDelimiters($normalizedArgs[0]->value, $scope, $patternDelimiters);
 	}
 
@@ -191,40 +193,6 @@ final class RegularExpressionQuotingRule implements Rule
 		}
 
 		return null;
-	}
-
-	/**
-	 * Get delimiters from non-constant patterns, if possible.
-	 *
-	 * @return string[]
-	 */
-	private function getDelimitersFromConcat(Concat $concat, Scope $scope): array
-	{
-		if ($concat->left instanceof Concat) {
-			return $this->getDelimitersFromConcat($concat->left, $scope);
-		}
-
-		$left = $scope->getType($concat->left);
-
-		$delimiters = [];
-		foreach ($left->getConstantStrings() as $leftString) {
-			$delimiter = $this->getDelimiterFromString($leftString);
-			if ($delimiter === null) {
-				continue;
-			}
-
-			$delimiters[] = $delimiter;
-		}
-		return $delimiters;
-	}
-
-	private function getDelimiterFromString(ConstantStringType $string): ?string
-	{
-		if ($string->getValue() === '') {
-			return null;
-		}
-
-		return substr($string->getValue(), 0, 1);
 	}
 
 	/**

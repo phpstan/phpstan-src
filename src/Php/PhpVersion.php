@@ -319,6 +319,12 @@ class PhpVersion
 		return $this->versionId >= 70400;
 	}
 
+	public function supportsPregCaptureOnlyNamedGroups(): bool
+	{
+		// https://php.watch/versions/8.2/preg-n-no-capture-modifier
+		return $this->versionId >= 80200;
+	}
+
 	public function hasDateTimeExceptions(): bool
 	{
 		return $this->versionId >= 80300;

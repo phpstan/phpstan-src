@@ -97,6 +97,11 @@ class VoidType implements Type
 		return new ErrorType();
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function toString(): Type
 	{
 		return new ErrorType();

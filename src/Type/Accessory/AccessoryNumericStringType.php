@@ -179,6 +179,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		]);
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		return $this->toNumber()->toAbsoluteNumber();
+	}
+
 	public function toInteger(): Type
 	{
 		return new IntegerType();

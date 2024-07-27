@@ -217,6 +217,11 @@ class Baz implements Type
 		// TODO: Implement toNumber() method.
 	}
 
+	public function toAbsoluteNumber(): \PHPStan\Type\Type
+	{
+		// TODO: Implement toAbsoluteNumber() method.
+	}
+
 	public function toInteger(): \PHPStan\Type\Type
 	{
 		// TODO: Implement toInteger() method.

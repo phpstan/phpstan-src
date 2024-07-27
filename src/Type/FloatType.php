@@ -110,6 +110,11 @@ class FloatType implements Type
 		return $this;
 	}
 
+	public function toAbsoluteNumber(): Type
+	{
+		return $this;
+	}
+
 	public function toFloat(): Type
 	{
 		return $this;

@@ -293,26 +293,8 @@ final class RegexArrayShapeMatcher
 		$i = 0;
 		foreach ($captureGroups as $captureGroup) {
 			$isTrailingOptional = $i >= $countGroups - $trailingOptionals;
-			$groupValueType = $this->getValueType($captureGroup->getType(), $flags);
-
-			if (!$wasMatched->yes()) {
-				$optional = true;
-			} else {
-				if (!$isTrailingOptional) {
-					$optional = false;
-					if ($this->containsUnmatchedAsNull($flags) && !$captureGroup->isOptional()) {
-						$groupValueType = TypeCombinator::removeNull($groupValueType);
-					}
-				} elseif ($this->containsUnmatchedAsNull($flags)) {
-					$optional = false;
-				} else {
-					$optional = $captureGroup->isOptional();
-				}
-			}
-
-			if (!$isTrailingOptional && $captureGroup->isOptional() && !$this->containsUnmatchedAsNull($flags)) {
-				$groupValueType = TypeCombinator::union($groupValueType, new ConstantStringType(''));
-			}
+			$groupValueType = $this->createGroupValueType($captureGroup, $wasMatched, $flags, $isTrailingOptional);
+			$optional = $this->isGroupOptional($captureGroup, $wasMatched, $flags, $isTrailingOptional);
 
 			if ($captureGroup->isNamed()) {
 				$builder->setOffsetValueType(
@@ -344,6 +326,40 @@ final class RegexArrayShapeMatcher
 		}
 
 		return $builder->getArray();
+	}
+
+	private function isGroupOptional(RegexCapturingGroup $captureGroup, TrinaryLogic $wasMatched, int $flags, bool $isTrailingOptional): bool
+	{
+		if (!$wasMatched->yes()) {
+			$optional = true;
+		} else {
+			if (!$isTrailingOptional) {
+				$optional = false;
+			} elseif ($this->containsUnmatchedAsNull($flags)) {
+				$optional = false;
+			} else {
+				$optional = $captureGroup->isOptional();
+			}
+		}
+
+		return $optional;
+	}
+
+	private function createGroupValueType(RegexCapturingGroup $captureGroup, TrinaryLogic $wasMatched, int $flags, bool $isTrailingOptional): Type
+	{
+		$groupValueType = $this->getValueType($captureGroup->getType(), $flags);
+
+		if ($wasMatched->yes()) {
+			if (!$isTrailingOptional && $this->containsUnmatchedAsNull($flags) && !$captureGroup->isOptional()) {
+				$groupValueType = TypeCombinator::removeNull($groupValueType);
+			}
+		}
+
+		if (!$isTrailingOptional && !$this->containsUnmatchedAsNull($flags) && $captureGroup->isOptional()) {
+			$groupValueType = TypeCombinator::union($groupValueType, new ConstantStringType(''));
+		}
+
+		return $groupValueType;
 	}
 
 	private function containsUnmatchedAsNull(int $flags): bool

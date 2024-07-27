@@ -119,27 +119,27 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					43,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric, backslash, or NUL in pattern: nok',
+					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
 					57,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric, backslash, or NUL in pattern: nok',
+					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
 					58,
 				],
 				[
-					'Regex pattern is invalid: Compilation failed: missing closing parenthesis at offset 1 in pattern: ~(~',
+					'Regex pattern is invalid: Compilation failed: missing ) at offset 1 in pattern: ~(~',
 					59,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric, backslash, or NUL in pattern: noknono',
+					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: noknono',
 					61,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric, backslash, or NUL in pattern: noknope',
+					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: noknope',
 					62,
 				],
 				[
-					'Regex pattern is invalid: Compilation failed: missing closing parenthesis at offset 1 in pattern: ~(~',
+					'Regex pattern is invalid: Compilation failed: missing ) at offset 1 in pattern: ~(~',
 					63,
 				],
 			],

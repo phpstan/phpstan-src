@@ -62,3 +62,11 @@ function doFoo(string $s) {
 	preg_replace('nok'. preg_quote($s).'nope', '');
 	preg_replace('~('. preg_quote($s, '~') .'~', '');
 }
+
+class Bug11403
+{
+	public function sayHello(string $s): void
+	{
+		preg_replace('![' . preg_quote($s) . ']+!u', $s, $s);
+	}
+}

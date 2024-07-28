@@ -29,9 +29,9 @@ function doMatch(string $s): void {
 	assertType('array{}|array{string, non-empty-string}', $matches);
 
 	if (preg_match('(Price: (£|€))i', $s, $matches)) {
-		assertType('array{string, non-empty-string, non-empty-string}', $matches);
+		assertType('array{string, non-empty-string}', $matches);
 	}
-	assertType('array{}|array{string, non-empty-string, non-empty-string}', $matches);
+	assertType('array{}|array{string, non-empty-string}', $matches);
 
 	if (preg_match('_foo(.)\_i_i', $s, $matches)) {
 		assertType('array{string, non-empty-string}', $matches);

@@ -44,7 +44,7 @@ final class RegexExpressionHelper
 					&& $expr->name instanceof Name
 					&& $expr->name->toLowerString() === 'preg_quote'
 				) {
-					return new ConstantStringType('');
+					return new ConstantStringType('.*');
 				}
 
 				if ($expr instanceof Concat) {

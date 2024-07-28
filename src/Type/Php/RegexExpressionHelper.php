@@ -10,6 +10,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_key_exists;
 use function strrpos;
 use function substr;
 
@@ -71,23 +72,48 @@ final class RegexExpressionHelper
 
 	public function getPatternModifiers(string $pattern): ?string
 	{
-		$delimiter = $this->getDelimiterFromString(new ConstantStringType($pattern));
-		if ($delimiter === null) {
-			return null;
-		}
-
-		if ($delimiter === '{') {
-			$endDelimiterPos = strrpos($pattern, '}');
-		} else {
-			// same start and end delimiter
-			$endDelimiterPos = strrpos($pattern, $delimiter);
-		}
+		$endDelimiterPos = $this->getEndDelimiterPos($pattern);
 
 		if ($endDelimiterPos === false) {
 			return null;
 		}
 
 		return substr($pattern, $endDelimiterPos + 1);
+	}
+
+	public function removeDelimitersAndModifiers(string $pattern): string
+	{
+		$endDelimiterPos = $this->getEndDelimiterPos($pattern);
+
+		if ($endDelimiterPos === false) {
+			return $pattern;
+		}
+
+		return substr($pattern, 1, $endDelimiterPos - 1);
+	}
+
+	private function getEndDelimiterPos(string $pattern): false|int
+	{
+		$startDelimiter = $this->getPatternDelimiter($pattern);
+		if ($startDelimiter === null) {
+			return false;
+		}
+
+		// delimiter variants, see https://www.php.net/manual/en/regexp.reference.delimiters.php
+		$bracketStyleDelimiters = [
+			'{' => '}',
+			'(' => ')',
+			'[' => ']',
+			'<' => '>',
+		];
+		if (array_key_exists($startDelimiter, $bracketStyleDelimiters)) {
+			$endDelimiterPos = strrpos($pattern, $bracketStyleDelimiters[$startDelimiter]);
+		} else {
+			// same start and end delimiter
+			$endDelimiterPos = strrpos($pattern, $startDelimiter);
+		}
+
+		return $endDelimiterPos;
 	}
 
 	/**
@@ -105,7 +131,7 @@ final class RegexExpressionHelper
 
 		$delimiters = [];
 		foreach ($left->getConstantStrings() as $leftString) {
-			$delimiter = $this->getDelimiterFromString($leftString);
+			$delimiter = $this->getPatternDelimiter($leftString->getValue());
 			if ($delimiter === null) {
 				continue;
 			}
@@ -115,13 +141,13 @@ final class RegexExpressionHelper
 		return $delimiters;
 	}
 
-	private function getDelimiterFromString(ConstantStringType $string): ?string
+	private function getPatternDelimiter(string $regex): ?string
 	{
-		if ($string->getValue() === '') {
+		if ($regex === '') {
 			return null;
 		}
 
-		return substr($string->getValue(), 0, 1);
+		return substr($regex, 0, 1);
 	}
 
 }

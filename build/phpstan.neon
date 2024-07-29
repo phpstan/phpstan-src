@@ -9,6 +9,7 @@ includes:
 	- ../phpstan-baseline.php
 	- ignore-by-php-version.neon.php
 	- ignore-by-architecture.neon.php
+
 parameters:
 	level: 8
 	paths:
@@ -97,6 +98,9 @@ parameters:
 		- stubs/ReactStreams.stub
 		- stubs/NetteDIContainer.stub
 		- stubs/PhpParserName.stub
+
+rules:
+	- PHPStan\Build\FinalClassRule
 
 services:
 	-

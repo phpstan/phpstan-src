@@ -1,0 +1,64 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Build;
+
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassNode;
+use PHPStan\Reflection\FunctionVariant;
+use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
+use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Type;
+use function in_array;
+use function sprintf;
+
+/**
+ * @implements Rule<InClassNode>
+ */
+final class FinalClassRule implements Rule
+{
+
+	public function getNodeType(): string
+	{
+		return InClassNode::class;
+	}
+
+	public function processNode(Node $node, Scope $scope): array
+	{
+		$classReflection = $node->getClassReflection();
+		if (!$classReflection->isClass()) {
+			return [];
+		}
+		if ($classReflection->isAbstract()) {
+			return [];
+		}
+		if ($classReflection->isFinal()) {
+			return [];
+		}
+		if ($classReflection->isSubclassOf(Type::class)) {
+			return [];
+		}
+
+		// exceptions
+		if (in_array($classReflection->getName(), [
+			FunctionVariant::class,
+			FunctionVariantWithPhpDocs::class,
+			DummyParameter::class,
+			PhpFunctionFromParserNodeReflection::class,
+		], true)) {
+			return [];
+		}
+
+		return [
+			RuleErrorBuilder::message(
+				sprintf('Class %s must be abstract or final.', $classReflection->getDisplayName()),
+			)
+				->identifier('phpstan.finalClass')
+				->build(),
+		];
+	}
+
+}

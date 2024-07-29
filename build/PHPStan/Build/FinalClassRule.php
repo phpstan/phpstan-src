@@ -4,6 +4,7 @@ namespace PHPStan\Build;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\File\FileHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
@@ -21,6 +22,10 @@ use function str_starts_with;
  */
 final class FinalClassRule implements Rule
 {
+
+	public function __construct(private FileHelper $fileHelper)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -53,7 +58,7 @@ final class FinalClassRule implements Rule
 			return [];
 		}
 
-		if (str_starts_with($scope->getFile(), dirname(__DIR__, 3) . '/tests')) {
+		if (str_starts_with($this->fileHelper->normalizePath($scope->getFile()), $this->fileHelper->normalizePath(dirname(__DIR__, 3) . '/tests'))) {
 			return [];
 		}
 

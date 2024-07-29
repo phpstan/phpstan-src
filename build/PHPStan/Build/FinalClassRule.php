@@ -14,6 +14,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
 use function in_array;
 use function sprintf;
+use function str_starts_with;
 
 /**
  * @implements Rule<InClassNode>
@@ -49,6 +50,10 @@ final class FinalClassRule implements Rule
 			DummyParameter::class,
 			PhpFunctionFromParserNodeReflection::class,
 		], true)) {
+			return [];
+		}
+
+		if (str_starts_with($scope->getFile(), dirname(__DIR__, 3) . '/tests')) {
 			return [];
 		}
 

@@ -47,7 +47,7 @@ class DefaultStubFilesProviderTest extends PHPStanTestCase
 	 */
 	private function createDefaultStubFilesProvider(array $stubFiles): DefaultStubFilesProvider
 	{
-		return new DefaultStubFilesProvider($this->getContainer(), $stubFiles, $this->currentWorkingDirectory);
+		return new DefaultStubFilesProvider($this->getContainer(), $stubFiles, [$this->currentWorkingDirectory]);
 	}
 
 }

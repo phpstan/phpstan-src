@@ -20,11 +20,12 @@ class DefaultStubFilesProvider implements StubFilesProvider
 
 	/**
 	 * @param string[] $stubFiles
+	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
 		private Container $container,
 		private array $stubFiles,
-		private string $currentWorkingDirectory,
+		private array $composerAutoloaderProjectPaths,
 	)
 	{
 	}
@@ -52,19 +53,22 @@ class DefaultStubFilesProvider implements StubFilesProvider
 			return $this->cachedProjectFiles;
 		}
 
-		$composerConfig = ComposerHelper::getComposerConfig($this->currentWorkingDirectory);
+		$filteredStubFiles = $this->getStubFiles();
+		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
+			$composerConfig = ComposerHelper::getComposerConfig($composerAutoloaderProjectPath);
+			if ($composerConfig === null) {
+				continue;
+			}
 
-		if ($composerConfig === null) {
-			return $this->getStubFiles();
+			$vendorDir = ComposerHelper::getVendorDirFromComposerConfig($composerAutoloaderProjectPath, $composerConfig);
+			$vendorDir = strtr($vendorDir, '\\', '/');
+			$filteredStubFiles = array_filter(
+				$filteredStubFiles,
+				static fn (string $file): bool => !str_contains(strtr($file, '\\', '/'), $vendorDir)
+			);
 		}
 
-		$vendorDir = ComposerHelper::getVendorDirFromComposerConfig($this->currentWorkingDirectory, $composerConfig);
-		$vendorDir = strtr($vendorDir, '\\', '/');
-
-		return $this->cachedProjectFiles = array_values(array_filter(
-			$this->getStubFiles(),
-			static fn (string $file): bool => !str_contains(strtr($file, '\\', '/'), $vendorDir)
-		));
+		return $this->cachedProjectFiles = array_values($filteredStubFiles);
 	}
 
 }

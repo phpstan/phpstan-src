@@ -68,9 +68,4 @@ class FooClass
 		);
 	}
 
-	public function showSource(string $s): void
-	{
-		error_log("Email-Template couldn't be found by parameters:" . show_source($s));
-	}
-
 }

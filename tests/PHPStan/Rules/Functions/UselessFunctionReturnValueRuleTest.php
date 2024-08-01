@@ -27,16 +27,12 @@ class UselessFunctionReturnValueRuleTest extends RuleTestCase
 				47,
 			],
 			[
-				'Return value of function var_export() is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.',
+				'Return value of function var_export() is always null and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.',
 				56,
 			],
 			[
 				'Return value of function print_r() is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.',
 				64,
-			],
-			[
-				'Return value of function show_source() is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.',
-				73,
 			],
 		]);
 	}

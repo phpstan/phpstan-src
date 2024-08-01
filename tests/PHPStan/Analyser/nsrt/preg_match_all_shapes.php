@@ -27,15 +27,17 @@ function (string $size): void {
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)?/', $size, $matches)) {
 		assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
-		return;
+	} else {
+		assertType("array{}", $matches);
 	}
-	assertType("array{}", $matches);
+	assertType("array{}|array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)?/', $size, $matches) > 0) {
 		assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
-		return;
+	} else {
+		assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
 	}
 	assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
 };
@@ -43,23 +45,26 @@ function (string $size): void {
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)?/', $size, $matches) != false) {
 		assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
-		return;
+	} else {
+		assertType("array{}", $matches);
 	}
-	assertType("array{}", $matches);
+	assertType("array{}|array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)?/', $size, $matches) == true) {
 		assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
-		return;
+	} else {
+		assertType("array{}", $matches);
 	}
-	assertType("array{}", $matches);
+	assertType("array{}|array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)?/', $size, $matches) === 1) {
 		assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
-		return;
+	} else {
+		assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
 	}
 	assertType("array{0: list<string>, num: list<''|numeric-string>, 1: list<''|numeric-string>}", $matches);
 };

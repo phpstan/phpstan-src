@@ -12,7 +12,7 @@ use function is_dir;
 use function is_file;
 use function sprintf;
 
-class ValidateExcludePathsExtension extends CompilerExtension
+final class ValidateExcludePathsExtension extends CompilerExtension
 {
 
 	/**

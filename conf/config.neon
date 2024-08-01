@@ -89,7 +89,6 @@ parameters:
 		paramOutType: false
 		pure: false
 		checkParameterCastableToStringFunctions: false
-		narrowPregMatches: false
 		uselessReturnValue: false
 		printfArrayParameters: false
 		preciseMissingReturn: false
@@ -290,10 +289,6 @@ conditionalTags:
 		phpstan.parser.richParserNodeVisitor: %featureToggles.curlSetOptTypes%
 	PHPStan\Parser\TypeTraverserInstanceofVisitor:
 		phpstan.parser.richParserNodeVisitor: %featureToggles.instanceofType%
-	PHPStan\Type\Php\PregMatchTypeSpecifyingExtension:
-		phpstan.typeSpecifier.functionTypeSpecifyingExtension: %featureToggles.narrowPregMatches%
-	PHPStan\Type\Php\PregMatchParameterOutTypeExtension:
-		phpstan.functionParameterOutTypeExtension: %featureToggles.narrowPregMatches%
 
 services:
 	-
@@ -1490,6 +1485,16 @@ services:
 
 	-
 		class: PHPStan\Type\Php\PregMatchTypeSpecifyingExtension
+
+	-
+		class: PHPStan\Type\Php\PregMatchTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+
+	-
+		class: PHPStan\Type\Php\PregMatchParameterOutTypeExtension
+		tags:
+			- phpstan.functionParameterOutTypeExtension
 
 	-
 		class: PHPStan\Type\Php\PregMatchParameterOutTypeExtension

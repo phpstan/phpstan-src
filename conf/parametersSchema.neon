@@ -84,7 +84,6 @@ parametersSchema:
 		paramOutType: bool()
 		pure: bool()
 		checkParameterCastableToStringFunctions: bool()
-		narrowPregMatches: bool()
 		uselessReturnValue: bool()
 		printfArrayParameters: bool()
 		preciseMissingReturn: bool()

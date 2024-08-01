@@ -54,7 +54,6 @@ parameters:
 		paramOutType: true
 		pure: true
 		checkParameterCastableToStringFunctions: true
-		narrowPregMatches: true
 		uselessReturnValue: true
 		printfArrayParameters: true
 		preciseMissingReturn: true

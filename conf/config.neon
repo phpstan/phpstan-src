@@ -94,6 +94,7 @@ parameters:
 		preciseMissingReturn: false
 		validatePregQuote: false
 		noImplicitWildcard: false
+		narrowPregMatches: true
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

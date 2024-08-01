@@ -89,6 +89,7 @@ parametersSchema:
 		preciseMissingReturn: bool()
 		validatePregQuote: bool()
 		noImplicitWildcard: bool()
+		narrowPregMatches: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

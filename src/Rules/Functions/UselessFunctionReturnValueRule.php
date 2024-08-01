@@ -24,8 +24,6 @@ class UselessFunctionReturnValueRule implements Rule
 		'var_export' => 'null',
 		'print_r' => 'true',
 		'highlight_string' => 'true',
-		'highlight_file' => 'bool',
-		'show_source' => 'bool',
 	];
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

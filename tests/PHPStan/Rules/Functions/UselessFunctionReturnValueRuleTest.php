@@ -34,10 +34,6 @@ class UselessFunctionReturnValueRuleTest extends RuleTestCase
 				'Return value of function print_r() is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.',
 				64,
 			],
-			[
-				'Return value of function show_source() is always bool and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.',
-				73,
-			],
 		]);
 	}
 

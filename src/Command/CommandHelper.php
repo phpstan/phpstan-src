@@ -18,6 +18,7 @@ use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\DuplicateIncludedFilesException;
+use PHPStan\DependencyInjection\InvalidExcludePathsException;
 use PHPStan\DependencyInjection\InvalidIgnoredErrorPatternsException;
 use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
@@ -355,6 +356,13 @@ class CommandHelper
 				$errorOutput->writeLineFormatted('');
 			}
 			throw new InceptionNotSuccessfulException();
+		} catch (InvalidExcludePathsException $e) {
+			$errorOutput->writeLineFormatted(sprintf('<error>Invalid %s in excludePaths:</error>', count($e->getErrors()) === 1 ? 'entry' : 'entries'));
+			foreach ($e->getErrors() as $error) {
+				$errorOutput->writeLineFormatted($error);
+				$errorOutput->writeLineFormatted('');
+			}
+			throw new InceptionNotSuccessfulException();
 		} catch (ValidationException $e) {
 			foreach ($e->getMessages() as $message) {
 				$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
@@ -583,7 +591,7 @@ class CommandHelper
 
 			$pathRoutingParser->setAnalysedFiles($files);
 
-			$stubFilesExcluder = new FileExcluder($currentWorkingDirectoryFileHelper, $stubFilesProvider->getProjectStubFiles());
+			$stubFilesExcluder = new FileExcluder($currentWorkingDirectoryFileHelper, $stubFilesProvider->getProjectStubFiles(), true);
 
 			$files = array_values(array_filter($files, static fn (string $file) => !$stubFilesExcluder->isExcludedFromAnalysing($file)));
 

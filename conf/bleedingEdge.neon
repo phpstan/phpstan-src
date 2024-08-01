@@ -59,5 +59,6 @@ parameters:
 		printfArrayParameters: true
 		preciseMissingReturn: true
 		validatePregQuote: true
+		noImplicitWildcard: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Rule.stub

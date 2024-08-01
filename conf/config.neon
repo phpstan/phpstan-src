@@ -94,6 +94,7 @@ parameters:
 		printfArrayParameters: false
 		preciseMissingReturn: false
 		validatePregQuote: false
+		noImplicitWildcard: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -269,6 +270,7 @@ extensions:
 	conditionalTags: PHPStan\DependencyInjection\ConditionalTagsExtension
 	parametersSchema: PHPStan\DependencyInjection\ParametersSchemaExtension
 	validateIgnoredErrors: PHPStan\DependencyInjection\ValidateIgnoredErrorsExtension
+	validateExcludePaths: PHPStan\DependencyInjection\ValidateExcludePathsExtension
 
 rules:
 	- PHPStan\Rules\Debug\DumpTypeRule
@@ -676,6 +678,8 @@ services:
 
 	-
 		implement: PHPStan\File\FileExcluderRawFactory
+		arguments:
+			noImplicitWildcard: %featureToggles.noImplicitWildcard%
 
 	fileExcluderAnalyse:
 		class: PHPStan\File\FileExcluder

@@ -19,7 +19,7 @@ class FileExcluderTest extends PHPStanTestCase
 	{
 		$this->skipIfNotOnWindows();
 
-		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes);
+		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes, false);
 
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}
@@ -127,7 +127,7 @@ class FileExcluderTest extends PHPStanTestCase
 	{
 		$this->skipIfNotOnUnix();
 
-		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes);
+		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes, false);
 
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}
@@ -206,6 +206,72 @@ class FileExcluderTest extends PHPStanTestCase
 				true,
 			],
 		];
+	}
+
+	public function dataNoImplicitWildcard(): iterable
+	{
+		yield [
+			__DIR__ . '/tests/foo.php',
+			[
+				__DIR__ . '/test',
+			],
+			false,
+			true,
+		];
+
+		yield [
+			__DIR__ . '/tests/foo.php',
+			[
+				__DIR__ . '/test',
+			],
+			true,
+			false,
+		];
+
+		yield [
+			__DIR__ . '/test/foo.php',
+			[
+				__DIR__ . '/test',
+			],
+			true,
+			true,
+		];
+
+		yield [
+			__DIR__ . '/FileExcluderTest.php',
+			[
+				__DIR__ . '/FileExcluderTest.php',
+			],
+			true,
+			true,
+		];
+
+		yield [
+			__DIR__ . '/tests/foo.php',
+			[
+				__DIR__ . '/test*',
+			],
+			true,
+			true,
+		];
+	}
+
+	/**
+	 * @dataProvider dataNoImplicitWildcard
+	 * @param string[] $analyseExcludes
+	 */
+	public function testNoImplicitWildcard(
+		string $filePath,
+		array $analyseExcludes,
+		bool $noImplicitWildcard,
+		bool $isExcluded,
+	): void
+	{
+		$this->skipIfNotOnUnix();
+
+		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes, $noImplicitWildcard);
+
+		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}
 
 }

@@ -11,6 +11,7 @@ use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
+use PHPStan\File\FileExcluder;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\DirectTypeNodeResolverExtensionRegistryProvider;
 use PHPStan\PhpDoc\TypeNodeResolver;
@@ -34,6 +35,8 @@ use function array_map;
 use function count;
 use function implode;
 use function is_array;
+use function is_dir;
+use function is_file;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -54,6 +57,8 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 		if (count($ignoreErrors) === 0) {
 			return;
 		}
+
+		$noImplicitWildcard = $builder->parameters['featureToggles']['noImplicitWildcard'];
 
 		/** @throws void */
 		$parser = Llk::load(new Read(__DIR__ . '/../../resources/RegexGrammar.pp'));
@@ -128,6 +133,36 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 					continue;
 				}
 				$errors[] = $error;
+			}
+		}
+
+		if ($noImplicitWildcard) {
+			foreach ($ignoreErrors as $ignoreError) {
+				if (!is_array($ignoreError)) {
+					continue;
+				}
+
+				if (isset($ignoreError['path'])) {
+					$ignorePaths = [$ignoreError['path']];
+				} elseif (isset($ignoreError['paths'])) {
+					$ignorePaths = $ignoreError['paths'];
+				} else {
+					continue;
+				}
+
+				foreach ($ignorePaths as $ignorePath) {
+					if (is_dir($ignorePath)) {
+						continue;
+					}
+					if (is_file($ignorePath)) {
+						continue;
+					}
+					if (FileExcluder::isFnmatchPattern($ignorePath)) {
+						continue;
+					}
+
+					$errors[] = sprintf('Path %s is neither a directory, nor a file path, nor a fnmatch pattern.', $ignorePath);
+				}
 			}
 		}
 

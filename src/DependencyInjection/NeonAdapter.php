@@ -29,7 +29,7 @@ use function substr;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v25-nette-di-again';
+	public const CACHE_KEY = 'v26-no-implicit-wildcard';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 

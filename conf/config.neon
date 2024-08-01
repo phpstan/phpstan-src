@@ -1489,9 +1489,6 @@ services:
 
 	-
 		class: PHPStan\Type\Php\PregMatchTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\PregMatchTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
@@ -1499,9 +1496,6 @@ services:
 		class: PHPStan\Type\Php\PregMatchParameterOutTypeExtension
 		tags:
 			- phpstan.functionParameterOutTypeExtension
-
-	-
-		class: PHPStan\Type\Php\PregMatchParameterOutTypeExtension
 
 	-
 		class: PHPStan\Type\Php\RegexArrayShapeMatcher

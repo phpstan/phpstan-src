@@ -7478,7 +7478,7 @@ return [
 'mysqli_fetch_all' => ['array', 'result'=>'mysqli_result', 'resulttype='=>'int'],
 'mysqli_fetch_array' => ['array|null|false', 'result'=>'mysqli_result', 'resulttype='=>'int'],
 'mysqli_fetch_assoc' => ['array<string,string|int|float|null>|null|false', 'result'=>'mysqli_result'],
-'mysqli_fetch_column' => ['null|int|float|string|false', 'column'=>'int'],
+'mysqli_fetch_column' => ['null|int|float|string|false', 'result' => 'mysqli_result', 'column'=>'int'],
 'mysqli_fetch_field' => ['(stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: int, length: int, charsetnr: string, flags: int, type: int, decimals: int})|false', 'result'=>'mysqli_result'],
 'mysqli_fetch_field_direct' => ['(stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: int, length: int, charsetnr: string, flags: int, type: int, decimals: int})|false', 'result'=>'mysqli_result', 'fieldnr'=>'int'],
 'mysqli_fetch_fields' => ['list<stdClass&object{name: string, orgname: string, table: string, orgtable: string, def: string, db: string, catalog: "def", max_length: int, length: int, charsetnr: string, flags: int, type: int, decimals: int}>', 'result'=>'mysqli_result'],

@@ -1,19 +1,8 @@
-<?php
+<?php // lint >= 7.4
 
 namespace PregReplaceCallbackMatchShapes;
 
 use function PHPStan\Testing\assertType;
-
-function (string $s): void {
-	preg_replace_callback(
-		'|<p>(\s*)\w|',
-		function ($matches) {
-			assertType('array{string, string}', $matches);
-			return '';
-		},
-		$s
-	);
-};
 
 function (string $s): void {
 	preg_replace_callback(

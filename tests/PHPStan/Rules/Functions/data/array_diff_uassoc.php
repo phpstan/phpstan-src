@@ -1,4 +1,4 @@
-<?php
+<?php namespace ParamsArrayDiffUassoc;
 
 array_diff_uassoc(
 	['a' => 1, 'b' => 2],

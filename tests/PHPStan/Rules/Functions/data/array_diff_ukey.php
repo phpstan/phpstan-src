@@ -1,4 +1,4 @@
-<?php
+<?php namespace ParamsArrayDiffUkey;
 
 array_diff_ukey(
 	['a' => 1, 'b' => 2],

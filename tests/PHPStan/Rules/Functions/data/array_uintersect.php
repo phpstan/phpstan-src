@@ -1,4 +1,4 @@
-<?php
+<?php namespace ParamsArrayUintersect;
 
 array_uintersect(
 	['a', 'b'],

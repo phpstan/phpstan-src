@@ -1,4 +1,4 @@
-<?php
+<?php namespace ParamsArrayUIntersectUassoc;
 
 array_uintersect_uassoc(
 	['a' => 'a', 'b' => 'b'],

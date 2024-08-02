@@ -1,4 +1,4 @@
-<?php
+<?php namespace ParamsArrayIntersectUkey;
 
 array_intersect_ukey(
 	['a' => 1, 'b' => 2],

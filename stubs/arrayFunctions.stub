@@ -69,7 +69,7 @@ function array_udiff(
 function array_is_list(array $value): bool {}
 
 /**
- * @template TK of mixed
+ * @template TK of array-key
  * @template TV of mixed
  *
  * @param array<TK, TV> $one
@@ -84,7 +84,7 @@ function array_diff_uassoc(
 ): array {}
 
 /**
- * @template TK of mixed
+ * @template TK of array-key
  * @template TV of mixed
  *
  * @param array<TK, TV> $one
@@ -99,7 +99,7 @@ function array_diff_ukey(
 ): array {}
 
 /**
- * @template TK of mixed
+ * @template TK of array-key
  * @template TV of mixed
  *
  * @param array<TK, TV> $one
@@ -114,7 +114,7 @@ function array_intersect_uassoc(
 ): array {}
 
 /**
- * @template TK of mixed
+ * @template TK of array-key
  * @template TV of mixed
  *
  * @param array<TK, TV> $one
@@ -130,7 +130,7 @@ function array_intersect_ukey(
 ): array {}
 
 /**
- * @template TK of mixed
+ * @template TK of array-key
  * @template TV of mixed
  *
  * @param array<TK, TV> $one
@@ -146,7 +146,7 @@ function array_udiff_assoc(
 ): array {}
 
 /**
- * @template TK of mixed
+ * @template TK of array-key
  * @template TV of mixed
  *
  * @param array<TK, TV> $one
@@ -163,7 +163,7 @@ function array_udiff_uassoc(
 ): array {}
 
 /**
- * @template TK of mixed
+ * @template TK of array-key
  * @template TV of mixed
  *
  * @param array<TK, TV> $one
@@ -178,7 +178,7 @@ function array_uintersect_assoc(
 ): array {}
 
 /**
- * @template TK of mixed
+ * @template TK of array-key
  * @template TV of mixed
  *
  * @param array<TK, TV> $one
@@ -195,7 +195,7 @@ function array_uintersect_uassoc(
 ): array {}
 
 /**
- * @template TK of mixed
+ * @template TK of array-key
  * @template TV of mixed
  *
  * @param array<TK, TV> $one

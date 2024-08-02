@@ -40,12 +40,16 @@ final class RegexExpressionHelper
 
 			public function resolve(Expr $expr): Type
 			{
+				// assume preg_quote() cannot create capturing groups or contain meta characters.
+				// replace it with a pattern which matches anything, does not affect $matches results
+				// and does not produce regex errors when followed by a quantifier.
+				// this allows us to turn string concatenations with preg_quote() into static analyzable strings.
 				if (
 					$expr instanceof Expr\FuncCall
 					&& $expr->name instanceof Name
 					&& $expr->name->toLowerString() === 'preg_quote'
 				) {
-					return new ConstantStringType('.*');
+					return new ConstantStringType('(?:.*)');
 				}
 
 				if ($expr instanceof Concat) {

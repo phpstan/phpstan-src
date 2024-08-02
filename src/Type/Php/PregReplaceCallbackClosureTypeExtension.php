@@ -13,7 +13,7 @@ use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 
-final class PregMatchCallbackClosureTypeExtension implements FunctionParameterClosureTypeExtension
+final class PregReplaceCallbackClosureTypeExtension implements FunctionParameterClosureTypeExtension
 {
 
 	public function __construct(

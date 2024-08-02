@@ -70,3 +70,24 @@ class Bug11403
 		preg_replace('![' . preg_quote($s) . ']+!u', $s, $s);
 	}
 }
+
+class Bug11432 {
+	function a(string $str, string $character = ',', bool $trim = false): string
+	{
+		$str = preg_replace('#' . preg_quote($character, '#') . '{2,}#', $character, $str);
+
+		return ($trim) ? trim($str, $character) : $str;
+	}
+	function b(string $str, string $character = ',', bool $trim = false): string
+	{
+		$str = preg_replace('#' . preg_quote($character, '#') . '*#', $character, $str);
+
+		return ($trim) ? trim($str, $character) : $str;
+	}
+	function c(string $str, string $character = ',', bool $trim = false): string
+	{
+		$str = preg_replace('#' . preg_quote($character, '#') . '?#', $character, $str);
+
+		return ($trim) ? trim($str, $character) : $str;
+	}
+}

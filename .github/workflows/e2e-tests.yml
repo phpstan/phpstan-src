@@ -216,16 +216,28 @@ jobs:
               ../bashunit -a contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../../bin/phpstan analyse -c ignore.neon || true)
+              OUTPUT=$(../../bin/phpstan analyse -c ignore.neon 2>&1 || true)
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in ignoreErrors' "$OUTPUT"
               ../bashunit -a contains 'tests is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../../bin/phpstan analyse -c excludePaths.neon || true)
+              OUTPUT=$(../../bin/phpstan analyse -c phpneon.php 2>&1 || true)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Invalid entry in ignoreErrors' "$OUTPUT"
+              ../bashunit -a contains 'src/test.php is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
+          - script: |
+              cd e2e/bad-exclude-paths
+              OUTPUT=$(../../bin/phpstan analyse -c excludePaths.neon 2>&1 || true)
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in excludePaths' "$OUTPUT"
               ../bashunit -a contains 'tests is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
+          - script: |
+              cd e2e/bad-exclude-paths
+              OUTPUT=$(../../bin/phpstan analyse -c phpneon2.php 2>&1 || true)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Invalid entry in excludePaths' "$OUTPUT"
+              ../bashunit -a contains 'src/test.php is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
 
     steps:
       - name: "Checkout"

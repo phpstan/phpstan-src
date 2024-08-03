@@ -45,11 +45,13 @@ class ValidateExcludePathsExtension extends CompilerExtension
 
 		$errors = [];
 		foreach (array_unique($paths) as $path) {
-			if (is_dir($path)) {
-				continue;
-			}
-			if (is_file($path)) {
-				continue;
+			if (FileExcluder::isAbsolutePath($path)) {
+				if (is_dir($path)) {
+					continue;
+				}
+				if (is_file($path)) {
+					continue;
+				}
 			}
 			if (FileExcluder::isFnmatchPattern($path)) {
 				continue;

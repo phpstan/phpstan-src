@@ -151,11 +151,13 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 				}
 
 				foreach ($ignorePaths as $ignorePath) {
-					if (is_dir($ignorePath)) {
-						continue;
-					}
-					if (is_file($ignorePath)) {
-						continue;
+					if (FileExcluder::isAbsolutePath($ignorePath)) {
+						if (is_dir($ignorePath)) {
+							continue;
+						}
+						if (is_file($ignorePath)) {
+							continue;
+						}
 					}
 					if (FileExcluder::isFnmatchPattern($ignorePath)) {
 						continue;

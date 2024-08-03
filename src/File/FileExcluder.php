@@ -9,6 +9,7 @@ use function is_file;
 use function preg_match;
 use function str_starts_with;
 use function strlen;
+use function substr;
 use const DIRECTORY_SEPARATOR;
 use const FNM_CASEFOLD;
 use const FNM_NOESCAPE;
@@ -114,6 +115,19 @@ class FileExcluder
 			if (fnmatch($exclude, $file, $this->fnmatchFlags)) {
 				return true;
 			}
+		}
+
+		return false;
+	}
+
+	public static function isAbsolutePath(string $path): bool
+	{
+		if (DIRECTORY_SEPARATOR === '/') {
+			if (str_starts_with($path, '/')) {
+				return true;
+			}
+		} elseif (substr($path, 1, 1) === ':') {
+			return true;
 		}
 
 		return false;

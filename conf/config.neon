@@ -1499,6 +1499,11 @@ services:
 			- phpstan.functionParameterOutTypeExtension
 
 	-
+		class: PHPStan\Type\Php\PregReplaceCallbackClosureTypeExtension
+		tags:
+			- phpstan.functionParameterClosureTypeExtension
+
+	-
 		class: PHPStan\Type\Php\RegexArrayShapeMatcher
 
 	-

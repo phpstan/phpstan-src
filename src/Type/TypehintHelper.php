@@ -201,11 +201,8 @@ class TypehintHelper
 			}
 
 			if (
-				($type->isCallable()->yes() && $phpDocType->isCallable()->yes())
-				|| (
-					(!$phpDocType instanceof NeverType || ($type instanceof MixedType && !$type->isExplicitMixed()))
-					&& $type->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocType))->yes()
-				)
+				(!$phpDocType instanceof NeverType || ($type instanceof MixedType && !$type->isExplicitMixed()))
+				&& $type->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocType))->yes()
 			) {
 				$resultType = $phpDocType;
 			} else {

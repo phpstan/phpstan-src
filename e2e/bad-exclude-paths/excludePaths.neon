@@ -1,0 +1,9 @@
+includes:
+	- ../../conf/bleedingEdge.neon
+
+parameters:
+	level: 8
+	paths:
+		- src
+	excludePaths:
+		- tests

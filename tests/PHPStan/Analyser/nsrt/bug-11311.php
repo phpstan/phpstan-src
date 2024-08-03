@@ -14,9 +14,9 @@ function doFoo(string $s) {
 
 function doUnmatchedAsNull(string $s): void {
 	if (preg_match('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType('array{string, non-empty-string|null, non-empty-string|null, non-empty-string|null}', $matches);
+		assertType("array{string, 'foo'|null, 'bar'|null, 'baz'|null}", $matches);
 	}
-	assertType('array{}|array{string, non-empty-string|null, non-empty-string|null, non-empty-string|null}', $matches);
+	assertType("array{}|array{string, 'foo'|null, 'bar'|null, 'baz'|null}", $matches);
 }
 
 // see https://3v4l.org/VeDob
@@ -70,13 +70,13 @@ $}x', $url, $matches, PREG_UNMATCHED_AS_NULL)) {
 class UnmatchedAsNullWithTopLevelAlternation {
 	function doFoo(string $s): void {
 		if (preg_match('/Price: (?:(£)|(€))\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-			assertType('array{string, non-empty-string|null, non-empty-string|null}', $matches); // could be array{0: string, 1: null, 2: non-empty-string}|array{0: string, 1: non-empty-string, 2: null}
+			assertType("array{string, '£'|null, '€'|null}", $matches); // could be tagged union
 		}
 	}
 
 	function doBar(string $s): void {
 		if (preg_match('/Price: (?:(£)|(€))?\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-			assertType('array{string, non-empty-string|null, non-empty-string|null}', $matches);
+			assertType("array{string, '£'|null, '€'|null}", $matches); // could be tagged union
 		}
 	}
 }

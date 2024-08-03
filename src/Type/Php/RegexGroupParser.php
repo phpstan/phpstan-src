@@ -90,6 +90,7 @@ final class RegexGroupParser
 			$groupCombinations,
 			$markVerbs,
 			$captureOnlyNamed,
+			false,
 		);
 
 		return [$capturingGroups, $groupCombinations, $markVerbs];
@@ -112,6 +113,7 @@ final class RegexGroupParser
 		array &$groupCombinations,
 		array &$markVerbs,
 		bool $captureOnlyNamed,
+		bool $repeatedMoreThenOnce,
 	): void
 	{
 		$group = null;
@@ -122,7 +124,7 @@ final class RegexGroupParser
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
-				$this->createGroupType($ast),
+				$this->createGroupType($ast, $repeatedMoreThenOnce),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
@@ -133,7 +135,7 @@ final class RegexGroupParser
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
-				$this->createGroupType($ast),
+				$this->createGroupType($ast, $repeatedMoreThenOnce),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#noncapturing') {
@@ -156,10 +158,14 @@ final class RegexGroupParser
 
 		$inOptionalQuantification = false;
 		if ($ast->getId() === '#quantification') {
-			[$min] = $this->getQuantificationRange($ast);
+			[$min, $max] = $this->getQuantificationRange($ast);
 
 			if ($min === 0) {
 				$inOptionalQuantification = true;
+			}
+
+			if ($max === null || $max > 1) {
+				$repeatedMoreThenOnce = true;
 			}
 		}
 
@@ -201,6 +207,7 @@ final class RegexGroupParser
 				$groupCombinations,
 				$markVerbs,
 				$captureOnlyNamed,
+				$repeatedMoreThenOnce,
 			);
 
 			if ($ast->getId() !== '#alternation') {
@@ -260,7 +267,7 @@ final class RegexGroupParser
 		return [$min, $max];
 	}
 
-	private function createGroupType(TreeNode $group): Type
+	private function createGroupType(TreeNode $group, bool $repeatedMoreThenOnce): Type
 	{
 		$isNonEmpty = TrinaryLogic::createMaybe();
 		$isNumeric = TrinaryLogic::createMaybe();
@@ -269,9 +276,10 @@ final class RegexGroupParser
 
 		$this->walkGroupAst($group, $isNonEmpty, $isNumeric, $inOptionalQuantification, $onlyLiterals);
 
-		if ($onlyLiterals !== null && $onlyLiterals !== []) {
+		if (!$repeatedMoreThenOnce && $onlyLiterals !== null && $onlyLiterals !== []) {
 			return new ConstantStringType(implode('', $onlyLiterals));
 		}
+
 		if ($isNumeric->yes()) {
 			$result = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 			if (!$isNonEmpty->yes()) {
@@ -285,6 +293,9 @@ final class RegexGroupParser
 		return new StringType();
 	}
 
+	/**
+	 * @param array<string>|null $onlyLiterals
+	 */
 	private function walkGroupAst(TreeNode $ast, TrinaryLogic &$isNonEmpty, TrinaryLogic &$isNumeric, bool &$inOptionalQuantification, ?array &$onlyLiterals): void
 	{
 		$children = $ast->getChildren();
@@ -294,7 +305,6 @@ final class RegexGroupParser
 			&& count($children) > 0
 		) {
 			$isNonEmpty = TrinaryLogic::createYes();
-			$onlyLiterals = null;
 		} elseif ($ast->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($ast);
 
@@ -319,10 +329,10 @@ final class RegexGroupParser
 				if (!$inOptionalQuantification) {
 					$isNonEmpty = TrinaryLogic::createYes();
 				}
-			} else {
+			} elseif (!in_array($ast->getValueToken(), ['capturing_name'], true)) {
 				$onlyLiterals = null;
 			}
-		} elseif (!in_array($ast->getId(), ['#capturing'], true)) {
+		} elseif (!in_array($ast->getId(), ['#capturing', '#namedcapturing'], true)) {
 			$onlyLiterals = null;
 		} else {
 			$x = 1;
@@ -346,6 +356,9 @@ final class RegexGroupParser
 		}
 	}
 
+	/**
+	 * @param array<string>|null $onlyLiterals
+	 */
 	private function getLiteralValue(TreeNode $node, ?array &$onlyLiterals): ?string
 	{
 		if ($node->getId() !== 'token') {
@@ -357,9 +370,13 @@ final class RegexGroupParser
 		$value = $node->getValueValue();
 
 		if (in_array($token, ['literal', 'escaped_end_class'], true)) {
-			if (strlen($node->getValueValue()) > 1 && $value[0] === '\\') {
+			if (strlen($value) > 1 && $value[0] === '\\') {
 				return substr($value, 1);
-			} elseif ($token === 'literal' && $onlyLiterals !== null && !in_array($value, ['.'], true)) {
+			} elseif (
+				$token === 'literal'
+				&& $onlyLiterals !== null
+				&& !in_array($value, ['.'], true)
+			) {
 				$onlyLiterals[] = $value;
 			}
 

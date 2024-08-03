@@ -234,11 +234,11 @@ class CommandHelperTest extends TestCase
 				__DIR__ . '/exclude-paths/full.neon',
 				[
 					'excludePaths' => [
-						'analyse' => [
-							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test',
-						],
 						'analyseAndScan' => [
 							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test2',
+						],
+						'analyse' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test',
 						],
 					],
 				],
@@ -247,12 +247,12 @@ class CommandHelperTest extends TestCase
 				__DIR__ . '/exclude-paths/including.neon',
 				[
 					'excludePaths' => [
+						'analyseAndScan' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test3',
+						],
 						'analyse' => [
 							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test',
 							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test2',
-						],
-						'analyseAndScan' => [
-							__DIR__ . DIRECTORY_SEPARATOR . 'exclude-paths' . DIRECTORY_SEPARATOR . 'test3',
 						],
 					],
 				],

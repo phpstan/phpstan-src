@@ -10,10 +10,12 @@ use Nette\DI\InvalidConfigurationException;
 use Nette\Neon\Entity;
 use Nette\Neon\Exception;
 use Nette\Neon\Neon;
+use PHPStan\DependencyInjection\Neon\OptionalPath;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use function array_values;
 use function array_walk_recursive;
+use function count;
 use function dirname;
 use function implode;
 use function in_array;
@@ -29,7 +31,7 @@ use function substr;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v26-no-implicit-wildcard';
+	public const CACHE_KEY = 'v27-optional-path';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 
@@ -65,6 +67,13 @@ class NeonAdapter implements Adapter
 				$val[Helpers::PREVENT_MERGING] = true;
 			}
 
+			$keyToResolve = $fileKey;
+			if (is_int($key)) {
+				$keyToResolve .= '[]';
+			} else {
+				$keyToResolve .= '[' . $key . ']';
+			}
+
 			if (is_array($val)) {
 				if (!is_int($key)) {
 					$fileKeyToPass = $fileKey . '[' . $key . ']';
@@ -89,16 +98,25 @@ class NeonAdapter implements Adapter
 					}
 					$val = $tmp;
 				} else {
-					$tmp = $this->process([$val->value], $fileKeyToPass, $file);
-					$val = new Statement($tmp[0], $this->process($val->attributes, $fileKeyToPass, $file));
+					if (
+						in_array($keyToResolve, [
+							'[parameters][excludePaths][]',
+							'[parameters][excludePaths][analyse][]',
+							'[parameters][excludePaths][analyseAndScan][]',
+						], true)
+						&& count($val->attributes) === 1
+						&& $val->attributes[0] === '?'
+						&& is_string($val->value)
+						&& !str_contains($val->value, '%')
+						&& !str_starts_with($val->value, '*')
+					) {
+						$fileHelper = $this->createFileHelperByFile($file);
+						$val = new OptionalPath($fileHelper->normalizePath($fileHelper->absolutizePath($val->value)));
+					} else {
+						$tmp = $this->process([$val->value], $fileKeyToPass, $file);
+						$val = new Statement($tmp[0], $this->process($val->attributes, $fileKeyToPass, $file));
+					}
 				}
-			}
-
-			$keyToResolve = $fileKey;
-			if (is_int($key)) {
-				$keyToResolve .= '[]';
-			} else {
-				$keyToResolve .= '[' . $key . ']';
 			}
 
 			if (in_array($keyToResolve, [

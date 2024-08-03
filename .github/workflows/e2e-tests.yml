@@ -238,6 +238,15 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in excludePaths' "$OUTPUT"
               ../bashunit -a contains 'src/test.php is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
+          - script: |
+              cd e2e/bad-exclude-paths
+              OUTPUT=$(../../bin/phpstan analyse -c ignoreNonexistentExcludePath.neon)
+              echo "$OUTPUT"
+          - script: |
+              cd e2e/bad-exclude-paths
+              cp -r tmp-node-modules node_modules
+              OUTPUT=$(../../bin/phpstan analyse -c ignoreNonexistentExcludePath.neon)
+              echo "$OUTPUT"
 
     steps:
       - name: "Checkout"

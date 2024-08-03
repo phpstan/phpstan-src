@@ -216,13 +216,13 @@ jobs:
               ../bashunit -a contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../../bin/phpstan analyse -c ignore.neon)
+              OUTPUT=$(../../bin/phpstan analyse -c ignore.neon || true)
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in ignoreErrors' "$OUTPUT"
               ../bashunit -a contains 'tests is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../../bin/phpstan analyse -c excludePaths.neon)
+              OUTPUT=$(../../bin/phpstan analyse -c excludePaths.neon || true)
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in excludePaths' "$OUTPUT"
               ../bashunit -a contains 'tests is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"

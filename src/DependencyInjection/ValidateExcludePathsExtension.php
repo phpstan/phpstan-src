@@ -58,11 +58,11 @@ final class ValidateExcludePathsExtension extends CompilerExtension
 		}
 
 		$newExcludePaths = [];
-		if (array_key_exists('analyse', $excludePaths)) {
-			$newExcludePaths['analyse'] = $excludePaths['analyse'];
-		}
 		if (array_key_exists('analyseAndScan', $excludePaths)) {
 			$newExcludePaths['analyseAndScan'] = $excludePaths['analyseAndScan'];
+		}
+		if (array_key_exists('analyse', $excludePaths)) {
+			$newExcludePaths['analyse'] = $excludePaths['analyse'];
 		}
 
 		foreach ($newExcludePaths as $key => $p) {

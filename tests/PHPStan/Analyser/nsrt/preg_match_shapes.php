@@ -44,9 +44,9 @@ function doMatch(string $s): void {
 	assertType('array{}|array{0: string, 1: non-empty-string, 2: string, 3: non-empty-string, 4?: non-empty-string}', $matches);
 
 	if (preg_match('/(a)(?<name>b)*(c)(d)*/', $s, $matches)) {
-		assertType('array{0: string, 1: non-empty-string, name: string, 2: string, 3: non-empty-string, 4?: non-empty-string}', $matches);
+		assertType("array{0: string, 1: 'a', name: string, 2: string, 3: 'c', 4?: 'd'}", $matches);
 	}
-	assertType('array{}|array{0: string, 1: non-empty-string, name: string, 2: string, 3: non-empty-string, 4?: non-empty-string}', $matches);
+	assertType("array{}|array{0: string, 1: 'a', name: string, 2: string, 3: 'c', 4?: 'd'}", $matches);
 
 	if (preg_match('/(a)(b)*(c)(?<name>d)*/', $s, $matches)) {
 		assertType('array{0: string, 1: non-empty-string, 2: string, 3: non-empty-string, name?: non-empty-string, 4?: non-empty-string}', $matches);
@@ -233,13 +233,13 @@ function testUnionPattern(string $s): void
 function doFoo(string $row): void
 {
 	if (preg_match('~^(a(b))$~', $row, $matches) === 1) {
-		assertType('array{string, non-empty-string, non-empty-string}', $matches);
+		assertType("array{string, non-empty-string, 'b'}", $matches);
 	}
 	if (preg_match('~^(a(b)?)$~', $row, $matches) === 1) {
 		assertType('array{0: string, 1: non-empty-string, 2?: non-empty-string}', $matches);
 	}
 	if (preg_match('~^(a(b)?)?$~', $row, $matches) === 1) {
-		assertType('array{0: string, 1?: non-empty-string, 2?: non-empty-string}', $matches);
+		assertType("array{0: string, 1?: non-empty-string, 2?: 'b'}", $matches);
 	}
 }
 
@@ -390,11 +390,11 @@ function unmatchedAsNullWithMandatoryGroup(string $s): void {
 
 function (string $s): void {
 	if (preg_match('{' . preg_quote('xxx') . '(z)}', $s, $matches)) {
-		assertType('array{string, non-empty-string}', $matches);
+		assertType("array{string, 'z'}", $matches);
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array{string, non-empty-string}', $matches);
+	assertType("array{}|array{string, 'z'}", $matches);
 };
 
 function (string $s): void {
@@ -417,11 +417,11 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('{' . preg_quote($s) . '(z)' . preg_quote($s) . '(?:abc)(def)?}', $s, $matches)) {
-		assertType('array{0: string, 1: non-empty-string, 2?: non-empty-string}', $matches);
+		assertType("array{0: string, 1: 'z', 2?: non-empty-string", $matches);
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array{0: string, 1: non-empty-string, 2?: non-empty-string}', $matches);
+	assertType("array{}|array{0: string, 1: 'z', 2?: non-empty-string}", $matches);
 };
 
 function (string $s, $mixed): void {
@@ -546,3 +546,15 @@ class Bug11376
 		}
 	}
 }
+
+function (string $s): void {
+	if (rand(0,1)) {
+		$p = '/Price: (£)(abc)/i';
+	} else {
+		$p = '/Price: (\d)(b)/i';
+	}
+
+	if (preg_match($p, $s, $matches)) {
+		assertType("array{string, '£', 'abc'}|array{string, numeric-string, 'b'}", $matches);
+	}
+};

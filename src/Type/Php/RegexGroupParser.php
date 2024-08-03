@@ -21,6 +21,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
 use function count;
+use function implode;
 use function in_array;
 use function is_int;
 use function rtrim;
@@ -264,9 +265,13 @@ final class RegexGroupParser
 		$isNonEmpty = TrinaryLogic::createMaybe();
 		$isNumeric = TrinaryLogic::createMaybe();
 		$inOptionalQuantification = false;
+		$onlyLiterals = [];
 
-		$this->walkGroupAst($group, $isNonEmpty, $isNumeric, $inOptionalQuantification);
+		$this->walkGroupAst($group, $isNonEmpty, $isNumeric, $inOptionalQuantification, $onlyLiterals);
 
+		if ($onlyLiterals !== null && $onlyLiterals !== []) {
+			return new ConstantStringType(implode('', $onlyLiterals));
+		}
 		if ($isNumeric->yes()) {
 			$result = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 			if (!$isNonEmpty->yes()) {
@@ -280,7 +285,7 @@ final class RegexGroupParser
 		return new StringType();
 	}
 
-	private function walkGroupAst(TreeNode $ast, TrinaryLogic &$isNonEmpty, TrinaryLogic &$isNumeric, bool &$inOptionalQuantification): void
+	private function walkGroupAst(TreeNode $ast, TrinaryLogic &$isNonEmpty, TrinaryLogic &$isNumeric, bool &$inOptionalQuantification, ?array &$onlyLiterals): void
 	{
 		$children = $ast->getChildren();
 
@@ -289,9 +294,8 @@ final class RegexGroupParser
 			&& count($children) > 0
 		) {
 			$isNonEmpty = TrinaryLogic::createYes();
-		}
-
-		if ($ast->getId() === '#quantification') {
+			$onlyLiterals = null;
+		} elseif ($ast->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($ast);
 
 			if ($min === 0) {
@@ -301,10 +305,10 @@ final class RegexGroupParser
 				$isNonEmpty = TrinaryLogic::createYes();
 				$inOptionalQuantification = false;
 			}
-		}
 
-		if ($ast->getId() === 'token') {
-			$literalValue = $this->getLiteralValue($ast);
+			$onlyLiterals = null;
+		} elseif ($ast->getId() === 'token') {
+			$literalValue = $this->getLiteralValue($ast, $onlyLiterals);
 			if ($literalValue !== null) {
 				if (Strings::match($literalValue, '/^\d+$/') === null) {
 					$isNumeric = TrinaryLogic::createNo();
@@ -315,7 +319,13 @@ final class RegexGroupParser
 				if (!$inOptionalQuantification) {
 					$isNonEmpty = TrinaryLogic::createYes();
 				}
+			} else {
+				$onlyLiterals = null;
 			}
+		} elseif (!in_array($ast->getId(), ['#capturing'], true)) {
+			$onlyLiterals = null;
+		} else {
+			$x = 1;
 		}
 
 		// [^0-9] should not parse as numeric-string, and [^list-everything-but-numbers] is technically
@@ -331,11 +341,12 @@ final class RegexGroupParser
 				$isNonEmpty,
 				$isNumeric,
 				$inOptionalQuantification,
+				$onlyLiterals,
 			);
 		}
 	}
 
-	private function getLiteralValue(TreeNode $node): ?string
+	private function getLiteralValue(TreeNode $node, ?array &$onlyLiterals): ?string
 	{
 		if ($node->getId() !== 'token') {
 			return null;
@@ -348,6 +359,8 @@ final class RegexGroupParser
 		if (in_array($token, ['literal', 'escaped_end_class'], true)) {
 			if (strlen($node->getValueValue()) > 1 && $value[0] === '\\') {
 				return substr($value, 1);
+			} elseif ($token === 'literal' && $onlyLiterals !== null && !in_array($value, ['.'], true)) {
+				$onlyLiterals[] = $value;
 			}
 
 			return $value;

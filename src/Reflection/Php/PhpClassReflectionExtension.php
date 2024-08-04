@@ -28,6 +28,7 @@ use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterWithPhpDocsReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
+use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\FunctionSignature;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
@@ -152,7 +153,10 @@ final class PhpClassReflectionExtension
 		return $classReflection->getNativeReflection()->hasProperty($propertyName);
 	}
 
-	public function getProperty(ClassReflection $classReflection, string $propertyName): ExtendedPropertyReflection
+	/**
+	 * @return ExtendedPropertyReflection
+	 */
+	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
 	{
 		if (!isset($this->propertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName])) {
 			$this->propertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName] = $this->createProperty($classReflection, $propertyName, true);

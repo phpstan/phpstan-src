@@ -118,16 +118,26 @@ final class RegexGroupParser
 	{
 		$group = null;
 		if ($ast->getId() === '#capturing') {
+			$maybeConstant = !$repeatedMoreThenOnce;
+			if ($parentGroup !== null && $parentGroup->resetsGroupCounter()) {
+				$maybeConstant = false;
+			}
+
 			$group = new RegexCapturingGroup(
 				$captureGroupId++,
 				null,
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
-				$this->createGroupType($ast, $repeatedMoreThenOnce),
+				$this->createGroupType($ast, $maybeConstant),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
+			$maybeConstant = !$repeatedMoreThenOnce;
+			if ($parentGroup !== null && $parentGroup->resetsGroupCounter()) {
+				$maybeConstant = false;
+			}
+
 			$name = $ast->getChild(0)->getValueValue();
 			$group = new RegexCapturingGroup(
 				$captureGroupId++,
@@ -135,7 +145,7 @@ final class RegexGroupParser
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
-				$this->createGroupType($ast, $repeatedMoreThenOnce),
+				$this->createGroupType($ast, $maybeConstant),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#noncapturing') {
@@ -267,7 +277,7 @@ final class RegexGroupParser
 		return [$min, $max];
 	}
 
-	private function createGroupType(TreeNode $group, bool $repeatedMoreThenOnce): Type
+	private function createGroupType(TreeNode $group, bool $maybeConstant): Type
 	{
 		$isNonEmpty = TrinaryLogic::createMaybe();
 		$isNumeric = TrinaryLogic::createMaybe();
@@ -276,7 +286,7 @@ final class RegexGroupParser
 
 		$this->walkGroupAst($group, $isNonEmpty, $isNumeric, $inOptionalQuantification, $onlyLiterals);
 
-		if (!$repeatedMoreThenOnce && $onlyLiterals !== null && $onlyLiterals !== []) {
+		if ($maybeConstant && $onlyLiterals !== null && $onlyLiterals !== []) {
 			return new ConstantStringType(implode('', $onlyLiterals));
 		}
 

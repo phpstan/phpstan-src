@@ -579,7 +579,7 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('/Price: ([0-9])/i', $s, $matches)) {
-		assertType("array{string, non-empty-string}", $matches);
+		assertType("array{string, numeric-string}", $matches);
 	}
 };
 

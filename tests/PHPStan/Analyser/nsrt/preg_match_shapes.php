@@ -558,3 +558,15 @@ function (string $s): void {
 		assertType("array{string, '£', 'abc'}|array{string, numeric-string, 'b'}", $matches);
 	}
 };
+
+function (string $s): void {
+	if (rand(0,1)) {
+		$p = '/Price: (£)/i';
+	} else {
+		$p = '/Price: (£|(\d)|(x))/i';
+	}
+
+	if (preg_match($p, $s, $matches)) {
+		assertType("array{0: string, 1: non-empty-string, 2?: numeric-string, 3?: 'x'}", $matches);
+	}
+};

@@ -22,9 +22,9 @@ function doUnmatchedAsNull(string $s): void {
 // see https://3v4l.org/VeDob#veol
 function unmatchedAsNullWithOptionalGroup(string $s): void {
 	if (preg_match('/Price: (£|€)?\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType("array{0: string, 1?: 'foo', 2?: 'bar', 3?: 'baz'}", $matches);
+		assertType("array{0: string, 1?: non-empty-string}", $matches);
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType("array{}|array{0: string, 1?: 'foo', 2?: 'bar', 3?: 'baz'}", $matches);
+	assertType("array{}|array{0: string, 1?: non-empty-string}", $matches);
 }

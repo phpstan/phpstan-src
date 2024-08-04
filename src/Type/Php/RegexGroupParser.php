@@ -344,8 +344,6 @@ final class RegexGroupParser
 			}
 		} elseif (!in_array($ast->getId(), ['#capturing', '#namedcapturing'], true)) {
 			$onlyLiterals = null;
-		} else {
-			$x = 1;
 		}
 
 		// [^0-9] should not parse as numeric-string, and [^list-everything-but-numbers] is technically

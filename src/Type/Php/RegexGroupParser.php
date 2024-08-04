@@ -113,12 +113,12 @@ final class RegexGroupParser
 		array &$groupCombinations,
 		array &$markVerbs,
 		bool $captureOnlyNamed,
-		bool $repeatedMoreThenOnce,
+		bool $repeatedMoreThanOnce,
 	): void
 	{
 		$group = null;
 		if ($ast->getId() === '#capturing') {
-			$maybeConstant = !$repeatedMoreThenOnce;
+			$maybeConstant = !$repeatedMoreThanOnce;
 			if ($parentGroup !== null && $parentGroup->resetsGroupCounter()) {
 				$maybeConstant = false;
 			}
@@ -133,7 +133,7 @@ final class RegexGroupParser
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
-			$maybeConstant = !$repeatedMoreThenOnce;
+			$maybeConstant = !$repeatedMoreThanOnce;
 			if ($parentGroup !== null && $parentGroup->resetsGroupCounter()) {
 				$maybeConstant = false;
 			}
@@ -175,7 +175,7 @@ final class RegexGroupParser
 			}
 
 			if ($max === null || $max > 1) {
-				$repeatedMoreThenOnce = true;
+				$repeatedMoreThanOnce = true;
 			}
 		}
 
@@ -217,7 +217,7 @@ final class RegexGroupParser
 				$groupCombinations,
 				$markVerbs,
 				$captureOnlyNamed,
-				$repeatedMoreThenOnce,
+				$repeatedMoreThanOnce,
 			);
 
 			if ($ast->getId() !== '#alternation') {

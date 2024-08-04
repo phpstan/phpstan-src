@@ -21,7 +21,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
 use function count;
-use function implode;
 use function in_array;
 use function is_int;
 use function rtrim;
@@ -284,10 +283,22 @@ final class RegexGroupParser
 		$inOptionalQuantification = false;
 		$onlyLiterals = [];
 
-		$this->walkGroupAst($group, $isNonEmpty, $isNumeric, $inOptionalQuantification, $onlyLiterals);
+		$this->walkGroupAst(
+			$group,
+			$isNonEmpty,
+			$isNumeric,
+			$inOptionalQuantification,
+			$onlyLiterals,
+			false,
+		);
 
 		if ($maybeConstant && $onlyLiterals !== null && $onlyLiterals !== []) {
-			return new ConstantStringType(implode('', $onlyLiterals));
+			$result = [];
+			foreach ($onlyLiterals as $literal) {
+				$result[] = new ConstantStringType($literal);
+
+			}
+			return TypeCombinator::union(...$result);
 		}
 
 		if ($isNumeric->yes()) {
@@ -306,7 +317,14 @@ final class RegexGroupParser
 	/**
 	 * @param array<string>|null $onlyLiterals
 	 */
-	private function walkGroupAst(TreeNode $ast, TrinaryLogic &$isNonEmpty, TrinaryLogic &$isNumeric, bool &$inOptionalQuantification, ?array &$onlyLiterals): void
+	private function walkGroupAst(
+		TreeNode $ast,
+		TrinaryLogic &$isNonEmpty,
+		TrinaryLogic &$isNumeric,
+		bool &$inOptionalQuantification,
+		?array &$onlyLiterals,
+		bool $inClass,
+	): void
 	{
 		$children = $ast->getChildren();
 
@@ -327,8 +345,24 @@ final class RegexGroupParser
 			}
 
 			$onlyLiterals = null;
+		} elseif ($ast->getId() === '#class' && $onlyLiterals !== null) {
+			$inClass = true;
+
+			$newLiterals = [];
+			foreach ($children as $child) {
+				$oldLiterals = $onlyLiterals;
+
+				if ($child->getId() === 'token') {
+					$this->getLiteralValue($child, $oldLiterals, true);
+				}
+
+				foreach ($oldLiterals ?? [] as $oldLiteral) {
+					$newLiterals[] = $oldLiteral;
+				}
+			}
+			$onlyLiterals = $newLiterals;
 		} elseif ($ast->getId() === 'token') {
-			$literalValue = $this->getLiteralValue($ast, $onlyLiterals);
+			$literalValue = $this->getLiteralValue($ast, $onlyLiterals, !$inClass);
 			if ($literalValue !== null) {
 				if (Strings::match($literalValue, '/^\d+$/') === null) {
 					$isNumeric = TrinaryLogic::createNo();
@@ -360,6 +394,7 @@ final class RegexGroupParser
 				$isNumeric,
 				$inOptionalQuantification,
 				$onlyLiterals,
+				$inClass,
 			);
 		}
 	}
@@ -367,7 +402,7 @@ final class RegexGroupParser
 	/**
 	 * @param array<string>|null $onlyLiterals
 	 */
-	private function getLiteralValue(TreeNode $node, ?array &$onlyLiterals): ?string
+	private function getLiteralValue(TreeNode $node, ?array &$onlyLiterals, bool $appendLiterals): ?string
 	{
 		if ($node->getId() !== 'token') {
 			return null;
@@ -381,11 +416,18 @@ final class RegexGroupParser
 			if (strlen($value) > 1 && $value[0] === '\\') {
 				return substr($value, 1);
 			} elseif (
-				$token === 'literal'
+				$appendLiterals
+				&& $token === 'literal'
 				&& $onlyLiterals !== null
 				&& !in_array($value, ['.'], true)
 			) {
-				$onlyLiterals[] = $value;
+				if ($onlyLiterals === []) {
+					$onlyLiterals = [$value];
+				} else {
+					foreach ($onlyLiterals as &$literal) {
+						$literal .= $value;
+					}
+				}
 			}
 
 			return $value;

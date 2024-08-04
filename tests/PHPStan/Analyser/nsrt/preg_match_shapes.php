@@ -435,7 +435,7 @@ function (string $s, $mixed): void {
 
 function (string $s): void {
 	if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $s, $matches) === 1) {
-		assertType('array{string, string, non-empty-string}', $matches);
+		assertType("array{string, string, 'b'|'d'|'E'|'e'|'F'|'f'|'G'|'g'|'H'|'h'|'o'|'s'|'u'|'X'|'x'}", $matches);
 	}
 };
 
@@ -453,13 +453,13 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('~^([157])$~', $s, $matches) === 1) {
-		assertType("array{string, numeric-string}", $matches);
+		assertType("array{string, '1'|'5'|'7'}", $matches);
 	}
 };
 
 function (string $s): void {
 	if (preg_match('~^([157XY])$~', $s, $matches) === 1) {
-		assertType("array{string, non-empty-string}", $matches);
+		assertType("array{string, '1'|'5'|'7'|'X'|'Y'}", $matches);
 	}
 };
 
@@ -519,10 +519,10 @@ function bug11323(string $s): void {
 		assertType('array{string, non-empty-string}', $matches);
 	}
 	if (preg_match("{([\r\n]+)(\n)([\n])}", $s, $matches)) {
-		assertType('array{string, non-empty-string, "\n", non-empty-string}', $matches);
+		assertType('array{string, non-empty-string, "\n", "\n"}', $matches);
 	}
 	if (preg_match('/foo(*:first)|bar(*:second)([x])/', $s, $matches)) {
-		assertType("array{0: string, 1?: non-empty-string, MARK?: 'first'|'second'}", $matches);
+		assertType("array{0: string, 1?: 'x', MARK?: 'first'|'second'}", $matches);
 	}
 }
 
@@ -568,5 +568,35 @@ function (string $s): void {
 
 	if (preg_match($p, $s, $matches)) {
 		assertType("array{0: string, 1: non-empty-string, 2?: numeric-string, 3?: 'x'}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/Price: ([a-z])/i', $s, $matches)) {
+		assertType("array{string, non-empty-string}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/Price: ([0-9])/i', $s, $matches)) {
+		assertType("array{string, numeric-string}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/Price: ([xXa])/i', $s, $matches)) {
+		assertType("array{string, 'a'|'X'|'x'}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/Price: (ba[rz])/i', $s, $matches)) {
+		assertType("array{string, 'bar'|'baz'}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/Price: (b[ao][mn])/i', $s, $matches)) {
+		assertType("array{string, 'bam'|'ban'|'bom'|'bon'}", $matches);
 	}
 };

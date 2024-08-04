@@ -179,7 +179,7 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $s, $matches, PREG_UNMATCHED_AS_NULL) === 1) {
-		assertType('array{string, non-empty-string|null, non-empty-string}', $matches);
+		assertType("array{string, non-empty-string|null, 'b'|'d'|'E'|'e'|'F'|'f'|'G'|'g'|'H'|'h'|'o'|'s'|'u'|'X'|'x'}", $matches);
 	}
 };
 

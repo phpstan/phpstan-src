@@ -3,7 +3,7 @@
 namespace PHPStan\Reflection\Dummy;
 
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\WrapperPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
@@ -11,7 +11,7 @@ use PHPStan\Type\Type;
 final class ChangedTypePropertyReflection implements WrapperPropertyReflection
 {
 
-	public function __construct(private ClassReflection $declaringClass, private PropertyReflection $reflection, private Type $readableType, private Type $writableType)
+	public function __construct(private ClassReflection $declaringClass, private ExtendedPropertyReflection $reflection, private Type $readableType, private Type $writableType)
 	{
 	}
 
@@ -80,7 +80,7 @@ final class ChangedTypePropertyReflection implements WrapperPropertyReflection
 		return $this->reflection->isInternal();
 	}
 
-	public function getOriginalReflection(): PropertyReflection
+	public function getOriginalReflection(): ExtendedPropertyReflection
 	{
 		return $this->reflection;
 	}

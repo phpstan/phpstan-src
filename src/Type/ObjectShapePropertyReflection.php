@@ -3,12 +3,12 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use stdClass;
 
-final class ObjectShapePropertyReflection implements PropertyReflection
+final class ObjectShapePropertyReflection implements ExtendedPropertyReflection
 {
 
 	public function __construct(private Type $type)

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
@@ -11,7 +12,7 @@ use function array_map;
 use function count;
 use function implode;
 
-final class IntersectionTypePropertyReflection implements PropertyReflection
+final class IntersectionTypePropertyReflection implements ExtendedPropertyReflection
 {
 
 	/**

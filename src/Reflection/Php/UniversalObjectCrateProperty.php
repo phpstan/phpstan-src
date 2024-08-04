@@ -3,11 +3,11 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-final class UniversalObjectCrateProperty implements PropertyReflection
+final class UniversalObjectCrateProperty implements ExtendedPropertyReflection
 {
 
 	public function __construct(

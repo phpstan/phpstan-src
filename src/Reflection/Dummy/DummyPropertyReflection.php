@@ -3,14 +3,14 @@
 namespace PHPStan\Reflection\Dummy;
 
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use stdClass;
 
-final class DummyPropertyReflection implements PropertyReflection
+final class DummyPropertyReflection implements ExtendedPropertyReflection
 {
 
 	public function getDeclaringClass(): ClassReflection

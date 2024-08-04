@@ -7,7 +7,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -17,7 +17,7 @@ use PHPStan\Type\TypehintHelper;
  * @api
  * @final
  */
-class PhpPropertyReflection implements PropertyReflection
+class PhpPropertyReflection implements ExtendedPropertyReflection
 {
 
 	private ?Type $finalNativeType = null;

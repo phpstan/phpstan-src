@@ -3,11 +3,11 @@
 namespace PHPStan\Reflection\Annotations;
 
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-final class AnnotationPropertyReflection implements PropertyReflection
+final class AnnotationPropertyReflection implements ExtendedPropertyReflection
 {
 
 	public function __construct(

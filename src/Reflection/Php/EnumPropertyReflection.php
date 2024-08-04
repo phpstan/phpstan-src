@@ -3,11 +3,11 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-final class EnumPropertyReflection implements PropertyReflection
+final class EnumPropertyReflection implements ExtendedPropertyReflection
 {
 
 	public function __construct(private ClassReflection $declaringClass, private Type $type)

@@ -59,6 +59,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -5687,7 +5688,7 @@ final class MutatingScope implements Scope
 	}
 
 	/** @api */
-	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?PropertyReflection
+	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection
 	{
 		if ($typeWithProperty instanceof UnionType) {
 			$newTypes = [];

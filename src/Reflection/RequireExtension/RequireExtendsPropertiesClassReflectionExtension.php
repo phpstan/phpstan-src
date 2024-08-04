@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\RequireExtension;
 
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\ShouldNotHappenException;
@@ -16,6 +17,9 @@ final class RequireExtendsPropertiesClassReflectionExtension implements Properti
 		return $this->findProperty($classReflection, $propertyName) !== null;
 	}
 
+	/**
+	 * @return ExtendedPropertyReflection
+	 */
 	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
 	{
 		$property = $this->findProperty($classReflection, $propertyName);
@@ -26,7 +30,7 @@ final class RequireExtendsPropertiesClassReflectionExtension implements Properti
 		return $property;
 	}
 
-	private function findProperty(ClassReflection $classReflection, string $propertyName): ?PropertyReflection
+	private function findProperty(ClassReflection $classReflection, string $propertyName): ?ExtendedPropertyReflection
 	{
 		if (!$classReflection->isInterface()) {
 			return null;

@@ -4,17 +4,17 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
-use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\WrapperPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-final class FoundPropertyReflection implements PropertyReflection
+final class FoundPropertyReflection implements ExtendedPropertyReflection
 {
 
 	public function __construct(
-		private PropertyReflection $originalPropertyReflection,
+		private ExtendedPropertyReflection $originalPropertyReflection,
 		private Scope $scope,
 		private string $propertyName,
 		private Type $readableType,

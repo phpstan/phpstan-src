@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Type;
 
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Type\Type;
 use function array_map;
@@ -9,7 +10,7 @@ use function array_map;
 final class IntersectionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 
-	private ?PropertyReflection $transformedProperty = null;
+	private ?ExtendedPropertyReflection $transformedProperty = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
 
@@ -32,12 +33,12 @@ final class IntersectionTypeUnresolvedPropertyPrototypeReflection implements Unr
 		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self($this->propertyName, array_map(static fn (UnresolvedPropertyPrototypeReflection $prototype): UnresolvedPropertyPrototypeReflection => $prototype->doNotResolveTemplateTypeMapToBounds(), $this->propertyPrototypes));
 	}
 
-	public function getNakedProperty(): PropertyReflection
+	public function getNakedProperty(): ExtendedPropertyReflection
 	{
 		return $this->getTransformedProperty();
 	}
 
-	public function getTransformedProperty(): PropertyReflection
+	public function getTransformedProperty(): ExtendedPropertyReflection
 	{
 		if ($this->transformedProperty !== null) {
 			return $this->transformedProperty;

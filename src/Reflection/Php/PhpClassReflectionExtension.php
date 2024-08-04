@@ -21,13 +21,13 @@ use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterWithPhpDocsReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
-use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\FunctionSignature;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
@@ -64,7 +64,7 @@ final class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
 {
 
-	/** @var PropertyReflection[][] */
+	/** @var ExtendedPropertyReflection[][] */
 	private array $propertiesIncludingAnnotations = [];
 
 	/** @var PhpPropertyReflection[][] */
@@ -152,7 +152,7 @@ final class PhpClassReflectionExtension
 		return $classReflection->getNativeReflection()->hasProperty($propertyName);
 	}
 
-	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
+	public function getProperty(ClassReflection $classReflection, string $propertyName): ExtendedPropertyReflection
 	{
 		if (!isset($this->propertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName])) {
 			$this->propertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName] = $this->createProperty($classReflection, $propertyName, true);
@@ -176,7 +176,7 @@ final class PhpClassReflectionExtension
 		ClassReflection $classReflection,
 		string $propertyName,
 		bool $includingAnnotations,
-	): PropertyReflection
+	): ExtendedPropertyReflection
 	{
 		$propertyReflection = $classReflection->getNativeReflection()->getProperty($propertyName);
 		$propertyName = $propertyReflection->getName();

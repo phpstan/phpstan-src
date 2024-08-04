@@ -3,7 +3,7 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\FloatType;
@@ -12,7 +12,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-final class SimpleXMLElementProperty implements PropertyReflection
+final class SimpleXMLElementProperty implements ExtendedPropertyReflection
 {
 
 	public function __construct(

@@ -18,14 +18,14 @@ final class ResolvedPropertyReflection implements WrapperPropertyReflection
 	private ?Type $writableType = null;
 
 	public function __construct(
-		private PropertyReflection $reflection,
+		private ExtendedPropertyReflection $reflection,
 		private TemplateTypeMap $templateTypeMap,
 		private TemplateTypeVarianceMap $callSiteVarianceMap,
 	)
 	{
 	}
 
-	public function getOriginalReflection(): PropertyReflection
+	public function getOriginalReflection(): ExtendedPropertyReflection
 	{
 		return $this->reflection;
 	}

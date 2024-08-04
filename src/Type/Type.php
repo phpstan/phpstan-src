@@ -9,6 +9,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
@@ -85,6 +86,9 @@ interface Type
 
 	public function hasProperty(string $propertyName): TrinaryLogic;
 
+	/**
+	 * @return ExtendedPropertyReflection
+	 */
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection;
 
 	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection;

@@ -10,12 +10,12 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
@@ -71,7 +71,7 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function hasConstant(Name $name): bool;
 
-	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?PropertyReflection;
+	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection;
 
 	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?ExtendedMethodReflection;
 

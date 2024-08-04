@@ -14,17 +14,17 @@ function doFoo(string $s) {
 
 function doUnmatchedAsNull(string $s): void {
 	if (preg_match('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType('array{0: string, 1?: non-empty-string, 2?: non-empty-string, 3?: non-empty-string}', $matches);
+		assertType("array{0: string, 1?: 'foo', 2?: 'bar', 3?: 'baz'}", $matches);
 	}
-	assertType('array{}|array{0: string, 1?: non-empty-string, 2?: non-empty-string, 3?: non-empty-string}', $matches);
+	assertType("array{}|array{0: string, 1?: 'foo', 2?: 'bar', 3?: 'baz'}", $matches);
 }
 
 // see https://3v4l.org/VeDob#veol
 function unmatchedAsNullWithOptionalGroup(string $s): void {
 	if (preg_match('/Price: (£|€)?\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType('array{0: string, 1?: non-empty-string}', $matches);
+		assertType("array{0: string, 1?: non-empty-string}", $matches);
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array{0: string, 1?: non-empty-string}', $matches);
+	assertType("array{}|array{0: string, 1?: non-empty-string}", $matches);
 }

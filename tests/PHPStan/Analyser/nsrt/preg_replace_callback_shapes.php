@@ -8,7 +8,7 @@ function (string $s): void {
 	preg_replace_callback(
 		'/(foo)?(bar)?(baz)?/',
 		function ($matches) {
-			assertType('array{string, non-empty-string|null, non-empty-string|null, non-empty-string|null}', $matches);
+			assertType("array{string, 'foo'|null, 'bar'|null, 'baz'|null}", $matches);
 			return '';
 		},
 		$s,
@@ -22,7 +22,7 @@ function (string $s): void {
 	preg_replace_callback(
 		'/(foo)?(bar)?(baz)?/',
 		function ($matches) {
-			assertType('array{0: array{string, int<0, max>}, 1?: array{non-empty-string, int<0, max>}, 2?: array{non-empty-string, int<0, max>}, 3?: array{non-empty-string, int<0, max>}}', $matches);
+			assertType("array{0: array{string, int<0, max>}, 1?: array{'foo', int<0, max>}, 2?: array{'bar', int<0, max>}, 3?: array{'baz', int<0, max>}}", $matches);
 			return '';
 		},
 		$s,
@@ -36,7 +36,7 @@ function (string $s): void {
 	preg_replace_callback(
 		'/(foo)?(bar)?(baz)?/',
 		function ($matches) {
-			assertType('array{array{string|null, int<-1, max>}, array{non-empty-string|null, int<-1, max>}, array{non-empty-string|null, int<-1, max>}, array{non-empty-string|null, int<-1, max>}}', $matches);
+			assertType("array{array{string|null, int<-1, max>}, array{'foo'|null, int<-1, max>}, array{'bar'|null, int<-1, max>}, array{'baz'|null, int<-1, max>}}", $matches);
 			return '';
 		},
 		$s,

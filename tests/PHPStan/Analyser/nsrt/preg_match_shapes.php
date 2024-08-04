@@ -492,7 +492,7 @@ function bug11323(string $s): void {
 		assertType('array{string, non-empty-string, non-empty-string, non-empty-string}', $matches);
 	}
 	if (preg_match('{(a)??(b)*+(c++)(d)+?}', $s, $matches)) {
-		assertType("array{string, string, string, non-empty-string, 'd'}", $matches);
+		assertType("array{string, ''|'a', string, non-empty-string, non-empty-string}", $matches);
 	}
 	if (preg_match('{(.\d)}', $s, $matches)) {
 		assertType('array{string, non-empty-string}', $matches);

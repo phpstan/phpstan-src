@@ -67,9 +67,9 @@ final class RegexGroupParser
 		}
 
 		$captureOnlyNamed = false;
+		$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex) ?? '';
 		if ($this->phpVersion->supportsPregCaptureOnlyNamedGroups()) {
-			$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex);
-			$captureOnlyNamed = str_contains($modifiers ?? '', 'n');
+			$captureOnlyNamed = str_contains($modifiers, 'n');
 		}
 
 		$capturingGroups = [];
@@ -90,6 +90,7 @@ final class RegexGroupParser
 			$markVerbs,
 			$captureOnlyNamed,
 			false,
+			$modifiers,
 		);
 
 		return [$capturingGroups, $groupCombinations, $markVerbs];
@@ -113,30 +114,21 @@ final class RegexGroupParser
 		array &$markVerbs,
 		bool $captureOnlyNamed,
 		bool $repeatedMoreThanOnce,
+		string $patternModifiers,
 	): void
 	{
 		$group = null;
 		if ($ast->getId() === '#capturing') {
-			$maybeConstant = !$repeatedMoreThanOnce;
-			if ($parentGroup !== null && $parentGroup->resetsGroupCounter()) {
-				$maybeConstant = false;
-			}
-
 			$group = new RegexCapturingGroup(
 				$captureGroupId++,
 				null,
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
-				$this->createGroupType($ast, $maybeConstant),
+				$this->createGroupType($ast, $this->allowConstantTypes($patternModifiers, $repeatedMoreThanOnce, $parentGroup)),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
-			$maybeConstant = !$repeatedMoreThanOnce;
-			if ($parentGroup !== null && $parentGroup->resetsGroupCounter()) {
-				$maybeConstant = false;
-			}
-
 			$name = $ast->getChild(0)->getValueValue();
 			$group = new RegexCapturingGroup(
 				$captureGroupId++,
@@ -144,7 +136,7 @@ final class RegexGroupParser
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
-				$this->createGroupType($ast, $maybeConstant),
+				$this->createGroupType($ast, $this->allowConstantTypes($patternModifiers, $repeatedMoreThanOnce, $parentGroup)),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#noncapturing') {
@@ -217,6 +209,7 @@ final class RegexGroupParser
 				$markVerbs,
 				$captureOnlyNamed,
 				$repeatedMoreThanOnce,
+				$patternModifiers,
 			);
 
 			if ($ast->getId() !== '#alternation') {
@@ -225,6 +218,29 @@ final class RegexGroupParser
 
 			$combinationIndex++;
 		}
+	}
+
+	private function allowConstantTypes(
+		string $patternModifiers,
+		bool $repeatedMoreThanOnce,
+		RegexCapturingGroup|RegexNonCapturingGroup|null $parentGroup,
+	): bool
+	{
+		if (str_contains($patternModifiers, 'i')) {
+			// if caseless, we don't use constant types
+			// because it likely yields too many combinations
+			return false;
+		}
+
+		if ($repeatedMoreThanOnce) {
+			return false;
+		}
+
+		if ($parentGroup !== null && $parentGroup->resetsGroupCounter()) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/** @return array{?int, ?int} */

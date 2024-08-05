@@ -3,10 +3,10 @@
 namespace PHPStan\Rules\Keywords;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\ConstFetch;
-use PhpParser\Node\Expr\Include_;
 use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\Include_;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\MagicConst\Dir;
@@ -15,17 +15,21 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function constant;
+use function defined;
+use function dirname;
+use function file_exists;
+use function is_string;
+use function sprintf;
 
 /**
  * @implements Rule<Include_>
  */
 class RequireFileExistsRule implements Rule
 {
-	private ReflectionProvider $reflectionProvider;
 
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -42,8 +46,8 @@ class RequireFileExistsRule implements Rule
 					RuleErrorBuilder::message(
 						sprintf(
 							'Required file "%s" does not exist.',
-							$filePath
-						)
+							$filePath,
+						),
 					)->build(),
 				];
 			}
@@ -122,4 +126,5 @@ class RequireFileExistsRule implements Rule
 		}
 		return null;
 	}
+
 }

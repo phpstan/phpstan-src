@@ -577,6 +577,24 @@ parameters:
 			path: src/Rules/Generics/TemplateTypeCheck.php
 
 		-
+			message: """
+				#^Call to deprecated method getValue\\(\\) of class PHPStan\\\\Reflection\\\\ClassConstantReflection\\:
+				Use getValueExpr\\(\\)$#
+			"""
+			count: 1
+			path: src/Rules/Keywords/RequireFileExistsRule.php
+
+		-
+			message: "#^Instanceof between PhpParser\\\\Node\\\\Name and PhpParser\\\\Node\\\\Name will always evaluate to true\\.$#"
+			count: 1
+			path: src/Rules/Keywords/RequireFileExistsRule.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\Keywords\\\\RequireFileExistsRule\\:\\:processNode\\(\\) should return list\\<PHPStan\\\\Rules\\\\IdentifierRuleError\\> but returns array\\{PHPStan\\\\Rules\\\\RuleError\\}\\.$#"
+			count: 1
+			path: src/Rules/Keywords/RequireFileExistsRule.php
+
+		-
 			message: "#^Function class_implements\\(\\) is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
 			count: 1
 			path: src/Rules/LazyRegistry.php

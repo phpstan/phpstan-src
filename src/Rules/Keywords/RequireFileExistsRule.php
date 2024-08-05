@@ -103,7 +103,7 @@ final class RequireFileExistsRule implements Rule
 				$classReflection = $this->reflectionProvider->getClass($className);
 				if ($classReflection->hasConstant($constantName)) {
 					$constantReflection = $classReflection->getConstant($constantName);
-					$constantValue = $constantReflection->getValueExpr();
+					$constantValue = $constantReflection->getValue();
 					if (is_string($constantValue)) {
 						return $constantValue;
 					}

@@ -388,12 +388,14 @@ final class RegexGroupParser
 					continue;
 				}
 
+				// a single token non-falsy on its own
 				$isNonFalsy = TrinaryLogic::createYes();
 			}
 
 			if ($meaningfulTokens > 0) {
 				$isNonEmpty = TrinaryLogic::createYes();
 
+				// two non-empty tokens concatenated results in a non-falsy string
 				if ($meaningfulTokens > 1 && !$inAlternation) {
 					$isNonFalsy = TrinaryLogic::createYes();
 				}
@@ -477,11 +479,11 @@ final class RegexGroupParser
 			[$min] = $this->getQuantificationRange($node);
 
 			if ($min > 0) {
-				return true;
+				return false;
 			}
 
 			if ($min === 0) {
-				return false;
+				return true;
 			}
 		}
 
@@ -490,16 +492,16 @@ final class RegexGroupParser
 			if ($literal !== '' && $literal !== '0') {
 				$isNonFalsy = true;
 			}
-			return true;
+			return false;
 		}
 
 		foreach ($node->getChildren() as $child) {
-			if ($this->isEmptyNode($child, $patternModifiers, $isNonFalsy)) {
-				return true;
+			if (!$this->isEmptyNode($child, $patternModifiers, $isNonFalsy)) {
+				return false;
 			}
 		}
 
-		return false;
+		return true;
 	}
 
 	/**

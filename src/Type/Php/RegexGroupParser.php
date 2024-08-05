@@ -375,18 +375,25 @@ final class RegexGroupParser
 			$ast->getId() === '#concatenation'
 			&& count($children) > 0
 		) {
-			$hasMeaningfulToken = false;
+			$meaningfulTokens = 0;
 			foreach ($children as $child) {
-				$value = $this->getLiteralValue($child, $onlyLiterals, false, $patternModifiers);
-				if ($value !== null) {
-					$hasMeaningfulToken = true;
-					break;
+				if ($child->getId() !== 'token') {
+					$meaningfulTokens++;
+					continue;
 				}
+
+				$value = $this->getLiteralValue($child, $onlyLiterals, false, $patternModifiers);
+				if ($value === null) {
+					continue;
+				}
+
+				$meaningfulTokens++;
 			}
 
-			if ($hasMeaningfulToken) {
+			if ($meaningfulTokens > 0) {
 				$isNonEmpty = TrinaryLogic::createYes();
-				if (!$inAlternation) {
+
+				if ($meaningfulTokens > 1 && !$inAlternation) {
 					$isNonFalsy = TrinaryLogic::createYes();
 				}
 			}

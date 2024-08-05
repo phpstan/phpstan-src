@@ -133,3 +133,15 @@ function (string $size): void {
 		assertType("array{0: list<array{string|null, int<-1, max>}>, num: list<array{numeric-string|null, int<-1, max>}>, 1: list<array{numeric-string|null, int<-1, max>}>, suffix: list<array{'ab'|null, int<-1, max>}>, 2: list<array{'ab'|null, int<-1, max>}>}", $matches);
 	}
 };
+
+class Bug11457
+{
+	public function sayHello(string $content): void
+	{
+		if (preg_match_all("~text=~mU", $content, $matches, PREG_OFFSET_CAPTURE) === 0) {
+			return;
+		}
+
+		assertType('array{list<array{string, int<0, max>}>}', $matches);
+	}
+}

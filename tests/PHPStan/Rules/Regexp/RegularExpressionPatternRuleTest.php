@@ -276,4 +276,57 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 		);
 	}
 
+	/**
+	 * @param list<array{0: string, 1: int, 2?: string|null}> $errors
+	 * @dataProvider dataArrayShapePatterns
+	 */
+	public function testArrayShapePatterns(string $file, array $errors): void
+	{
+		$this->analyse(
+			[$file],
+			$errors,
+		);
+	}
+
+	public function dataArrayShapePatterns(): iterable
+	{
+		yield [
+			__DIR__ . '/../../Analyser/nsrt/preg_match_all_shapes.php',
+			[],
+		];
+
+		yield [
+			__DIR__ . '/../../Analyser/nsrt/preg_match_shapes.php',
+			[
+				[
+					"Regex pattern is invalid: Unknown modifier 'y' in pattern: /(foo)(bar)(baz)/xyz",
+					124,
+				],
+			],
+		];
+
+		if (PHP_VERSION_ID >= 80000) {
+			yield [
+				__DIR__ . '/../../Analyser/nsrt/preg_match_shapes_php80.php',
+				[],
+			];
+		}
+
+		if (PHP_VERSION_ID >= 80200) {
+			yield [
+				__DIR__ . '/../../Analyser/nsrt/preg_match_shapes_php82.php',
+				[],
+			];
+		}
+
+		yield [
+			__DIR__ . '/../../Analyser/nsrt/preg_replace_callback_shapes.php',
+			[],
+		];
+		yield [
+			__DIR__ . '/../../Analyser/nsrt/preg_replace_callback_shapes-php72.php',
+			[],
+		];
+	}
+
 }

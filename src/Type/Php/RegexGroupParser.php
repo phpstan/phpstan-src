@@ -390,6 +390,7 @@ final class RegexGroupParser
 
 				// a single token non-falsy on its own
 				$isNonFalsy = TrinaryLogic::createYes();
+				break;
 			}
 
 			if ($meaningfulTokens > 0) {

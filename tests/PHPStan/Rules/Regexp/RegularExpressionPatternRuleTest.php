@@ -283,7 +283,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 	{
 		$this->analyse(
 			[$file],
-			$errors
+			$errors,
 		);
 	}
 
@@ -291,15 +291,15 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 	{
 		yield [
 			__DIR__ . '/../../Analyser/nsrt/preg_match_all_shapes.php',
-			[]
+			[],
 		];
 		yield [
 			__DIR__ . '/../../Analyser/nsrt/preg_match_php7.php',
-			[]
+			[],
 		];
 		yield [
 			__DIR__ . '/../../Analyser/nsrt/preg_match_php8.php',
-			[]
+			[],
 		];
 
 		yield [
@@ -307,27 +307,27 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 			[
 				[
 					"Regex pattern is invalid: Unknown modifier 'y' in pattern: /(foo)(bar)(baz)/xyz",
-					124
-				]
-			]
+					124,
+				],
+			],
 		];
 
 		yield [
 			__DIR__ . '/../../Analyser/nsrt/preg_match_shapes_php80.php',
-			[]
+			[],
 		];
 		yield [
 			__DIR__ . '/../../Analyser/nsrt/preg_match_shapes_php82.php',
-			[]
+			[],
 		];
 
 		yield [
 			__DIR__ . '/../../Analyser/nsrt/preg_replace_callback_shapes.php',
-			[]
+			[],
 		];
 		yield [
 			__DIR__ . '/../../Analyser/nsrt/preg_replace_callback_shapes-php72.php',
-			[]
+			[],
 		];
 	}
 

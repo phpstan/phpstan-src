@@ -378,7 +378,7 @@ final class RegexGroupParser
 			$meaningfulTokens = 0;
 			foreach ($children as $child) {
 				$nonFalsy = false;
-				if ($this->isEmptyNode($child, $patternModifiers, $nonFalsy)) {
+				if ($this->maybeEmptyNode($child, $patternModifiers, $nonFalsy)) {
 					continue;
 				}
 
@@ -474,7 +474,7 @@ final class RegexGroupParser
 		}
 	}
 
-	private function isEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool
+	private function maybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool
 	{
 		if ($node->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($node);
@@ -497,7 +497,7 @@ final class RegexGroupParser
 		}
 
 		foreach ($node->getChildren() as $child) {
-			if (!$this->isEmptyNode($child, $patternModifiers, $isNonFalsy)) {
+			if (!$this->maybeEmptyNode($child, $patternModifiers, $isNonFalsy)) {
 				return false;
 			}
 		}

@@ -43,7 +43,7 @@ class RequireFileExistsRuleTest extends RuleTestCase
 
 	public function testFileDoesNotExistUsingClassConst(): void
 	{
-		$this->analyse([__DIR__ . '/data/required-file-does-not-exist-using-class-const.php'], [
+		$this->analyse([__DIR__ . '/data/file-does-not-exist-using-class-const.php'], [
 			[
 				'Required file "a-file-that-does-not-exist.php" does not exist.',
 				7,
@@ -66,7 +66,7 @@ class RequireFileExistsRuleTest extends RuleTestCase
 	{
 		define('FILE_DOES_NOT_EXIST', 'a-file-that-does-not-exist.txt');
 
-		$this->analyse([__DIR__ . '/data/required-file-does-not-exist-using-constant.php'], [
+		$this->analyse([__DIR__ . '/data/file-does-not-exist-using-constant.php'], [
 			[
 				'Required file "a-file-that-does-not-exist.txt" does not exist.',
 				7,

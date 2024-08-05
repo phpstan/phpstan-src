@@ -21,4 +21,18 @@ class RequireFileExistsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/file-does-not-exist-but-const-is-defined-in-the-same-file.php'], []);
 	}
+
+	public function testFileExistsButPathIsRelative(): void
+	{
+		$this->analyse([__DIR__ . '/data/file-exists-but-path-is-relative.php'], [
+			[
+				'Required file "include-me-to-prove-you-work.txt" does not exist.',
+				5,
+			],
+			[
+				'Required file "include-me-to-prove-you-work.txt" does not exist.',
+				6,
+			],
+		]);
+	}
 }

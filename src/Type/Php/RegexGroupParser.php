@@ -378,7 +378,6 @@ final class RegexGroupParser
 			$meaningfulTokens = 0;
 			foreach ($children as $child) {
 				if ($child->getId() !== 'token') {
-					$meaningfulTokens++;
 					continue;
 				}
 
@@ -419,15 +418,17 @@ final class RegexGroupParser
 			foreach ($children as $child) {
 				$oldLiterals = $onlyLiterals;
 
-				if ($child->getId() === 'token') {
-					$this->getLiteralValue($child, $oldLiterals, true, $patternModifiers);
-				}
-
+				$this->getLiteralValue($child, $oldLiterals, true, $patternModifiers);
 				foreach ($oldLiterals ?? [] as $oldLiteral) {
 					$newLiterals[] = $oldLiteral;
 				}
 			}
 			$onlyLiterals = $newLiterals;
+
+			if (!$inOptionalQuantification) {
+				$isNonEmpty = TrinaryLogic::createYes();
+			}
+
 		} elseif ($ast->getId() === 'token') {
 			$literalValue = $this->getLiteralValue($ast, $onlyLiterals, !$inClass, $patternModifiers);
 			if ($literalValue !== null) {

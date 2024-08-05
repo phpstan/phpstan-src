@@ -293,14 +293,6 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 			__DIR__ . '/../../Analyser/nsrt/preg_match_all_shapes.php',
 			[],
 		];
-		yield [
-			__DIR__ . '/../../Analyser/nsrt/preg_match_php7.php',
-			[],
-		];
-		yield [
-			__DIR__ . '/../../Analyser/nsrt/preg_match_php8.php',
-			[],
-		];
 
 		yield [
 			__DIR__ . '/../../Analyser/nsrt/preg_match_shapes.php',

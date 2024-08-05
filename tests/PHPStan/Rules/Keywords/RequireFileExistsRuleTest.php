@@ -97,4 +97,9 @@ class RequireFileExistsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/file-does-not-exist-but-uses-a-class-method.php'], []);
 	}
+
+	public function testFileDoesNotExistButUsesAFunction(): void
+	{
+		$this->analyse([__DIR__ . '/data/file-does-not-exist-but-uses-a-function.php'], []);
+	}
 }

@@ -549,9 +549,9 @@ class Bug11376
 
 function (string $s): void {
 	if (rand(0,1)) {
-		$p = '/Price: (£)(abc)/i';
+		$p = '/Price: (£)(abc)/';
 	} else {
-		$p = '/Price: (\d)(b)/i';
+		$p = '/Price: (\d)(b)/';
 	}
 
 	if (preg_match($p, $s, $matches)) {
@@ -561,9 +561,9 @@ function (string $s): void {
 
 function (string $s): void {
 	if (rand(0,1)) {
-		$p = '/Price: (£)/i';
+		$p = '/Price: (£)/';
 	} else {
-		$p = '/Price: (£|(\d)|(x))/i';
+		$p = '/Price: (£|(\d)|(x))/';
 	}
 
 	if (preg_match($p, $s, $matches)) {
@@ -585,18 +585,24 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('/Price: ([xXa])/i', $s, $matches)) {
+		assertType("array{string, non-empty-string}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/Price: ([xXa])/', $s, $matches)) {
 		assertType("array{string, 'a'|'X'|'x'}", $matches);
 	}
 };
 
 function (string $s): void {
-	if (preg_match('/Price: (ba[rz])/i', $s, $matches)) {
+	if (preg_match('/Price: (ba[rz])/', $s, $matches)) {
 		assertType("array{string, 'bar'|'baz'}", $matches);
 	}
 };
 
 function (string $s): void {
-	if (preg_match('/Price: (b[ao][mn])/i', $s, $matches)) {
+	if (preg_match('/Price: (b[ao][mn])/', $s, $matches)) {
 		assertType("array{string, 'bam'|'ban'|'bom'|'bon'}", $matches);
 	}
 };

@@ -2,6 +2,15 @@
 
 return [
 	'new' => [
+		'bcadd' => ['numeric-string', 'left_operand'=>'numeric-string', 'right_operand'=>'numeric-string', 'scale='=>'int'],
+		'bccomp' => ['int', 'left_operand'=>'numeric-string', 'right_operand'=>'numeric-string', 'scale='=>'int'],
+		'bcdiv' => ['numeric-string|null', 'left_operand'=>'numeric-string', 'right_operand'=>'numeric-string', 'scale='=>'int'],
+		'bcmod' => ['numeric-string|null', 'left_operand'=>'string', 'right_operand'=>'numeric-string', 'scale='=>'int'],
+		'bcmul' => ['numeric-string', 'left_operand'=>'numeric-string', 'right_operand'=>'numeric-string', 'scale='=>'int'],
+		'bcpow' => ['numeric-string', 'base'=>'numeric-string', 'exponent'=>'numeric-string', 'scale='=>'int'],
+		'bcpowmod' => ['numeric-string|null', 'base'=>'numeric-string', 'exponent'=>'numeric-string', 'modulus'=>'string', 'scale='=>'int'],
+		'bcsqrt' => ['numeric-string', 'operand'=>'numeric-string', 'scale='=>'int'],
+		'bcsub' => ['numeric-string', 'left_operand'=>'numeric-string', 'right_operand'=>'numeric-string', 'scale='=>'int'],
 		'Closure::bind' => ['Closure', 'old'=>'Closure', 'to'=>'?object', 'scope='=>'object|class-string|\'static\'|null'],
 		'Closure::bindTo' => ['Closure', 'new'=>'?object', 'newscope='=>'object|class-string|\'static\'|null'],
 		'error_log' => ['bool', 'message'=>'string', 'message_type='=>'0|1|2|3|4', 'destination='=>'string', 'extra_headers='=>'string'],

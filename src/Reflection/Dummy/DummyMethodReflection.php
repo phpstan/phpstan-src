@@ -108,6 +108,11 @@ final class DummyMethodReflection implements ExtendedMethodReflection
 		return Assertions::createEmpty();
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return true;
+	}
+
 	public function getSelfOutType(): ?Type
 	{
 		return null;

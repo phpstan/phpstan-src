@@ -56,7 +56,7 @@ final class CallUserFuncRule implements Rule
 		if ($result === null) {
 			return [];
 		}
-		[$parametersAcceptor, $funcCall] = $result;
+		[$parametersAcceptor, $funcCall, $acceptsNamedArguments] = $result;
 
 		$callableDescription = 'callable passed to call_user_func()';
 
@@ -75,7 +75,8 @@ final class CallUserFuncRule implements Rule
 			'Unknown parameter $%s in call to ' . $callableDescription . '.',
 			'Return type of call to ' . $callableDescription . ' contains unresolvable type.',
 			'Parameter %s of ' . $callableDescription . ' contains unresolvable type.',
-		]);
+			ucfirst($callableDescription) . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
+		], 'function', $acceptsNamedArguments);
 	}
 
 }

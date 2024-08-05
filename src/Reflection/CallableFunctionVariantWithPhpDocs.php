@@ -35,6 +35,7 @@ final class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDoc
 		private array $impurePoints,
 		private array $invalidateExpressions,
 		private array $usedVariables,
+		private bool $acceptsNamedArguments,
 	)
 	{
 		parent::__construct(
@@ -72,6 +73,11 @@ final class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDoc
 	public function getUsedVariables(): array
 	{
 		return $this->usedVariables;
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->acceptsNamedArguments;
 	}
 
 }

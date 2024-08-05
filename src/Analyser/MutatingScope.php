@@ -1361,6 +1361,7 @@ final class MutatingScope implements Scope
 						$cachedClosureData['impurePoints'],
 						$cachedClosureData['invalidateExpressions'],
 						$cachedClosureData['usedVariables'],
+						true,
 					);
 				}
 				if (self::$resolveClosureTypeDepth >= 2) {
@@ -1575,6 +1576,7 @@ final class MutatingScope implements Scope
 				$impurePointsForClosureType,
 				$invalidateExpressions,
 				$usedVariables,
+				true,
 			);
 		} elseif ($node instanceof New_) {
 			if ($node->class instanceof Name) {
@@ -2523,9 +2525,11 @@ final class MutatingScope implements Scope
 
 			$throwPoints = [];
 			$impurePoints = [];
+			$acceptsNamedArguments = true;
 			if ($variant instanceof CallableParametersAcceptor) {
 				$throwPoints = $variant->getThrowPoints();
 				$impurePoints = $variant->getImpurePoints();
+				$acceptsNamedArguments = $variant->acceptsNamedArguments();
 			} elseif ($function !== null) {
 				$returnTypeForThrow = $variant->getReturnType();
 				$throwType = $function->getThrowType();
@@ -2549,6 +2553,8 @@ final class MutatingScope implements Scope
 				if ($impurePoint !== null) {
 					$impurePoints[] = $impurePoint;
 				}
+
+				$acceptsNamedArguments = $function->acceptsNamedArguments();
 			}
 
 			$parameters = $variant->getParameters();
@@ -2564,6 +2570,7 @@ final class MutatingScope implements Scope
 				$impurePoints,
 				[],
 				[],
+				$acceptsNamedArguments,
 			);
 		}
 

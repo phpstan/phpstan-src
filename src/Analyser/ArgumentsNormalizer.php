@@ -27,7 +27,7 @@ final class ArgumentsNormalizer
 	public const ORIGINAL_ARG_ATTRIBUTE = 'originalArg';
 
 	/**
-	 * @return array{ParametersAcceptor, FuncCall}|null
+	 * @return array{ParametersAcceptor, FuncCall, bool}|null
 	 */
 	public static function reorderCallUserFuncArguments(
 		FuncCall $callUserFuncCall,
@@ -65,18 +65,24 @@ final class ArgumentsNormalizer
 			return null;
 		}
 
+		$callableParametersAcceptors = $calledOnType->getCallableParametersAcceptors($scope);
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$passThruArgs,
-			$calledOnType->getCallableParametersAcceptors($scope),
+			$callableParametersAcceptors,
 			null,
 		);
+
+		$acceptsNamedArguments = true;
+		foreach ($callableParametersAcceptors as $callableParametersAcceptor) {
+			$acceptsNamedArguments = $acceptsNamedArguments && $callableParametersAcceptor->acceptsNamedArguments();
+		}
 
 		return [$parametersAcceptor, new FuncCall(
 			$callbackArg->value,
 			$passThruArgs,
 			$callUserFuncCall->getAttributes(),
-		)];
+		), $acceptsNamedArguments];
 	}
 
 	public static function reorderFuncArguments(

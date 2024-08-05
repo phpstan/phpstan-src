@@ -29,6 +29,7 @@ final class NativeFunctionReflection implements FunctionReflection
 		?Assertions $assertions = null,
 		private ?string $phpDocComment = null,
 		?TrinaryLogic $returnsByReference = null,
+		private bool $acceptsNamedArguments = true,
 	)
 	{
 		$this->assertions = $assertions ?? Assertions::createEmpty();
@@ -130,6 +131,11 @@ final class NativeFunctionReflection implements FunctionReflection
 	public function returnsByReference(): TrinaryLogic
 	{
 		return $this->returnsByReference;
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->acceptsNamedArguments;
 	}
 
 }

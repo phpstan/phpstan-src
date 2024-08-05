@@ -60,6 +60,7 @@ final class PhpFunctionReflection implements FunctionReflection
 		private ?string $filename,
 		private ?bool $isPure,
 		private Assertions $asserts,
+		private bool $acceptsNamedArguments,
 		private ?string $phpDocComment,
 		private array $phpDocParameterOutTypes,
 		private array $phpDocParameterImmediatelyInvokedCallable,
@@ -295,6 +296,11 @@ final class PhpFunctionReflection implements FunctionReflection
 	public function returnsByReference(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->reflection->returnsReference());
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->acceptsNamedArguments;
 	}
 
 }

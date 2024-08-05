@@ -107,6 +107,11 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->getAsserts();
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->reflection->acceptsNamedArguments();
+	}
+
 	public function getSelfOutType(): ?Type
 	{
 		return $this->reflection->getSelfOutType();

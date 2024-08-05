@@ -170,6 +170,11 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 		));
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->reflection->acceptsNamedArguments();
+	}
+
 	public function getSelfOutType(): ?Type
 	{
 		if ($this->selfOutType === false) {

@@ -137,6 +137,11 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return Assertions::createEmpty();
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->getDeclaringClass()->acceptsNamedArguments();
+	}
+
 	public function getSelfOutType(): ?Type
 	{
 		return null;

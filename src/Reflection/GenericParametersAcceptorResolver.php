@@ -126,6 +126,7 @@ final class GenericParametersAcceptorResolver
 				$originalParametersAcceptor->getImpurePoints(),
 				$originalParametersAcceptor->getInvalidateExpressions(),
 				$originalParametersAcceptor->getUsedVariables(),
+				$originalParametersAcceptor->acceptsNamedArguments(),
 			);
 		}
 

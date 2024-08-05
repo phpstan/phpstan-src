@@ -79,6 +79,11 @@ final class CallCallablesRule implements Rule
 		$parametersAcceptors = $type->getCallableParametersAcceptors($scope);
 		$messages = [];
 
+		$acceptsNamedArguments = true;
+		foreach ($parametersAcceptors as $parametersAcceptor) {
+			$acceptsNamedArguments = $acceptsNamedArguments && $parametersAcceptor->acceptsNamedArguments();
+		}
+
 		if (
 			count($parametersAcceptors) === 1
 			&& $parametersAcceptors[0] instanceof InaccessibleMethod
@@ -127,8 +132,10 @@ final class CallCallablesRule implements Rule
 					'Unknown parameter $%s in call to ' . $callableDescription . '.',
 					'Return type of call to ' . $callableDescription . ' contains unresolvable type.',
 					'Parameter %s of ' . $callableDescription . ' contains unresolvable type.',
+					ucfirst($callableDescription) . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 				],
 				'callable',
+				$acceptsNamedArguments,
 			),
 		);
 	}

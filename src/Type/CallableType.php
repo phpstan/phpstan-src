@@ -294,6 +294,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return [];
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return true;
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

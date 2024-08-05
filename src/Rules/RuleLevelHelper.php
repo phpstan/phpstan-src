@@ -124,6 +124,9 @@ final class RuleLevelHelper
 					$acceptedType->getTemplateTags(),
 					$acceptedType->getThrowPoints(),
 					$acceptedType->getImpurePoints(),
+					$acceptedType->getInvalidateExpressions(),
+					$acceptedType->getUsedVariables(),
+					$acceptedType->acceptsNamedArguments(),
 				);
 			}
 

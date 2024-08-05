@@ -27,6 +27,7 @@ final class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVaria
 		private array $impurePoints,
 		private array $invalidateExpressions,
 		private array $usedVariables,
+		private bool $acceptsNamedArguments,
 	)
 	{
 	}
@@ -109,6 +110,11 @@ final class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVaria
 	public function getUsedVariables(): array
 	{
 		return $this->usedVariables;
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->acceptsNamedArguments;
 	}
 
 }

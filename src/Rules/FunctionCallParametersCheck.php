@@ -53,7 +53,7 @@ final class FunctionCallParametersCheck
 
 	/**
 	 * @param Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall
-	 * @param array{0: string, 1: string, 2: string, 3: string, 4: string, 5: string, 6: string, 7: string, 8: string, 9: string, 10: string, 11: string, 12: string, 13?: string} $messages
+	 * @param array{0: string, 1: string, 2: string, 3: string, 4: string, 5: string, 6: string, 7: string, 8: string, 9: string, 10: string, 11: string, 12: string, 13?: string, 14?: string} $messages
 	 * @param 'attribute'|'callable'|'method'|'staticMethod'|'function'|'new' $nodeType
 	 * @return list<IdentifierRuleError>
 	 */
@@ -64,6 +64,7 @@ final class FunctionCallParametersCheck
 		$funcCall,
 		array $messages,
 		string $nodeType = 'function',
+		bool $acceptsNamedArguments = true,
 	): array
 	{
 		$functionParametersMinCount = 0;
@@ -286,6 +287,26 @@ final class FunctionCallParametersCheck
 
 				if ($scope instanceof MutatingScope) {
 					$scope = $scope->popInFunctionCall();
+				}
+			}
+
+			if (!$acceptsNamedArguments && $this->checkUnresolvableParameterTypes && isset($messages[14])) {
+				if ($argumentName !== null) {
+					$errors[] = RuleErrorBuilder::message(sprintf($messages[14], sprintf('named argument $%s', $argumentName)))
+						->identifier('argument.named')
+						->line($argumentLine)
+						->nonIgnorable()
+						->build();
+				} elseif ($unpack) {
+					$unpackedArrayType = $scope->getType($argumentValue);
+					$hasStringKey = $unpackedArrayType->getIterableKeyType()->isString();
+					if (!$hasStringKey->no()) {
+						$errors[] = RuleErrorBuilder::message(sprintf($messages[14], sprintf('unpacked array with %s', $hasStringKey->yes() ? 'string key' : 'possibly string key')))
+							->identifier('argument.named')
+							->line($argumentLine)
+							->nonIgnorable()
+							->build();
+					}
 				}
 			}
 

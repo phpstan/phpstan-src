@@ -13,11 +13,11 @@ use PHPStan\Type\Type;
 final class InaccessibleMethod implements CallableParametersAcceptor
 {
 
-	public function __construct(private MethodReflection $methodReflection)
+	public function __construct(private ExtendedMethodReflection $methodReflection)
 	{
 	}
 
-	public function getMethod(): MethodReflection
+	public function getMethod(): ExtendedMethodReflection
 	{
 		return $this->methodReflection;
 	}
@@ -84,6 +84,11 @@ final class InaccessibleMethod implements CallableParametersAcceptor
 	public function getUsedVariables(): array
 	{
 		return [];
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->methodReflection->acceptsNamedArguments();
 	}
 
 }

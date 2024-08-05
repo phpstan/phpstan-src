@@ -94,4 +94,9 @@ class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, Callab
 		return [];
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return true;
+	}
+
 }

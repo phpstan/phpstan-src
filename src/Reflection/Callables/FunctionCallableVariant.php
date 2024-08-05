@@ -163,4 +163,9 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Param
 		return [];
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->function->acceptsNamedArguments();
+	}
+
 }

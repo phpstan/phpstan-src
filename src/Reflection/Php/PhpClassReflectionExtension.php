@@ -477,6 +477,7 @@ final class PhpClassReflectionExtension
 			$reflectionMethod = null;
 			$throwType = null;
 			$asserts = Assertions::createEmpty();
+			$acceptsNamedArguments = true;
 			$selfOutType = null;
 			$phpDocComment = null;
 			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
@@ -539,6 +540,7 @@ final class PhpClassReflectionExtension
 							}
 
 							$asserts = Assertions::createFromResolvedPhpDocBlock($stubPhpDoc);
+							$acceptsNamedArguments = $stubPhpDoc->acceptsNamedArguments();
 
 							$selfOutTypeTag = $stubPhpDoc->getSelfOutTag();
 							if ($selfOutTypeTag !== null) {
@@ -583,6 +585,7 @@ final class PhpClassReflectionExtension
 								$phpDocParameterTypes[$name] = $paramTag->getType();
 							}
 							$asserts = Assertions::createFromResolvedPhpDocBlock($phpDocBlock);
+							$acceptsNamedArguments = $phpDocBlock->acceptsNamedArguments();
 
 							$selfOutTypeTag = $phpDocBlock->getSelfOutTag();
 							if ($selfOutTypeTag !== null) {
@@ -625,6 +628,7 @@ final class PhpClassReflectionExtension
 				$hasSideEffects,
 				$throwType,
 				$asserts,
+				$acceptsNamedArguments,
 				$selfOutType,
 				$phpDocComment,
 			);
@@ -773,6 +777,7 @@ final class PhpClassReflectionExtension
 		$isFinal = $resolvedPhpDoc->isFinal();
 		$isPure = $resolvedPhpDoc->isPure();
 		$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
+		$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 		$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
 		$phpDocComment = null;
 		if ($resolvedPhpDoc->hasPhpDocString()) {
@@ -793,6 +798,7 @@ final class PhpClassReflectionExtension
 			$isFinal,
 			$isPure,
 			$asserts,
+			$acceptsNamedArguments,
 			$selfOutType,
 			$phpDocComment,
 			$phpDocParameterOutTypes,

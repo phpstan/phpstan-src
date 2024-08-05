@@ -141,6 +141,11 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 		return Assertions::createEmpty();
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->declaringClass->acceptsNamedArguments();
+	}
+
 	public function getSelfOutType(): ?Type
 	{
 		return null;

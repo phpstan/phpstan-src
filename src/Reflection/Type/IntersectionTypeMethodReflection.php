@@ -187,6 +187,16 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		return $assertions;
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		$accepts = true;
+		foreach ($this->methods as $method) {
+			$accepts = $accepts && $method->acceptsNamedArguments();
+		}
+
+		return $accepts;
+	}
+
 	public function getSelfOutType(): ?Type
 	{
 		return null;

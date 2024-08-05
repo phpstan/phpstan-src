@@ -23,6 +23,8 @@ interface FunctionReflection
 	 */
 	public function getNamedArgumentsVariants(): ?array;
 
+	public function acceptsNamedArguments(): bool;
+
 	public function isDeprecated(): TrinaryLogic;
 
 	public function getDeprecatedDescription(): ?string;

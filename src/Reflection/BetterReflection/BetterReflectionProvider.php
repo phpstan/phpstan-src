@@ -280,6 +280,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$isFinal = false;
 		$isPure = null;
 		$asserts = Assertions::createEmpty();
+		$acceptsNamedArguments = true;
 		$phpDocComment = null;
 		$phpDocParameterOutTags = [];
 		$phpDocParameterImmediatelyInvokedCallable = [];
@@ -305,6 +306,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			if ($resolvedPhpDoc->hasPhpDocString()) {
 				$phpDocComment = $resolvedPhpDoc->getPhpDocString();
 			}
+			$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 			$phpDocParameterOutTags = $resolvedPhpDoc->getParamOutTags();
 			$phpDocParameterImmediatelyInvokedCallable = $resolvedPhpDoc->getParamsImmediatelyInvokedCallable();
 			$phpDocParameterClosureThisTypeTags = $resolvedPhpDoc->getParamClosureThisTags();
@@ -323,6 +325,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null,
 			$isPure,
 			$asserts,
+			$acceptsNamedArguments,
 			$phpDocComment,
 			array_map(static fn (ParamOutTag $paramOutTag): Type => $paramOutTag->getType(), $phpDocParameterOutTags),
 			$phpDocParameterImmediatelyInvokedCallable,

@@ -378,7 +378,7 @@ final class RegexGroupParser
 			$meaningfulTokens = 0;
 			foreach ($children as $child) {
 				$nonFalsy = false;
-				if (!$this->isNonEmptyNode($child, $patternModifiers, $nonFalsy)) {
+				if ($this->isEmptyNode($child, $patternModifiers, $nonFalsy)) {
 					continue;
 				}
 
@@ -426,11 +426,6 @@ final class RegexGroupParser
 				}
 			}
 			$onlyLiterals = $newLiterals;
-
-			if (!$inOptionalQuantification) {
-				$isNonEmpty = TrinaryLogic::createYes();
-			}
-
 		} elseif ($ast->getId() === 'token') {
 			$literalValue = $this->getLiteralValue($ast, $onlyLiterals, !$inClass, $patternModifiers);
 			if ($literalValue !== null) {
@@ -476,7 +471,7 @@ final class RegexGroupParser
 		}
 	}
 
-	private function isNonEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool
+	private function isEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool
 	{
 		if ($node->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($node);
@@ -499,7 +494,7 @@ final class RegexGroupParser
 		}
 
 		foreach ($node->getChildren() as $child) {
-			if ($this->isNonEmptyNode($child, $patternModifiers, $isNonFalsy)) {
+			if ($this->isEmptyNode($child, $patternModifiers, $isNonFalsy)) {
 				return true;
 			}
 		}

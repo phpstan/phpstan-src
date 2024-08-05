@@ -127,7 +127,7 @@ function (string $size): void {
 	if (preg_match('/ab(\d+\s)e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string}', $matches);
+	assertType('array{string, non-falsy-string}', $matches);
 };
 
 function (string $size): void {

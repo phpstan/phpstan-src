@@ -64,9 +64,9 @@ function doMatch(string $s): void {
 	assertType("array{}|array{string, 'foo', 'bar', non-falsy-string}", $matches);
 
 	if (preg_match('/(foo)(bar)(baz)*/', $s, $matches)) {
-		assertType("array{0: string, 1: 'foo', 2: 'bar', 3?: non-empty-string}", $matches);
+		assertType("array{0: string, 1: 'foo', 2: 'bar', 3?: non-falsy-string}", $matches);
 	}
-	assertType("array{}|array{0: string, 1: 'foo', 2: 'bar', 3?: non-empty-string}", $matches);
+	assertType("array{}|array{0: string, 1: 'foo', 2: 'bar', 3?: non-falsy-string}", $matches);
 
 	if (preg_match('/(foo)(bar)(baz)?/', $s, $matches)) {
 		assertType("array{0: string, 1: 'foo', 2: 'bar', 3?: 'baz'}", $matches);
@@ -79,9 +79,9 @@ function doMatch(string $s): void {
 	assertType("array{}|array{0: string, 1: 'foo', 2: 'bar', 3?: non-falsy-string}", $matches);
 
 	if (preg_match('/(foo)(bar)(baz){2,3}/', $s, $matches)) {
-		assertType("array{string, 'foo', 'bar', non-empty-string}", $matches);
+		assertType("array{string, 'foo', 'bar', non-falsy-string}", $matches);
 	}
-	assertType("array{}|array{string, 'foo', 'bar', non-empty-string}", $matches);
+	assertType("array{}|array{string, 'foo', 'bar', non-falsy-string}", $matches);
 
 	if (preg_match('/(foo)(bar)(baz){2}/', $s, $matches)) {
 		assertType("array{string, 'foo', 'bar', non-falsy-string}", $matches);
@@ -110,7 +110,7 @@ function doNamedSubpattern(string $s): void {
 	if (preg_match('/^(?<name>\S+::\S+)(?:(?<dataname> with data set (?:#\d+|"[^"]+"))\s\()?/', $s, $matches)) {
 		assertType('array{0: string, name: non-falsy-string, 1: non-falsy-string, dataname?: non-falsy-string, 2?: non-falsy-string}', $matches);
 	}
-	assertType('array{0: string, name: non-falsy-string, 1: non-falsy-string, dataname?: non-falsy-string, 2?: non-falsy-string}', $matches);
+	assertType('array{}|array{0: string, name: non-falsy-string, 1: non-falsy-string, dataname?: non-falsy-string, 2?: non-falsy-string}', $matches);
 }
 
 function doOffsetCapture(string $s): void {
@@ -236,7 +236,7 @@ function doFoo(string $row): void
 		assertType("array{string, 'ab', 'b'}", $matches);
 	}
 	if (preg_match('~^(a(b)?)$~', $row, $matches) === 1) {
-		assertType("array{0: string, 1: non-empty-string, 2?: 'b'}", $matches);
+		assertType("array{0: string, 1: non-falsy-string, 2?: 'b'}", $matches);
 	}
 	if (preg_match('~^(a(b)?)?$~', $row, $matches) === 1) {
 		assertType("array{0: string, 1?: non-falsy-string, 2?: 'b'}", $matches);
@@ -279,7 +279,7 @@ function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)?)d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: non-empty-string, 2?: numeric-string}', $matches);
+	assertType('array{0: string, 1: non-falsy-string, 2?: numeric-string}', $matches);
 };
 
 function (string $size): void {
@@ -474,10 +474,10 @@ function bug11323(string $s): void {
 		assertType("array{string, non-falsy-string, 'a-z'}", $matches);
 	}
 	if (preg_match('{(\d+)(?i)insensitive((?x-i)case SENSITIVE here(?i:insensitive non-capturing group))}', $s, $matches)) {
-		assertType('array{string, numeric-string, non-empty-string}', $matches);
+		assertType('array{string, numeric-string, non-falsy-string}', $matches);
 	}
 	if (preg_match('{([]] [^]])}', $s, $matches)) {
-		assertType('array{string, non-empty-string}', $matches);
+		assertType('array{string, non-falsy-string}', $matches);
 	}
 	if (preg_match('{([[:digit:]])}', $s, $matches)) {
 		assertType('array{string, numeric-string}', $matches);
@@ -510,10 +510,10 @@ function bug11323(string $s): void {
 		assertType('array{string, non-empty-string, numeric-string}', $matches);
 	}
 	if (preg_match('{(\d([1-4])\d)}', $s, $matches)) {
-		assertType('array{string, numeric-string, numeric-string}', $matches);
+		assertType('array{string, non-falsy-string&numeric-string, numeric-string}', $matches);
 	}
 	if (preg_match('{(x?([1-4])\d)}', $s, $matches)) {
-		assertType('array{string, non-empty-string, numeric-string}', $matches);
+		assertType('array{string, non-falsy-string, numeric-string}', $matches);
 	}
 	if (preg_match('{([^1-4])}', $s, $matches)) {
 		assertType('array{string, non-empty-string}', $matches);

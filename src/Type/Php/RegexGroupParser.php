@@ -30,6 +30,7 @@ use function str_contains;
 use function str_replace;
 use function strlen;
 use function substr;
+use function trim;
 
 final class RegexGroupParser
 {
@@ -126,7 +127,11 @@ final class RegexGroupParser
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
-				$this->createGroupType($ast, $this->allowConstantTypes($patternModifiers, $repeatedMoreThanOnce, $parentGroup)),
+				$this->createGroupType(
+					$ast,
+					$this->allowConstantTypes($patternModifiers, $repeatedMoreThanOnce, $parentGroup),
+					$patternModifiers,
+				),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
@@ -137,7 +142,11 @@ final class RegexGroupParser
 				$inAlternation ? $alternationId : null,
 				$inOptionalQuantification,
 				$parentGroup,
-				$this->createGroupType($ast, $this->allowConstantTypes($patternModifiers, $repeatedMoreThanOnce, $parentGroup)),
+				$this->createGroupType(
+					$ast,
+					$this->allowConstantTypes($patternModifiers, $repeatedMoreThanOnce, $parentGroup),
+					$patternModifiers,
+				),
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#noncapturing') {
@@ -293,7 +302,7 @@ final class RegexGroupParser
 		return [$min, $max];
 	}
 
-	private function createGroupType(TreeNode $group, bool $maybeConstant): Type
+	private function createGroupType(TreeNode $group, bool $maybeConstant, string $patternModifiers): Type
 	{
 		$isNonEmpty = TrinaryLogic::createMaybe();
 		$isNonFalsy = TrinaryLogic::createMaybe();
@@ -310,6 +319,7 @@ final class RegexGroupParser
 			$inOptionalQuantification,
 			$onlyLiterals,
 			false,
+			$patternModifiers,
 		);
 
 		if ($maybeConstant && $onlyLiterals !== null && $onlyLiterals !== []) {
@@ -356,6 +366,7 @@ final class RegexGroupParser
 		bool &$inOptionalQuantification,
 		?array &$onlyLiterals,
 		bool $inClass,
+		string $patternModifiers,
 	): void
 	{
 		$children = $ast->getChildren();
@@ -364,9 +375,31 @@ final class RegexGroupParser
 			$ast->getId() === '#concatenation'
 			&& count($children) > 0
 		) {
-			$isNonEmpty = TrinaryLogic::createYes();
-			if (!$inAlternation) {
+			$meaningfulTokens = 0;
+			foreach ($children as $child) {
+				$nonFalsy = false;
+				if ($this->isMaybeEmptyNode($child, $patternModifiers, $nonFalsy)) {
+					continue;
+				}
+
+				$meaningfulTokens++;
+
+				if (!$nonFalsy || $inAlternation) {
+					continue;
+				}
+
+				// a single token non-falsy on its own
 				$isNonFalsy = TrinaryLogic::createYes();
+				break;
+			}
+
+			if ($meaningfulTokens > 0) {
+				$isNonEmpty = TrinaryLogic::createYes();
+
+				// two non-empty tokens concatenated results in a non-falsy string
+				if ($meaningfulTokens > 1 && !$inAlternation) {
+					$isNonFalsy = TrinaryLogic::createYes();
+				}
 			}
 		} elseif ($ast->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($ast);
@@ -390,17 +423,14 @@ final class RegexGroupParser
 			foreach ($children as $child) {
 				$oldLiterals = $onlyLiterals;
 
-				if ($child->getId() === 'token') {
-					$this->getLiteralValue($child, $oldLiterals, true);
-				}
-
+				$this->getLiteralValue($child, $oldLiterals, true, $patternModifiers);
 				foreach ($oldLiterals ?? [] as $oldLiteral) {
 					$newLiterals[] = $oldLiteral;
 				}
 			}
 			$onlyLiterals = $newLiterals;
 		} elseif ($ast->getId() === 'token') {
-			$literalValue = $this->getLiteralValue($ast, $onlyLiterals, !$inClass);
+			$literalValue = $this->getLiteralValue($ast, $onlyLiterals, !$inClass, $patternModifiers);
 			if ($literalValue !== null) {
 				if (Strings::match($literalValue, '/^\d+$/') === null) {
 					$isNumeric = TrinaryLogic::createNo();
@@ -439,14 +469,46 @@ final class RegexGroupParser
 				$inOptionalQuantification,
 				$onlyLiterals,
 				$inClass,
+				$patternModifiers,
 			);
 		}
+	}
+
+	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool
+	{
+		if ($node->getId() === '#quantification') {
+			[$min] = $this->getQuantificationRange($node);
+
+			if ($min > 0) {
+				return false;
+			}
+
+			if ($min === 0) {
+				return true;
+			}
+		}
+
+		$literal = $this->getLiteralValue($node, $onlyLiterals, false, $patternModifiers);
+		if ($literal !== null) {
+			if ($literal !== '' && $literal !== '0') {
+				$isNonFalsy = true;
+			}
+			return false;
+		}
+
+		foreach ($node->getChildren() as $child) {
+			if (!$this->isMaybeEmptyNode($child, $patternModifiers, $isNonFalsy)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
 	 * @param array<string>|null $onlyLiterals
 	 */
-	private function getLiteralValue(TreeNode $node, ?array &$onlyLiterals, bool $appendLiterals): ?string
+	private function getLiteralValue(TreeNode $node, ?array &$onlyLiterals, bool $appendLiterals, string $patternModifiers): ?string
 	{
 		if ($node->getId() !== 'token') {
 			return null;
@@ -457,6 +519,10 @@ final class RegexGroupParser
 		$value = $node->getValueValue();
 
 		if (in_array($token, ['literal', 'escaped_end_class'], true)) {
+			if (str_contains($patternModifiers, 'x') && trim($value) === '') {
+				return null;
+			}
+
 			if (strlen($value) > 1 && $value[0] === '\\') {
 				return substr($value, 1);
 			} elseif (

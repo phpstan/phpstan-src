@@ -277,6 +277,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 	}
 
 	/**
+	 * @param list<array{0: string, 1: int, 2?: string|null}> $errors
 	 * @dataProvider dataArrayShapePatterns
 	 */
 	public function testArrayShapePatterns(string $file, array $errors): void

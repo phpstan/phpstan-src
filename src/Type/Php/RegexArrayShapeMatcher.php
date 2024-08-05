@@ -351,7 +351,7 @@ final class RegexArrayShapeMatcher
 		$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags, $matchesAll));
 
 		if ($matchesAll) {
-			if (!$wasMatched->yes() && !$this->containsGroupCapture($flags)) {
+			if (!$wasMatched->yes() && !$this->containsOffsetCapture($flags)) {
 				$subjectValueType = TypeCombinator::union($subjectValueType, new ConstantStringType(''));
 			}
 			if ($this->containsPatternOrder($flags)) {
@@ -421,7 +421,7 @@ final class RegexArrayShapeMatcher
 		return $groupValueType;
 	}
 
-	private function containsGroupCapture(int $flags): bool
+	private function containsOffsetCapture(int $flags): bool
 	{
 		return ($flags & PREG_OFFSET_CAPTURE) !== 0;
 	}
@@ -468,7 +468,7 @@ final class RegexArrayShapeMatcher
 			$offsetType = IntegerRangeType::fromInterval(-1, null);
 		}
 
-		if ($this->containsGroupCapture($flags)) {
+		if ($this->containsOffsetCapture($flags)) {
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 
 			$builder->setOffsetValueType(

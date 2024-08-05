@@ -144,4 +144,22 @@ class Bug11457
 
 		assertType('array{list<array{string, int<0, max>}>}', $matches);
 	}
+
+	public function sayFoo(string $content): void
+	{
+		if (preg_match_all("~text=~mU", $content, $matches, PREG_SET_ORDER) === 0) {
+			return;
+		}
+
+		assertType('list<array{string}>', $matches);
+	}
+
+	public function sayBar(string $content): void
+	{
+		if (preg_match_all("~text=~mU", $content, $matches, PREG_PATTERN_ORDER) === 0) {
+			return;
+		}
+
+		assertType('array{list<string>}', $matches);
+	}
 }

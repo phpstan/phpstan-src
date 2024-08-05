@@ -77,4 +77,9 @@ class RequireFileExistsRuleTest extends RuleTestCase
 			],
 		]);
 	}
+
+	public function testFileExistsUsingDIR(): void
+	{
+		$this->analyse([__DIR__ . '/data/file-exists-using-DIR.php'], []);
+	}
 }

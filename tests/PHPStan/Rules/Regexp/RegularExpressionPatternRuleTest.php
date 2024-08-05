@@ -305,10 +305,13 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 			],
 		];
 
-		yield [
-			__DIR__ . '/../../Analyser/nsrt/preg_match_shapes_php80.php',
-			[],
-		];
+		if (PHP_VERSION_ID >= 80000) {
+			yield [
+				__DIR__ . '/../../Analyser/nsrt/preg_match_shapes_php80.php',
+				[],
+			];
+		}
+
 		if (PHP_VERSION_ID >= 80200) {
 			yield [
 				__DIR__ . '/../../Analyser/nsrt/preg_match_shapes_php82.php',

@@ -638,6 +638,12 @@ function (string $s): void {
 };
 
 function (string $s): void {
+	if (preg_match('/( .* )/x', $s, $matches)) {
+		assertType('array{string, string}', $matches);
+	}
+};
+
+function (string $s): void {
 	if (preg_match('/( .+ )/x', $s, $matches)) {
 		assertType('array{string, non-empty-string}', $matches);
 	}

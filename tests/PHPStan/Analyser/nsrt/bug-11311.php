@@ -120,7 +120,7 @@ function (string $size): void {
 	if (preg_match('/ab(\d\d)/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, numeric-string}', $matches);
+	assertType('array{string, non-falsy-string&numeric-string}', $matches);
 };
 
 function (string $size): void {
@@ -162,7 +162,7 @@ function (string $size): void {
 	if (preg_match('/ab(\d+\d?)e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, numeric-string}', $matches);
+	assertType('array{string, non-falsy-string&numeric-string}', $matches);
 };
 
 function (string $s): void {
@@ -179,7 +179,7 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $s, $matches, PREG_UNMATCHED_AS_NULL) === 1) {
-		assertType("array{string, non-empty-string|null, 'b'|'d'|'E'|'e'|'F'|'f'|'G'|'g'|'H'|'h'|'o'|'s'|'u'|'X'|'x'}", $matches);
+		assertType("array{string, non-falsy-string|null, 'b'|'d'|'E'|'e'|'F'|'f'|'G'|'g'|'H'|'h'|'o'|'s'|'u'|'X'|'x'}", $matches);
 	}
 };
 

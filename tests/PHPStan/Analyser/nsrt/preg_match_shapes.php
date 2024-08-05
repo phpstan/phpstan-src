@@ -59,9 +59,9 @@ function doMatch(string $s): void {
 	assertType('array{}|array{0: string, 1?: non-empty-string}', $matches);
 
 	if (preg_match('/(foo)(bar)(baz)+/', $s, $matches)) {
-		assertType("array{string, 'foo', 'bar', non-empty-string}", $matches);
+		assertType("array{string, 'foo', 'bar', non-falsy-string}", $matches);
 	}
-	assertType("array{}|array{string, 'foo', 'bar', non-empty-string}", $matches);
+	assertType("array{}|array{string, 'foo', 'bar', non-falsy-string}", $matches);
 
 	if (preg_match('/(foo)(bar)(baz)*/', $s, $matches)) {
 		assertType("array{0: string, 1: 'foo', 2: 'bar', 3?: non-empty-string}", $matches);
@@ -74,9 +74,9 @@ function doMatch(string $s): void {
 	assertType("array{}|array{0: string, 1: 'foo', 2: 'bar', 3?: 'baz'}", $matches);
 
 	if (preg_match('/(foo)(bar)(baz){0,3}/', $s, $matches)) {
-		assertType("array{0: string, 1: 'foo', 2: 'bar', 3?: non-empty-string}", $matches);
+		assertType("array{0: string, 1: 'foo', 2: 'bar', 3?: non-falsy-string}", $matches);
 	}
-	assertType("array{}|array{0: string, 1: 'foo', 2: 'bar', 3?: non-empty-string}", $matches);
+	assertType("array{}|array{0: string, 1: 'foo', 2: 'bar', 3?: non-falsy-string}", $matches);
 
 	if (preg_match('/(foo)(bar)(baz){2,3}/', $s, $matches)) {
 		assertType("array{string, 'foo', 'bar', non-empty-string}", $matches);
@@ -84,9 +84,9 @@ function doMatch(string $s): void {
 	assertType("array{}|array{string, 'foo', 'bar', non-empty-string}", $matches);
 
 	if (preg_match('/(foo)(bar)(baz){2}/', $s, $matches)) {
-		assertType("array{string, 'foo', 'bar', non-empty-string}", $matches);
+		assertType("array{string, 'foo', 'bar', non-falsy-string}", $matches);
 	}
-	assertType("array{}|array{string, 'foo', 'bar', non-empty-string}", $matches);
+	assertType("array{}|array{string, 'foo', 'bar', non-falsy-string}", $matches);
 }
 
 function doNonCapturingGroup(string $s): void {
@@ -103,14 +103,14 @@ function doNamedSubpattern(string $s): void {
 	assertType('array{}|array{0: string, num: numeric-string, 1: numeric-string, 2: non-empty-string}', $matches);
 
 	if (preg_match('/^(?<name>\S+::\S+)/', $s, $matches)) {
-		assertType('array{0: string, name: non-empty-string, 1: non-empty-string}', $matches);
+		assertType('array{0: string, name: non-falsy-string, 1: non-falsy-string}', $matches);
 	}
-	assertType('array{}|array{0: string, name: non-empty-string, 1: non-empty-string}', $matches);
+	assertType('array{}|array{0: string, name: non-falsy-string, 1: non-falsy-string}', $matches);
 
 	if (preg_match('/^(?<name>\S+::\S+)(?:(?<dataname> with data set (?:#\d+|"[^"]+"))\s\()?/', $s, $matches)) {
-		assertType('array{0: string, name: non-empty-string, 1: non-empty-string, dataname?: non-empty-string, 2?: non-empty-string}', $matches);
+		assertType('array{0: string, name: non-falsy-string, 1: non-falsy-string, dataname?: non-falsy-string, 2?: non-falsy-string}', $matches);
 	}
-	assertType('array{}|array{0: string, name: non-empty-string, 1: non-empty-string, dataname?: non-empty-string, 2?: non-empty-string}', $matches);
+	assertType('array{0: string, name: non-falsy-string, 1: non-falsy-string, dataname?: non-falsy-string, 2?: non-falsy-string}', $matches);
 }
 
 function doOffsetCapture(string $s): void {
@@ -239,7 +239,7 @@ function doFoo(string $row): void
 		assertType("array{0: string, 1: non-empty-string, 2?: 'b'}", $matches);
 	}
 	if (preg_match('~^(a(b)?)?$~', $row, $matches) === 1) {
-		assertType("array{0: string, 1?: non-empty-string, 2?: 'b'}", $matches);
+		assertType("array{0: string, 1?: non-falsy-string, 2?: 'b'}", $matches);
 	}
 }
 
@@ -272,7 +272,7 @@ function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+))?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string, numeric-string}|array{string}', $matches);
+	assertType('array{string, non-falsy-string, numeric-string}|array{string}', $matches);
 };
 
 function (string $size): void {
@@ -286,14 +286,14 @@ function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)?)?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1?: non-empty-string, 2?: numeric-string}', $matches);
+	assertType('array{0: string, 1?: non-falsy-string, 2?: numeric-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+))d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string, numeric-string}', $matches);
+	assertType('array{string, non-falsy-string, numeric-string}', $matches);
 };
 
 function (string $size): void {
@@ -321,7 +321,7 @@ function (string $size): void {
 	if (preg_match('~\{(?:(include)\\s+(?:[$]?\\w+(?<!file))\\s)|(?:(include\\s+file)\\s+(?:[$]?\\w+)\\s)|(?:(include(?:Template|(?:\\s+file)))\\s+(?:\'?.*?\.latte\'?)\\s)~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType("array{0: string, 1: 'include', 2?: non-empty-string, 3?: non-empty-string}", $matches);
+	assertType("array{0: string, 1: 'include', 2?: non-falsy-string, 3?: non-falsy-string}", $matches);
 };
 
 
@@ -338,7 +338,7 @@ function bug11277a(string $value): void
 function bug11277b(string $value): void
 {
 	if (preg_match('/^(?:(.+,?)|(x))*$/', $value, $matches)) {
-		assertType('array{0: string, 1?: non-empty-string, 2?: non-empty-string}', $matches);
+		assertType('array{0: string, 1?: non-falsy-string, 2?: non-empty-string}', $matches);
 		if (count($matches) === 2) {
 			assertType('array{string, string}', $matches); // could be array{string, non-empty-string}
 		}
@@ -441,13 +441,13 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('~^((\\d{1,6})-)$~', $s, $matches) === 1) {
-		assertType("array{string, non-empty-string, numeric-string}", $matches);
+		assertType("array{string, non-falsy-string, numeric-string}", $matches);
 	}
 };
 
 function (string $s): void {
 	if (preg_match('~^((\\d{1,6}).)$~', $s, $matches) === 1) {
-		assertType("array{string, non-empty-string, numeric-string}", $matches);
+		assertType("array{string, non-falsy-string, numeric-string}", $matches);
 	}
 };
 
@@ -471,7 +471,7 @@ function bug11323(string $s): void {
 		assertType('array{string, non-empty-string, non-empty-string}', $matches);
 	}
 	if (preg_match('{([-\p{L}[\]*|\x03\a\b+?{}(?:)-]+[^[:digit:]?{}a-z0-9#-k]+)(a-z)}', $s, $matches)) {
-		assertType("array{string, non-empty-string, 'a-z'}", $matches);
+		assertType("array{string, non-falsy-string, 'a-z'}", $matches);
 	}
 	if (preg_match('{(\d+)(?i)insensitive((?x-i)case SENSITIVE here(?i:insensitive non-capturing group))}', $s, $matches)) {
 		assertType('array{string, numeric-string, non-empty-string}', $matches);
@@ -495,16 +495,16 @@ function bug11323(string $s): void {
 		assertType("array{string, ''|'a', string, non-empty-string, non-empty-string}", $matches);
 	}
 	if (preg_match('{(.\d)}', $s, $matches)) {
-		assertType('array{string, non-empty-string}', $matches);
+		assertType('array{string, non-falsy-string}', $matches);
 	}
 	if (preg_match('{(\d.)}', $s, $matches)) {
-		assertType('array{string, non-empty-string}', $matches);
+		assertType('array{string, non-falsy-string}', $matches);
 	}
 	if (preg_match('{(\d\d)}', $s, $matches)) {
 		assertType('array{string, numeric-string}', $matches);
 	}
 	if (preg_match('{(.(\d))}', $s, $matches)) {
-		assertType('array{string, non-empty-string, numeric-string}', $matches);
+		assertType('array{string, non-falsy-string, numeric-string}', $matches);
 	}
 	if (preg_match('{((\d).)}', $s, $matches)) {
 		assertType('array{string, non-empty-string, numeric-string}', $matches);
@@ -604,5 +604,11 @@ function (string $s): void {
 function (string $s): void {
 	if (preg_match('/Price: (b[ao][mn])/', $s, $matches)) {
 		assertType("array{string, 'bam'|'ban'|'bom'|'bon'}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/Price: (\s{3}|0)/', $s, $matches)) {
+		assertType("array{string, non-empty-string}", $matches);
 	}
 };

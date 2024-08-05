@@ -303,6 +303,7 @@ final class RegexGroupParser
 
 		$this->walkGroupAst(
 			$group,
+			false,
 			$isNonEmpty,
 			$isNonFalsy,
 			$isNumeric,
@@ -348,6 +349,7 @@ final class RegexGroupParser
 	 */
 	private function walkGroupAst(
 		TreeNode $ast,
+		bool $inAlternation,
 		TrinaryLogic &$isNonEmpty,
 		TrinaryLogic &$isNonFalsy,
 		TrinaryLogic &$isNumeric,
@@ -363,6 +365,7 @@ final class RegexGroupParser
 			&& count($children) > 0
 		) {
 			$isNonEmpty = TrinaryLogic::createYes();
+			$isNonFalsy = TrinaryLogic::createYes();
 		} elseif ($ast->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($ast);
 
@@ -373,7 +376,7 @@ final class RegexGroupParser
 				$isNonEmpty = TrinaryLogic::createYes();
 				$inOptionalQuantification = false;
 			}
-			if ($min >= 2) {
+			if ($min >= 2 && !$inAlternation) {
 				$isNonFalsy = TrinaryLogic::createYes();
 			}
 
@@ -413,6 +416,10 @@ final class RegexGroupParser
 			$onlyLiterals = null;
 		}
 
+		if ($ast->getId() === '#alternation') {
+			$inAlternation = true;
+		}
+
 		// [^0-9] should not parse as numeric-string, and [^list-everything-but-numbers] is technically
 		// doable but really silly compared to just \d so we can safely assume the string is not numeric
 		// for negative classes
@@ -423,6 +430,7 @@ final class RegexGroupParser
 		foreach ($children as $child) {
 			$this->walkGroupAst(
 				$child,
+				$inAlternation,
 				$isNonEmpty,
 				$isNonFalsy,
 				$isNumeric,

@@ -365,7 +365,9 @@ final class RegexGroupParser
 			&& count($children) > 0
 		) {
 			$isNonEmpty = TrinaryLogic::createYes();
-			$isNonFalsy = TrinaryLogic::createYes();
+			if (!$inAlternation) {
+				$isNonFalsy = TrinaryLogic::createYes();
+			}
 		} elseif ($ast->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($ast);
 

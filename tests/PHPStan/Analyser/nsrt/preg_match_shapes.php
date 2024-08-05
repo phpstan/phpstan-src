@@ -612,3 +612,16 @@ function (string $s): void {
 		assertType("array{string, non-empty-string}", $matches);
 	}
 };
+
+function (string $s): void {
+	if (preg_match('/Price: (a|0)/', $s, $matches)) {
+		assertType("array{string, non-empty-string}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/Price: (aa|0)/', $s, $matches)) {
+		assertType("array{string, non-empty-string}", $matches);
+	}
+};
+

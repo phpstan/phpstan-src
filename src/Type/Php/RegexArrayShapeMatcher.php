@@ -351,9 +351,6 @@ final class RegexArrayShapeMatcher
 		$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags, $matchesAll));
 
 		if ($matchesAll) {
-			if (!$wasMatched->yes() && !$this->containsOffsetCapture($flags)) {
-				$subjectValueType = TypeCombinator::union($subjectValueType, new ConstantStringType(''));
-			}
 			if ($this->containsPatternOrder($flags)) {
 				$subjectValueType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $subjectValueType));
 			}

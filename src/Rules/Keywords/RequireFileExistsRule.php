@@ -25,7 +25,7 @@ use function sprintf;
 /**
  * @implements Rule<Include_>
  */
-class RequireFileExistsRule implements Rule
+final class RequireFileExistsRule implements Rule
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

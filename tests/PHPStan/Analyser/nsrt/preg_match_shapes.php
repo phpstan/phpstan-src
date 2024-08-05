@@ -249,7 +249,7 @@ function doFoo2(string $row): void
 		return;
 	}
 
-	assertType("array{0: string, 1: string, branchCode: ''|numeric-string, 2: ''|numeric-string, accountNumber: numeric-string, 3: numeric-string, bankCode: numeric-string, 4: numeric-string}", $matches);
+	assertType("array{0: string, 1: string, branchCode: ''|numeric-string, 2: ''|numeric-string, accountNumber: numeric-string, 3: numeric-string, bankCode: non-falsy-string&numeric-string, 4: non-falsy-string&numeric-string}", $matches);
 }
 
 function doFoo3(string $row): void
@@ -258,7 +258,7 @@ function doFoo3(string $row): void
 		return;
 	}
 
-	assertType('array{string, non-empty-string, non-empty-string, numeric-string, numeric-string, numeric-string, numeric-string}', $matches);
+	assertType('array{string, non-falsy-string, non-falsy-string, numeric-string, numeric-string, numeric-string, numeric-string}', $matches);
 }
 
 function (string $size): void {

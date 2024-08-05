@@ -13,6 +13,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntersectionType;
@@ -295,6 +296,7 @@ final class RegexGroupParser
 	private function createGroupType(TreeNode $group, bool $maybeConstant): Type
 	{
 		$isNonEmpty = TrinaryLogic::createMaybe();
+		$isNonFalsy = TrinaryLogic::createMaybe();
 		$isNumeric = TrinaryLogic::createMaybe();
 		$inOptionalQuantification = false;
 		$onlyLiterals = [];
@@ -302,6 +304,7 @@ final class RegexGroupParser
 		$this->walkGroupAst(
 			$group,
 			$isNonEmpty,
+			$isNonFalsy,
 			$isNumeric,
 			$inOptionalQuantification,
 			$onlyLiterals,
@@ -318,11 +321,21 @@ final class RegexGroupParser
 		}
 
 		if ($isNumeric->yes()) {
+			if ($isNonFalsy->yes()) {
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryNumericStringType(),
+					new AccessoryNonFalsyStringType(),
+				]);
+			}
+
 			$result = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 			if (!$isNonEmpty->yes()) {
 				return TypeCombinator::union(new ConstantStringType(''), $result);
 			}
 			return $result;
+		} elseif ($isNonFalsy->yes()) {
+			return new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
 		} elseif ($isNonEmpty->yes()) {
 			return new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
 		}
@@ -336,6 +349,7 @@ final class RegexGroupParser
 	private function walkGroupAst(
 		TreeNode $ast,
 		TrinaryLogic &$isNonEmpty,
+		TrinaryLogic &$isNonFalsy,
 		TrinaryLogic &$isNumeric,
 		bool &$inOptionalQuantification,
 		?array &$onlyLiterals,
@@ -358,6 +372,9 @@ final class RegexGroupParser
 			if ($min >= 1) {
 				$isNonEmpty = TrinaryLogic::createYes();
 				$inOptionalQuantification = false;
+			}
+			if ($min >= 2) {
+				$isNonFalsy = TrinaryLogic::createYes();
 			}
 
 			$onlyLiterals = null;
@@ -407,6 +424,7 @@ final class RegexGroupParser
 			$this->walkGroupAst(
 				$child,
 				$isNonEmpty,
+				$isNonFalsy,
 				$isNumeric,
 				$inOptionalQuantification,
 				$onlyLiterals,

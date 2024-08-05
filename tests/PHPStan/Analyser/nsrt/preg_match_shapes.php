@@ -328,7 +328,7 @@ function (string $size): void {
 function bug11277a(string $value): void
 {
 	if (preg_match('/^\[(.+,?)*\]$/', $value, $matches)) {
-		assertType('array{0: string, 1?: non-falsy-string}', $matches);
+		assertType('array{0: string, 1?: non-empty-string}', $matches);
 		if (count($matches) === 2) {
 			assertType('array{string, string}', $matches); // could be array{string, non-empty-string}
 		}
@@ -338,7 +338,7 @@ function bug11277a(string $value): void
 function bug11277b(string $value): void
 {
 	if (preg_match('/^(?:(.+,?)|(x))*$/', $value, $matches)) {
-		assertType('array{0: string, 1?: non-falsy-string, 2?: non-empty-string}', $matches);
+		assertType('array{0: string, 1?: non-empty-string, 2?: non-empty-string}', $matches);
 		if (count($matches) === 2) {
 			assertType('array{string, string}', $matches); // could be array{string, non-empty-string}
 		}
@@ -625,3 +625,26 @@ function (string $s): void {
 	}
 };
 
+function (string $s): void {
+	if (preg_match('/( \d+ )/x', $s, $matches)) {
+		assertType('array{string, numeric-string}', $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/( .? )/x', $s, $matches)) {
+		assertType('array{string, string}', $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/( .* )/x', $s, $matches)) {
+		assertType('array{string, string}', $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/( .+ )/x', $s, $matches)) {
+		assertType('array{string, non-empty-string}', $matches);
+	}
+};

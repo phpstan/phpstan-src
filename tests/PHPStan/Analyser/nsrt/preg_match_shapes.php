@@ -265,7 +265,7 @@ function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)(\d+)(\s+))?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string, numeric-string, numeric-string, non-empty-string}|array{string}', $matches);
+	assertType('array{string, non-falsy-string, numeric-string, numeric-string, non-empty-string}|array{string}', $matches);
 };
 
 function (string $size): void {
@@ -328,7 +328,7 @@ function (string $size): void {
 function bug11277a(string $value): void
 {
 	if (preg_match('/^\[(.+,?)*\]$/', $value, $matches)) {
-		assertType('array{0: string, 1?: non-empty-string}', $matches);
+		assertType('array{0: string, 1?: non-falsy-string}', $matches);
 		if (count($matches) === 2) {
 			assertType('array{string, string}', $matches); // could be array{string, non-empty-string}
 		}
@@ -501,13 +501,13 @@ function bug11323(string $s): void {
 		assertType('array{string, non-falsy-string}', $matches);
 	}
 	if (preg_match('{(\d\d)}', $s, $matches)) {
-		assertType('array{string, numeric-string}', $matches);
+		assertType('array{string, non-falsy-string&numeric-string}', $matches);
 	}
 	if (preg_match('{(.(\d))}', $s, $matches)) {
 		assertType('array{string, non-falsy-string, numeric-string}', $matches);
 	}
 	if (preg_match('{((\d).)}', $s, $matches)) {
-		assertType('array{string, non-empty-string, numeric-string}', $matches);
+		assertType('array{string, non-falsy-string, numeric-string}', $matches);
 	}
 	if (preg_match('{(\d([1-4])\d)}', $s, $matches)) {
 		assertType('array{string, non-falsy-string&numeric-string, numeric-string}', $matches);

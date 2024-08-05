@@ -92,14 +92,14 @@ function (string $size): void {
 	if (preg_match('/a(\dAB){2}b(\d){2,4}([1-5])([1-5a-z])e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string, numeric-string, numeric-string, non-empty-string}', $matches);
+	assertType('array{string, non-falsy-string, numeric-string, numeric-string, non-empty-string}', $matches);
 };
 
 function (string $size): void {
 	if (preg_match('/ab(ab(\d)){2,4}xx([0-9][a-c])?e?/', $size, $matches, PREG_UNMATCHED_AS_NULL) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{string, non-empty-string, numeric-string, non-empty-string|null}', $matches);
+	assertType('array{string, non-falsy-string, numeric-string, non-falsy-string|null}', $matches);
 };
 
 function (string $size): void {

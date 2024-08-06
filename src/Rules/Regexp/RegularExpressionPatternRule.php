@@ -9,7 +9,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Php\RegexExpressionHelper;
+use PHPStan\Type\Regex\RegexExpressionHelper;
 use function in_array;
 use function sprintf;
 use function str_starts_with;

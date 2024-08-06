@@ -15,7 +15,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Php\RegexExpressionHelper;
+use PHPStan\Type\Regex\RegexExpressionHelper;
 use function array_filter;
 use function array_merge;
 use function array_values;

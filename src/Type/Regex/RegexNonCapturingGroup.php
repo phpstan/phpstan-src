@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Type\Php;
+namespace PHPStan\Type\Regex;
 
 class RegexNonCapturingGroup
 {

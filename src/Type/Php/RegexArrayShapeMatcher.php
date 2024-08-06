@@ -116,7 +116,7 @@ final class RegexArrayShapeMatcher
 			// regex could not be parsed by Hoa/Regex
 			return null;
 		}
-		[$groupList, $alternationList, $markVerbs] = $parseResult;
+		[$groupList, $markVerbs] = $parseResult;
 
 		$trailingOptionals = 0;
 		foreach (array_reverse($groupList) as $captureGroup) {

@@ -44,7 +44,7 @@ final class RegexGroupParser
 	}
 
 	/**
-	 * @return array{array<int, RegexCapturingGroup>, list<RegexAlternation>, list<string>}|null
+	 * @return array{array<int, RegexCapturingGroup>, list<string>}|null
 	 */
 	public function parseGroups(string $regex): ?array
 	{
@@ -88,14 +88,13 @@ final class RegexGroupParser
 			null,
 			$captureGroupId,
 			$capturingGroups,
-			$alternationList,
 			$markVerbs,
 			$captureOnlyNamed,
 			false,
 			$modifiers,
 		);
 
-		return [$capturingGroups, $alternationList, $markVerbs];
+		return [$capturingGroups, $markVerbs];
 	}
 
 	/**
@@ -112,7 +111,6 @@ final class RegexGroupParser
 		RegexCapturingGroup|RegexNonCapturingGroup|null $parentGroup,
 		int &$captureGroupId,
 		array &$capturingGroups,
-		array &$alternationList,
 		array &$markVerbs,
 		bool $captureOnlyNamed,
 		bool $repeatedMoreThanOnce,
@@ -183,7 +181,6 @@ final class RegexGroupParser
 		if ($ast->getId() === '#alternation') {
 			$alternationId++;
 			$alternation = new RegexAlternation($alternationId);
-			$alternationList[] = $alternation;
 		}
 
 		if ($ast->getId() === '#mark') {
@@ -212,7 +209,6 @@ final class RegexGroupParser
 				$parentGroup,
 				$captureGroupId,
 				$capturingGroups,
-				$alternationList,
 				$markVerbs,
 				$captureOnlyNamed,
 				$repeatedMoreThanOnce,

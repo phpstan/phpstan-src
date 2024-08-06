@@ -198,3 +198,29 @@ function (string $s): void {
 	preg_match('/%a(\d*)?/', $s, $matches, PREG_UNMATCHED_AS_NULL);
 	assertType("array{0?: string, 1?: ''|numeric-string|null}", $matches); // could be array{0?: string, 1?: ''|numeric-string}
 };
+
+function (string $s): void {
+	if (preg_match('~a|(\d)|(\s)~', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType("array{string, numeric-string|null, non-empty-string|null}", $matches);
+	} else {
+		assertType("array{}", $matches);
+	}
+	assertType("array{}|array{string, numeric-string|null, non-empty-string|null}", $matches);
+};
+
+function (string $s): void {
+	if (preg_match('~a|(\d)|(\s)~', $s, $matches, PREG_UNMATCHED_AS_NULL|PREG_OFFSET_CAPTURE) === 1) {
+		assertType("array{array{string|null, int<-1, max>}, array{numeric-string|null, int<-1, max>}, array{non-empty-string|null, int<-1, max>}}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('~a|((u)x)|((v)y)~', $s, $matches, PREG_UNMATCHED_AS_NULL) === 1) {
+		assertType("array{string, 'ux'|null, 'u'|null, 'vy'|null, 'v'|null}", $matches);
+	}
+};
+
+function (string $s): void {
+	preg_match('~a|(\d)|(\s)~', $s, $matches, PREG_UNMATCHED_AS_NULL);
+	assertType("array{0?: string, 1?: numeric-string|null, 2?: non-empty-string|null}", $matches);
+};

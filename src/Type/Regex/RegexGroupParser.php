@@ -177,7 +177,7 @@ final class RegexGroupParser
 
 		if ($ast->getId() === '#alternation') {
 			$alternationId++;
-			$alternation = new RegexAlternation($alternationId);
+			$alternation = new RegexAlternation($alternationId, count($ast->getChildren()));
 		}
 
 		if ($ast->getId() === '#mark') {

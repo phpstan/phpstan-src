@@ -129,16 +129,16 @@ function doUnknownFlags(string $s, int $flags): void {
 
 function doMultipleAlternativeCaptureGroupsWithSameNameWithModifier(string $s): void {
 	if (preg_match('/(?J)(?<Foo>[a-z]+)|(?<Foo>[0-9]+)/', $s, $matches)) {
-		assertType('array{0: string, Foo: numeric-string|non-empty-string, 1: non-empty-string, 2?: numeric-string}', $matches);
+		assertType("array{0: string, Foo: non-empty-string, 1: non-empty-string}|array{0: string, Foo: numeric-string, 1: '', 2: numeric-string}", $matches);
 	}
-	assertType('array{}|array{0: string, Foo: numeric-string|non-empty-string, 1: non-empty-string, 2?: numeric-string}', $matches);
+	assertType("array{}|array{0: string, Foo: non-empty-string, 1: non-empty-string}|array{0: string, Foo: numeric-string, 1: '', 2: numeric-string}", $matches);
 }
 
 function doMultipleConsecutiveCaptureGroupsWithSameNameWithModifier(string $s): void {
 	if (preg_match('/(?J)(?<Foo>[a-z]+)|(?<Foo>[0-9]+)/', $s, $matches)) {
-		assertType('array{0: string, Foo: numeric-string|non-empty-string, 1: non-empty-string, 2?: numeric-string}', $matches);
+		assertType("array{0: string, Foo: non-empty-string, 1: non-empty-string}|array{0: string, Foo: numeric-string, 1: '', 2: numeric-string}", $matches);
 	}
-	assertType('array{}|array{0: string, Foo: numeric-string|non-empty-string, 1: non-empty-string, 2?: numeric-string}', $matches);
+	assertType("array{}|array{0: string, Foo: non-empty-string, 1: non-empty-string}|array{0: string, Foo: numeric-string, 1: '', 2: numeric-string}", $matches);
 }
 
 // https://github.com/hoaproject/Regex/issues/31
@@ -307,21 +307,21 @@ function (string $size): void {
 	if (preg_match('~^(?:(\\d+)x(\\d+)|(\\d+)|x(\\d+))$~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: numeric-string, 2: numeric-string, 3?: numeric-string, 4?: numeric-string}', $matches);
+	assertType("array{string, '', '', '', numeric-string}|array{string, '', '', numeric-string}|array{string, numeric-string, numeric-string}", $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~^(?:(\\d+)x(\\d+)|(\\d+)|x(\\d+))?$~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: string, 1: numeric-string, 2: numeric-string, 3?: numeric-string, 4?: numeric-string}|array{string}', $matches);
+	assertType("array{string, '', '', '', numeric-string}|array{string, '', '', numeric-string}|array{string, numeric-string, numeric-string}|array{string}", $matches);
 };
 
 function (string $size): void {
 	if (preg_match('~\{(?:(include)\\s+(?:[$]?\\w+(?<!file))\\s)|(?:(include\\s+file)\\s+(?:[$]?\\w+)\\s)|(?:(include(?:Template|(?:\\s+file)))\\s+(?:\'?.*?\.latte\'?)\\s)~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType("array{0: string, 1: 'include', 2?: non-falsy-string, 3?: non-falsy-string}", $matches);
+	assertType("array{string, '', '', non-falsy-string}|array{string, '', non-falsy-string}|array{string, 'include'}", $matches);
 };
 
 
@@ -338,13 +338,7 @@ function bug11277a(string $value): void
 function bug11277b(string $value): void
 {
 	if (preg_match('/^(?:(.+,?)|(x))*$/', $value, $matches)) {
-		assertType('array{0: string, 1?: non-empty-string, 2?: non-empty-string}', $matches);
-		if (count($matches) === 2) {
-			assertType('array{string, string}', $matches); // could be array{string, non-empty-string}
-		}
-		if (count($matches) === 3) {
-			assertType('array{string, string, string}', $matches); // could be array{string, non-empty-string, non-empty-string}
-		}
+		assertType("array{0: string, 1?: non-empty-string}|array{string, '', non-empty-string}", $matches);
 	}
 }
 
@@ -656,8 +650,7 @@ function (string $value): void
 	}
 };
 
-function (string $value): void
-{
+function (string $value): void {
 	if (preg_match('/^(?:(x)|(y))*$/', $value, $matches, PREG_OFFSET_CAPTURE)) {
 		assertType("array{0: array{string, int<-1, max>}, 1?: array{non-empty-string, int<-1, max>}, 2?: array{non-empty-string, int<-1, max>}}", $matches);
 	}
@@ -683,3 +676,26 @@ class Bug11479
 		assertType("array{0?: string, dateFrom?: ''|numeric-string, 1?: ''|numeric-string, dateTo?: numeric-string, 2?: numeric-string}", $matches);
 	}
 }
+
+function (string $s): void {
+	if (preg_match('~a|(\d)|(\s)~', $s, $matches) === 1) {
+		assertType("array{0: string, 1?: numeric-string}|array{string, '', non-empty-string}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('~a|((u)x)|((v)y)~', $s, $matches) === 1) {
+		assertType("array{string, '', '', 'vy', 'v'}|array{string, 'ux', 'u'}|array{string}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('~a|(\d)|(\s)~', $s, $matches, PREG_OFFSET_CAPTURE) === 1) {
+		assertType("array{0: array{string, int<0, max>}, 1?: array{numeric-string, int<0, max>}}|array{array{string, int<0, max>}, array{'', int<0, max>}, array{non-empty-string, int<0, max>}}", $matches);
+	}
+};
+
+function (string $s): void {
+	preg_match('~a|(\d)|(\s)~', $s, $matches);
+	assertType("array{0?: string, 1?: '', 2?: non-empty-string}|array{0?: string, 1?: numeric-string}", $matches);
+};

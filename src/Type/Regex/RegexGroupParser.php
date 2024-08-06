@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Type\Php;
+namespace PHPStan\Type\Regex;
 
 use Hoa\Compiler\Llk\Llk;
 use Hoa\Compiler\Llk\Parser;
@@ -20,7 +20,6 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_key_exists;
 use function count;
 use function in_array;
 use function is_int;
@@ -45,7 +44,7 @@ final class RegexGroupParser
 	}
 
 	/**
-	 * @return array{array<int, RegexCapturingGroup>, array<int, array<int, int[]>>, list<string>}|null
+	 * @return array{array<int, RegexCapturingGroup>, list<string>}|null
 	 */
 	public function parseGroups(string $regex): ?array
 	{
@@ -75,44 +74,40 @@ final class RegexGroupParser
 		}
 
 		$capturingGroups = [];
-		$groupCombinations = [];
 		$alternationId = -1;
 		$captureGroupId = 100;
 		$markVerbs = [];
 		$this->walkRegexAst(
 			$ast,
-			false,
+			null,
 			$alternationId,
 			0,
 			false,
 			null,
 			$captureGroupId,
 			$capturingGroups,
-			$groupCombinations,
 			$markVerbs,
 			$captureOnlyNamed,
 			false,
 			$modifiers,
 		);
 
-		return [$capturingGroups, $groupCombinations, $markVerbs];
+		return [$capturingGroups, $markVerbs];
 	}
 
 	/**
 	 * @param array<int, RegexCapturingGroup> $capturingGroups
-	 * @param array<int, array<int, int[]>> $groupCombinations
 	 * @param list<string> $markVerbs
 	 */
 	private function walkRegexAst(
 		TreeNode $ast,
-		bool $inAlternation,
+		?RegexAlternation $alternation,
 		int &$alternationId,
 		int $combinationIndex,
 		bool $inOptionalQuantification,
 		RegexCapturingGroup|RegexNonCapturingGroup|null $parentGroup,
 		int &$captureGroupId,
 		array &$capturingGroups,
-		array &$groupCombinations,
 		array &$markVerbs,
 		bool $captureOnlyNamed,
 		bool $repeatedMoreThanOnce,
@@ -124,7 +119,7 @@ final class RegexGroupParser
 			$group = new RegexCapturingGroup(
 				$captureGroupId++,
 				null,
-				$inAlternation ? $alternationId : null,
+				$alternation,
 				$inOptionalQuantification,
 				$parentGroup,
 				$this->createGroupType(
@@ -139,7 +134,7 @@ final class RegexGroupParser
 			$group = new RegexCapturingGroup(
 				$captureGroupId++,
 				$name,
-				$inAlternation ? $alternationId : null,
+				$alternation,
 				$inOptionalQuantification,
 				$parentGroup,
 				$this->createGroupType(
@@ -151,7 +146,7 @@ final class RegexGroupParser
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#noncapturing') {
 			$group = new RegexNonCapturingGroup(
-				$inAlternation ? $alternationId : null,
+				$alternation,
 				$inOptionalQuantification,
 				$parentGroup,
 				false,
@@ -159,7 +154,7 @@ final class RegexGroupParser
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#noncapturingreset') {
 			$group = new RegexNonCapturingGroup(
-				$inAlternation ? $alternationId : null,
+				$alternation,
 				$inOptionalQuantification,
 				$parentGroup,
 				true,
@@ -182,7 +177,7 @@ final class RegexGroupParser
 
 		if ($ast->getId() === '#alternation') {
 			$alternationId++;
-			$inAlternation = true;
+			$alternation = new RegexAlternation($alternationId);
 		}
 
 		if ($ast->getId() === '#mark') {
@@ -196,26 +191,21 @@ final class RegexGroupParser
 		) {
 			$capturingGroups[$group->getId()] = $group;
 
-			if (!array_key_exists($alternationId, $groupCombinations)) {
-				$groupCombinations[$alternationId] = [];
+			if ($alternation !== null) {
+				$alternation->pushGroup($combinationIndex, $group);
 			}
-			if (!array_key_exists($combinationIndex, $groupCombinations[$alternationId])) {
-				$groupCombinations[$alternationId][$combinationIndex] = [];
-			}
-			$groupCombinations[$alternationId][$combinationIndex][] = $group->getId();
 		}
 
 		foreach ($ast->getChildren() as $child) {
 			$this->walkRegexAst(
 				$child,
-				$inAlternation,
+				$alternation,
 				$alternationId,
 				$combinationIndex,
 				$inOptionalQuantification,
 				$parentGroup,
 				$captureGroupId,
 				$capturingGroups,
-				$groupCombinations,
 				$markVerbs,
 				$captureOnlyNamed,
 				$repeatedMoreThanOnce,

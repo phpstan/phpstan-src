@@ -77,10 +77,9 @@ final class RegexGroupParser
 		$alternationId = -1;
 		$captureGroupId = 100;
 		$markVerbs = [];
-		$alternation = null;
 		$this->walkRegexAst(
 			$ast,
-			$alternation,
+			null,
 			$alternationId,
 			0,
 			false,

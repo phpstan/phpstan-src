@@ -192,7 +192,7 @@ final class RegexGroupParser
 		) {
 			$capturingGroups[$group->getId()] = $group;
 
-			if ($alternation instanceof RegexAlternation) {
+			if ($alternation !== null) {
 				$alternation->pushGroup($combinationIndex, $group);
 			}
 		}

@@ -74,7 +74,6 @@ final class RegexGroupParser
 		}
 
 		$capturingGroups = [];
-		$alternationList = [];
 		$alternationId = -1;
 		$captureGroupId = 100;
 		$markVerbs = [];
@@ -99,7 +98,6 @@ final class RegexGroupParser
 
 	/**
 	 * @param array<int, RegexCapturingGroup> $capturingGroups
-	 * @param list<RegexAlternation> $alternationList
 	 * @param list<string> $markVerbs
 	 */
 	private function walkRegexAst(

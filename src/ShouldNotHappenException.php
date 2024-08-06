@@ -2,9 +2,9 @@
 
 namespace PHPStan;
 
-use Exception;
+use LogicException;
 
-final class ShouldNotHappenException extends Exception
+final class ShouldNotHappenException extends LogicException
 {
 
 	/** @api */

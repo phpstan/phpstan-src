@@ -20,7 +20,6 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_key_exists;
 use function count;
 use function in_array;
 use function is_int;
@@ -45,7 +44,7 @@ final class RegexGroupParser
 	}
 
 	/**
-	 * @return array{array<int, RegexCapturingGroup>, array<int, array<int, int[]>>, list<string>}|null
+	 * @return array{array<int, RegexCapturingGroup>, list<RegexAlternation>, list<string>}|null
 	 */
 	public function parseGroups(string $regex): ?array
 	{
@@ -75,44 +74,45 @@ final class RegexGroupParser
 		}
 
 		$capturingGroups = [];
-		$groupCombinations = [];
+		$alternationList = [];
 		$alternationId = -1;
 		$captureGroupId = 100;
 		$markVerbs = [];
+		$alternation = null;
 		$this->walkRegexAst(
 			$ast,
-			false,
+			$alternation,
 			$alternationId,
 			0,
 			false,
 			null,
 			$captureGroupId,
 			$capturingGroups,
-			$groupCombinations,
+			$alternationList,
 			$markVerbs,
 			$captureOnlyNamed,
 			false,
 			$modifiers,
 		);
 
-		return [$capturingGroups, $groupCombinations, $markVerbs];
+		return [$capturingGroups, $alternationList, $markVerbs];
 	}
 
 	/**
 	 * @param array<int, RegexCapturingGroup> $capturingGroups
-	 * @param array<int, array<int, int[]>> $groupCombinations
+	 * @param list<RegexAlternation> $alternationList
 	 * @param list<string> $markVerbs
 	 */
 	private function walkRegexAst(
 		TreeNode $ast,
-		bool $inAlternation,
+		?RegexAlternation $alternation,
 		int &$alternationId,
 		int $combinationIndex,
 		bool $inOptionalQuantification,
 		RegexCapturingGroup|RegexNonCapturingGroup|null $parentGroup,
 		int &$captureGroupId,
 		array &$capturingGroups,
-		array &$groupCombinations,
+		array &$alternationList,
 		array &$markVerbs,
 		bool $captureOnlyNamed,
 		bool $repeatedMoreThanOnce,
@@ -124,7 +124,7 @@ final class RegexGroupParser
 			$group = new RegexCapturingGroup(
 				$captureGroupId++,
 				null,
-				$inAlternation ? $alternationId : null,
+				$alternation,
 				$inOptionalQuantification,
 				$parentGroup,
 				$this->createGroupType(
@@ -139,7 +139,7 @@ final class RegexGroupParser
 			$group = new RegexCapturingGroup(
 				$captureGroupId++,
 				$name,
-				$inAlternation ? $alternationId : null,
+				$alternation,
 				$inOptionalQuantification,
 				$parentGroup,
 				$this->createGroupType(
@@ -151,7 +151,7 @@ final class RegexGroupParser
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#noncapturing') {
 			$group = new RegexNonCapturingGroup(
-				$inAlternation ? $alternationId : null,
+				$alternation,
 				$inOptionalQuantification,
 				$parentGroup,
 				false,
@@ -159,7 +159,7 @@ final class RegexGroupParser
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#noncapturingreset') {
 			$group = new RegexNonCapturingGroup(
-				$inAlternation ? $alternationId : null,
+				$alternation,
 				$inOptionalQuantification,
 				$parentGroup,
 				true,
@@ -182,7 +182,8 @@ final class RegexGroupParser
 
 		if ($ast->getId() === '#alternation') {
 			$alternationId++;
-			$inAlternation = true;
+			$alternation = new RegexAlternation($alternationId);
+			$alternationList[] = $alternation;
 		}
 
 		if ($ast->getId() === '#mark') {
@@ -196,26 +197,22 @@ final class RegexGroupParser
 		) {
 			$capturingGroups[$group->getId()] = $group;
 
-			if (!array_key_exists($alternationId, $groupCombinations)) {
-				$groupCombinations[$alternationId] = [];
+			if ($alternation instanceof RegexAlternation) {
+				$alternation->pushGroup($combinationIndex, $group);
 			}
-			if (!array_key_exists($combinationIndex, $groupCombinations[$alternationId])) {
-				$groupCombinations[$alternationId][$combinationIndex] = [];
-			}
-			$groupCombinations[$alternationId][$combinationIndex][] = $group->getId();
 		}
 
 		foreach ($ast->getChildren() as $child) {
 			$this->walkRegexAst(
 				$child,
-				$inAlternation,
+				$alternation,
 				$alternationId,
 				$combinationIndex,
 				$inOptionalQuantification,
 				$parentGroup,
 				$captureGroupId,
 				$capturingGroups,
-				$groupCombinations,
+				$alternationList,
 				$markVerbs,
 				$captureOnlyNamed,
 				$repeatedMoreThanOnce,

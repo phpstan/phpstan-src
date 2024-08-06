@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Type\Php;
+namespace PHPStan\Type\Regex;
 
 use PHPStan\Type\Type;
 
@@ -12,7 +12,7 @@ final class RegexCapturingGroup
 	public function __construct(
 		private int $id,
 		private ?string $name,
-		private ?int $alternationId,
+		private ?RegexAlternation $alternation,
 		private bool $inOptionalQuantification,
 		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
 		private Type $type,
@@ -40,15 +40,27 @@ final class RegexCapturingGroup
 		return $this->parent instanceof RegexNonCapturingGroup && $this->parent->resetsGroupCounter();
 	}
 
-	/** @phpstan-assert-if-true !null $this->getAlternationId() */
+	/**
+	 * @phpstan-assert-if-true !null $this->getAlternationId()
+	 * @phpstan-assert-if-true !null $this->getAlternation()
+	 */
 	public function inAlternation(): bool
 	{
-		return $this->alternationId !== null;
+		return $this->alternation !== null;
+	}
+
+	public function getAlternation(): ?RegexAlternation
+	{
+		return $this->alternation;
 	}
 
 	public function getAlternationId(): ?int
 	{
-		return $this->alternationId;
+		if ($this->alternation === null) {
+			return null;
+		}
+
+		return $this->alternation->getId();
 	}
 
 	public function isOptional(): bool

@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Type\Php;
+namespace PHPStan\Type\Regex;
 
 final class RegexNonCapturingGroup
 {
 
 	public function __construct(
-		private ?int $alternationId,
+		private ?RegexAlternation $alternation,
 		private bool $inOptionalQuantification,
 		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
 		private bool $resetGroupCounter,
@@ -17,12 +17,16 @@ final class RegexNonCapturingGroup
 	/** @phpstan-assert-if-true !null $this->getAlternationId() */
 	public function inAlternation(): bool
 	{
-		return $this->alternationId !== null;
+		return $this->alternation !== null;
 	}
 
 	public function getAlternationId(): ?int
 	{
-		return $this->alternationId;
+		if ($this->alternation === null) {
+			return null;
+		}
+
+		return $this->alternation->getId();
 	}
 
 	public function isOptional(): bool

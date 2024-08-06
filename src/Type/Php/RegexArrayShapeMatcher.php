@@ -14,10 +14,13 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\Regex\RegexAlternation;
+use PHPStan\Type\Regex\RegexCapturingGroup;
+use PHPStan\Type\Regex\RegexExpressionHelper;
+use PHPStan\Type\Regex\RegexGroupParser;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_key_exists;
 use function array_reverse;
 use function count;
 use function in_array;
@@ -117,7 +120,7 @@ final class RegexArrayShapeMatcher
 			// regex could not be parsed by Hoa/Regex
 			return null;
 		}
-		[$groupList, $groupCombinations, $markVerbs] = $parseResult;
+		[$groupList, $markVerbs] = $parseResult;
 
 		$trailingOptionals = 0;
 		foreach (array_reverse($groupList) as $captureGroup) {
@@ -128,7 +131,7 @@ final class RegexArrayShapeMatcher
 		}
 
 		$onlyOptionalTopLevelGroup = $this->getOnlyOptionalTopLevelGroup($groupList);
-		$onlyTopLevelAlternationId = $this->getOnlyTopLevelAlternationId($groupList);
+		$onlyTopLevelAlternation = $this->getOnlyTopLevelAlternation($groupList);
 
 		if (
 			!$matchesAll
@@ -160,12 +163,11 @@ final class RegexArrayShapeMatcher
 		} elseif (
 			!$matchesAll
 			&& $wasMatched->yes()
-			&& $onlyTopLevelAlternationId !== null
-			&& array_key_exists($onlyTopLevelAlternationId, $groupCombinations)
+			&& $onlyTopLevelAlternation !== null
 		) {
 			$combiTypes = [];
 			$isOptionalAlternation = false;
-			foreach ($groupCombinations[$onlyTopLevelAlternationId] as $groupCombo) {
+			foreach ($onlyTopLevelAlternation->getGroupCombinations() as $groupCombo) {
 				$comboList = $groupList;
 
 				$beforeCurrentCombo = true;
@@ -176,7 +178,10 @@ final class RegexArrayShapeMatcher
 						$beforeCurrentCombo = false;
 					} elseif ($beforeCurrentCombo && !$group->resetsGroupCounter()) {
 						$group->forceNonOptional();
-					} elseif ($group->getAlternationId() === $onlyTopLevelAlternationId && !$this->containsUnmatchedAsNull($flags ?? 0, $matchesAll)) {
+					} elseif (
+						$group->getAlternationId() === $onlyTopLevelAlternation->getId()
+						&& !$this->containsUnmatchedAsNull($flags ?? 0, $matchesAll)
+					) {
 						unset($comboList[$groupId]);
 					}
 				}
@@ -243,9 +248,9 @@ final class RegexArrayShapeMatcher
 	/**
 	 * @param array<int, RegexCapturingGroup> $captureGroups
 	 */
-	private function getOnlyTopLevelAlternationId(array $captureGroups): ?int
+	private function getOnlyTopLevelAlternation(array $captureGroups): ?RegexAlternation
 	{
-		$alternationId = null;
+		$alternation = null;
 		foreach ($captureGroups as $captureGroup) {
 			if (!$captureGroup->isTopLevel()) {
 				continue;
@@ -255,14 +260,14 @@ final class RegexArrayShapeMatcher
 				return null;
 			}
 
-			if ($alternationId === null) {
-				$alternationId = $captureGroup->getAlternationId();
-			} elseif ($alternationId !== $captureGroup->getAlternationId()) {
+			if ($alternation === null) {
+				$alternation = $captureGroup->getAlternation();
+			} elseif ($alternation->getId() !== $captureGroup->getAlternation()->getId()) {
 				return null;
 			}
 		}
 
-		return $alternationId;
+		return $alternation;
 	}
 
 	/**

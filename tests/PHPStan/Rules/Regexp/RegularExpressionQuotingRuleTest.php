@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Regexp;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPStan\Type\Php\RegexExpressionHelper;
+use PHPStan\Type\Regex\RegexExpressionHelper;
 use const PHP_VERSION_ID;
 
 /**

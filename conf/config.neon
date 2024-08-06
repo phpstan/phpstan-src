@@ -1507,10 +1507,10 @@ services:
 		class: PHPStan\Type\Php\RegexArrayShapeMatcher
 
 	-
-		class: PHPStan\Type\Php\RegexGroupParser
+		class: PHPStan\Type\Regex\RegexGroupParser
 
 	-
-		class: PHPStan\Type\Php\RegexExpressionHelper
+		class: PHPStan\Type\Regex\RegexExpressionHelper
 
 	-
 		class: PHPStan\Type\Php\ReflectionClassConstructorThrowTypeExtension

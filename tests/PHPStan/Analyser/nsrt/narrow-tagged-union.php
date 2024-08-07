@@ -9,6 +9,13 @@ class HelloWorld
 	/** @param array{string, '', non-empty-string}|array{string, numeric-string} $arr */
 	public function sayHello(array $arr): void
 	{
+		if (count($arr) === 0) {
+			assertType('*NEVER*', $arr);
+		} else {
+			assertType("array{string, '', non-empty-string}|array{string, numeric-string}", $arr);
+		}
+		assertType("array{string, '', non-empty-string}|array{string, numeric-string}", $arr);
+
 		if (count($arr) === 1) {
 			assertType('*NEVER*', $arr);
 		} else {

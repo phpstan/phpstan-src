@@ -41,7 +41,7 @@ final class RequireFileExistsRule implements Rule
 	{
 		if ($this->shouldProcessNode($node)) {
 			$filePath = $this->resolveFilePath($node->expr, $scope);
-			if ($filePath !== null && !file_exists($filePath)) {
+			if (is_string($filePath) && !is_file($filePath)) {
 				return [
 					RuleErrorBuilder::message(
 						sprintf(

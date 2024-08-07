@@ -31,7 +31,7 @@ conditionalTags:
 	PHPStan\Rules\Regexp\RegularExpressionQuotingRule:
 		phpstan.rules.rule: %featureToggles.validatePregQuote%
 	PHPStan\Rules\Keywords\RequireFileExistsRule:
-    	phpstan.rules.rule: %featureToggles.requireFileExists%
+		phpstan.rules.rule: %featureToggles.requireFileExists%
 
 rules:
 	- PHPStan\Rules\Api\ApiInstantiationRule
@@ -117,6 +117,7 @@ rules:
 	- PHPStan\Rules\Types\InvalidTypesInUnionRule
 	- PHPStan\Rules\Variables\UnsetRule
 	- PHPStan\Rules\Whitespace\FileWhitespaceRule
+	- PHPStan\Rules\Keywords\RequireFileExistsRule
 
 services:
 	-

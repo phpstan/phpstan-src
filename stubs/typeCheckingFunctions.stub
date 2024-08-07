@@ -105,6 +105,15 @@ function is_long(mixed $value): bool
 }
 
 /**
+ * @phpstan-assert-if-true =resource $value
+ * @return bool
+ */
+function is_resource(mixed $value): bool
+{
+
+}
+
+/**
  * @return ($value is array ? true : false)
  */
 function is_array(mixed $value): bool

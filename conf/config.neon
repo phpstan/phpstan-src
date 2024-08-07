@@ -1798,11 +1798,6 @@ services:
 		class: PHPStan\Type\Php\IsAFunctionTypeSpecifyingHelper
 
 	-
-		class: PHPStan\Type\Php\IsResourceFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
 		class: PHPStan\Type\Php\CtypeDigitFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension

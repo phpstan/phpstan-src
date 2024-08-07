@@ -26,11 +26,11 @@ class RequireFileExistsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/file-exists-but-path-is-relative.php'], [
 			[
-				'Required file "include-me-to-prove-you-work.txt" does not exist.',
+				'Path in require() "include-me-to-prove-you-work.txt" is not a file or it does not exist.',
 				5,
 			],
 			[
-				'Required file "include-me-to-prove-you-work.txt" does not exist.',
+				'Path in require_once() "include-me-to-prove-you-work.txt" is not a file or it does not exist.',
 				6,
 			],
 		]);
@@ -45,11 +45,11 @@ class RequireFileExistsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/file-does-not-exist-using-class-const.php'], [
 			[
-				'Required file "a-file-that-does-not-exist.php" does not exist.',
+				'Path in require() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
 				7,
 			],
 			[
-				'Required file "a-file-that-does-not-exist.php" does not exist.',
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
 				8,
 			],
 		]);
@@ -64,15 +64,15 @@ class RequireFileExistsRuleTest extends RuleTestCase
 
 	public function testFileDoesNotExistUsingConst(): void
 	{
-		define('FILE_DOES_NOT_EXIST', 'a-file-that-does-not-exist.txt');
+		define('FILE_DOES_NOT_EXIST', 'a-file-that-does-not-exist.php');
 
 		$this->analyse([__DIR__ . '/data/file-does-not-exist-using-constant.php'], [
 			[
-				'Required file "a-file-that-does-not-exist.txt" does not exist.',
+				'Path in require() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
 				7,
 			],
 			[
-				'Required file "a-file-that-does-not-exist.txt" does not exist.',
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
 				8,
 			],
 		]);

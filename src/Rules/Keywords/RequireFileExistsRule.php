@@ -43,12 +43,7 @@ final class RequireFileExistsRule implements Rule
 			$filePath = $this->resolveFilePath($node->expr, $scope);
 			if (is_string($filePath) && !is_file($filePath)) {
 				return [
-					RuleErrorBuilder::message(
-						sprintf(
-							'Required file "%s" does not exist.',
-							$filePath,
-						),
-					)->build(),
+					$this->getErrorMessage($node, $filePath)->build()
 				];
 			}
 		}
@@ -62,6 +57,21 @@ final class RequireFileExistsRule implements Rule
 				$node->type === Include_::TYPE_REQUIRE
 				|| $node->type === Include_::TYPE_REQUIRE_ONCE
 			);
+	}
+
+	private function getErrorMessage(Include_ $node, string $filePath): RuleErrorBuilder
+	{
+		$message = match ($node->type) {
+			Include_::TYPE_REQUIRE => 'Path in require() "%s" is not a file or it does not exist.',
+			Include_::TYPE_REQUIRE_ONCE => 'Path in require_once() "%s" is not a file or it does not exist.',
+		};
+
+		return RuleErrorBuilder::message(
+			sprintf(
+				$message,
+				$filePath,
+			),
+		);
 	}
 
 	private function resolveFilePath(Node $node, Scope $scope): ?string

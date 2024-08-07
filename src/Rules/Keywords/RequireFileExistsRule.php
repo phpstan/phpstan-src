@@ -62,6 +62,6 @@ final class RequireFileExistsRule implements Rule
 		$type = $scope->getType($node->expr);
 		$paths = $type->getConstantStrings();
 
-		return $paths ? $paths[0]->getValue() : null;
+		return isset($paths[0]) ? $paths[0]->getValue() : null;
 	}
 }

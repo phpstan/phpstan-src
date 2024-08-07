@@ -18,7 +18,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function constant;
 use function defined;
 use function dirname;
-use function file_exists;
 use function is_string;
 use function sprintf;
 

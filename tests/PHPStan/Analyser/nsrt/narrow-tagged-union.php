@@ -79,6 +79,17 @@ class HelloWorld
 		assertType("array{array<int>, numeric-string}|array{string, '', non-empty-string}", $arr);
 	}
 
+	/** @param array{string, '', non-empty-string}|array<int> $arr */
+	public function mixedArrays(array $arr): void
+	{
+		if (count($arr, COUNT_NORMAL) === 3) {
+			assertType("non-empty-array<int|string>", $arr); // could be array{string, '', non-empty-string}|non-empty-array<int>
+		} else {
+			assertType("array<int|string>", $arr); // could be array{string, '', non-empty-string}|array<int>
+		}
+		assertType("array<int|string>", $arr); // could be array{string, '', non-empty-string}|array<int>
+	}
+
 	public function arrayIntRangeSize(): void
 	{
 		$x = [];

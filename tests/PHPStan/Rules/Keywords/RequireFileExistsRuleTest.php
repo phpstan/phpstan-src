@@ -14,7 +14,7 @@ class RequireFileExistsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new RequireFileExistsRule($this->createReflectionProvider());
+		return new RequireFileExistsRule();
 	}
 
 	public function testItCannotReadConstantsDefinedInTheAnalysedFile(): void

@@ -984,29 +984,47 @@ class TypeSpecifier
 			&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
 			&& $constantType instanceof ConstantIntegerType
 		) {
+			$argType = $scope->getType($exprNode->getArgs()[0]->value);
+
+			if (count($exprNode->getArgs()) === 1) {
+				$isNormalCount = true;
+			} else {
+				$mode = $scope->getType($exprNode->getArgs()[1]->value);
+				if (!$mode->isInteger()->yes()) {
+					return new SpecifiedTypes();
+				}
+
+				$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->yes();
+				if (!$isNormalCount) {
+					$isNormalCount = $argType->getIterableValueType()->isArray()->no();
+				}
+			}
+
+			if (
+				$isNormalCount
+				&& $argType instanceof UnionType
+				&& $argType->isList()->yes()
+				&& $constantType->getValue() > 0
+			) {
+				$result = [];
+				foreach ($argType->getTypes() as $innerType) {
+					if (!$innerType->getArraySize()->isSuperTypeOf($constantType)->yes()) {
+						continue;
+					}
+
+					$result[] = $innerType;
+				}
+
+				return $this->create($exprNode->getArgs()[0]->value, TypeCombinator::union(...$result), $context, false, $scope, $rootExpr);
+			}
+
 			if ($context->truthy() || $constantType->getValue() === 0) {
 				$newContext = $context;
 				if ($constantType->getValue() === 0) {
 					$newContext = $newContext->negate();
 				}
 
-				$argType = $scope->getType($exprNode->getArgs()[0]->value);
-
 				if ($argType->isArray()->yes()) {
-					if (count($exprNode->getArgs()) === 1) {
-						$isNormalCount = true;
-					} else {
-						$mode = $scope->getType($exprNode->getArgs()[1]->value);
-						if (!$mode->isInteger()->yes()) {
-							return new SpecifiedTypes();
-						}
-
-						$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->yes();
-						if (!$isNormalCount) {
-							$isNormalCount = $argType->getIterableValueType()->isArray()->no();
-						}
-					}
-
 					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
 					if ($isNormalCount && $argType->isList()->yes() && $context->truthy() && $constantType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 						$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();

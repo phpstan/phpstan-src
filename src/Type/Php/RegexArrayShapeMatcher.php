@@ -132,6 +132,7 @@ final class RegexArrayShapeMatcher
 
 		$onlyOptionalTopLevelGroup = $this->getOnlyOptionalTopLevelGroup($groupList);
 		$onlyTopLevelAlternation = $this->getOnlyTopLevelAlternation($groupList);
+		$flags ??= 0;
 
 		if (
 			!$matchesAll
@@ -147,12 +148,12 @@ final class RegexArrayShapeMatcher
 				$groupList,
 				$wasMatched,
 				$trailingOptionals,
-				$flags ?? 0,
+				$flags,
 				$markVerbs,
 				$matchesAll,
 			);
 
-			if (!$this->containsUnmatchedAsNull($flags ?? 0, $matchesAll)) {
+			if (!$this->containsUnmatchedAsNull($flags, $matchesAll)) {
 				$combiType = TypeCombinator::union(
 					new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [0], [], true),
 					$combiType,
@@ -180,7 +181,7 @@ final class RegexArrayShapeMatcher
 						$group->forceNonOptional();
 					} elseif (
 						$group->getAlternationId() === $onlyTopLevelAlternation->getId()
-						&& !$this->containsUnmatchedAsNull($flags ?? 0, $matchesAll)
+						&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
 					) {
 						unset($comboList[$groupId]);
 					}
@@ -190,7 +191,7 @@ final class RegexArrayShapeMatcher
 					$comboList,
 					$wasMatched,
 					$trailingOptionals,
-					$flags ?? 0,
+					$flags,
 					$markVerbs,
 					$matchesAll,
 				);
@@ -203,7 +204,7 @@ final class RegexArrayShapeMatcher
 				}
 			}
 
-			if ($isOptionalAlternation && !$this->containsUnmatchedAsNull($flags ?? 0, $matchesAll)) {
+			if ($isOptionalAlternation && !$this->containsUnmatchedAsNull($flags, $matchesAll)) {
 				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [0], [], true);
 			}
 
@@ -214,7 +215,7 @@ final class RegexArrayShapeMatcher
 			$groupList,
 			$wasMatched,
 			$trailingOptionals,
-			$flags ?? 0,
+			$flags,
 			$markVerbs,
 			$matchesAll,
 		);

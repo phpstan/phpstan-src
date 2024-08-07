@@ -52,5 +52,19 @@ class HelloWorld
 		assertType("array{string, '', non-empty-string}|array{string, numeric-string}", $arr);
 
 	}
+
+	/** @param array{string, '', non-empty-string}|array{array<int>, numeric-string} $arr */
+	public function nestedArrays(array $arr): void
+	{
+		// don't narrow when $arr contains recursive arrays
+
+		if (count($arr, COUNT_RECURSIVE) === 3) {
+			assertType("array{array<int>, numeric-string}|array{string, '', non-empty-string}", $arr);
+		} else {
+			assertType("array{array<int>, numeric-string}|array{string, '', non-empty-string}", $arr);
+		}
+		assertType("array{array<int>, numeric-string}|array{string, '', non-empty-string}", $arr);
+
+	}
 }
 

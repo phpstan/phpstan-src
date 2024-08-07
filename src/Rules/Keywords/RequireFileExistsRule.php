@@ -9,6 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use function is_file;
 use function is_string;
 use function sprintf;
 
@@ -17,6 +18,7 @@ use function sprintf;
  */
 final class RequireFileExistsRule implements Rule
 {
+
 	public function getNodeType(): string
 	{
 		return Include_::class;
@@ -28,7 +30,7 @@ final class RequireFileExistsRule implements Rule
 			$filePath = $this->resolveFilePath($node, $scope);
 			if (is_string($filePath) && !is_file($filePath)) {
 				return [
-					$this->getErrorMessage($node, $filePath)
+					$this->getErrorMessage($node, $filePath),
 				];
 			}
 		}
@@ -67,4 +69,5 @@ final class RequireFileExistsRule implements Rule
 
 		return isset($paths[0]) ? $paths[0]->getValue() : null;
 	}
+
 }

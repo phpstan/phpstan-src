@@ -154,7 +154,7 @@ final class RegexArrayShapeMatcher
 
 			if (!$this->containsUnmatchedAsNull($flags ?? 0, $matchesAll)) {
 				$combiType = TypeCombinator::union(
-					new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()], [0], [], true),
+					new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [0], [], true),
 					$combiType,
 				);
 			}
@@ -288,7 +288,7 @@ final class RegexArrayShapeMatcher
 		// first item in matches contains the overall match.
 		$builder->setOffsetValueType(
 			$this->getKeyType(0),
-			$this->createSubjectValueType($wasMatched, $flags, $matchesAll),
+			$this->createSubjectValueType($flags, $matchesAll),
 			$this->isSubjectOptional($wasMatched, $matchesAll),
 		);
 
@@ -351,7 +351,7 @@ final class RegexArrayShapeMatcher
 		return !$wasMatched->yes();
 	}
 
-	private function createSubjectValueType(TrinaryLogic $wasMatched, int $flags, bool $matchesAll): Type
+	private function createSubjectValueType(int $flags, bool $matchesAll): Type
 	{
 		$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags, $matchesAll));
 

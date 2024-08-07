@@ -17,6 +17,7 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -31,6 +32,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -45,6 +47,7 @@ class HelloWorld
 		assertType('true', $true == $oneStr);
 		assertType('false', $true == $zeroStr);
 		assertType('true', $true == $minusOneStr);
+		assertType('true', $true == $plusOneStr);
 		assertType('false', $true == $null);
 		assertType('false', $true == $emptyArr);
 		assertType('true', $true == $phpStr);
@@ -60,6 +63,7 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -74,6 +78,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -88,6 +93,7 @@ class HelloWorld
 		assertType('false', $false == $oneStr);
 		assertType('true', $false == $zeroStr);
 		assertType('false', $false == $minusOneStr);
+		assertType('false', $false == $plusOneStr);
 		assertType('true', $false == $null);
 		assertType('true', $false == $emptyArr);
 		assertType('false', $false == $phpStr);
@@ -103,6 +109,7 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -117,6 +124,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -131,6 +139,7 @@ class HelloWorld
 		assertType('true', $one == $oneStr);
 		assertType('false', $one == $zeroStr);
 		assertType('false', $one == $minusOneStr);
+		assertType('true', $one == $plusOneStr);
 		assertType('false', $one == $null);
 		assertType('false', $one == $emptyArr);
 		assertType('false', $one == $phpStr);
@@ -146,6 +155,7 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -160,6 +170,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -174,6 +185,7 @@ class HelloWorld
 		assertType('false', $zero == $oneStr);
 		assertType('true', $zero == $zeroStr);
 		assertType('false', $zero == $minusOneStr);
+		assertType('false', $zero == $plusOneStr);
 		assertType('true', $zero == $null);
 		assertType('false', $zero == $emptyArr);
 	}
@@ -187,6 +199,7 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -201,6 +214,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -215,6 +229,7 @@ class HelloWorld
 		assertType('false', $minusOne == $oneStr);
 		assertType('false', $minusOne == $zeroStr);
 		assertType('true', $minusOne == $minusOneStr);
+		assertType('false', $minusOne == $plusOneStr);
 		assertType('false', $minusOne == $null);
 		assertType('false', $minusOne == $emptyArr);
 		assertType('false', $minusOne == $phpStr);
@@ -230,6 +245,7 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -244,6 +260,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -258,6 +275,7 @@ class HelloWorld
 		assertType('true', $oneStr == $oneStr);
 		assertType('false', $oneStr == $zeroStr);
 		assertType('false', $oneStr == $minusOneStr);
+		assertType('true', $oneStr == $plusOneStr);
 		assertType('false', $oneStr == $null);
 		assertType('false', $oneStr == $emptyArr);
 		assertType('false', $oneStr == $phpStr);
@@ -273,6 +291,7 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -287,6 +306,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -301,6 +321,7 @@ class HelloWorld
 		assertType('false', $zeroStr == $oneStr);
 		assertType('true', $zeroStr == $zeroStr);
 		assertType('false', $zeroStr == $minusOneStr);
+		assertType('false', $zeroStr == $plusOneStr);
 		assertType('false', $zeroStr == $null);
 		assertType('false', $zeroStr == $emptyArr);
 		assertType('false', $zeroStr == $phpStr);
@@ -316,6 +337,7 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -330,6 +352,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -344,6 +367,7 @@ class HelloWorld
 		assertType('false', $minusOneStr == $oneStr);
 		assertType('false', $minusOneStr == $zeroStr);
 		assertType('true', $minusOneStr == $minusOneStr);
+		assertType('false', $minusOneStr == $plusOneStr);
 		assertType('false', $minusOneStr == $null);
 		assertType('false', $minusOneStr == $emptyArr);
 		assertType('false', $minusOneStr == $phpStr);
@@ -359,6 +383,53 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
+	 * @param null $null
+	 * @param array{} $emptyArr
+	 * @param 'php' $phpStr
+	 * @param '' $emptyStr
+	 */
+	public function sayPlusOneStr(
+		$true,
+		$false,
+		$one,
+		$zero,
+		$minusOne,
+		$oneStr,
+		$zeroStr,
+		$minusOneStr,
+		$plusOneStr,
+		$null,
+		$emptyArr,
+		$phpStr,
+		$emptyStr
+	): void
+	{
+		assertType('true', $plusOneStr == $true);
+		assertType('false', $plusOneStr == $false);
+		assertType('true', $plusOneStr == $one);
+		assertType('false', $plusOneStr == $zero);
+		assertType('false', $plusOneStr == $minusOne);
+		assertType('true', $plusOneStr == $oneStr);
+		assertType('false', $plusOneStr == $zeroStr);
+		assertType('false', $plusOneStr == $minusOneStr);
+		assertType('true', $plusOneStr == $plusOneStr);
+		assertType('false', $plusOneStr == $null);
+		assertType('false', $plusOneStr == $emptyArr);
+		assertType('false', $plusOneStr == $phpStr);
+		assertType('false', $plusOneStr == $emptyStr);
+	}
+
+	/**
+	 * @param true $true
+	 * @param false $false
+	 * @param 1 $one
+	 * @param 0 $zero
+	 * @param -1 $minusOne
+	 * @param '1' $oneStr
+	 * @param '0' $zeroStr
+	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -373,6 +444,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -387,6 +459,7 @@ class HelloWorld
 		assertType('false', $null == $oneStr);
 		assertType('false', $null == $zeroStr);
 		assertType('false', $null == $minusOneStr);
+		assertType('false', $null == $plusOneStr);
 		assertType('true', $null == $null);
 		assertType('true', $null == $emptyArr);
 		assertType('false', $null == $phpStr);
@@ -402,6 +475,7 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -416,6 +490,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -430,6 +505,7 @@ class HelloWorld
 		assertType('false', $emptyArr == $oneStr);
 		assertType('false', $emptyArr == $zeroStr);
 		assertType('false', $emptyArr == $minusOneStr);
+		assertType('false', $emptyArr == $plusOneStr);
 		assertType('true', $emptyArr == $null);
 		assertType('true', $emptyArr == $emptyArr);
 		assertType('false', $emptyArr == $phpStr);
@@ -445,6 +521,7 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -459,6 +536,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -472,6 +550,7 @@ class HelloWorld
 		assertType('false', $phpStr == $oneStr);
 		assertType('false', $phpStr == $zeroStr);
 		assertType('false', $phpStr == $minusOneStr);
+		assertType('false', $phpStr == $plusOneStr);
 		assertType('false', $phpStr == $null);
 		assertType('false', $phpStr == $emptyArr);
 		assertType('true', $phpStr == $phpStr);
@@ -487,6 +566,7 @@ class HelloWorld
 	 * @param '1' $oneStr
 	 * @param '0' $zeroStr
 	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
 	 * @param null $null
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
@@ -501,6 +581,7 @@ class HelloWorld
 		$oneStr,
 		$zeroStr,
 		$minusOneStr,
+		$plusOneStr,
 		$null,
 		$emptyArr,
 		$phpStr,
@@ -514,6 +595,7 @@ class HelloWorld
 		assertType('false', $emptyStr == $oneStr);
 		assertType('false', $emptyStr == $zeroStr);
 		assertType('false', $emptyStr == $minusOneStr);
+		assertType('false', $emptyStr == $plusOneStr);
 		assertType('true', $emptyStr == $null);
 		assertType('false', $emptyStr == $emptyArr);
 		assertType('false', $emptyStr == $phpStr);

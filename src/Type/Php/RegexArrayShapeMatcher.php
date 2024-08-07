@@ -204,7 +204,7 @@ final class RegexArrayShapeMatcher
 			}
 
 			if ($isOptionalAlternation && !$this->containsUnmatchedAsNull($flags ?? 0, $matchesAll)) {
-				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()], [0], [], true);
+				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [0], [], true);
 			}
 
 			return TypeCombinator::union(...$combiTypes);

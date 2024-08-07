@@ -132,6 +132,7 @@ final class RegexArrayShapeMatcher
 
 		$onlyOptionalTopLevelGroup = $this->getOnlyOptionalTopLevelGroup($groupList);
 		$onlyTopLevelAlternation = $this->getOnlyTopLevelAlternation($groupList);
+		$flags ??= 0;
 
 		if (
 			!$matchesAll
@@ -147,14 +148,14 @@ final class RegexArrayShapeMatcher
 				$groupList,
 				$wasMatched,
 				$trailingOptionals,
-				$flags ?? 0,
+				$flags,
 				$markVerbs,
 				$matchesAll,
 			);
 
-			if (!$this->containsUnmatchedAsNull($flags ?? 0, $matchesAll)) {
+			if (!$this->containsUnmatchedAsNull($flags, $matchesAll)) {
 				$combiType = TypeCombinator::union(
-					new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()], [0], [], true),
+					new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [0], [], true),
 					$combiType,
 				);
 			}
@@ -180,7 +181,7 @@ final class RegexArrayShapeMatcher
 						$group->forceNonOptional();
 					} elseif (
 						$group->getAlternationId() === $onlyTopLevelAlternation->getId()
-						&& !$this->containsUnmatchedAsNull($flags ?? 0, $matchesAll)
+						&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
 					) {
 						unset($comboList[$groupId]);
 					}
@@ -190,7 +191,7 @@ final class RegexArrayShapeMatcher
 					$comboList,
 					$wasMatched,
 					$trailingOptionals,
-					$flags ?? 0,
+					$flags,
 					$markVerbs,
 					$matchesAll,
 				);
@@ -203,8 +204,8 @@ final class RegexArrayShapeMatcher
 				}
 			}
 
-			if ($isOptionalAlternation && !$this->containsUnmatchedAsNull($flags ?? 0, $matchesAll)) {
-				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [new StringType()], [0], [], true);
+			if ($isOptionalAlternation && !$this->containsUnmatchedAsNull($flags, $matchesAll)) {
+				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [0], [], true);
 			}
 
 			return TypeCombinator::union(...$combiTypes);
@@ -214,7 +215,7 @@ final class RegexArrayShapeMatcher
 			$groupList,
 			$wasMatched,
 			$trailingOptionals,
-			$flags ?? 0,
+			$flags,
 			$markVerbs,
 			$matchesAll,
 		);
@@ -288,7 +289,7 @@ final class RegexArrayShapeMatcher
 		// first item in matches contains the overall match.
 		$builder->setOffsetValueType(
 			$this->getKeyType(0),
-			$this->createSubjectValueType($wasMatched, $flags, $matchesAll),
+			$this->createSubjectValueType($flags, $matchesAll),
 			$this->isSubjectOptional($wasMatched, $matchesAll),
 		);
 
@@ -351,7 +352,7 @@ final class RegexArrayShapeMatcher
 		return !$wasMatched->yes();
 	}
 
-	private function createSubjectValueType(TrinaryLogic $wasMatched, int $flags, bool $matchesAll): Type
+	private function createSubjectValueType(int $flags, bool $matchesAll): Type
 	{
 		$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags, $matchesAll));
 

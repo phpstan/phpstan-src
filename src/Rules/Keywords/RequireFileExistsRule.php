@@ -48,11 +48,16 @@ final class RequireFileExistsRule implements Rule
 
 	private function getErrorMessage(Include_ $node, string $filePath): RuleError
 	{
-		$message = match ($node->type) {
-			Include_::TYPE_REQUIRE => 'Path in require() "%s" is not a file or it does not exist.',
-			Include_::TYPE_REQUIRE_ONCE => 'Path in require_once() "%s" is not a file or it does not exist.',
-			default => throw new ShouldNotHappenException('Rule should have already validated the node type.')
-		};
+		switch ($node->type) {
+			case Include_::TYPE_REQUIRE:
+				$message = 'Path in require() "%s" is not a file or it does not exist.';
+				break;
+			case Include_::TYPE_REQUIRE_ONCE:
+				$message = 'Path in require_once() "%s" is not a file or it does not exist.';
+				break;
+			default:
+				throw new ShouldNotHappenException('Rule should have already validated the node type.');
+		}
 
 		return RuleErrorBuilder::message(
 			sprintf(

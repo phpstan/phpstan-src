@@ -1004,7 +1004,6 @@ class TypeSpecifier
 				$isNormalCount
 				&& $argType instanceof UnionType
 				&& $argType->isList()->yes()
-				&& $constantType->getValue() > 0
 			) {
 				$result = [];
 				foreach ($argType->getTypes() as $innerType) {

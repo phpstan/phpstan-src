@@ -6,7 +6,9 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Include_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use function is_string;
 use function sprintf;
 
@@ -26,7 +28,7 @@ final class RequireFileExistsRule implements Rule
 			$filePath = $this->resolveFilePath($node, $scope);
 			if (is_string($filePath) && !is_file($filePath)) {
 				return [
-					$this->getErrorMessage($node, $filePath)->build()
+					$this->getErrorMessage($node, $filePath)
 				];
 			}
 		}
@@ -42,11 +44,12 @@ final class RequireFileExistsRule implements Rule
 			);
 	}
 
-	private function getErrorMessage(Include_ $node, string $filePath): RuleErrorBuilder
+	private function getErrorMessage(Include_ $node, string $filePath): RuleError
 	{
 		$message = match ($node->type) {
 			Include_::TYPE_REQUIRE => 'Path in require() "%s" is not a file or it does not exist.',
 			Include_::TYPE_REQUIRE_ONCE => 'Path in require_once() "%s" is not a file or it does not exist.',
+			default => throw new ShouldNotHappenException('Rule should have already validated the node type.')
 		};
 
 		return RuleErrorBuilder::message(
@@ -54,7 +57,7 @@ final class RequireFileExistsRule implements Rule
 				$message,
 				$filePath,
 			),
-		);
+		)->build();
 	}
 
 	private function resolveFilePath(Include_ $node, Scope $scope): ?string

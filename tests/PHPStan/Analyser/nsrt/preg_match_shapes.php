@@ -648,3 +648,17 @@ function (string $s): void {
 		assertType('array{string, non-empty-string}', $matches);
 	}
 };
+
+function (string $value): void
+{
+	if (preg_match('/^(x)*$/', $value, $matches, PREG_OFFSET_CAPTURE)) {
+		assertType("array{0: array{string, int<0, max>}, 1?: array{non-empty-string, int<0, max>}}", $matches);
+	}
+};
+
+function (string $value): void
+{
+	if (preg_match('/^(?:(x)|(y))*$/', $value, $matches, PREG_OFFSET_CAPTURE)) {
+		assertType("array{0: array{string, int<0, max>}, 1?: array{non-empty-string, int<0, max>}, 2?: array{non-empty-string, int<0, max>}}", $matches);
+	}
+};

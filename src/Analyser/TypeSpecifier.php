@@ -1007,14 +1007,27 @@ class TypeSpecifier
 			) {
 				$result = [];
 				foreach ($argType->getTypes() as $innerType) {
-					if (!$innerType->getArraySize()->isSuperTypeOf($constantType)->yes()) {
+					if (!$innerType->isConstantArray()->yes()) {
+						$result = null;
+						break;
+					}
+
+					$arraySize = $innerType->getArraySize();
+					if (!$arraySize instanceof ConstantIntegerType) {
+						$result = null;
+						break;
+					}
+
+					if (!$constantType->isSuperTypeOf($arraySize)->yes()) {
 						continue;
 					}
 
 					$result[] = $innerType;
 				}
 
-				return $this->create($exprNode->getArgs()[0]->value, TypeCombinator::union(...$result), $context, false, $scope, $rootExpr);
+				if ($result !== null) {
+					return $this->create($exprNode->getArgs()[0]->value, TypeCombinator::union(...$result), $context, false, $scope, $rootExpr);
+				}
 			}
 
 			if ($context->truthy() || $constantType->getValue() === 0) {

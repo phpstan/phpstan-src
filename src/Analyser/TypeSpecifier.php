@@ -39,8 +39,10 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
@@ -1892,7 +1894,20 @@ class TypeSpecifier
 		if ($expressions !== null) {
 			$exprNode = $expressions[0];
 			$constantType = $expressions[1];
-			if (!$context->null() && ($constantType->getValue() === false || $constantType->getValue() === null)) {
+
+			if (!$context->null() && $constantType->getValue() === null) {
+				$trueTypes = [
+					new NullType(),
+					new ConstantBooleanType(false),
+					new ConstantIntegerType(0),
+					new ConstantFloatType(0.0),
+					new ConstantStringType(''),
+					new ConstantArrayType([], []),
+				];
+				return $this->create($exprNode, new UnionType($trueTypes), $context, false, $scope, $rootExpr);
+			}
+
+			if (!$context->null() && $constantType->getValue() === false) {
 				return $this->specifyTypesInCondition(
 					$scope,
 					$exprNode,
@@ -1908,6 +1923,28 @@ class TypeSpecifier
 					$context->true() ? TypeSpecifierContext::createTruthy() : TypeSpecifierContext::createTruthy()->negate(),
 					$rootExpr,
 				);
+			}
+
+			if (!$context->null() && $constantType->getValue() === '') {
+				/* There is a difference between php 7.x and 8.x on the equality
+				 * behavior between zero and the empty string, so to be conservative
+				 * we leave it untouched regardless of the language version */
+				if ($context->true()) {
+					$trueTypes = [
+						new NullType(),
+						new ConstantBooleanType(false),
+						new ConstantIntegerType(0),
+						new ConstantFloatType(0.0),
+						new ConstantStringType(''),
+					];
+				} else {
+					$trueTypes = [
+						new NullType(),
+						new ConstantBooleanType(false),
+						new ConstantStringType(''),
+					];
+				}
+				return $this->create($exprNode, new UnionType($trueTypes), $context, false, $scope, $rootExpr);
 			}
 
 			if (

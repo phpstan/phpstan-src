@@ -394,15 +394,19 @@ final class RegexArrayShapeMatcher
 	private function createGroupValueType(RegexCapturingGroup $captureGroup, TrinaryLogic $wasMatched, int $flags, bool $isTrailingOptional, bool $isLastGroup, bool $matchesAll): Type
 	{
 		if ($matchesAll) {
-			$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll);
+			if (!$this->containsSetOrder($flags) && !$this->containsUnmatchedAsNull($flags, $matchesAll) && $captureGroup->isOptional()) {
+				$groupValueType = $this->getValueType(
+					TypeCombinator::union($captureGroup->getType(), new ConstantStringType('')),
+					$flags,
+					$matchesAll,
+				);
+				$groupValueType = TypeCombinator::removeNull($groupValueType);
+			} else {
+				$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll);
+			}
 
 			if (!$isTrailingOptional && $this->containsUnmatchedAsNull($flags, $matchesAll) && !$captureGroup->isOptional()) {
 				$groupValueType = TypeCombinator::removeNull($groupValueType);
-			}
-
-			if (!$this->containsSetOrder($flags) && !$this->containsUnmatchedAsNull($flags, $matchesAll) && $captureGroup->isOptional()) {
-				$groupValueType = TypeCombinator::removeNull($groupValueType);
-				$groupValueType = TypeCombinator::union($groupValueType, new ConstantStringType(''));
 			}
 
 			if ($this->containsPatternOrder($flags)) {
@@ -474,6 +478,8 @@ final class RegexArrayShapeMatcher
 		$offsetType = IntegerRangeType::fromInterval(0, null);
 		if ($this->containsUnmatchedAsNull($flags, $matchesAll)) {
 			$valueType = TypeCombinator::addNull($valueType);
+		}
+		if ($this->containsUnmatchedAsNull($flags, $matchesAll) || $matchesAll) {
 			// unmatched groups return -1 as offset
 			$offsetType = IntegerRangeType::fromInterval(-1, null);
 		}

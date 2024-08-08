@@ -112,13 +112,13 @@ function (string $size): void {
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches, PREG_SET_ORDER|PREG_OFFSET_CAPTURE)) {
-		assertType("list<array{0: array{string, int<0, max>}, num: array{numeric-string, int<0, max>}, 1: array{numeric-string, int<0, max>}, suffix?: array{'ab', int<0, max>}, 2?: array{'ab', int<0, max>}}>", $matches);
+		assertType("list<array{0: array{string, int<-1, max>}, num: array{numeric-string, int<-1, max>}, 1: array{numeric-string, int<-1, max>}, suffix?: array{'ab', int<-1, max>}, 2?: array{'ab', int<-1, max>}}>", $matches);
 	}
 };
 
 function (string $size): void {
 	if (preg_match_all('/ab(?P<num>\d+)(?P<suffix>ab)?/', $size, $matches, PREG_PATTERN_ORDER|PREG_OFFSET_CAPTURE)) {
-		assertType("array{0: list<array{string, int<0, max>}>, num: list<array{numeric-string, int<0, max>}>, 1: list<array{numeric-string, int<0, max>}>, suffix: list<''|array{'ab', int<0, max>}>, 2: list<''|array{'ab', int<0, max>}>}", $matches);
+		assertType("array{0: list<array{string, int<-1, max>}>, num: list<array{numeric-string, int<-1, max>}>, 1: list<array{numeric-string, int<-1, max>}>, suffix: list<array{''|'ab', int<-1, max>}>, 2: list<array{''|'ab', int<-1, max>}>}", $matches);
 	}
 };
 
@@ -142,7 +142,7 @@ class Bug11457
 			return;
 		}
 
-		assertType('array{list<array{string, int<0, max>}>}', $matches);
+		assertType('array{list<array{string, int<-1, max>}>}', $matches);
 	}
 
 	public function sayFoo(string $content): void
@@ -161,5 +161,17 @@ class Bug11457
 		}
 
 		assertType('array{list<string>}', $matches);
+	}
+
+	function doFoobar(string $s): void {
+		if (preg_match_all('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_OFFSET_CAPTURE)) {
+			assertType("array{list<array{string, int<-1, max>}>, list<array{''|'foo', int<-1, max>}>, list<array{''|'bar', int<-1, max>}>, list<array{''|'baz', int<-1, max>}>}", $matches);
+		}
+	}
+
+	function doFoobarNull(string $s): void {
+		if (preg_match_all('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL)) {
+			assertType("array{list<array{string|null, int<-1, max>}>, list<array{'foo'|null, int<-1, max>}>, list<array{'bar'|null, int<-1, max>}>, list<array{'baz'|null, int<-1, max>}>}", $matches);
+		}
 	}
 }

@@ -1370,9 +1370,6 @@ final class InitializerExprTypeResolver
 		if (
 			($leftType->isEnum()->yes() && $rightType->isTrue()->no())
 			|| ($rightType->isEnum()->yes() && $leftType->isTrue()->no())
-			|| ($leftType->isString()->yes() && $rightType->isString()->yes())
-			|| ($leftType->isInteger()->yes() && $rightType->isInteger()->yes())
-			|| ($leftType->isFloat()->yes() && $rightType->isFloat()->yes())
 		) {
 			return $this->resolveIdenticalType($leftType, $rightType);
 		}

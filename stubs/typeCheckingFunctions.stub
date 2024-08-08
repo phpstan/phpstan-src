@@ -105,7 +105,7 @@ function is_long(mixed $value): bool
 }
 
 /**
- * @phpstan-assert-if-true resource $value
+ * @phpstan-assert-if-true =resource $value
  * @return bool
  */
 function is_resource(mixed $value): bool

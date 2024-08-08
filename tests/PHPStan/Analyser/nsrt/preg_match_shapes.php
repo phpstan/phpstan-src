@@ -567,7 +567,7 @@ function (string $s): void {
 	}
 
 	if (preg_match($p, $s, $matches)) {
-		assertType("array{0: string, 1: non-empty-string, 2?: numeric-string, 3?: 'x'}", $matches);
+		assertType("array{0: string, 1: non-empty-string, 2?: ''|numeric-string, 3?: 'x'}", $matches);
 	}
 };
 

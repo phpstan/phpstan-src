@@ -297,7 +297,8 @@ final class RegexArrayShapeMatcher
 		$i = 0;
 		foreach ($captureGroups as $captureGroup) {
 			$isTrailingOptional = $i >= $countGroups - $trailingOptionals;
-			$groupValueType = $this->createGroupValueType($captureGroup, $wasMatched, $flags, $isTrailingOptional, $matchesAll);
+			$isLastGroup = $i === $countGroups - 1;
+			$groupValueType = $this->createGroupValueType($captureGroup, $wasMatched, $flags, $isTrailingOptional, $isLastGroup, $matchesAll);
 			$optional = $this->isGroupOptional($captureGroup, $wasMatched, $flags, $isTrailingOptional, $matchesAll);
 
 			if ($captureGroup->isNamed()) {
@@ -390,7 +391,7 @@ final class RegexArrayShapeMatcher
 		return $optional;
 	}
 
-	private function createGroupValueType(RegexCapturingGroup $captureGroup, TrinaryLogic $wasMatched, int $flags, bool $isTrailingOptional, bool $matchesAll): Type
+	private function createGroupValueType(RegexCapturingGroup $captureGroup, TrinaryLogic $wasMatched, int $flags, bool $isTrailingOptional, bool $isLastGroup, bool $matchesAll): Type
 	{
 		$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll);
 
@@ -417,7 +418,7 @@ final class RegexArrayShapeMatcher
 			}
 		}
 
-		if (!$isTrailingOptional && !$this->containsUnmatchedAsNull($flags, $matchesAll) && $captureGroup->isOptional()) {
+		if (!$isLastGroup && !$this->containsUnmatchedAsNull($flags, $matchesAll) && $captureGroup->isOptional()) {
 			$groupValueType = TypeCombinator::union($groupValueType, new ConstantStringType(''));
 		}
 

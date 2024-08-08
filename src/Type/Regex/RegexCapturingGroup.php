@@ -4,18 +4,18 @@ namespace PHPStan\Type\Regex;
 
 use PHPStan\Type\Type;
 
-class RegexCapturingGroup
+final class RegexCapturingGroup
 {
 
 	private bool $forceNonOptional = false;
 
 	public function __construct(
-		private int $id,
-		private ?string $name,
-		private ?RegexAlternation $alternation,
-		private bool $inOptionalQuantification,
-		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
-		private Type $type,
+		private readonly int $id,
+		private readonly ?string $name,
+		private readonly ?RegexAlternation $alternation,
+		private readonly bool $inOptionalQuantification,
+		private readonly RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
+		private readonly Type $type,
 	)
 	{
 	}

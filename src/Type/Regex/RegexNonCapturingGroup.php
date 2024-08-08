@@ -2,14 +2,14 @@
 
 namespace PHPStan\Type\Regex;
 
-class RegexNonCapturingGroup
+final class RegexNonCapturingGroup
 {
 
 	public function __construct(
-		private ?RegexAlternation $alternation,
-		private bool $inOptionalQuantification,
-		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
-		private bool $resetGroupCounter,
+		private readonly ?RegexAlternation $alternation,
+		private readonly bool $inOptionalQuantification,
+		private readonly RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
+		private readonly bool $resetGroupCounter,
 	)
 	{
 	}

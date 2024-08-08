@@ -10,7 +10,7 @@ final class RegexAlternation
 	/** @var array<int, list<int>> */
 	private array $groupCombinations = [];
 
-	public function __construct(private int $alternationId)
+	public function __construct(private readonly int $alternationId)
 	{
 	}
 

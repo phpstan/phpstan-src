@@ -22,7 +22,7 @@ function (string $s): void {
 	preg_replace_callback(
 		'/(foo)?(bar)?(baz)?/',
 		function ($matches) {
-			assertType("array{0: array{string, int<0, max>}, 1?: array{'foo', int<0, max>}, 2?: array{'bar', int<0, max>}, 3?: array{'baz', int<0, max>}}", $matches);
+			assertType("array{0: array{string, int<0, max>}, 1?: array{''|'foo', int<0, max>}, 2?: array{''|'bar', int<0, max>}, 3?: array{'baz', int<0, max>}}", $matches);
 			return '';
 		},
 		$s,

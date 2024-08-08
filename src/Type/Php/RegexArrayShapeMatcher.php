@@ -416,7 +416,7 @@ final class RegexArrayShapeMatcher
 			$groupValueType = $this->getValueType(
 				TypeCombinator::union($captureGroup->getType(), new ConstantStringType('')),
 				$flags,
-				$matchesAll
+				$matchesAll,
 			);
 		} else {
 			$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll);

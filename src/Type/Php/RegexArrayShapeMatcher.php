@@ -475,13 +475,10 @@ final class RegexArrayShapeMatcher
 	{
 		$valueType = $baseType;
 
-		$offsetType = IntegerRangeType::fromInterval(0, null);
+		// unmatched groups return -1 as offset
+		$offsetType = IntegerRangeType::fromInterval(-1, null);
 		if ($this->containsUnmatchedAsNull($flags, $matchesAll)) {
 			$valueType = TypeCombinator::addNull($valueType);
-		}
-		if ($this->containsUnmatchedAsNull($flags, $matchesAll) || $matchesAll) {
-			// unmatched groups return -1 as offset
-			$offsetType = IntegerRangeType::fromInterval(-1, null);
 		}
 
 		if ($this->containsOffsetCapture($flags)) {

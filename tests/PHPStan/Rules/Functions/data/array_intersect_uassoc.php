@@ -31,3 +31,27 @@ array_intersect_uassoc(
 		return $a <=> $b;
 	}
 );
+
+array_intersect_uassoc(
+	['a' => 1, 'b' => 2],
+	['c' => 1, 'd' => 2],
+	['c' => 1, 'd' => 2],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	}
+);
+
+array_intersect_uassoc(
+	['a' => 1, 'b' => 2],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	}
+);
+
+array_intersect_uassoc(
+	['a' => 1, 'b' => 2],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	},
+	['a' => 1, 'b' => 2]
+);

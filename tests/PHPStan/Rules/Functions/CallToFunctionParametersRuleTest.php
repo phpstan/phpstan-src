@@ -1758,6 +1758,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #3 $key_compare_func of function array_intersect_uassoc expects callable(0|1|2|3, 0|1|2|3): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
 				30,
 			],
+			[
+				'Parameter #2 ...$arrays of function array_intersect_uassoc expects array<\'a\'|\'b\', 1|2>, Closure(string, string): int<-1, 1> given.',
+				53,
+			],
+			[
+				'Parameter #3 $key_compare_func of function array_intersect_uassoc expects callable(\'a\'|\'b\', \'a\'|\'b\'): int<-1, 1>, array{a: 1, b: 2} given.',
+				56,
+			],
 		]);
 	}
 

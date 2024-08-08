@@ -493,23 +493,46 @@ class FunctionCallParametersCheck
 		$originalParameters = $parametersAcceptor instanceof ResolvedFunctionVariant
 			? $parametersAcceptor->getOriginalParametersAcceptor()->getParameters()
 			: array_fill(0, count($parameters), null);
+		$expandedParameters = [];
+		$expandedOriginalParameters = [];
 		$parametersByName = [];
 		$originalParametersByName = [];
 		$unusedParametersByName = [];
 		$errors = [];
+		$expandVariadicParam = count($arguments) - count($parameters);
 		foreach ($parameters as $i => $parameter) {
 			$parametersByName[$parameter->getName()] = $parameter;
-			$originalParametersByName[$parameter->getName()] = $originalParameters[$i];
+			$originalParameter = $originalParameters[$i];
+			$originalParametersByName[$parameter->getName()] = $originalParameter;
+			$expandedParameters[] = $parameter;
+			$expandedOriginalParameters[] = $originalParameter;
 
 			if ($parameter->isVariadic()) {
+				// This handles variadic parameter followed by a another parameter. This cannot happen in user-defined
+				// code, but it does happen in built-in functions - e.g. array_intersect_uassoc. Currently, this condition
+				// doesn't handle the case where the following parameter is optional (it may not be needed).
+				if ($expandVariadicParam < 0 && array_key_exists($i + 1, $parameters)) {
+					$expandVariadicParam++;
+					array_pop($expandedParameters);
+					array_pop($expandedOriginalParameters);
+				} else {
+					for (; $expandVariadicParam > 0; --$expandVariadicParam) {
+						$expandedParameters[] = $parameter;
+						$expandedOriginalParameters[] = $originalParameter;
+					}
+				}
+
 				continue;
 			}
 
 			$unusedParametersByName[$parameter->getName()] = $parameter;
 		}
 
+		$parameters = $expandedParameters;
+		$originalParameters = $expandedOriginalParameters;
 		$newArguments = [];
 
+		// TODO: check isVariadic usages in below code - they may not be necessary anymore.
 		$namedArgumentAlreadyOccurred = false;
 		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine]) {
 			if ($argumentName === null) {

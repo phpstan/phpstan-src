@@ -364,14 +364,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	{
 		if ($type instanceof self) {
 			if (count($this->keyTypes) === 0) {
-				if (count($type->keyTypes) > 0) {
-					if (count($type->optionalKeys) > 0) {
-						return TrinaryLogic::createMaybe();
-					}
-					return TrinaryLogic::createNo();
-				}
-
-				return TrinaryLogic::createYes();
+				return $type->isIterableAtLeastOnce()->negate();
 			}
 
 			$results = [];

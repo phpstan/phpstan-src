@@ -4252,6 +4252,56 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ClosureType::class,
 			'pure-Closure',
 		];
+
+		$xy = new ConstantArrayType([
+			new ConstantIntegerType(0),
+		], [
+			new ConstantStringType('xy'),
+		]);
+		$abxy = new ConstantArrayType([
+			new ConstantIntegerType(0),
+			new ConstantIntegerType(1),
+		], [
+			new ConstantStringType('ab'),
+			new ConstantStringType('xy'),
+		], [2], [1]);
+
+		yield [
+			[
+				new UnionType([
+					new ConstantArrayType([], []),
+					$xy,
+					$abxy,
+				]),
+				new UnionType([
+					$xy,
+					$abxy,
+				]),
+			],
+			UnionType::class,
+			"array{'xy'}|array{0: 'ab', 1?: 'xy'}",
+		];
+
+		yield [
+			[
+				new ConstantArrayType([], []),
+				new UnionType([
+					$xy,
+					$abxy,
+				]),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+
+		yield [
+			[
+				new ConstantArrayType([], []),
+				$abxy,
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
 	}
 
 	/**

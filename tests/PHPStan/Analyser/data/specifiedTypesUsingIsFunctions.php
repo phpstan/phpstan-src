@@ -41,8 +41,7 @@ function () {
 		throw new \Exception();
 	}
 
-	$resource = fopen('php://memory', 'r');
-	if ($resource === false) {
+	if (!is_resource($resource)) {
 		throw new \Exception();
 	}
 

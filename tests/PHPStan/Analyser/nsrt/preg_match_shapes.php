@@ -652,7 +652,7 @@ function (string $value): void
 
 function (string $value): void {
 	if (preg_match('/^(?:(x)|(y))*$/', $value, $matches, PREG_OFFSET_CAPTURE)) {
-		assertType("array{0: array{string, int<-1, max>}, 1?: array{non-empty-string, int<-1, max>}, 2?: array{non-empty-string, int<-1, max>}}", $matches);
+		assertType("array{0: array{string, int<-1, max>}, 1?: array{non-empty-string, int<-1, max>}}|array{array{string, int<-1, max>}, array{'', int<-1, max>}, array{non-empty-string, int<-1, max>}}", $matches);
 	}
 };
 
@@ -691,7 +691,7 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('~a|(\d)|(\s)~', $s, $matches, PREG_OFFSET_CAPTURE) === 1) {
-		assertType("array{0: array{string, int<0, max>}, 1?: array{numeric-string, int<0, max>}}|array{array{string, int<0, max>}, array{'', int<0, max>}, array{non-empty-string, int<0, max>}}", $matches);
+		assertType("array{0: array{string, int<-1, max>}, 1?: array{numeric-string, int<-1, max>}}|array{array{string, int<-1, max>}, array{'', int<-1, max>}, array{non-empty-string, int<-1, max>}}", $matches);
 	}
 };
 

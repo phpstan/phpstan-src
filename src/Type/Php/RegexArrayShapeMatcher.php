@@ -14,6 +14,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Regex\RegexAlternation;
 use PHPStan\Type\Regex\RegexCapturingGroup;
 use PHPStan\Type\Regex\RegexExpressionHelper;
@@ -140,7 +141,7 @@ final class RegexArrayShapeMatcher
 			&& $onlyOptionalTopLevelGroup !== null
 		) {
 			// if only one top level capturing optional group exists
-			// we build a more precise constant union of a empty-match and a match with the group
+			// we build a more precise tagged union of a empty-match and a match with the group
 
 			$onlyOptionalTopLevelGroup->forceNonOptional();
 
@@ -154,18 +155,24 @@ final class RegexArrayShapeMatcher
 			);
 
 			if (!$this->containsUnmatchedAsNull($flags, $matchesAll)) {
+				// positive match has a subject but not any capturing group
 				$combiType = TypeCombinator::union(
 					new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [0], [], true),
 					$combiType,
 				);
 			}
 
+			$onlyOptionalTopLevelGroup->clearOverrides();
+
 			return $combiType;
 		} elseif (
 			!$matchesAll
-			&& $wasMatched->yes()
+			&& $onlyOptionalTopLevelGroup === null
 			&& $onlyTopLevelAlternation !== null
+			&& !$wasMatched->no()
 		) {
+			// if only a single top level alternation exist built a more precise tagged union
+
 			$combiTypes = [];
 			$isOptionalAlternation = false;
 			foreach ($onlyTopLevelAlternation->getGroupCombinations() as $groupCombo) {
@@ -179,6 +186,9 @@ final class RegexArrayShapeMatcher
 						$beforeCurrentCombo = false;
 					} elseif ($beforeCurrentCombo && !$group->resetsGroupCounter()) {
 						$group->forceNonOptional();
+						$group->forceType(
+							$this->containsUnmatchedAsNull($flags, $matchesAll) ? new NullType() : new ConstantStringType(''),
+						);
 					} elseif (
 						$group->getAlternationId() === $onlyTopLevelAlternation->getId()
 						&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
@@ -200,17 +210,26 @@ final class RegexArrayShapeMatcher
 
 				foreach ($groupCombo as $groupId) {
 					$group = $comboList[$groupId];
-					$group->restoreNonOptional();
+					$group->clearOverrides();
 				}
 			}
 
-			if ($isOptionalAlternation && !$this->containsUnmatchedAsNull($flags, $matchesAll)) {
+			if (
+				!$this->containsUnmatchedAsNull($flags, $matchesAll)
+				&& (
+					$onlyTopLevelAlternation->getAlternationsCount() !== count($onlyTopLevelAlternation->getGroupCombinations())
+					|| $isOptionalAlternation
+				)
+			) {
+				// positive match has a subject but not any capturing group
 				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [0], [], true);
 			}
 
 			return TypeCombinator::union(...$combiTypes);
 		}
 
+		// the general case, which should work in all cases but does not yield the most
+		// precise result possible in some cases
 		return $this->buildArrayType(
 			$groupList,
 			$wasMatched,

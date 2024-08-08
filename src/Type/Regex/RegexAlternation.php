@@ -10,7 +10,10 @@ final class RegexAlternation
 	/** @var array<int, list<int>> */
 	private array $groupCombinations = [];
 
-	public function __construct(private readonly int $alternationId)
+	public function __construct(
+		private readonly int $alternationId,
+		private readonly int $alternationsCount,
+	)
 	{
 	}
 
@@ -26,6 +29,11 @@ final class RegexAlternation
 		}
 
 		$this->groupCombinations[$combinationIndex][] = $group->getId();
+	}
+
+	public function getAlternationsCount(): int
+	{
+		return $this->alternationsCount;
 	}
 
 	/**

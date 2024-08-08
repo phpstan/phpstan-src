@@ -9,6 +9,8 @@ final class RegexCapturingGroup
 
 	private bool $forceNonOptional = false;
 
+	private ?Type $forceType = null;
+
 	public function __construct(
 		private readonly int $id,
 		private readonly ?string $name,
@@ -30,9 +32,15 @@ final class RegexCapturingGroup
 		$this->forceNonOptional = true;
 	}
 
-	public function restoreNonOptional(): void
+	public function forceType(Type $type): void
+	{
+		$this->forceType = $type;
+	}
+
+	public function clearOverrides(): void
 	{
 		$this->forceNonOptional = false;
+		$this->forceType = null;
 	}
 
 	public function resetsGroupCounter(): bool
@@ -109,6 +117,9 @@ final class RegexCapturingGroup
 
 	public function getType(): Type
 	{
+		if ($this->forceType !== null) {
+			return $this->forceType;
+		}
 		return $this->type;
 	}
 

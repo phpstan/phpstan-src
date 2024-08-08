@@ -300,7 +300,7 @@ function (string $size): void {
 	if (preg_match('~^a\.(b)?(c)?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType("array{0: string, 1?: 'b', 2?: 'c'}", $matches);
+	assertType("array{0: string, 1?: ''|'b', 2?: 'c'}", $matches);
 };
 
 function (string $size): void {
@@ -662,3 +662,24 @@ function (string $value): void
 		assertType("array{0: array{string, int<0, max>}, 1?: array{non-empty-string, int<0, max>}, 2?: array{non-empty-string, int<0, max>}}", $matches);
 	}
 };
+
+class Bug11479
+{
+	static public function sayHello(string $source): void
+	{
+		$pattern = "~^(?P<dateFrom>\d)?\-?(?P<dateTo>\d)?$~";
+
+		preg_match($pattern, $source, $matches);
+
+		// for $source = "-1" in $matches is
+		// array (
+		//  0 => '-1',
+		//  'dateFrom' => '',
+		//  1 => '',
+		//  'dateTo' => '1',
+		//  2 => '1',
+		//)
+
+		assertType("array{0?: string, dateFrom?: ''|numeric-string, 1?: ''|numeric-string, dateTo?: numeric-string, 2?: numeric-string}", $matches);
+	}
+}

@@ -247,6 +247,10 @@ jobs:
               cp -r tmp-node-modules node_modules
               OUTPUT=$(../../bin/phpstan analyse -c ignoreNonexistentExcludePath.neon)
               echo "$OUTPUT"
+          - script: |
+              cd e2e/bad-exclude-paths
+              OUTPUT=$(../../bin/phpstan analyse -c ignoreReportUnmatchedFalse.neon)
+              echo "$OUTPUT"
 
     steps:
       - name: "Checkout"

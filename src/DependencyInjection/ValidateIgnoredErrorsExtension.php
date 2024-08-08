@@ -136,7 +136,9 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 			}
 		}
 
-		if ($noImplicitWildcard) {
+		$reportUnmatched = (bool) $builder->parameters['reportUnmatchedIgnoredErrors'];
+
+		if ($noImplicitWildcard && $reportUnmatched) {
 			foreach ($ignoreErrors as $ignoreError) {
 				if (!is_array($ignoreError)) {
 					continue;

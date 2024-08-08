@@ -355,6 +355,11 @@ final class CommandHelper
 				$errorOutput->writeLineFormatted($error);
 				$errorOutput->writeLineFormatted('');
 			}
+
+			$errorOutput->writeLineFormatted('To ignore non-existent paths in ignoreErrors,');
+			$errorOutput->writeLineFormatted('set <fg=cyan>reportUnmatchedIgnoredErrors: false</> in your configuration file.');
+			$errorOutput->writeLineFormatted('');
+
 			throw new InceptionNotSuccessfulException();
 		} catch (InvalidExcludePathsException $e) {
 			$errorOutput->writeLineFormatted(sprintf('<error>Invalid %s in excludePaths:</error>', count($e->getErrors()) === 1 ? 'entry' : 'entries'));

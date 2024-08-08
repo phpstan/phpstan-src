@@ -14,9 +14,9 @@ function doFoo(string $s) {
 
 function doUnmatchedAsNull(string $s): void {
 	if (preg_match('/(foo)?(bar)?(baz)?/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType("array{0: string, 1?: 'foo', 2?: 'bar', 3?: 'baz'}", $matches);
+		assertType("array{0: string, 1?: ''|'foo', 2?: ''|'bar', 3?: 'baz'}", $matches);
 	}
-	assertType("array{}|array{0: string, 1?: 'foo', 2?: 'bar', 3?: 'baz'}", $matches);
+	assertType("array{}|array{0: string, 1?: ''|'foo', 2?: ''|'bar', 3?: 'baz'}", $matches);
 }
 
 // see https://3v4l.org/VeDob#veol

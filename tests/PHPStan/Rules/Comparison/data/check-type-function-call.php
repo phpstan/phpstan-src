@@ -967,3 +967,12 @@ function checkSuperGlobals(): void
 		if (is_int($k)) {}
 	}
 }
+
+/**
+ * @param resource $resource
+ */
+function checkClosedResource($resource): void {
+	if (!is_resource($resource)) {
+
+	}
+}

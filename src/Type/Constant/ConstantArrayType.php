@@ -366,15 +366,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				return $type->isIterableAtLeastOnce()->negate();
 			}
 
-			if (
-				$this->isList->yes()
-				&& $type->isList->yes()
-				&& count($this->keyTypes) !== count($type->keyTypes)
-				&& count($type->optionalKeys) === 0
-			) {
-				return TrinaryLogic::createNo();
-			}
-
 			$results = [];
 			foreach ($this->keyTypes as $i => $keyType) {
 				$hasOffset = $type->hasOffsetValueType($keyType);
@@ -394,6 +385,25 @@ class ConstantArrayType extends ArrayType implements ConstantType
 					return TrinaryLogic::createNo();
 				}
 				$results[] = $isValueSuperType;
+			}
+
+			if (
+				$this->isList->yes()
+				&& $type->isList->yes()
+				&& count($this->keyTypes) !== count($type->keyTypes)
+				&& count($type->optionalKeys) === 0
+			) {
+				$keepSeparate = true;
+				foreach ($this->valueTypes as $valueType) {
+					if ($valueType->isConstantValue()->yes()) {
+						$keepSeparate = false;
+						break;
+					}
+				}
+
+				if ($keepSeparate) {
+					return TrinaryLogic::createNo();
+				}
 			}
 
 			return TrinaryLogic::createYes()->and(...$results);

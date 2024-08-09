@@ -58,7 +58,6 @@ class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-param-immediately-invoked-callable',
 		'@phpstan-param-later-invoked-callable',
 		'@phpstan-param-closure-this',
-		'@phpstan-skip-php8-stubs',
 	];
 
 	public function __construct(

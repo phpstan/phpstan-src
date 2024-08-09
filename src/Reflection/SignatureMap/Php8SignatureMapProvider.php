@@ -27,9 +27,9 @@ use function array_key_exists;
 use function array_map;
 use function count;
 use function explode;
+use function in_array;
 use function is_string;
 use function sprintf;
-use function str_contains;
 use function strtolower;
 
 class Php8SignatureMapProvider implements SignatureMapProvider
@@ -188,7 +188,26 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		$lowerName = strtolower($functionName);
 		if (
 			!array_key_exists($lowerName, $this->map->functions)
-			|| ($reflectionFunction !== null && $reflectionFunction->getDocComment() !== false && str_contains($reflectionFunction->getDocComment(), '@phpstan-skip-php8-stubs'))
+			|| (
+				$className === null
+				// These functions have a variadic parameter in the middle. This is not well described by php8-stubs.
+				&& in_array(
+					$functionName,
+					[
+						'array_diff_uassoc',
+						'array_diff_ukey',
+						'array_intersect_uassoc',
+						'array_intersect_ukey',
+						'array_udiff',
+						'array_udiff_assoc',
+						'array_udiff_uassoc',
+						'array_uintersect',
+						'array_uintersect_assoc',
+						'array_uintersect_uassoc',
+					],
+					true,
+				)
+			)
 		) {
 			return $this->functionSignatureMapProvider->getFunctionSignatures($functionName, $className, $reflectionFunction);
 		}

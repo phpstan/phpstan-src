@@ -31,3 +31,31 @@ array_diff_uassoc(
 		return $a <=> $b;
 	}
 );
+
+array_diff_uassoc(
+	['a' => 'a', 'b' => 'b'],
+	['c' => 'c', 'd' => 'd'],
+	['c' => 'c', 'd' => 'd'],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	}
+);
+
+array_diff_uassoc(
+	['a' => 'a', 'b' => 'b'],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	}
+);
+
+array_diff_uassoc(
+	['a' => 'a', 'b' => 'b'],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	},
+	['a' => 'a', 'b' => 'b'],
+);
+
+array_diff_uassoc(
+	['a' => 'a', 'b' => 'b'],
+);

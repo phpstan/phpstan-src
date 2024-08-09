@@ -55,3 +55,7 @@ array_intersect_uassoc(
 	},
 	['a' => 1, 'b' => 2]
 );
+
+array_intersect_uassoc(
+	['a' => 'a', 'b' => 'b'],
+);

@@ -31,3 +31,31 @@ array_uintersect(
 		return $a <=> $b;
 	}
 );
+
+array_uintersect(
+	['a', 'b'],
+	['c', 'd'],
+	['c', 'd'],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	}
+);
+
+array_uintersect(
+	['a', 'b'],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	}
+);
+
+array_uintersect(
+	['a', 'b'],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	},
+	['a', 'b'],
+);
+
+array_uintersect(
+	['a', 'b'],
+);

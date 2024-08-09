@@ -1736,6 +1736,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #3 $key_compare_func of function array_diff_uassoc expects callable(0|1|2|3, 0|1|2|3): int, Closure(string, string): int<-1, 1> given.',
 				30,
 			],
+			[
+				'Parameter #2 ...$arrays of function array_diff_uassoc expects array<\'a\'|\'b\', \'a\'|\'b\'>, Closure(string, string): int<-1, 1> given.',
+				53,
+			],
+			[
+				'Parameter #3 $key_compare_func of function array_diff_uassoc expects callable(\'a\'|\'b\', \'a\'|\'b\'): int, array{a: \'a\', b: \'b\'} given.',
+				56,
+			],
+			[
+				'Function array_diff_uassoc invoked with 1 parameter, at least 2 required.',
+				59,
+			],
 		]);
 	}
 
@@ -1750,6 +1762,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #3 $key_compare_func of function array_diff_ukey expects callable(0|1|2|3, 0|1|2|3): int, Closure(string, string): int<-1, 1> given.',
 				30,
+			],
+			[
+				'Parameter #2 ...$arrays of function array_diff_ukey expects array<\'a\'|\'b\', \'a\'|\'b\'>, Closure(string, string): int<-1, 1> given.',
+				53,
+			],
+			[
+				'Parameter #3 $key_compare_func of function array_diff_ukey expects callable(\'a\'|\'b\', \'a\'|\'b\'): int, array{a: \'a\', b: \'b\'} given.',
+				56,
+			],
+			[
+				'Function array_diff_ukey invoked with 1 parameter, at least 2 required.',
+				59,
 			],
 		]);
 	}
@@ -1774,6 +1798,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #3 $key_compare_func of function array_intersect_uassoc expects callable(\'a\'|\'b\', \'a\'|\'b\'): int, array{a: 1, b: 2} given.',
 				56,
 			],
+			[
+				'Function array_intersect_uassoc invoked with 1 parameter, at least 2 required.',
+				59,
+			],
 		]);
 	}
 
@@ -1789,6 +1817,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #3 $key_compare_func of function array_intersect_ukey expects callable(0|1|2|3, 0|1|2|3): int, Closure(string, string): int<-1, 1> given.',
 				30,
 			],
+			[
+				'Parameter #2 ...$arrays of function array_intersect_ukey expects array<\'a\'|\'b\', \'a\'|\'b\'>, Closure(string, string): int<-1, 1> given.',
+				53,
+			],
+			[
+				'Parameter #3 $key_compare_func of function array_intersect_ukey expects callable(\'a\'|\'b\', \'a\'|\'b\'): int, array{a: \'a\', b: \'b\'} given.',
+				56,
+			],
+			[
+				'Function array_intersect_ukey invoked with 1 parameter, at least 2 required.',
+				59,
+			],
 		]);
 	}
 
@@ -1803,6 +1843,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #3 $value_compare_func of function array_udiff_assoc expects callable(1|2|3|4|5, 1|2|3|4|5): int, Closure(string, string): int<-1, 1> given.',
 				30,
+			],
+			[
+				'Parameter #2 ...$arrays of function array_udiff_assoc expects array<\'a\'|\'b\', \'a\'|\'b\'>, Closure(string, string): int<-1, 1> given.',
+				53,
+			],
+			[
+				'Parameter #3 $value_compare_func of function array_udiff_assoc expects callable(\'a\'|\'b\', \'a\'|\'b\'): int, array{a: \'a\', b: \'b\'} given.',
+				56,
+			],
+			[
+				'Function array_udiff_assoc invoked with 1 parameter, at least 2 required.',
+				59,
 			],
 		]);
 	}
@@ -1827,6 +1879,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #4 $key_compare_func of function array_udiff_uassoc expects callable(0|1|2|3, 0|1|2|3): int, Closure(string, string): int<-1, 1> given.',
 				42,
 			],
+			[
+				'Parameter #2 ...$arrays of function array_udiff_uassoc expects array<\'a\'|\'b\', \'a\'|\'b\'>, Closure(string, string): int<-1, 1> given.',
+				71,
+			],
+			[
+				'Parameter #3 $value_compare_func of function array_udiff_uassoc expects callable(\'a\'|\'b\', \'a\'|\'b\'): int, array{a: \'a\', b: \'b\'} given.',
+				74,
+			],
+			[
+				'Function array_udiff_uassoc invoked with 2 parameters, at least 3 required.',
+				80,
+			],
 		]);
 	}
 
@@ -1841,6 +1905,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #3 $value_compare_func of function array_uintersect_assoc expects callable(1|2|3|4, 1|2|3|4): int, Closure(string, string): int<-1, 1> given.',
 				30,
+			],
+			[
+				'Parameter #2 ...$arrays of function array_uintersect_assoc expects array<\'a\'|\'b\', \'a\'|\'b\'>, Closure(string, string): int<-1, 1> given.',
+				53,
+			],
+			[
+				'Parameter #3 $value_compare_func of function array_uintersect_assoc expects callable(\'a\'|\'b\', \'a\'|\'b\'): int, array{a: \'a\', b: \'b\'} given.',
+				56,
+			],
+			[
+				'Function array_uintersect_assoc invoked with 1 parameter, at least 2 required.',
+				59,
 			],
 		]);
 	}
@@ -1865,6 +1941,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #4 $key_compare_func of function array_uintersect_uassoc expects callable(0|1|2|3, 0|1|2|3): int, Closure(string, string): int<-1, 1> given.',
 				42,
 			],
+			[
+				'Parameter #2 ...$arrays of function array_uintersect_uassoc expects array<\'a\'|\'b\', \'a\'|\'b\'>, Closure(string, string): int<-1, 1> given.',
+				71,
+			],
+			[
+				'Parameter #3 $value_compare_func of function array_uintersect_uassoc expects callable(\'a\'|\'b\', \'a\'|\'b\'): int, array{a: \'a\', b: \'b\'} given.',
+				74,
+			],
+			[
+				'Function array_uintersect_uassoc invoked with 2 parameters, at least 3 required.',
+				80,
+			],
 		]);
 	}
 
@@ -1879,6 +1967,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #3 $value_compare_func of function array_uintersect expects callable(1|2|3|4, 1|2|3|4): int, Closure(string, string): int<-1, 1> given.',
 				30,
+			],
+			[
+				'Parameter #2 ...$arrays of function array_uintersect expects array<0|1, \'a\'|\'b\'>, Closure(string, string): int<-1, 1> given.',
+				53,
+			],
+			[
+				'Parameter #3 $value_compare_func of function array_uintersect expects callable(\'a\'|\'b\', \'a\'|\'b\'): int, array{\'a\', \'b\'} given.',
+				56,
+			],
+			[
+				'Function array_uintersect invoked with 1 parameter, at least 2 required.',
+				59,
 			],
 		]);
 	}

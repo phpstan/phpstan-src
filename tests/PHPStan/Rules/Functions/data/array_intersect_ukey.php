@@ -31,3 +31,31 @@ array_intersect_ukey(
 		return $a <=> $b;
 	}
 );
+
+array_intersect_ukey(
+	['a' => 'a', 'b' => 'b'],
+	['c' => 'c', 'd' => 'd'],
+	['c' => 'c', 'd' => 'd'],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	}
+);
+
+array_intersect_ukey(
+	['a' => 'a', 'b' => 'b'],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	}
+);
+
+array_intersect_ukey(
+	['a' => 'a', 'b' => 'b'],
+	static function (string $a, string $b): int {
+		return $a <=> $b;
+	},
+	['a' => 'a', 'b' => 'b'],
+);
+
+array_intersect_ukey(
+	['a' => 'a', 'b' => 'b'],
+);

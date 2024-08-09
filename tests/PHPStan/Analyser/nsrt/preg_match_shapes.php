@@ -707,3 +707,12 @@ function bug11490 (string $expression): void {
 		assertType("array{string, ''|'+'|'-', numeric-string}", $matches);
 	}
 }
+
+function bug11490b (string $expression): void {
+	$matches = [];
+
+	if (preg_match('/([\\[+])?([\d]+)%/', $expression, $matches) === 1) {
+		assertType("array{string, ''|'+'|'[', numeric-string}", $matches);
+	}
+}
+

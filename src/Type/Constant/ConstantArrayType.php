@@ -367,6 +367,17 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				return $type->isIterableAtLeastOnce()->negate();
 			}
 
+			if (
+				$this->isList->yes()
+				&& $type->isList->yes()
+				&& count($this->keyTypes) !== count($type->keyTypes)
+			) {
+				if (count($type->optionalKeys) > 0) {
+					return TrinaryLogic::createMaybe();
+				}
+				return TrinaryLogic::createNo();
+			}
+
 			$results = [];
 			foreach ($this->keyTypes as $i => $keyType) {
 				$hasOffset = $type->hasOffsetValueType($keyType);

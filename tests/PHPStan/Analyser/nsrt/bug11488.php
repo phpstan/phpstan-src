@@ -46,7 +46,7 @@ class Foo
 		if (count($row) !== 1) {
 			assertType('array{mixed, string|null, mixed}', $row);
 		} else {
-			assertType('array{0: mixed, 1?: string|null}', $row);
+			assertType('array{mixed}', $row);
 		}
 
 		if (count($row) !== 2) {

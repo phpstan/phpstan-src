@@ -279,4 +279,34 @@ class CountWithOptionalKeys
 		}
 	}
 
+	/**
+	 * @param array{string}|array{0: mixed, 1?: string|null} $row
+	 */
+	protected function testOptionalKeysInTaggedUnion(array $row): void
+	{
+		if (count($row) === 0) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 1) {
+			assertType('array{mixed}', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 2) {
+			assertType('array{mixed, string|null}', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 3) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+	}
+
 }

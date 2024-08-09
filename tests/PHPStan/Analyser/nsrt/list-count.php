@@ -282,7 +282,7 @@ class CountWithOptionalKeys
 	/**
 	 * @param array{string}|array{0: int, 1?: string|null} $row
 	 */
-	protected function testOptionalKeysInTaggedUnion($row): void
+	protected function testOptionalKeysInListsOfTaggedUnion($row): void
 	{
 		if (count($row) === 0) {
 			assertType('*NEVER*', $row);
@@ -306,6 +306,36 @@ class CountWithOptionalKeys
 			assertType('*NEVER*', $row);
 		} else {
 			assertType('array{0: int, 1?: string|null}|array{string}', $row);
+		}
+	}
+
+	/**
+	 * @param array{string}|array{0: int, 3?: string|null} $row
+	 */
+	protected function testOptionalKeysInUnionArray($row): void
+	{
+		if (count($row) === 0) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: int, 3?: string|null}|array{string}', $row);
+		}
+
+		if (count($row) === 1) {
+			assertType('array{0: int, 3?: string|null}|array{string}', $row);
+		} else {
+			assertType('array{0: int, 3?: string|null}', $row);
+		}
+
+		if (count($row) === 2) {
+			assertType('array{0: int, 3?: string|null}', $row);
+		} else {
+			assertType('array{0: int, 3?: string|null}|array{string}', $row);
+		}
+
+		if (count($row) === 3) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: int, 3?: string|null}|array{string}', $row);
 		}
 	}
 

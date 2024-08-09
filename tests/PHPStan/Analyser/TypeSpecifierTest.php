@@ -70,7 +70,9 @@ class TypeSpecifierTest extends PHPStanTestCase
 		$this->scope = $this->scope->assignVariable('barOrFalse', new UnionType([new ObjectType('Bar'), new ConstantBooleanType(false)]), new UnionType([new ObjectType('Bar'), new ConstantBooleanType(false)]));
 		$this->scope = $this->scope->assignVariable('stringOrFalse', new UnionType([new StringType(), new ConstantBooleanType(false)]), new UnionType([new StringType(), new ConstantBooleanType(false)]));
 		$this->scope = $this->scope->assignVariable('array', new ArrayType(new MixedType(), new MixedType()), new ArrayType(new MixedType(), new MixedType()));
+		$this->scope = $this->scope->assignVariable('arrayOrNull', new UnionType([new ArrayType(new MixedType(), new MixedType()), new NullType()]), new UnionType([new ArrayType(new MixedType(), new MixedType()), new NullType()]));
 		$this->scope = $this->scope->assignVariable('foo', new MixedType(), new MixedType());
+		$this->scope = $this->scope->assignVariable('mixed', new MixedType(), new MixedType());
 		$this->scope = $this->scope->assignVariable('classString', new ClassStringType(), new ClassStringType());
 		$this->scope = $this->scope->assignVariable('genericClassString', new GenericClassStringType(new ObjectType('Bar')), new GenericClassStringType(new ObjectType('Bar')));
 		$this->scope = $this->scope->assignVariable('object', new ObjectWithoutClassType(), new ObjectWithoutClassType());
@@ -349,8 +351,16 @@ class TypeSpecifierTest extends PHPStanTestCase
 					$this->createFunctionCall('is_int', 'foo'),
 					$this->createFunctionCall('is_string', 'bar'),
 				),
-				[],
+				['$foo' => 'int'],
 				['$foo' => '~int', '$bar' => '~string'],
+			],
+			[
+				new Expr\BinaryOp\BooleanOr(
+					$this->createFunctionCall('is_int', 'foo'),
+					$this->createFunctionCall('is_string', 'mixed'),
+				),
+				[],
+				['$foo' => '~int', '$mixed' => '~string'],
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
@@ -648,10 +658,19 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\Empty_(new Variable('array')),
 				[
-					'$array' => 'array{}|null',
+					'$array' => 'array{}',
 				],
 				[
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
+				],
+			],
+			[
+				new Expr\Empty_(new Variable('arrayOrNull')),
+				[
+					'$arrayOrNull' => 'array{}|null',
+				],
+				[
+					'$arrayOrNull' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 			],
 			[
@@ -660,7 +679,16 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 				[
-					'$array' => 'array{}|null',
+					'$array' => 'array{}',
+				],
+			],
+			[
+				new BooleanNot(new Expr\Empty_(new Variable('arrayOrNull'))),
+				[
+					'$arrayOrNull' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
+				],
+				[
+					'$arrayOrNull' => 'array{}|null',
 				],
 			],
 			[

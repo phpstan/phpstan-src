@@ -507,11 +507,13 @@ final class RegexGroupParser
 		$value = $node->getValueValue();
 
 		if (
-			in_array($token, ['literal', 'escaped_end_class'], true)
-			// literal "-" in front/back of a character class like '[-a-z]' or '[abc-]', not forming a range
-			|| $token === 'range'
-			// literal "[" or "]" inside character classes '[[]' or '[]]'
-			|| in_array($token, ['class_', '_class_literal'], true)
+			in_array($token, [
+				'literal', 'escaped_end_class',
+				// literal "-" in front/back of a character class like '[-a-z]' or '[abc-]', not forming a range
+				'range',
+				// literal "[" or "]" inside character classes '[[]' or '[]]'
+				'class_', '_class_literal',
+			], true)
 		) {
 			if (str_contains($patternModifiers, 'x') && trim($value) === '') {
 				return null;

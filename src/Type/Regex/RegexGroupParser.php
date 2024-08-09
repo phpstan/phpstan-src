@@ -508,7 +508,11 @@ final class RegexGroupParser
 		$token = $node->getValueToken();
 		$value = $node->getValueValue();
 
-		if (in_array($token, ['literal', 'escaped_end_class'], true)) {
+		if (
+			in_array($token, ['literal', 'escaped_end_class'], true)
+			// literal "-" in front/back of a character class like '[-a-z]' or '[abc-]', not forming a range
+			|| $token === 'range'
+		) {
 			if (str_contains($patternModifiers, 'x') && trim($value) === '') {
 				return null;
 			}
@@ -517,7 +521,7 @@ final class RegexGroupParser
 				return substr($value, 1);
 			} elseif (
 				$appendLiterals
-				&& $token === 'literal'
+				&& in_array($token, ['literal', 'range'], true)
 				&& $onlyLiterals !== null
 				&& !in_array($value, ['.'], true)
 			) {
@@ -530,11 +534,6 @@ final class RegexGroupParser
 				}
 			}
 
-			return $value;
-		}
-
-		// literal "-" in front/back of a character class like '[-a-z]' or '[abc-]', not forming a range
-		if ($token === 'range') {
 			return $value;
 		}
 

@@ -51,7 +51,6 @@ class NativeFunctionReflectionProvider
 		$asserts = Assertions::createEmpty();
 		$docComment = null;
 		$returnsByReference = TrinaryLogic::createMaybe();
-		$resolvedPhpDoc = null;
 		try {
 			$reflectionFunction = $this->reflector->reflectFunction($functionName);
 			$reflectionFunctionAdapter = new ReflectionFunction($reflectionFunction);
@@ -75,7 +74,7 @@ class NativeFunctionReflectionProvider
 
 		$functionSignaturesResult = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
 
-		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignaturesResult['positional'][0]->getParameters())) ?? $resolvedPhpDoc;
+		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignaturesResult['positional'][0]->getParameters()));
 		if ($phpDoc !== null) {
 			if ($phpDoc->hasPhpDocString()) {
 				$docComment = $phpDoc->getPhpDocString();

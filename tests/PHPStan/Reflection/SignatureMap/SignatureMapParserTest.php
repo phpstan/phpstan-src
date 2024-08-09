@@ -543,11 +543,12 @@ class SignatureMapParserTest extends PHPStanTestCase
 
 			foreach ($signatures as $signature) {
 				self::assertNotInstanceOf(ErrorType::class, $signature->getReturnType(), $functionName);
-				$optionalOcurred = false;
+				$optionalOccurred = false;
 				foreach ($signature->getParameters() as $parameter) {
+					// Required parameter can follow variadic parameter - e.g. array_intersect_uassoc.
 					if ($parameter->isOptional()) {
-						$optionalOcurred = true;
-					} elseif ($optionalOcurred) {
+						$optionalOccurred = $optionalOccurred || !$parameter->isVariadic();
+					} elseif ($optionalOccurred) {
 						$this->fail(sprintf('%s contains required parameter after optional.', $functionName));
 					}
 					self::assertNotInstanceOf(ErrorType::class, $parameter->getType(), sprintf('%s (parameter %s)', $functionName, $parameter->getName()));

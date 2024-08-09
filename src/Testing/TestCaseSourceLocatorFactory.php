@@ -85,7 +85,7 @@ class TestCaseSourceLocatorFactory
 		$astLocator = new Locator($this->phpParser);
 		$astPhp8Locator = new Locator($this->php8Parser);
 
-		$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate(__DIR__ . '/../../resources/highest-priority-stubs.stub');
+		$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate(__DIR__ . '/../../stubs/highest-priority-stubs.stub');
 		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber);
 		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);

@@ -122,7 +122,7 @@ class BetterReflectionSourceLocatorFactory
 		}
 
 		$locators[] = new RewriteClassAliasSourceLocator(new AggregateSourceLocator($fileLocators));
-		$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate(__DIR__ . '/../../../resources/highest-priority-stubs.stub');
+		$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate(__DIR__ . '/../../../stubs/highest-priority-stubs.stub');
 		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
 
 		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);

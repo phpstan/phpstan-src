@@ -171,6 +171,7 @@ parameters:
 	universalObjectCratesClasses:
 		- stdClass
 	stubFiles:
+		- ../stubs/highest-priority-stubs.stub
 		- ../stubs/ReflectionAttribute.stub
 		- ../stubs/ReflectionClass.stub
 		- ../stubs/ReflectionClassConstant.stub

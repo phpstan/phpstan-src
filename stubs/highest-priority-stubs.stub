@@ -1,6 +1,7 @@
 <?php
 
-// These stubs override phpstorm-stubs as the main reflection source for native code.
+// These stubs are not just loaded for phpDoc as other stubs, but they also override phpstorm-stubs as a source of
+// reflection for native functions.
 
 /**
  * @template TK of array-key

@@ -12,27 +12,12 @@ use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterWithPhpDocsReflection;
-use PHPStan\Reflection\PassedByReference;
-use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\BenevolentUnionType;
-use PHPStan\Type\CallableType;
-use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\Generic\TemplateBenevolentUnionType;
-use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\Generic\TemplateTypeParameterStrategy;
-use PHPStan\Type\Generic\TemplateTypeScope;
-use PHPStan\Type\Generic\TemplateTypeVariance;
-use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
-use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_map;
 use function strtolower;
@@ -55,116 +40,6 @@ class NativeFunctionReflectionProvider
 			return $this->functionMap[$lowerCasedFunctionName];
 		}
 
-		if ($lowerCasedFunctionName === 'array_intersect_uassoc') {
-			$genericKeyType = new TemplateBenevolentUnionType(
-				TemplateTypeScope::createWithFunction($realFunctionName),
-				new TemplateTypeParameterStrategy(),
-				TemplateTypeVariance::createInvariant(),
-				'TK',
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-			);
-			$genericArrayType = new ArrayType(
-				$genericKeyType,
-				new TemplateMixedType(
-					TemplateTypeScope::createWithFunction($realFunctionName),
-					new TemplateTypeParameterStrategy(),
-					TemplateTypeVariance::createInvariant(),
-					'TV',
-					new MixedType(),
-				),
-			);
-			$nativeArrayType = new ArrayType(new MixedType(), new MixedType());
-			$genericCallableType = new CallableType(
-				[
-					new DummyParameter(
-						'a',
-						$genericKeyType,
-						false,
-						PassedByReference::createNo(),
-						false,
-						null,
-					),
-					new DummyParameter(
-						'b',
-						$genericKeyType,
-						false,
-						PassedByReference::createNo(),
-						false,
-						null,
-					),
-				],
-				IntegerRangeType::fromInterval(-1, 1),
-				false,
-				TemplateTypeMap::createEmpty(),
-				null,
-				[],
-				null,
-			);
-			$nativeCallableType = new CallableType();
-			return new NativeFunctionReflection(
-				$realFunctionName,
-				[
-					new FunctionVariantWithPhpDocs(
-						TemplateTypeMap::createEmpty(),
-						null,
-						[
-							new NativeParameterWithPhpDocsReflection(
-								'array',
-								false,
-								$genericArrayType,
-								$genericArrayType,
-								$nativeArrayType,
-								PassedByReference::createNo(),
-								false,
-								null,
-								null,
-								TrinaryLogic::createNo(),
-								null,
-							),
-							new NativeParameterWithPhpDocsReflection(
-								'arrays',
-								true,
-								$genericArrayType,
-								$genericArrayType,
-								$nativeArrayType,
-								PassedByReference::createNo(),
-								true,
-								null,
-								null,
-								TrinaryLogic::createNo(),
-								null,
-							),
-							new NativeParameterWithPhpDocsReflection(
-								'key_compare_func',
-								false,
-								$genericCallableType,
-								$genericCallableType,
-								$nativeCallableType,
-								PassedByReference::createNo(),
-								false,
-								null,
-								null,
-								TrinaryLogic::createYes(),
-								null,
-							),
-						],
-						true,
-						$genericArrayType,
-						$genericArrayType,
-						$nativeArrayType,
-						null,
-					),
-				],
-				null,
-				null,
-				TrinaryLogic::createMaybe(),
-				false,
-				Assertions::createEmpty(),
-				null,
-				TrinaryLogic::createNo(),
-			);
-		}
-
 		if (!$this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName)) {
 			return null;
 		}
@@ -176,6 +51,7 @@ class NativeFunctionReflectionProvider
 		$asserts = Assertions::createEmpty();
 		$docComment = null;
 		$returnsByReference = TrinaryLogic::createMaybe();
+		$resolvedPhpDoc = null;
 		try {
 			$reflectionFunction = $this->reflector->reflectFunction($functionName);
 			$reflectionFunctionAdapter = new ReflectionFunction($reflectionFunction);
@@ -199,7 +75,7 @@ class NativeFunctionReflectionProvider
 
 		$functionSignaturesResult = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
 
-		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignaturesResult['positional'][0]->getParameters()));
+		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignaturesResult['positional'][0]->getParameters())) ?? $resolvedPhpDoc;
 		if ($phpDoc !== null) {
 			if ($phpDoc->hasPhpDocString()) {
 				$docComment = $phpDoc->getPhpDocString();

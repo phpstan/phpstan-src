@@ -16,6 +16,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
+use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use ReflectionClass;
 use function dirname;
@@ -35,6 +36,7 @@ class TestCaseSourceLocatorFactory
 	 * @param array{analyse?: array<int, string>, analyseAndScan?: array<int, string>}|null $excludePaths
 	 */
 	public function __construct(
+		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		private Parser $phpParser,
 		private Parser $php8Parser,
@@ -83,6 +85,7 @@ class TestCaseSourceLocatorFactory
 		$astLocator = new Locator($this->phpParser);
 		$astPhp8Locator = new Locator($this->php8Parser);
 
+		$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate(__DIR__ . '/../../resources/highest-priority-stubs.stub');
 		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber);
 		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);

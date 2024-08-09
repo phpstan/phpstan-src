@@ -1,0 +1,19 @@
+<?php
+
+// These stubs override phpstorm-stubs as the main reflection source for native code.
+
+/**
+ * @template TK of array-key
+ * @template TV of mixed
+ *
+ * @param array<TK, TV> $array
+ * @param array<TK, TV> ...$arrays
+ * @param callable(TK, TK): int<-1, 1> $key_compare_func
+ * @return array<TK, TV>
+ * @phpstan-skip-php8-stubs
+ */
+function array_intersect_uassoc(
+    array $array,
+    array ...$arrays,
+    callable $key_compare_func
+): array {}

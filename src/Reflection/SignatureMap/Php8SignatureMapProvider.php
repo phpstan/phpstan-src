@@ -185,7 +185,10 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunctionAbstract|null $reflectionFunction): array
 	{
 		$lowerName = strtolower($functionName);
-		if (!array_key_exists($lowerName, $this->map->functions)) {
+		if (
+			!array_key_exists($lowerName, $this->map->functions)
+			|| ($reflectionFunction !== null && $reflectionFunction->getDocComment() !== false && str_contains($reflectionFunction->getDocComment(), '@phpstan-skip-php8-stubs'))
+		) {
 			return $this->functionSignatureMapProvider->getFunctionSignatures($functionName, $className, $reflectionFunction);
 		}
 

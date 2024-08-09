@@ -50,19 +50,6 @@ function uksort(array &$array, callable $callback): bool
 }
 
 /**
- * @template T of mixed
- *
- * @param array<T> $one
- * @param array<T> $two
- * @param callable(T, T): int $three
- */
-function array_udiff(
-    array $one,
-    array $two,
-    callable $three
-): int {}
-
-/**
  * @param array<array-key, mixed> $value
  * @return ($value is __always-list ? true : false)
  */

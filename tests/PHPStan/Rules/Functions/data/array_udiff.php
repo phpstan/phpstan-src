@@ -37,3 +37,21 @@ array_udiff(
 	["26","27"],
 	'strcasecmp',
 );
+
+array_udiff(
+	[25,26],
+	[26,27],
+	[26,27],
+	static function(int $a, int $b): int {
+		return $a <=> $b;
+	},
+);
+
+array_udiff(
+	[25,26],
+	[26,27],
+	static function(int $a, int $b): int {
+		return $a <=> $b;
+	},
+	[26,27],
+);

@@ -431,8 +431,6 @@ final class RegexGroupParser
 				if (!$inOptionalQuantification) {
 					$isNonEmpty = TrinaryLogic::createYes();
 				}
-			} elseif (!in_array($ast->getValueToken(), ['capturing_name'], true)) {
-				$onlyLiterals = null;
 			}
 		} elseif (!in_array($ast->getId(), ['#capturing', '#namedcapturing'], true)) {
 			$onlyLiterals = null;
@@ -539,6 +537,10 @@ final class RegexGroupParser
 			}
 
 			return $value;
+		}
+
+		if (!in_array($token, ['capturing_name'], true)) {
+			$onlyLiterals = null;
 		}
 
 		// character escape sequences, just return a fixed string

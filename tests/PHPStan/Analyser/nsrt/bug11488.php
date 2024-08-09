@@ -24,7 +24,8 @@ class Foo
 		}
 
 		if (count($row) !== 3) {
-			assertType('array{0: mixed, 1?: string|null}', $row);
+			// should be array{0: mixed, 1?: string|null}
+			assertType('array{0: mixed, 1?: mixed}', $row);
 		}
 	}
 

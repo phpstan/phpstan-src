@@ -220,12 +220,32 @@ function countCountable(CountableFoo $x, int $mode)
 class CountWithOptionalKeys
 {
 	/**
-	 * @param array{mixed}|array{0: mixed, 1?: string|null} $row
+	 * @param array{0: mixed, 1?: string|null} $row
 	 */
 	protected function testOptionalKeys(array $row): void
 	{
+		if (count($row) === 0) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 1) {
+			assertType('array{mixed}', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
 		if (count($row) === 2) {
 			assertType('array{mixed, string|null}', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 3) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
 		}
 	}
 

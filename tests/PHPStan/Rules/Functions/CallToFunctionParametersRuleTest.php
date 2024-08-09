@@ -632,11 +632,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/array_udiff.php'], [
 			[
-				'Parameter #3 $value_compare_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int<-1, 1>, Closure(string, string): string given.',
+				'Parameter #3 $value_compare_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int, Closure(string, string): string given.',
 				6,
 			],
 			[
-				'Parameter #3 $value_compare_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int<-1, 1>, Closure(int, int): (literal-string&non-falsy-string&numeric-string) given.',
+				'Parameter #3 $value_compare_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int, Closure(int, int): (literal-string&non-falsy-string&numeric-string) given.',
 				14,
 			],
 			[
@@ -648,7 +648,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				21,
 			],
 			[
-				'Parameter #3 $value_compare_func of function array_udiff expects callable(string, string): int<-1, 1>, Closure(string, int): non-empty-string given.',
+				'Parameter #3 $value_compare_func of function array_udiff expects callable(string, string): int, Closure(string, int): non-empty-string given.',
 				22,
 			],
 			[
@@ -656,7 +656,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				53,
 			],
 			[
-				'Parameter #4 $value_compare_func of function array_udiff expects callable(25|26|27, 25|26|27): int<-1, 1>, array{26, 27} given.',
+				'Parameter #4 $value_compare_func of function array_udiff expects callable(25|26|27, 25|26|27): int, array{26, 27} given.',
 				56,
 			],
 		]);
@@ -1729,11 +1729,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/array_diff_uassoc.php'], [
 			[
-				'Parameter #3 $key_compare_func of function array_diff_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int<-1, 1>, Closure(int, int): int<-1, 1> given.',
+				'Parameter #3 $key_compare_func of function array_diff_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int, Closure(int, int): int<-1, 1> given.',
 				22,
 			],
 			[
-				'Parameter #3 $key_compare_func of function array_diff_uassoc expects callable(0|1|2|3, 0|1|2|3): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #3 $key_compare_func of function array_diff_uassoc expects callable(0|1|2|3, 0|1|2|3): int, Closure(string, string): int<-1, 1> given.',
 				30,
 			],
 		]);
@@ -1744,11 +1744,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/array_diff_ukey.php'], [
 			[
-				'Parameter #3 $key_compare_func of function array_diff_ukey expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int<-1, 1>, Closure(int, int): int<-1, 1> given.',
+				'Parameter #3 $key_compare_func of function array_diff_ukey expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int, Closure(int, int): int<-1, 1> given.',
 				22,
 			],
 			[
-				'Parameter #3 $key_compare_func of function array_diff_ukey expects callable(0|1|2|3, 0|1|2|3): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #3 $key_compare_func of function array_diff_ukey expects callable(0|1|2|3, 0|1|2|3): int, Closure(string, string): int<-1, 1> given.',
 				30,
 			],
 		]);
@@ -1759,11 +1759,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/array_intersect_uassoc.php'], [
 			[
-				'Parameter #3 $key_compare_func of function array_intersect_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int<-1, 1>, Closure(int, int): int<-1, 1> given.',
+				'Parameter #3 $key_compare_func of function array_intersect_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int, Closure(int, int): int<-1, 1> given.',
 				22,
 			],
 			[
-				'Parameter #3 $key_compare_func of function array_intersect_uassoc expects callable(0|1|2|3, 0|1|2|3): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #3 $key_compare_func of function array_intersect_uassoc expects callable(0|1|2|3, 0|1|2|3): int, Closure(string, string): int<-1, 1> given.',
 				30,
 			],
 			[
@@ -1771,7 +1771,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				53,
 			],
 			[
-				'Parameter #3 $key_compare_func of function array_intersect_uassoc expects callable(\'a\'|\'b\', \'a\'|\'b\'): int<-1, 1>, array{a: 1, b: 2} given.',
+				'Parameter #3 $key_compare_func of function array_intersect_uassoc expects callable(\'a\'|\'b\', \'a\'|\'b\'): int, array{a: 1, b: 2} given.',
 				56,
 			],
 		]);
@@ -1782,11 +1782,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/array_intersect_ukey.php'], [
 			[
-				'Parameter #3 $key_compare_func of function array_intersect_ukey expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int<-1, 1>, Closure(int, int): int<-1, 1> given.',
+				'Parameter #3 $key_compare_func of function array_intersect_ukey expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int, Closure(int, int): int<-1, 1> given.',
 				22,
 			],
 			[
-				'Parameter #3 $key_compare_func of function array_intersect_ukey expects callable(0|1|2|3, 0|1|2|3): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #3 $key_compare_func of function array_intersect_ukey expects callable(0|1|2|3, 0|1|2|3): int, Closure(string, string): int<-1, 1> given.',
 				30,
 			],
 		]);
@@ -1797,11 +1797,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/array_udiff_assoc.php'], [
 			[
-				'Parameter #3 $value_compare_func of function array_udiff_assoc expects callable(1|2, 1|2): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #3 $value_compare_func of function array_udiff_assoc expects callable(1|2, 1|2): int, Closure(string, string): int<-1, 1> given.',
 				22,
 			],
 			[
-				'Parameter #3 $value_compare_func of function array_udiff_assoc expects callable(1|2|3|4|5, 1|2|3|4|5): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #3 $value_compare_func of function array_udiff_assoc expects callable(1|2|3|4|5, 1|2|3|4|5): int, Closure(string, string): int<-1, 1> given.',
 				30,
 			],
 		]);
@@ -1812,19 +1812,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/array_udiff_uassoc.php'], [
 			[
-				'Parameter #3 $value_compare_func of function array_udiff_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int<-1, 1>, Closure(int, int): int<-1, 1> given.',
+				'Parameter #3 $value_compare_func of function array_udiff_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int, Closure(int, int): int<-1, 1> given.',
 				28,
 			],
 			[
-				'Parameter #4 $key_compare_func of function array_udiff_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int<-1, 1>, Closure(int, int): int<-1, 1> given.',
+				'Parameter #4 $key_compare_func of function array_udiff_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int, Closure(int, int): int<-1, 1> given.',
 				31,
 			],
 			[
-				'Parameter #3 $value_compare_func of function array_udiff_uassoc expects callable(1|2|3|4|5, 1|2|3|4|5): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #3 $value_compare_func of function array_udiff_uassoc expects callable(1|2|3|4|5, 1|2|3|4|5): int, Closure(string, string): int<-1, 1> given.',
 				39,
 			],
 			[
-				'Parameter #4 $key_compare_func of function array_udiff_uassoc expects callable(0|1|2|3, 0|1|2|3): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #4 $key_compare_func of function array_udiff_uassoc expects callable(0|1|2|3, 0|1|2|3): int, Closure(string, string): int<-1, 1> given.',
 				42,
 			],
 		]);
@@ -1835,11 +1835,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/array_uintersect_assoc.php'], [
 			[
-				'Parameter #3 $value_compare_func of function array_uintersect_assoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int<-1, 1>, Closure(int, int): int<-1, 1> given.',
+				'Parameter #3 $value_compare_func of function array_uintersect_assoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int, Closure(int, int): int<-1, 1> given.',
 				22,
 			],
 			[
-				'Parameter #3 $value_compare_func of function array_uintersect_assoc expects callable(1|2|3|4, 1|2|3|4): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #3 $value_compare_func of function array_uintersect_assoc expects callable(1|2|3|4, 1|2|3|4): int, Closure(string, string): int<-1, 1> given.',
 				30,
 			],
 		]);
@@ -1850,19 +1850,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/array_uintersect_uassoc.php'], [
 			[
-				'Parameter #3 $value_compare_func of function array_uintersect_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int<-1, 1>, Closure(int, int): int<-1, 1> given.',
+				'Parameter #3 $value_compare_func of function array_uintersect_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int, Closure(int, int): int<-1, 1> given.',
 				28,
 			],
 			[
-				'Parameter #4 $key_compare_func of function array_uintersect_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int<-1, 1>, Closure(int, int): int<-1, 1> given.',
+				'Parameter #4 $key_compare_func of function array_uintersect_uassoc expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int, Closure(int, int): int<-1, 1> given.',
 				31,
 			],
 			[
-				'Parameter #3 $value_compare_func of function array_uintersect_uassoc expects callable(1|2|3|4|5, 1|2|3|4|5): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #3 $value_compare_func of function array_uintersect_uassoc expects callable(1|2|3|4|5, 1|2|3|4|5): int, Closure(string, string): int<-1, 1> given.',
 				39,
 			],
 			[
-				'Parameter #4 $key_compare_func of function array_uintersect_uassoc expects callable(0|1|2|3, 0|1|2|3): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #4 $key_compare_func of function array_uintersect_uassoc expects callable(0|1|2|3, 0|1|2|3): int, Closure(string, string): int<-1, 1> given.',
 				42,
 			],
 		]);
@@ -1873,11 +1873,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/array_uintersect.php'], [
 			[
-				'Parameter #3 $value_compare_func of function array_uintersect expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int<-1, 1>, Closure(int, int): int<-1, 1> given.',
+				'Parameter #3 $value_compare_func of function array_uintersect expects callable(\'a\'|\'b\'|\'c\'|\'d\', \'a\'|\'b\'|\'c\'|\'d\'): int, Closure(int, int): int<-1, 1> given.',
 				22,
 			],
 			[
-				'Parameter #3 $value_compare_func of function array_uintersect expects callable(1|2|3|4, 1|2|3|4): int<-1, 1>, Closure(string, string): int<-1, 1> given.',
+				'Parameter #3 $value_compare_func of function array_uintersect expects callable(1|2|3|4, 1|2|3|4): int, Closure(string, string): int<-1, 1> given.',
 				30,
 			],
 		]);

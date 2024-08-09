@@ -8,7 +8,7 @@
  *
  * @param array<TK, TV> $array
  * @param array<TK, TV> ...$arrays
- * @param callable(TK, TK): int<-1, 1> $key_compare_func
+ * @param callable(TK, TK): int $key_compare_func
  * @return array<TK, TV>
  * @phpstan-skip-php8-stubs
  */
@@ -24,7 +24,7 @@ function array_diff_uassoc(
  *
  * @param array<TK, TV> $array
  * @param array<TK, TV> ...$arrays
- * @param callable(TK, TK): int<-1, 1> $key_compare_func
+ * @param callable(TK, TK): int $key_compare_func
  * @return array<TK, TV>
  * @phpstan-skip-php8-stubs
  */
@@ -40,7 +40,7 @@ function array_diff_ukey(
  *
  * @param array<TK, TV> $array
  * @param array<TK, TV> ...$arrays
- * @param callable(TK, TK): int<-1, 1> $key_compare_func
+ * @param callable(TK, TK): int $key_compare_func
  * @return array<TK, TV>
  * @phpstan-skip-php8-stubs
  */
@@ -56,7 +56,7 @@ function array_intersect_uassoc(
  *
  * @param array<TK, TV> $array
  * @param array<TK, TV> ...$arrays
- * @param callable(TK, TK): int<-1, 1> $key_compare_func
+ * @param callable(TK, TK): int $key_compare_func
  * @return array<TK, TV>
  * @phpstan-skip-php8-stubs
  */
@@ -72,7 +72,7 @@ function array_intersect_ukey(
  *
  * @param array<TK, TV> $array
  * @param array<TK, TV> ...$arrays
- * @param callable(TV, TV): int<-1, 1> $value_compare_func
+ * @param callable(TV, TV): int $value_compare_func
  * @return array<TK, TV>
  * @phpstan-skip-php8-stubs
  */
@@ -88,7 +88,7 @@ function array_udiff_assoc(
  *
  * @param array<TK, TV> $array
  * @param array<TK, TV> ...$arrays
- * @param callable(TV, TV): int<-1, 1> $value_compare_func
+ * @param callable(TV, TV): int $value_compare_func
  * @return array<TK, TV>
  * @phpstan-skip-php8-stubs
  */
@@ -104,8 +104,8 @@ function array_uintersect_assoc(
  *
  * @param array<TK, TV> $array1
  * @param array<TK, TV> ...$arrays
- * @param callable(TV, TV): int<-1, 1> $value_compare_func
- * @param callable(TK, TK): int<-1, 1> $key_compare_func
+ * @param callable(TV, TV): int $value_compare_func
+ * @param callable(TK, TK): int $key_compare_func
  * @return array<TK, TV>
  * @phpstan-skip-php8-stubs
  */
@@ -122,8 +122,8 @@ function array_udiff_uassoc(
  *
  * @param array<TK, TV> $array
  * @param array<TK, TV> ...$arrays
- * @param callable(TV, TV): int<-1, 1> $value_compare_func
- * @param callable(TK, TK): int<-1, 1> $key_compare_func
+ * @param callable(TV, TV): int $value_compare_func
+ * @param callable(TK, TK): int $key_compare_func
  * @return array<TK, TV>
  * @phpstan-skip-php8-stubs
  */
@@ -140,7 +140,7 @@ function array_uintersect_uassoc(
  *
  * @param array<TK, TV> $array
  * @param array<TK, TV> ...$arrays
- * @param callable(TV, TV): int<-1, 1> $value_compare_func
+ * @param callable(TV, TV): int $value_compare_func
  * @return array<TK, TV>
  * @phpstan-skip-php8-stubs
  */
@@ -156,7 +156,7 @@ function array_udiff(
  *
  * @param array<TK, TV> $array
  * @param array<TK, TV> ...$arrays
- * @param callable(TV, TV): int<-1, 1> $value_compare_func
+ * @param callable(TV, TV): int $value_compare_func
  * @return array<TK, TV>
  * @phpstan-skip-php8-stubs
  */

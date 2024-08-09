@@ -519,6 +519,10 @@ final class RegexGroupParser
 
 			if (strlen($value) > 1 && $value[0] === '\\') {
 				$value = substr($value, 1);
+
+				if ($value === false) { // @phpstan-ignore-line (PHP7.2 compatibility)
+					throw new ShouldNotHappenException();
+				}
 			}
 
 			if (

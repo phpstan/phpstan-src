@@ -576,48 +576,36 @@ class TypeSpecifier
 				throw new ShouldNotHappenException();
 			}
 
-			if ($context->falsey() && $scope->getType($expr->left)->isTrue()->yes()) {
-				$leftTypes = null;
-			} else {
-				$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context, $rootExpr);
-			}
-
+			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context, $rootExpr);
 			$rightScope = $scope->filterByTruthyValue($expr->left);
-			if ($context->falsey() && $scope->getType($expr->right)->isTrue()->yes()) {
-				$rightTypes = null;
-			} else {
-				$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context, $rootExpr);
-			}
+			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context, $rootExpr);
 
-			if ($leftTypes === null && $rightTypes === null) {
-				$types = new SpecifiedTypes([], [], false, [], $expr);
-			} elseif ($leftTypes === null) {
-				$types = $context->true() ? $rightTypes : $rightTypes->normalize($rightScope);
-			} elseif ($rightTypes === null) {
-				$types = $context->true() ? $leftTypes : $leftTypes->normalize($scope);
-			} else {
-				$types = $context->true()
-					? $leftTypes->unionWith($rightTypes)
-					: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
-			}
+			if ($context->falsey()) {
+				$leftIsAlwaysTrue = $scope->getType($expr->left)->isTrue()->yes();
+				$rightIsAlwaysTrue = $scope->getType($expr->right)->isTrue()->yes();
 
-			if ($context->false()) {
-				if ($leftTypes === null || $rightTypes === null) {
-					$conditionalTypes = [];
-				} else {
-					$conditionalTypes = array_merge(
-						$this->processBooleanNotSureConditionalTypes($scope, $leftTypes, $rightTypes),
-						$this->processBooleanNotSureConditionalTypes($scope, $rightTypes, $leftTypes),
-						$this->processBooleanSureConditionalTypes($scope, $leftTypes, $rightTypes),
-						$this->processBooleanSureConditionalTypes($scope, $rightTypes, $leftTypes),
-					);
+				if ($leftIsAlwaysTrue && !$rightIsAlwaysTrue) {
+					return $context->true() ? $rightTypes : $rightTypes->normalize($rightScope);
 				}
+				if ($rightIsAlwaysTrue && !$leftIsAlwaysTrue) {
+					return $context->true() ? $leftTypes : $leftTypes->normalize($scope);
+				}
+			}
 
+			$types = $context->true()
+				? $leftTypes->unionWith($rightTypes)
+				: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
+			if ($context->false()) {
 				return new SpecifiedTypes(
 					$types->getSureTypes(),
 					$types->getSureNotTypes(),
 					false,
-					$conditionalTypes,
+					array_merge(
+						$this->processBooleanNotSureConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanNotSureConditionalTypes($scope, $rightTypes, $leftTypes),
+						$this->processBooleanSureConditionalTypes($scope, $leftTypes, $rightTypes),
+						$this->processBooleanSureConditionalTypes($scope, $rightTypes, $leftTypes),
+					),
 					$rootExpr,
 				);
 			}
@@ -628,27 +616,20 @@ class TypeSpecifier
 				throw new ShouldNotHappenException();
 			}
 
-			if ($context->truthy() && $scope->getType($expr->left)->isFalse()->yes()) {
-				$leftTypes = null;
-			} else {
-				$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context, $rootExpr);
-			}
-
+			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context, $rootExpr);
 			$rightScope = $scope->filterByFalseyValue($expr->left);
-			if ($context->truthy() && $scope->getType($expr->right)->isFalse()->yes()) {
-				$rightTypes = null;
-			} else {
-				$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context, $rootExpr);
-			}
+			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context, $rootExpr);
 
-			if ($leftTypes === null && $rightTypes === null) {
-				return new SpecifiedTypes([], [], false, [], $expr);
-			}
-			if ($leftTypes === null) {
-				return $context->true() ? $rightTypes->normalize($rightScope) : $rightTypes;
-			}
-			if ($rightTypes === null) {
-				return $context->true() ? $leftTypes->normalize($scope) : $leftTypes;
+			if ($context->truthy()) {
+				$leftIsAlwaysFalse = $scope->getType($expr->left)->isFalse()->yes();
+				$rightIsAlwaysFalse = $scope->getType($expr->right)->isFalse()->yes();
+
+				if ($leftIsAlwaysFalse && !$rightIsAlwaysFalse) {
+					return $context->true() ? $rightTypes->normalize($rightScope) : $rightTypes;
+				}
+				if ($rightIsAlwaysFalse && !$leftIsAlwaysFalse) {
+					return $context->true() ? $leftTypes->normalize($scope) : $leftTypes;
+				}
 			}
 
 			$types = $context->true()

@@ -99,6 +99,11 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 			],
 			[
 				'Result of && is always false.',
+				66,
+				//$tipText,
+			],
+			[
+				'Result of && is always false.',
 				125,
 			],
 			[
@@ -187,6 +192,11 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 			],
 			[
 				'Result of && is always false.',
+				66,
+				//$tipText,
+			],
+			[
+				'Result of && is always false.',
 				125,
 			],
 			[
@@ -262,6 +272,11 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 			[
 				'Result of and is always true.',
 				64,
+				//$tipText,
+			],
+			[
+				'Result of and is always false.',
+				66,
 				//$tipText,
 			],
 			[

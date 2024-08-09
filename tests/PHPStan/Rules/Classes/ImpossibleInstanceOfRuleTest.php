@@ -120,6 +120,10 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					$tipText,
 				],
 				[
+					'Instanceof between *NEVER* and ImpossibleInstanceOf\Foo will always evaluate to false.',
+					234,
+				],
+				[
 					'Instanceof between ImpossibleInstanceOf\Bar&ImpossibleInstanceOf\Foo and ImpossibleInstanceOf\Foo will always evaluate to true.',
 					238,
 					//$tipText,
@@ -227,6 +231,10 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				[
 					'Instanceof between *NEVER* and ImpossibleInstanceOf\Lorem will always evaluate to false.',
 					228,
+				],
+				[
+					'Instanceof between *NEVER* and ImpossibleInstanceOf\Foo will always evaluate to false.',
+					234,
 				],
 				[
 					'Instanceof between *NEVER* and ImpossibleInstanceOf\Bar will always evaluate to false.',

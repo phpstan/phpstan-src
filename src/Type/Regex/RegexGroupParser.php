@@ -518,7 +518,7 @@ final class RegexGroupParser
 			}
 
 			if (strlen($value) > 1 && $value[0] === '\\') {
-				$value = substr($value, 1);
+				$value = substr($value, 1) ?: '';
 			}
 
 			if (

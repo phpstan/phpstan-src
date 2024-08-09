@@ -59,6 +59,12 @@ function doFalse($x, $y, $z): void
 		assertType("0|0.0|''|'0'|array{}|false|null", $x);
 	}
 
+	if (!$x) {
+		assertType("0|0.0|''|'0'|array{}|false|null", $x);
+	} else {
+		assertType("1|'x'|object|true", $x);
+	}
+
 	if ($y == false) {
 		assertType("0|''|'0'|null", $y);
 	} else {
@@ -88,6 +94,12 @@ function doTrue($x, $y, $z): void
 		assertType("0|0.0|''|'0'|array{}|false|null", $x);
 	} else {
 		assertType("1|'x'|object|true", $x);
+	}
+
+	if ($x) {
+		assertType("1|'x'|object|true", $x);
+	} else {
+		assertType("0|0.0|''|'0'|array{}|false|null", $x);
 	}
 
 	if ($y == true) {

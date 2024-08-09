@@ -2398,8 +2398,10 @@ class NodeScopeResolver
 				&& $functionReflection->getName() === 'file_put_contents'
 				&& count($expr->getArgs()) > 0
 			) {
-				$scope = $scope->invalidateExpression(new FuncCall(new Name('file_get_contents'), [$expr->getArgs()[0]]))
-					->invalidateExpression(new FuncCall(new Name\FullyQualified('file_get_contents'), [$expr->getArgs()[0]]));
+				foreach (['file_get_contents', 'filesize'] as $functionToInvalidate) {
+					$scope = $scope->invalidateExpression(new FuncCall(new Name($functionToInvalidate), [$expr->getArgs()[0]]))
+						->invalidateExpression(new FuncCall(new Name\FullyQualified($functionToInvalidate), [$expr->getArgs()[0]]));
+				}
 			}
 
 			if (

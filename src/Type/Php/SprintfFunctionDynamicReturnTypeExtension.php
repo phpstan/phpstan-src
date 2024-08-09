@@ -125,32 +125,45 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			return $singlePlaceholderEarlyReturn;
 		}
 
-		$isNonEmpty = $allPatternsNonEmpty;
-		if (
-			count($formatStrings) === 0
-			&& $functionReflection->getName() === 'sprintf'
-			&& count($args) === 2
-			&& $formatType->isNonEmptyString()->yes()
-			&& $scope->getType($args[1]->value)->isNonEmptyString()->yes()
-		) {
-			$isNonEmpty = true;
-		}
-
 		if ($allPatternsNonFalsy) {
-			$returnType = new IntersectionType([
+			return new IntersectionType([
 				new StringType(),
 				new AccessoryNonFalsyStringType(),
 			]);
-		} elseif ($isNonEmpty) {
-			$returnType = new IntersectionType([
+		}
+
+		$isNonEmpty = $allPatternsNonEmpty;
+		if (
+			!$isNonEmpty
+			&& $functionReflection->getName() === 'sprintf'
+			&& count($args) >= 2
+			&& $formatType->isNonEmptyString()->yes()
+		) {
+			$allArgsNonEmpty = true;
+			foreach ($args as $key => $arg) {
+				if ($key === 0) {
+					continue;
+				}
+
+				if (!$scope->getType($arg->value)->toString()->isNonEmptyString()->yes()) {
+					$allArgsNonEmpty = false;
+					break;
+				}
+			}
+
+			if ($allArgsNonEmpty) {
+				$isNonEmpty = true;
+			}
+		}
+
+		if ($isNonEmpty) {
+			return new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),
 			]);
-		} else {
-			$returnType = new StringType();
 		}
 
-		return $returnType;
+		return new StringType();
 	}
 
 	/**

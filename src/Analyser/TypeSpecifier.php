@@ -1060,9 +1060,9 @@ class TypeSpecifier
 					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
 					if ($isNormalCount->yes() && $argType->isList()->yes() && $context->truthy() && $constantType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 						$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
-						$itemType = $argType->getIterableValueType();
 						for ($i = 0; $i < $constantType->getValue(); $i++) {
-							$valueTypesBuilder->setOffsetValueType(new ConstantIntegerType($i), $itemType);
+							$offsetType = new ConstantIntegerType($i);
+							$valueTypesBuilder->setOffsetValueType($offsetType, $argType->getOffsetValueType($offsetType));
 						}
 						$valueTypes = $this->create($exprNode->getArgs()[0]->value, $valueTypesBuilder->getArray(), $context, false, $scope, $rootExpr);
 					} else {

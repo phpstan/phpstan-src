@@ -330,7 +330,7 @@ function bug11277a(string $value): void
 	if (preg_match('/^\[(.+,?)*\]$/', $value, $matches)) {
 		assertType('array{0: string, 1?: non-empty-string}', $matches);
 		if (count($matches) === 2) {
-			assertType('array{string, string}', $matches); // could be array{string, non-empty-string}
+			assertType('array{string, non-empty-string}', $matches);
 		}
 	}
 }

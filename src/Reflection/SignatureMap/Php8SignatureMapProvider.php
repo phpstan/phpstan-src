@@ -29,6 +29,7 @@ use function count;
 use function explode;
 use function is_string;
 use function sprintf;
+use function str_contains;
 use function strtolower;
 
 class Php8SignatureMapProvider implements SignatureMapProvider

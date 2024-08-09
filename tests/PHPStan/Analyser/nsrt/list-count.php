@@ -222,7 +222,7 @@ class CountWithOptionalKeys
 	/**
 	 * @param array{0: mixed, 1?: string|null} $row
 	 */
-	protected function testOptionalKeys(array $row): void
+	protected function testOptionalKeys($row): void
 	{
 		if (count($row) === 0) {
 			assertType('*NEVER*', $row);
@@ -252,7 +252,7 @@ class CountWithOptionalKeys
 	/**
 	 * @param array{mixed}|array{0: mixed, 1?: string|null} $row
 	 */
-	protected function testOptionalKeysInUnion(array $row): void
+	protected function testOptionalKeysInUnion($row): void
 	{
 		if (count($row) === 0) {
 			assertType('*NEVER*', $row);
@@ -280,32 +280,32 @@ class CountWithOptionalKeys
 	}
 
 	/**
-	 * @param array{string}|array{0: mixed, 1?: string|null} $row
+	 * @param array{string}|array{0: int, 1?: string|null} $row
 	 */
-	protected function testOptionalKeysInTaggedUnion(array $row): void
+	protected function testOptionalKeysInTaggedUnion($row): void
 	{
 		if (count($row) === 0) {
 			assertType('*NEVER*', $row);
 		} else {
-			assertType('array{0: mixed, 1?: string|null}', $row);
+			assertType('array{0: int, 1?: string|null}|array{string}', $row);
 		}
 
 		if (count($row) === 1) {
-			assertType('array{mixed}', $row);
+			assertType('array{0: int, 1?: string|null}|array{string}', $row);
 		} else {
-			assertType('array{0: mixed, 1?: string|null}', $row);
+			assertType('array{0: int, 1?: string|null}', $row);
 		}
 
 		if (count($row) === 2) {
-			assertType('array{mixed, string|null}', $row);
+			assertType('array{int, string|null}', $row);
 		} else {
-			assertType('array{0: mixed, 1?: string|null}', $row);
+			assertType('array{0: int, 1?: string|null}|array{string}', $row);
 		}
 
 		if (count($row) === 3) {
 			assertType('*NEVER*', $row);
 		} else {
-			assertType('array{0: mixed, 1?: string|null}', $row);
+			assertType('array{0: int, 1?: string|null}|array{string}', $row);
 		}
 	}
 

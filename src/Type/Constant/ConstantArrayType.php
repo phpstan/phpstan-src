@@ -371,10 +371,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$this->isList->yes()
 				&& $type->isList->yes()
 				&& count($this->keyTypes) !== count($type->keyTypes)
+				&& count($type->optionalKeys) === 0
 			) {
-				if (count($type->optionalKeys) > 0) {
-					return TrinaryLogic::createMaybe();
-				}
 				return TrinaryLogic::createNo();
 			}
 

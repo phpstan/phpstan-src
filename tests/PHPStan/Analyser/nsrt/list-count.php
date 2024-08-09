@@ -216,3 +216,17 @@ function countCountable(CountableFoo $x, int $mode)
 	}
 	assertType('ListCount\CountableFoo', $x);
 }
+
+class CountWithOptionalKeys
+{
+	/**
+	 * @param array{mixed}|array{0: mixed, 1?: string|null} $row
+	 */
+	protected function testOptionalKeys(array $row): void
+	{
+		if (count($row) === 2) {
+			assertType('array{mixed, string|null}', $row);
+		}
+	}
+
+}

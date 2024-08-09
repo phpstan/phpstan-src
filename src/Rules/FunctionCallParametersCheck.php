@@ -533,7 +533,6 @@ class FunctionCallParametersCheck
 		$originalParameters = $expandedOriginalParameters;
 		$newArguments = [];
 
-		// TODO: check isVariadic usages in below code - they may not be necessary anymore.
 		$namedArgumentAlreadyOccurred = false;
 		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine]) {
 			if ($argumentName === null) {

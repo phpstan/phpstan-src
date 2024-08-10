@@ -699,3 +699,20 @@ function (string $s): void {
 	preg_match('~a|(\d)|(\s)~', $s, $matches);
 	assertType("array{0?: string, 1?: '', 2?: non-empty-string}|array{0?: string, 1?: numeric-string}", $matches);
 };
+
+function bug11490 (string $expression): void {
+	$matches = [];
+
+	if (preg_match('/([-+])?([\d]+)%/', $expression, $matches) === 1) {
+		assertType("array{string, ''|'+'|'-', numeric-string}", $matches);
+	}
+}
+
+function bug11490b (string $expression): void {
+	$matches = [];
+
+	if (preg_match('/([\\[+])?([\d]+)%/', $expression, $matches) === 1) {
+		assertType("array{string, ''|'+'|'[', numeric-string}", $matches);
+	}
+}
+

@@ -431,8 +431,6 @@ final class RegexGroupParser
 				if (!$inOptionalQuantification) {
 					$isNonEmpty = TrinaryLogic::createYes();
 				}
-			} elseif (!in_array($ast->getValueToken(), ['capturing_name'], true)) {
-				$onlyLiterals = null;
 			}
 		} elseif (!in_array($ast->getId(), ['#capturing', '#namedcapturing'], true)) {
 			$onlyLiterals = null;
@@ -508,16 +506,26 @@ final class RegexGroupParser
 		$token = $node->getValueToken();
 		$value = $node->getValueValue();
 
-		if (in_array($token, ['literal', 'escaped_end_class'], true)) {
+		if (
+			in_array($token, [
+				'literal', 'escaped_end_class',
+				// literal "-" in front/back of a character class like '[-a-z]' or '[abc-]', not forming a range
+				'range',
+				// literal "[" or "]" inside character classes '[[]' or '[]]'
+				'class_', '_class_literal',
+			], true)
+		) {
 			if (str_contains($patternModifiers, 'x') && trim($value) === '') {
 				return null;
 			}
 
 			if (strlen($value) > 1 && $value[0] === '\\') {
-				return substr($value, 1);
-			} elseif (
+				$value = substr($value, 1) ?: '';
+			}
+
+			if (
 				$appendLiterals
-				&& $token === 'literal'
+				&& in_array($token, ['literal', 'range', 'class_', '_class_literal'], true)
 				&& $onlyLiterals !== null
 				&& !in_array($value, ['.'], true)
 			) {
@@ -533,14 +541,8 @@ final class RegexGroupParser
 			return $value;
 		}
 
-		// literal "-" in front/back of a character class like '[-a-z]' or '[abc-]', not forming a range
-		if ($token === 'range') {
-			return $value;
-		}
-
-		// literal "[" or "]" inside character classes '[[]' or '[]]'
-		if (in_array($token, ['class_', '_class_literal'], true)) {
-			return $value;
+		if (!in_array($token, ['capturing_name'], true)) {
+			$onlyLiterals = null;
 		}
 
 		// character escape sequences, just return a fixed string

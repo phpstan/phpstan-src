@@ -541,9 +541,7 @@ class ArrayType implements Type
 		}
 
 		if ($isKeySuperType->yes()) {
-			return $otherArraysType->isIterableAtLeastOnce()->yes()
-				? TypeCombinator::intersect($this, new NonEmptyArrayType())
-				: $this;
+			return $this;
 		}
 
 		return new self($otherArraysType->getIterableKeyType(), $this->getIterableValueType());

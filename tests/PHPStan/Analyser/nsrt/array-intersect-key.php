@@ -15,9 +15,9 @@ class Foo
 	public function nonEmpty(array $arr, array $arr2): void
 	{
 		assertType('non-empty-array<int|string, string>', array_intersect_key($arr));
-		assertType('non-empty-array<int|string, string>', array_intersect_key($arr, $arr));
+		assertType('array<int|string, string>', array_intersect_key($arr, $arr));
 		assertType('array<int, string>', array_intersect_key($arr, $arr2));
-		assertType('non-empty-array<int, string>', array_intersect_key($arr2, $arr));
+		assertType('array<int, string>', array_intersect_key($arr2, $arr));
 		assertType('array{}', array_intersect_key($arr, []));
 		assertType("array<'foo', string>", array_intersect_key($arr, ['foo' => 17]));
 	}

@@ -4905,7 +4905,7 @@ return [
 'Imagick::roundCorners' => ['bool', 'x_rounding'=>'float', 'y_rounding'=>'float', 'stroke_width='=>'float', 'displace='=>'float', 'size_correction='=>'float'],
 'Imagick::roundCornersImage' => ['bool', 'x_rounding'=>'', 'y_rounding'=>'', 'stroke_width='=>'', 'displace='=>'', 'size_correction='=>''],
 'Imagick::sampleImage' => ['bool', 'columns'=>'int', 'rows'=>'int'],
-'Imagick::scaleImage' => ['bool', 'cols'=>'int', 'rows'=>'int', 'bestfit='=>'bool'],
+'Imagick::scaleImage' => ['bool', 'cols'=>'int', 'rows'=>'int', 'bestfit='=>'bool', 'legacy='=>'bool'],
 'Imagick::segmentImage' => ['bool', 'colorspace'=>'int', 'cluster_threshold'=>'float', 'smooth_threshold'=>'float', 'verbose='=>'bool'],
 'Imagick::selectiveBlurImage' => ['bool', 'radius'=>'float', 'sigma'=>'float', 'threshold'=>'float', 'channel='=>'int'],
 'Imagick::separateImageChannel' => ['bool', 'channel'=>'int'],

@@ -1095,8 +1095,16 @@ class InitializerExprTypeResolver
 				new BooleanType(),
 			]);
 
-			if ($plusable->isSuperTypeOf($leftType)->yes() && $plusable->isSuperTypeOf($rightType)->yes()) {
+			$plusableSuperTypeOfLeft = $plusable->isSuperTypeOf($leftType)->yes();
+			$plusableSuperTypeOfRight = $plusable->isSuperTypeOf($rightType)->yes();
+			if ($plusableSuperTypeOfLeft && $plusableSuperTypeOfRight) {
 				return TypeCombinator::union($leftType, $rightType);
+			}
+			if ($plusableSuperTypeOfLeft && $rightType instanceof MixedType) {
+				return $leftType;
+			}
+			if ($plusableSuperTypeOfRight && $leftType instanceof MixedType) {
+				return $rightType;
 			}
 		}
 

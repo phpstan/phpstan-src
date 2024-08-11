@@ -178,16 +178,16 @@ class UnionType implements CompoundType
 			return AcceptsResult::createYes();
 		}
 
-		if ($type instanceof CompoundType && !$type instanceof CallableType && !$type instanceof TemplateType && !$type instanceof IntersectionType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
-		}
-
 		$result = AcceptsResult::createNo();
 		foreach ($this->getSortedTypes() as $i => $innerType) {
 			$result = $result->or($innerType->acceptsWithReason($type, $strictTypes)->decorateReasons(static fn (string $reason) => sprintf('Type #%d from the union: %s', $i + 1, $reason)));
 		}
 		if ($result->yes()) {
 			return $result;
+		}
+
+		if ($type instanceof CompoundType && !$type instanceof CallableType && !$type instanceof TemplateType && !$type instanceof IntersectionType) {
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
 		if ($type instanceof TemplateUnionType) {

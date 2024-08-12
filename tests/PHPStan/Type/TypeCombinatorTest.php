@@ -4861,6 +4861,37 @@ class TypeCombinatorTest extends PHPStanTestCase
 				ObjectShapeType::class,
 				'object{foo?: int}',
 			],
+			[
+				new UnionType([
+					new ConstantArrayType([
+						new ConstantIntegerType(0),
+					], [
+						new MixedType(true),
+					],
+						[0], [], true
+					),
+					new ConstantArrayType([
+						new ConstantIntegerType(0),
+						new ConstantIntegerType(1),
+						new ConstantIntegerType(2),
+					], [
+						new MixedType(true),
+						new UnionType([new StringType(), new NullType()]),
+						new MixedType(true),
+					],
+						[0], [], true
+					),
+				]),
+				new ConstantArrayType([
+					new ConstantIntegerType(0),
+				], [
+					new MixedType(true),
+				],
+					[0], [], true
+				),
+				ConstantArrayType::class,
+				'array{mixed, string|null, mixed}',
+			],
 		];
 	}
 

@@ -62,4 +62,30 @@ class HelloWorld
 		}
 		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 	}
+
+	public function intRangeCount(): void
+	{
+		$count = 1;
+		if (rand(0, 1)) {
+			$count++;
+		}
+
+		$x = [];
+		if (rand(0, 1)) {
+			$x[] = 'ab';
+		}
+		if (rand(0, 1)) {
+			$x[] = 'xy';
+		}
+
+		assertType('1|2', $count);
+
+		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
+		if (count($x) >= $count) {
+			assertType("array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
+		} else {
+			assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
+		}
+		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
+	}
 }

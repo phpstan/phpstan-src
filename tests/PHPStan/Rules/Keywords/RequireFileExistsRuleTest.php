@@ -67,4 +67,40 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRelativePathWithoutIncludePath(): void
+	{
+		$this->analyse([__DIR__ . '/data/require-file-relative-path.php'], [
+			[
+				'Path in include() "RequireFileExistsRuleTest.php" is not a file or it does not exist.',
+				3,
+			],
+			[
+				'Path in include_once() "RequireFileExistsRuleTest.php" is not a file or it does not exist.',
+				4,
+			],
+			[
+				'Path in require() "RequireFileExistsRuleTest.php" is not a file or it does not exist.',
+				5,
+			],
+			[
+				'Path in require_once() "RequireFileExistsRuleTest.php" is not a file or it does not exist.',
+				6,
+			],
+		]);
+	}
+
+	public function testRelativePathWithIncludePath(): void
+	{
+		$includePaths = [realpath(__DIR__)];
+		$includePaths[] = get_include_path();
+
+		set_include_path(implode(PATH_SEPARATOR, $includePaths));
+
+		try {
+			$this->analyse([__DIR__ . '/data/require-file-relative-path.php'], []);
+		} finally {
+			set_include_path($includePaths[1]);
+		}
+	}
+
 }

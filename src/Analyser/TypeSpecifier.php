@@ -256,6 +256,7 @@ class TypeSpecifier
 				if (
 					$isNormalCount->yes()
 					&& $argType instanceof UnionType
+					&& $argType->isConstantArray()->yes()
 					&& $leftType instanceof ConstantIntegerType
 				) {
 					if ($orEqual) {

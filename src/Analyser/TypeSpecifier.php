@@ -951,10 +951,6 @@ class TypeSpecifier
 
 	private function narrowUnionBySize(FuncCall $countFuncCall, UnionType $argType, Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
 	{
-		if (!$sizeType->isInteger()->yes()) {
-			return null;
-		}
-
 		if (count($countFuncCall->getArgs()) === 1) {
 			$isNormalCount = TrinaryLogic::createYes();
 		} else {

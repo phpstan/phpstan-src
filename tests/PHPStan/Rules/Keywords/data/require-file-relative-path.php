@@ -4,4 +4,3 @@ include 'RequireFileExistsRuleTest.php';
 include_once 'RequireFileExistsRuleTest.php';
 require 'RequireFileExistsRuleTest.php';
 require_once 'RequireFileExistsRuleTest.php';
-

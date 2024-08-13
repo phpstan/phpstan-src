@@ -47,7 +47,7 @@ class RequireFileExistsRuleTest extends RuleTestCase
 
 	public function testFileDoesNotExistConditionally(): void
 	{
-		$this->analyse([__DIR__ . '/data/file-does-not-exist-conditionally.php'], [
+		$this->analyse([__DIR__ . '/data/require-file-conditionally.php'], [
 			[
 				'Path in include() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
 				9,

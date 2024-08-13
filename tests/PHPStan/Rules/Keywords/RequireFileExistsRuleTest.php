@@ -4,6 +4,11 @@ namespace PHPStan\Rules\Keywords;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function get_include_path;
+use function implode;
+use function realpath;
+use function set_include_path;
+use const PATH_SEPARATOR;
 
 /**
  * @extends RuleTestCase<RequireFileExistsRule>

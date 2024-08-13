@@ -30,7 +30,7 @@ final class RequireFileExistsRule implements Rule
 		$paths = $this->resolveFilePaths($node, $scope);
 
 		foreach ($paths as $path) {
-			if (stream_resolve_include_path($path)) {
+			if (stream_resolve_include_path($path) !== false) {
 				continue;
 			}
 

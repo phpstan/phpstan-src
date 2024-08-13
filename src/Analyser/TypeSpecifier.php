@@ -991,7 +991,7 @@ class TypeSpecifier
 		return null;
 	}
 
-	private function turnListIntoConstantArray(FuncCall $countFuncCall, Type $listOrArray, Type $sizeType, Scope $scope): ?Type
+	private function turnListIntoConstantArray(FuncCall $countFuncCall, Type $type, Type $sizeType, Scope $scope): ?Type
 	{
 		$argType = $scope->getType($countFuncCall->getArgs()[0]->value);
 
@@ -1004,15 +1004,15 @@ class TypeSpecifier
 
 		if (
 			$isNormalCount->yes()
+			&& $type->isList()->yes()
 			&& $sizeType instanceof ConstantIntegerType
-			&& $listOrArray->isList()->yes()
 			&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
 		) {
 			// turn optional offsets non-optional
 			$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
 			for ($i = 0; $i < $sizeType->getValue(); $i++) {
 				$offsetType = new ConstantIntegerType($i);
-				$valueTypesBuilder->setOffsetValueType($offsetType, $listOrArray->getOffsetValueType($offsetType));
+				$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
 			}
 			return $valueTypesBuilder->getArray();
 		}

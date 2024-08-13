@@ -26,6 +26,14 @@ class RequireFileExistsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/file-exists-but-path-is-relative.php'], [
 			[
+				'Path in include() "include-me-to-prove-you-work.txt" is not a file or it does not exist.',
+				3,
+			],
+			[
+				'Path in include_once() "include-me-to-prove-you-work.txt" is not a file or it does not exist.',
+				4,
+			],
+			[
 				'Path in require() "include-me-to-prove-you-work.txt" is not a file or it does not exist.',
 				5,
 			],
@@ -44,6 +52,14 @@ class RequireFileExistsRuleTest extends RuleTestCase
 	public function testFileDoesNotExistUsingClassConst(): void
 	{
 		$this->analyse([__DIR__ . '/data/file-does-not-exist-using-class-const.php'], [
+			[
+				'Path in include() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				5,
+			],
+			[
+				'Path in include_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				6,
+			],
 			[
 				'Path in require() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
 				7,
@@ -68,6 +84,14 @@ class RequireFileExistsRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/file-does-not-exist-using-constant.php'], [
 			[
+				'Path in include() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				5,
+			],
+			[
+				'Path in include_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				6,
+			],
+			[
 				'Path in require() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
 				7,
 			],
@@ -91,6 +115,14 @@ class RequireFileExistsRuleTest extends RuleTestCase
 	public function testFileDoesNotExistButUsesVariables(): void
 	{
 		$this->analyse([__DIR__ . '/data/file-does-not-exist-but-uses-a-variable.php'], [
+			[
+				'Path in include() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				5,
+			],
+			[
+				'Path in include_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				6,
+			],
 			[
 				'Path in require() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
 				7,

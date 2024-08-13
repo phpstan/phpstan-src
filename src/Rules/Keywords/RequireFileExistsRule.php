@@ -26,24 +26,14 @@ final class RequireFileExistsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->shouldProcessNode($node)) {
-			$filePath = $this->resolveFilePath($node, $scope);
-			if (is_string($filePath) && !is_file($filePath)) {
-				return [
-					$this->getErrorMessage($node, $filePath),
-				];
-			}
+		$filePath = $this->resolveFilePath($node, $scope);
+		if (is_string($filePath) && !is_file($filePath)) {
+			return [
+				$this->getErrorMessage($node, $filePath),
+			];
 		}
 
 		return [];
-	}
-
-	private function shouldProcessNode(Node $node): bool
-	{
-		return $node instanceof Include_ && (
-				$node->type === Include_::TYPE_REQUIRE
-				|| $node->type === Include_::TYPE_REQUIRE_ONCE
-			);
 	}
 
 	private function getErrorMessage(Include_ $node, string $filePath): RuleError
@@ -54,6 +44,12 @@ final class RequireFileExistsRule implements Rule
 				break;
 			case Include_::TYPE_REQUIRE_ONCE:
 				$message = 'Path in require_once() "%s" is not a file or it does not exist.';
+				break;
+			case Include_::TYPE_INCLUDE:
+				$message = 'Path in include() "%s" is not a file or it does not exist.';
+				break;
+			case Include_::TYPE_INCLUDE_ONCE:
+				$message = 'Path in include_once() "%s" is not a file or it does not exist.';
 				break;
 			default:
 				throw new ShouldNotHappenException('Rule should have already validated the node type.');

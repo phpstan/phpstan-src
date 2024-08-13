@@ -17,9 +17,33 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		return new RequireFileExistsRule();
 	}
 
-	public function testItCannotReadConstantsDefinedInTheAnalysedFile(): void
+	public static function getAdditionalConfigFiles(): array
 	{
-		$this->analyse([__DIR__ . '/data/file-does-not-exist-but-const-is-defined-in-the-same-file.php'], []);
+		return [
+			__DIR__ . '/../../Analyser/usePathConstantsAsConstantString.neon',
+		];
+	}
+
+	public function testFileDoesNotExistUsingConstDefinedInTheSameFolder(): void
+	{
+		$this->analyse([__DIR__ . '/data/file-does-not-exist-using-const-defined-in-the-same-file.php'], [
+			[
+				'Path in include() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				5,
+			],
+			[
+				'Path in include_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				6,
+			],
+			[
+				'Path in require() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				7,
+			],
+			[
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				8,
+			],
+		]);
 	}
 
 	public function testFileExistsButPathIsRelative(): void

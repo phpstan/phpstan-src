@@ -9,9 +9,9 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use function is_file;
 use function sprintf;
 use function str_replace;
+use function stream_resolve_include_path;
 
 /**
  * @implements Rule<Include_>
@@ -30,7 +30,7 @@ final class RequireFileExistsRule implements Rule
 		$paths = $this->resolveFilePaths($node, $scope);
 
 		foreach ($paths as $path) {
-			if (is_file($path)) {
+			if (stream_resolve_include_path($path)) {
 				continue;
 			}
 

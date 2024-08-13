@@ -136,6 +136,28 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/file-exists-using-a-variable.php'], []);
 	}
 
+	public function testFileDoesNotExistConditionally(): void
+	{
+		$this->analyse([__DIR__ . '/data/file-does-not-exist-conditionally.php'], [
+			[
+				'Path in include() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				9,
+			],
+			[
+				'Path in include_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				10,
+			],
+			[
+				'Path in require() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				11,
+			],
+			[
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				12,
+			],
+		]);
+	}
+
 	public function testFileDoesNotExistButUsesVariables(): void
 	{
 		$this->analyse([__DIR__ . '/data/file-does-not-exist-but-uses-a-variable.php'], [

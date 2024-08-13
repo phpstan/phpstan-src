@@ -27,14 +27,18 @@ final class RequireFileExistsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$filePath = $this->resolveFilePath($node, $scope);
-		if (is_string($filePath) && !is_file($filePath)) {
-			return [
-				$this->getErrorMessage($node, $filePath),
-			];
+		$errors = [];
+		$paths = $this->resolveFilePaths($node, $scope);
+
+		foreach ($paths as $path) {
+			if (is_file($path)) {
+				continue;
+			}
+
+			$errors[] = $this->getErrorMessage($node, $path);
 		}
 
-		return [];
+		return $errors;
 	}
 
 	private function getErrorMessage(Include_ $node, string $filePath): IdentifierRuleError
@@ -69,12 +73,20 @@ final class RequireFileExistsRule implements Rule
 		)->nonIgnorable()->identifier($identifier)->build();
 	}
 
-	private function resolveFilePath(Include_ $node, Scope $scope): ?string
+	/**
+	 * @return array<string>
+	 */
+	private function resolveFilePaths(Include_ $node, Scope $scope): array
 	{
+		$paths = [];
 		$type = $scope->getType($node->expr);
-		$paths = $type->getConstantStrings();
+		$constantStrings = $type->getConstantStrings();
 
-		return isset($paths[0]) ? $paths[0]->getValue() : null;
+		foreach ($constantStrings as $constantString) {
+			$paths[] = $constantString->getValue();
+		}
+
+		return $paths;
 	}
 
 }

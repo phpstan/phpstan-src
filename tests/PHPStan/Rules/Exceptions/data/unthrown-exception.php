@@ -744,3 +744,49 @@ class ExtendsCallCallable3 extends CallCallable
 	}
 
 }
+
+class TestIntdivWithRange
+{
+	/**
+	 * @param int          $int
+	 * @param int<min, -1> $negativeInt
+	 * @param int<1, max>  $positiveInt
+	 */
+	public function doFoo(int $int, int $negativeInt, int $positiveInt): void
+	{
+		try {
+			intdiv($int, $positiveInt);
+			intdiv($positiveInt, $negativeInt);
+			intdiv($negativeInt, $positiveInt);
+			intdiv($positiveInt, $positiveInt);
+		} catch (\ArithmeticError $e) {
+
+		}
+		try {
+			intdiv($int, $negativeInt);
+		} catch (\ArithmeticError $e) {
+
+		}
+		try {
+			intdiv($negativeInt, $negativeInt);
+		} catch (\ArithmeticError $e) {
+
+		}
+		try {
+			intdiv($positiveInt, $int);
+		} catch (\ArithmeticError $e) {
+
+		}
+		try {
+			intdiv($negativeInt, $int);
+		} catch (\ArithmeticError $e) {
+
+		}
+		try {
+			intdiv($int, '-1,5');
+		} catch (\ArithmeticError $e) {
+
+		}
+	}
+
+}

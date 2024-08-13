@@ -313,5 +313,3 @@ services:
 		class: PHPStan\Rules\Regexp\RegularExpressionQuotingRule
 	-
 		class: PHPStan\Rules\Keywords\RequireFileExistsRule
-		tags:
-			- phpstan.rules.rule

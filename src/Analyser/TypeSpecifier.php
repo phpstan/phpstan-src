@@ -246,44 +246,17 @@ class TypeSpecifier
 			) {
 				$argType = $scope->getType($expr->right->getArgs()[0]->value);
 
-				if (count($expr->right->getArgs()) === 1) {
-					$isNormalCount = TrinaryLogic::createYes();
-				} else {
-					$mode = $scope->getType($expr->right->getArgs()[1]->value);
-					$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->or($argType->getIterableValueType()->isArray()->negate());
-				}
-
-				if (
-					$isNormalCount->yes()
-					&& $argType instanceof UnionType
-					&& $argType->isConstantArray()->yes()
-					&& $leftType instanceof ConstantIntegerType
-				) {
+				if ($argType instanceof UnionType && $leftType instanceof ConstantIntegerType) {
 					if ($orEqual) {
-						$constantType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
+						$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
 					} else {
-						$constantType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
+						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
 					}
 
-					$result = [];
-					foreach ($argType->getTypes() as $innerType) {
-						$arraySize = $innerType->getArraySize();
-						$isSize = $constantType->isSuperTypeOf($arraySize);
-						if ($context->truthy()) {
-							if ($isSize->no()) {
-								continue;
-							}
-						}
-						if ($context->falsey()) {
-							if (!$isSize->yes()) {
-								continue;
-							}
-						}
-
-						$result[] = $innerType;
+					$narrowed = $this->narrowUnionBySize($expr->right, $argType, $sizeType, $context, $scope, $rootExpr);
+					if ($narrowed !== null) {
+						return $narrowed;
 					}
-
-					return $this->create($expr->right->getArgs()[0]->value, TypeCombinator::union(...$result), $context, false, $scope, $rootExpr);
 				}
 
 				if (
@@ -974,6 +947,47 @@ class TypeSpecifier
 		}
 
 		return new SpecifiedTypes([], [], false, [], $rootExpr);
+	}
+
+	private function narrowUnionBySize(FuncCall $countFuncCall, UnionType $argType, Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
+	{
+		if (!$sizeType->isInteger()->yes()) {
+			return null;
+		}
+
+		if (count($countFuncCall->getArgs()) === 1) {
+			$isNormalCount = TrinaryLogic::createYes();
+		} else {
+			$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
+			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->or($argType->getIterableValueType()->isArray()->negate());
+		}
+
+		if (
+			$isNormalCount->yes()
+			&& $argType->isConstantArray()->yes()
+		) {
+			$result = [];
+			foreach ($argType->getTypes() as $innerType) {
+				$arraySize = $innerType->getArraySize();
+				$isSize = $sizeType->isSuperTypeOf($arraySize);
+				if ($context->truthy()) {
+					if ($isSize->no()) {
+						continue;
+					}
+				}
+				if ($context->falsey()) {
+					if (!$isSize->yes()) {
+						continue;
+					}
+				}
+
+				$result[] = $innerType;
+			}
+
+			return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$result), $context, false, $scope, $rootExpr);
+		}
+
+		return null;
 	}
 
 	private function specifyTypesForConstantBinaryExpression(

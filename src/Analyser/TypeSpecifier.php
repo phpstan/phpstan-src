@@ -253,7 +253,7 @@ class TypeSpecifier
 						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
 					}
 
-					$narrowed = $this->narrowUnionBySize($expr->right, $argType, $sizeType, $context, $scope, $rootExpr);
+					$narrowed = $this->narrowUnionByArraySize($expr->right, $argType, $sizeType, $context, $scope, $rootExpr);
 					if ($narrowed !== null) {
 						return $narrowed;
 					}
@@ -949,7 +949,7 @@ class TypeSpecifier
 		return new SpecifiedTypes([], [], false, [], $rootExpr);
 	}
 
-	private function narrowUnionBySize(FuncCall $countFuncCall, UnionType $argType, Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
+	private function narrowUnionByArraySize(FuncCall $countFuncCall, UnionType $argType, Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
 	{
 		if (count($countFuncCall->getArgs()) === 1) {
 			$isNormalCount = TrinaryLogic::createYes();
@@ -1037,7 +1037,7 @@ class TypeSpecifier
 			$argType = $scope->getType($exprNode->getArgs()[0]->value);
 
 			if ($argType instanceof UnionType) {
-				$narrowed = $this->narrowUnionBySize($exprNode, $argType, $constantType, $context, $scope, $rootExpr);
+				$narrowed = $this->narrowUnionByArraySize($exprNode, $argType, $constantType, $context, $scope, $rootExpr);
 				if ($narrowed !== null) {
 					return $narrowed;
 				}

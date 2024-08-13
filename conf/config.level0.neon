@@ -117,7 +117,6 @@ rules:
 	- PHPStan\Rules\Types\InvalidTypesInUnionRule
 	- PHPStan\Rules\Variables\UnsetRule
 	- PHPStan\Rules\Whitespace\FileWhitespaceRule
-	- PHPStan\Rules\Keywords\RequireFileExistsRule
 
 services:
 	-
@@ -312,3 +311,7 @@ services:
 
 	-
 		class: PHPStan\Rules\Regexp\RegularExpressionQuotingRule
+	-
+		class: PHPStan\Rules\Keywords\RequireFileExistsRule
+		tags:
+			- phpstan.rules.rule

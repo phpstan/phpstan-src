@@ -970,6 +970,16 @@ class TypeSpecifier
 					if ($isSize->no()) {
 						continue;
 					}
+
+					if ($sizeType instanceof ConstantIntegerType && $innerType->isList()->yes()) {
+						// turn optional offsets non-optional
+						$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
+						for ($i = 0; $i < $sizeType->getValue(); $i++) {
+							$offsetType = new ConstantIntegerType($i);
+							$valueTypesBuilder->setOffsetValueType($offsetType, $innerType->getOffsetValueType($offsetType));
+						}
+						$innerType = $valueTypesBuilder->getArray();
+					}
 				}
 				if ($context->falsey()) {
 					if (!$isSize->yes()) {
@@ -1059,6 +1069,7 @@ class TypeSpecifier
 
 					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
 					if ($isNormalCount->yes() && $argType->isList()->yes() && $context->truthy() && $constantType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+						// turn optional offsets non-optional
 						$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
 						for ($i = 0; $i < $constantType->getValue(); $i++) {
 							$offsetType = new ConstantIntegerType($i);

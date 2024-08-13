@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\BinaryOp\Equal;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
@@ -52,7 +53,16 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 
 		$needleExpr = $node->getArgs()[0]->value;
 		$arrayExpr = $node->getArgs()[1]->value;
-		if ($arrayExpr instanceof Array_ && $isStrictComparison) {
+
+		$needleType = $scope->getType($needleExpr);
+		$arrayType = $scope->getType($arrayExpr);
+		$arrayValueType = $arrayType->getIterableValueType();
+
+		$isStrictComparison = $isStrictComparison
+			|| $needleType->isEnum()->yes()
+			|| $arrayValueType->isEnum()->yes();
+
+		if ($arrayExpr instanceof Array_) {
 			$types = null;
 			foreach ($arrayExpr->items as $item) {
 				if ($item === null) {
@@ -62,7 +72,12 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 					$types = null;
 					break;
 				}
-				$itemTypes = $this->typeSpecifier->resolveIdentical(new Identical($needleExpr, $item->value), $scope, $context, null);
+
+				if ($isStrictComparison) {
+					$itemTypes = $this->typeSpecifier->resolveIdentical(new Identical($needleExpr, $item->value), $scope, $context, null);
+				} else {
+					$itemTypes = $this->typeSpecifier->resolveEqual(new Equal($needleExpr, $item->value), $scope, $context, null);
+				}
 
 				if ($types === null) {
 					$types = $itemTypes;
@@ -76,14 +91,6 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 				return $types;
 			}
 		}
-
-		$needleType = $scope->getType($needleExpr);
-		$arrayType = $scope->getType($arrayExpr);
-		$arrayValueType = $arrayType->getIterableValueType();
-
-		$isStrictComparison = $isStrictComparison
-			|| $needleType->isEnum()->yes()
-			|| $arrayValueType->isEnum()->yes();
 
 		if (!$isStrictComparison) {
 			if (

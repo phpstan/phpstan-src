@@ -244,12 +244,51 @@ class TypeSpecifier
 				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
 				&& $leftType->isInteger()->yes()
 			) {
+				$argType = $scope->getType($expr->right->getArgs()[0]->value);
+
+				if (count($expr->right->getArgs()) === 1) {
+					$isNormalCount = TrinaryLogic::createYes();
+				} else {
+					$mode = $scope->getType($expr->right->getArgs()[1]->value);
+					$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->or($argType->getIterableValueType()->isArray()->negate());
+				}
+
+				if (
+					$isNormalCount->yes()
+					&& $argType instanceof UnionType
+					&& $leftType instanceof ConstantIntegerType
+				) {
+					if ($orEqual) {
+						$constantType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
+					} else {
+						$constantType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
+					}
+
+					$result = [];
+					foreach ($argType->getTypes() as $innerType) {
+						$arraySize = $innerType->getArraySize();
+						$isSize = $constantType->isSuperTypeOf($arraySize);
+						if ($context->truthy()) {
+							if ($isSize->no()) {
+								continue;
+							}
+						}
+						if ($context->falsey()) {
+							if (!$isSize->yes()) {
+								continue;
+							}
+						}
+
+						$result[] = $innerType;
+					}
+
+					return $this->create($expr->right->getArgs()[0]->value, TypeCombinator::union(...$result), $context, false, $scope, $rootExpr);
+				}
+
 				if (
 					$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
 					|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
 				) {
-					$argType = $scope->getType($expr->right->getArgs()[0]->value);
-
 					if ($context->truthy() && $argType->isArray()->maybe()) {
 						$countables = [];
 						if ($argType instanceof UnionType) {

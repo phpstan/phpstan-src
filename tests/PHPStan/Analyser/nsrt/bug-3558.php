@@ -28,6 +28,6 @@ function (): void {
 	}
 
 	if(count($idGroups) > 1){
-		assertType('array{1, array{1, 2}, array{1, 2}, array{1, 2}}|array{1}', $idGroups);
+		assertType('array{1, array{1, 2}, array{1, 2}, array{1, 2}}', $idGroups);
 	}
 };

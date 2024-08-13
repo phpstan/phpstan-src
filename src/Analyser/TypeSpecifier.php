@@ -971,7 +971,7 @@ class TypeSpecifier
 						continue;
 					}
 
-					if ($sizeType instanceof ConstantIntegerType && $innerType->isList()->yes()) {
+					if ($sizeType instanceof ConstantIntegerType && $innerType->isList()->yes() && $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 						// turn optional offsets non-optional
 						$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
 						for ($i = 0; $i < $sizeType->getValue(); $i++) {
@@ -1060,6 +1060,14 @@ class TypeSpecifier
 				}
 
 				if ($argType->isArray()->yes()) {
+					if (
+						$context->truthy()
+						&& $argType->isConstantArray()->yes()
+						&& $constantType->isSuperTypeOf($argType->getArraySize())->no()
+					) {
+						return $this->create($exprNode->getArgs()[0]->value, new NeverType(), $context, false, $scope, $rootExpr);
+					}
+
 					if (count($exprNode->getArgs()) === 1) {
 						$isNormalCount = TrinaryLogic::createYes();
 					} else {

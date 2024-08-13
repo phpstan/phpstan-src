@@ -1040,36 +1040,11 @@ class TypeSpecifier
 		) {
 			$argType = $scope->getType($exprNode->getArgs()[0]->value);
 
-			if (count($exprNode->getArgs()) === 1) {
-				$isNormalCount = TrinaryLogic::createYes();
-			} else {
-				$mode = $scope->getType($exprNode->getArgs()[1]->value);
-				$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->or($argType->getIterableValueType()->isArray()->negate());
-			}
-
-			if (
-				$isNormalCount->yes()
-				&& $argType instanceof UnionType
-			) {
-				$result = [];
-				foreach ($argType->getTypes() as $innerType) {
-					$arraySize = $innerType->getArraySize();
-					$isSize = $constantType->isSuperTypeOf($arraySize);
-					if ($context->truthy()) {
-						if ($isSize->no()) {
-							continue;
-						}
-					}
-					if ($context->falsey()) {
-						if (!$isSize->yes()) {
-							continue;
-						}
-					}
-
-					$result[] = $innerType;
+			if ($argType instanceof UnionType) {
+				$narrowed = $this->narrowUnionBySize($exprNode, $argType, $constantType, $context, $scope, $rootExpr);
+				if ($narrowed !== null) {
+					return $narrowed;
 				}
-
-				return $this->create($exprNode->getArgs()[0]->value, TypeCombinator::union(...$result), $context, false, $scope, $rootExpr);
 			}
 
 			if ($context->truthy() || $constantType->getValue() === 0) {
@@ -1079,6 +1054,13 @@ class TypeSpecifier
 				}
 
 				if ($argType->isArray()->yes()) {
+					if (count($exprNode->getArgs()) === 1) {
+						$isNormalCount = TrinaryLogic::createYes();
+					} else {
+						$mode = $scope->getType($exprNode->getArgs()[1]->value);
+						$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->or($argType->getIterableValueType()->isArray()->negate());
+					}
+
 					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
 					if ($isNormalCount->yes() && $argType->isList()->yes() && $context->truthy() && $constantType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 						$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();

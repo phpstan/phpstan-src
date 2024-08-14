@@ -18,8 +18,8 @@ class Foo
 		assertType('false', strtok('', ' '));
 
 		assertType('non-empty-string', $nonEmptyString[0]);
-		assertType('string', $nonEmptyString[1]);
-		assertType('string', $s[0]);
+		assertType('non-empty-string', $nonEmptyString[1]);
+		assertType('non-empty-string', $s[0]);
 	}
 
 }

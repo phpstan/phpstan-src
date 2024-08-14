@@ -1716,4 +1716,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/count-array-shift.php'], $errors);
 	}
 
+	public function testBug11506(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11506.php'], []);
+	}
+
 }

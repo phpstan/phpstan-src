@@ -29,17 +29,17 @@ class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		}
 
 		$valueType = $scope->getType($funcCall->getArgs()[0]->value)->toInteger();
-		$containsMin = $valueType->acceptsWithReason(new ConstantIntegerType(PHP_INT_MIN), true);
+		$containsMin = $valueType->isSuperTypeOf(new ConstantIntegerType(PHP_INT_MIN));
 
 		$divisorType = $scope->getType($funcCall->getArgs()[1]->value)->toInteger();
 		if (!$containsMin->no()) {
-			$divisionByMinusOne = $divisorType->acceptsWithReason(new ConstantIntegerType(-1), true);
+			$divisionByMinusOne = $divisorType->isSuperTypeOf(new ConstantIntegerType(-1));
 			if (!$divisionByMinusOne->no()) {
 				return new ObjectType(ArithmeticError::class);
 			}
 		}
 
-		$divisionByZero = $divisorType->acceptsWithReason(new ConstantIntegerType(0), false);
+		$divisionByZero = $divisorType->isSuperTypeOf(new ConstantIntegerType(0));
 		if (!$divisionByZero->no()) {
 			return new ObjectType(DivisionByZeroError::class);
 		}

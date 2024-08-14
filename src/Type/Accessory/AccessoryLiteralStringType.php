@@ -153,7 +153,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		return $this;
+		if ($valueType->isLiteralString()->yes()) {
+			return $this;
+		}
+
+		return new StringType();
 	}
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type

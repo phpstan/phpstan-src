@@ -29,7 +29,6 @@ class Foo
 
 	/**
 	 * @param literal-string $literalString
-	 * @param literal-string $anotherLiteralString
 	 */
 	public function doBar(string $literalString, string $generalString): void
 	{
@@ -38,6 +37,18 @@ class Foo
 
 		$literalString[1] = $generalString;
 		assertType('non-empty-string', $literalString);
+	}
+
+	/**
+	 * @param non-falsy-string $nonFalsyString
+	 */
+	public function doBaz(string $nonFalsyString, string $generalString): void
+	{
+		$nonFalsyString[0] = 'a';
+		assertType('non-falsy-string', $nonFalsyString);
+
+		$nonFalsyString[1] = $generalString;
+		assertType('non-empty-string', $nonFalsyString);
 	}
 
 }

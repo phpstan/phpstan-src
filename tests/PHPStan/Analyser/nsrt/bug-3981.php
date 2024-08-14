@@ -20,6 +20,11 @@ class Foo
 		assertType('non-empty-string', $nonEmptyString[0]);
 		assertType('non-empty-string', $nonEmptyString[1]);
 		assertType('non-empty-string', $s[0]);
+
+		assertType('string', $s);
+
+		$s[0] = '1';
+		assertType('non-empty-string', $s);
 	}
 
 }

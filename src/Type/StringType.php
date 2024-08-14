@@ -72,7 +72,10 @@ class StringType implements Type
 			return new ErrorType();
 		}
 
-		return new StringType();
+		return new IntersectionType([
+			new StringType(),
+			new AccessoryNonEmptyStringType(),
+		]);
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
@@ -87,7 +90,10 @@ class StringType implements Type
 		}
 
 		if ($offsetType->isInteger()->yes() || $offsetType instanceof MixedType) {
-			return new StringType();
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNonEmptyStringType(),
+			]);
 		}
 
 		return new ErrorType();

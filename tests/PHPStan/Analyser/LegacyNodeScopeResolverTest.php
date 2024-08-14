@@ -1073,7 +1073,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$secondStringArray',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$thirdStringArray',
 			],
 			[
@@ -1089,7 +1089,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$secondStringArrayList',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$thirdStringArrayList',
 			],
 			[
@@ -1097,35 +1097,35 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$fourthStringArrayList',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$firstStringArrayForeach',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$secondStringArrayForeach',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$thirdStringArrayForeach',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$fourthStringArrayForeach',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$firstStringArrayForeachList',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$secondStringArrayForeachList',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$thirdStringArrayForeachList',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$fourthStringArrayForeachList',
 			],
 			[
@@ -2904,7 +2904,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$fooString[4]',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'$fooString[$integer]',
 			],
 			[

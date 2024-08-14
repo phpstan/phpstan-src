@@ -27,4 +27,17 @@ class Foo
 		assertType('non-empty-string', $s);
 	}
 
+	/**
+	 * @param literal-string $literalString
+	 * @param literal-string $anotherLiteralString
+	 */
+	public function doBar(string $literalString, string $generalString): void
+	{
+		$literalString[0] = 'a';
+		assertType('literal-string&non-empty-string', $literalString);
+
+		$literalString[1] = $generalString;
+		assertType('non-empty-string', $literalString);
+	}
+
 }

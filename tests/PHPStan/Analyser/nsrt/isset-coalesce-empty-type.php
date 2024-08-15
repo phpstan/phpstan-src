@@ -296,7 +296,7 @@ class Bug4671
 	 */
 	public function doFoo(int $intput, array $strings): void
 	{
-		assertType('false', isset($strings[(string) $intput]));
+		assertType('bool', isset($strings[(string) $intput]));
 	}
 
 }

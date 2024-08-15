@@ -609,11 +609,17 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		$offsetType = $offsetType->toArrayKey();
+		$offsetArrayKeyType = $offsetType->toArrayKey();
+
+		return $this->recursiveHasOffsetValueType($offsetArrayKeyType);
+	}
+
+	private function recursiveHasOffsetValueType(Type $offsetType): TrinaryLogic
+	{
 		if ($offsetType instanceof UnionType) {
 			$results = [];
 			foreach ($offsetType->getTypes() as $innerType) {
-				$results[] = $this->hasOffsetValueType($innerType);
+				$results[] = $this->recursiveHasOffsetValueType($innerType);
 			}
 
 			return TrinaryLogic::extremeIdentity(...$results);
@@ -623,7 +629,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			if ($finiteTypes !== []) {
 				$results = [];
 				foreach ($finiteTypes as $innerType) {
-					$results[] = $this->hasOffsetValueType($innerType);
+					$results[] = $this->recursiveHasOffsetValueType($innerType);
 				}
 
 				return TrinaryLogic::extremeIdentity(...$results);

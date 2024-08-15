@@ -14,7 +14,9 @@ function printTagName(array $tags, string $tagId): void
 	// Adding the second `*` to either of the following lines makes the error disappear
 
 	$tagsById = array_combine(array_column($tags, 'id'), $tags);
-	echo $tagsById[$tagId]['tagName'] . PHP_EOL;
+	if (false !== $tagsById) {
+		echo $tagsById[$tagId]['tagName'] . PHP_EOL;
+	}
 }
 
 printTagName(

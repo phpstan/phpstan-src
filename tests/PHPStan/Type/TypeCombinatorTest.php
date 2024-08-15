@@ -16,6 +16,7 @@ use Iterator;
 use ObjectShapesAcceptance\ClassWithFooIntProperty;
 use PHPStan\Fixture\FinalClass;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -2567,6 +2568,36 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			ClosureType::class,
 			'Closure(): mixed',
+		];
+		yield [
+			[
+				new CallableType([
+					new DummyParameter('callback', new ObjectType('stdClass'), false, null, false, null),
+				], new VoidType(), false),
+				new CallableType([
+					new DummyParameter('callback', new UnionType([
+						new ObjectType('stdClass'),
+						new ObjectType('Exception'),
+					]), false, null, false, null),
+				], new VoidType(), false),
+			],
+			CallableType::class,
+			'callable(Exception|stdClass): void',
+		];
+		yield [
+			[
+				new CallableType([
+					new DummyParameter('callback', new ObjectType('stdClass'), false, null, false, null),
+				], new VoidType(), false),
+				new CallableType([
+					new DummyParameter('callback', new UnionType([
+						new IntegerType(),
+						new ObjectType('Exception'),
+					]), false, null, false, null),
+				], new VoidType(), false),
+			],
+			UnionType::class,
+			'(callable(Exception|int): void)|(callable(stdClass): void)',
 		];
 	}
 

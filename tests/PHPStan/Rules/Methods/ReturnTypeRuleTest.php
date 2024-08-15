@@ -1051,7 +1051,17 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug10715(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-10715.php'], []);
+		$this->analyse([__DIR__.'/data/bug-10715.php'], []);
+	}
+
+	public function testBug4163(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4163.php'], [
+			[
+				'Method Bug4163\HelloWorld::lall() should return array<string, string> but returns array<int|string, string>.',
+				28,
+			],
+		]);
 	}
 
 }

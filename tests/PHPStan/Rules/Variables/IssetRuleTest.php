@@ -233,10 +233,7 @@ class IssetRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
-		$this->analyse([__DIR__ . '/data/bug-4671.php'], [[
-			'Offset numeric-string on array<string, string> in isset() does not exist.',
-			13,
-		]]);
+		$this->analyse([__DIR__ . '/data/bug-4671.php'], []);
 	}
 
 	public function testVariableCertaintyInIsset(): void

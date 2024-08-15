@@ -957,7 +957,10 @@ class IntersectionType implements CompoundType
 	public function toArrayKey(): Type
 	{
 		if ($this->isNumericString()->yes()) {
-			return new IntegerType();
+			return new UnionType([
+				new IntegerType(),
+				$this,
+			]);
 		}
 
 		if ($this->isString()->yes()) {

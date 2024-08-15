@@ -7,11 +7,10 @@ use DivisionByZeroError;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use function count;
 use const PHP_INT_MIN;
 
@@ -29,39 +28,19 @@ class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 			return $functionReflection->getThrowType();
 		}
 
-		$containsMin = false;
-		$valueType = $scope->getType($funcCall->getArgs()[0]->value);
-		foreach ($valueType->getConstantScalarTypes() as $constantScalarType) {
-			if ($constantScalarType->getValue() === PHP_INT_MIN) {
-				$containsMin = true;
-			}
+		$valueType = $scope->getType($funcCall->getArgs()[0]->value)->toInteger();
+		$containsMin = $valueType->isSuperTypeOf(new ConstantIntegerType(PHP_INT_MIN));
 
-			$valueType = TypeCombinator::remove($valueType, $constantScalarType);
-		}
-
-		if (!$valueType instanceof NeverType) {
-			$containsMin = true;
-		}
-
-		$divisionByZero = false;
-		$divisorType = $scope->getType($funcCall->getArgs()[1]->value);
-		foreach ($divisorType->getConstantScalarTypes() as $constantScalarType) {
-			if ($containsMin && $constantScalarType->getValue() === -1) {
+		$divisorType = $scope->getType($funcCall->getArgs()[1]->value)->toInteger();
+		if (!$containsMin->no()) {
+			$divisionByMinusOne = $divisorType->isSuperTypeOf(new ConstantIntegerType(-1));
+			if (!$divisionByMinusOne->no()) {
 				return new ObjectType(ArithmeticError::class);
 			}
-
-			if ($constantScalarType->getValue() === 0) {
-				$divisionByZero = true;
-			}
-
-			$divisorType = TypeCombinator::remove($divisorType, $constantScalarType);
 		}
 
-		if (!$divisorType instanceof NeverType) {
-			return new ObjectType($containsMin ? ArithmeticError::class : DivisionByZeroError::class);
-		}
-
-		if ($divisionByZero) {
+		$divisionByZero = $divisorType->isSuperTypeOf(new ConstantIntegerType(0));
+		if (!$divisionByZero->no()) {
 			return new ObjectType(DivisionByZeroError::class);
 		}
 

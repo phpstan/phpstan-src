@@ -6,22 +6,24 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
-use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Error;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
@@ -35,11 +37,19 @@ use function array_map;
 use function count;
 use function in_array;
 use function is_string;
-use function strtolower;
+use function sprintf;
 use function substr;
 
-final class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayFilterFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	private const USE_BOTH = 1;
+	private const USE_KEY = 2;
+	private const USE_ITEM = 3;
+
+	public function __construct(private ReflectionProvider $reflectionProvider)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -72,70 +82,69 @@ final class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicF
 			]);
 		}
 
-		if ($callbackArg === null || ($callbackArg instanceof ConstFetch && strtolower($callbackArg->name->getParts()[0]) === 'null')) {
+		if ($callbackArg === null || $scope->getType($callbackArg)->isNull()->yes()) {
 			return TypeCombinator::union(
 				...array_map([$this, 'removeFalsey'], $arrayArgType->getArrays()),
 			);
 		}
 
-		if ($flagArg === null) {
-			if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
-				$statement = $callbackArg->stmts[0];
-				if ($statement instanceof Return_ && $statement->expr !== null) {
-					return $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $arrayArgType, null, $statement->expr);
-				}
-			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
-				return $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $arrayArgType, null, $callbackArg->expr);
-			} elseif ($callbackArg instanceof String_) {
-				$funcName = self::createFunctionName($callbackArg->value);
-				if ($funcName === null) {
-					return new ErrorType();
-				}
-
-				$itemVar = new Variable('item');
-				$expr = new FuncCall($funcName, [new Arg($itemVar)]);
-				return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, null, $expr);
-			}
+		$mode = $this->determineMode($flagArg, $scope);
+		if ($mode === null) {
+			return new ArrayType($keyType, $itemType);
 		}
 
-		if ($flagArg instanceof ConstFetch && $flagArg->name->getParts()[0] === 'ARRAY_FILTER_USE_KEY') {
-			if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
-				$statement = $callbackArg->stmts[0];
-				if ($statement instanceof Return_ && $statement->expr !== null) {
-					return $this->filterByTruthyValue($scope, null, $arrayArgType, $callbackArg->params[0]->var, $statement->expr);
+		if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
+			$statement = $callbackArg->stmts[0];
+			if ($statement instanceof Return_ && $statement->expr !== null) {
+				if ($mode === self::USE_ITEM) {
+					$keyVar = null;
+					$itemVar = $callbackArg->params[0]->var;
+				} elseif ($mode === self::USE_KEY) {
+					$keyVar = $callbackArg->params[0]->var;
+					$itemVar = null;
+				} elseif ($mode === self::USE_BOTH) {
+					$keyVar = $callbackArg->params[1]->var ?? null;
+					$itemVar = $callbackArg->params[0]->var;
 				}
-			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
-				return $this->filterByTruthyValue($scope, null, $arrayArgType, $callbackArg->params[0]->var, $callbackArg->expr);
-			} elseif ($callbackArg instanceof String_) {
-				$funcName = self::createFunctionName($callbackArg->value);
-				if ($funcName === null) {
-					return new ErrorType();
-				}
-
-				$keyVar = new Variable('key');
-				$expr = new FuncCall($funcName, [new Arg($keyVar)]);
-				return $this->filterByTruthyValue($scope, null, $arrayArgType, $keyVar, $expr);
+				return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $statement->expr);
 			}
-		}
+		} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
+			if ($mode === self::USE_ITEM) {
+				$keyVar = null;
+				$itemVar = $callbackArg->params[0]->var;
+			} elseif ($mode === self::USE_KEY) {
+				$keyVar = $callbackArg->params[0]->var;
+				$itemVar = null;
+			} elseif ($mode === self::USE_BOTH) {
+				$keyVar = $callbackArg->params[1]->var ?? null;
+				$itemVar = $callbackArg->params[0]->var;
+			}
+			return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $callbackArg->expr);
+		} elseif (
+			($callbackArg instanceof FuncCall || $callbackArg instanceof MethodCall || $callbackArg instanceof StaticCall)
+			&& $callbackArg->isFirstClassCallable()
+		) {
+			[$args, $itemVar, $keyVar] = $this->createDummyArgs($mode);
+			$expr = clone $callbackArg;
+			$expr->args = $args;
+			return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $expr);
+		} else {
+			$constantStrings = $scope->getType($callbackArg)->getConstantStrings();
+			if (count($constantStrings) > 0) {
+				$results = [];
+				[$args, $itemVar, $keyVar] = $this->createDummyArgs($mode);
 
-		if ($flagArg instanceof ConstFetch && $flagArg->name->getParts()[0] === 'ARRAY_FILTER_USE_BOTH') {
-			if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
-				$statement = $callbackArg->stmts[0];
-				if ($statement instanceof Return_ && $statement->expr !== null) {
-					return $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $arrayArgType, $callbackArg->params[1]->var ?? null, $statement->expr);
-				}
-			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
-				return $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $arrayArgType, $callbackArg->params[1]->var ?? null, $callbackArg->expr);
-			} elseif ($callbackArg instanceof String_) {
-				$funcName = self::createFunctionName($callbackArg->value);
-				if ($funcName === null) {
-					return new ErrorType();
-				}
+				foreach ($constantStrings as $constantString) {
+					$funcName = self::createFunctionName($constantString->getValue());
+					if ($funcName === null) {
+						$results[] = new ErrorType();
+						continue;
+					}
 
-				$itemVar = new Variable('item');
-				$keyVar = new Variable('key');
-				$expr = new FuncCall($funcName, [new Arg($itemVar), new Arg($keyVar)]);
-				return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $expr);
+					$expr = new FuncCall($funcName, $args);
+					$results[] = $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $expr);
+				}
+				return TypeCombinator::union(...$results);
 			}
 		}
 
@@ -278,6 +287,65 @@ final class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicF
 		}
 
 		return new Name($funcName);
+	}
+
+	/**
+	 * @param self::USE_* $mode
+	 * @return array{list<Arg>, ?Variable, ?Variable}
+	 */
+	private function createDummyArgs(int $mode): array
+	{
+		if ($mode === self::USE_ITEM) {
+			$itemVar = new Variable('item');
+			$keyVar = null;
+			$args = [new Arg($itemVar)];
+		} elseif ($mode === self::USE_KEY) {
+			$itemVar = null;
+			$keyVar = new Variable('key');
+			$args = [new Arg($keyVar)];
+		} elseif ($mode === self::USE_BOTH) {
+			$itemVar = new Variable('item');
+			$keyVar = new Variable('key');
+			$args = [new Arg($itemVar), new Arg($keyVar)];
+		}
+		return [$args, $itemVar, $keyVar];
+	}
+
+	/**
+	 * @param non-empty-string $constantName
+	 */
+	private function getConstant(string $constantName): int
+	{
+		$constant = $this->reflectionProvider->getConstant(new Name($constantName), null);
+		$valueType = $constant->getValueType();
+		if (!$valueType instanceof ConstantIntegerType) {
+			throw new ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
+		}
+
+		return $valueType->getValue();
+	}
+
+	/**
+	 * @return self::USE_*|null
+	 */
+	private function determineMode(?Expr $flagArg, Scope $scope): ?int
+	{
+		if ($flagArg === null) {
+			return self::USE_ITEM;
+		}
+
+		$flagValues = $scope->getType($flagArg)->getConstantScalarValues();
+		if (count($flagValues) !== 1) {
+			return null;
+		}
+
+		if ($flagValues[0] === $this->getConstant('ARRAY_FILTER_USE_KEY')) {
+			return self::USE_KEY;
+		} elseif ($flagValues[0] === $this->getConstant('ARRAY_FILTER_USE_BOTH')) {
+			return self::USE_BOTH;
+		}
+
+		return null;
 	}
 
 }

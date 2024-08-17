@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -23,6 +24,7 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 					'ReadonlyPropertyAssign\\TestCase::setUp',
 				],
 			),
+			new PhpVersion(PHP_VERSION_ID),
 		);
 	}
 
@@ -152,6 +154,23 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				16,
 			],
 		]);
+	}
+
+	public function testBug11495(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$errors = [];
+		if (PHP_VERSION_ID < 80300) {
+			$errors[] = [
+				'Readonly property Bug11495\HelloWorld::$foo is assigned outside of the constructor.',
+				17,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-11495.php'], $errors);
 	}
 
 }

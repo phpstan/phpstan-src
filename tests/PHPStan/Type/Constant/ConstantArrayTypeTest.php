@@ -14,6 +14,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -344,6 +345,18 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new ConstantStringType('true'),
 			]),
 			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			new ConstantArrayType([], []),
+			new NeverType(),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
+			new NeverType(),
+			TrinaryLogic::createYes(),
 		];
 	}
 

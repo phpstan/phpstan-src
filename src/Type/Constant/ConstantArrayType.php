@@ -300,6 +300,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
+		if ($type instanceof NeverType) {
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+		}
+
 		if ($type instanceof self && count($this->keyTypes) === 0) {
 			return AcceptsResult::createFromBoolean(count($type->keyTypes) === 0);
 		}

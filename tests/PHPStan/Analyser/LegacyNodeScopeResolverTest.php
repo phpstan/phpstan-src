@@ -8335,12 +8335,12 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'$this(AnonymousClass3301acd9e9d13ba9bbce9581cdb00699)',
+				'$this(AnonymousClass6a0687bc4f876de22e6d370597168d67)',
 				'$this',
 				"'inside'",
 			],
 			[
-				'AnonymousClass3301acd9e9d13ba9bbce9581cdb00699',
+				'AnonymousClass6a0687bc4f876de22e6d370597168d67',
 				'$foo',
 				"'outside'",
 			],
@@ -8388,7 +8388,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'$this(AnonymousClass3de0a9734314db9dec21ba308363ff9a)',
+				'$this(AnonymousClassa90f7ae5a3564e08aca97d6fbb39c2b2)',
 				'$this',
 			],
 		];
@@ -8406,6 +8406,44 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/anonymous-class-name-in-trait.php',
 			$description,
 			$expression,
+		);
+	}
+
+	public function dataAnonymousClassNameSameLine(): array
+	{
+		return [
+			[
+				'AnonymousClass6540444db24e3b8821f292cc08bb9b6c',
+				'$foo',
+				'$bar',
+			],
+			[
+				'AnonymousClass7c37a0e958f6b76cfeb23acfa3259ff8',
+				'$bar',
+				'$baz',
+			],
+			[
+				'AnonymousClassca84fbe02c775710b2735bfe3cbfbb7e',
+				'$baz',
+				'die',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataAnonymousClassNameSameLine
+	 */
+	public function testAnonymousClassNameSameLine(
+		string $description,
+		string $expression,
+		string $evaluatedPointExpression,
+	): void
+	{
+		$this->assertTypes(
+			__DIR__ . '/data/anonymous-class-name-same-line.php',
+			$description,
+			$expression,
+			$evaluatedPointExpression,
 		);
 	}
 

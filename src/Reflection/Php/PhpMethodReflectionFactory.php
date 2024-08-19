@@ -31,12 +31,12 @@ interface PhpMethodReflectionFactory
 		bool $isFinal,
 		?bool $isPure,
 		Assertions $asserts,
-		bool $acceptsNamedArguments,
 		?Type $selfOutType,
 		?string $phpDocComment,
 		array $phpDocParameterOutTypes,
 		array $immediatelyInvokedCallableParameters = [],
 		array $phpDocClosureThisTypeParameters = [],
+		bool $acceptsNamedArguments = true,
 	): PhpMethodReflection;
 
 }

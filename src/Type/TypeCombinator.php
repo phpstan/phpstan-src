@@ -594,6 +594,12 @@ class TypeCombinator
 					if (!($innerType instanceof AccessoryType) && !($innerType instanceof CallableType)) {
 						continue;
 					}
+					if ($innerType instanceof HasOffsetType) {
+						$offset = $innerType->getOffsetType();
+						if ($offset instanceof ConstantStringType || $offset instanceof ConstantIntegerType) {
+							$innerType = new HasOffsetValueType($offset, $arrayType->getIterableValueType());
+						}
+					}
 					if ($innerType instanceof HasOffsetValueType) {
 						$accessoryTypes[sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()))][$i] = $innerType;
 						continue;

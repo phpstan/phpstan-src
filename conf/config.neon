@@ -2139,6 +2139,7 @@ services:
 		class: PHPStan\Diagnose\PHPStanDiagnoseExtension
 		arguments:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+			allConfigFiles: %allConfigFiles%
 		autowired: false
 
 	# Error formatters

@@ -1579,7 +1579,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
-			count: 4
+			count: 5
 			path: src/Type/TypeCombinator.php
 
 		-
@@ -1619,6 +1619,16 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\StringType is error\\-prone and deprecated\\. Use Type\\:\\:isString\\(\\) instead\\.$#"
+			count: 1
+			path: src/Type/TypeCombinator.php
+
+		-
+			message: "#^Instanceof between PHPStan\\\\Type\\\\Constant\\\\ConstantIntegerType and PHPStan\\\\Type\\\\Constant\\\\ConstantIntegerType will always evaluate to true\\.$#"
+			count: 1
+			path: src/Type/TypeCombinator.php
+
+		-
+			message: "#^Result of \\|\\| is always true\\.$#"
 			count: 1
 			path: src/Type/TypeCombinator.php
 

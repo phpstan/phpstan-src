@@ -978,7 +978,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					]),
 				],
 				IntersectionType::class,
-				'array&hasOffset(\'foo\')',
+				'array&hasOffsetValue(\'foo\', mixed)',
 			],
 			[
 				[
@@ -2567,6 +2567,21 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			ClosureType::class,
 			'Closure(): mixed',
+		];
+		yield [
+			[
+				new IntersectionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new NonEmptyArrayType(),
+					new HasOffsetValueType(new ConstantStringType('thing'), new ConstantStringType('bla')),
+				]),
+				new IntersectionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new HasOffsetType(new ConstantStringType('thing')),
+				]),
+			],
+			IntersectionType::class,
+			'array&hasOffsetValue(\'thing\', mixed)',
 		];
 	}
 

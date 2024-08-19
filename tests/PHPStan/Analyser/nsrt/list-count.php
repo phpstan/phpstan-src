@@ -216,3 +216,127 @@ function countCountable(CountableFoo $x, int $mode)
 	}
 	assertType('ListCount\CountableFoo', $x);
 }
+
+class CountWithOptionalKeys
+{
+	/**
+	 * @param array{0: mixed, 1?: string|null} $row
+	 */
+	protected function testOptionalKeys($row): void
+	{
+		if (count($row) === 0) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 1) {
+			assertType('array{mixed}', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 2) {
+			assertType('array{mixed, string|null}', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 3) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+	}
+
+	/**
+	 * @param array{mixed}|array{0: mixed, 1?: string|null} $row
+	 */
+	protected function testOptionalKeysInUnion($row): void
+	{
+		if (count($row) === 0) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 1) {
+			assertType('array{mixed}', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 2) {
+			assertType('array{mixed, string|null}', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 3) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: mixed, 1?: string|null}', $row);
+		}
+	}
+
+	/**
+	 * @param array{string}|array{0: int, 1?: string|null} $row
+	 */
+	protected function testOptionalKeysInListsOfTaggedUnion($row): void
+	{
+		if (count($row) === 0) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: int, 1?: string|null}|array{string}', $row);
+		}
+
+		if (count($row) === 1) {
+			assertType('array{0: int, 1?: string|null}|array{string}', $row);
+		} else {
+			assertType('array{0: int, 1?: string|null}', $row);
+		}
+
+		if (count($row) === 2) {
+			assertType('array{int, string|null}', $row);
+		} else {
+			assertType('array{0: int, 1?: string|null}|array{string}', $row);
+		}
+
+		if (count($row) === 3) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: int, 1?: string|null}|array{string}', $row);
+		}
+	}
+
+	/**
+	 * @param array{string}|array{0: int, 3?: string|null} $row
+	 */
+	protected function testOptionalKeysInUnionArray($row): void
+	{
+		if (count($row) === 0) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: int, 3?: string|null}|array{string}', $row);
+		}
+
+		if (count($row) === 1) {
+			assertType('array{0: int, 3?: string|null}|array{string}', $row);
+		} else {
+			assertType('array{0: int, 3?: string|null}', $row);
+		}
+
+		if (count($row) === 2) {
+			assertType('array{0: int, 3?: string|null}', $row);
+		} else {
+			assertType('array{0: int, 3?: string|null}|array{string}', $row);
+		}
+
+		if (count($row) === 3) {
+			assertType('*NEVER*', $row);
+		} else {
+			assertType('array{0: int, 3?: string|null}|array{string}', $row);
+		}
+	}
+
+}

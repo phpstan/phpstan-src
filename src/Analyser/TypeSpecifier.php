@@ -970,6 +970,11 @@ class TypeSpecifier
 					if ($isSize->no()) {
 						continue;
 					}
+
+					$constArray = $this->turnListIntoConstantArray($countFuncCall, $innerType, $sizeType, $scope);
+					if ($constArray !== null) {
+						$innerType = $constArray;
+					}
 				}
 				if ($context->falsey()) {
 					if (!$isSize->yes()) {
@@ -981,6 +986,35 @@ class TypeSpecifier
 			}
 
 			return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$result), $context, false, $scope, $rootExpr);
+		}
+
+		return null;
+	}
+
+	private function turnListIntoConstantArray(FuncCall $countFuncCall, Type $type, Type $sizeType, Scope $scope): ?Type
+	{
+		$argType = $scope->getType($countFuncCall->getArgs()[0]->value);
+
+		if (count($countFuncCall->getArgs()) === 1) {
+			$isNormalCount = TrinaryLogic::createYes();
+		} else {
+			$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
+			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->or($argType->getIterableValueType()->isArray()->negate());
+		}
+
+		if (
+			$isNormalCount->yes()
+			&& $type->isList()->yes()
+			&& $sizeType instanceof ConstantIntegerType
+			&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+		) {
+			// turn optional offsets non-optional
+			$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
+			for ($i = 0; $i < $sizeType->getValue(); $i++) {
+				$offsetType = new ConstantIntegerType($i);
+				$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
+			}
+			return $valueTypesBuilder->getArray();
 		}
 
 		return null;
@@ -1050,21 +1084,18 @@ class TypeSpecifier
 				}
 
 				if ($argType->isArray()->yes()) {
-					if (count($exprNode->getArgs()) === 1) {
-						$isNormalCount = TrinaryLogic::createYes();
-					} else {
-						$mode = $scope->getType($exprNode->getArgs()[1]->value);
-						$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->or($argType->getIterableValueType()->isArray()->negate());
+					if (
+						$context->truthy()
+						&& $argType->isConstantArray()->yes()
+						&& $constantType->isSuperTypeOf($argType->getArraySize())->no()
+					) {
+						return $this->create($exprNode->getArgs()[0]->value, new NeverType(), $context, false, $scope, $rootExpr);
 					}
 
 					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-					if ($isNormalCount->yes() && $argType->isList()->yes() && $context->truthy() && $constantType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-						$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
-						$itemType = $argType->getIterableValueType();
-						for ($i = 0; $i < $constantType->getValue(); $i++) {
-							$valueTypesBuilder->setOffsetValueType(new ConstantIntegerType($i), $itemType);
-						}
-						$valueTypes = $this->create($exprNode->getArgs()[0]->value, $valueTypesBuilder->getArray(), $context, false, $scope, $rootExpr);
+					$constArray = $this->turnListIntoConstantArray($exprNode, $argType, $constantType, $scope);
+					if ($context->truthy() && $constArray !== null) {
+						$valueTypes = $this->create($exprNode->getArgs()[0]->value, $constArray, $context, false, $scope, $rootExpr);
 					} else {
 						$valueTypes = $this->create($exprNode->getArgs()[0]->value, new NonEmptyArrayType(), $newContext, false, $scope, $rootExpr);
 					}

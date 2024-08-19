@@ -24,6 +24,7 @@ use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvi
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\File\RelativePathHelper;
+use PHPStan\Parser\AnonymousClassVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -214,6 +215,14 @@ class BetterReflectionProvider implements ReflectionProvider
 			null,
 		);
 
+		/** @var int|null $classLineIndex */
+		$classLineIndex = $classNode->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX);
+		if ($classLineIndex === null) {
+			$displayName = sprintf('class@anonymous/%s:%s', $filename, $classNode->getStartLine());
+		} else {
+			$displayName = sprintf('class@anonymous/%s:%s:%d', $filename, $classNode->getStartLine(), $classLineIndex);
+		}
+
 		self::$anonymousClasses[$className] = new ClassReflection(
 			$this->reflectionProviderProvider->getReflectionProvider(),
 			$this->initializerExprTypeResolver,
@@ -227,7 +236,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getAllowedSubTypesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getRequireExtendsPropertyClassReflectionExtension(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getRequireExtendsMethodsClassReflectionExtension(),
-			sprintf('class@anonymous/%s:%s', $filename, $classNode->getStartLine()),
+			$displayName,
 			new ReflectionClass($reflectionClass),
 			$scopeFile,
 			null,

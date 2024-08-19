@@ -8335,12 +8335,12 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'$this(AnonymousClass6a0687bc4f876de22e6d370597168d67)',
+				'$this(AnonymousClass3301acd9e9d13ba9bbce9581cdb00699)',
 				'$this',
 				"'inside'",
 			],
 			[
-				'AnonymousClass6a0687bc4f876de22e6d370597168d67',
+				'AnonymousClass3301acd9e9d13ba9bbce9581cdb00699',
 				'$foo',
 				"'outside'",
 			],
@@ -8388,7 +8388,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'$this(AnonymousClassa90f7ae5a3564e08aca97d6fbb39c2b2)',
+				'$this(AnonymousClass3de0a9734314db9dec21ba308363ff9a)',
 				'$this',
 			],
 		];
@@ -8413,17 +8413,17 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'AnonymousClass6540444db24e3b8821f292cc08bb9b6c',
+				'AnonymousClass0d7d08272ba2f0a6ef324bb65c679e02',
 				'$foo',
 				'$bar',
 			],
 			[
-				'AnonymousClass7c37a0e958f6b76cfeb23acfa3259ff8',
+				'AnonymousClass464f64cbdca25b4af842cae65615bca9',
 				'$bar',
 				'$baz',
 			],
 			[
-				'AnonymousClassca84fbe02c775710b2735bfe3cbfbb7e',
+				'AnonymousClassa9fb472ec9acc5cae3bee4355c296bfa',
 				'$baz',
 				'die',
 			],

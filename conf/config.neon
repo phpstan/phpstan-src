@@ -312,6 +312,11 @@ services:
 				preserveOriginalNames: true
 
 	-
+		class: PHPStan\Parser\AnonymousClassVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parser\ArrayFilterArgVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor

@@ -84,6 +84,10 @@ parameters:
 			message: "#^Parameter \\#1 (?:\\$argument|\\$objectOrClass) of class ReflectionClass constructor expects class\\-string\\<PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\>\\|PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig, string given\\.$#"
 			count: 1
 			path: ../src/Command/CommandHelper.php
+		-
+			message: "#^Parameter \\#1 (?:\\$argument|\\$objectOrClass) of class ReflectionClass constructor expects class\\-string\\<PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\>\\|PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig, string given\\.$#"
+			count: 1
+			path: ../src/Diagnose/PHPStanDiagnoseExtension.php
 		- '#^Parameter \#1 \$offsetType of class PHPStan\\Type\\Accessory\\HasOffsetType constructor expects PHPStan\\Type\\Constant\\ConstantIntegerType\|PHPStan\\Type\\Constant\\ConstantStringType#'
 		- '#^Short ternary operator is not allowed#'
 	reportStaticMethodSignatures: true

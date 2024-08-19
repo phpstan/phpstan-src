@@ -165,11 +165,6 @@ parameters:
 			path: src/Diagnose/PHPStanDiagnoseExtension.php
 
 		-
-			message: "#^Parameter \\#1 \\$objectOrClass of class ReflectionClass constructor expects class\\-string\\<PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\>\\|PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig, string given\\.$#"
-			count: 1
-			path: src/Diagnose/PHPStanDiagnoseExtension.php
-
-		-
 			message: "#^Parameter \\#1 \\$path of function dirname expects string, string\\|false given\\.$#"
 			count: 1
 			path: src/Diagnose/PHPStanDiagnoseExtension.php

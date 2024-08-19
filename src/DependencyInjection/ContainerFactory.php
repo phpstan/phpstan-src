@@ -218,9 +218,6 @@ class ContainerFactory
 			if ($path === false) {
 				continue;
 			}
-			if ($containerFile->getATime() > $twoDaysAgo) {
-				continue;
-			}
 			if ($containerFile->getCTime() > $twoDaysAgo) {
 				continue;
 			}

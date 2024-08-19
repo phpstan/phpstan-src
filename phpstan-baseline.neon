@@ -160,6 +160,21 @@ parameters:
 			path: src/DependencyInjection/NeonAdapter.php
 
 		-
+			message: "#^Creating new ReflectionClass is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
+			count: 1
+			path: src/Diagnose/PHPStanDiagnoseExtension.php
+
+		-
+			message: "#^Parameter \\#1 \\$objectOrClass of class ReflectionClass constructor expects class\\-string\\<PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig\\>\\|PHPStan\\\\ExtensionInstaller\\\\GeneratedConfig, string given\\.$#"
+			count: 1
+			path: src/Diagnose/PHPStanDiagnoseExtension.php
+
+		-
+			message: "#^Parameter \\#1 \\$path of function dirname expects string, string\\|false given\\.$#"
+			count: 1
+			path: src/Diagnose/PHPStanDiagnoseExtension.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Internal/ContainerDynamicReturnTypeExtension.php

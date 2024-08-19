@@ -8,6 +8,7 @@ use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
+use ReflectionClass;
 use function array_key_exists;
 use function array_slice;
 use function class_exists;
@@ -15,7 +16,9 @@ use function count;
 use function dirname;
 use function explode;
 use function implode;
+use function in_array;
 use function is_file;
+use function is_readable;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -69,13 +72,32 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 		}
 		$output->writeLineFormatted('');
 
+		$configFilesFromExtensionInstaller = [];
 		if (class_exists('PHPStan\ExtensionInstaller\GeneratedConfig')) {
 			$output->writeLineFormatted('<info>Extension installer:</info>');
 			if (count(GeneratedConfig::EXTENSIONS) === 0) {
 				$output->writeLineFormatted('No extensions installed');
 			}
+
+			$generatedConfigReflection = new ReflectionClass('PHPStan\ExtensionInstaller\GeneratedConfig');
+			$generatedConfigDirectory = dirname($generatedConfigReflection->getFileName());
 			foreach (GeneratedConfig::EXTENSIONS as $name => $extensionConfig) {
 				$output->writeLineFormatted(sprintf('%s: %s', $name, $extensionConfig['version'] ?? 'Unknown version'));
+				foreach ($extensionConfig['extra']['includes'] ?? [] as $includedFile) {
+					$includedFilePath = null;
+					if (isset($extensionConfig['relative_install_path'])) {
+						$includedFilePath = sprintf('%s/%s/%s', $generatedConfigDirectory, $extensionConfig['relative_install_path'], $includedFile);
+						if (!is_file($includedFilePath) || !is_readable($includedFilePath)) {
+							$includedFilePath = null;
+						}
+					}
+
+					if ($includedFilePath === null) {
+						$includedFilePath = sprintf('%s/%s', $extensionConfig['install_path'], $includedFile);
+					}
+
+					$configFilesFromExtensionInstaller[] = $this->fileHelper->normalizePath($includedFilePath, '/');
+				}
 			}
 		} else {
 			$output->writeLineFormatted('<info>Extension installer:</info> Not installed');
@@ -85,6 +107,9 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 		$thirdPartyIncludedConfigs = [];
 		foreach ($this->allConfigFiles as $configFile) {
 			$configFile = $this->fileHelper->normalizePath($configFile, '/');
+			if (in_array($configFile, $configFilesFromExtensionInstaller, true)) {
+				continue;
+			}
 			foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
 				$composerConfig = ComposerHelper::getComposerConfig($composerAutoloaderProjectPath);
 				if ($composerConfig === null) {

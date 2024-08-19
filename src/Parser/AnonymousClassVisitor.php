@@ -9,6 +9,7 @@ use function count;
 class AnonymousClassVisitor extends NodeVisitorAbstract
 {
 
+	public const ATTRIBUTE_ANONYMOUS_CLASS = 'anonymousClass';
 	public const ATTRIBUTE_LINE_INDEX = 'anonymousClassLineIndex';
 
 	/** @var array<int, non-empty-list<Node\Stmt\Class_>> */
@@ -26,6 +27,7 @@ class AnonymousClassVisitor extends NodeVisitorAbstract
 			return null;
 		}
 
+		$node->setAttribute(self::ATTRIBUTE_ANONYMOUS_CLASS, true);
 		$this->nodesPerLine[$node->getStartLine()][] = $node;
 
 		return null;

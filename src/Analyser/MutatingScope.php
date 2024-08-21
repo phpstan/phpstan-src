@@ -2083,6 +2083,18 @@ final class MutatingScope implements Scope
 				$typeCallback = function () use ($node): Type {
 					if ($node->class instanceof Name) {
 						$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
+						if (
+							$staticMethodCalledOnType instanceof StaticType
+							&& !in_array($node->class->toLowerString(), ['self', 'static', 'parent'], true)
+						) {
+							$methodReflectionCandidate = $this->getMethodReflection(
+								$staticMethodCalledOnType,
+								$node->name->name,
+							);
+							if ($methodReflectionCandidate !== null && $methodReflectionCandidate->isStatic()) {
+								$staticMethodCalledOnType = $staticMethodCalledOnType->getStaticObjectType();
+							}
+						}
 					} else {
 						$staticMethodCalledOnType = $this->getNativeType($node->class);
 					}
@@ -2108,6 +2120,18 @@ final class MutatingScope implements Scope
 			$typeCallback = function () use ($node): Type {
 				if ($node->class instanceof Name) {
 					$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
+					if (
+						$staticMethodCalledOnType instanceof StaticType
+						&& !in_array($node->class->toLowerString(), ['self', 'static', 'parent'], true)
+					) {
+						$methodReflectionCandidate = $this->getMethodReflection(
+							$staticMethodCalledOnType,
+							$node->name->name,
+						);
+						if ($methodReflectionCandidate !== null && $methodReflectionCandidate->isStatic()) {
+							$staticMethodCalledOnType = $staticMethodCalledOnType->getStaticObjectType();
+						}
+					}
 				} else {
 					$staticMethodCalledOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
 				}

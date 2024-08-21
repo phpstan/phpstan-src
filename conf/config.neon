@@ -95,6 +95,7 @@ parameters:
 		validatePregQuote: false
 		noImplicitWildcard: false
 		narrowPregMatches: true
+		tooWidePropertyType: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

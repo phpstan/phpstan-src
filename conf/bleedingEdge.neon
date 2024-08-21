@@ -59,5 +59,6 @@ parameters:
 		preciseMissingReturn: true
 		validatePregQuote: true
 		noImplicitWildcard: true
+		tooWidePropertyType: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Rule.stub

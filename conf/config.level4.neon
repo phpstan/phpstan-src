@@ -54,6 +54,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.pure%
 	PHPStan\Rules\DeadCode\PossiblyPureStaticCallCollector:
 		phpstan.collector: %featureToggles.pure%
+	PHPStan\Rules\TooWideTypehints\TooWidePropertyTypeRule:
+		phpstan.rules.rule: %featureToggles.tooWidePropertyType%
 
 parameters:
 	checkAdvancedIsset: true
@@ -313,3 +315,6 @@ services:
 
 	-
 		class: PHPStan\Rules\TooWideTypehints\TooWideMethodParameterOutTypeRule
+
+	-
+		class: PHPStan\Rules\TooWideTypehints\TooWidePropertyTypeRule

@@ -90,6 +90,7 @@ parametersSchema:
 		validatePregQuote: bool()
 		noImplicitWildcard: bool()
 		narrowPregMatches: bool()
+		tooWidePropertyType: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

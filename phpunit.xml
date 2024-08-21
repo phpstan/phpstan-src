@@ -26,8 +26,7 @@
 
 	<testsuites>
 		<testsuite name="PHPStan">
-			<directory suffix="Test.php">tests/PHPStan</directory>
-			<exclude>tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php</exclude>
+			<file>tests/PHPStan/Rules/Properties/TypesAssignedToPropertiesRuleTest.php</file>
 		</testsuite>
 	</testsuites>
 

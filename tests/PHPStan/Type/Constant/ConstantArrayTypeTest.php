@@ -5,6 +5,8 @@ namespace PHPStan\Type\Constant;
 use Closure;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -12,6 +14,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -357,6 +360,51 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			new ConstantArrayType([new ConstantIntegerType(1)], [new ConstantIntegerType(2)]),
 			new NeverType(),
 			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantStringType('test')], [new MixedType()]),
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new HasOffsetType(new ConstantStringType('test')),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantStringType('test')], [new StringType()]),
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new HasOffsetValueType(new ConstantStringType('test'), new StringType()),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantStringType('test')], [new MixedType()]),
+			new UnionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new HasOffsetType(new ConstantStringType('test')),
+			]),
+			TrinaryLogic::createMaybe(),
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantStringType('test')], [new StringType()]),
+			new UnionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new HasOffsetValueType(new ConstantStringType('test'), new StringType()),
+			]),
+			TrinaryLogic::createMaybe(),
+		];
+
+		yield [
+			new ConstantArrayType([new ConstantStringType('test')], [new MixedType()]),
+			new IntersectionType([
+				new UnionType([new ArrayType(new MixedType(), new MixedType()), new IterableType(new MixedType(), new MixedType())]),
+				new HasOffsetType(new ConstantStringType('test')),
+			]),
+			TrinaryLogic::createMaybe(),
 		];
 	}
 

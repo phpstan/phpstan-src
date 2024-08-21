@@ -33,7 +33,6 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
-use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
@@ -296,11 +295,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
 	{
-		if ($type instanceof MixedType && !$type instanceof TemplateMixedType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
-		}
-
-		if ($type instanceof NeverType) {
+		if ($type instanceof CompoundType && !$type instanceof IntersectionType) {
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 

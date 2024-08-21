@@ -61,6 +61,9 @@ final class TooWidePropertyTypeRule implements Rule
 				continue;
 			}
 			foreach ($this->extensionProvider->getExtensions() as $extension) {
+				if ($extension->isAlwaysRead($propertyReflection, $propertyName)) {
+					continue 2;
+				}
 				if ($extension->isAlwaysWritten($propertyReflection, $propertyName)) {
 					continue 2;
 				}

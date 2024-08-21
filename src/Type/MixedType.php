@@ -29,6 +29,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
@@ -439,7 +440,7 @@ class MixedType implements CompoundType, SubtractableType
 			function () use ($level): string {
 				$description = 'mixed';
 				if ($this->subtractedType !== null) {
-					$description .= $this->subtractedType instanceof UnionType
+					$description .= $this->subtractedType instanceof UnionType || $this->subtractedType instanceof IntersectionType
 						? sprintf('~(%s)', $this->subtractedType->describe($level))
 						: sprintf('~%s', $this->subtractedType->describe($level));
 				}
@@ -449,7 +450,7 @@ class MixedType implements CompoundType, SubtractableType
 			function () use ($level): string {
 				$description = 'mixed';
 				if ($this->subtractedType !== null) {
-					$description .= $this->subtractedType instanceof UnionType
+					$description .= $this->subtractedType instanceof UnionType || $this->subtractedType instanceof IntersectionType
 						? sprintf('~(%s)', $this->subtractedType->describe($level))
 						: sprintf('~%s', $this->subtractedType->describe($level));
 				}

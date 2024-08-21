@@ -9,6 +9,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use PHPStan\Type\UnionType;
 use function sprintf;
 
 /** @api */
@@ -132,7 +133,9 @@ class ObjectWithoutClassType implements SubtractableType
 			function () use ($level): string {
 				$description = 'object';
 				if ($this->subtractedType !== null) {
-					$description .= sprintf('~%s', $this->subtractedType->describe($level));
+					$description .= $this->subtractedType instanceof UnionType
+						? sprintf('~(%s)', $this->subtractedType->describe($level))
+						: sprintf('~%s', $this->subtractedType->describe($level));
 				}
 
 				return $description;

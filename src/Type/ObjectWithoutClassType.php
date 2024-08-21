@@ -5,7 +5,6 @@ namespace PHPStan\Type;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
@@ -134,7 +133,7 @@ class ObjectWithoutClassType implements SubtractableType
 			function () use ($level): string {
 				$description = 'object';
 				if ($this->subtractedType !== null) {
-					$description .= $this->subtractedType instanceof UnionType || $this->subtractedType instanceof IntersectionType
+					$description .= $this->subtractedType instanceof UnionType
 						? sprintf('~(%s)', $this->subtractedType->describe($level))
 						: sprintf('~%s', $this->subtractedType->describe($level));
 				}

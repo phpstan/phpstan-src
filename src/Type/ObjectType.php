@@ -42,7 +42,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -489,7 +488,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$preciseWithSubtracted = function () use ($level): string {
 			$description = $this->className;
 			if ($this->subtractedType !== null) {
-				$description .= $this->subtractedType instanceof UnionType || $this->subtractedType instanceof IntersectionType
+				$description .= $this->subtractedType instanceof UnionType
 					? sprintf('~(%s)', $this->subtractedType->describe($level))
 					: sprintf('~%s', $this->subtractedType->describe($level));
 			}
@@ -542,7 +541,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->subtractedType !== null) {
-			$description .= $this->subtractedType instanceof UnionType || $this->subtractedType instanceof IntersectionType
+			$description .= $this->subtractedType instanceof UnionType
 				? sprintf('~(%s)', $this->subtractedType->describe(VerbosityLevel::cache()))
 				: sprintf('~%s', $this->subtractedType->describe(VerbosityLevel::cache()));
 		}

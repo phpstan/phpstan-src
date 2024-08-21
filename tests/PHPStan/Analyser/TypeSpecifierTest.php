@@ -44,7 +44,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 {
 
 	private const FALSEY_TYPE_DESCRIPTION = '0|0.0|\'\'|\'0\'|array{}|false|null';
-	private const TRUTHY_TYPE_DESCRIPTION = 'mixed~' . self::FALSEY_TYPE_DESCRIPTION;
+	private const TRUTHY_TYPE_DESCRIPTION = 'mixed~(' . self::FALSEY_TYPE_DESCRIPTION . ')';
 	private const SURE_NOT_FALSEY = '~' . self::FALSEY_TYPE_DESCRIPTION;
 	private const SURE_NOT_TRUTHY = '~' . self::TRUTHY_TYPE_DESCRIPTION;
 
@@ -819,10 +819,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new LNumber(3),
 				),
 				[
-					'$n' => 'mixed~int<3, max>|true',
+					'$n' => 'mixed~(int<3, max>|true)',
 				],
 				[
-					'$n' => 'mixed~0.0|int<min, 2>|false|null',
+					'$n' => 'mixed~(0.0|int<min, 2>|false|null)',
 				],
 			],
 			[
@@ -831,10 +831,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new LNumber(PHP_INT_MIN),
 				),
 				[
-					'$n' => 'mixed~int<' . PHP_INT_MIN . ', max>|true',
+					'$n' => 'mixed~(int<' . PHP_INT_MIN . ', max>|true)',
 				],
 				[
-					'$n' => 'mixed~0.0|false|null',
+					'$n' => 'mixed~(0.0|false|null)',
 				],
 			],
 			[
@@ -843,7 +843,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new LNumber(PHP_INT_MAX),
 				),
 				[
-					'$n' => 'mixed~0.0|bool|int<min, ' . PHP_INT_MAX . '>|null',
+					'$n' => 'mixed~(0.0|bool|int<min, ' . PHP_INT_MAX . '>|null)',
 				],
 				[
 					'$n' => 'mixed',
@@ -858,7 +858,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$n' => 'mixed~int<' . (PHP_INT_MIN + 1) . ', max>',
 				],
 				[
-					'$n' => 'mixed~0.0|bool|int<min, ' . PHP_INT_MIN . '>|null',
+					'$n' => 'mixed~(0.0|bool|int<min, ' . PHP_INT_MIN . '>|null)',
 				],
 			],
 			[
@@ -867,10 +867,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new LNumber(PHP_INT_MAX),
 				),
 				[
-					'$n' => 'mixed~0.0|int<min, ' . (PHP_INT_MAX - 1) . '>|false|null',
+					'$n' => 'mixed~(0.0|int<min, ' . (PHP_INT_MAX - 1) . '>|false|null)',
 				],
 				[
-					'$n' => 'mixed~int<' . PHP_INT_MAX . ', max>|true',
+					'$n' => 'mixed~(int<' . PHP_INT_MAX . ', max>|true)',
 				],
 			],
 			[
@@ -885,10 +885,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 					),
 				),
 				[
-					'$n' => 'mixed~0.0|int<min, 2>|int<6, max>|false|null',
+					'$n' => 'mixed~(0.0|int<min, 2>|int<6, max>|false|null)',
 				],
 				[
-					'$n' => 'mixed~int<3, 5>|true',
+					'$n' => 'mixed~(int<3, 5>|true)',
 				],
 			],
 			[
@@ -1190,7 +1190,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
 				),
 				['$a' => 'non-empty-string|null'],
-				['$a' => 'mixed~non-empty-string & ~null'],
+				['$a' => 'mixed~(non-empty-string) & ~null'],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
@@ -1204,7 +1204,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
 				),
 				['$a' => 'non-empty-string|null'],
-				['$a' => 'mixed~non-empty-string & ~null'],
+				['$a' => 'mixed~(non-empty-string) & ~null'],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
@@ -1218,7 +1218,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
 				),
 				['$a' => 'non-empty-array|null'],
-				['$a' => 'mixed~non-empty-array & ~null'],
+				['$a' => 'mixed~(non-empty-array) & ~null'],
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
@@ -1250,7 +1250,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$foo' => 'non-empty-array',
-					'count($foo)' => 'mixed~0.0|int<min, 1>|false|null',
+					'count($foo)' => 'mixed~(0.0|int<min, 1>|false|null)',
 				],
 				[],
 			],
@@ -1287,7 +1287,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'strlen($foo)' => '~0',
 				],
 				[
-					'$foo' => 'mixed~non-empty-string',
+					'$foo' => 'mixed~(non-empty-string)',
 				],
 			],
 			[

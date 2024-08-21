@@ -13,7 +13,7 @@ class Foo
 	public function doFoo()
 	{
 		if (!empty($this->config['authors'])) {
-			assertType("mixed~0|0.0|''|'0'|array{}|false|null", $this->config['authors']);
+			assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $this->config['authors']);
 			foreach ($this->config['authors'] as $key => $author) {
 				assertType("mixed", $this->config['authors']);
 				if (!is_array($author)) {

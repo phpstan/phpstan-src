@@ -16,7 +16,7 @@ function foo2($foo) {
 	if (array_is_list($foo)) {
 		assertType('list<mixed>', $foo);
 	} else {
-		assertType('mixed~list<mixed>', $foo);
+		assertType('mixed~(list<mixed>)', $foo);
 	}
 }
 

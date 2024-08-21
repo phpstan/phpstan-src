@@ -91,6 +91,7 @@ parametersSchema:
 		noImplicitWildcard: bool()
 		narrowPregMatches: bool()
 		tooWidePropertyType: bool()
+		explicitThrow: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

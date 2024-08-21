@@ -96,6 +96,7 @@ parameters:
 		noImplicitWildcard: false
 		narrowPregMatches: true
 		tooWidePropertyType: false
+		explicitThrow: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -538,6 +539,7 @@ services:
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 			paramOutType: %featureToggles.paramOutType%
 			preciseMissingReturn: %featureToggles.preciseMissingReturn%
+			explicitThrow: %featureToggles.explicitThrow%
 
 	-
 		class: PHPStan\Analyser\ConstantResolver

@@ -262,6 +262,7 @@ final class NodeScopeResolver
 		private readonly bool $detectDeadTypeInMultiCatch,
 		private readonly bool $paramOutType,
 		private readonly bool $preciseMissingReturn,
+		private readonly bool $explicitThrow,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -1545,6 +1546,7 @@ final class NodeScopeResolver
 				}
 
 				// explicit only
+				$onlyExplicitIsThrow = true;
 				if (count($matchingThrowPoints) === 0) {
 					foreach ($throwPoints as $throwPointIndex => $throwPoint) {
 						foreach ($catchTypes as $catchTypeIndex => $catchTypeItem) {
@@ -1556,13 +1558,24 @@ final class NodeScopeResolver
 							if (!$throwPoint->isExplicit()) {
 								continue;
 							}
+							$throwNode = $throwPoint->getNode();
+							if (
+								!$throwNode instanceof Throw_
+								&& !$throwNode instanceof Expr\Throw_
+								&& !($throwNode instanceof Node\Stmt\Expression && $throwNode->expr instanceof Expr\Throw_)
+							) {
+								$onlyExplicitIsThrow = false;
+							}
 							$matchingThrowPoints[$throwPointIndex] = $throwPoint;
 						}
 					}
 				}
 
 				// implicit only
-				if (count($matchingThrowPoints) === 0) {
+				if (
+					count($matchingThrowPoints) === 0
+					|| ($this->explicitThrow && $onlyExplicitIsThrow)
+				) {
 					foreach ($throwPoints as $throwPointIndex => $throwPoint) {
 						if ($throwPoint->isExplicit()) {
 							continue;

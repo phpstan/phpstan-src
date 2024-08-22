@@ -1027,8 +1027,7 @@ class TypeSpecifier
 		}
 
 		if (
-			$context->truthy()
-			&& $isNormalCount->yes()
+			$isNormalCount->yes()
 			&& $type->isList()->yes()
 			&& $sizeType instanceof IntegerRangeType
 			&& $sizeType->getMin() !== null

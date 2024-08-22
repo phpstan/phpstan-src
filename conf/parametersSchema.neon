@@ -93,6 +93,7 @@ parametersSchema:
 		tooWidePropertyType: bool()
 		explicitThrow: bool()
 		absentTypeChecks: bool()
+		requireFileExists: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

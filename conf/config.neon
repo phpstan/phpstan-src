@@ -94,6 +94,7 @@ parameters:
 		preciseMissingReturn: false
 		validatePregQuote: false
 		noImplicitWildcard: false
+		requireFileExists: false
 		narrowPregMatches: true
 		tooWidePropertyType: false
 		explicitThrow: false

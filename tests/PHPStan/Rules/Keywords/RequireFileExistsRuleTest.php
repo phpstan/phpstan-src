@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Keywords;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function get_include_path;
 use function implode;
@@ -24,7 +25,7 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		$this->rule = $this->getDefaultRule();
 	}
 
-	protected function getRule(): RequireFileExistsRule
+	protected function getRule(): Rule
 	{
 		return $this->rule;
 	}

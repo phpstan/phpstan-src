@@ -8,6 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -17,6 +18,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function count;
+use function in_array;
 
 final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -101,9 +103,30 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		if ($compareSuperTypes === $isStringSuperType) {
 			return new StringType();
 		} elseif ($compareSuperTypes === $isArraySuperType) {
-			if (count($subjectArgumentType->getArrays()) > 0) {
+			$subjectArrays = $subjectArgumentType->getArrays();
+			if (count($subjectArrays) > 0) {
 				$result = [];
-				foreach ($subjectArgumentType->getArrays() as $arrayType) {
+				foreach ($subjectArrays as $arrayType) {
+					$constantArrays = $arrayType->getConstantArrays();
+
+					if (
+						$constantArrays !== []
+						&& in_array($functionReflection->getName(), ['preg_replace', 'preg_replace_callback', 'preg_replace_callback_array'], true)
+					) {
+						foreach ($constantArrays as $constantArray) {
+							$generalizedArray = $constantArray->generalizeValues();
+
+							$builder = ConstantArrayTypeBuilder::createEmpty();
+							// turn all keys optional
+							foreach ($constantArray->getKeyTypes() as $keyType) {
+								$builder->setOffsetValueType($keyType, $generalizedArray->getOffsetValueType($keyType), true);
+							}
+							$result[] = $builder->getArray();
+						}
+
+						continue;
+					}
+
 					$result[] = $arrayType->generalizeValues();
 				}
 
@@ -134,6 +157,20 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		Scope $scope,
 	): bool
 	{
+		if (
+			in_array($functionReflection->getName(), ['preg_replace', 'preg_replace_callback', 'preg_replace_callback_array'], true)
+			&& count($functionCall->getArgs()) > 0
+		) {
+			$subjectArgumentType = $this->getSubjectType($functionReflection, $functionCall, $scope);
+
+			if (
+				$subjectArgumentType !== null
+				&& $subjectArgumentType->isArray()->yes()
+			) {
+				return false;
+			}
+		}
+
 		$possibleTypes = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$functionCall->getArgs(),

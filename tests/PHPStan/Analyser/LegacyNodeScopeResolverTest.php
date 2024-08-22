@@ -7426,11 +7426,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$expectedArray',
 			],
 			[
-				'array{a: string, b: string}|null',
+				'array{a?: string, b?: string}',
 				'$expectedArray2',
 			],
 			[
-				'array{a: string, b: string}|null',
+				'array{a?: string, b?: string}',
 				'$anotherExpectedArray',
 			],
 			[
@@ -7450,7 +7450,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherExpectedArrayOrString',
 			],
 			[
-				'array{a: string, b: string}|null',
+				'array{a?: string, b?: string}',
 				'preg_replace_callback_array($callbacks, $array)',
 			],
 			[

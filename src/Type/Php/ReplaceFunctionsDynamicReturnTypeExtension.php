@@ -52,15 +52,7 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 	{
 		$type = $this->getPreliminarilyResolvedTypeFromFunctionCall($functionReflection, $functionCall, $scope);
 
-		$possibleTypes = ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$functionCall->getArgs(),
-			$functionReflection->getVariants(),
-		)->getReturnType();
-		// resolve conditional return types
-		$possibleTypes = TypeUtils::resolveLateResolvableTypes($possibleTypes);
-
-		if (TypeCombinator::containsNull($possibleTypes)) {
+		if ($this->canReturnNull($functionReflection, $functionCall, $scope)) {
 			$type = TypeCombinator::addNull($type);
 		}
 
@@ -73,18 +65,17 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		Scope $scope,
 	): Type
 	{
-		$argumentPosition = self::FUNCTIONS_SUBJECT_POSITION[$functionReflection->getName()];
+		$subjectArgumentType = $this->getSubjectType($functionReflection, $functionCall, $scope);
 		$defaultReturnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$functionCall->getArgs(),
 			$functionReflection->getVariants(),
 		)->getReturnType();
 
-		if (count($functionCall->getArgs()) <= $argumentPosition) {
+		if ($subjectArgumentType === null) {
 			return $defaultReturnType;
 		}
 
-		$subjectArgumentType = $scope->getType($functionCall->getArgs()[$argumentPosition]->value);
 		if ($subjectArgumentType instanceof MixedType) {
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
@@ -122,6 +113,37 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		return $defaultReturnType;
+	}
+
+	private function getSubjectType(
+		FunctionReflection $functionReflection,
+		FuncCall $functionCall,
+		Scope $scope,
+	): ?Type
+	{
+		$argumentPosition = self::FUNCTIONS_SUBJECT_POSITION[$functionReflection->getName()];
+		if (count($functionCall->getArgs()) <= $argumentPosition) {
+			return null;
+		}
+		return $scope->getType($functionCall->getArgs()[$argumentPosition]->value);
+	}
+
+	private function canReturnNull(
+		FunctionReflection $functionReflection,
+		FuncCall $functionCall,
+		Scope $scope,
+	): bool
+	{
+		$possibleTypes = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$functionCall->getArgs(),
+			$functionReflection->getVariants(),
+		)->getReturnType();
+
+		// resolve conditional return types
+		$possibleTypes = TypeUtils::resolveLateResolvableTypes($possibleTypes);
+
+		return TypeCombinator::containsNull($possibleTypes);
 	}
 
 }

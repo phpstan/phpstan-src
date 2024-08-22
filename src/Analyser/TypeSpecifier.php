@@ -980,7 +980,7 @@ class TypeSpecifier
 						continue;
 					}
 
-					$constArray = $this->turnListIntoConstantArray($countFuncCall, $innerType, $sizeType, $context, $scope);
+					$constArray = $this->turnListIntoConstantArray($countFuncCall, $innerType, $sizeType, $scope);
 					if ($constArray !== null) {
 						$innerType = $constArray;
 					}
@@ -1000,7 +1000,7 @@ class TypeSpecifier
 		return null;
 	}
 
-	private function turnListIntoConstantArray(FuncCall $countFuncCall, Type $type, Type $sizeType, TypeSpecifierContext $context, Scope $scope): ?Type
+	private function turnListIntoConstantArray(FuncCall $countFuncCall, Type $type, Type $sizeType, Scope $scope): ?Type
 	{
 		$argType = $scope->getType($countFuncCall->getArgs()[0]->value);
 
@@ -1133,7 +1133,7 @@ class TypeSpecifier
 					}
 
 					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-					$constArray = $this->turnListIntoConstantArray($exprNode, $argType, $constantType, $context, $scope);
+					$constArray = $this->turnListIntoConstantArray($exprNode, $argType, $constantType, $scope);
 					if ($context->truthy() && $constArray !== null) {
 						$valueTypes = $this->create($exprNode->getArgs()[0]->value, $constArray, $context, false, $scope, $rootExpr);
 					} else {

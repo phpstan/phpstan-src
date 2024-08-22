@@ -323,7 +323,7 @@ class TypeSpecifier
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType->isString()->yes()) {
 						$accessory = new AccessoryNonEmptyStringType();
-						if ($leftType instanceof ConstantIntegerType && $leftType->getValue() >= 2) {
+						if (IntegerRangeType::createAllGreaterThanOrEqualTo(2)->isSuperTypeOf($leftType)->yes()) {
 							$accessory = new AccessoryNonFalsyStringType();
 						}
 

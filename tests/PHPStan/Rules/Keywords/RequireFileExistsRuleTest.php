@@ -4,7 +4,9 @@ namespace PHPStan\Rules\Keywords;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function chdir;
 use function get_include_path;
+use function getcwd;
 use function implode;
 use function realpath;
 use function set_include_path;
@@ -72,24 +74,24 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testRelativePathWithoutIncludePath(): void
+	public function testRelativePath(): void
 	{
 		$this->analyse([__DIR__ . '/data/require-file-relative-path.php'], [
 			[
-				'Path in include() "RequireFileExistsRuleTest.php" is not a file or it does not exist.',
-				3,
+				'Path in include() "data/include-me-to-prove-you-work.txt" is not a file or it does not exist.',
+				8,
 			],
 			[
-				'Path in include_once() "RequireFileExistsRuleTest.php" is not a file or it does not exist.',
-				4,
+				'Path in include_once() "data/include-me-to-prove-you-work.txt" is not a file or it does not exist.',
+				9,
 			],
 			[
-				'Path in require() "RequireFileExistsRuleTest.php" is not a file or it does not exist.',
-				5,
+				'Path in require() "data/include-me-to-prove-you-work.txt" is not a file or it does not exist.',
+				10,
 			],
 			[
-				'Path in require_once() "RequireFileExistsRuleTest.php" is not a file or it does not exist.',
-				6,
+				'Path in require_once() "data/include-me-to-prove-you-work.txt" is not a file or it does not exist.',
+				11,
 			],
 		]);
 	}
@@ -105,6 +107,18 @@ class RequireFileExistsRuleTest extends RuleTestCase
 			$this->analyse([__DIR__ . '/data/require-file-relative-path.php'], []);
 		} finally {
 			set_include_path($includePaths[1]);
+		}
+	}
+
+	public function testRelativePathWithSameWorkingDirectory(): void
+	{
+		$originalWorkingDirectory = getcwd();
+		chdir(__DIR__);
+
+		try {
+			$this->analyse([__DIR__ . '/data/require-file-relative-path.php'], []);
+		} finally {
+			chdir((string) $originalWorkingDirectory);
 		}
 	}
 

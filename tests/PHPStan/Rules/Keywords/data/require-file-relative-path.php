@@ -1,6 +1,11 @@
 <?php declare(strict_types=1);
 
-include 'RequireFileExistsRuleTest.php';
-include_once 'RequireFileExistsRuleTest.php';
-require 'RequireFileExistsRuleTest.php';
-require_once 'RequireFileExistsRuleTest.php';
+include 'include-me-to-prove-you-work.txt';
+include_once 'include-me-to-prove-you-work.txt';
+require 'include-me-to-prove-you-work.txt';
+require_once 'include-me-to-prove-you-work.txt';
+
+include 'data/include-me-to-prove-you-work.txt';
+include_once 'data/include-me-to-prove-you-work.txt';
+require 'data/include-me-to-prove-you-work.txt';
+require_once 'data/include-me-to-prove-you-work.txt';

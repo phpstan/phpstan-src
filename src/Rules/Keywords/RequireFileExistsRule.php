@@ -5,13 +5,20 @@ namespace PHPStan\Rules\Keywords;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Include_;
 use PHPStan\Analyser\Scope;
+use PHPStan\File\FileHelper;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use function dirname;
+use function explode;
+use function get_include_path;
+use function getcwd;
+use function is_file;
+use function is_string;
 use function sprintf;
 use function str_replace;
-use function stream_resolve_include_path;
+use const PATH_SEPARATOR;
 
 /**
  * @implements Rule<Include_>
@@ -30,7 +37,7 @@ final class RequireFileExistsRule implements Rule
 		$paths = $this->resolveFilePaths($node, $scope);
 
 		foreach ($paths as $path) {
-			if (stream_resolve_include_path($path) !== false) {
+			if ($this->doesFileExist($path, $scope)) {
 				continue;
 			}
 
@@ -38,6 +45,40 @@ final class RequireFileExistsRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * We cannot use `stream_resolve_include_path` as it works based on the calling script.
+	 * This method simulates the behavior of `stream_resolve_include_path` but for the given scope.
+	 * The priority order is the following:
+	 * 	1. The current working directory.
+	 * 	2. The include path.
+	 *  3. The path of the script that is being executed.
+	 */
+	private function doesFileExist(string $path, Scope $scope): bool
+	{
+		$directories = [
+			getcwd(),
+			...explode(PATH_SEPARATOR, get_include_path()),
+			dirname($scope->getFile()),
+		];
+
+		foreach ($directories as $directory) {
+			if (is_string($directory) && $this->doesFileExistForDirectory($path, $directory)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function doesFileExistForDirectory(string $path, string $workingDirectory): bool
+	{
+		$fileHelper = new FileHelper($workingDirectory);
+		$normalisedPath = $fileHelper->normalizePath($path);
+		$absolutePath = $fileHelper->absolutizePath($normalisedPath);
+
+		return is_file($absolutePath);
 	}
 
 	private function getErrorMessage(Include_ $node, string $filePath): IdentifierRuleError

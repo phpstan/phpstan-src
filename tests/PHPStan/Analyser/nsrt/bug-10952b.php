@@ -16,13 +16,13 @@ class HelloWorld
 		$string = $this->getString();
 
 		if (1 < mb_strlen($string)) {
-			assertType('non-empty-string', $string);
+			assertType('non-falsy-string', $string);
 		} else {
 			assertType("string", $string);
 		}
 
 		if (mb_strlen($string) > 1) {
-			assertType('non-empty-string', $string);
+			assertType('non-falsy-string', $string);
 		} else {
 			assertType("string", $string);
 		}

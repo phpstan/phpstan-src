@@ -5,6 +5,8 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -41,6 +43,16 @@ class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			}
 
 			return TypeCombinator::union(...$results);
+		}
+
+		if ($preserveKeys) {
+			// Remove list
+			$newArrayType = new ArrayType($type->getIterableKeyType(), $type->getIterableValueType());
+			if ($type->isIterableAtLeastOnce()->yes()) {
+				$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
+			}
+
+			return $newArrayType;
 		}
 
 		return $type;

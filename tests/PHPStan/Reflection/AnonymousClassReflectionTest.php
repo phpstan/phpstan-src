@@ -5,7 +5,6 @@ namespace PHPStan\Reflection;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Parser\AnonymousClassVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Testing\RuleTestCase;
@@ -36,7 +35,7 @@ class AnonymousClassReflectionTest extends RuleTestCase
 
 			public function processNode(Node $node, Scope $scope): array
 			{
-				if (!(bool) $node->getAttribute(AnonymousClassVisitor::ATTRIBUTE_ANONYMOUS_CLASS)) {
+				if (!$node->isAnonymous()) {
 					return [];
 				}
 

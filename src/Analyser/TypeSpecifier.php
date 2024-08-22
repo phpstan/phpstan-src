@@ -1130,7 +1130,21 @@ class TypeSpecifier
 					return $funcTypes->unionWith($valueTypes);
 				}
 			}
+		}
 
+		if (
+			$context->true()
+			&& $exprNode instanceof FuncCall
+			&& $exprNode->name instanceof Name
+			&& $exprNode->name->toLowerString() === 'preg_match'
+			&& (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()
+		) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				$exprNode,
+				$context,
+				$rootExpr,
+			);
 		}
 
 		return null;
@@ -2080,21 +2094,6 @@ class TypeSpecifier
 			$unwrappedRightExpr = $rightExpr->getExpr();
 		}
 		$rightType = $scope->getType($rightExpr);
-
-		if (
-			$context->true()
-			&& $unwrappedLeftExpr instanceof FuncCall
-			&& $unwrappedLeftExpr->name instanceof Name
-			&& $unwrappedLeftExpr->name->toLowerString() === 'preg_match'
-			&& (new ConstantIntegerType(1))->isSuperTypeOf($rightType)->yes()
-		) {
-			return $this->specifyTypesInCondition(
-				$scope,
-				$leftExpr,
-				$context,
-				$rootExpr,
-			);
-		}
 
 		if (
 			$context->true()

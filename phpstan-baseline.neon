@@ -848,7 +848,7 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
-			count: 1
+			count: 2
 			path: src/Type/Constant/ConstantArrayType.php
 
 		-

@@ -112,7 +112,7 @@ final class RequireFileExistsRule implements Rule
 				$type,
 				$filePath,
 			),
-		)->nonIgnorable()->identifier($identifier)->build();
+		)->identifier($identifier)->build();
 	}
 
 	/**

@@ -8409,6 +8409,44 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
+	public function dataAnonymousClassNameSameLine(): array
+	{
+		return [
+			[
+				'AnonymousClass0d7d08272ba2f0a6ef324bb65c679e02',
+				'$foo',
+				'$bar',
+			],
+			[
+				'AnonymousClass464f64cbdca25b4af842cae65615bca9',
+				'$bar',
+				'$baz',
+			],
+			[
+				'AnonymousClassa9fb472ec9acc5cae3bee4355c296bfa',
+				'$baz',
+				'die',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataAnonymousClassNameSameLine
+	 */
+	public function testAnonymousClassNameSameLine(
+		string $description,
+		string $expression,
+		string $evaluatedPointExpression,
+	): void
+	{
+		$this->assertTypes(
+			__DIR__ . '/data/anonymous-class-name-same-line.php',
+			$description,
+			$expression,
+			$evaluatedPointExpression,
+		);
+	}
+
 	public function dataDynamicConstants(): array
 	{
 		return [

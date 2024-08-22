@@ -117,6 +117,7 @@ use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
+use PHPStan\Parser\AnonymousClassVisitor;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\Parser;
@@ -855,7 +856,7 @@ class NodeScopeResolver
 				if ($stmt->name === null) {
 					throw new ShouldNotHappenException();
 				}
-				if ($stmt->getAttribute('anonymousClass', false) === false) {
+				if ($stmt->getAttribute(AnonymousClassVisitor::ATTRIBUTE_ANONYMOUS_CLASS, false) === false) {
 					$classReflection = $this->reflectionProvider->getClass($stmt->name->toString());
 				} else {
 					$classReflection = $this->reflectionProvider->getAnonymousClassReflection($stmt, $scope);

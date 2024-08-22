@@ -27,17 +27,7 @@ class AnonymousClassVisitor extends NodeVisitorAbstract
 			return null;
 		}
 
-		$node = new AnonymousClassNode(
-			$node->name,
-			[
-				'flags' => $node->flags,
-				'extends' => $node->extends,
-				'implements' => $node->implements,
-				'stmts' => $node->stmts,
-				'attrGroups' => $node->attrGroups,
-			],
-			$node->getAttributes(),
-		);
+		$node = AnonymousClassNode::createFromClassNode($node);
 		$this->nodesPerLine[$node->getStartLine()][] = $node;
 
 		return $node;

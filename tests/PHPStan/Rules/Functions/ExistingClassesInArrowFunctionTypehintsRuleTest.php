@@ -34,6 +34,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 				new PhpVersion($this->phpVersionId),
 				true,
 				false,
+				true,
 			),
 			new PhpVersion(PHP_VERSION_ID),
 		);

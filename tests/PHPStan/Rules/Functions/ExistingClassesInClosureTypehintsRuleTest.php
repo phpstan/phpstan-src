@@ -34,6 +34,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 				new PhpVersion($this->phpVersionId),
 				true,
 				false,
+				true,
 			),
 		);
 	}

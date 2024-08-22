@@ -34,6 +34,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				new PhpVersion($this->phpVersionId),
 				true,
 				false,
+				true,
 			),
 		);
 	}
@@ -467,6 +468,24 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 			[
 				'Template type T of method ParamOutTemplate\FooBar::uselessLocalTemplate() is not referenced in a parameter.',
 				22,
+			],
+		]);
+	}
+
+	public function testParamOutClasses(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-out-classes.php'], [
+			[
+				'Parameter $p of method ParamOutClassesMethods\Bar::doFoo() has invalid type ParamOutClassesMethods\Nonexistent.',
+				23,
+			],
+			[
+				'Parameter $q of method ParamOutClassesMethods\Bar::doFoo() has invalid type ParamOutClassesMethods\FooTrait.',
+				23,
+			],
+			[
+				'Class ParamOutClassesMethods\Foo referenced with incorrect case: ParamOutClassesMethods\fOO.',
+				23,
 			],
 		]);
 	}

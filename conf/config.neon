@@ -97,6 +97,7 @@ parameters:
 		narrowPregMatches: true
 		tooWidePropertyType: false
 		explicitThrow: false
+		absentTypeChecks: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -970,6 +971,7 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkThisOnly: %checkThisOnly%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\FunctionReturnTypeCheck

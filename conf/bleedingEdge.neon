@@ -61,5 +61,6 @@ parameters:
 		noImplicitWildcard: true
 		tooWidePropertyType: true
 		explicitThrow: true
+		absentTypeChecks: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Rule.stub

@@ -92,6 +92,7 @@ parametersSchema:
 		narrowPregMatches: bool()
 		tooWidePropertyType: bool()
 		explicitThrow: bool()
+		absentTypeChecks: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

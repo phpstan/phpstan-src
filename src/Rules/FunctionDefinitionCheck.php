@@ -52,6 +52,7 @@ final class FunctionDefinitionCheck
 		private PhpVersion $phpVersion,
 		private bool $checkClassCaseSensitivity,
 		private bool $checkThisOnly,
+		private bool $absentTypeChecks,
 	)
 	{
 	}
@@ -583,9 +584,15 @@ final class FunctionDefinitionCheck
 			return $parameter->getNativeType()->getReferencedClasses();
 		}
 
+		$outTypeClasses = [];
+		if ($parameter->getOutType() !== null && $this->absentTypeChecks) {
+			$outTypeClasses = $parameter->getOutType()->getReferencedClasses();
+		}
+
 		return array_merge(
 			$parameter->getNativeType()->getReferencedClasses(),
 			$parameter->getPhpDocType()->getReferencedClasses(),
+			$outTypeClasses,
 		);
 	}
 

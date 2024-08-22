@@ -48,4 +48,9 @@ class YieldFromTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11517(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11517.php'], []);
+	}
+
 }

@@ -15,6 +15,9 @@ class HelloWorld
 	public function __clone()
 	{
 		$this->foo = 'baz';
+
+		$s = new self();
+		$s->foo = 'baz';
 	}
 
 	public function getFoo(): string

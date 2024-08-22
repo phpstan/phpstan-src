@@ -162,11 +162,23 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$errors = [];
 		if (PHP_VERSION_ID < 80300) {
-			$errors[] = [
-				'Readonly property Bug11495\HelloWorld::$foo is assigned outside of the constructor.',
-				17,
+			$errors = [
+				[
+					'Readonly property Bug11495\HelloWorld::$foo is assigned outside of the constructor.',
+					17,
+				],
+				[
+					'Readonly property Bug11495\HelloWorld::$foo is assigned outside of the constructor.',
+					20,
+				],
+			];
+		} else {
+			$errors = [
+				[
+					'Readonly property Bug11495\HelloWorld::$foo is not assigned on $this.',
+					20,
+				],
 			];
 		}
 

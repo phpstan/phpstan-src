@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use function count;
 
-class AnonymousClassVisitor extends NodeVisitorAbstract
+final class AnonymousClassVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_ANONYMOUS_CLASS = 'anonymousClass';

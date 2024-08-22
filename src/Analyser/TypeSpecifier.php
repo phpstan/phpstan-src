@@ -246,11 +246,16 @@ class TypeSpecifier
 			) {
 				$argType = $scope->getType($expr->right->getArgs()[0]->value);
 
-				if ($argType instanceof UnionType && $leftType instanceof ConstantIntegerType) {
-					if ($orEqual) {
-						$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
-					} else {
-						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
+				if ($argType instanceof UnionType) {
+					$sizeType = null;
+					if ($leftType instanceof ConstantIntegerType) {
+						if ($orEqual) {
+							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
+						} else {
+							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
+						}
+					} elseif ($leftType instanceof IntegerRangeType) {
+						$sizeType = $leftType;
 					}
 
 					$narrowed = $this->narrowUnionByArraySize($expr->right, $argType, $sizeType, $context, $scope, $rootExpr);
@@ -949,8 +954,12 @@ class TypeSpecifier
 		return new SpecifiedTypes([], [], false, [], $rootExpr);
 	}
 
-	private function narrowUnionByArraySize(FuncCall $countFuncCall, UnionType $argType, Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
+	private function narrowUnionByArraySize(FuncCall $countFuncCall, UnionType $argType, ?Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
 	{
+		if ($sizeType === null) {
+			return null;
+		}
+
 		if (count($countFuncCall->getArgs()) === 1) {
 			$isNormalCount = TrinaryLogic::createYes();
 		} else {
@@ -971,7 +980,7 @@ class TypeSpecifier
 						continue;
 					}
 
-					$constArray = $this->turnListIntoConstantArray($countFuncCall, $innerType, $sizeType, $scope);
+					$constArray = $this->turnListIntoConstantArray($countFuncCall, $innerType, $sizeType, $context, $scope);
 					if ($constArray !== null) {
 						$innerType = $constArray;
 					}
@@ -991,7 +1000,7 @@ class TypeSpecifier
 		return null;
 	}
 
-	private function turnListIntoConstantArray(FuncCall $countFuncCall, Type $type, Type $sizeType, Scope $scope): ?Type
+	private function turnListIntoConstantArray(FuncCall $countFuncCall, Type $type, Type $sizeType, TypeSpecifierContext $context, Scope $scope): ?Type
 	{
 		$argType = $scope->getType($countFuncCall->getArgs()[0]->value);
 
@@ -1013,6 +1022,38 @@ class TypeSpecifier
 			for ($i = 0; $i < $sizeType->getValue(); $i++) {
 				$offsetType = new ConstantIntegerType($i);
 				$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
+			}
+			return $valueTypesBuilder->getArray();
+		}
+
+		if (
+			$context->truthy()
+			&& $isNormalCount->yes()
+			&& $type->isList()->yes()
+			&& $sizeType instanceof IntegerRangeType
+			&& $sizeType->getMin() !== null
+		) {
+			// turn optional offsets non-optional
+			$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
+			for ($i = 0; $i < $sizeType->getMin(); $i++) {
+				$offsetType = new ConstantIntegerType($i);
+				$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
+			}
+			if ($sizeType->getMax() !== null) {
+				for ($i = $sizeType->getMin(); $i < $sizeType->getMax(); $i++) {
+					$offsetType = new ConstantIntegerType($i);
+					$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), true);
+				}
+			} else {
+				for ($i = $sizeType->getMin();; $i++) {
+					$offsetType = new ConstantIntegerType($i);
+					$hasOffset = $type->hasOffsetValueType($offsetType);
+					if ($hasOffset->no()) {
+						break;
+					}
+					$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), !$hasOffset->yes());
+				}
+
 			}
 			return $valueTypesBuilder->getArray();
 		}
@@ -1093,7 +1134,7 @@ class TypeSpecifier
 					}
 
 					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-					$constArray = $this->turnListIntoConstantArray($exprNode, $argType, $constantType, $scope);
+					$constArray = $this->turnListIntoConstantArray($exprNode, $argType, $constantType, $context, $scope);
 					if ($context->truthy() && $constArray !== null) {
 						$valueTypes = $this->create($exprNode->getArgs()[0]->value, $constArray, $context, false, $scope, $rootExpr);
 					} else {

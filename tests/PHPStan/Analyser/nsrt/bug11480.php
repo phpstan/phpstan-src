@@ -24,7 +24,7 @@ class HelloWorld
 		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 
 		if (count($x) > 1) {
-			assertType("array{0: 'ab', 1?: 'xy'}", $x);
+			assertType("array{'ab', 'xy'}", $x);
 		} else {
 			assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		}
@@ -58,7 +58,7 @@ class HelloWorld
 		if (count($x) <= 1) {
 			assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		} else {
-			assertType("array{0: 'ab', 1?: 'xy'}", $x);
+			assertType("array{'ab', 'xy'}", $x);
 		}
 		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 	}
@@ -106,7 +106,7 @@ class HelloWorld
 		if (count($x) >= $count) {
 			assertType("array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		} else {
-			assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
+			assertType("array{}", $x);
 		}
 		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 	}

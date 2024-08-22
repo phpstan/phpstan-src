@@ -313,3 +313,5 @@ services:
 		class: PHPStan\Rules\Regexp\RegularExpressionQuotingRule
 	-
 		class: PHPStan\Rules\Keywords\RequireFileExistsRule
+		arguments:
+			currentWorkingDirectory: %currentWorkingDirectory%

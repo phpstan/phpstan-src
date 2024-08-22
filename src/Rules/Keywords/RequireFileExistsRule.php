@@ -13,9 +13,7 @@ use PHPStan\ShouldNotHappenException;
 use function dirname;
 use function explode;
 use function get_include_path;
-use function getcwd;
 use function is_file;
-use function is_string;
 use function sprintf;
 use function str_replace;
 use const PATH_SEPARATOR;
@@ -25,6 +23,10 @@ use const PATH_SEPARATOR;
  */
 final class RequireFileExistsRule implements Rule
 {
+
+	public function __construct(private string $currentWorkingDirectory)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -58,13 +60,13 @@ final class RequireFileExistsRule implements Rule
 	private function doesFileExist(string $path, Scope $scope): bool
 	{
 		$directories = [
-			getcwd(),
+			$this->currentWorkingDirectory,
 			...explode(PATH_SEPARATOR, get_include_path()),
 			dirname($scope->getFile()),
 		];
 
 		foreach ($directories as $directory) {
-			if (is_string($directory) && $this->doesFileExistForDirectory($path, $directory)) {
+			if ($this->doesFileExistForDirectory($path, $directory)) {
 				return true;
 			}
 		}

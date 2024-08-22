@@ -2,11 +2,8 @@
 
 namespace PHPStan\Rules\Keywords;
 
-use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use function chdir;
 use function get_include_path;
-use function getcwd;
 use function implode;
 use function realpath;
 use function set_include_path;
@@ -18,9 +15,18 @@ use const PATH_SEPARATOR;
 class RequireFileExistsRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): Rule
+	private RequireFileExistsRule $rule;
+
+	public function setUp(): void
 	{
-		return new RequireFileExistsRule();
+		parent::setUp();
+
+		$this->rule = $this->getDefaultRule();
+	}
+
+	protected function getRule(): RequireFileExistsRule
+	{
+		return $this->rule;
 	}
 
 	public static function getAdditionalConfigFiles(): array
@@ -28,6 +34,11 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		return [
 			__DIR__ . '/../../Analyser/usePathConstantsAsConstantString.neon',
 		];
+	}
+
+	private function getDefaultRule(): RequireFileExistsRule
+	{
+		return new RequireFileExistsRule(__DIR__ . '/../');
 	}
 
 	public function testBasicCase(): void
@@ -112,13 +123,12 @@ class RequireFileExistsRuleTest extends RuleTestCase
 
 	public function testRelativePathWithSameWorkingDirectory(): void
 	{
-		$originalWorkingDirectory = getcwd();
-		chdir(__DIR__);
+		$this->rule = new RequireFileExistsRule(__DIR__);
 
 		try {
 			$this->analyse([__DIR__ . '/data/require-file-relative-path.php'], []);
 		} finally {
-			chdir((string) $originalWorkingDirectory);
+			$this->rule = $this->getDefaultRule();
 		}
 	}
 

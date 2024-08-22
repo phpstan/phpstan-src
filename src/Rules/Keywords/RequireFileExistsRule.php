@@ -10,6 +10,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use function array_merge;
 use function dirname;
 use function explode;
 use function get_include_path;
@@ -59,11 +60,11 @@ final class RequireFileExistsRule implements Rule
 	 */
 	private function doesFileExist(string $path, Scope $scope): bool
 	{
-		$directories = [
-			$this->currentWorkingDirectory,
-			...explode(PATH_SEPARATOR, get_include_path()),
-			dirname($scope->getFile()),
-		];
+		$directories = array_merge(
+			[$this->currentWorkingDirectory],
+			explode(PATH_SEPARATOR, get_include_path()),
+			[dirname($scope->getFile())],
+		);
 
 		foreach ($directories as $directory) {
 			if ($this->doesFileExistForDirectory($path, $directory)) {

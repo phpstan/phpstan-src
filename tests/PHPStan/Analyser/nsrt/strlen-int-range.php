@@ -17,7 +17,7 @@ function doFoo(string $s, $zeroToThree, $twoOrThree, $twoOrMore, int $maxThree, 
 		assertType('string', $s);
 	}
 	if (strlen($s) > $zeroToThree) {
-		assertType('non-empty-string', $s);
+		assertType('non-empty-string', $s); // could be non-falsy-string
 	}
 	if (strlen($s) > $twoOrThree) {
 		assertType('non-falsy-string', $s);

@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Assert;
 use function implode;
 use function sprintf;
 
@@ -38,6 +39,8 @@ class AnonymousClassReflectionTest extends RuleTestCase
 				if (!$node->isAnonymous()) {
 					return [];
 				}
+
+				Assert::assertTrue($node->getAttribute('anonymousClass'));
 
 				$classReflection = $this->reflectionProvider->getAnonymousClassReflection($node, $scope);
 

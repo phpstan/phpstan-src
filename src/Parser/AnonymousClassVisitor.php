@@ -28,6 +28,7 @@ class AnonymousClassVisitor extends NodeVisitorAbstract
 		}
 
 		$node = AnonymousClassNode::createFromClassNode($node);
+		$node->setAttribute('anonymousClass', true); // We keep this for backward compatibility
 		$this->nodesPerLine[$node->getStartLine()][] = $node;
 
 		return $node;

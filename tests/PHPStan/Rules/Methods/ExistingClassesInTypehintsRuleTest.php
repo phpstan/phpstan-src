@@ -512,11 +512,11 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/self-out.php'], [
 			[
-				'Method SelfOutClasses\Foo::doFoo() has invalid return type SelfOutClasses\Nonexistent.',
+				'Method SelfOutClasses\Foo::doFoo() has invalid @phpstan-self-out type SelfOutClasses\Nonexistent.',
 				16,
 			],
 			[
-				'Method SelfOutClasses\Foo::doBar() has invalid return type SelfOutClasses\FooTrait.',
+				'Method SelfOutClasses\Foo::doBar() has invalid @phpstan-self-out type SelfOutClasses\FooTrait.',
 				24,
 			],
 			[

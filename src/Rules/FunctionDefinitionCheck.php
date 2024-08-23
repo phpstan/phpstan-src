@@ -241,6 +241,7 @@ final class FunctionDefinitionCheck
 		string $templateTypeMissingInParameterMessage,
 		string $unresolvableParameterTypeMessage,
 		string $unresolvableReturnTypeMessage,
+		string $selfOutMessage,
 	): array
 	{
 		/** @var ParametersAcceptorWithPhpDocs $parametersAcceptor */
@@ -263,7 +264,7 @@ final class FunctionDefinitionCheck
 
 			foreach ($selfOutTypeReferencedClasses as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {
-					$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $class))
+					$errors[] = RuleErrorBuilder::message(sprintf($selfOutMessage, $class))
 						->line($methodNode->getStartLine())
 						->identifier('class.notFound')
 						->build();
@@ -273,7 +274,7 @@ final class FunctionDefinitionCheck
 					continue;
 				}
 
-				$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $class))
+				$errors[] = RuleErrorBuilder::message(sprintf($selfOutMessage, $class))
 					->line($methodNode->getStartLine())
 					->identifier('selfOut.trait')
 					->build();

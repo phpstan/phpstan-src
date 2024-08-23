@@ -36,6 +36,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
@@ -421,7 +422,12 @@ final class PhpDocNodeResolver
 		foreach (['@param-closure-this', '@phpstan-param-closure-this'] as $tagName) {
 			foreach ($phpDocNode->getParamClosureThisTagValues($tagName) as $tagValue) {
 				$parameterName = substr($tagValue->parameterName, 1);
-				$closureThisTypes[$parameterName] = new ParamClosureThisTag($this->typeNodeResolver->resolve($tagValue->type, $nameScope));
+				$closureThisTypes[$parameterName] = new ParamClosureThisTag(
+					TypeCombinator::intersect(
+						$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
+						new ObjectWithoutClassType(),
+					),
+				);
 			}
 		}
 

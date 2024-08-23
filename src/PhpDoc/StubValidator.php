@@ -54,9 +54,11 @@ use PHPStan\Rules\Methods\MissingMethodReturnTypehintRule;
 use PHPStan\Rules\Methods\OverridingMethodRule;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\GenericCallableRuleHelper;
+use PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatibleParamImmediatelyInvokedCallableRule;
 use PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule;
+use PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule;
 use PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule;
 use PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule;
 use PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule;
@@ -199,6 +201,8 @@ final class StubValidator
 				$container->getParameter('featureToggles')['invalidPhpDocTagLine'],
 			),
 			new IncompatibleParamImmediatelyInvokedCallableRule($fileTypeMapper),
+			new IncompatibleSelfOutTypeRule(),
+			new IncompatibleClassConstantPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper),
 			new InvalidThrowsPhpDocValueRule($fileTypeMapper),
 
 			// level 6

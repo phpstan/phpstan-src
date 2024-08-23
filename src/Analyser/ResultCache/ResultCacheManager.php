@@ -412,20 +412,20 @@ final class ResultCacheManager
 		}
 		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, array $exportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
-				if ($output->isDebug()) {
+				if ($output->isVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
 				}
 				return false;
 			}
 			if ($dependencies === null) {
-				if ($output->isDebug()) {
+				if ($output->isVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because of error in dependencies.');
 				}
 				return false;
 			}
 
 			if (count($internalErrors) > 0) {
-				if ($output->isDebug()) {
+				if ($output->isVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because of internal errors.');
 				}
 				return false;
@@ -437,7 +437,7 @@ final class ResultCacheManager
 						continue;
 					}
 
-					if ($output->isDebug()) {
+					if ($output->isVerbose()) {
 						$output->writeLineFormatted(sprintf('Result cache was not saved because of non-ignorable exception: %s', $error->getMessage()));
 					}
 
@@ -447,7 +447,7 @@ final class ResultCacheManager
 
 			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $exportedNodes, $projectExtensionFiles, $meta);
 
-			if ($output->isDebug()) {
+			if ($output->isVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
 			}
 
@@ -463,7 +463,7 @@ final class ResultCacheManager
 				}
 				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes(), $projectExtensionFiles);
 			} else {
-				if ($output->isDebug()) {
+				if ($output->isVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
 				}
 			}

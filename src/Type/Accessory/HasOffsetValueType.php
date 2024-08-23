@@ -233,6 +233,15 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function reverseArray(TrinaryLogic $preserveKeys): Type
+	{
+		if ($preserveKeys->yes()) {
+			return $this;
+		}
+
+		return new NonEmptyArrayType();
+	}
+
 	public function searchArray(Type $needleType): Type
 	{
 		if (

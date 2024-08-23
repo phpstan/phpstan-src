@@ -218,6 +218,15 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function reverseArray(TrinaryLogic $preserveKeys): Type
+	{
+		if ($preserveKeys->no()) {
+			return $this;
+		}
+
+		return new MixedType();
+	}
+
 	public function searchArray(Type $needleType): Type
 	{
 		return new MixedType();

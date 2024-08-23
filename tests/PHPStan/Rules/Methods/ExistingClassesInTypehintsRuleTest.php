@@ -508,4 +508,22 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testSelfOut(): void
+	{
+		$this->analyse([__DIR__ . '/data/self-out.php'], [
+			[
+				'Method SelfOutClasses\Foo::doFoo() has invalid return type SelfOutClasses\Nonexistent.',
+				16,
+			],
+			[
+				'Method SelfOutClasses\Foo::doBar() has invalid return type SelfOutClasses\FooTrait.',
+				24,
+			],
+			[
+				'Class SelfOutClasses\Foo referenced with incorrect case: SelfOutClasses\fOO.',
+				32,
+			],
+		]);
+	}
+
 }

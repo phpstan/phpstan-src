@@ -246,7 +246,7 @@ final class FunctionDefinitionCheck
 		/** @var ParametersAcceptorWithPhpDocs $parametersAcceptor */
 		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants());
 
-		return $this->checkParametersAcceptor(
+		$errors = $this->checkParametersAcceptor(
 			$parametersAcceptor,
 			$methodNode,
 			$parameterMessage,
@@ -256,6 +256,39 @@ final class FunctionDefinitionCheck
 			$unresolvableParameterTypeMessage,
 			$unresolvableReturnTypeMessage,
 		);
+
+		$selfOutType = $methodReflection->getSelfOutType();
+		if ($selfOutType !== null && $this->absentTypeChecks) {
+			$selfOutTypeReferencedClasses = $selfOutType->getReferencedClasses();
+
+			foreach ($selfOutTypeReferencedClasses as $class) {
+				if (!$this->reflectionProvider->hasClass($class)) {
+					$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $class))
+						->line($methodNode->getStartLine())
+						->identifier('class.notFound')
+						->build();
+					continue;
+				}
+				if (!$this->reflectionProvider->getClass($class)->isTrait()) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $class))
+					->line($methodNode->getStartLine())
+					->identifier('selfOut.trait')
+					->build();
+			}
+
+			$errors = array_merge(
+				$errors,
+				$this->classCheck->checkClassNames(
+					array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $methodNode), $selfOutTypeReferencedClasses),
+					$this->checkClassCaseSensitivity,
+				),
+			);
+		}
+
+		return $errors;
 	}
 
 	/**

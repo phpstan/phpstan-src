@@ -34,19 +34,24 @@ final class IncompatibleSelfOutTypeRule implements Rule
 		$classReflection = $method->getDeclaringClass();
 		$classType = new ObjectType($classReflection->getName(), null, $classReflection);
 
-		if ($classType->isSuperTypeOf($selfOutType)->yes()) {
-			return [];
-		}
-
-		return [
-			RuleErrorBuilder::message(sprintf(
+		$errors = [];
+		if (!$classType->isSuperTypeOf($selfOutType)->yes()) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Self-out type %s of method %s::%s is not subtype of %s.',
 				$selfOutType->describe(VerbosityLevel::precise()),
 				$classReflection->getName(),
 				$method->getName(),
 				$classType->describe(VerbosityLevel::precise()),
-			))->identifier('selfOut.type')->build(),
-		];
+			))->identifier('selfOut.type')->build();
+		}
+
+		if ($method->isStatic()) {
+			$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-self-out is not supported above static method %s::%s().', $classReflection->getName(), $method->getName()))
+				->identifier('selfOut.static')
+				->build();
+		}
+
+		return $errors;
 	}
 
 }

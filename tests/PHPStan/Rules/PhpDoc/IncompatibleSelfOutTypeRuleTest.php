@@ -27,6 +27,10 @@ class IncompatibleSelfOutTypeRuleTest extends RuleTestCase
 				'Self-out type IncompatibleSelfOutType\A|null of method IncompatibleSelfOutType\A::four is not subtype of IncompatibleSelfOutType\A.',
 				28,
 			],
+			[
+				'PHPDoc tag @phpstan-self-out is not supported above static method IncompatibleSelfOutType\Foo::selfOutStatic().',
+				38,
+			],
 		]);
 	}
 

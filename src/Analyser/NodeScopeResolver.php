@@ -2649,7 +2649,7 @@ final class NodeScopeResolver
 					$nodeCallback(new InvalidateExprNode($expr->var), $scope);
 					$scope = $scope->invalidateExpression($expr->var, true);
 				}
-				if ($parametersAcceptor !== null) {
+				if ($parametersAcceptor !== null && !$methodReflection->isStatic()) {
 					$selfOutType = $methodReflection->getSelfOutType();
 					if ($selfOutType !== null) {
 						$scope = $scope->assignExpression(

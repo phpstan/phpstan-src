@@ -27,3 +27,17 @@ interface A
 	 */
 	public function four();
 }
+
+/**
+ * @template T
+ */
+class Foo
+{
+
+	/** @phpstan-self-out self<int> */
+	public static function selfOutStatic(): void
+	{
+
+	}
+
+}

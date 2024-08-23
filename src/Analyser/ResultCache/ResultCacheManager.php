@@ -92,13 +92,13 @@ final class ResultCacheManager
 	{
 		$startTime = microtime(true);
 		if ($debug) {
-			if ($output->isDebug()) {
+			if ($output->isVerbose()) {
 				$output->writeLineFormatted('Result cache not used because of debug mode.');
 			}
 			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], [], [], []);
 		}
 		if ($onlyFiles) {
-			if ($output->isDebug()) {
+			if ($output->isVerbose()) {
 				$output->writeLineFormatted('Result cache not used because only files were passed as analysed paths.');
 			}
 			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], [], [], []);
@@ -106,7 +106,7 @@ final class ResultCacheManager
 
 		$cacheFilePath = $this->cacheFilePath;
 		if (!is_file($cacheFilePath)) {
-			if ($output->isDebug()) {
+			if ($output->isVerbose()) {
 				$output->writeLineFormatted('Result cache not used because the cache file does not exist.');
 			}
 			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], [], [], []);
@@ -115,7 +115,7 @@ final class ResultCacheManager
 		try {
 			$data = require $cacheFilePath;
 		} catch (Throwable $e) {
-			if ($output->isDebug()) {
+			if ($output->isVerbose()) {
 				$output->writeLineFormatted(sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()));
 			}
 
@@ -126,7 +126,7 @@ final class ResultCacheManager
 
 		if (!is_array($data)) {
 			@unlink($cacheFilePath);
-			if ($output->isDebug()) {
+			if ($output->isVerbose()) {
 				$output->writeLineFormatted('Result cache not used because the cache file is corrupted.');
 			}
 
@@ -135,7 +135,7 @@ final class ResultCacheManager
 
 		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
 		if ($this->isMetaDifferent($data['meta'], $meta)) {
-			if ($output->isDebug()) {
+			if ($output->isVerbose()) {
 				$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
 				$output->writeLineFormatted('Result cache not used because the metadata do not match: ' . implode(', ', $diffs));
 			}
@@ -143,7 +143,7 @@ final class ResultCacheManager
 		}
 
 		if (time() - $data['lastFullAnalysisTime'] >= 60 * 60 * 24 * 7) {
-			if ($output->isDebug()) {
+			if ($output->isVerbose()) {
 				$output->writeLineFormatted('Result cache not used because it\'s more than 7 days since last full analysis.');
 			}
 			// run full analysis if the result cache is older than 7 days
@@ -159,7 +159,7 @@ final class ResultCacheManager
 				continue;
 			}
 			if (!is_file($extensionFile)) {
-				if ($output->isDebug()) {
+				if ($output->isVerbose()) {
 					$output->writeLineFormatted(sprintf('Result cache not used because extension file %s was not found.', $extensionFile));
 				}
 				return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], [], [], []);
@@ -169,7 +169,7 @@ final class ResultCacheManager
 				continue;
 			}
 
-			if ($output->isDebug()) {
+			if ($output->isVerbose()) {
 				$output->writeLineFormatted(sprintf('Result cache not used because extension file %s hash does not match.', $extensionFile));
 			}
 
@@ -287,7 +287,7 @@ final class ResultCacheManager
 		$filesToAnalyse = array_unique($filesToAnalyse);
 		$filesToAnalyseCount = count($filesToAnalyse);
 
-		if ($output->isDebug()) {
+		if ($output->isVerbose()) {
 			$elapsed = microtime(true) - $startTime;
 			$elapsedString = $elapsed > 5
 				? sprintf(' in %f seconds', round($elapsed, 1))

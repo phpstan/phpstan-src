@@ -8,7 +8,6 @@ use PHPStan\Analyser\NameScope;
 use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\File\FileHelper;
-use PHPStan\Parser\AnonymousClassVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
@@ -261,7 +260,7 @@ final class FileTypeMapper
 							}
 
 							$className = $this->anonymousClassNameHelper->getAnonymousClassName($node, $fileName);
-						} elseif ((bool) $node->getAttribute(AnonymousClassVisitor::ATTRIBUTE_ANONYMOUS_CLASS, false)) {
+						} elseif ($node instanceof Node\Stmt\Class_ && $node->isAnonymous()) {
 							$className = $node->name->name;
 						} else {
 							if ($traitFound) {
@@ -452,7 +451,7 @@ final class FileTypeMapper
 							}
 
 							$className = $this->anonymousClassNameHelper->getAnonymousClassName($node, $fileName);
-						} elseif ((bool) $node->getAttribute(AnonymousClassVisitor::ATTRIBUTE_ANONYMOUS_CLASS, false)) {
+						} elseif ($node instanceof Node\Stmt\Class_ && $node->isAnonymous()) {
 							$className = $node->name->name;
 						} else {
 							if ($traitFound) {

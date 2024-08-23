@@ -584,15 +584,20 @@ final class FunctionDefinitionCheck
 			return $parameter->getNativeType()->getReferencedClasses();
 		}
 
-		$outTypeClasses = [];
-		if ($parameter->getOutType() !== null && $this->absentTypeChecks) {
-			$outTypeClasses = $parameter->getOutType()->getReferencedClasses();
+		$moreClasses = [];
+		if ($this->absentTypeChecks) {
+			if ($parameter->getOutType() !== null) {
+				$moreClasses = array_merge($moreClasses, $parameter->getOutType()->getReferencedClasses());
+			}
+			if ($parameter->getClosureThisType() !== null) {
+				$moreClasses = array_merge($moreClasses, $parameter->getClosureThisType()->getReferencedClasses());
+			}
 		}
 
 		return array_merge(
 			$parameter->getNativeType()->getReferencedClasses(),
 			$parameter->getPhpDocType()->getReferencedClasses(),
-			$outTypeClasses,
+			$moreClasses,
 		);
 	}
 

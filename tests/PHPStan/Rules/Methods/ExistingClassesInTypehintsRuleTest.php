@@ -490,4 +490,22 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testParamClosureThisClasses(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-closure-this-classes.php'], [
+			[
+				'Parameter $a of method ParamClosureThisClasses\Bar::doFoo() has invalid type ParamClosureThisClasses\Nonexistent.',
+				24,
+			],
+			[
+				'Parameter $b of method ParamClosureThisClasses\Bar::doFoo() has invalid type ParamClosureThisClasses\FooTrait.',
+				25,
+			],
+			[
+				'Class ParamClosureThisClasses\Foo referenced with incorrect case: ParamClosureThisClasses\fOO.',
+				26,
+			],
+		]);
+	}
+
 }

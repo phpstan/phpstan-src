@@ -4,11 +4,14 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassMethodNode;
+use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
 use function sprintf;
 
 /**
@@ -17,7 +20,10 @@ use function sprintf;
 final class IncompatibleSelfOutTypeRule implements Rule
 {
 
-	public function __construct(private UnresolvableTypeHelper $unresolvableTypeHelper)
+	public function __construct(
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+	)
 	{
 	}
 
@@ -63,7 +69,35 @@ final class IncompatibleSelfOutTypeRule implements Rule
 			))->identifier('parameter.unresolvableType')->build();
 		}
 
-		return $errors;
+		$escapedTagName = SprintfHelper::escapeFormatString('@phpstan-self-out');
+
+		return array_merge($errors, $this->genericObjectTypeCheck->check(
+			$selfOutType,
+			sprintf(
+				'PHPDoc tag %s contains generic type %%s but %%s %%s is not generic.',
+				$escapedTagName,
+			),
+			sprintf(
+				'Generic type %%s in PHPDoc tag %s does not specify all template types of %%s %%s: %%s',
+				$escapedTagName,
+			),
+			sprintf(
+				'Generic type %%s in PHPDoc tag %s specifies %%d template types, but %%s %%s supports only %%d: %%s',
+				$escapedTagName,
+			),
+			sprintf(
+				'Type %%s in generic type %%s in PHPDoc tag %s is not subtype of template type %%s of %%s %%s.',
+				$escapedTagName,
+			),
+			sprintf(
+				'Call-site variance of %%s in generic type %%s in PHPDoc tag %s is in conflict with %%s template type %%s of %%s %%s.',
+				$escapedTagName,
+			),
+			sprintf(
+				'Call-site variance of %%s in generic type %%s in PHPDoc tag %s is redundant, template type %%s of %%s %%s has the same variance.',
+				$escapedTagName,
+			),
+		));
 	}
 
 }

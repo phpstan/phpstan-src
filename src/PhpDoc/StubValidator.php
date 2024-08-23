@@ -51,6 +51,7 @@ use PHPStan\Rules\Methods\MethodParameterComparisonHelper;
 use PHPStan\Rules\Methods\MethodSignatureRule;
 use PHPStan\Rules\Methods\MissingMethodParameterTypehintRule;
 use PHPStan\Rules\Methods\MissingMethodReturnTypehintRule;
+use PHPStan\Rules\Methods\MissingMethodSelfOutTypeRule;
 use PHPStan\Rules\Methods\OverridingMethodRule;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\GenericCallableRuleHelper;
@@ -226,6 +227,10 @@ final class StubValidator
 				$container->getByType(PhpDocParser::class),
 				true,
 			);
+		}
+
+		if ((bool) $container->getParameter('featureToggles')['absentTypeChecks']) {
+			$rules[] = new MissingMethodSelfOutTypeRule($missingTypehintCheck);
 		}
 
 		return new DirectRuleRegistry($rules);

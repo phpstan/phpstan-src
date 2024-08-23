@@ -13,6 +13,10 @@ rules:
 	- PHPStan\Rules\Methods\MissingMethodReturnTypehintRule
 	- PHPStan\Rules\Properties\MissingPropertyTypehintRule
 
+conditionalTags:
+	PHPStan\Rules\Methods\MissingMethodSelfOutTypeRule:
+		phpstan.rules.rule: %featureToggles.absentTypeChecks%
+
 services:
 	-
 		class: PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule
@@ -27,3 +31,6 @@ services:
 			paramOut: %featureToggles.paramOutType%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Methods\MissingMethodSelfOutTypeRule

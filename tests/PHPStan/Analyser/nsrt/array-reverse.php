@@ -46,4 +46,28 @@ class Foo
 		assertType('array{\'bar\', \'foo\'}|array{bar: 19, foo: 17}', array_reverse($b));
 		assertType('array{19: \'bar\', 17: \'foo\'}|array{bar: 19, foo: 17}', array_reverse($b, true));
 	}
+
+	/**
+	 * @param list<string> $a
+	 * @param non-empty-list<string> $b
+	 */
+	public function list(array $a, array $b): void
+	{
+		assertType('list<string>', array_reverse($a));
+		assertType('array<int<0, max>, string>', array_reverse($a, true));
+
+		assertType('non-empty-list<string>', array_reverse($b));
+		assertType('non-empty-array<int<0, max>, string>', array_reverse($b, true));
+	}
+
+	public function mixed(mixed $mixed): void
+	{
+		assertType('array', array_reverse($mixed));
+		assertType('array', array_reverse($mixed, true));
+
+		if (array_key_exists('foo', $mixed)) {
+			assertType('non-empty-array', array_reverse($mixed));
+			assertType("array&hasOffset('foo')", array_reverse($mixed, true));
+		}
+	}
 }

@@ -552,6 +552,11 @@ class ArrayType implements Type
 		return $this;
 	}
 
+	public function reverseArray(TrinaryLogic $preserveKeys): Type
+	{
+		return $this;
+	}
+
 	public function searchArray(Type $needleType): Type
 	{
 		return TypeCombinator::union($this->getIterableKeyType(), new ConstantBooleanType(false));

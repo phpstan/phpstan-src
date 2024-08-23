@@ -282,6 +282,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->popArray();
 	}
 
+	public function reverseArray(TrinaryLogic $preserveKeys): Type
+	{
+		return $this->resolve()->reverseArray($preserveKeys);
+	}
+
 	public function searchArray(Type $needleType): Type
 	{
 		return $this->resolve()->searchArray($needleType);

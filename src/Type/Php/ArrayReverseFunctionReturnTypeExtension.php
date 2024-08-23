@@ -4,15 +4,20 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
-use function count;
 
 final class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -26,24 +31,14 @@ final class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionRe
 		}
 
 		$type = $scope->getType($functionCall->getArgs()[0]->value);
-		$preserveKeysType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : new NeverType();
-		$preserveKeys = $preserveKeysType->isTrue()->yes();
-
-		if (!$type->isArray()->yes()) {
-			return null;
+		if ($type->isArray()->no()) {
+			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
-		$constantArrays = $type->getConstantArrays();
-		if (count($constantArrays) > 0) {
-			$results = [];
-			foreach ($constantArrays as $constantArray) {
-				$results[] = $constantArray->reverse($preserveKeys);
-			}
+		$preserveKeysType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : new ConstantBooleanType(false);
+		$preserveKeys = (new ConstantBooleanType(true))->isSuperTypeOf($preserveKeysType);
 
-			return TypeCombinator::union(...$results);
-		}
-
-		return $type;
+		return $type->reverseArray($preserveKeys);
 	}
 
 }

@@ -3088,6 +3088,42 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'curl_init($string)',
 			],
 			[
+				PHP_VERSION_ID < 80000 ? 'resource' : 'CurlHandle',
+				'curl_init(null)',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'resource' : 'CurlHandle',
+				'curl_init(\'https://phpstan.org\')',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
+				"curl_init('\0')",
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
+				"curl_init('https://phpstan.org\0')",
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'resource' : 'CurlHandle',
+				'curl_init(\'\')',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'resource|false' : 'CurlHandle',
+				'curl_init(\':\')',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'resource|false' : 'CurlHandle',
+				'curl_init(\'file://host/text.txt\')',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'resource|false' : 'CurlHandle',
+				'curl_init(\'FIle://host/text.txt\')',
+			],
+			[
+				PHP_VERSION_ID < 80000 ? 'resource' : 'CurlHandle',
+				'curl_init(\'host/text.txt\')',
+			],
+			[
 				'string',
 				'sprintf($string, $string, 1)',
 			],

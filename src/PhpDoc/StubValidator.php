@@ -201,7 +201,7 @@ final class StubValidator
 				$container->getParameter('featureToggles')['invalidPhpDocTagLine'],
 			),
 			new IncompatibleParamImmediatelyInvokedCallableRule($fileTypeMapper),
-			new IncompatibleSelfOutTypeRule(),
+			new IncompatibleSelfOutTypeRule($unresolvableTypeHelper),
 			new IncompatibleClassConstantPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper),
 			new InvalidThrowsPhpDocValueRule($fileTypeMapper),
 

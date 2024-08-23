@@ -40,4 +40,20 @@ class Foo
 
 	}
 
+	/**
+	 * @phpstan-self-out int&string
+	 */
+	public function doFoo(): void
+	{
+
+	}
+
+	/**
+	 * @phpstan-self-out self<int&string>
+	 */
+	public function doBar(): void
+	{
+
+	}
+
 }

@@ -13,7 +13,7 @@ class IncompatibleSelfOutTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new IncompatibleSelfOutTypeRule();
+		return new IncompatibleSelfOutTypeRule(new UnresolvableTypeHelper());
 	}
 
 	public function testRule(): void
@@ -30,6 +30,14 @@ class IncompatibleSelfOutTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @phpstan-self-out is not supported above static method IncompatibleSelfOutType\Foo::selfOutStatic().',
 				38,
+			],
+			[
+				'PHPDoc tag @phpstan-self-out for method IncompatibleSelfOutType\Foo::doFoo() contains unresolvable type.',
+				46,
+			],
+			[
+				'PHPDoc tag @phpstan-self-out for method IncompatibleSelfOutType\Foo::doBar() contains unresolvable type.',
+				54,
 			],
 		]);
 	}

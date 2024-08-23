@@ -17,6 +17,10 @@ use function sprintf;
 final class IncompatibleSelfOutTypeRule implements Rule
 {
 
+	public function __construct(private UnresolvableTypeHelper $unresolvableTypeHelper)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return InClassMethodNode::class;
@@ -39,7 +43,7 @@ final class IncompatibleSelfOutTypeRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Self-out type %s of method %s::%s is not subtype of %s.',
 				$selfOutType->describe(VerbosityLevel::precise()),
-				$classReflection->getName(),
+				$classReflection->getDisplayName(),
 				$method->getName(),
 				$classType->describe(VerbosityLevel::precise()),
 			))->identifier('selfOut.type')->build();
@@ -49,6 +53,14 @@ final class IncompatibleSelfOutTypeRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-self-out is not supported above static method %s::%s().', $classReflection->getName(), $method->getName()))
 				->identifier('selfOut.static')
 				->build();
+		}
+
+		if ($this->unresolvableTypeHelper->containsUnresolvableType($selfOutType)) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'PHPDoc tag @phpstan-self-out for method %s::%s() contains unresolvable type.',
+				$classReflection->getDisplayName(),
+				$method->getName(),
+			))->identifier('parameter.unresolvableType')->build();
 		}
 
 		return $errors;

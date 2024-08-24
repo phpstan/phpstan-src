@@ -78,3 +78,13 @@ class MissingTypehints
 {
 
 }
+
+/**
+ * @phpstan-type A = Nonexistent
+ * @phpstan-type B = \LocalTypeTraitAliases\Foo
+ * @phpstan-type C = fOO
+ */
+class NonexistentClasses
+{
+
+}

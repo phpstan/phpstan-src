@@ -2,11 +2,14 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PhpParser\Node\Stmt\ClassLike;
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -31,7 +34,9 @@ final class LocalTypeAliasesCheck
 		private ReflectionProvider $reflectionProvider,
 		private TypeNodeResolver $typeNodeResolver,
 		private MissingTypehintCheck $missingTypehintCheck,
+		private ClassNameCheck $classCheck,
 		private bool $checkMissingTypehints,
+		private bool $checkClassCaseSensitivity,
 		private bool $absentTypeChecks,
 	)
 	{
@@ -40,7 +45,7 @@ final class LocalTypeAliasesCheck
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	public function check(ClassReflection $reflection): array
+	public function check(ClassReflection $reflection, ClassLike $node): array
 	{
 		$phpDoc = $reflection->getResolvedPhpDoc();
 		if ($phpDoc === null) {
@@ -212,6 +217,26 @@ final class LocalTypeAliasesCheck
 							$aliasName,
 							$callableType->describe(VerbosityLevel::typeOnly()),
 						))->identifier('missingType.callable')->build();
+					}
+				}
+
+				foreach ($resolvedType->getReferencedClasses() as $class) {
+					if (!$this->reflectionProvider->hasClass($class)) {
+						$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s contains unknown class %s.', $aliasName, $class))
+							->identifier('class.notFound')
+							->discoveringSymbolsTip()
+							->build();
+					} elseif ($this->reflectionProvider->getClass($class)->isTrait()) {
+						$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s contains invalid type %s.', $aliasName, $class))
+							->identifier('typeAlias.trait')
+							->build();
+					} else {
+						$errors = array_merge(
+							$errors,
+							$this->classCheck->checkClassNames([
+								new ClassNameNodePair($class, $node),
+							], $this->checkClassCaseSensitivity),
+						);
 					}
 				}
 			}

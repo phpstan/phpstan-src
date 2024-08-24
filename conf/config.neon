@@ -914,6 +914,7 @@ services:
 		arguments:
 			globalTypeAliases: %typeAliases%
 			checkMissingTypehints: %checkMissingTypehints%
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-

@@ -3,6 +3,10 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\PhpDoc\TypeNodeResolver;
+use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -14,11 +18,21 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$reflectionProvider = $this->createReflectionProvider();
+
 		return new LocalTypeTraitAliasesRule(
 			new LocalTypeAliasesCheck(
 				['GlobalTypeAlias' => 'int|string'],
 				$this->createReflectionProvider(),
 				self::getContainer()->getByType(TypeNodeResolver::class),
+				new MissingTypehintCheck(true, true, true, true, []),
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassForbiddenNameCheck(self::getContainer()),
+				),
+				true,
+				true,
+				true,
 			),
 			$this->createReflectionProvider(),
 		);

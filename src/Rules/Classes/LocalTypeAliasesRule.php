@@ -24,7 +24,7 @@ final class LocalTypeAliasesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		return $this->check->check($node->getClassReflection());
+		return $this->check->check($node->getClassReflection(), $node->getOriginalNode());
 	}
 
 }

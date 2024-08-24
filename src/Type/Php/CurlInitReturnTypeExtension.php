@@ -11,8 +11,12 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
+use function array_map;
 use function count;
 use function is_string;
 use function parse_url;
@@ -50,43 +54,49 @@ class CurlInitReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 		}
 
 		$urlArgType = $scope->getType($args[0]->value);
-		if ($urlArgType->isNull()->yes()) {
-			return $notFalseReturnType;
-		}
-		if ($urlArgType->isString()->yes()) {
-			$urlArgValue = $urlArgType->getConstantScalarValues()[0] ?? null;
-			if ($urlArgValue !== null) {
-				if (!is_string($urlArgValue)) {
-					throw new ShouldNotHappenException();
-				}
-				if (str_contains($urlArgValue, "\0")) {
-					if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
-						// https://github.com/php/php-src/blob/php-7.4.33/ext/curl/interface.c#L112-L115
-						return new ConstantBooleanType(false);
-					}
-					// https://github.com/php/php-src/blob/php-8.0.0/ext/curl/interface.c#L104-L107
-					return new NeverType();
-				}
-				if ($this->phpVersion->getVersionId() < 80000) {
-					// Before PHP 8.0 an unparsable URL or a file:// scheme would fail if open_basedir is used
-					// Since we can't detect open_basedir properly, we'll always consider a failure possible if these
-					//   conditions are given
-					// https://github.com/php/php-src/blob/php-7.4.33/ext/curl/interface.c#L139-L158
-					$parsedUrlArg = parse_url($urlArgValue);
-					if ($parsedUrlArg === false || (isset($parsedUrlArg['scheme']) && strcasecmp($parsedUrlArg['scheme'], 'file') === 0)) {
-						return $returnType;
-					}
-				}
-				if (strlen($urlArgValue) > self::CURL_MAX_INPUT_LENGTH) {
-					// Since libcurl 7.65.0 this would always fail, but no current PHP version requires it at the moment
-					// https://github.com/curl/curl/commit/5fc28510a4664f46459d9a40187d81cc08571e60
-					return $returnType;
-				}
-				return $notFalseReturnType;
-			}
+		if ($urlArgType->isConstantScalarValue()->yes() && (new UnionType([new NullType(), new StringType()]))->isSuperTypeOf($urlArgType)->yes()) {
+			$urlArgReturnTypes = array_map(
+				fn ($value) => $this->getUrlArgValueReturnType($value, $returnType, $notFalseReturnType),
+				$urlArgType->getConstantScalarValues(),
+			);
+			return TypeCombinator::union(...$urlArgReturnTypes);
 		}
 
 		return $returnType;
+	}
+
+	private function getUrlArgValueReturnType(mixed $urlArgValue, Type $returnType, Type $notFalseReturnType): Type
+	{
+		if ($urlArgValue === null) {
+			return $notFalseReturnType;
+		}
+		if (!is_string($urlArgValue)) {
+			throw new ShouldNotHappenException();
+		}
+		if (str_contains($urlArgValue, "\0")) {
+			if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+				// https://github.com/php/php-src/blob/php-7.4.33/ext/curl/interface.c#L112-L115
+				return new ConstantBooleanType(false);
+			}
+			// https://github.com/php/php-src/blob/php-8.0.0/ext/curl/interface.c#L104-L107
+			return new NeverType();
+		}
+		if ($this->phpVersion->getVersionId() < 80000) {
+			// Before PHP 8.0 an unparsable URL or a file:// scheme would fail if open_basedir is used
+			// Since we can't detect open_basedir properly, we'll always consider a failure possible if these
+			//   conditions are given
+			// https://github.com/php/php-src/blob/php-7.4.33/ext/curl/interface.c#L139-L158
+			$parsedUrlArgValue = parse_url($urlArgValue);
+			if ($parsedUrlArgValue === false || (isset($parsedUrlArgValue['scheme']) && strcasecmp($parsedUrlArgValue['scheme'], 'file') === 0)) {
+				return $returnType;
+			}
+		}
+		if (strlen($urlArgValue) > self::CURL_MAX_INPUT_LENGTH) {
+			// Since libcurl 7.65.0 this would always fail, but no current PHP version requires it at the moment
+			// https://github.com/curl/curl/commit/5fc28510a4664f46459d9a40187d81cc08571e60
+			return $returnType;
+		}
+		return $notFalseReturnType;
 	}
 
 }

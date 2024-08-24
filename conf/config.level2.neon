@@ -71,6 +71,7 @@ services:
 		class: PHPStan\Rules\Classes\MixinRule
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
 		tags:
 			- phpstan.rules.rule
 

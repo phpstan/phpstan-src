@@ -327,4 +327,12 @@ class PhpVersion
 		return $this->versionId >= 80300;
 	}
 
+	public function isCurloptUrlCheckingFileSchemeWithOpenBasedir(): bool
+	{
+		// Before PHP 8.0, when setting CURLOPT_URL, an unparsable URL or a file:// scheme would fail if open_basedir is used
+		// https://github.com/php/php-src/blob/php-7.4.33/ext/curl/interface.c#L139-L158
+		// https://github.com/php/php-src/blob/php-8.0.0/ext/curl/interface.c#L128-L130
+		return $this->versionId < 80000;
+	}
+
 }

@@ -81,7 +81,7 @@ class CurlInitReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 			// https://github.com/php/php-src/blob/php-8.0.0/ext/curl/interface.c#L104-L107
 			return new NeverType();
 		}
-		if ($this->phpVersion->getVersionId() < 80000) {
+		if ($this->phpVersion->isCurloptUrlCheckingFileSchemeWithOpenBasedir()) {
 			// Before PHP 8.0 an unparsable URL or a file:// scheme would fail if open_basedir is used
 			// Since we can't detect open_basedir properly, we'll always consider a failure possible if these
 			//   conditions are given

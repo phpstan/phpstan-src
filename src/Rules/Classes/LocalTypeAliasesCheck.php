@@ -4,12 +4,14 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node\Stmt\ClassLike;
 use PHPStan\Analyser\NameScope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -39,6 +41,7 @@ final class LocalTypeAliasesCheck
 		private MissingTypehintCheck $missingTypehintCheck,
 		private ClassNameCheck $classCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private bool $checkMissingTypehints,
 		private bool $checkClassCaseSensitivity,
 		private bool $absentTypeChecks,
@@ -256,6 +259,35 @@ final class LocalTypeAliasesCheck
 					->identifier('typeAlias.unresolvableType')
 					->build();
 			}
+
+			$escapedTypeAlias = SprintfHelper::escapeFormatString($aliasName);
+			$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
+				$resolvedType,
+				sprintf(
+					'Type alias %s contains generic type %%s but %%s %%s is not generic.',
+					$escapedTypeAlias,
+				),
+				sprintf(
+					'Generic type %%s in type alias %s does not specify all template types of %%s %%s: %%s',
+					$escapedTypeAlias,
+				),
+				sprintf(
+					'Generic type %%s in type alias %s specifies %%d template types, but %%s %%s supports only %%d: %%s',
+					$escapedTypeAlias,
+				),
+				sprintf(
+					'Type %%s in generic type %%s in type alias %s is not subtype of template type %%s of %%s %%s.',
+					$escapedTypeAlias,
+				),
+				sprintf(
+					'Call-site variance of %%s in generic type %%s in type alias %s is in conflict with %%s template type %%s of %%s %%s.',
+					$escapedTypeAlias,
+				),
+				sprintf(
+					'Call-site variance of %%s in generic type %%s in type alias %s is redundant, template type %%s of %%s %%s has the same variance.',
+					$escapedTypeAlias,
+				),
+			));
 		}
 
 		return $errors;

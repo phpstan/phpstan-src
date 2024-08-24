@@ -6,6 +6,7 @@ use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
@@ -33,6 +34,7 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 					new ClassForbiddenNameCheck(self::getContainer()),
 				),
 				new UnresolvableTypeHelper(),
+				new GenericObjectTypeCheck(),
 				true,
 				true,
 				true,
@@ -136,6 +138,10 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 			[
 				'Type alias A contains unresolvable type.',
 				95,
+			],
+			[
+				'Type alias A contains generic type Exception<int> but class Exception is not generic.',
+				103,
 			],
 		]);
 	}

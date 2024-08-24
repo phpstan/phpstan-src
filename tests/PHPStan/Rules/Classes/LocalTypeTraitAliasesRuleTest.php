@@ -6,6 +6,7 @@ use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
@@ -32,6 +33,7 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 					new ClassForbiddenNameCheck(self::getContainer()),
 				),
 				new UnresolvableTypeHelper(),
+				new GenericObjectTypeCheck(),
 				true,
 				true,
 				true,

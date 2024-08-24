@@ -96,3 +96,11 @@ class UnresolvableExample
 {
 
 }
+
+/**
+ * @phpstan-type A = \Exception<int>
+ */
+class GenericsCheck
+{
+
+}

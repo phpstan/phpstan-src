@@ -12,6 +12,7 @@ use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\CircularTypeAliasErrorType;
 use PHPStan\Type\ErrorType;
@@ -37,6 +38,7 @@ final class LocalTypeAliasesCheck
 		private TypeNodeResolver $typeNodeResolver,
 		private MissingTypehintCheck $missingTypehintCheck,
 		private ClassNameCheck $classCheck,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkMissingTypehints,
 		private bool $checkClassCaseSensitivity,
 		private bool $absentTypeChecks,
@@ -247,6 +249,12 @@ final class LocalTypeAliasesCheck
 						], $this->checkClassCaseSensitivity),
 					);
 				}
+			}
+
+			if ($this->unresolvableTypeHelper->containsUnresolvableType($resolvedType)) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s contains unresolvable type.', $aliasName))
+					->identifier('typeAlias.unresolvableType')
+					->build();
 			}
 		}
 

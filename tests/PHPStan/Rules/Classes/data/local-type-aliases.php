@@ -88,3 +88,11 @@ class NonexistentClasses
 {
 
 }
+
+/**
+ * @phpstan-type A = string&int
+ */
+class UnresolvableExample
+{
+
+}

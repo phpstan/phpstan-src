@@ -7,6 +7,7 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -31,6 +32,7 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
 					new ClassForbiddenNameCheck(self::getContainer()),
 				),
+				new UnresolvableTypeHelper(),
 				true,
 				true,
 				true,
@@ -130,6 +132,10 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 			[
 				'Class LocalTypeAliases\Foo referenced with incorrect case: LocalTypeAliases\fOO.',
 				87,
+			],
+			[
+				'Type alias A contains unresolvable type.',
+				95,
 			],
 		]);
 	}

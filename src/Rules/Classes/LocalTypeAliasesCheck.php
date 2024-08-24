@@ -8,12 +8,14 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\CircularTypeAliasErrorType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function in_array;
 use function sprintf;
@@ -28,6 +30,9 @@ final class LocalTypeAliasesCheck
 		private array $globalTypeAliases,
 		private ReflectionProvider $reflectionProvider,
 		private TypeNodeResolver $typeNodeResolver,
+		private MissingTypehintCheck $missingTypehintCheck,
+		private bool $checkMissingTypehints,
+		private bool $absentTypeChecks,
 	)
 	{
 	}
@@ -169,6 +174,47 @@ final class LocalTypeAliasesCheck
 
 				return $traverse($type);
 			});
+
+			if ($this->absentTypeChecks && !$foundError) {
+				if ($this->checkMissingTypehints) {
+					foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($resolvedType) as $iterableType) {
+						$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+						$errors[] = RuleErrorBuilder::message(sprintf(
+							'%s %s has type alias %s with no value type specified in iterable type %s.',
+							$reflection->getClassTypeDescription(),
+							$reflection->getDisplayName(),
+							$aliasName,
+							$iterableTypeDescription,
+						))
+							->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+							->identifier('missingType.iterableValue')
+							->build();
+					}
+
+					foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($resolvedType) as [$name, $genericTypeNames]) {
+						$errors[] = RuleErrorBuilder::message(sprintf(
+							'%s %s has type alias %s with generic %s but does not specify its types: %s',
+							$reflection->getClassTypeDescription(),
+							$reflection->getDisplayName(),
+							$aliasName,
+							$name,
+							implode(', ', $genericTypeNames),
+						))
+							->identifier('missingType.generics')
+							->build();
+					}
+
+					foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($resolvedType) as $callableType) {
+						$errors[] = RuleErrorBuilder::message(sprintf(
+							'%s %s has type alias %s with no signature specified for %s.',
+							$reflection->getClassTypeDescription(),
+							$reflection->getDisplayName(),
+							$aliasName,
+							$callableType->describe(VerbosityLevel::typeOnly()),
+						))->identifier('missingType.callable')->build();
+					}
+				}
+			}
 		}
 
 		return $errors;

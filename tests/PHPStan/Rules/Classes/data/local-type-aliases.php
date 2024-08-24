@@ -5,7 +5,7 @@ namespace LocalTypeAliases;
 class ExistingClassAlias {}
 
 /**
- * @phpstan-type ExportedTypeAlias \Countable&\Traversable
+ * @phpstan-type ExportedTypeAlias \Countable&\Traversable<int>
  */
 class Foo
 {
@@ -65,6 +65,16 @@ class Invalid
 
 /** @psalm-type MyObject = what{} */
 class InvalidTypeDefinitionToIgnoreBecauseItsAParseErrorAlreadyReportedInInvalidPhpDocTagValueRule
+{
+
+}
+
+/**
+ * @phpstan-type NoIterableValue = array
+ * @phpstan-type NoGenerics = Generic
+ * @phpstan-type NoCallable = array<callable>
+ */
+class MissingTypehints
 {
 
 }

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\PhpDoc\TypeNodeResolver;
+use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -20,6 +21,9 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 				['GlobalTypeAlias' => 'int|string'],
 				$this->createReflectionProvider(),
 				self::getContainer()->getByType(TypeNodeResolver::class),
+				new MissingTypehintCheck(true, true, true, true, []),
+				true,
+				true,
 			),
 		);
 	}
@@ -90,6 +94,19 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 			[
 				'Invalid type definition detected in type alias InvalidTypeAlias.',
 				62,
+			],
+			[
+				'Class LocalTypeAliases\MissingTypehints has type alias NoIterableValue with no value type specified in iterable type array.',
+				77,
+				'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type',
+			],
+			[
+				'Class LocalTypeAliases\MissingTypehints has type alias NoGenerics with generic class LocalTypeAliases\Generic but does not specify its types: T',
+				77,
+			],
+			[
+				'Class LocalTypeAliases\MissingTypehints has type alias NoCallable with no signature specified for callable.',
+				77,
 			],
 		]);
 	}

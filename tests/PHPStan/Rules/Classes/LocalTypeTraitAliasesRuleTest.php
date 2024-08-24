@@ -91,6 +91,11 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 				'Invalid type definition detected in type alias InvalidTypeAlias.',
 				62,
 			],
+			[
+				'Trait LocalTypeTraitAliases\MissingType has type alias NoIterablueValue with no value type specified in iterable type array.',
+				69,
+				'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type',
+			],
 		]);
 	}
 

@@ -913,6 +913,8 @@ services:
 		class: PHPStan\Rules\Classes\LocalTypeAliasesCheck
 		arguments:
 			globalTypeAliases: %typeAliases%
+			checkMissingTypehints: %checkMissingTypehints%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\Comparison\ConstantConditionRuleHelper

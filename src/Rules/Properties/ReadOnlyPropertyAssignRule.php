@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
@@ -24,6 +25,7 @@ class ReadOnlyPropertyAssignRule implements Rule
 	public function __construct(
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private ConstructorsHelper $constructorsHelper,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -76,9 +78,11 @@ class ReadOnlyPropertyAssignRule implements Rule
 				throw new ShouldNotHappenException();
 			}
 
+			$methodName = $scopeMethod->getName();
 			if (
-				in_array($scopeMethod->getName(), $this->constructorsHelper->getConstructors($scopeClassReflection), true)
-				|| strtolower($scopeMethod->getName()) === '__unserialize'
+				in_array($methodName, $this->constructorsHelper->getConstructors($scopeClassReflection), true)
+				|| strtolower($methodName) === '__unserialize'
+				|| ($this->phpVersion->supportsReadonlyPropertyReinitializationOnClone() && strtolower($methodName) === '__clone')
 			) {
 				if (TypeUtils::findThisType($scope->getType($propertyFetch->var)) === null) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is not assigned on $this.', $declaringClass->getDisplayName(), $propertyReflection->getName()))

@@ -327,4 +327,9 @@ class PhpVersion
 		return $this->versionId >= 80300;
 	}
 
+	public function supportsReadonlyPropertyReinitializationOnClone(): bool
+	{
+		return $this->versionId >= 80300;
+	}
+
 }

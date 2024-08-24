@@ -1732,7 +1732,7 @@ class ClassReflection
 	}
 
 	/**
-	 * @return array<PropertyTag>
+	 * @return array<string, PropertyTag>
 	 */
 	public function getPropertyTags(): array
 	{

@@ -49,6 +49,10 @@ rules:
 	- PHPStan\Rules\PhpDoc\RequireExtendsDefinitionTraitRule
 
 conditionalTags:
+	PHPStan\Rules\Classes\PropertyTagRule:
+		phpstan.rules.rule: %featureToggles.absentTypeChecks%
+	PHPStan\Rules\Classes\PropertyTagTraitRule:
+		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule:
 		phpstan.rules.rule: %featureToggles.closureDefaultParameterTypeRule%
 	PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule:
@@ -74,6 +78,12 @@ services:
 			absentTypeChecks: %featureToggles.absentTypeChecks%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Classes\PropertyTagRule
+
+	-
+		class: PHPStan\Rules\Classes\PropertyTagTraitRule
 
 	-
 		class: PHPStan\Rules\PhpDoc\RequireExtendsCheck

@@ -26,6 +26,10 @@ use PHPStan\Rules\Classes\ExistingClassInTraitUseRule;
 use PHPStan\Rules\Classes\LocalTypeAliasesCheck;
 use PHPStan\Rules\Classes\LocalTypeAliasesRule;
 use PHPStan\Rules\Classes\LocalTypeTraitAliasesRule;
+use PHPStan\Rules\Classes\MixinRule;
+use PHPStan\Rules\Classes\PropertyTagCheck;
+use PHPStan\Rules\Classes\PropertyTagRule;
+use PHPStan\Rules\Classes\PropertyTagTraitRule;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\FunctionDefinitionCheck;
@@ -231,6 +235,11 @@ final class StubValidator
 
 		if ((bool) $container->getParameter('featureToggles')['absentTypeChecks']) {
 			$rules[] = new MissingMethodSelfOutTypeRule($missingTypehintCheck);
+
+			$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true);
+			$rules[] = new PropertyTagRule($propertyTagCheck);
+			$rules[] = new PropertyTagTraitRule($propertyTagCheck, $reflectionProvider);
+			$rules[] = new MixinRule($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
 		}
 
 		return new DirectRuleRegistry($rules);

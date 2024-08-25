@@ -112,12 +112,28 @@ final class GenericAncestorsCheck
 			}
 
 			foreach ($ancestorType->getReferencedClasses() as $referencedClass) {
-				if ($this->reflectionProvider->hasClass($referencedClass)) {
+				if (!$this->reflectionProvider->hasClass($referencedClass)) {
+					$messages[] = RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))
+						->identifier('class.notFound')
+						->build();
+					continue;
+				}
+
+				if (!$this->absentTypeChecks) {
+					continue;
+				}
+
+				if ($referencedClass === $ancestorType->getClassName()) {
+					continue;
+				}
+
+				$classReflection = $this->reflectionProvider->getClass($referencedClass);
+				if (!$classReflection->isTrait()) {
 					continue;
 				}
 
 				$messages[] = RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))
-					->identifier('class.notFound')
+					->identifier('generics.trait')
 					->build();
 			}
 

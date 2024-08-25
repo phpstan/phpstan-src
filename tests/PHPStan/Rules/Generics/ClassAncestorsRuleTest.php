@@ -127,6 +127,10 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				'Call-site variance annotation of covariant Throwable in generic type ClassAncestorsExtends\FooGeneric<covariant Throwable, InvalidArgumentException> in PHPDoc tag @extends is not allowed.',
 				246,
 			],
+			[
+				'PHPDoc tag @extends has invalid type ClassAncestorsExtends\FooTrait.',
+				259,
+			],
 		]);
 	}
 

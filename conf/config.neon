@@ -918,6 +918,11 @@ services:
 			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
+		class: PHPStan\Rules\Classes\MethodTagCheck
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+
+	-
 		class: PHPStan\Rules\Classes\PropertyTagCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%

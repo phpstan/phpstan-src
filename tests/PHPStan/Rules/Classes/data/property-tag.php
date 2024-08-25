@@ -86,8 +86,3 @@ class NonexistentClasses
 {
 
 }
-
-
-// todo nonexistent class
-// todo trait
-// todo class name case

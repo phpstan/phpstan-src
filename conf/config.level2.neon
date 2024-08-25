@@ -49,6 +49,10 @@ rules:
 	- PHPStan\Rules\PhpDoc\RequireExtendsDefinitionTraitRule
 
 conditionalTags:
+	PHPStan\Rules\Classes\MethodTagRule:
+		phpstan.rules.rule: %featureToggles.absentTypeChecks%
+	PHPStan\Rules\Classes\MethodTagTraitRule:
+		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Classes\PropertyTagRule:
 		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Classes\PropertyTagTraitRule:
@@ -78,6 +82,12 @@ services:
 			absentTypeChecks: %featureToggles.absentTypeChecks%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Classes\MethodTagRule
+
+	-
+		class: PHPStan\Rules\Classes\MethodTagTraitRule
 
 	-
 		class: PHPStan\Rules\Classes\PropertyTagRule

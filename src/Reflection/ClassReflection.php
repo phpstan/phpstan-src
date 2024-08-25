@@ -1745,7 +1745,7 @@ class ClassReflection
 	}
 
 	/**
-	 * @return array<MethodTag>
+	 * @return array<string, MethodTag>
 	 */
 	public function getMethodTags(): array
 	{

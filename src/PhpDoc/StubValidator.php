@@ -26,6 +26,9 @@ use PHPStan\Rules\Classes\ExistingClassInTraitUseRule;
 use PHPStan\Rules\Classes\LocalTypeAliasesCheck;
 use PHPStan\Rules\Classes\LocalTypeAliasesRule;
 use PHPStan\Rules\Classes\LocalTypeTraitAliasesRule;
+use PHPStan\Rules\Classes\MethodTagCheck;
+use PHPStan\Rules\Classes\MethodTagRule;
+use PHPStan\Rules\Classes\MethodTagTraitRule;
 use PHPStan\Rules\Classes\MixinRule;
 use PHPStan\Rules\Classes\PropertyTagCheck;
 use PHPStan\Rules\Classes\PropertyTagRule;
@@ -235,6 +238,10 @@ final class StubValidator
 
 		if ((bool) $container->getParameter('featureToggles')['absentTypeChecks']) {
 			$rules[] = new MissingMethodSelfOutTypeRule($missingTypehintCheck);
+
+			$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true);
+			$rules[] = new MethodTagRule($methodTagCheck);
+			$rules[] = new MethodTagTraitRule($methodTagCheck, $reflectionProvider);
 
 			$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true);
 			$rules[] = new PropertyTagRule($propertyTagCheck);

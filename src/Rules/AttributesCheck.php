@@ -127,6 +127,7 @@ final class AttributesCheck
 				$nodeAttributes['isAttribute'] = true;
 
 				$parameterErrors = $this->functionCallParametersCheck->check(
+					$attributeConstructor,
 					ParametersAcceptorSelector::selectFromArgs(
 						$scope,
 						$attribute->args,

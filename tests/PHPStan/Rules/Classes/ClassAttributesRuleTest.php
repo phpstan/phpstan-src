@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
@@ -34,6 +35,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 					new PhpVersion(80000),
 					new UnresolvableTypeHelper(),
 					new PropertyReflectionFinder(),
+					self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
 					true,
 					true,
 					true,

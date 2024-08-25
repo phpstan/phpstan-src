@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\EnumCases;
 
+use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
@@ -33,6 +34,7 @@ class EnumCaseAttributesRuleTest extends RuleTestCase
 					new PhpVersion(80100),
 					new UnresolvableTypeHelper(),
 					new PropertyReflectionFinder(),
+					self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
 					true,
 					true,
 					true,

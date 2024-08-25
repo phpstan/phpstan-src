@@ -40,6 +40,7 @@ final class CallToFunctionParametersRule implements Rule
 		$functionName = SprintfHelper::escapeFormatString($function->getName());
 
 		return $this->check->check(
+			$function,
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),

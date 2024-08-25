@@ -192,6 +192,7 @@ final class InstantiationRule implements Rule
 		$classDisplayName = SprintfHelper::escapeFormatString($classReflection->getDisplayName());
 
 		return array_merge($messages, $this->check->check(
+			$constructorReflection,
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),

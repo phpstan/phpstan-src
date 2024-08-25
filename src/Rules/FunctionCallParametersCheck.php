@@ -6,7 +6,10 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -42,6 +45,7 @@ final class FunctionCallParametersCheck
 		private PhpVersion $phpVersion,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private ParameterClosureTypeExtensionProvider $parameterClosureTypeExtensionProvider,
 		private bool $checkArgumentTypes,
 		private bool $checkArgumentsPassedByReference,
 		private bool $checkExtraArguments,
@@ -52,12 +56,14 @@ final class FunctionCallParametersCheck
 	}
 
 	/**
+	 * @param MethodReflection|FunctionReflection|null $callReflection
 	 * @param Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall
 	 * @param array{0: string, 1: string, 2: string, 3: string, 4: string, 5: string, 6: string, 7: string, 8: string, 9: string, 10: string, 11: string, 12: string, 13?: string, 14?: string} $messages
 	 * @param 'attribute'|'callable'|'method'|'staticMethod'|'function'|'new' $nodeType
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
+		$callReflection,
 		ParametersAcceptor $parametersAcceptor,
 		Scope $scope,
 		bool $isBuiltin,
@@ -312,6 +318,17 @@ final class FunctionCallParametersCheck
 
 			if ($this->checkArgumentTypes) {
 				$parameterType = TypeUtils::resolveLateResolvableTypes($parameter->getType());
+
+				// TODO: handle other types of extensions
+				if ($funcCall instanceof Expr\FuncCall && $callReflection instanceof FunctionReflection) {
+					foreach ($this->parameterClosureTypeExtensionProvider->getFunctionParameterClosureTypeExtensions() as $functionParameterClosureTypeExtension) {
+						if (!$functionParameterClosureTypeExtension->isFunctionSupported($callReflection, $parameter)) {
+							continue;
+						}
+						$parameterType = $functionParameterClosureTypeExtension->getTypeFromFunctionCall($callReflection, $funcCall, $parameter, $scope) ?? $parameterType;
+
+					}
+				}
 
 				if (
 					!$parameter->passedByReference()->createsNewVariable()

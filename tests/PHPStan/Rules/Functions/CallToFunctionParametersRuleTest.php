@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
@@ -26,7 +27,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class), true, true, true, true, true),
 		);
 	}
 
@@ -658,19 +659,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/preg_replace_callback.php'], [
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(string): string given.',
+				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{string}): string, Closure(string): string given.',
 				6,
 			],
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(string): string given.',
+				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{string}): string, Closure(string): string given.',
 				13,
 			],
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(array): void given.',
+				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{string}): string, Closure(array): void given.',
 				20,
 			],
 			[
-				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(): void given.',
+				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{string}): string, Closure(): void given.',
 				25,
 			],
 		]);
@@ -1751,6 +1752,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testBug11506(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11506.php'], []);
+	}
+
+	public function testFunctionParameterClosureTypeExtension(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-parameter-closure-type-extension.php'], [
+			[
+				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{0: array{string, int<-1, max>}, 1?: array{\'\'|\'foo\', int<-1, max>}, 2?: array{\'\'|\'bar\', int<-1, max>}, 3?: array{\'baz\', int<-1, max>}}): string, Closure(array<int>): string given.',
+				44,
+			],
+		]);
 	}
 
 	public function testBug11559(): void

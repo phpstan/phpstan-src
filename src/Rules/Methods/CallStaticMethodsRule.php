@@ -54,6 +54,7 @@ final class CallStaticMethodsRule implements Rule
 		));
 
 		$errors = array_merge($errors, $this->parametersCheck->check(
+			$method,
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),

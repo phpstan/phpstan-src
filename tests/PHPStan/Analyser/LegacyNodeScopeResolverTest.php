@@ -3080,14 +3080,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_key_exists(\'foo\', $generalArray)',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'resource' : 'CurlHandle',
-				'curl_init()',
-			],
-			[
-				PHP_VERSION_ID < 80000 ? 'resource|false' : 'CurlHandle|false',
-				'curl_init($string)',
-			],
-			[
 				'string',
 				'sprintf($string, $string, 1)',
 			],

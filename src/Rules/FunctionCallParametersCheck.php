@@ -7,6 +7,8 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -20,6 +22,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ParameterClosureTypeHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
@@ -42,6 +45,7 @@ final class FunctionCallParametersCheck
 		private PhpVersion $phpVersion,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private ParameterClosureTypeHelper $parameterClosureTypeHelper,
 		private bool $checkArgumentTypes,
 		private bool $checkArgumentsPassedByReference,
 		private bool $checkExtraArguments,
@@ -55,6 +59,7 @@ final class FunctionCallParametersCheck
 	 * @param Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall
 	 * @param array{0: string, 1: string, 2: string, 3: string, 4: string, 5: string, 6: string, 7: string, 8: string, 9: string, 10: string, 11: string, 12: string, 13?: string, 14?: string} $messages
 	 * @param 'attribute'|'callable'|'method'|'staticMethod'|'function'|'new' $nodeType
+	 * @param MethodReflection|FunctionReflection|null $callReflection
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
@@ -65,6 +70,7 @@ final class FunctionCallParametersCheck
 		array $messages,
 		string $nodeType = 'function',
 		bool $acceptsNamedArguments = true,
+		$callReflection = null,
 	): array
 	{
 		$functionParametersMinCount = 0;
@@ -309,7 +315,13 @@ final class FunctionCallParametersCheck
 			}
 
 			if ($this->checkArgumentTypes) {
-				$parameterType = TypeUtils::resolveLateResolvableTypes($parameter->getType());
+				$parameterType = $this->parameterClosureTypeHelper->getParameterTypeFromParameterClosureTypeExtension(
+					$funcCall,
+					$callReflection,
+					$parameter,
+					$scope,
+				) ?? $parameter->getType();
+				$parameterType = TypeUtils::resolveLateResolvableTypes($parameterType);
 
 				if (
 					!$parameter->passedByReference()->createsNewVariable()

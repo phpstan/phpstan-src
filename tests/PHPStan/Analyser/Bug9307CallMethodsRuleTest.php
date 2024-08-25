@@ -12,6 +12,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\ParameterClosureTypeHelper;
 use const PHP_VERSION_ID;
 
 /**
@@ -26,7 +27,19 @@ class Bug9307CallMethodsRuleTest extends RuleTestCase
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, true, false, true, false);
 		return new CallMethodsRule(
 			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(PHP_VERSION_ID), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
+			new FunctionCallParametersCheck(
+				$ruleLevelHelper,
+				new NullsafeCheck(),
+				new PhpVersion(PHP_VERSION_ID),
+				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
+				self::getContainer()->getByType(ParameterClosureTypeHelper::class),
+				true,
+				true,
+				true,
+				true,
+				true,
+			),
 		);
 	}
 

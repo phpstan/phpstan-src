@@ -220,6 +220,7 @@ final class InstantiationRule implements Rule
 			],
 			'new',
 			$constructorReflection->acceptsNamedArguments(),
+			$constructorReflection,
 		));
 	}
 

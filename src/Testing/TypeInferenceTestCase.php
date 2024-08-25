@@ -9,7 +9,6 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
-use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SystemAgnosticSimpleRelativePathHelper;
@@ -22,6 +21,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\ParameterClosureTypeHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use Symfony\Component\Finder\Finder;
@@ -75,7 +75,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$typeSpecifier,
 			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
-			self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
+			self::getContainer()->getByType(ParameterClosureTypeHelper::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			self::getContainer()->getParameter('polluteScopeWithLoopInitialAssignments'),
 			self::getContainer()->getParameter('polluteScopeWithAlwaysIterableForeach'),

@@ -10,6 +10,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\ParameterClosureTypeHelper;
 use const PHP_VERSION_ID;
 
 /**
@@ -21,7 +22,22 @@ class CallUserFuncRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		return new CallUserFuncRule($reflectionProvider, new FunctionCallParametersCheck(new RuleLevelHelper($reflectionProvider, true, false, true, true, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true));
+		return new CallUserFuncRule(
+			$reflectionProvider,
+			new FunctionCallParametersCheck(
+				new RuleLevelHelper($reflectionProvider, true, false, true, true, false, true, false),
+				new NullsafeCheck(),
+				new PhpVersion(80000),
+				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
+				self::getContainer()->getByType(ParameterClosureTypeHelper::class),
+				true,
+				true,
+				true,
+				true,
+				true,
+			),
+		);
 	}
 
 	public function testRule(): void

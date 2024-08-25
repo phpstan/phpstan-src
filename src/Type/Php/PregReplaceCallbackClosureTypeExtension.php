@@ -8,7 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\ClosureType;
+use PHPStan\Type\CallableType;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -49,7 +49,7 @@ final class PregReplaceCallbackClosureTypeExtension implements FunctionParameter
 			return null;
 		}
 
-		return new ClosureType(
+		return new CallableType(
 			[
 				new NativeParameterReflection($parameter->getName(), $parameter->isOptional(), $matchesType, $parameter->passedByReference(), $parameter->isVariadic(), $parameter->getDefaultValue()),
 			],

@@ -994,6 +994,7 @@ services:
 		arguments:
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\Generics\GenericObjectTypeCheck

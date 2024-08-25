@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -18,8 +19,10 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(true, true),
+				new UnresolvableTypeHelper(),
 				true,
 				[],
+				true,
 			),
 			new CrossCheckInterfacesHelper(),
 		);
@@ -267,6 +270,16 @@ class ClassAncestorsRuleTest extends RuleTestCase
 	public function testBug8473(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8473.php'], []);
+	}
+
+	public function testBug11552(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11552.php'], [
+			[
+				'Class Bug11552\SomeResult @extends tag contains unresolvable type.',
+				17,
+			],
+		]);
 	}
 
 }

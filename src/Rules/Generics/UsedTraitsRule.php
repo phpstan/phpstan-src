@@ -68,6 +68,7 @@ final class UsedTraitsRule implements Rule
 			$node->traits,
 			array_map(static fn (UsesTag $tag): Type => $tag->getType(), $useTags),
 			sprintf('%s @use tag contains incompatible type %%s.', ucfirst($description)),
+			sprintf('%s @use tag contains unresolvable type.', ucfirst($description)),
 			sprintf('%s has @use tag, but does not use any trait.', ucfirst($description)),
 			sprintf('The @use tag of %s describes %%s but the %s uses %%s.', $description, $typeDescription),
 			'PHPDoc tag @use contains generic type %s but %s %s is not generic.',

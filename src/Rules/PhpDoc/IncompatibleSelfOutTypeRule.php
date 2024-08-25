@@ -66,7 +66,7 @@ final class IncompatibleSelfOutTypeRule implements Rule
 				'PHPDoc tag @phpstan-self-out for method %s::%s() contains unresolvable type.',
 				$classReflection->getDisplayName(),
 				$method->getName(),
-			))->identifier('parameter.unresolvableType')->build();
+			))->identifier('selfOut.unresolvableType')->build();
 		}
 
 		$escapedTagName = SprintfHelper::escapeFormatString('@phpstan-self-out');

@@ -317,13 +317,13 @@ final class FunctionCallParametersCheck
 			}
 
 			if ($this->checkArgumentTypes) {
-				$parameterType = TypeUtils::resolveLateResolvableTypes($parameter->getType());
 				$parameterType = $this->parameterClosureTypeHelper->getParameterTypeFromParameterClosureTypeExtension(
 					$funcCall,
 					$callReflection,
 					$parameter,
 					$scope,
-				) ?? $parameterType;
+				) ?? $parameter->getType();
+				$parameterType = TypeUtils::resolveLateResolvableTypes($parameterType);
 
 				if (
 					!$parameter->passedByReference()->createsNewVariable()

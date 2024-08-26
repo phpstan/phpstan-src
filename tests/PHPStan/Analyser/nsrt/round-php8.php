@@ -10,8 +10,8 @@ if (rand(0, 1)) {
 }
 
 // Round
-assertType('float', round(123));
-assertType('float', round(123.456));
+assertType('123.0', round(123));
+assertType('123.0', round(123.456));
 assertType('float', round($_GET['foo'] / 60));
 assertType('float', round('123'));
 assertType('float', round('123.456'));
@@ -27,8 +27,8 @@ assertType('*NEVER*', round());
 assertType('float', round($_GET['foo']));
 
 // Ceil
-assertType('float', ceil(123));
-assertType('float', ceil(123.456));
+assertType('123.0', ceil(123));
+assertType('124.0', ceil(123.456));
 assertType('float', ceil($_GET['foo'] / 60));
 assertType('float', ceil('123'));
 assertType('float', ceil('123.456'));
@@ -44,8 +44,8 @@ assertType('*NEVER*', ceil());
 assertType('float', ceil($_GET['foo']));
 
 // Floor
-assertType('float', floor(123));
-assertType('float', floor(123.456));
+assertType('123.0', floor(123));
+assertType('123.0', floor(123.456));
 assertType('float', floor($_GET['foo'] / 60));
 assertType('float', floor('123'));
 assertType('float', floor('123.456'));
@@ -86,15 +86,51 @@ function g(float $n,float $m ,float $p , float $q): void
 	assertType('2.0|3.0', round($q,mode:PHP_ROUND_HALF_UP));
 	assertType('1.0|2.0', round($q,mode:PHP_ROUND_HALF_DOWN));
 
-//	assertType(3,round(3.4));
-//	assertType(4,round(3.5));
-//	assertType(4,round(3.6));
-//	assertType(4.round(3.6, 0));
-//	assertType(5.05.round(5.045, 2));
-//	assertType(5.06round(5.055, 2));
-//	assertType(round(300,345, -2));
-//	assertType(round(0,345, -3));
-//	assertType(round(700,678, -2));
-//	assertType(round(1000,678, -3));
-//	assertType('float', round($n,2,3));
+	assertType('3.0', round(3.4));
+	assertType('4.0', round(3.5));
+	assertType('4.0', round(3.6));
+	assertType('4.0', round(3.6, 0));
+	assertType('5.05', round(5.045, 2));
+	assertType('5.06', round(5.055, 2));
+	assertType('300.0', round(345, -2));
+	assertType('0.0', round(345, -3));
+	assertType('700.0', round(678, -2));
+	assertType('1000.0', round(678, -3));
+
+	$number = 135.79;
+	assertType('135.79', round($number, 3));
+	assertType('135.79', round($number, 2));
+	assertType('135.8', round($number, 1));
+	assertType('136.0', round($number, 0));
+	assertType('140.0', round($number, -1));
+	assertType('100.0', round($number, -2));
+	assertType('0.0', round($number, -3));
+
+	// Rounding modes with 9.5
+	assertType('10.0', round(9.5, 0, PHP_ROUND_HALF_UP));
+	assertType('9.0', round(9.5, 0, PHP_ROUND_HALF_DOWN));
+	assertType('10.0', round(9.5, 0, PHP_ROUND_HALF_EVEN));
+	assertType('9.0', round(9.5, 0, PHP_ROUND_HALF_ODD));
+
+	// Rounding modes with 8.5
+	assertType('9.0', round(8.5, 0, PHP_ROUND_HALF_UP));
+	assertType('8.0', round(8.5, 0, PHP_ROUND_HALF_DOWN));
+	assertType('8.0', round(8.5, 0, PHP_ROUND_HALF_EVEN));
+	assertType('9.0', round(8.5, 0, PHP_ROUND_HALF_ODD));
+
+	// Using PHP_ROUND_HALF_UP with 1 decimal digit precision
+	assertType('1.6', round( 1.55, 1, PHP_ROUND_HALF_UP));
+	assertType('-1.6', round(-1.55, 1, PHP_ROUND_HALF_UP));
+
+	// Using PHP_ROUND_HALF_DOWN with 1 decimal digit precision
+	assertType('1.5', round( 1.55, 1, PHP_ROUND_HALF_DOWN));
+	assertType('-1.5', round(-1.55, 1, PHP_ROUND_HALF_DOWN));
+
+	// Using PHP_ROUND_HALF_EVEN with 1 decimal digit precision
+	assertType('1.6', round( 1.55, 1, PHP_ROUND_HALF_EVEN));
+	assertType('-1.6', round(-1.55, 1, PHP_ROUND_HALF_EVEN));
+
+	// Using PHP_ROUND_HALF_ODD with 1 decimal digit precision
+	assertType('1.5', round( 1.55, 1, PHP_ROUND_HALF_ODD));
+	assertType('-1.5', round(-1.55, 1, PHP_ROUND_HALF_ODD));
 }

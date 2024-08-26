@@ -151,10 +151,9 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				$precisionArg = $args[1]->value;
 				$precisionType = $scope->getType($precisionArg);
 				$precisions = $precisionType->getConstantScalarValues();
-				if (count($precisions) !== 1) {
+				if (count($precisions) !== 1 || !is_int($precisions[0])) {
 					return null;
 				}
-
 				$precision = $precisions[0];
 			} else {
 				$precision = 0;
@@ -168,7 +167,7 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			$modeType = $scope->getType($modeArg);
 			$mode = $modeType->getConstantScalarValues();
 
-			if (count($mode) === 1) {
+			if (count($mode) === 1 && is_int($mode[0])) {
 				return static fn ($name) => round($name, $precision, $mode[0]);
 			}
 		}

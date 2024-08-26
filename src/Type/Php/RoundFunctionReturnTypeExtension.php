@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use Closure;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
@@ -20,13 +21,14 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\UnionType;
+use function array_map;
+use function ceil;
 use function count;
+use function floor;
 use function in_array;
-use function OffsetAccessLegal\float;
-use function is_int;
 use function is_float;
+use function is_int;
+use function round;
 
 final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -69,7 +71,6 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			return $noArgsReturnType;
 		}
 
-
 		$argType = $scope->getType($args[0]->value);
 
 		$functionName = $functionReflection->getName();
@@ -78,7 +79,7 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		if ($proc !== null) {
 			$constantScalarValues = $argType->getConstantScalarValues();
-			$rv = array();
+			$rv = [];
 
 			foreach ($constantScalarValues as $constantScalarValue) {
 
@@ -92,13 +93,12 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				$rv[] = new ConstantFloatType($value);
 			}
 
-			if (count($rv) > 1) {
+			if (count($rv) >= 1) {
 
 				$rvUnion = TypeCombinator::union(...array_map(static fn ($l) => $l, $rv));
 				return $rvUnion;
 			}
 		}
-
 
 		//最初の引数のTypeを取得
 		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
@@ -130,14 +130,11 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				);
 			}
 
-
-
 			//スーパータイプではないなら、NeverTypeを返す
 			if ($allowed->isSuperTypeOf($firstArgType)->no()) {
 				// PHP 8 fatals if the parameter is not an integer or float.
 				return new NeverType(true);
 			}
-
 
 		} elseif ($firstArgType->isArray()->yes()) {
 			// PHP 7 returns false if the parameter is an array.
@@ -149,50 +146,46 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 	}
 
 	/**
-	 * @param string $functionName
 	 * @param array $args
-	 * @param Scope $scope
-	 * @return \Closure
 	 */
-	public function getProc(string $functionName, array $args, Scope $scope): ?\Closure
+	public function getProc(string $functionName, array $args, Scope $scope): ?Closure
 	{
-		if ($functionName == "floor") {
-			return fn($name) => floor($name);
+		if ($functionName === 'floor') {
+			return static fn ($name) => floor($name);
 		}
-		if ($functionName == "ceil") {
-			return  fn($name) => ceil($name);
+		if ($functionName === 'ceil') {
+			return static fn ($name) => ceil($name);
 		}
 		if ($functionName === 'round') {
-			if (count($args) == 1) {
-				return  fn($name) => round($name);
+			if (count($args) === 1) {
+				return static fn ($name) => round($name);
 			}
 			if (isset($args[1]->value)) {
 				$precisionArg = $args[1]->value;
 				$precisionType = $scope->getType($precisionArg);
 				$precisions = $precisionType->getConstantScalarValues();
-				if (count($precisions) == 1) {
-					$precision = $precisions[0];
-				}
-				else{
+				if (count($precisions) !== 1) {
 					return null;
 				}
+
+				$precision = $precisions[0];
 			} else {
 				$precision = 0;
 			}
 
-			if (isset($args[2]->value)) {
-				$modeArg = $args[2]->value;
-				$modeType = $scope->getType($modeArg);
-				$mode = $modeType->getConstantScalarValues();
-
-				if (count($mode) == 1) {
-					return fn($name) => round($name, $precision, $mode[0]);
-				}
+			if (!isset($args[2]->value)) {
+				return static fn ($name) => round($name, $precision);
 			}
-			else{
-				return fn($name) => round($name, $precision);
+
+			$modeArg = $args[2]->value;
+			$modeType = $scope->getType($modeArg);
+			$mode = $modeType->getConstantScalarValues();
+
+			if (count($mode) === 1) {
+				return static fn ($name) => round($name, $precision, $mode[0]);
 			}
 		}
 		return null;
 	}
+
 }

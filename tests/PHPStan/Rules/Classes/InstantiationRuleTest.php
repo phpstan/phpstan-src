@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Classes;
 
-use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -14,6 +13,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\ParameterClosureTypeHelper;
 use const PHP_VERSION_ID;
 
 /**
@@ -27,7 +27,19 @@ class InstantiationRuleTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 		return new InstantiationRule(
 			$reflectionProvider,
-			new FunctionCallParametersCheck(new RuleLevelHelper($reflectionProvider, true, false, true, false, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class), true, true, true, true, true),
+			new FunctionCallParametersCheck(
+				new RuleLevelHelper($reflectionProvider, true, false, true, false, false, true, false),
+				new NullsafeCheck(),
+				new PhpVersion(80000),
+				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
+				self::getContainer()->getByType(ParameterClosureTypeHelper::class),
+				true,
+				true,
+				true,
+				true,
+				true,
+			),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
 				new ClassForbiddenNameCheck(self::getContainer()),

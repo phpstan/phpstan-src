@@ -4,13 +4,8 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\CallLike;
-use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
@@ -27,6 +22,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ParameterClosureTypeHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
@@ -49,7 +45,7 @@ final class FunctionCallParametersCheck
 		private PhpVersion $phpVersion,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private PropertyReflectionFinder $propertyReflectionFinder,
-		private ParameterClosureTypeExtensionProvider $parameterClosureTypeExtensionProvider,
+		private ParameterClosureTypeHelper $parameterClosureTypeHelper,
 		private bool $checkArgumentTypes,
 		private bool $checkArgumentsPassedByReference,
 		private bool $checkExtraArguments,
@@ -322,7 +318,7 @@ final class FunctionCallParametersCheck
 
 			if ($this->checkArgumentTypes) {
 				$parameterType = TypeUtils::resolveLateResolvableTypes($parameter->getType());
-				$parameterType = $this->getParameterTypeFromParameterClosureTypeExtension(
+				$parameterType = $this->parameterClosureTypeHelper->getParameterTypeFromParameterClosureTypeExtension(
 					$funcCall,
 					$callReflection,
 					$parameter,
@@ -647,36 +643,6 @@ final class FunctionCallParametersCheck
 		}
 
 		return implode(' ', $parts);
-	}
-
-	/**
-	 * @param MethodReflection|FunctionReflection|null $calleeReflection
-	 */
-	private function getParameterTypeFromParameterClosureTypeExtension(CallLike $callLike, $calleeReflection, ParameterReflection $parameter, Scope $scope): ?Type
-	{
-		if ($callLike instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
-			foreach ($this->parameterClosureTypeExtensionProvider->getFunctionParameterClosureTypeExtensions() as $functionParameterClosureTypeExtension) {
-				if ($functionParameterClosureTypeExtension->isFunctionSupported($calleeReflection, $parameter)) {
-					return $functionParameterClosureTypeExtension->getTypeFromFunctionCall($calleeReflection, $callLike, $parameter, $scope);
-				}
-			}
-		} elseif ($calleeReflection instanceof MethodReflection) {
-			if ($callLike instanceof StaticCall) {
-				foreach ($this->parameterClosureTypeExtensionProvider->getStaticMethodParameterClosureTypeExtensions() as $staticMethodParameterClosureTypeExtension) {
-					if ($staticMethodParameterClosureTypeExtension->isStaticMethodSupported($calleeReflection, $parameter)) {
-						return $staticMethodParameterClosureTypeExtension->getTypeFromStaticMethodCall($calleeReflection, $callLike, $parameter, $scope);
-					}
-				}
-			} elseif ($callLike instanceof MethodCall) {
-				foreach ($this->parameterClosureTypeExtensionProvider->getMethodParameterClosureTypeExtensions() as $methodParameterClosureTypeExtension) {
-					if ($methodParameterClosureTypeExtension->isMethodSupported($calleeReflection, $parameter)) {
-						return $methodParameterClosureTypeExtension->getTypeFromMethodCall($calleeReflection, $callLike, $parameter, $scope);
-					}
-				}
-			}
-		}
-
-		return null;
 	}
 
 }

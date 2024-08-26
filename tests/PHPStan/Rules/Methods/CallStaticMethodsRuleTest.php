@@ -22,6 +22,7 @@ use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\ParameterClosureTypeHelper;
 use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -62,52 +63,54 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				new PhpVersion(80000),
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
-				new class implements ParameterClosureTypeExtensionProvider
-				{
-
-					public function getFunctionParameterClosureTypeExtensions(): array
+				new ParameterClosureTypeHelper(
+					new class implements ParameterClosureTypeExtensionProvider
 					{
-						return [];
-					}
 
-					public function getMethodParameterClosureTypeExtensions(): array
-					{
-						return [];
-					}
+						public function getFunctionParameterClosureTypeExtensions(): array
+						{
+							return [];
+						}
 
-					public function getStaticMethodParameterClosureTypeExtensions(): array
-					{
-						return [
-							new class implements StaticMethodParameterClosureTypeExtension
-							{
+						public function getMethodParameterClosureTypeExtensions(): array
+						{
+							return [];
+						}
 
-								public function isStaticMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool
+						public function getStaticMethodParameterClosureTypeExtensions(): array
+						{
+							return [
+								new class implements StaticMethodParameterClosureTypeExtension
 								{
-									return $methodReflection->getName() === 'foo' && $methodReflection->getDeclaringClass()->getName() === 'StaticMethodParameterClosureTypeExtension\\Foo';
-								}
 
-								public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, ParameterReflection $parameter, Scope $scope): Type
-								{
-									return new ClosureType(
-										[
-											new NativeParameterReflection(
-												$parameter->getName(),
-												$parameter->isOptional(),
-												TypeCombinator::union(new ConstantIntegerType(5), new ConstantIntegerType(7)),
-												$parameter->passedByReference(),
-												$parameter->isVariadic(),
-												$parameter->getDefaultValue(),
-											),
-										],
-										new IntegerType(),
-									);
-								}
+									public function isStaticMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool
+									{
+										return $methodReflection->getName() === 'foo' && $methodReflection->getDeclaringClass()->getName() === 'StaticMethodParameterClosureTypeExtension\\Foo';
+									}
 
-							},
-						];
-					}
+									public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, ParameterReflection $parameter, Scope $scope): Type
+									{
+										return new ClosureType(
+											[
+												new NativeParameterReflection(
+													$parameter->getName(),
+													$parameter->isOptional(),
+													TypeCombinator::union(new ConstantIntegerType(5), new ConstantIntegerType(7)),
+													$parameter->passedByReference(),
+													$parameter->isVariadic(),
+													$parameter->getDefaultValue(),
+												),
+											],
+											new IntegerType(),
+										);
+									}
 
-				},
+								},
+							];
+						}
+
+					},
+				),
 				true,
 				true,
 				true,

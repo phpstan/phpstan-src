@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Functions;
 
-use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
@@ -11,6 +10,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\ParameterClosureTypeHelper;
 use const PHP_VERSION_ID;
 
 /**
@@ -31,7 +31,7 @@ class CallCallablesRuleTest extends RuleTestCase
 				new PhpVersion(80000),
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
-				self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
+				self::getContainer()->getByType(ParameterClosureTypeHelper::class),
 				true,
 				true,
 				true,

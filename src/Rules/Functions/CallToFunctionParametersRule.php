@@ -40,7 +40,6 @@ final class CallToFunctionParametersRule implements Rule
 		$functionName = SprintfHelper::escapeFormatString($function->getName());
 
 		return $this->check->check(
-			$function,
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),
@@ -69,6 +68,7 @@ final class CallToFunctionParametersRule implements Rule
 			],
 			'function',
 			$function->acceptsNamedArguments(),
+			$function,
 		);
 	}
 

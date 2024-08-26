@@ -46,7 +46,6 @@ final class CallMethodsRule implements Rule
 		$messagesMethodName = SprintfHelper::escapeFormatString($declaringClass->getDisplayName() . '::' . $methodReflection->getName() . '()');
 
 		return array_merge($errors, $this->parametersCheck->check(
-			$methodReflection,
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),
@@ -75,6 +74,7 @@ final class CallMethodsRule implements Rule
 			],
 			'method',
 			$methodReflection->acceptsNamedArguments(),
+			$methodReflection,
 		));
 	}
 

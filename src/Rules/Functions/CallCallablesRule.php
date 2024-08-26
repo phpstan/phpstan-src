@@ -113,7 +113,6 @@ final class CallCallablesRule implements Rule
 		return array_merge(
 			$messages,
 			$this->check->check(
-				null,
 				$parametersAcceptor,
 				$scope,
 				false,

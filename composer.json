@@ -111,7 +111,8 @@
 				"patches/DependencyChecker.patch"
 			],
 			"nette/neon": [
-				"patches/NetteNeonStringNode.patch"
+				"patches/NetteNeonStringNode.patch",
+				"patches/NeonParser.patch"
 			]
 		}
 	},

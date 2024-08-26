@@ -13,6 +13,8 @@ use PHPStan\Type\ConstantScalarType;
 use function array_keys;
 use function count;
 use function implode;
+use function is_float;
+use function key;
 use function max;
 use function sprintf;
 use function var_export;
@@ -85,23 +87,24 @@ class DuplicateKeysInLiteralArraysRule implements Rule
 			}
 
 			$value = $keyType->getValue();
+			$index = is_float($value) ? (int) $value : key([$value => null]);
 			$printedValue = $key !== null
 				? $this->exprPrinter->printExpr($key)
 				: $value;
 
-			$printedValues[$value][] = $printedValue;
+			$printedValues[$index][] = $printedValue;
 
-			if (!isset($valueLines[$value])) {
-				$valueLines[$value] = $item->getStartLine();
+			if (!isset($valueLines[$index])) {
+				$valueLines[$index] = $item->getStartLine();
 			}
 
 			$previousCount = count($values);
-			$values[$value] = $printedValue;
+			$values[$index] = $printedValue;
 			if ($previousCount !== count($values)) {
 				continue;
 			}
 
-			$duplicateKeys[$value] = true;
+			$duplicateKeys[$index] = true;
 		}
 
 		$messages = [];

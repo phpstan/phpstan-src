@@ -13,4 +13,13 @@ $a = [
 	new \DateTimeImmutable() => 'aaa',
 	[] => 'bbb',
 	$stringOrObject => 'aaa',
+	1.0 => 'aaa',
+	$mixed => 'aaa',
+];
+
+/** @var float|null $floatOrNull */
+$floatOrNull = null;
+
+$b = [
+	$floatOrNull => 'aaa',
 ];

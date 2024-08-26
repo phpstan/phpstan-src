@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -22,6 +23,7 @@ class InvalidKeyInArrayDimFetchRule implements Rule
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
 		private bool $reportMaybes,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -54,15 +56,34 @@ class InvalidKeyInArrayDimFetchRule implements Rule
 		}
 
 		$isSuperType = AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimensionType);
-		if ($isSuperType->yes() || ($isSuperType->maybe() && !$this->reportMaybes)) {
-			return [];
+		$isOk = $isSuperType->yes() || ($isSuperType->maybe() && !$this->reportMaybes);
+		if (!$isOk) {
+			return [
+				RuleErrorBuilder::message(
+					sprintf('%s array key type %s.', $isSuperType->no() ? 'Invalid' : 'Possibly invalid', $dimensionType->describe(VerbosityLevel::typeOnly())),
+				)->identifier('offsetAccess.invalidOffset')->build(),
+			];
 		}
 
-		return [
-			RuleErrorBuilder::message(
-				sprintf('%s array key type %s.', $isSuperType->no() ? 'Invalid' : 'Possibly invalid', $dimensionType->describe(VerbosityLevel::typeOnly())),
-			)->identifier('offsetAccess.invalidOffset')->build(),
-		];
+		if ($this->phpVersion->getVersionId() >= 80100) {
+			$isFloat = $dimensionType->isFloat();
+
+			if ($isFloat->yes()) {
+				return [
+					RuleErrorBuilder::message(
+						'Float used as array key, this emits deprecation notice.',
+					)->identifier('array.invalidOffset')->build(),
+				];
+			} elseif ($this->reportMaybes && $isFloat->maybe()) {
+				return [
+					RuleErrorBuilder::message(
+						'Float possibly used as array key, this emits deprecation notice.',
+					)->identifier('array.invalidOffset')->build(),
+				];
+			}
+		}
+
+		return [];
 	}
 
 }

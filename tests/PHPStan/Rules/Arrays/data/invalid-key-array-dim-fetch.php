@@ -46,3 +46,8 @@ $array[new \DateTimeImmutable()][5];
 $array[5][new \DateTimeImmutable()];
 $array[new \stdClass()][new \DateTimeImmutable()];
 $array[new \DateTimeImmutable()][] = 5;
+
+/** @var float|null $floatOrNull */
+$floatOrNull = null;
+$a[$floatOrNull];
+$a[$mixed];

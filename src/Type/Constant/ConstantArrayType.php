@@ -387,6 +387,25 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$results[] = $isValueSuperType;
 			}
 
+			if (
+				$this->isList->yes()
+				&& $type->isList->yes()
+				&& count($this->keyTypes) !== count($type->keyTypes)
+				&& count($type->optionalKeys) === 0
+			) {
+				$keepSeparate = true;
+				foreach ($this->valueTypes as $valueType) {
+					if ($valueType->isConstantValue()->yes()) {
+						$keepSeparate = false;
+						break;
+					}
+				}
+
+				if ($keepSeparate) {
+					return TrinaryLogic::createNo();
+				}
+			}
+
 			return TrinaryLogic::createYes()->and(...$results);
 		}
 

@@ -1,6 +1,6 @@
-<?php // lint < 8.4
+<?php // lint >= 8.4
 
-namespace Pr1244;
+namespace Pr1244Php84;
 
 use function PHPStan\Testing\assertType;
 
@@ -13,9 +13,9 @@ function foo() {
 	assertType('null', var_export($string, false));
 	assertType('string', var_export($string, true));
 
-	assertType('bool', highlight_string());
-	assertType('bool', highlight_string($string));
-	assertType('bool', highlight_string($string, false));
+	assertType('true', highlight_string());
+	assertType('true', highlight_string($string));
+	assertType('true', highlight_string($string, false));
 	assertType('string', highlight_string($string, true));
 
 	assertType('bool', highlight_file());

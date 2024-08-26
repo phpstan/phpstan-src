@@ -1498,6 +1498,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\HighlightStringDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\IntdivThrowTypeExtension
 		tags:
 			- phpstan.dynamicFunctionThrowTypeExtension

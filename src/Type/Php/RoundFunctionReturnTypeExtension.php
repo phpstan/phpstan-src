@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Php;
 
-use Closure;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
@@ -71,32 +70,15 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			return $noArgsReturnType;
 		}
 
-		$argType = $scope->getType($args[0]->value);
-		$functionName = $functionReflection->getName();
-		$proc = $this->getProc($functionName, $args, $scope);
-
-		if ($proc !== null) {
-			$constantScalarValues = $argType->getConstantScalarValues();
-			$returnValueTypes = [];
-
-			foreach ($constantScalarValues as $constantScalarValue) {
-				if (!is_int($constantScalarValue) && !is_float($constantScalarValue)) {
-					$returnValueTypes = [];
-					break;
-				}
-
-				$returnValueTypes[] = new ConstantFloatType($proc($constantScalarValue));
-			}
-
-			if (count($returnValueTypes) >= 1) {
-				return TypeCombinator::union(...array_map(static fn ($l) => $l, $returnValueTypes));
-			}
-		}
-
-		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
-
+		$firstArgType = $scope->getType($args[0]->value);
 		if ($firstArgType instanceof MixedType) {
 			return $defaultReturnType;
+		}
+
+		$functionName = $functionReflection->getName();
+		$returnConstantType = $this->resolveConstantType($functionName, $args, $scope, $firstArgType);
+		if ($returnConstantType !== null) {
+			return $returnConstantType;
 		}
 
 		if ($this->phpVersion->hasStricterRoundFunctions()) {
@@ -133,46 +115,64 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 	/**
 	 * @param Arg[] $args
 	 */
-	public function getProc(string $functionName, array $args, Scope $scope): ?Closure
+	public function resolveConstantType(string $functionName, array $args, Scope $scope, Type $argType): ?Type
 	{
+		$proc = null;
+
 		if ($functionName === 'floor') {
-			return static fn ($name) => floor($name);
-		}
-
-		if ($functionName === 'ceil') {
-			return static fn ($name) => ceil($name);
-		}
-
-		if ($functionName === 'round') {
+			$proc = static fn ($name) => floor($name);
+		} elseif ($functionName === 'ceil') {
+			$proc = static fn ($name) => ceil($name);
+		} elseif ($functionName === 'round') {
 			if (count($args) === 1) {
-				return static fn ($name) => round($name);
-			}
-			if (isset($args[1]->value)) {
-				$precisionArg = $args[1]->value;
-				$precisionType = $scope->getType($precisionArg);
-				$precisions = $precisionType->getConstantScalarValues();
-				if (count($precisions) !== 1 || !is_int($precisions[0])) {
-					return null;
-				}
-				$precision = $precisions[0];
+				$proc = static fn ($name) => round($name);
 			} else {
-				$precision = 0;
+				if (isset($args[1]->value)) {
+					$precisionArg = $args[1]->value;
+					$precisionType = $scope->getType($precisionArg);
+					$precisions = $precisionType->getConstantScalarValues();
+					if (count($precisions) !== 1 || !is_int($precisions[0])) {
+						return null;
+					}
+					$precision = $precisions[0];
+				} else {
+					$precision = 0;
+				}
+
+				if (!isset($args[2]->value)) {
+					$proc = static fn ($name) => round($name, $precision);
+				} else {
+					$modeArg = $args[2]->value;
+					$modeType = $scope->getType($modeArg);
+					$mode = $modeType->getConstantScalarValues();
+
+					if (count($mode) === 1 && is_int($mode[0])) {
+						$proc = static fn ($name) => round($name, $precision, $mode[0]);
+					}
+				}
+			}
+		}
+
+		if ($proc === null) {
+			return null;
+		}
+
+		$constantScalarValues = $argType->getConstantScalarValues();
+		$returnValueTypes = [];
+
+		foreach ($constantScalarValues as $constantScalarValue) {
+			if (!is_int($constantScalarValue) && !is_float($constantScalarValue)) {
+				$returnValueTypes = [];
+				break;
 			}
 
-			if (!isset($args[2]->value)) {
-				return static fn ($name) => round($name, $precision);
-			}
+			$returnValueTypes[] = new ConstantFloatType($proc($constantScalarValue));
+		}
 
-			$modeArg = $args[2]->value;
-			$modeType = $scope->getType($modeArg);
-			$mode = $modeType->getConstantScalarValues();
-
-			if (count($mode) === 1 && is_int($mode[0])) {
-				return static fn ($name) => round($name, $precision, $mode[0]);
-			}
+		if (count($returnValueTypes) >= 1) {
+			return TypeCombinator::union(...array_map(static fn ($l) => $l, $returnValueTypes));
 		}
 
 		return null;
 	}
-
 }

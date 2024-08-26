@@ -82,14 +82,23 @@
 			"composer/ca-bundle": [
 				"patches/cloudflare-ca.patch"
 			],
+			"hoa/exception": [
+				"patches/Idle.patch"
+			],
+			"hoa/file": [
+				"patches/File.patch",
+				"patches/Read.patch"
+			],
 			"hoa/iterator": [
 				"patches/Buffer.patch",
 				"patches/Lookahead.patch"
 			],
 			"hoa/compiler": [
 				"patches/HoaException.patch",
+				"patches/Invocation.patch",
 				"patches/Rule.patch",
-				"patches/Lexer.patch"
+				"patches/Lexer.patch",
+				"patches/TreeNode.patch"
 			],
 			"hoa/consistency": [
 				"patches/Consistency.patch"

@@ -1,0 +1,14 @@
+--- Llk/TreeNode.php	2017-08-08 09:44:07
++++ Llk/TreeNode.php	2024-08-26 23:07:29
+@@ -95,9 +95,9 @@
+      */
+     public function __construct(
+         $id,
+-        array $value    = null,
++        ?array $value    = null,
+         array $children = [],
+-        self  $parent   = null
++        ?self  $parent   = null
+     ) {
+         $this->setId($id);
+

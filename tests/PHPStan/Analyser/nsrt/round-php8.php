@@ -59,3 +59,42 @@ assertType('*NEVER*', floor(array()));
 assertType('*NEVER*', floor(array(123)));
 assertType('*NEVER*', floor());
 assertType('float', floor($_GET['foo']));
+
+/**
+ * @param 1.1|2.2|5.5|6.6 $n
+ */
+function f(float $n): void
+{
+	assertType('1.0|2.0|5.0|6.0', floor($n));
+}
+
+
+/**
+ * @param 1.11|2.22 $n
+ * @param 2|3 $m
+ * @param 2|4 $p
+ * @param 1.5|2.5 $q
+ */
+function g(float $n,float $m ,float $p , float $q): void
+{
+	assertType('1.1|2.2', round($n,1));
+	assertType('1.1|2.2', round($n,1,PHP_ROUND_HALF_UP));
+	assertType('float', round($n,$m,PHP_ROUND_HALF_UP));
+	assertType('float', round($n,0,$p));
+	assertType('1.1|2.2', round($n,1));
+	assertType('1.0|2.0', round($n,mode:PHP_ROUND_HALF_UP));
+	assertType('2.0|3.0', round($q,mode:PHP_ROUND_HALF_UP));
+	assertType('1.0|2.0', round($q,mode:PHP_ROUND_HALF_DOWN));
+
+//	assertType(3,round(3.4));
+//	assertType(4,round(3.5));
+//	assertType(4,round(3.6));
+//	assertType(4.round(3.6, 0));
+//	assertType(5.05.round(5.045, 2));
+//	assertType(5.06round(5.055, 2));
+//	assertType(round(300,345, -2));
+//	assertType(round(0,345, -3));
+//	assertType(round(700,678, -2));
+//	assertType(round(1000,678, -3));
+//	assertType('float', round($n,2,3));
+}

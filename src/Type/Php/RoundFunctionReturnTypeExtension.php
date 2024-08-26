@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use Closure;
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
@@ -66,58 +67,44 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		$args = $functionCall->getArgs();
 
-		//引数長さ0ならNeverType/NullTypeを返す
 		if (count($args) < 1) {
 			return $noArgsReturnType;
 		}
 
 		$argType = $scope->getType($args[0]->value);
-
 		$functionName = $functionReflection->getName();
-
 		$proc = $this->getProc($functionName, $args, $scope);
 
 		if ($proc !== null) {
 			$constantScalarValues = $argType->getConstantScalarValues();
-			$rv = [];
+			$returnValueTypes = [];
 
 			foreach ($constantScalarValues as $constantScalarValue) {
-
 				if (!is_int($constantScalarValue) && !is_float($constantScalarValue)) {
-					$rv = [];
+					$returnValueTypes = [];
 					break;
 				}
 
-				$value = $proc($constantScalarValue);
-
-				$rv[] = new ConstantFloatType($value);
+				$returnValueTypes[] = new ConstantFloatType($proc($constantScalarValue));
 			}
 
-			if (count($rv) >= 1) {
-
-				$rvUnion = TypeCombinator::union(...array_map(static fn ($l) => $l, $rv));
-				return $rvUnion;
+			if (count($returnValueTypes) >= 1) {
+				return TypeCombinator::union(...array_map(static fn ($l) => $l, $returnValueTypes));
 			}
 		}
 
-		//最初の引数のTypeを取得
 		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
 
-		//$firstArgType が MixedTypeなら $defaultReturnTypeを返す
 		if ($firstArgType instanceof MixedType) {
 			return $defaultReturnType;
 		}
 
-		//この条件分岐はバージョン情報
 		if ($this->phpVersion->hasStricterRoundFunctions()) {
-
-			//PHP言語仕様として、引数として指定されてるIntegerTypeとFloatTypeを指定
 			$allowed = TypeCombinator::union(
 				new IntegerType(),
 				new FloatType(),
 			);
 
-			//厳密な型を宣言しないならとういう条件分岐
 			if (!$scope->isDeclareStrictTypes()) {
 				$allowed = TypeCombinator::union(
 					$allowed,
@@ -130,7 +117,6 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				);
 			}
 
-			//スーパータイプではないなら、NeverTypeを返す
 			if ($allowed->isSuperTypeOf($firstArgType)->no()) {
 				// PHP 8 fatals if the parameter is not an integer or float.
 				return new NeverType(true);
@@ -138,7 +124,6 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		} elseif ($firstArgType->isArray()->yes()) {
 			// PHP 7 returns false if the parameter is an array.
-			// パラメータが配列の場合は false を返します。
 			return new ConstantBooleanType(false);
 		}
 
@@ -146,16 +131,18 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 	}
 
 	/**
-	 * @param array $args
+	 * @param Arg[] $args
 	 */
 	public function getProc(string $functionName, array $args, Scope $scope): ?Closure
 	{
 		if ($functionName === 'floor') {
 			return static fn ($name) => floor($name);
 		}
+
 		if ($functionName === 'ceil') {
 			return static fn ($name) => ceil($name);
 		}
+
 		if ($functionName === 'round') {
 			if (count($args) === 1) {
 				return static fn ($name) => round($name);
@@ -185,6 +172,7 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				return static fn ($name) => round($name, $precision, $mode[0]);
 			}
 		}
+
 		return null;
 	}
 

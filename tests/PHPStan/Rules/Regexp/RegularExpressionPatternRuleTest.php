@@ -156,6 +156,9 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID >= 80200) {
 			$messagePart = 'alphanumeric, backslash, or NUL';
 		}
+		if (PHP_VERSION_ID >= 80400) {
+			$messagePart = 'alphanumeric, backslash, or NUL byte';
+		}
 
 		$this->analyse(
 			[__DIR__ . '/data/valid-regex-pattern.php'],

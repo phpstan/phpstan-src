@@ -1,6 +1,6 @@
-<?php // lint < 8.4
+<?php // lint >= 8.4
 
-namespace Bug7341;
+namespace Bug7341Php84;
 
 use function PHPStan\Testing\assertType;
 
@@ -15,7 +15,7 @@ final class CsvWriterTerminate extends \php_user_filter
 	public function filter($in, $out, &$consumed, $closing): int
 	{
 		while ($bucket = stream_bucket_make_writeable($in)) {
-			assertType('stdClass', $bucket);
+			assertType('StreamBucket', $bucket);
 
 			if (isset($this->params['terminate'])) {
 				$bucket->data = preg_replace('/([^\r])\n/', '$1'.$this->params['terminate'], $bucket->data);

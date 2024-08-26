@@ -266,10 +266,8 @@ final class BetterReflectionProvider implements ReflectionProvider
 			return $this->functionReflections[$lowerCasedFunctionName];
 		}
 
-		if ($this->phpVersion->hasExitAsFunction()) {
-			if (in_array($lowerCasedFunctionName, ['exit', 'die'], true)) {
-				return $this->functionReflections[$lowerCasedFunctionName] = new ExitFunctionReflection($lowerCasedFunctionName);
-			}
+		if (in_array($lowerCasedFunctionName, ['exit', 'die'], true)) {
+			return $this->functionReflections[$lowerCasedFunctionName] = new ExitFunctionReflection($lowerCasedFunctionName);
 		}
 
 		$nativeFunctionReflection = $this->nativeFunctionReflectionProvider->findFunctionReflection($lowerCasedFunctionName);
@@ -351,12 +349,11 @@ final class BetterReflectionProvider implements ReflectionProvider
 
 	public function resolveFunctionName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
-		if ($this->phpVersion->hasExitAsFunction()) {
-			$name = $nameNode->toLowerString();
-			if (in_array($name, ['exit', 'die'], true)) {
-				return $name;
-			}
+		$name = $nameNode->toLowerString();
+		if (in_array($name, ['exit', 'die'], true)) {
+			return $name;
 		}
+
 		return $this->resolveName($nameNode, function (string $name): bool {
 			try {
 				$this->reflector->reflectFunction($name);

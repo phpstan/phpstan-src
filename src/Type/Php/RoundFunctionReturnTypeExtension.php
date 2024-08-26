@@ -29,6 +29,10 @@ use function in_array;
 use function is_float;
 use function is_int;
 use function round;
+use const PHP_ROUND_HALF_DOWN;
+use const PHP_ROUND_HALF_EVEN;
+use const PHP_ROUND_HALF_ODD;
+use const PHP_ROUND_HALF_UP;
 
 final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -146,7 +150,7 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 					$modeType = $scope->getType($modeArg);
 					$mode = $modeType->getConstantScalarValues();
 
-					if (count($mode) === 1 && is_int($mode[0])) {
+					if (count($mode) === 1 && in_array($mode[0], [PHP_ROUND_HALF_UP, PHP_ROUND_HALF_DOWN, PHP_ROUND_HALF_EVEN, PHP_ROUND_HALF_ODD], true)) {
 						$proc = static fn ($name) => round($name, $precision, $mode[0]);
 					}
 				}

@@ -6,7 +6,7 @@
   "dependencyDashboard": true,
   "rangeStrategy": "update-lockfile",
   "rebaseWhen": "conflicted",
-  "baseBranches": ["1.11.x"],
+  "baseBranches": ["1.12.x"],
   "packageRules": [
     {
       "matchPackagePatterns": ["*"],

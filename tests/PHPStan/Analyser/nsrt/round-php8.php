@@ -61,31 +61,12 @@ assertType('*NEVER*', floor());
 assertType('float', floor($_GET['foo']));
 
 /**
- * @param 1.1|2.2|5.5|6.6 $n
+ * @param 1.11|2.22 $floatUnionA
+ * @param 1.5|2.5 $floatUnionB
+ * @param 1.1|2.2|5.5|6.6 $floatUnionC
  */
-function f(float $n): void
+function constant(float $floatUnionA, float $floatUnionB, float $floatUnionC)
 {
-	assertType('1.0|2.0|5.0|6.0', floor($n));
-}
-
-
-/**
- * @param 1.11|2.22 $n
- * @param 2|3 $m
- * @param 2|4 $p
- * @param 1.5|2.5 $q
- */
-function g(float $n,float $m ,float $p , float $q): void
-{
-	assertType('1.1|2.2', round($n,1));
-	assertType('1.1|2.2', round($n,1,PHP_ROUND_HALF_UP));
-	assertType('float', round($n,$m,PHP_ROUND_HALF_UP));
-	assertType('float', round($n,0,$p));
-	assertType('1.1|2.2', round($n,1));
-	assertType('1.0|2.0', round($n,mode:PHP_ROUND_HALF_UP));
-	assertType('2.0|3.0', round($q,mode:PHP_ROUND_HALF_UP));
-	assertType('1.0|2.0', round($q,mode:PHP_ROUND_HALF_DOWN));
-
 	assertType('3.0', round(3.4));
 	assertType('4.0', round(3.5));
 	assertType('4.0', round(3.6));
@@ -96,6 +77,13 @@ function g(float $n,float $m ,float $p , float $q): void
 	assertType('0.0', round(345, -3));
 	assertType('700.0', round(678, -2));
 	assertType('1000.0', round(678, -3));
+
+	assertType('1.1|2.2', round($floatUnionA, 1));
+	assertType('1.1|2.2', round($floatUnionA, 1, PHP_ROUND_HALF_UP));
+	assertType('1.0|2.0', round($floatUnionA, mode: PHP_ROUND_HALF_UP));
+	assertType('2.0|3.0', round($floatUnionB, mode: PHP_ROUND_HALF_UP));
+	assertType('1.0|2.0', round($floatUnionB, mode: PHP_ROUND_HALF_DOWN));
+	assertType('1.0|2.0|5.0|6.0', floor($floatUnionC));
 
 	$number = 135.79;
 	assertType('135.79', round($number, 3));
@@ -133,4 +121,25 @@ function g(float $n,float $m ,float $p , float $q): void
 	// Using PHP_ROUND_HALF_ODD with 1 decimal digit precision
 	assertType('1.5', round( 1.55, 1, PHP_ROUND_HALF_ODD));
 	assertType('-1.5', round(-1.55, 1, PHP_ROUND_HALF_ODD));
+}
+
+/**
+ * @param 1.11|2.22 $floatUnion
+ * @param 2|3 $precisionUnion
+ * @param 2|4 $modeUnion
+ * @param 1|'2.5' $IntOrNumStr
+ * @param 1.11|'2.22' $floatOrNumStr
+ */
+function notConstant(float $floatUnion, float $precisionUnion, float $modeUnion, $IntOrNumStr, $floatOrNumStr)
+{
+	assertType('float', round($floatUnion, $precisionUnion, PHP_ROUND_HALF_UP));
+	assertType('float', round($floatUnion, 0, $modeUnion));
+
+	assertType('float', round($IntOrNumStr));
+	assertType('float', round($IntOrNumStr, mode: PHP_ROUND_HALF_UP));
+	assertType('float', round($IntOrNumStr, mode: PHP_ROUND_HALF_DOWN));
+
+	assertType('float', round($floatOrNumStr));
+	assertType('float', round($floatOrNumStr, mode: PHP_ROUND_HALF_UP));
+	assertType('float', round($floatOrNumStr, mode: PHP_ROUND_HALF_DOWN));
 }

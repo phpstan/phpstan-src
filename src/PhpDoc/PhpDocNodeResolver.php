@@ -196,7 +196,7 @@ final class PhpDocNodeResolver
 					}
 					$defaultValue = null;
 					if ($parameterNode->defaultValue !== null) {
-						$defaultValue = $this->constExprNodeResolver->resolve($parameterNode->defaultValue);
+						$defaultValue = $this->constExprNodeResolver->resolve($parameterNode->defaultValue, $nameScope);
 					}
 
 					$parameters[$parameterName] = new MethodTagParameter(

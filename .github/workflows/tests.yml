@@ -66,6 +66,10 @@ jobs:
         shell: bash
         run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
 
+      - name: "Update PHPUnit"
+        if: matrix.php-version != '7.3'
+        run: "composer update phpunit/phpunit -W"
+
       - name: "Tests"
         run: "make tests"
 

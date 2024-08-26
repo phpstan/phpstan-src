@@ -9,6 +9,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
@@ -19,8 +20,13 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
+use function OffsetAccessLegal\float;
+use function is_int;
+use function is_float;
 
 final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -56,22 +62,62 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			$noArgsReturnType = new NullType();
 		}
 
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+
+		//引数長さ0ならNeverType/NullTypeを返す
+		if (count($args) < 1) {
 			return $noArgsReturnType;
 		}
 
+
+		$argType = $scope->getType($args[0]->value);
+
+		$functionName = $functionReflection->getName();
+
+		$proc = $this->getProc($functionName, $args, $scope);
+
+		if ($proc !== null) {
+			$constantScalarValues = $argType->getConstantScalarValues();
+			$rv = array();
+
+			foreach ($constantScalarValues as $constantScalarValue) {
+
+				if (!is_int($constantScalarValue) && !is_float($constantScalarValue)) {
+					$rv = [];
+					break;
+				}
+
+				$value = $proc($constantScalarValue);
+
+				$rv[] = new ConstantFloatType($value);
+			}
+
+			if (count($rv) > 1) {
+
+				$rvUnion = TypeCombinator::union(...array_map(static fn ($l) => $l, $rv));
+				return $rvUnion;
+			}
+		}
+
+
+		//最初の引数のTypeを取得
 		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
 
+		//$firstArgType が MixedTypeなら $defaultReturnTypeを返す
 		if ($firstArgType instanceof MixedType) {
 			return $defaultReturnType;
 		}
 
+		//この条件分岐はバージョン情報
 		if ($this->phpVersion->hasStricterRoundFunctions()) {
+
+			//PHP言語仕様として、引数として指定されてるIntegerTypeとFloatTypeを指定
 			$allowed = TypeCombinator::union(
 				new IntegerType(),
 				new FloatType(),
 			);
 
+			//厳密な型を宣言しないならとういう条件分岐
 			if (!$scope->isDeclareStrictTypes()) {
 				$allowed = TypeCombinator::union(
 					$allowed,
@@ -84,16 +130,69 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				);
 			}
 
+
+
+			//スーパータイプではないなら、NeverTypeを返す
 			if ($allowed->isSuperTypeOf($firstArgType)->no()) {
 				// PHP 8 fatals if the parameter is not an integer or float.
 				return new NeverType(true);
 			}
+
+
 		} elseif ($firstArgType->isArray()->yes()) {
 			// PHP 7 returns false if the parameter is an array.
+			// パラメータが配列の場合は false を返します。
 			return new ConstantBooleanType(false);
 		}
 
 		return new FloatType();
 	}
 
+	/**
+	 * @param string $functionName
+	 * @param array $args
+	 * @param Scope $scope
+	 * @return \Closure
+	 */
+	public function getProc(string $functionName, array $args, Scope $scope): ?\Closure
+	{
+		if ($functionName == "floor") {
+			return fn($name) => floor($name);
+		}
+		if ($functionName == "ceil") {
+			return  fn($name) => ceil($name);
+		}
+		if ($functionName === 'round') {
+			if (count($args) == 1) {
+				return  fn($name) => round($name);
+			}
+			if (isset($args[1]->value)) {
+				$precisionArg = $args[1]->value;
+				$precisionType = $scope->getType($precisionArg);
+				$precisions = $precisionType->getConstantScalarValues();
+				if (count($precisions) == 1) {
+					$precision = $precisions[0];
+				}
+				else{
+					return null;
+				}
+			} else {
+				$precision = 0;
+			}
+
+			if (isset($args[2]->value)) {
+				$modeArg = $args[2]->value;
+				$modeType = $scope->getType($modeArg);
+				$mode = $modeType->getConstantScalarValues();
+
+				if (count($mode) == 1) {
+					return fn($name) => round($name, $precision, $mode[0]);
+				}
+			}
+			else{
+				return fn($name) => round($name, $precision);
+			}
+		}
+		return null;
+	}
 }

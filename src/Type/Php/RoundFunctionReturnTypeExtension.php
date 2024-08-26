@@ -22,7 +22,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_map;
+use PHPStan\Type\UnionType;
 use function ceil;
 use function count;
 use function floor;
@@ -88,14 +88,6 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		if ($this->phpVersion->hasStricterRoundFunctions()) {
-<<<<<<< HEAD
-=======
-			$allowed = TypeCombinator::union(
-				new IntegerType(),
-				new FloatType(),
-			);
-
->>>>>>> 05dc61fe1 (fix style)
 			if (!$scope->isDeclareStrictTypes()) {
 				$allowed = new UnionType([
 					new IntegerType(),
@@ -118,7 +110,6 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				// PHP 8 fatals if the parameter is not an integer or float.
 				return new NeverType(true);
 			}
-
 		} elseif ($firstArgType->isArray()->yes()) {
 			// PHP 7 returns false if the parameter is an array.
 			return new ConstantBooleanType(false);
@@ -185,9 +176,10 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		if (count($returnValueTypes) >= 1) {
-			return TypeCombinator::union(...array_map(static fn ($l) => $l, $returnValueTypes));
+			return TypeCombinator::union(...$returnValueTypes);
 		}
 
 		return null;
 	}
+
 }

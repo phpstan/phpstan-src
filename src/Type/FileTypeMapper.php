@@ -109,21 +109,35 @@ final class FileTypeMapper
 			return $this->createResolvedPhpDocBlock($phpDocKey, $nameScopeMap[$nameScopeKey], $docComment, $fileName);
 		}
 
+		$keyFileName = $fileName;
 		if (!isset($this->inProcess[$fileName][$nameScopeKey])) { // wrong $fileName due to traits
+			if (!is_null($className)) {
+				$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
+				if ($reflectionProvider->hasClass($className)) {
+					$classFileName = $reflectionProvider->getClass($className)->getFileName();
+					$nameScopeKeyCandidate = $this->getNameScopeKey($classFileName, $className, $traitName, $functionName);
+					if (isset($this->inProcess[$classFileName][$nameScopeKeyCandidate])) {
+						$keyFileName = $classFileName;
+						$nameScopeKey = $nameScopeKeyCandidate;
+					}
+				}
+			}
+		}
+		if (!isset($this->inProcess[$keyFileName][$nameScopeKey])) {
 			return ResolvedPhpDocBlock::createEmpty();
 		}
 
-		if ($this->inProcess[$fileName][$nameScopeKey] === true) { // PHPDoc has cyclic dependency
+		if ($this->inProcess[$keyFileName][$nameScopeKey] === true) { // PHPDoc has cyclic dependency
 			return ResolvedPhpDocBlock::createEmpty();
 		}
 
-		if (is_callable($this->inProcess[$fileName][$nameScopeKey])) {
-			$resolveCallback = $this->inProcess[$fileName][$nameScopeKey];
-			$this->inProcess[$fileName][$nameScopeKey] = true;
-			$this->inProcess[$fileName][$nameScopeKey] = $resolveCallback();
+		if (is_callable($this->inProcess[$keyFileName][$nameScopeKey])) {
+			$resolveCallback = $this->inProcess[$keyFileName][$nameScopeKey];
+			$this->inProcess[$keyFileName][$nameScopeKey] = true;
+			$this->inProcess[$keyFileName][$nameScopeKey] = $resolveCallback();
 		}
 
-		return $this->createResolvedPhpDocBlock($phpDocKey, $this->inProcess[$fileName][$nameScopeKey], $docComment, $fileName);
+		return $this->createResolvedPhpDocBlock($phpDocKey, $this->inProcess[$keyFileName][$nameScopeKey], $docComment, $fileName);
 	}
 
 	private function createResolvedPhpDocBlock(string $phpDocKey, NameScope $nameScope, string $phpDocString, ?string $fileName): ResolvedPhpDocBlock

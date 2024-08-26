@@ -1,0 +1,11 @@
+--- Llk/Rule/Invocation.php	2017-08-08 09:44:07
++++ Llk/Rule/Invocation.php	2024-08-26 23:11:25
+@@ -95,7 +95,7 @@
+     public function __construct(
+         $rule,
+         $data,
+-        array $todo = null,
++        ?array $todo = null,
+         $depth      = -1
+     ) {
+         $this->_rule         = $rule;

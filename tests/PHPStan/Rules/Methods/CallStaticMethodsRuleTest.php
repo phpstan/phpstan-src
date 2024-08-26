@@ -2,8 +2,13 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PhpParser\Node\Expr\StaticCall;
+use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -14,6 +19,12 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\ClosureType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
 use function usort;
 use const PHP_VERSION_ID;
@@ -51,7 +62,52 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				new PhpVersion(80000),
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
-				self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
+				new class implements ParameterClosureTypeExtensionProvider
+				{
+
+					public function getFunctionParameterClosureTypeExtensions(): array
+					{
+						return [];
+					}
+
+					public function getMethodParameterClosureTypeExtensions(): array
+					{
+						return [];
+					}
+
+					public function getStaticMethodParameterClosureTypeExtensions(): array
+					{
+						return [
+							new class implements StaticMethodParameterClosureTypeExtension
+							{
+
+								public function isStaticMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool
+								{
+									return $methodReflection->getName() === 'foo' && $methodReflection->getDeclaringClass()->getName() === 'StaticMethodParameterClosureTypeExtension\\Foo';
+								}
+
+								public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, ParameterReflection $parameter, Scope $scope): Type
+								{
+									return new ClosureType(
+										[
+											new NativeParameterReflection(
+												$parameter->getName(),
+												$parameter->isOptional(),
+												TypeCombinator::union(new ConstantIntegerType(5), new ConstantIntegerType(7)),
+												$parameter->passedByReference(),
+												$parameter->isVariadic(),
+												$parameter->getDefaultValue(),
+											),
+										],
+										new IntegerType(),
+									);
+								}
+
+							},
+						];
+					}
+
+				},
 				true,
 				true,
 				true,
@@ -839,6 +895,24 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #3 $newScope of static method Closure::bind() expects \'static\'|class-string|object|null, \'CallClosureBind\\\Bar3\' given.',
 				68,
+			],
+		]);
+	}
+
+	public function testParameterClosureTypeExtension(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/static-method-parameter-closure-type-extension.php'], [
+			[
+				'Parameter #1 $fn of static method StaticMethodParameterClosureTypeExtension\Foo::foo() expects Closure(5|7): int, Closure(5): int given.',
+				16,
+				'Type 5 of parameter #1 $a of passed callable needs to be same or wider than parameter type 5|7 of accepting callable.',
 			],
 		]);
 	}

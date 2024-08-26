@@ -1754,8 +1754,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11506.php'], []);
 	}
 
-	public function testFunctionParameterClosureTypeExtension(): void
+	public function testParameterClosureTypeExtension(): void
 	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4');
+		}
+
 		$this->analyse([__DIR__ . '/data/function-parameter-closure-type-extension.php'], [
 			[
 				'Parameter #2 $callback of function preg_replace_callback expects Closure(array{0: array{string, int<-1, max>}, 1?: array{\'\'|\'foo\', int<-1, max>}, 2?: array{\'\'|\'bar\', int<-1, max>}, 3?: array{\'baz\', int<-1, max>}}): string, Closure(array<int>): string given.',

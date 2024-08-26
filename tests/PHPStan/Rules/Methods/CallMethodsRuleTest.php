@@ -2,8 +2,13 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PhpParser\Node\Expr\MethodCall;
+use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -11,6 +16,12 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\ClosureType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\MethodParameterClosureTypeExtension;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use const PHP_VERSION_ID;
 
 /**
@@ -35,9 +46,67 @@ class CallMethodsRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false);
+
 		return new CallMethodsRule(
 			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class), true, true, true, true, true),
+			new FunctionCallParametersCheck(
+				$ruleLevelHelper,
+				new NullsafeCheck(),
+				new PhpVersion($this->phpVersion),
+				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
+				new class implements ParameterClosureTypeExtensionProvider
+				{
+
+					public function getFunctionParameterClosureTypeExtensions(): array
+					{
+						return [];
+					}
+
+					public function getMethodParameterClosureTypeExtensions(): array
+					{
+						return [
+							new class implements MethodParameterClosureTypeExtension
+							{
+
+								public function isMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool
+								{
+									return $methodReflection->getName() === 'foo' && $methodReflection->getDeclaringClass()->getName() === 'MethodParameterClosureTypeExtension\\Foo';
+								}
+
+								public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, ParameterReflection $parameter, Scope $scope): Type
+								{
+									return new ClosureType(
+										[
+											new NativeParameterReflection(
+												$parameter->getName(),
+												$parameter->isOptional(),
+												TypeCombinator::union(new ConstantIntegerType(5), new ConstantIntegerType(7)),
+												$parameter->passedByReference(),
+												$parameter->isVariadic(),
+												$parameter->getDefaultValue(),
+											),
+										],
+										new IntegerType(),
+									);
+								}
+
+							},
+						];
+					}
+
+					public function getStaticMethodParameterClosureTypeExtensions(): array
+					{
+						return [];
+					}
+
+				},
+				true,
+				true,
+				true,
+				true,
+				true,
+			),
 		);
 	}
 
@@ -3342,6 +3411,26 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Method NoNamedArgumentsMethod\Bar::doFoo() invoked with named argument $i, but it\'s not allowed because of @no-named-arguments.',
 				33,
+			],
+		]);
+	}
+
+	public function testParameterClosureTypeExtension(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/method-parameter-closure-type-extension.php'], [
+			[
+				'Parameter #1 $fn of method MethodParameterClosureTypeExtension\Foo::foo() expects Closure(5|7): int, Closure(5): int given.',
+				16,
+				'Type 5 of parameter #1 $a of passed callable needs to be same or wider than parameter type 5|7 of accepting callable.',
 			],
 		]);
 	}

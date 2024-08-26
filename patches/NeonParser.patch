@@ -1,0 +1,11 @@
+--- src/Neon/Parser.php	2022-03-10 03:04:26
++++ src/Neon/Parser.php	2024-08-26 21:57:02
+@@ -236,7 +236,7 @@
+ 	}
+
+
+-	private function injectPos(Node $node, int $start = null, int $end = null): Node
++	private function injectPos(Node $node, ?int $start = null, ?int $end = null): Node
+ 	{
+ 		$node->startTokenPos = $start ?? $this->tokens->getPos();
+ 		$node->startLine = $this->posToLine[$node->startTokenPos];

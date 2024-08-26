@@ -19,6 +19,7 @@ $pinnedToSupportPhp72 = [
 	'symfony/process',
 	'symfony/service-contracts',
 	'symfony/string',
+	'nette/php-generator',
 ];
 
 return $config

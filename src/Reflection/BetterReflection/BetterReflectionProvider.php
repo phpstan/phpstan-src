@@ -40,6 +40,7 @@ use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\NamespaceAnswerer;
+use PHPStan\Reflection\Php\ExitFunctionReflection;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
@@ -52,6 +53,7 @@ use PHPStan\Type\Type;
 use function array_key_exists;
 use function array_map;
 use function base64_decode;
+use function in_array;
 use function sprintf;
 use function strtolower;
 use const PHP_VERSION_ID;
@@ -264,6 +266,12 @@ final class BetterReflectionProvider implements ReflectionProvider
 			return $this->functionReflections[$lowerCasedFunctionName];
 		}
 
+		if ($this->phpVersion->hasExitAsFunction()) {
+			if (in_array($lowerCasedFunctionName, ['exit', 'die'], true)) {
+				return $this->functionReflections[$lowerCasedFunctionName] = new ExitFunctionReflection($lowerCasedFunctionName);
+			}
+		}
+
 		$nativeFunctionReflection = $this->nativeFunctionReflectionProvider->findFunctionReflection($lowerCasedFunctionName);
 		if ($nativeFunctionReflection !== null) {
 			$this->functionReflections[$lowerCasedFunctionName] = $nativeFunctionReflection;
@@ -343,6 +351,12 @@ final class BetterReflectionProvider implements ReflectionProvider
 
 	public function resolveFunctionName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
+		if ($this->phpVersion->hasExitAsFunction()) {
+			$name = $nameNode->toLowerString();
+			if (in_array($name, ['exit', 'die'], true)) {
+				return $name;
+			}
+		}
 		return $this->resolveName($nameNode, function (string $name): bool {
 			try {
 				$this->reflector->reflectFunction($name);

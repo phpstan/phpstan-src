@@ -338,4 +338,9 @@ class PhpVersion
 		return $this->versionId < 80000;
 	}
 
+	public function hasExitAsFunction(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
 }

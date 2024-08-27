@@ -28,3 +28,11 @@ function returnString(): string
 	return 'baz';
 }
 
+class X {
+	const XY ='ABC';
+
+	function doFoo() {
+		$s = X::XY;
+		$s[] = 'foo';
+	}
+}

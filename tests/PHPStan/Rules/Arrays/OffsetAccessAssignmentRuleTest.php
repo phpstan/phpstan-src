@@ -188,6 +188,10 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 				'Cannot assign new offset to string.',
 				24,
 			],
+			[
+				'Cannot assign new offset to string.',
+				36,
+			],
 		]);
 	}
 

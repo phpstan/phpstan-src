@@ -33,6 +33,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_map;
 use function count;
+use function in_array;
 use function is_string;
 use function strtolower;
 use function substr;

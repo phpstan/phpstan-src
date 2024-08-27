@@ -9,7 +9,6 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
-use PHPStan\Type\UnionType;
 use function sprintf;
 
 /** @api */

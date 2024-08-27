@@ -32,7 +32,6 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
-use PHPStan\Type\UnionType;
 use function sprintf;
 
 /** @api */

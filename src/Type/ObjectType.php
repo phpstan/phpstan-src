@@ -47,7 +47,6 @@ use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
-use PHPStan\Type\UnionType;
 use Throwable;
 use Traversable;
 use function array_key_exists;

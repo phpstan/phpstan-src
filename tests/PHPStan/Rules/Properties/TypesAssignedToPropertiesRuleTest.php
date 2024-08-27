@@ -637,6 +637,11 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/generics-in-callable-in-constructor.php'], []);
 	}
 
+	public function testBug10686(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10686.php'], []);
+	}
+
 	public function testBug11275(): void
 	{
 		if (PHP_VERSION_ID < 80000) {

@@ -156,4 +156,39 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8015.php'], []);
 	}
 
+	public function testBug11572(): void
+	{
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-11572.php'], [
+			[
+				'Cannot assign new offset to string.',
+				15,
+			],
+			[
+				'Cannot assign new offset to string.',
+				16,
+			],
+			[
+				'Cannot assign new offset to string.',
+				17,
+			],
+			[
+				'Cannot assign new offset to string.',
+				18,
+			],
+			[
+				'Cannot assign new offset to string.',
+				19,
+			],
+			[
+				'Cannot assign new offset to string.',
+				20,
+			],
+			[
+				'Cannot assign new offset to string.',
+				24,
+			],
+		]);
+	}
+
 }

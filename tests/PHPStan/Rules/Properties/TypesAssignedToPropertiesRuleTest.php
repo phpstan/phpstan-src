@@ -208,6 +208,29 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				168,
 			],
 		]);
+
+		$this->analyse([__DIR__ . '/data/bug-3777-static.php'], [
+			[
+				'Property Bug3777Static\Bar::$foo (Bug3777Static\Foo<stdClass>) does not accept Bug3777Static\Fooo<object>.',
+				58,
+			],
+			[
+				'Property Bug3777Static\Ipsum::$ipsum (Bug3777Static\Lorem<stdClass, Exception>) does not accept Bug3777Static\Lorem<Exception, stdClass>.',
+				95,
+			],
+			[
+				'Property Bug3777Static\Ipsum2::$lorem2 (Bug3777Static\Lorem2<stdClass, Exception>) does not accept Bug3777Static\Lorem2<stdClass, object>.',
+				129,
+			],
+			[
+				'Property Bug3777Static\Ipsum2::$ipsum2 (Bug3777Static\Lorem2<stdClass, Exception>) does not accept Bug3777Static\Lorem2<Exception, object>.',
+				131,
+			],
+			[
+				'Property Bug3777Static\Ipsum3::$ipsum3 (Bug3777Static\Lorem3<stdClass, Exception>) does not accept Bug3777Static\Lorem3<Exception, stdClass>.',
+				168,
+			],
+		]);
 	}
 
 	public function testAppendendArrayKey(): void

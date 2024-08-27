@@ -1,6 +1,6 @@
 <?php
 
-namespace Bug3777;
+namespace Bug3777Static;
 
 use function PHPStan\Testing\assertType;
 
@@ -47,16 +47,16 @@ class Bar
 	public function __construct()
 	{
 		$this->foo = new Foo();
-		assertType('Bug3777\Foo<stdClass>', $this->foo);
+		assertType('Bug3777Static\Foo<stdClass>', $this->foo);
 
 		$this->fooo = new Fooo();
-		assertType('Bug3777\Fooo<stdClass>', $this->fooo);
+		assertType('Bug3777Static\Fooo<stdClass>', $this->fooo);
 	}
 
 	public function doBar()
 	{
 		$this->foo = new Fooo();
-		assertType('Bug3777\Fooo<object>', $this->foo);
+		assertType('Bug3777Static\Fooo<object>', $this->foo);
 	}
 
 }
@@ -91,9 +91,9 @@ class Ipsum
 	public function __construct()
 	{
 		$this->lorem = new Lorem(new \stdClass, new \Exception());
-		assertType('Bug3777\Lorem<stdClass, Exception>', $this->lorem);
+		assertType('Bug3777Static\Lorem<stdClass, Exception>', $this->lorem);
 		$this->ipsum = new Lorem(new \Exception(), new \stdClass);
-		assertType('Bug3777\Lorem<Exception, stdClass>', $this->ipsum);
+		assertType('Bug3777Static\Lorem<Exception, stdClass>', $this->ipsum);
 	}
 
 }
@@ -127,9 +127,9 @@ class Ipsum2
 	public function __construct()
 	{
 		$this->lorem2 = new Lorem2(new \stdClass);
-		assertType('Bug3777\Lorem2<stdClass, object>', $this->lorem2);
+		assertType('Bug3777Static\Lorem2<stdClass, object>', $this->lorem2);
 		$this->ipsum2 = new Lorem2(new \Exception());
-		assertType('Bug3777\Lorem2<Exception, object>', $this->ipsum2);
+		assertType('Bug3777Static\Lorem2<Exception, object>', $this->ipsum2);
 	}
 
 }
@@ -164,9 +164,9 @@ class Ipsum3
 	public function __construct()
 	{
 		$this->lorem3 = new Lorem3(new \stdClass, new \Exception());
-		assertType('Bug3777\Lorem3<stdClass, Exception>', $this->lorem3);
+		assertType('Bug3777Static\Lorem3<stdClass, Exception>', $this->lorem3);
 		$this->ipsum3 = new Lorem3(new \Exception(), new \stdClass());
-		assertType('Bug3777\Lorem3<Exception, stdClass>', $this->ipsum3);
+		assertType('Bug3777Static\Lorem3<Exception, stdClass>', $this->ipsum3);
 	}
 
 }

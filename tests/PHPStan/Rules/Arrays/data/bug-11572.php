@@ -36,3 +36,12 @@ class X {
 		$s[] = 'foo';
 	}
 }
+
+/**
+ * @param int<3,4> $range
+ */
+function doInt(int $i, $range): void
+{
+	$i[] = 1;
+	$range[] = 1;
+}

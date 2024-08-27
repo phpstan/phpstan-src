@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<DoWhileLoopConditionNode>
  */
-class DoWhileLoopConstantConditionRule implements Rule
+final class DoWhileLoopConstantConditionRule implements Rule
 {
 
 	public function __construct(

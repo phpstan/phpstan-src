@@ -6,7 +6,7 @@ use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-class RuntimeConstantReflection implements GlobalConstantReflection
+final class RuntimeConstantReflection implements GlobalConstantReflection
 {
 
 	public function __construct(

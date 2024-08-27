@@ -10,7 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Expr\ArrayDimFetch>
  */
-class OffsetAccessWithoutDimForReadingRule implements Rule
+final class OffsetAccessWithoutDimForReadingRule implements Rule
 {
 
 	public function getNodeType(): string

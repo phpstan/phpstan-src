@@ -11,7 +11,7 @@ use PHPStan\Type\Type;
 /**
  * @implements Rule<Node\Expr\Isset_>
  */
-class IssetRule implements Rule
+final class IssetRule implements Rule
 {
 
 	public function __construct(private IssetCheck $issetCheck)

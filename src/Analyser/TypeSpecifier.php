@@ -82,7 +82,7 @@ use function strtolower;
 use function substr;
 use const COUNT_NORMAL;
 
-class TypeSpecifier
+final class TypeSpecifier
 {
 
 	/** @var MethodTypeSpecifyingExtension[][]|null */

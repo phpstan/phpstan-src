@@ -5,7 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
 
-class ScopeContext
+final class ScopeContext
 {
 
 	private function __construct(

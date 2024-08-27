@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
-class ThrowsVoidMethodWithExplicitThrowPointRule implements Rule
+final class ThrowsVoidMethodWithExplicitThrowPointRule implements Rule
 {
 
 	public function __construct(

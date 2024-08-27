@@ -19,7 +19,7 @@ use function sprintf;
  * @deprecated Replaced by PHPStan\Rules\Properties\TypesAssignedToPropertiesRule
  * @implements Rule<Node\Expr>
  */
-class AppendedArrayItemTypeRule implements Rule
+final class AppendedArrayItemTypeRule implements Rule
 {
 
 	public function __construct(

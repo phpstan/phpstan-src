@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Stmt\Declare_>
  */
-class DeclareStrictTypesRule implements Rule
+final class DeclareStrictTypesRule implements Rule
 {
 
 	public function __construct(

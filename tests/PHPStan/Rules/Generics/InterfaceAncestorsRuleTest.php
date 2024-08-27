@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -18,8 +19,10 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(true, true),
+				new UnresolvableTypeHelper(),
 				true,
 				[],
+				true,
 			),
 			new CrossCheckInterfacesHelper(),
 		);

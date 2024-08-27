@@ -20,7 +20,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function strtolower;
 
-class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(

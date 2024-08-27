@@ -15,7 +15,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use function array_map;
 
-class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
+final class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 
 	private ?ExtendedMethodReflection $transformedMethod = null;

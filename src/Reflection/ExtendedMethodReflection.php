@@ -32,6 +32,8 @@ interface ExtendedMethodReflection extends MethodReflection
 	 */
 	public function getNamedArgumentsVariants(): ?array;
 
+	public function acceptsNamedArguments(): bool;
+
 	public function getAsserts(): Assertions;
 
 	public function getSelfOutType(): ?Type;

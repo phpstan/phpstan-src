@@ -59,6 +59,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -149,6 +150,7 @@ use function is_numeric;
 use function is_string;
 use function ltrim;
 use function md5;
+use function preg_match;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -158,7 +160,7 @@ use function usort;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
-class MutatingScope implements Scope
+final class MutatingScope implements Scope
 {
 
 	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
@@ -1360,6 +1362,7 @@ class MutatingScope implements Scope
 						$cachedClosureData['impurePoints'],
 						$cachedClosureData['invalidateExpressions'],
 						$cachedClosureData['usedVariables'],
+						true,
 					);
 				}
 				if (self::$resolveClosureTypeDepth >= 2) {
@@ -1574,6 +1577,7 @@ class MutatingScope implements Scope
 				$impurePointsForClosureType,
 				$invalidateExpressions,
 				$usedVariables,
+				true,
 			);
 		} elseif ($node instanceof New_) {
 			if ($node->class instanceof Name) {
@@ -2221,25 +2225,45 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof FuncCall) {
-			if ($node->name instanceof Expr) {
+			$functionName = null;
+			if ($node->name instanceof Name) {
+				$functionName = $node->name;
+			} elseif ($node->name instanceof Expr) {
 				$calledOnType = $this->getType($node->name);
 				if ($calledOnType->isCallable()->no()) {
 					return new ErrorType();
 				}
 
-				return ParametersAcceptorSelector::selectFromArgs(
-					$this,
-					$node->getArgs(),
-					$calledOnType->getCallableParametersAcceptors($this),
-					null,
-				)->getReturnType();
+				if ($node->name instanceof String_) {
+					/** @var non-empty-string $name */
+					$name = $node->name->value;
+					$functionName = new Name($name);
+				} elseif ($node->name instanceof FuncCall && $node->name->isFirstClassCallable() &&
+						  $node->name->getAttribute('phpstan_cache_printer') !== null &&
+						  preg_match('/\A(?<name>\\\\?[^()]+)\(...\)\z/', $node->name->getAttribute('phpstan_cache_printer'), $m) === 1
+				) {
+					/** @var non-falsy-string $name */
+					$name = $m['name'];
+					$functionName = new Name($name);
+				} else {
+					return ParametersAcceptorSelector::selectFromArgs(
+						$this,
+						$node->getArgs(),
+						$calledOnType->getCallableParametersAcceptors($this),
+						null,
+					)->getReturnType();
+				}
 			}
 
-			if (!$this->reflectionProvider->hasFunction($node->name, $this)) {
+			if ($functionName === null) {
+				throw new ShouldNotHappenException();
+			}
+
+			if (!$this->reflectionProvider->hasFunction($functionName, $this)) {
 				return new ErrorType();
 			}
 
-			$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
+			$functionReflection = $this->reflectionProvider->getFunction($functionName, $this);
 			if ($this->nativeTypesPromoted) {
 				return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
 			}
@@ -2522,9 +2546,11 @@ class MutatingScope implements Scope
 
 			$throwPoints = [];
 			$impurePoints = [];
+			$acceptsNamedArguments = true;
 			if ($variant instanceof CallableParametersAcceptor) {
 				$throwPoints = $variant->getThrowPoints();
 				$impurePoints = $variant->getImpurePoints();
+				$acceptsNamedArguments = $variant->acceptsNamedArguments();
 			} elseif ($function !== null) {
 				$returnTypeForThrow = $variant->getReturnType();
 				$throwType = $function->getThrowType();
@@ -2548,6 +2574,8 @@ class MutatingScope implements Scope
 				if ($impurePoint !== null) {
 					$impurePoints[] = $impurePoint;
 				}
+
+				$acceptsNamedArguments = $function->acceptsNamedArguments();
 			}
 
 			$parameters = $variant->getParameters();
@@ -2563,6 +2591,7 @@ class MutatingScope implements Scope
 				$impurePoints,
 				[],
 				[],
+				$acceptsNamedArguments,
 			);
 		}
 
@@ -5687,7 +5716,7 @@ class MutatingScope implements Scope
 	}
 
 	/** @api */
-	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?PropertyReflection
+	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection
 	{
 		if ($typeWithProperty instanceof UnionType) {
 			$newTypes = [];

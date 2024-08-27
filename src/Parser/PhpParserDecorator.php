@@ -8,7 +8,7 @@ use PhpParser\Node;
 use PhpParser\Parser;
 use function sprintf;
 
-class PhpParserDecorator implements Parser
+final class PhpParserDecorator implements Parser
 {
 
 	public function __construct(private \PHPStan\Parser\Parser $wrappedParser)

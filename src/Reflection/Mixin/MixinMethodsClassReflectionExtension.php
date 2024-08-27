@@ -11,7 +11,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_intersect;
 use function count;
 
-class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExtension
+final class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 
 	/** @var array<string, array<string, true>> */

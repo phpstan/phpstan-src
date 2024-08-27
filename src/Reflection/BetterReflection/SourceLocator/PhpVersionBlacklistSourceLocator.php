@@ -9,7 +9,7 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 
-class PhpVersionBlacklistSourceLocator implements SourceLocator
+final class PhpVersionBlacklistSourceLocator implements SourceLocator
 {
 
 	public function __construct(

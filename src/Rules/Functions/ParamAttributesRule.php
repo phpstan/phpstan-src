@@ -11,7 +11,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<Node\Param>
  */
-class ParamAttributesRule implements Rule
+final class ParamAttributesRule implements Rule
 {
 
 	public function __construct(private AttributesCheck $attributesCheck)

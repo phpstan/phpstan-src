@@ -8,7 +8,7 @@ use function array_map;
 use function count;
 use function implode;
 
-class ParserErrorsException extends Exception
+final class ParserErrorsException extends Exception
 {
 
 	/** @var mixed[] */

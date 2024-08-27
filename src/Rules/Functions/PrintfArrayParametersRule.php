@@ -22,7 +22,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class PrintfArrayParametersRule implements Rule
+final class PrintfArrayParametersRule implements Rule
 {
 
 	public function __construct(

@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\TraitUse>
  */
-class ExistingClassInTraitUseRule implements Rule
+final class ExistingClassInTraitUseRule implements Rule
 {
 
 	public function __construct(

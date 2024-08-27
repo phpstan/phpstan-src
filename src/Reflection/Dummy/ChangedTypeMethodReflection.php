@@ -11,7 +11,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use function is_bool;
 
-class ChangedTypeMethodReflection implements ExtendedMethodReflection
+final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**
@@ -105,6 +105,11 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 	public function getAsserts(): Assertions
 	{
 		return $this->reflection->getAsserts();
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->reflection->acceptsNamedArguments();
 	}
 
 	public function getSelfOutType(): ?Type

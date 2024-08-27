@@ -15,7 +15,7 @@ use function array_filter;
 use function count;
 use function version_compare;
 
-class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

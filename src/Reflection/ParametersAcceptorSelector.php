@@ -53,7 +53,10 @@ use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
 use const CURLOPT_SSL_VERIFYHOST;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ParametersAcceptorSelector
 {
 
@@ -603,6 +606,7 @@ class ParametersAcceptorSelector
 		$impurePoints = [];
 		$invalidateExpressions = [];
 		$usedVariables = [];
+		$acceptsNamedArguments = false;
 
 		foreach ($acceptors as $acceptor) {
 			$returnTypes[] = $acceptor->getReturnType();
@@ -618,6 +622,7 @@ class ParametersAcceptorSelector
 				$impurePoints = array_merge($impurePoints, $acceptor->getImpurePoints());
 				$invalidateExpressions = array_merge($invalidateExpressions, $acceptor->getInvalidateExpressions());
 				$usedVariables = array_merge($usedVariables, $acceptor->getUsedVariables());
+				$acceptsNamedArguments = $acceptsNamedArguments || $acceptor->acceptsNamedArguments();
 			}
 			$isVariadic = $isVariadic || $acceptor->isVariadic();
 
@@ -719,6 +724,7 @@ class ParametersAcceptorSelector
 				$impurePoints,
 				$invalidateExpressions,
 				$usedVariables,
+				$acceptsNamedArguments,
 			);
 		}
 
@@ -754,6 +760,7 @@ class ParametersAcceptorSelector
 				$acceptor->getImpurePoints(),
 				$acceptor->getInvalidateExpressions(),
 				$acceptor->getUsedVariables(),
+				$acceptor->acceptsNamedArguments(),
 			);
 		}
 

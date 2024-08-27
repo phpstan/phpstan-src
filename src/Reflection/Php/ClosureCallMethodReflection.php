@@ -150,6 +150,11 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 		return $this->nativeMethodReflection->getAsserts();
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->nativeMethodReflection->acceptsNamedArguments();
+	}
+
 	public function getSelfOutType(): ?Type
 	{
 		return $this->nativeMethodReflection->getSelfOutType();

@@ -2,11 +2,11 @@
 
 namespace PHPStan\Reflection\Php;
 
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\Type\Type;
 
-class EnumUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
+final class EnumUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 
 	public function __construct(private EnumPropertyReflection $property)
@@ -18,12 +18,12 @@ class EnumUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPro
 		return $this;
 	}
 
-	public function getNakedProperty(): PropertyReflection
+	public function getNakedProperty(): ExtendedPropertyReflection
 	{
 		return $this->property;
 	}
 
-	public function getTransformedProperty(): PropertyReflection
+	public function getTransformedProperty(): ExtendedPropertyReflection
 	{
 		return $this->property;
 	}

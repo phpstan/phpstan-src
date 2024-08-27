@@ -17,7 +17,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use function is_a;
 
-class LazyInternalScopeFactory implements InternalScopeFactory
+final class LazyInternalScopeFactory implements InternalScopeFactory
 {
 
 	private bool $explicitMixedInUnknownGenericNew;

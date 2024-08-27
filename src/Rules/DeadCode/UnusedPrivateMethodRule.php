@@ -20,7 +20,7 @@ use function strtolower;
 /**
  * @implements Rule<ClassMethodsNode>
  */
-class UnusedPrivateMethodRule implements Rule
+final class UnusedPrivateMethodRule implements Rule
 {
 
 	public function __construct(private AlwaysUsedMethodExtensionProvider $extensionProvider)

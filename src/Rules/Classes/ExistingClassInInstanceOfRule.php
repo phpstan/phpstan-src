@@ -19,7 +19,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\Instanceof_>
  */
-class ExistingClassInInstanceOfRule implements Rule
+final class ExistingClassInInstanceOfRule implements Rule
 {
 
 	public function __construct(

@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleError;
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError117 implements RuleError, FileRuleError, IdentifierRuleError, MetadataRuleError, NonIgnorableRuleError
+final class RuleError117 implements RuleError, FileRuleError, IdentifierRuleError, MetadataRuleError, NonIgnorableRuleError
 {
 
 	public string $message;

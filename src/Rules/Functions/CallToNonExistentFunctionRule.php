@@ -14,7 +14,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class CallToNonExistentFunctionRule implements Rule
+final class CallToNonExistentFunctionRule implements Rule
 {
 
 	public function __construct(

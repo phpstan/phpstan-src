@@ -21,7 +21,7 @@ use function array_map;
 use function array_unique;
 use function count;
 
-class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	use MbFunctionsReturnTypeExtensionTrait;

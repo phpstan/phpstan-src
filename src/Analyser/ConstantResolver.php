@@ -25,7 +25,7 @@ use const INF;
 use const NAN;
 use const PHP_INT_SIZE;
 
-class ConstantResolver
+final class ConstantResolver
 {
 
 	/** @var array<string, true> */

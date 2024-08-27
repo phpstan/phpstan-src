@@ -7,7 +7,7 @@ use PHPStan\DependencyInjection\Container;
 use function class_implements;
 use function class_parents;
 
-class LazyRegistry implements Registry
+final class LazyRegistry implements Registry
 {
 
 	public const RULE_TAG = 'phpstan.rules.rule';

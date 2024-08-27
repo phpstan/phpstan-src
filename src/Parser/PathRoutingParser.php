@@ -13,7 +13,7 @@ use function realpath;
 use function str_contains;
 use const DIRECTORY_SEPARATOR;
 
-class PathRoutingParser implements Parser
+final class PathRoutingParser implements Parser
 {
 
 	/** @var bool[] filePath(string) => bool(true) */

@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
-class ConstantsInTraitsRule implements Rule
+final class ConstantsInTraitsRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpVersion)

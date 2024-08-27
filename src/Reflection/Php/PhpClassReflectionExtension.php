@@ -21,6 +21,7 @@ use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
@@ -60,11 +61,11 @@ use function is_array;
 use function sprintf;
 use function strtolower;
 
-class PhpClassReflectionExtension
+final class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
 {
 
-	/** @var PropertyReflection[][] */
+	/** @var ExtendedPropertyReflection[][] */
 	private array $propertiesIncludingAnnotations = [];
 
 	/** @var PhpPropertyReflection[][] */
@@ -152,6 +153,9 @@ class PhpClassReflectionExtension
 		return $classReflection->getNativeReflection()->hasProperty($propertyName);
 	}
 
+	/**
+	 * @return ExtendedPropertyReflection
+	 */
 	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
 	{
 		if (!isset($this->propertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName])) {
@@ -176,7 +180,7 @@ class PhpClassReflectionExtension
 		ClassReflection $classReflection,
 		string $propertyName,
 		bool $includingAnnotations,
-	): PropertyReflection
+	): ExtendedPropertyReflection
 	{
 		$propertyReflection = $classReflection->getNativeReflection()->getProperty($propertyName);
 		$propertyName = $propertyReflection->getName();
@@ -473,6 +477,7 @@ class PhpClassReflectionExtension
 			$reflectionMethod = null;
 			$throwType = null;
 			$asserts = Assertions::createEmpty();
+			$acceptsNamedArguments = true;
 			$selfOutType = null;
 			$phpDocComment = null;
 			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
@@ -535,6 +540,7 @@ class PhpClassReflectionExtension
 							}
 
 							$asserts = Assertions::createFromResolvedPhpDocBlock($stubPhpDoc);
+							$acceptsNamedArguments = $stubPhpDoc->acceptsNamedArguments();
 
 							$selfOutTypeTag = $stubPhpDoc->getSelfOutTag();
 							if ($selfOutTypeTag !== null) {
@@ -579,6 +585,7 @@ class PhpClassReflectionExtension
 								$phpDocParameterTypes[$name] = $paramTag->getType();
 							}
 							$asserts = Assertions::createFromResolvedPhpDocBlock($phpDocBlock);
+							$acceptsNamedArguments = $phpDocBlock->acceptsNamedArguments();
 
 							$selfOutTypeTag = $phpDocBlock->getSelfOutTag();
 							if ($selfOutTypeTag !== null) {
@@ -621,6 +628,7 @@ class PhpClassReflectionExtension
 				$hasSideEffects,
 				$throwType,
 				$asserts,
+				$acceptsNamedArguments,
 				$selfOutType,
 				$phpDocComment,
 			);
@@ -769,6 +777,7 @@ class PhpClassReflectionExtension
 		$isFinal = $resolvedPhpDoc->isFinal();
 		$isPure = $resolvedPhpDoc->isPure();
 		$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
+		$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 		$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
 		$phpDocComment = null;
 		if ($resolvedPhpDoc->hasPhpDocString()) {
@@ -794,6 +803,7 @@ class PhpClassReflectionExtension
 			$phpDocParameterOutTypes,
 			$immediatelyInvokedCallableParameters,
 			$closureThisParameters,
+			$acceptsNamedArguments,
 		);
 	}
 

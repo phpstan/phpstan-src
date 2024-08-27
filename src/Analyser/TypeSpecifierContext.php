@@ -4,7 +4,10 @@ namespace PHPStan\Analyser;
 
 use PHPStan\ShouldNotHappenException;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class TypeSpecifierContext
 {
 

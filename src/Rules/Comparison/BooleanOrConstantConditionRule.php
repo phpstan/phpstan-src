@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<BooleanOrNode>
  */
-class BooleanOrConstantConditionRule implements Rule
+final class BooleanOrConstantConditionRule implements Rule
 {
 
 	public function __construct(

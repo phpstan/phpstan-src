@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class MissingMethodImplementationRule implements Rule
+final class MissingMethodImplementationRule implements Rule
 {
 
 	public function getNodeType(): string

@@ -28,7 +28,7 @@ use function count;
 use function sprintf;
 use function str_contains;
 
-class RuleLevelHelper
+final class RuleLevelHelper
 {
 
 	public function __construct(
@@ -124,6 +124,9 @@ class RuleLevelHelper
 					$acceptedType->getTemplateTags(),
 					$acceptedType->getThrowPoints(),
 					$acceptedType->getImpurePoints(),
+					$acceptedType->getInvalidateExpressions(),
+					$acceptedType->getUsedVariables(),
+					$acceptedType->acceptsNamedArguments(),
 				);
 			}
 

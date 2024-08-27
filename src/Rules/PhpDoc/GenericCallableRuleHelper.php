@@ -18,7 +18,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_keys;
 use function sprintf;
 
-class GenericCallableRuleHelper
+final class GenericCallableRuleHelper
 {
 
 	public function __construct(

@@ -12,7 +12,7 @@ use function class_exists;
 use function interface_exists;
 use function trait_exists;
 
-class RewriteClassAliasSourceLocator implements SourceLocator
+final class RewriteClassAliasSourceLocator implements SourceLocator
 {
 
 	public function __construct(private SourceLocator $originalSourceLocator)

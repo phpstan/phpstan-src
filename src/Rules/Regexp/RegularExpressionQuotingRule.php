@@ -27,7 +27,7 @@ use function strlen;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class RegularExpressionQuotingRule implements Rule
+final class RegularExpressionQuotingRule implements Rule
 {
 
 	public function __construct(

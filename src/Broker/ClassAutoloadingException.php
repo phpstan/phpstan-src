@@ -7,7 +7,7 @@ use Throwable;
 use function get_class;
 use function sprintf;
 
-class ClassAutoloadingException extends AnalysedCodeException
+final class ClassAutoloadingException extends AnalysedCodeException
 {
 
 	private string $className;
@@ -39,7 +39,7 @@ class ClassAutoloadingException extends AnalysedCodeException
 		return $this->className;
 	}
 
-	public function getTip(): ?string
+	public function getTip(): string
 	{
 		return 'Learn more at https://phpstan.org/user-guide/discovering-symbols';
 	}

@@ -15,7 +15,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\New_>
  */
-class DateTimeInstantiationRule implements Rule
+final class DateTimeInstantiationRule implements Rule
 {
 
 	public function getNodeType(): string

@@ -7,7 +7,7 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\ShouldNotHappenException;
 
-class ExportedNodeVisitor extends NodeVisitorAbstract
+final class ExportedNodeVisitor extends NodeVisitorAbstract
 {
 
 	private ?string $fileName = null;

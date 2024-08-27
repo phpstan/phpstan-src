@@ -13,7 +13,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 
-class PhpParameterReflection implements ParameterReflectionWithPhpDocs
+final class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 {
 
 	private ?Type $type = null;

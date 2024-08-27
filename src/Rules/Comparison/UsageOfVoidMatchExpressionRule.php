@@ -10,7 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Expr\Match_>
  */
-class UsageOfVoidMatchExpressionRule implements Rule
+final class UsageOfVoidMatchExpressionRule implements Rule
 {
 
 	public function getNodeType(): string

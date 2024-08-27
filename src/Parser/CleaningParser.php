@@ -6,7 +6,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\NodeTraverser;
 use PHPStan\Php\PhpVersion;
 
-class CleaningParser implements Parser
+final class CleaningParser implements Parser
 {
 
 	private NodeTraverser $traverser;

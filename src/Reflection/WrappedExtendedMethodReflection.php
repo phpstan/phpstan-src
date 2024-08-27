@@ -9,7 +9,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_map;
 
-class WrappedExtendedMethodReflection implements ExtendedMethodReflection
+final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(private MethodReflection $method)
@@ -135,6 +135,11 @@ class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->getDeclaringClass()->acceptsNamedArguments();
 	}
 
 	public function getSelfOutType(): ?Type

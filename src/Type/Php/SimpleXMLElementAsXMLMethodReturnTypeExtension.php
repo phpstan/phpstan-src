@@ -14,7 +14,7 @@ use PHPStan\Type\UnionType;
 use SimpleXMLElement;
 use function count;
 
-class SimpleXMLElementAsXMLMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
+final class SimpleXMLElementAsXMLMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
 	public function getClass(): string

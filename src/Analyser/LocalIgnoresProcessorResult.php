@@ -5,7 +5,7 @@ namespace PHPStan\Analyser;
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
  */
-class LocalIgnoresProcessorResult
+final class LocalIgnoresProcessorResult
 {
 
 	/**

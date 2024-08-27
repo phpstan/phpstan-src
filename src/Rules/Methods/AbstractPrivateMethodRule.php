@@ -10,7 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 
 /** @implements Rule<InClassMethodNode> */
-class AbstractPrivateMethodRule implements Rule
+final class AbstractPrivateMethodRule implements Rule
 {
 
 	public function getNodeType(): string

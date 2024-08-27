@@ -20,7 +20,7 @@ use function sprintf;
  * @deprecated Replaced by PHPStan\Rules\Functions\ImplodeParameterCastableToStringRuleTest
  * @implements Rule<Node\Expr\FuncCall>
  */
-class ImplodeFunctionRule implements Rule
+final class ImplodeFunctionRule implements Rule
 {
 
 	public function __construct(

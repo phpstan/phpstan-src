@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<StaticMethodCallableNode>
  */
-class StaticMethodCallableRule implements Rule
+final class StaticMethodCallableRule implements Rule
 {
 
 	public function __construct(private StaticMethodCallCheck $methodCallCheck, private PhpVersion $phpVersion)

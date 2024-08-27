@@ -17,7 +17,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use function is_a;
 
-class DirectInternalScopeFactory implements InternalScopeFactory
+final class DirectInternalScopeFactory implements InternalScopeFactory
 {
 
 	/**

@@ -5,7 +5,7 @@ namespace PHPStan\Reflection;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 
-class PhpVersionStaticAccessor
+final class PhpVersionStaticAccessor
 {
 
 	private static ?PhpVersion $instance = null;

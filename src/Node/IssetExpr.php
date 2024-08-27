@@ -4,7 +4,7 @@ namespace PHPStan\Node;
 
 use PhpParser\Node\Expr;
 
-class IssetExpr extends Expr implements VirtualNode
+final class IssetExpr extends Expr implements VirtualNode
 {
 
 	public function __construct(

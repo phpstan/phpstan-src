@@ -7,7 +7,7 @@ use PHPStan\Dependency\ExportedNode;
 use PHPStan\Dependency\RootExportedNode;
 use ReturnTypeWillChange;
 
-class ExportedTraitNode implements RootExportedNode, JsonSerializable
+final class ExportedTraitNode implements RootExportedNode, JsonSerializable
 {
 
 	public function __construct(private string $traitName)
@@ -51,6 +51,9 @@ class ExportedTraitNode implements RootExportedNode, JsonSerializable
 		];
 	}
 
+	/**
+	 * @return self::TYPE_TRAIT
+	 */
 	public function getType(): string
 	{
 		return self::TYPE_TRAIT;

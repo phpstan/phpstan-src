@@ -11,7 +11,10 @@ use PhpParser\NodeAbstract;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\Type;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ClassPropertyNode extends NodeAbstract implements VirtualNode
 {
 

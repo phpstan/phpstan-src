@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertyNode>
  */
-class PropertyVarianceRule implements Rule
+final class PropertyVarianceRule implements Rule
 {
 
 	public function __construct(

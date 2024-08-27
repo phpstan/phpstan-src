@@ -50,7 +50,7 @@ use function strtolower;
 /**
  * @implements Rule<Instanceof_>
  */
-class ApiInstanceofTypeRule implements Rule
+final class ApiInstanceofTypeRule implements Rule
 {
 
 	private const MAP = [

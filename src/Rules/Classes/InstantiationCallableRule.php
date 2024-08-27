@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<InstantiationCallableNode>
  */
-class InstantiationCallableRule implements Rule
+final class InstantiationCallableRule implements Rule
 {
 
 	public function getNodeType(): string

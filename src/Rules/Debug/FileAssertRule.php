@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class FileAssertRule implements Rule
+final class FileAssertRule implements Rule
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

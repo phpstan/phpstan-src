@@ -9,7 +9,7 @@ use function array_merge;
 use function count;
 use function sprintf;
 
-class CallableTypeHelper
+final class CallableTypeHelper
 {
 
 	public static function isParametersAcceptorSuperTypeOf(

@@ -2,7 +2,7 @@
 
 namespace PHPStan\Cache;
 
-class CacheItem
+final class CacheItem
 {
 
 	/**

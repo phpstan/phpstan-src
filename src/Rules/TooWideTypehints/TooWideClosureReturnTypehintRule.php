@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<ClosureReturnStatementsNode>
  */
-class TooWideClosureReturnTypehintRule implements Rule
+final class TooWideClosureReturnTypehintRule implements Rule
 {
 
 	public function getNodeType(): string

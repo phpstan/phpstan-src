@@ -15,7 +15,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use function count;
 
-class StrPadFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class StrPadFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

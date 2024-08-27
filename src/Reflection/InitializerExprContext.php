@@ -15,7 +15,10 @@ use function explode;
 use function implode;
 use function sprintf;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class InitializerExprContext implements NamespaceAnswerer
 {
 

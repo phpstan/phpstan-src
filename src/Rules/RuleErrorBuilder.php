@@ -13,6 +13,7 @@ use function sprintf;
 
 /**
  * @api
+ * @final
  * @template-covariant T of RuleError
  */
 class RuleErrorBuilder

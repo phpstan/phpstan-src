@@ -5,7 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node as PhpParserNode;
 use PHPStan\PhpDocParser\Ast\Node as PhpDocNode;
 
-class PhpDocLineHelper
+final class PhpDocLineHelper
 {
 
 	/**

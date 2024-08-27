@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection\Type;
 
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Type\Type;
 
 interface UnresolvedPropertyPrototypeReflection
@@ -10,9 +10,9 @@ interface UnresolvedPropertyPrototypeReflection
 
 	public function doNotResolveTemplateTypeMapToBounds(): self;
 
-	public function getNakedProperty(): PropertyReflection;
+	public function getNakedProperty(): ExtendedPropertyReflection;
 
-	public function getTransformedProperty(): PropertyReflection;
+	public function getTransformedProperty(): ExtendedPropertyReflection;
 
 	public function withFechedOnType(Type $type): self;
 

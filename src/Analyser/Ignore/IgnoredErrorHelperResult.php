@@ -13,7 +13,7 @@ use function is_array;
 use function is_string;
 use function sprintf;
 
-class IgnoredErrorHelperResult
+final class IgnoredErrorHelperResult
 {
 
 	/**

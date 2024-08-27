@@ -7,7 +7,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-class DummyParameterWithPhpDocs extends DummyParameter implements ParameterReflectionWithPhpDocs
+final class DummyParameterWithPhpDocs extends DummyParameter implements ParameterReflectionWithPhpDocs
 {
 
 	public function __construct(

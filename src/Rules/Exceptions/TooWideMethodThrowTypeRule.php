@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
-class TooWideMethodThrowTypeRule implements Rule
+final class TooWideMethodThrowTypeRule implements Rule
 {
 
 	public function __construct(private FileTypeMapper $fileTypeMapper, private TooWideThrowTypeCheck $check)

@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\StaticCall>
  */
-class CallStaticMethodsRule implements Rule
+final class CallStaticMethodsRule implements Rule
 {
 
 	public function __construct(
@@ -78,8 +78,10 @@ class CallStaticMethodsRule implements Rule
 				'Unknown parameter $%s in call to ' . $lowercasedMethodName . '.',
 				'Return type of call to ' . $lowercasedMethodName . ' contains unresolvable type.',
 				'Parameter %s of ' . $lowercasedMethodName . ' contains unresolvable type.',
+				$displayMethodName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 			],
 			'staticMethod',
+			$method->acceptsNamedArguments(),
 		));
 
 		return $errors;

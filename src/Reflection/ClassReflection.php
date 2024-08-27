@@ -69,14 +69,17 @@ use function reset;
 use function sprintf;
 use function strtolower;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ClassReflection
 {
 
 	/** @var ExtendedMethodReflection[] */
 	private array $methods = [];
 
-	/** @var PropertyReflection[] */
+	/** @var ExtendedPropertyReflection[] */
 	private array $properties = [];
 
 	/** @var ClassConstantReflection[] */
@@ -534,6 +537,15 @@ class ClassReflection
 		return new WrappedExtendedMethodReflection($method);
 	}
 
+	private function wrapExtendedProperty(PropertyReflection $method): ExtendedPropertyReflection
+	{
+		if ($method instanceof ExtendedPropertyReflection) {
+			return $method;
+		}
+
+		return new WrappedExtendedPropertyReflection($method);
+	}
+
 	public function hasNativeMethod(string $methodName): bool
 	{
 		return $this->getPhpExtension()->hasNativeMethod($this, $methodName);
@@ -616,7 +628,7 @@ class ClassReflection
 		$this->getPhpExtension()->evictPrivateSymbols($this->getCacheKey());
 	}
 
-	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
+	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
 	{
 		if ($this->isEnum()) {
 			return $this->getNativeProperty($propertyName);
@@ -637,7 +649,7 @@ class ClassReflection
 					continue;
 				}
 
-				$property = $extension->getProperty($this, $propertyName);
+				$property = $this->wrapExtendedProperty($extension->getProperty($this, $propertyName));
 				if ($scope->canAccessProperty($property)) {
 					return $this->properties[$key] = $property;
 				}
@@ -1720,7 +1732,7 @@ class ClassReflection
 	}
 
 	/**
-	 * @return array<PropertyTag>
+	 * @return array<string, PropertyTag>
 	 */
 	public function getPropertyTags(): array
 	{
@@ -1733,7 +1745,7 @@ class ClassReflection
 	}
 
 	/**
-	 * @return array<MethodTag>
+	 * @return array<string, MethodTag>
 	 */
 	public function getMethodTags(): array
 	{

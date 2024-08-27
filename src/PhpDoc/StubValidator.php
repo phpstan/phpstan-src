@@ -26,6 +26,13 @@ use PHPStan\Rules\Classes\ExistingClassInTraitUseRule;
 use PHPStan\Rules\Classes\LocalTypeAliasesCheck;
 use PHPStan\Rules\Classes\LocalTypeAliasesRule;
 use PHPStan\Rules\Classes\LocalTypeTraitAliasesRule;
+use PHPStan\Rules\Classes\MethodTagCheck;
+use PHPStan\Rules\Classes\MethodTagRule;
+use PHPStan\Rules\Classes\MethodTagTraitRule;
+use PHPStan\Rules\Classes\MixinRule;
+use PHPStan\Rules\Classes\PropertyTagCheck;
+use PHPStan\Rules\Classes\PropertyTagRule;
+use PHPStan\Rules\Classes\PropertyTagTraitRule;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\FunctionDefinitionCheck;
@@ -51,11 +58,15 @@ use PHPStan\Rules\Methods\MethodParameterComparisonHelper;
 use PHPStan\Rules\Methods\MethodSignatureRule;
 use PHPStan\Rules\Methods\MissingMethodParameterTypehintRule;
 use PHPStan\Rules\Methods\MissingMethodReturnTypehintRule;
+use PHPStan\Rules\Methods\MissingMethodSelfOutTypeRule;
 use PHPStan\Rules\Methods\OverridingMethodRule;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\GenericCallableRuleHelper;
+use PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule;
+use PHPStan\Rules\PhpDoc\IncompatibleParamImmediatelyInvokedCallableRule;
 use PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule;
+use PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule;
 use PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule;
 use PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule;
 use PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule;
@@ -70,7 +81,7 @@ use function array_fill_keys;
 use function count;
 use function sprintf;
 
-class StubValidator
+final class StubValidator
 {
 
 	public function __construct(
@@ -197,6 +208,9 @@ class StubValidator
 				$container->getParameter('featureToggles')['allInvalidPhpDocs'],
 				$container->getParameter('featureToggles')['invalidPhpDocTagLine'],
 			),
+			new IncompatibleParamImmediatelyInvokedCallableRule($fileTypeMapper),
+			new IncompatibleSelfOutTypeRule($unresolvableTypeHelper, $genericObjectTypeCheck),
+			new IncompatibleClassConstantPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper),
 			new InvalidThrowsPhpDocValueRule($fileTypeMapper),
 
 			// level 6
@@ -220,6 +234,19 @@ class StubValidator
 				$container->getByType(PhpDocParser::class),
 				true,
 			);
+		}
+
+		if ((bool) $container->getParameter('featureToggles')['absentTypeChecks']) {
+			$rules[] = new MissingMethodSelfOutTypeRule($missingTypehintCheck);
+
+			$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true);
+			$rules[] = new MethodTagRule($methodTagCheck);
+			$rules[] = new MethodTagTraitRule($methodTagCheck, $reflectionProvider);
+
+			$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true);
+			$rules[] = new PropertyTagRule($propertyTagCheck);
+			$rules[] = new PropertyTagTraitRule($propertyTagCheck, $reflectionProvider);
+			$rules[] = new MixinRule($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
 		}
 
 		return new DirectRuleRegistry($rules);

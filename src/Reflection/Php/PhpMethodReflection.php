@@ -45,7 +45,10 @@ use function strtolower;
 use function time;
 use const PHP_VERSION_ID;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class PhpMethodReflection implements ExtendedMethodReflection
 {
 
@@ -84,6 +87,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		private bool $isFinal,
 		private ?bool $isPure,
 		private Assertions $asserts,
+		private bool $acceptsNamedArguments,
 		private ?Type $selfOutType,
 		private ?string $phpDocComment,
 		private array $phpDocParameterOutTypes,
@@ -451,6 +455,11 @@ class PhpMethodReflection implements ExtendedMethodReflection
 	public function getAsserts(): Assertions
 	{
 		return $this->asserts;
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->declaringClass->acceptsNamedArguments() && $this->acceptsNamedArguments;
 	}
 
 	public function getSelfOutType(): ?Type

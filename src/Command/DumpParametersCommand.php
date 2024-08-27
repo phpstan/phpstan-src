@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use function is_string;
 
-class DumpParametersCommand extends Command
+final class DumpParametersCommand extends Command
 {
 
 	private const NAME = 'dump-parameters';

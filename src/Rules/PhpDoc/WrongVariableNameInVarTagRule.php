@@ -31,7 +31,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt>
  */
-class WrongVariableNameInVarTagRule implements Rule
+final class WrongVariableNameInVarTagRule implements Rule
 {
 
 	public function __construct(

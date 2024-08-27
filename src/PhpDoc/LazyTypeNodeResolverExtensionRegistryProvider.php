@@ -4,7 +4,7 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\DependencyInjection\Container;
 
-class LazyTypeNodeResolverExtensionRegistryProvider implements TypeNodeResolverExtensionRegistryProvider
+final class LazyTypeNodeResolverExtensionRegistryProvider implements TypeNodeResolverExtensionRegistryProvider
 {
 
 	private ?TypeNodeResolverExtensionRegistry $registry = null;

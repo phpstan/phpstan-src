@@ -6,7 +6,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use function sprintf;
 use function strtolower;
 
-class ClassCaseSensitivityCheck
+final class ClassCaseSensitivityCheck
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider, private bool $checkInternalClassCaseSensitivity)

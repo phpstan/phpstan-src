@@ -9,7 +9,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use function count;
 
-class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private DateFunctionReturnTypeHelper $dateFunctionReturnTypeHelper)

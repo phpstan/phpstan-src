@@ -10,7 +10,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\PsrAutoloaderMappin
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use function is_file;
 
-class OptimizedPsrAutoloaderLocator implements SourceLocator
+final class OptimizedPsrAutoloaderLocator implements SourceLocator
 {
 
 	/** @var array<string, OptimizedSingleFileSourceLocator> */

@@ -5,7 +5,10 @@ namespace PHPStan\Node;
 use PhpParser\Node;
 use PhpParser\NodeAbstract;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class FileNode extends NodeAbstract implements VirtualNode
 {
 

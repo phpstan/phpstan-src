@@ -5,7 +5,7 @@ namespace PHPStan\Process;
 use Fidry\CpuCoreCounter\CpuCoreCounter as FidryCpuCoreCounter;
 use Fidry\CpuCoreCounter\NumberOfCpuCoreNotFound;
 
-class CpuCoreCounter
+final class CpuCoreCounter
 {
 
 	private ?int $count = null;

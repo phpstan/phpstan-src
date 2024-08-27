@@ -10,7 +10,7 @@ use PHPStan\Collectors\Collector;
 /**
  * @implements Collector<Node\Stmt\Expression, array{class-string, string, int}>
  */
-class PossiblyPureStaticCallCollector implements Collector
+final class PossiblyPureStaticCallCollector implements Collector
 {
 
 	public function __construct()

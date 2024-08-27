@@ -4,6 +4,10 @@ namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\Type\Type;
 
+/**
+ * @api
+ * @final
+ */
 class SelfOutTypeTag implements TypedTag
 {
 

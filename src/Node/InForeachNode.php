@@ -5,7 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\NodeAbstract;
 
-class InForeachNode extends NodeAbstract implements VirtualNode
+final class InForeachNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(private Foreach_ $originalNode)

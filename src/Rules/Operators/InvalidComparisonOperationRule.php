@@ -23,7 +23,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\BinaryOp>
  */
-class InvalidComparisonOperationRule implements Rule
+final class InvalidComparisonOperationRule implements Rule
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

@@ -5,7 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\AnalysedCodeException;
 use function sprintf;
 
-class UndefinedVariableException extends AnalysedCodeException
+final class UndefinedVariableException extends AnalysedCodeException
 {
 
 	public function __construct(private Scope $scope, private string $variableName)

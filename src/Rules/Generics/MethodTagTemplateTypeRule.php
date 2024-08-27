@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class MethodTagTemplateTypeRule implements Rule
+final class MethodTagTemplateTypeRule implements Rule
 {
 
 	public function __construct(

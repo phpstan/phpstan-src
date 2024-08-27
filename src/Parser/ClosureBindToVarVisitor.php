@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\NodeVisitorAbstract;
 
-class ClosureBindToVarVisitor extends NodeVisitorAbstract
+final class ClosureBindToVarVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'closureBindToVar';

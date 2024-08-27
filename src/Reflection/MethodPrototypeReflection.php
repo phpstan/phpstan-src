@@ -4,7 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Type\Type;
 
-class MethodPrototypeReflection implements ClassMemberReflection
+final class MethodPrototypeReflection implements ClassMemberReflection
 {
 
 	/**

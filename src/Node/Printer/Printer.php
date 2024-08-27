@@ -19,7 +19,7 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
-class Printer extends Standard
+final class Printer extends Standard
 {
 
 	public function __construct()

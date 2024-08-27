@@ -10,7 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Expr\MethodCall>
  */
-class IllegalConstructorMethodCallRule implements Rule
+final class IllegalConstructorMethodCallRule implements Rule
 {
 
 	public function getNodeType(): string

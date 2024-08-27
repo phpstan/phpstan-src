@@ -10,7 +10,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<VarTagChangedExpressionTypeNode>
  */
-class VarTagChangedExpressionTypeRule implements Rule
+final class VarTagChangedExpressionTypeRule implements Rule
 {
 
 	public function __construct(private VarTagTypeRuleHelper $varTagTypeRuleHelper)

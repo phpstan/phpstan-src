@@ -11,7 +11,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use function count;
 
-class DateFormatMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
+final class DateFormatMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
 	public function __construct(private DateFunctionReturnTypeHelper $dateFunctionReturnTypeHelper)
@@ -28,7 +28,7 @@ class DateFormatMethodReturnTypeExtension implements DynamicMethodReturnTypeExte
 		return $methodReflection->getName() === 'format';
 	}
 
-	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
+	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
 		if (count($methodCall->getArgs()) === 0) {
 			return new StringType();

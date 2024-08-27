@@ -3,16 +3,17 @@
 namespace PHPStan\Reflection\Annotations;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\NeverType;
 
-class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
+final class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
 
-	/** @var PropertyReflection[][] */
+	/** @var ExtendedPropertyReflection[][] */
 	private array $properties = [];
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
@@ -28,6 +29,9 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 		return isset($this->properties[$classReflection->getCacheKey()][$propertyName]);
 	}
 
+	/**
+	 * @return ExtendedPropertyReflection
+	 */
 	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
 	{
 		return $this->properties[$classReflection->getCacheKey()][$propertyName];
@@ -37,7 +41,7 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 		ClassReflection $classReflection,
 		ClassReflection $declaringClass,
 		string $propertyName,
-	): ?PropertyReflection
+	): ?ExtendedPropertyReflection
 	{
 		$propertyTags = $classReflection->getPropertyTags();
 		if (isset($propertyTags[$propertyName])) {

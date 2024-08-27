@@ -17,7 +17,7 @@ use function count;
 use function implode;
 use function is_bool;
 
-class UnionTypeMethodReflection implements ExtendedMethodReflection
+final class UnionTypeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**
@@ -167,6 +167,16 @@ class UnionTypeMethodReflection implements ExtendedMethodReflection
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		$accepts = true;
+		foreach ($this->methods as $method) {
+			$accepts = $accepts && $method->acceptsNamedArguments();
+		}
+
+		return $accepts;
 	}
 
 	public function getSelfOutType(): ?Type

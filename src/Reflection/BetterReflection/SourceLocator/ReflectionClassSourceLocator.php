@@ -12,7 +12,7 @@ use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use ReflectionClass;
 
-class ReflectionClassSourceLocator implements SourceLocator
+final class ReflectionClassSourceLocator implements SourceLocator
 {
 
 	public function __construct(

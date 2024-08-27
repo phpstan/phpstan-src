@@ -14,7 +14,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLoca
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use function dirname;
 
-class StubSourceLocatorFactory
+final class StubSourceLocatorFactory
 {
 
 	public function __construct(

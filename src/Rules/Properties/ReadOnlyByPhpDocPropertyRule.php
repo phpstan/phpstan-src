@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<ClassPropertyNode>
  */
-class ReadOnlyByPhpDocPropertyRule implements Rule
+final class ReadOnlyByPhpDocPropertyRule implements Rule
 {
 
 	public function getNodeType(): string

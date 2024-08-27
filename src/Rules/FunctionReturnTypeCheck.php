@@ -13,7 +13,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
-class FunctionReturnTypeCheck
+final class FunctionReturnTypeCheck
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

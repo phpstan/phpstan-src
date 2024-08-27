@@ -15,7 +15,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function count;
 
-class PregFilterFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class PregFilterFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

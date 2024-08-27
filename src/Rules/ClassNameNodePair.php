@@ -4,7 +4,7 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node;
 
-class ClassNameNodePair
+final class ClassNameNodePair
 {
 
 	public function __construct(private string $className, private Node $node)

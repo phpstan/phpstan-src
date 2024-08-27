@@ -6,7 +6,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use Throwable;
 
-class SimpleThrowPoint
+final class SimpleThrowPoint
 {
 
 	private function __construct(

@@ -22,7 +22,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function count;
 
-class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

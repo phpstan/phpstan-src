@@ -2,7 +2,7 @@
 
 namespace PHPStan\Analyser;
 
-class StatementContext
+final class StatementContext
 {
 
 	private function __construct(

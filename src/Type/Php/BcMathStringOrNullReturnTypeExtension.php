@@ -21,7 +21,7 @@ use PHPStan\Type\UnionType;
 use function in_array;
 use function is_numeric;
 
-class BcMathStringOrNullReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class BcMathStringOrNullReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

@@ -12,7 +12,7 @@ use PHPStan\Rules\TipRuleError;
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError95 implements RuleError, LineRuleError, FileRuleError, TipRuleError, IdentifierRuleError, NonIgnorableRuleError
+final class RuleError95 implements RuleError, LineRuleError, FileRuleError, TipRuleError, IdentifierRuleError, NonIgnorableRuleError
 {
 
 	public string $message;

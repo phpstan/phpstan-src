@@ -9,7 +9,7 @@ use function array_values;
 use function str_contains;
 use function strtr;
 
-class DefaultStubFilesProvider implements StubFilesProvider
+final class DefaultStubFilesProvider implements StubFilesProvider
 {
 
 	/** @var string[]|null */

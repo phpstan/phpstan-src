@@ -13,7 +13,7 @@ use PHPStan\Type\UnionType;
 use ReflectionClass;
 use function count;
 
-class ReflectionClassConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
+final class ReflectionClassConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool

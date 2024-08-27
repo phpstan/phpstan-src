@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class ClassAncestorsRule implements Rule
+final class ClassAncestorsRule implements Rule
 {
 
 	public function __construct(
@@ -49,6 +49,7 @@ class ClassAncestorsRule implements Rule
 			$originalNode->extends !== null ? [$originalNode->extends] : [],
 			array_map(static fn (ExtendsTag $tag): Type => $tag->getType(), $classReflection->getExtendsTags()),
 			sprintf('Class %s @extends tag contains incompatible type %%s.', $escapedClassName),
+			sprintf('Class %s @extends tag contains unresolvable type.', $className),
 			sprintf('Class %s has @extends tag, but does not extend any class.', $escapedClassName),
 			sprintf('The @extends tag of class %s describes %%s but the class extends %%s.', $escapedClassName),
 			'PHPDoc tag @extends contains generic type %s but %s %s is not generic.',
@@ -65,6 +66,7 @@ class ClassAncestorsRule implements Rule
 			$originalNode->implements,
 			array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $classReflection->getImplementsTags()),
 			sprintf('Class %s @implements tag contains incompatible type %%s.', $escapedClassName),
+			sprintf('Class %s @implements tag contains unresolvable type.', $className),
 			sprintf('Class %s has @implements tag, but does not implement any interface.', $escapedClassName),
 			sprintf('The @implements tag of class %s describes %%s but the class implements: %%s', $escapedClassName),
 			'PHPDoc tag @implements contains generic type %s but %s %s is not generic.',

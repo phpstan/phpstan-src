@@ -9,7 +9,7 @@ use ReturnTypeWillChange;
 use function array_map;
 use function count;
 
-class ExportedPropertiesNode implements JsonSerializable, ExportedNode
+final class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 {
 
 	/**

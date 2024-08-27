@@ -11,7 +11,7 @@ use function count;
 /**
  * @implements Rule<Node\FunctionLike>
  */
-class VariadicParametersDeclarationRule implements Rule
+final class VariadicParametersDeclarationRule implements Rule
 {
 
 	public function getNodeType(): string

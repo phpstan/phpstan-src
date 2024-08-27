@@ -4,7 +4,7 @@ namespace PHPStan\Process;
 
 use Exception;
 
-class ProcessCanceledException extends Exception
+final class ProcessCanceledException extends Exception
 {
 
 }

@@ -21,7 +21,7 @@ use function in_array;
 use function is_callable;
 use function mb_check_encoding;
 
-class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	/**

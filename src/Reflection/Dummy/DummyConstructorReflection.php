@@ -13,7 +13,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
 
-class DummyConstructorReflection implements ExtendedMethodReflection
+final class DummyConstructorReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(private ClassReflection $declaringClass)
@@ -109,6 +109,11 @@ class DummyConstructorReflection implements ExtendedMethodReflection
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->declaringClass->acceptsNamedArguments();
 	}
 
 	public function getSelfOutType(): ?Type

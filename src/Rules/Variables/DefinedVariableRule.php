@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Variable>
  */
-class DefinedVariableRule implements Rule
+final class DefinedVariableRule implements Rule
 {
 
 	public function __construct(

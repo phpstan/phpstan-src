@@ -12,7 +12,7 @@ use function strlen;
 use function strpos;
 use function substr;
 
-class ClassForbiddenNameCheck
+final class ClassForbiddenNameCheck
 {
 
 	private const INTERNAL_CLASS_PREFIXES = [

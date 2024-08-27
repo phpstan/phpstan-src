@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<MethodCall>
  */
-class GetTemplateTypeRule implements Rule
+final class GetTemplateTypeRule implements Rule
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

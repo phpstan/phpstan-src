@@ -47,7 +47,7 @@ use const PHP_VERSION_ID;
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
  */
-class ResultCacheManager
+final class ResultCacheManager
 {
 
 	private const CACHE_VERSION = 'v12-linesToIgnore';

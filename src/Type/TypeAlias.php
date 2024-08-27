@@ -7,7 +7,7 @@ use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 
-class TypeAlias
+final class TypeAlias
 {
 
 	private ?Type $resolvedType = null;

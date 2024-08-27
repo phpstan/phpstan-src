@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Scalar\Encapsed>
  */
-class InvalidPartOfEncapsedStringRule implements Rule
+final class InvalidPartOfEncapsedStringRule implements Rule
 {
 
 	public function __construct(

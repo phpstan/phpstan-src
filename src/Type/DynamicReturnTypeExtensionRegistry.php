@@ -8,7 +8,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use function array_merge;
 use function strtolower;
 
-class DynamicReturnTypeExtensionRegistry
+final class DynamicReturnTypeExtensionRegistry
 {
 
 	/** @var DynamicMethodReturnTypeExtension[][]|null */

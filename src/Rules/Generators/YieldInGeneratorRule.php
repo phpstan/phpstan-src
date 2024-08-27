@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr>
  */
-class YieldInGeneratorRule implements Rule
+final class YieldInGeneratorRule implements Rule
 {
 
 	public function __construct(private bool $reportMaybes)

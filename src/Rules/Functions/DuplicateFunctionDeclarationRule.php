@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<InFunctionNode>
  */
-class DuplicateFunctionDeclarationRule implements Rule
+final class DuplicateFunctionDeclarationRule implements Rule
 {
 
 	public function __construct(private Reflector $reflector, private RelativePathHelper $relativePathHelper)

@@ -24,7 +24,7 @@ use function sprintf;
 /**
  * @implements Rule<ExecutionEndNode>
  */
-class MissingReturnRule implements Rule
+final class MissingReturnRule implements Rule
 {
 
 	public function __construct(

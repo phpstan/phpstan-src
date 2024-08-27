@@ -20,7 +20,7 @@ use PHPStan\Type\TypeCombinator;
 use function is_bool;
 use function json_decode;
 
-class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	/** @var array<string, int> */

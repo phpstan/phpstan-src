@@ -7,7 +7,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use function array_keys;
 
-class EnumAllowedSubTypesClassReflectionExtension implements AllowedSubTypesClassReflectionExtension
+final class EnumAllowedSubTypesClassReflectionExtension implements AllowedSubTypesClassReflectionExtension
 {
 
 	public function supports(ClassReflection $classReflection): bool

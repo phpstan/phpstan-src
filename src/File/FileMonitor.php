@@ -8,7 +8,7 @@ use function array_keys;
 use function count;
 use function sha1_file;
 
-class FileMonitor
+final class FileMonitor
 {
 
 	/** @var array<string, string>|null */

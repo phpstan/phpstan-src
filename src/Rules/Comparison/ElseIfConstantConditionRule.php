@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\ElseIf_>
  */
-class ElseIfConstantConditionRule implements Rule
+final class ElseIfConstantConditionRule implements Rule
 {
 
 	public function __construct(

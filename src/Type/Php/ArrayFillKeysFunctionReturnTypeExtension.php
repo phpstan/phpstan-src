@@ -12,7 +12,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use function count;
 
-class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

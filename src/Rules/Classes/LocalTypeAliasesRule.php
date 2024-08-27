@@ -10,7 +10,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<InClassNode>
  */
-class LocalTypeAliasesRule implements Rule
+final class LocalTypeAliasesRule implements Rule
 {
 
 	public function __construct(private LocalTypeAliasesCheck $check)
@@ -24,7 +24,7 @@ class LocalTypeAliasesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		return $this->check->check($node->getClassReflection());
+		return $this->check->check($node->getClassReflection(), $node->getOriginalNode());
 	}
 
 }

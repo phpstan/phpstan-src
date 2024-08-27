@@ -16,7 +16,7 @@ use Throwable;
 use function array_map;
 use function count;
 
-class FunctionCallableVariant implements CallableParametersAcceptor, ParametersAcceptorWithPhpDocs
+final class FunctionCallableVariant implements CallableParametersAcceptor, ParametersAcceptorWithPhpDocs
 {
 
 	/** @var SimpleThrowPoint[]|null  */
@@ -161,6 +161,11 @@ class FunctionCallableVariant implements CallableParametersAcceptor, ParametersA
 	public function getUsedVariables(): array
 	{
 		return [];
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->function->acceptsNamedArguments();
 	}
 
 }

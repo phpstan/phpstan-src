@@ -11,7 +11,10 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
 use function count;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 

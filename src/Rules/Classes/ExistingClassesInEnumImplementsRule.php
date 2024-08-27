@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Enum_>
  */
-class ExistingClassesInEnumImplementsRule implements Rule
+final class ExistingClassesInEnumImplementsRule implements Rule
 {
 
 	public function __construct(

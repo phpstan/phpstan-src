@@ -4,7 +4,7 @@ namespace PHPStan\Type;
 
 use Exception;
 
-class CircularTypeAliasDefinitionException extends Exception
+final class CircularTypeAliasDefinitionException extends Exception
 {
 
 }

@@ -13,7 +13,7 @@ use function str_contains;
 /**
  * @implements Rule<Node\Expr\New_>
  */
-class ApiInstantiationRule implements Rule
+final class ApiInstantiationRule implements Rule
 {
 
 	public function __construct(

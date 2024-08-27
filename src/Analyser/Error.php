@@ -12,7 +12,10 @@ use Throwable;
 use function is_bool;
 use function sprintf;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class Error implements JsonSerializable
 {
 

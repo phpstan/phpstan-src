@@ -14,7 +14,7 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
+final class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
 
 	public function getClass(): string
@@ -48,6 +48,12 @@ class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStaticMeth
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),
 				$variant instanceof ParametersAcceptorWithPhpDocs ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+				[],
+				$variant->getThrowPoints(),
+				$variant->getImpurePoints(),
+				$variant->getInvalidateExpressions(),
+				$variant->getUsedVariables(),
+				$variant->acceptsNamedArguments(),
 			);
 		}
 

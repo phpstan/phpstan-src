@@ -4,7 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\DependencyInjection\Container;
 
-class LazyTypeAliasResolverProvider implements TypeAliasResolverProvider
+final class LazyTypeAliasResolverProvider implements TypeAliasResolverProvider
 {
 
 	public function __construct(private Container $container)

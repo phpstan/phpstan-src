@@ -9,7 +9,7 @@ use function array_keys;
 use function count;
 use function sprintf;
 
-class ProcessPool
+final class ProcessPool
 {
 
 	/** @var array<string, Process> */

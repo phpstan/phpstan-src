@@ -11,7 +11,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
-class ParameterCastableToStringCheck
+final class ParameterCastableToStringCheck
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

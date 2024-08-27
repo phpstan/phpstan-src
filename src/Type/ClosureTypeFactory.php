@@ -23,7 +23,10 @@ use function array_map;
 use function count;
 use function str_replace;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ClosureTypeFactory
 {
 

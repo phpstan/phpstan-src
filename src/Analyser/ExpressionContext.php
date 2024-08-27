@@ -4,7 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Type\Type;
 
-class ExpressionContext
+final class ExpressionContext
 {
 
 	private function __construct(

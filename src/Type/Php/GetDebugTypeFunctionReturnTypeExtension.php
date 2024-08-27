@@ -14,7 +14,7 @@ use PHPStan\Type\UnionType;
 use function array_map;
 use function count;
 
-class GetDebugTypeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class GetDebugTypeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Throw_>
  */
-class ThrowExprTypeRule implements Rule
+final class ThrowExprTypeRule implements Rule
 {
 
 	public function __construct(

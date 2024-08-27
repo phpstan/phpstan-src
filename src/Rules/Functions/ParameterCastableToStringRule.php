@@ -17,7 +17,7 @@ use function in_array;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class ParameterCastableToStringRule implements Rule
+final class ParameterCastableToStringRule implements Rule
 {
 
 	public function __construct(

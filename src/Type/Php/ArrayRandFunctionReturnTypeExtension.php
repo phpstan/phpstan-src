@@ -16,7 +16,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
 
-class ArrayRandFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayRandFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

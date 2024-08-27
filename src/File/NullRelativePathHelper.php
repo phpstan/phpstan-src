@@ -2,7 +2,7 @@
 
 namespace PHPStan\File;
 
-class NullRelativePathHelper implements RelativePathHelper
+final class NullRelativePathHelper implements RelativePathHelper
 {
 
 	public function getRelativePath(string $filename): string

@@ -11,7 +11,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function in_array;
 
-class ArrayNextDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayNextDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

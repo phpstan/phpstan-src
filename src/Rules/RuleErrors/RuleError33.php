@@ -8,7 +8,7 @@ use PHPStan\Rules\RuleError;
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError33 implements RuleError, MetadataRuleError
+final class RuleError33 implements RuleError, MetadataRuleError
 {
 
 	public string $message;

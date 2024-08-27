@@ -4,7 +4,7 @@ namespace PHPStan\Analyser\ResultCache;
 
 use PHPStan\Analyser\AnalyserResult;
 
-class ResultCacheProcessResult
+final class ResultCacheProcessResult
 {
 
 	public function __construct(private AnalyserResult $analyserResult, private bool $saved)

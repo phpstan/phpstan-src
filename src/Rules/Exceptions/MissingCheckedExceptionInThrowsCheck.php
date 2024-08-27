@@ -12,7 +12,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use Throwable;
 
-class MissingCheckedExceptionInThrowsCheck
+final class MissingCheckedExceptionInThrowsCheck
 {
 
 	public function __construct(private ExceptionTypeResolver $exceptionTypeResolver)

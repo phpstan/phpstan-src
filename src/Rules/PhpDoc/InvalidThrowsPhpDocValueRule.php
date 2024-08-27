@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt>
  */
-class InvalidThrowsPhpDocValueRule implements Rule
+final class InvalidThrowsPhpDocValueRule implements Rule
 {
 
 	public function __construct(private FileTypeMapper $fileTypeMapper)

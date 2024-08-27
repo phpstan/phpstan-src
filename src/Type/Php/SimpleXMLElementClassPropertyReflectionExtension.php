@@ -10,7 +10,7 @@ use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 
-class SimpleXMLElementClassPropertyReflectionExtension implements PropertiesClassReflectionExtension
+final class SimpleXMLElementClassPropertyReflectionExtension implements PropertiesClassReflectionExtension
 {
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool

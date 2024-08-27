@@ -19,7 +19,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
 use function count;
 
-class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
+final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
 	private TypeSpecifier $typeSpecifier;

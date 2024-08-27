@@ -12,6 +12,7 @@ use function count;
 
 /**
  * @api
+ * @final
  */
 class Assertions
 {

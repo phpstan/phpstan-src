@@ -9,7 +9,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 
-class ArraySpliceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArraySpliceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 
 /** @implements Rule<InClassMethodNode> */
-class FinalPrivateMethodRule implements Rule
+final class FinalPrivateMethodRule implements Rule
 {
 
 	public function __construct(

@@ -2,23 +2,33 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PhpParser\Node\Stmt\ClassLike;
 use PHPStan\Analyser\NameScope;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\CircularTypeAliasErrorType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
+use function array_merge;
+use function implode;
 use function in_array;
 use function sprintf;
 
-class LocalTypeAliasesCheck
+final class LocalTypeAliasesCheck
 {
 
 	/**
@@ -28,6 +38,13 @@ class LocalTypeAliasesCheck
 		private array $globalTypeAliases,
 		private ReflectionProvider $reflectionProvider,
 		private TypeNodeResolver $typeNodeResolver,
+		private MissingTypehintCheck $missingTypehintCheck,
+		private ClassNameCheck $classCheck,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private bool $checkMissingTypehints,
+		private bool $checkClassCaseSensitivity,
+		private bool $absentTypeChecks,
 	)
 	{
 	}
@@ -35,7 +52,7 @@ class LocalTypeAliasesCheck
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	public function check(ClassReflection $reflection): array
+	public function check(ClassReflection $reflection, ClassLike $node): array
 	{
 		$phpDoc = $reflection->getResolvedPhpDoc();
 		if ($phpDoc === null) {
@@ -169,6 +186,108 @@ class LocalTypeAliasesCheck
 
 				return $traverse($type);
 			});
+
+			if ($foundError) {
+				continue;
+			}
+
+			if (!$this->absentTypeChecks) {
+				continue;
+			}
+
+			if ($this->checkMissingTypehints) {
+				foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($resolvedType) as $iterableType) {
+					$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'%s %s has type alias %s with no value type specified in iterable type %s.',
+						$reflection->getClassTypeDescription(),
+						$reflection->getDisplayName(),
+						$aliasName,
+						$iterableTypeDescription,
+					))
+						->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+						->identifier('missingType.iterableValue')
+						->build();
+				}
+
+				foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($resolvedType) as [$name, $genericTypeNames]) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'%s %s has type alias %s with generic %s but does not specify its types: %s',
+						$reflection->getClassTypeDescription(),
+						$reflection->getDisplayName(),
+						$aliasName,
+						$name,
+						implode(', ', $genericTypeNames),
+					))
+						->identifier('missingType.generics')
+						->build();
+				}
+
+				foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($resolvedType) as $callableType) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'%s %s has type alias %s with no signature specified for %s.',
+						$reflection->getClassTypeDescription(),
+						$reflection->getDisplayName(),
+						$aliasName,
+						$callableType->describe(VerbosityLevel::typeOnly()),
+					))->identifier('missingType.callable')->build();
+				}
+			}
+
+			foreach ($resolvedType->getReferencedClasses() as $class) {
+				if (!$this->reflectionProvider->hasClass($class)) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s contains unknown class %s.', $aliasName, $class))
+						->identifier('class.notFound')
+						->discoveringSymbolsTip()
+						->build();
+				} elseif ($this->reflectionProvider->getClass($class)->isTrait()) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s contains invalid type %s.', $aliasName, $class))
+						->identifier('typeAlias.trait')
+						->build();
+				} else {
+					$errors = array_merge(
+						$errors,
+						$this->classCheck->checkClassNames([
+							new ClassNameNodePair($class, $node),
+						], $this->checkClassCaseSensitivity),
+					);
+				}
+			}
+
+			if ($this->unresolvableTypeHelper->containsUnresolvableType($resolvedType)) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s contains unresolvable type.', $aliasName))
+					->identifier('typeAlias.unresolvableType')
+					->build();
+			}
+
+			$escapedTypeAlias = SprintfHelper::escapeFormatString($aliasName);
+			$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
+				$resolvedType,
+				sprintf(
+					'Type alias %s contains generic type %%s but %%s %%s is not generic.',
+					$escapedTypeAlias,
+				),
+				sprintf(
+					'Generic type %%s in type alias %s does not specify all template types of %%s %%s: %%s',
+					$escapedTypeAlias,
+				),
+				sprintf(
+					'Generic type %%s in type alias %s specifies %%d template types, but %%s %%s supports only %%d: %%s',
+					$escapedTypeAlias,
+				),
+				sprintf(
+					'Type %%s in generic type %%s in type alias %s is not subtype of template type %%s of %%s %%s.',
+					$escapedTypeAlias,
+				),
+				sprintf(
+					'Call-site variance of %%s in generic type %%s in type alias %s is in conflict with %%s template type %%s of %%s %%s.',
+					$escapedTypeAlias,
+				),
+				sprintf(
+					'Call-site variance of %%s in generic type %%s in type alias %s is redundant, template type %%s of %%s %%s has the same variance.',
+					$escapedTypeAlias,
+				),
+			));
 		}
 
 		return $errors;

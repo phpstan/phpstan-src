@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr>
  */
-class ReadingWriteOnlyPropertiesRule implements Rule
+final class ReadingWriteOnlyPropertiesRule implements Rule
 {
 
 	public function __construct(

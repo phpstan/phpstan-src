@@ -20,7 +20,7 @@ use function substr;
 /**
  * @implements Rule<Node\Expr>
  */
-class InvalidBinaryOperationRule implements Rule
+final class InvalidBinaryOperationRule implements Rule
 {
 
 	public function __construct(

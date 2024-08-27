@@ -11,7 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
-class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDocs implements CallableParametersAcceptor
+final class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDocs implements CallableParametersAcceptor
 {
 
 	/**
@@ -35,6 +35,7 @@ class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDocs impl
 		private array $impurePoints,
 		private array $invalidateExpressions,
 		private array $usedVariables,
+		private bool $acceptsNamedArguments,
 	)
 	{
 		parent::__construct(
@@ -72,6 +73,11 @@ class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDocs impl
 	public function getUsedVariables(): array
 	{
 		return $this->usedVariables;
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->acceptsNamedArguments;
 	}
 
 }

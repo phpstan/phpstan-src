@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\If_>
  */
-class IfConstantConditionRule implements Rule
+final class IfConstantConditionRule implements Rule
 {
 
 	public function __construct(

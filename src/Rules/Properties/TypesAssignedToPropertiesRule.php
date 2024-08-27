@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<PropertyAssignNode>
  */
-class TypesAssignedToPropertiesRule implements Rule
+final class TypesAssignedToPropertiesRule implements Rule
 {
 
 	public function __construct(

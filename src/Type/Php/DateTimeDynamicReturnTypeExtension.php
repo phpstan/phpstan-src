@@ -15,7 +15,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 
-class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

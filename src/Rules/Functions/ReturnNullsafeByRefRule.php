@@ -12,7 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<ReturnStatementsNode>
  */
-class ReturnNullsafeByRefRule implements Rule
+final class ReturnNullsafeByRefRule implements Rule
 {
 
 	public function __construct(private NullsafeCheck $nullsafeCheck)

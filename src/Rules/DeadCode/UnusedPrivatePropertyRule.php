@@ -20,7 +20,7 @@ use function str_contains;
 /**
  * @implements Rule<ClassPropertiesNode>
  */
-class UnusedPrivatePropertyRule implements Rule
+final class UnusedPrivatePropertyRule implements Rule
 {
 
 	/**

@@ -2,8 +2,12 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -20,7 +24,7 @@ use PHPStan\Type\TypeUtils;
 use function array_slice;
 use function count;
 
-class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -37,6 +41,7 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$singleArrayArgument = !isset($functionCall->getArgs()[2]);
 		$callableType = $scope->getType($functionCall->getArgs()[0]->value);
 		$callableIsNull = $callableType->isNull()->yes();
+		$callback = null;
 
 		if ($callableType->isCallable()->yes()) {
 			$valueTypes = [new NeverType()];
@@ -44,6 +49,7 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 				$valueTypes[] = $parametersAcceptor->getReturnType();
 			}
 			$valueType = TypeCombinator::union(...$valueTypes);
+			$callback = $functionCall->getArgs()[0]->value;
 		} elseif ($callableIsNull) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
@@ -73,7 +79,11 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 							$returnedArrayBuilder->setOffsetValueType(
 								$keyType,
-								$valueType,
+								$callback === null
+									? $valueType
+									: $scope->getType(new FuncCall($callback, [
+										new Arg(new TypeExpr($constantArray->getValueTypes()[$i])),
+									])),
 								$constantArray->isOptionalKey($i),
 							);
 						}

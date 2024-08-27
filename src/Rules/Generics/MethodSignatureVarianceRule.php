@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassMethodNode>
  */
-class MethodSignatureVarianceRule implements Rule
+final class MethodSignatureVarianceRule implements Rule
 {
 
 	public function __construct(private VarianceCheck $varianceCheck)

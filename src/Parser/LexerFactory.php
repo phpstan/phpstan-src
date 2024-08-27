@@ -6,7 +6,7 @@ use PhpParser\Lexer;
 use PHPStan\Php\PhpVersion;
 use const PHP_VERSION_ID;
 
-class LexerFactory
+final class LexerFactory
 {
 
 	private const OPTIONS = ['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos', 'startFilePos', 'endFilePos']];

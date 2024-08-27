@@ -12,7 +12,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use stdClass;
 
-class DummyMethodReflection implements ExtendedMethodReflection
+final class DummyMethodReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(private string $name)
@@ -106,6 +106,11 @@ class DummyMethodReflection implements ExtendedMethodReflection
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return true;
 	}
 
 	public function getSelfOutType(): ?Type

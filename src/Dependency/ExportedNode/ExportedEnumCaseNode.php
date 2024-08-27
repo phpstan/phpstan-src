@@ -6,7 +6,7 @@ use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
 use ReturnTypeWillChange;
 
-class ExportedEnumCaseNode implements ExportedNode, JsonSerializable
+final class ExportedEnumCaseNode implements ExportedNode, JsonSerializable
 {
 
 	public function __construct(private string $name, private ?string $value, private ?ExportedPhpDocNode $phpDoc)

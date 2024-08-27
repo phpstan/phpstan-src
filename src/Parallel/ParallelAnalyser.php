@@ -33,7 +33,7 @@ use function sprintf;
 use function str_contains;
 use const PHP_URL_PORT;
 
-class ParallelAnalyser
+final class ParallelAnalyser
 {
 
 	private const DEFAULT_TIMEOUT = 600.0;

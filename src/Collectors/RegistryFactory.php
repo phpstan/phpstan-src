@@ -4,7 +4,7 @@ namespace PHPStan\Collectors;
 
 use PHPStan\DependencyInjection\Container;
 
-class RegistryFactory
+final class RegistryFactory
 {
 
 	public const COLLECTOR_TAG = 'phpstan.collector';

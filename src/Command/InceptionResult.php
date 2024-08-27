@@ -13,7 +13,7 @@ use function microtime;
 use function round;
 use function sprintf;
 
-class InceptionResult
+final class InceptionResult
 {
 
 	/** @var callable(): (array{string[], bool}) */

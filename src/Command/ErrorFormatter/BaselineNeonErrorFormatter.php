@@ -14,7 +14,7 @@ use function preg_quote;
 use function substr;
 use const SORT_STRING;
 
-class BaselineNeonErrorFormatter
+final class BaselineNeonErrorFormatter
 {
 
 	public function __construct(private RelativePathHelper $relativePathHelper)

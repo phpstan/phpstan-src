@@ -36,6 +36,7 @@ interface PhpMethodReflectionFactory
 		array $phpDocParameterOutTypes,
 		array $immediatelyInvokedCallableParameters = [],
 		array $phpDocClosureThisTypeParameters = [],
+		bool $acceptsNamedArguments = true,
 	): PhpMethodReflection;
 
 }

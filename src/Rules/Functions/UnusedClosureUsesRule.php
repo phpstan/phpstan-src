@@ -14,7 +14,7 @@ use function is_string;
 /**
  * @implements Rule<Node\Expr\Closure>
  */
-class UnusedClosureUsesRule implements Rule
+final class UnusedClosureUsesRule implements Rule
 {
 
 	public function __construct(private UnusedFunctionParametersCheck $check)

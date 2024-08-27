@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use function count;
 
-class LastConditionVisitor extends NodeVisitorAbstract
+final class LastConditionVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'isLastCondition';

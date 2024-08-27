@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Expr\Cast\Unset_>
  */
-class UnsetCastRule implements Rule
+final class UnsetCastRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpVersion)

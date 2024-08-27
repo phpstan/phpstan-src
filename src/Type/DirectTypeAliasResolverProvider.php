@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-class DirectTypeAliasResolverProvider implements TypeAliasResolverProvider
+final class DirectTypeAliasResolverProvider implements TypeAliasResolverProvider
 {
 
 	public function __construct(private TypeAliasResolver $typeAliasResolver)

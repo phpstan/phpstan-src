@@ -18,7 +18,7 @@ use function strtolower;
 /**
  * @implements Rule<PropertyAssignNode>
  */
-class ReadOnlyPropertyAssignRule implements Rule
+final class ReadOnlyPropertyAssignRule implements Rule
 {
 
 	public function __construct(

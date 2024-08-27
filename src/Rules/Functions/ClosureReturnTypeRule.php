@@ -13,7 +13,7 @@ use PHPStan\Type\TypeCombinator;
 /**
  * @implements Rule<ClosureReturnStatementsNode>
  */
-class ClosureReturnTypeRule implements Rule
+final class ClosureReturnTypeRule implements Rule
 {
 
 	public function __construct(private FunctionReturnTypeCheck $returnTypeCheck)

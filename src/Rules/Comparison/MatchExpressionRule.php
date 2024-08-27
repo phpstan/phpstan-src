@@ -22,7 +22,7 @@ use function sprintf;
 /**
  * @implements Rule<MatchExpressionNode>
  */
-class MatchExpressionRule implements Rule
+final class MatchExpressionRule implements Rule
 {
 
 	public function __construct(

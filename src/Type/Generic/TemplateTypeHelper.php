@@ -10,7 +10,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 
-class TemplateTypeHelper
+final class TemplateTypeHelper
 {
 
 	/**

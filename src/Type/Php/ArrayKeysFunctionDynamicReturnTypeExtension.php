@@ -13,7 +13,7 @@ use PHPStan\Type\Type;
 use function count;
 use function strtolower;
 
-class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

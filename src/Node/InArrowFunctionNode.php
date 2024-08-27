@@ -7,7 +7,10 @@ use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\NodeAbstract;
 use PHPStan\Type\ClosureType;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class InArrowFunctionNode extends NodeAbstract implements VirtualNode
 {
 

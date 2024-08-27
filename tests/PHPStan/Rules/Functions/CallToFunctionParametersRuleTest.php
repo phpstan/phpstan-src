@@ -1711,6 +1711,32 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/count-array-shift.php'], $errors);
 	}
 
+	public function testNoNamedArguments(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/no-named-arguments.php'], [
+			[
+				'Function NoNamedArgumentsFunction\\foo invoked with named argument $i, but it\'s not allowed because of @no-named-arguments.',
+				14,
+			],
+			[
+				'Function NoNamedArgumentsFunction\foo invoked with unpacked array with string key, but it\'s not allowed because of @no-named-arguments.',
+				24,
+			],
+			[
+				'Function NoNamedArgumentsFunction\foo invoked with unpacked array with possibly string key, but it\'s not allowed because of @no-named-arguments.',
+				25,
+			],
+			[
+				'Function NoNamedArgumentsFunction\\foo invoked with named argument $i, but it\'s not allowed because of @no-named-arguments.',
+				29,
+			],
+		]);
+	}
+
 	public function testBug11506(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11506.php'], []);

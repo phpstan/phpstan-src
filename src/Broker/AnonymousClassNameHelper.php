@@ -10,7 +10,7 @@ use PHPStan\ShouldNotHappenException;
 use function md5;
 use function sprintf;
 
-class AnonymousClassNameHelper
+final class AnonymousClassNameHelper
 {
 
 	public function __construct(

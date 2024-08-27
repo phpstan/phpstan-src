@@ -17,7 +17,7 @@ use function str_starts_with;
 /**
  * @implements Rule<Node>
  */
-class InvalidPHPStanDocTagRule implements Rule
+final class InvalidPHPStanDocTagRule implements Rule
 {
 
 	private const POSSIBLE_PHPSTAN_TAGS = [

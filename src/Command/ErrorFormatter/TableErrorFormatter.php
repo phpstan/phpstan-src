@@ -21,7 +21,7 @@ use function sprintf;
 use function str_contains;
 use function str_replace;
 
-class TableErrorFormatter implements ErrorFormatter
+final class TableErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(

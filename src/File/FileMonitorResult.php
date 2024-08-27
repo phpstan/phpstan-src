@@ -4,7 +4,7 @@ namespace PHPStan\File;
 
 use function count;
 
-class FileMonitorResult
+final class FileMonitorResult
 {
 
 	/**

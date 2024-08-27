@@ -14,7 +14,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class CallToFunctionParametersRule implements Rule
+final class CallToFunctionParametersRule implements Rule
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider, private FunctionCallParametersCheck $check)
@@ -64,8 +64,10 @@ class CallToFunctionParametersRule implements Rule
 				'Unknown parameter $%s in call to function ' . $functionName . '.',
 				'Return type of call to function ' . $functionName . ' contains unresolvable type.',
 				'Parameter %s of function ' . $functionName . ' contains unresolvable type.',
+				'Function ' . $functionName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 			],
 			'function',
+			$function->acceptsNamedArguments(),
 		);
 	}
 

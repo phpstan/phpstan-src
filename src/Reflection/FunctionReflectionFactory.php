@@ -29,6 +29,7 @@ interface FunctionReflectionFactory
 		?string $filename,
 		?bool $isPure,
 		Assertions $asserts,
+		bool $acceptsNamedArguments,
 		?string $phpDocComment,
 		array $phpDocParameterOutTypes,
 		array $phpDocParameterImmediatelyInvokedCallable,

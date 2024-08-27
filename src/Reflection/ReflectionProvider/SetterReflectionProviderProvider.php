@@ -4,7 +4,7 @@ namespace PHPStan\Reflection\ReflectionProvider;
 
 use PHPStan\Reflection\ReflectionProvider;
 
-class SetterReflectionProviderProvider implements ReflectionProviderProvider
+final class SetterReflectionProviderProvider implements ReflectionProviderProvider
 {
 
 	private ReflectionProvider $reflectionProvider;

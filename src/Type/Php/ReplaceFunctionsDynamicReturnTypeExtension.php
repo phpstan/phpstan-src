@@ -18,7 +18,7 @@ use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function count;
 
-class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	private const FUNCTIONS_SUBJECT_POSITION = [

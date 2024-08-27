@@ -18,7 +18,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Stmt\Trait_>
  */
-class RequireImplementsDefinitionTraitRule implements Rule
+final class RequireImplementsDefinitionTraitRule implements Rule
 {
 
 	public function __construct(

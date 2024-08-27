@@ -34,6 +34,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				new PhpVersion($this->phpVersionId),
 				true,
 				false,
+				true,
 			),
 		);
 	}
@@ -447,6 +448,42 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 			[
 				'Template type S of function ParamOutTemplate\uselessGeneric() is not referenced in a parameter.',
 				9,
+			],
+		]);
+	}
+
+	public function testParamOutClasses(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-out-classes.php'], [
+			[
+				'Parameter $p of function ParamOutClasses\doFoo() has invalid type ParamOutClasses\Nonexistent.',
+				20,
+			],
+			[
+				'Parameter $q of function ParamOutClasses\doFoo() has invalid type ParamOutClasses\FooTrait.',
+				20,
+			],
+			[
+				'Class ParamOutClasses\Foo referenced with incorrect case: ParamOutClasses\fOO.',
+				20,
+			],
+		]);
+	}
+
+	public function testParamClosureThisClasses(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-closure-this-classes.php'], [
+			[
+				'Parameter $a of function ParamClosureThisClassesFunctions\doFoo() has invalid type ParamClosureThisClassesFunctions\Nonexistent.',
+				21,
+			],
+			[
+				'Parameter $b of function ParamClosureThisClassesFunctions\doFoo() has invalid type ParamClosureThisClassesFunctions\FooTrait.',
+				22,
+			],
+			[
+				'Class ParamClosureThisClassesFunctions\Foo referenced with incorrect case: ParamClosureThisClassesFunctions\fOO.',
+				23,
 			],
 		]);
 	}

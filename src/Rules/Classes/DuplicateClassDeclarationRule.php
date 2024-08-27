@@ -20,7 +20,7 @@ use function strtolower;
 /**
  * @implements Rule<InClassNode>
  */
-class DuplicateClassDeclarationRule implements Rule
+final class DuplicateClassDeclarationRule implements Rule
 {
 
 	public function __construct(private Reflector $reflector, private RelativePathHelper $relativePathHelper)

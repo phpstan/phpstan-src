@@ -27,7 +27,7 @@ use function count;
 use function is_array;
 use function range;
 
-class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	private const RANGE_LENGTH_THRESHOLD = 50;

@@ -15,7 +15,7 @@ use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use function strtolower;
 
-class IsIterableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
+final class IsIterableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
 	private TypeSpecifier $typeSpecifier;

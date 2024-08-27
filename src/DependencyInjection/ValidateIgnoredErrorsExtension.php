@@ -40,7 +40,7 @@ use function is_file;
 use function sprintf;
 use const PHP_VERSION_ID;
 
-class ValidateIgnoredErrorsExtension extends CompilerExtension
+final class ValidateIgnoredErrorsExtension extends CompilerExtension
 {
 
 	/**

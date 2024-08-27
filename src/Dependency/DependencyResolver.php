@@ -28,7 +28,7 @@ use PHPStan\Type\Type;
 use function array_merge;
 use function count;
 
-class DependencyResolver
+final class DependencyResolver
 {
 
 	public function __construct(

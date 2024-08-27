@@ -21,7 +21,7 @@ use function count;
 use function is_string;
 use function sprintf;
 
-class VarTagTypeRuleHelper
+final class VarTagTypeRuleHelper
 {
 
 	public function __construct(private bool $checkTypeAgainstPhpDocType, private bool $strictWideningCheck)

@@ -119,7 +119,7 @@ use function str_starts_with;
 use function strtolower;
 use function substr;
 
-class TypeNodeResolver
+final class TypeNodeResolver
 {
 
 	/** @var array<string, true> */
@@ -961,7 +961,7 @@ class TypeNodeResolver
 				),
 			]);
 		} elseif ($mainType instanceof ClosureType) {
-			$closure = new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap, null, null, $templateTags, [], $mainType->getImpurePoints());
+			$closure = new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap, null, null, $templateTags, [], $mainType->getImpurePoints(), $mainType->getInvalidateExpressions(), $mainType->getUsedVariables(), $mainType->acceptsNamedArguments());
 			if ($closure->isPure()->yes() && $returnType->isVoid()->yes()) {
 				return new ErrorType();
 			}
@@ -1059,6 +1059,7 @@ class TypeNodeResolver
 
 							$className = $classReflection->getParentClass()->getName();
 						}
+						break;
 				}
 			}
 

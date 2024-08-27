@@ -8,7 +8,7 @@ use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 /**
  * @template-covariant T of Node
  */
-class FetchedNode
+final class FetchedNode
 {
 
 	/**

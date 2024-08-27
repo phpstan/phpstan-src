@@ -4,7 +4,7 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\Php\PhpVersion;
 
-class ReflectionEnumStubFilesExtension implements StubFilesExtension
+final class ReflectionEnumStubFilesExtension implements StubFilesExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

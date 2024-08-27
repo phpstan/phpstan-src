@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<LiteralArrayNode>
  */
-class UnpackIterableInArrayRule implements Rule
+final class UnpackIterableInArrayRule implements Rule
 {
 
 	public function __construct(

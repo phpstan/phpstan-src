@@ -15,7 +15,7 @@ use function str_contains;
 /**
  * @implements Rule<Node\Expr\StaticCall>
  */
-class ApiStaticCallRule implements Rule
+final class ApiStaticCallRule implements Rule
 {
 
 	public function __construct(

@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\AssignOp>
  */
-class OffsetAccessAssignOpRule implements Rule
+final class OffsetAccessAssignOpRule implements Rule
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

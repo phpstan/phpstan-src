@@ -99,6 +99,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		?array $impurePoints = null,
 		private array $invalidateExpressions = [],
 		private array $usedVariables = [],
+		private bool $acceptsNamedArguments = true,
 	)
 	{
 		$this->parameters = $parameters ?? [];
@@ -407,6 +408,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->usedVariables;
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->acceptsNamedArguments;
+	}
+
 	public function isCloneable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
@@ -562,6 +568,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->impurePoints,
 			$this->invalidateExpressions,
 			$this->usedVariables,
+			$this->acceptsNamedArguments,
 		);
 	}
 
@@ -611,6 +618,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->impurePoints,
 			$this->invalidateExpressions,
 			$this->usedVariables,
+			$this->acceptsNamedArguments,
 		);
 	}
 
@@ -780,6 +788,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$properties['impurePoints'],
 			$properties['invalidateExpressions'],
 			$properties['usedVariables'],
+			$properties['acceptsNamedArguments'],
 		);
 	}
 

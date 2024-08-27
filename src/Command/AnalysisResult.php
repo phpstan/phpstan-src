@@ -9,7 +9,10 @@ use function array_map;
 use function count;
 use function usort;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class AnalysisResult
 {
 

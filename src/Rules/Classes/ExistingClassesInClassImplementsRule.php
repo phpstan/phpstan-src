@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Class_>
  */
-class ExistingClassesInClassImplementsRule implements Rule
+final class ExistingClassesInClassImplementsRule implements Rule
 {
 
 	public function __construct(

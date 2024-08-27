@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<InArrowFunctionNode>
  */
-class IncompatibleArrowFunctionDefaultParameterTypeRule implements Rule
+final class IncompatibleArrowFunctionDefaultParameterTypeRule implements Rule
 {
 
 	public function getNodeType(): string

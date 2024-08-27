@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Api;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
@@ -27,6 +28,7 @@ final class BcUncoveredInterface
 		Scope::class,
 		FunctionReflection::class,
 		ExtendedMethodReflection::class,
+		ExtendedPropertyReflection::class,
 		ParametersAcceptorWithPhpDocs::class,
 		ParameterReflectionWithPhpDocs::class,
 		CallableParametersAcceptor::class,

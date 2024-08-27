@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<FunctionReturnStatementsNode>
  */
-class TooWideFunctionParameterOutTypeRule implements Rule
+final class TooWideFunctionParameterOutTypeRule implements Rule
 {
 
 	public function __construct(

@@ -10,14 +10,14 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
-class InaccessibleMethod implements CallableParametersAcceptor
+final class InaccessibleMethod implements CallableParametersAcceptor
 {
 
-	public function __construct(private MethodReflection $methodReflection)
+	public function __construct(private ExtendedMethodReflection $methodReflection)
 	{
 	}
 
-	public function getMethod(): MethodReflection
+	public function getMethod(): ExtendedMethodReflection
 	{
 		return $this->methodReflection;
 	}
@@ -84,6 +84,11 @@ class InaccessibleMethod implements CallableParametersAcceptor
 	public function getUsedVariables(): array
 	{
 		return [];
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->methodReflection->acceptsNamedArguments();
 	}
 
 }

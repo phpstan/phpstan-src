@@ -20,7 +20,10 @@ use function is_nan;
 use function is_object;
 use function is_string;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ConstantTypeHelper
 {
 

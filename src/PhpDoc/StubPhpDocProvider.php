@@ -14,7 +14,7 @@ use function array_key_exists;
 use function array_map;
 use function is_string;
 
-class StubPhpDocProvider
+final class StubPhpDocProvider
 {
 
 	/** @var array<string, ResolvedPhpDocBlock|null> */

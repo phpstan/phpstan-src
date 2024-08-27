@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Trait_>
  */
-class TraitTemplateTypeRule implements Rule
+final class TraitTemplateTypeRule implements Rule
 {
 
 	public function __construct(

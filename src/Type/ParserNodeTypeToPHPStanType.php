@@ -13,7 +13,7 @@ use function get_class;
 use function in_array;
 use function strtolower;
 
-class ParserNodeTypeToPHPStanType
+final class ParserNodeTypeToPHPStanType
 {
 
 	/**

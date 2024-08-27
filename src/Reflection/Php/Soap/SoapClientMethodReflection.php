@@ -12,7 +12,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 
-class SoapClientMethodReflection implements MethodReflection
+final class SoapClientMethodReflection implements MethodReflection
 {
 
 	public function __construct(private ClassReflection $declaringClass, private string $name)
@@ -87,7 +87,7 @@ class SoapClientMethodReflection implements MethodReflection
 		return TrinaryLogic::createNo();
 	}
 
-	public function getThrowType(): ?Type
+	public function getThrowType(): Type
 	{
 		return new ObjectType('SoapFault');
 	}

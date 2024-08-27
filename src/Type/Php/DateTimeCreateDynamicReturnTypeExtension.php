@@ -16,7 +16,7 @@ use function count;
 use function date_create;
 use function in_array;
 
-class DateTimeCreateDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class DateTimeCreateDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

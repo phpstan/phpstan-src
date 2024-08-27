@@ -3322,4 +3322,27 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/closure-parameter-generics.php'], []);
 	}
 
+	public function testNoNamedArguments(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/no-named-arguments.php'], [
+			[
+				'Method NoNamedArgumentsMethod\Foo::doFoo() invoked with named argument $i, but it\'s not allowed because of @no-named-arguments.',
+				32,
+			],
+			[
+				'Method NoNamedArgumentsMethod\Bar::doFoo() invoked with named argument $i, but it\'s not allowed because of @no-named-arguments.',
+				33,
+			],
+		]);
+	}
+
 }

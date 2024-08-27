@@ -9,13 +9,13 @@ on:
       - '.github/workflows/build-issue-bot.yml'
   push:
     branches:
-      - "1.11.x"
+      - "1.12.x"
     paths:
       - 'issue-bot/**'
       - '.github/workflows/build-issue-bot.yml'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.11.x-dev"
+  COMPOSER_ROOT_VERSION: "1.12.x-dev"
 
 concurrency:
   group: build-issue-bot-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches

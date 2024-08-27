@@ -14,7 +14,7 @@ use PHPStan\Type\TypeCombinator;
 use function array_slice;
 use function count;
 
-class ArrayIntersectKeyFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayIntersectKeyFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

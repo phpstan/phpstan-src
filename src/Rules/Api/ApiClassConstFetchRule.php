@@ -14,7 +14,7 @@ use function str_contains;
 /**
  * @implements Rule<Node\Expr\ClassConstFetch>
  */
-class ApiClassConstFetchRule implements Rule
+final class ApiClassConstFetchRule implements Rule
 {
 
 	public function __construct(

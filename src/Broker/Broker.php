@@ -11,7 +11,10 @@ use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class Broker implements ReflectionProvider
 {
 

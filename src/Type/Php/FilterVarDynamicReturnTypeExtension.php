@@ -10,7 +10,7 @@ use PHPStan\Type\Type;
 use function count;
 use function strtolower;
 
-class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper)

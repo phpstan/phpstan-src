@@ -40,6 +40,7 @@ use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\NamespaceAnswerer;
+use PHPStan\Reflection\Php\ExitFunctionReflection;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
@@ -52,11 +53,12 @@ use PHPStan\Type\Type;
 use function array_key_exists;
 use function array_map;
 use function base64_decode;
+use function in_array;
 use function sprintf;
 use function strtolower;
 use const PHP_VERSION_ID;
 
-class BetterReflectionProvider implements ReflectionProvider
+final class BetterReflectionProvider implements ReflectionProvider
 {
 
 	/** @var FunctionReflection[] */
@@ -264,6 +266,10 @@ class BetterReflectionProvider implements ReflectionProvider
 			return $this->functionReflections[$lowerCasedFunctionName];
 		}
 
+		if (in_array($lowerCasedFunctionName, ['exit', 'die'], true)) {
+			return $this->functionReflections[$lowerCasedFunctionName] = new ExitFunctionReflection($lowerCasedFunctionName);
+		}
+
 		$nativeFunctionReflection = $this->nativeFunctionReflectionProvider->findFunctionReflection($lowerCasedFunctionName);
 		if ($nativeFunctionReflection !== null) {
 			$this->functionReflections[$lowerCasedFunctionName] = $nativeFunctionReflection;
@@ -288,6 +294,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		$isFinal = false;
 		$isPure = null;
 		$asserts = Assertions::createEmpty();
+		$acceptsNamedArguments = true;
 		$phpDocComment = null;
 		$phpDocParameterOutTags = [];
 		$phpDocParameterImmediatelyInvokedCallable = [];
@@ -313,6 +320,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			if ($resolvedPhpDoc->hasPhpDocString()) {
 				$phpDocComment = $resolvedPhpDoc->getPhpDocString();
 			}
+			$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 			$phpDocParameterOutTags = $resolvedPhpDoc->getParamOutTags();
 			$phpDocParameterImmediatelyInvokedCallable = $resolvedPhpDoc->getParamsImmediatelyInvokedCallable();
 			$phpDocParameterClosureThisTypeTags = $resolvedPhpDoc->getParamClosureThisTags();
@@ -331,6 +339,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null,
 			$isPure,
 			$asserts,
+			$acceptsNamedArguments,
 			$phpDocComment,
 			array_map(static fn (ParamOutTag $paramOutTag): Type => $paramOutTag->getType(), $phpDocParameterOutTags),
 			$phpDocParameterImmediatelyInvokedCallable,
@@ -340,6 +349,11 @@ class BetterReflectionProvider implements ReflectionProvider
 
 	public function resolveFunctionName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
+		$name = $nameNode->toLowerString();
+		if (in_array($name, ['exit', 'die'], true)) {
+			return $name;
+		}
+
 		return $this->resolveName($nameNode, function (string $name): bool {
 			try {
 				$this->reflector->reflectFunction($name);

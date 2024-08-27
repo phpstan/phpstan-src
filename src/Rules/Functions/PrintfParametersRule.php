@@ -16,7 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class PrintfParametersRule implements Rule
+final class PrintfParametersRule implements Rule
 {
 
 	private const FORMAT_ARGUMENT_POSITIONS = [

@@ -5,7 +5,7 @@ namespace PHPStan\PhpDoc\Tag;
 use PhpParser\Node\Expr;
 use function sprintf;
 
-class AssertTagParameter
+final class AssertTagParameter
 {
 
 	public function __construct(

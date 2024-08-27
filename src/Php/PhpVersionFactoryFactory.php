@@ -11,7 +11,7 @@ use function end;
 use function is_file;
 use function is_string;
 
-class PhpVersionFactoryFactory
+final class PhpVersionFactoryFactory
 {
 
 	/**

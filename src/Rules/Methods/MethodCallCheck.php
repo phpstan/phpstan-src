@@ -19,7 +19,7 @@ use function count;
 use function sprintf;
 use function strtolower;
 
-class MethodCallCheck
+final class MethodCallCheck
 {
 
 	public function __construct(

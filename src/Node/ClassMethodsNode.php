@@ -7,7 +7,10 @@ use PhpParser\NodeAbstract;
 use PHPStan\Node\Method\MethodCall;
 use PHPStan\Reflection\ClassReflection;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ClassMethodsNode extends NodeAbstract implements VirtualNode
 {
 

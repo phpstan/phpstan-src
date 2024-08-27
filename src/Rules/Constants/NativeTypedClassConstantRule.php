@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
-class NativeTypedClassConstantRule implements Rule
+final class NativeTypedClassConstantRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpVersion)

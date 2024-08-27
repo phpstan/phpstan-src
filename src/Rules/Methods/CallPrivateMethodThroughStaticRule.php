@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<StaticCall>
  */
-class CallPrivateMethodThroughStaticRule implements Rule
+final class CallPrivateMethodThroughStaticRule implements Rule
 {
 
 	public function getNodeType(): string

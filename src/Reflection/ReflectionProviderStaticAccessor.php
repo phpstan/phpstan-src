@@ -4,7 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\ShouldNotHappenException;
 
-class ReflectionProviderStaticAccessor
+final class ReflectionProviderStaticAccessor
 {
 
 	private static ?ReflectionProvider $instance = null;

@@ -7,7 +7,7 @@ use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 
-class LazyOperatorTypeSpecifyingExtensionRegistryProvider implements OperatorTypeSpecifyingExtensionRegistryProvider
+final class LazyOperatorTypeSpecifyingExtensionRegistryProvider implements OperatorTypeSpecifyingExtensionRegistryProvider
 {
 
 	private ?OperatorTypeSpecifyingExtensionRegistry $registry = null;

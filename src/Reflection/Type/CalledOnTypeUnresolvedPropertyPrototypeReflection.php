@@ -4,21 +4,21 @@ namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\ChangedTypePropertyReflection;
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 
-class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
+final class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 
-	private ?PropertyReflection $transformedProperty = null;
+	private ?ExtendedPropertyReflection $transformedProperty = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
 
 	public function __construct(
-		private PropertyReflection $propertyReflection,
+		private ExtendedPropertyReflection $propertyReflection,
 		private ClassReflection $resolvedDeclaringClass,
 		private bool $resolveTemplateTypeMapToBounds,
 		private Type $fetchedOnType,
@@ -40,12 +40,12 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 		);
 	}
 
-	public function getNakedProperty(): PropertyReflection
+	public function getNakedProperty(): ExtendedPropertyReflection
 	{
 		return $this->propertyReflection;
 	}
 
-	public function getTransformedProperty(): PropertyReflection
+	public function getTransformedProperty(): ExtendedPropertyReflection
 	{
 		if ($this->transformedProperty !== null) {
 			return $this->transformedProperty;
@@ -70,7 +70,7 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 		);
 	}
 
-	private function transformPropertyWithStaticType(ClassReflection $declaringClass, PropertyReflection $property): PropertyReflection
+	private function transformPropertyWithStaticType(ClassReflection $declaringClass, ExtendedPropertyReflection $property): ExtendedPropertyReflection
 	{
 		$readableType = $this->transformStaticType($property->getReadableType());
 		$writableType = $this->transformStaticType($property->getWritableType());

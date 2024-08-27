@@ -12,7 +12,7 @@ use function count;
 /**
  * @implements Collector<FunctionReturnStatementsNode, string>
  */
-class FunctionWithoutImpurePointsCollector implements Collector
+final class FunctionWithoutImpurePointsCollector implements Collector
 {
 
 	public function getNodeType(): string

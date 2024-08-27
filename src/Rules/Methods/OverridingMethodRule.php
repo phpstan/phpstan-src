@@ -29,7 +29,7 @@ use function strtolower;
 /**
  * @implements Rule<InClassMethodNode>
  */
-class OverridingMethodRule implements Rule
+final class OverridingMethodRule implements Rule
 {
 
 	public function __construct(

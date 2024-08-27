@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node>
  */
-class InvalidTypesInUnionRule implements Rule
+final class InvalidTypesInUnionRule implements Rule
 {
 
 	private const ONLY_STANDALONE_TYPES = [

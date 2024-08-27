@@ -14,7 +14,7 @@ use function array_merge;
 /**
  * @implements Rule<Node\Expr\MethodCall>
  */
-class CallMethodsRule implements Rule
+final class CallMethodsRule implements Rule
 {
 
 	public function __construct(
@@ -70,8 +70,10 @@ class CallMethodsRule implements Rule
 				'Unknown parameter $%s in call to method ' . $messagesMethodName . '.',
 				'Return type of call to method ' . $messagesMethodName . ' contains unresolvable type.',
 				'Parameter %s of method ' . $messagesMethodName . ' contains unresolvable type.',
+				'Method ' . $messagesMethodName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 			],
 			'method',
+			$methodReflection->acceptsNamedArguments(),
 		));
 	}
 

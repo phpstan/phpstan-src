@@ -14,7 +14,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
-class TooWideParameterOutTypeCheck
+final class TooWideParameterOutTypeCheck
 {
 
 	/**

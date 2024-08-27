@@ -2,7 +2,7 @@
 
 namespace PHPStan\Analyser;
 
-class EnsuredNonNullabilityResult
+final class EnsuredNonNullabilityResult
 {
 
 	/**

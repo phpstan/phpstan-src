@@ -34,7 +34,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\StaticPropertyFetch>
  */
-class AccessStaticPropertiesRule implements Rule
+final class AccessStaticPropertiesRule implements Rule
 {
 
 	public function __construct(

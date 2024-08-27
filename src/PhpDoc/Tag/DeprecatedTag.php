@@ -2,7 +2,10 @@
 
 namespace PHPStan\PhpDoc\Tag;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class DeprecatedTag
 {
 

@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<InFunctionNode>
  */
-class FunctionSignatureVarianceRule implements Rule
+final class FunctionSignatureVarianceRule implements Rule
 {
 
 	public function __construct(private VarianceCheck $varianceCheck)

@@ -15,7 +15,7 @@ use function sprintf;
 use function stream_get_contents;
 use function tmpfile;
 
-class Process
+final class Process
 {
 
 	public \React\ChildProcess\Process $process;

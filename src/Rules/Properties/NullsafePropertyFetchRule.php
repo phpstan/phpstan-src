@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\NullsafePropertyFetch>
  */
-class NullsafePropertyFetchRule implements Rule
+final class NullsafePropertyFetchRule implements Rule
 {
 
 	public function __construct()

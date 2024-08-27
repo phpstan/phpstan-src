@@ -6,7 +6,10 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 use PHPStan\Reflection\ClassReflection;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class InClassNode extends Node\Stmt implements VirtualNode
 {
 

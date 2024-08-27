@@ -11,7 +11,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<Node\Expr\Closure>
  */
-class ClosureAttributesRule implements Rule
+final class ClosureAttributesRule implements Rule
 {
 
 	public function __construct(private AttributesCheck $attributesCheck)

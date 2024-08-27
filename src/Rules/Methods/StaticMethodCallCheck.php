@@ -32,7 +32,7 @@ use function in_array;
 use function sprintf;
 use function strtolower;
 
-class StaticMethodCallCheck
+final class StaticMethodCallCheck
 {
 
 	public function __construct(

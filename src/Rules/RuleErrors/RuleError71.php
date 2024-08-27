@@ -10,7 +10,7 @@ use PHPStan\Rules\RuleError;
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError71 implements RuleError, LineRuleError, FileRuleError, NonIgnorableRuleError
+final class RuleError71 implements RuleError, LineRuleError, FileRuleError, NonIgnorableRuleError
 {
 
 	public string $message;

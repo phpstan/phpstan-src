@@ -5,7 +5,7 @@ namespace PHPStan\DependencyInjection;
 use Nette\DI\Config\Loader;
 use PHPStan\File\FileHelper;
 
-class NeonLoader extends Loader
+final class NeonLoader extends Loader
 {
 
 	public function __construct(

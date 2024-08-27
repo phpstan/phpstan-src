@@ -10,7 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Stmt\Trait_>
  */
-class TraitAttributeClassRule implements Rule
+final class TraitAttributeClassRule implements Rule
 {
 
 	public function getNodeType(): string

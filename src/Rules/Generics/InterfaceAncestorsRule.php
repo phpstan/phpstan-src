@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class InterfaceAncestorsRule implements Rule
+final class InterfaceAncestorsRule implements Rule
 {
 
 	public function __construct(
@@ -47,6 +47,7 @@ class InterfaceAncestorsRule implements Rule
 			$originalNode->extends,
 			array_map(static fn (ExtendsTag $tag): Type => $tag->getType(), $classReflection->getExtendsTags()),
 			sprintf('Interface %s @extends tag contains incompatible type %%s.', $escapedInterfaceName),
+			sprintf('Interface %s @extends tag contains unresolvable type.', $interfaceName),
 			sprintf('Interface %s has @extends tag, but does not extend any interface.', $escapedInterfaceName),
 			sprintf('The @extends tag of interface %s describes %%s but the interface extends: %%s', $escapedInterfaceName),
 			'PHPDoc tag @extends contains generic type %s but %s %s is not generic.',
@@ -63,6 +64,7 @@ class InterfaceAncestorsRule implements Rule
 			[],
 			array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $classReflection->getImplementsTags()),
 			sprintf('Interface %s @implements tag contains incompatible type %%s.', $escapedInterfaceName),
+			sprintf('Interface %s @implements tag contains unresolvable type.', $interfaceName),
 			sprintf('Interface %s has @implements tag, but can not implement any interface, must extend from it.', $escapedInterfaceName),
 			'',
 			'',

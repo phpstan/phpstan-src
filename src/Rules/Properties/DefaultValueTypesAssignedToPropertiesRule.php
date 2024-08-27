@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertyNode>
  */
-class DefaultValueTypesAssignedToPropertiesRule implements Rule
+final class DefaultValueTypesAssignedToPropertiesRule implements Rule
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)

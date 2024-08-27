@@ -11,7 +11,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 
-class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

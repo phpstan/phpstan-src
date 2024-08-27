@@ -11,7 +11,7 @@ on:
       - 'issue-bot/**'
   push:
     branches:
-      - "1.11.x"
+      - "1.12.x"
     paths-ignore:
       - 'compiler/**'
       - 'apigen/**'
@@ -19,7 +19,7 @@ on:
       - 'issue-bot/**'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.11.x-dev"
+  COMPOSER_ROOT_VERSION: "1.12.x-dev"
   REFLECTION_GOLDEN_TEST_FILE: "/tmp/reflection-golden.test"
   REFLECTION_GOLDEN_SYMBOLS_FILE: "/tmp/reflection-golden-symbols.txt"
 
@@ -71,6 +71,7 @@ jobs:
           - "8.1"
           - "8.2"
           - "8.3"
+          - "8.4"
 
     steps:
       - uses: Wandalen/wretry.action@v3.5.0
@@ -101,7 +102,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Transform source code"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3' && matrix.php-version != '8.4'
         shell: bash
         run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
 
@@ -120,7 +121,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Transform source code"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3' && matrix.php-version != '8.4'
         shell: bash
         run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
 

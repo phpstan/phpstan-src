@@ -8,7 +8,7 @@ use PHPStan\Dependency\RootExportedNode;
 /**
  * @phpstan-type LinesToIgnore = array<string, array<int, non-empty-list<string>|null>>
  */
-class FileAnalyserResult
+final class FileAnalyserResult
 {
 
 	/**

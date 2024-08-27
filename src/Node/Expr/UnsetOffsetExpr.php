@@ -5,7 +5,7 @@ namespace PHPStan\Node\Expr;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
 
-class UnsetOffsetExpr extends Expr implements VirtualNode
+final class UnsetOffsetExpr extends Expr implements VirtualNode
 {
 
 	public function __construct(private Expr $var, private Expr $dim)

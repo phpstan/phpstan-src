@@ -6,7 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Type\Type;
 
-class AlwaysRememberedExpr extends Expr implements VirtualNode
+final class AlwaysRememberedExpr extends Expr implements VirtualNode
 {
 
 	public function __construct(public Expr $expr, private Type $type, private Type $nativeType)

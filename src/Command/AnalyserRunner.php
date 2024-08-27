@@ -16,7 +16,7 @@ use function function_exists;
 use function is_file;
 use function memory_get_peak_usage;
 
-class AnalyserRunner
+final class AnalyserRunner
 {
 
 	public function __construct(

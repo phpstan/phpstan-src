@@ -9,7 +9,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\ShouldNotHappenException;
 
-class RequireExtendsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
+final class RequireExtendsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 
 	public function hasMethod(ClassReflection $classReflection, string $methodName): bool

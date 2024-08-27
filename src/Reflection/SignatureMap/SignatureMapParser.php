@@ -13,7 +13,7 @@ use function array_slice;
 use function str_starts_with;
 use function substr;
 
-class SignatureMapParser
+final class SignatureMapParser
 {
 
 	private TypeStringResolver $typeStringResolver;

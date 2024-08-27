@@ -25,6 +25,7 @@ use function strtolower;
 
 /**
  * @api
+ * @final
  */
 class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements ExtendedMethodReflection
 {

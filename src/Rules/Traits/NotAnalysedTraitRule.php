@@ -13,7 +13,7 @@ use function strtolower;
 /**
  * @implements Rule<CollectedDataNode>
  */
-class NotAnalysedTraitRule implements Rule
+final class NotAnalysedTraitRule implements Rule
 {
 
 	public function getNodeType(): string

@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<LiteralArrayNode>
  */
-class EmptyArrayItemRule implements Rule
+final class EmptyArrayItemRule implements Rule
 {
 
 	public function getNodeType(): string

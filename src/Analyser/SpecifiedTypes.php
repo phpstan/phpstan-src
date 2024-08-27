@@ -6,7 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-class SpecifiedTypes
+final class SpecifiedTypes
 {
 
 	/**

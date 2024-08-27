@@ -6,7 +6,7 @@ use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
 use ReturnTypeWillChange;
 
-class ExportedPhpDocNode implements ExportedNode, JsonSerializable
+final class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 {
 
 	/**

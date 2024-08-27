@@ -4,7 +4,7 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\Php\PhpVersion;
 
-class JsonValidateStubFilesExtension implements StubFilesExtension
+final class JsonValidateStubFilesExtension implements StubFilesExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

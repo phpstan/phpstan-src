@@ -6,7 +6,7 @@ use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use function sprintf;
 
-class RawErrorFormatter implements ErrorFormatter
+final class RawErrorFormatter implements ErrorFormatter
 {
 
 	public function formatErrors(

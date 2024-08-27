@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Function_>
  */
-class FunctionTemplateTypeRule implements Rule
+final class FunctionTemplateTypeRule implements Rule
 {
 
 	public function __construct(

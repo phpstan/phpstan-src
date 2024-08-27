@@ -26,7 +26,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\New_>
  */
-class InstantiationRule implements Rule
+final class InstantiationRule implements Rule
 {
 
 	public function __construct(
@@ -216,8 +216,10 @@ class InstantiationRule implements Rule
 				'Unknown parameter $%s in call to ' . $classDisplayName . ' constructor.',
 				'Return type of call to ' . $classDisplayName . ' constructor contains unresolvable type.',
 				'Parameter %s of class ' . $classDisplayName . ' constructor contains unresolvable type.',
+				'Class ' . $classDisplayName . ' constructor invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 			],
 			'new',
+			$constructorReflection->acceptsNamedArguments(),
 		));
 	}
 

@@ -17,7 +17,7 @@ use function sha1_file;
 use function sprintf;
 use function strtolower;
 
-class OptimizedDirectorySourceLocatorFactory
+final class OptimizedDirectorySourceLocatorFactory
 {
 
 	private PhpFileCleaner $cleaner;

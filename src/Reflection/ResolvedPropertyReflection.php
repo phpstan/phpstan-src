@@ -10,7 +10,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
-class ResolvedPropertyReflection implements WrapperPropertyReflection
+final class ResolvedPropertyReflection implements WrapperPropertyReflection
 {
 
 	private ?Type $readableType = null;
@@ -18,14 +18,14 @@ class ResolvedPropertyReflection implements WrapperPropertyReflection
 	private ?Type $writableType = null;
 
 	public function __construct(
-		private PropertyReflection $reflection,
+		private ExtendedPropertyReflection $reflection,
 		private TemplateTypeMap $templateTypeMap,
 		private TemplateTypeVarianceMap $callSiteVarianceMap,
 	)
 	{
 	}
 
-	public function getOriginalReflection(): PropertyReflection
+	public function getOriginalReflection(): ExtendedPropertyReflection
 	{
 		return $this->reflection;
 	}

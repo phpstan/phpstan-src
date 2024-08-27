@@ -2,7 +2,7 @@
 
 namespace PHPStan\PhpDoc;
 
-class CountableStubFilesExtension implements StubFilesExtension
+final class CountableStubFilesExtension implements StubFilesExtension
 {
 
 	public function __construct(private bool $bleedingEdge)

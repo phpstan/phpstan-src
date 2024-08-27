@@ -4,7 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Node\InvalidateExprNode;
 
-class ProcessClosureResult
+final class ProcessClosureResult
 {
 
 	/**

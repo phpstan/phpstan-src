@@ -13,7 +13,7 @@ use function strtolower;
 /**
  * @implements Collector<MethodReturnStatementsNode, string>
  */
-class ConstructorWithoutImpurePointsCollector implements Collector
+final class ConstructorWithoutImpurePointsCollector implements Collector
 {
 
 	public function getNodeType(): string

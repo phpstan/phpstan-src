@@ -18,7 +18,7 @@ use function unlink;
 use function var_export;
 use const DIRECTORY_SEPARATOR;
 
-class FileCacheStorage implements CacheStorage
+final class FileCacheStorage implements CacheStorage
 {
 
 	public function __construct(private string $directory)

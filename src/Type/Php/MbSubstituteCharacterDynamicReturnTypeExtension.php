@@ -18,7 +18,7 @@ use PHPStan\Type\TypeCombinator;
 use function in_array;
 use function strtolower;
 
-class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

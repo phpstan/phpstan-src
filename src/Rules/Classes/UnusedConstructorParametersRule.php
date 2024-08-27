@@ -22,7 +22,7 @@ use function strtolower;
 /**
  * @implements Rule<InClassMethodNode>
  */
-class UnusedConstructorParametersRule implements Rule
+final class UnusedConstructorParametersRule implements Rule
 {
 
 	public function __construct(private UnusedFunctionParametersCheck $check)

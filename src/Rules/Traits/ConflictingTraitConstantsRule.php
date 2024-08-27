@@ -19,7 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
-class ConflictingTraitConstantsRule implements Rule
+final class ConflictingTraitConstantsRule implements Rule
 {
 
 	public function __construct(private InitializerExprTypeResolver $initializerExprTypeResolver)

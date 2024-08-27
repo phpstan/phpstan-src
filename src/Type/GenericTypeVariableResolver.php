@@ -4,7 +4,10 @@ namespace PHPStan\Type;
 
 use PHPStan\Type\Generic\TemplateTypeHelper;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class GenericTypeVariableResolver
 {
 

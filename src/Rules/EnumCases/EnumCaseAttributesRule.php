@@ -11,7 +11,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<Node\Stmt\EnumCase>
  */
-class EnumCaseAttributesRule implements Rule
+final class EnumCaseAttributesRule implements Rule
 {
 
 	public function __construct(private AttributesCheck $attributesCheck)

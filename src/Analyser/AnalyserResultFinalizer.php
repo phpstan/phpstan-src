@@ -14,7 +14,7 @@ use function count;
 use function get_class;
 use function sprintf;
 
-class AnalyserResultFinalizer
+final class AnalyserResultFinalizer
 {
 
 	public function __construct(

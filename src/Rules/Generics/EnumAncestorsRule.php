@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class EnumAncestorsRule implements Rule
+final class EnumAncestorsRule implements Rule
 {
 
 	public function __construct(
@@ -47,6 +47,7 @@ class EnumAncestorsRule implements Rule
 			[],
 			array_map(static fn (ExtendsTag $tag): Type => $tag->getType(), $classReflection->getExtendsTags()),
 			sprintf('Enum %s @extends tag contains incompatible type %%s.', $escapedEnumName),
+			sprintf('Enum %s @extends tag contains unresolvable type.', $enumName),
 			sprintf('Enum %s has @extends tag, but cannot extend anything.', $escapedEnumName),
 			'',
 			'',
@@ -63,6 +64,7 @@ class EnumAncestorsRule implements Rule
 			$originalNode->implements,
 			array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $classReflection->getImplementsTags()),
 			sprintf('Enum %s @implements tag contains incompatible type %%s.', $escapedEnumName),
+			sprintf('Enum %s @implements tag contains unresolvable type.', $enumName),
 			sprintf('Enum %s has @implements tag, but does not implement any interface.', $escapedEnumName),
 			sprintf('The @implements tag of eunm %s describes %%s but the enum implements: %%s', $escapedEnumName),
 			'PHPDoc tag @implements contains generic type %s but %s %s is not generic.',

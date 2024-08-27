@@ -11,7 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 use function is_bool;
 
-class ResolvedMethodReflection implements ExtendedMethodReflection
+final class ResolvedMethodReflection implements ExtendedMethodReflection
 {
 
 	/** @var ParametersAcceptorWithPhpDocs[]|null */
@@ -168,6 +168,11 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 			$this->callSiteVarianceMap,
 			TemplateTypeVariance::createInvariant(),
 		));
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->reflection->acceptsNamedArguments();
 	}
 
 	public function getSelfOutType(): ?Type

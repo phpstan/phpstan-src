@@ -8,7 +8,7 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_merge;
 
-class TypeSpecifierFactory
+final class TypeSpecifierFactory
 {
 
 	public const FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG = 'phpstan.typeSpecifier.functionTypeSpecifyingExtension';

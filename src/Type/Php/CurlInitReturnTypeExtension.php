@@ -24,7 +24,7 @@ use function str_contains;
 use function strcasecmp;
 use function strlen;
 
-class CurlInitReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class CurlInitReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	/** @see https://github.com/curl/curl/blob/curl-8_9_1/lib/urldata.h#L135 */

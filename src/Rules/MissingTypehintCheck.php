@@ -27,7 +27,7 @@ use function in_array;
 use function sprintf;
 use function strtolower;
 
-class MissingTypehintCheck
+final class MissingTypehintCheck
 {
 
 	public const MISSING_ITERABLE_VALUE_TYPE_TIP = 'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type';

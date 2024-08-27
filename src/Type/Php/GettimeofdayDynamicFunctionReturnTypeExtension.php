@@ -15,7 +15,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
-class GettimeofdayDynamicFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class GettimeofdayDynamicFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

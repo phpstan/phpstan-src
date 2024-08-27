@@ -11,7 +11,10 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function sprintf;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, CallableParametersAcceptor
 {
 
@@ -89,6 +92,11 @@ class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, Callab
 	public function getUsedVariables(): array
 	{
 		return [];
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return true;
 	}
 
 }

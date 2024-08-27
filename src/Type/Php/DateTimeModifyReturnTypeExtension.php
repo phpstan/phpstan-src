@@ -16,7 +16,7 @@ use PHPStan\Type\TypeCombinator;
 use Throwable;
 use function count;
 
-class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtension
+final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
 	/** @param class-string<DateTimeInterface> $dateTimeClass */

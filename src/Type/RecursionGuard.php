@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-class RecursionGuard
+final class RecursionGuard
 {
 
 	/** @var true[] */

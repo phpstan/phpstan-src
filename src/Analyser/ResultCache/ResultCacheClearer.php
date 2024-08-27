@@ -6,7 +6,7 @@ use function dirname;
 use function is_file;
 use function unlink;
 
-class ResultCacheClearer
+final class ResultCacheClearer
 {
 
 	public function __construct(private string $cacheFilePath)

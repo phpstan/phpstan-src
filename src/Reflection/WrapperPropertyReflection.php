@@ -2,9 +2,9 @@
 
 namespace PHPStan\Reflection;
 
-interface WrapperPropertyReflection extends PropertyReflection
+interface WrapperPropertyReflection extends ExtendedPropertyReflection
 {
 
-	public function getOriginalReflection(): PropertyReflection;
+	public function getOriginalReflection(): ExtendedPropertyReflection;
 
 }

@@ -17,7 +17,7 @@ use function count;
 use function sprintf;
 use function substr;
 
-class ConditionalReturnTypeRuleHelper
+final class ConditionalReturnTypeRuleHelper
 {
 
 	/**

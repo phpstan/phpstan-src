@@ -13,7 +13,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function in_array;
 
-class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
+final class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 
 	private const ARGUMENTS_POSITIONS = [

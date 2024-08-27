@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class RequireImplementsRule implements Rule
+final class RequireImplementsRule implements Rule
 {
 
 	public function getNodeType(): string

@@ -11,7 +11,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<Node\Expr\ArrowFunction>
  */
-class ArrowFunctionAttributesRule implements Rule
+final class ArrowFunctionAttributesRule implements Rule
 {
 
 	public function __construct(private AttributesCheck $attributesCheck)

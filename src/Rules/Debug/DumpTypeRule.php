@@ -15,7 +15,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class DumpTypeRule implements Rule
+final class DumpTypeRule implements Rule
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

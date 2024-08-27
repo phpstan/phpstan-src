@@ -21,7 +21,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-class MixinRule implements Rule
+final class MixinRule implements Rule
 {
 
 	public function __construct(
@@ -31,6 +31,7 @@ class MixinRule implements Rule
 		private MissingTypehintCheck $missingTypehintCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkClassCaseSensitivity,
+		private bool $absentTypeChecks,
 	)
 	{
 	}
@@ -81,6 +82,30 @@ class MixinRule implements Rule
 				))
 					->identifier('missingType.generics')
 					->build();
+			}
+
+			if ($this->absentTypeChecks) {
+				foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($type) as $iterableType) {
+					$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'%s %s has PHPDoc tag @mixin with no value type specified in iterable type %s.',
+						$classReflection->getClassTypeDescription(),
+						$classReflection->getDisplayName(),
+						$iterableTypeDescription,
+					))
+						->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+						->identifier('missingType.iterableValue')
+						->build();
+				}
+
+				foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($type) as $callableType) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'%s %s has PHPDoc tag @mixin with no signature specified for %s.',
+						$classReflection->getClassTypeDescription(),
+						$classReflection->getDisplayName(),
+						$callableType->describe(VerbosityLevel::typeOnly()),
+					))->identifier('missingType.callable')->build();
+				}
 			}
 
 			foreach ($type->getReferencedClasses() as $class) {

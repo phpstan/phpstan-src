@@ -15,7 +15,7 @@ use PHPStan\Type\Type;
 use function count;
 use function in_array;
 
-class StrvalFamilyFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class StrvalFamilyFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	private const FUNCTIONS = [

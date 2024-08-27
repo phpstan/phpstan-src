@@ -32,7 +32,7 @@ use function sprintf;
 use function substr;
 use function vsprintf;
 
-class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

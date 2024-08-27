@@ -5,7 +5,10 @@ namespace PHPStan\Node;
 use PhpParser\Node;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class InFunctionNode extends Node\Stmt implements VirtualNode
 {
 

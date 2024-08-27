@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
-class DirectReadWritePropertiesExtensionProvider implements ReadWritePropertiesExtensionProvider
+final class DirectReadWritePropertiesExtensionProvider implements ReadWritePropertiesExtensionProvider
 {
 
 	/**

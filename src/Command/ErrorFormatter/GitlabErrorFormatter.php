@@ -12,7 +12,7 @@ use function implode;
 /**
  * @see https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html#implementing-a-custom-tool
  */
-class GitlabErrorFormatter implements ErrorFormatter
+final class GitlabErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(private RelativePathHelper $relativePathHelper)

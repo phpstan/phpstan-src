@@ -14,7 +14,7 @@ use const DIRECTORY_SEPARATOR;
 use const FNM_CASEFOLD;
 use const FNM_NOESCAPE;
 
-class FileExcluder
+final class FileExcluder
 {
 
 	/**

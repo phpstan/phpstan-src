@@ -54,11 +54,13 @@ parameters:
 		paramOutType: true
 		pure: true
 		checkParameterCastableToStringFunctions: true
-		narrowPregMatches: true
 		uselessReturnValue: true
 		printfArrayParameters: true
 		preciseMissingReturn: true
 		validatePregQuote: true
 		noImplicitWildcard: true
+		tooWidePropertyType: true
+		explicitThrow: true
+		absentTypeChecks: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Rule.stub

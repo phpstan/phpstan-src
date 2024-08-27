@@ -14,7 +14,7 @@ use function strlen;
 use function substr;
 use const DIRECTORY_SEPARATOR;
 
-class FuzzyRelativePathHelper implements RelativePathHelper
+final class FuzzyRelativePathHelper implements RelativePathHelper
 {
 
 	private string $directorySeparator;

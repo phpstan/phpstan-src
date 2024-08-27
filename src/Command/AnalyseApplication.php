@@ -19,7 +19,7 @@ use function microtime;
 use function sha1_file;
 use function sprintf;
 
-class AnalyseApplication
+final class AnalyseApplication
 {
 
 	public function __construct(

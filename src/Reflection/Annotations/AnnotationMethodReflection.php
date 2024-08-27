@@ -13,7 +13,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 
-class AnnotationMethodReflection implements ExtendedMethodReflection
+final class AnnotationMethodReflection implements ExtendedMethodReflection
 {
 
 	/** @var FunctionVariantWithPhpDocs[]|null */
@@ -139,6 +139,11 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->declaringClass->acceptsNamedArguments();
 	}
 
 	public function getSelfOutType(): ?Type

@@ -13,7 +13,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
-class EnumCasesMethodReflection implements ExtendedMethodReflection
+final class EnumCasesMethodReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(private ClassReflection $declaringClass, private Type $returnType)
@@ -118,6 +118,11 @@ class EnumCasesMethodReflection implements ExtendedMethodReflection
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->declaringClass->acceptsNamedArguments();
 	}
 
 	public function getSelfOutType(): ?Type

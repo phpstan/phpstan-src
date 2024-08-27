@@ -14,7 +14,7 @@ use function count;
 use function sprintf;
 use function strtolower;
 
-class AttributesCheck
+final class AttributesCheck
 {
 
 	public function __construct(
@@ -151,8 +151,10 @@ class AttributesCheck
 						'Unknown parameter $%s in call to ' . $attributeClassName . ' constructor.',
 						'Return type of call to ' . $attributeClassName . ' constructor contains unresolvable type.',
 						'Parameter %s of attribute class ' . $attributeClassName . ' constructor contains unresolvable type.',
+						'Attribute class ' . $attributeClassName . ' constructorinvoked with %s, but it\'s not allowed because of @no-named-arguments.',
 					],
 					'attribute',
+					$attributeConstructor->acceptsNamedArguments(),
 				);
 
 				foreach ($parameterErrors as $error) {

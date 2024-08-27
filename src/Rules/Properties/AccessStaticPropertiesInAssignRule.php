@@ -10,7 +10,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<PropertyAssignNode>
  */
-class AccessStaticPropertiesInAssignRule implements Rule
+final class AccessStaticPropertiesInAssignRule implements Rule
 {
 
 	public function __construct(private AccessStaticPropertiesRule $accessStaticPropertiesRule)

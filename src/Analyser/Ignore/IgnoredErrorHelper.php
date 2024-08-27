@@ -12,7 +12,7 @@ use function is_array;
 use function is_file;
 use function sprintf;
 
-class IgnoredErrorHelper
+final class IgnoredErrorHelper
 {
 
 	/**

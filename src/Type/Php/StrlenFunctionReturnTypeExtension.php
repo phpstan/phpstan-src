@@ -24,7 +24,7 @@ use function range;
 use function sort;
 use function strlen;
 
-class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

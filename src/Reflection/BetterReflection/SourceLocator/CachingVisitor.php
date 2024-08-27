@@ -12,7 +12,7 @@ use PHPStan\BetterReflection\Util\ConstantNodeChecker;
 use PHPStan\Reflection\ConstantNameHelper;
 use function strtolower;
 
-class CachingVisitor extends NodeVisitorAbstract
+final class CachingVisitor extends NodeVisitorAbstract
 {
 
 	private string $fileName;

@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\StaticPropertyFetch>
  */
-class AccessPrivatePropertyThroughStaticRule implements Rule
+final class AccessPrivatePropertyThroughStaticRule implements Rule
 {
 
 	public function getNodeType(): string

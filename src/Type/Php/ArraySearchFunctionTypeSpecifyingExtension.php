@@ -16,7 +16,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
 use function strtolower;
 
-class ArraySearchFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
+final class ArraySearchFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
 	private TypeSpecifier $typeSpecifier;

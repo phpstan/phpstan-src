@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\MethodCall>
  */
-class ImpossibleCheckTypeMethodCallRule implements Rule
+final class ImpossibleCheckTypeMethodCallRule implements Rule
 {
 
 	public function __construct(

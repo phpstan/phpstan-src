@@ -6,7 +6,7 @@ use Nette\DI\Config\Loader;
 use PHPStan\File\FileHelper;
 use function getenv;
 
-class LoaderFactory
+final class LoaderFactory
 {
 
 	public function __construct(

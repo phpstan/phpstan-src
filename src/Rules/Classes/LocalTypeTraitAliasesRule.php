@@ -10,7 +10,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<Node\Stmt\Trait_>
  */
-class LocalTypeTraitAliasesRule implements Rule
+final class LocalTypeTraitAliasesRule implements Rule
 {
 
 	public function __construct(private LocalTypeAliasesCheck $check, private ReflectionProvider $reflectionProvider)
@@ -33,7 +33,7 @@ class LocalTypeTraitAliasesRule implements Rule
 			return [];
 		}
 
-		return $this->check->check($this->reflectionProvider->getClass($traitName->toString()));
+		return $this->check->check($this->reflectionProvider->getClass($traitName->toString()), $node);
 	}
 
 }

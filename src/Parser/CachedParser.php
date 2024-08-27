@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\File\FileReader;
 use function array_slice;
 
-class CachedParser implements Parser
+final class CachedParser implements Parser
 {
 
 	/** @var array<string, Node\Stmt[]>*/

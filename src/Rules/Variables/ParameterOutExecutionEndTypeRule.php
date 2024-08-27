@@ -24,7 +24,7 @@ use function sprintf;
 /**
  * @implements Rule<ExecutionEndNode>
  */
-class ParameterOutExecutionEndTypeRule implements Rule
+final class ParameterOutExecutionEndTypeRule implements Rule
 {
 
 	public function __construct(

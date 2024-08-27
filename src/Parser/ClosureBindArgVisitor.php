@@ -7,7 +7,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\NodeVisitorAbstract;
 use function count;
 
-class ClosureBindArgVisitor extends NodeVisitorAbstract
+final class ClosureBindArgVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'closureBindArg';

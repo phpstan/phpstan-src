@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @internal
  */
-class SymfonyOutput implements Output
+final class SymfonyOutput implements Output
 {
 
 	public function __construct(

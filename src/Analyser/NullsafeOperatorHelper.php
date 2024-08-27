@@ -5,7 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node\Expr;
 use PHPStan\Type\TypeCombinator;
 
-class NullsafeOperatorHelper
+final class NullsafeOperatorHelper
 {
 
 	public static function getNullsafeShortcircuitedExprRespectingScope(Scope $scope, Expr $expr): Expr

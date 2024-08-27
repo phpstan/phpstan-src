@@ -11,7 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
-class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVariant, CallableParametersAcceptor
+final class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVariant, CallableParametersAcceptor
 {
 
 	/**
@@ -27,6 +27,7 @@ class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVariant, Ca
 		private array $impurePoints,
 		private array $invalidateExpressions,
 		private array $usedVariables,
+		private bool $acceptsNamedArguments,
 	)
 	{
 	}
@@ -109,6 +110,11 @@ class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVariant, Ca
 	public function getUsedVariables(): array
 	{
 		return $this->usedVariables;
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->acceptsNamedArguments;
 	}
 
 }

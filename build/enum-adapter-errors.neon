@@ -144,8 +144,3 @@ parameters:
 			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\BuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) has invalid return type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Reflection/Php/BuiltinMethodReflection.php
-
-		-
-			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\NativeBuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) has invalid return type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Reflection/Php/NativeBuiltinMethodReflection.php

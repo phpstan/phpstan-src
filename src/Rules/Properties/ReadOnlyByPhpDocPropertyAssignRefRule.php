@@ -11,7 +11,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\AssignRef>
  */
-class ReadOnlyByPhpDocPropertyAssignRefRule implements Rule
+final class ReadOnlyByPhpDocPropertyAssignRefRule implements Rule
 {
 
 	public function __construct(private PropertyReflectionFinder $propertyReflectionFinder)

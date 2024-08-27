@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use function is_string;
 
-class DiagnoseCommand extends Command
+final class DiagnoseCommand extends Command
 {
 
 	private const NAME = 'diagnose';

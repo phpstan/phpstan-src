@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 
 /** @implements Rule<MagicConst> */
-class MagicConstantContextRule implements Rule
+final class MagicConstantContextRule implements Rule
 {
 
 	public function getNodeType(): string

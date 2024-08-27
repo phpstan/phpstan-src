@@ -19,7 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
-class TooWideMethodReturnTypehintRule implements Rule
+final class TooWideMethodReturnTypehintRule implements Rule
 {
 
 	public function __construct(private bool $checkProtectedAndPublicMethods, private bool $alwaysCheckFinal)

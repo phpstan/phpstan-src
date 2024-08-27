@@ -20,7 +20,7 @@ use function str_starts_with;
 /**
  * @implements Rule<Node>
  */
-class InvalidPhpDocTagValueRule implements Rule
+final class InvalidPhpDocTagValueRule implements Rule
 {
 
 	public function __construct(

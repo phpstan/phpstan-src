@@ -10,7 +10,7 @@ use ReturnTypeWillChange;
 use function array_map;
 use function count;
 
-class ExportedFunctionNode implements RootExportedNode, JsonSerializable
+final class ExportedFunctionNode implements RootExportedNode, JsonSerializable
 {
 
 	/**
@@ -133,6 +133,9 @@ class ExportedFunctionNode implements RootExportedNode, JsonSerializable
 		);
 	}
 
+	/**
+	 * @return self::TYPE_FUNCTION
+	 */
 	public function getType(): string
 	{
 		return self::TYPE_FUNCTION;

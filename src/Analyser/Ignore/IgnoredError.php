@@ -15,7 +15,7 @@ use function preg_quote;
 use function sprintf;
 use function str_replace;
 
-class IgnoredError
+final class IgnoredError
 {
 
 	/**

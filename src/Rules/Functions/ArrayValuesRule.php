@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class ArrayValuesRule implements Rule
+final class ArrayValuesRule implements Rule
 {
 
 	public function __construct(

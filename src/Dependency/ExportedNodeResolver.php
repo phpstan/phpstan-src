@@ -28,7 +28,7 @@ use function array_map;
 use function implode;
 use function is_string;
 
-class ExportedNodeResolver
+final class ExportedNodeResolver
 {
 
 	public function __construct(private FileTypeMapper $fileTypeMapper, private ExprPrinter $exprPrinter)

@@ -14,7 +14,7 @@ use function strpos;
 use function substr;
 use function trim;
 
-class ParentDirectoryRelativePathHelper implements RelativePathHelper
+final class ParentDirectoryRelativePathHelper implements RelativePathHelper
 {
 
 	public function __construct(private string $parentDirectory)

@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Interface_>
  */
-class ApiInterfaceExtendsRule implements Rule
+final class ApiInterfaceExtendsRule implements Rule
 {
 
 	public function __construct(

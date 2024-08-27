@@ -21,7 +21,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 
-class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion)

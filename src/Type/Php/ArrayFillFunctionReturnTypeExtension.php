@@ -20,7 +20,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 
-class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	private const MAX_SIZE_USE_CONSTANT_ARRAY = 100;

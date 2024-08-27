@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Expr\Throw_>
  */
-class ThrowExpressionRule implements Rule
+final class ThrowExpressionRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpVersion)

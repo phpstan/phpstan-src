@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -21,7 +22,7 @@ use function implode;
 use function in_array;
 use function sprintf;
 
-class GenericAncestorsCheck
+final class GenericAncestorsCheck
 {
 
 	/**
@@ -31,8 +32,10 @@ class GenericAncestorsCheck
 		private ReflectionProvider $reflectionProvider,
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private VarianceCheck $varianceCheck,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkGenericClassInNonGenericObjectType,
 		private array $skipCheckGenericClasses,
+		private bool $absentTypeChecks,
 	)
 	{
 	}
@@ -46,6 +49,7 @@ class GenericAncestorsCheck
 		array $nameNodes,
 		array $ancestorTypes,
 		string $incompatibleTypeMessage,
+		string $unresolvableTypeMessage,
 		string $noNamesMessage,
 		string $noRelatedNameMessage,
 		string $classNotGenericMessage,
@@ -99,13 +103,37 @@ class GenericAncestorsCheck
 			);
 			$messages = array_merge($messages, $genericObjectTypeCheckMessages);
 
+			if ($this->absentTypeChecks) {
+				if ($this->unresolvableTypeHelper->containsUnresolvableType($ancestorType)) {
+					$messages[] = RuleErrorBuilder::message($unresolvableTypeMessage)
+						->identifier('generics.unresolvable')
+						->build();
+				}
+			}
+
 			foreach ($ancestorType->getReferencedClasses() as $referencedClass) {
-				if ($this->reflectionProvider->hasClass($referencedClass)) {
+				if (!$this->reflectionProvider->hasClass($referencedClass)) {
+					$messages[] = RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))
+						->identifier('class.notFound')
+						->build();
+					continue;
+				}
+
+				if (!$this->absentTypeChecks) {
+					continue;
+				}
+
+				if ($referencedClass === $ancestorType->getClassName()) {
+					continue;
+				}
+
+				$classReflection = $this->reflectionProvider->getClass($referencedClass);
+				if (!$classReflection->isTrait()) {
 					continue;
 				}
 
 				$messages[] = RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))
-					->identifier('class.notFound')
+					->identifier('generics.trait')
 					->build();
 			}
 

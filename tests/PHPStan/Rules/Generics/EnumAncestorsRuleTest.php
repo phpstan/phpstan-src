@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -19,8 +20,10 @@ class EnumAncestorsRuleTest extends RuleTestCase
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(true, true),
+				new UnresolvableTypeHelper(),
 				true,
 				[],
+				true,
 			),
 			new CrossCheckInterfacesHelper(),
 		);

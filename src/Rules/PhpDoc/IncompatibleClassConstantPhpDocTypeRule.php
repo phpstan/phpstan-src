@@ -20,7 +20,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
-class IncompatibleClassConstantPhpDocTypeRule implements Rule
+final class IncompatibleClassConstantPhpDocTypeRule implements Rule
 {
 
 	public function __construct(

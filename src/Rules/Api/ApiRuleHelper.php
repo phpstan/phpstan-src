@@ -11,7 +11,7 @@ use function stripos;
 use function strtolower;
 use const PATHINFO_BASENAME;
 
-class ApiRuleHelper
+final class ApiRuleHelper
 {
 
 	public function isPhpStanCode(Scope $scope, string $namespace, ?string $declaringFile): bool

@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassMethodNode>
  */
-class ExistingClassesInTypehintsRule implements Rule
+final class ExistingClassesInTypehintsRule implements Rule
 {
 
 	public function __construct(private FunctionDefinitionCheck $check)
@@ -53,6 +53,11 @@ class ExistingClassesInTypehintsRule implements Rule
 			),
 			sprintf(
 				'Method %s::%s() has unresolvable native return type.',
+				$className,
+				$methodName,
+			),
+			sprintf(
+				'Method %s::%s() has invalid @phpstan-self-out type %%s.',
 				$className,
 				$methodName,
 			),

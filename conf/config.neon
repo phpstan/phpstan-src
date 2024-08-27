@@ -89,12 +89,15 @@ parameters:
 		paramOutType: false
 		pure: false
 		checkParameterCastableToStringFunctions: false
-		narrowPregMatches: false
 		uselessReturnValue: false
 		printfArrayParameters: false
 		preciseMissingReturn: false
 		validatePregQuote: false
 		noImplicitWildcard: false
+		narrowPregMatches: true
+		tooWidePropertyType: false
+		explicitThrow: false
+		absentTypeChecks: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -259,6 +262,7 @@ parameters:
 	editorUrlTitle: null
 	errorFormat: null
 	sysGetTempDir: ::sys_get_temp_dir()
+	sourceLocatorPlaygroundMode: false
 	pro:
 		dnsServers:
 			- '1.1.1.2'
@@ -291,12 +295,6 @@ conditionalTags:
 		phpstan.parser.richParserNodeVisitor: %featureToggles.curlSetOptTypes%
 	PHPStan\Parser\TypeTraverserInstanceofVisitor:
 		phpstan.parser.richParserNodeVisitor: %featureToggles.instanceofType%
-	PHPStan\Type\Php\PregMatchTypeSpecifyingExtension:
-		phpstan.typeSpecifier.functionTypeSpecifyingExtension: %featureToggles.narrowPregMatches%
-	PHPStan\Type\Php\PregMatchParameterOutTypeExtension:
-		phpstan.functionParameterOutTypeExtension: %featureToggles.narrowPregMatches%
-	PHPStan\Type\Php\PregReplaceCallbackClosureTypeExtension:
-		phpstan.functionParameterClosureTypeExtension: %featureToggles.narrowPregMatches%
 
 services:
 	-
@@ -547,6 +545,7 @@ services:
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 			paramOutType: %featureToggles.paramOutType%
 			preciseMissingReturn: %featureToggles.preciseMissingReturn%
+			explicitThrow: %featureToggles.explicitThrow%
 
 	-
 		class: PHPStan\Analyser\ConstantResolver
@@ -914,6 +913,19 @@ services:
 		class: PHPStan\Rules\Classes\LocalTypeAliasesCheck
 		arguments:
 			globalTypeAliases: %typeAliases%
+			checkMissingTypehints: %checkMissingTypehints%
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
+
+	-
+		class: PHPStan\Rules\Classes\MethodTagCheck
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+
+	-
+		class: PHPStan\Rules\Classes\PropertyTagCheck
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 
 	-
 		class: PHPStan\Rules\Comparison\ConstantConditionRuleHelper
@@ -972,6 +984,7 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkThisOnly: %checkThisOnly%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\FunctionReturnTypeCheck
@@ -986,6 +999,7 @@ services:
 		arguments:
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\Generics\GenericObjectTypeCheck
@@ -1484,6 +1498,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\HighlightStringDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\IntdivThrowTypeExtension
 		tags:
 			- phpstan.dynamicFunctionThrowTypeExtension
@@ -1500,12 +1519,18 @@ services:
 
 	-
 		class: PHPStan\Type\Php\PregMatchTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
 		class: PHPStan\Type\Php\PregMatchParameterOutTypeExtension
+		tags:
+			- phpstan.functionParameterOutTypeExtension
 
 	-
 		class: PHPStan\Type\Php\PregReplaceCallbackClosureTypeExtension
+		tags:
+			- phpstan.functionParameterClosureTypeExtension
 
 	-
 		class: PHPStan\Type\Php\RegexArrayShapeMatcher
@@ -2089,6 +2114,7 @@ services:
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
+			playgroundMode: %sourceLocatorPlaygroundMode%
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory

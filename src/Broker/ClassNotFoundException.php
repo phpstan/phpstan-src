@@ -5,7 +5,7 @@ namespace PHPStan\Broker;
 use PHPStan\AnalysedCodeException;
 use function sprintf;
 
-class ClassNotFoundException extends AnalysedCodeException
+final class ClassNotFoundException extends AnalysedCodeException
 {
 
 	public function __construct(private string $className)
@@ -18,7 +18,7 @@ class ClassNotFoundException extends AnalysedCodeException
 		return $this->className;
 	}
 
-	public function getTip(): ?string
+	public function getTip(): string
 	{
 		return 'Learn more at https://phpstan.org/user-guide/discovering-symbols';
 	}

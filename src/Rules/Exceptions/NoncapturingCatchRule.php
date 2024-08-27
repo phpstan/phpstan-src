@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Stmt\Catch_>
  */
-class NoncapturingCatchRule implements Rule
+final class NoncapturingCatchRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpVersion)

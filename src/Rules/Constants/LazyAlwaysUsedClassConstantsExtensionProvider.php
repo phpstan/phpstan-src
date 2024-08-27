@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Constants;
 
 use PHPStan\DependencyInjection\Container;
 
-class LazyAlwaysUsedClassConstantsExtensionProvider implements AlwaysUsedClassConstantsExtensionProvider
+final class LazyAlwaysUsedClassConstantsExtensionProvider implements AlwaysUsedClassConstantsExtensionProvider
 {
 
 	/** @var AlwaysUsedClassConstantsExtension[]|null */

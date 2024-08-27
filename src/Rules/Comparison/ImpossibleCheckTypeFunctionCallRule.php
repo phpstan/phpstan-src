@@ -13,7 +13,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class ImpossibleCheckTypeFunctionCallRule implements Rule
+final class ImpossibleCheckTypeFunctionCallRule implements Rule
 {
 
 	public function __construct(

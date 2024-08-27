@@ -10,7 +10,7 @@ use PHPStan\Type\ClosureType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 
-class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
+final class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
 
 	public function getClass(): string

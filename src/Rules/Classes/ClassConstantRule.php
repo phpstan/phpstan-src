@@ -28,7 +28,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\ClassConstFetch>
  */
-class ClassConstantRule implements Rule
+final class ClassConstantRule implements Rule
 {
 
 	public function __construct(

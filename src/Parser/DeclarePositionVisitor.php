@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use function str_starts_with;
 
-class DeclarePositionVisitor extends NodeVisitorAbstract
+final class DeclarePositionVisitor extends NodeVisitorAbstract
 {
 
 	private bool $isFirstStatement = true;

@@ -5,7 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 
-class VariableAssignNode extends NodeAbstract implements VirtualNode
+final class VariableAssignNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(

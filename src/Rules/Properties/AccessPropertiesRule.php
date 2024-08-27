@@ -26,7 +26,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\PropertyFetch>
  */
-class AccessPropertiesRule implements Rule
+final class AccessPropertiesRule implements Rule
 {
 
 	public function __construct(

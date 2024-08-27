@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassMethodNode>
  */
-class IncompatibleDefaultParameterTypeRule implements Rule
+final class IncompatibleDefaultParameterTypeRule implements Rule
 {
 
 	public function getNodeType(): string

@@ -17,7 +17,7 @@ use function str_starts_with;
 use function strrpos;
 use function substr;
 
-class IgnoredRegexValidator
+final class IgnoredRegexValidator
 {
 
 	public function __construct(

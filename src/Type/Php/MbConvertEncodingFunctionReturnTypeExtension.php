@@ -11,7 +11,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 
-class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

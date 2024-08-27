@@ -6,7 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-class EnsuredNonNullabilityResultExpression
+final class EnsuredNonNullabilityResultExpression
 {
 
 	public function __construct(

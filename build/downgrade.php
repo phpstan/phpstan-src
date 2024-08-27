@@ -2,6 +2,7 @@
 
 return [
 	'paths' => [
+		__DIR__ . '/../build/PHPStan',
 		__DIR__ . '/../src',
 		__DIR__ . '/../tests/PHPStan',
 		__DIR__ . '/../tests/e2e',

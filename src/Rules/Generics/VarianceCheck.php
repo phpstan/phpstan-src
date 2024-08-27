@@ -10,7 +10,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
 use function sprintf;
 
-class VarianceCheck
+final class VarianceCheck
 {
 
 	public function __construct(

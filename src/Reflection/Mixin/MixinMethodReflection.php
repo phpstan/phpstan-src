@@ -8,7 +8,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-class MixinMethodReflection implements MethodReflection
+final class MixinMethodReflection implements MethodReflection
 {
 
 	public function __construct(private MethodReflection $reflection, private bool $static)

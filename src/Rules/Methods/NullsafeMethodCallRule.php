@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\NullsafeMethodCall>
  */
-class NullsafeMethodCallRule implements Rule
+final class NullsafeMethodCallRule implements Rule
 {
 
 	public function getNodeType(): string

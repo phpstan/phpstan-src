@@ -8,7 +8,10 @@ use PhpParser\NodeAbstract;
 use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Reflection\ClassReflection;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ClassConstantsNode extends NodeAbstract implements VirtualNode
 {
 

@@ -5,7 +5,7 @@ namespace PHPStan\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
 
-class BrokerFactory
+final class BrokerFactory
 {
 
 	public const PROPERTIES_CLASS_REFLECTION_EXTENSION_TAG = 'phpstan.broker.propertiesClassReflectionExtension';

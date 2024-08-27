@@ -13,7 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertiesNode>
  */
-class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
+final class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
 {
 
 	public function __construct(

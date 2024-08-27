@@ -25,7 +25,7 @@ use function strlen;
 use function substr;
 use const PHP_VERSION_ID;
 
-class PHPStanDiagnoseExtension implements DiagnoseExtension
+final class PHPStanDiagnoseExtension implements DiagnoseExtension
 {
 
 	/**

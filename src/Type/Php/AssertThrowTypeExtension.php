@@ -11,7 +11,7 @@ use PHPStan\Type\Type;
 use Throwable;
 use function count;
 
-class AssertThrowTypeExtension implements DynamicFunctionThrowTypeExtension
+final class AssertThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

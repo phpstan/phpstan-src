@@ -8,7 +8,7 @@ use PhpParser\NodeVisitorAbstract;
 use PHPStan\Reflection\ParametersAcceptor;
 use function in_array;
 
-class CleaningVisitor extends NodeVisitorAbstract
+final class CleaningVisitor extends NodeVisitorAbstract
 {
 
 	private NodeFinder $nodeFinder;

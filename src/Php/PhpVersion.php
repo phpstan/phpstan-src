@@ -4,7 +4,10 @@ namespace PHPStan\Php;
 
 use function floor;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class PhpVersion
 {
 
@@ -333,6 +336,11 @@ class PhpVersion
 		// https://github.com/php/php-src/blob/php-7.4.33/ext/curl/interface.c#L139-L158
 		// https://github.com/php/php-src/blob/php-8.0.0/ext/curl/interface.c#L128-L130
 		return $this->versionId < 80000;
+	}
+
+	public function highlightStringDoesNotReturnFalse(): bool
+	{
+		return $this->versionId >= 80400;
 	}
 
 }

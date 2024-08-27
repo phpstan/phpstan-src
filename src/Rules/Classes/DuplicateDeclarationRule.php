@@ -18,7 +18,7 @@ use function strtolower;
 /**
  * @implements Rule<InClassNode>
  */
-class DuplicateDeclarationRule implements Rule
+final class DuplicateDeclarationRule implements Rule
 {
 
 	public function getNodeType(): string

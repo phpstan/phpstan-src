@@ -5,7 +5,7 @@ namespace PHPStan\DependencyInjection;
 use Exception;
 use function implode;
 
-class InvalidExcludePathsException extends Exception
+final class InvalidExcludePathsException extends Exception
 {
 
 	/**

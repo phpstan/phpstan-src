@@ -4,7 +4,7 @@ namespace PHPStan\Reflection\ReflectionProvider;
 
 use PHPStan\Reflection\ReflectionProvider;
 
-class ReflectionProviderFactory
+final class ReflectionProviderFactory
 {
 
 	public function __construct(

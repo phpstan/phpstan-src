@@ -6,7 +6,10 @@ use JsonSerializable;
 use PhpParser\Node;
 use ReturnTypeWillChange;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class CollectedData implements JsonSerializable
 {
 

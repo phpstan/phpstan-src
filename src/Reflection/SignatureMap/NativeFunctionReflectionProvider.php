@@ -22,7 +22,7 @@ use function array_key_exists;
 use function array_map;
 use function strtolower;
 
-class NativeFunctionReflectionProvider
+final class NativeFunctionReflectionProvider
 {
 
 	/** @var NativeFunctionReflection[] */
@@ -51,6 +51,7 @@ class NativeFunctionReflectionProvider
 		$asserts = Assertions::createEmpty();
 		$docComment = null;
 		$returnsByReference = TrinaryLogic::createMaybe();
+		$acceptsNamedArguments = true;
 		try {
 			$reflectionFunction = $this->reflector->reflectFunction($functionName);
 			$reflectionFunctionAdapter = new ReflectionFunction($reflectionFunction);
@@ -84,6 +85,7 @@ class NativeFunctionReflectionProvider
 			}
 			$asserts = Assertions::createFromResolvedPhpDocBlock($phpDoc);
 			$phpDocReturnType = $this->getReturnTypeFromPhpDoc($phpDoc);
+			$acceptsNamedArguments = $phpDoc->acceptsNamedArguments();
 		}
 
 		$variantsByType = ['positional' => []];
@@ -148,6 +150,7 @@ class NativeFunctionReflectionProvider
 			$asserts,
 			$docComment,
 			$returnsByReference,
+			$acceptsNamedArguments,
 		);
 		$this->functionMap[$lowerCasedFunctionName] = $functionReflection;
 

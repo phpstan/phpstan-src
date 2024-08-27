@@ -83,4 +83,30 @@ class CallUserFuncRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7057.php'], []);
 	}
 
+	public function testNoNamedArguments(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/no-named-arguments-call-user-func.php'], [
+			[
+				'Callable passed to call_user_func() invoked with named argument $i, but it\'s not allowed because of @no-named-arguments.',
+				29,
+			],
+			[
+				'Callable passed to call_user_func() invoked with named argument $i, but it\'s not allowed because of @no-named-arguments.',
+				30,
+			],
+			[
+				'Callable passed to call_user_func() invoked with named argument $i, but it\'s not allowed because of @no-named-arguments.',
+				31,
+			],
+			[
+				'Callable passed to call_user_func() invoked with named argument $i, but it\'s not allowed because of @no-named-arguments.',
+				32,
+			],
+		]);
+	}
+
 }

@@ -3,6 +3,12 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\PhpDoc\TypeNodeResolver;
+use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -15,11 +21,23 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$reflectionProvider = $this->createReflectionProvider();
+
 		return new LocalTypeAliasesRule(
 			new LocalTypeAliasesCheck(
 				['GlobalTypeAlias' => 'int|string'],
 				$this->createReflectionProvider(),
 				self::getContainer()->getByType(TypeNodeResolver::class),
+				new MissingTypehintCheck(true, true, true, true, []),
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassForbiddenNameCheck(self::getContainer()),
+				),
+				new UnresolvableTypeHelper(),
+				new GenericObjectTypeCheck(),
+				true,
+				true,
+				true,
 			),
 		);
 	}
@@ -90,6 +108,40 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 			[
 				'Invalid type definition detected in type alias InvalidTypeAlias.',
 				62,
+			],
+			[
+				'Class LocalTypeAliases\MissingTypehints has type alias NoIterableValue with no value type specified in iterable type array.',
+				77,
+				'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type',
+			],
+			[
+				'Class LocalTypeAliases\MissingTypehints has type alias NoGenerics with generic class LocalTypeAliases\Generic but does not specify its types: T',
+				77,
+			],
+			[
+				'Class LocalTypeAliases\MissingTypehints has type alias NoCallable with no signature specified for callable.',
+				77,
+			],
+			[
+				'Type alias A contains unknown class LocalTypeAliases\Nonexistent.',
+				87,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Type alias B contains invalid type LocalTypeTraitAliases\Foo.',
+				87,
+			],
+			[
+				'Class LocalTypeAliases\Foo referenced with incorrect case: LocalTypeAliases\fOO.',
+				87,
+			],
+			[
+				'Type alias A contains unresolvable type.',
+				95,
+			],
+			[
+				'Type alias A contains generic type Exception<int> but class Exception is not generic.',
+				103,
 			],
 		]);
 	}

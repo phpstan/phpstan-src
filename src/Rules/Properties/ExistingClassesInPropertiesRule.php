@@ -19,7 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertyNode>
  */
-class ExistingClassesInPropertiesRule implements Rule
+final class ExistingClassesInPropertiesRule implements Rule
 {
 
 	public function __construct(

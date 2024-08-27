@@ -4,7 +4,10 @@ namespace PHPStan\Node\Printer;
 
 use PhpParser\Node\Expr;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ExprPrinter
 {
 

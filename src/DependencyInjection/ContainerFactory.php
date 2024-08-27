@@ -55,7 +55,10 @@ use function substr;
 use function time;
 use function unlink;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ContainerFactory
 {
 

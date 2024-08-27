@@ -7,7 +7,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-class NativeParameterReflection implements ParameterReflection
+final class NativeParameterReflection implements ParameterReflection
 {
 
 	public function __construct(

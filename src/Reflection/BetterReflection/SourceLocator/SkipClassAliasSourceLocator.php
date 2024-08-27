@@ -10,7 +10,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use ReflectionClass;
 use function class_exists;
 
-class SkipClassAliasSourceLocator implements SourceLocator
+final class SkipClassAliasSourceLocator implements SourceLocator
 {
 
 	public function __construct(private SourceLocator $sourceLocator)

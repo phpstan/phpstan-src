@@ -26,7 +26,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Stmt\Return_>
  */
-class ReturnTypeRule implements Rule
+final class ReturnTypeRule implements Rule
 {
 
 	public function __construct(private FunctionReturnTypeCheck $returnTypeCheck)

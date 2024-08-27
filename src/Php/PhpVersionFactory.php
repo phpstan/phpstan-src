@@ -7,7 +7,7 @@ use function max;
 use function min;
 use const PHP_VERSION_ID;
 
-class PhpVersionFactory
+final class PhpVersionFactory
 {
 
 	public function __construct(
@@ -26,7 +26,7 @@ class PhpVersionFactory
 			$parts = explode('.', $this->composerPhpVersion);
 			$tmp = (int) $parts[0] * 10000 + (int) ($parts[1] ?? 0) * 100 + (int) ($parts[2] ?? 0);
 			$tmp = max($tmp, 70100);
-			$versionId = min($tmp, 80399);
+			$versionId = min($tmp, 80499);
 			$source = PhpVersion::SOURCE_COMPOSER_PLATFORM_PHP;
 		} else {
 			$versionId = PHP_VERSION_ID;

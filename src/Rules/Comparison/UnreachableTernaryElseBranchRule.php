@@ -11,7 +11,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 /**
  * @implements Rule<Node\Expr\Ternary>
  */
-class UnreachableTernaryElseBranchRule implements Rule
+final class UnreachableTernaryElseBranchRule implements Rule
 {
 
 	public function __construct(

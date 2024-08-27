@@ -12,7 +12,7 @@ use function count;
 /**
  * @implements Rule<FileNode>
  */
-class NoPhpCodeRule implements Rule
+final class NoPhpCodeRule implements Rule
 {
 
 	public function getNodeType(): string

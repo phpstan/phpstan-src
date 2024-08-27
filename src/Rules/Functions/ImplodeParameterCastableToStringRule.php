@@ -19,7 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class ImplodeParameterCastableToStringRule implements Rule
+final class ImplodeParameterCastableToStringRule implements Rule
 {
 
 	public function __construct(

@@ -14,7 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function count;
 
-class MicrotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class MicrotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

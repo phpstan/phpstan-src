@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-class GeneralizePrecision
+final class GeneralizePrecision
 {
 
 	private const LESS_SPECIFIC = 1;

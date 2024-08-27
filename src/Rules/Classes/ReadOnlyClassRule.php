@@ -12,7 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<InClassNode>
  */
-class ReadOnlyClassRule implements Rule
+final class ReadOnlyClassRule implements Rule
 {
 
 	public function __construct(private PhpVersion $phpVersion)

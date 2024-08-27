@@ -25,7 +25,7 @@ use function is_file;
 use function str_contains;
 use const GLOB_ONLYDIR;
 
-class ComposerJsonAndInstalledJsonSourceLocatorMaker
+final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 {
 
 	public function __construct(

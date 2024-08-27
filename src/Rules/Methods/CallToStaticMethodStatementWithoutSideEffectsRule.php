@@ -19,7 +19,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Stmt\Expression>
  */
-class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
+final class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 {
 
 	public function __construct(

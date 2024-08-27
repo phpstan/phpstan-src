@@ -6,6 +6,9 @@ use PhpParser\Node;
 use function class_implements;
 use function class_parents;
 
+/**
+ * @final
+ */
 class DirectRegistry implements Registry
 {
 

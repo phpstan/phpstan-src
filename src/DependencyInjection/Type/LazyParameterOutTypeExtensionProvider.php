@@ -4,7 +4,7 @@ namespace PHPStan\DependencyInjection\Type;
 
 use PHPStan\DependencyInjection\Container;
 
-class LazyParameterOutTypeExtensionProvider implements ParameterOutTypeExtensionProvider
+final class LazyParameterOutTypeExtensionProvider implements ParameterOutTypeExtensionProvider
 {
 
 	public const FUNCTION_TAG = 'phpstan.functionParameterOutTypeExtension';

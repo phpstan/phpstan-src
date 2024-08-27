@@ -18,7 +18,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class RegularExpressionPatternRule implements Rule
+final class RegularExpressionPatternRule implements Rule
 {
 
 	public function __construct(

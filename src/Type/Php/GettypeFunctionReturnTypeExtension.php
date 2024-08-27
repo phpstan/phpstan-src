@@ -15,7 +15,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function count;
 
-class GettypeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class GettypeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

@@ -4,7 +4,7 @@ namespace PHPStan\Parallel;
 
 use Exception;
 
-class ProcessTimedOutException extends Exception
+final class ProcessTimedOutException extends Exception
 {
 
 }

@@ -22,7 +22,10 @@ use function max;
 use function min;
 use function range;
 
-/** @api */
+/**
+ * @api
+ * @final
+ */
 class ConstantArrayTypeBuilder
 {
 

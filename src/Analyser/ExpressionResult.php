@@ -2,7 +2,7 @@
 
 namespace PHPStan\Analyser;
 
-class ExpressionResult
+final class ExpressionResult
 {
 
 	/** @var (callable(): MutatingScope)|null */

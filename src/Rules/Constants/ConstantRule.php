@@ -11,7 +11,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\ConstFetch>
  */
-class ConstantRule implements Rule
+final class ConstantRule implements Rule
 {
 
 	public function getNodeType(): string

@@ -31,7 +31,7 @@ use const T_COMMENT;
 use const T_DOC_COMMENT;
 use const T_WHITESPACE;
 
-class RichParser implements Parser
+final class RichParser implements Parser
 {
 
 	public const VISITOR_SERVICE_TAG = 'phpstan.parser.richParserNodeVisitor';

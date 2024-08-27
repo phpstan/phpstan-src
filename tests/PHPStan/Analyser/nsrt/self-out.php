@@ -50,6 +50,14 @@ class a {
      */
     public function test(): void {
     }
+
+	/**
+	 * @phpstan-self-out self<false>
+	 */
+	public static function selfOutWithStaticMethod(): void
+	{
+
+	}
 }
 
 /**
@@ -93,5 +101,8 @@ function () {
 	assertType('SelfOut\\a<int|non-empty-string>', $i);
 
 	$i->setData(true);
+	assertType('SelfOut\\a<true>', $i);
+
+	$i->selfOutWithStaticMethod();
 	assertType('SelfOut\\a<true>', $i);
 };

@@ -7,7 +7,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use function array_values;
 
-class NodeDependencies
+final class NodeDependencies
 {
 
 	/**

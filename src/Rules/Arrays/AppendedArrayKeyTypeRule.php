@@ -18,7 +18,7 @@ use function sprintf;
  * @deprecated Replaced by PHPStan\Rules\Properties\TypesAssignedToPropertiesRule
  * @implements Rule<Node\Expr\Assign>
  */
-class AppendedArrayKeyTypeRule implements Rule
+final class AppendedArrayKeyTypeRule implements Rule
 {
 
 	public function __construct(

@@ -16,7 +16,7 @@ use PHPStan\Type\Type;
 use function array_map;
 use function count;
 
-class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
+final class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 
 	/** @var ExtendedMethodReflection[][] */

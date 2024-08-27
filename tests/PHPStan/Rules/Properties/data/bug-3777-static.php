@@ -9,12 +9,12 @@ class HelloWorld
 	/**
 	 * @var \SplObjectStorage<\DateTimeImmutable, null>
 	 */
-	public $dates;
+	public static $dates;
 
 	public function __construct()
 	{
-		$this->dates = new \SplObjectStorage();
-		assertType('SplObjectStorage<DateTimeImmutable, null>', $this->dates);
+		static::$dates = new \SplObjectStorage();
+		assertType('SplObjectStorage<DateTimeImmutable, null>', static::$dates);
 	}
 }
 
@@ -39,24 +39,24 @@ class Bar
 {
 
 	/** @var Foo<\stdClass> */
-	private $foo;
+	private static $foo;
 
 	/** @var Fooo<\stdClass> */
-	private $fooo;
+	private static $fooo;
 
 	public function __construct()
 	{
-		$this->foo = new Foo();
-		assertType('Bug3777Static\Foo<stdClass>', $this->foo);
+		static::$foo = new Foo();
+		assertType('Bug3777Static\Foo<stdClass>', static::$foo);
 
-		$this->fooo = new Fooo();
-		assertType('Bug3777Static\Fooo<stdClass>', $this->fooo);
+		static::$fooo = new Fooo();
+		assertType('Bug3777Static\Fooo<stdClass>', static::$fooo);
 	}
 
 	public function doBar()
 	{
-		$this->foo = new Fooo();
-		assertType('Bug3777Static\Fooo<object>', $this->foo);
+		static::$foo = new Fooo();
+		assertType('Bug3777Static\Fooo<object>', static::$foo);
 	}
 
 }
@@ -83,17 +83,17 @@ class Ipsum
 {
 
 	/** @var Lorem<\stdClass, \Exception> */
-	private $lorem;
+	private static $lorem;
 
 	/** @var Lorem<\stdClass, \Exception> */
-	private $ipsum;
+	private static $ipsum;
 
 	public function __construct()
 	{
-		$this->lorem = new Lorem(new \stdClass, new \Exception());
-		assertType('Bug3777Static\Lorem<stdClass, Exception>', $this->lorem);
-		$this->ipsum = new Lorem(new \Exception(), new \stdClass);
-		assertType('Bug3777Static\Lorem<Exception, stdClass>', $this->ipsum);
+		static::$lorem = new Lorem(new \stdClass, new \Exception());
+		assertType('Bug3777Static\Lorem<stdClass, Exception>', static::$lorem);
+		static::$ipsum = new Lorem(new \Exception(), new \stdClass);
+		assertType('Bug3777Static\Lorem<Exception, stdClass>', static::$ipsum);
 	}
 
 }
@@ -119,17 +119,17 @@ class Ipsum2
 {
 
 	/** @var Lorem2<\stdClass, \Exception> */
-	private $lorem2;
+	private static $lorem2;
 
 	/** @var Lorem2<\stdClass, \Exception> */
-	private $ipsum2;
+	private static $ipsum2;
 
 	public function __construct()
 	{
-		$this->lorem2 = new Lorem2(new \stdClass);
-		assertType('Bug3777Static\Lorem2<stdClass, object>', $this->lorem2);
-		$this->ipsum2 = new Lorem2(new \Exception());
-		assertType('Bug3777Static\Lorem2<Exception, object>', $this->ipsum2);
+		static::$lorem2 = new Lorem2(new \stdClass);
+		assertType('Bug3777Static\Lorem2<stdClass, object>', static::$lorem2);
+		static::$ipsum2 = new Lorem2(new \Exception());
+		assertType('Bug3777Static\Lorem2<Exception, object>', static::$ipsum2);
 	}
 
 }
@@ -156,17 +156,17 @@ class Ipsum3
 {
 
 	/** @var Lorem3<\stdClass, \Exception> */
-	private $lorem3;
+	private static $lorem3;
 
 	/** @var Lorem3<\stdClass, \Exception> */
-	private $ipsum3;
+	private static $ipsum3;
 
 	public function __construct()
 	{
-		$this->lorem3 = new Lorem3(new \stdClass, new \Exception());
-		assertType('Bug3777Static\Lorem3<stdClass, Exception>', $this->lorem3);
-		$this->ipsum3 = new Lorem3(new \Exception(), new \stdClass());
-		assertType('Bug3777Static\Lorem3<Exception, stdClass>', $this->ipsum3);
+		static::$lorem3 = new Lorem3(new \stdClass, new \Exception());
+		assertType('Bug3777Static\Lorem3<stdClass, Exception>', static::$lorem3);
+		static::$ipsum3 = new Lorem3(new \Exception(), new \stdClass());
+		assertType('Bug3777Static\Lorem3<Exception, stdClass>', static::$ipsum3);
 	}
 
 }

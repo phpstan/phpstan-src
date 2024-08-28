@@ -1,0 +1,11 @@
+--- File.php	2017-07-11 09:42:15
++++ File.php	2024-08-26 23:13:27
+@@ -192,7 +192,7 @@
+      * @throws  \Hoa\File\Exception\FileDoesNotExist
+      * @throws  \Hoa\File\Exception
+      */
+-    protected function &_open($streamName, Stream\Context $context = null)
++    protected function &_open($streamName, ?Stream\Context $context = null)
+     {
+         if (substr($streamName, 0, 4) == 'file' &&
+             false === is_dir(dirname($streamName))) {

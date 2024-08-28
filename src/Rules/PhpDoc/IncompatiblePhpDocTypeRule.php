@@ -12,11 +12,13 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
+use function in_array;
 use function is_string;
 use function sprintf;
 use function trim;
@@ -68,10 +70,9 @@ final class IncompatiblePhpDocTypeRule implements Rule
 
 		$errors = [];
 
-		foreach ([$resolvedPhpDoc->getParamTags(), $resolvedPhpDoc->getParamOutTags()] as $parameters) {
+		foreach (['@param' => $resolvedPhpDoc->getParamTags(), '@param-out' => $resolvedPhpDoc->getParamOutTags(), '@param-closure-this' => $resolvedPhpDoc->getParamClosureThisTags()] as $tagName => $parameters) {
 			foreach ($parameters as $parameterName => $phpDocParamTag) {
 				$phpDocParamType = $phpDocParamTag->getType();
-				$tagName = $phpDocParamTag instanceof ParamTag ? '@param' : '@param-out';
 
 				if (!isset($nativeParameterTypes[$parameterName])) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
@@ -99,7 +100,6 @@ final class IncompatiblePhpDocTypeRule implements Rule
 					) {
 						$phpDocParamType = $phpDocParamType->getIterableValueType();
 					}
-					$isParamSuperType = $nativeParamType->isSuperTypeOf($phpDocParamType);
 
 					$escapedParameterName = SprintfHelper::escapeFormatString($parameterName);
 					$escapedTagName = SprintfHelper::escapeFormatString($tagName);
@@ -160,28 +160,43 @@ final class IncompatiblePhpDocTypeRule implements Rule
 						continue;
 					}
 
-					if ($isParamSuperType->no()) {
-						$errors[] = RuleErrorBuilder::message(sprintf(
-							'PHPDoc tag %s for parameter $%s with type %s is incompatible with native type %s.',
-							$tagName,
-							$parameterName,
-							$phpDocParamType->describe(VerbosityLevel::typeOnly()),
-							$nativeParamType->describe(VerbosityLevel::typeOnly()),
-						))->identifier('parameter.phpDocType')->build();
+					if (in_array($tagName, ['@param', '@param-out'], true)) {
+						$isParamSuperType = $nativeParamType->isSuperTypeOf($phpDocParamType);
+						if ($isParamSuperType->no()) {
+							$errors[] = RuleErrorBuilder::message(sprintf(
+								'PHPDoc tag %s for parameter $%s with type %s is incompatible with native type %s.',
+								$tagName,
+								$parameterName,
+								$phpDocParamType->describe(VerbosityLevel::typeOnly()),
+								$nativeParamType->describe(VerbosityLevel::typeOnly()),
+							))->identifier('parameter.phpDocType')->build();
 
-					} elseif ($isParamSuperType->maybe()) {
-						$errorBuilder = RuleErrorBuilder::message(sprintf(
-							'PHPDoc tag %s for parameter $%s with type %s is not subtype of native type %s.',
-							$tagName,
-							$parameterName,
-							$phpDocParamType->describe(VerbosityLevel::typeOnly()),
-							$nativeParamType->describe(VerbosityLevel::typeOnly()),
-						))->identifier('parameter.phpDocType');
-						if ($phpDocParamType instanceof TemplateType) {
-							$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocParamType->getName(), $nativeParamType->describe(VerbosityLevel::typeOnly())));
+						} elseif ($isParamSuperType->maybe()) {
+							$errorBuilder = RuleErrorBuilder::message(sprintf(
+								'PHPDoc tag %s for parameter $%s with type %s is not subtype of native type %s.',
+								$tagName,
+								$parameterName,
+								$phpDocParamType->describe(VerbosityLevel::typeOnly()),
+								$nativeParamType->describe(VerbosityLevel::typeOnly()),
+							))->identifier('parameter.phpDocType');
+							if ($phpDocParamType instanceof TemplateType) {
+								$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocParamType->getName(), $nativeParamType->describe(VerbosityLevel::typeOnly())));
+							}
+
+							$errors[] = $errorBuilder->build();
 						}
+					}
 
-						$errors[] = $errorBuilder->build();
+					if ($tagName === '@param-closure-this') {
+						$isNonClosure = (new ClosureType())->isSuperTypeOf($nativeParamType)->no();
+						if ($isNonClosure) {
+							$errors[] = RuleErrorBuilder::message(sprintf(
+								'PHPDoc tag %s is for parameter $%s with non-Closure type %s.',
+								$tagName,
+								$parameterName,
+								$nativeParamType->describe(VerbosityLevel::typeOnly()),
+							))->identifier('paramClosureThis.nonClosure')->build();
+						}
 					}
 				}
 			}

@@ -34,6 +34,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				new PhpVersion($this->phpVersionId),
 				true,
 				false,
+				true,
 			),
 		);
 	}
@@ -467,6 +468,60 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 			[
 				'Template type T of method ParamOutTemplate\FooBar::uselessLocalTemplate() is not referenced in a parameter.',
 				22,
+			],
+		]);
+	}
+
+	public function testParamOutClasses(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-out-classes.php'], [
+			[
+				'Parameter $p of method ParamOutClassesMethods\Bar::doFoo() has invalid type ParamOutClassesMethods\Nonexistent.',
+				23,
+			],
+			[
+				'Parameter $q of method ParamOutClassesMethods\Bar::doFoo() has invalid type ParamOutClassesMethods\FooTrait.',
+				23,
+			],
+			[
+				'Class ParamOutClassesMethods\Foo referenced with incorrect case: ParamOutClassesMethods\fOO.',
+				23,
+			],
+		]);
+	}
+
+	public function testParamClosureThisClasses(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-closure-this-classes.php'], [
+			[
+				'Parameter $a of method ParamClosureThisClasses\Bar::doFoo() has invalid type ParamClosureThisClasses\Nonexistent.',
+				24,
+			],
+			[
+				'Parameter $b of method ParamClosureThisClasses\Bar::doFoo() has invalid type ParamClosureThisClasses\FooTrait.',
+				25,
+			],
+			[
+				'Class ParamClosureThisClasses\Foo referenced with incorrect case: ParamClosureThisClasses\fOO.',
+				26,
+			],
+		]);
+	}
+
+	public function testSelfOut(): void
+	{
+		$this->analyse([__DIR__ . '/data/self-out.php'], [
+			[
+				'Method SelfOutClasses\Foo::doFoo() has invalid @phpstan-self-out type SelfOutClasses\Nonexistent.',
+				16,
+			],
+			[
+				'Method SelfOutClasses\Foo::doBar() has invalid @phpstan-self-out type SelfOutClasses\FooTrait.',
+				24,
+			],
+			[
+				'Class SelfOutClasses\Foo referenced with incorrect case: SelfOutClasses\fOO.',
+				32,
 			],
 		]);
 	}

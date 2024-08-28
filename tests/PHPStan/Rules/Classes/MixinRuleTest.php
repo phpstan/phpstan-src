@@ -32,6 +32,7 @@ class MixinRuleTest extends RuleTestCase
 			new MissingTypehintCheck(true, true, true, true, []),
 			new UnresolvableTypeHelper(),
 			true,
+			true,
 		);
 	}
 
@@ -96,6 +97,15 @@ class MixinRuleTest extends RuleTestCase
 				'Call-site variance of covariant MixinRule\Foo in generic type MixinRule\Adipiscing<covariant MixinRule\Foo> in PHPDoc tag @mixin is redundant, template type T of class MixinRule\Adipiscing has the same variance.',
 				116,
 				'You can safely remove the call-site variance annotation.',
+			],
+			[
+				'Class MixinRule\NoIterableValue has PHPDoc tag @mixin with no value type specified in iterable type array.',
+				124,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Class MixinRule\NoCallableSignature has PHPDoc tag @mixin with no signature specified for callable.',
+				132,
 			],
 		]);
 	}

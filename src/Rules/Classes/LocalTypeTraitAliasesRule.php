@@ -33,7 +33,7 @@ final class LocalTypeTraitAliasesRule implements Rule
 			return [];
 		}
 
-		return $this->check->check($this->reflectionProvider->getClass($traitName->toString()));
+		return $this->check->check($this->reflectionProvider->getClass($traitName->toString()), $node);
 	}
 
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -20,8 +21,10 @@ class UsedTraitsRuleTest extends RuleTestCase
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(true, true),
+				new UnresolvableTypeHelper(),
 				true,
 				[],
+				true,
 			),
 		);
 	}

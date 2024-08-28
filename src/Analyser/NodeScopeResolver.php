@@ -262,6 +262,7 @@ final class NodeScopeResolver
 		private readonly bool $detectDeadTypeInMultiCatch,
 		private readonly bool $paramOutType,
 		private readonly bool $preciseMissingReturn,
+		private readonly bool $explicitThrow,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -855,7 +856,7 @@ final class NodeScopeResolver
 				if ($stmt->name === null) {
 					throw new ShouldNotHappenException();
 				}
-				if ($stmt->getAttribute('anonymousClass', false) === false) {
+				if (!$stmt->isAnonymous()) {
 					$classReflection = $this->reflectionProvider->getClass($stmt->name->toString());
 				} else {
 					$classReflection = $this->reflectionProvider->getAnonymousClassReflection($stmt, $scope);
@@ -870,7 +871,7 @@ final class NodeScopeResolver
 			$this->processAttributeGroups($stmt, $stmt->attrGroups, $classScope, $classStatementsGatherer);
 
 			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer, $context);
-			$nodeCallback(new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensionProvider, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classReflection), $classScope);
+			$nodeCallback(new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensionProvider, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classStatementsGatherer->getPropertyAssigns(), $classReflection), $classScope);
 			$nodeCallback(new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope);
 			$nodeCallback(new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope);
 			$classReflection->evictPrivateSymbols();
@@ -1545,6 +1546,7 @@ final class NodeScopeResolver
 				}
 
 				// explicit only
+				$onlyExplicitIsThrow = true;
 				if (count($matchingThrowPoints) === 0) {
 					foreach ($throwPoints as $throwPointIndex => $throwPoint) {
 						foreach ($catchTypes as $catchTypeIndex => $catchTypeItem) {
@@ -1556,13 +1558,24 @@ final class NodeScopeResolver
 							if (!$throwPoint->isExplicit()) {
 								continue;
 							}
+							$throwNode = $throwPoint->getNode();
+							if (
+								!$throwNode instanceof Throw_
+								&& !$throwNode instanceof Expr\Throw_
+								&& !($throwNode instanceof Node\Stmt\Expression && $throwNode->expr instanceof Expr\Throw_)
+							) {
+								$onlyExplicitIsThrow = false;
+							}
 							$matchingThrowPoints[$throwPointIndex] = $throwPoint;
 						}
 					}
 				}
 
 				// implicit only
-				if (count($matchingThrowPoints) === 0) {
+				if (
+					count($matchingThrowPoints) === 0
+					|| ($this->explicitThrow && $onlyExplicitIsThrow)
+				) {
 					foreach ($throwPoints as $throwPointIndex => $throwPoint) {
 						if ($throwPoint->isExplicit()) {
 							continue;
@@ -2635,7 +2648,7 @@ final class NodeScopeResolver
 					$nodeCallback(new InvalidateExprNode($expr->var), $scope);
 					$scope = $scope->invalidateExpression($expr->var, true);
 				}
-				if ($parametersAcceptor !== null) {
+				if ($parametersAcceptor !== null && !$methodReflection->isStatic()) {
 					$selfOutType = $methodReflection->getSelfOutType();
 					if ($selfOutType !== null) {
 						$scope = $scope->assignExpression(

@@ -65,15 +65,15 @@ function (): void {
 		$bar = 1;
 		maybeThrows();
 	} catch (\InvalidArgumentException $e) {
-		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
 		assertType('1|2', $foo);
 
-		assertVariableCertainty(TrinaryLogic::createNo(), $bar);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $bar);
 		assertVariableCertainty(TrinaryLogic::createNo(), $baz);
 	} catch (\RuntimeException $e) {
 		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
-		assertVariableCertainty(TrinaryLogic::createNo(), $bar);
-		assertVariableCertainty(TrinaryLogic::createYes(), $baz);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $bar);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $baz);
 		assertType('1|2', $baz);
 	} catch (\Throwable $e) {
 		assertType('Throwable~InvalidArgumentException|RuntimeException', $e);
@@ -99,7 +99,7 @@ function (): void {
 		throw new \InvalidArgumentException();
 	} catch (\InvalidArgumentException $e) {
 		assertType('1', $foo);
-		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
 	}
 };
 

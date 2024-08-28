@@ -24,6 +24,7 @@ use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvi
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\File\RelativePathHelper;
+use PHPStan\Parser\AnonymousClassVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -39,6 +40,7 @@ use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\NamespaceAnswerer;
+use PHPStan\Reflection\Php\ExitFunctionReflection;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
@@ -51,6 +53,7 @@ use PHPStan\Type\Type;
 use function array_key_exists;
 use function array_map;
 use function base64_decode;
+use function in_array;
 use function sprintf;
 use function strtolower;
 use const PHP_VERSION_ID;
@@ -201,7 +204,6 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$scopeFile,
 		);
 		$classNode->name = new Node\Identifier($className);
-		$classNode->setAttribute('anonymousClass', true);
 
 		if (isset(self::$anonymousClasses[$className])) {
 			return self::$anonymousClasses[$className];
@@ -213,6 +215,14 @@ final class BetterReflectionProvider implements ReflectionProvider
 			new LocatedSource(FileReader::read($scopeFile), $className, $scopeFile),
 			null,
 		);
+
+		/** @var int|null $classLineIndex */
+		$classLineIndex = $classNode->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX);
+		if ($classLineIndex === null) {
+			$displayName = sprintf('class@anonymous/%s:%s', $filename, $classNode->getStartLine());
+		} else {
+			$displayName = sprintf('class@anonymous/%s:%s:%d', $filename, $classNode->getStartLine(), $classLineIndex);
+		}
 
 		self::$anonymousClasses[$className] = new ClassReflection(
 			$this->reflectionProviderProvider->getReflectionProvider(),
@@ -227,7 +237,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getAllowedSubTypesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getRequireExtendsPropertyClassReflectionExtension(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getRequireExtendsMethodsClassReflectionExtension(),
-			sprintf('class@anonymous/%s:%s', $filename, $classNode->getStartLine()),
+			$displayName,
 			new ReflectionClass($reflectionClass),
 			$scopeFile,
 			null,
@@ -254,6 +264,10 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$lowerCasedFunctionName = strtolower($functionName);
 		if (isset($this->functionReflections[$lowerCasedFunctionName])) {
 			return $this->functionReflections[$lowerCasedFunctionName];
+		}
+
+		if (in_array($lowerCasedFunctionName, ['exit', 'die'], true)) {
+			return $this->functionReflections[$lowerCasedFunctionName] = new ExitFunctionReflection($lowerCasedFunctionName);
 		}
 
 		$nativeFunctionReflection = $this->nativeFunctionReflectionProvider->findFunctionReflection($lowerCasedFunctionName);
@@ -335,6 +349,11 @@ final class BetterReflectionProvider implements ReflectionProvider
 
 	public function resolveFunctionName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
+		$name = $nameNode->toLowerString();
+		if (in_array($name, ['exit', 'die'], true)) {
+			return $name;
+		}
+
 		return $this->resolveName($nameNode, function (string $name): bool {
 			try {
 				$this->reflector->reflectFunction($name);

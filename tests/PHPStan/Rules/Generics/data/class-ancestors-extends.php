@@ -247,3 +247,16 @@ class FooTypeProjection extends FooGeneric
 {
 
 }
+
+trait FooTrait
+{
+
+}
+
+/**
+ * @extends FooGeneric<FooTrait, \InvalidArgumentException>
+ */
+class TraitInExtends extends FooGeneric
+{
+
+}

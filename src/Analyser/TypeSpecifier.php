@@ -246,11 +246,16 @@ final class TypeSpecifier
 			) {
 				$argType = $scope->getType($expr->right->getArgs()[0]->value);
 
-				if ($argType instanceof UnionType && $leftType instanceof ConstantIntegerType) {
-					if ($orEqual) {
-						$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
-					} else {
-						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
+				if ($argType instanceof UnionType) {
+					$sizeType = null;
+					if ($leftType instanceof ConstantIntegerType) {
+						if ($orEqual) {
+							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
+						} else {
+							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
+						}
+					} elseif ($leftType instanceof IntegerRangeType) {
+						$sizeType = $leftType;
 					}
 
 					$narrowed = $this->narrowUnionByArraySize($expr->right, $argType, $sizeType, $context, $scope, $rootExpr);
@@ -268,19 +273,12 @@ final class TypeSpecifier
 						if ($argType instanceof UnionType) {
 							$countableInterface = new ObjectType(Countable::class);
 							foreach ($argType->getTypes() as $innerType) {
-								if (
-									$innerType->isArray()->yes()
-								) {
+								if ($innerType->isArray()->yes()) {
 									$innerType = TypeCombinator::intersect(new NonEmptyArrayType(), $innerType);
-									if ($innerType->isList()->yes()) {
-										$innerType = AccessoryArrayListType::intersectWith($innerType);
-									}
 									$countables[] = $innerType;
 								}
 
-								if (
-									!$countableInterface->isSuperTypeOf($innerType)->yes()
-								) {
+								if (!$countableInterface->isSuperTypeOf($innerType)->yes()) {
 									continue;
 								}
 
@@ -323,7 +321,8 @@ final class TypeSpecifier
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType->isString()->yes()) {
 						$accessory = new AccessoryNonEmptyStringType();
-						if ($leftType instanceof ConstantIntegerType && $leftType->getValue() >= 2) {
+
+						if (IntegerRangeType::createAllGreaterThanOrEqualTo(2 - $offset)->isSuperTypeOf($leftType)->yes()) {
 							$accessory = new AccessoryNonFalsyStringType();
 						}
 
@@ -949,8 +948,12 @@ final class TypeSpecifier
 		return new SpecifiedTypes([], [], false, [], $rootExpr);
 	}
 
-	private function narrowUnionByArraySize(FuncCall $countFuncCall, UnionType $argType, Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
+	private function narrowUnionByArraySize(FuncCall $countFuncCall, UnionType $argType, ?Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
 	{
+		if ($sizeType === null) {
+			return null;
+		}
+
 		if (count($countFuncCall->getArgs()) === 1) {
 			$isNormalCount = TrinaryLogic::createYes();
 		} else {
@@ -1013,6 +1016,37 @@ final class TypeSpecifier
 			for ($i = 0; $i < $sizeType->getValue(); $i++) {
 				$offsetType = new ConstantIntegerType($i);
 				$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
+			}
+			return $valueTypesBuilder->getArray();
+		}
+
+		if (
+			$isNormalCount->yes()
+			&& $type->isList()->yes()
+			&& $sizeType instanceof IntegerRangeType
+			&& $sizeType->getMin() !== null
+		) {
+			// turn optional offsets non-optional
+			$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
+			for ($i = 0; $i < $sizeType->getMin(); $i++) {
+				$offsetType = new ConstantIntegerType($i);
+				$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
+			}
+			if ($sizeType->getMax() !== null) {
+				for ($i = $sizeType->getMin(); $i < $sizeType->getMax(); $i++) {
+					$offsetType = new ConstantIntegerType($i);
+					$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), true);
+				}
+			} else {
+				for ($i = $sizeType->getMin();; $i++) {
+					$offsetType = new ConstantIntegerType($i);
+					$hasOffset = $type->hasOffsetValueType($offsetType);
+					if ($hasOffset->no()) {
+						break;
+					}
+					$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), !$hasOffset->yes());
+				}
+
 			}
 			return $valueTypesBuilder->getArray();
 		}

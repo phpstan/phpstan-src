@@ -5,13 +5,24 @@ namespace PHPStan\Diagnose;
 use Phar;
 use PHPStan\Command\Output;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
+use PHPStan\File\FileHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
+use ReflectionClass;
+use function array_key_exists;
+use function array_slice;
 use function class_exists;
 use function count;
 use function dirname;
+use function explode;
+use function implode;
+use function in_array;
 use function is_file;
+use function is_readable;
 use function sprintf;
+use function str_starts_with;
+use function strlen;
+use function substr;
 use const PHP_VERSION_ID;
 
 final class PHPStanDiagnoseExtension implements DiagnoseExtension
@@ -19,10 +30,13 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
+	 * @param string [] $allConfigFiles
 	 */
 	public function __construct(
 		private PhpVersion $phpVersion,
+		private FileHelper $fileHelper,
 		private array $composerAutoloaderProjectPaths,
+		private array $allConfigFiles,
 	)
 	{
 	}
@@ -58,18 +72,85 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 		}
 		$output->writeLineFormatted('');
 
+		$configFilesFromExtensionInstaller = [];
 		if (class_exists('PHPStan\ExtensionInstaller\GeneratedConfig')) {
 			$output->writeLineFormatted('<info>Extension installer:</info>');
 			if (count(GeneratedConfig::EXTENSIONS) === 0) {
 				$output->writeLineFormatted('No extensions installed');
 			}
+
+			$generatedConfigReflection = new ReflectionClass('PHPStan\ExtensionInstaller\GeneratedConfig');
+			$generatedConfigDirectory = dirname($generatedConfigReflection->getFileName());
 			foreach (GeneratedConfig::EXTENSIONS as $name => $extensionConfig) {
 				$output->writeLineFormatted(sprintf('%s: %s', $name, $extensionConfig['version'] ?? 'Unknown version'));
+				foreach ($extensionConfig['extra']['includes'] ?? [] as $includedFile) {
+					$includedFilePath = null;
+					if (isset($extensionConfig['relative_install_path'])) {
+						$includedFilePath = sprintf('%s/%s/%s', $generatedConfigDirectory, $extensionConfig['relative_install_path'], $includedFile);
+						if (!is_file($includedFilePath) || !is_readable($includedFilePath)) {
+							$includedFilePath = null;
+						}
+					}
+
+					if ($includedFilePath === null) {
+						$includedFilePath = sprintf('%s/%s', $extensionConfig['install_path'], $includedFile);
+					}
+
+					$configFilesFromExtensionInstaller[] = $this->fileHelper->normalizePath($includedFilePath, '/');
+				}
 			}
 		} else {
 			$output->writeLineFormatted('<info>Extension installer:</info> Not installed');
 		}
 		$output->writeLineFormatted('');
+
+		$thirdPartyIncludedConfigs = [];
+		foreach ($this->allConfigFiles as $configFile) {
+			$configFile = $this->fileHelper->normalizePath($configFile, '/');
+			if (in_array($configFile, $configFilesFromExtensionInstaller, true)) {
+				continue;
+			}
+			foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
+				$composerConfig = ComposerHelper::getComposerConfig($composerAutoloaderProjectPath);
+				if ($composerConfig === null) {
+					continue;
+				}
+				$vendorDir = $this->fileHelper->normalizePath(ComposerHelper::getVendorDirFromComposerConfig($composerAutoloaderProjectPath, $composerConfig), '/');
+				if (!str_starts_with($configFile, $vendorDir)) {
+					continue;
+				}
+
+				$installedPath = $vendorDir . '/composer/installed.php';
+				if (!is_file($installedPath)) {
+					continue;
+				}
+
+				$installed = require $installedPath;
+
+				$trimmed = substr($configFile, strlen($vendorDir) + 1);
+				$parts = explode('/', $trimmed);
+				$package = implode('/', array_slice($parts, 0, 2));
+				$configPath = implode('/', array_slice($parts, 2));
+				if (!array_key_exists($package, $installed['versions'])) {
+					continue;
+				}
+
+				$packageVersion = $installed['versions'][$package]['pretty_version'] ?? null;
+				if ($packageVersion === null) {
+					continue;
+				}
+
+				$thirdPartyIncludedConfigs[] = [$package, $packageVersion, $configPath];
+			}
+		}
+
+		if (count($thirdPartyIncludedConfigs) > 0) {
+			$output->writeLineFormatted('<info>Included configs from Composer packages:</info>');
+			foreach ($thirdPartyIncludedConfigs as [$package, $packageVersion, $configPath]) {
+				$output->writeLineFormatted(sprintf('%s (%s): %s', $package, $configPath, $packageVersion));
+			}
+			$output->writeLineFormatted('');
+		}
 
 		$composerAutoloaderProjectPathsCount = count($this->composerAutoloaderProjectPaths);
 		$output->writeLineFormatted(sprintf(

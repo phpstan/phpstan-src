@@ -275,7 +275,7 @@ final class FileTypeMapper
 							}
 
 							$className = $this->anonymousClassNameHelper->getAnonymousClassName($node, $fileName);
-						} elseif ((bool) $node->getAttribute('anonymousClass', false)) {
+						} elseif ($node instanceof Node\Stmt\Class_ && $node->isAnonymous()) {
 							$className = $node->name->name;
 						} else {
 							if ($traitFound) {
@@ -466,7 +466,7 @@ final class FileTypeMapper
 							}
 
 							$className = $this->anonymousClassNameHelper->getAnonymousClassName($node, $fileName);
-						} elseif ((bool) $node->getAttribute('anonymousClass', false)) {
+						} elseif ($node instanceof Node\Stmt\Class_ && $node->isAnonymous()) {
 							$className = $node->name->name;
 						} else {
 							if ($traitFound) {

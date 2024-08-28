@@ -13,6 +13,7 @@ use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Constant\ClassConstantFetch;
+use PHPStan\Node\Property\PropertyAssign;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
@@ -54,6 +55,9 @@ final class ClassStatementsGatherer
 
 	/** @var array<string, MethodReturnStatementsNode> */
 	private array $returnStatementNodes = [];
+
+	/** @var list<PropertyAssign> */
+	private array $propertyAssigns = [];
 
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
@@ -120,6 +124,14 @@ final class ClassStatementsGatherer
 	public function getReturnStatementsNodes(): array
 	{
 		return $this->returnStatementNodes;
+	}
+
+	/**
+	 * @return list<PropertyAssign>
+	 */
+	public function getPropertyAssigns(): array
+	{
+		return $this->propertyAssigns;
 	}
 
 	public function __invoke(Node $node, Scope $scope): void
@@ -189,6 +201,7 @@ final class ClassStatementsGatherer
 		}
 		if ($node instanceof PropertyAssignNode) {
 			$this->propertyUsages[] = new PropertyWrite($node->getPropertyFetch(), $scope, false);
+			$this->propertyAssigns[] = new PropertyAssign($node, $scope);
 			return;
 		}
 		if (!$node instanceof Expr) {

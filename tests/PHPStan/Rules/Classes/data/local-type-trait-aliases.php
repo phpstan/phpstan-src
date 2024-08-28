@@ -5,7 +5,7 @@ namespace LocalTypeTraitAliases;
 class ExistingClassAlias {}
 
 /**
- * @phpstan-type ExportedTypeAlias \Countable&\Traversable
+ * @phpstan-type ExportedTypeAlias \Countable&\Traversable<int>
  */
 trait Foo
 {
@@ -61,4 +61,12 @@ trait Generic
  */
 trait Invalid
 {
+}
+
+/**
+ * @phpstan-type NoIterablueValue = array
+ */
+trait MissingType
+{
+
 }

@@ -1,0 +1,11 @@
+--- Idle.php	2017-01-16 08:53:27
++++ Idle.php	2024-08-26 23:18:04
+@@ -100,7 +100,7 @@
+         $message,
+         $code = 0,
+         $arguments = [],
+-        \Exception $previous = null
++        ?\Exception $previous = null
+     ) {
+         $this->_tmpArguments = $arguments;
+         parent::__construct($message, $code, $previous);

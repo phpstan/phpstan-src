@@ -3080,14 +3080,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_key_exists(\'foo\', $generalArray)',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'resource' : 'CurlHandle',
-				'curl_init()',
-			],
-			[
-				PHP_VERSION_ID < 80000 ? 'resource|false' : 'CurlHandle|false',
-				'curl_init($string)',
-			],
-			[
 				'string',
 				'sprintf($string, $string, 1)',
 			],
@@ -8406,6 +8398,44 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/anonymous-class-name-in-trait.php',
 			$description,
 			$expression,
+		);
+	}
+
+	public function dataAnonymousClassNameSameLine(): array
+	{
+		return [
+			[
+				'AnonymousClass0d7d08272ba2f0a6ef324bb65c679e02',
+				'$foo',
+				'$bar',
+			],
+			[
+				'AnonymousClass464f64cbdca25b4af842cae65615bca9',
+				'$bar',
+				'$baz',
+			],
+			[
+				'AnonymousClassa9fb472ec9acc5cae3bee4355c296bfa',
+				'$baz',
+				'die',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataAnonymousClassNameSameLine
+	 */
+	public function testAnonymousClassNameSameLine(
+		string $description,
+		string $expression,
+		string $evaluatedPointExpression,
+	): void
+	{
+		$this->assertTypes(
+			__DIR__ . '/data/anonymous-class-name-same-line.php',
+			$description,
+			$expression,
+			$evaluatedPointExpression,
 		);
 	}
 

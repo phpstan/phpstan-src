@@ -18,17 +18,18 @@
 		"jetbrains/phpstorm-stubs": "dev-master#bdc8acd7c04c0c87197849c7cdd27e44b67b56c7",
 		"nette/bootstrap": "^3.0",
 		"nette/di": "^3.1.4",
-		"nette/neon": "^3.3.1",
+		"nette/neon": "3.3.3",
+		"nette/php-generator": "3.6.9",
 		"nette/schema": "^1.2.2",
 		"nette/utils": "^3.2.5",
 		"nikic/php-parser": "^4.17.1",
 		"ondram/ci-detector": "^3.4.0",
-		"ondrejmirtes/better-reflection": "6.25.0.13",
-		"phpstan/php-8-stubs": "0.3.95",
+		"ondrejmirtes/better-reflection": "6.25.0.17",
+		"phpstan/php-8-stubs": "0.3.99",
 		"phpstan/phpdoc-parser": "1.29.1",
 		"psr/http-message": "^1.1",
 		"react/async": "^3",
-		"react/child-process": "^0.6.4",
+		"react/child-process": "^0.7",
 		"react/dns": "^1.10",
 		"react/event-loop": "^1.2",
 		"react/http": "^1.1",
@@ -81,14 +82,23 @@
 			"composer/ca-bundle": [
 				"patches/cloudflare-ca.patch"
 			],
+			"hoa/exception": [
+				"patches/Idle.patch"
+			],
+			"hoa/file": [
+				"patches/File.patch",
+				"patches/Read.patch"
+			],
 			"hoa/iterator": [
 				"patches/Buffer.patch",
 				"patches/Lookahead.patch"
 			],
 			"hoa/compiler": [
 				"patches/HoaException.patch",
+				"patches/Invocation.patch",
 				"patches/Rule.patch",
-				"patches/Lexer.patch"
+				"patches/Lexer.patch",
+				"patches/TreeNode.patch"
 			],
 			"hoa/consistency": [
 				"patches/Consistency.patch"
@@ -109,6 +119,10 @@
 			],
 			"nette/di": [
 				"patches/DependencyChecker.patch"
+			],
+			"nette/neon": [
+				"patches/NetteNeonStringNode.patch",
+				"patches/NeonParser.patch"
 			]
 		}
 	},

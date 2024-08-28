@@ -1059,6 +1059,7 @@ final class TypeNodeResolver
 
 							$className = $classReflection->getParentClass()->getName();
 						}
+						break;
 				}
 			}
 

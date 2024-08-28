@@ -798,12 +798,12 @@ final class PhpClassReflectionExtension
 			$isFinal,
 			$isPure,
 			$asserts,
-			$acceptsNamedArguments,
 			$selfOutType,
 			$phpDocComment,
 			$phpDocParameterOutTypes,
 			$immediatelyInvokedCallableParameters,
 			$closureThisParameters,
+			$acceptsNamedArguments,
 		);
 	}
 

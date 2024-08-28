@@ -117,3 +117,19 @@ class Elit2
 {
 
 }
+
+/**
+ * @mixin Dolor<array>
+ */
+class NoIterableValue
+{
+
+}
+
+/**
+ * @mixin Dolor<callable>
+ */
+class NoCallableSignature
+{
+
+}

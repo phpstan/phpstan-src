@@ -90,6 +90,9 @@ parametersSchema:
 		validatePregQuote: bool()
 		noImplicitWildcard: bool()
 		narrowPregMatches: bool()
+		tooWidePropertyType: bool()
+		explicitThrow: bool()
+		absentTypeChecks: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -142,7 +145,7 @@ parametersSchema:
 		minimumNumberOfJobsPerProcess: int(),
 		buffer: int()
 	])
-	phpVersion: schema(anyOf(schema(int(), min(70100), max(80399))), nullable())
+	phpVersion: schema(anyOf(schema(int(), min(70100), max(80499))), nullable())
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
 	propertyAlwaysWrittenTags: listOf(string())

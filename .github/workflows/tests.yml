@@ -41,6 +41,7 @@ jobs:
           - "8.1"
           - "8.2"
           - "8.3"
+          - "8.4"
         operating-system: [ ubuntu-latest, windows-latest ]
 
     steps:
@@ -61,9 +62,13 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Transform source code"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3'
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3' && matrix.php-version != '8.4'
         shell: bash
         run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
+
+      - name: "Update PHPUnit"
+        if: matrix.php-version != '7.3'
+        run: "composer update phpunit/phpunit -W"
 
       - name: "Tests"
         run: "make tests"

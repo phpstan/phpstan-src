@@ -1732,7 +1732,7 @@ class ClassReflection
 	}
 
 	/**
-	 * @return array<PropertyTag>
+	 * @return array<string, PropertyTag>
 	 */
 	public function getPropertyTags(): array
 	{
@@ -1745,7 +1745,7 @@ class ClassReflection
 	}
 
 	/**
-	 * @return array<MethodTag>
+	 * @return array<string, MethodTag>
 	 */
 	public function getMethodTags(): array
 	{

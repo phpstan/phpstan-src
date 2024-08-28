@@ -1416,6 +1416,27 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug5597(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5597.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug11511(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11511.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Access to an undefined property object::$bar.', $errors[0]->getMessage());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

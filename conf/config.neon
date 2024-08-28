@@ -95,6 +95,9 @@ parameters:
 		validatePregQuote: false
 		noImplicitWildcard: false
 		narrowPregMatches: true
+		tooWidePropertyType: false
+		explicitThrow: false
+		absentTypeChecks: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -305,6 +308,11 @@ services:
 		arguments:
 			options:
 				preserveOriginalNames: true
+
+	-
+		class: PHPStan\Parser\AnonymousClassVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
 
 	-
 		class: PHPStan\Parser\ArrayFilterArgVisitor
@@ -537,6 +545,7 @@ services:
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 			paramOutType: %featureToggles.paramOutType%
 			preciseMissingReturn: %featureToggles.preciseMissingReturn%
+			explicitThrow: %featureToggles.explicitThrow%
 
 	-
 		class: PHPStan\Analyser\ConstantResolver
@@ -904,6 +913,19 @@ services:
 		class: PHPStan\Rules\Classes\LocalTypeAliasesCheck
 		arguments:
 			globalTypeAliases: %typeAliases%
+			checkMissingTypehints: %checkMissingTypehints%
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
+
+	-
+		class: PHPStan\Rules\Classes\MethodTagCheck
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+
+	-
+		class: PHPStan\Rules\Classes\PropertyTagCheck
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 
 	-
 		class: PHPStan\Rules\Comparison\ConstantConditionRuleHelper
@@ -962,6 +984,7 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkThisOnly: %checkThisOnly%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\FunctionReturnTypeCheck
@@ -976,6 +999,7 @@ services:
 		arguments:
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\Generics\GenericObjectTypeCheck
@@ -1470,6 +1494,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 	-
 		class: PHPStan\Type\Php\HashFunctionsReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\HighlightStringDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
@@ -2139,6 +2168,7 @@ services:
 		class: PHPStan\Diagnose\PHPStanDiagnoseExtension
 		arguments:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
+			allConfigFiles: %allConfigFiles%
 		autowired: false
 
 	# Error formatters

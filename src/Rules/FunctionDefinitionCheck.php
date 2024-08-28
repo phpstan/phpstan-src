@@ -52,6 +52,7 @@ final class FunctionDefinitionCheck
 		private PhpVersion $phpVersion,
 		private bool $checkClassCaseSensitivity,
 		private bool $checkThisOnly,
+		private bool $absentTypeChecks,
 	)
 	{
 	}
@@ -240,12 +241,13 @@ final class FunctionDefinitionCheck
 		string $templateTypeMissingInParameterMessage,
 		string $unresolvableParameterTypeMessage,
 		string $unresolvableReturnTypeMessage,
+		string $selfOutMessage,
 	): array
 	{
 		/** @var ParametersAcceptorWithPhpDocs $parametersAcceptor */
 		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants());
 
-		return $this->checkParametersAcceptor(
+		$errors = $this->checkParametersAcceptor(
 			$parametersAcceptor,
 			$methodNode,
 			$parameterMessage,
@@ -255,6 +257,39 @@ final class FunctionDefinitionCheck
 			$unresolvableParameterTypeMessage,
 			$unresolvableReturnTypeMessage,
 		);
+
+		$selfOutType = $methodReflection->getSelfOutType();
+		if ($selfOutType !== null && $this->absentTypeChecks) {
+			$selfOutTypeReferencedClasses = $selfOutType->getReferencedClasses();
+
+			foreach ($selfOutTypeReferencedClasses as $class) {
+				if (!$this->reflectionProvider->hasClass($class)) {
+					$errors[] = RuleErrorBuilder::message(sprintf($selfOutMessage, $class))
+						->line($methodNode->getStartLine())
+						->identifier('class.notFound')
+						->build();
+					continue;
+				}
+				if (!$this->reflectionProvider->getClass($class)->isTrait()) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message(sprintf($selfOutMessage, $class))
+					->line($methodNode->getStartLine())
+					->identifier('selfOut.trait')
+					->build();
+			}
+
+			$errors = array_merge(
+				$errors,
+				$this->classCheck->checkClassNames(
+					array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $methodNode), $selfOutTypeReferencedClasses),
+					$this->checkClassCaseSensitivity,
+				),
+			);
+		}
+
+		return $errors;
 	}
 
 	/**
@@ -583,9 +618,20 @@ final class FunctionDefinitionCheck
 			return $parameter->getNativeType()->getReferencedClasses();
 		}
 
+		$moreClasses = [];
+		if ($this->absentTypeChecks) {
+			if ($parameter->getOutType() !== null) {
+				$moreClasses = array_merge($moreClasses, $parameter->getOutType()->getReferencedClasses());
+			}
+			if ($parameter->getClosureThisType() !== null) {
+				$moreClasses = array_merge($moreClasses, $parameter->getClosureThisType()->getReferencedClasses());
+			}
+		}
+
 		return array_merge(
 			$parameter->getNativeType()->getReferencedClasses(),
 			$parameter->getPhpDocType()->getReferencedClasses(),
+			$moreClasses,
 		);
 	}
 

@@ -56,6 +56,11 @@ final class ExistingClassesInTypehintsRule implements Rule
 				$className,
 				$methodName,
 			),
+			sprintf(
+				'Method %s::%s() has invalid @phpstan-self-out type %%s.',
+				$className,
+				$methodName,
+			),
 		);
 	}
 

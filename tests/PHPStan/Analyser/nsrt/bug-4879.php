@@ -33,7 +33,7 @@ class HelloWorld
 
 			$this->test();
 		} catch (\Exception $ex) {
-			assertVariableCertainty(TrinaryLogic::createNo(), $var);
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $var);
 		}
 	}
 

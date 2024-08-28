@@ -3,6 +3,12 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\PhpDoc\TypeNodeResolver;
+use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -14,11 +20,23 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$reflectionProvider = $this->createReflectionProvider();
+
 		return new LocalTypeTraitAliasesRule(
 			new LocalTypeAliasesCheck(
 				['GlobalTypeAlias' => 'int|string'],
 				$this->createReflectionProvider(),
 				self::getContainer()->getByType(TypeNodeResolver::class),
+				new MissingTypehintCheck(true, true, true, true, []),
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassForbiddenNameCheck(self::getContainer()),
+				),
+				new UnresolvableTypeHelper(),
+				new GenericObjectTypeCheck(),
+				true,
+				true,
+				true,
 			),
 			$this->createReflectionProvider(),
 		);
@@ -90,6 +108,11 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 			[
 				'Invalid type definition detected in type alias InvalidTypeAlias.',
 				62,
+			],
+			[
+				'Trait LocalTypeTraitAliases\MissingType has type alias NoIterablueValue with no value type specified in iterable type array.',
+				69,
+				'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type',
 			],
 		]);
 	}

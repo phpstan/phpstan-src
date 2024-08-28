@@ -13,6 +13,7 @@ use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Method\MethodCall;
+use PHPStan\Node\Property\PropertyAssign;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
@@ -40,6 +41,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	 * @param array<int, PropertyRead|PropertyWrite> $propertyUsages
 	 * @param array<int, MethodCall> $methodCalls
 	 * @param array<string, MethodReturnStatementsNode> $returnStatementNodes
+	 * @param list<PropertyAssign> $propertyAssigns
 	 */
 	public function __construct(
 		private ClassLike $class,
@@ -48,6 +50,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		private array $propertyUsages,
 		private array $methodCalls,
 		private array $returnStatementNodes,
+		private array $propertyAssigns,
 		private ClassReflection $classReflection,
 	)
 	{
@@ -402,6 +405,14 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		}
 
 		return $initialInitializedProperties;
+	}
+
+	/**
+	 * @return list<PropertyAssign>
+	 */
+	public function getPropertyAssigns(): array
+	{
+		return $this->propertyAssigns;
 	}
 
 }

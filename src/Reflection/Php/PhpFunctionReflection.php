@@ -3,10 +3,7 @@
 namespace PHPStan\Reflection\Php;
 
 use PhpParser\Node;
-use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\Cache\Cache;
@@ -27,6 +24,7 @@ use PHPStan\Type\TypehintHelper;
 use function array_key_exists;
 use function array_map;
 use function filemtime;
+use function is_array;
 use function is_file;
 use function sprintf;
 use function time;
@@ -149,12 +147,12 @@ final class PhpFunctionReflection implements FunctionReflection
 				if ($modifiedTime === false) {
 					$modifiedTime = time();
 				}
-				$variableCacheKey = sprintf('%d-v3', $modifiedTime);
+				$variableCacheKey = sprintf('%d-v4', $modifiedTime);
 				$key = sprintf('variadic-function-%s-%s', $functionName, $fileName);
 				$cachedResult = $this->cache->load($key, $variableCacheKey);
 				if ($cachedResult === null) {
 					$nodes = $this->parser->parseFile($fileName);
-					$result = $this->callsFuncGetArgs($nodes);
+					$result = !$this->callsFuncGetArgs($nodes)->no();
 					$this->cache->save($key, $variableCacheKey, $result);
 					return $result;
 				}
@@ -167,41 +165,41 @@ final class PhpFunctionReflection implements FunctionReflection
 	}
 
 	/**
-	 * @param Node[] $nodes
+	 * @param Node[]|scalar[]|Node $node
 	 */
-	private function callsFuncGetArgs(array $nodes): bool
+	private function callsFuncGetArgs(array|Node $node): TrinaryLogic
 	{
-		foreach ($nodes as $node) {
+		$result = TrinaryLogic::createMaybe();
+
+		if ($node instanceof Node) {
 			if ($node instanceof Function_) {
 				$functionName = (string) $node->namespacedName;
 
 				if ($functionName === $this->reflection->getName()) {
-					return $this->functionCallStatementFinder->findFunctionCallInStatements(ParametersAcceptor::VARIADIC_FUNCTIONS, $node->getStmts()) !== null;
-				}
-
-				continue;
-			}
-
-			if ($node instanceof ClassLike) {
-				continue;
-			}
-
-			if ($node instanceof Namespace_) {
-				if ($this->callsFuncGetArgs($node->stmts)) {
-					return true;
+					// native variadic with ...$param is checked via ReflectionFunction->isVariadic()
+					return TrinaryLogic::createFromBoolean($this->functionCallStatementFinder->findFunctionCallInStatements(ParametersAcceptor::VARIADIC_FUNCTIONS, $node->getStmts()) !== null);
 				}
 			}
 
-			if (!$node instanceof Declare_ || $node->stmts === null) {
-				continue;
-			}
+			foreach ($node->getSubNodeNames() as $subNodeName) {
+				$innerNode = $node->{$subNodeName};
+				if (!$innerNode instanceof Node && !is_array($innerNode)) {
+					continue;
+				}
 
-			if ($this->callsFuncGetArgs($node->stmts)) {
-				return true;
+				$result = $result->and($this->callsFuncGetArgs($innerNode));
+			}
+		} elseif (is_array($node)) {
+			foreach ($node as $subNode) {
+				if (!$subNode instanceof Node) {
+					continue;
+				}
+
+				$result = $result->and($this->callsFuncGetArgs($subNode));
 			}
 		}
 
-		return false;
+		return $result;
 	}
 
 	private function getReturnType(): Type

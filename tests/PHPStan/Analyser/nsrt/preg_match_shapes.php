@@ -608,6 +608,12 @@ function (string $s): void {
 };
 
 function (string $s): void {
+	if (preg_match('/Price: (a|bc?)/', $s, $matches)) {
+		assertType("array{string, non-empty-string}", $matches);
+	}
+};
+
+function (string $s): void {
 	if (preg_match('/Price: (a|\d)/', $s, $matches)) {
 		assertType("array{string, non-empty-string}", $matches);
 	}

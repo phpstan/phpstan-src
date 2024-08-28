@@ -33,6 +33,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_map;
 use function count;
+use function in_array;
 use function is_string;
 use function strtolower;
 use function substr;
@@ -192,9 +193,11 @@ final class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicF
 			$results = [];
 			foreach ($constantArrays as $constantArray) {
 				$builder = ConstantArrayTypeBuilder::createEmpty();
+				$optionalKeys = $constantArray->getOptionalKeys();
 				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 					$itemType = $constantArray->getValueTypes()[$i];
 					[$newKeyType, $newItemType, $optional] = $this->processKeyAndItemType($scope, $keyType, $itemType, $itemVar, $keyVar, $expr);
+					$optional = $optional || in_array($i, $optionalKeys, true);
 					if ($newKeyType instanceof NeverType || $newItemType instanceof NeverType) {
 						continue;
 					}

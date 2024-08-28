@@ -6,12 +6,22 @@ use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
+use function escapeshellarg;
+use function escapeshellcmd;
+use function exec;
+use function implode;
+use function is_null;
+use function putenv;
+use function sprintf;
+use const DIRECTORY_SEPARATOR;
+use const PHP_BINARY;
 
 /**
  * @group genericsmulti
  */
 class GenericsWithMultipleFilesIntegrationTest extends PHPStanTestCase
 {
+
 	/**
 	 * @return array<array<string>>
 	 */
@@ -39,7 +49,7 @@ class GenericsWithMultipleFilesIntegrationTest extends PHPStanTestCase
 
 		exec(sprintf('%s %s clear-result-cache %s 2>&1', escapeshellcmd(PHP_BINARY), $phpstanCmd, $configOption), $clearResultCacheOutputLines, $clearResultCacheExitCode);
 
-		if (0 !== $clearResultCacheExitCode) {
+		if ($clearResultCacheExitCode !== 0) {
 			throw new ShouldNotHappenException('Could not clear result cache: ' . implode("\n", $clearResultCacheOutputLines));
 		}
 
@@ -81,4 +91,5 @@ class GenericsWithMultipleFilesIntegrationTest extends PHPStanTestCase
 	{
 		return __DIR__ . '/generics.neon';
 	}
+
 }

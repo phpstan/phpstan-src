@@ -32,6 +32,7 @@ use function count;
 use function is_array;
 use function is_callable;
 use function is_file;
+use function is_null;
 use function ltrim;
 use function md5;
 use function sprintf;

@@ -12,11 +12,11 @@ function doMatch(string $s): void {
 	assertType('array{}|array{string}', $matches);
 
 	if (preg_match('/Price: (£|€)\d+/', $s, $matches)) {
-		assertType('array{string, non-empty-string}', $matches);
+		assertType("array{string, '£'|'€'}", $matches);
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array{string, non-empty-string}', $matches);
+	assertType("array{}|array{string, '£'|'€'}", $matches);
 
 	if (preg_match('/Price: (£|€)(\d+)/i', $s, $matches)) {
 		assertType('array{string, non-empty-string, numeric-string}', $matches);
@@ -54,9 +54,9 @@ function doMatch(string $s): void {
 	assertType("array{}|array{0: string, 1: 'a', 2: string, 3: 'c', name?: non-empty-string, 4?: non-empty-string}", $matches);
 
 	if (preg_match('/(a|b)|(?:c)/', $s, $matches)) {
-		assertType('array{0: string, 1?: non-empty-string}', $matches);
+		assertType("array{0: string, 1?: 'a'|'b'}", $matches);
 	}
-	assertType('array{}|array{0: string, 1?: non-empty-string}', $matches);
+	assertType("array{}|array{0: string, 1?: 'a'|'b'}", $matches);
 
 	if (preg_match('/(foo)(bar)(baz)+/', $s, $matches)) {
 		assertType("array{string, 'foo', 'bar', non-falsy-string}", $matches);
@@ -356,30 +356,30 @@ function bug11291(string $s): void {
 function bug11323a(string $s): void
 {
 	if (preg_match('/Price: (?P<currency>£|€)\d+/', $s, $matches)) {
-		assertType('array{0: string, currency: non-empty-string, 1: non-empty-string}', $matches);
+		assertType("array{0: string, currency: '£'|'€', 1: '£'|'€'}", $matches);
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array{0: string, currency: non-empty-string, 1: non-empty-string}', $matches);
+	assertType("array{}|array{0: string, currency: '£'|'€', 1: '£'|'€'}", $matches);
 }
 
 function bug11323b(string $s): void
 {
 	if (preg_match('/Price: (?<currency>£|€)\d+/', $s, $matches)) {
-		assertType('array{0: string, currency: non-empty-string, 1: non-empty-string}', $matches);
+		assertType("array{0: string, currency: '£'|'€', 1: '£'|'€'}", $matches);
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array{0: string, currency: non-empty-string, 1: non-empty-string}', $matches);
+	assertType("array{}|array{0: string, currency: '£'|'€', 1: '£'|'€'}", $matches);
 }
 
 function unmatchedAsNullWithMandatoryGroup(string $s): void {
 	if (preg_match('/Price: (?<currency>£|€)\d+/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
-		assertType('array{0: string, currency: non-empty-string, 1: non-empty-string}', $matches);
+		assertType("array{0: string, currency: '£'|'€', 1: '£'|'€'}", $matches);
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array{0: string, currency: non-empty-string, 1: non-empty-string}', $matches);
+	assertType("array{}|array{0: string, currency: '£'|'€', 1: '£'|'€'}", $matches);
 }
 
 function (string $s): void {
@@ -608,14 +608,20 @@ function (string $s): void {
 };
 
 function (string $s): void {
-	if (preg_match('/Price: (a|0)/', $s, $matches)) {
+	if (preg_match('/Price: (a|\d)/', $s, $matches)) {
 		assertType("array{string, non-empty-string}", $matches);
 	}
 };
 
 function (string $s): void {
+	if (preg_match('/Price: (a|0)/', $s, $matches)) {
+		assertType("array{string, '0'|'a'}", $matches);
+	}
+};
+
+function (string $s): void {
 	if (preg_match('/Price: (aa|0)/', $s, $matches)) {
-		assertType("array{string, non-empty-string}", $matches);
+		assertType("array{string, '0'|'aa'}", $matches);
 	}
 };
 

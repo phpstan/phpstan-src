@@ -11,6 +11,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
+use function ltrim;
 use function strrpos;
 use function substr;
 
@@ -147,6 +148,8 @@ final class RegexExpressionHelper
 
 	private function getPatternDelimiter(string $regex): ?string
 	{
+		$regex = ltrim($regex);
+
 		if ($regex === '') {
 			return null;
 		}

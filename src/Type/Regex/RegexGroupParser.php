@@ -20,6 +20,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_merge;
 use function count;
 use function in_array;
 use function is_int;
@@ -432,7 +433,7 @@ final class RegexGroupParser
 					$isNonEmpty = TrinaryLogic::createYes();
 				}
 			}
-		} elseif (!in_array($ast->getId(), ['#capturing', '#namedcapturing'], true)) {
+		} elseif (!in_array($ast->getId(), ['#capturing', '#namedcapturing', '#alternation'], true)) {
 			$onlyLiterals = null;
 		}
 
@@ -447,6 +448,7 @@ final class RegexGroupParser
 			$isNumeric = TrinaryLogic::createNo();
 		}
 
+		$alternativeLiterals = [];
 		foreach ($children as $child) {
 			$this->walkGroupAst(
 				$child,
@@ -459,7 +461,24 @@ final class RegexGroupParser
 				$inClass,
 				$patternModifiers,
 			);
+
+			if ($ast->getId() !== '#alternation') {
+				continue;
+			}
+
+			if ($onlyLiterals !== null && $alternativeLiterals !== null) {
+				$alternativeLiterals = array_merge($alternativeLiterals, $onlyLiterals);
+				$onlyLiterals = [];
+			} else {
+				$alternativeLiterals = null;
+			}
 		}
+
+		if ($alternativeLiterals === null || $alternativeLiterals === []) {
+			return;
+		}
+
+		$onlyLiterals = $alternativeLiterals;
 	}
 
 	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool

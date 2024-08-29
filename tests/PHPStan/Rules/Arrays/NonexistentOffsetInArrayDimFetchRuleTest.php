@@ -864,4 +864,18 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11572(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11572.php'], [
+			[
+				'Cannot access an offset on int.',
+				45,
+			],
+			[
+				'Cannot access an offset on int<3, 4>.',
+				46,
+			],
+		]);
+	}
+
 }

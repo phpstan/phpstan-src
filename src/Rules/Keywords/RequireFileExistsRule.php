@@ -91,21 +91,25 @@ final class RequireFileExistsRule implements Rule
 		switch ($node->type) {
 			case Include_::TYPE_REQUIRE:
 				$type = 'require';
+				$identifierType = 'require';
 				break;
 			case Include_::TYPE_REQUIRE_ONCE:
 				$type = 'require_once';
+				$identifierType = 'requireOnce';
 				break;
 			case Include_::TYPE_INCLUDE:
 				$type = 'include';
+				$identifierType = 'include';
 				break;
 			case Include_::TYPE_INCLUDE_ONCE:
 				$type = 'include_once';
+				$identifierType = 'includeOnce';
 				break;
 			default:
 				throw new ShouldNotHappenException('Rule should have already validated the node type.');
 		}
 
-		$identifier = sprintf('%s.fileNotFound', str_replace('_once', 'Once', $type));
+		$identifier = sprintf('%s.fileNotFound', $identifierType);
 
 		return RuleErrorBuilder::message(
 			sprintf(

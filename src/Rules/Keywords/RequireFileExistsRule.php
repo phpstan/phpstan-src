@@ -16,7 +16,6 @@ use function explode;
 use function get_include_path;
 use function is_file;
 use function sprintf;
-use function str_replace;
 use const PATH_SEPARATOR;
 
 /**

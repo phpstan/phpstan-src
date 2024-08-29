@@ -1056,13 +1056,19 @@ final class TypeSpecifier
 
 	private function specifyTypesForConstantBinaryExpression(
 		Expr $exprNode,
-		ConstantScalarType $constantType,
+		Type $constantType,
 		TypeSpecifierContext $context,
 		Scope $scope,
 		?Expr $rootExpr,
 	): ?SpecifiedTypes
 	{
-		if (!$context->null() && $constantType->getValue() === false) {
+		$scalarValues = $constantType->getConstantScalarValues();
+		if (count($scalarValues) !== 1) {
+			return null;
+		}
+		$constValue = $scalarValues[0];
+
+		if (!$context->null() && $constValue === false) {
 			$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
 			if ($exprNode instanceof Expr\NullsafeMethodCall || $exprNode instanceof Expr\NullsafePropertyFetch) {
 				return $types;
@@ -1076,7 +1082,7 @@ final class TypeSpecifier
 			));
 		}
 
-		if (!$context->null() && $constantType->getValue() === true) {
+		if (!$context->null() && $constValue === true) {
 			$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
 			if ($exprNode instanceof Expr\NullsafeMethodCall || $exprNode instanceof Expr\NullsafePropertyFetch) {
 				return $types;
@@ -1090,10 +1096,6 @@ final class TypeSpecifier
 			));
 		}
 
-		if ($constantType->getValue() === null) {
-			return $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-		}
-
 		if (
 			!$context->null()
 			&& $exprNode instanceof FuncCall
@@ -1102,6 +1104,10 @@ final class TypeSpecifier
 			&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
 			&& $constantType instanceof ConstantIntegerType
 		) {
+			if ($constantType->getValue() < 0) {
+				return $this->create($exprNode->getArgs()[0]->value, new NeverType(), $context, false, $scope, $rootExpr);
+			}
+
 			$argType = $scope->getType($exprNode->getArgs()[0]->value);
 
 			if ($argType instanceof UnionType) {
@@ -1146,6 +1152,10 @@ final class TypeSpecifier
 			&& in_array(strtolower((string) $exprNode->name), ['strlen', 'mb_strlen'], true)
 			&& $constantType instanceof ConstantIntegerType
 		) {
+			if ($constantType->getValue() < 0) {
+				return $this->create($exprNode->getArgs()[0]->value, new NeverType(), $context, false, $scope, $rootExpr);
+			}
+
 			if ($context->truthy() || $constantType->getValue() === 0) {
 				$newContext = $context;
 				if ($constantType->getValue() === 0) {
@@ -1172,12 +1182,18 @@ final class TypeSpecifier
 
 	private function specifyTypesForConstantStringBinaryExpression(
 		Expr $exprNode,
-		ConstantStringType $constantType,
+		Type $constantType,
 		TypeSpecifierContext $context,
 		Scope $scope,
 		?Expr $rootExpr,
 	): ?SpecifiedTypes
 	{
+		$scalarValues = $constantType->getConstantScalarValues();
+		if (count($scalarValues) !== 1 || !is_string($scalarValues[0])) {
+			return null;
+		}
+		$constantStringValue = $scalarValues[0];
+
 		if (
 			$context->truthy()
 			&& $exprNode instanceof FuncCall
@@ -1188,12 +1204,12 @@ final class TypeSpecifier
 				'ucwords', 'mb_convert_case', 'mb_convert_kana',
 			], true)
 			&& isset($exprNode->getArgs()[0])
-			&& $constantType->getValue() !== ''
+			&& $constantStringValue !== ''
 		) {
 			$argType = $scope->getType($exprNode->getArgs()[0]->value);
 
 			if ($argType->isString()->yes()) {
-				if ($constantType->getValue() !== '0') {
+				if ($constantStringValue !== '0') {
 					return $this->create(
 						$exprNode->getArgs()[0]->value,
 						TypeCombinator::intersect($argType, new AccessoryNonFalsyStringType()),
@@ -1220,28 +1236,28 @@ final class TypeSpecifier
 			&& isset($exprNode->getArgs()[0])
 		) {
 			$type = null;
-			if ($constantType->getValue() === 'string') {
+			if ($constantStringValue === 'string') {
 				$type = new StringType();
 			}
-			if ($constantType->getValue() === 'array') {
+			if ($constantStringValue === 'array') {
 				$type = new ArrayType(new MixedType(), new MixedType());
 			}
-			if ($constantType->getValue() === 'boolean') {
+			if ($constantStringValue === 'boolean') {
 				$type = new BooleanType();
 			}
-			if (in_array($constantType->getValue(), ['resource', 'resource (closed)'], true)) {
+			if (in_array($constantStringValue, ['resource', 'resource (closed)'], true)) {
 				$type = new ResourceType();
 			}
-			if ($constantType->getValue() === 'integer') {
+			if ($constantStringValue === 'integer') {
 				$type = new IntegerType();
 			}
-			if ($constantType->getValue() === 'double') {
+			if ($constantStringValue === 'double') {
 				$type = new FloatType();
 			}
-			if ($constantType->getValue() === 'NULL') {
+			if ($constantStringValue === 'NULL') {
 				$type = new NullType();
 			}
-			if ($constantType->getValue() === 'object') {
+			if ($constantStringValue === 'object') {
 				$type = new ObjectWithoutClassType();
 			}
 
@@ -1260,7 +1276,7 @@ final class TypeSpecifier
 			&& isset($exprNode->getArgs()[0])
 		) {
 			$argType = $scope->getType($exprNode->getArgs()[0]->value);
-			$objectType = new ObjectType($constantType->getValue());
+			$objectType = new ObjectType($constantStringValue);
 			$classStringType = new GenericClassStringType($objectType);
 
 			if ($argType->isString()->yes()) {
@@ -2149,10 +2165,14 @@ final class TypeSpecifier
 			}
 		}
 
-		if (count($rightType->getConstantStrings()) > 0) {
+		if ($rightType->isInteger()->yes() || $rightType->isString()->yes()) {
 			$types = null;
-			foreach ($rightType->getConstantStrings() as $constantString) {
-				$specifiedType = $this->specifyTypesForConstantStringBinaryExpression($unwrappedLeftExpr, $constantString, $context, $scope, $rootExpr);
+			foreach ($rightType->getFiniteTypes() as $finiteType) {
+				if ($finiteType->isString()->yes()) {
+					$specifiedType = $this->specifyTypesForConstantStringBinaryExpression($unwrappedLeftExpr, $finiteType, $context, $scope, $rootExpr);
+				} else {
+					$specifiedType = $this->specifyTypesForConstantBinaryExpression($unwrappedLeftExpr, $finiteType, $context, $scope, $rootExpr);
+				}
 				if ($specifiedType === null) {
 					continue;
 				}

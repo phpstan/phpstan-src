@@ -9,9 +9,11 @@ use function PHPStan\Testing\assertType;
  * @param int<2, 3> $twoOrThree
  * @param int<2, max> $twoOrMore
  * @param int<min, 3> $maxThree
- * @param int<10, 11> $tenOrEleven
+ * @param 10|11 $tenOrEleven
+ * @param 0|11 $zeroOrEleven
+ * @param int<-10,-5> $negative
  */
-function doFoo(string $s, $zeroToThree, $twoOrThree, $twoOrMore, int $maxThree, $tenOrEleven): void
+function doFoo(string $s, $zeroToThree, $twoOrThree, $twoOrMore, int $maxThree, $tenOrEleven, $zeroOrEleven, int $negative): void
 {
 	if (strlen($s) >= $zeroToThree) {
 		assertType('string', $s);
@@ -50,5 +52,64 @@ function doFoo(string $s, $zeroToThree, $twoOrThree, $twoOrMore, int $maxThree, 
 
 	if (strlen($s) > $tenOrEleven) {
 		assertType('non-falsy-string', $s);
+	}
+
+	if (strlen($s) == $zeroToThree) {
+		assertType('string', $s);
+	}
+	if (strlen($s) === $zeroToThree) {
+		assertType('string', $s);
+	}
+
+	if (strlen($s) == $twoOrThree) {
+		assertType('non-falsy-string', $s);
+	}
+	if (strlen($s) === $twoOrThree) {
+		assertType('non-falsy-string', $s);
+	}
+
+	if (strlen($s) == $oneOrMore) {
+		assertType('string', $s); // could be non-empty-string
+	}
+	if (strlen($s) === $oneOrMore) {
+		assertType('string', $s); // could be non-empty-string
+	}
+
+	if (strlen($s) == $tenOrEleven) {
+		assertType('non-falsy-string', $s);
+	}
+	if (strlen($s) === $tenOrEleven) {
+		assertType('non-falsy-string', $s);
+	}
+	if ($tenOrEleven == strlen($s)) {
+		assertType('non-falsy-string', $s);
+	}
+	if ($tenOrEleven === strlen($s)) {
+		assertType('non-falsy-string', $s);
+	}
+
+	if (strlen($s) == $maxThree) {
+		assertType('string', $s);
+	}
+	if (strlen($s) === $maxThree) {
+		assertType('string', $s);
+	}
+
+	if (strlen($s) == $zeroOrEleven) {
+		assertType('string', $s);
+	}
+	if (strlen($s) === $zeroOrEleven) {
+		assertType('string', $s);
+	}
+
+	if (strlen($s) == $negative) {
+		assertType('*NEVER*', $s);
+	} else {
+		assertType('string', $s);
+	}
+	if (strlen($s) === $negative) {
+		assertType('*NEVER*', $s);
+	} else {
+		assertType('string', $s);
 	}
 }

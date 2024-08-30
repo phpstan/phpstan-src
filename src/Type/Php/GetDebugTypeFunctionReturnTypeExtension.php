@@ -75,9 +75,10 @@ class GetDebugTypeFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 					$parentClass = $reflection->getParentClass();
 					$implementedInterfaces = $reflection->getImmediateInterfaces();
 					if ($parentClass !== null) {
-						$types[] = $parentClass->getName() . '@anonymous';
+						$types[] = new ConstantStringType($parentClass->getName() . '@anonymous');
 					} elseif ($implementedInterfaces !== []) {
-						$types[] = $implementedInterfaces[0]->getName() . '@anonymous';
+						$firstInterface = $implementedInterfaces[array_key_first($implementedInterfaces)];
+						$types[] = new ConstantStringType($firstInterface->getName() . '@anonymous');
 					} else {
 						$types[] = new ConstantStringType('class@anonymous');
 					}

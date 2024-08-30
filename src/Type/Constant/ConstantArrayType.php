@@ -546,7 +546,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$has = $has->and(TrinaryLogic::createMaybe());
 			}
 
-			return ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
+			return ConstantArrayTypeAndMethod::createConcrete($classOrObject, $method->getValue(), $has);
 		}
 
 		return null;
@@ -593,7 +593,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$has = $has->and(TrinaryLogic::createMaybe());
 			}
 
-			$typeAndMethods[] = ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
+			$typeAndMethods[] = ConstantArrayTypeAndMethod::createConcrete($classOrObject, $method->getValue(), $has);
 		}
 
 		return $typeAndMethods;

@@ -1061,17 +1061,13 @@ final class TypeSpecifier
 
 	private function specifyTypesForConstantBinaryExpression(
 		Expr $exprNode,
-		Type $constantType,
+		ConstantScalarType $constantType,
 		TypeSpecifierContext $context,
 		Scope $scope,
 		?Expr $rootExpr,
 	): ?SpecifiedTypes
 	{
-		$scalarValues = $constantType->getConstantScalarValues();
-		if (count($scalarValues) !== 1) {
-			return null;
-		}
-		$constValue = $scalarValues[0];
+		$constValue = $constantType->getValue();
 
 		if (!$context->null() && $constValue === false) {
 			$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
@@ -1106,17 +1102,13 @@ final class TypeSpecifier
 
 	private function specifyTypesForConstantStringBinaryExpression(
 		Expr $exprNode,
-		Type $constantType,
+		ConstantStringType $constantType,
 		TypeSpecifierContext $context,
 		Scope $scope,
 		?Expr $rootExpr,
 	): ?SpecifiedTypes
 	{
-		$scalarValues = $constantType->getConstantScalarValues();
-		if (count($scalarValues) !== 1 || !is_string($scalarValues[0])) {
-			return null;
-		}
-		$constantStringValue = $scalarValues[0];
+		$constantStringValue = $constantType->getValue();
 
 		if (
 			$context->truthy()

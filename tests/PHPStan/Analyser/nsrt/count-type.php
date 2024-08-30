@@ -65,3 +65,24 @@ class Foo
 	}
 
 }
+
+/**
+ * @param \ArrayObject<int, mixed> $obj
+ */
+function(\ArrayObject $obj): void {
+	if (count($obj) === 0) {
+		assertType('ArrayObject', $obj);
+		return;
+	}
+
+	assertType('ArrayObject', $obj);
+};
+
+function($mixed): void {
+	if (count($mixed) === 0) {
+		assertType('array{}|Countable', $mixed);
+		return;
+	}
+
+	assertType('mixed~array{}', $mixed);
+};

@@ -2093,15 +2093,25 @@ final class TypeSpecifier
 				return $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NeverType(), $context, false, $scope, $rootExpr);
 			}
 
+			$argType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
 			$isZero = (new ConstantIntegerType(0))->isSuperTypeOf($rightType);
 			if ($isZero->yes()) {
 				$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, false, $scope, $rootExpr);
+
+				if ($context->truthy() && !$argType->isArray()->yes()) {
+					$newArgType = new UnionType([
+						new ObjectType(Countable::class),
+						new ConstantArrayType([], []),
+					]);
+				} else {
+					$newArgType = new ConstantArrayType([], []);
+				}
+
 				return $funcTypes->unionWith(
-					$this->create($unwrappedLeftExpr->getArgs()[0]->value, new ConstantArrayType([], []), $context, false, $scope, $rootExpr),
+					$this->create($unwrappedLeftExpr->getArgs()[0]->value, $newArgType, $context, false, $scope, $rootExpr),
 				);
 			}
 
-			$argType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
 			if ($argType instanceof UnionType) {
 				$narrowed = $this->narrowUnionByArraySize($unwrappedLeftExpr, $argType, $rightType, $context, $scope, $rootExpr);
 				if ($narrowed !== null) {

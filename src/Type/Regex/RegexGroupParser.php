@@ -20,7 +20,6 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_merge;
 use function count;
 use function in_array;
 use function is_int;
@@ -295,6 +294,16 @@ final class RegexGroupParser
 
 	private function createGroupType(TreeNode $group, bool $maybeConstant, string $patternModifiers): Type
 	{
+		$rootAlternation = $this->getRootAlternation($group);
+		if ($rootAlternation !== null) {
+			$types = [];
+			foreach ($rootAlternation->getChildren() as $alternative) {
+				$types[] = $this->createGroupType($alternative, $maybeConstant, $patternModifiers);
+			}
+
+			return TypeCombinator::union(...$types);
+		}
+
 		$isNonEmpty = TrinaryLogic::createMaybe();
 		$isNonFalsy = TrinaryLogic::createMaybe();
 		$isNumeric = TrinaryLogic::createMaybe();
@@ -343,6 +352,28 @@ final class RegexGroupParser
 		}
 
 		return new StringType();
+	}
+
+	private function getRootAlternation(TreeNode $group): ?TreeNode
+	{
+		if (
+			$group->getId() === '#capturing'
+			&& count($group->getChildren()) === 1
+			&& $group->getChild(0)->getId() === '#alternation'
+		) {
+			return $group->getChild(0);
+		}
+
+		// 1st token within a named capturing group is a token holding the group-name
+		if (
+			$group->getId() === '#namedcapturing'
+			&& count($group->getChildren()) === 2
+			&& $group->getChild(1)->getId() === '#alternation'
+		) {
+			return $group->getChild(1);
+		}
+
+		return null;
 	}
 
 	/**
@@ -448,7 +479,6 @@ final class RegexGroupParser
 			$isNumeric = TrinaryLogic::createNo();
 		}
 
-		$alternativeLiterals = [];
 		foreach ($children as $child) {
 			$this->walkGroupAst(
 				$child,
@@ -461,24 +491,7 @@ final class RegexGroupParser
 				$inClass,
 				$patternModifiers,
 			);
-
-			if ($ast->getId() !== '#alternation') {
-				continue;
-			}
-
-			if ($onlyLiterals !== null && $alternativeLiterals !== null) {
-				$alternativeLiterals = array_merge($alternativeLiterals, $onlyLiterals);
-				$onlyLiterals = [];
-			} else {
-				$alternativeLiterals = null;
-			}
 		}
-
-		if ($alternativeLiterals === null || $alternativeLiterals === []) {
-			return;
-		}
-
-		$onlyLiterals = $alternativeLiterals;
 	}
 
 	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool

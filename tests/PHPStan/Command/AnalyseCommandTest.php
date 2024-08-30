@@ -78,16 +78,28 @@ class AnalyseCommandTest extends PHPStanTestCase
 	{
 		return [
 			[
-				__DIR__ . '/test-autodiscover',
-				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover' . DIRECTORY_SEPARATOR . 'phpstan.neon',
+				__DIR__ . '/test-autodiscover-dot',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-dot' . DIRECTORY_SEPARATOR . '.phpstan.neon',
 			],
 			[
-				__DIR__ . '/test-autodiscover-dist',
-				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-dist' . DIRECTORY_SEPARATOR . 'phpstan.neon.dist',
+				__DIR__ . '/test-autodiscover-dot-dist',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-dot-dist' . DIRECTORY_SEPARATOR . '.phpstan.neon.dist',
 			],
 			[
-				__DIR__ . '/test-autodiscover-dist-dot-neon',
-				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-dist-dot-neon' . DIRECTORY_SEPARATOR . 'phpstan.dist.neon',
+				__DIR__ . '/test-autodiscover-dot-dist-dot-neon',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-dot-dist-dot-neon' . DIRECTORY_SEPARATOR . '.phpstan.dist.neon',
+			],
+			[
+				__DIR__ . '/test-autodiscover-no-dot',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-no-dot' . DIRECTORY_SEPARATOR . 'phpstan.neon',
+			],
+			[
+				__DIR__ . '/test-autodiscover-no-dot-dist',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-no-dot-dist' . DIRECTORY_SEPARATOR . 'phpstan.neon.dist',
+			],
+			[
+				__DIR__ . '/test-autodiscover-no-dot-dist-dot-neon',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-no-dot-dist-dot-neon' . DIRECTORY_SEPARATOR . 'phpstan.dist.neon',
 			],
 			[
 				__DIR__ . '/test-autodiscover-priority',
@@ -96,6 +108,10 @@ class AnalyseCommandTest extends PHPStanTestCase
 			[
 				__DIR__ . '/test-autodiscover-priority-dist-dot-neon',
 				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-priority-dist-dot-neon' . DIRECTORY_SEPARATOR . 'phpstan.neon',
+			],
+			[
+				__DIR__ . '/test-autodiscover-priority-dot',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-priority-dot' . DIRECTORY_SEPARATOR . '.phpstan.neon',
 			],
 		];
 	}

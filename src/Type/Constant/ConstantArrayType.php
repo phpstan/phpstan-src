@@ -478,6 +478,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			}
 
 			$method = $typeAndMethodName->getType()
+				->getObjectTypeOrClassStringObjectType()
 				->getMethod($typeAndMethodName->getMethod(), $scope);
 
 			if (!$scope->canCallMethod($method)) {

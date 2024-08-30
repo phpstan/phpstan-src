@@ -12,7 +12,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 
-class ParameterClosureTypeHelper
+final class ParameterClosureTypeHelper
 {
 
 	public function __construct(private readonly ParameterClosureTypeExtensionProvider $parameterClosureTypeExtensionProvider)

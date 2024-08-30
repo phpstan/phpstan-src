@@ -37,6 +37,7 @@ class GetDebugTypeFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 
 	/**
 	 * @see https://www.php.net/manual/en/function.get-debug-type.php#refsect1-function.get-debug-type-returnvalues
+	 * @see https://github.com/php/php-src/commit/ef0e4478c51540510b67f7781ad240f5e0592ee4
 	 */
 	private static function resolveOneType(Type $type): Type
 	{
@@ -71,7 +72,15 @@ class GetDebugTypeFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 				}
 
 				if ($reflection->isAnonymous()) { // phpcs:ignore
-					$types[] = new ConstantStringType('class@anonymous');
+					$parentClass = $reflection->getParentClass();
+					$implementedInterfaces = $reflection->getImmediateInterfaces();
+					if ($parentClass !== null) {
+						$types[] = $parentClass->getName() . '@anonymous';
+					} elseif ($implementedInterfaces !== []) {
+						$types[] = $implementedInterfaces[0]->getName() . '@anonymous';
+					} else {
+						$types[] = new ConstantStringType('class@anonymous');
+					}
 				}
 			}
 

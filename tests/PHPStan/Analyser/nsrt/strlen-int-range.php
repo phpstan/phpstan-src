@@ -69,10 +69,10 @@ function doFoo(string $s, $zeroToThree, $twoOrThree, $twoOrMore, int $maxThree, 
 	}
 
 	if (strlen($s) == $oneOrMore) {
-		assertType('string', $s); // could be non-empty-string
+		assertType('non-empty-string', $s);
 	}
 	if (strlen($s) === $oneOrMore) {
-		assertType('string', $s); // could be non-empty-string
+		assertType('non-empty-string', $s);
 	}
 
 	if (strlen($s) == $tenOrEleven) {
@@ -111,5 +111,33 @@ function doFoo(string $s, $zeroToThree, $twoOrThree, $twoOrMore, int $maxThree, 
 		assertType('*NEVER*', $s);
 	} else {
 		assertType('string', $s);
+	}
+}
+
+/**
+ * @param int<1, max> $oneOrMore
+ * @param int<2, max> $twoOrMore
+ */
+function doFooBar(string $s, array $arr, int $oneOrMore, int $twoOrMore): void
+{
+	if (strlen($s) == $oneOrMore) {
+		assertType('non-empty-string', $s);
+	}
+	if (strlen($s) === $oneOrMore) {
+		assertType('non-empty-string', $s);
+	}
+
+	if (strlen($s) == $twoOrMore) {
+		assertType('non-falsy-string', $s);
+	}
+	if (strlen($s) === $twoOrMore) {
+		assertType('non-falsy-string', $s);
+	}
+
+	if (count($arr) == $oneOrMore) {
+		assertType('non-empty-array', $arr);
+	}
+	if (count($arr) === $oneOrMore) {
+		assertType('non-empty-array', $arr);
 	}
 }

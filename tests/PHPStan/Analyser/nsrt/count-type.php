@@ -44,12 +44,12 @@ class Foo
 		if (count($arr) == $maybeZero) {
 			assertType('array', $arr);
 		} else {
-			assertType('non-empty-array', $arr);
+			assertType('array', $arr);
 		}
 		if (count($arr) === $maybeZero) {
 			assertType('array', $arr);
 		} else {
-			assertType('non-empty-array', $arr);
+			assertType('array', $arr);
 		}
 
 		if (count($arr) == $negative) {

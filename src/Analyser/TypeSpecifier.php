@@ -1049,7 +1049,11 @@ final class TypeSpecifier
 				}
 
 			}
-			return $valueTypesBuilder->getArray();
+
+			$arrayType = $valueTypesBuilder->getArray();
+			if ($arrayType->isIterableAtLeastOnce()->yes()) {
+				return $arrayType;
+			}
 		}
 
 		return null;

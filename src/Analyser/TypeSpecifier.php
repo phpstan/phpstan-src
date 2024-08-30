@@ -1038,7 +1038,7 @@ final class TypeSpecifier
 					$offsetType = new ConstantIntegerType($i);
 					$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), true);
 				}
-			} else {
+			} elseif ($type->isConstantArray()->yes()) {
 				for ($i = $sizeType->getMin();; $i++) {
 					$offsetType = new ConstantIntegerType($i);
 					$hasOffset = $type->hasOffsetValueType($offsetType);

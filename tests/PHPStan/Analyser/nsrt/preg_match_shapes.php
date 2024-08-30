@@ -561,7 +561,7 @@ function (string $s): void {
 	}
 
 	if (preg_match($p, $s, $matches)) {
-		assertType("array{0: string, 1: non-empty-string, 2?: ''|numeric-string, 3?: 'x'}", $matches);
+		assertType("array{0: string, 1: 'x'|'£'|numeric-string, 2?: ''|numeric-string, 3?: 'x'}", $matches);
 	}
 };
 
@@ -609,13 +609,31 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('/Price: (a|bc?)/', $s, $matches)) {
+		assertType("array{string, non-falsy-string}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/Price: (?<named>a|bc?)/', $s, $matches)) {
+		assertType("array{0: string, named: non-falsy-string, 1: non-falsy-string}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/Price: (a|0c?)/', $s, $matches)) {
 		assertType("array{string, non-empty-string}", $matches);
 	}
 };
 
 function (string $s): void {
 	if (preg_match('/Price: (a|\d)/', $s, $matches)) {
-		assertType("array{string, non-empty-string}", $matches);
+		assertType("array{string, 'a'|numeric-string}", $matches);
+	}
+};
+
+function (string $s): void {
+	if (preg_match('/Price: (?<named>a|\d)/', $s, $matches)) {
+		assertType("array{0: string, named: 'a'|numeric-string, 1: 'a'|numeric-string}", $matches);
 	}
 };
 

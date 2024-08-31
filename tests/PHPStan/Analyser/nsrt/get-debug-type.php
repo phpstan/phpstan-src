@@ -5,6 +5,9 @@ namespace GetDebugType;
 use function PHPStan\Testing\assertType;
 
 final class A {}
+interface B {}
+interface C {}
+class D {}
 
 /**
  * @param double $d
@@ -18,6 +21,9 @@ function doFoo(bool $b, int $i, float $f, $d, $r, string $s, array $a, $intOrStr
 	$o = new \stdClass();
 	$A = new A();
 	$anonymous = new class {};
+	$anonymousImplements = new class implements B, C {};
+	$anonymousExtends = new class extends D {};
+	$anonymousExtendsImplements = new class extends D implements B, C {};
 
 	assertType("'bool'", get_debug_type($b));
 	assertType("'bool'", get_debug_type(true));
@@ -35,6 +41,9 @@ function doFoo(bool $b, int $i, float $f, $d, $r, string $s, array $a, $intOrStr
 	assertType("'int'|'string'", get_debug_type($intOrString));
 	assertType("'array'|'GetDebugType\\\\A'", get_debug_type($arrayOrObject));
 	assertType("'class@anonymous'", get_debug_type($anonymous));
+	assertType("'GetDebugType\\\\B@anonymous'", get_debug_type($anonymousImplements));
+	assertType("'GetDebugType\\\\D@anonymous'", get_debug_type($anonymousExtends));
+	assertType("'GetDebugType\\\\D@anonymous'", get_debug_type($anonymousExtendsImplements));
 }
 
 /**

@@ -11,6 +11,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use function array_key_first;
 use function array_map;
 use function count;
 
@@ -37,6 +38,7 @@ final class GetDebugTypeFunctionReturnTypeExtension implements DynamicFunctionRe
 
 	/**
 	 * @see https://www.php.net/manual/en/function.get-debug-type.php#refsect1-function.get-debug-type-returnvalues
+	 * @see https://github.com/php/php-src/commit/ef0e4478c51540510b67f7781ad240f5e0592ee4
 	 */
 	private static function resolveOneType(Type $type): Type
 	{
@@ -71,7 +73,16 @@ final class GetDebugTypeFunctionReturnTypeExtension implements DynamicFunctionRe
 				}
 
 				if ($reflection->isAnonymous()) { // phpcs:ignore
-					$types[] = new ConstantStringType('class@anonymous');
+					$parentClass = $reflection->getParentClass();
+					$implementedInterfaces = $reflection->getImmediateInterfaces();
+					if ($parentClass !== null) {
+						$types[] = new ConstantStringType($parentClass->getName() . '@anonymous');
+					} elseif ($implementedInterfaces !== []) {
+						$firstInterface = $implementedInterfaces[array_key_first($implementedInterfaces)];
+						$types[] = new ConstantStringType($firstInterface->getName() . '@anonymous');
+					} else {
+						$types[] = new ConstantStringType('class@anonymous');
+					}
 				}
 			}
 

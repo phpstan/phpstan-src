@@ -21,10 +21,6 @@ class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/method-call-statement-no-side-effects.php'], [
 			[
-				'Call to method DateTimeImmutable::modify() on a separate line has no effect.',
-				15,
-			],
-			[
 				'Call to static method DateTimeImmutable::createFromFormat() on a separate line has no effect.',
 				16,
 			],

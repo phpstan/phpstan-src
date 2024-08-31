@@ -10,7 +10,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use function sprintf;
 

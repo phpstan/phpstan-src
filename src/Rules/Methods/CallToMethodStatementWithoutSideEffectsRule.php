@@ -62,30 +62,15 @@ final class CallToMethodStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$method = $calledOnType->getMethod($methodName, $scope);
-		if ($method->hasSideEffects()->no() || $methodCall->isFirstClassCallable()) {
-			if (!$methodCall->isFirstClassCallable()) {
-				$throwsType = $method->getThrowType();
-				if ($throwsType !== null && !$throwsType->isVoid()->yes()) {
-					return [];
-				}
-			}
 
-			$methodResult = $scope->getType($methodCall);
-			if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
-				return [];
-			}
-
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'Call to %s %s::%s() on a separate line has no effect.',
-					$method->isStatic() ? 'static method' : 'method',
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
-				))->identifier('method.resultUnused')->build(),
-			];
-		}
-
-		return [];
+		return [
+			RuleErrorBuilder::message(sprintf(
+				'Call to %s %s::%s() on a separate line has no effect.',
+				$method->isStatic() ? 'static method' : 'method',
+				$method->getDeclaringClass()->getDisplayName(),
+				$method->getName(),
+			))->identifier('method.resultUnused')->build(),
+		];
 	}
 
 }

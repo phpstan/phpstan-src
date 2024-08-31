@@ -11,6 +11,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function sprintf;
@@ -81,6 +82,11 @@ final class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 				|| strtolower($method->getName()) === strtolower($method->getDeclaringClass()->getName())
 			)
 		) {
+			return [];
+		}
+
+		$methodResult = $scope->getType($staticCall);
+		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
 			return [];
 		}
 

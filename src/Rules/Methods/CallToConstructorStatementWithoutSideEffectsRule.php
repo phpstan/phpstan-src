@@ -8,6 +8,8 @@ use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\NeverType;
+
 use function sprintf;
 
 /**
@@ -59,6 +61,11 @@ final class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$constructor = $classReflection->getConstructor();
+		$methodResult = $scope->getType($instantiation);
+		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
+			return [];
+		}
+
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Call to %s::%s() on a separate line has no effect.',

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -14,7 +15,7 @@ use PHPStan\Type\Type;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Stmt\Expression>
+ * @implements Rule<NoopExpressionNode>
  */
 final class CallToMethodStatementWithoutSideEffectsRule implements Rule
 {
@@ -25,18 +26,18 @@ final class CallToMethodStatementWithoutSideEffectsRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt\Expression::class;
+		return NoopExpressionNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node->expr instanceof Node\Expr\NullsafeMethodCall) {
-			$scope = $scope->filterByTruthyValue(new Node\Expr\BinaryOp\NotIdentical($node->expr->var, new Node\Expr\ConstFetch(new Node\Name('null'))));
-		} elseif (!$node->expr instanceof Node\Expr\MethodCall) {
+		$methodCall = $node->getOriginalExpr();
+		if ($methodCall instanceof Node\Expr\NullsafeMethodCall) {
+			$scope = $scope->filterByTruthyValue(new Node\Expr\BinaryOp\NotIdentical($methodCall->var, new Node\Expr\ConstFetch(new Node\Name('null'))));
+		} elseif (!$methodCall instanceof Node\Expr\MethodCall) {
 			return [];
 		}
 
-		$methodCall = $node->expr;
 		if (!$methodCall->name instanceof Node\Identifier) {
 			return [];
 		}
@@ -61,8 +62,8 @@ final class CallToMethodStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$method = $calledOnType->getMethod($methodName, $scope);
-		if ($method->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
-			if (!$node->expr->isFirstClassCallable()) {
+		if ($method->hasSideEffects()->no() || $methodCall->isFirstClassCallable()) {
+			if (!$methodCall->isFirstClassCallable()) {
 				$throwsType = $method->getThrowType();
 				if ($throwsType !== null && !$throwsType->isVoid()->yes()) {
 					return [];

@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function array_merge;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallToMethodStatementWithoutSideEffectsRule>
@@ -87,6 +89,26 @@ class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 	public function testBug4455(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4455.php'], []);
+	}
+
+	public function testBug11503(): void
+	{
+		$errors = [
+			['Call to method DateTimeImmutable::add() on a separate line has no effect.', 10],
+			['Call to method DateTimeImmutable::modify() on a separate line has no effect.', 11],
+			['Call to method DateTimeImmutable::setDate() on a separate line has no effect.', 12],
+			['Call to method DateTimeImmutable::setISODate() on a separate line has no effect.', 13],
+			['Call to method DateTimeImmutable::setTime() on a separate line has no effect.', 14],
+			['Call to method DateTimeImmutable::setTimestamp() on a separate line has no effect.', 15],
+			['Call to method DateTimeImmutable::setTimezone() on a separate line has no effect.', 17],
+		];
+		if (PHP_VERSION_ID < 80300) {
+			$errors = array_merge([
+				['Call to method DateTimeImmutable::sub() on a separate line has no effect.', 9],
+			], $errors);
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-11503.php'], $errors);
 	}
 
 	public function testFirstClassCallables(): void

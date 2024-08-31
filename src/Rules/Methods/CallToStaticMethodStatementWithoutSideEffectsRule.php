@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -17,7 +18,7 @@ use function sprintf;
 use function strtolower;
 
 /**
- * @implements Rule<Node\Stmt\Expression>
+ * @implements Rule<NoopExpressionNode>
  */
 final class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 {
@@ -31,16 +32,16 @@ final class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt\Expression::class;
+		return NoopExpressionNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->expr instanceof Node\Expr\StaticCall) {
+		$staticCall = $node->getOriginalExpr();
+		if (!$staticCall instanceof Node\Expr\StaticCall) {
 			return [];
 		}
 
-		$staticCall = $node->expr;
 		if (!$staticCall->name instanceof Node\Identifier) {
 			return [];
 		}
@@ -84,30 +85,19 @@ final class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 			return [];
 		}
 
-		if ($method->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
-			if (!$node->expr->isFirstClassCallable()) {
-				$throwsType = $method->getThrowType();
-				if ($throwsType !== null && !$throwsType->isVoid()->yes()) {
-					return [];
-				}
-			}
-
-			$methodResult = $scope->getType($staticCall);
-			if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
-				return [];
-			}
-
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'Call to %s %s::%s() on a separate line has no effect.',
-					$method->isStatic() ? 'static method' : 'method',
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
-				))->identifier('staticMethod.resultUnused')->build(),
-			];
+		$methodResult = $scope->getType($staticCall);
+		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
+			return [];
 		}
 
-		return [];
+		return [
+			RuleErrorBuilder::message(sprintf(
+				'Call to %s %s::%s() on a separate line has no effect.',
+				$method->isStatic() ? 'static method' : 'method',
+				$method->getDeclaringClass()->getDisplayName(),
+				$method->getName(),
+			))->identifier('staticMethod.resultUnused')->build(),
+		];
 	}
 
 }

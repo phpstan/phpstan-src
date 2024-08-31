@@ -181,10 +181,10 @@ final class CommandHelper
 		if ($projectConfigFile === null) {
 			$discoverableConfigNames = [
 				'.phpstan.neon',
-				'.phpstan.neon.dist',
-				'.phpstan.dist.neon',
 				'phpstan.neon',
+				'.phpstan.neon.dist',
 				'phpstan.neon.dist',
+				'.phpstan.dist.neon',
 				'phpstan.dist.neon',
 			];
 			foreach ($discoverableConfigNames as $discoverableConfigName) {

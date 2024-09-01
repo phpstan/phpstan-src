@@ -27,3 +27,15 @@ function doFoo(string $x, array $arr): void {
 	}
 	assertType('array{}|array{string}', $matches);
 }
+
+
+interface Reader {
+	public function getFilePath(): string|false;
+}
+
+function bug7685(Reader $reader): void {
+	$filePath = $reader->getFilePath();
+	if (false !== (bool) $filePath) {
+		assertType('non-falsy-string', $filePath);
+	}
+}

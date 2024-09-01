@@ -109,6 +109,9 @@ class ConstantArrayTypeBuilder
 				}
 
 				$max = max($this->nextAutoIndexes);
+				if ($max !== count($this->keyTypes)) {
+					$this->isList = TrinaryLogic::createNo();
+				}
 
 				$this->keyTypes[] = new ConstantIntegerType($max);
 				$this->valueTypes[] = $valueType;

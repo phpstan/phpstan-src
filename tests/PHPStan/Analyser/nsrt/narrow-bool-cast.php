@@ -49,5 +49,16 @@ function bug6006() {
 
 	$data = array_filter($data, fn(?string $input): bool => (bool)$input);
 
-	assertType('', $data);
+	assertType('array<string, non-falsy-string>', $data);
+}
+
+function bug10528(string $string): void {
+	$pos = strpos('*', $string);
+	assert((bool) $pos);
+
+	assertType('int<1, max>', $pos);
+
+	$sub = substr($string, 0, $pos);
+	assert($pos !== FALSE);
+	$sub = substr($string, 0, $pos);
 }

@@ -48,3 +48,24 @@ function castString($x, string $s, bool $b) {
 		assertType('string', $s);
 	}
 }
+
+/** @param int<-5, 5> $x */
+function castInt($x, string $s, bool $b) {
+    if ((int) $x) {
+        assertType('int<-5, -1>|int<1, 5>', $x);
+    } else {
+        assertType('0', $x);
+    }
+
+    if ((int) $b) {
+        assertType('true', $b);
+    } else {
+        assertType('false', $b);
+    }
+
+    if ((int) strpos($s, 'xy')) {
+        assertType('non-falsy-string', $s);
+    } else {
+        assertType('string', $s);
+    }
+}

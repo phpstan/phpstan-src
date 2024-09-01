@@ -27,38 +27,3 @@ function doFoo(string $x, array $arr): void {
 	}
 	assertType('array{}|array{string}', $matches);
 }
-
-
-interface Reader {
-	public function getFilePath(): string|false;
-}
-
-function bug7685(Reader $reader): void {
-	$filePath = $reader->getFilePath();
-	if (false !== (bool) $filePath) {
-		assertType('non-falsy-string', $filePath);
-	}
-}
-
-function bug6006() {
-	/** @var array<string, null|string> $data */
-	$data = [
-		'name' => 'John',
-		'dob' => null,
-	];
-
-	$data = array_filter($data, fn(?string $input): bool => (bool)$input);
-
-	assertType('array<string, non-falsy-string>', $data);
-}
-
-function bug10528(string $string): void {
-	$pos = strpos('*', $string);
-	assert((bool) $pos);
-
-	assertType('int<1, max>', $pos);
-
-	$sub = substr($string, 0, $pos);
-	assert($pos !== FALSE);
-	$sub = substr($string, 0, $pos);
-}

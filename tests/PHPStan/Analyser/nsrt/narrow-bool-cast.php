@@ -39,3 +39,15 @@ function bug7685(Reader $reader): void {
 		assertType('non-falsy-string', $filePath);
 	}
 }
+
+function bug6006() {
+	/** @var array<string, null|string> $data */
+	$data = [
+		'name' => 'John',
+		'dob' => null,
+	];
+
+	$data = array_filter($data, fn(?string $input): bool => (bool)$input);
+
+	assertType('', $data);
+}

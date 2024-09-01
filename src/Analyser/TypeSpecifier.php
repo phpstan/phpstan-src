@@ -196,6 +196,8 @@ final class TypeSpecifier
 				$context,
 				$rootExpr,
 			);
+		} elseif ($expr instanceof Expr\Cast\Bool_) {
+			return $this->resolveEqual(new Expr\BinaryOp\Equal($expr->expr, new ConstFetch(new Name\FullyQualified('true'))), $scope, $context, $rootExpr);
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Equal) {
 			return $this->resolveEqual($expr, $scope, $context, $rootExpr);
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotEqual) {

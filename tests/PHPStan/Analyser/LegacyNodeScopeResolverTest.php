@@ -355,7 +355,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches3',
 				TrinaryLogic::createYes(),
-				'array{0?: string}',
+				'array{}|array{string}',
 			],
 			[
 				$testScope,
@@ -415,7 +415,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'ternaryMatches',
 				TrinaryLogic::createYes(),
-				'array{0?: string}',
+				'array{string}',
 			],
 			[
 				$testScope,

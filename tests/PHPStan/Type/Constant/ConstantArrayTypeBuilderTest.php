@@ -152,6 +152,14 @@ class ConstantArrayTypeBuilderTest extends TestCase
 
 		$builder->setOffsetValueType($oneOrZero, new NullType());
 		$this->assertTrue($builder->isList());
+
+		$oneOrFour = TypeCombinator::union(
+			new ConstantIntegerType(1),
+			new ConstantIntegerType(4),
+		);
+
+		$builder->setOffsetValueType($oneOrFour, new NullType());
+		$this->assertFalse($builder->isList());
 	}
 
 }

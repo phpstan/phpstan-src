@@ -199,8 +199,6 @@ class ConstantArrayTypeBuilder
 				return;
 			}
 
-			$this->isList = TrinaryLogic::createNo();
-
 			$scalarTypes = $offsetType->getConstantScalarTypes();
 			if (count($scalarTypes) === 0) {
 				$integerRanges = TypeUtils::getIntegerRanges($offsetType);
@@ -257,6 +255,8 @@ class ConstantArrayTypeBuilder
 					return;
 				}
 			}
+
+			$this->isList = TrinaryLogic::createNo();
 		}
 
 		if ($offsetType === null) {

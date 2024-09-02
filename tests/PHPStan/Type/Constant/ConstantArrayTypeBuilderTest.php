@@ -5,6 +5,7 @@ namespace PHPStan\Type\Constant;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\TestCase;
 
@@ -125,6 +126,39 @@ class ConstantArrayTypeBuilderTest extends TestCase
 		$this->assertTrue($builder->isList());
 
 		$builder->setOffsetValueType(new ConstantIntegerType(2), new NullType(), true);
+		$this->assertFalse($builder->isList());
+	}
+
+	public function testIsListWithUnion(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		$builder->setOffsetValueType(null, new ConstantIntegerType(0));
+		$this->assertTrue($builder->isList());
+
+		$builder->setOffsetValueType(new ConstantIntegerType(0), new NullType());
+		$this->assertTrue($builder->isList());
+
+		$builder->setOffsetValueType(new ConstantIntegerType(1), new NullType());
+		$this->assertTrue($builder->isList());
+
+		$builder->setOffsetValueType(new ConstantIntegerType(2), new NullType());
+		$this->assertTrue($builder->isList());
+
+		$oneOrZero = TypeCombinator::union(
+			new ConstantIntegerType(0),
+			new ConstantIntegerType(1),
+		);
+
+		$builder->setOffsetValueType($oneOrZero, new NullType());
+		$this->assertTrue($builder->isList());
+
+		$oneOrFour = TypeCombinator::union(
+			new ConstantIntegerType(1),
+			new ConstantIntegerType(4),
+		);
+
+		$builder->setOffsetValueType($oneOrFour, new NullType());
 		$this->assertFalse($builder->isList());
 	}
 

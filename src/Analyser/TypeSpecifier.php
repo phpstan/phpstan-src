@@ -39,6 +39,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -1049,7 +1050,7 @@ final class TypeSpecifier
 					$offsetType = new ConstantIntegerType($i);
 					$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), true);
 				}
-			} else {
+			} elseif ($type->isConstantArray()->yes()) {
 				for ($i = $sizeType->getMin();; $i++) {
 					$offsetType = new ConstantIntegerType($i);
 					$hasOffset = $type->hasOffsetValueType($offsetType);
@@ -1060,7 +1061,11 @@ final class TypeSpecifier
 				}
 
 			}
-			return $valueTypesBuilder->getArray();
+
+			$arrayType = $valueTypesBuilder->getArray();
+			if ($arrayType->isIterableAtLeastOnce()->yes()) {
+				return $arrayType;
+			}
 		}
 
 		return null;
@@ -1100,54 +1105,6 @@ final class TypeSpecifier
 				$context->true() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createTrue()->negate(),
 				$rootExpr,
 			));
-		}
-
-		if (
-			!$context->null()
-			&& $exprNode instanceof FuncCall
-			&& count($exprNode->getArgs()) >= 1
-			&& $exprNode->name instanceof Name
-			&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
-			&& $constantType instanceof ConstantIntegerType
-		) {
-			if ($constantType->getValue() < 0) {
-				return $this->create($exprNode->getArgs()[0]->value, new NeverType(), $context, false, $scope, $rootExpr);
-			}
-
-			$argType = $scope->getType($exprNode->getArgs()[0]->value);
-
-			if ($argType instanceof UnionType) {
-				$narrowed = $this->narrowUnionByArraySize($exprNode, $argType, $constantType, $context, $scope, $rootExpr);
-				if ($narrowed !== null) {
-					return $narrowed;
-				}
-			}
-
-			if ($context->truthy() || $constantType->getValue() === 0) {
-				$newContext = $context;
-				if ($constantType->getValue() === 0) {
-					$newContext = $newContext->negate();
-				}
-
-				if ($argType->isArray()->yes()) {
-					if (
-						$context->truthy()
-						&& $argType->isConstantArray()->yes()
-						&& $constantType->isSuperTypeOf($argType->getArraySize())->no()
-					) {
-						return $this->create($exprNode->getArgs()[0]->value, new NeverType(), $context, false, $scope, $rootExpr);
-					}
-
-					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-					$constArray = $this->turnListIntoConstantArray($exprNode, $argType, $constantType, $scope);
-					if ($context->truthy() && $constArray !== null) {
-						$valueTypes = $this->create($exprNode->getArgs()[0]->value, $constArray, $context, false, $scope, $rootExpr);
-					} else {
-						$valueTypes = $this->create($exprNode->getArgs()[0]->value, new NonEmptyArrayType(), $newContext, false, $scope, $rootExpr);
-					}
-					return $funcTypes->unionWith($valueTypes);
-				}
-			}
 		}
 
 		if (
@@ -2136,6 +2093,70 @@ final class TypeSpecifier
 			$unwrappedRightExpr = $rightExpr->getExpr();
 		}
 		$rightType = $scope->getType($rightExpr);
+
+		if (
+			!$context->null()
+			&& $unwrappedLeftExpr instanceof FuncCall
+			&& count($unwrappedLeftExpr->getArgs()) >= 1
+			&& $unwrappedLeftExpr->name instanceof Name
+			&& in_array(strtolower((string) $unwrappedLeftExpr->name), ['count', 'sizeof'], true)
+			&& $rightType->isInteger()->yes()
+		) {
+			if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($rightType)->yes()) {
+				return $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NeverType(), $context, false, $scope, $rootExpr);
+			}
+
+			$argType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
+			$isZero = (new ConstantIntegerType(0))->isSuperTypeOf($rightType);
+			if ($isZero->yes()) {
+				$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, false, $scope, $rootExpr);
+
+				if ($context->truthy() && !$argType->isArray()->yes()) {
+					$newArgType = new UnionType([
+						new ObjectType(Countable::class),
+						new ConstantArrayType([], []),
+					]);
+				} else {
+					$newArgType = new ConstantArrayType([], []);
+				}
+
+				return $funcTypes->unionWith(
+					$this->create($unwrappedLeftExpr->getArgs()[0]->value, $newArgType, $context, false, $scope, $rootExpr),
+				);
+			}
+
+			if ($argType instanceof UnionType) {
+				$narrowed = $this->narrowUnionByArraySize($unwrappedLeftExpr, $argType, $rightType, $context, $scope, $rootExpr);
+				if ($narrowed !== null) {
+					return $narrowed;
+				}
+			}
+
+			if ($context->truthy()) {
+				if ($argType->isArray()->yes()) {
+					if (
+						$argType->isConstantArray()->yes()
+						&& $rightType->isSuperTypeOf($argType->getArraySize())->no()
+					) {
+						return $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NeverType(), $context, false, $scope, $rootExpr);
+					}
+
+					$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, false, $scope, $rootExpr);
+					$constArray = $this->turnListIntoConstantArray($unwrappedLeftExpr, $argType, $rightType, $scope);
+					if ($constArray !== null) {
+						return $funcTypes->unionWith(
+							$this->create($unwrappedLeftExpr->getArgs()[0]->value, $constArray, $context, false, $scope, $rootExpr),
+						);
+					} elseif (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($rightType)->yes()) {
+						return $funcTypes->unionWith(
+							$this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, false, $scope, $rootExpr),
+						);
+					}
+
+					return $funcTypes;
+				}
+			}
+		}
 
 		if (
 			$context->true()

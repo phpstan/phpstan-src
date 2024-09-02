@@ -4,7 +4,8 @@ namespace NonEmptyStringSubstrSpecifyinh;
 
 use function PHPStan\Testing\assertType;
 
-class Foo {
+class Foo
+{
 	public function nonEmptySubstr(string $s, int $offset, int $length): void
 	{
 		if (substr($s, 10) === 'hallo') {
@@ -79,6 +80,21 @@ class Foo {
 		$x = 'hallo';
 		if (substr($x, 0, PHP_INT_MAX) !== 'foo') {
 			assertType('\'hallo\'', $x);
+		}
+	}
+
+	/**
+	 * @param non-empty-string $nonES
+	 * @param non-falsy-string $falsyString
+	 */
+	public function stringTypes(string $s, $nonES, $falsyString): void
+	{
+		if (substr($s, 10) === $nonES) {
+			assertType('non-empty-string', $s);
+		}
+
+		if (substr($s, 10) === $falsyString) {
+			assertType('non-falsy-string', $s);
 		}
 	}
 }

@@ -1201,41 +1201,6 @@ final class TypeSpecifier
 		$constantStringValue = $scalarValues[0];
 
 		if (
-			$context->truthy()
-			&& $exprNode instanceof FuncCall
-			&& $exprNode->name instanceof Name
-			&& in_array(strtolower($exprNode->name->toString()), [
-				'substr', 'strstr', 'stristr', 'strchr', 'strrchr', 'strtolower', 'strtoupper', 'ucfirst', 'lcfirst',
-				'mb_substr', 'mb_strstr', 'mb_stristr', 'mb_strchr', 'mb_strrchr', 'mb_strtolower', 'mb_strtoupper', 'mb_ucfirst', 'mb_lcfirst',
-				'ucwords', 'mb_convert_case', 'mb_convert_kana',
-			], true)
-			&& isset($exprNode->getArgs()[0])
-			&& $constantStringValue !== ''
-		) {
-			$argType = $scope->getType($exprNode->getArgs()[0]->value);
-
-			if ($argType->isString()->yes()) {
-				if ($constantStringValue !== '0') {
-					return $this->create(
-						$exprNode->getArgs()[0]->value,
-						TypeCombinator::intersect($argType, new AccessoryNonFalsyStringType()),
-						$context,
-						false,
-						$scope,
-					);
-				}
-
-				return $this->create(
-					$exprNode->getArgs()[0]->value,
-					TypeCombinator::intersect($argType, new AccessoryNonEmptyStringType()),
-					$context,
-					false,
-					$scope,
-				);
-			}
-		}
-
-		if (
 			$exprNode instanceof FuncCall
 			&& $exprNode->name instanceof Name
 			&& strtolower($exprNode->name->toString()) === 'gettype'
@@ -2168,6 +2133,41 @@ final class TypeSpecifier
 					$scope,
 					$rootExpr,
 				)->unionWith($this->create($leftExpr, $rightType, $context, false, $scope, $rootExpr));
+			}
+		}
+
+		if (
+			$context->truthy()
+			&& $unwrappedLeftExpr instanceof FuncCall
+			&& $unwrappedLeftExpr->name instanceof Name
+			&& in_array(strtolower($unwrappedLeftExpr->name->toString()), [
+				'substr', 'strstr', 'stristr', 'strchr', 'strrchr', 'strtolower', 'strtoupper', 'ucfirst', 'lcfirst',
+				'mb_substr', 'mb_strstr', 'mb_stristr', 'mb_strchr', 'mb_strrchr', 'mb_strtolower', 'mb_strtoupper', 'mb_ucfirst', 'mb_lcfirst',
+				'ucwords', 'mb_convert_case', 'mb_convert_kana',
+			], true)
+			&& isset($unwrappedLeftExpr->getArgs()[0])
+			&& $rightType->isNonEmptyString()->yes()
+		) {
+			$argType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
+
+			if ($argType->isString()->yes()) {
+				if ($rightType->isNonFalsyString()->yes()) {
+					return $this->create(
+						$unwrappedLeftExpr->getArgs()[0]->value,
+						TypeCombinator::intersect($argType, new AccessoryNonFalsyStringType()),
+						$context,
+						false,
+						$scope,
+					);
+				}
+
+				return $this->create(
+					$unwrappedLeftExpr->getArgs()[0]->value,
+					TypeCombinator::intersect($argType, new AccessoryNonEmptyStringType()),
+					$context,
+					false,
+					$scope,
+				);
 			}
 		}
 

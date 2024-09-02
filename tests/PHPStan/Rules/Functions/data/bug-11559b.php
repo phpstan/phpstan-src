@@ -68,3 +68,15 @@ maybe_variadic_fn4('action','asdf');
 function variadic_fn5(...$values) {
 }
 variadic_fn5('action','asdf');
+
+
+if (rand(0,1)) {
+	function maybe_variadic_fn6($x, $y): void {
+	}
+} else if ( ! function_exists( 'maybe_variadic_fn6' ) ) {
+	function maybe_variadic_fn6($y, ...$values): void {
+	}
+}
+
+maybe_variadic_fn6('action','asdf');
+

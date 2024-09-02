@@ -152,7 +152,7 @@ final class PhpFunctionReflection implements FunctionReflection
 				$cachedResult = $this->cache->load($key, $variableCacheKey);
 				if ($cachedResult === null) {
 					$nodes = $this->parser->parseFile($fileName);
-					$result = !$this->callsFuncGetArgs($nodes)->no();
+					$result = !$this->containsVariadicFunction($nodes)->no();
 					$this->cache->save($key, $variableCacheKey, $result);
 					return $result;
 				}
@@ -167,7 +167,7 @@ final class PhpFunctionReflection implements FunctionReflection
 	/**
 	 * @param Node[]|scalar[]|Node $node
 	 */
-	private function callsFuncGetArgs(array|Node $node): TrinaryLogic
+	private function containsVariadicFunction(array|Node $node): TrinaryLogic
 	{
 		$result = TrinaryLogic::createMaybe();
 
@@ -176,8 +176,7 @@ final class PhpFunctionReflection implements FunctionReflection
 				$functionName = (string) $node->namespacedName;
 
 				if ($functionName === $this->reflection->getName()) {
-					// native variadic with ...$param is checked via ReflectionFunction->isVariadic()
-					return TrinaryLogic::createFromBoolean($this->functionCallStatementFinder->findFunctionCallInStatements(ParametersAcceptor::VARIADIC_FUNCTIONS, $node->getStmts()) !== null);
+					return TrinaryLogic::createFromBoolean($this->isFunctionNodeVariadic($node));
 				}
 			}
 
@@ -187,7 +186,7 @@ final class PhpFunctionReflection implements FunctionReflection
 					continue;
 				}
 
-				$result = $result->and($this->callsFuncGetArgs($innerNode));
+				$result = $result->and($this->containsVariadicFunction($innerNode));
 			}
 		} elseif (is_array($node)) {
 			foreach ($node as $subNode) {
@@ -195,7 +194,7 @@ final class PhpFunctionReflection implements FunctionReflection
 					continue;
 				}
 
-				$result = $result->and($this->callsFuncGetArgs($subNode));
+				$result = $result->and($this->containsVariadicFunction($subNode));
 			}
 		}
 
@@ -299,6 +298,21 @@ final class PhpFunctionReflection implements FunctionReflection
 	public function acceptsNamedArguments(): bool
 	{
 		return $this->acceptsNamedArguments;
+	}
+
+	private function isFunctionNodeVariadic(Function_ $node): bool
+	{
+		foreach ($node->params as $parameter) {
+			if ($parameter->variadic) {
+				return true;
+			}
+		}
+
+		if ($this->functionCallStatementFinder->findFunctionCallInStatements(ParametersAcceptor::VARIADIC_FUNCTIONS, $node->getStmts()) !== null) {
+			return true;
+		}
+
+		return false;
 	}
 
 }

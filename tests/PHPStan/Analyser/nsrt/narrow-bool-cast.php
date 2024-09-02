@@ -27,3 +27,24 @@ function doFoo(string $x, array $arr): void {
 	}
 	assertType('array{}|array{string}', $matches);
 }
+
+/** @param int<-5, 5> $x */
+function castString($x, string $s, bool $b) {
+	if ((string) $x) {
+		assertType('int<-5, -1>|int<1, 5>', $x);
+	} else {
+		assertType('0', $x);
+	}
+
+	if ((string) $b) {
+		assertType('true', $b);
+	} else {
+		assertType('false', $b);
+	}
+
+	if ((string) strrchr($s, 'xy')) {
+		assertType('string', $s); // could be non-empty-string
+	} else {
+		assertType('string', $s);
+	}
+}

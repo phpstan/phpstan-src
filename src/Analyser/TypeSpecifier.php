@@ -198,6 +198,7 @@ final class TypeSpecifier
 			);
 		} elseif (
 			$expr instanceof Expr\Cast\String_
+			|| $expr instanceof Expr\Cast\Double
 			|| $expr instanceof Expr\Cast\Int_
 			|| $expr instanceof Expr\Cast\Bool_
 		) {

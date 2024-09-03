@@ -69,3 +69,24 @@ function castInt($x, string $s, bool $b) {
         assertType('string', $s);
     }
 }
+
+/** @param int<-5, 5> $x */
+function castFloat($x, string $s, bool $b) {
+    if ((float) $x) {
+        assertType('int<-5, -1>|int<1, 5>', $x);
+    } else {
+        assertType('0', $x);
+    }
+
+    if ((float) $b) {
+        assertType('true', $b);
+    } else {
+        assertType('false', $b);
+    }
+
+    if ((float) $s) {
+        assertType('non-falsy-string', $s);
+    } else {
+        assertType("''|'0'", $s);
+    }
+}

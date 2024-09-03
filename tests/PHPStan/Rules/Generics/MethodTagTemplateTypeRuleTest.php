@@ -21,16 +21,18 @@ class MethodTagTemplateTypeRuleTest extends RuleTestCase
 		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $reflectionProvider);
 
 		return new MethodTagTemplateTypeRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck(
-				$reflectionProvider,
-				new ClassNameCheck(
-					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(self::getContainer()),
+			new MethodTagTemplateTypeCheck(
+				self::getContainer()->getByType(FileTypeMapper::class),
+				new TemplateTypeCheck(
+					$reflectionProvider,
+					new ClassNameCheck(
+						new ClassCaseSensitivityCheck($reflectionProvider, true),
+						new ClassForbiddenNameCheck(self::getContainer()),
+					),
+					new GenericObjectTypeCheck(),
+					$typeAliasResolver,
+					true,
 				),
-				new GenericObjectTypeCheck(),
-				$typeAliasResolver,
-				true,
 			),
 		);
 	}

@@ -1006,6 +1006,9 @@ services:
 		class: PHPStan\Rules\Generics\GenericObjectTypeCheck
 
 	-
+		class: PHPStan\Rules\Generics\MethodTagTemplateTypeCheck
+
+	-
 		class: PHPStan\Rules\Generics\TemplateTypeCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%

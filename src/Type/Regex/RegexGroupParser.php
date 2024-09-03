@@ -460,7 +460,7 @@ final class RegexGroupParser
 					$isNumeric = TrinaryLogic::createYes();
 				}
 
-				if (!$inOptionalQuantification) {
+				if (!$inOptionalQuantification && $literalValue !== '') {
 					$isNonEmpty = TrinaryLogic::createYes();
 				}
 			}

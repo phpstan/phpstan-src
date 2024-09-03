@@ -1742,4 +1742,23 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11506.php'], []);
 	}
 
+	public function testBug11559(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11559.php'], []);
+	}
+
+	public function testBug11559b(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11559b.php'], [
+			[
+				'Function Bug11559b\maybe_variadic_fn invoked with 5 parameters, 0 required.',
+				14,
+			],
+			[
+				'Function Bug11559b\maybe_variadic_fn4 invoked with 2 parameters, 0 required.',
+				65,
+			],
+		]);
+	}
+
 }

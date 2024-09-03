@@ -75,6 +75,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Keywords/data/declare-inline-html.php \
 		--exclude tests/PHPStan/Rules/Classes/data/extends-readonly-class.php \
 		--exclude tests/PHPStan/Rules/Classes/data/instantiation-promoted-properties.php \
+		--exclude tests/PHPStan/Rules/Classes/data/bug-11592.php \
 		src tests
 
 cs:

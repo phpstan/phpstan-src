@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use function in_array;
 use function sprintf;
 
 /**
@@ -29,6 +30,18 @@ final class AbstractMethodInNonAbstractClassRule implements Rule
 		$class = $scope->getClassReflection();
 
 		if (!$class->isAbstract() && $node->isAbstract()) {
+			if ($class->isEnum()) {
+				$lowercasedMethodName = $node->name->toLowerString();
+				if ($lowercasedMethodName === 'cases') {
+					return [];
+				}
+				if ($class->isBackedEnum()) {
+					if (in_array($lowercasedMethodName, ['from', 'tryfrom'], true)) {
+						return [];
+					}
+				}
+			}
+
 			$description = $class->getClassTypeDescription();
 			return [
 				RuleErrorBuilder::message(sprintf(

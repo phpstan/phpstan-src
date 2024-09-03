@@ -89,4 +89,34 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11592(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/../Classes/data/bug-11592.php'], [
+			[
+				'Enum Bug11592\Test contains abstract method from().',
+				9,
+			],
+			[
+				'Enum Bug11592\Test contains abstract method tryFrom().',
+				11,
+			],
+			[
+				'Enum Bug11592\Test2 contains abstract method from().',
+				24,
+			],
+			[
+				'Enum Bug11592\Test2 contains abstract method tryFrom().',
+				26,
+			],
+			[
+				'Enum Bug11592\EnumWithAbstractMethod contains abstract method foo().',
+				46,
+			],
+		]);
+	}
+
 }

@@ -24,10 +24,11 @@ class EnumSanityRuleTest extends RuleTestCase
 		}
 
 		$expected = [
-			[
+			/*[
+				// reported by AbstractMethodInNonAbstractClassRule
 				'Enum EnumSanity\EnumWithAbstractMethod contains abstract method foo().',
 				7,
-			],
+			],*/
 			[
 				'Enum EnumSanity\EnumWithConstructorAndDestructor contains constructor.',
 				12,
@@ -119,6 +120,32 @@ class EnumSanityRuleTest extends RuleTestCase
 			[
 				'Enum case Bug9402\Foo::Two value \'foo\' does not match the "int" type.',
 				13,
+			],
+		]);
+	}
+
+	public function testBug11592(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-11592.php'], [
+			[
+				'Enum Bug11592\Test2 cannot redeclare native method cases().',
+				22,
+			],
+			[
+				'Enum Bug11592\BackedTest2 cannot redeclare native method cases().',
+				37,
+			],
+			[
+				'Enum Bug11592\BackedTest2 cannot redeclare native method from().',
+				39,
+			],
+			[
+				'Enum Bug11592\BackedTest2 cannot redeclare native method tryFrom().',
+				41,
 			],
 		]);
 	}

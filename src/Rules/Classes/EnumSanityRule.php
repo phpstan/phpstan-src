@@ -47,20 +47,7 @@ final class EnumSanityRule implements Rule
 		$errors = [];
 
 		foreach ($enumNode->getMethods() as $methodNode) {
-			if ($methodNode->isAbstract()) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum %s contains abstract method %s().',
-					$classReflection->getDisplayName(),
-					$methodNode->name->name,
-				))
-					->identifier('enum.abstractMethod')
-					->line($methodNode->getStartLine())
-					->nonIgnorable()
-					->build();
-			}
-
 			$lowercasedMethodName = $methodNode->name->toLowerString();
-
 			if ($methodNode->isMagic()) {
 				if ($lowercasedMethodName === '__construct') {
 					$errors[] = RuleErrorBuilder::message(sprintf(

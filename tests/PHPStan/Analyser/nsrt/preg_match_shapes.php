@@ -746,3 +746,10 @@ function bug11490b (string $expression): void {
 	}
 }
 
+function bug11622 (string $expression): void {
+	$matches = [];
+
+	if (preg_match('/^abc(def|$)/', $expression, $matches) === 1) {
+		assertType("array{string, string}", $matches);
+	}
+}

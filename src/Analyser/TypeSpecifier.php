@@ -2081,10 +2081,7 @@ final class TypeSpecifier
 				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 			}
 
-			if (
-				$context->true()
-				&& $exprNode instanceof Expr\CallLike
-			) {
+			if ($exprNode instanceof Expr\CallLike) {
 				$specifiedTypes = $this->specifyWithComparisonAwareTypeSpecifyingExtensions(
 					$expr,
 					$exprNode,
@@ -2188,8 +2185,7 @@ final class TypeSpecifier
 		$rightType = $scope->getType($rightExpr);
 
 		if (
-			$context->true()
-			&& $unwrappedLeftExpr instanceof FuncCall
+			$unwrappedLeftExpr instanceof FuncCall
 			&& $unwrappedLeftExpr->name instanceof Name
 		) {
 			$specifiedTypes = $this->specifyWithComparisonAwareTypeSpecifyingExtensions(

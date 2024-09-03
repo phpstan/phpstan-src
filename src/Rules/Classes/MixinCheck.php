@@ -37,9 +37,25 @@ final class MixinCheck
 	 */
 	public function check(ClassReflection $classReflection, ClassLike $node): array
 	{
-		$mixinTags = $classReflection->getMixinTags();
 		$errors = [];
-		foreach ($mixinTags as $mixinTag) {
+		foreach ($this->checkInTraitDefinitionContext($classReflection) as $error) {
+			$errors[] = $error;
+		}
+
+		foreach ($this->checkInTraitUseContext($classReflection, $classReflection, $node) as $error) {
+			$errors[] = $error;
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	public function checkInTraitDefinitionContext(ClassReflection $classReflection): array
+	{
+		$errors = [];
+		foreach ($classReflection->getMixinTags() as $mixinTag) {
 			$type = $mixinTag->getType();
 			if (!$type->canCallMethods()->yes() || !$type->canAccessProperties()->yes()) {
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))
@@ -48,6 +64,67 @@ final class MixinCheck
 				continue;
 			}
 
+			if (!$this->absentTypeChecks) {
+				continue;
+			}
+
+			foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($type) as $iterableType) {
+				$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s %s has PHPDoc tag @mixin with no value type specified in iterable type %s.',
+					$classReflection->getClassTypeDescription(),
+					$classReflection->getDisplayName(),
+					$iterableTypeDescription,
+				))
+					->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+					->identifier('missingType.iterableValue')
+					->build();
+			}
+
+			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($type) as [$innerName, $genericTypeNames]) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'PHPDoc tag @mixin contains generic %s but does not specify its types: %s',
+					$innerName,
+					implode(', ', $genericTypeNames),
+				))
+					->identifier('missingType.generics')
+					->build();
+			}
+
+			foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($type) as $callableType) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s %s has PHPDoc tag @mixin with no signature specified for %s.',
+					$classReflection->getClassTypeDescription(),
+					$classReflection->getDisplayName(),
+					$callableType->describe(VerbosityLevel::typeOnly()),
+				))->identifier('missingType.callable')->build();
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	public function checkInTraitUseContext(
+		ClassReflection $reflection,
+		ClassReflection $implementingClassReflection,
+		ClassLike $node,
+	): array
+	{
+		if ($reflection->getNativeReflection()->getName() === $implementingClassReflection->getName()) {
+			$phpDoc = $reflection->getResolvedPhpDoc();
+		} else {
+			$phpDoc = $reflection->getTraitContextResolvedPhpDoc($implementingClassReflection);
+		}
+		if ($phpDoc === null) {
+			return [];
+		}
+
+		$errors = [];
+		foreach ($phpDoc->getMixinTags() as $mixinTag) {
+			$type = $mixinTag->getType();
 			if (
 				$this->unresolvableTypeHelper->containsUnresolvableType($type)
 			) {
@@ -66,40 +143,6 @@ final class MixinCheck
 				'Call-site variance of %s in generic type %s in PHPDoc tag @mixin is in conflict with %s template type %s of %s %s.',
 				'Call-site variance of %s in generic type %s in PHPDoc tag @mixin is redundant, template type %s of %s %s has the same variance.',
 			));
-
-			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($type) as [$innerName, $genericTypeNames]) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'PHPDoc tag @mixin contains generic %s but does not specify its types: %s',
-					$innerName,
-					implode(', ', $genericTypeNames),
-				))
-					->identifier('missingType.generics')
-					->build();
-			}
-
-			if ($this->absentTypeChecks) {
-				foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($type) as $iterableType) {
-					$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'%s %s has PHPDoc tag @mixin with no value type specified in iterable type %s.',
-						$classReflection->getClassTypeDescription(),
-						$classReflection->getDisplayName(),
-						$iterableTypeDescription,
-					))
-						->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
-						->identifier('missingType.iterableValue')
-						->build();
-				}
-
-				foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($type) as $callableType) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'%s %s has PHPDoc tag @mixin with no signature specified for %s.',
-						$classReflection->getClassTypeDescription(),
-						$classReflection->getDisplayName(),
-						$callableType->describe(VerbosityLevel::typeOnly()),
-					))->identifier('missingType.callable')->build();
-				}
-			}
 
 			foreach ($type->getReferencedClasses() as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {

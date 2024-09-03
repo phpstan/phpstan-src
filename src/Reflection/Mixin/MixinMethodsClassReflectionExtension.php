@@ -74,6 +74,15 @@ final class MixinMethodsClassReflectionExtension implements MethodsClassReflecti
 			return new MixinMethodReflection($method, $static);
 		}
 
+		foreach ($classReflection->getTraits() as $traitClass) {
+			$methodWithDeclaringClass = $this->findMethod($traitClass, $methodName);
+			if ($methodWithDeclaringClass === null) {
+				continue;
+			}
+
+			return $methodWithDeclaringClass;
+		}
+
 		$parentClass = $classReflection->getParentClass();
 		while ($parentClass !== null) {
 			$method = $this->findMethod($parentClass, $methodName);

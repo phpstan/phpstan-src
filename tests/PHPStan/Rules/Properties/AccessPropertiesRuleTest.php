@@ -949,4 +949,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9694.php'], []);
 	}
 
+	public function testTraitMixin(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
+		$this->analyse([__DIR__ . '/data/trait-mixin.php'], []);
+	}
+
 }

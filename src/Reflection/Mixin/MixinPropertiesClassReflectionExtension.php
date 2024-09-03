@@ -65,6 +65,15 @@ final class MixinPropertiesClassReflectionExtension implements PropertiesClassRe
 			return $property;
 		}
 
+		foreach ($classReflection->getTraits() as $traitClass) {
+			$methodWithDeclaringClass = $this->findProperty($traitClass, $propertyName);
+			if ($methodWithDeclaringClass === null) {
+				continue;
+			}
+
+			return $methodWithDeclaringClass;
+		}
+
 		$parentClass = $classReflection->getParentClass();
 		while ($parentClass !== null) {
 			$property = $this->findProperty($parentClass, $propertyName);

@@ -3345,4 +3345,13 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTraitMixin(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/trait-mixin.php'], []);
+	}
+
 }

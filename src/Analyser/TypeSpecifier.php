@@ -1074,13 +1074,7 @@ final class TypeSpecifier
 		?Expr $rootExpr,
 	): ?SpecifiedTypes
 	{
-		$scalarValues = $constantType->getConstantScalarValues();
-		if (count($scalarValues) !== 1) {
-			return null;
-		}
-		$constValue = $scalarValues[0];
-
-		if (!$context->null() && $constValue === false) {
+		if (!$context->null() && $constantType->isFalse()->yes()) {
 			$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
 			if ($exprNode instanceof Expr\NullsafeMethodCall || $exprNode instanceof Expr\NullsafePropertyFetch) {
 				return $types;
@@ -1094,7 +1088,7 @@ final class TypeSpecifier
 			));
 		}
 
-		if (!$context->null() && $constValue === true) {
+		if (!$context->null() && $constantType->isTrue()->yes()) {
 			$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
 			if ($exprNode instanceof Expr\NullsafeMethodCall || $exprNode instanceof Expr\NullsafePropertyFetch) {
 				return $types;

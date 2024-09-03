@@ -37,7 +37,7 @@ final class DateTimeSubMethodThrowTypeExtension implements DynamicMethodThrowTyp
 			return null;
 		}
 
-		return new ObjectType('DateMalformedStringException');
+		return new ObjectType('DateInvalidOperationException');
 	}
 
 }

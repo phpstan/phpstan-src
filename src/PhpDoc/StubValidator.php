@@ -54,6 +54,7 @@ use PHPStan\Rules\Generics\InterfaceTemplateTypeRule;
 use PHPStan\Rules\Generics\MethodSignatureVarianceRule;
 use PHPStan\Rules\Generics\MethodTagTemplateTypeCheck;
 use PHPStan\Rules\Generics\MethodTagTemplateTypeRule;
+use PHPStan\Rules\Generics\MethodTagTemplateTypeTraitRule;
 use PHPStan\Rules\Generics\MethodTemplateTypeRule;
 use PHPStan\Rules\Generics\TemplateTypeCheck;
 use PHPStan\Rules\Generics\TraitTemplateTypeRule;
@@ -257,6 +258,7 @@ final class StubValidator
 			$rules[] = new PropertyTagTraitUseRule($propertyTagCheck);
 			$rules[] = new MixinRule($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
 			$rules[] = new LocalTypeTraitUseAliasesRule($localTypeAliasesCheck);
+			$rules[] = new MethodTagTemplateTypeTraitRule($methodTagTemplateTypeCheck, $reflectionProvider);
 		}
 
 		return new DirectRuleRegistry($rules);

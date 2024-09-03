@@ -65,6 +65,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.closureDefaultParameterTypeRule%
 	PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule:
 		phpstan.rules.rule: %featureToggles.closureDefaultParameterTypeRule%
+	PHPStan\Rules\Generics\MethodTagTemplateTypeTraitRule:
+		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Methods\IllegalConstructorMethodCallRule:
 		phpstan.rules.rule: %featureToggles.illegalConstructorMethodCall%
 	PHPStan\Rules\Methods\IllegalConstructorStaticCallRule:
@@ -127,6 +129,9 @@ services:
 			reportMaybes: %reportMaybes%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Generics\MethodTagTemplateTypeTraitRule
 	-
 		class: PHPStan\Rules\Methods\IllegalConstructorMethodCallRule
 	-

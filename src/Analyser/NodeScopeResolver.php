@@ -4953,6 +4953,7 @@ final class NodeScopeResolver
 				}
 			}
 
+			$scope = $result->getScope();
 			$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
 			$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
 
@@ -4965,7 +4966,7 @@ final class NodeScopeResolver
 			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 
 			$nodeCallback(new VariableAssignNode($var, $assignedExpr, $isAssignOp), $result->getScope());
-			$scope = $result->getScope()->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr));
+			$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr));
 			foreach ($conditionalExpressions as $exprString => $holders) {
 				$scope = $scope->addConditionalExpressions($exprString, $holders);
 			}

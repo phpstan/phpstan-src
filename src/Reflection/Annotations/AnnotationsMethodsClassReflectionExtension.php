@@ -108,15 +108,6 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 				return $methodWithDeclaringClass;
 			}
 
-			foreach ($parentClass->getTraits() as $traitClass) {
-				$parentTraitMethodWithDeclaringClass = $this->findClassReflectionWithMethod($traitClass, $parentClass, $methodName);
-				if ($parentTraitMethodWithDeclaringClass === null) {
-					continue;
-				}
-
-				return $parentTraitMethodWithDeclaringClass;
-			}
-
 			$parentClass = $parentClass->getParentClass();
 		}
 

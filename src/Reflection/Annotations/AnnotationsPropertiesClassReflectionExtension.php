@@ -90,15 +90,6 @@ final class AnnotationsPropertiesClassReflectionExtension implements PropertiesC
 				return $methodWithDeclaringClass;
 			}
 
-			foreach ($parentClass->getTraits() as $traitClass) {
-				$parentTraitMethodWithDeclaringClass = $this->findClassReflectionWithProperty($traitClass, $parentClass, $propertyName);
-				if ($parentTraitMethodWithDeclaringClass === null) {
-					continue;
-				}
-
-				return $parentTraitMethodWithDeclaringClass;
-			}
-
 			$parentClass = $parentClass->getParentClass();
 		}
 

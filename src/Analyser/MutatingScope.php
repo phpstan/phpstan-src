@@ -5400,7 +5400,7 @@ final class MutatingScope implements Scope
 			$descriptions[$key] = $variableTypeHolder->getType()->describe(VerbosityLevel::precise());
 		}
 		foreach ($this->nativeExpressionTypes as $exprString => $nativeTypeHolder) {
-			$key = sprintf('native %s', $exprString);
+			$key = sprintf('native %s (%s)', $exprString, $nativeTypeHolder->getCertainty()->describe());
 			$descriptions[$key] = $nativeTypeHolder->getType()->describe(VerbosityLevel::precise());
 		}
 

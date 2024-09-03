@@ -29,6 +29,7 @@ final class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 
 	public const PHPSTAN_TESTING_FUNCTIONS = [
 		'PHPStan\\dumpType',
+		'PHPStan\\debugScope',
 		'PHPStan\\Testing\\assertType',
 		'PHPStan\\Testing\\assertNativeType',
 		'PHPStan\\Testing\\assertVariableCertainty',

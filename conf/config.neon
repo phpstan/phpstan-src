@@ -278,6 +278,7 @@ extensions:
 	validateExcludePaths: PHPStan\DependencyInjection\ValidateExcludePathsExtension
 
 rules:
+	- PHPStan\Rules\Debug\DebugScopeRule
 	- PHPStan\Rules\Debug\DumpTypeRule
 	- PHPStan\Rules\Debug\FileAssertRule
 

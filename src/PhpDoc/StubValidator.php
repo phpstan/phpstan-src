@@ -31,6 +31,7 @@ use PHPStan\Rules\Classes\MethodTagCheck;
 use PHPStan\Rules\Classes\MethodTagRule;
 use PHPStan\Rules\Classes\MethodTagTraitRule;
 use PHPStan\Rules\Classes\MethodTagTraitUseRule;
+use PHPStan\Rules\Classes\MixinCheck;
 use PHPStan\Rules\Classes\MixinRule;
 use PHPStan\Rules\Classes\PropertyTagCheck;
 use PHPStan\Rules\Classes\PropertyTagRule;
@@ -182,6 +183,7 @@ final class StubValidator
 		$phpClassReflectionExtension = $container->getByType(PhpClassReflectionExtension::class);
 		$genericCallableRuleHelper = $container->getByType(GenericCallableRuleHelper::class);
 		$methodTagTemplateTypeCheck = $container->getByType(MethodTagTemplateTypeCheck::class);
+		$mixinCheck = $container->getByType(MixinCheck::class);
 
 		$rules = [
 			// level 0
@@ -256,7 +258,7 @@ final class StubValidator
 			$rules[] = new PropertyTagRule($propertyTagCheck);
 			$rules[] = new PropertyTagTraitRule($propertyTagCheck, $reflectionProvider);
 			$rules[] = new PropertyTagTraitUseRule($propertyTagCheck);
-			$rules[] = new MixinRule($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
+			$rules[] = new MixinRule($mixinCheck);
 			$rules[] = new LocalTypeTraitUseAliasesRule($localTypeAliasesCheck);
 			$rules[] = new MethodTagTemplateTypeTraitRule($methodTagTemplateTypeCheck, $reflectionProvider);
 		}

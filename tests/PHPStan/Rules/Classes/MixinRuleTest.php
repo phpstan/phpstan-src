@@ -23,16 +23,18 @@ class MixinRuleTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 
 		return new MixinRule(
-			$reflectionProvider,
-			new ClassNameCheck(
-				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(self::getContainer()),
+			new MixinCheck(
+				$reflectionProvider,
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassForbiddenNameCheck(self::getContainer()),
+				),
+				new GenericObjectTypeCheck(),
+				new MissingTypehintCheck(true, true, true, true, []),
+				new UnresolvableTypeHelper(),
+				true,
+				true,
 			),
-			new GenericObjectTypeCheck(),
-			new MissingTypehintCheck(true, true, true, true, []),
-			new UnresolvableTypeHelper(),
-			true,
-			true,
 		);
 	}
 

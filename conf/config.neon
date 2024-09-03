@@ -924,6 +924,12 @@ services:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 
 	-
+		class: PHPStan\Rules\Classes\MixinCheck
+		arguments:
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
+
+	-
 		class: PHPStan\Rules\Classes\PropertyTagCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%

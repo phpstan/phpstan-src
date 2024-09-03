@@ -280,6 +280,10 @@ final class RegexArrayShapeMatcher
 				return null;
 			}
 
+			if ($captureGroup->inOptionalQuantification()) {
+				return null;
+			}
+
 			if ($alternation === null) {
 				$alternation = $captureGroup->getAlternation();
 			} elseif ($alternation->getId() !== $captureGroup->getAlternation()->getId()) {

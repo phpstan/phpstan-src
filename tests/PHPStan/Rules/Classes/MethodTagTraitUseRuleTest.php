@@ -10,6 +10,7 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MethodTagTraitUseRule>
@@ -52,6 +53,21 @@ class MethodTagTraitUseRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @method for method MethodTagTrait\Foo::doBaz2() parameter #1 $a default value contains unresolvable type.',
 				$fooTraitLine,
+			],
+		]);
+	}
+
+	public function testEnum(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			self::markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/method-tag-trait-enum.php'], [
+			[
+				'PHPDoc tag @method for method MethodTagTraitEnum\Foo::doFoo() return type contains unknown class MethodTagTraitEnum\intt.',
+				8,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

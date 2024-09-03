@@ -1587,7 +1587,7 @@ class ClassReflection
 		if (!$this->isTrait()) {
 			throw new ShouldNotHappenException();
 		}
-		if (!$implementingClass->isClass()) {
+		if ($implementingClass->isTrait()) {
 			throw new ShouldNotHappenException();
 		}
 		$fileName = $this->getFileName();

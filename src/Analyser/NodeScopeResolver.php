@@ -5788,8 +5788,11 @@ final class NodeScopeResolver
 					$methodAst->name = $methodNames[$methodName];
 				}
 
+				if (!$scope->isInClass()) {
+					throw new ShouldNotHappenException();
+				}
 				$traitScope = $scope->enterTrait($traitReflection);
-				$nodeCallback(new InTraitNode($node, $traitReflection), $traitScope);
+				$nodeCallback(new InTraitNode($node, $traitReflection, $scope->getClassReflection()), $traitScope);
 				$this->processStmtNodes($node, $stmts, $traitScope, $nodeCallback, StatementContext::createTopLevel());
 				return;
 			}

@@ -26,13 +26,16 @@ use PHPStan\Rules\Classes\ExistingClassInTraitUseRule;
 use PHPStan\Rules\Classes\LocalTypeAliasesCheck;
 use PHPStan\Rules\Classes\LocalTypeAliasesRule;
 use PHPStan\Rules\Classes\LocalTypeTraitAliasesRule;
+use PHPStan\Rules\Classes\LocalTypeTraitUseAliasesRule;
 use PHPStan\Rules\Classes\MethodTagCheck;
 use PHPStan\Rules\Classes\MethodTagRule;
 use PHPStan\Rules\Classes\MethodTagTraitRule;
+use PHPStan\Rules\Classes\MethodTagTraitUseRule;
 use PHPStan\Rules\Classes\MixinRule;
 use PHPStan\Rules\Classes\PropertyTagCheck;
 use PHPStan\Rules\Classes\PropertyTagRule;
 use PHPStan\Rules\Classes\PropertyTagTraitRule;
+use PHPStan\Rules\Classes\PropertyTagTraitUseRule;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\FunctionDefinitionCheck;
@@ -242,11 +245,14 @@ final class StubValidator
 			$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true);
 			$rules[] = new MethodTagRule($methodTagCheck);
 			$rules[] = new MethodTagTraitRule($methodTagCheck, $reflectionProvider);
+			$rules[] = new MethodTagTraitUseRule($methodTagCheck);
 
 			$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true);
 			$rules[] = new PropertyTagRule($propertyTagCheck);
 			$rules[] = new PropertyTagTraitRule($propertyTagCheck, $reflectionProvider);
+			$rules[] = new PropertyTagTraitUseRule($propertyTagCheck);
 			$rules[] = new MixinRule($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
+			$rules[] = new LocalTypeTraitUseAliasesRule($localTypeAliasesCheck);
 		}
 
 		return new DirectRuleRegistry($rules);

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node\Stmt\ClassLike;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
@@ -44,32 +45,12 @@ final class PropertyTagCheck
 	{
 		$errors = [];
 		foreach ($classReflection->getPropertyTags() as $propertyName => $propertyTag) {
-			$readableType = $propertyTag->getReadableType();
-			$writableType = $propertyTag->getWritableType();
-
-			$types = [];
-			$tagName = '@property';
-			if ($readableType !== null) {
-				if ($writableType !== null) {
-					if ($writableType->equals($readableType)) {
-						$types[] = $readableType;
-					} else {
-						$types[] = $readableType;
-						$types[] = $writableType;
-					}
-				} else {
-					$tagName = '@property-read';
-					$types[] = $readableType;
-				}
-			} elseif ($writableType !== null) {
-				$tagName = '@property-write';
-				$types[] = $writableType;
-			} else {
-				throw new ShouldNotHappenException();
-			}
-
+			[$types, $tagName] = $this->getTypesAndTagName($propertyTag);
 			foreach ($types as $type) {
-				foreach ($this->checkPropertyType($classReflection, $propertyName, $tagName, $type, $node) as $error) {
+				foreach ($this->checkPropertyTypeInTraitDefinitionContext($classReflection, $propertyName, $tagName, $type) as $error) {
+					$errors[] = $error;
+				}
+				foreach ($this->checkPropertyTypeInTraitUseContext($classReflection, $propertyName, $tagName, $type, $node) as $error) {
 					$errors[] = $error;
 				}
 			}
@@ -81,33 +62,86 @@ final class PropertyTagCheck
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	private function checkPropertyType(ClassReflection $classReflection, string $propertyName, string $tagName, Type $type, ClassLike $node): array
+	public function checkInTraitDefinitionContext(ClassReflection $classReflection): array
 	{
-		if ($this->unresolvableTypeHelper->containsUnresolvableType($type)) {
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'PHPDoc tag %s for property %s::$%s contains unresolvable type.',
-					$tagName,
-					$classReflection->getDisplayName(),
-					$propertyName,
-				))->identifier('propertyTag.unresolvableType')
-					->build(),
-			];
+		$errors = [];
+		foreach ($classReflection->getPropertyTags() as $propertyName => $propertyTag) {
+			[$types, $tagName] = $this->getTypesAndTagName($propertyTag);
+			foreach ($types as $type) {
+				foreach ($this->checkPropertyTypeInTraitDefinitionContext($classReflection, $propertyName, $tagName, $type) as $error) {
+					$errors[] = $error;
+				}
+			}
 		}
 
-		$escapedClassName = SprintfHelper::escapeFormatString($classReflection->getDisplayName());
-		$escapedPropertyName = SprintfHelper::escapeFormatString($propertyName);
-		$escapedTagName = SprintfHelper::escapeFormatString($tagName);
+		return $errors;
+	}
 
-		$errors = $this->genericObjectTypeCheck->check(
-			$type,
-			sprintf('PHPDoc tag %s for property %s::$%s contains generic type %%s but %%s %%s is not generic.', $escapedTagName, $escapedClassName, $escapedPropertyName),
-			sprintf('Generic type %%s in PHPDoc tag %s for property %s::$%s does not specify all template types of %%s %%s: %%s', $escapedTagName, $escapedClassName, $escapedPropertyName),
-			sprintf('Generic type %%s in PHPDoc tag %s for property %s::$%s specifies %%d template types, but %%s %%s supports only %%d: %%s', $escapedTagName, $escapedClassName, $escapedPropertyName),
-			sprintf('Type %%s in generic type %%s in PHPDoc tag %s for property %s::$%s is not subtype of template type %%s of %%s %%s.', $escapedTagName, $escapedClassName, $escapedPropertyName),
-			sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag %s for property %s::$%s is in conflict with %%s template type %%s of %%s %%s.', $escapedTagName, $escapedClassName, $escapedPropertyName),
-			sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag %s for property %s::$%s is redundant, template type %%s of %%s %%s has the same variance.', $escapedTagName, $escapedClassName, $escapedPropertyName),
-		);
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	public function checkInTraitUseContext(
+		ClassReflection $classReflection,
+		ClassReflection $implementingClass,
+		ClassLike $node,
+	): array
+	{
+		$phpDoc = $classReflection->getTraitContextResolvedPhpDoc($implementingClass);
+		if ($phpDoc === null) {
+			return [];
+		}
+
+		$errors = [];
+		foreach ($phpDoc->getPropertyTags() as $propertyName => $propertyTag) {
+			[$types, $tagName] = $this->getTypesAndTagName($propertyTag);
+			foreach ($types as $type) {
+				foreach ($this->checkPropertyTypeInTraitUseContext($classReflection, $propertyName, $tagName, $type, $node) as $error) {
+					$errors[] = $error;
+				}
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return array{list<Type>, string}
+	 */
+	private function getTypesAndTagName(PropertyTag $propertyTag): array
+	{
+		$readableType = $propertyTag->getReadableType();
+		$writableType = $propertyTag->getWritableType();
+
+		$types = [];
+		$tagName = '@property';
+		if ($readableType !== null) {
+			if ($writableType !== null) {
+				if ($writableType->equals($readableType)) {
+					$types[] = $readableType;
+				} else {
+					$types[] = $readableType;
+					$types[] = $writableType;
+				}
+			} else {
+				$tagName = '@property-read';
+				$types[] = $readableType;
+			}
+		} elseif ($writableType !== null) {
+			$tagName = '@property-write';
+			$types[] = $writableType;
+		} else {
+			throw new ShouldNotHappenException();
+		}
+
+		return [$types, $tagName];
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function checkPropertyTypeInTraitDefinitionContext(ClassReflection $classReflection, string $propertyName, string $tagName, Type $type): array
+	{
+		$errors = [];
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($type) as [$innerName, $genericTypeNames]) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -148,6 +182,15 @@ final class PropertyTagCheck
 			))->identifier('missingType.callable')->build();
 		}
 
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function checkPropertyTypeInTraitUseContext(ClassReflection $classReflection, string $propertyName, string $tagName, Type $type, ClassLike $node): array
+	{
+		$errors = [];
 		foreach ($type->getReferencedClasses() as $class) {
 			if (!$this->reflectionProvider->hasClass($class)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag %s for property %s::$%s contains unknown class %s.', $tagName, $classReflection->getDisplayName(), $propertyName, $class))
@@ -168,7 +211,31 @@ final class PropertyTagCheck
 			}
 		}
 
-		return $errors;
+		if ($this->unresolvableTypeHelper->containsUnresolvableType($type)) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'PHPDoc tag %s for property %s::$%s contains unresolvable type.',
+				$tagName,
+				$classReflection->getDisplayName(),
+				$propertyName,
+			))->identifier('propertyTag.unresolvableType')->build();
+		}
+
+		$escapedClassName = SprintfHelper::escapeFormatString($classReflection->getDisplayName());
+		$escapedPropertyName = SprintfHelper::escapeFormatString($propertyName);
+		$escapedTagName = SprintfHelper::escapeFormatString($tagName);
+
+		return array_merge(
+			$errors,
+			$this->genericObjectTypeCheck->check(
+				$type,
+				sprintf('PHPDoc tag %s for property %s::$%s contains generic type %%s but %%s %%s is not generic.', $escapedTagName, $escapedClassName, $escapedPropertyName),
+				sprintf('Generic type %%s in PHPDoc tag %s for property %s::$%s does not specify all template types of %%s %%s: %%s', $escapedTagName, $escapedClassName, $escapedPropertyName),
+				sprintf('Generic type %%s in PHPDoc tag %s for property %s::$%s specifies %%d template types, but %%s %%s supports only %%d: %%s', $escapedTagName, $escapedClassName, $escapedPropertyName),
+				sprintf('Type %%s in generic type %%s in PHPDoc tag %s for property %s::$%s is not subtype of template type %%s of %%s %%s.', $escapedTagName, $escapedClassName, $escapedPropertyName),
+				sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag %s for property %s::$%s is in conflict with %%s template type %%s of %%s %%s.', $escapedTagName, $escapedClassName, $escapedPropertyName),
+				sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag %s for property %s::$%s is redundant, template type %%s of %%s %%s has the same variance.', $escapedTagName, $escapedClassName, $escapedPropertyName),
+			),
+		);
 	}
 
 }

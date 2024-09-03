@@ -39,27 +39,18 @@ class MethodTagTraitRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$fooTraitLine = 12;
 		$this->analyse([__DIR__ . '/data/method-tag-trait.php'], [
 			[
-				'PHPDoc tag @method for method MethodTagTrait\Foo::doFoo() return type contains unknown class MethodTagTrait\intt.',
-				$fooTraitLine,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
-			[
-				'PHPDoc tag @method for method MethodTagTrait\Foo::doBar() parameter #1 $a contains unresolvable type.',
-				$fooTraitLine,
-			],
-			[
-				'PHPDoc tag @method for method MethodTagTrait\Foo::doBaz2() parameter #1 $a default value contains unresolvable type.',
-				$fooTraitLine,
-			],
-			[
 				'Trait MethodTagTrait\Foo has PHPDoc tag @method for method doMissingIterablueValue() return type with no value type specified in iterable type array.',
-				$fooTraitLine,
+				12,
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 		]);
+	}
+
+	public function testBug11591(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11591-method-tag.php'], []);
 	}
 
 }

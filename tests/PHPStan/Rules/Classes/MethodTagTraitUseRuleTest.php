@@ -12,17 +12,17 @@ use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<PropertyTagTraitRule>
+ * @extends RuleTestCase<MethodTagTraitUseRule>
  */
-class PropertyTagTraitRuleTest extends RuleTestCase
+class MethodTagTraitUseRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): TRule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
-		return new PropertyTagTraitRule(
-			new PropertyTagCheck(
+		return new MethodTagTraitUseRule(
+			new MethodTagCheck(
 				$reflectionProvider,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
@@ -33,24 +33,32 @@ class PropertyTagTraitRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				true,
 			),
-			$reflectionProvider,
 		);
 	}
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/property-tag-trait.php'], [
+		$fooTraitLine = 12;
+		$this->analyse([__DIR__ . '/data/method-tag-trait.php'], [
 			[
-				'Trait PropertyTagTrait\Foo has PHPDoc tag @property for property $bar with no value type specified in iterable type array.',
-				9,
-				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+				'PHPDoc tag @method for method MethodTagTrait\Foo::doFoo() return type contains unknown class MethodTagTrait\intt.',
+				$fooTraitLine,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'PHPDoc tag @method for method MethodTagTrait\Foo::doBar() parameter #1 $a contains unresolvable type.',
+				$fooTraitLine,
+			],
+			[
+				'PHPDoc tag @method for method MethodTagTrait\Foo::doBaz2() parameter #1 $a default value contains unresolvable type.',
+				$fooTraitLine,
 			],
 		]);
 	}
 
 	public function testBug11591(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-11591-property-tag.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-11591-method-tag.php'], []);
 	}
 
 }

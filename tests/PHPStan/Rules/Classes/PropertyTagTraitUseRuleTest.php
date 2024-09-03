@@ -12,16 +12,16 @@ use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<PropertyTagTraitRule>
+ * @extends RuleTestCase<PropertyTagTraitUseRule>
  */
-class PropertyTagTraitRuleTest extends RuleTestCase
+class PropertyTagTraitUseRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): TRule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
-		return new PropertyTagTraitRule(
+		return new PropertyTagTraitUseRule(
 			new PropertyTagCheck(
 				$reflectionProvider,
 				new ClassNameCheck(
@@ -33,7 +33,6 @@ class PropertyTagTraitRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				true,
 			),
-			$reflectionProvider,
 		);
 	}
 
@@ -41,9 +40,9 @@ class PropertyTagTraitRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/property-tag-trait.php'], [
 			[
-				'Trait PropertyTagTrait\Foo has PHPDoc tag @property for property $bar with no value type specified in iterable type array.',
+				'PHPDoc tag @property for property PropertyTagTrait\Foo::$foo contains unknown class PropertyTagTrait\intt.',
 				9,
-				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

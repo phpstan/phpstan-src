@@ -70,3 +70,16 @@ trait MissingType
 {
 
 }
+
+class Usages
+{
+
+	use Foo;
+	use Bar;
+	use Baz;
+	use Qux;
+	use Generic;
+	use Invalid;
+	use MissingType;
+
+}

@@ -4,13 +4,13 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Node\InClassNode;
+use PHPStan\Node\InTraitNode;
 use PHPStan\Rules\Rule;
 
 /**
- * @implements Rule<InClassNode>
+ * @implements Rule<InTraitNode>
  */
-final class MethodTagRule implements Rule
+final class MethodTagTraitUseRule implements Rule
 {
 
 	public function __construct(private MethodTagCheck $check)
@@ -19,13 +19,14 @@ final class MethodTagRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return InClassNode::class;
+		return InTraitNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		return $this->check->check(
-			$node->getClassReflection(),
+		return $this->check->checkInTraitUseContext(
+			$node->getTraitReflection(),
+			$node->getImplementingClassReflection(),
 			$node->getOriginalNode(),
 		);
 	}

@@ -117,4 +117,9 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11591(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11591.php'], []);
+	}
+
 }

@@ -12,7 +12,7 @@ use PHPStan\Reflection\ClassReflection;
 class InTraitNode extends Node\Stmt implements VirtualNode
 {
 
-	public function __construct(private Node\Stmt\Trait_ $originalNode, private ClassReflection $traitReflection)
+	public function __construct(private Node\Stmt\Trait_ $originalNode, private ClassReflection $traitReflection, private ClassReflection $implementingClassReflection)
 	{
 		parent::__construct($originalNode->getAttributes());
 	}
@@ -25,6 +25,11 @@ class InTraitNode extends Node\Stmt implements VirtualNode
 	public function getTraitReflection(): ClassReflection
 	{
 		return $this->traitReflection;
+	}
+
+	public function getImplementingClassReflection(): ClassReflection
+	{
+		return $this->implementingClassReflection;
 	}
 
 	public function getType(): string

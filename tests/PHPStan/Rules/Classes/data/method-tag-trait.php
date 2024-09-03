@@ -21,3 +21,10 @@ class ClassWithConstant
 	public const FOO = 1;
 
 }
+
+class Usages
+{
+
+	use Foo;
+
+}

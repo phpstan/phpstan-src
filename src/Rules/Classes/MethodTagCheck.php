@@ -47,7 +47,10 @@ final class MethodTagCheck
 			foreach ($methodTag->getParameters() as $parameterName => $parameterTag) {
 				$i++;
 				$parameterDescription = sprintf('parameter #%d $%s', $i, $parameterName);
-				foreach ($this->checkMethodType($classReflection, $methodName, $parameterDescription, $parameterTag->getType(), $node) as $error) {
+				foreach ($this->checkMethodTypeInTraitDefinitionContext($classReflection, $methodName, $parameterDescription, $parameterTag->getType()) as $error) {
+					$errors[] = $error;
+				}
+				foreach ($this->checkMethodTypeInTraitUseContext($classReflection, $methodName, $parameterDescription, $parameterTag->getType(), $node) as $error) {
 					$errors[] = $error;
 				}
 
@@ -55,12 +58,20 @@ final class MethodTagCheck
 					continue;
 				}
 
-				foreach ($this->checkMethodType($classReflection, $methodName, sprintf('%s default value', $parameterDescription), $parameterTag->getDefaultValue(), $node) as $error) {
+				$defaultValueDescription = sprintf('%s default value', $parameterDescription);
+				foreach ($this->checkMethodTypeInTraitDefinitionContext($classReflection, $methodName, $defaultValueDescription, $parameterTag->getDefaultValue()) as $error) {
+					$errors[] = $error;
+				}
+				foreach ($this->checkMethodTypeInTraitUseContext($classReflection, $methodName, $defaultValueDescription, $parameterTag->getDefaultValue(), $node) as $error) {
 					$errors[] = $error;
 				}
 			}
 
-			foreach ($this->checkMethodType($classReflection, $methodName, 'return type', $methodTag->getReturnType(), $node) as $error) {
+			$returnTypeDescription = 'return type';
+			foreach ($this->checkMethodTypeInTraitDefinitionContext($classReflection, $methodName, $returnTypeDescription, $methodTag->getReturnType()) as $error) {
+				$errors[] = $error;
+			}
+			foreach ($this->checkMethodTypeInTraitUseContext($classReflection, $methodName, $returnTypeDescription, $methodTag->getReturnType(), $node) as $error) {
 				$errors[] = $error;
 			}
 		}
@@ -71,34 +82,86 @@ final class MethodTagCheck
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	private function checkMethodType(ClassReflection $classReflection, string $methodName, string $description, Type $type, ClassLike $node): array
+	public function checkInTraitDefinitionContext(ClassReflection $classReflection): array
 	{
-		if ($this->unresolvableTypeHelper->containsUnresolvableType($type)) {
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'PHPDoc tag @method for method %s::%s() %s contains unresolvable type.',
-					$classReflection->getDisplayName(),
-					$methodName,
-					$description,
-				))->identifier('methodTag.unresolvableType')
-					->build(),
-			];
+		$errors = [];
+		foreach ($classReflection->getMethodTags() as $methodName => $methodTag) {
+			$i = 0;
+			foreach ($methodTag->getParameters() as $parameterName => $parameterTag) {
+				$i++;
+				$parameterDescription = sprintf('parameter #%d $%s', $i, $parameterName);
+				foreach ($this->checkMethodTypeInTraitDefinitionContext($classReflection, $methodName, $parameterDescription, $parameterTag->getType()) as $error) {
+					$errors[] = $error;
+				}
+
+				if ($parameterTag->getDefaultValue() === null) {
+					continue;
+				}
+
+				$defaultValueDescription = sprintf('%s default value', $parameterDescription);
+				foreach ($this->checkMethodTypeInTraitDefinitionContext($classReflection, $methodName, $defaultValueDescription, $parameterTag->getDefaultValue()) as $error) {
+					$errors[] = $error;
+				}
+			}
+
+			$returnTypeDescription = 'return type';
+			foreach ($this->checkMethodTypeInTraitDefinitionContext($classReflection, $methodName, $returnTypeDescription, $methodTag->getReturnType()) as $error) {
+				$errors[] = $error;
+			}
 		}
 
-		$escapedClassName = SprintfHelper::escapeFormatString($classReflection->getDisplayName());
-		$escapedMethodName = SprintfHelper::escapeFormatString($methodName);
-		$escapedDescription = SprintfHelper::escapeFormatString($description);
+		return $errors;
+	}
 
-		$errors = $this->genericObjectTypeCheck->check(
-			$type,
-			sprintf('PHPDoc tag @method for method %s::%s() %s contains generic type %%s but %%s %%s is not generic.', $escapedClassName, $escapedMethodName, $escapedDescription),
-			sprintf('Generic type %%s in PHPDoc tag @method for method %s::%s() %s does not specify all template types of %%s %%s: %%s', $escapedClassName, $escapedMethodName, $escapedDescription),
-			sprintf('Generic type %%s in PHPDoc tag @method for method %s::%s() %s specifies %%d template types, but %%s %%s supports only %%d: %%s', $escapedClassName, $escapedMethodName, $escapedDescription),
-			sprintf('Type %%s in generic type %%s in PHPDoc tag @method for method %s::%s() %s is not subtype of template type %%s of %%s %%s.', $escapedClassName, $escapedMethodName, $escapedDescription),
-			sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag @method for method %s::%s() %s is in conflict with %%s template type %%s of %%s %%s.', $escapedClassName, $escapedMethodName, $escapedDescription),
-			sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag @method for method %s::%s() %s is redundant, template type %%s of %%s %%s has the same variance.', $escapedClassName, $escapedMethodName, $escapedDescription),
-		);
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	public function checkInTraitUseContext(
+		ClassReflection $classReflection,
+		ClassReflection $implementingClass,
+		ClassLike $node,
+	): array
+	{
+		$phpDoc = $classReflection->getTraitContextResolvedPhpDoc($implementingClass);
+		if ($phpDoc === null) {
+			return [];
+		}
 
+		$errors = [];
+		foreach ($phpDoc->getMethodTags() as $methodName => $methodTag) {
+			$i = 0;
+			foreach ($methodTag->getParameters() as $parameterName => $parameterTag) {
+				$i++;
+				$parameterDescription = sprintf('parameter #%d $%s', $i, $parameterName);
+				foreach ($this->checkMethodTypeInTraitUseContext($classReflection, $methodName, $parameterDescription, $parameterTag->getType(), $node) as $error) {
+					$errors[] = $error;
+				}
+
+				if ($parameterTag->getDefaultValue() === null) {
+					continue;
+				}
+
+				$defaultValueDescription = sprintf('%s default value', $parameterDescription);
+				foreach ($this->checkMethodTypeInTraitUseContext($classReflection, $methodName, $defaultValueDescription, $parameterTag->getDefaultValue(), $node) as $error) {
+					$errors[] = $error;
+				}
+			}
+
+			$returnTypeDescription = 'return type';
+			foreach ($this->checkMethodTypeInTraitUseContext($classReflection, $methodName, $returnTypeDescription, $methodTag->getReturnType(), $node) as $error) {
+				$errors[] = $error;
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function checkMethodTypeInTraitDefinitionContext(ClassReflection $classReflection, string $methodName, string $description, Type $type): array
+	{
+		$errors = [];
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($type) as [$innerName, $genericTypeNames]) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag @method for method %s::%s() %s contains generic %s but does not specify its types: %s',
@@ -138,6 +201,15 @@ final class MethodTagCheck
 			))->identifier('missingType.callable')->build();
 		}
 
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function checkMethodTypeInTraitUseContext(ClassReflection $classReflection, string $methodName, string $description, Type $type, ClassLike $node): array
+	{
+		$errors = [];
 		foreach ($type->getReferencedClasses() as $class) {
 			if (!$this->reflectionProvider->hasClass($class)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @method for method %s::%s() %s contains unknown class %s.', $classReflection->getDisplayName(), $methodName, $description, $class))
@@ -158,7 +230,31 @@ final class MethodTagCheck
 			}
 		}
 
-		return $errors;
+		if ($this->unresolvableTypeHelper->containsUnresolvableType($type)) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'PHPDoc tag @method for method %s::%s() %s contains unresolvable type.',
+				$classReflection->getDisplayName(),
+				$methodName,
+				$description,
+			))->identifier('methodTag.unresolvableType')->build();
+		}
+
+		$escapedClassName = SprintfHelper::escapeFormatString($classReflection->getDisplayName());
+		$escapedMethodName = SprintfHelper::escapeFormatString($methodName);
+		$escapedDescription = SprintfHelper::escapeFormatString($description);
+
+		return array_merge(
+			$errors,
+			$this->genericObjectTypeCheck->check(
+				$type,
+				sprintf('PHPDoc tag @method for method %s::%s() %s contains generic type %%s but %%s %%s is not generic.', $escapedClassName, $escapedMethodName, $escapedDescription),
+				sprintf('Generic type %%s in PHPDoc tag @method for method %s::%s() %s does not specify all template types of %%s %%s: %%s', $escapedClassName, $escapedMethodName, $escapedDescription),
+				sprintf('Generic type %%s in PHPDoc tag @method for method %s::%s() %s specifies %%d template types, but %%s %%s supports only %%d: %%s', $escapedClassName, $escapedMethodName, $escapedDescription),
+				sprintf('Type %%s in generic type %%s in PHPDoc tag @method for method %s::%s() %s is not subtype of template type %%s of %%s %%s.', $escapedClassName, $escapedMethodName, $escapedDescription),
+				sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag @method for method %s::%s() %s is in conflict with %%s template type %%s of %%s %%s.', $escapedClassName, $escapedMethodName, $escapedDescription),
+				sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag @method for method %s::%s() %s is redundant, template type %%s of %%s %%s has the same variance.', $escapedClassName, $escapedMethodName, $escapedDescription),
+			),
+		);
 	}
 
 }

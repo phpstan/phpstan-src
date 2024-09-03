@@ -33,7 +33,7 @@ final class MethodTagTraitRule implements Rule
 			return [];
 		}
 
-		return $this->check->check($this->reflectionProvider->getClass($traitName->toString()), $node);
+		return $this->check->checkInTraitDefinitionContext($this->reflectionProvider->getClass($traitName->toString()));
 	}
 
 }

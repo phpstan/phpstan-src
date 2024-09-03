@@ -53,9 +53,13 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Classes\MethodTagTraitRule:
 		phpstan.rules.rule: %featureToggles.absentTypeChecks%
+	PHPStan\Rules\Classes\MethodTagTraitUseRule:
+		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Classes\PropertyTagRule:
 		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Classes\PropertyTagTraitRule:
+		phpstan.rules.rule: %featureToggles.absentTypeChecks%
+	PHPStan\Rules\Classes\PropertyTagTraitUseRule:
 		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule:
 		phpstan.rules.rule: %featureToggles.closureDefaultParameterTypeRule%
@@ -90,10 +94,16 @@ services:
 		class: PHPStan\Rules\Classes\MethodTagTraitRule
 
 	-
+		class: PHPStan\Rules\Classes\MethodTagTraitUseRule
+
+	-
 		class: PHPStan\Rules\Classes\PropertyTagRule
 
 	-
 		class: PHPStan\Rules\Classes\PropertyTagTraitRule
+
+	-
+		class: PHPStan\Rules\Classes\PropertyTagTraitUseRule
 
 	-
 		class: PHPStan\Rules\PhpDoc\RequireExtendsCheck

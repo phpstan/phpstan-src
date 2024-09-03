@@ -129,6 +129,8 @@ class ClassReflection
 
 	private false|ResolvedPhpDocBlock $resolvedPhpDocBlock = false;
 
+	private false|ResolvedPhpDocBlock $traitContextResolvedPhpDocBlock = false;
+
 	/** @var ClassReflection[]|null */
 	private ?array $cachedInterfaces = null;
 
@@ -1578,6 +1580,31 @@ class ClassReflection
 		}
 
 		return $this->resolvedPhpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc($fileName, $this->getName(), null, null, $this->reflectionDocComment);
+	}
+
+	public function getTraitContextResolvedPhpDoc(self $implementingClass): ?ResolvedPhpDocBlock
+	{
+		if (!$this->isTrait()) {
+			throw new ShouldNotHappenException();
+		}
+		if (!$implementingClass->isClass()) {
+			throw new ShouldNotHappenException();
+		}
+		$fileName = $this->getFileName();
+		if (is_bool($this->reflectionDocComment)) {
+			$docComment = $this->reflection->getDocComment();
+			$this->reflectionDocComment = $docComment !== false ? $docComment : null;
+		}
+
+		if ($this->reflectionDocComment === null) {
+			return null;
+		}
+
+		if ($this->traitContextResolvedPhpDocBlock !== false) {
+			return $this->traitContextResolvedPhpDocBlock;
+		}
+
+		return $this->traitContextResolvedPhpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc($fileName, $implementingClass->getName(), $this->getName(), null, $this->reflectionDocComment);
 	}
 
 	private function getFirstExtendsTag(): ?ExtendsTag

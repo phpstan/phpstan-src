@@ -54,6 +54,22 @@ final class LocalTypeAliasesCheck
 	 */
 	public function check(ClassReflection $reflection, ClassLike $node): array
 	{
+		$errors = [];
+		foreach ($this->checkInTraitDefinitionContext($reflection) as $error) {
+			$errors[] = $error;
+		}
+		foreach ($this->checkInTraitUseContext($reflection, $reflection, $node) as $error) {
+			$errors[] = $error;
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	public function checkInTraitDefinitionContext(ClassReflection $reflection): array
+	{
 		$phpDoc = $reflection->getResolvedPhpDoc();
 		if ($phpDoc === null) {
 			return [];
@@ -69,7 +85,7 @@ final class LocalTypeAliasesCheck
 		};
 
 		$errors = [];
-		$className = $reflection->getName();
+		$className = $reflection->getDisplayName();
 
 		$importedAliases = [];
 
@@ -162,32 +178,7 @@ final class LocalTypeAliasesCheck
 			}
 
 			$resolvedType = $typeAliasTag->getTypeAlias()->resolve($this->typeNodeResolver);
-			$foundError = false;
-			TypeTraverser::map($resolvedType, static function (Type $type, callable $traverse) use (&$errors, &$foundError, $aliasName): Type {
-				if ($foundError) {
-					return $type;
-				}
-
-				if ($type instanceof CircularTypeAliasErrorType) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Circular definition detected in type alias %s.', $aliasName))
-						->identifier('typeAlias.circular')
-						->build();
-					$foundError = true;
-					return $type;
-				}
-
-				if ($type instanceof ErrorType) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Invalid type definition detected in type alias %s.', $aliasName))
-						->identifier('typeAlias.invalidType')
-						->build();
-					$foundError = true;
-					return $type;
-				}
-
-				return $traverse($type);
-			});
-
-			if ($foundError) {
+			if ($this->hasErrorType($resolvedType, $aliasName, $errors)) {
 				continue;
 			}
 
@@ -195,45 +186,78 @@ final class LocalTypeAliasesCheck
 				continue;
 			}
 
-			if ($this->checkMissingTypehints) {
-				foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($resolvedType) as $iterableType) {
-					$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'%s %s has type alias %s with no value type specified in iterable type %s.',
-						$reflection->getClassTypeDescription(),
-						$reflection->getDisplayName(),
-						$aliasName,
-						$iterableTypeDescription,
-					))
-						->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
-						->identifier('missingType.iterableValue')
-						->build();
-				}
-
-				foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($resolvedType) as [$name, $genericTypeNames]) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'%s %s has type alias %s with generic %s but does not specify its types: %s',
-						$reflection->getClassTypeDescription(),
-						$reflection->getDisplayName(),
-						$aliasName,
-						$name,
-						implode(', ', $genericTypeNames),
-					))
-						->identifier('missingType.generics')
-						->build();
-				}
-
-				foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($resolvedType) as $callableType) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'%s %s has type alias %s with no signature specified for %s.',
-						$reflection->getClassTypeDescription(),
-						$reflection->getDisplayName(),
-						$aliasName,
-						$callableType->describe(VerbosityLevel::typeOnly()),
-					))->identifier('missingType.callable')->build();
-				}
+			if (!$this->checkMissingTypehints) {
+				continue;
 			}
 
+			foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($resolvedType) as $iterableType) {
+				$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s %s has type alias %s with no value type specified in iterable type %s.',
+					$reflection->getClassTypeDescription(),
+					$reflection->getDisplayName(),
+					$aliasName,
+					$iterableTypeDescription,
+				))
+					->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+					->identifier('missingType.iterableValue')
+					->build();
+			}
+
+			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($resolvedType) as [$name, $genericTypeNames]) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s %s has type alias %s with generic %s but does not specify its types: %s',
+					$reflection->getClassTypeDescription(),
+					$reflection->getDisplayName(),
+					$aliasName,
+					$name,
+					implode(', ', $genericTypeNames),
+				))
+					->identifier('missingType.generics')
+					->build();
+			}
+
+			foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($resolvedType) as $callableType) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s %s has type alias %s with no signature specified for %s.',
+					$reflection->getClassTypeDescription(),
+					$reflection->getDisplayName(),
+					$aliasName,
+					$callableType->describe(VerbosityLevel::typeOnly()),
+				))->identifier('missingType.callable')->build();
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	public function checkInTraitUseContext(
+		ClassReflection $reflection,
+		ClassReflection $implementingClassReflection,
+		ClassLike $node,
+	): array
+	{
+		if ($reflection->getNativeReflection()->getName() === $implementingClassReflection->getName()) {
+			$phpDoc = $reflection->getResolvedPhpDoc();
+		} else {
+			$phpDoc = $reflection->getTraitContextResolvedPhpDoc($implementingClassReflection);
+		}
+		if ($phpDoc === null) {
+			return [];
+		}
+
+		$errors = [];
+
+		foreach ($phpDoc->getTypeAliasTags() as $typeAliasTag) {
+			$aliasName = $typeAliasTag->getAliasName();
+			$resolvedType = $typeAliasTag->getTypeAlias()->resolve($this->typeNodeResolver);
+			$throwawayErrors = [];
+			if ($this->hasErrorType($resolvedType, $aliasName, $throwawayErrors)) {
+				continue;
+			}
 			foreach ($resolvedType->getReferencedClasses() as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s contains unknown class %s.', $aliasName, $class))
@@ -302,6 +326,40 @@ final class LocalTypeAliasesCheck
 		$aliasNameResolvedType = $this->typeNodeResolver->resolve(new IdentifierTypeNode($aliasName), $nameScope->bypassTypeAliases());
 		return ($aliasNameResolvedType->isObject()->yes() && !in_array($aliasName, ['self', 'parent'], true))
 			|| $aliasNameResolvedType instanceof TemplateType; // aliases take precedence over type parameters, this is reported by other rules using TemplateTypeCheck
+	}
+
+	/**
+	 * @param list<IdentifierRuleError> $errors
+	 * @param-out list<IdentifierRuleError> $errors
+	 */
+	private function hasErrorType(Type $type, string $aliasName, array &$errors): bool
+	{
+		$foundError = false;
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$errors, &$foundError, $aliasName): Type {
+			if ($foundError) {
+				return $type;
+			}
+
+			if ($type instanceof CircularTypeAliasErrorType) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Circular definition detected in type alias %s.', $aliasName))
+					->identifier('typeAlias.circular')
+					->build();
+				$foundError = true;
+				return $type;
+			}
+
+			if ($type instanceof ErrorType) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Invalid type definition detected in type alias %s.', $aliasName))
+					->identifier('typeAlias.invalidType')
+					->build();
+				$foundError = true;
+				return $type;
+			}
+
+			return $traverse($type);
+		});
+
+		return $foundError;
 	}
 
 }

@@ -32,8 +32,14 @@ class TypeSpecifierContext
 
 	private static function create(?int $value, ?TypeSpecifierComparisonContext $comparisonContext = null): self
 	{
-		self::$registry[$value] ??= new self($value, $comparisonContext);
-		return self::$registry[$value];
+		if ($value !== self::CONTEXT_COMPARISON) {
+			self::$registry[$value] ??= new self($value, $comparisonContext);
+			return self::$registry[$value];
+		}
+
+		// each comparison context contains context dependent properties
+		// and therefore cannot be cached/re-used
+		return new self($value, $comparisonContext);
 	}
 
 	public static function createTrue(): self

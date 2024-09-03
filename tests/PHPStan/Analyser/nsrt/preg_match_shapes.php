@@ -760,4 +760,5 @@ function bug11604 (string $string): void {
 	}
 
 	assertType("array{0: string, 1?: ''|'XX', 2?: 'YY'}", $matches);
+	// could be array{string, '', 'YY'}|array{string, 'XX'}|array{string}
 }

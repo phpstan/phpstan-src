@@ -55,6 +55,10 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Classes\MethodTagTraitUseRule:
 		phpstan.rules.rule: %featureToggles.absentTypeChecks%
+	PHPStan\Rules\Classes\MixinTraitRule:
+		phpstan.rules.rule: %featureToggles.absentTypeChecks%
+	PHPStan\Rules\Classes\MixinTraitUseRule:
+		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Classes\PropertyTagRule:
 		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Classes\PropertyTagTraitRule:
@@ -85,6 +89,12 @@ services:
 		class: PHPStan\Rules\Classes\MixinRule
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Classes\MixinTraitRule
+
+	-
+		class: PHPStan\Rules\Classes\MixinTraitUseRule
 
 	-
 		class: PHPStan\Rules\Classes\MethodTagRule

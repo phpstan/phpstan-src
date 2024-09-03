@@ -1,0 +1,50 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Rules\Classes;
+
+use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
+/**
+ * @extends RuleTestCase<MixinTraitUseRule>
+ */
+class MixinTraitUseRuleTest extends RuleTestCase
+{
+
+	protected function getRule(): Rule
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+
+		return new MixinTraitUseRule(
+			new MixinCheck(
+				$reflectionProvider,
+				new ClassNameCheck(
+					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassForbiddenNameCheck(self::getContainer()),
+				),
+				new GenericObjectTypeCheck(),
+				new MissingTypehintCheck(true, true, true, true, []),
+				new UnresolvableTypeHelper(),
+				true,
+				true,
+			),
+		);
+	}
+
+	public function testRule(): void
+	{
+		$this->analyse([__DIR__ . '/data/mixin-trait-use.php'], [
+			[
+				'PHPDoc tag @mixin contains unresolvable type.',
+				22,
+			],
+		]);
+	}
+
+}

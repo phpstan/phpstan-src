@@ -52,6 +52,8 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Generics\InterfaceAncestorsRule;
 use PHPStan\Rules\Generics\InterfaceTemplateTypeRule;
 use PHPStan\Rules\Generics\MethodSignatureVarianceRule;
+use PHPStan\Rules\Generics\MethodTagTemplateTypeCheck;
+use PHPStan\Rules\Generics\MethodTagTemplateTypeRule;
 use PHPStan\Rules\Generics\MethodTemplateTypeRule;
 use PHPStan\Rules\Generics\TemplateTypeCheck;
 use PHPStan\Rules\Generics\TraitTemplateTypeRule;
@@ -178,6 +180,7 @@ final class StubValidator
 		$localTypeAliasesCheck = $container->getByType(LocalTypeAliasesCheck::class);
 		$phpClassReflectionExtension = $container->getByType(PhpClassReflectionExtension::class);
 		$genericCallableRuleHelper = $container->getByType(GenericCallableRuleHelper::class);
+		$methodTagTemplateTypeCheck = $container->getByType(MethodTagTemplateTypeCheck::class);
 
 		$rules = [
 			// level 0
@@ -201,6 +204,7 @@ final class StubValidator
 			new InterfaceAncestorsRule($genericAncestorsCheck, $crossCheckInterfacesHelper),
 			new InterfaceTemplateTypeRule($templateTypeCheck),
 			new MethodTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
+			new MethodTagTemplateTypeRule($methodTagTemplateTypeCheck),
 			new MethodSignatureVarianceRule($varianceCheck),
 			new TraitTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new IncompatiblePhpDocTypeRule($fileTypeMapper, $genericObjectTypeCheck, $unresolvableTypeHelper, $genericCallableRuleHelper),

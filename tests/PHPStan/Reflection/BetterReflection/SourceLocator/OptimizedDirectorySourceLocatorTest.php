@@ -313,10 +313,6 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 
 	public function testBug5525(): void
 	{
-		if (PHP_VERSION_ID < 70300) {
-			self::markTestSkipped('This test needs at least PHP 7.3 because of different PCRE engine');
-		}
-
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
 		$locator = $factory->createByFiles([__DIR__ . '/data/bug-5525.php']);
 		$reflector = new DefaultReflector($locator);

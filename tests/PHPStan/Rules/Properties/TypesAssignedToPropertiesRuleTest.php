@@ -315,9 +315,6 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	public function testBug6286(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->analyse([__DIR__ . '/data/bug-6286.php'], [
 			[
 				'Property Bug6286\HelloWorld::$details (array{name: string, age: int}) does not accept array{name: string, age: \'Forty-two\'}.',
@@ -408,19 +405,12 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	public function testBug5382(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/bug-5382.php'], []);
 	}
 
 	public function testBug6757(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-6757.php'], []);
 	}
@@ -506,10 +496,6 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	public function testBug3311b(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-3311b.php'], [
 			[
@@ -528,20 +514,12 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	public function testBug9131(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-9131.php'], []);
 	}
 
 	public function testBug8222(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-8222.php'], []);
 	}

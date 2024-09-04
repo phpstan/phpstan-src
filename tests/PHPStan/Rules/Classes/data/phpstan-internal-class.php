@@ -1,4 +1,4 @@
-<?php // lint >= 7.4
+<?php
 
 namespace _PHPStan_156ee64ba; // mimicks a prefixed class, as contained in phpstan.phar releases
 

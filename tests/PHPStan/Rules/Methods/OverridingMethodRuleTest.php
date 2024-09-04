@@ -559,18 +559,12 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	public function testBug7717(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-7717.php'], []);
 	}
 
 	public function testBug6104(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-6104.php'], []);
 	}
@@ -624,10 +618,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	public function testBug8081(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-8081.php'], [
 			[
@@ -639,10 +629,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	public function testBug8500(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-8500.php'], [
 			[
@@ -654,10 +640,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	public function testBug9014(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-9014.php'], [
 			[
@@ -684,10 +666,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	public function testBug10101(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-10101.php'], [
 			[

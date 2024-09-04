@@ -416,9 +416,6 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 
 	public function testRuleAssignOp(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			self::markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->analyse([__DIR__ . '/data/access-static-properties-assign-op.php'], [
 			[
 				'Access to an undefined static property AccessStaticProperties\AssignOpNonexistentProperty::$flags.',

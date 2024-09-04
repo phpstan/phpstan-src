@@ -316,9 +316,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				8,
 			],
 		];
-		if (PHP_VERSION_ID < 70400) {
-			$errors = [];
-		}
 		if (PHP_VERSION_ID >= 80000) {
 			$errors = [
 				[
@@ -333,7 +330,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testImplodeOnLessThanPhp74(): void
 	{
-		$errors = [];
 		if (PHP_VERSION_ID >= 80000) {
 			$errors = [
 				[
@@ -341,7 +337,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 					8,
 				],
 			];
-		} elseif (PHP_VERSION_ID >= 70400) {
+		} else {
 			$errors = [
 				[
 					'Parameter #1 $glue of function implode expects string, array given.',
@@ -815,10 +811,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testProcOpen(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/proc_open.php'], [
 			[
 				"Parameter #1 \$command of function proc_open expects list<string>|string, array{something: 'bogus', in: 'here'} given.",
@@ -1632,10 +1624,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testBug10527(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-10527.php'], []);
 	}
 
@@ -1660,10 +1648,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testParamClosureThis(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/function-call-param-closure-this.php'], [
 			[
 				'Parameter #1 $cb of function FunctionCallParamClosureThis\acceptClosure expects bindable closure, static closure given.',

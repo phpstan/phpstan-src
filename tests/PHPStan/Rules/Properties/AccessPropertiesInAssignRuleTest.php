@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<AccessPropertiesInAssignRule>
@@ -40,10 +39,6 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 
 	public function testRuleAssignOp(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			self::markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$this->analyse([__DIR__ . '/data/access-properties-assign-op.php'], [
 			[

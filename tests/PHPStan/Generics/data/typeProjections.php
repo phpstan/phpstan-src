@@ -1,4 +1,4 @@
-<?php // lint >= 7.4
+<?php
 
 namespace PHPStan\Generics\TypeProjections;
 

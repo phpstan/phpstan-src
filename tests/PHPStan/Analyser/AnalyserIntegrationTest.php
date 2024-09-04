@@ -411,9 +411,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug4715(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4715.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1368,9 +1365,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug11026(): void
 	{
-		if (PHP_VERSION_ID < 70300) {
-			$this->markTestSkipped('Test requires PHP 7.3.');
-		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11026.php');
 		$this->assertNoErrors($errors);
 	}

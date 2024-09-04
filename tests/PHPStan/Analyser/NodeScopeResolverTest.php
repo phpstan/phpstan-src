@@ -20,7 +20,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/enum-reflection-php81.php');
 		}
 
-		if (PHP_VERSION_ID < 80000 && PHP_VERSION_ID >= 70400) {
+		if (PHP_VERSION_ID < 80000) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4902.php');
 		}
 
@@ -29,8 +29,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 				yield from $this->gatherAssertTypes(__DIR__ . '/data/mb-strlen-php82.php');
 			} elseif (PHP_VERSION_ID >= 80000) {
 				yield from $this->gatherAssertTypes(__DIR__ . '/data/mb-strlen-php8.php');
-			} elseif (PHP_VERSION_ID < 70300) {
-				yield from $this->gatherAssertTypes(__DIR__ . '/data/mb-strlen-php72.php');
 			} else {
 				yield from $this->gatherAssertTypes(__DIR__ . '/data/mb-strlen-php73.php');
 			}
@@ -69,9 +67,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Functions/data/varying-acceptor.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-4415.php');
-		if (PHP_VERSION_ID >= 70400) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-5372.php');
-		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-5372.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Arrays/data/bug-5372_2.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-5562.php');
 
@@ -85,9 +81,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/new-in-initializers-runtime.php');
 		}
 
-		if (PHP_VERSION_ID >= 70400) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Comparison/data/bug-6473.php');
-		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Comparison/data/bug-6473.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/filter-iterator-child-class.php');
 
@@ -125,9 +119,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Arrays/data/bug-7469.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Variables/data/bug-3391.php');
 
-		if (PHP_VERSION_ID >= 70400) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Functions/data/bug-anonymous-function-method-constant.php');
-		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Functions/data/bug-anonymous-function-method-constant.php');
 
 		if (PHP_VERSION_ID >= 80200) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/true-typehint.php');

@@ -8914,9 +8914,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $expression,
 	): void
 	{
-		if (PHP_VERSION_ID < 70300) {
-			$this->markTestSkipped('Test requires PHP 7.3');
-		}
 		$this->assertTypes(
 			__DIR__ . '/data/php73_functions.php',
 			$description,
@@ -9046,9 +9043,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $expression,
 	): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4');
-		}
 		$this->assertTypes(
 			__DIR__ . '/data/php74_functions.php',
 			$description,
@@ -9480,34 +9474,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataPhp74FunctionsIn73(): array
-	{
-		return [
-			[
-				'mixed',
-				'password_algos()',
-			],
-		];
-	}
-
-	/**
-	 * @dataProvider dataPhp74FunctionsIn73
-	 */
-	public function testPhp74FunctionsIn73(
-		string $description,
-		string $expression,
-	): void
-	{
-		if (PHP_VERSION_ID >= 70400) {
-			$this->markTestSkipped('Test does not run on PHP >= 7.4.');
-		}
-		$this->assertTypes(
-			__DIR__ . '/data/die-73.php',
-			$description,
-			$expression,
-		);
-	}
-
 	public function dataPhp74FunctionsIn74(): array
 	{
 		return [
@@ -9526,9 +9492,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $expression,
 	): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->assertTypes(
 			__DIR__ . '/data/die-74.php',
 			$description,

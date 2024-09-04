@@ -55,10 +55,6 @@ class TooWideMethodThrowTypeRuleTest extends RuleTestCase
 
 	public function testImmediatelyCalledArrowFunction(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			self::markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/immediately-called-arrow-function.php'], [
 			[
 				'Method ImmediatelyCalledArrowFunction\ImmediatelyCalledCallback::doFoo2() has InvalidArgumentException in PHPDoc @throws tag but it\'s not thrown.',

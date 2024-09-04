@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<BooleanNotConstantConditionRule>
@@ -126,10 +125,6 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 
 	public function testBug6473(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6473.php'], []);
 	}

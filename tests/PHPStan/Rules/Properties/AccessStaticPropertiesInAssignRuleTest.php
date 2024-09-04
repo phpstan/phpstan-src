@@ -8,7 +8,6 @@ use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<AccessStaticPropertiesInAssignRule>
@@ -47,9 +46,6 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 
 	public function testRuleAssignOp(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			self::markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->analyse([__DIR__ . '/data/access-static-properties-assign-op.php'], [
 			[
 				'Access to an undefined static property AccessStaticProperties\AssignOpNonexistentProperty::$flags.',

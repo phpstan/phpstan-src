@@ -324,10 +324,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testBug7190(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 

@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1); // lint >= 7.4
+<?php declare(strict_types = 1);
 
 $array = [1,2,3];
 

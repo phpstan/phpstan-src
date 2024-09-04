@@ -39,9 +39,20 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 				'Anonymous function should return int but returns string.',
 				14,
 			],
+
+		]);
+	}
+
+	public function testRuleNever(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			self::markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/arrow-function-never-return.php'], [
 			[
 				'Anonymous function should never return but return statement found.',
-				44,
+				12,
 			],
 		]);
 	}

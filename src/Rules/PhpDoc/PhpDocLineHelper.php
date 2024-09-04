@@ -19,7 +19,7 @@ final class PhpDocLineHelper
 		$phpDoc = $node->getDocComment();
 
 		if ($phpDocTagLine === null || $phpDoc === null) {
-			return $node->getLine();
+			return $node->getStartLine();
 		}
 
 		return $phpDoc->getStartLine() + $phpDocTagLine - 1;

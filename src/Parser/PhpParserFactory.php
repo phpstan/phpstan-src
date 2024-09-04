@@ -8,7 +8,7 @@ use PhpParser\Parser\Php8;
 use PhpParser\ParserAbstract;
 use PHPStan\Php\PhpVersion;
 
-class PhpParserFactory
+final class PhpParserFactory
 {
 
 	public function __construct(private Lexer $lexer, private PhpVersion $phpVersion)

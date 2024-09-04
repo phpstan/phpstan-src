@@ -57,9 +57,6 @@ final class ParameterOutExecutionEndTypeRule implements Rule
 				return [];
 			}
 		}
-		if ($endNode instanceof Node\Stmt\Throw_) {
-			return [];
-		}
 
 		$variant = ParametersAcceptorSelector::selectSingle($inFunction->getVariants());
 		$parameters = $variant->getParameters();

@@ -204,7 +204,7 @@ final class FunctionDefinitionCheck
 		foreach ($returnType->getReferencedClasses() as $returnTypeClass) {
 			if (!$this->reflectionProvider->hasClass($returnTypeClass)) {
 				$errors[] = RuleErrorBuilder::message(sprintf($returnMessage, $returnTypeClass))
-					->line($returnTypeNode->getLine())
+					->line($returnTypeNode->getStartLine())
 					->identifier('class.notFound')
 					->build();
 				continue;

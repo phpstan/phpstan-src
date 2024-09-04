@@ -5,7 +5,7 @@ namespace PHPStan\Parser;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 
-class StandaloneThrowExprVisitor extends NodeVisitorAbstract
+final class StandaloneThrowExprVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'standaloneThrowExpr';

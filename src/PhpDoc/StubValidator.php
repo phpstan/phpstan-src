@@ -217,12 +217,15 @@ final class StubValidator
 			new InvalidPhpDocTagValueRule(
 				$container->getByType(Lexer::class),
 				$container->getByType(PhpDocParser::class),
-				$container->getParameter('featureToggles')['allInvalidPhpDocs'],
 				$container->getParameter('featureToggles')['invalidPhpDocTagLine'],
 			),
 			new IncompatibleParamImmediatelyInvokedCallableRule($fileTypeMapper),
 			new IncompatibleSelfOutTypeRule($unresolvableTypeHelper, $genericObjectTypeCheck),
 			new IncompatibleClassConstantPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper),
+			new InvalidPHPStanDocTagRule(
+				$container->getByType(Lexer::class),
+				$container->getByType(PhpDocParser::class),
+			),
 			new InvalidThrowsPhpDocValueRule($fileTypeMapper),
 
 			// level 6
@@ -238,14 +241,6 @@ final class StubValidator
 			$relativePathHelper = $container->getService('simpleRelativePathHelper');
 			$rules[] = new DuplicateClassDeclarationRule($reflector, $relativePathHelper);
 			$rules[] = new DuplicateFunctionDeclarationRule($reflector, $relativePathHelper);
-		}
-
-		if ((bool) $container->getParameter('featureToggles')['allInvalidPhpDocs']) {
-			$rules[] = new InvalidPHPStanDocTagRule(
-				$container->getByType(Lexer::class),
-				$container->getByType(PhpDocParser::class),
-				true,
-			);
 		}
 
 		if ((bool) $container->getParameter('featureToggles')['absentTypeChecks']) {

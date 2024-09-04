@@ -18,7 +18,6 @@ class InvalidPHPStanDocTagRuleTest extends RuleTestCase
 		return new InvalidPHPStanDocTagRule(
 			self::getContainer()->getByType(Lexer::class),
 			self::getContainer()->getByType(PhpDocParser::class),
-			true,
 		);
 	}
 

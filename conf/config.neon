@@ -74,7 +74,7 @@ parameters:
 		newRuleLevelHelper: false
 		instanceofType: false
 		paramOutVariance: false
-		allInvalidPhpDocs: false
+
 		strictStaticMethodTemplateTypeVariance: false
 		propertyVariance: false
 		genericPrototypeMessage: false

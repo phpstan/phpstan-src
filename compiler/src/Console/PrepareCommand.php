@@ -65,7 +65,7 @@ final class PrepareCommand extends Command
 
 		unset($json['replace']);
 		$json['name'] = 'phpstan/phpstan';
-		$json['require']['php'] = '^7.2|^8.0';
+		$json['require']['php'] = '^7.4|^8.0';
 
 		// simplify autoload (remove not packed build directory]
 		$json['autoload']['psr-4']['PHPStan\\'] = 'src/';

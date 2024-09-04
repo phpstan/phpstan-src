@@ -204,6 +204,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$scopeFile,
 		);
 		$classNode->name = new Node\Identifier($className);
+		$classNode->namespacedName = null;
 
 		if (isset(self::$anonymousClasses[$className])) {
 			return self::$anonymousClasses[$className];

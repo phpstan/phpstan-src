@@ -13,6 +13,9 @@ on:
       - 'apigen/**'
       - '.github/workflows/apiref.yml'
 
+env:
+  COMPOSER_ROOT_VERSION: "1.12.x-dev"
+
 concurrency:
   group: apigen-${{ github.ref }} # will be canceled on subsequent pushes in branch
   cancel-in-progress: true

@@ -6,7 +6,6 @@ use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use function array_merge;
 
 /**
  * @extends RuleTestCase<InvalidPhpDocTagValueRule>
@@ -14,21 +13,19 @@ use function array_merge;
 class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 {
 
-	private bool $checkAllInvalidPhpDocs;
-
 	protected function getRule(): Rule
 	{
 		return new InvalidPhpDocTagValueRule(
 			self::getContainer()->getByType(Lexer::class),
 			self::getContainer()->getByType(PhpDocParser::class),
-			$this->checkAllInvalidPhpDocs,
+			true,
 			true,
 		);
 	}
 
-	public function dataRule(): iterable
+	public function testRule(): void
 	{
-		$errors = [
+		$this->analyse([__DIR__ . '/data/invalid-phpdoc.php'], [
 			[
 				'PHPDoc tag @param has invalid value (): Unexpected token "\n * ", expected type at offset 13 on line 2',
 				6,
@@ -97,42 +94,25 @@ class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 				'PHPDoc tag @var has invalid value ((Foo&): Unexpected token "*/", expected type at offset 15 on line 1',
 				91,
 			],
-		];
-
-		yield [false, $errors];
-		yield [true, array_merge($errors, [
 			[
 				'PHPDoc tag @var has invalid value ((Foo&): Unexpected token "*/", expected type at offset 15 on line 1',
 				101,
 			],
-		])];
-	}
-
-	/**
-	 * @dataProvider dataRule
-	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
-	 */
-	public function testRule(bool $checkAllInvalidPhpDocs, array $expectedErrors): void
-	{
-		$this->checkAllInvalidPhpDocs = $checkAllInvalidPhpDocs;
-		$this->analyse([__DIR__ . '/data/invalid-phpdoc.php'], $expectedErrors);
+		]);
 	}
 
 	public function testBug4731(): void
 	{
-		$this->checkAllInvalidPhpDocs = true;
 		$this->analyse([__DIR__ . '/data/bug-4731.php'], []);
 	}
 
 	public function testBug4731WithoutFirstTag(): void
 	{
-		$this->checkAllInvalidPhpDocs = true;
 		$this->analyse([__DIR__ . '/data/bug-4731-no-first-tag.php'], []);
 	}
 
 	public function testInvalidTypeInTypeAlias(): void
 	{
-		$this->checkAllInvalidPhpDocs = true;
 		$this->analyse([__DIR__ . '/data/invalid-type-type-alias.php'], [
 			[
 				'PHPDoc tag @phpstan-type InvalidFoo has invalid value: Unexpected token "{", expected TOKEN_PHPDOC_EOL at offset 65 on line 3',

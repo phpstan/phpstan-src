@@ -429,20 +429,30 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataTrueTypes(): array
+	public function testTrueTypehint(): void
 	{
-		return [
-			[80200, []],
-		];
-	}
-
-	/**
-	 * @dataProvider dataTrueTypes
-	 * @param list<array{0: string, 1: int, 2?: string}> $errors
-	 */
-	public function testTrueTypehint(int $phpVersion, array $errors): void
-	{
-		$this->phpVersionId = $phpVersion;
+		if (PHP_VERSION_ID >= 80200) {
+			$errors = [];
+		} else {
+			$errors = [
+				[
+					'Parameter $v of method NativeTrueType\Truthy::foo() has invalid type NativeTrueType\true.',
+					10,
+				],
+				[
+					'Method NativeTrueType\Truthy::foo() has invalid return type NativeTrueType\true.',
+					10,
+				],
+				[
+					'Parameter $trueUnion of method NativeTrueType\Truthy::trueUnion() has invalid type NativeTrueType\true.',
+					14,
+				],
+				[
+					'Method NativeTrueType\Truthy::trueUnionReturn() has invalid return type NativeTrueType\true.',
+					31,
+				],
+			];
+		}
 
 		$this->analyse([__DIR__ . '/data/true-typehint.php'], $errors);
 	}

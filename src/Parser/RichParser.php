@@ -183,7 +183,7 @@ final class RichParser implements Parser
 					$line++;
 				}
 				if ($isNextLine || $isCurrentLine) {
-					$line += substr_count($token[1], "\n");
+					$line += substr_count($token->text, "\n");
 
 					$lines[$line] = null;
 					continue;

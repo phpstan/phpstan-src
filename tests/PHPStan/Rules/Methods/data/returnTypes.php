@@ -375,7 +375,7 @@ class Foo extends FooParent implements FooInterface
 		}
 	}
 
-	public function misleadingMixedReturnType(): mixed
+	/*public function misleadingMixedReturnType(): mixed
 	{
 		if (rand(0, 1)) {
 			return 1;
@@ -386,7 +386,7 @@ class Foo extends FooParent implements FooInterface
 		if (rand(0, 1)) {
 			return new mixed();
 		}
-	}
+	}*/
 }
 
 class FooChild extends Foo

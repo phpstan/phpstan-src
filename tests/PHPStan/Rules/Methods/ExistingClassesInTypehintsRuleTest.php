@@ -437,7 +437,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	{
 		if (PHP_VERSION_ID >= 80200) {
 			$errors = [];
-		} else {
+		} elseif (PHP_VERSION_ID >= 80000) {
 			$errors = [
 				[
 					'Parameter $v of method NativeTrueType\Truthy::foo() has invalid type NativeTrueType\true.',
@@ -453,6 +453,41 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				],
 				[
 					'Method NativeTrueType\Truthy::trueUnionReturn() has invalid return type NativeTrueType\true.',
+					31,
+				],
+			];
+		} else {
+			$errors = [
+				[
+					'Parameter $v of method NativeTrueType\Truthy::foo() has invalid type NativeTrueType\true.',
+					10,
+				],
+				[
+					'Method NativeTrueType\Truthy::foo() has invalid return type NativeTrueType\true.',
+					10,
+				],
+				[
+					"Method NativeTrueType\Truthy::trueUnion() uses native union types but they're supported only on PHP 8.0 and later.",
+					14,
+				],
+				[
+					'Parameter $trueUnion of method NativeTrueType\Truthy::trueUnion() has invalid type NativeTrueType\true.',
+					14,
+				],
+				[
+					'Parameter $trueUnion of method NativeTrueType\Truthy::trueUnion() has invalid type NativeTrueType\null.',
+					14,
+				],
+				[
+					"Method NativeTrueType\Truthy::trueUnionReturn() uses native union types but they're supported only on PHP 8.0 and later.",
+					31,
+				],
+				[
+					'Method NativeTrueType\Truthy::trueUnionReturn() has invalid return type NativeTrueType\true.',
+					31,
+				],
+				[
+					'Method NativeTrueType\Truthy::trueUnionReturn() has invalid return type NativeTrueType\null.',
 					31,
 				],
 			];

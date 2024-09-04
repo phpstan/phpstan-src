@@ -827,6 +827,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testOffsetAccess(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/offset-access.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('PHPDoc tag @return contains unresolvable type.', $errors[0]->getMessage());
@@ -1063,6 +1067,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testAssertDocblock(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/assert-docblock.php');
 		$this->assertCount(4, $errors);
 		$this->assertSame('Call to method AssertDocblock\A::testInt() with string will always evaluate to false.', $errors[0]->getMessage());
@@ -1396,6 +1404,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug11283(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11283.php');
 		$this->assertNoErrors($errors);
 	}

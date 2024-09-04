@@ -208,15 +208,15 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8169.php'], [
 			[
 				'Call to method Bug8169\HelloWorld::assertString() with string will always evaluate to true.',
-				19,
+				21,
 			],
 			[
 				'Call to method Bug8169\HelloWorld::assertString() with string will always evaluate to true.',
-				26,
+				28,
 			],
 			[
 				'Call to method Bug8169\HelloWorld::assertString() with int will always evaluate to false.',
-				33,
+				35,
 			],
 		]);
 	}

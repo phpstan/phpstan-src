@@ -289,7 +289,14 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	public function testNever(): void
 	{
 		$errors = [];
-		if (PHP_VERSION_ID < 80200) {
+		if (PHP_VERSION_ID < 80100) {
+			$errors = [
+				[
+					'Anonymous function has invalid return type ArrowFunctionNever\never.',
+					6,
+				],
+			];
+		} elseif (PHP_VERSION_ID < 80200) {
 			$errors = [
 				[
 					'Never return type in arrow function is supported only on PHP 8.2 and later.',

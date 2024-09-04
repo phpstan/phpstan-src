@@ -18,7 +18,7 @@ on:
       - '.github/workflows/checksum-phar.yml'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.12.x-dev"
+  COMPOSER_ROOT_VERSION: "2.0.x-dev"
 
 concurrency:
   group: checksum-phar-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
@@ -101,14 +101,14 @@ jobs:
       - name: "Composer dump"
         run: "composer install --no-interaction --no-progress"
         env:
-          COMPOSER_ROOT_VERSION: "1.12.x-dev"
+          COMPOSER_ROOT_VERSION: "2.0.x-dev"
 
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"
         run: "php box.phar compile --no-parallel"
         env:
           PHAR_CHECKSUM: "1"
-          COMPOSER_ROOT_VERSION: "1.12.x-dev"
+          COMPOSER_ROOT_VERSION: "2.0.x-dev"
 
       - name: "Re-sign PHAR"
         run: "php compiler/build/resign.php tmp/phpstan.phar"

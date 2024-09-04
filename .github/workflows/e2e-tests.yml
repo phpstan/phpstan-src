@@ -19,7 +19,7 @@ on:
       - 'issue-bot/**'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.12.x-dev"
+  COMPOSER_ROOT_VERSION: "2.0.x-dev"
 
 concurrency:
   group: e2e-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches

@@ -1895,6 +1895,8 @@ final class NodeScopeResolver
 			$impurePoints = [
 				new ImpurePoint($scope, $stmt, 'betweenPhpTags', 'output between PHP opening and closing tags', true),
 			];
+		} elseif ($stmt instanceof Node\Stmt\Block) {
+			return $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback, $context);
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$hasYield = false;
 			$throwPoints = $overridingThrowPoints ?? [];

@@ -43,12 +43,6 @@ services:
 	-
 		class: PHPStan\Rules\Functions\CallUserFuncRule
 	-
-		class: PHPStan\Rules\Functions\ImplodeFunctionRule
-		arguments:
-			disabled: %featureToggles.checkParameterCastableToStringFunctions%
-		tags:
-			- phpstan.rules.rule
-	-
 		class: PHPStan\Rules\Functions\ParameterCastableToStringRule
 	-
 		class: PHPStan\Rules\Functions\ImplodeParameterCastableToStringRule

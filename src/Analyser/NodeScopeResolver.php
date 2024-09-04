@@ -791,6 +791,9 @@ final class NodeScopeResolver
 				new StatementExitPoint($stmt, $scope),
 			], $overridingThrowPoints ?? $throwPoints, $impurePoints);
 		} elseif ($stmt instanceof Node\Stmt\Expression) {
+			if ($stmt->expr instanceof Expr\Throw_) {
+				$scope = $stmtScope;
+			}
 			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope);
 			$hasAssign = false;
 			$currentScope = $scope;

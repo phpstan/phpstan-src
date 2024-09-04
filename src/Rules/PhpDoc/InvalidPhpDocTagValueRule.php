@@ -18,7 +18,7 @@ use function sprintf;
 use function str_starts_with;
 
 /**
- * @implements Rule<Node>
+ * @implements Rule<Node\Stmt>
  */
 final class InvalidPhpDocTagValueRule implements Rule
 {
@@ -26,7 +26,6 @@ final class InvalidPhpDocTagValueRule implements Rule
 	public function __construct(
 		private Lexer $phpDocLexer,
 		private PhpDocParser $phpDocParser,
-		private bool $checkAllInvalidPhpDocs,
 		private bool $invalidPhpDocTagLine,
 	)
 	{
@@ -34,32 +33,17 @@ final class InvalidPhpDocTagValueRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node::class;
+		return Node\Stmt::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$this->checkAllInvalidPhpDocs) {
-			if (
-				!$node instanceof Node\Stmt\ClassLike
-				&& !$node instanceof Node\FunctionLike
-				&& !$node instanceof Node\Stmt\Foreach_
-				&& !$node instanceof Node\Stmt\Property
-				&& !$node instanceof Node\Expr\Assign
-				&& !$node instanceof Node\Expr\AssignRef
-				&& !$node instanceof Node\Stmt\ClassConst
-			) {
-				return [];
-			}
-		} else {
-			// mirrored with InvalidPHPStanDocTagRule
-			if ($node instanceof VirtualNode) {
-				return [];
-			}
-			if ($node instanceof Node\Stmt\Expression) {
-				return [];
-			}
-			if ($node instanceof Node\Expr && !$node instanceof Node\Expr\Assign && !$node instanceof Node\Expr\AssignRef) {
+		// mirrored with InvalidPHPStanDocTagRule
+		if ($node instanceof VirtualNode) {
+			return [];
+		}
+		if ($node instanceof Node\Stmt\Expression) {
+			if (!$node->expr instanceof Node\Expr\Assign && !$node->expr instanceof Node\Expr\AssignRef) {
 				return [];
 			}
 		}

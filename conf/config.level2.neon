@@ -146,7 +146,6 @@ services:
 	-
 		class: PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
 		arguments:
-			checkAllInvalidPhpDocs: %featureToggles.allInvalidPhpDocs%
 			invalidPhpDocTagLine: %featureToggles.invalidPhpDocTagLine%
 		tags:
 			- phpstan.rules.rule
@@ -159,8 +158,6 @@ services:
 			- phpstan.rules.rule
 	-
 		class: PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
-		arguments:
-			checkAllInvalidPhpDocs: %featureToggles.allInvalidPhpDocs%
 		tags:
 			- phpstan.rules.rule
 	-

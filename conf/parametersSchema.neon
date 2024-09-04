@@ -69,7 +69,6 @@ parametersSchema:
 		newRuleLevelHelper: bool()
 		instanceofType: bool()
 		paramOutVariance: bool()
-		allInvalidPhpDocs: bool()
 		strictStaticMethodTemplateTypeVariance: bool()
 		propertyVariance: bool()
 		genericPrototypeMessage: bool()

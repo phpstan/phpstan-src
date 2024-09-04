@@ -73,7 +73,7 @@ final class ClassForbiddenNameCheck
 				$projectName,
 				$className,
 			))
-				->line($pair->getNode()->getLine())
+				->line($pair->getNode()->getStartLine())
 				->identifier('class.prefixed')
 				->nonIgnorable();
 

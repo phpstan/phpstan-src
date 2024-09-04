@@ -178,7 +178,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 						'Expected type must be a literal string, %s given in %s on line %d.',
 						$expectedType->describe(VerbosityLevel::precise()),
 						$relativePathHelper->getRelativePath($file),
-						$node->getLine(),
+						$node->getStartLine(),
 					));
 				}
 				$actualType = $scope->getType($node->getArgs()[1]->value);
@@ -190,7 +190,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 						'Expected type must be a literal string, %s given in %s on line %d.',
 						$expectedType->describe(VerbosityLevel::precise()),
 						$relativePathHelper->getRelativePath($file),
-						$node->getLine(),
+						$node->getStartLine(),
 					));
 				}
 

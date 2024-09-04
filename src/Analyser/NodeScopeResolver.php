@@ -1556,8 +1556,7 @@ final class NodeScopeResolver
 							}
 							$throwNode = $throwPoint->getNode();
 							if (
-								!$throwNode instanceof Throw_
-								&& !$throwNode instanceof Expr\Throw_
+								!$throwNode instanceof Expr\Throw_
 								&& !($throwNode instanceof Node\Stmt\Expression && $throwNode->expr instanceof Expr\Throw_)
 							) {
 								$onlyExplicitIsThrow = false;
@@ -1858,9 +1857,6 @@ final class NodeScopeResolver
 				if ($const->namespacedName !== null) {
 					$constantName = new Name\FullyQualified($const->namespacedName->toString());
 				} else {
-					if ($const->name->toString() === '') {
-						throw new ShouldNotHappenException('Constant cannot have a empty name');
-					}
 					$constantName = new Name\FullyQualified($const->name->toString());
 				}
 				$scope = $scope->assignExpression(new ConstFetch($constantName), $scope->getType($const->value), $scope->getNativeType($const->value));

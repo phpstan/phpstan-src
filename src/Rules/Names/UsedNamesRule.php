@@ -10,7 +10,6 @@ use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Use_;
-use PhpParser\Node\Stmt\UseUse;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
 use PHPStan\Rules\IdentifierRuleError;
@@ -100,7 +99,7 @@ final class UsedNamesRule implements Rule
 						$namespace !== '' ? $namespace . '\\' . $node->name->toString() : $node->name->toString(),
 					))
 						->identifier(sprintf('%s.nameInUse', $type))
-						->line($node->getLine())
+						->line($node->getStartLine())
 						->nonIgnorable()
 						->build(),
 				];
@@ -113,7 +112,7 @@ final class UsedNamesRule implements Rule
 	}
 
 	/**
-	 * @param UseUse[] $uses
+	 * @param Node\UseItem[] $uses
 	 * @param array<string, string[]> $usedNames
 	 * @return list<IdentifierRuleError>
 	 */
@@ -132,7 +131,7 @@ final class UsedNamesRule implements Rule
 					$use->getAlias()->toString(),
 				))
 					->identifier('use.nameInUse')
-					->line($use->getLine())
+					->line($use->getStartLine())
 					->nonIgnorable()
 					->build();
 				continue;
@@ -142,7 +141,7 @@ final class UsedNamesRule implements Rule
 		return $errors;
 	}
 
-	private function shouldBeIgnored(Use_|GroupUse|UseUse $use): bool
+	private function shouldBeIgnored(Use_|GroupUse|Node\UseItem $use): bool
 	{
 		return in_array($use->type, [Use_::TYPE_FUNCTION, Use_::TYPE_CONSTANT], true);
 	}

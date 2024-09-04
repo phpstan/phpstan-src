@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Operators;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<InvalidIncDecOperationRule>
@@ -69,6 +70,10 @@ class InvalidIncDecOperationRuleTest extends RuleTestCase
 
 	public function testMixed(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/invalid-inc-dec-mixed.php'], [

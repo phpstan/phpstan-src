@@ -46,6 +46,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testImpossibleCheckTypeFunctionCall(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse(
@@ -274,6 +278,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testImpossibleCheckTypeFunctionCallWithoutAlwaysTrue(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkAlwaysTrueCheckTypeFunctionCall = false;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse(
@@ -610,6 +618,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testConditionalTypesInference(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/conditional-types-inference.php'], [
@@ -645,6 +657,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testBug6443(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6443.php'], []);

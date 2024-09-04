@@ -306,6 +306,10 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 
 	public function testBinaryMixed(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/invalid-binary-mixed.php'], [

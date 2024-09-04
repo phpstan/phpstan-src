@@ -243,6 +243,10 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional-arrow.php'], $errors);
 	}

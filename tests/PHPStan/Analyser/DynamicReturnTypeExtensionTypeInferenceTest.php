@@ -14,10 +14,10 @@ class DynamicReturnTypeExtensionTypeInferenceTest extends TypeInferenceTestCase
 
 		if (PHP_VERSION_ID >= 80000) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-types-named-args.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-getsingle-conditional.php');
 		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-compound-types.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-getsingle-conditional.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7344.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7391b.php');
 	}

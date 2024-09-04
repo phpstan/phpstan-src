@@ -135,6 +135,10 @@ class IterableInForeachRuleTest extends RuleTestCase
 	 */
 	public function testMixed(bool $checkExplicitMixed, bool $checkImplicitMixed, array $errors): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkExplicitMixed = $checkExplicitMixed;
 		$this->checkImplicitMixed = $checkImplicitMixed;
 		$this->analyse([__DIR__ . '/data/foreach-mixed.php'], $errors);

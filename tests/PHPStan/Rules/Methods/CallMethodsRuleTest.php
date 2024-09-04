@@ -1595,6 +1595,10 @@ class CallMethodsRuleTest extends RuleTestCase
 	 */
 	public function testExplicitMixed(bool $checkExplicitMixed, array $errors): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2708,6 +2712,10 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug7593(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -3088,6 +3096,10 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug9951(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;

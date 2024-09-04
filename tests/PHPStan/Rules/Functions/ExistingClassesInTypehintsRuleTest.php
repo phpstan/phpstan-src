@@ -368,6 +368,10 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional.php'], $errors);
 	}
@@ -439,6 +443,10 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	public function testConditionalReturnType(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/conditional-return-type.php'], [
 			[
 				'Template type T of function FunctionConditionalReturnType\notGet() is not referenced in a parameter.',
@@ -449,6 +457,10 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	public function testTemplateInParamOut(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/param-out.php'], [
 			[
 				'Template type S of function ParamOutTemplate\uselessGeneric() is not referenced in a parameter.',

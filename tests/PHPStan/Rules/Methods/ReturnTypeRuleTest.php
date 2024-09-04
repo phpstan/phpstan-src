@@ -283,8 +283,31 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testMisleadingMixedType(): void
+	{
+		if (PHP_VERSION_ID >= 80000) {
+			$errors = [];
+		} else {
+			$errors = [
+				[
+					'Method MethodMisleadingMixedReturn\Foo::misleadingMixedReturnType() should return MethodMisleadingMixedReturn\mixed but returns int.',
+					11,
+				],
+				[
+					'Method MethodMisleadingMixedReturn\Foo::misleadingMixedReturnType() should return MethodMisleadingMixedReturn\mixed but returns true.',
+					14,
+				],
+			];
+		}
+		$this->analyse([__DIR__ . '/data/method-misleading-mixed-return.php'], $errors);
+	}
+
 	public function testMisleadingTypehintsInClassWithoutNamespace(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/misleadingTypehints.php'], [
 			[
 				'Method FooWithoutNamespace::misleadingBoolReturnType() should return boolean but returns true.',
@@ -522,6 +545,10 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug4603(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-4603.php'], []);
 	}
 
@@ -774,6 +801,10 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug8071(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-8071.php'], [
 			[

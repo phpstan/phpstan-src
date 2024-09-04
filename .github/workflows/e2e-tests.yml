@@ -26,36 +26,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  result-cache-php-parser-e2e:
-    name: "Result cache PHP-Parser E2E test"
-
-    runs-on: ${{ matrix.operating-system }}
-    timeout-minutes: 60
-
-    strategy:
-      fail-fast: false
-      matrix:
-        operating-system: [ubuntu-latest, windows-latest]
-
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "none"
-          php-version: "8.1"
-          extensions: mbstring
-          ini-values: memory_limit=256M
-
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
-
-      - name: "Tests"
-        run: |
-          git clone https://github.com/nikic/PHP-Parser.git tests/e2e/PHP-Parser && git -C tests/e2e/PHP-Parser checkout v3.1.5 && composer install --working-dir tests/e2e/PHP-Parser && vendor/bin/phpunit tests/e2e/ResultCacheEndToEndTest.php
-
   result-cache-e2e-tests:
     name: "Result cache E2E tests"
     runs-on: ubuntu-latest

@@ -99,9 +99,6 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
-      - name: "Update PHPUnit"
-        run: "composer update phpunit/phpunit -W"
-
       - name: "Cache Result cache"
         uses: actions/cache@v4
         with:

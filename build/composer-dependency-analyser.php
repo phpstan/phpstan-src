@@ -33,7 +33,7 @@ return $config
 	)
 	->ignoreErrorsOnPackage('phpunit/phpunit', [ErrorType::DEV_DEPENDENCY_IN_PROD]) // prepared test tooling
 	->ignoreErrorsOnPackage('jetbrains/phpstorm-stubs', [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV]) // there is no direct usage, but we need newer version then required by ondrejmirtes/BetterReflection
-	->ignoreErrorsOnPath(__DIR__ . '/../tests', [ErrorType::UNKNOWN_CLASS, ErrorType::UNKNOWN_FUNCTION]) // to be able to test invalid symbols
+	->ignoreErrorsOnPath(__DIR__ . '/../tests', [ErrorType::UNKNOWN_CLASS, ErrorType::UNKNOWN_FUNCTION, ErrorType::SHADOW_DEPENDENCY]) // to be able to test invalid symbols
 	->ignoreUnknownClasses([
 		'JetBrains\PhpStorm\Pure', // not present on composer's classmap
 		'PHPStan\ExtensionInstaller\GeneratedConfig', // generated

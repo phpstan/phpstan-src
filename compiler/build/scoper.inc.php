@@ -218,6 +218,16 @@ return [
 
 			return str_replace(sprintf('use %s\\PhpParser;', $prefix), 'use PhpParser;', $content);
 		},
+		function (string $filePath, string $prefix, string $content): string {
+			if (
+				$filePath !== 'vendor/nette/utils/src/Utils/Strings.php'
+				&& $filePath !== 'vendor/nette/utils/src/Utils/Arrays.php'
+			) {
+				return $content;
+			}
+
+			return str_replace('#[\\JetBrains\\PhpStorm\\Language(\'RegExp\')] ', '', $content);
+		},
 	],
 	'exclude-namespaces' => [
 		'PHPStan',

@@ -37,7 +37,7 @@ jobs:
         with:
           repository: phpstan/phpstan
           path: phpstan-dist
-          ref: 1.12.x
+          ref: 2.0.x
 
       - name: "Get info"
         id: info

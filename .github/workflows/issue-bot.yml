@@ -11,7 +11,7 @@ on:
       - 'changelog-generator/**'
   push:
     branches:
-      - "1.12.x"
+      - "2.0.x"
     paths-ignore:
       - 'compiler/**'
       - 'apigen/**'
@@ -167,7 +167,7 @@ jobs:
 
       - name: "Evaluate results - push"
         working-directory: "issue-bot"
-        if: "github.repository_owner == 'phpstan' && github.ref == 'refs/heads/1.12.x'"
+        if: "github.repository_owner == 'phpstan' && github.ref == 'refs/heads/2.0.x'"
         env:
           GITHUB_PAT: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           PHPSTAN_SRC_COMMIT_BEFORE: ${{ github.event.before }}

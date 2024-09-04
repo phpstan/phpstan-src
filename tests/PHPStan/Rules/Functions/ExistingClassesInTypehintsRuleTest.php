@@ -421,13 +421,18 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataTrueTypes
-	 * @param list<array{0: string, 1: int, 2?: string}> $errors
-	 */
-	public function testTrueTypehint(int $phpVersion, array $errors): void
+	public function testTrueTypehint(): void
 	{
-		$this->phpVersionId = $phpVersion;
+		if (PHP_VERSION_ID >= 80200) {
+			$errors = [];
+		} else {
+			$errors = [
+				[
+					'Function NativeTrueType\alwaysTrue() has invalid return type NativeTrueType\true.',
+					5,
+				],
+			];
+		}
 
 		$this->analyse([__DIR__ . '/data/true-typehint.php'], $errors);
 	}

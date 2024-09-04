@@ -97,13 +97,6 @@ services:
 			- phpstan.rules.rule
 
 	-
-		class: PHPStan\Rules\DeadCode\NoopRule
-		arguments:
-			better: %featureToggles.betterNoop%
-		tags:
-			- phpstan.rules.rule
-
-	-
 		class: PHPStan\Rules\DeadCode\CallToConstructorStatementWithoutImpurePointsRule
 
 	-

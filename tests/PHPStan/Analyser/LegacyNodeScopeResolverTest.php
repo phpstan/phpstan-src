@@ -6431,7 +6431,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$foo->misleadingIntReturnType()',
 			],
 			[
-				'mixed',
+				PHP_VERSION_ID >= 80000 ? 'mixed' : 'MisleadingTypes\mixed',
 				'$foo->misleadingMixedReturnType()',
 			],
 		];

@@ -1417,6 +1417,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testBug6175(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-6175.php'], []);
 	}
 
@@ -1600,6 +1604,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testBug7283(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-7283.php'], []);
 	}
 
@@ -1670,6 +1678,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testBug10297(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-10297.php'], []);
 	}
 

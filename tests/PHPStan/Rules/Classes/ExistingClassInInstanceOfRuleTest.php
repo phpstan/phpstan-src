@@ -7,6 +7,7 @@ use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ExistingClassInInstanceOfRule>
@@ -67,6 +68,10 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 
 	public function testBug7720(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-7720.php'], [
 			[
 				'Instanceof between mixed and trait Bug7720\FooBar will always evaluate to false.',

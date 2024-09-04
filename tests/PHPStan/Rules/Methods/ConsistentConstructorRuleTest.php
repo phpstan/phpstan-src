@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function sprintf;
-use const PHP_VERSION_ID;
 
 /** @extends RuleTestCase<ConsistentConstructorRule> */
 class ConsistentConstructorRuleTest extends RuleTestCase

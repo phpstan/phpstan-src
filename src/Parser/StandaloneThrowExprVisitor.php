@@ -10,7 +10,7 @@ final class StandaloneThrowExprVisitor extends NodeVisitorAbstract
 
 	public const ATTRIBUTE_NAME = 'standaloneThrowExpr';
 
-	public function enterNode(Node $node)
+	public function enterNode(Node $node): ?Node\Stmt\Expression
 	{
 		if (!$node instanceof Node\Stmt\Expression) {
 			return null;

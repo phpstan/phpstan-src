@@ -51,7 +51,6 @@ use function array_map;
 use function array_merge;
 use function array_pop;
 use function array_push;
-use function array_reverse;
 use function array_slice;
 use function array_unique;
 use function array_values;
@@ -892,14 +891,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function reverseArray(TrinaryLogic $preserveKeys): Type
 	{
-		$keyTypesReversed = array_reverse($this->keyTypes, true);
-		$keyTypes = array_values($keyTypesReversed);
-		$keyTypesReversedKeys = array_keys($keyTypesReversed);
-		$optionalKeys = array_map(static fn (int $optionalKey): int => $keyTypesReversedKeys[$optionalKey], $this->optionalKeys);
+		$builder = ConstantArrayTypeBuilder::createEmpty();
 
-		$reversed = new self($keyTypes, array_reverse($this->valueTypes), $this->nextAutoIndexes, $optionalKeys, TrinaryLogic::createNo());
+		for ($i = count($this->keyTypes) - 1; $i >= 0; $i--) {
+			$offsetType = $preserveKeys->yes() || $this->keyTypes[$i]->isInteger()->no()
+				? $this->keyTypes[$i]
+				: null;
+			$builder->setOffsetValueType($offsetType, $this->valueTypes[$i], $this->isOptionalKey($i));
+		}
 
-		return $preserveKeys->yes() ? $reversed : $reversed->reindex();
+		return $builder->getArray();
 	}
 
 	public function searchArray(Type $needleType): Type

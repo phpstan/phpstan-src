@@ -802,15 +802,11 @@ services:
 
 	-
 		class: PHPStan\Reflection\Mixin\MixinMethodsClassReflectionExtension
-		tags:
-			- phpstan.broker.methodsClassReflectionExtension
 		arguments:
 			mixinExcludeClasses: %mixinExcludeClasses%
 
 	-
 		class: PHPStan\Reflection\Mixin\MixinPropertiesClassReflectionExtension
-		tags:
-			- phpstan.broker.propertiesClassReflectionExtension
 		arguments:
 			mixinExcludeClasses: %mixinExcludeClasses%
 

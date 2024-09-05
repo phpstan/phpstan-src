@@ -38,9 +38,6 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 		}
 
 		$functionName = (string) $node->name;
-		if (in_array(strtolower($functionName), ['is_a', 'is_subclass_of'], true)) {
-			return [];
-		}
 		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node);
 		if ($isAlways === null) {
 			return [];

@@ -54,14 +54,17 @@ final class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeS
 		$superType = $allowString
 			? TypeCombinator::union(new ObjectWithoutClassType(), new ClassStringType())
 			: new ObjectWithoutClassType();
+
+		$resultType = $this->isAFunctionTypeSpecifyingHelper->determineType($objectOrClassType, $classType, $allowString, false);
+
 		// prevent false-positives in IsAFunctionTypeSpecifyingHelper
-		if ($superType->isSuperTypeOf($objectOrClassType)->yes() && !$classType->isClassStringType()->yes()) {
+		if ($resultType->equals($superType) && $resultType->isSuperTypeOf($objectOrClassType)->yes()) {
 			return new SpecifiedTypes([], []);
 		}
 
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,
-			$this->isAFunctionTypeSpecifyingHelper->determineType($objectOrClassType, $classType, $allowString, false),
+			$resultType,
 			$context,
 			false,
 			$scope,

@@ -77,3 +77,14 @@ class Filters {
 		return is_string($value);
 	}
 }
+
+function unionOfCallableStrings(): void
+{
+	$func = rand(0, 1) === 1 ? 'is_string' : 'is_int';
+	$list = [
+		1,
+		2,
+		'foo',
+	];
+	assertType("array{1, 2}|array{2: 'foo'}", array_filter($list, $func));
+}

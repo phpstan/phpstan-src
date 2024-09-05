@@ -22,10 +22,10 @@ use PHPStan\Dependency\ExportedNode\ExportedPropertiesNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitUseAdaptation;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Node\Printer\NodeTypePrinter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
-use function implode;
 use function is_string;
 
 final class ExportedNodeResolver
@@ -165,55 +165,13 @@ final class ExportedNodeResolver
 					$docComment !== null ? $docComment->getText() : null,
 				),
 				$node->byRef,
-				$this->printType($node->returnType),
+				NodeTypePrinter::printType($node->returnType),
 				$this->exportParameterNodes($node->params),
 				$this->exportAttributeNodes($node->attrGroups),
 			);
 		}
 
 		return null;
-	}
-
-	/**
-	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $type
-	 */
-	private function printType($type): ?string
-	{
-		if ($type === null) {
-			return null;
-		}
-
-		if ($type instanceof Node\NullableType) {
-			return '?' . $this->printType($type->type);
-		}
-
-		if ($type instanceof Node\UnionType) {
-			return implode('|', array_map(function ($innerType): string {
-				$printedType = $this->printType($innerType);
-				if ($printedType === null) {
-					throw new ShouldNotHappenException();
-				}
-
-				return $printedType;
-			}, $type->types));
-		}
-
-		if ($type instanceof Node\IntersectionType) {
-			return implode('&', array_map(function ($innerType): string {
-				$printedType = $this->printType($innerType);
-				if ($printedType === null) {
-					throw new ShouldNotHappenException();
-				}
-
-				return $printedType;
-			}, $type->types));
-		}
-
-		if ($type instanceof Node\Identifier || $type instanceof Name) {
-			return $type->toString();
-		}
-
-		throw new ShouldNotHappenException();
 	}
 
 	/**
@@ -243,7 +201,7 @@ final class ExportedNodeResolver
 			}
 			$nodes[] = new ExportedParameterNode(
 				$param->var->name,
-				$this->printType($type),
+				NodeTypePrinter::printType($type),
 				$param->byRef,
 				$param->variadic,
 				$param->default !== null,
@@ -321,7 +279,7 @@ final class ExportedNodeResolver
 					$node->isAbstract(),
 					$node->isFinal(),
 					$node->isStatic(),
-					$this->printType($node->returnType),
+					NodeTypePrinter::printType($node->returnType),
 					$this->exportParameterNodes($node->params),
 					$this->exportAttributeNodes($node->attrGroups),
 				);
@@ -343,7 +301,7 @@ final class ExportedNodeResolver
 					null,
 					$docComment !== null ? $docComment->getText() : null,
 				),
-				$this->printType($node->type),
+				NodeTypePrinter::printType($node->type),
 				$node->isPublic(),
 				$node->isPrivate(),
 				$node->isStatic(),

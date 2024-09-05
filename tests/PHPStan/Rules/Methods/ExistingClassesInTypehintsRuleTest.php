@@ -526,4 +526,26 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDeprecatedImplicitlyNullableParameterType(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			self::markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/method-implicitly-nullable.php'], [
+			[
+				'Deprecated in PHP 8.4: Parameter #3 $c (int) is implicitly nullable via default value null.',
+				13,
+			],
+			[
+				'Deprecated in PHP 8.4: Parameter #5 $e (int|string) is implicitly nullable via default value null.',
+				15,
+			],
+			[
+				'Deprecated in PHP 8.4: Parameter #7 $g (stdClass) is implicitly nullable via default value null.',
+				17,
+			],
+		]);
+	}
+
 }

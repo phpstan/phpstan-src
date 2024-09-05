@@ -492,16 +492,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-6305.php'], [
-			[
-				'Call to function is_subclass_of() with Bug6305\B and \'Bug6305\\\A\' will always evaluate to true.',
-				11,
-			],
-			[
-				'Call to function is_subclass_of() with Bug6305\B and \'Bug6305\\\B\' will always evaluate to false.',
-				14,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-6305.php'], []);
 	}
 
 	public function testBug6698(): void
@@ -1099,6 +1090,13 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/always-true-preg-match.php'], []);
+	}
+
+	public function testBug3979(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-3979.php'], []);
 	}
 
 }

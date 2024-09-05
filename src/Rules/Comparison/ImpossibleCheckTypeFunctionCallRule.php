@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function in_array;
 use function sprintf;
 use function strtolower;
 
@@ -37,7 +38,7 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 		}
 
 		$functionName = (string) $node->name;
-		if (strtolower($functionName) === 'is_a') {
+		if (in_array(strtolower($functionName), ['is_a', 'is_subclass_of'], true)) {
 			return [];
 		}
 		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node);

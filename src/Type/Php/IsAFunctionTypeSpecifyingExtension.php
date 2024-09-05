@@ -15,7 +15,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\TypeCombinator;
-
 use function count;
 use function strtolower;
 

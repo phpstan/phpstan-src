@@ -7,9 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use function in_array;
 use function sprintf;
-use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>

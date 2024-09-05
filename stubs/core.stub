@@ -80,7 +80,7 @@ function parse_str(string $string, array &$result): void {}
 function mb_parse_str(string $string, array &$result): bool {}
 
 /** @param-out float $percent */
-function similar_text(string $string1, string $string2, float &$percent = null) : int {}
+function similar_text(string $string1, string $string2, ?float &$percent = null) : int {}
 
 /**
  * @param mixed $output
@@ -258,7 +258,7 @@ function preg_filter($pattern, $replacement, $subject, int $limit = -1, &$count 
  * @param-out int $count
  * @return list<string>|string
  */
-function str_replace($search, $replace, $subject, int &$count = null) {}
+function str_replace($search, $replace, $subject, ?int &$count = null) {}
 
 /**
  * @param array<mixed>|string $search
@@ -267,7 +267,7 @@ function str_replace($search, $replace, $subject, int &$count = null) {}
  * @param-out int $count
  * @return list<string>|string
  */
-function str_ireplace($search, $replace, $subject, int &$count = null) {}
+function str_ireplace($search, $replace, $subject, ?int &$count = null) {}
 
 /**
  * @template TRead of null|array<array-key, resource>
@@ -294,16 +294,16 @@ function flock($stream, int $operation, mixed &$would_block = null): bool {}
  * @param-out string $error_message
  * @return resource|false
  */
-function fsockopen(string $hostname, int $port = -1, int &$error_code = null, string &$error_message = null, ?float $timeout = null) {}
+function fsockopen(string $hostname, int $port = -1, ?int &$error_code = null, ?string &$error_message = null, ?float $timeout = null) {}
 
 /**
  * @param-out string $filename
  * @param-out int $line
  */
-function headers_sent(string &$filename = null, int &$line = null): bool {}
+function headers_sent(?string &$filename = null, ?int &$line = null): bool {}
 
 /**
  * @param-out callable-string $callable_name
  * @return ($value is callable ? true : false)
  */
-function is_callable(mixed $value, bool $syntax_only = false, string &$callable_name = null): bool {}
+function is_callable(mixed $value, bool $syntax_only = false, ?string &$callable_name = null): bool {}

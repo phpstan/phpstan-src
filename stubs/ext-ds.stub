@@ -61,7 +61,7 @@ final class Deque implements Sequence
 	 * @param (callable(TValue): bool)|null $callback
 	 * @return Deque<TValue>
 	 */
-	public function filter(callable $callback = null): Deque
+	public function filter(?callable $callback = null): Deque
 	{
 	}
 
@@ -190,7 +190,7 @@ final class Map implements Collection, ArrayAccess
 	 * @param (callable(TKey, TValue): bool)|null $callback
 	 * @return Map<TKey, TValue>
 	 */
-	public function filter(callable $callback = null): Map
+	public function filter(?callable $callback = null): Map
 	{
 	}
 
@@ -284,7 +284,7 @@ final class Map implements Collection, ArrayAccess
 	 * @param (callable(TValue, TValue): int)|null $comparator
 	 * @return void
 	 */
-	public function sort(callable $comparator = null)
+	public function sort(?callable $comparator = null)
 	{
 	}
 
@@ -292,7 +292,7 @@ final class Map implements Collection, ArrayAccess
 	 * @param (callable(TValue, TValue): int)|null $comparator
 	 * @return Map<TKey, TValue>
 	 */
-	public function sorted(callable $comparator = null): Map
+	public function sorted(?callable $comparator = null): Map
 	{
 	}
 
@@ -300,7 +300,7 @@ final class Map implements Collection, ArrayAccess
 	 * @param (callable(TKey, TKey): int)|null $comparator
 	 * @return void
 	 */
-	public function ksort(callable $comparator = null)
+	public function ksort(?callable $comparator = null)
 	{
 	}
 
@@ -308,7 +308,7 @@ final class Map implements Collection, ArrayAccess
 	 * @param (callable(TKey, TKey): int)|null $comparator
 	 * @return Map<TKey, TValue>
 	 */
-	public function ksorted(callable $comparator = null): Map
+	public function ksorted(?callable $comparator = null): Map
 	{
 	}
 
@@ -401,7 +401,7 @@ interface Sequence extends Collection, ArrayAccess
 	 * @param (callable(TValue): bool)|null $callback
 	 * @return Sequence<TValue>
 	 */
-	public function filter(callable $callback = null);
+	public function filter(?callable $callback = null);
 
 	/**
 	 * @param TValue $value
@@ -432,7 +432,7 @@ interface Sequence extends Collection, ArrayAccess
 	 * @param string $glue
 	 * @return string
 	 */
-	public function join(string $glue = null): string;
+	public function join(?string $glue = null): string;
 
 	/**
 	 * @return TValue
@@ -509,13 +509,13 @@ interface Sequence extends Collection, ArrayAccess
 	 * @param (callable(TValue, TValue): int)|null $comparator
 	 * @return void
 	 */
-	public function sort(callable $comparator = null);
+	public function sort(?callable $comparator = null);
 
 	/**
 	 * @param (callable(TValue, TValue): int)|null $comparator
 	 * @return Sequence<TValue>
 	 */
-	public function sorted(callable $comparator = null);
+	public function sorted(?callable $comparator = null);
 
 	/**
 	 * @param TValue ...$values
@@ -563,7 +563,7 @@ final class Vector implements Sequence
 	 * @param (callable(TValue, TValue): int)|null $comparator
 	 * @return Vector<TValue>
 	 */
-	public function sorted(callable $comparator = null): Vector
+	public function sorted(?callable $comparator = null): Vector
 	{
 	}
 
@@ -571,7 +571,7 @@ final class Vector implements Sequence
 	 * @param (callable(TValue): bool)|null $callback
 	 * @return Vector<TValue>
 	 */
-	public function filter(callable $callback = null): Vector
+	public function filter(?callable $callback = null): Vector
 	{
 	}
 
@@ -642,7 +642,7 @@ final class Set implements Collection, ArrayAccess
 	 * @param (callable(TValue): bool)|null $callback
 	 * @return Set<TValue>
 	 */
-	public function filter(callable $callback = null): Set
+	public function filter(?callable $callback = null): Set
 	{
 	}
 
@@ -731,7 +731,7 @@ final class Set implements Collection, ArrayAccess
 	/**
 	 * @param (callable(TValue, TValue): int)|null $comparator
 	 */
-	public function sort(callable $comparator = null): void
+	public function sort(?callable $comparator = null): void
 	{
 	}
 
@@ -739,7 +739,7 @@ final class Set implements Collection, ArrayAccess
 	 * @param (callable(TValue, TValue): int)|null $comparator
 	 * @return Set<TValue>
 	 */
-	public function sorted(callable $comparator = null): Set
+	public function sorted(?callable $comparator = null): Set
 	{
 	}
 

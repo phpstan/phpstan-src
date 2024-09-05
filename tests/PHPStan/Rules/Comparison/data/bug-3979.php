@@ -20,3 +20,15 @@ function check_class($value, $class_type): bool
 
 var_dump(check_class("B", "A")); // true
 var_dump(check_class("C", "A")); // false
+
+/**
+ * @param class-string $value
+ * @param string $class_type
+ */
+function check_class2($value, $class_type): bool
+{
+	if (is_a($value, $class_type, true)) {
+		return true;
+	}
+	return false;
+}

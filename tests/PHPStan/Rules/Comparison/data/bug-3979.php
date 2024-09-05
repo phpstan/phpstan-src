@@ -32,3 +32,51 @@ function check_class2($value, $class_type): bool
 	}
 	return false;
 }
+
+/**
+ * @param class-string|object $value
+ * @param string $class_type
+ */
+function check_class3($value, $class_type): bool
+{
+	if (is_a($value, $class_type, true)) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * @param class-string|object $value
+ * @param string $class_type
+ */
+function check_class4($value, $class_type): bool
+{
+	if (is_subclass_of($value, $class_type, true)) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * @param object $value
+ * @param string $class_type
+ */
+function check_class5($value, $class_type): bool
+{
+	if (is_a($value, $class_type, true)) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * @param object $value
+ * @param string $class_type
+ */
+function check_class6($value, $class_type): bool
+{
+	if (is_subclass_of($value, $class_type, true)) {
+		return true;
+	}
+	return false;
+}

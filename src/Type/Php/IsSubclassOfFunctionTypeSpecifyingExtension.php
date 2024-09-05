@@ -9,9 +9,15 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
+
 use function count;
 use function strtolower;
 
@@ -45,6 +51,14 @@ final class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeS
 
 		// prevent false-positives in IsAFunctionTypeSpecifyingHelper
 		if ($objectOrClassType instanceof GenericClassStringType && $classType instanceof GenericClassStringType) {
+			return new SpecifiedTypes([], []);
+		}
+
+		$superType = $allowString
+			? TypeCombinator::union(new ObjectWithoutClassType(), new ClassStringType())
+			: new ObjectWithoutClassType();
+		// prevent false-positives in IsAFunctionTypeSpecifyingHelper
+		if ($superType->isSuperTypeOf($objectOrClassType)->yes() && !$classType->isClassStringType()->yes()) {
 			return new SpecifiedTypes([], []);
 		}
 

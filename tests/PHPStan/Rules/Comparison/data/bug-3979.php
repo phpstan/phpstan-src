@@ -80,3 +80,51 @@ function check_class6($value, $class_type): bool
 	}
 	return false;
 }
+
+/**
+ * @param object $value
+ * @param class-string $class_type
+ */
+function check_class7($value, $class_type): bool
+{
+	if (is_a($value, $class_type, true)) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * @param object $value
+ * @param class-string $class_type
+ */
+function check_class8($value, $class_type): bool
+{
+	if (is_subclass_of($value, $class_type, true)) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * @param class-string $value
+ * @param class-string $class_type
+ */
+function check_class9($value, $class_type): bool
+{
+	if (is_a($value, $class_type, true)) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * @param class-string $value
+ * @param class-string $class_type
+ */
+function check_class10($value, $class_type): bool
+{
+	if (is_subclass_of($value, $class_type, true)) {
+		return true;
+	}
+	return false;
+}

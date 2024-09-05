@@ -3,6 +3,7 @@
 namespace PHPStan\Rules;
 
 use PhpParser\Node;
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
@@ -15,6 +16,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\UnionType;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Printer\NodeTypePrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -41,6 +43,7 @@ use function count;
 use function in_array;
 use function is_string;
 use function sprintf;
+use function strtolower;
 
 final class FunctionDefinitionCheck
 {
@@ -103,7 +106,7 @@ final class FunctionDefinitionCheck
 	{
 		$errors = [];
 		$unionTypeReported = false;
-		foreach ($parameters as $param) {
+		foreach ($parameters as $i => $param) {
 			if ($param->type === null) {
 				continue;
 			}
@@ -123,6 +126,18 @@ final class FunctionDefinitionCheck
 			if (!$param->var instanceof Variable || !is_string($param->var->name)) {
 				throw new ShouldNotHappenException();
 			}
+
+			$implicitlyNullableTypeError = $this->checkImplicitlyNullableType(
+				$param->type,
+				$param->default,
+				$i + 1,
+				$param->getStartLine(),
+				$param->var->name,
+			);
+			if ($implicitlyNullableTypeError !== null) {
+				$errors[] = $implicitlyNullableTypeError;
+			}
+
 			$type = $scope->getFunctionType($param->type, false, false);
 			if ($type->isVoid()->yes()) {
 				$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, 'void'))
@@ -331,6 +346,18 @@ final class FunctionDefinitionCheck
 					->nonIgnorable()
 					->build();
 			}
+		}
+
+		foreach ($parameterNodes as $i => $parameterNode) {
+			if (!$parameterNode->var instanceof Variable || !is_string($parameterNode->var->name)) {
+				throw new ShouldNotHappenException();
+			}
+			$implicitlyNullableTypeError = $this->checkImplicitlyNullableType($parameterNode->type, $parameterNode->default, $i + 1, $parameterNode->getStartLine(), $parameterNode->var->name);
+			if ($implicitlyNullableTypeError === null) {
+				continue;
+			}
+
+			$errors[] = $implicitlyNullableTypeError;
 		}
 
 		if ($this->phpVersion->deprecatesRequiredParameterAfterOptional()) {
@@ -652,6 +679,62 @@ final class FunctionDefinitionCheck
 			$parametersAcceptor->getNativeReturnType()->getReferencedClasses(),
 			$parametersAcceptor->getPhpDocReturnType()->getReferencedClasses(),
 		);
+	}
+
+	private function checkImplicitlyNullableType(
+		Identifier|Name|ComplexType|null $type,
+		?Node\Expr $default,
+		int $order,
+		int $line,
+		string $name,
+	): ?IdentifierRuleError
+	{
+		if (!$default instanceof ConstFetch) {
+			return null;
+		}
+
+		if ($default->name->toLowerString() !== 'null') {
+			return null;
+		}
+
+		if ($type === null) {
+			return null;
+		}
+
+		if ($type instanceof NullableType || $type instanceof IntersectionType) {
+			return null;
+		}
+
+		if (!$this->phpVersion->deprecatesImplicitlyNullableParameterTypes()) {
+			return null;
+		}
+
+		if ($type instanceof Identifier && strtolower($type->name) === 'mixed') {
+			return null;
+		}
+		if ($type instanceof Name && $type->toLowerString() === 'mixed') {
+			return null;
+		}
+
+		if ($type instanceof UnionType) {
+			foreach ($type->types as $innerType) {
+				if ($innerType instanceof Identifier && strtolower($innerType->name) === 'null') {
+					return null;
+				}
+				if ($innerType instanceof Name && $innerType->toLowerString() === 'null') {
+					return null;
+				}
+			}
+		}
+
+		return RuleErrorBuilder::message(sprintf(
+			'Deprecated in PHP 8.4: Parameter #%d $%s (%s) is implicitly nullable via default value null.',
+			$order,
+			$name,
+			NodeTypePrinter::printType($type),
+		))->line($line)
+			->identifier('parameter.implicitlyNullable')
+			->build();
 	}
 
 }

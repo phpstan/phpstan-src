@@ -343,4 +343,9 @@ class PhpVersion
 		return $this->versionId >= 80400;
 	}
 
+	public function deprecatesImplicitlyNullableParameterTypes(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
 }

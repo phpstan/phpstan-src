@@ -13,9 +13,6 @@ on:
 env:
   COMPOSER_ROOT_VERSION: "2.0.x-dev"
 
-env:
-  COMPOSER_ROOT_VERSION: "1.12.x-dev"
-
 concurrency:
   group: phar-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
   cancel-in-progress: true

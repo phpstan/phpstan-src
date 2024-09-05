@@ -10,9 +10,6 @@ on:
     tags:
       - '2.0.*'
 
-env:
-  COMPOSER_ROOT_VERSION: "2.0.x-dev"
-
 concurrency:
   group: phar-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
   cancel-in-progress: true
@@ -79,12 +76,15 @@ jobs:
 
       - name: "Composer dump"
         run: "composer install --no-interaction --no-progress"
+        env:
+          COMPOSER_ROOT_VERSION: "2.0.x-dev"
 
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"
         run: "php box.phar compile --no-parallel"
         env:
           PHAR_CHECKSUM: "1"
+          COMPOSER_ROOT_VERSION: "2.0.x-dev"
 
       - name: "Re-sign PHAR"
         run: "php compiler/build/resign.php tmp/phpstan.phar"

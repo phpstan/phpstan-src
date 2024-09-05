@@ -411,9 +411,20 @@ class TypeUtils
 
 	public static function resolveLateResolvableTypes(Type $type, bool $resolveUnresolvableTypes = true): Type
 	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($resolveUnresolvableTypes): Type {
-			while ($type instanceof LateResolvableType && ($resolveUnresolvableTypes || $type->isResolvable())) {
+		/** @var int $ignoreResolveUnresolvableTypesLevel */
+		$ignoreResolveUnresolvableTypesLevel = 0;
+
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($resolveUnresolvableTypes, &$ignoreResolveUnresolvableTypesLevel): Type {
+			while ($type instanceof LateResolvableType && (($resolveUnresolvableTypes && $ignoreResolveUnresolvableTypesLevel === 0) || $type->isResolvable())) {
 				$type = $type->resolve();
+			}
+
+			if ($type instanceof CallableType || $type instanceof ClosureType) {
+				$ignoreResolveUnresolvableTypesLevel++;
+				$result = $traverse($type);
+				$ignoreResolveUnresolvableTypesLevel--;
+
+				return $result;
 			}
 
 			return $traverse($type);

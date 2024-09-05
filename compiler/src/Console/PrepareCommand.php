@@ -63,7 +63,7 @@ final class PrepareCommand extends Command
 	{
 		$json = json_decode($this->filesystem->read($buildDir . '/composer.json'), true);
 
-		unset($json['replace']);
+		unset($json['replace']['phpstan/phpstan']);
 		$json['name'] = 'phpstan/phpstan';
 		$json['require']['php'] = '^7.4|^8.0';
 

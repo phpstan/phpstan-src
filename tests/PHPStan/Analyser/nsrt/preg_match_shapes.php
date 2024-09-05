@@ -753,3 +753,18 @@ function bug11622 (string $expression): void {
 		assertType("array{string, string}", $matches);
 	}
 }
+
+function bug11604 (string $string): void {
+	if (! preg_match('/(XX)|(YY)?ZZ/', $string, $matches)) {
+		return;
+	}
+
+	assertType("array{0: string, 1?: ''|'XX', 2?: 'YY'}", $matches);
+	// could be array{string, '', 'YY'}|array{string, 'XX'}|array{string}
+}
+
+function bug11604b (string $string): void {
+	if (preg_match('/(XX)|(YY)?(ZZ)/', $string, $matches)) {
+		assertType("array{0: string, 1?: ''|'XX', 2?: ''|'YY', 3?: 'ZZ'}", $matches);
+	}
+}

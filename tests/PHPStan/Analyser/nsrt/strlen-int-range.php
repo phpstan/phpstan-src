@@ -113,3 +113,17 @@ function doFoo(string $s, $zeroToThree, $twoOrThree, $twoOrMore, int $maxThree, 
 		assertType('string', $s);
 	}
 }
+
+/**
+ * @param int<1, max> $oneOrMore
+ * @param int<2, max> $twoOrMore
+ */
+function doFooBar(array $arr, int $oneOrMore, int $twoOrMore): void
+{
+	if (count($arr) == $oneOrMore) {
+		assertType('non-empty-array', $arr);
+	}
+	if (count($arr) === $twoOrMore) {
+		assertType('non-empty-array', $arr);
+	}
+}

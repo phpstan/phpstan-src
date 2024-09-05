@@ -1188,17 +1188,16 @@ final class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		$floatType = new FloatType();
 		$leftNumberType = $leftType->toNumber();
 		if ($leftNumberType instanceof ConstantIntegerType && $leftNumberType->getValue() === 0) {
-			if ($floatType->isSuperTypeOf($rightType)->yes()) {
+			if ($rightType->isFloat()->yes()) {
 				return new ConstantFloatType(0.0);
 			}
 			return new ConstantIntegerType(0);
 		}
 		$rightNumberType = $rightType->toNumber();
 		if ($rightNumberType instanceof ConstantIntegerType && $rightNumberType->getValue() === 0) {
-			if ($floatType->isSuperTypeOf($leftType)->yes()) {
+			if ($leftType->isFloat()->yes()) {
 				return new ConstantFloatType(0.0);
 			}
 			return new ConstantIntegerType(0);

@@ -46,8 +46,7 @@ final class ExponentiateHelper
 		}
 
 		// exponentiation of a float, stays a float
-		$float = new FloatType();
-		$isFloatBase = $float->isSuperTypeOf($base)->yes();
+		$isFloatBase = $base->isFloat()->yes();
 
 		$isLooseZero = (new ConstantIntegerType(0))->isSuperTypeOf($exponent->toNumber());
 		if ($isLooseZero->yes()) {

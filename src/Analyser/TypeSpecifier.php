@@ -38,6 +38,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ComparisonAwareTypeSpecifyingExtension;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -2005,6 +2006,47 @@ final class TypeSpecifier
 		return array_merge(...$extensionsForClass);
 	}
 
+	private function specifyWithComparisonAwareTypeSpecifyingExtensions(
+		Expr\BinaryOp $binaryOp,
+		Expr $callExpr,
+		Expr\CallLike $callLike,
+		Type $comparisonType,
+		Scope $scope,
+		TypeSpecifierContext $context,
+		?Expr $rootExpr,
+	): ?SpecifiedTypes
+	{
+		if ($callLike instanceof FuncCall && $callLike->name instanceof Name) {
+			if (!$this->reflectionProvider->hasFunction($callLike->name, $scope)) {
+				return null;
+			}
+			$functionReflection = $this->reflectionProvider->getFunction($callLike->name, $scope);
+
+			$comparisonContext = TypeSpecifierContext::createComparison(
+				new TypeSpecifierComparisonContext(
+					$binaryOp,
+					$callExpr,
+					$comparisonType,
+					$context,
+					$rootExpr,
+				),
+			);
+			foreach ($this->getFunctionTypeSpecifyingExtensions() as $extension) {
+				if (!$extension instanceof ComparisonAwareTypeSpecifyingExtension) {
+					continue;
+				}
+
+				if (!$extension->isFunctionSupported($functionReflection, $callLike, $comparisonContext)) {
+					continue;
+				}
+
+				return $extension->specifyTypes($functionReflection, $callLike, $scope, $comparisonContext);
+			}
+		}
+
+		return null;
+	}
+
 	public function resolveEqual(Expr\BinaryOp\Equal $expr, Scope $scope, TypeSpecifierContext $context, ?Expr $rootExpr): SpecifiedTypes
 	{
 		$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
@@ -2039,14 +2081,19 @@ final class TypeSpecifier
 				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 			}
 
-			if (
-				$context->true()
-				&& $exprNode instanceof FuncCall
-				&& $exprNode->name instanceof Name
-				&& $exprNode->name->toLowerString() === 'preg_match'
-				&& (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()
-			) {
-				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
+			if ($exprNode instanceof Expr\CallLike) {
+				$specifiedTypes = $this->specifyWithComparisonAwareTypeSpecifyingExtensions(
+					$expr,
+					$exprNode,
+					$exprNode,
+					$constantType,
+					$scope,
+					$context,
+					$rootExpr,
+				);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
+				}
 			}
 		}
 
@@ -2138,18 +2185,21 @@ final class TypeSpecifier
 		$rightType = $scope->getType($rightExpr);
 
 		if (
-			$context->true()
-			&& $unwrappedLeftExpr instanceof FuncCall
+			$unwrappedLeftExpr instanceof FuncCall
 			&& $unwrappedLeftExpr->name instanceof Name
-			&& $unwrappedLeftExpr->name->toLowerString() === 'preg_match'
-			&& (new ConstantIntegerType(1))->isSuperTypeOf($rightType)->yes()
 		) {
-			return $this->specifyTypesInCondition(
-				$scope,
+			$specifiedTypes = $this->specifyWithComparisonAwareTypeSpecifyingExtensions(
+				$expr,
 				$leftExpr,
+				$unwrappedLeftExpr,
+				$rightType,
+				$scope,
 				$context,
 				$rootExpr,
 			);
+			if ($specifiedTypes !== null) {
+				return $specifiedTypes;
+			}
 		}
 
 		if (

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\BinaryOp\Equal;
+use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -10,11 +12,13 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ComparisonAwareTypeSpecifyingExtension;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use function in_array;
 use function strtolower;
 
-final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
+final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension, ComparisonAwareTypeSpecifyingExtension
 {
 
 	private TypeSpecifier $typeSpecifier;
@@ -37,6 +41,25 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
+		$comparisonContext = $context->comparison();
+		if ($comparisonContext !== null) {
+			$binaryOp = $comparisonContext->getBinaryOp();
+			if (
+				($binaryOp instanceof Equal || $binaryOp instanceof Identical)
+				&& $comparisonContext->getTypeSpecifierContext()->true()
+				&& (new ConstantIntegerType(1))->isSuperTypeOf($comparisonContext->getComparisonType())->yes()
+			) {
+				return $this->typeSpecifier->specifyTypesInCondition(
+					$scope,
+					$comparisonContext->getCallExpr(),
+					$comparisonContext->getTypeSpecifierContext(),
+					$comparisonContext->getRootExpr(),
+				);
+			}
+
+			return new SpecifiedTypes();
+		}
+
 		$args = $node->getArgs();
 		$patternArg = $args[0] ?? null;
 		$matchesArg = $args[2] ?? null;

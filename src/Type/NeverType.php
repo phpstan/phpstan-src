@@ -316,6 +316,11 @@ class NeverType implements CompoundType
 		return new NeverType();
 	}
 
+	public function reverseArray(TrinaryLogic $preserveKeys): Type
+	{
+		return new NeverType();
+	}
+
 	public function searchArray(Type $needleType): Type
 	{
 		return new NeverType();

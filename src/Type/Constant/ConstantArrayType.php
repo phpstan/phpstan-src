@@ -837,6 +837,23 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->removeLastElements(1);
 	}
 
+	private function reverseConstantArray(TrinaryLogic $preserveKeys): self
+	{
+		$keyTypesReversed = array_reverse($this->keyTypes, true);
+		$keyTypes = array_values($keyTypesReversed);
+		$keyTypesReversedKeys = array_keys($keyTypesReversed);
+		$optionalKeys = array_map(static fn (int $optionalKey): int => $keyTypesReversedKeys[$optionalKey], $this->optionalKeys);
+
+		$reversed = new self($keyTypes, array_reverse($this->valueTypes), $this->nextAutoIndexes, $optionalKeys, TrinaryLogic::createNo());
+
+		return $preserveKeys->yes() ? $reversed : $reversed->reindex();
+	}
+
+	public function reverseArray(TrinaryLogic $preserveKeys): Type
+	{
+		return $this->reverseConstantArray($preserveKeys);
+	}
+
 	public function searchArray(Type $needleType): Type
 	{
 		$matches = [];
@@ -1121,9 +1138,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$offset *= -1;
 			$reversedLimit = min($limit, $offset);
 			$reversedOffset = $offset - $reversedLimit;
-			return $this->reverse(true)
+			return $this->reverseConstantArray(TrinaryLogic::createYes())
 				->slice($reversedOffset, $reversedLimit, $preserveKeys)
-				->reverse(true);
+				->reverseConstantArray(TrinaryLogic::createYes());
 		}
 
 		if ($offset > 0) {
@@ -1162,16 +1179,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $preserveKeys ? $slice : $slice->reindex();
 	}
 
+	/** @deprecated Use reverseArray() instead */
 	public function reverse(bool $preserveKeys = false): self
 	{
-		$keyTypesReversed = array_reverse($this->keyTypes, true);
-		$keyTypes = array_values($keyTypesReversed);
-		$keyTypesReversedKeys = array_keys($keyTypesReversed);
-		$optionalKeys = array_map(static fn (int $optionalKey): int => $keyTypesReversedKeys[$optionalKey], $this->optionalKeys);
-
-		$reversed = new self($keyTypes, array_reverse($this->valueTypes), $this->nextAutoIndexes, $optionalKeys, TrinaryLogic::createNo());
-
-		return $preserveKeys ? $reversed : $reversed->reindex();
+		return $this->reverseConstantArray(TrinaryLogic::createFromBoolean($preserveKeys));
 	}
 
 	/** @param positive-int $length */

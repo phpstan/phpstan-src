@@ -199,6 +199,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function reverseArray(TrinaryLogic $preserveKeys): Type
+	{
+		return $this;
+	}
+
 	public function searchArray(Type $needleType): Type
 	{
 		return new MixedType();

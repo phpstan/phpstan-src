@@ -9,8 +9,6 @@ $polyfills = [
 	'symfony/polyfill-intl-grapheme',
 	'symfony/polyfill-intl-normalizer',
 	'symfony/polyfill-mbstring',
-	'symfony/polyfill-php73',
-	'symfony/polyfill-php74',
 	'symfony/polyfill-php80',
 	'symfony/polyfill-php81',
 ];

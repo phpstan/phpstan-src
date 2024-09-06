@@ -8,6 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -17,6 +18,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use function array_slice;
 use function count;
 
@@ -73,7 +75,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 							$returnedArrayBuilder->setOffsetValueType(
 								$keyType,
-								$valueType,
+								$this->mapValueType($constantArray->getOffsetValueType($keyType), $valueType),
 								$constantArray->isOptionalKey($i),
 							);
 						}
@@ -88,24 +90,24 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 				} else {
 					$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 						$arrayType->getIterableKeyType(),
-						$valueType,
+						$this->mapValueType($arrayType->getIterableValueType(), $valueType),
 					), ...TypeUtils::getAccessoryTypes($arrayType));
 				}
 			} elseif ($arrayType->isArray()->yes()) {
 				$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 					$arrayType->getIterableKeyType(),
-					$valueType,
+					$this->mapValueType($arrayType->getIterableValueType(), $valueType),
 				), ...TypeUtils::getAccessoryTypes($arrayType));
 			} else {
 				$mappedArrayType = new ArrayType(
 					new MixedType(),
-					$valueType,
+					$this->mapValueType($arrayType->getIterableValueType(), $valueType),
 				);
 			}
 		} else {
 			$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 				new IntegerType(),
-				$valueType,
+				$this->mapValueType($arrayType->getIterableValueType(), $valueType),
 			), ...TypeUtils::getAccessoryTypes($arrayType));
 		}
 
@@ -114,6 +116,28 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		return $mappedArrayType;
+	}
+
+	private function mapValueType(Type $initialValue, Type $returnType): Type
+	{
+		$newValues = [];
+		if ($returnType instanceof UnionType) {
+			foreach ($returnType->getTypes() as $type) {
+				if ($type instanceof ConditionalTypeForParameter) {
+					$newValues[] = $type->toConditional($initialValue);
+				} else {
+					$newValues[] = $type;
+				}
+			}
+
+			return TypeCombinator::union(...$newValues);
+		}
+
+		if ($returnType instanceof ConditionalTypeForParameter) {
+			return $returnType->toConditional($initialValue);
+		}
+
+		return $returnType;
 	}
 
 }

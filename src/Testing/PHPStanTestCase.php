@@ -5,6 +5,7 @@ namespace PHPStan\Testing;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\DirectInternalScopeFactory;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeFactory;
@@ -188,6 +189,7 @@ abstract class PHPStanTestCase extends TestCase
 				self::getParser(),
 				$container->getByType(NodeScopeResolver::class),
 				$container->getByType(PhpVersion::class),
+				$container->getByType(MethodCallReturnTypeHelper::class),
 				$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
 				$container->getParameter('featureToggles')['explicitMixedForGlobalVariables'],
 				$constantResolver,

@@ -207,6 +207,7 @@ final class MutatingScope implements Scope
 		private ConstantResolver $constantResolver,
 		private ScopeContext $context,
 		private PhpVersion $phpVersion,
+		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		private bool $declareStrictTypes = false,
 		private PhpFunctionFromParserNodeReflection|null $function = null,
 		?string $namespace = null,
@@ -5485,7 +5486,6 @@ final class MutatingScope implements Scope
 			$constructorMethod = new DummyConstructorReflection($classReflection);
 		}
 
-		$resolvedTypes = [];
 		$methodCall = new Expr\StaticCall(
 			new Name($resolvedClassName),
 			new Node\Identifier($constructorMethod->getName()),
@@ -5498,29 +5498,15 @@ final class MutatingScope implements Scope
 			$constructorMethod->getVariants(),
 			$constructorMethod->getNamedArgumentsVariants(),
 		);
-		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
-
-		if ($normalizedMethodCall !== null) {
-			foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
-				if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
-					continue;
-				}
-
-				$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
-					$constructorMethod,
-					$normalizedMethodCall,
-					$this,
-				);
-				if ($resolvedType === null) {
-					continue;
-				}
-
-				$resolvedTypes[] = $resolvedType;
-			}
-		}
-
-		if (count($resolvedTypes) > 0) {
-			return TypeCombinator::union(...$resolvedTypes);
+		$returnType = $this->methodCallReturnTypeHelper->constructorReturnType(
+			$parametersAcceptor,
+			$this,
+			$methodCall,
+			$constructorMethod,
+			$classReflection->getName(),
+		);
+		if ($returnType !== null) {
+			return $returnType;
 		}
 
 		$methodResult = $this->getType($methodCall);
@@ -5619,34 +5605,10 @@ final class MutatingScope implements Scope
 		);
 	}
 
-	private function filterTypeWithMethod(Type $typeWithMethod, string $methodName): ?Type
-	{
-		if ($typeWithMethod instanceof UnionType) {
-			$newTypes = [];
-			foreach ($typeWithMethod->getTypes() as $innerType) {
-				if (!$innerType->hasMethod($methodName)->yes()) {
-					continue;
-				}
-
-				$newTypes[] = $innerType;
-			}
-			if (count($newTypes) === 0) {
-				return null;
-			}
-			$typeWithMethod = TypeCombinator::union(...$newTypes);
-		}
-
-		if (!$typeWithMethod->hasMethod($methodName)->yes()) {
-			return null;
-		}
-
-		return $typeWithMethod;
-	}
-
 	/** @api */
 	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?ExtendedMethodReflection
 	{
-		$type = $this->filterTypeWithMethod($typeWithMethod, $methodName);
+		$type = $this->methodCallReturnTypeHelper->filterTypeWithMethod($typeWithMethod, $methodName);
 		if ($type === null) {
 			return null;
 		}
@@ -5657,7 +5619,7 @@ final class MutatingScope implements Scope
 	/** @api */
 	public function getNakedMethod(Type $typeWithMethod, string $methodName): ?ExtendedMethodReflection
 	{
-		$type = $this->filterTypeWithMethod($typeWithMethod, $methodName);
+		$type = $this->methodCallReturnTypeHelper->filterTypeWithMethod($typeWithMethod, $methodName);
 		if ($type === null) {
 			return null;
 		}
@@ -5670,7 +5632,7 @@ final class MutatingScope implements Scope
 	 */
 	private function methodCallReturnType(Type $typeWithMethod, string $methodName, Expr $methodCall): ?Type
 	{
-		$typeWithMethod = $this->filterTypeWithMethod($typeWithMethod, $methodName);
+		$typeWithMethod = $this->methodCallReturnTypeHelper->filterTypeWithMethod($typeWithMethod, $methodName);
 		if ($typeWithMethod === null) {
 			return null;
 		}
@@ -5682,55 +5644,20 @@ final class MutatingScope implements Scope
 			$methodReflection->getVariants(),
 			$methodReflection->getNamedArgumentsVariants(),
 		);
-		if ($methodCall instanceof MethodCall) {
-			$normalizedMethodCall = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $methodCall);
-		} else {
-			$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
-		}
-		if ($normalizedMethodCall === null) {
-			return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $methodCall);
-		}
 
-		$resolvedTypes = [];
-		foreach ($typeWithMethod->getObjectClassNames() as $className) {
-			if ($normalizedMethodCall instanceof MethodCall) {
-				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicMethodReturnTypeExtensionsForClass($className) as $dynamicMethodReturnTypeExtension) {
-					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
-						continue;
-					}
+		$returnType = $this->methodCallReturnTypeHelper->methodCallReturnType(
+			$parametersAcceptor,
+			$this,
+			$typeWithMethod,
+			$methodName,
+			$methodCall,
+		);
 
-					$resolvedType = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($methodReflection, $normalizedMethodCall, $this);
-					if ($resolvedType === null) {
-						continue;
-					}
-
-					$resolvedTypes[] = $resolvedType;
-				}
-			} else {
-				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($className) as $dynamicStaticMethodReturnTypeExtension) {
-					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($methodReflection)) {
-						continue;
-					}
-
-					$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
-						$methodReflection,
-						$normalizedMethodCall,
-						$this,
-					);
-					if ($resolvedType === null) {
-						continue;
-					}
-
-					$resolvedTypes[] = $resolvedType;
-				}
-			}
+		if ($returnType !== null) {
+			return $this->transformVoidToNull($returnType, $methodCall);
 		}
 
-		if (count($resolvedTypes) > 0) {
-			return $this->transformVoidToNull(TypeCombinator::union(...$resolvedTypes), $methodCall);
-		}
-
-		return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $methodCall);
+		return null;
 	}
 
 	/** @api */

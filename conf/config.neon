@@ -795,6 +795,25 @@ services:
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository
 
 	-
+		class: PHPStan\Reflection\BetterReflection\Type\AdapterReflectionEnumCaseDynamicReturnTypeExtension
+		arguments:
+			class: PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
+		class: PHPStan\Reflection\BetterReflection\Type\AdapterReflectionEnumCaseDynamicReturnTypeExtension
+		arguments:
+			class: PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumUnitCase
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
+		class: PHPStan\Reflection\BetterReflection\Type\AdapterReflectionEnumDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
 		class: PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExtension
 
 	-

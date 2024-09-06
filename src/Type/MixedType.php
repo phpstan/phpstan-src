@@ -189,6 +189,15 @@ class MixedType implements CompoundType, SubtractableType
 		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)));
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		if ($this->isArray()->no()) {
+			return new ErrorType();
+		}
+
+		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)));
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		if ($this->isArray()->no()) {

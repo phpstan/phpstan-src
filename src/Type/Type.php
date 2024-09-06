@@ -151,6 +151,8 @@ interface Type
 
 	public function getValuesArray(): Type;
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type;
+
 	public function fillKeysArray(Type $valueType): Type;
 
 	public function flipArray(): Type;

@@ -5,7 +5,7 @@ namespace PHPStan\Type\Php;
 use PHPStan\Testing\TypeInferenceTestCase;
 use const PHP_VERSION_ID;
 
-class CurlInitReturnTypeExtensionTest extends TypeInferenceTestCase
+class CurlInitReturnTypeTest extends TypeInferenceTestCase
 {
 
 	public static function dataFileAsserts(): iterable

@@ -4,18 +4,21 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
-use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use function count;
 
 final class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -25,49 +28,22 @@ final class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionRetu
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		$args = $functionCall->getArgs();
-		if (count($args) < 1) {
+		if (count($args) < 2) {
 			return null;
 		}
 
-		$valueType = $scope->getType($args[0]->value);
-		if (!$valueType->isArray()->yes()) {
-			return null;
+		$arrayType = $scope->getType($args[0]->value);
+		if ($arrayType->isArray()->no()) {
+			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
-		$offsetType = isset($args[1]) ? $scope->getType($args[1]->value) : null;
-		$limitType = isset($args[2]) ? $scope->getType($args[2]->value) : null;
+		$offsetType = $scope->getType($args[1]->value);
+		$lengthType = isset($args[2]) ? $scope->getType($args[2]->value) : new NullType();
 
-		$constantArrays = $valueType->getConstantArrays();
-		if (count($constantArrays) > 0) {
-			$preserveKeysType = isset($args[3]) ? $scope->getType($args[3]->value) : null;
+		$preserveKeysType = isset($args[3]) ? $scope->getType($args[3]->value) : new ConstantBooleanType(false);
+		$preserveKeys = (new ConstantBooleanType(true))->isSuperTypeOf($preserveKeysType);
 
-			$offset = $offsetType instanceof ConstantIntegerType ? $offsetType->getValue() : 0;
-			$limit = $limitType instanceof ConstantIntegerType ? $limitType->getValue() : null;
-			$preserveKeys = $preserveKeysType !== null && $preserveKeysType->isTrue()->yes();
-
-			$results = [];
-			foreach ($constantArrays as $constantArray) {
-				$results[] = $constantArray->slice($offset, $limit, $preserveKeys);
-			}
-
-			return TypeCombinator::union(...$results);
-		}
-
-		if ($valueType->isIterableAtLeastOnce()->yes()) {
-			$optionalOffsetsType = TypeCombinator::union($valueType, new ConstantArrayType([], []));
-
-			$zero = new ConstantIntegerType(0);
-			if (
-				($offsetType === null || $zero->isSuperTypeOf($offsetType)->yes())
-				&& ($limitType === null || IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($limitType)->yes())
-			) {
-				return TypeCombinator::intersect($optionalOffsetsType, new NonEmptyArrayType());
-			}
-
-			return $optionalOffsetsType;
-		}
-
-		return $valueType;
+		return $arrayType->sliceArray($offsetType, $lengthType, $preserveKeys);
 	}
 
 }

@@ -17,8 +17,8 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\UnionType;
 use function array_slice;
 use function count;
 
@@ -120,24 +120,13 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 	private function mapValueType(Type $initialValue, Type $returnType): Type
 	{
-		$newValues = [];
-		if ($returnType instanceof UnionType) {
-			foreach ($returnType->getTypes() as $type) {
-				if ($type instanceof ConditionalTypeForParameter) {
-					$newValues[] = $type->toConditional($initialValue);
-				} else {
-					$newValues[] = $type;
-				}
+		return TypeTraverser::map($returnType, static function (Type $type, callable $traverse) use ($initialValue): Type {
+			if ($type instanceof ConditionalTypeForParameter) {
+				$type = $type->toConditional($initialValue);
 			}
 
-			return TypeCombinator::union(...$newValues);
-		}
-
-		if ($returnType instanceof ConditionalTypeForParameter) {
-			return $returnType->toConditional($initialValue);
-		}
-
-		return $returnType;
+			return $traverse($type);
+		});
 	}
 
 }

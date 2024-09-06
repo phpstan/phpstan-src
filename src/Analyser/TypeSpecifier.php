@@ -1059,7 +1059,8 @@ final class TypeSpecifier
 					}
 					$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), !$hasOffset->yes());
 				}
-
+			} else {
+				return null;
 			}
 
 			$arrayType = $valueTypesBuilder->getArray();

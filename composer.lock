@@ -4668,12 +4668,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-deprecation-rules.git",
-                "reference": "4590cf64974274acb3cf683bddfbe59031272949"
+                "reference": "398e2e2d7b71cbdd943c87bd7c7731ad1eeaf1cd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-deprecation-rules/zipball/4590cf64974274acb3cf683bddfbe59031272949",
-                "reference": "4590cf64974274acb3cf683bddfbe59031272949",
+                "url": "https://api.github.com/repos/phpstan/phpstan-deprecation-rules/zipball/398e2e2d7b71cbdd943c87bd7c7731ad1eeaf1cd",
+                "reference": "398e2e2d7b71cbdd943c87bd7c7731ad1eeaf1cd",
                 "shasum": ""
             },
             "require": {
@@ -4685,6 +4685,7 @@
                 "phpstan/phpstan-phpunit": "^2.0",
                 "phpunit/phpunit": "^9.6"
             },
+            "default-branch": true,
             "type": "phpstan-extension",
             "extra": {
                 "phpstan": {
@@ -4707,7 +4708,7 @@
                 "issues": "https://github.com/phpstan/phpstan-deprecation-rules/issues",
                 "source": "https://github.com/phpstan/phpstan-deprecation-rules/tree/2.0.x"
             },
-            "time": "2024-09-04T20:43:23+00:00"
+            "time": "2024-09-06T13:40:51+00:00"
         },
         {
             "name": "phpstan/phpstan-nette",
@@ -4796,6 +4797,7 @@
                 "phpstan/phpstan-strict-rules": "^2.0",
                 "phpunit/phpunit": "^9.6"
             },
+            "default-branch": true,
             "type": "phpstan-extension",
             "extra": {
                 "phpstan": {

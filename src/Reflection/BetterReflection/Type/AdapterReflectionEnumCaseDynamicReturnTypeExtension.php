@@ -18,7 +18,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function in_array;
 
-class AdapterReflectionEnumCaseDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
+final class AdapterReflectionEnumCaseDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
 	public function __construct(private PhpVersion $phpVersion, private string $class)

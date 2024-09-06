@@ -127,13 +127,6 @@ function doFooBar(string $s, array $arr, int $oneOrMore, int $twoOrMore): void
 		assertType('non-empty-array', $arr);
 	}
 
-	if (strlen($s) == $oneOrMore) {
-		assertType('non-empty-string', $s);
-	}
-	if (strlen($s) === $oneOrMore) {
-		assertType('non-empty-string', $s);
-	}
-
 	if (strlen($s) == $twoOrMore) {
 		assertType('non-falsy-string', $s);
 	}

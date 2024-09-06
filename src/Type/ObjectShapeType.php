@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Broker\Broker;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\QuoteAwareConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
@@ -519,6 +520,8 @@ class ObjectShapeType implements Type
 
 				/** @var ConstExprStringNode $keyNode */
 				$keyNode = $keyPhpDocNode->constExpr;
+
+				$keyNode = new QuoteAwareConstExprStringNode($keyNode->value, QuoteAwareConstExprStringNode::SINGLE_QUOTED);
 			}
 			$items[] = new ObjectShapeItemNode(
 				$keyNode,

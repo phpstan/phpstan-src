@@ -9,6 +9,7 @@ use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\QuoteAwareConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
@@ -1666,6 +1667,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$value = $keyNode->value;
 				if (self::isValidIdentifier($value)) {
 					$keyNode = new IdentifierTypeNode($value);
+				} else {
+					$keyNode = new QuoteAwareConstExprStringNode($value, QuoteAwareConstExprStringNode::SINGLE_QUOTED);
 				}
 			}
 

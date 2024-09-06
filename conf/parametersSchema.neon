@@ -148,6 +148,7 @@ parametersSchema:
 	phpVersion: schema(anyOf(schema(int(), min(70100), max(80499))), nullable())
 	polluteScopeWithLoopInitialAssignments: bool()
 	polluteScopeWithAlwaysIterableForeach: bool()
+	polluteScopeWithBlock: bool()
 	propertyAlwaysWrittenTags: listOf(string())
 	propertyAlwaysReadTags: listOf(string())
 	additionalConstructors: listOf(string())

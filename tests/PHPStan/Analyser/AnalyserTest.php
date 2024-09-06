@@ -735,6 +735,7 @@ class AnalyserTest extends PHPStanTestCase
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			false,
 			true,
+			true,
 			[],
 			[],
 			[stdClass::class],

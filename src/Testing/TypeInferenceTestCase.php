@@ -79,6 +79,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			self::getContainer()->getParameter('polluteScopeWithLoopInitialAssignments'),
 			self::getContainer()->getParameter('polluteScopeWithAlwaysIterableForeach'),
+			self::getContainer()->getParameter('polluteScopeWithBlock'),
 			static::getEarlyTerminatingMethodCalls(),
 			static::getEarlyTerminatingFunctionCalls(),
 			self::getContainer()->getParameter('universalObjectCratesClasses'),

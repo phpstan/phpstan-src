@@ -154,6 +154,7 @@ parameters:
 	phpVersion: null
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
+	polluteScopeWithBlock: true
 	propertyAlwaysWrittenTags: []
 	propertyAlwaysReadTags: []
 	fixerTmpDir: %pro.tmpDir% #unused
@@ -544,6 +545,7 @@ services:
 			reflector: @nodeScopeResolverReflector
 			polluteScopeWithLoopInitialAssignments: %polluteScopeWithLoopInitialAssignments%
 			polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
+			polluteScopeWithBlock: %polluteScopeWithBlock%
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
 			implicitThrows: %exceptions.implicitThrows%

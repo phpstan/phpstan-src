@@ -253,6 +253,7 @@ final class NodeScopeResolver
 		private readonly ScopeFactory $scopeFactory,
 		private readonly bool $polluteScopeWithLoopInitialAssignments,
 		private readonly bool $polluteScopeWithAlwaysIterableForeach,
+		private readonly bool $polluteScopeWithBlock,
 		private readonly array $earlyTerminatingMethodCalls,
 		private readonly array $earlyTerminatingFunctionCalls,
 		private readonly array $universalObjectCratesClasses,
@@ -1895,7 +1896,20 @@ final class NodeScopeResolver
 				new ImpurePoint($scope, $stmt, 'betweenPhpTags', 'output between PHP opening and closing tags', true),
 			];
 		} elseif ($stmt instanceof Node\Stmt\Block) {
-			return $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback, $context);
+			$result = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback, $context);
+			if ($this->polluteScopeWithBlock) {
+				return $result;
+			}
+
+			return new StatementResult(
+				$scope->mergeWith($result->getScope()),
+				$result->hasYield(),
+				$result->isAlwaysTerminating(),
+				$result->getExitPoints(),
+				$result->getThrowPoints(),
+				$result->getImpurePoints(),
+				$result->getEndStatements(),
+			);
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$hasYield = false;
 			$throwPoints = $overridingThrowPoints ?? [];

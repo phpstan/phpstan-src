@@ -99,6 +99,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::createScopeFactory($reflectionProvider, $typeSpecifier),
 				$this->shouldPolluteScopeWithLoopInitialAssignments(),
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
+				self::getContainer()->getParameter('polluteScopeWithBlock'),
 				[],
 				[],
 				self::getContainer()->getParameter('universalObjectCratesClasses'),

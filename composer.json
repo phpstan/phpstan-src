@@ -48,7 +48,7 @@
 		"symfony/string": "^5.4.3"
 	},
 	"replace": {
-		"phpstan/phpstan": "self.version",
+		"phpstan/phpstan": "2.0.x",
 		"symfony/polyfill-php73": "*"
 	},
 	"require-dev": {

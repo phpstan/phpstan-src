@@ -1650,6 +1650,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/argon2id-password-hash.php'], []);
 	}
 
+	public function testBug4960(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4960.php'], []);
+	}
+
 	public function testParamClosureThis(): void
 	{
 		if (PHP_VERSION_ID < 70400) {

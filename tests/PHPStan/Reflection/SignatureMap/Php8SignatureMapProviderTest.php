@@ -12,6 +12,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
@@ -59,7 +60,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						'variadic' => false,
 					],
 				],
-				new UnionType([
+				new BenevolentUnionType([
 					new ObjectType('CurlHandle'),
 					new ConstantBooleanType(false),
 				]),

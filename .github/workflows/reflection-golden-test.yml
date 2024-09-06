@@ -19,7 +19,6 @@ on:
       - 'issue-bot/**'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.12.x-dev"
   REFLECTION_GOLDEN_TEST_FILE: "/tmp/reflection-golden.test"
   REFLECTION_GOLDEN_SYMBOLS_FILE: "/tmp/reflection-golden-symbols.txt"
 

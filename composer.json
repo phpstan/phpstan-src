@@ -50,7 +50,7 @@
 		"symfony/string": "^5.4.3"
 	},
 	"replace": {
-		"phpstan/phpstan": "self.version"
+		"phpstan/phpstan": "1.12.x"
 	},
 	"require-dev": {
 		"brianium/paratest": "^6.5",

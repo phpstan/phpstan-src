@@ -47,6 +47,10 @@ class EchoRuleTest extends RuleTestCase
 				'Parameter #1 (\'string\'|array{\'string\'}) of echo cannot be converted to string.',
 				17,
 			],
+			[
+				'Parameter #1 (array{}) of echo cannot be converted to string.',
+				29,
+			],
 		]);
 	}
 

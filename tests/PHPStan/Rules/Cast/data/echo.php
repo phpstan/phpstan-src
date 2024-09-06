@@ -23,3 +23,9 @@ function (array $test)
 	/** @var string $test */
 	echo $test;
 };
+
+function (): void {
+	{
+		echo [];
+	}
+};

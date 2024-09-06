@@ -15,6 +15,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function array_map;
 use function count;
@@ -48,7 +49,10 @@ final class CurlInitReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		$args = $functionCall->getArgs();
 		$argsCount = count($args);
 		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-		$notFalseReturnType = TypeCombinator::remove($returnType, new ConstantBooleanType(false));
+		// curl_init() will return false if it fails to allocate memory or if initialization fails in general.
+		// The default assumption is that a user doesn't need or want to be concerned about these issues,
+		//   but nothing should prevent checking for them anyway.
+		$notFalseReturnType = TypeUtils::toBenevolentUnion($returnType);
 		if ($argsCount === 0) {
 			return $notFalseReturnType;
 		}

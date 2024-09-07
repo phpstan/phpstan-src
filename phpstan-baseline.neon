@@ -195,21 +195,6 @@ parameters:
 			path: src/PhpDoc/PhpDocNodeResolver.php
 
 		-
-			message: "#^Property PHPStan\\\\PhpDocParser\\\\Ast\\\\PhpDoc\\\\AssertTagMethodValueNode\\:\\:\\$isEquality \\(bool\\) on left side of \\?\\? is not nullable\\.$#"
-			count: 1
-			path: src/PhpDoc/PhpDocNodeResolver.php
-
-		-
-			message: "#^Property PHPStan\\\\PhpDocParser\\\\Ast\\\\PhpDoc\\\\AssertTagPropertyValueNode\\:\\:\\$isEquality \\(bool\\) on left side of \\?\\? is not nullable\\.$#"
-			count: 1
-			path: src/PhpDoc/PhpDocNodeResolver.php
-
-		-
-			message: "#^Property PHPStan\\\\PhpDocParser\\\\Ast\\\\PhpDoc\\\\AssertTagValueNode\\:\\:\\$isEquality \\(bool\\) on left side of \\?\\? is not nullable\\.$#"
-			count: 1
-			path: src/PhpDoc/PhpDocNodeResolver.php
-
-		-
 			message: "#^Method PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock\\:\\:getNameScope\\(\\) should return PHPStan\\\\Analyser\\\\NameScope but returns PHPStan\\\\Analyser\\\\NameScope\\|null\\.$#"
 			count: 1
 			path: src/PhpDoc/ResolvedPhpDocBlock.php
@@ -240,11 +225,6 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) or Type\\:\\:getObjectClassNames\\(\\) instead\\.$#"
 			count: 2
-			path: src/PhpDoc/TypeNodeResolver.php
-
-		-
-			message: "#^Property PHPStan\\\\PhpDocParser\\\\Ast\\\\Type\\\\CallableTypeNode\\:\\:\\$templateTypes \\(array\\<PHPStan\\\\PhpDocParser\\\\Ast\\\\PhpDoc\\\\TemplateTagValueNode\\>\\) on left side of \\?\\? is not nullable\\.$#"
-			count: 1
 			path: src/PhpDoc/TypeNodeResolver.php
 
 		-

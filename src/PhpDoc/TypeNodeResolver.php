@@ -894,7 +894,7 @@ final class TypeNodeResolver
 	{
 		$templateTags = [];
 
-		if (count($typeNode->templateTypes ?? []) > 0) {
+		if (count($typeNode->templateTypes) > 0) {
 			foreach ($typeNode->templateTypes as $templateType) {
 				$templateTags[$templateType->name] = new TemplateTag(
 					$templateType->name,

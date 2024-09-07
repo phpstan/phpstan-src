@@ -7,7 +7,7 @@ use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
-use PHPStan\PhpDocParser\Ast\ConstExpr\QuoteAwareConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\Callables\FunctionCallableVariant;
@@ -528,7 +528,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			return $this->generalize(GeneralizePrecision::moreSpecific())->toPhpDocNode();
 		}
 
-		return new ConstTypeNode(new QuoteAwareConstExprStringNode($this->value, QuoteAwareConstExprStringNode::SINGLE_QUOTED));
+		return new ConstTypeNode(new ConstExprStringNode($this->value, ConstExprStringNode::SINGLE_QUOTED));
 	}
 
 	/**

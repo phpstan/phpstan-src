@@ -46,8 +46,6 @@ parametersSchema:
 		consistentConstructor: bool()
 		checkUnresolvableParameterTypes: bool()
 		readOnlyByPhpDoc: bool()
-		phpDocParserRequireWhitespaceBeforeDescription: bool()
-		phpDocParserIncludeLines: bool()
 		enableIgnoreErrorsWithinPhpDocs: bool()
 		runtimeReflectionRules: bool()
 		notAnalysedTrait: bool()

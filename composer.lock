@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6ddd2ca1209453c124e93e7c5aaae4c0",
+    "content-hash": "35946ee5494c73903dd91c4abfa4c290",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2282,32 +2282,33 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "1.30.0",
+            "version": "2.0.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "5ceb0e384997db59f38774bf79c2a6134252c08f"
+                "reference": "9d57f3db5bba9b0d8d11726389eb8af3126780b4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/5ceb0e384997db59f38774bf79c2a6134252c08f",
-                "reference": "5ceb0e384997db59f38774bf79c2a6134252c08f",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/9d57f3db5bba9b0d8d11726389eb8af3126780b4",
+                "reference": "9d57f3db5bba9b0d8d11726389eb8af3126780b4",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.2 || ^8.0"
+                "php": "^7.4 || ^8.0"
             },
             "require-dev": {
                 "doctrine/annotations": "^2.0",
-                "nikic/php-parser": "^4.15",
+                "nikic/php-parser": "^5.1",
                 "php-parallel-lint/php-parallel-lint": "^1.2",
                 "phpstan/extension-installer": "^1.0",
-                "phpstan/phpstan": "^1.5",
-                "phpstan/phpstan-phpunit": "^1.1",
-                "phpstan/phpstan-strict-rules": "^1.0",
-                "phpunit/phpunit": "^9.5",
+                "phpstan/phpstan": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/phpunit": "^9.6",
                 "symfony/process": "^5.2"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -2323,9 +2324,9 @@
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.30.0"
+                "source": "https://github.com/phpstan/phpdoc-parser/tree/2.0.x"
             },
-            "time": "2024-08-29T09:54:52+00:00"
+            "time": "2024-09-07T21:23:59+00:00"
         },
         {
             "name": "psr/container",
@@ -4440,19 +4441,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/simple-downgrader.git",
-                "reference": "dbbf56fab0bc71310ff3766ea204d84f019e99b7"
+                "reference": "1630e1672948a2b59955d7fa634992dc4331ac00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/dbbf56fab0bc71310ff3766ea204d84f019e99b7",
-                "reference": "dbbf56fab0bc71310ff3766ea204d84f019e99b7",
+                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/1630e1672948a2b59955d7fa634992dc4331ac00",
+                "reference": "1630e1672948a2b59955d7fa634992dc4331ac00",
                 "shasum": ""
             },
             "require": {
                 "nette/utils": "^3.2.5",
                 "nikic/php-parser": "^5.0",
                 "php": "^7.4|^8.0",
-                "phpstan/phpdoc-parser": "^1.24.5",
+                "phpstan/phpdoc-parser": "^2.0",
                 "symfony/console": "^5.4",
                 "symfony/finder": "^5.4"
             },
@@ -4481,7 +4482,7 @@
                 "issues": "https://github.com/ondrejmirtes/simple-downgrader/issues",
                 "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/2.x"
             },
-            "time": "2024-02-12T19:24:54+00:00"
+            "time": "2024-09-07T21:32:41+00:00"
         },
         {
             "name": "phar-io/manifest",

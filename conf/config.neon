@@ -51,8 +51,6 @@ parameters:
 		consistentConstructor: false
 		checkUnresolvableParameterTypes: false
 		readOnlyByPhpDoc: false
-		phpDocParserRequireWhitespaceBeforeDescription: false
-		phpDocParserIncludeLines: false
 		enableIgnoreErrorsWithinPhpDocs: false
 		runtimeReflectionRules: false
 		notAnalysedTrait: false
@@ -417,29 +415,22 @@ services:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 
 	-
+		class: PHPStan\PhpDocParser\ParserConfig
+		arguments:
+			usedAttributes:
+				lines: true
+
+	-
 		class: PHPStan\PhpDocParser\Lexer\Lexer
 
 	-
 		class: PHPStan\PhpDocParser\Parser\TypeParser
-		arguments:
-			quoteAwareConstExprString: %featureToggles.unescapeStrings%
 
 	-
 		class: PHPStan\PhpDocParser\Parser\ConstExprParser
-		factory: @PHPStan\PhpDoc\ConstExprParserFactory::create()
 
 	-
 		class: PHPStan\PhpDocParser\Parser\PhpDocParser
-		arguments:
-			requireWhitespaceBeforeDescription: %featureToggles.phpDocParserRequireWhitespaceBeforeDescription%
-			preserveTypeAliasesWithInvalidTypes: true
-			usedAttributes:
-				lines: %featureToggles.phpDocParserIncludeLines%
-
-	-
-		class: PHPStan\PhpDoc\ConstExprParserFactory
-		arguments:
-			unescapeStrings: %featureToggles.unescapeStrings%
 
 	-
 		class: PHPStan\PhpDoc\PhpDocInheritanceResolver

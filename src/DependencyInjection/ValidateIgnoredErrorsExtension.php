@@ -20,6 +20,7 @@ use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\TypeParser;
+use PHPStan\PhpDocParser\ParserConfig;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
@@ -67,11 +68,13 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 		ReflectionProviderStaticAccessor::registerInstance($reflectionProvider);
 		PhpVersionStaticAccessor::registerInstance(new PhpVersion(PHP_VERSION_ID));
 		$constantResolver = new ConstantResolver($reflectionProviderProvider, []);
+
+		$phpDocParserConfig = new ParserConfig([]);
 		$ignoredRegexValidator = new IgnoredRegexValidator(
 			$parser,
 			new TypeStringResolver(
-				new Lexer(),
-				new TypeParser(new ConstExprParser($builder->parameters['featureToggles']['unescapeStrings'])),
+				new Lexer($phpDocParserConfig),
+				new TypeParser($phpDocParserConfig, new ConstExprParser($phpDocParserConfig)),
 				new TypeNodeResolver(
 					new DirectTypeNodeResolverExtensionRegistryProvider(
 						new class implements TypeNodeResolverExtensionRegistry {

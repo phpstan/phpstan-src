@@ -99,6 +99,7 @@ parameters:
 		tooWidePropertyType: false
 		explicitThrow: false
 		absentTypeChecks: false
+		divisionByZero: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

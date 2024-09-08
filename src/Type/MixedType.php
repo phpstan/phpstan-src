@@ -508,15 +508,15 @@ class MixedType implements CompoundType, SubtractableType
 		if ($this->subtractedType !== null) {
 			if ($this->subtractedType->isSuperTypeOf(new ConstantStringType(''))->yes()) {
 				$accessories = [
+					new StringType(),
 					new AccessoryNonEmptyStringType(),
 				];
 				if ($this->subtractedType->isSuperTypeOf(new ConstantStringType('0'))->yes()) {
 					$accessories[] = new AccessoryNonFalsyStringType();
 				}
-				return new IntersectionType([
-					new StringType(),
-					...$accessories,
-				]);
+				return new IntersectionType(
+					$accessories,
+				);
 			}
 		}
 

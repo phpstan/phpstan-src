@@ -409,7 +409,7 @@ class MoreNonEmptyStringFunctions
 		assertType('non-falsy-string', sprintf($nonFalsy, $s));
 	}
 
-	function subtract(mixed $m) {
+	function subtract($m) {
 		if ($m) {
 			assertType('non-falsy-string', (string) $m);
 		}

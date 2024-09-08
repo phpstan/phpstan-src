@@ -447,7 +447,7 @@ class X {
 
 }
 
-function subtract(mixed $m) {
+function subtract($m) {
 	if ($m != 0) {
 		assertType("mixed", $m);
 		assertType('int', (int) $m);

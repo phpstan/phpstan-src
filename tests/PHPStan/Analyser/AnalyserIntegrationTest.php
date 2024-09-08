@@ -312,6 +312,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug11649(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11649.php');
+		$this->assertNoErrors($errors);
+	}
+
 	public function testBug6872(): void
 	{
 		if (PHP_VERSION_ID < 80000) {

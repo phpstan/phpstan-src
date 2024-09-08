@@ -446,3 +446,14 @@ class X {
 	}
 
 }
+
+function subtract(mixed $m) {
+	if ($m != 0) {
+		assertType("mixed", $m);
+		assertType('string', (int) $m);
+	}
+	if ($m !== 0) {
+		assertType("mixed~0", $m);
+		assertType('int<min, -1>|int<1, max>', (int) $m);
+	}
+}

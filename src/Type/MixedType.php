@@ -27,6 +27,7 @@ use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
@@ -485,6 +486,15 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function toInteger(): Type
 	{
+		if ($this->subtractedType !== null) {
+			if ($this->subtractedType->isSuperTypeOf(new ConstantIntegerType(0))->yes()) {
+				return new UnionType([
+					IntegerRangeType::fromInterval(null, -1),
+					IntegerRangeType::fromInterval(1, null)
+				]);
+			}
+		}
+
 		return new IntegerType();
 	}
 

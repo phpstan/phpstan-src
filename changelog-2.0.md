@@ -30,13 +30,11 @@ Bleeding edge (TODO move to other sections)
     * Report `instanceof` of classes not covered by backward compatibility promise (https://github.com/phpstan/phpstan-src/commit/ff4d02d62a7a2e2c4d928d48d31d49246dba7139)
     * Report `instanceof` of classes covered by backward compatibility promise but where the assumption might change (https://github.com/phpstan/phpstan-src/commit/996bc69fa977aa64f601bd82b8a0ae39be0cbeef)
 * Use explicit mixed for global array variables ([#1411](https://github.com/phpstan/phpstan-src/pull/1411)), thanks @herndlm!
-* PHPDoc parser: Require whitespace before description with limited start tokens (https://github.com/phpstan/phpdoc-parser/pull/128), https://github.com/phpstan/phpdoc-parser/issues/125, thanks @rvanvelzen!
 * Add `@readonly` rule that disallows default values ([#1391](https://github.com/phpstan/phpstan-src/pull/1391)), thanks @herndlm!
 * **Array `list` type** ([#1751](https://github.com/phpstan/phpstan-src/pull/1751)), #3311, #8185, #6243, thanks @rvanvelzen!
     * Lists are arrays with sequential integer keys starting at 0
 * Improve error wording of the NonexistentOffset, BooleanAndConstantConditionRule, and BooleanOrConstantConditionRule ([#1882](https://github.com/phpstan/phpstan-src/pull/1882)), thanks @VincentLanglet!
 * MissingMagicSerializationMethodsRule ([#1711](https://github.com/phpstan/phpstan-src/pull/1711)), #7482, thanks @staabm!
-* Unescape strings in phpdoc-parser (https://github.com/phpstan/phpstan-src/commit/97786ed8376b478ec541ea9df1c450c1fbfe7461)
 * Stub files validation - detect duplicate classes and functions (https://github.com/phpstan/phpstan-src/commit/ddf8d5c3859c2c75c20f525a0e2ca8b99032373a, https://github.com/phpstan/phpstan-src/commit/17e4b74335e5235d7cd6708eb687a774a0eeead4)
 * Change `curl_setopt` function signature based on 2nd arg ([#1719](https://github.com/phpstan/phpstan-src/pull/1719)), thanks @staabm!
 * Empty `skipCheckGenericClasses` (https://github.com/phpstan/phpstan-src/commit/28c2c79b16cac6ba6b01f1b4d211541dd49d8a77)
@@ -65,7 +63,6 @@ Bleeding edge (TODO move to other sections)
 * Analysis with zero files results in non-zero exit code (https://github.com/phpstan/phpstan-src/commit/46ff440648e62617df86aa74ba905ffa99897737), #9410
 * Report dead types even in multi-exception catch ([#2399](https://github.com/phpstan/phpstan-src/pull/2399)), thanks @JanTvrdik!
 * `error_log` errors with `message_type=2` ([#2428](https://github.com/phpstan/phpstan-src/pull/2428)), #9380, thanks @staabm!
-* InvalidPhpDocTagValueRule: include PHPDoc line number in the error message (https://github.com/phpstan/phpstan-src/commit/a04e0be832900749b5b4ba22e2de21db8bfa09a0)
 * Check `filter_input*` type param type ([#2271](https://github.com/phpstan/phpstan-src/pull/2271)), thanks @herndlm!
 * More precise `stream_socket_client()` signature ([#2519](https://github.com/phpstan/phpstan-src/pull/2519)), thanks @staabm!
 * More precise `scandir()` signature ([#2518](https://github.com/phpstan/phpstan-src/pull/2518)), thanks @staabm!
@@ -74,7 +71,6 @@ Bleeding edge (TODO move to other sections)
 * MethodSignatureRule - look at abstract trait method (https://github.com/phpstan/phpstan-src/commit/5fd8cee591ce1b07daa5f98a1ddcdfc723f1b5eb)
 * MagicConstantContextRule ([#2741](https://github.com/phpstan/phpstan-src/pull/2741)), #10099, thanks @staabm!
 * More precise `RecursiveIteratorIterator::__construct()` parameter types ([#2835](https://github.com/phpstan/phpstan-src/pull/2835)), thanks @staabm!
-* PhpDocParser: add config for lines in its AST & enable ignoring errors within PHPDocs ([#2807](https://github.com/phpstan/phpstan-src/pull/2807)), thanks @janedbal!
 * Do not generalize template types, except when in `GenericObjectType` ([#2818](https://github.com/phpstan/phpstan-src/pull/2818), [#2821](https://github.com/phpstan/phpstan-src/pull/2821))
     * This fixes following **17 issues**: #8166, #8127, #7944, #7283, #6653, #6196, #9084, #8683, #8074, #7984, #7301, #7087, #5594, #5592, #9472, #9764, #10092
 * TooWideMethodReturnTypehintRule - always report for final methods (https://github.com/phpstan/phpstan-src/commit/c30e9a484c8245b8126cd63444607ca74d2af761)
@@ -139,6 +135,11 @@ Bleeding edge (TODO move to other sections)
 
 Improvements 🔧
 =====================
+
+* PHPDoc parser: Require whitespace before description with limited start tokens (https://github.com/phpstan/phpdoc-parser/pull/128), https://github.com/phpstan/phpdoc-parser/issues/125, thanks @rvanvelzen!
+* Unescape strings in PHPDoc parser (https://github.com/phpstan/phpstan-src/commit/97786ed8376b478ec541ea9df1c450c1fbfe7461)
+* PHPDoc parser: add config for lines in its AST & enable ignoring errors within PHPDocs ([#2807](https://github.com/phpstan/phpstan-src/pull/2807)), thanks @janedbal!
+* InvalidPhpDocTagValueRule: include PHPDoc line number in the error message (https://github.com/phpstan/phpstan-src/commit/a04e0be832900749b5b4ba22e2de21db8bfa09a0)
 
 Bugfixes 🐛
 =====================

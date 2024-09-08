@@ -450,7 +450,7 @@ class X {
 function subtract(mixed $m) {
 	if ($m != 0) {
 		assertType("mixed", $m);
-		assertType('string', (int) $m);
+		assertType('int', (int) $m);
 	}
 	if ($m !== 0) {
 		assertType("mixed~0", $m);

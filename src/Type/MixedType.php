@@ -490,7 +490,7 @@ class MixedType implements CompoundType, SubtractableType
 			if ($this->subtractedType->isSuperTypeOf(new ConstantIntegerType(0))->yes()) {
 				return new UnionType([
 					IntegerRangeType::fromInterval(null, -1),
-					IntegerRangeType::fromInterval(1, null)
+					IntegerRangeType::fromInterval(1, null),
 				]);
 			}
 		}

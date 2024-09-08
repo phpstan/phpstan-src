@@ -145,8 +145,6 @@ services:
 		class: PHPStan\Rules\Methods\IllegalConstructorStaticCallRule
 	-
 		class: PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
-		arguments:
-			invalidPhpDocTagLine: %featureToggles.invalidPhpDocTagLine%
 		tags:
 			- phpstan.rules.rule
 	-

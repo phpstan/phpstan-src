@@ -18,7 +18,6 @@ class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 		return new InvalidPhpDocTagValueRule(
 			self::getContainer()->getByType(Lexer::class),
 			self::getContainer()->getByType(PhpDocParser::class),
-			true,
 		);
 	}
 

@@ -555,18 +555,6 @@ class AnalyserTest extends PHPStanTestCase
 		}
 	}
 
-	public function testIgnoreNextLineLegacyBehaviour(): void
-	{
-		$result = $this->runAnalyser([], false, [__DIR__ . '/data/ignore-next-line-legacy.php'], true, false);
-
-		foreach ([10, 32, 36] as $i => $line) {
-			$this->assertArrayHasKey($i, $result);
-			$this->assertInstanceOf(Error::class, $result[$i]);
-			$this->assertSame('Fail.', $result[$i]->getMessage());
-			$this->assertSame($line, $result[$i]->getLine());
-		}
-	}
-
 	/**
 	 * @dataProvider dataTrueAndFalse
 	 */
@@ -653,10 +641,9 @@ class AnalyserTest extends PHPStanTestCase
 		bool $reportUnmatchedIgnoredErrors,
 		$filePaths,
 		bool $onlyFiles,
-		bool $enableIgnoreErrorsWithinPhpDocs = true,
 	): array
 	{
-		$analyser = $this->createAnalyser($enableIgnoreErrorsWithinPhpDocs);
+		$analyser = $this->createAnalyser();
 
 		if (is_string($filePaths)) {
 			$filePaths = [$filePaths];
@@ -701,7 +688,7 @@ class AnalyserTest extends PHPStanTestCase
 		);
 	}
 
-	private function createAnalyser(bool $enableIgnoreErrorsWithinPhpDocs): Analyser
+	private function createAnalyser(): Analyser
 	{
 		$ruleRegistry = new DirectRuleRegistry([
 			new AlwaysFailRule(),
@@ -755,7 +742,6 @@ class AnalyserTest extends PHPStanTestCase
 				new NameResolver(),
 				self::getContainer(),
 				new IgnoreLexer(),
-				$enableIgnoreErrorsWithinPhpDocs,
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new RuleErrorTransformer(),

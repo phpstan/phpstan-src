@@ -44,7 +44,6 @@ final class RichParser implements Parser
 		private NameResolver $nameResolver,
 		private Container $container,
 		private IgnoreLexer $ignoreLexer,
-		private bool $enableIgnoreErrorsWithinPhpDocs = false,
 	)
 	{
 	}
@@ -152,7 +151,7 @@ final class RichParser implements Parser
 			$isNextLine = str_contains($text, '@phpstan-ignore-next-line');
 			$isCurrentLine = str_contains($text, '@phpstan-ignore-line');
 
-			if ($this->enableIgnoreErrorsWithinPhpDocs && $type === T_DOC_COMMENT) {
+			if ($type === T_DOC_COMMENT) {
 				$lines += $this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line');
 				if ($isNextLine) {
 					$pattern = sprintf('~%s~si', implode('|', [self::PHPDOC_TAG_REGEX, self::PHPDOC_DOCTRINE_TAG_REGEX]));

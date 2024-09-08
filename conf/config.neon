@@ -51,7 +51,6 @@ parameters:
 		consistentConstructor: false
 		checkUnresolvableParameterTypes: false
 		readOnlyByPhpDoc: false
-		enableIgnoreErrorsWithinPhpDocs: false
 		runtimeReflectionRules: false
 		notAnalysedTrait: false
 		curlSetOptTypes: false
@@ -77,7 +76,6 @@ parameters:
 		propertyVariance: false
 		genericPrototypeMessage: false
 		stricterFunctionMap: false
-		invalidPhpDocTagLine: false
 		detectDeadTypeInMultiCatch: false
 		zeroFiles: false
 		projectServicesNotInAnalysedPaths: false
@@ -2018,7 +2016,6 @@ services:
 		class: PHPStan\Parser\RichParser
 		arguments:
 			parser: @currentPhpVersionPhpParser
-			enableIgnoreErrorsWithinPhpDocs: %featureToggles.enableIgnoreErrorsWithinPhpDocs%
 		autowired: no
 
 	currentPhpVersionSimpleParser:

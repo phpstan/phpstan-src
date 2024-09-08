@@ -16,7 +16,6 @@ parameters:
 		consistentConstructor: true
 		checkUnresolvableParameterTypes: true
 		readOnlyByPhpDoc: true
-		enableIgnoreErrorsWithinPhpDocs: true
 		runtimeReflectionRules: true
 		notAnalysedTrait: true
 		curlSetOptTypes: true
@@ -41,7 +40,6 @@ parameters:
 		propertyVariance: true
 		genericPrototypeMessage: true
 		stricterFunctionMap: true
-		invalidPhpDocTagLine: true
 		detectDeadTypeInMultiCatch: true
 		zeroFiles: true
 		projectServicesNotInAnalysedPaths: true

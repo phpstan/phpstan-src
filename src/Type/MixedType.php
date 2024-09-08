@@ -27,6 +27,7 @@ use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -494,6 +495,15 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function toString(): Type
 	{
+		if ($this->subtractedType !== null) {
+			if ($this->subtractedType->isSuperTypeOf(new ConstantStringType(''))->yes()) {
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+				]);
+			}
+		}
+
 		return new StringType();
 	}
 

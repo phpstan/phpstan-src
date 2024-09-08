@@ -408,4 +408,15 @@ class MoreNonEmptyStringFunctions
 		assertType('non-empty-string', sprintf($nonEmpty, $s));
 		assertType('non-falsy-string', sprintf($nonFalsy, $s));
 	}
+
+	function subtract(mixed $m) {
+		if ($m != '') {
+			assertType("mixed", $m);
+			assertType('string', (string) $m);
+		}
+		if ($m !== '') {
+			assertType("mixed~''", $m);
+			assertType('non-empty-string', (string) $m);
+		}
+	}
 }

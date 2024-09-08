@@ -474,8 +474,6 @@ class MixedType implements CompoundType, SubtractableType
 	public function toNumber(): Type
 	{
 		return new UnionType([
-			$this->toInteger(),
-			$this->toFloat(),
 		]);
 	}
 

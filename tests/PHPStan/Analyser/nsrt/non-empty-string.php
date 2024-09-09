@@ -411,6 +411,7 @@ class MoreNonEmptyStringFunctions
 
 	function subtract($m) {
 		if ($m) {
+			assertType("mixed~0|0.0|''|'0'|array{}|false|null", $m);
 			assertType('non-falsy-string', (string) $m);
 		}
 		if ($m != '') {
@@ -419,7 +420,7 @@ class MoreNonEmptyStringFunctions
 		}
 		if ($m !== '') {
 			assertType("mixed~''", $m);
-			assertType('non-empty-string', (string) $m);
+			assertType('string', (string) $m);
 		}
 		if (!is_string($m)) {
 			assertType("mixed~string", $m);

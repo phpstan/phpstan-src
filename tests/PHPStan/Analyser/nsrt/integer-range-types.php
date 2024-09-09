@@ -450,15 +450,15 @@ class X {
 function subtract($m) {
 	if ($m != 0) {
 		assertType("mixed", $m); // could be "mixed~0|0.0|''|'0'|array{}|false|null"
-		assertType('int', (int) $m);
+		assertType('int', (int) $m); // could be int<min, -1>|int<1, max>
 	}
 	if ($m !== 0) {
 		assertType("mixed~0", $m);
-		assertType('int<min, -1>|int<1, max>', (int) $m);
+		assertType('int', (int) $m); // mixed could still contain falsey values, which cast to 0
 	}
 	if (!is_int($m)) {
 		assertType("mixed~int", $m);
-		assertType('int', (int) $m);
+		assertType('int', (int) $m); // mixed could still contain falsey values, which cast to 0
 	}
 
 	if ($m != true) {
@@ -476,6 +476,6 @@ function subtract($m) {
 	}
 	if ($m !== false) {
 		assertType("mixed~false", $m);
-		assertType('int', (int) $m);
+		assertType('int', (int) $m); // mixed could still contain falsey values, which cast to 0
 	}
 }

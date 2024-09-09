@@ -49,6 +49,7 @@ use function escapeshellarg;
 use function fclose;
 use function fopen;
 use function fwrite;
+use function get_class;
 use function getenv;
 use function http_build_query;
 use function ini_get;
@@ -240,10 +241,11 @@ final class FixerApplication
 
 		try {
 			$phar = new Phar($pharPath);
-		} catch (Throwable) {
+		} catch (Throwable $e) {
 			@unlink($pharPath);
 			@unlink($infoPath);
 			$output->writeln('<fg=red>PHPStan Pro PHAR signature is corrupted.</>');
+			$output->writeln(sprintf('%s: %s', get_class($e), $e->getMessage()));
 
 			throw new FixerProcessException();
 		}
@@ -252,6 +254,7 @@ final class FixerApplication
 			@unlink($pharPath);
 			@unlink($infoPath);
 			$output->writeln('<fg=red>PHPStan Pro PHAR signature is corrupted.</>');
+			$output->writeln(sprintf('Wrong hash type: %s', $phar->getSignature()['hash_type']));
 
 			throw new FixerProcessException();
 		}

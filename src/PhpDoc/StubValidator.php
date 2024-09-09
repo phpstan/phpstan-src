@@ -251,12 +251,12 @@ final class StubValidator
 		if ((bool) $container->getParameter('featureToggles')['absentTypeChecks']) {
 			$rules[] = new MissingMethodSelfOutTypeRule($missingTypehintCheck);
 
-			$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true);
+			$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
 			$rules[] = new MethodTagRule($methodTagCheck);
 			$rules[] = new MethodTagTraitRule($methodTagCheck, $reflectionProvider);
 			$rules[] = new MethodTagTraitUseRule($methodTagCheck);
 
-			$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true);
+			$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
 			$rules[] = new PropertyTagRule($propertyTagCheck);
 			$rules[] = new PropertyTagTraitRule($propertyTagCheck, $reflectionProvider);
 			$rules[] = new PropertyTagTraitUseRule($propertyTagCheck);

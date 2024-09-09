@@ -31,6 +31,7 @@ final class PropertyTagCheck
 		private MissingTypehintCheck $missingTypehintCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkClassCaseSensitivity,
+		private bool $checkMissingTypehints,
 	)
 	{
 	}
@@ -141,6 +142,10 @@ final class PropertyTagCheck
 	 */
 	private function checkPropertyTypeInTraitDefinitionContext(ClassReflection $classReflection, string $propertyName, string $tagName, Type $type): array
 	{
+		if (!$this->checkMissingTypehints) {
+			return [];
+		}
+
 		$errors = [];
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($type) as [$innerName, $genericTypeNames]) {

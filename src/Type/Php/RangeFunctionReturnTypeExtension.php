@@ -68,7 +68,7 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 					}
 
 					try {
-						$rangeValues = range($startConstant->getValue(), $endConstant->getValue(), $stepConstant->getValue());
+						$rangeValues = @range($startConstant->getValue(), $endConstant->getValue(), $stepConstant->getValue());
 					} catch (ValueError) {
 						continue;
 					}

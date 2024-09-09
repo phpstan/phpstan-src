@@ -32,6 +32,7 @@ class MethodTagTraitRuleTest extends RuleTestCase
 				new MissingTypehintCheck(true, true, true, true, []),
 				new UnresolvableTypeHelper(),
 				true,
+				true,
 			),
 			$reflectionProvider,
 		);

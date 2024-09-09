@@ -28,6 +28,7 @@ final class MixinCheck
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkClassCaseSensitivity,
 		private bool $absentTypeChecks,
+		private bool $checkMissingTypehints,
 	)
 	{
 	}
@@ -65,6 +66,10 @@ final class MixinCheck
 			}
 
 			if (!$this->absentTypeChecks) {
+				continue;
+			}
+
+			if (!$this->checkMissingTypehints) {
 				continue;
 			}
 

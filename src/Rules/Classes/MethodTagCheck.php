@@ -29,6 +29,7 @@ final class MethodTagCheck
 		private MissingTypehintCheck $missingTypehintCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkClassCaseSensitivity,
+		private bool $checkMissingTypehints,
 	)
 	{
 	}
@@ -161,6 +162,10 @@ final class MethodTagCheck
 	 */
 	private function checkMethodTypeInTraitDefinitionContext(ClassReflection $classReflection, string $methodName, string $description, Type $type): array
 	{
+		if (!$this->checkMissingTypehints) {
+			return [];
+		}
+
 		$errors = [];
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($type) as [$innerName, $genericTypeNames]) {
 			$errors[] = RuleErrorBuilder::message(sprintf(

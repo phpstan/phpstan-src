@@ -32,6 +32,7 @@ class PropertyTagTraitUseRuleTest extends RuleTestCase
 				new MissingTypehintCheck(true, true, true, true, []),
 				new UnresolvableTypeHelper(),
 				true,
+				true,
 			),
 		);
 	}

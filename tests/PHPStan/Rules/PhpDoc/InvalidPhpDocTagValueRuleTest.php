@@ -124,4 +124,24 @@ class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/ignore-line-within-phpdoc.php'], []);
 	}
 
+	public function testBug6299(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6299.php'], [
+			[
+				"PHPDoc tag @phpstan-return has invalid value (array{'numeric': stdClass[], 'branches': array{'names': string[], 'exclude': bool}}}|int): Unexpected token \"}\", expected TOKEN_HORIZONTAL_WS at offset 107 on line 2",
+				10,
+			],
+		]);
+	}
+
+	public function testBug6692(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6692.php'], [
+			[
+				'PHPDoc tag @return has invalid value ($this<string>): Unexpected token "<", expected TOKEN_HORIZONTAL_WS at offset 21 on line 2',
+				11,
+			],
+		]);
+	}
+
 }

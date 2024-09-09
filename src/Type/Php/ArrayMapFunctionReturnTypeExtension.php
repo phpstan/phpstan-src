@@ -2,9 +2,11 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -13,10 +15,10 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_map;
 use function array_slice;
 use function count;
 
@@ -38,12 +40,18 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		$callableType = $scope->getType($functionCall->getArgs()[0]->value);
 		$callableIsNull = $callableType->isNull()->yes();
 
+		$callableParametersAcceptors = null;
+
 		if ($callableType->isCallable()->yes()) {
-			$valueTypes = [new NeverType()];
-			foreach ($callableType->getCallableParametersAcceptors($scope) as $parametersAcceptor) {
-				$valueTypes[] = $parametersAcceptor->getReturnType();
-			}
-			$valueType = TypeCombinator::union(...$valueTypes);
+			$callableParametersAcceptors = $callableType->getCallableParametersAcceptors($scope);
+			$valueType = ParametersAcceptorSelector::selectFromTypes(
+				array_map(
+					static fn (Node\Arg $arg) => $scope->getType($arg->value)->getIterableValueType(),
+					array_slice($functionCall->getArgs(), 1),
+				),
+				$callableParametersAcceptors,
+				false,
+			)->getReturnType();
 		} elseif ($callableIsNull) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
@@ -70,10 +78,17 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 				if ($totalCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 					foreach ($constantArrays as $constantArray) {
 						$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+						$valueTypes = $constantArray->getValueTypes();
 						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 							$returnedArrayBuilder->setOffsetValueType(
 								$keyType,
-								$valueType,
+								$callableParametersAcceptors !== null
+									? ParametersAcceptorSelector::selectFromTypes(
+										[$valueTypes[$i]],
+										$callableParametersAcceptors,
+										false,
+									)->getReturnType()
+									: $valueType,
 								$constantArray->isOptionalKey($i),
 							);
 						}

@@ -1742,6 +1742,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11056(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-11056.php'], []);
+	}
+
 	public function testBug11506(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11506.php'], []);

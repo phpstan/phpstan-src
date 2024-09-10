@@ -4775,18 +4775,29 @@ final class NodeScopeResolver
 				}
 
 				$argValue = $arg->value;
-				if ($argValue instanceof Variable && is_string($argValue->name)) {
-					if ($argValue->name !== 'this') {
-						$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);
-						if ($paramOutType !== null) {
-							$byRefType = $paramOutType;
-						}
-
-						$nodeCallback(new VariableAssignNode($argValue, new TypeExpr($byRefType), false), $scope);
-						$scope = $scope->assignVariable($argValue->name, $byRefType, new MixedType());
+				if (!$argValue instanceof Variable || $argValue->name !== 'this') {
+					$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);
+					if ($paramOutType !== null) {
+						$byRefType = $paramOutType;
 					}
-				} else {
-					$scope = $scope->invalidateExpression($argValue);
+
+					$result = $this->processAssignVar(
+						$scope,
+						$stmt,
+						$argValue,
+						new TypeExpr($byRefType),
+						static function (Node $node, Scope $scope) use ($nodeCallback): void {
+							if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
+								return;
+							}
+
+							$nodeCallback($node, $scope);
+						},
+						$context,
+						static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, [], []),
+						true,
+					);
+					$scope = $result->getScope();
 				}
 			} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
 				$argType = $scope->getType($arg->value);

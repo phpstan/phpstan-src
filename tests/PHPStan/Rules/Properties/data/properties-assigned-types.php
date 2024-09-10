@@ -376,3 +376,48 @@ class AppendToArrayAccess
 		$this->collection2[] = 2;
 	}
 }
+
+class ParamOutAssign
+{
+
+	/** @var list<string> */
+	private $foo;
+
+	/** @var list<list<string>> */
+	private $foo2;
+
+	/**
+	 * @param mixed $a
+	 * @param-out string $a
+	 */
+	public function paramOut(&$a): void
+	{
+
+	}
+
+	public function doFoo(): void
+	{
+		$this->paramOut($this->foo);
+	}
+
+	public function doFoo2(): void
+	{
+		$this->paramOut($this->foo[0]);
+	}
+
+	public function doBar(): void
+	{
+		$this->paramOut($this->foo2);
+	}
+
+	public function doBar2(): void
+	{
+		$this->paramOut($this->foo2[0]);
+	}
+
+	public function doBar3(): void
+	{
+		$this->paramOut($this->foo2[0][0]);
+	}
+
+}

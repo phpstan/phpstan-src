@@ -107,6 +107,21 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				'Property PropertiesAssignedTypes\AppendToArrayAccess::$collection2 (ArrayAccess<int, string>&Countable) does not accept Countable.',
 				376,
 			],
+			[
+				'Property PropertiesAssignedTypes\ParamOutAssign::$foo (list<string>) does not accept string.',
+				400,
+				'string is not a list.',
+			],
+			[
+				'Property PropertiesAssignedTypes\ParamOutAssign::$foo2 (list<list<string>>) does not accept string.',
+				410,
+				'string is not a list.',
+			],
+			[
+				'Property PropertiesAssignedTypes\ParamOutAssign::$foo2 (list<list<string>>) does not accept non-empty-list<list<string>|string>.',
+				415,
+				'list<string>|string might not be a list.',
+			],
 		]);
 	}
 

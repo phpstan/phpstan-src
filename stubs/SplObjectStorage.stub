@@ -5,9 +5,10 @@
  * @template TData
  *
  * @template-implements Iterator<int, TObject>
+ * @template-implements SeekableIterator<int, TObject>
  * @template-implements ArrayAccess<TObject, TData>
  */
-class SplObjectStorage implements Countable, Iterator, Serializable, ArrayAccess
+class SplObjectStorage implements Countable, Iterator, SeekableIterator, Serializable, ArrayAccess
 {
 
     /**

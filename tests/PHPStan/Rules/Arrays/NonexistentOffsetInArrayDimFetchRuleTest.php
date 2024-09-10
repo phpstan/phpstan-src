@@ -878,4 +878,24 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug2313(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2313.php'], []);
+	}
+
+	public function testBug11655(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11655.php'], [
+			[
+				"Offset 3 does not exist on array{string, 'x', array{string, 'x'}}.",
+				15,
+			],
+		]);
+	}
+
+	public function testBug2634(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2634.php'], []);
+	}
+
 }

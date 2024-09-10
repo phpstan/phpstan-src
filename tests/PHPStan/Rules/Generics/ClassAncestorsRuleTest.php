@@ -108,7 +108,7 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				215,
 			],
 			[
-				'Class ClassAncestorsExtends\FooObjectStorage @extends tag contains incompatible type ClassAncestorsExtends\FooObjectStorage&iterable<object>.',
+				'Class ClassAncestorsExtends\FooObjectStorage @extends tag contains incompatible type ClassAncestorsExtends\FooObjectStorage.',
 				226,
 			],
 			[

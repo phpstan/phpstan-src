@@ -4578,20 +4578,18 @@ final class NodeScopeResolver
 
 			$lookForUnset = false;
 			if ($assignByReference) {
-				if ($arg->value instanceof Variable) {
-					$isBuiltin = false;
-					if ($calleeReflection instanceof FunctionReflection && $calleeReflection->isBuiltin()) {
-						$isBuiltin = true;
-					} elseif ($calleeReflection instanceof ExtendedMethodReflection && $calleeReflection->getDeclaringClass()->isBuiltin()) {
-						$isBuiltin = true;
-					}
-					if (
-						$isBuiltin
-						|| ($parameterNativeType === null || !$parameterNativeType->isNull()->no())
-					) {
-						$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $arg->value);
-						$lookForUnset = true;
-					}
+				$isBuiltin = false;
+				if ($calleeReflection instanceof FunctionReflection && $calleeReflection->isBuiltin()) {
+					$isBuiltin = true;
+				} elseif ($calleeReflection instanceof ExtendedMethodReflection && $calleeReflection->getDeclaringClass()->isBuiltin()) {
+					$isBuiltin = true;
+				}
+				if (
+					$isBuiltin
+					|| ($parameterNativeType === null || !$parameterNativeType->isNull()->no())
+				) {
+					$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $arg->value);
+					$lookForUnset = true;
 				}
 			}
 

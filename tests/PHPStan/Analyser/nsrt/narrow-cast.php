@@ -31,9 +31,9 @@ function doFoo(string $x, array $arr): void {
 /** @param int<-5, 5> $x */
 function castString($x, string $s, bool $b) {
 	if ((string) $x) {
-		assertType('int<-5, -1>|int<1, 5>', $x);
+		assertType('int<-5, 5>', $x);
 	} else {
-		assertType('0', $x);
+		assertType('int<-5, 5>', $x);
 	}
 
 	if ((string) $b) {
@@ -70,7 +70,7 @@ function castInt($x, string $s, bool $b) {
 	}
 
     if ((int) strpos($s, 'xy')) {
-        assertType('non-falsy-string', $s);
+        assertType('string', $s);
     } else {
         assertType('string', $s);
     }
@@ -79,9 +79,9 @@ function castInt($x, string $s, bool $b) {
 /** @param int<-5, 5> $x */
 function castFloat($x, string $s, bool $b) {
     if ((float) $x) {
-        assertType('int<-5, -1>|int<1, 5>', $x);
+        assertType('int<-5, 5>', $x);
     } else {
-        assertType('0', $x);
+        assertType('int<-5, 5>', $x);
     }
 
     if ((float) $b) {

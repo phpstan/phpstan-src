@@ -385,7 +385,6 @@ final class AnalyseCommand extends Command
 		}
 
 		$internalErrorsTuples = array_values($internalErrorsTuples);
-		$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml';
 
 		/**
 		 * Variable $internalErrors only contains non-file-specific "internal errors".
@@ -396,32 +395,8 @@ final class AnalyseCommand extends Command
 				continue;
 			}
 
-			$message = sprintf('%s while %s', $internalError->getMessage(), $internalError->getContextDescription());
-			if ($internalError->getTraceAsString() !== null) {
-				if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
-					$firstTraceItem = $internalError->getTrace()[0] ?? null;
-					$trace = '';
-					if ($firstTraceItem !== null && $firstTraceItem['file'] !== null && $firstTraceItem['line'] !== null) {
-						$trace = sprintf('## %s(%d)%s', $firstTraceItem['file'], $firstTraceItem['line'], "\n");
-					}
-					$trace .= $internalError->getTraceAsString();
-
-					if ($internalError->shouldReportBug()) {
-						$message .= sprintf('%sPost the following stack trace to %s: %s%s', "\n", $bugReportUrl, "\n", $trace);
-					} else {
-						$message .= sprintf('%s%s', "\n\n", $trace);
-					}
-				} else {
-					if ($internalError->shouldReportBug()) {
-						$message .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s%s', "\n\n", "\n", $bugReportUrl, "\n");
-					} else {
-						$message .= sprintf('%sRun PHPStan with -v option to see the stack trace', "\n");
-					}
-				}
-			}
-
 			$internalErrors[] = new InternalError(
-				$message,
+				$this->getMessageFromInternalError($internalError, $output->getVerbosity()),
 				$internalError->getContextDescription(),
 				$internalError->getTrace(),
 				$internalError->getTraceAsString(),
@@ -553,6 +528,36 @@ final class AnalyseCommand extends Command
 			throw new ShouldNotHappenException();
 		}
 		return new StreamOutput($resource);
+	}
+
+	private function getMessageFromInternalError(InternalError $internalError, int $verbosity): string
+	{
+		$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml';
+		$message = sprintf('%s while %s', $internalError->getMessage(), $internalError->getContextDescription());
+		if ($internalError->getTraceAsString() !== null) {
+			if (OutputInterface::VERBOSITY_VERBOSE <= $verbosity) {
+				$firstTraceItem = $internalError->getTrace()[0] ?? null;
+				$trace = '';
+				if ($firstTraceItem !== null && $firstTraceItem['file'] !== null && $firstTraceItem['line'] !== null) {
+					$trace = sprintf('## %s(%d)%s', $firstTraceItem['file'], $firstTraceItem['line'], "\n");
+				}
+				$trace .= $internalError->getTraceAsString();
+
+				if ($internalError->shouldReportBug()) {
+					$message .= sprintf('%sPost the following stack trace to %s: %s%s', "\n", $bugReportUrl, "\n", $trace);
+				} else {
+					$message .= sprintf('%s%s', "\n\n", $trace);
+				}
+			} else {
+				if ($internalError->shouldReportBug()) {
+					$message .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s%s', "\n\n", "\n", $bugReportUrl, "\n");
+				} else {
+					$message .= sprintf('%sRun PHPStan with -v option to see the stack trace', "\n");
+				}
+			}
+		}
+
+		return $message;
 	}
 
 	private function generateBaseline(string $generateBaselineFile, InceptionResult $inceptionResult, AnalysisResult $analysisResult, OutputInterface $output, bool $allowEmptyBaseline, string $baselineExtension, bool $failWithoutResultCache): int

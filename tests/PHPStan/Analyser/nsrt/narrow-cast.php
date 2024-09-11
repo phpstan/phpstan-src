@@ -63,6 +63,12 @@ function castInt($x, string $s, bool $b) {
         assertType('false', $b);
     }
 
+	if ((int) $s) {
+		assertType('string', $s);
+	} else {
+		assertType('string', $s);
+	}
+
     if ((int) strpos($s, 'xy')) {
         assertType('non-falsy-string', $s);
     } else {
@@ -85,8 +91,8 @@ function castFloat($x, string $s, bool $b) {
     }
 
     if ((float) $s) {
-        assertType('non-falsy-string', $s);
+        assertType('string', $s);
     } else {
-        assertType("''|'0'", $s);
+        assertType("string", $s);
     }
 }

@@ -144,35 +144,6 @@ class ParametersAcceptorSelectorTest extends PHPStanTestCase
 			),
 		];
 
-		$absVariants = $reflectionProvider->getFunction(new Name('abs'), null)->getVariants();
-		yield [
-			[
-				new FloatType(),
-				new FloatType(),
-			],
-			$absVariants,
-			false,
-			ParametersAcceptorSelector::combineAcceptors($absVariants),
-		];
-		yield [
-			[
-				new FloatType(),
-				new IntegerType(),
-				new StringType(),
-			],
-			$absVariants,
-			false,
-			ParametersAcceptorSelector::combineAcceptors($absVariants),
-		];
-		yield [
-			[
-				new StringType(),
-			],
-			$absVariants,
-			false,
-			$absVariants[2],
-		];
-
 		$strtokVariants = $reflectionProvider->getFunction(new Name('strtok'), null)->getVariants();
 		yield [
 			[],

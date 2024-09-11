@@ -197,15 +197,31 @@ final class TypeSpecifier
 				$context,
 				$rootExpr,
 			);
-		} elseif (
-			$expr instanceof Expr\Cast\String_
-			|| $expr instanceof Expr\Cast\Double
-			|| $expr instanceof Expr\Cast\Int_
-			|| $expr instanceof Expr\Cast\Bool_
-		) {
+		} elseif ($expr instanceof Expr\Cast\Bool_) {
 			return $this->specifyTypesInCondition(
 				$scope,
-				new Node\Expr\BinaryOp\NotEqual($expr->expr, new ConstFetch(new Name\FullyQualified('false'))),
+				new Node\Expr\BinaryOp\Equal($expr->expr, new ConstFetch(new Name\FullyQualified('true'))),
+				$context,
+				$rootExpr,
+			);
+		} elseif ($expr instanceof Expr\Cast\String_) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				new Node\Expr\BinaryOp\NotEqual($expr->expr, new Node\Scalar\String_('')),
+				$context,
+				$rootExpr,
+			);
+		} elseif ($expr instanceof Expr\Cast\Int_) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				new Node\Expr\BinaryOp\NotEqual($expr->expr, new Node\Scalar\LNumber(0)),
+				$context,
+				$rootExpr,
+			);
+		} elseif ($expr instanceof Expr\Cast\Double) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				new Node\Expr\BinaryOp\NotEqual($expr->expr, new Node\Scalar\DNumber(0.0)),
 				$context,
 				$rootExpr,
 			);

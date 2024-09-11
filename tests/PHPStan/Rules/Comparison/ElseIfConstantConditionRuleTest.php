@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ElseIfConstantConditionRule>
@@ -117,6 +118,21 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 				'Elseif condition is always true.',
 				56,
 				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]);
+	}
+
+	public function testBug11674(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-11674.php'], [
+			[
+				'Elseif condition is always false.',
+				28,
 			],
 		]);
 	}

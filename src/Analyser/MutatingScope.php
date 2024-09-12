@@ -2756,7 +2756,7 @@ final class MutatingScope implements Scope
 		return new ObjectType($originalClass);
 	}
 
-	private function resolveTypeByNameWithLateStaticBinding(Name $class, Identifier $name): TypeWithClassName
+	private function resolveTypeByNameWithLateStaticBinding(Name $class, Node\Identifier $name): TypeWithClassName
 	{
 		$classType = $this->resolveTypeByName($class);
 

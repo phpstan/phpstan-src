@@ -487,7 +487,11 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function toInteger(): Type
 	{
-		if ($this->subtractedType !== null && StaticTypeFactory::falsey()->equals($this->subtractedType)) {
+		if (
+			$this->subtractedType !== null
+			&& StaticTypeFactory::falsey()->equals($this->subtractedType)
+			&& $this->subtractedType->isSuperTypeOf(new StringType())->yes()
+		) {
 			return new UnionType([
 				IntegerRangeType::fromInterval(null, -1),
 				IntegerRangeType::fromInterval(1, null),

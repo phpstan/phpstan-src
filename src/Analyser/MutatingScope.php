@@ -1202,19 +1202,7 @@ final class MutatingScope implements Scope
 					return new ObjectType(Closure::class);
 				}
 
-				$classType = $this->resolveTypeByName($node->class);
-				if (
-					$classType instanceof StaticType
-					&& !in_array($node->class->toLowerString(), ['self', 'static', 'parent'], true)
-				) {
-					$methodReflectionCandidate = $this->getMethodReflection(
-						$classType,
-						$node->name->name,
-					);
-					if ($methodReflectionCandidate !== null && $methodReflectionCandidate->isStatic()) {
-						$classType = $classType->getStaticObjectType();
-					}
-				}
+				$classType = $this->resolveTypeWithLateStaticBinding($node->class, $node->name);
 				$methodName = $node->name->toString();
 				if (!$classType->hasMethod($methodName)->yes()) {
 					return new ObjectType(Closure::class);
@@ -2094,19 +2082,7 @@ final class MutatingScope implements Scope
 			if ($this->nativeTypesPromoted) {
 				$typeCallback = function () use ($node): Type {
 					if ($node->class instanceof Name) {
-						$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
-						if (
-							$staticMethodCalledOnType instanceof StaticType
-							&& !in_array($node->class->toLowerString(), ['self', 'static', 'parent'], true)
-						) {
-							$methodReflectionCandidate = $this->getMethodReflection(
-								$staticMethodCalledOnType,
-								$node->name->name,
-							);
-							if ($methodReflectionCandidate !== null && $methodReflectionCandidate->isStatic()) {
-								$staticMethodCalledOnType = $staticMethodCalledOnType->getStaticObjectType();
-							}
-						}
+						$staticMethodCalledOnType = $this->resolveTypeWithLateStaticBinding($node->class, $node->name);
 					} else {
 						$staticMethodCalledOnType = $this->getNativeType($node->class);
 					}
@@ -2131,19 +2107,7 @@ final class MutatingScope implements Scope
 
 			$typeCallback = function () use ($node): Type {
 				if ($node->class instanceof Name) {
-					$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
-					if (
-						$staticMethodCalledOnType instanceof StaticType
-						&& !in_array($node->class->toLowerString(), ['self', 'static', 'parent'], true)
-					) {
-						$methodReflectionCandidate = $this->getMethodReflection(
-							$staticMethodCalledOnType,
-							$node->name->name,
-						);
-						if ($methodReflectionCandidate !== null && $methodReflectionCandidate->isStatic()) {
-							$staticMethodCalledOnType = $staticMethodCalledOnType->getStaticObjectType();
-						}
-					}
+					$staticMethodCalledOnType = $this->resolveTypeWithLateStaticBinding($node->class, $node->name);
 				} else {
 					$staticMethodCalledOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
 				}
@@ -2791,6 +2755,26 @@ final class MutatingScope implements Scope
 
 		return new ObjectType($originalClass);
 	}
+
+	private function resolveTypeWithLateStaticBinding(Name $class, Identifier $name): TypeWithClassName
+	{
+		$classType = $this->resolveTypeByName($class);
+
+		if (
+			$classType instanceof StaticType
+			&& !in_array($class->toLowerString(), ['self', 'static', 'parent'], true)
+		) {
+			$methodReflectionCandidate = $this->getMethodReflection(
+				$classType,
+				$name->name,
+			);
+			if ($methodReflectionCandidate !== null && $methodReflectionCandidate->isStatic()) {
+				$classType = $classType->getStaticObjectType();
+			}
+		}
+
+                return $classType;
+        }
 
 	/**
 	 * @api

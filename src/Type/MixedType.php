@@ -491,11 +491,9 @@ class MixedType implements CompoundType, SubtractableType
 			new NullType(),
 			new ConstantBooleanType(false),
 			new ConstantIntegerType(0),
-			new ConstantFloatType(0.0),
-			new ConstantStringType(''),
-			new ConstantStringType('0'),
 			new ConstantArrayType([], []),
-			new StringType()
+			new StringType(),
+			new FloatType()
 		]);
 		if (
 			$this->subtractedType !== null

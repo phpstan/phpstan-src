@@ -13,6 +13,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\Diagnose\DiagnoseExtension;
 use PHPStan\Diagnose\PHPStanDiagnoseExtension;
 use PHPStan\File\CouldNotWriteFileException;
+use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
@@ -34,6 +35,7 @@ use function array_intersect;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function array_reverse;
 use function array_unique;
 use function array_values;
 use function count;
@@ -50,12 +52,16 @@ use function is_string;
 use function pathinfo;
 use function rewind;
 use function sprintf;
+use function str_contains;
 use function stream_get_contents;
 use function strlen;
 use function substr;
 use const PATHINFO_BASENAME;
 use const PATHINFO_EXTENSION;
 
+/**
+ * @phpstan-import-type Trace from InternalError as InternalErrorTrace
+ */
 final class AnalyseCommand extends Command
 {
 
@@ -385,7 +391,8 @@ final class AnalyseCommand extends Command
 		}
 
 		$internalErrorsTuples = array_values($internalErrorsTuples);
-		$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml';
+
+		$fileHelper = $container->getByType(FileHelper::class);
 
 		/**
 		 * Variable $internalErrors only contains non-file-specific "internal errors".
@@ -396,32 +403,8 @@ final class AnalyseCommand extends Command
 				continue;
 			}
 
-			$message = sprintf('%s while %s', $internalError->getMessage(), $internalError->getContextDescription());
-			if ($internalError->getTraceAsString() !== null) {
-				if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
-					$firstTraceItem = $internalError->getTrace()[0] ?? null;
-					$trace = '';
-					if ($firstTraceItem !== null && $firstTraceItem['file'] !== null && $firstTraceItem['line'] !== null) {
-						$trace = sprintf('## %s(%d)%s', $firstTraceItem['file'], $firstTraceItem['line'], "\n");
-					}
-					$trace .= $internalError->getTraceAsString();
-
-					if ($internalError->shouldReportBug()) {
-						$message .= sprintf('%sPost the following stack trace to %s: %s%s', "\n", $bugReportUrl, "\n", $trace);
-					} else {
-						$message .= sprintf('%s%s', "\n\n", $trace);
-					}
-				} else {
-					if ($internalError->shouldReportBug()) {
-						$message .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s%s', "\n\n", "\n", $bugReportUrl, "\n");
-					} else {
-						$message .= sprintf('%sRun PHPStan with -v option to see the stack trace', "\n");
-					}
-				}
-			}
-
 			$internalErrors[] = new InternalError(
-				$message,
+				$this->getMessageFromInternalError($fileHelper, $internalError, $output->getVerbosity()),
 				$internalError->getContextDescription(),
 				$internalError->getTrace(),
 				$internalError->getTraceAsString(),
@@ -553,6 +536,77 @@ final class AnalyseCommand extends Command
 			throw new ShouldNotHappenException();
 		}
 		return new StreamOutput($resource);
+	}
+
+	private function getMessageFromInternalError(FileHelper $fileHelper, InternalError $internalError, int $verbosity): string
+	{
+		$message = sprintf('%s while %s', $internalError->getMessage(), $internalError->getContextDescription());
+		$hasLarastan = false;
+		$isLaravelLast = false;
+
+		foreach (array_reverse($internalError->getTrace()) as $traceItem) {
+			if ($traceItem['file'] === null) {
+				continue;
+			}
+
+			$file = $fileHelper->normalizePath($traceItem['file'], '/');
+
+			if (str_contains($file, '/larastan/')) {
+				$hasLarastan = true;
+				$isLaravelLast = false;
+				continue;
+			}
+
+			if (!str_contains($file, '/laravel/framework/')) {
+				continue;
+			}
+
+			$isLaravelLast = true;
+		}
+		if ($hasLarastan) {
+			if ($isLaravelLast) {
+				$message .= "\n";
+				$message .= "\n" . 'This message is coming from Laravel Framework itself.';
+				$message .= "\n" . 'Larastan boots up your application in order to provide';
+				$message .= "\n" . 'smarter static analysis of your codebase.';
+				$message .= "\n";
+				$message .= "\n" . 'In order to do that, the environment you run PHPStan in';
+				$message .= "\n" . 'must match the environment you run your application in.';
+				$message .= "\n";
+				$message .= "\n" . 'Make sure you\'ve set your environment variables';
+				$message .= "\n" . 'or the .env file correctly.';
+
+				return $message;
+			}
+
+			$bugReportUrl = 'https://github.com/larastan/larastan/issues/new?template=bug-report.md';
+		} else {
+			$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.yaml';
+		}
+		if ($internalError->getTraceAsString() !== null) {
+			if (OutputInterface::VERBOSITY_VERBOSE <= $verbosity) {
+				$firstTraceItem = $internalError->getTrace()[0] ?? null;
+				$trace = '';
+				if ($firstTraceItem !== null && $firstTraceItem['file'] !== null && $firstTraceItem['line'] !== null) {
+					$trace = sprintf('## %s(%d)%s', $firstTraceItem['file'], $firstTraceItem['line'], "\n");
+				}
+				$trace .= $internalError->getTraceAsString();
+
+				if ($internalError->shouldReportBug()) {
+					$message .= sprintf('%sPost the following stack trace to %s: %s%s', "\n", $bugReportUrl, "\n", $trace);
+				} else {
+					$message .= sprintf('%s%s', "\n\n", $trace);
+				}
+			} else {
+				if ($internalError->shouldReportBug()) {
+					$message .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s%s', "\n\n", "\n", $bugReportUrl, "\n");
+				} else {
+					$message .= sprintf('%sRun PHPStan with -v option to see the stack trace', "\n");
+				}
+			}
+		}
+
+		return $message;
 	}
 
 	private function generateBaseline(string $generateBaselineFile, InceptionResult $inceptionResult, AnalysisResult $analysisResult, OutputInterface $output, bool $allowEmptyBaseline, string $baselineExtension, bool $failWithoutResultCache): int

@@ -2773,8 +2773,8 @@ final class MutatingScope implements Scope
 			}
 		}
 
-                return $classType;
-        }
+		return $classType;
+	}
 
 	/**
 	 * @api

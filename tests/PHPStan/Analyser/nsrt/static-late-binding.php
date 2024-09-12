@@ -67,7 +67,7 @@ class B extends A
         assertType('int', parent::retStaticConst());
         assertType('2', $this->retStaticConst());
         assertType('bool', X::retStaticConst());
-        assertType('*ERROR*', $clUnioned->retStaticConst()); // should be bool|int
+        assertType('*ERROR*', $clUnioned->retStaticConst()); // should be bool|int https://github.com/phpstan/phpstan/issues/11687
 
         assertType('int', A::retStaticConst(...)());
         assertType('2', B::retStaticConst(...)());
@@ -76,7 +76,7 @@ class B extends A
         assertType('int', parent::retStaticConst(...)());
         assertType('2', $this->retStaticConst(...)());
         assertType('bool', X::retStaticConst(...)());
-        assertType('mixed', $clUnioned->retStaticConst(...)()); // should be bool|int
+        assertType('mixed', $clUnioned->retStaticConst(...)()); // should be bool|int https://github.com/phpstan/phpstan/issues/11687
 
         assertType('StaticLateBinding\A', A::retStatic());
         assertType('StaticLateBinding\B', B::retStatic());
@@ -85,7 +85,7 @@ class B extends A
         assertType('static(StaticLateBinding\B)', parent::retStatic());
         assertType('static(StaticLateBinding\B)', $this->retStatic());
         assertType('bool', X::retStatic());
-        assertType('bool|StaticLateBinding\A|StaticLateBinding\X', $clUnioned::retStatic()); // should be bool|StaticLateBinding\A
+        assertType('bool|StaticLateBinding\A|StaticLateBinding\X', $clUnioned::retStatic()); // should be bool|StaticLateBinding\A https://github.com/phpstan/phpstan/issues/11687
 
         assertType('StaticLateBinding\A', A::retStatic(...)());
         assertType('StaticLateBinding\B', B::retStatic(...)());
@@ -94,7 +94,7 @@ class B extends A
         assertType('static(StaticLateBinding\B)', parent::retStatic(...)());
         assertType('static(StaticLateBinding\B)', $this->retStatic(...)());
         assertType('bool', X::retStatic(...)());
-        assertType('mixed', $clUnioned::retStatic(...)()); // should be bool|StaticLateBinding\A
+        assertType('mixed', $clUnioned::retStatic(...)()); // should be bool|StaticLateBinding\A https://github.com/phpstan/phpstan/issues/11687
 
         assertType('static(StaticLateBinding\B)', A::retNonStatic());
         assertType('static(StaticLateBinding\B)', B::retNonStatic());
@@ -103,7 +103,7 @@ class B extends A
         assertType('static(StaticLateBinding\B)', parent::retNonStatic());
         assertType('static(StaticLateBinding\B)', $this->retNonStatic());
         assertType('bool', X::retNonStatic());
-        assertType('*ERROR*', $clUnioned->retNonStatic()); // should be bool|static(StaticLateBinding\B)
+        assertType('*ERROR*', $clUnioned->retNonStatic()); // should be bool|static(StaticLateBinding\B) https://github.com/phpstan/phpstan/issues/11687
 
         A::outStaticConst($v);
         assertType('int', $v);

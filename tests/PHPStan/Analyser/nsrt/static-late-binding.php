@@ -115,7 +115,7 @@ class B extends A
 
         assertType('StaticLateBinding\A', A::retStatic(...)());
         assertType('StaticLateBinding\B', B::retStatic(...)());
-        assertType('Closure', self::retStatic()(...)); // should be static(StaticLateBinding\B)
+        assertType('static(StaticLateBinding\B)', self::retStatic(...)());
         assertType('static(StaticLateBinding\B)', static::retStatic(...)());
         assertType('static(StaticLateBinding\B)', parent::retStatic(...)());
         assertType('static(StaticLateBinding\B)', $this->retStatic(...)());

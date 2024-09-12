@@ -31,7 +31,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class AccessoryLiteralStringType implements CompoundType, AccessoryType
+class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 {
 
 	use MaybeCallableTypeTrait;
@@ -124,7 +124,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return 'literal-string';
+		return 'lowercase-string';
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic
@@ -159,7 +159,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			return $stringOffset;
 		}
 
-		if ($valueType->isLiteralString()->yes()) {
+		if ($valueType->isLowercaseString()->yes()) {
 			return $this;
 		}
 
@@ -294,12 +294,12 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function isLiteralString(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isLowercaseString(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return TrinaryLogic::createYes();
 	}
 
 	public function isClassStringType(): TrinaryLogic
@@ -372,7 +372,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function toPhpDocNode(): TypeNode
 	{
-		return new IdentifierTypeNode('literal-string');
+		return new IdentifierTypeNode('lowercase-string');
 	}
 
 }

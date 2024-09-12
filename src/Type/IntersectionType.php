@@ -637,6 +637,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isLiteralString());
 	}
 
+	public function isLowercaseString(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isLowercaseString());
+	}
+
 	public function isClassStringType(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isClassStringType());

@@ -343,6 +343,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isLowercaseString(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean(strtolower($this->value) === $this->value);
+	}
+
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		if ($offsetType->isInteger()->yes()) {

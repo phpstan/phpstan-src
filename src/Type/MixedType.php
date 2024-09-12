@@ -21,6 +21,7 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -909,6 +910,22 @@ class MixedType implements CompoundType, SubtractableType
 			);
 
 			if ($this->subtractedType->isSuperTypeOf($literalString)->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isLowercaseString(): TrinaryLogic
+	{
+		if ($this->subtractedType !== null) {
+			$lowercaseString = TypeCombinator::intersect(
+				new StringType(),
+				new AccessoryLowercaseStringType(),
+			);
+
+			if ($this->subtractedType->isSuperTypeOf($lowercaseString)->yes()) {
 				return TrinaryLogic::createNo();
 			}
 		}

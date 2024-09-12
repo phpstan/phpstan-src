@@ -1203,6 +1203,18 @@ final class MutatingScope implements Scope
 				}
 
 				$classType = $this->resolveTypeByName($node->class);
+				if (
+					$classType instanceof StaticType
+					&& !in_array($node->class->toLowerString(), ['self', 'static', 'parent'], true)
+				) {
+					$methodReflectionCandidate = $this->getMethodReflection(
+						$classType,
+						$node->name->name,
+					);
+					if ($methodReflectionCandidate !== null && $methodReflectionCandidate->isStatic()) {
+						$classType = $classType->getStaticObjectType();
+					}
+				}
 				$methodName = $node->name->toString();
 				if (!$classType->hasMethod($methodName)->yes()) {
 					return new ObjectType(Closure::class);

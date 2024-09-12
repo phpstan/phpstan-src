@@ -472,7 +472,7 @@ function subtract($m) {
 
 	if ($m != false) {
 		assertType("mixed~0|0.0|''|'0'|array{}|false|null", $m);
-		assertType('int<min, -1>|int<1, max>', (int) $m);
+		assertType('int', (int) $m);
 	}
 	if ($m !== false) {
 		assertType("mixed~false", $m);

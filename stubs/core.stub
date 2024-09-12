@@ -307,3 +307,9 @@ function headers_sent(?string &$filename = null, ?int &$line = null): bool {}
  * @return ($value is callable ? true : false)
  */
 function is_callable(mixed $value, bool $syntax_only = false, ?string &$callable_name = null): bool {}
+
+/**
+ * @param float|int $num
+ * @return ($num is float ? float : $num is int ? non-negative-int : float|non-negative-int)
+ */
+function abs($num) {}

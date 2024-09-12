@@ -57,9 +57,7 @@
 
 return [
 '_' => ['string', 'message'=>'string'],
-'abs' => ['0|positive-int', 'number'=>'int'],
-'abs\'1' => ['float', 'number'=>'float'],
-'abs\'2' => ['float|0|positive-int', 'number'=>'string'],
+'abs' => ['float|0|positive-int', 'num'=>'int|float'],
 'accelerator_get_configuration' => ['array'],
 'accelerator_get_scripts' => ['array'],
 'accelerator_get_status' => ['array', 'fetch_scripts'=>'bool'],

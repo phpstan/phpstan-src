@@ -115,12 +115,12 @@ class B extends A
 
         assertType('StaticLateBinding\A', A::retStatic(...)());
         assertType('StaticLateBinding\B', B::retStatic(...)());
-        assertType('static(StaticLateBinding\B)', self::retStatic()(...));
+        assertType('Closure', self::retStatic()(...)); // should be static(StaticLateBinding\B)
         assertType('static(StaticLateBinding\B)', static::retStatic(...)());
         assertType('static(StaticLateBinding\B)', parent::retStatic(...)());
         assertType('static(StaticLateBinding\B)', $this->retStatic(...)());
         assertType('bool', X::retStatic(...)());
-        assertType('bool|StaticLateBinding\A|StaticLateBinding\X', $clUnioned::retStatic(...)()); // should be bool|StaticLateBinding\A
+        assertType('mixed', $clUnioned::retStatic(...)()); // should be bool|StaticLateBinding\A
     }
 }
 

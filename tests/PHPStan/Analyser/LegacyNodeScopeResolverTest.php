@@ -1129,11 +1129,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$fourthStringArrayForeachList',
 			],
 			[
-				'string',
+				'lowercase-string',
 				'$dateArray[\'Y\']',
 			],
 			[
-				'string',
+				'lowercase-string',
 				'$dateArray[\'m\']',
 			],
 			[
@@ -1141,7 +1141,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$dateArray[\'d\']',
 			],
 			[
-				'string',
+				'lowercase-string',
 				'$intArrayForRewritingFirstElement[0]',
 			],
 			[

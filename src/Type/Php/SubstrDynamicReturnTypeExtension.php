@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -88,18 +89,21 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 			return TypeCombinator::union(...$results);
 		}
 
+		$accessoryTypes = [];
+		if ($string->isLowercaseString()->yes()) {
+			$accessoryTypes[] = new AccessoryLowercaseStringType();
+		}
 		if ($string->isNonEmptyString()->yes() && ($negativeOffset || $zeroOffset && $positiveLength)) {
 			if ($string->isNonFalsyString()->yes() && !$maybeOneLength) {
-				return new IntersectionType([
-					new StringType(),
-					new AccessoryNonFalsyStringType(),
-				]);
-
+				$accessoryTypes[] = new AccessoryNonFalsyStringType();
+			} else {
+				$accessoryTypes[] = new AccessoryNonEmptyStringType();
 			}
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonEmptyStringType(),
-			]);
+		}
+		if (count($accessoryTypes) > 0) {
+			$accessoryTypes[] = new StringType();
+
+			return new IntersectionType($accessoryTypes);
 		}
 
 		return null;

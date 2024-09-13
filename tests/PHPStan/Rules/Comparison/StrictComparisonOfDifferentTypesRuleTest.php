@@ -566,7 +566,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/bug-6939.php'], [
 			[
-				'Strict comparison using === between string and false will always evaluate to false.',
+				'Strict comparison using === between lowercase-string and false will always evaluate to false.',
 				10,
 			],
 		]);

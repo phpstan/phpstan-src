@@ -82,7 +82,7 @@ function array_is_list(array $value): bool {}
  *
  * @param array<TK, TV> $one
  * @param array<TK, TV> $two
- * @param callable(TK, TK): int<-1, 1> $three
+ * @param callable(TK, TK): int $three
  * @return array<TK, TV>
  */
 function array_diff_uassoc(
@@ -97,7 +97,7 @@ function array_diff_uassoc(
  *
  * @param array<TK, TV> $one
  * @param array<TK, TV> $two
- * @param callable(TK, TK): int<-1, 1> $three
+ * @param callable(TK, TK): int $three
  * @return array<TK, TV>
  */
 function array_diff_ukey(
@@ -112,7 +112,7 @@ function array_diff_ukey(
  *
  * @param array<TK, TV> $one
  * @param array<TK, TV> $two
- * @param callable(TK, TK): int<-1, 1> $three
+ * @param callable(TK, TK): int $three
  * @return array<TK, TV>
  */
 function array_intersect_uassoc(
@@ -127,7 +127,7 @@ function array_intersect_uassoc(
  *
  * @param array<TK, TV> $one
  * @param array<TK, TV> $two
- * @param callable(TK, TK): int<-1, 1> $three
+ * @param callable(TK, TK): int $three
  *
  * @return array<TK, TV>
  */
@@ -143,7 +143,7 @@ function array_intersect_ukey(
  *
  * @param array<TK, TV> $one
  * @param array<TK, TV> $two
- * @param callable(TV, TV): int<-1, 1> $three
+ * @param callable(TV, TV): int $three
  *
  * @return array<TK, TV>
  */
@@ -159,8 +159,8 @@ function array_udiff_assoc(
  *
  * @param array<TK, TV> $one
  * @param array<TK, TV> $two
- * @param callable(TV, TV): int<-1, 1> $three
- * @param callable(TK, TK): int<-1, 1> $four
+ * @param callable(TV, TV): int $three
+ * @param callable(TK, TK): int $four
  * @return array<TK, TV>
  */
 function array_udiff_uassoc(
@@ -176,7 +176,7 @@ function array_udiff_uassoc(
  *
  * @param array<TK, TV> $one
  * @param array<TK, TV> $two
- * @param callable(TV, TV): int<-1, 1> $three
+ * @param callable(TV, TV): int $three
  * @return array<TK, TV>
  */
 function array_uintersect_assoc(
@@ -191,8 +191,8 @@ function array_uintersect_assoc(
  *
  * @param array<TK, TV> $one
  * @param array<TK, TV> $two
- * @param callable(TV, TV): int<-1, 1> $three
- * @param callable(TK, TK): int<-1, 1> $four
+ * @param callable(TV, TV): int $three
+ * @param callable(TK, TK): int $four
  * @return array<TK, TV>
  */
 function array_uintersect_uassoc(
@@ -208,7 +208,7 @@ function array_uintersect_uassoc(
  *
  * @param array<TK, TV> $one
  * @param array<TK, TV> $two
- * @param callable(TV, TV): int<-1, 1> $three
+ * @param callable(TV, TV): int $three
  * @return array<TK, TV>
  */
 function array_uintersect(

@@ -640,11 +640,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'Parameter #1 $arr1 of function array_udiff expects array<string>, null given.',
+				'Parameter #1 $arr1 of function array_udiff expects array<(int&TK)|(string&TK), string>, null given.',
 				20,
 			],
 			[
-				'Parameter #2 $arr2 of function array_udiff expects array<string>, null given.',
+				'Parameter #2 $arr2 of function array_udiff expects array<(int&TK)|(string&TK), string>, null given.',
 				21,
 			],
 			[

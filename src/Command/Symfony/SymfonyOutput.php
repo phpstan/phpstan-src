@@ -49,4 +49,9 @@ final class SymfonyOutput implements Output
 		return $this->symfonyOutput->isDebug();
 	}
 
+	public function isDecorated(): bool
+	{
+		return $this->symfonyOutput->isDecorated();
+	}
+
 }

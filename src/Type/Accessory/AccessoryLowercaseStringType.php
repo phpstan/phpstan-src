@@ -81,7 +81,7 @@ class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($type->isLiteralString(), []);
+		return new AcceptsResult($type->isLowercaseString(), []);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -94,7 +94,7 @@ class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 			return TrinaryLogic::createYes();
 		}
 
-		return $type->isLiteralString();
+		return $type->isLowercaseString();
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
@@ -103,7 +103,7 @@ class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return $otherType->isLiteralString()
+		return $otherType->isLowercaseString()
 			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
 	}
 
@@ -148,7 +148,7 @@ class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 			return new ErrorType();
 		}
 
-		return new StringType();
+		return new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]);
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type

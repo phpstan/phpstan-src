@@ -75,13 +75,13 @@ final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturn
 			if (count($modes) > 0) {
 				$forceLowercase = count(array_diff($modes, [
 						MB_CASE_LOWER,
-						MB_CASE_LOWER_SIMPLE,
+						5, // MB_CASE_LOWER_SIMPLE
 					])) === 0;
 				$keepLowercase = count(array_diff($modes, [
 						MB_CASE_LOWER,
-						MB_CASE_LOWER_SIMPLE,
-						MB_CASE_FOLD,
-						MB_CASE_FOLD_SIMPLE,
+						5, // MB_CASE_LOWER_SIMPLE
+						3, // MB_CASE_FOLD,
+						7, // MB_CASE_FOLD_SIMPLE
 					])) === 0;
 			}
 		} elseif (in_array($fnName, ['ucwords', 'mb_convert_kana'], true)) {
@@ -91,9 +91,9 @@ final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturn
 			} else {
 				$modes = $fnName === 'mb_convert_kana' ? ['KV'] : [" \t\r\n\f\v"];
 			}
-		} elseif (in_array($fnName, ['strtolower', 'mb_strtolower'])) {
+		} elseif (in_array($fnName, ['strtolower', 'mb_strtolower'], true)) {
 			$forceLowercase = true;
-		} elseif (in_array($fnName, ['lcfirst', 'mb_lcfirst'])) {
+		} elseif (in_array($fnName, ['lcfirst', 'mb_lcfirst'], true)) {
 			$keepLowercase = true;
 		}
 

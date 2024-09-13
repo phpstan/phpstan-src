@@ -1405,7 +1405,7 @@ final class TypeSpecifier
 					$assertedType,
 					$assert->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
 					$scope,
-				)->setRootExpr($containsUnresolvedTemplate || $assert->isEquality() ? $call : null);
+				)->setRootExpr($containsUnresolvedTemplate || $assert->isEquality() ? $call : $assertExpr);
 				$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
 
 				if (!$context->null() || !$assertedType instanceof ConstantBooleanType) {

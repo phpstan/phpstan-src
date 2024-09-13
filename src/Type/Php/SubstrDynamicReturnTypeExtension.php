@@ -37,71 +37,69 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 	): ?Type
 	{
 		$args = $functionCall->getArgs();
-		if (count($args) === 0) {
+		if (count($args) < 2) {
 			return null;
 		}
 
-		if (count($args) >= 2) {
-			$string = $scope->getType($args[0]->value);
-			$offset = $scope->getType($args[1]->value);
+		$string = $scope->getType($args[0]->value);
+		$offset = $scope->getType($args[1]->value);
 
-			$negativeOffset = IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($offset)->yes();
-			$zeroOffset = (new ConstantIntegerType(0))->isSuperTypeOf($offset)->yes();
-			$length = null;
-			$positiveLength = false;
-			$maybeOneLength = false;
+		$negativeOffset = IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($offset)->yes();
+		$zeroOffset = (new ConstantIntegerType(0))->isSuperTypeOf($offset)->yes();
+		$length = null;
+		$positiveLength = false;
+		$maybeOneLength = false;
 
-			if (count($args) === 3) {
-				$length = $scope->getType($args[2]->value);
-				$positiveLength = IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($length)->yes();
-				$maybeOneLength = !(new ConstantIntegerType(1))->isSuperTypeOf($length)->no();
-			}
+		if (count($args) === 3) {
+			$length = $scope->getType($args[2]->value);
+			$positiveLength = IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($length)->yes();
+			$maybeOneLength = !(new ConstantIntegerType(1))->isSuperTypeOf($length)->no();
+		}
 
-			$constantStrings = $string->getConstantStrings();
-			if (
-				count($constantStrings) > 0
-				&& $offset instanceof ConstantIntegerType
-				&& ($length === null || $length instanceof ConstantIntegerType)
-			) {
-				$results = [];
-				foreach ($constantStrings as $constantString) {
-					if ($length !== null) {
-						if ($functionReflection->getName() === 'mb_substr') {
-							$substr = mb_substr($constantString->getValue(), $offset->getValue(), $length->getValue());
-						} else {
-							$substr = substr($constantString->getValue(), $offset->getValue(), $length->getValue());
-						}
+		$constantStrings = $string->getConstantStrings();
+		if (
+			count($constantStrings) > 0
+			&& $offset instanceof ConstantIntegerType
+			&& ($length === null || $length instanceof ConstantIntegerType)
+		) {
+			$results = [];
+			foreach ($constantStrings as $constantString) {
+				if ($length !== null) {
+					if ($functionReflection->getName() === 'mb_substr') {
+						$substr = mb_substr($constantString->getValue(), $offset->getValue(), $length->getValue());
 					} else {
-						if ($functionReflection->getName() === 'mb_substr') {
-							$substr = mb_substr($constantString->getValue(), $offset->getValue());
-						} else {
-							$substr = substr($constantString->getValue(), $offset->getValue());
-						}
+						$substr = substr($constantString->getValue(), $offset->getValue(), $length->getValue());
 					}
-
-					if (is_bool($substr)) {
-						$results[] = new ConstantBooleanType($substr);
+				} else {
+					if ($functionReflection->getName() === 'mb_substr') {
+						$substr = mb_substr($constantString->getValue(), $offset->getValue());
 					} else {
-						$results[] = new ConstantStringType($substr);
+						$substr = substr($constantString->getValue(), $offset->getValue());
 					}
 				}
 
-				return TypeCombinator::union(...$results);
+				if (is_bool($substr)) {
+					$results[] = new ConstantBooleanType($substr);
+				} else {
+					$results[] = new ConstantStringType($substr);
+				}
 			}
 
-			if ($string->isNonEmptyString()->yes() && ($negativeOffset || $zeroOffset && $positiveLength)) {
-				if ($string->isNonFalsyString()->yes() && !$maybeOneLength) {
-					return new IntersectionType([
-						new StringType(),
-						new AccessoryNonFalsyStringType(),
-					]);
+			return TypeCombinator::union(...$results);
+		}
 
-				}
+		if ($string->isNonEmptyString()->yes() && ($negativeOffset || $zeroOffset && $positiveLength)) {
+			if ($string->isNonFalsyString()->yes() && !$maybeOneLength) {
 				return new IntersectionType([
 					new StringType(),
-					new AccessoryNonEmptyStringType(),
+					new AccessoryNonFalsyStringType(),
 				]);
+
 			}
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNonEmptyStringType(),
+			]);
 		}
 
 		return null;

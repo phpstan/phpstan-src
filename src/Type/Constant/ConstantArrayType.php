@@ -327,7 +327,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$acceptsValue = $valueType->acceptsWithReason($otherValueType, $strictTypes)->decorateReasons(
 				static fn (string $reason) => sprintf(
 					'Offset %s (%s) does not accept type %s: %s',
-					$keyType->describe(VerbosityLevel::value()),
+					$keyType->describe(VerbosityLevel::precise()),
 					$valueType->describe($verbosity),
 					$otherValueType->describe($verbosity),
 					$reason,
@@ -337,7 +337,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$acceptsValue = new AcceptsResult($acceptsValue->result, [
 					sprintf(
 						'Offset %s (%s) does not accept type %s.',
-						$keyType->describe(VerbosityLevel::value()),
+						$keyType->describe(VerbosityLevel::precise()),
 						$valueType->describe($verbosity),
 						$otherValueType->describe($verbosity),
 					),

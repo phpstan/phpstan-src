@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -25,6 +26,10 @@ use function substr;
 
 final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -90,10 +95,12 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		$accessoryTypes = [];
+		$isNotEmpty = false;
 		if ($string->isLowercaseString()->yes()) {
 			$accessoryTypes[] = new AccessoryLowercaseStringType();
 		}
 		if ($string->isNonEmptyString()->yes() && ($negativeOffset || $zeroOffset && $positiveLength)) {
+			$isNotEmpty = true;
 			if ($string->isNonFalsyString()->yes() && !$maybeOneLength) {
 				$accessoryTypes[] = new AccessoryNonFalsyStringType();
 			} else {
@@ -102,6 +109,13 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 		if (count($accessoryTypes) > 0) {
 			$accessoryTypes[] = new StringType();
+
+			if (!$isNotEmpty && $this->phpVersion->substrReturnFalseInsteadOfEmptyString()) {
+				return TypeCombinator::union(
+					new ConstantBooleanType(false),
+					new IntersectionType($accessoryTypes)
+				);
+			}
 
 			return new IntersectionType($accessoryTypes);
 		}

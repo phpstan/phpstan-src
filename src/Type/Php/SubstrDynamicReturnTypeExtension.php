@@ -113,7 +113,7 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 			if (!$isNotEmpty && $this->phpVersion->substrReturnFalseInsteadOfEmptyString()) {
 				return TypeCombinator::union(
 					new ConstantBooleanType(false),
-					new IntersectionType($accessoryTypes)
+					new IntersectionType($accessoryTypes),
 				);
 			}
 

@@ -16,11 +16,13 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_diff;
 use function array_map;
 use function count;
 use function in_array;
 use function is_callable;
 use function mb_check_encoding;
+use const MB_CASE_LOWER;
 
 final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -74,15 +76,15 @@ final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturn
 			$modes = array_map(static fn ($mode) => $mode->getValue(), TypeUtils::getConstantIntegers($modeType));
 			if (count($modes) > 0) {
 				$forceLowercase = count(array_diff($modes, [
-						MB_CASE_LOWER,
-						5, // MB_CASE_LOWER_SIMPLE
-					])) === 0;
+					MB_CASE_LOWER,
+					5, // MB_CASE_LOWER_SIMPLE
+				])) === 0;
 				$keepLowercase = count(array_diff($modes, [
-						MB_CASE_LOWER,
-						5, // MB_CASE_LOWER_SIMPLE
-						3, // MB_CASE_FOLD,
-						7, // MB_CASE_FOLD_SIMPLE
-					])) === 0;
+					MB_CASE_LOWER,
+					5, // MB_CASE_LOWER_SIMPLE
+					3, // MB_CASE_FOLD,
+					7, // MB_CASE_FOLD_SIMPLE
+				])) === 0;
 			}
 		} elseif (in_array($fnName, ['ucwords', 'mb_convert_kana'], true)) {
 			if (count($args) >= 2) {

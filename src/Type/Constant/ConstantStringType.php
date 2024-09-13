@@ -49,6 +49,7 @@ use function is_int;
 use function is_numeric;
 use function key;
 use function strlen;
+use function strtolower;
 use function substr;
 use function substr_count;
 

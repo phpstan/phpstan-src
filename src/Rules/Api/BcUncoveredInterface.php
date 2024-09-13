@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Api;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\Command\Output;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
@@ -39,6 +40,7 @@ final class BcUncoveredInterface
 		NonIgnorableRuleError::class,
 		RuleError::class,
 		TipRuleError::class,
+		Output::class,
 	];
 
 }

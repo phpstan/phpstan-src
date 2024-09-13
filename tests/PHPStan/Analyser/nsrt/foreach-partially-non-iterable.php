@@ -29,7 +29,7 @@ class Bar
 		foreach ($s as $k => $v) {
 			$a .= 'test';
 		}
-		assertType('(literal-string&non-falsy-string)|null', $a);
+		assertType('(literal-string&lowercase-string&non-falsy-string)|null', $a);
 	}
 
 }

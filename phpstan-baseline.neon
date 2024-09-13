@@ -692,6 +692,11 @@ parameters:
 			path: src/Type/Accessory/AccessoryLiteralStringType.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryLowercaseStringType.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Accessory/AccessoryNonEmptyStringType.php
@@ -715,11 +720,6 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/Accessory/AccessoryNumericStringType.php
-
-		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
-			count: 1
-			path: src/Type/Accessory/AccessoryLowercaseStringType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"

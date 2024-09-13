@@ -20,6 +20,7 @@ use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -453,6 +454,10 @@ class ConstantStringType extends StringType implements ConstantScalarType
 				$accessories[] = new AccessoryNonFalsyStringType();
 			} else {
 				$accessories[] = new AccessoryNonEmptyStringType();
+			}
+
+			if (strtolower($this->getValue()) === $this->getValue()) {
+				$accessories[] = new AccessoryLowercaseStringType();
 			}
 
 			return new IntersectionType($accessories);

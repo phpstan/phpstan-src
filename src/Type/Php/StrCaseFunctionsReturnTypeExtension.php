@@ -72,8 +72,18 @@ final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturn
 		if ($fnName === 'mb_convert_case') {
 			$modeType = $scope->getType($args[1]->value);
 			$modes = array_map(static fn ($mode) => $mode->getValue(), TypeUtils::getConstantIntegers($modeType));
-			$forceLowercase = count(array_diff($modes, [MB_CASE_LOWER, MB_CASE_LOWER_SIMPLE])) === 0;
-			$keepLowercase = count(array_diff($modes, [MB_CASE_LOWER, MB_CASE_LOWER_SIMPLE, MB_CASE_FOLD, MB_CASE_FOLD_SIMPLE])) === 0;
+			if (count($modes) > 0) {
+				$forceLowercase = count(array_diff($modes, [
+						MB_CASE_LOWER,
+						MB_CASE_LOWER_SIMPLE,
+					])) === 0;
+				$keepLowercase = count(array_diff($modes, [
+						MB_CASE_LOWER,
+						MB_CASE_LOWER_SIMPLE,
+						MB_CASE_FOLD,
+						MB_CASE_FOLD_SIMPLE,
+					])) === 0;
+			}
 		} elseif (in_array($fnName, ['ucwords', 'mb_convert_kana'], true)) {
 			if (count($args) >= 2) {
 				$modeType = $scope->getType($args[1]->value);

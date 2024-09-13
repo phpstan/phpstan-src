@@ -153,8 +153,8 @@ class ConstantStringTypeTest extends PHPStanTestCase
 	{
 		$this->assertSame('literal-string&non-falsy-string', (new ConstantStringType('NonexistentClass'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('literal-string', (new ConstantStringType(''))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&non-falsy-string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&non-empty-string&numeric-string', (new ConstantStringType('0'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('literal-string&lowercase-string&non-falsy-string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('literal-string&lowercase-string&non-empty-string&numeric-string', (new ConstantStringType('0'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('literal-string&non-falsy-string&numeric-string', (new ConstantStringType('1.123'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('literal-string&non-falsy-string', (new ConstantStringType('    1       1   '))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('literal-string&non-falsy-string&numeric-string', (new ConstantStringType('+1'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));

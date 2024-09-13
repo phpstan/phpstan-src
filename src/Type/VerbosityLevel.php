@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -101,6 +102,7 @@ final class VerbosityLevel
 				|| $type instanceof AccessoryNonFalsyStringType
 				|| $type instanceof AccessoryLiteralStringType
 				|| $type instanceof AccessoryNumericStringType
+				|| $type instanceof AccessoryLowercaseStringType
 				|| $type instanceof NonEmptyArrayType
 				|| $type instanceof AccessoryArrayListType
 			) {

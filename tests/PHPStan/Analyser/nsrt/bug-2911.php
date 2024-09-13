@@ -59,7 +59,7 @@ final class ArrayItemRemoval
 
 		$settings['remove'] = strtolower($settings['remove']);
 
-		assertType("non-empty-array<string, mixed>&hasOffsetValue('remove', string)", $settings);
+		assertType("non-empty-array<string, mixed>&hasOffsetValue('remove', lowercase-string)", $settings);
 
 		if (!in_array($settings['remove'], ['first', 'last', 'all'], true)) {
 			throw $this->configException($settings, 'remove');

@@ -8093,7 +8093,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrayAppendedInForeach',
 			],
 			[
-				'non-empty-array<int<0, max>, literal-string&non-falsy-string>', // could be 'array<int<0, max>, \'bar\'|\'baz\'|\'foo\'>'
+				'non-empty-array<int<0, max>, literal-string&lowercase-string&non-falsy-string>', // could be 'array<int<0, max>, \'bar\'|\'baz\'|\'foo\'>'
 				'$anotherArrayAppendedInForeach',
 			],
 			[

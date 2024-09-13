@@ -44,6 +44,11 @@ final class SymfonyOutput implements Output
 		return $this->symfonyOutput->isVerbose();
 	}
 
+	public function isVeryVerbose(): bool
+	{
+		return $this->symfonyOutput->isVeryVerbose();
+	}
+
 	public function isDebug(): bool
 	{
 		return $this->symfonyOutput->isDebug();

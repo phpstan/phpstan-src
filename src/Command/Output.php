@@ -16,6 +16,8 @@ interface Output
 
 	public function isVerbose(): bool;
 
+	public function isVeryVerbose(): bool;
+
 	public function isDebug(): bool;
 
 	public function isDecorated(): bool;

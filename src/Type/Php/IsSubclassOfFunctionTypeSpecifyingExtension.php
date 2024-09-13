@@ -52,7 +52,6 @@ final class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeS
 			$node->getArgs()[0]->value,
 			$this->isAFunctionTypeSpecifyingHelper->determineType($objectOrClassType, $classType, $allowString, false),
 			$context,
-			false,
 			$scope,
 		);
 	}

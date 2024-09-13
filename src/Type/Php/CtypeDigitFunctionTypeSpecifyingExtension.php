@@ -59,7 +59,7 @@ final class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 		}
 
 		$unionType = TypeCombinator::union(...$types);
-		$specifiedTypes = $this->typeSpecifier->create($exprArg, $unionType, $context, false, $scope);
+		$specifiedTypes = $this->typeSpecifier->create($exprArg, $unionType, $context, $scope);
 
 		if ($exprArg instanceof Cast\String_) {
 			$castedType = new UnionType([
@@ -71,7 +71,7 @@ final class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 				new ConstantBooleanType(true),
 			]);
 			$specifiedTypes = $specifiedTypes->unionWith(
-				$this->typeSpecifier->create($exprArg->expr, $castedType, $context, false, $scope),
+				$this->typeSpecifier->create($exprArg->expr, $castedType, $context, $scope),
 			);
 		}
 

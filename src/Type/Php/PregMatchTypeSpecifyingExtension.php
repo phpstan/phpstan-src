@@ -68,14 +68,17 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			$context = $context->negate();
 		}
 
-		return $this->typeSpecifier->create(
+		$types = $this->typeSpecifier->create(
 			$matchesArg->value,
 			$matchedType,
 			$context,
-			$overwrite,
 			$scope,
-			$node,
-		);
+		)->setRootExpr($node);
+		if ($overwrite) {
+			$types = $types->setAlwaysOverwriteTypes();
+		}
+
+		return $types;
 	}
 
 }

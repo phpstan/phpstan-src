@@ -71,9 +71,9 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 				}
 
 				if ($isStrictComparison) {
-					$itemTypes = $this->typeSpecifier->resolveIdentical(new Identical($needleExpr, $item->value), $scope, $context, null);
+					$itemTypes = $this->typeSpecifier->resolveIdentical(new Identical($needleExpr, $item->value), $scope, $context);
 				} else {
-					$itemTypes = $this->typeSpecifier->resolveEqual(new Equal($needleExpr, $item->value), $scope, $context, null);
+					$itemTypes = $this->typeSpecifier->resolveEqual(new Equal($needleExpr, $item->value), $scope, $context);
 				}
 
 				if ($types === null) {
@@ -99,7 +99,6 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 					$node->getArgs()[1]->value,
 					TypeCombinator::intersect($arrayType, new NonEmptyArrayType()),
 					$context,
-					false,
 					$scope,
 				);
 			}
@@ -122,7 +121,6 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 				$needleExpr,
 				$arrayValueType,
 				$context,
-				false,
 				$scope,
 			);
 			if ($needleExpr instanceof AlwaysRememberedExpr) {
@@ -130,7 +128,6 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 					$needleExpr->getExpr(),
 					$arrayValueType,
 					$context,
-					false,
 					$scope,
 				));
 			}
@@ -156,7 +153,6 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 				$node->getArgs()[1]->value,
 				new ArrayType(new MixedType(), $arrayValueType),
 				TypeSpecifierContext::createTrue(),
-				false,
 				$scope,
 			));
 		}
@@ -166,7 +162,6 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 				$node->getArgs()[1]->value,
 				TypeCombinator::intersect($arrayType, new NonEmptyArrayType()),
 				$context,
-				false,
 				$scope,
 			));
 		}

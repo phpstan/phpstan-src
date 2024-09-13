@@ -90,18 +90,16 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 					$args[$hackstackArg]->value,
 					new IntersectionType($accessories),
 					$context,
-					false,
 					$scope,
-					new BooleanAnd(
-						new NotIdentical(
-							$args[$needleArg]->value,
-							new String_(''),
-						),
-						new FuncCall(new Name('FAUX_FUNCTION'), [
-							new Arg($args[$needleArg]->value),
-						]),
+				)->setRootExpr(new BooleanAnd(
+					new NotIdentical(
+						$args[$needleArg]->value,
+						new String_(''),
 					),
-				);
+					new FuncCall(new Name('FAUX_FUNCTION'), [
+						new Arg($args[$needleArg]->value),
+					]),
+				));
 			}
 		}
 

@@ -36,7 +36,7 @@ final class IsIterableFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 			return new SpecifiedTypes();
 		}
 
-		return $this->typeSpecifier->create($node->getArgs()[0]->value, new IterableType(new MixedType(), new MixedType()), $context, false, $scope);
+		return $this->typeSpecifier->create($node->getArgs()[0]->value, new IterableType(new MixedType(), new MixedType()), $context, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

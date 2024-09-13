@@ -82,7 +82,6 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 				new HasPropertyType($propertyNameType->getValue()),
 			]),
 			$context,
-			false,
 			$scope,
 		);
 	}

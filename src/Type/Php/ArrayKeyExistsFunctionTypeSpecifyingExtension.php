@@ -73,7 +73,6 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 					$key,
 					$arrayKeyType,
 					$context,
-					false,
 					$scope,
 				);
 
@@ -86,10 +85,8 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 					$arrayDimFetch,
 					$arrayType->getIterableValueType(),
 					$context,
-					false,
 					$scope,
-					new Identical($arrayDimFetch, new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT'))),
-				));
+				))->setRootExpr(new Identical($arrayDimFetch, new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT'))));
 			}
 
 			return new SpecifiedTypes();
@@ -108,7 +105,6 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 			$array,
 			$type,
 			$context,
-			false,
 			$scope,
 		);
 	}

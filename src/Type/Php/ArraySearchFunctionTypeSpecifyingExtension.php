@@ -47,7 +47,6 @@ final class ArraySearchFunctionTypeSpecifyingExtension implements FunctionTypeSp
 			$arrayArg,
 			TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new NonEmptyArrayType()),
 			$context,
-			false,
 			$scope,
 		);
 	}

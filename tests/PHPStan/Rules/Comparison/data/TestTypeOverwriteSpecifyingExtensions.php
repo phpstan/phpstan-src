@@ -51,8 +51,8 @@ class GenericTypeOverride implements MethodTypeSpecifyingExtension, TypeSpecifie
 			$node->var,
 			$newType,
 			TypeSpecifierContext::createTruthy(),
-			true
-		);
+			$scope,
+		)->setAlwaysOverwriteTypes();
 	}
 
 }

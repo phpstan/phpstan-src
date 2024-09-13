@@ -42,7 +42,6 @@ final class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 				]),
 				new ConstantBooleanType(true),
 				$context,
-				false,
 				$scope,
 			);
 		}
@@ -51,7 +50,6 @@ final class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 			$node->getArgs()[0]->value,
 			new CallableType(),
 			$context,
-			false,
 			$scope,
 		);
 	}

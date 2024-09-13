@@ -58,7 +58,7 @@ final class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 			return $this->methodExistsExtension->specifyTypes($functionReflection, $functionCall, $scope, $context);
 		}
 
-		return $this->typeSpecifier->create($value, new CallableType(), $context, false, $scope);
+		return $this->typeSpecifier->create($value, new CallableType(), $context, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

@@ -56,9 +56,8 @@ final class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecify
 			),
 			$scope->getType($node->getArgs()[1]->value),
 			TypeSpecifierContext::createTruthy(),
-			true,
 			$scope,
-		);
+		)->setAlwaysOverwriteTypes();
 	}
 
 }

@@ -78,9 +78,8 @@ final class SetTypeFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			$value,
 			TypeCombinator::union(...$types),
 			TypeSpecifierContext::createTruthy(),
-			true,
 			$scope,
-		);
+		)->setAlwaysOverwriteTypes();
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

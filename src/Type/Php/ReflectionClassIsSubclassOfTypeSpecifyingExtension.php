@@ -50,7 +50,6 @@ final class ReflectionClassIsSubclassOfTypeSpecifyingExtension implements Method
 				new ObjectType($valueType->getValue()),
 			]),
 			$context,
-			false,
 			$scope,
 		);
 	}

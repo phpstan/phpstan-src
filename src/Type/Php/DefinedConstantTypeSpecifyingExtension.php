@@ -63,7 +63,6 @@ final class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecif
 			$expr,
 			new MixedType(),
 			$context,
-			false,
 			$scope,
 		);
 	}

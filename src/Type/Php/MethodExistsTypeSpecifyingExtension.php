@@ -61,7 +61,6 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 						new HasMethodType($methodNameType->getValue()),
 					]),
 					$context,
-					false,
 					$scope,
 				);
 			}
@@ -79,7 +78,6 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 				new ClassStringType(),
 			]),
 			$context,
-			false,
 			$scope,
 		);
 	}

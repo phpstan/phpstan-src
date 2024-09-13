@@ -51,7 +51,6 @@ final class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 			$node->getArgs()[0]->value,
 			$this->isAFunctionTypeSpecifyingHelper->determineType($objectOrClassType, $classType, $allowString, true),
 			$context,
-			false,
 			$scope,
 		);
 	}

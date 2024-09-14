@@ -152,7 +152,7 @@ final class RichParser implements Parser
 			$isCurrentLine = str_contains($text, '@phpstan-ignore-line');
 
 			if ($type === T_DOC_COMMENT) {
-				$lines += $this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line');
+				$lines += $this->getLinesToIgnoreForTokenByIgnoreComment($text, $line, '@phpstan-ignore-line', false);
 				if ($isNextLine) {
 					$pattern = sprintf('~%s~si', implode('|', [self::PHPDOC_TAG_REGEX, self::PHPDOC_DOCTRINE_TAG_REGEX]));
 					$r = preg_match_all($pattern, $text, $pregMatches, PREG_OFFSET_CAPTURE);
@@ -242,7 +242,7 @@ final class RichParser implements Parser
 		string $tokenText,
 		int $tokenLine,
 		string $ignoreComment,
-		bool $ignoreNextLine = false,
+		bool $ignoreNextLine,
 	): array
 	{
 		$lines = [];

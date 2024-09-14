@@ -3376,7 +3376,7 @@ final class MutatingScope implements Scope
 	 */
 	public function enterAnonymousFunction(
 		Expr\Closure $closure,
-		?array $callableParameters = null,
+		?array $callableParameters,
 	): self
 	{
 		$anonymousFunctionReflection = $this->getType($closure);
@@ -3411,7 +3411,7 @@ final class MutatingScope implements Scope
 	 */
 	private function enterAnonymousFunctionWithoutReflection(
 		Expr\Closure $closure,
-		?array $callableParameters = null,
+		?array $callableParameters,
 	): self
 	{
 		$expressionTypes = [];
@@ -3553,7 +3553,7 @@ final class MutatingScope implements Scope
 	 * @api
 	 * @param ParameterReflection[]|null $callableParameters
 	 */
-	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters = null): self
+	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters): self
 	{
 		$anonymousFunctionReflection = $this->getType($arrowFunction);
 		if (!$anonymousFunctionReflection instanceof ClosureType) {

@@ -1809,7 +1809,7 @@ final class NodeScopeResolver
 					continue;
 				}
 
-				$scope = $scope->assignVariable($var->name, new MixedType(), new MixedType());
+				$scope = $scope->assignVariable($var->name, new MixedType(), new MixedType(), TrinaryLogic::createYes());
 				$vars[] = $var->name;
 			}
 			$scope = $this->processVarAnnotation($scope, $vars, $stmt);
@@ -1842,7 +1842,7 @@ final class NodeScopeResolver
 				$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
 				$scope = $scope->exitExpressionAssign($var->var);
 
-				$scope = $scope->assignVariable($var->var->name, new MixedType(), new MixedType());
+				$scope = $scope->assignVariable($var->var->name, new MixedType(), new MixedType(), TrinaryLogic::createYes());
 				$vars[] = $var->var->name;
 			}
 
@@ -2091,6 +2091,7 @@ final class NodeScopeResolver
 			$exprToSpecify,
 			$exprTypeWithoutNull,
 			TypeCombinator::removeNull($nativeType),
+			TrinaryLogic::createYes(),
 		);
 
 		return new EnsuredNonNullabilityResult(
@@ -2457,7 +2458,7 @@ final class NodeScopeResolver
 				$functionReflection !== null
 				&& in_array($functionReflection->getName(), ['fopen', 'file_get_contents'], true)
 			) {
-				$scope = $scope->assignVariable('http_response_header', AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType())), new ArrayType(new IntegerType(), new StringType()));
+				$scope = $scope->assignVariable('http_response_header', AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType())), new ArrayType(new IntegerType(), new StringType()), TrinaryLogic::createYes());
 			}
 
 			if (
@@ -4217,7 +4218,7 @@ final class NodeScopeResolver
 							$variableNativeType = TypeCombinator::union($scope->getVariableType($inAssignRightSideVariableName), $inAssignRightSideNativeType);
 						}
 					}
-					$scope = $scope->assignVariable($inAssignRightSideVariableName, $variableType, $variableNativeType);
+					$scope = $scope->assignVariable($inAssignRightSideVariableName, $variableType, $variableNativeType, TrinaryLogic::createYes());
 				}
 			}
 			$this->processExprNode($stmt, $use->var, $useScope, $nodeCallback, $context);
@@ -4625,7 +4626,7 @@ final class NodeScopeResolver
 					&& !$arg->value->static
 				) {
 					$restoreThisScope = $scopeToPass;
-					$scopeToPass = $scopeToPass->assignVariable('this', $parameter->getClosureThisType(), new ObjectWithoutClassType());
+					$scopeToPass = $scopeToPass->assignVariable('this', $parameter->getClosureThisType(), new ObjectWithoutClassType(), TrinaryLogic::createYes());
 				}
 
 				if ($parameter !== null) {
@@ -4677,7 +4678,7 @@ final class NodeScopeResolver
 					&& $parameter->getClosureThisType() !== null
 					&& !$arg->value->static
 				) {
-					$scopeToPass = $scopeToPass->assignVariable('this', $parameter->getClosureThisType(), new ObjectWithoutClassType());
+					$scopeToPass = $scopeToPass->assignVariable('this', $parameter->getClosureThisType(), new ObjectWithoutClassType(), TrinaryLogic::createYes());
 				}
 
 				if ($parameter !== null) {
@@ -4983,7 +4984,7 @@ final class NodeScopeResolver
 			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 
 			$nodeCallback(new VariableAssignNode($var, $assignedExpr, $isAssignOp), $result->getScope());
-			$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr));
+			$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
 			foreach ($conditionalExpressions as $exprString => $holders) {
 				$scope = $scope->addConditionalExpressions($exprString, $holders);
 			}
@@ -5142,7 +5143,7 @@ final class NodeScopeResolver
 			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				if ($var instanceof Variable && is_string($var->name)) {
 					$nodeCallback(new VariableAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
-					$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite);
+					$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite, TrinaryLogic::createYes());
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 						$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
@@ -5394,7 +5395,7 @@ final class NodeScopeResolver
 
 			if ($var instanceof Variable && is_string($var->name)) {
 				$nodeCallback(new VariableAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
-				$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite);
+				$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite, TrinaryLogic::createYes());
 			} else {
 				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 					$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
@@ -5603,13 +5604,13 @@ final class NodeScopeResolver
 
 			$variableType = $varTags[$variableName]->getType();
 			$changed = true;
-			$scope = $scope->assignVariable($variableName, $variableType, new MixedType());
+			$scope = $scope->assignVariable($variableName, $variableType, new MixedType(), TrinaryLogic::createYes());
 		}
 
 		if (count($variableNames) === 1 && count($varTags) === 1 && isset($varTags[0])) {
 			$variableType = $varTags[0]->getType();
 			$changed = true;
-			$scope = $scope->assignVariable($variableNames[0], $variableType, new MixedType());
+			$scope = $scope->assignVariable($variableNames[0], $variableType, new MixedType(), TrinaryLogic::createYes());
 		}
 
 		return $scope;

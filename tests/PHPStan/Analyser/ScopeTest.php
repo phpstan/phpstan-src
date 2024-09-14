@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -232,8 +233,8 @@ class ScopeTest extends PHPStanTestCase
 	{
 		/** @var ScopeFactory $scopeFactory */
 		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
-		$scopeA = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $a, $a);
-		$scopeB = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $b, $b);
+		$scopeA = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $a, $a, TrinaryLogic::createYes());
+		$scopeB = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $b, $b, TrinaryLogic::createYes());
 		$resultScope = $scopeA->generalizeWith($scopeB);
 		$this->assertSame($expectedTypeDescription, $resultScope->getVariableType('a')->describe(VerbosityLevel::precise()));
 	}

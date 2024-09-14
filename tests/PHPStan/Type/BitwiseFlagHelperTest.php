@@ -127,13 +127,13 @@ final class BitwiseFlagHelperTest extends PHPStanTestCase
 		/** @var ScopeFactory $scopeFactory */
 		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
 		$scope = $scopeFactory->create(ScopeContext::create('file.php'))
-			->assignVariable('mixedVar', new MixedType(), new MixedType())
-			->assignVariable('stringVar', new StringType(), new StringType())
-			->assignVariable('integerVar', new IntegerType(), new IntegerType())
-			->assignVariable('booleanVar', new BooleanType(), new BooleanType())
-			->assignVariable('floatVar', new FloatType(), new FloatType())
-			->assignVariable('unionIntFloatVar', new UnionType([new IntegerType(), new FloatType()]), new UnionType([new IntegerType(), new FloatType()]))
-			->assignVariable('unionStringFloatVar', new UnionType([new StringType(), new FloatType()]), new UnionType([new StringType(), new FloatType()]));
+			->assignVariable('mixedVar', new MixedType(), new MixedType(), TrinaryLogic::createYes())
+			->assignVariable('stringVar', new StringType(), new StringType(), TrinaryLogic::createYes())
+			->assignVariable('integerVar', new IntegerType(), new IntegerType(), TrinaryLogic::createYes())
+			->assignVariable('booleanVar', new BooleanType(), new BooleanType(), TrinaryLogic::createYes())
+			->assignVariable('floatVar', new FloatType(), new FloatType(), TrinaryLogic::createYes())
+			->assignVariable('unionIntFloatVar', new UnionType([new IntegerType(), new FloatType()]), new UnionType([new IntegerType(), new FloatType()]), TrinaryLogic::createYes())
+			->assignVariable('unionStringFloatVar', new UnionType([new StringType(), new FloatType()]), new UnionType([new StringType(), new FloatType()]), TrinaryLogic::createYes());
 
 		$analyser = new BitwiseFlagHelper($this->createReflectionProvider());
 		$actual = $analyser->bitwiseOrContainsConstant($expr, $scope, $constName);

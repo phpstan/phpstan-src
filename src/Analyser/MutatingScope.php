@@ -3614,7 +3614,7 @@ final class MutatingScope implements Scope
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
 				throw new ShouldNotHappenException();
 			}
-			$arrowFunctionScope = $arrowFunctionScope->assignVariable($parameter->var->name, $parameterType, $parameterType);
+			$arrowFunctionScope = $arrowFunctionScope->assignVariable($parameter->var->name, $parameterType, $parameterType, TrinaryLogic::createYes());
 		}
 
 		if ($arrowFunction->static) {
@@ -3733,6 +3733,7 @@ final class MutatingScope implements Scope
 			$valueName,
 			$originalScope->getIterableValueType($iterateeType),
 			$originalScope->getIterableValueType($nativeIterateeType),
+			TrinaryLogic::createYes(),
 		);
 		if ($keyName !== null) {
 			$scope = $scope->enterForeachKey($originalScope, $iteratee, $keyName);
@@ -3749,6 +3750,7 @@ final class MutatingScope implements Scope
 			$keyName,
 			$originalScope->getIterableKeyType($iterateeType),
 			$originalScope->getIterableKeyType($nativeIterateeType),
+			TrinaryLogic::createYes(),
 		);
 
 		if ($iterateeType->isArray()->yes()) {
@@ -3783,6 +3785,7 @@ final class MutatingScope implements Scope
 			$variableName,
 			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
 			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
+			TrinaryLogic::createYes(),
 		);
 	}
 
@@ -3928,18 +3931,16 @@ final class MutatingScope implements Scope
 		return array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions);
 	}
 
-	public function assignVariable(string $variableName, Type $type, Type $nativeType, ?TrinaryLogic $certainty = null): self
+	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty): self
 	{
 		$node = new Variable($variableName);
 		$scope = $this->assignExpression($node, $type, $nativeType);
-		if ($certainty !== null) {
-			if ($certainty->no()) {
-				throw new ShouldNotHappenException();
-			} elseif (!$certainty->yes()) {
-				$exprString = '$' . $variableName;
-				$scope->expressionTypes[$exprString] = new ExpressionTypeHolder($node, $type, $certainty);
-				$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
-			}
+		if ($certainty->no()) {
+			throw new ShouldNotHappenException();
+		} elseif (!$certainty->yes()) {
+			$exprString = '$' . $variableName;
+			$scope->expressionTypes[$exprString] = new ExpressionTypeHolder($node, $type, $certainty);
+			$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
 		}
 
 		$parameterOriginalValueExprString = $this->getNodeKey(new ParameterVariableOriginalValueExpr($variableName));
@@ -3987,7 +3988,7 @@ final class MutatingScope implements Scope
 		return $scope->invalidateExpression($expr);
 	}
 
-	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType, ?TrinaryLogic $certainty = null): self
+	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType, TrinaryLogic $certainty): self
 	{
 		if ($expr instanceof ConstFetch) {
 			$loweredConstName = strtolower($expr->name->toString());
@@ -4035,9 +4036,7 @@ final class MutatingScope implements Scope
 			}
 		}
 
-		if ($certainty === null) {
-			$certainty = TrinaryLogic::createYes();
-		} elseif ($certainty->no()) {
+		if ($certainty->no()) {
 			throw new ShouldNotHappenException();
 		}
 
@@ -4073,11 +4072,8 @@ final class MutatingScope implements Scope
 		return $scope;
 	}
 
-	public function assignExpression(Expr $expr, Type $type, ?Type $nativeType = null): self
+	public function assignExpression(Expr $expr, Type $type, Type $nativeType): self
 	{
-		if ($nativeType === null) {
-			$nativeType = new MixedType();
-		}
 		$scope = $this;
 		if ($expr instanceof PropertyFetch) {
 			$scope = $this->invalidateExpression($expr)
@@ -4088,7 +4084,7 @@ final class MutatingScope implements Scope
 			$scope = $this->invalidateExpression($expr);
 		}
 
-		return $scope->specifyExpressionType($expr, $type, $nativeType);
+		return $scope->specifyExpressionType($expr, $type, $nativeType, TrinaryLogic::createYes());
 	}
 
 	public function assignInitializedProperty(Type $fetchedOnType, string $propertyName): self
@@ -4292,13 +4288,14 @@ final class MutatingScope implements Scope
 
 		if ($originalExprType->equals($nativeType)) {
 			$newType = TypeCombinator::intersect($type, $originalExprType);
-			return $this->specifyExpressionType($expr, $newType, $newType);
+			return $this->specifyExpressionType($expr, $newType, $newType, TrinaryLogic::createYes());
 		}
 
 		return $this->specifyExpressionType(
 			$expr,
 			TypeCombinator::intersect($type, $originalExprType),
 			TypeCombinator::intersect($type, $nativeType),
+			TrinaryLogic::createYes(),
 		);
 	}
 
@@ -4315,6 +4312,7 @@ final class MutatingScope implements Scope
 			$expr,
 			TypeCombinator::remove($exprType, $typeToRemove),
 			TypeCombinator::remove($this->getNativeType($expr), $typeToRemove),
+			TrinaryLogic::createYes(),
 		);
 	}
 

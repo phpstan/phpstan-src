@@ -9,6 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -69,7 +70,7 @@ final class InvalidUnaryOperationRule implements Rule
 				throw new ShouldNotHappenException();
 			}
 
-			$scope = $scope->assignVariable($varName, $exprType, $exprType);
+			$scope = $scope->assignVariable($varName, $exprType, $exprType, TrinaryLogic::createYes());
 			if (!$scope->getType($newNode) instanceof ErrorType) {
 				return [];
 			}

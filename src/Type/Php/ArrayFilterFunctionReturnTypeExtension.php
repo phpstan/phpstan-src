@@ -18,6 +18,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -244,7 +245,7 @@ final class ArrayFilterFunctionReturnTypeExtension implements DynamicFunctionRet
 				throw new ShouldNotHappenException();
 			}
 			$itemVarName = $itemVar->name;
-			$scope = $scope->assignVariable($itemVarName, $itemType, new MixedType());
+			$scope = $scope->assignVariable($itemVarName, $itemType, new MixedType(), TrinaryLogic::createYes());
 		}
 
 		$keyVarName = null;
@@ -253,7 +254,7 @@ final class ArrayFilterFunctionReturnTypeExtension implements DynamicFunctionRet
 				throw new ShouldNotHappenException();
 			}
 			$keyVarName = $keyVar->name;
-			$scope = $scope->assignVariable($keyVarName, $keyType, new MixedType());
+			$scope = $scope->assignVariable($keyVarName, $keyType, new MixedType(), TrinaryLogic::createYes());
 		}
 
 		$booleanResult = $scope->getType($expr)->toBoolean();

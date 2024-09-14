@@ -21,6 +21,7 @@ use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -62,20 +63,20 @@ class TypeSpecifierTest extends PHPStanTestCase
 		$this->typeSpecifier = self::getContainer()->getService('typeSpecifier');
 		$this->scope = $this->createScopeFactory($reflectionProvider, $this->typeSpecifier)->create(ScopeContext::create(''));
 		$this->scope = $this->scope->enterClass($reflectionProvider->getClass('DateTime'));
-		$this->scope = $this->scope->assignVariable('bar', new ObjectType('Bar'), new ObjectType('Bar'));
-		$this->scope = $this->scope->assignVariable('stringOrNull', new UnionType([new StringType(), new NullType()]), new UnionType([new StringType(), new NullType()]));
-		$this->scope = $this->scope->assignVariable('string', new StringType(), new StringType());
-		$this->scope = $this->scope->assignVariable('fooOrNull', new UnionType([new ObjectType('Foo'), new NullType()]), new UnionType([new ObjectType('Foo'), new NullType()]));
-		$this->scope = $this->scope->assignVariable('barOrNull', new UnionType([new ObjectType('Bar'), new NullType()]), new UnionType([new ObjectType('Bar'), new NullType()]));
-		$this->scope = $this->scope->assignVariable('barOrFalse', new UnionType([new ObjectType('Bar'), new ConstantBooleanType(false)]), new UnionType([new ObjectType('Bar'), new ConstantBooleanType(false)]));
-		$this->scope = $this->scope->assignVariable('stringOrFalse', new UnionType([new StringType(), new ConstantBooleanType(false)]), new UnionType([new StringType(), new ConstantBooleanType(false)]));
-		$this->scope = $this->scope->assignVariable('array', new ArrayType(new MixedType(), new MixedType()), new ArrayType(new MixedType(), new MixedType()));
-		$this->scope = $this->scope->assignVariable('foo', new MixedType(), new MixedType());
-		$this->scope = $this->scope->assignVariable('classString', new ClassStringType(), new ClassStringType());
-		$this->scope = $this->scope->assignVariable('genericClassString', new GenericClassStringType(new ObjectType('Bar')), new GenericClassStringType(new ObjectType('Bar')));
-		$this->scope = $this->scope->assignVariable('object', new ObjectWithoutClassType(), new ObjectWithoutClassType());
-		$this->scope = $this->scope->assignVariable('int', new IntegerType(), new IntegerType());
-		$this->scope = $this->scope->assignVariable('float', new FloatType(), new FloatType());
+		$this->scope = $this->scope->assignVariable('bar', new ObjectType('Bar'), new ObjectType('Bar'), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('stringOrNull', new UnionType([new StringType(), new NullType()]), new UnionType([new StringType(), new NullType()]), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('string', new StringType(), new StringType(), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('fooOrNull', new UnionType([new ObjectType('Foo'), new NullType()]), new UnionType([new ObjectType('Foo'), new NullType()]), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('barOrNull', new UnionType([new ObjectType('Bar'), new NullType()]), new UnionType([new ObjectType('Bar'), new NullType()]), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('barOrFalse', new UnionType([new ObjectType('Bar'), new ConstantBooleanType(false)]), new UnionType([new ObjectType('Bar'), new ConstantBooleanType(false)]), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('stringOrFalse', new UnionType([new StringType(), new ConstantBooleanType(false)]), new UnionType([new StringType(), new ConstantBooleanType(false)]), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('array', new ArrayType(new MixedType(), new MixedType()), new ArrayType(new MixedType(), new MixedType()), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('foo', new MixedType(), new MixedType(), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('classString', new ClassStringType(), new ClassStringType(), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('genericClassString', new GenericClassStringType(new ObjectType('Bar')), new GenericClassStringType(new ObjectType('Bar')), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('object', new ObjectWithoutClassType(), new ObjectWithoutClassType(), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('int', new IntegerType(), new IntegerType(), TrinaryLogic::createYes());
+		$this->scope = $this->scope->assignVariable('float', new FloatType(), new FloatType(), TrinaryLogic::createYes());
 	}
 
 	/**

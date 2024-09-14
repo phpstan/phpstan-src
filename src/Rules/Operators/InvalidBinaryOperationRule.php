@@ -10,6 +10,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -104,8 +105,8 @@ final class InvalidBinaryOperationRule implements Rule
 		}
 
 		$scope = $scope
-			->assignVariable($leftName, $leftType, $leftType)
-			->assignVariable($rightName, $rightType, $rightType);
+			->assignVariable($leftName, $leftType, $leftType, TrinaryLogic::createYes())
+			->assignVariable($rightName, $rightType, $rightType, TrinaryLogic::createYes());
 
 		if (!$scope->getType($newNode) instanceof ErrorType) {
 			return [];

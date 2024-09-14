@@ -71,7 +71,7 @@ class ContainerFactory
 	private static ?int $lastInitializedContainerId = null;
 
 	/** @api */
-	public function __construct(private string $currentWorkingDirectory, private bool $checkDuplicateFiles = false)
+	public function __construct(private string $currentWorkingDirectory)
 	{
 		$this->fileHelper = new FileHelper($currentWorkingDirectory);
 
@@ -274,10 +274,6 @@ class ContainerFactory
 
 		$deduplicated = array_unique($normalized);
 		if (count($normalized) <= count($deduplicated)) {
-			return [$normalized, $configArray];
-		}
-
-		if (!$this->checkDuplicateFiles) {
 			return [$normalized, $configArray];
 		}
 

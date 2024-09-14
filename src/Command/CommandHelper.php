@@ -212,7 +212,7 @@ final class CommandHelper
 		$paths = array_map(static fn (string $path): string => $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($path)), $paths);
 
 		$analysedPathsFromConfig = [];
-		$containerFactory = new ContainerFactory($currentWorkingDirectory, true);
+		$containerFactory = new ContainerFactory($currentWorkingDirectory);
 		$projectConfig = null;
 		if ($projectConfigFile !== null) {
 			if (!is_file($projectConfigFile)) {

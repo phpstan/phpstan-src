@@ -18,7 +18,6 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\NeverType;
@@ -98,13 +97,11 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 
 	/**
 	 * @param string[] $constructors
-	 * @param ReadWritePropertiesExtension[]|null $extensions
 	 * @return array{array<string, ClassPropertyNode>, array<array{string, int, ClassPropertyNode, string, string}>, array<array{string, int, ClassPropertyNode}>}
 	 */
 	public function getUninitializedProperties(
 		Scope $scope,
 		array $constructors,
-		?array $extensions = null,
 	): array
 	{
 		if (!$this->getClass() instanceof Class_) {
@@ -116,9 +113,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$originalProperties = [];
 		$initialInitializedProperties = [];
 		$initializedProperties = [];
-		if ($extensions === null) {
-			$extensions = $this->readWritePropertiesExtensionProvider->getExtensions();
-		}
+		$extensions = $this->readWritePropertiesExtensionProvider->getExtensions();
 		$initializedViaExtension = [];
 		foreach ($this->getProperties() as $property) {
 			if ($property->isStatic()) {

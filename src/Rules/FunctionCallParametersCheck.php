@@ -63,8 +63,8 @@ final class FunctionCallParametersCheck
 		bool $isBuiltin,
 		$funcCall,
 		array $messages,
-		string $nodeType = 'function',
-		bool $acceptsNamedArguments = true,
+		string $nodeType,
+		bool $acceptsNamedArguments,
 	): array
 	{
 		$functionParametersMinCount = 0;

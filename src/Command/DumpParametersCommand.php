@@ -81,6 +81,8 @@ final class DumpParametersCommand extends Command
 				null,
 				$level,
 				false,
+				false,
+				false,
 			);
 		} catch (InceptionNotSuccessfulException) {
 			return 1;

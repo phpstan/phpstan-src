@@ -171,6 +171,7 @@ final class AnalyseCommand extends Command
 				$level,
 				$allowXdebug,
 				$debugEnabled,
+				true,
 			);
 		} catch (InceptionNotSuccessfulException $e) {
 			return 1;

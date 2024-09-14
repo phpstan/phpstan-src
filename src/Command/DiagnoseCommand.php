@@ -79,6 +79,8 @@ final class DiagnoseCommand extends Command
 				null,
 				$level,
 				false,
+				false,
+				false,
 			);
 		} catch (InceptionNotSuccessfulException) {
 			return 1;

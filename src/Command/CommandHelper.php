@@ -89,8 +89,8 @@ final class CommandHelper
 		?string $generateBaselineFile,
 		?string $level,
 		bool $allowXdebug,
-		bool $debugEnabled = false,
-		bool $cleanupContainerCache = true,
+		bool $debugEnabled,
+		bool $cleanupContainerCache,
 	): InceptionResult
 	{
 		$stdOutput = new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle($input, $output)));

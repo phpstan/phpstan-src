@@ -26,10 +26,10 @@ final class NativeFunctionReflection implements FunctionReflection
 		private ?Type $throwType,
 		private TrinaryLogic $hasSideEffects,
 		private bool $isDeprecated,
-		?Assertions $assertions = null,
-		private ?string $phpDocComment = null,
-		?TrinaryLogic $returnsByReference = null,
-		private bool $acceptsNamedArguments = true,
+		?Assertions $assertions,
+		private ?string $phpDocComment,
+		?TrinaryLogic $returnsByReference,
+		private bool $acceptsNamedArguments,
 	)
 	{
 		$this->assertions = $assertions ?? Assertions::createEmpty();

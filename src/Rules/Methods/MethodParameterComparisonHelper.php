@@ -31,7 +31,7 @@ final class MethodParameterComparisonHelper
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	public function compare(ExtendedMethodReflection $prototype, ClassReflection $prototypeDeclaringClass, PhpMethodFromParserNodeReflection $method, bool $ignorable = false): array
+	public function compare(ExtendedMethodReflection $prototype, ClassReflection $prototypeDeclaringClass, PhpMethodFromParserNodeReflection $method, bool $ignorable): array
 	{
 		/** @var list<IdentifierRuleError> $messages */
 		$messages = [];

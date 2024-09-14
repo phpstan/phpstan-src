@@ -19,7 +19,7 @@ class MethodTag
 		private Type $returnType,
 		private bool $isStatic,
 		private array $parameters,
-		private array $templateTags = [],
+		private array $templateTags,
 	)
 	{
 	}

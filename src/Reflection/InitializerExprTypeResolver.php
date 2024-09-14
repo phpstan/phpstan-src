@@ -102,7 +102,7 @@ final class InitializerExprTypeResolver
 		private PhpVersion $phpVersion,
 		private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
 		private OversizedArrayBuilder $oversizedArrayBuilder,
-		private bool $usePathConstantsAsConstantString = false,
+		private bool $usePathConstantsAsConstantString,
 	)
 	{
 	}

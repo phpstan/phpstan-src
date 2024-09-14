@@ -108,7 +108,7 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 							return new OperatorTypeSpecifyingExtensionRegistry(null, []);
 						}
 
-					}, new OversizedArrayBuilder()),
+					}, new OversizedArrayBuilder(), true),
 				),
 			),
 		);

@@ -11,16 +11,20 @@ use stdClass;
 use function array_shift;
 use function define;
 use function implode;
+use function realpath;
 use function sprintf;
+use function str_starts_with;
+use function strlen;
+use function substr;
 use const PHP_INT_SIZE;
 use const PHP_VERSION_ID;
 
 class NodeScopeResolverTest extends TypeInferenceTestCase
 {
 
-	public function dataFileAsserts(): iterable
+	private static function findTestFiles(): iterable
 	{
-		foreach ($this->findTestDataFilesFromDirectory(__DIR__ . '/nsrt') as $testFile) {
+		foreach (self::findTestDataFilesFromDirectory(__DIR__ . '/nsrt') as $testFile) {
 			yield [$testFile];
 		}
 
@@ -197,8 +201,23 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield [__DIR__ . '/../Rules/Classes/data/mixin-trait-use.php'];
 	}
 
+	public static function dataFile(): iterable
+	{
+		$base = realpath(__DIR__ . '/../../../') . '/';
+		$baseLength = strlen($base);
+
+		foreach (self::findTestFiles() as [$file]) {
+			$testName = $file;
+			if (str_starts_with($file, $base)) {
+				$testName = substr($file, $baseLength);
+			}
+
+			yield $testName => [$file];
+		}
+	}
+
 	/**
-	 * @dataProvider dataFileAsserts
+	 * @dataProvider dataFile
 	 */
 	public function testFile(string $file): void
 	{

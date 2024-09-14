@@ -22,6 +22,9 @@ use const PHP_VERSION_ID;
 class NodeScopeResolverTest extends TypeInferenceTestCase
 {
 
+	/**
+	 * @return iterable<array{string}>
+	 */
 	private static function findTestFiles(): iterable
 	{
 		foreach (self::findTestDataFilesFromDirectory(__DIR__ . '/nsrt') as $testFile) {
@@ -201,6 +204,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield [__DIR__ . '/../Rules/Classes/data/mixin-trait-use.php'];
 	}
 
+	/**
+	 * @return iterable<string, array{string}>
+	 */
 	public static function dataFile(): iterable
 	{
 		$base = realpath(__DIR__ . '/../../../') . '/';

@@ -329,12 +329,9 @@ final class NodeScopeResolver
 		array $stmts,
 		MutatingScope $scope,
 		callable $nodeCallback,
-		?StatementContext $context = null,
+		StatementContext $context,
 	): StatementResult
 	{
-		if ($context === null) {
-			$context = StatementContext::createTopLevel();
-		}
 		$exitPoints = [];
 		$throwPoints = [];
 		$impurePoints = [];

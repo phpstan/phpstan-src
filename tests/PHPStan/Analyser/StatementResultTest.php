@@ -406,6 +406,7 @@ class StatementResultTest extends PHPStanTestCase
 			$scope,
 			static function (): void {
 			},
+			StatementContext::createTopLevel(),
 		);
 		$this->assertSame($expectedIsAlwaysTerminating, $result->isAlwaysTerminating());
 	}

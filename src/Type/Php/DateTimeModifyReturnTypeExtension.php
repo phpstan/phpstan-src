@@ -22,7 +22,7 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 	/** @param class-string<DateTimeInterface> $dateTimeClass */
 	public function __construct(
 		private PhpVersion $phpVersion,
-		private string $dateTimeClass = DateTime::class,
+		private string $dateTimeClass,
 	)
 	{
 	}

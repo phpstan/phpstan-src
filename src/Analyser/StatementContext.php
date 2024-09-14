@@ -2,6 +2,14 @@
 
 namespace PHPStan\Analyser;
 
+/**
+ * Object of this class is one of the parameters of `NodeScopeResolver::processStmtNodes()`.
+ *
+ * It determines whether loops will be analysed once or multiple times
+ * until the types "stabilize".
+ *
+ * When in doubt, use `StatementContext::createTopLevel()`.
+ */
 final class StatementContext
 {
 
@@ -11,11 +19,17 @@ final class StatementContext
 	{
 	}
 
+	/**
+	 * @api
+	 */
 	public static function createTopLevel(): self
 	{
 		return new self(true);
 	}
 
+	/**
+	 * @api
+	 */
 	public static function createDeep(): self
 	{
 		return new self(false);

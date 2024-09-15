@@ -1971,6 +1971,46 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			[
 				[
+					new StringType(),
+					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+				],
+				StringType::class,
+				'string',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new AccessoryNumericStringType()]),
+					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+				],
+				UnionType::class,
+				'lowercase-string|numeric-string',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
+					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+				],
+				UnionType::class,
+				'lowercase-string|non-falsy-string',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
+					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+				],
+				UnionType::class,
+				'lowercase-string|non-empty-string',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new AccessoryLiteralStringType()]),
+					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+				],
+				UnionType::class,
+				'literal-string|lowercase-string',
+			],
+			[
+				[
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('doFoo'),
 						'T',
@@ -2591,46 +2631,6 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			IntersectionType::class,
 			'array&hasOffsetValue(\'thing\', mixed)',
-		];
-		yield [
-			[
-				new StringType(),
-				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
-			],
-			StringType::class,
-			'string',
-		];
-		yield [
-			[
-				new IntersectionType([new StringType(), new AccessoryNumericStringType()]),
-				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
-			],
-			UnionType::class,
-			'lowercase-string|numeric-string',
-		];
-		yield [
-			[
-				new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
-				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
-			],
-			UnionType::class,
-			'lowercase-string|non-falsy-string',
-		];
-		yield [
-			[
-				new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
-				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
-			],
-			UnionType::class,
-			'lowercase-string|non-empty-string',
-		];
-		yield [
-			[
-				new IntersectionType([new StringType(), new AccessoryLiteralStringType()]),
-				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
-			],
-			UnionType::class,
-			'lowercase-string|literal-string',
 		];
 	}
 
@@ -3893,6 +3893,46 @@ class TypeCombinatorTest extends PHPStanTestCase
 				],
 				NeverType::class,
 				'*NEVER*=implicit',
+			],
+			[
+				[
+					new StringType(),
+					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+				],
+				IntersectionType::class,
+				'lowercase-string',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new AccessoryNumericStringType()]),
+					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+				],
+				IntersectionType::class,
+				'lowercase-string&numeric-string',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
+					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+				],
+				IntersectionType::class,
+				'lowercase-string&non-falsy-string',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
+					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+				],
+				IntersectionType::class,
+				'lowercase-string&non-empty-string',
+			],
+			[
+				[
+					new IntersectionType([new StringType(), new AccessoryLiteralStringType()]),
+					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+				],
+				IntersectionType::class,
+				'literal-string&lowercase-string',
 			],
 		];
 

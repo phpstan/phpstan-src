@@ -1685,7 +1685,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			);
 		}
 
-		return new ArrayShapeNode($exportValuesOnly ? $values : $items);
+		return ArrayShapeNode::createSealed($exportValuesOnly ? $values : $items);
 	}
 
 	public static function isValidIdentifier(string $value): bool

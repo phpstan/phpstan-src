@@ -74,9 +74,6 @@ class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 
 	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
 	{
-		if ($type instanceof MixedType) {
-			return AcceptsResult::createNo();
-		}
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}

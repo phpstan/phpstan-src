@@ -19,6 +19,7 @@ use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -2591,6 +2592,46 @@ class TypeCombinatorTest extends PHPStanTestCase
 			IntersectionType::class,
 			'array&hasOffsetValue(\'thing\', mixed)',
 		];
+		yield [
+			[
+				new StringType(),
+				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			],
+			StringType::class,
+			'string',
+		];
+		yield [
+			[
+				new IntersectionType([new StringType(), new AccessoryNumericStringType()]),
+				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			],
+			UnionType::class,
+			'lowercase-string|numeric-string',
+		];
+		yield [
+			[
+				new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
+				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			],
+			UnionType::class,
+			'lowercase-string|non-falsy-string',
+		];
+		yield [
+			[
+				new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
+				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			],
+			UnionType::class,
+			'lowercase-string|non-empty-string',
+		];
+		yield [
+			[
+				new IntersectionType([new StringType(), new AccessoryLiteralStringType()]),
+				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			],
+			UnionType::class,
+			'lowercase-string|literal-string',
+		];
 	}
 
 	/**
@@ -4324,6 +4365,23 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			NeverType::class,
 			'*NEVER*=implicit',
+		];
+
+		yield [
+			[
+				new ConstantStringType('FOO'),
+				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ConstantStringType('foo'),
+				new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			],
+			ConstantStringType::class,
+			'\'foo\'',
 		];
 	}
 

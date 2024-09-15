@@ -87,6 +87,10 @@ final class VerbosityLevel
 	/** @api */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{
+		$verboseLevelCallback = static function (Type $acceptingType): VerbosityLevel {
+			return $acceptingType->isLowercaseString()->yes() ? self::precise() : self::value();
+		};
+
 		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$moreVerbose): Type {
 			if ($type->isCallable()->yes()) {
 				$moreVerbose = true;
@@ -121,7 +125,7 @@ final class VerbosityLevel
 		TypeTraverser::map($acceptingType, $moreVerboseCallback);
 
 		if ($moreVerbose) {
-			return self::value();
+			return $verboseLevelCallback($acceptingType);
 		}
 
 		if ($acceptedType === null) {
@@ -160,7 +164,7 @@ final class VerbosityLevel
 		$moreVerbose = false;
 		TypeTraverser::map($acceptedType, $moreVerboseCallback);
 
-		return $moreVerbose ? self::value() : self::typeOnly();
+		return $moreVerbose ? $verboseLevelCallback($acceptingType) : self::typeOnly();
 	}
 
 	/**

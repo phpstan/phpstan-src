@@ -4441,12 +4441,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/simple-downgrader.git",
-                "reference": "1630e1672948a2b59955d7fa634992dc4331ac00"
+                "reference": "760b4c5c0b5ae631e6604bdcf074387e40e35ed1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/1630e1672948a2b59955d7fa634992dc4331ac00",
-                "reference": "1630e1672948a2b59955d7fa634992dc4331ac00",
+                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/760b4c5c0b5ae631e6604bdcf074387e40e35ed1",
+                "reference": "760b4c5c0b5ae631e6604bdcf074387e40e35ed1",
                 "shasum": ""
             },
             "require": {
@@ -4459,9 +4459,10 @@
             },
             "require-dev": {
                 "php-parallel-lint/php-parallel-lint": "^1.3",
-                "phpstan/phpstan": "^1.10",
-                "phpunit/phpunit": "^8.5.36"
+                "phpstan/phpstan": "^2.0",
+                "phpunit/phpunit": "^9.6"
             },
+            "default-branch": true,
             "bin": [
                 "bin/simple-downgrade"
             ],
@@ -4482,7 +4483,7 @@
                 "issues": "https://github.com/ondrejmirtes/simple-downgrader/issues",
                 "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/2.x"
             },
-            "time": "2024-09-07T21:32:41+00:00"
+            "time": "2024-09-15T14:01:11+00:00"
         },
         {
             "name": "phar-io/manifest",

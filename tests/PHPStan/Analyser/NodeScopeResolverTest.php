@@ -4,9 +4,6 @@ namespace PHPStan\Analyser;
 
 use EnumTypeAssertions\Foo;
 use PHPStan\Testing\TypeInferenceTestCase;
-use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\Type;
-use PHPStan\Type\VerbosityLevel;
 use stdClass;
 use function array_shift;
 use function define;
@@ -236,17 +233,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			$file = array_shift($args);
 
 			if ($assertType === 'type') {
-				if ($args[0] instanceof Type) {
-					// backward compatibility
-					$expectedType = $args[0];
-					$this->assertInstanceOf(ConstantScalarType::class, $expectedType);
-					$expected = $expectedType->getValue();
-					$actualType = $args[1];
-					$actual = $actualType->describe(VerbosityLevel::precise());
-				} else {
-					$expected = $args[0];
-					$actual = $args[1];
-				}
+				$expected = $args[0];
+				$actual = $args[1];
 
 				if ($expected !== $actual) {
 					$failures[] = sprintf('Expected type %s, got type %s on line %d.', $expected, $actual, $args[2]);

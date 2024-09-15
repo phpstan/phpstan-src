@@ -1962,6 +1962,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			[
 				[
+					new IntersectionType([new StringType(), new AccessoryNumericStringType()]),
+					new IntersectionType([new StringType(), new AccessoryLiteralStringType()]),
+				],
+				UnionType::class,
+				'literal-string|numeric-string',
+			],
+			[
+				[
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('doFoo'),
 						'T',

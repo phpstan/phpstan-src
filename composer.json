@@ -22,7 +22,7 @@
 		"nette/php-generator": "3.6.9",
 		"nette/schema": "^1.2.2",
 		"nette/utils": "^3.2.5",
-		"nikic/php-parser": "^5.1.0",
+		"nikic/php-parser": "^5.2.0",
 		"ondram/ci-detector": "^3.4.0",
 		"ondrejmirtes/better-reflection": "6.42.0.8",
 		"phpstan/php-8-stubs": "0.3.104",

@@ -78,7 +78,7 @@ final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 		$resultType = new ArrayType(new IntegerType(), $valueType);
 		if ((new ConstantIntegerType(0))->isSuperTypeOf($startIndexType)->yes()) {
-			$resultType = AccessoryArrayListType::intersectWith($resultType);
+			$resultType = TypeCombinator::intersect($resultType, new AccessoryArrayListType());
 		}
 		if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($numberType)->yes()) {
 			$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());

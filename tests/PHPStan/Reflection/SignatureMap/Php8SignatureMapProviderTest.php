@@ -11,6 +11,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -22,6 +23,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
@@ -98,9 +100,9 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						new ConstantStringType('errors'),
 					], [
 						IntegerRangeType::fromInterval(0, null),
-						new ArrayType(new IntegerType(), new StringType()),
+						new IntersectionType([new ArrayType(IntegerRangeType::fromInterval(0, null), new StringType()), new AccessoryArrayListType()]),
 						IntegerRangeType::fromInterval(0, null),
-						new ArrayType(new IntegerType(), new StringType()),
+						new IntersectionType([new ArrayType(IntegerRangeType::fromInterval(0, null), new StringType()), new AccessoryArrayListType()]),
 					]),
 				]),
 				new UnionType([

@@ -92,7 +92,7 @@ final class OversizedArrayBuilder
 
 		$arrayType = new ArrayType($keyType, $valueType);
 		if ($isList) {
-			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 		}
 
 		return TypeCombinator::intersect($arrayType, new NonEmptyArrayType(), new OversizedArrayType());

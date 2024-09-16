@@ -99,7 +99,7 @@ final class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionRet
 			$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
 		}
 		if ($indexType === null) {
-			$returnType = AccessoryArrayListType::intersectWith($returnType);
+			$returnType = TypeCombinator::intersect($returnType, new AccessoryArrayListType());
 		}
 
 		return $returnType;

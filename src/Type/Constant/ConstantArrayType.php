@@ -904,7 +904,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$generalizedArray = TypeCombinator::intersect($generalizedArray, new NonEmptyArrayType());
 		}
 		if ($valuesArray->isList->yes()) {
-			$generalizedArray = AccessoryArrayListType::intersectWith($generalizedArray);
+			$generalizedArray = TypeCombinator::intersect($generalizedArray, new AccessoryArrayListType());
 		}
 
 		return $generalizedArray;
@@ -1267,7 +1267,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		if ($this->isList()->yes()) {
-			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 		}
 
 		if (count($accessoryTypes) > 0) {
@@ -1304,7 +1304,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		}
 		if ($this->isList->yes()) {
-			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 		}
 
 		return $arrayType;

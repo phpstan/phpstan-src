@@ -409,15 +409,11 @@ final class TypeNodeResolver
 				return new NonAcceptingNeverType();
 
 			case 'list':
-				return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType()));
+				return TypeCombinator::intersect(new ArrayType(new IntegerType(), new MixedType()), new AccessoryArrayListType());
 			case 'non-empty-list':
-				return AccessoryArrayListType::intersectWith(TypeCombinator::intersect(
-					new ArrayType(new IntegerType(), new MixedType()),
-					new NonEmptyArrayType(),
-				));
-			case '__always-list':
 				return TypeCombinator::intersect(
 					new ArrayType(new IntegerType(), new MixedType()),
+					new NonEmptyArrayType(),
 					new AccessoryArrayListType(),
 				);
 
@@ -657,7 +653,7 @@ final class TypeNodeResolver
 			return $arrayType;
 		} elseif (in_array($mainTypeName, ['list', 'non-empty-list'], true)) {
 			if (count($genericTypes) === 1) { // list<ValueType>
-				$listType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $genericTypes[0]));
+				$listType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $genericTypes[0]), new AccessoryArrayListType());
 				if ($mainTypeName === 'non-empty-list') {
 					return TypeCombinator::intersect($listType, new NonEmptyArrayType());
 				}
@@ -995,7 +991,7 @@ final class TypeNodeResolver
 
 		$arrayType = $builder->getArray();
 		if ($typeNode->kind === ArrayShapeNode::KIND_LIST) {
-			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 		}
 
 		return $arrayType;

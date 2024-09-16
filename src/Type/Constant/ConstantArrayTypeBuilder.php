@@ -306,7 +306,7 @@ class ConstantArrayTypeBuilder
 		}
 
 		if ($this->isList->yes()) {
-			$array = AccessoryArrayListType::intersectWith($array);
+			$array = TypeCombinator::intersect($array, new AccessoryArrayListType());
 		}
 
 		return $array;

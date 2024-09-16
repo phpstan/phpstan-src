@@ -31,7 +31,6 @@ use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\ObjectType;
 use Symfony\Component\Finder\Finder;
@@ -192,7 +191,6 @@ class ContainerFactory
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);
-		AccessoryArrayListType::setListTypeEnabled($container->getParameter('featureToggles')['listType']);
 		TemplateTypeVariance::setInvarianceCompositionEnabled($container->getParameter('featureToggles')['invarianceComposition']);
 	}
 

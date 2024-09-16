@@ -132,7 +132,7 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		}
 		if ($isList) {
-			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 		}
 
 		return $arrayType;

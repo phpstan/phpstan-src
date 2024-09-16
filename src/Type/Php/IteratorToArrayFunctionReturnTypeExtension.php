@@ -10,6 +10,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function strtolower;
 
 final class IteratorToArrayFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -47,7 +48,7 @@ final class IteratorToArrayFunctionReturnTypeExtension implements DynamicFunctio
 		);
 
 		if ($isList) {
-			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 		}
 
 		return $arrayType;

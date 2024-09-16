@@ -5,6 +5,9 @@ When PHPStan 2.0 gets released, this will turn into [releases notes on GitHub](h
 Major new features 🚀
 =====================
 
+* **Array `list` type** ([#1751](https://github.com/phpstan/phpstan-src/pull/1751)), #3311, #8185, #6243, thanks @rvanvelzen!
+    * Lists are arrays with sequential integer keys starting at 0
+
 Bleeding edge (TODO move to other sections)
 =====================
 
@@ -30,8 +33,6 @@ Bleeding edge (TODO move to other sections)
     * Report `instanceof` of classes covered by backward compatibility promise but where the assumption might change (https://github.com/phpstan/phpstan-src/commit/996bc69fa977aa64f601bd82b8a0ae39be0cbeef)
 * Use explicit mixed for global array variables ([#1411](https://github.com/phpstan/phpstan-src/pull/1411)), thanks @herndlm!
 * Add `@readonly` rule that disallows default values ([#1391](https://github.com/phpstan/phpstan-src/pull/1391)), thanks @herndlm!
-* **Array `list` type** ([#1751](https://github.com/phpstan/phpstan-src/pull/1751)), #3311, #8185, #6243, thanks @rvanvelzen!
-    * Lists are arrays with sequential integer keys starting at 0
 * Improve error wording of the NonexistentOffset, BooleanAndConstantConditionRule, and BooleanOrConstantConditionRule ([#1882](https://github.com/phpstan/phpstan-src/pull/1882)), thanks @VincentLanglet!
 * MissingMagicSerializationMethodsRule ([#1711](https://github.com/phpstan/phpstan-src/pull/1711)), #7482, thanks @staabm!
 * Stub files validation - detect duplicate classes and functions (https://github.com/phpstan/phpstan-src/commit/ddf8d5c3859c2c75c20f525a0e2ca8b99032373a, https://github.com/phpstan/phpstan-src/commit/17e4b74335e5235d7cd6708eb687a774a0eeead4)

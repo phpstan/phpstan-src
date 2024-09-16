@@ -615,7 +615,7 @@ class TypeCombinator
 			$constantArrays = $arrayType->getConstantArrays();
 
 			foreach ($constantArrays as $constantArray) {
-				if ($constantArray->isList()->yes() && AccessoryArrayListType::isListTypeEnabled()) {
+				if ($constantArray->isList()->yes()) {
 					$list = new AccessoryArrayListType();
 					$accessoryTypes[$list->describe(VerbosityLevel::cache())][$i] = $list;
 				}
@@ -822,7 +822,7 @@ class TypeCombinator
 
 				$arrayType = new ArrayType($keyType, $valueType);
 				if ($isList) {
-					$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+					$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 				}
 
 				return TypeCombinator::intersect($arrayType, new NonEmptyArrayType(), new OversizedArrayType());

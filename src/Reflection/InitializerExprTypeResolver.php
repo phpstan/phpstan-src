@@ -568,7 +568,7 @@ final class InitializerExprTypeResolver
 
 		$arrayType = $arrayBuilder->getArray();
 		if ($isList === true) {
-			return AccessoryArrayListType::intersectWith($arrayType);
+			return TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 		}
 
 		return $arrayType;
@@ -1041,7 +1041,7 @@ final class InitializerExprTypeResolver
 				$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 			}
 			if ($leftType->isList()->yes() && $rightType->isList()->yes()) {
-				$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+				$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 			}
 
 			return $arrayType;

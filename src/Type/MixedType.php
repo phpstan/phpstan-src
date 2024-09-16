@@ -177,7 +177,7 @@ class MixedType implements CompoundType, SubtractableType
 			return new ErrorType();
 		}
 
-		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new UnionType([new IntegerType(), new StringType()])));
+		return TypeCombinator::intersect(new ArrayType(new IntegerType(), new UnionType([new IntegerType(), new StringType()])), new AccessoryArrayListType());
 	}
 
 	public function getValuesArray(): Type
@@ -186,7 +186,7 @@ class MixedType implements CompoundType, SubtractableType
 			return new ErrorType();
 		}
 
-		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)));
+		return TypeCombinator::intersect(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)), new AccessoryArrayListType());
 	}
 
 	public function fillKeysArray(Type $valueType): Type
@@ -258,7 +258,7 @@ class MixedType implements CompoundType, SubtractableType
 			return new ErrorType();
 		}
 
-		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)));
+		return TypeCombinator::intersect(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)), new AccessoryArrayListType());
 	}
 
 	public function isCallable(): TrinaryLogic

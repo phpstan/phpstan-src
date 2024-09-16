@@ -88,7 +88,7 @@ final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionR
 				);
 				$arrayType = new ArrayType($inputArgType->getIterableKeyType(), $valueType);
 
-				return $isList ? AccessoryArrayListType::intersectWith($arrayType) : $arrayType;
+				return $isList ? TypeCombinator::intersect($arrayType, new AccessoryArrayListType()) : $arrayType;
 			}
 
 			// Override $add_empty option
@@ -116,7 +116,7 @@ final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionR
 					$addEmpty ? TypeCombinator::addNull($valueType) : $valueType,
 				);
 
-				return $isList ? AccessoryArrayListType::intersectWith($arrayType) : $arrayType;
+				return $isList ? TypeCombinator::intersect($arrayType, new AccessoryArrayListType()) : $arrayType;
 			}
 
 			return null;

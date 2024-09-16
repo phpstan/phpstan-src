@@ -526,10 +526,11 @@ final class MutatingScope implements Scope
 				return IntegerRangeType::fromInterval(1, null);
 			}
 			if ($variableName === 'argv') {
-				return AccessoryArrayListType::intersectWith(TypeCombinator::intersect(
+				return TypeCombinator::intersect(
 					new ArrayType(new IntegerType(), new StringType()),
 					new NonEmptyArrayType(),
-				));
+					new AccessoryArrayListType(),
+				);
 			}
 			if ($this->canAnyVariableExist()) {
 				return new MixedType();
@@ -3175,7 +3176,7 @@ final class MutatingScope implements Scope
 				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()) {
 					$parameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $parameterType);
 				} else {
-					$parameterType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $parameterType));
+					$parameterType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $parameterType), new AccessoryArrayListType());
 				}
 			}
 			$parameterNode = new Variable($parameter->getName());
@@ -3190,7 +3191,7 @@ final class MutatingScope implements Scope
 				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()) {
 					$nativeParameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $nativeParameterType);
 				} else {
-					$nativeParameterType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $nativeParameterType));
+					$nativeParameterType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $nativeParameterType), new AccessoryArrayListType());
 				}
 			}
 			$nativeExpressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameterNode, $nativeParameterType);
@@ -3670,11 +3671,11 @@ final class MutatingScope implements Scope
 				));
 			}
 
-			return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $this->getFunctionType(
+			return TypeCombinator::intersect(new ArrayType(new IntegerType(), $this->getFunctionType(
 				$type,
 				false,
 				false,
-			)));
+			)), new AccessoryArrayListType());
 		}
 
 		if ($type instanceof Name) {
@@ -5079,7 +5080,7 @@ final class MutatingScope implements Scope
 						$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
 					}
 					if ($constantArraysA->isList()->yes() && $constantArraysB->isList()->yes()) {
-						$resultType = AccessoryArrayListType::intersectWith($resultType);
+						$resultType = TypeCombinator::intersect($resultType, new AccessoryArrayListType());
 					}
 					$resultTypes[] = $resultType;
 				}
@@ -5122,7 +5123,7 @@ final class MutatingScope implements Scope
 					$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
 				}
 				if ($generalArraysA->isList()->yes() && $generalArraysB->isList()->yes()) {
-					$resultType = AccessoryArrayListType::intersectWith($resultType);
+					$resultType = TypeCombinator::intersect($resultType, new AccessoryArrayListType());
 				}
 				if ($generalArraysA->isOversizedArray()->yes() && $generalArraysB->isOversizedArray()->yes()) {
 					$resultType = TypeCombinator::intersect($resultType, new OversizedArrayType());

@@ -315,7 +315,7 @@ final class TypeSpecifier
 					if ($argType->isArray()->yes()) {
 						$newType = new NonEmptyArrayType();
 						if ($context->true() && $argType->isList()->yes()) {
-							$newType = AccessoryArrayListType::intersectWith($newType);
+							$newType = TypeCombinator::intersect($newType, new AccessoryArrayListType());
 						}
 
 						$result = $result->unionWith(

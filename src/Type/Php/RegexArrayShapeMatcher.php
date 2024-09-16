@@ -354,7 +354,7 @@ final class RegexArrayShapeMatcher
 		}
 
 		if ($matchesAll && $this->containsSetOrder($flags)) {
-			$arrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $builder->getArray()));
+			$arrayType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $builder->getArray()), new AccessoryArrayListType());
 			if (!$wasMatched->yes()) {
 				$arrayType = TypeCombinator::union(
 					new ConstantArrayType([], []),
@@ -382,7 +382,7 @@ final class RegexArrayShapeMatcher
 
 		if ($matchesAll) {
 			if ($this->containsPatternOrder($flags)) {
-				$subjectValueType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $subjectValueType));
+				$subjectValueType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $subjectValueType), new AccessoryArrayListType());
 			}
 		}
 
@@ -433,7 +433,7 @@ final class RegexArrayShapeMatcher
 			}
 
 			if ($this->containsPatternOrder($flags)) {
-				$groupValueType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $groupValueType));
+				$groupValueType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $groupValueType), new AccessoryArrayListType());
 			}
 
 			return $groupValueType;

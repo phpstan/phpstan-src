@@ -43,7 +43,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 				new IntegerType(),
 				new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new StringType(), IntegerRangeType::fromInterval(0, null)], [2], [], TrinaryLogic::createYes()),
 			);
-			return TypeCombinator::union(AccessoryArrayListType::intersectWith($type), new ConstantBooleanType(false));
+			return TypeCombinator::union(TypeCombinator::intersect($type, new AccessoryArrayListType()), new ConstantBooleanType(false));
 		}
 
 		return null;

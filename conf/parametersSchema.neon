@@ -49,7 +49,6 @@ parametersSchema:
 		runtimeReflectionRules: bool()
 		notAnalysedTrait: bool()
 		curlSetOptTypes: bool()
-		listType: bool()
 		abstractTraitMethod: bool()
 		missingMagicSerializationRule: bool()
 		nullContextForVoidReturningFunctions: bool()

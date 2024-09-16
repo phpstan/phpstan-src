@@ -103,7 +103,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			return TypeCombinator::union(...$results);
 		}
 
-		$returnType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
+		$returnType = TypeCombinator::intersect(new ArrayType(new IntegerType(), new StringType()), new AccessoryArrayListType());
 
 		return $encoding === null && !$this->phpVersion->strSplitReturnsEmptyArray()
 			? TypeCombinator::intersect($returnType, new NonEmptyArrayType())

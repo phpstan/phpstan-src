@@ -94,7 +94,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 						}
 						$returnedArray = $returnedArrayBuilder->getArray();
 						if ($constantArray->isList()->yes()) {
-							$returnedArray = AccessoryArrayListType::intersectWith($returnedArray);
+							$returnedArray = TypeCombinator::intersect($returnedArray, new AccessoryArrayListType());
 						}
 						$arrayTypes[] = $returnedArray;
 					}

@@ -2455,7 +2455,7 @@ final class NodeScopeResolver
 				$functionReflection !== null
 				&& in_array($functionReflection->getName(), ['fopen', 'file_get_contents'], true)
 			) {
-				$scope = $scope->assignVariable('http_response_header', AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType())), new ArrayType(new IntegerType(), new StringType()), TrinaryLogic::createYes());
+				$scope = $scope->assignVariable('http_response_header', TypeCombinator::intersect(new ArrayType(new IntegerType(), new StringType()), new AccessoryArrayListType()), new ArrayType(new IntegerType(), new StringType()), TrinaryLogic::createYes());
 			}
 
 			if (
@@ -3841,7 +3841,7 @@ final class NodeScopeResolver
 						? TypeCombinator::intersect($array, new NonEmptyArrayType())
 						: $array;
 					$constantArray = $isList
-						? AccessoryArrayListType::intersectWith($constantArray)
+						? TypeCombinator::intersect($constantArray, new AccessoryArrayListType())
 						: $constantArray;
 				}
 
@@ -3884,7 +3884,7 @@ final class NodeScopeResolver
 				return $type;
 			}
 
-			$newArrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $type->getIterableValueType()));
+			$newArrayType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $type->getIterableValueType()), new AccessoryArrayListType());
 			if ($isIterableAtLeastOnce->yes()) {
 				$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
 			}

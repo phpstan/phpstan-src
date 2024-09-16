@@ -198,12 +198,12 @@ class ArrayType implements Type
 
 	public function getKeysArray(): Type
 	{
-		return AccessoryArrayListType::intersectWith(new self(new IntegerType(), $this->getIterableKeyType()));
+		return TypeCombinator::intersect(new self(new IntegerType(), $this->getIterableKeyType()), new AccessoryArrayListType());
 	}
 
 	public function getValuesArray(): Type
 	{
-		return AccessoryArrayListType::intersectWith(new self(new IntegerType(), $this->itemType));
+		return TypeCombinator::intersect(new self(new IntegerType(), $this->itemType), new AccessoryArrayListType());
 	}
 
 	public function isIterable(): TrinaryLogic
@@ -569,7 +569,7 @@ class ArrayType implements Type
 
 	public function shuffleArray(): Type
 	{
-		return AccessoryArrayListType::intersectWith(new self(new IntegerType(), $this->itemType));
+		return TypeCombinator::intersect(new self(new IntegerType(), $this->itemType), new AccessoryArrayListType());
 	}
 
 	public function isCallable(): TrinaryLogic

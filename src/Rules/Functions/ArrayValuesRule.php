@@ -10,7 +10,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function sprintf;
@@ -36,10 +35,6 @@ final class ArrayValuesRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!($node->name instanceof Node\Name)) {
-			return [];
-		}
-
-		if (AccessoryArrayListType::isListTypeEnabled() === false) {
 			return [];
 		}
 

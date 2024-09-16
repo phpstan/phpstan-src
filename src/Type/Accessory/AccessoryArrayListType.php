@@ -39,8 +39,6 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
-	private static bool $enabled = false;
-
 	public function __construct()
 	{
 	}
@@ -466,25 +464,6 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 	public static function __set_state(array $properties): Type
 	{
 		return new self();
-	}
-
-	public static function setListTypeEnabled(bool $enabled): void
-	{
-		self::$enabled = $enabled;
-	}
-
-	public static function isListTypeEnabled(): bool
-	{
-		return self::$enabled;
-	}
-
-	public static function intersectWith(Type $type): Type
-	{
-		if (self::$enabled) {
-			return TypeCombinator::intersect($type, new self());
-		}
-
-		return $type;
 	}
 
 	public function exponentiate(Type $exponent): Type

@@ -79,7 +79,11 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 					}
 
 					if (count($rangeValues) > self::RANGE_LENGTH_THRESHOLD) {
-						if ($startConstant instanceof ConstantIntegerType && $endConstant instanceof ConstantIntegerType) {
+						if (
+							$startConstant instanceof ConstantIntegerType
+							&& $endConstant instanceof ConstantIntegerType
+							&& $stepConstant instanceof ConstantIntegerType
+						) {
 							if ($startConstant->getValue() > $endConstant->getValue()) {
 								$tmp = $startConstant;
 								$startConstant = $endConstant;
@@ -100,6 +104,7 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 								TypeCombinator::union(
 									$startConstant->generalize(GeneralizePrecision::moreSpecific()),
 									$endConstant->generalize(GeneralizePrecision::moreSpecific()),
+									$stepType->generalize(GeneralizePrecision::moreSpecific()),
 								),
 							),
 							new NonEmptyArrayType(),

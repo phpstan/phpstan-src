@@ -19,7 +19,7 @@ class FileExcluderTest extends PHPStanTestCase
 	{
 		$this->skipIfNotOnWindows();
 
-		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes, false);
+		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes);
 
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}
@@ -34,7 +34,7 @@ class FileExcluderTest extends PHPStanTestCase
 			],
 			[
 				__DIR__ . '/data/excluded-file.php',
-				[__DIR__],
+				[__DIR__ . '/*'],
 				true,
 			],
 			[
@@ -64,7 +64,7 @@ class FileExcluderTest extends PHPStanTestCase
 			],
 			[
 				__DIR__ . '\data\parse-error.php',
-				['tests/PHPStan/File/data'],
+				['tests/PHPStan/File/data/*'],
 				true,
 			],
 			[
@@ -99,7 +99,7 @@ class FileExcluderTest extends PHPStanTestCase
 			],
 			[
 				'c:\etc\phpstan\dummy-1.php',
-				['c:\etc\phpstan\\'],
+				['c:\etc\phpstan\\*'],
 				true,
 			],
 			[
@@ -109,7 +109,7 @@ class FileExcluderTest extends PHPStanTestCase
 			],
 			[
 				'c:\etc\phpstan-test\dummy-2.php',
-				['c:\etc\phpstan'],
+				['c:\etc\phpstan*'],
 				true,
 			],
 		];
@@ -127,7 +127,7 @@ class FileExcluderTest extends PHPStanTestCase
 	{
 		$this->skipIfNotOnUnix();
 
-		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes, false);
+		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes);
 
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}
@@ -172,7 +172,7 @@ class FileExcluderTest extends PHPStanTestCase
 			],
 			[
 				__DIR__ . '/data/parse-error.php',
-				['tests/PHPStan/File/data'],
+				['*/tests/PHPStan/File/data/*'],
 				true,
 			],
 			[
@@ -192,7 +192,7 @@ class FileExcluderTest extends PHPStanTestCase
 			],
 			[
 				'/etc/phpstan/dummy-1.php',
-				['/etc/phpstan/'],
+				['/etc/phpstan/*'],
 				true,
 			],
 			[
@@ -202,7 +202,7 @@ class FileExcluderTest extends PHPStanTestCase
 			],
 			[
 				'/etc/phpstan-test/dummy-2.php',
-				['/etc/phpstan'],
+				['/etc/phpstan*'],
 				true,
 			],
 		];
@@ -216,16 +216,6 @@ class FileExcluderTest extends PHPStanTestCase
 				__DIR__ . '/test',
 			],
 			false,
-			true,
-		];
-
-		yield [
-			__DIR__ . '/tests/foo.php',
-			[
-				__DIR__ . '/test',
-			],
-			true,
-			false,
 		];
 
 		yield [
@@ -233,7 +223,6 @@ class FileExcluderTest extends PHPStanTestCase
 			[
 				__DIR__ . '/test',
 			],
-			true,
 			true,
 		];
 
@@ -243,7 +232,6 @@ class FileExcluderTest extends PHPStanTestCase
 				__DIR__ . '/FileExcluderTest.php',
 			],
 			true,
-			true,
 		];
 
 		yield [
@@ -251,7 +239,6 @@ class FileExcluderTest extends PHPStanTestCase
 			[
 				__DIR__ . '/test*',
 			],
-			true,
 			true,
 		];
 	}
@@ -263,13 +250,12 @@ class FileExcluderTest extends PHPStanTestCase
 	public function testNoImplicitWildcard(
 		string $filePath,
 		array $analyseExcludes,
-		bool $noImplicitWildcard,
 		bool $isExcluded,
 	): void
 	{
 		$this->skipIfNotOnUnix();
 
-		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes, $noImplicitWildcard);
+		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes);
 
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}

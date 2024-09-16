@@ -89,7 +89,6 @@ parameters:
 		printfArrayParameters: false
 		preciseMissingReturn: false
 		validatePregQuote: false
-		noImplicitWildcard: false
 		requireFileExists: false
 		narrowPregMatches: true
 		tooWidePropertyType: false
@@ -682,8 +681,6 @@ services:
 
 	-
 		implement: PHPStan\File\FileExcluderRawFactory
-		arguments:
-			noImplicitWildcard: %featureToggles.noImplicitWildcard%
 
 	fileExcluderAnalyse:
 		class: PHPStan\File\FileExcluder

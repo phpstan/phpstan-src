@@ -120,9 +120,7 @@ Bleeding edge (TODO move to other sections)
 * Check types in `@property` tags (https://github.com/phpstan/phpstan-src/commit/55ea2ae516df22a071ab873fdd6f748a3af0520e), #10752, #9356
 * Check types in `@method` tags (https://github.com/phpstan/phpstan-src/commit/5b7e474680eaf33874b7ed6a227677adcbed9ca5)
 * Check `@extends`, `@implements`, `@use` for unresolvable types (https://github.com/phpstan/phpstan-src/commit/2bb528233edb75312614166e282776f279cf2018), #11552
-* Report invalid exclude paths in PHP config (https://github.com/phpstan/phpstan-src/commit/9718c14f1ffac81ba3d2bf331b4e8b4041a4d004)
 * RegularExpressionPatternRule: validate preg_quote'd patterns ([#3270](https://github.com/phpstan/phpstan-src/pull/3270)), thanks @staabm!
-* No implicit wildcard in FileExcluder (https://github.com/phpstan/phpstan-src/commit/e19e6e5f8cfa706cc30e44a17276a6bc269f995c), #10299
 * Report useless return values of function calls like `var_export` without `$return=true` ([#3225](https://github.com/phpstan/phpstan-src/pull/3225)), #11320, thanks @staabm!
 * Check mixed in binary operator ([#3231](https://github.com/phpstan/phpstan-src/pull/3231)), #7538, #10440, thanks @schlndh!
 * Check vprintf/vsprintf arguments against placeholder count ([#3126](https://github.com/phpstan/phpstan-src/pull/3126)), thanks @staabm!
@@ -140,6 +138,8 @@ Improvements 🔧
 * Unescape strings in PHPDoc parser (https://github.com/phpstan/phpstan-src/commit/97786ed8376b478ec541ea9df1c450c1fbfe7461)
 * PHPDoc parser: add config for lines in its AST & enable ignoring errors within PHPDocs ([#2807](https://github.com/phpstan/phpstan-src/pull/2807)), thanks @janedbal!
 * InvalidPhpDocTagValueRule: include PHPDoc line number in the error message (https://github.com/phpstan/phpstan-src/commit/a04e0be832900749b5b4ba22e2de21db8bfa09a0)
+* No implicit wildcard in FileExcluder (https://github.com/phpstan/phpstan-src/commit/e19e6e5f8cfa706cc30e44a17276a6bc269f995c), #10299
+* Report invalid exclude paths in PHP config (https://github.com/phpstan/phpstan-src/commit/9718c14f1ffac81ba3d2bf331b4e8b4041a4d004)
 
 Bugfixes 🐛
 =====================

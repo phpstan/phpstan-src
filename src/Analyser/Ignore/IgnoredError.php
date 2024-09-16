@@ -4,7 +4,6 @@ namespace PHPStan\Analyser\Ignore;
 
 use Nette\Utils\Strings;
 use PHPStan\Analyser\Error;
-use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\File\FileExcluder;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
@@ -86,7 +85,7 @@ final class IgnoredError
 		}
 
 		if ($path !== null) {
-			$fileExcluder = new FileExcluder($fileHelper, [$path], BleedingEdgeToggle::isBleedingEdge());
+			$fileExcluder = new FileExcluder($fileHelper, [$path]);
 			$isExcluded = $fileExcluder->isExcludedFromAnalysing($error->getFilePath());
 			if (!$isExcluded && $error->getTraitFilePath() !== null) {
 				return $fileExcluder->isExcludedFromAnalysing($error->getTraitFilePath());

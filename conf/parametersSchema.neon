@@ -83,7 +83,6 @@ parametersSchema:
 		printfArrayParameters: bool()
 		preciseMissingReturn: bool()
 		validatePregQuote: bool()
-		noImplicitWildcard: bool()
 		narrowPregMatches: bool()
 		tooWidePropertyType: bool()
 		explicitThrow: bool()

@@ -52,7 +52,6 @@ final class FileExcluder
 	public function __construct(
 		FileHelper $fileHelper,
 		array $analyseExcludes,
-		private bool $noImplicitWildcard,
 	)
 	{
 		foreach ($analyseExcludes as $exclude) {
@@ -68,18 +67,14 @@ final class FileExcluder
 			if (self::isFnmatchPattern($normalized)) {
 				$this->fnmatchAnalyseExcludes[] = $normalized;
 			} else {
-				if ($this->noImplicitWildcard) {
-					if (is_file($normalized)) {
-						$this->literalAnalyseFilesExcludes[] = $normalized;
-					} elseif (is_dir($normalized)) {
-						if (!$trailingDirSeparator) {
-							$normalized .= DIRECTORY_SEPARATOR;
-						}
-
-						$this->literalAnalyseDirectoryExcludes[] = $normalized;
+				if (is_file($normalized)) {
+					$this->literalAnalyseFilesExcludes[] = $normalized;
+				} elseif (is_dir($normalized)) {
+					if (!$trailingDirSeparator) {
+						$normalized .= DIRECTORY_SEPARATOR;
 					}
-				} else {
-					$this->literalAnalyseExcludes[] = $fileHelper->absolutizePath($normalized);
+
+					$this->literalAnalyseDirectoryExcludes[] = $normalized;
 				}
 			}
 		}
@@ -99,16 +94,14 @@ final class FileExcluder
 				return true;
 			}
 		}
-		if ($this->noImplicitWildcard) {
-			foreach ($this->literalAnalyseDirectoryExcludes as $exclude) {
-				if (str_starts_with($file, $exclude)) {
-					return true;
-				}
+		foreach ($this->literalAnalyseDirectoryExcludes as $exclude) {
+			if (str_starts_with($file, $exclude)) {
+				return true;
 			}
-			foreach ($this->literalAnalyseFilesExcludes as $exclude) {
-				if ($file === $exclude) {
-					return true;
-				}
+		}
+		foreach ($this->literalAnalyseFilesExcludes as $exclude) {
+			if ($file === $exclude) {
+				return true;
 			}
 		}
 		foreach ($this->fnmatchAnalyseExcludes as $exclude) {

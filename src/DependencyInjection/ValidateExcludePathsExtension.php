@@ -28,8 +28,7 @@ final class ValidateExcludePathsExtension extends CompilerExtension
 		}
 
 		$errors = [];
-		$noImplicitWildcard = $builder->parameters['featureToggles']['noImplicitWildcard'];
-		if ($builder->parameters['__validate'] && $noImplicitWildcard) {
+		if ($builder->parameters['__validate']) {
 			$paths = [];
 			if (array_key_exists('analyse', $excludePaths)) {
 				$paths = $excludePaths['analyse'];

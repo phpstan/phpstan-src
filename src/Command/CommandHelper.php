@@ -609,7 +609,7 @@ final class CommandHelper
 
 			$pathRoutingParser->setAnalysedFiles($files);
 
-			$stubFilesExcluder = new FileExcluder($currentWorkingDirectoryFileHelper, $stubFilesProvider->getProjectStubFiles(), true);
+			$stubFilesExcluder = new FileExcluder($currentWorkingDirectoryFileHelper, $stubFilesProvider->getProjectStubFiles());
 
 			$files = array_values(array_filter($files, static fn (string $file) => !$stubFilesExcluder->isExcludedFromAnalysing($file)));
 

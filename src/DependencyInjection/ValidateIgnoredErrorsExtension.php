@@ -59,8 +59,6 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 			return;
 		}
 
-		$noImplicitWildcard = $builder->parameters['featureToggles']['noImplicitWildcard'];
-
 		/** @throws void */
 		$parser = Llk::load(new Read(__DIR__ . '/../../resources/RegexGrammar.pp'));
 		$reflectionProvider = new DummyReflectionProvider();
@@ -141,7 +139,7 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 
 		$reportUnmatched = (bool) $builder->parameters['reportUnmatchedIgnoredErrors'];
 
-		if ($noImplicitWildcard && $reportUnmatched) {
+		if ($reportUnmatched) {
 			foreach ($ignoreErrors as $ignoreError) {
 				if (!is_array($ignoreError)) {
 					continue;

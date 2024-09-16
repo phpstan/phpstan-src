@@ -59,7 +59,6 @@ Bleeding edge (TODO move to other sections)
 * More precise `file()` flags args ([#2476](https://github.com/phpstan/phpstan-src/pull/2476), [#2482](https://github.com/phpstan/phpstan-src/pull/2482)), thanks @staabm!
 * More precise `flock()` operation flags ([#2477](https://github.com/phpstan/phpstan-src/pull/2477)), thanks @staabm!
 * Rule for `call_user_func()` ([#2479](https://github.com/phpstan/phpstan-src/pull/2479)), thanks @staabm!
-* Analysis with zero files results in non-zero exit code (https://github.com/phpstan/phpstan-src/commit/46ff440648e62617df86aa74ba905ffa99897737), #9410
 * Report dead types even in multi-exception catch ([#2399](https://github.com/phpstan/phpstan-src/pull/2399)), thanks @JanTvrdik!
 * `error_log` errors with `message_type=2` ([#2428](https://github.com/phpstan/phpstan-src/pull/2428)), #9380, thanks @staabm!
 * Check `filter_input*` type param type ([#2271](https://github.com/phpstan/phpstan-src/pull/2271)), thanks @herndlm!
@@ -140,6 +139,7 @@ Improvements 🔧
 * Do not generalize template types, except when in `GenericObjectType` ([#2818](https://github.com/phpstan/phpstan-src/pull/2818), [#2821](https://github.com/phpstan/phpstan-src/pull/2821))
     * This fixes following **17 issues**: #8166, #8127, #7944, #7283, #6653, #6196, #9084, #8683, #8074, #7984, #7301, #7087, #5594, #5592, #9472, #9764, #10092
 * Non-static methods cannot be used as static callables in PHP 8+ ([#2420](https://github.com/phpstan/phpstan-src/pull/2420)), thanks @staabm!
+* Analysis with zero files results in non-zero exit code (https://github.com/phpstan/phpstan-src/commit/46ff440648e62617df86aa74ba905ffa99897737), #9410
 
 Bugfixes 🐛
 =====================

@@ -7,8 +7,8 @@ use PHPStan\Testing\TypeInferenceTestCase;
 use stdClass;
 use function array_shift;
 use function define;
+use function dirname;
 use function implode;
-use function realpath;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -206,7 +206,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public static function dataFile(): iterable
 	{
-		$base = realpath(__DIR__ . '/../../../') . '/';
+		$base = dirname(__DIR__, 3) . '/';
 		$baseLength = strlen($base);
 
 		foreach (self::findTestFiles() as $file) {

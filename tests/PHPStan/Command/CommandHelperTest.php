@@ -205,6 +205,7 @@ class CommandHelperTest extends TestCase
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'nested' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'there.php',
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'up.php',
 					],
+					'reportUnmatchedIgnoredErrors' => false,
 					'ignoreErrors' => [
 						[
 							'message' => '#aaa#',

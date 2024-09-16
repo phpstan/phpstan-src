@@ -3,6 +3,7 @@ parameters:
 		- here.php
 		- test/there.php
 		- ../up.php
+	reportUnmatchedIgnoredErrors: false
 	ignoreErrors:
 		-
 			message: '#aaa#'

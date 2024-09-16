@@ -142,7 +142,7 @@ class FileExcluderTest extends PHPStanTestCase
 			],
 			[
 				__DIR__ . '/data/excluded-file.php',
-				[__DIR__],
+				[__DIR__ . '/*'],
 				true,
 			],
 			[
@@ -168,11 +168,6 @@ class FileExcluderTest extends PHPStanTestCase
 			[
 				__DIR__ . '/data/parse-error.php',
 				[__DIR__ . '/data/[pP]arse-[eE]rror.ph[pP]'],
-				true,
-			],
-			[
-				__DIR__ . '/data/parse-error.php',
-				['*/tests/PHPStan/File/data/*'],
 				true,
 			],
 			[

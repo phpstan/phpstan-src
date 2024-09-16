@@ -1,4 +1,4 @@
 parameters:
 	excludePaths:
 		- test
-		- test2
+		- test2 (?)

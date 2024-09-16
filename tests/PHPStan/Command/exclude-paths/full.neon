@@ -3,4 +3,4 @@ parameters:
 		analyse:
 			- test
 		analyseAndScan:
-			- test2
+			- test2 (?)

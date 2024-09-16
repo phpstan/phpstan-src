@@ -503,12 +503,7 @@ final class AnalyseCommand extends Command
 
 				$errorOutput->writeLineFormatted('');
 
-				$bleedingEdge = (bool) $container->getParameter('featureToggles')['projectServicesNotInAnalysedPaths'];
-				if ($bleedingEdge) {
-					return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
-				}
-
-				$errorOutput->getStyle()->warning('This will cause a non-zero exit code in PHPStan 2.0.');
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
 			}
 		}
 

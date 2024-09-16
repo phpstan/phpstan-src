@@ -551,15 +551,17 @@ final class RegexGroupParser
 				return null;
 			}
 
+			$isEscaped = false;
 			if (strlen($value) > 1 && $value[0] === '\\') {
 				$value = substr($value, 1) ?: '';
+				$isEscaped = true;
 			}
 
 			if (
 				$appendLiterals
 				&& in_array($token, ['literal', 'range', 'class_', '_class_literal'], true)
 				&& $onlyLiterals !== null
-				&& !in_array($value, ['.'], true)
+				&& (!in_array($value, ['.'], true) || $isEscaped)
 			) {
 				if ($onlyLiterals === []) {
 					$onlyLiterals = [$value];

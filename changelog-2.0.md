@@ -9,7 +9,6 @@ Bleeding edge (TODO move to other sections)
 =====================
 
 * Infer explicit mixed when instantiating generic class with unknown template types (https://github.com/phpstan/phpstan-src/commit/089d4c6fb6eb709c44123548d33990113d174b86), #6398
-* Countable stub with `0|positive-int` ([#1027](https://github.com/phpstan/phpstan-src/pull/1027)), thanks @staabm!
 * Report useless `array_filter()` calls ([#1077](https://github.com/phpstan/phpstan-src/pull/1077)), #6840, thanks @leongersen!
 * Specify explicit mixed array type via `is_array` ([#1191](https://github.com/phpstan/phpstan-src/pull/1191)), thanks @herndlm!
 * Lower memory consumption thanks to breaking up of reference cycles
@@ -146,6 +145,8 @@ Bugfixes 🐛
 
 Function signature fixes 🤖
 =======================
+
+* Countable stub with `0|positive-int` ([#1027](https://github.com/phpstan/phpstan-src/pull/1027)), thanks @staabm!
 
 Internals 🔍
 =====================

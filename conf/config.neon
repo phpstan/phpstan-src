@@ -195,6 +195,7 @@ parameters:
 		- ../stubs/arrayFunctions.stub
 		- ../stubs/core.stub
 		- ../stubs/typeCheckingFunctions.stub
+		- ../stubs/Countable.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit
@@ -455,13 +456,6 @@ services:
 		class: PHPStan\PhpDoc\StubValidator
 		arguments:
 			duplicateStubs: %featureToggles.duplicateStubs%
-
-	-
-		class: PHPStan\PhpDoc\CountableStubFilesExtension
-		arguments:
-			bleedingEdge: %featureToggles.bleedingEdge%
-		tags:
-			- phpstan.stubFilesExtension
 
 	-
 		class: PHPStan\PhpDoc\SocketSelectStubFilesExtension

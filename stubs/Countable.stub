@@ -3,7 +3,7 @@
 interface Countable
 {
     /**
-     * @return int
+     * @return 0|positive-int
      */
     public function count(): int;
 }

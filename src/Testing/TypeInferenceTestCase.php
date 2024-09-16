@@ -279,24 +279,37 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	 */
 	public static function gatherAssertTypesFromDirectory(string $directory): array
 	{
-		if (!is_dir($directory)) {
-			self::fail(sprintf('Directory %s does not exist.', $directory));
-		}
-
-		$finder = new Finder();
-		$finder->followLinks();
 		$asserts = [];
-		foreach ($finder->files()->name('*.php')->in($directory) as $fileInfo) {
-			$path = $fileInfo->getPathname();
-			if (self::isFileLintSkipped($path)) {
-				continue;
-			}
+		foreach (self::findTestDataFilesFromDirectory($directory) as $path) {
 			foreach (self::gatherAssertTypes($path) as $key => $assert) {
 				$asserts[$key] = $assert;
 			}
 		}
 
 		return $asserts;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public static function findTestDataFilesFromDirectory(string $directory): array
+	{
+		if (!is_dir($directory)) {
+			self::fail(sprintf('Directory %s does not exist.', $directory));
+		}
+
+		$finder = new Finder();
+		$finder->followLinks();
+		$files = [];
+		foreach ($finder->files()->name('*.php')->in($directory) as $fileInfo) {
+			$path = $fileInfo->getPathname();
+			if (self::isFileLintSkipped($path)) {
+				continue;
+			}
+			$files[] = $path;
+		}
+
+		return $files;
 	}
 
 	/**

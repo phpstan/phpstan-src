@@ -91,7 +91,6 @@ Bleeding edge (TODO move to other sections)
 * CallToConstructorStatementWithoutSideEffectsRule - report class with no constructor (https://github.com/phpstan/phpstan-src/commit/b116d25a6e4ba6c09f59af6569d9e6f6fd20aff4)
 * Deprecated: returning plain strings as errors, use RuleErrorBuilder
     * Learn more: [Using RuleErrorBuilder to enrich reported errors in custom rules](https://phpstan.org/blog/using-rule-error-builder)
-* Deprecated: returning RuleError without identifier (https://github.com/phpstan/phpstan-src/commit/969e6fa31d5484d42dab902703cfc6820a983cfd)
 * Check if required file exists ([#3294](https://github.com/phpstan/phpstan-src/pull/3294)), #3397, thanks @Bellangelo!
 * Check generics `@method` `@template` tags above traits (https://github.com/phpstan/phpstan-src/commit/aadbf62d3ae4517fc7a212b07130bedcef8d13ac)
 * Check `@mixin` PHPDoc tag above traits (https://github.com/phpstan/phpstan-src/commit/0d0de946900adf4eb3c799b1b547567536e23147)
@@ -139,6 +138,7 @@ Improvements 🔧
 * Analysis with zero files results in non-zero exit code (https://github.com/phpstan/phpstan-src/commit/46ff440648e62617df86aa74ba905ffa99897737), #9410
 * Fail build when project config uses custom extensions outside of analysed paths
     * This will only occur after a run that uses already present and valid result cache
+* Require identifier in custom rules (https://github.com/phpstan/phpstan-src/commit/969e6fa31d5484d42dab902703cfc6820a983cfd)
 
 Bugfixes 🐛
 =====================

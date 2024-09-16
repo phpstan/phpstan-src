@@ -295,7 +295,6 @@ final class FunctionCallParametersCheck
 					$errors[] = RuleErrorBuilder::message(sprintf($messages[14], sprintf('named argument $%s', $argumentName)))
 						->identifier('argument.named')
 						->line($argumentLine)
-						->nonIgnorable()
 						->build();
 				} elseif ($unpack) {
 					$unpackedArrayType = $scope->getType($argumentValue);
@@ -304,7 +303,6 @@ final class FunctionCallParametersCheck
 						$errors[] = RuleErrorBuilder::message(sprintf($messages[14], sprintf('unpacked array with %s', $hasStringKey->yes() ? 'string key' : 'possibly string key')))
 							->identifier('argument.named')
 							->line($argumentLine)
-							->nonIgnorable()
 							->build();
 					}
 				}

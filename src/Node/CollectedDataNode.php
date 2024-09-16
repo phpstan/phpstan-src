@@ -12,7 +12,7 @@ use function array_key_exists;
  * @api
  * @final
  */
-class CollectedDataNode extends NodeAbstract
+class CollectedDataNode extends NodeAbstract implements VirtualNode
 {
 
 	/**

@@ -217,6 +217,16 @@ return [
 			return str_replace(sprintf('use %s\\PhpParser;', $prefix), 'use PhpParser;', $content);
 		},
 		function (string $filePath, string $prefix, string $content): string {
+			if (!str_starts_with($filePath, 'vendor/nikic/php-parser/lib')) {
+				return $content;
+			}
+
+			return str_replace([
+				sprintf('\\%s', $prefix),
+				sprintf('\\\\%s', $prefix),
+			], '', $content);
+		},
+		function (string $filePath, string $prefix, string $content): string {
 			if (
 				$filePath !== 'vendor/nette/utils/src/Utils/Strings.php'
 				&& $filePath !== 'vendor/nette/utils/src/Utils/Arrays.php'

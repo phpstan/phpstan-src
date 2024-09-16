@@ -32,7 +32,7 @@ interface Rule
 
 	/**
 	 * @phpstan-param TNodeType $node
-	 * @return (string|RuleError)[] errors
+	 * @return list<IdentifierRuleError>
 	 */
 	public function processNode(Node $node, Scope $scope): array;
 

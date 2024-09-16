@@ -57,5 +57,3 @@ parameters:
 		explicitThrow: true
 		absentTypeChecks: true
 		requireFileExists: true
-	stubFiles:
-		- ../stubs/bleedingEdge/Rule.stub

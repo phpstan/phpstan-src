@@ -445,14 +445,14 @@ final class RegexGroupParser
 			foreach ($children as $child) {
 				$oldLiterals = $onlyLiterals;
 
-				$this->getLiteralValue($child, $oldLiterals, true, $patternModifiers);
+				$this->getLiteralValue($child, $oldLiterals, true, $patternModifiers, true);
 				foreach ($oldLiterals ?? [] as $oldLiteral) {
 					$newLiterals[] = $oldLiteral;
 				}
 			}
 			$onlyLiterals = $newLiterals;
 		} elseif ($ast->getId() === 'token') {
-			$literalValue = $this->getLiteralValue($ast, $onlyLiterals, !$inClass, $patternModifiers);
+			$literalValue = $this->getLiteralValue($ast, $onlyLiterals, !$inClass, $patternModifiers, false);
 			if ($literalValue !== null) {
 				if (Strings::match($literalValue, '/^\d+$/') === null) {
 					$isNumeric = TrinaryLogic::createNo();
@@ -508,7 +508,7 @@ final class RegexGroupParser
 			}
 		}
 
-		$literal = $this->getLiteralValue($node, $onlyLiterals, false, $patternModifiers);
+		$literal = $this->getLiteralValue($node, $onlyLiterals, false, $patternModifiers, false);
 		if ($literal !== null) {
 			if ($literal !== '' && $literal !== '0') {
 				$isNonFalsy = true;
@@ -528,7 +528,7 @@ final class RegexGroupParser
 	/**
 	 * @param array<string>|null $onlyLiterals
 	 */
-	private function getLiteralValue(TreeNode $node, ?array &$onlyLiterals, bool $appendLiterals, string $patternModifiers): ?string
+	private function getLiteralValue(TreeNode $node, ?array &$onlyLiterals, bool $appendLiterals, string $patternModifiers, bool $inCharacterClass): ?string
 	{
 		if ($node->getId() !== 'token') {
 			return null;
@@ -561,7 +561,7 @@ final class RegexGroupParser
 				$appendLiterals
 				&& in_array($token, ['literal', 'range', 'class_', '_class_literal'], true)
 				&& $onlyLiterals !== null
-				&& (!in_array($value, ['.'], true) || $isEscaped)
+				&& (!in_array($value, ['.'], true) || $isEscaped || $inCharacterClass)
 			) {
 				if ($onlyLiterals === []) {
 					$onlyLiterals = [$value];

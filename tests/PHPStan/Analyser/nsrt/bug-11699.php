@@ -13,6 +13,15 @@ function doFoo():void {
 	}
 }
 
+function doFoo1():void {
+	$string = 'Foo.bar';
+	$match = [];
+	$result = preg_match('~(?<AB>[\~,\?.])~', $string, $match); // dot in character class does not need to be escaped
+	if ($result === 1) {
+		assertType("','|'.'|'?'|'~'", $match['AB']);
+	}
+}
+
 function doFoo2():void {
 	$string = 'Foo.bar';
 	$match = [];

@@ -40,3 +40,12 @@ function doFoo3():void {
 		assertType("'.'", $match['AB']);
 	}
 }
+
+function doFoo4():void {
+	$string = 'Foo.bar';
+	$match = [];
+	$result = preg_match('~(?<AB>[^\~,\?\.])~', $string, $match);
+	if ($result === 1) {
+		assertType("non-empty-string", $match['AB']);
+	}
+}

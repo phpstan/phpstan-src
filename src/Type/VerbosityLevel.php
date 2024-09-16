@@ -123,7 +123,7 @@ final class VerbosityLevel
 		$verboseLevel = null;
 		TypeTraverser::map($acceptingType, $moreVerboseCallback);
 
-		if (null !== $verboseLevel) {
+		if ($verboseLevel !== null) {
 			return $verboseLevel;
 		}
 
@@ -163,7 +163,7 @@ final class VerbosityLevel
 		$verboseLevel = null;
 		TypeTraverser::map($acceptedType, $moreVerboseCallback);
 
-		return null !== $verboseLevel ? self::value() : self::typeOnly();
+		return $verboseLevel !== null ? self::value() : self::typeOnly();
 	}
 
 	/**

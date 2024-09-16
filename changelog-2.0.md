@@ -71,8 +71,6 @@ Bleeding edge (TODO move to other sections)
 * MethodSignatureRule - look at abstract trait method (https://github.com/phpstan/phpstan-src/commit/5fd8cee591ce1b07daa5f98a1ddcdfc723f1b5eb)
 * MagicConstantContextRule ([#2741](https://github.com/phpstan/phpstan-src/pull/2741)), #10099, thanks @staabm!
 * More precise `RecursiveIteratorIterator::__construct()` parameter types ([#2835](https://github.com/phpstan/phpstan-src/pull/2835)), thanks @staabm!
-* Do not generalize template types, except when in `GenericObjectType` ([#2818](https://github.com/phpstan/phpstan-src/pull/2818), [#2821](https://github.com/phpstan/phpstan-src/pull/2821))
-    * This fixes following **17 issues**: #8166, #8127, #7944, #7283, #6653, #6196, #9084, #8683, #8074, #7984, #7301, #7087, #5594, #5592, #9472, #9764, #10092
 * TooWideMethodReturnTypehintRule - always report for final methods (https://github.com/phpstan/phpstan-src/commit/c30e9a484c8245b8126cd63444607ca74d2af761)
 * LogicalXorConstantConditionRule (https://github.com/phpstan/phpstan-src/commit/3a12724fd636b1bcf36c22b36e8f765d97150895, https://github.com/phpstan/phpstan-src/commit/3b011f6524254dad0f16840fdcfdbe7421548617), #7539
 * NoopRule - report top-level `xor` because that's probably not what the user intended to do (https://github.com/phpstan/phpstan-src/commit/a1fffb3346e09f1e8e8d987d4282263295a55142), #10267
@@ -140,6 +138,8 @@ Improvements 🔧
 * InvalidPhpDocTagValueRule: include PHPDoc line number in the error message (https://github.com/phpstan/phpstan-src/commit/a04e0be832900749b5b4ba22e2de21db8bfa09a0)
 * No implicit wildcard in FileExcluder (https://github.com/phpstan/phpstan-src/commit/e19e6e5f8cfa706cc30e44a17276a6bc269f995c), #10299
 * Report invalid exclude paths in PHP config (https://github.com/phpstan/phpstan-src/commit/9718c14f1ffac81ba3d2bf331b4e8b4041a4d004)
+* Do not generalize template types, except when in `GenericObjectType` ([#2818](https://github.com/phpstan/phpstan-src/pull/2818), [#2821](https://github.com/phpstan/phpstan-src/pull/2821))
+    * This fixes following **17 issues**: #8166, #8127, #7944, #7283, #6653, #6196, #9084, #8683, #8074, #7984, #7301, #7087, #5594, #5592, #9472, #9764, #10092
 
 Bugfixes 🐛
 =====================

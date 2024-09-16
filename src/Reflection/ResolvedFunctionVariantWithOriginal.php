@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
@@ -245,7 +244,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 		};
 
 		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($references, $objectCb): Type {
-			if (BleedingEdgeToggle::isBleedingEdge() && $type instanceof GenericObjectType) {
+			if ($type instanceof GenericObjectType) {
 				return TypeTraverser::map($type, $objectCb);
 			}
 

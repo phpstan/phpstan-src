@@ -87,17 +87,13 @@ final class VerbosityLevel
 	/** @api */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{
-		$verboseLevelCallback = static function (Type $acceptingType): VerbosityLevel {
-			return $acceptingType->isLowercaseString()->yes() ? self::precise() : self::value();
-		};
-
-		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$moreVerbose): Type {
+		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$verboseLevel): Type {
 			if ($type->isCallable()->yes()) {
-				$moreVerbose = true;
+				$verboseLevel = self::value();
 				return $type;
 			}
 			if ($type->isConstantValue()->yes() && $type->isNull()->no()) {
-				$moreVerbose = true;
+				$verboseLevel = self::value();
 				return $type;
 			}
 			if (
@@ -106,26 +102,29 @@ final class VerbosityLevel
 				|| $type instanceof AccessoryNonFalsyStringType
 				|| $type instanceof AccessoryLiteralStringType
 				|| $type instanceof AccessoryNumericStringType
-				|| $type instanceof AccessoryLowercaseStringType
 				|| $type instanceof NonEmptyArrayType
 				|| $type instanceof AccessoryArrayListType
 			) {
-				$moreVerbose = true;
+				$verboseLevel = self::value();
+				return $type;
+			}
+			if ($type instanceof AccessoryLowercaseStringType) {
+				$verboseLevel = self::precise();
 				return $type;
 			}
 			if ($type instanceof IntegerRangeType) {
-				$moreVerbose = true;
+				$verboseLevel = self::value();
 				return $type;
 			}
 			return $traverse($type);
 		};
 
-		/** @var bool $moreVerbose */
-		$moreVerbose = false;
+		/** @var VerbosityLevel|null $verboseLevel */
+		$verboseLevel = null;
 		TypeTraverser::map($acceptingType, $moreVerboseCallback);
 
-		if ($moreVerbose) {
-			return $verboseLevelCallback($acceptingType);
+		if (null !== $verboseLevel) {
+			return $verboseLevel;
 		}
 
 		if ($acceptedType === null) {
@@ -160,11 +159,11 @@ final class VerbosityLevel
 			return self::typeOnly();
 		}
 
-		/** @var bool $moreVerbose */
-		$moreVerbose = false;
+		/** @var VerbosityLevel|null $verboseLevel */
+		$verboseLevel = null;
 		TypeTraverser::map($acceptedType, $moreVerboseCallback);
 
-		return $moreVerbose ? $verboseLevelCallback($acceptingType) : self::typeOnly();
+		return null !== $verboseLevel ? self::value() : self::typeOnly();
 	}
 
 	/**

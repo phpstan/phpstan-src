@@ -57,7 +57,6 @@ Bleeding edge (TODO move to other sections)
 * Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)
 * InvalidPHPStanDocTagRule in StubValidator (https://github.com/phpstan/phpstan-src/commit/9c2552b7e744926d1a74c1ba8fd32c64079eed61)
 * More precise `file()` flags args ([#2476](https://github.com/phpstan/phpstan-src/pull/2476), [#2482](https://github.com/phpstan/phpstan-src/pull/2482)), thanks @staabm!
-* Non-static methods cannot be used as static callables in PHP 8+ ([#2420](https://github.com/phpstan/phpstan-src/pull/2420)), thanks @staabm!
 * More precise `flock()` operation flags ([#2477](https://github.com/phpstan/phpstan-src/pull/2477)), thanks @staabm!
 * Rule for `call_user_func()` ([#2479](https://github.com/phpstan/phpstan-src/pull/2479)), thanks @staabm!
 * Analysis with zero files results in non-zero exit code (https://github.com/phpstan/phpstan-src/commit/46ff440648e62617df86aa74ba905ffa99897737), #9410
@@ -140,6 +139,7 @@ Improvements 🔧
 * Report invalid exclude paths in PHP config (https://github.com/phpstan/phpstan-src/commit/9718c14f1ffac81ba3d2bf331b4e8b4041a4d004)
 * Do not generalize template types, except when in `GenericObjectType` ([#2818](https://github.com/phpstan/phpstan-src/pull/2818), [#2821](https://github.com/phpstan/phpstan-src/pull/2821))
     * This fixes following **17 issues**: #8166, #8127, #7944, #7283, #6653, #6196, #9084, #8683, #8074, #7984, #7301, #7087, #5594, #5592, #9472, #9764, #10092
+* Non-static methods cannot be used as static callables in PHP 8+ ([#2420](https://github.com/phpstan/phpstan-src/pull/2420)), thanks @staabm!
 
 Bugfixes 🐛
 =====================

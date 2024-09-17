@@ -301,7 +301,6 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		$finder = new Finder();
 		$finder->followLinks();
 		$files = [];
-
 		foreach ($finder->files()->name('*.php')->in($directory) as $fileInfo) {
 			$path = $fileInfo->getPathname();
 			if (self::isFileLintSkipped($path)) {

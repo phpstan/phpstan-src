@@ -8,6 +8,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\NonIgnorableRuleError;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
 
 final class RuleErrorTransformer
@@ -17,7 +18,7 @@ final class RuleErrorTransformer
 	 * @param class-string<Node> $nodeType
 	 */
 	public function transform(
-		IdentifierRuleError $ruleError,
+		RuleError $ruleError,
 		Scope $scope,
 		string $nodeType,
 		int $nodeLine,
@@ -29,6 +30,7 @@ final class RuleErrorTransformer
 		$filePath = $scope->getFile();
 		$traitFilePath = null;
 		$tip = null;
+		$identifier = null;
 		$metadata = [];
 		if ($scope->isInTrait()) {
 			$traitReflection = $scope->getTraitReflection();
@@ -56,6 +58,10 @@ final class RuleErrorTransformer
 			$tip = $ruleError->getTip();
 		}
 
+		if ($ruleError instanceof IdentifierRuleError) {
+			$identifier = $ruleError->getIdentifier();
+		}
+
 		if ($ruleError instanceof MetadataRuleError) {
 			$metadata = $ruleError->getMetadata();
 		}
@@ -74,7 +80,7 @@ final class RuleErrorTransformer
 			$tip,
 			$nodeLine,
 			$nodeType,
-			$ruleError->getIdentifier(),
+			$identifier,
 			$metadata,
 		);
 	}

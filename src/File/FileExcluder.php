@@ -50,7 +50,7 @@ final class FileExcluder
 	 * @param string[] $analyseExcludes
 	 */
 	public function __construct(
-		FileHelper $fileHelper,
+		private FileHelper $fileHelper,
 		array $analyseExcludes,
 	)
 	{
@@ -89,6 +89,8 @@ final class FileExcluder
 
 	public function isExcludedFromAnalysing(string $file): bool
 	{
+		$file = $this->fileHelper->normalizePath($file);
+
 		foreach ($this->literalAnalyseExcludes as $exclude) {
 			if (str_starts_with($file, $exclude)) {
 				return true;

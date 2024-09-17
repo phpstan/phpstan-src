@@ -159,7 +159,9 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	$application->setDefaultCommand('analyse');
 	ProgressBar::setFormatDefinition('file_download', ' [%bar%] %percent:3s%% %fileSize%');
 
+	$composerAutoloaderProjectPaths = array_map('realpath', $composerAutoloaderProjectPaths);
 	$reversedComposerAutoloaderProjectPaths = array_values(array_unique(array_reverse($composerAutoloaderProjectPaths)));
+	
 	$application->add(new AnalyseCommand($reversedComposerAutoloaderProjectPaths, $analysisStartTime));
 	$application->add(new WorkerCommand($reversedComposerAutoloaderProjectPaths));
 	$application->add(new ClearResultCacheCommand($reversedComposerAutoloaderProjectPaths));

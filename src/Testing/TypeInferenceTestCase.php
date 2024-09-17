@@ -302,13 +302,12 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		$finder->followLinks();
 		$files = [];
 
-		$fileHelper = new FileHelper($directory);
 		foreach ($finder->files()->name('*.php')->in($directory) as $fileInfo) {
 			$path = $fileInfo->getPathname();
 			if (self::isFileLintSkipped($path)) {
 				continue;
 			}
-			$files[] = $fileHelper->normalizePath($path);
+			$files[] = $path;
 		}
 
 		return $files;

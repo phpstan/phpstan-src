@@ -16,7 +16,10 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new NumberComparisonOperatorsConstantConditionRule($this->treatPhpDocTypesAsCertain);
+		return new NumberComparisonOperatorsConstantConditionRule(
+			$this->treatPhpDocTypesAsCertain,
+			true,
+		);
 	}
 
 	public function testBug8277(): void

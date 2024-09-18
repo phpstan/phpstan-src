@@ -15,7 +15,11 @@ class ArrayFilterRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ArrayFilterRule($this->createReflectionProvider(), $this->treatPhpDocTypesAsCertain);
+		return new ArrayFilterRule(
+			$this->createReflectionProvider(),
+			$this->treatPhpDocTypesAsCertain,
+			true,
+		);
 	}
 
 	public function testFile(): void

@@ -21,6 +21,7 @@ final class LogicalXorConstantConditionRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $reportAlwaysTrueInLastCondition,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -42,6 +43,9 @@ final class LogicalXorConstantConditionRule implements Rule
 
 				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $node->left);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
+					return $ruleErrorBuilder;
+				}
+				if (!$this->treatPhpDocTypesAsCertainTip) {
 					return $ruleErrorBuilder;
 				}
 
@@ -75,6 +79,9 @@ final class LogicalXorConstantConditionRule implements Rule
 					$node->right,
 				);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
+					return $ruleErrorBuilder;
+				}
+				if (!$this->treatPhpDocTypesAsCertainTip) {
 					return $ruleErrorBuilder;
 				}
 

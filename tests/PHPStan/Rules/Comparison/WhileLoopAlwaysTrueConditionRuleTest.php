@@ -28,6 +28,7 @@ class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 				true,
 			),
 			$this->treatPhpDocTypesAsCertain,
+			true,
 		);
 	}
 

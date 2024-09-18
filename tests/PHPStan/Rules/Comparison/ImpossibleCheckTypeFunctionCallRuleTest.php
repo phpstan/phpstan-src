@@ -36,6 +36,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			$this->checkAlwaysTrueCheckTypeFunctionCall,
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
+			true,
 		);
 	}
 

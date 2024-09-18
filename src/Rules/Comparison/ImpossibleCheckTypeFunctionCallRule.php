@@ -21,6 +21,7 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 		private bool $checkAlwaysTrueCheckTypeFunctionCall,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $reportAlwaysTrueInLastCondition,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -52,6 +53,9 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 
 			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $node);
 			if ($isAlways !== null) {
+				return $ruleErrorBuilder;
+			}
+			if (!$this->treatPhpDocTypesAsCertainTip) {
 				return $ruleErrorBuilder;
 			}
 

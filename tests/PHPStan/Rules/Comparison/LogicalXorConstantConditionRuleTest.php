@@ -31,6 +31,7 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 			),
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
+			true,
 		);
 	}
 

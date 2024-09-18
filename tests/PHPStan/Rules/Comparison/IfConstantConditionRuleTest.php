@@ -29,6 +29,7 @@ class IfConstantConditionRuleTest extends RuleTestCase
 				true,
 			),
 			$this->treatPhpDocTypesAsCertain,
+			true,
 		);
 	}
 

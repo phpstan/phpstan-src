@@ -24,6 +24,7 @@ final class ArrayFilterRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -79,7 +80,7 @@ final class ArrayFilterRule implements Rule
 			))->identifier('arrayFilter.empty');
 			if ($this->treatPhpDocTypesAsCertain) {
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
-				if (!$nativeArrayType->isIterableAtLeastOnce()->no()) {
+				if ($this->treatPhpDocTypesAsCertainTip && !$nativeArrayType->isIterableAtLeastOnce()->no()) {
 					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}
 			}
@@ -101,7 +102,7 @@ final class ArrayFilterRule implements Rule
 			if ($this->treatPhpDocTypesAsCertain) {
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
 				$isNativeSuperType = $falsyType->isSuperTypeOf($nativeArrayType->getIterableValueType());
-				if (!$isNativeSuperType->no()) {
+				if ($this->treatPhpDocTypesAsCertainTip && !$isNativeSuperType->no()) {
 					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}
 			}
@@ -121,7 +122,7 @@ final class ArrayFilterRule implements Rule
 			if ($this->treatPhpDocTypesAsCertain) {
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
 				$isNativeSuperType = $falsyType->isSuperTypeOf($nativeArrayType->getIterableValueType());
-				if (!$isNativeSuperType->yes()) {
+				if ($this->treatPhpDocTypesAsCertainTip && !$isNativeSuperType->yes()) {
 					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}
 			}

@@ -20,6 +20,7 @@ final class ElseIfConstantConditionRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $reportAlwaysTrueInLastCondition,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -43,6 +44,9 @@ final class ElseIfConstantConditionRule implements Rule
 
 				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $node->cond);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
+					return $ruleErrorBuilder;
+				}
+				if (!$this->treatPhpDocTypesAsCertainTip) {
 					return $ruleErrorBuilder;
 				}
 

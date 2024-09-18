@@ -22,6 +22,7 @@ final class DoWhileLoopConstantConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -68,6 +69,9 @@ final class DoWhileLoopConstantConditionRule implements Rule
 
 				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $node->getCond());
 				if ($booleanNativeType instanceof ConstantBooleanType) {
+					return $ruleErrorBuilder;
+				}
+				if (!$this->treatPhpDocTypesAsCertainTip) {
 					return $ruleErrorBuilder;
 				}
 

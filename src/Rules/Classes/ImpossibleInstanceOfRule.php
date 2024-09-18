@@ -25,6 +25,7 @@ final class ImpossibleInstanceOfRule implements Rule
 		private bool $checkAlwaysTrueInstanceof,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $reportAlwaysTrueInLastCondition,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -68,6 +69,10 @@ final class ImpossibleInstanceOfRule implements Rule
 
 			$instanceofTypeWithoutPhpDocs = $scope->getNativeType($node);
 			if ($instanceofTypeWithoutPhpDocs instanceof ConstantBooleanType) {
+				return $ruleErrorBuilder;
+			}
+
+			if (!$this->treatPhpDocTypesAsCertainTip) {
 				return $ruleErrorBuilder;
 			}
 

@@ -25,7 +25,7 @@
 		"nikic/php-parser": "^5.2.0",
 		"ondram/ci-detector": "^3.4.0",
 		"ondrejmirtes/better-reflection": "6.42.0.8",
-		"phpstan/php-8-stubs": "0.3.105",
+		"phpstan/php-8-stubs": "0.3.106",
 		"phpstan/phpdoc-parser": "^2.0",
 		"psr/http-message": "^1.1",
 		"react/async": "^3",

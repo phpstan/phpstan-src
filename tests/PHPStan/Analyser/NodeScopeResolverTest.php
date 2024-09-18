@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use EnumTypeAssertions\Foo;
+use PHPStan\File\FileHelper;
 use PHPStan\Testing\TypeInferenceTestCase;
 use stdClass;
 use function array_shift;
@@ -205,7 +206,10 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		$base = dirname(__DIR__, 3) . '/';
 		$baseLength = strlen($base);
 
+		$fileHelper = new FileHelper($base);
 		foreach (self::findTestFiles() as $file) {
+			$file = $fileHelper->normalizePath($file);
+
 			$testName = $file;
 			if (str_starts_with($file, $base)) {
 				$testName = substr($file, $baseLength);

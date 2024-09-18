@@ -223,6 +223,29 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				168,
 			],
 		]);
+
+		$this->analyse([__DIR__ . '/data/bug-3777-static.php'], [
+			[
+				'Static property Bug3777Static\Bar::$foo (Bug3777Static\Foo<stdClass>) does not accept Bug3777Static\Fooo<object>.',
+				58,
+			],
+			[
+				'Static property Bug3777Static\Ipsum::$ipsum (Bug3777Static\Lorem<stdClass, Exception>) does not accept Bug3777Static\Lorem<Exception, stdClass>.',
+				95,
+			],
+			[
+				'Static property Bug3777Static\Ipsum2::$lorem2 (Bug3777Static\Lorem2<stdClass, Exception>) does not accept Bug3777Static\Lorem2<stdClass, object>.',
+				129,
+			],
+			[
+				'Static property Bug3777Static\Ipsum2::$ipsum2 (Bug3777Static\Lorem2<stdClass, Exception>) does not accept Bug3777Static\Lorem2<Exception, object>.',
+				131,
+			],
+			[
+				'Static property Bug3777Static\Ipsum3::$ipsum3 (Bug3777Static\Lorem3<stdClass, Exception>) does not accept Bug3777Static\Lorem3<Exception, stdClass>.',
+				168,
+			],
+		]);
 	}
 
 	public function testAppendendArrayKey(): void
@@ -627,6 +650,11 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/generics-in-callable-in-constructor.php'], []);
+	}
+
+	public function testBug10686(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10686.php'], []);
 	}
 
 	public function testBug11275(): void

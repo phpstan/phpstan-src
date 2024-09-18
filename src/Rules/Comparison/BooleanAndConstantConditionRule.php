@@ -23,6 +23,7 @@ final class BooleanAndConstantConditionRule implements Rule
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $bleedingEdge,
 		private bool $reportAlwaysTrueInLastCondition,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -50,6 +51,9 @@ final class BooleanAndConstantConditionRule implements Rule
 
 				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $originalNode->left);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
+					return $ruleErrorBuilder;
+				}
+				if (!$this->treatPhpDocTypesAsCertainTip) {
 					return $ruleErrorBuilder;
 				}
 
@@ -90,6 +94,9 @@ final class BooleanAndConstantConditionRule implements Rule
 				if ($booleanNativeType instanceof ConstantBooleanType) {
 					return $ruleErrorBuilder;
 				}
+				if (!$this->treatPhpDocTypesAsCertainTip) {
+					return $ruleErrorBuilder;
+				}
 
 				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
@@ -120,6 +127,9 @@ final class BooleanAndConstantConditionRule implements Rule
 
 					$booleanNativeType = $scope->getNativeType($originalNode);
 					if ($booleanNativeType instanceof ConstantBooleanType) {
+						return $ruleErrorBuilder;
+					}
+					if (!$this->treatPhpDocTypesAsCertainTip) {
 						return $ruleErrorBuilder;
 					}
 

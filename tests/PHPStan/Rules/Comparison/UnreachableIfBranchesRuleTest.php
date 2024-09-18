@@ -29,6 +29,7 @@ class UnreachableIfBranchesRuleTest extends RuleTestCase
 			),
 			$this->treatPhpDocTypesAsCertain,
 			false,
+			true,
 		);
 	}
 

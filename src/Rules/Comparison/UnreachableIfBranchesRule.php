@@ -18,6 +18,7 @@ final class UnreachableIfBranchesRule implements Rule
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $disable,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -46,6 +47,9 @@ final class UnreachableIfBranchesRule implements Rule
 
 			$booleanNativeType = $scope->getNativeType($condition)->toBoolean();
 			if ($booleanNativeType instanceof ConstantBooleanType) {
+				return $ruleErrorBuilder;
+			}
+			if (!$this->treatPhpDocTypesAsCertainTip) {
 				return $ruleErrorBuilder;
 			}
 

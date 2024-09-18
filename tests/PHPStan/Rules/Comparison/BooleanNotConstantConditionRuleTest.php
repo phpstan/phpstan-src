@@ -32,6 +32,7 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 			),
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
+			true,
 		);
 	}
 

@@ -21,6 +21,7 @@ final class NumberComparisonOperatorsConstantConditionRule implements Rule
 
 	public function __construct(
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -53,6 +54,9 @@ final class NumberComparisonOperatorsConstantConditionRule implements Rule
 
 				$booleanNativeType = $scope->getNativeType($node);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
+					return $ruleErrorBuilder;
+				}
+				if (!$this->treatPhpDocTypesAsCertainTip) {
 					return $ruleErrorBuilder;
 				}
 

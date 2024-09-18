@@ -34,11 +34,13 @@ services:
 		class: PHPStan\Rules\Functions\ArrayFilterRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
 
 	-
 		class: PHPStan\Rules\Functions\ArrayValuesRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
 
 	-
 		class: PHPStan\Rules\Functions\CallUserFuncRule

@@ -20,7 +20,12 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ConstantLooseComparisonRule($this->checkAlwaysTrueStrictComparison, $this->treatPhpDocTypesAsCertain, $this->reportAlwaysTrueInLastCondition);
+		return new ConstantLooseComparisonRule(
+			$this->checkAlwaysTrueStrictComparison,
+			$this->treatPhpDocTypesAsCertain,
+			$this->reportAlwaysTrueInLastCondition,
+			true,
+		);
 	}
 
 	public function testRule(): void

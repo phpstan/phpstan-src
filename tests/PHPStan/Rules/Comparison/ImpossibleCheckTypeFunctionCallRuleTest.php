@@ -1017,7 +1017,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					unset($i[2]);
 				}
 
-				return $i;
+				return array_values($i);
 			},
 			self::getLooseComparisonAgainsEnumsIssues(),
 		);

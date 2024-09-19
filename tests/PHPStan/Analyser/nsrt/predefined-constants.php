@@ -45,7 +45,7 @@ assertType('1024', E_USER_NOTICE);
 assertType('4096', E_RECOVERABLE_ERROR);
 assertType('8192', E_DEPRECATED);
 assertType('16384', E_USER_DEPRECATED);
-assertType('32767', E_ALL);
+assertType('int', E_ALL);
 assertType('2048', E_STRICT);
 assertType('int<1, max>', __COMPILER_HALT_OFFSET__);
 assertType('true', true);

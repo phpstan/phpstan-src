@@ -256,6 +256,7 @@ parameters:
 		- OPENSSL_VERSION_NUMBER
 		- ZEND_DEBUG_BUILD
 		- ZEND_THREAD_SAFE
+		- E_ALL # different on PHP 8.4
 	customRulesetUsed: null
 	editorUrl: null
 	editorUrlTitle: null

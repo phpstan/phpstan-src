@@ -74,5 +74,18 @@ class Foo
 		assertType('non-empty-list<non-empty-list<0|1|2|3>>', array_chunk($arr, $tooBig));
 	}
 
+	public function offsets(array $arr): void
+	{
+		if (array_key_exists('foo', $arr)) {
+			assertType('non-empty-list<non-empty-list<mixed>>', array_chunk($arr, 2));
+			assertType('non-empty-list<non-empty-array>', array_chunk($arr, 2, true));
+		}
+
+		if (array_key_exists('foo', $arr) && $arr['foo'] === 'bar') {
+			assertType('non-empty-list<non-empty-list<mixed>>', array_chunk($arr, 2));
+			assertType('non-empty-list<non-empty-array>', array_chunk($arr, 2, true));
+		}
+
+	}
 
 }

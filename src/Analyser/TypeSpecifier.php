@@ -37,7 +37,6 @@ use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -828,17 +827,6 @@ final class TypeSpecifier
 								$this->create(
 									$var->dim,
 									$varIterableKeyType,
-									$context,
-									false,
-									$scope,
-									$rootExpr,
-								),
-							);
-						} else {
-							$types = $types->unionWith(
-								$this->create(
-									$var->dim,
-									new UnionType([new IntegerType(), new StringType()]),
 									$context,
 									false,
 									$scope,

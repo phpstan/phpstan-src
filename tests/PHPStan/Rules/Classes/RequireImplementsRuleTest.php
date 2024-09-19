@@ -57,7 +57,7 @@ class RequireImplementsRuleTest extends RuleTestCase
 				137,
 			],
 			[
-				'Trait IncompatibleRequireImplements\ValidPsalmTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface2, but class@anonymous/tests/PHPStan/Rules/PhpDoc/data/incompatible-require-implements.php:164 does not.',
+				'Trait IncompatibleRequireImplements\ValidPsalmTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface2, but IncompatibleRequireImplements\RequiredInterface@anonymous/tests/PHPStan/Rules/PhpDoc/data/incompatible-require-implements.php:164 does not.',
 				164,
 			],
 			[

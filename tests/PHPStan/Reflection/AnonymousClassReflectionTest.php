@@ -101,6 +101,55 @@ class AnonymousClassReflectionTest extends RuleTestCase
 				]),
 				9,
 			],
+			[
+				implode("\n", [
+					'name: AnonymousClass1d622e3ff3a656e68d55eafbd25eaef1',
+					'display name: AnonymousClassReflectionTest\A@anonymous/tests/PHPStan/Reflection/data/anonymous-classes.php:17:1',
+				]),
+				17,
+			],
+			[
+				implode("\n", [
+					'name: AnonymousClass6e1acc8e948827c8d0439a2225fdbdd0',
+					'display name: AnonymousClassReflectionTest\A@anonymous/tests/PHPStan/Reflection/data/anonymous-classes.php:17:2',
+				]),
+				17,
+			],
+			[
+				implode("\n", [
+					'name: AnonymousClass2a49db3d44479dddd8beaea4ea8131fb',
+					'display name: AnonymousClassReflectionTest\A@anonymous/tests/PHPStan/Reflection/data/anonymous-classes.php:19:1',
+				]),
+				19,
+			],
+			[
+				implode("\n", [
+					'name: AnonymousClass337463cf86ee25e526f445630960b336',
+					'display name: AnonymousClassReflectionTest\A@anonymous/tests/PHPStan/Reflection/data/anonymous-classes.php:19:2',
+				]),
+				19,
+			],
+			[
+				implode("\n", [
+					'name: AnonymousClassda3e79cc45f826d60295f848abab37e7',
+					'display name: AnonymousClassReflectionTest\U@anonymous/tests/PHPStan/Reflection/data/anonymous-classes.php:29',
+				]),
+				29,
+			],
+			[
+				implode("\n", [
+					'name: AnonymousClassc06612bf3776bbe5e50870a8c3151186',
+					'display name: AnonymousClassReflectionTest\U@anonymous/tests/PHPStan/Reflection/data/anonymous-classes.php:31',
+				]),
+				31,
+			],
+			[
+				implode("\n", [
+					'name: AnonymousClassbee6eba8c721d73d649fcc9d361f5902',
+					'display name: AnonymousClassReflectionTest\V@anonymous/tests/PHPStan/Reflection/data/anonymous-classes.php:33',
+				]),
+				33,
+			],
 		]);
 	}
 

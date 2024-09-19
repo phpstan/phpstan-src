@@ -307,7 +307,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				70,
 			],
 			[
-				'Readonly property class@anonymous/tests/PHPStan/Rules/Properties/data/redeclare-readonly-property.php:117::$myProp is already assigned.',
+				'Readonly property RedeclareReadonlyProperty\A@anonymous/tests/PHPStan/Rules/Properties/data/redeclare-readonly-property.php:117::$myProp is already assigned.',
 				121,
 			],
 			[

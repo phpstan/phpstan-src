@@ -29,7 +29,7 @@ class MissingMethodImplementationRuleTest extends RuleTestCase
 				24,
 			],
 			[
-				'Non-abstract class class@anonymous/tests/PHPStan/Rules/Methods/data/missing-method-impl.php:41 contains abstract method doFoo() from interface MissingMethodImpl\Foo.',
+				'Non-abstract class MissingMethodImpl\Foo@anonymous/tests/PHPStan/Rules/Methods/data/missing-method-impl.php:41 contains abstract method doFoo() from interface MissingMethodImpl\Foo.',
 				41,
 			],
 		]);

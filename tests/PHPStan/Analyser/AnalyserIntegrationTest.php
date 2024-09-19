@@ -541,9 +541,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6442.php');
 		$this->assertCount(2, $errors);
-		$this->assertSame('Dumped type: \'Bug6442\\\A\'', $errors[0]->getMessage());
+		$this->assertSame('Dumped type: \'Bug6442\\\B\'', $errors[0]->getMessage());
 		$this->assertSame(9, $errors[0]->getLine());
-		$this->assertSame('Dumped type: \'Bug6442\\\B\'', $errors[1]->getMessage());
+		$this->assertSame('Dumped type: \'Bug6442\\\A\'', $errors[1]->getMessage());
 		$this->assertSame(9, $errors[1]->getLine());
 	}
 

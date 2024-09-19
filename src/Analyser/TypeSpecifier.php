@@ -838,7 +838,7 @@ final class TypeSpecifier
 							$types = $types->unionWith(
 								$this->create(
 									$var->dim,
-									new BenevolentUnionType([new IntegerType(), new StringType()]),
+									new UnionType([new IntegerType(), new StringType()]),
 									$context,
 									false,
 									$scope,

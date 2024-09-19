@@ -40,7 +40,7 @@ class TypeExpression
  */
 function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr, array $numericKeyArray): void {
 	if (isset($generalArr[$mixed])) {
-		assertType('(int|string)', $mixed); // array-key cast semantics
+		assertType('int|string', $mixed); // array-key cast semantics
 	} else {
 		assertType('mixed', $mixed);
 	}
@@ -61,7 +61,7 @@ function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr, arr
 	assertType('string', $s);
 
 	if (isset($arr[$mixed])) {
-		assertType('(int|string)', $mixed); // array-key cast semantics
+		assertType('int|string', $mixed); // array-key cast semantics
 	} else {
 		assertType('mixed', $mixed);
 	}
@@ -82,7 +82,7 @@ function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr, arr
 	assertType('string', $s);
 
 	if (isset($numericKeyArray[$mixed])) {
-		assertType("(int|string)", $mixed); // array-key cast semantics
+		assertType("int|string", $mixed); // array-key cast semantics
 	} else {
 		assertType("mixed", $mixed);
 	}
@@ -94,7 +94,7 @@ function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr, arr
  */
 function multiDim($mixed, $mixed2, array $arr) {
 	if (isset($arr[$mixed])) {
-		assertType('(int|string)', $mixed); // array-key cast semantics
+		assertType('int|string', $mixed); // array-key cast semantics
 	} else {
 		assertType('mixed', $mixed);
 	}
@@ -102,8 +102,8 @@ function multiDim($mixed, $mixed2, array $arr) {
 
 	if (isset($arr[$mixed]) && isset($arr[$mixed][$mixed2])) {
 		// array-key cast semantics
-		assertType('(int|string)', $mixed);
-		assertType('(int|string)', $mixed2);
+		assertType('int|string', $mixed);
+		assertType('int|string', $mixed2);
 	} else {
 		assertType('mixed', $mixed);
 	}
@@ -111,8 +111,8 @@ function multiDim($mixed, $mixed2, array $arr) {
 
 	if (isset($arr[$mixed][$mixed2])) {
 		// array-key cast semantics
-		assertType('(int|string)', $mixed);
-		assertType('(int|string)', $mixed2);
+		assertType('int|string', $mixed);
+		assertType('int|string', $mixed2);
 	} else {
 		assertType('mixed', $mixed);
 		assertType('mixed', $mixed2);

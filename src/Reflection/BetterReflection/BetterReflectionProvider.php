@@ -51,6 +51,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 use function array_key_exists;
+use function array_key_first;
 use function array_map;
 use function base64_decode;
 use function in_array;
@@ -217,12 +218,23 @@ final class BetterReflectionProvider implements ReflectionProvider
 			null,
 		);
 
+		$displayParentName = $reflectionClass->getParentClassName();
+		if ($displayParentName === null) {
+			// https://3v4l.org/6FBuP
+			$classInterfaceNames = $reflectionClass->getInterfaceNames();
+			if ($classInterfaceNames !== []) {
+				$displayParentName = $classInterfaceNames[array_key_first($classInterfaceNames)];
+			} else {
+				$displayParentName = 'class';
+			}
+		}
+
 		/** @var int|null $classLineIndex */
 		$classLineIndex = $classNode->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX);
 		if ($classLineIndex === null) {
-			$displayName = sprintf('class@anonymous/%s:%s', $filename, $classNode->getStartLine());
+			$displayName = sprintf('%s@anonymous/%s:%s', $displayParentName, $filename, $classNode->getStartLine());
 		} else {
-			$displayName = sprintf('class@anonymous/%s:%s:%d', $filename, $classNode->getStartLine(), $classLineIndex);
+			$displayName = sprintf('%s@anonymous/%s:%s:%d', $displayParentName, $filename, $classNode->getStartLine(), $classLineIndex);
 		}
 
 		self::$anonymousClasses[$className] = new ClassReflection(

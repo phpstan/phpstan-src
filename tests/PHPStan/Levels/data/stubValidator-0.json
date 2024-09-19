@@ -20,12 +20,12 @@
         "ignorable": false
     },
     {
-        "message": "Method class@anonymous/stubValidator/stubs.php:27::doFoo() has no return type specified.",
+        "message": "Method ArrayIterator@anonymous/stubValidator/stubs.php:27::doFoo() has no return type specified.",
         "line": 30,
         "ignorable": false
     },
     {
-        "message": "Parameter $foo of method class@anonymous/stubValidator/stubs.php:27::doFoo() has invalid type StubValidator\\Foooooooo.",
+        "message": "Parameter $foo of method ArrayIterator@anonymous/stubValidator/stubs.php:27::doFoo() has invalid type StubValidator\\Foooooooo.",
         "line": 30,
         "ignorable": false
     }

@@ -1082,39 +1082,6 @@ final class TypeSpecifier
 			)->setRootExpr($rootExpr));
 		}
 
-		if (
-			!$context->null()
-			&& $exprNode instanceof FuncCall
-			&& count($exprNode->getArgs()) === 1
-			&& $exprNode->name instanceof Name
-			&& in_array(strtolower((string) $exprNode->name), ['strlen', 'mb_strlen'], true)
-			&& $constantType instanceof ConstantIntegerType
-		) {
-			if ($constantType->getValue() < 0) {
-				return $this->create($exprNode->getArgs()[0]->value, new NeverType(), $context, $scope)->setRootExpr($rootExpr);
-			}
-
-			if ($context->truthy() || $constantType->getValue() === 0) {
-				$newContext = $context;
-				if ($constantType->getValue() === 0) {
-					$newContext = $newContext->negate();
-				}
-				$argType = $scope->getType($exprNode->getArgs()[0]->value);
-				if ($argType->isString()->yes()) {
-					$funcTypes = $this->create($exprNode, $constantType, $context, $scope)->setRootExpr($rootExpr);
-
-					$accessory = new AccessoryNonEmptyStringType();
-					if ($constantType->getValue() >= 2) {
-						$accessory = new AccessoryNonFalsyStringType();
-					}
-					$valueTypes = $this->create($exprNode->getArgs()[0]->value, $accessory, $newContext, $scope)->setRootExpr($rootExpr);
-
-					return $funcTypes->unionWith($valueTypes);
-				}
-			}
-
-		}
-
 		return null;
 	}
 
@@ -2080,6 +2047,42 @@ final class TypeSpecifier
 		}
 
 		if (
+			!$context->null()
+			&& $unwrappedLeftExpr instanceof FuncCall
+			&& count($unwrappedLeftExpr->getArgs()) === 1
+			&& $unwrappedLeftExpr->name instanceof Name
+			&& in_array(strtolower((string) $unwrappedLeftExpr->name), ['strlen', 'mb_strlen'], true)
+			&& $rightType->isInteger()->yes()
+		) {
+			if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($rightType)->yes()) {
+				return $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NeverType(), $context, $scope)->setRootExpr($expr);
+			}
+
+			$isZero = (new ConstantIntegerType(0))->isSuperTypeOf($rightType);
+			if ($isZero->yes()) {
+				$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+				return $funcTypes->unionWith(
+					$this->create($unwrappedLeftExpr->getArgs()[0]->value, new ConstantStringType(''), $context, $scope)->setRootExpr($expr),
+				);
+			}
+
+			if ($context->truthy() && IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($rightType)->yes()) {
+				$argType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
+				if ($argType->isString()->yes()) {
+					$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+
+					$accessory = new AccessoryNonEmptyStringType();
+					if (IntegerRangeType::fromInterval(2, null)->isSuperTypeOf($rightType)->yes()) {
+						$accessory = new AccessoryNonFalsyStringType();
+					}
+					$valueTypes = $this->create($unwrappedLeftExpr->getArgs()[0]->value, $accessory, $context, $scope)->setRootExpr($expr);
+
+					return $funcTypes->unionWith($valueTypes);
+				}
+			}
+		}
+
+		if (
 			$context->true()
 			&& $unwrappedLeftExpr instanceof FuncCall
 			&& $unwrappedLeftExpr->name instanceof Name
@@ -2143,14 +2146,11 @@ final class TypeSpecifier
 			}
 		}
 
-		if ($rightType->isInteger()->yes() || $rightType->isString()->yes()) {
+		if ($rightType->isString()->yes()) {
 			$types = null;
-			foreach ($rightType->getFiniteTypes() as $finiteType) {
-				if ($finiteType->isString()->yes()) {
-					$specifiedType = $this->specifyTypesForConstantStringBinaryExpression($unwrappedLeftExpr, $finiteType, $context, $scope, $expr);
-				} else {
-					$specifiedType = $this->specifyTypesForConstantBinaryExpression($unwrappedLeftExpr, $finiteType, $context, $scope, $expr);
-				}
+			foreach ($rightType->getConstantStrings() as $constantString) {
+				$specifiedType = $this->specifyTypesForConstantStringBinaryExpression($unwrappedLeftExpr, $constantString, $context, $scope, $expr);
+
 				if ($specifiedType === null) {
 					continue;
 				}

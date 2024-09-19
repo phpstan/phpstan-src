@@ -122,6 +122,9 @@ parametersSchema:
 	deprecationRulesInstalled: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
 
+	tips: structure([
+		treatPhpDocTypesAsCertain: bool()
+	])
 	tipsOfTheDay: bool()
 	reportMaybes: bool()
 	reportMaybesInMethodSignatures: bool()

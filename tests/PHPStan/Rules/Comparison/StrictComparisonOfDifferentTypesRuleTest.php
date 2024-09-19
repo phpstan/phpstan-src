@@ -21,7 +21,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new StrictComparisonOfDifferentTypesRule($this->checkAlwaysTrueStrictComparison, $this->treatPhpDocTypesAsCertain, $this->reportAlwaysTrueInLastCondition);
+		return new StrictComparisonOfDifferentTypesRule(
+			$this->checkAlwaysTrueStrictComparison,
+			$this->treatPhpDocTypesAsCertain,
+			$this->reportAlwaysTrueInLastCondition,
+			true,
+		);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool

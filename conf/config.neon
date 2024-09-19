@@ -156,6 +156,8 @@ parameters:
 	treatPhpDocTypesAsCertain: true
 	usePathConstantsAsConstantString: false
 	rememberPossiblyImpureFunctionValues: true
+	tips:
+		treatPhpDocTypesAsCertain: true
 	tipsOfTheDay: true
 	reportMagicMethods: false
 	reportMagicProperties: false

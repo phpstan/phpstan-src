@@ -18,6 +18,7 @@ final class WhileLoopAlwaysFalseConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -41,6 +42,9 @@ final class WhileLoopAlwaysFalseConditionRule implements Rule
 
 				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $node->cond);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
+					return $ruleErrorBuilder;
+				}
+				if (!$this->treatPhpDocTypesAsCertainTip) {
 					return $ruleErrorBuilder;
 				}
 

@@ -20,7 +20,12 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ImpossibleInstanceOfRule($this->checkAlwaysTrueInstanceOf, $this->treatPhpDocTypesAsCertain, $this->reportAlwaysTrueInLastCondition);
+		return new ImpossibleInstanceOfRule(
+			$this->checkAlwaysTrueInstanceOf,
+			$this->treatPhpDocTypesAsCertain,
+			$this->reportAlwaysTrueInLastCondition,
+			true,
+		);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool

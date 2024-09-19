@@ -21,6 +21,7 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 		private bool $checkAlwaysTrueStrictComparison,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $reportAlwaysTrueInLastCondition,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -51,6 +52,9 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 
 			$instanceofTypeWithoutPhpDocs = $scope->getNativeType($node);
 			if ($instanceofTypeWithoutPhpDocs instanceof ConstantBooleanType) {
+				return $ruleErrorBuilder;
+			}
+			if (!$this->treatPhpDocTypesAsCertainTip) {
 				return $ruleErrorBuilder;
 			}
 

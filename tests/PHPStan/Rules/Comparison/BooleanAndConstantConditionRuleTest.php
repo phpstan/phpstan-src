@@ -34,6 +34,7 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 			$this->treatPhpDocTypesAsCertain,
 			$this->bleedingEdge,
 			$this->reportAlwaysTrueInLastCondition,
+			true,
 		);
 	}
 

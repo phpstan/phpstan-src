@@ -23,6 +23,7 @@ final class ArrayValuesRule implements Rule
 	public function __construct(
 		private readonly ReflectionProvider $reflectionProvider,
 		private readonly bool $treatPhpDocTypesAsCertain,
+		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -79,7 +80,7 @@ final class ArrayValuesRule implements Rule
 			))->identifier('arrayValues.empty');
 			if ($this->treatPhpDocTypesAsCertain) {
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
-				if (!$nativeArrayType->isIterableAtLeastOnce()->no()) {
+				if ($this->treatPhpDocTypesAsCertainTip && !$nativeArrayType->isIterableAtLeastOnce()->no()) {
 					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}
 			}
@@ -97,7 +98,7 @@ final class ArrayValuesRule implements Rule
 			))->identifier('arrayValues.list');
 			if ($this->treatPhpDocTypesAsCertain) {
 				$nativeArrayType = $scope->getNativeType($args[0]->value);
-				if (!$nativeArrayType->isList()->yes()) {
+				if ($this->treatPhpDocTypesAsCertainTip && !$nativeArrayType->isList()->yes()) {
 					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}
 			}

@@ -1284,7 +1284,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					),
 				),
 				[
-					'$foo' => 'non-empty-string',
+					'$foo' => "string & ~''",
 					'strlen($foo)' => '~0',
 				],
 				[

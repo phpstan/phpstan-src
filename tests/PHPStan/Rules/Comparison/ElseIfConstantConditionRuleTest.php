@@ -32,6 +32,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 			),
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
+			true,
 		);
 	}
 

@@ -841,4 +841,15 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11600(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-11600.php'], [
+			[
+				'Parameter #1 $array of static method Bug10600\HelloWorld::sayHello() expects array{1, 2}, array{1: 2, 0: 1} given.',
+				18,
+			],
+		]);
+	}
+
 }

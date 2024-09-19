@@ -303,6 +303,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return AcceptsResult::createFromBoolean(count($type->keyTypes) === 0);
 		}
 
+		if ($this->isList()->yes() && $type->isList()->no()) {
+			return AcceptsResult::createNo();
+		}
+
 		$result = AcceptsResult::createYes();
 		foreach ($this->keyTypes as $i => $keyType) {
 			$valueType = $this->valueTypes[$i];

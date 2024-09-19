@@ -39,7 +39,6 @@ class YieldFromTypeRuleTest extends RuleTestCase
 			[
 				'Generator expects value type array{DateTime, DateTime, stdClass, DateTimeImmutable}, array{0: DateTime, 1: DateTime, 2: stdClass, 4: DateTimeImmutable} given.',
 				74,
-				'Array does not have offset 3.',
 			],
 			[
 				'Result of yield from (void) is used.',

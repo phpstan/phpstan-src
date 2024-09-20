@@ -820,14 +820,13 @@ final class TypeSpecifier
 						);
 					} elseif ($var->dim instanceof Expr\Variable) {
 						$varType = $scope->getType($var->var);
-						if (!$varType->isIterableAtLeastOnce()->no()) {
+						if ($varType->isArray()->yes() && !$varType->isIterableAtLeastOnce()->no()) {
 							$varIterableKeyType = $varType->getIterableKeyType();
 
 							if ($varIterableKeyType->isConstantScalarValue()->yes()) {
-								$varIterableKeyType = TypeCombinator::union(
+								$narrowedKey = TypeCombinator::union(
 									$varIterableKeyType,
 									TypeCombinator::remove($varIterableKeyType->toString(), new ConstantStringType('')),
-									$varIterableKeyType->toFloat(),
 								);
 
 								$zero = new UnionType([
@@ -835,9 +834,9 @@ final class TypeSpecifier
 									new ConstantIntegerType(0),
 								]);
 								if (!$varIterableKeyType->isSuperTypeOf($zero)->no()) {
-									$varIterableKeyType = TypeCombinator::union(
-										$varIterableKeyType,
-										new ConstantBooleanType(false)
+									$narrowedKey = TypeCombinator::union(
+										$narrowedKey,
+										new ConstantBooleanType(false),
 									);
 								}
 
@@ -846,20 +845,24 @@ final class TypeSpecifier
 									new ConstantIntegerType(1),
 								]);
 								if (!$varIterableKeyType->isSuperTypeOf($one)->no()) {
-									$varIterableKeyType = TypeCombinator::union(
-										$varIterableKeyType,
-										new ConstantBooleanType(true)
+									$narrowedKey = TypeCombinator::union(
+										$narrowedKey,
+										new ConstantBooleanType(true),
 									);
 								}
 
 								if (!$varIterableKeyType->isSuperTypeOf(new ConstantStringType(''))->no()) {
-									$varIterableKeyType = TypeCombinator::addNull($varIterableKeyType);
+									$narrowedKey = TypeCombinator::addNull($narrowedKey);
+								}
+
+								if (!$varIterableKeyType->isNumericString()->no() || !$varIterableKeyType->isInteger()->no()) {
+									$narrowedKey = TypeCombinator::union($narrowedKey, new FloatType());
 								}
 
 								$types = $types->unionWith(
 									$this->create(
 										$var->dim,
-										$varIterableKeyType,
+										$narrowedKey,
 										$context,
 										false,
 										$scope,
@@ -875,7 +878,7 @@ final class TypeSpecifier
 											new UnionType([
 												new ArrayType(new MixedType(), new MixedType()),
 												new ObjectWithoutClassType(),
-												new ResourceType()
+												new ResourceType(),
 											]),
 										),
 										$context,

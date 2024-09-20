@@ -134,7 +134,7 @@ function emptyString($mixed)
     // see https://3v4l.org/XHZdr
     $arr = ['' => 1, 'a' => 2];
     if (isset($arr[$mixed])) {
-        assertType("0.0|''|'a'|null", $mixed); // could be ''|'a'|null
+        assertType("''|'a'|null", $mixed);
     } else {
         assertType('mixed', $mixed);
     }
@@ -145,7 +145,7 @@ function numericString($mixed)
 {
     $arr = ['1' => 1, '2' => 2];
     if (isset($arr[$mixed])) {
-        assertType("1|1.0|2|2.0|'1'|'2'|true", $mixed);
+        assertType("1|2|'1'|'2'|float|true", $mixed);
     } else {
         assertType('mixed', $mixed);
     }
@@ -153,7 +153,7 @@ function numericString($mixed)
 
     $arr = ['0' => 1, '2' => 2];
     if (isset($arr[$mixed])) {
-        assertType("0|0.0|2|2.0|'0'|'2'|false", $mixed);
+        assertType("0|2|'0'|'2'|float|false", $mixed);
     } else {
         assertType('mixed', $mixed);
     }
@@ -164,7 +164,7 @@ function intKeys($mixed)
 {
     $arr = [1 => 1, 2 => 2];
     if (isset($arr[$mixed])) {
-        assertType("1|1.0|2|2.0|'1'|'2'|true", $mixed);
+        assertType("1|2|'1'|'2'|float|true", $mixed);
     } else {
         assertType('mixed', $mixed);
     }
@@ -172,7 +172,7 @@ function intKeys($mixed)
 
     $arr = [0 => 0, 1 => 1, 2 => 2];
     if (isset($arr[$mixed])) {
-        assertType("0|0.0|1|1.0|2|2.0|'0'|'1'|'2'|bool", $mixed);
+        assertType("0|1|2|'0'|'1'|'2'|bool|float", $mixed);
     } else {
         assertType('mixed', $mixed);
     }

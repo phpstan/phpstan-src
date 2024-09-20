@@ -444,7 +444,7 @@ final class FunctionCallParametersCheck
 				$parameterTemplateTypes = [];
 				foreach ($originalParametersAcceptor->getParameters() as $parameter) {
 					TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$parameterTemplateTypes): Type {
-						if ($type instanceof TemplateType) {
+						if ($type instanceof TemplateType && $type->getDefault() === null) {
 							$parameterTemplateTypes[$type->getName()] = true;
 							return $type;
 						}

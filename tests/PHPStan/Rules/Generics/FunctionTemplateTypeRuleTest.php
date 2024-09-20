@@ -67,6 +67,14 @@ class FunctionTemplateTypeRuleTest extends RuleTestCase
 				'Call-site variance of contravariant int in generic type FunctionTemplateType\GenericCovariant<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of class FunctionTemplateType\GenericCovariant.',
 				94,
 			],
+			[
+				'PHPDoc tag @template T for function FunctionTemplateType\invalidDefault() has invalid default type FunctionTemplateType\Zazzzu.',
+				102,
+			],
+			[
+				'Default type bool in PHPDoc tag @template T for function FunctionTemplateType\outOfBoundsDefault() is not subtype of bound type object.',
+				110,
+			],
 		]);
 	}
 

@@ -60,6 +60,8 @@ final class TraitTemplateTypeRule implements Rule
 			sprintf('PHPDoc tag @template for trait %s cannot have existing type alias %%s as its name.', $escapedTraitName),
 			sprintf('PHPDoc tag @template %%s for trait %s has invalid bound type %%s.', $escapedTraitName),
 			sprintf('PHPDoc tag @template %%s for trait %s with bound type %%s is not supported.', $escapedTraitName),
+			sprintf('PHPDoc tag @template %%s for trait %s has invalid default type %%s.', $escapedTraitName),
+			sprintf('Default type %%s in PHPDoc tag @template %%s for trait %s is not subtype of bound type %%s.', $escapedTraitName),
 		);
 	}
 

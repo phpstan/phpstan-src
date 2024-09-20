@@ -65,3 +65,19 @@ trait Sit
 {
 
 }
+
+/**
+ * @template T = Zazzzu
+ */
+trait Adipiscing
+{
+
+}
+
+/**
+ * @template T of object = bool
+ */
+trait Elit
+{
+
+}

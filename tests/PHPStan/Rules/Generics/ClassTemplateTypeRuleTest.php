@@ -86,6 +86,14 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				'Call-site variance of contravariant int in generic type ClassTemplateType\Consecteur<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of class ClassTemplateType\Consecteur.',
 				113,
 			],
+			[
+				'PHPDoc tag @template T for class ClassTemplateType\Elit has invalid default type ClassTemplateType\Zazzzu.',
+				121,
+			],
+			[
+				'Default type bool in PHPDoc tag @template T for class ClassTemplateType\Venenatis is not subtype of bound type object.',
+				129,
+			],
 		]);
 	}
 

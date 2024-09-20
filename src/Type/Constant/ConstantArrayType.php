@@ -734,7 +734,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 					$k++;
 				}
 
-				return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, TrinaryLogic::createNo());
+				$wasLastOffset = TrinaryLogic::createFromBoolean($i === count($this->keyTypes) - 1);
+
+				return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, $this->isList->and($wasLastOffset));
 			}
 
 			return $this;

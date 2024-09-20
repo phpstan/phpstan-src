@@ -122,12 +122,19 @@ class ConstantArrayTypeBuilder
 				$newAutoIndexes[] = $newAutoIndex;
 				$this->nextAutoIndexes = array_values(array_unique($newAutoIndexes));
 
+				$keyTypesCount = count($this->keyTypes);
+
 				if ($optional || $hasOptional) {
-					$this->optionalKeys[] = count($this->keyTypes) - 1;
+					$this->optionalKeys[] = $keyTypesCount - 1;
 				}
 
-				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
+				if ($keyTypesCount > self::ARRAY_COUNT_LIMIT) {
 					$this->degradeToGeneralArray = true;
+				}
+
+				if ($keyTypesCount - 1 !== $max && $this->isList->yes()) {
+					// The array is not a list any longer if there is gap in the offsets
+					$this->isList = TrinaryLogic::createNo();
 				}
 
 				return;

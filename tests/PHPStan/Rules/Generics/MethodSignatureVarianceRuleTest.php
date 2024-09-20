@@ -234,4 +234,14 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10609(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10609.php'], [
+			[
+				'Template type A is declared as covariant, but occurs in contravariant position in parameter fn of method Bug10609\Collection::tap().',
+				13,
+			],
+		]);
+	}
+
 }

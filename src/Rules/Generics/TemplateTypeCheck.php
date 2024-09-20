@@ -185,11 +185,13 @@ final class TemplateTypeCheck
 				$messages[] = $genericDefaultError;
 			}
 
-			if ($boundType->accepts($defaultType, $scope->isDeclareStrictTypes())->no()) {
-				$messages[] = RuleErrorBuilder::message(sprintf($defaultNotSubtypeOfBoundMessage, $defaultType->describe(VerbosityLevel::typeOnly()), $templateTagName, $boundType->describe(VerbosityLevel::typeOnly())))
-					->identifier('generics.templateDefaultOutOfBounds')
-					->build();
+			if (!$boundType->accepts($defaultType, $scope->isDeclareStrictTypes())->no()) {
+				continue;
 			}
+
+			$messages[] = RuleErrorBuilder::message(sprintf($defaultNotSubtypeOfBoundMessage, $defaultType->describe(VerbosityLevel::typeOnly()), $templateTagName, $boundType->describe(VerbosityLevel::typeOnly())))
+				->identifier('generics.templateDefaultOutOfBounds')
+				->build();
 		}
 
 		return $messages;

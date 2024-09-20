@@ -823,10 +823,36 @@ final class TypeSpecifier
 						if (!$varType->isIterableAtLeastOnce()->no()) {
 							$varIterableKeyType = $varType->getIterableKeyType();
 
-							if ($varIterableKeyType->isString()->yes()
-								&& $varIterableKeyType->isNumericString()->no()
-							) {
-								if (!$varIterableKeyType->isNonEmptyString()->no()) {
+							if ($varIterableKeyType->isConstantScalarValue()->yes()) {
+								$varIterableKeyType = TypeCombinator::union(
+									$varIterableKeyType,
+									TypeCombinator::remove($varIterableKeyType->toString(), new ConstantStringType('')),
+									$varIterableKeyType->toFloat(),
+								);
+
+								$zero = new UnionType([
+									new ConstantStringType('0'),
+									new ConstantIntegerType(0),
+								]);
+								if (!$varIterableKeyType->isSuperTypeOf($zero)->no()) {
+									$varIterableKeyType = TypeCombinator::union(
+										$varIterableKeyType,
+										new ConstantBooleanType(false)
+									);
+								}
+
+								$one = new UnionType([
+									new ConstantStringType('1'),
+									new ConstantIntegerType(1),
+								]);
+								if (!$varIterableKeyType->isSuperTypeOf($one)->no()) {
+									$varIterableKeyType = TypeCombinator::union(
+										$varIterableKeyType,
+										new ConstantBooleanType(true)
+									);
+								}
+
+								if (!$varIterableKeyType->isSuperTypeOf(new ConstantStringType(''))->no()) {
 									$varIterableKeyType = TypeCombinator::addNull($varIterableKeyType);
 								}
 

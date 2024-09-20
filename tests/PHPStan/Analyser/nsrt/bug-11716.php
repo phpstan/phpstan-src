@@ -36,9 +36,8 @@ class TypeExpression
 
 /**
  * @param array<int, string> $arr
- * @param array<1|'2', string> $numericKeyArray
  */
-function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr, array $numericKeyArray): void {
+function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr): void {
 	if (isset($generalArr[$mixed])) {
 		assertType('mixed~array|object|resource', $mixed);
 	} else {
@@ -80,13 +79,6 @@ function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr, arr
 		assertType('string', $s);
 	}
 	assertType('string', $s);
-
-	if (isset($numericKeyArray[$mixed])) {
-		assertType("mixed~array|object|resource", $mixed);
-	} else {
-		assertType("mixed", $mixed);
-	}
-	assertType("mixed", $mixed);
 }
 
 /**
@@ -141,9 +133,46 @@ function emptyString($mixed)
 {
     // see https://3v4l.org/XHZdr
     $arr = ['' => 1, 'a' => 2];
-
     if (isset($arr[$mixed])) {
-        assertType("''|'a'|null", $mixed);
+        assertType("0.0|''|'a'|null", $mixed); // could be ''|'a'|null
+    } else {
+        assertType('mixed', $mixed);
+    }
+    assertType('mixed', $mixed);
+}
+
+function numericString($mixed)
+{
+    $arr = ['1' => 1, '2' => 2];
+    if (isset($arr[$mixed])) {
+        assertType("1|1.0|2|2.0|'1'|'2'|true", $mixed);
+    } else {
+        assertType('mixed', $mixed);
+    }
+    assertType('mixed', $mixed);
+
+    $arr = ['0' => 1, '2' => 2];
+    if (isset($arr[$mixed])) {
+        assertType("0|0.0|2|2.0|'0'|'2'|false", $mixed);
+    } else {
+        assertType('mixed', $mixed);
+    }
+    assertType('mixed', $mixed);
+}
+
+function intKeys($mixed)
+{
+    $arr = [1 => 1, 2 => 2];
+    if (isset($arr[$mixed])) {
+        assertType("1|1.0|2|2.0|'1'|'2'|true", $mixed);
+    } else {
+        assertType('mixed', $mixed);
+    }
+    assertType('mixed', $mixed);
+
+    $arr = [0 => 0, 1 => 1, 2 => 2];
+    if (isset($arr[$mixed])) {
+        assertType("0|0.0|1|1.0|2|2.0|'0'|'1'|'2'|bool", $mixed);
     } else {
         assertType('mixed', $mixed);
     }

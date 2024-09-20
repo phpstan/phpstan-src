@@ -820,19 +820,39 @@ final class TypeSpecifier
 						);
 					} elseif ($var->dim instanceof Expr\Variable) {
 						$varType = $scope->getType($var->var);
-						$varIterableKeyType = $varType->getIterableKeyType();
-
-						if ($varIterableKeyType->isString()->yes() && $varIterableKeyType->isNumericString()->no()) {
-							$types = $types->unionWith(
-								$this->create(
-									$var->dim,
-									$varIterableKeyType,
-									$context,
-									false,
-									$scope,
-									$rootExpr,
-								),
-							);
+						if (!$varType->isIterableAtLeastOnce()->no()) {
+							$varIterableKeyType = $varType->getIterableKeyType();
+							if ($varIterableKeyType->isString()->yes()
+								&& $varIterableKeyType->isNumericString()->no()
+							) {
+								$types = $types->unionWith(
+									$this->create(
+										$var->dim,
+										$varIterableKeyType,
+										$context,
+										false,
+										$scope,
+										$rootExpr,
+									),
+								);
+							} else {
+								$types = $types->unionWith(
+									$this->create(
+										$var->dim,
+										new MixedType(
+											false,
+											new UnionType([
+												new ArrayType(new MixedType(), new MixedType()),
+												new ObjectWithoutClassType(),
+											]),
+										),
+										$context,
+										false,
+										$scope,
+										$rootExpr,
+									),
+								);
+							}
 						}
 					}
 				}

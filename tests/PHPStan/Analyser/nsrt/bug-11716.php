@@ -40,7 +40,7 @@ class TypeExpression
  */
 function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr, array $numericKeyArray): void {
 	if (isset($generalArr[$mixed])) {
-		assertType('mixed', $mixed);
+		assertType('mixed~array|object', $mixed);
 	} else {
 		assertType('mixed', $mixed);
 	}
@@ -61,7 +61,7 @@ function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr, arr
 	assertType('string', $s);
 
 	if (isset($arr[$mixed])) {
-		assertType('mixed', $mixed);
+		assertType('mixed~array|object', $mixed);
 	} else {
 		assertType('mixed', $mixed);
 	}
@@ -82,7 +82,7 @@ function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr, arr
 	assertType('string', $s);
 
 	if (isset($numericKeyArray[$mixed])) {
-		assertType("mixed", $mixed);
+		assertType("mixed~array|object", $mixed);
 	} else {
 		assertType("mixed", $mixed);
 	}
@@ -94,27 +94,45 @@ function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr, arr
  */
 function multiDim($mixed, $mixed2, array $arr) {
 	if (isset($arr[$mixed])) {
-		assertType('mixed', $mixed);
+		assertType('mixed~array|object', $mixed);
 	} else {
 		assertType('mixed', $mixed);
 	}
 	assertType('mixed', $mixed);
 
 	if (isset($arr[$mixed]) && isset($arr[$mixed][$mixed2])) {
-		assertType('mixed', $mixed);
-		assertType('mixed', $mixed2);
+		assertType('mixed~array|object', $mixed);
+		assertType('mixed~array|object', $mixed2);
 	} else {
 		assertType('mixed', $mixed);
 	}
 	assertType('mixed', $mixed);
 
 	if (isset($arr[$mixed][$mixed2])) {
-		assertType('mixed', $mixed);
-		assertType('mixed', $mixed2);
+		assertType('mixed~array|object', $mixed);
+		assertType('mixed~array|object', $mixed2);
 	} else {
 		assertType('mixed', $mixed);
 		assertType('mixed', $mixed2);
 	}
 	assertType('mixed', $mixed);
 	assertType('mixed', $mixed2);
+}
+
+/**
+ * @param array<int, string> $arr
+ */
+function emptyArrr($mixed, array $arr)
+{
+    if (count($arr) !== 0) {
+        return;
+    }
+
+    assertType('array{}', $arr);
+    if (isset($arr[$mixed])) {
+        assertType('mixed', $mixed);
+    } else {
+        assertType('mixed', $mixed);
+    }
+    assertType('mixed', $mixed);
 }

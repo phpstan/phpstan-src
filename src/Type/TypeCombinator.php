@@ -750,6 +750,7 @@ class TypeCombinator
 					$templateArray->getVariance(),
 					$templateArray->getName(),
 					$arrayType,
+					$templateArray->getDefault(),
 				);
 			}
 

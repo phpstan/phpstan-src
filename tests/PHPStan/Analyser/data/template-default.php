@@ -60,7 +60,7 @@ function () {
 	assertType('TemplateDefault\\Builder<true, false>', $qb);
 	$qb->two();
 	assertType('TemplateDefault\\Builder<true, true>', $qb);
-	assertType('void', $qb->execute());
+	assertType('null', $qb->execute());
 };
 
 function () {
@@ -70,7 +70,7 @@ function () {
 	assertType('TemplateDefault\\Builder<false, true>', $qb);
 	$qb->one();
 	assertType('TemplateDefault\\Builder<true, true>', $qb);
-	assertType('void', $qb->execute());
+	assertType('null', $qb->execute());
 };
 
 function () {
@@ -78,5 +78,5 @@ function () {
 	assertType('TemplateDefault\\Builder<false, false>', $qb);
 	$qb->one();
 	assertType('TemplateDefault\\Builder<true, false>', $qb);
-	assertType('*NEVER*', $qb->execute());
+	assertType('never', $qb->execute());
 };

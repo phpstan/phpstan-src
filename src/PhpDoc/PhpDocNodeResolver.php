@@ -176,6 +176,9 @@ final class PhpDocNodeResolver
 							$templateType->bound !== null
 								? $this->typeNodeResolver->resolve($templateType->bound, $nameScope)
 								: new MixedType(),
+							$templateType->default !== null
+								? $this->typeNodeResolver->resolve($templateType->default, $nameScope)
+								: null,
 							TemplateTypeVariance::createInvariant(),
 						);
 					}

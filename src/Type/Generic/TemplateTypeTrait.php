@@ -176,7 +176,11 @@ trait TemplateTypeTrait
 		return $type instanceof self
 			&& $type->scope->equals($this->scope)
 			&& $type->name === $this->name
-			&& $this->bound->equals($type->bound);
+			&& $this->bound->equals($type->bound)
+			&& (
+				($this->default === null && $type->default === null)
+				|| ($this->default !== null && $type->default !== null && $this->default->equals($type->default))
+			);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
@@ -342,6 +346,7 @@ trait TemplateTypeTrait
 			$bound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$default,
 		);
 	}
 
@@ -352,7 +357,9 @@ trait TemplateTypeTrait
 		}
 
 		$bound = $cb($this->getBound(), $right->getBound());
-		if ($this->getBound() === $bound) {
+		$default = $this->getDefault() !== null && $right->getDefault() !== null ? $cb($this->getDefault(), $right->getDefault()) : null;
+
+		if ($this->getBound() === $bound && $this->getDefault() === $default) {
 			return $this;
 		}
 
@@ -379,6 +386,7 @@ trait TemplateTypeTrait
 			$bound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 

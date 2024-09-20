@@ -292,6 +292,7 @@ class TypeUtils
 				$type->getVariance(),
 				$type->getName(),
 				static::toStrictUnion($type->getBound()),
+				$type->getDefault(),
 			);
 		}
 

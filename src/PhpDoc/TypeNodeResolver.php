@@ -920,6 +920,9 @@ final class TypeNodeResolver
 					$templateType->bound !== null
 						? $this->resolve($templateType->bound, $nameScope)
 						: new MixedType(),
+					$templateType->default !== null
+						? $this->resolve($templateType->default, $nameScope)
+						: null,
 					TemplateTypeVariance::createInvariant(),
 				);
 			}

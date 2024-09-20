@@ -150,16 +150,23 @@ final class TemplateTypeCheck
 			}
 
 			foreach ($defaultType->getReferencedClasses() as $referencedClass) {
-				if (
-					$this->reflectionProvider->hasClass($referencedClass)
-					&& !$this->reflectionProvider->getClass($referencedClass)->isTrait()
-				) {
+				if (!$this->reflectionProvider->hasClass($referencedClass)) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						$invalidDefaultTypeMessage,
+						$templateTagName,
+						$referencedClass,
+					))->identifier('class.notFound')->build();
+					continue;
+				}
+				if (!$this->reflectionProvider->getClass($referencedClass)->isTrait()) {
 					continue;
 				}
 
-				$messages[] = RuleErrorBuilder::message(sprintf($invalidDefaultTypeMessage, $templateTagName, $referencedClass))
-					->identifier('generics.invalidTemplateDefault')
-					->build();
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					$invalidDefaultTypeMessage,
+					$templateTagName,
+					$referencedClass,
+				))->identifier('generics.traitBound')->build();
 			}
 
 			$classNameNodePairs = array_map(static fn (string $referencedClass): ClassNameNodePair => new ClassNameNodePair($referencedClass, $node), $defaultType->getReferencedClasses());

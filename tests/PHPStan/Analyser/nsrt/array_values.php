@@ -37,4 +37,12 @@ class HelloWorld
 		);
 		assertType("array{0?: 'a'|'b'|'c', 1?: 'b'|'c', 2?: 'c'}", array_values($numbers));
 	}
+
+	/**
+	 * @param array<string, non-empty-array<string, int>> $a
+	 */
+	public function arrayMap(array $a): void
+	{
+		assertType('array<string, non-empty-list<int>>', array_map(array_values(...), $a));
+	}
 }

@@ -17,6 +17,14 @@ function array_reduce(
 ) {}
 
 /**
+ * @template T of mixed
+ *
+ * @param array<T> $array
+ * @return ($array is non-empty-array ? non-empty-list<T> : list<T>)
+ */
+function array_values(array $array): array {}
+
+/**
  * @template TKey as (int|string)
  * @template T
  * @template TArray as array<TKey,T>

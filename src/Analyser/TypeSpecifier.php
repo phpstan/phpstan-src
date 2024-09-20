@@ -822,9 +822,14 @@ final class TypeSpecifier
 						$varType = $scope->getType($var->var);
 						if (!$varType->isIterableAtLeastOnce()->no()) {
 							$varIterableKeyType = $varType->getIterableKeyType();
+
 							if ($varIterableKeyType->isString()->yes()
 								&& $varIterableKeyType->isNumericString()->no()
 							) {
+								if (!$varIterableKeyType->isNonEmptyString()->no()) {
+									$varIterableKeyType = TypeCombinator::addNull($varIterableKeyType);
+								}
+
 								$types = $types->unionWith(
 									$this->create(
 										$var->dim,

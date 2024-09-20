@@ -136,3 +136,16 @@ function emptyArrr($mixed, array $arr)
     }
     assertType('mixed', $mixed);
 }
+
+function emptyString($mixed)
+{
+    // see https://3v4l.org/XHZdr
+    $arr = ['' => 1, 'a' => 2];
+
+    if (isset($arr[$mixed])) {
+        assertType("''|'a'|null", $mixed);
+    } else {
+        assertType('mixed', $mixed);
+    }
+    assertType('mixed', $mixed);
+}

@@ -844,6 +844,7 @@ final class TypeSpecifier
 											new UnionType([
 												new ArrayType(new MixedType(), new MixedType()),
 												new ObjectWithoutClassType(),
+												new ResourceType()
 											]),
 										),
 										$context,

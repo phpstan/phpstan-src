@@ -858,36 +858,27 @@ final class TypeSpecifier
 								if (!$varIterableKeyType->isNumericString()->no() || !$varIterableKeyType->isInteger()->no()) {
 									$narrowedKey = TypeCombinator::union($narrowedKey, new FloatType());
 								}
-
-								$types = $types->unionWith(
-									$this->create(
-										$var->dim,
-										$narrowedKey,
-										$context,
-										false,
-										$scope,
-										$rootExpr,
-									),
-								);
 							} else {
-								$types = $types->unionWith(
-									$this->create(
-										$var->dim,
-										new MixedType(
-											false,
-											new UnionType([
-												new ArrayType(new MixedType(), new MixedType()),
-												new ObjectWithoutClassType(),
-												new ResourceType(),
-											]),
-										),
-										$context,
-										false,
-										$scope,
-										$rootExpr,
-									),
+								$narrowedKey = new MixedType(
+									false,
+									new UnionType([
+										new ArrayType(new MixedType(), new MixedType()),
+										new ObjectWithoutClassType(),
+										new ResourceType(),
+									]),
 								);
 							}
+
+							$types = $types->unionWith(
+								$this->create(
+									$var->dim,
+									$narrowedKey,
+									$context,
+									false,
+									$scope,
+									$rootExpr,
+								),
+							);
 						}
 					}
 				}

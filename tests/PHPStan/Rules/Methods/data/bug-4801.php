@@ -13,7 +13,7 @@ interface I {
 	 * @param (callable(T): TResult)|null $a
 	 * @return I<TResult>
 	 */
-  public function work(callable|null $a): I;
+  public function work(?callable $a): I;
 }
 
 /**

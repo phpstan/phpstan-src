@@ -2670,6 +2670,14 @@ final class MutatingScope implements Scope
 			);
 		}
 
+		if ($arrayDimFetch->var instanceof Expr\ClassConstFetch) {
+			if ($offsetAccessibleType->hasOffsetValueType($offsetType)->yes()) {
+				return $offsetAccessibleType->getOffsetValueType($offsetType);
+			}
+
+			return TypeCombinator::addNull($offsetAccessibleType->getIterableValueType());
+		}
+
 		return $offsetAccessibleType->getOffsetValueType($offsetType);
 	}
 

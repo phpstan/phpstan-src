@@ -16,13 +16,20 @@ class HelloWorld
 	{
 		$value = trim($value);
 
+		assertType("string", $value);
+		assertType("'Test1'|'Test2'|null", self::MAP[$value]);
+
 		if ($value === '') {
 			throw new \RuntimeException();
 		}
 
+		assertType("non-empty-string", $value);
+		assertType("'Test1'|'Test2'|null", self::MAP[$value]);
+
 		$value = self::MAP[$value] ?? $value;
 
-		assertType("'Test1'|'Test2'", self::MAP[$value]);
+		assertType("non-empty-string", $value);
+		assertType("'Test1'|'Test2'|null", self::MAP[$value]);
 
 		// ...
 	}

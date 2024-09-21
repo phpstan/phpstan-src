@@ -141,7 +141,7 @@ function emptyString($mixed)
     assertType('mixed', $mixed);
 }
 
-function numericString($mixed)
+function numericString($mixed, int $i, string $s)
 {
     $arr = ['1' => 1, '2' => 2];
     if (isset($arr[$mixed])) {
@@ -158,6 +158,22 @@ function numericString($mixed)
         assertType('mixed', $mixed);
     }
     assertType('mixed', $mixed);
+
+	$arr = ['1' => 1, '2' => 2];
+	if (isset($arr[$i])) {
+		assertType("1|2", $i);
+	} else {
+		assertType('int', $i);
+	}
+	assertType('int', $i);
+
+	$arr = ['1' => 1, '2' => 2, 3 => 3];
+	if (isset($arr[$s])) {
+		assertType("'1'|'2'|'3'", $s);
+	} else {
+		assertType('string', $s);
+	}
+	assertType('string', $s);
 }
 
 function intKeys($mixed)

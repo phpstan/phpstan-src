@@ -829,29 +829,21 @@ final class TypeSpecifier
 									TypeCombinator::remove($varIterableKeyType->toString(), new ConstantStringType('')),
 								);
 
-								$zero = new UnionType([
-									new ConstantStringType('0'),
-									new ConstantIntegerType(0),
-								]);
-								if (!$varIterableKeyType->isSuperTypeOf($zero)->no()) {
+								if (!$varType->hasOffsetValueType(new ConstantIntegerType(0))->no()) {
 									$narrowedKey = TypeCombinator::union(
 										$narrowedKey,
 										new ConstantBooleanType(false),
 									);
 								}
 
-								$one = new UnionType([
-									new ConstantStringType('1'),
-									new ConstantIntegerType(1),
-								]);
-								if (!$varIterableKeyType->isSuperTypeOf($one)->no()) {
+								if (!$varType->hasOffsetValueType(new ConstantIntegerType(1))->no()) {
 									$narrowedKey = TypeCombinator::union(
 										$narrowedKey,
 										new ConstantBooleanType(true),
 									);
 								}
 
-								if (!$varIterableKeyType->isSuperTypeOf(new ConstantStringType(''))->no()) {
+								if (!$varType->hasOffsetValueType(new ConstantStringType(''))->no()) {
 									$narrowedKey = TypeCombinator::addNull($narrowedKey);
 								}
 

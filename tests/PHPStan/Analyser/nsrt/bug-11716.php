@@ -178,3 +178,12 @@ function intKeys($mixed)
     }
     assertType('mixed', $mixed);
 }
+
+function arrayAccess(\ArrayAccess $arr, $mixed) {
+    if (isset($arr[$mixed])) {
+        assertType("mixed", $mixed);
+    } else {
+        assertType('mixed', $mixed);
+    }
+    assertType('mixed', $mixed);
+}

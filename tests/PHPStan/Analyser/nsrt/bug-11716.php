@@ -136,7 +136,7 @@ function emptyString($mixed)
     if (isset($arr[$mixed])) {
         assertType("''|'a'|null", $mixed);
     } else {
-        assertType('mixed', $mixed);
+        assertType('mixed', $mixed); // could be mixed~(''|'a'|null)
     }
     assertType('mixed', $mixed);
 }

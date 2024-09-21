@@ -2675,7 +2675,9 @@ final class MutatingScope implements Scope
 				return $offsetAccessibleType->getOffsetValueType($offsetType);
 			}
 
-			return TypeCombinator::addNull($offsetAccessibleType->getIterableValueType());
+			if ($offsetAccessibleType->isArray()->yes()) {
+				return TypeCombinator::addNull($offsetAccessibleType->getIterableValueType());
+			}
 		}
 
 		return $offsetAccessibleType->getOffsetValueType($offsetType);

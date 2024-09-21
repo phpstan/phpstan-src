@@ -88,9 +88,10 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
+		$name = strtolower($functionReflection->getName());
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
-		if (!isset($functionCall->getArgs()[0])) {
+		if (!isset($functionCall->getArgs()[0]) || !isset(self::SUPPORTED_FUNCTIONS[$name])) {
 			return $defaultReturnType;
 		}
 
@@ -113,7 +114,7 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 		]);
 
 		$invalidAlgorithmType = $this->phpVersion->throwsValueErrorForInternalFunctions() ? $neverType : $falseType;
-		$functionData = self::SUPPORTED_FUNCTIONS[strtolower($functionReflection->getName())];
+		$functionData = self::SUPPORTED_FUNCTIONS[$name];
 
 		$returnTypes = array_map(
 			function (ConstantStringType $type) use ($functionData, $nonEmptyString, $invalidAlgorithmType) {

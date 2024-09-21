@@ -62,7 +62,7 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 	{
 		$args = $node->getArgs();
 
-		if (count($args) >= 2) {
+		if (count($args) >= 2 && array_key_exists(strtolower($functionReflection->getName()), self::STR_CONTAINING_FUNCTIONS)) {
 			[$hackstackArg, $needleArg] = self::STR_CONTAINING_FUNCTIONS[strtolower($functionReflection->getName())];
 
 			$haystackType = $scope->getType($args[$hackstackArg]->value);

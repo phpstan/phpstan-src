@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MethodSignatureVarianceRule>
@@ -236,6 +237,10 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 
 	public function testBug10609(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-10609.php'], [
 			[
 				'Template type A is declared as covariant, but occurs in contravariant position in parameter fn of method Bug10609\Collection::tap().',

@@ -61,7 +61,6 @@ parameters:
 		duplicateStubs: false
 		logicalXor: false
 		betterNoop: false
-		invarianceComposition: false
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false
 		varTagType: false

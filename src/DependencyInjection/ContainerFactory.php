@@ -31,7 +31,6 @@ use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\ObjectType;
 use Symfony\Component\Finder\Finder;
 use function array_diff_key;
@@ -191,7 +190,6 @@ class ContainerFactory
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);
-		TemplateTypeVariance::setInvarianceCompositionEnabled($container->getParameter('featureToggles')['invarianceComposition']);
 	}
 
 	public function clearOldContainers(string $tempDirectory): void

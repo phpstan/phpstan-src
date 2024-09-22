@@ -37,7 +37,6 @@ Bleeding edge (TODO move to other sections)
 * Stub files validation - detect duplicate classes and functions (https://github.com/phpstan/phpstan-src/commit/ddf8d5c3859c2c75c20f525a0e2ca8b99032373a, https://github.com/phpstan/phpstan-src/commit/17e4b74335e5235d7cd6708eb687a774a0eeead4)
 * Change `curl_setopt` function signature based on 2nd arg ([#1719](https://github.com/phpstan/phpstan-src/pull/1719)), thanks @staabm!
 * Empty `skipCheckGenericClasses` (https://github.com/phpstan/phpstan-src/commit/28c2c79b16cac6ba6b01f1b4d211541dd49d8a77)
-* Fix invariance composition ([#2054](https://github.com/phpstan/phpstan-src/pull/2054)), thanks @jiripudil!
 * Validate inline PHPDoc `@var` tag type against native type (https://github.com/phpstan/phpstan-src/commit/a69e3bc2f1e87f6da1e65d7935f1cc36bd5c42fe)
     * Set [`reportWrongPhpDocTypeInVarTag`](https://phpstan.org/config-reference#reportwrongphpdoctypeinvartag) to `true` to have all types validated, not just native ones
 * Always report always true conditions, except for last elseif and match arm ([#2105](https://github.com/phpstan/phpstan-src/pull/2105)), thanks @staabm!
@@ -143,6 +142,8 @@ Improvements 🔧
 
 Bugfixes 🐛
 =====================
+
+* Fix invariance composition ([#2054](https://github.com/phpstan/phpstan-src/pull/2054)), thanks @jiripudil!
 
 Function signature fixes 🤖
 =======================

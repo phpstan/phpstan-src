@@ -26,7 +26,6 @@ parameters:
 		duplicateStubs: true
 		logicalXor: true
 		betterNoop: true
-		invarianceComposition: true
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true
 		varTagType: true

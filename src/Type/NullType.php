@@ -331,6 +331,10 @@ class NullType implements ConstantScalarType
 			return new ConstantBooleanType($this->getValue() == []); // phpcs:ignore
 		}
 
+		if ($type instanceof CompoundType) {
+			return $type->looseCompare($this, $phpVersion);
+		}
+
 		return new BooleanType();
 	}
 

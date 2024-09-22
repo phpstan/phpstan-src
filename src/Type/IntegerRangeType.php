@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
@@ -687,6 +688,15 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		}
 
 		return new GenericTypeNode(new IdentifierTypeNode('int'), [$min, $max]);
+	}
+
+	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
+	{
+		if ($this->isSmallerThan($type)->yes() || $this->isGreaterThan($type)->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
+		return parent::looseCompare($type, $phpVersion);
 	}
 
 	/**

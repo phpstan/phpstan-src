@@ -471,7 +471,7 @@ function subtract($m) {
 	}
 
 	if ($m != false) {
-		assertType("mixed~0|0.0|''|'0'|array{}|false|null", $m);
+		assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $m);
 		assertType('int', (int) $m);
 	}
 	if ($m !== false) {
@@ -479,10 +479,10 @@ function subtract($m) {
 		assertType('int', (int) $m); // mixed could still contain falsey values, which cast to 0
 	}
 	if (!is_string($m) && !is_float($m)) {
-		assertType("mixed~float|string", $m);
+		assertType("mixed~(float|string)", $m);
 		assertType('int', (int) $m);
 		if ($m != false) {
-			assertType("mixed~0|array{}|float|string|false|null", $m);
+			assertType("mixed~(0|array{}|float|string|false|null)", $m);
 			assertType('int<min, -1>|int<1, max>', (int) $m);
 		}
 	}

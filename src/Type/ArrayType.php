@@ -513,6 +513,20 @@ class ArrayType implements Type
 		return $this;
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		$chunkType = $preserveKeys->yes()
+			? $this
+			: TypeCombinator::intersect(new ArrayType(new IntegerType(), $this->getIterableValueType()), new AccessoryArrayListType());
+		$chunkType = TypeCombinator::intersect($chunkType, new NonEmptyArrayType());
+
+		$arrayType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $chunkType), new AccessoryArrayListType());
+
+		return $this->isIterableAtLeastOnce()->yes()
+			? TypeCombinator::intersect($arrayType, new NonEmptyArrayType())
+			: $arrayType;
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		$itemType = $this->getItemType();

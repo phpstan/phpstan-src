@@ -36,10 +36,10 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
-use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
@@ -53,7 +53,6 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 {
 
 	use NonArrayTypeTrait;
-	use NonGenericTypeTrait;
 	use NonIterableTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonOffsetAccessibleTypeTrait;
@@ -538,6 +537,23 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		}
 
 		return $typeMap->union($this->getReturnType()->inferTemplateTypes($returnType));
+	}
+
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		$references = $this->getReturnType()->getReferencedTemplateTypes(
+			$positionVariance->compose(TemplateTypeVariance::createCovariant()),
+		);
+
+		$paramVariance = $positionVariance->compose(TemplateTypeVariance::createContravariant());
+
+		foreach ($this->getParameters() as $param) {
+			foreach ($param->getType()->getReferencedTemplateTypes($paramVariance) as $reference) {
+				$references[] = $reference;
+			}
+		}
+
+		return $references;
 	}
 
 	public function traverse(callable $cb): Type

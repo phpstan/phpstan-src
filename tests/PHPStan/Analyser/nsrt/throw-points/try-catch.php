@@ -76,7 +76,7 @@ function (): void {
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $baz);
 		assertType('1|2', $baz);
 	} catch (\Throwable $e) {
-		assertType('Throwable~InvalidArgumentException|RuntimeException', $e);
+		assertType('Throwable~(InvalidArgumentException|RuntimeException)', $e);
 		assertVariableCertainty(TrinaryLogic::createNo(), $foo);
 		assertVariableCertainty(TrinaryLogic::createYes(), $bar);
 		assertVariableCertainty(TrinaryLogic::createNo(), $baz);

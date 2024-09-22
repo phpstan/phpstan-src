@@ -262,6 +262,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->getValuesArray();
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		return $this->resolve()->chunkArray($lengthType, $preserveKeys);
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		return $this->resolve()->fillKeysArray($valueType);

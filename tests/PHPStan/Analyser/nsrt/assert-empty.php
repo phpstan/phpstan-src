@@ -25,5 +25,5 @@ function ($var) {
 
 function ($var) {
 	assertNotEmpty($var);
-	assertType("mixed~0|0.0|''|'0'|array{}|false|null", $var);
+	assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $var);
 };

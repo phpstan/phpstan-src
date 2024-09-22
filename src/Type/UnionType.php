@@ -701,6 +701,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->getValuesArray());
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->chunkArray($lengthType, $preserveKeys));
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		return $this->unionTypes(static fn (Type $type): Type => $type->fillKeysArray($valueType));

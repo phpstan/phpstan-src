@@ -175,6 +175,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		return $this;
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		return $this;
@@ -222,12 +227,12 @@ class OversizedArrayType implements CompoundType, AccessoryType
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function getArraySize(): Type
 	{
-		return IntegerRangeType::fromInterval(1, null);
+		return IntegerRangeType::fromInterval(0, null);
 	}
 
 	public function getIterableKeyType(): Type

@@ -209,6 +209,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new NonEmptyArrayType();
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		return new NonEmptyArrayType();
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		return new NonEmptyArrayType();

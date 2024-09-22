@@ -132,7 +132,9 @@ class ObjectWithoutClassType implements SubtractableType
 			function () use ($level): string {
 				$description = 'object';
 				if ($this->subtractedType !== null) {
-					$description .= sprintf('~%s', $this->subtractedType->describe($level));
+					$description .= $this->subtractedType instanceof UnionType
+						? sprintf('~(%s)', $this->subtractedType->describe($level))
+						: sprintf('~%s', $this->subtractedType->describe($level));
 				}
 
 				return $description;

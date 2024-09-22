@@ -13,7 +13,7 @@ class Foo
 			return;
 		}
 
-		assertType('mixed~array{}|null', $arguments);
+		assertType('mixed~(array{}|null)', $arguments);
 
 		array_shift($arguments);
 

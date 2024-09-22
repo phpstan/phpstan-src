@@ -189,6 +189,15 @@ class MixedType implements CompoundType, SubtractableType
 		return TypeCombinator::intersect(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)), new AccessoryArrayListType());
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		if ($this->isArray()->no()) {
+			return new ErrorType();
+		}
+
+		return TypeCombinator::intersect(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)), new AccessoryArrayListType());
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		if ($this->isArray()->no()) {
@@ -438,7 +447,9 @@ class MixedType implements CompoundType, SubtractableType
 			function () use ($level): string {
 				$description = 'mixed';
 				if ($this->subtractedType !== null) {
-					$description .= sprintf('~%s', $this->subtractedType->describe($level));
+					$description .= $this->subtractedType instanceof UnionType
+						? sprintf('~(%s)', $this->subtractedType->describe($level))
+						: sprintf('~%s', $this->subtractedType->describe($level));
 				}
 
 				return $description;
@@ -446,7 +457,9 @@ class MixedType implements CompoundType, SubtractableType
 			function () use ($level): string {
 				$description = 'mixed';
 				if ($this->subtractedType !== null) {
-					$description .= sprintf('~%s', $this->subtractedType->describe($level));
+					$description .= $this->subtractedType instanceof UnionType
+						? sprintf('~(%s)', $this->subtractedType->describe($level))
+						: sprintf('~%s', $this->subtractedType->describe($level));
 				}
 
 				if ($this->isExplicitMixed) {

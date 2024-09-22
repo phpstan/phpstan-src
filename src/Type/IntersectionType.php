@@ -724,6 +724,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->getValuesArray());
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->chunkArray($lengthType, $preserveKeys));
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->fillKeysArray($valueType));

@@ -307,7 +307,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return AcceptsResult::createNo();
 		}
 
-		$result = AcceptsResult::createYes();
+		if ($this->isList()->yes() && $type->isList()->maybe()) {
+			$result = AcceptsResult::createMaybe();
+		} else {
+			$result = AcceptsResult::createYes();
+		}
+
 		foreach ($this->keyTypes as $i => $keyType) {
 			$valueType = $this->valueTypes[$i];
 			$hasOffsetValueType = $type->hasOffsetValueType($keyType);

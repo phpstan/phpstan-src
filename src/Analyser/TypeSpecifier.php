@@ -784,6 +784,60 @@ final class TypeSpecifier
 								$scope,
 							)->setRootExpr($expr),
 						);
+					} else {
+						$varType = $scope->getType($var->var);
+						if ($varType->isArray()->yes() && !$varType->isIterableAtLeastOnce()->no()) {
+							$varIterableKeyType = $varType->getIterableKeyType();
+
+							if ($varIterableKeyType->isConstantScalarValue()->yes()) {
+								$narrowedKey = TypeCombinator::union(
+									$varIterableKeyType,
+									TypeCombinator::remove($varIterableKeyType->toString(), new ConstantStringType('')),
+								);
+
+								if (!$varType->hasOffsetValueType(new ConstantIntegerType(0))->no()) {
+									$narrowedKey = TypeCombinator::union(
+										$narrowedKey,
+										new ConstantBooleanType(false),
+									);
+								}
+
+								if (!$varType->hasOffsetValueType(new ConstantIntegerType(1))->no()) {
+									$narrowedKey = TypeCombinator::union(
+										$narrowedKey,
+										new ConstantBooleanType(true),
+									);
+								}
+
+								if (!$varType->hasOffsetValueType(new ConstantStringType(''))->no()) {
+									$narrowedKey = TypeCombinator::addNull($narrowedKey);
+								}
+
+								if (!$varIterableKeyType->isNumericString()->no() || !$varIterableKeyType->isInteger()->no()) {
+									$narrowedKey = TypeCombinator::union($narrowedKey, new FloatType());
+								}
+							} else {
+								$narrowedKey = new MixedType(
+									false,
+									new UnionType([
+										new ArrayType(new MixedType(), new MixedType()),
+										new ObjectWithoutClassType(),
+										new ResourceType(),
+									]),
+								);
+							}
+
+							$types = $types->unionWith(
+								$this->create(
+									$var->dim,
+									$narrowedKey,
+									$context,
+									false,
+									$scope,
+									$rootExpr,
+								),
+							);
+						}
 					}
 				}
 

@@ -20,7 +20,7 @@ class Foo
 		if (is_int($foo) && ctype_digit($foo)) {
 			assertType('int<48, 57>|int<256, max>', $foo);
 		} else {
-			assertType('mixed~int<48, 57>|int<256, max>', $foo);
+			assertType('mixed~(int<48, 57>|int<256, max>)', $foo);
 		}
 
 		if (ctype_digit($foo)) {
@@ -28,6 +28,6 @@ class Foo
 			return;
 		}
 
-		assertType('mixed~int<48, 57>|int<256, max>', $foo); // not all numeric strings are covered by ctype_digit
+		assertType('mixed~(int<48, 57>|int<256, max>)', $foo); // not all numeric strings are covered by ctype_digit
 	}
 }

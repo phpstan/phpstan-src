@@ -487,7 +487,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$preciseWithSubtracted = function () use ($level): string {
 			$description = $this->className;
 			if ($this->subtractedType !== null) {
-				$description .= sprintf('~%s', $this->subtractedType->describe($level));
+				$description .= $this->subtractedType instanceof UnionType
+					? sprintf('~(%s)', $this->subtractedType->describe($level))
+					: sprintf('~%s', $this->subtractedType->describe($level));
 			}
 
 			return $description;
@@ -538,7 +540,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->subtractedType !== null) {
-			$description .= sprintf('~%s', $this->subtractedType->describe(VerbosityLevel::cache()));
+			$description .= $this->subtractedType instanceof UnionType
+				? sprintf('~(%s)', $this->subtractedType->describe(VerbosityLevel::cache()))
+				: sprintf('~%s', $this->subtractedType->describe(VerbosityLevel::cache()));
 		}
 
 		$reflection = $this->classReflection;

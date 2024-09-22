@@ -12,7 +12,7 @@ class Foo
 		assertType('$this(ThisSubtractable\Foo)', $this);
 
 		if (!$this instanceof Bar && !$this instanceof Baz) {
-			assertType('$this(ThisSubtractable\Foo~ThisSubtractable\Bar|ThisSubtractable\Baz)', $this);
+			assertType('$this(ThisSubtractable\Foo~(ThisSubtractable\Bar|ThisSubtractable\Baz))', $this);
 		} else {
 			assertType('($this(ThisSubtractable\Foo)&ThisSubtractable\Bar)|($this(ThisSubtractable\Foo)&ThisSubtractable\Baz)', $this);
 		}
@@ -26,7 +26,7 @@ class Foo
 		assertType('static(ThisSubtractable\Foo)', $s);
 
 		if (!$s instanceof Bar && !$s instanceof Baz) {
-			assertType('static(ThisSubtractable\Foo~ThisSubtractable\Bar|ThisSubtractable\Baz)', $s);
+			assertType('static(ThisSubtractable\Foo~(ThisSubtractable\Bar|ThisSubtractable\Baz))', $s);
 		} else {
 			assertType('(static(ThisSubtractable\Foo)&ThisSubtractable\Bar)|(static(ThisSubtractable\Foo)&ThisSubtractable\Baz)', $s);
 		}
@@ -52,7 +52,7 @@ class Foo
 		assertType('ThisSubtractable\Foo', $s);
 
 		if (!$s instanceof Bar && !$s instanceof Baz) {
-			assertType('ThisSubtractable\Foo~ThisSubtractable\Bar|ThisSubtractable\Baz', $s);
+			assertType('ThisSubtractable\Foo~(ThisSubtractable\Bar|ThisSubtractable\Baz)', $s);
 		} else {
 			assertType('ThisSubtractable\Bar|ThisSubtractable\Baz', $s);
 		}
@@ -70,12 +70,12 @@ class Foo
 		assertType('ThisSubtractable\Foo&hasMethod(test123)', $s);
 
 		if (!$s instanceof Bar && !$s instanceof Baz) {
-			assertType('ThisSubtractable\Foo~ThisSubtractable\Bar|ThisSubtractable\Baz&hasMethod(test123)', $s);
+			assertType('ThisSubtractable\Foo~(ThisSubtractable\Bar|ThisSubtractable\Baz)&hasMethod(test123)', $s);
 		} else {
 			assertType('(ThisSubtractable\Bar&hasMethod(test123))|(ThisSubtractable\Baz&hasMethod(test123))', $s);
 		}
 
-		assertType('(ThisSubtractable\Bar&hasMethod(test123))|(ThisSubtractable\Baz&hasMethod(test123))|(ThisSubtractable\Foo~ThisSubtractable\Bar|ThisSubtractable\Baz&hasMethod(test123))', $s);
+		assertType('(ThisSubtractable\Bar&hasMethod(test123))|(ThisSubtractable\Baz&hasMethod(test123))|(ThisSubtractable\Foo~(ThisSubtractable\Bar|ThisSubtractable\Baz)&hasMethod(test123))', $s);
 	}
 
 	/**

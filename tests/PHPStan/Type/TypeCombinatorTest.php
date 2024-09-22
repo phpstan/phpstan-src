@@ -1886,7 +1886,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					StaticTypeFactory::truthy(),
 				],
 				MixedType::class,
-				'mixed~0|0.0|\'\'|\'0\'|array{}|false|null=implicit',
+				'mixed~(0|0.0|\'\'|\'0\'|array{}|false|null)=implicit',
 			],
 			[
 				[
@@ -3325,7 +3325,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new MixedType(false, new IntegerType()),
 				],
 				MixedType::class,
-				'mixed~int|string=implicit',
+				'mixed~(int|string)=implicit',
 			],
 			[
 				[
@@ -4494,7 +4494,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				StaticTypeFactory::truthy(),
 				StaticTypeFactory::falsey(),
 				MixedType::class,
-				'mixed~0|0.0|\'\'|\'0\'|array{}|false|null',
+				'mixed~(0|0.0|\'\'|\'0\'|array{}|false|null)',
 			],
 			[
 				StaticTypeFactory::falsey(),
@@ -4670,7 +4670,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new MixedType(false, new IntegerType()),
 				new StringType(),
 				MixedType::class,
-				'mixed~int|string',
+				'mixed~(int|string)',
 			],
 			[
 				new MixedType(false),
@@ -4706,7 +4706,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ObjectType('Exception', new ObjectType('InvalidArgumentException')),
 				new ObjectType('LengthException'),
 				ObjectType::class,
-				'Exception~InvalidArgumentException|LengthException',
+				'Exception~(InvalidArgumentException|LengthException)',
 			],
 			[
 				new ObjectType('Exception'),

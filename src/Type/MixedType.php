@@ -447,7 +447,9 @@ class MixedType implements CompoundType, SubtractableType
 			function () use ($level): string {
 				$description = 'mixed';
 				if ($this->subtractedType !== null) {
-					$description .= sprintf('~%s', $this->subtractedType->describe($level));
+					$description .= $this->subtractedType instanceof UnionType
+						? sprintf('~(%s)', $this->subtractedType->describe($level))
+						: sprintf('~%s', $this->subtractedType->describe($level));
 				}
 
 				return $description;
@@ -455,7 +457,9 @@ class MixedType implements CompoundType, SubtractableType
 			function () use ($level): string {
 				$description = 'mixed';
 				if ($this->subtractedType !== null) {
-					$description .= sprintf('~%s', $this->subtractedType->describe($level));
+					$description .= $this->subtractedType instanceof UnionType
+						? sprintf('~(%s)', $this->subtractedType->describe($level))
+						: sprintf('~%s', $this->subtractedType->describe($level));
 				}
 
 				if ($this->isExplicitMixed) {

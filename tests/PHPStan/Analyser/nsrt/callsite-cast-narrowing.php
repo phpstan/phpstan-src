@@ -15,7 +15,7 @@ class HelloWorld
 		if (ctype_digit((string) $mixed)) {
 			assertType('int<0, max>|numeric-string|true', $mixed);
 		} else {
-			assertType('mixed~int<0, max>|numeric-string|true', $mixed);
+			assertType('mixed~(int<0, max>|numeric-string|true)', $mixed);
 		}
 		assertType('mixed', $mixed);
 

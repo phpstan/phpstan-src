@@ -25,7 +25,7 @@ function test(Suit $x): string {
 		assertType('Bug7176Types\Suit::Spades', $x);
 		return 'DOES NOT WORK';
 	}
-	assertType('Bug7176Types\Suit~Bug7176Types\Suit::Clubs|Bug7176Types\Suit::Spades', $x);
+	assertType('Bug7176Types\Suit~(Bug7176Types\Suit::Clubs|Bug7176Types\Suit::Spades)', $x);
 
 	return match ($x) {
 		Suit::Hearts => 'a',

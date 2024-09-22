@@ -51,7 +51,7 @@ class Foo
 				unset($this->config['authors']);
 				assertType("array<mixed~'authors', mixed>", $this->config);
 			} else {
-				assertType("array&hasOffsetValue('authors', mixed~0|0.0|''|'0'|array{}|false|null)", $this->config);
+				assertType("array&hasOffsetValue('authors', mixed~(0|0.0|''|'0'|array{}|false|null))", $this->config);
 			}
 
 			assertType('array', $this->config);

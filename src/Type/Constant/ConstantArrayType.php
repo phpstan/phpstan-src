@@ -652,12 +652,26 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
+		if (count($this->keyTypes) === 0) {
+			return new ErrorType();
+		}
+
 		$offsetType = $offsetType->toArrayKey();
 		$matchingValueTypes = [];
 		$all = true;
+		$maybeAll = true;
 		foreach ($this->keyTypes as $i => $keyType) {
 			if ($keyType->isSuperTypeOf($offsetType)->no()) {
 				$all = false;
+
+				if (
+					$keyType instanceof ConstantIntegerType
+					&& !$offsetType->isString()->no()
+					&& $offsetType->isConstantScalarValue()->no()
+				) {
+					continue;
+				}
+				$maybeAll = false;
 				continue;
 			}
 
@@ -665,10 +679,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		if ($all) {
-			if (count($this->keyTypes) === 0) {
-				return new ErrorType();
-			}
-
 			return $this->getIterableValueType();
 		}
 
@@ -679,6 +689,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			}
 
 			return $type;
+		}
+
+		if ($maybeAll) {
+			return $this->getIterableValueType();
 		}
 
 		return new ErrorType(); // undefined offset

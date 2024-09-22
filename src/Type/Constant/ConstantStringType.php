@@ -345,10 +345,9 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		if ($offsetType instanceof ConstantIntegerType) {
-			return TrinaryLogic::createFromBoolean(
-				$offsetType->getValue() < strlen($this->value),
-			);
+		if ($offsetType->isInteger()->yes()) {
+			$strLenType = IntegerRangeType::fromInterval(0, strlen($this->value) - 1);
+			return $strLenType->isSuperTypeOf($offsetType);
 		}
 
 		return parent::hasOffsetValueType($offsetType);
@@ -356,12 +355,33 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		if ($offsetType instanceof ConstantIntegerType) {
-			if ($offsetType->getValue() < strlen($this->value)) {
-				return new self($this->value[$offsetType->getValue()]);
+		if ($offsetType->isInteger()->yes()) {
+			if ($offsetType instanceof ConstantIntegerType) {
+				if ($offsetType->getValue() < strlen($this->value)) {
+					return new self($this->value[$offsetType->getValue()]);
+				}
+
+				return new ErrorType();
 			}
 
-			return new ErrorType();
+			$strLenType = IntegerRangeType::fromInterval(0, strlen($this->value) - 1);
+			$intersected = TypeCombinator::intersect($strLenType, $offsetType);
+			if ($intersected instanceof IntegerRangeType) {
+				$finiteTypes = $intersected->getFiniteTypes();
+				if ($finiteTypes === []) {
+					return parent::getOffsetValueType($offsetType);
+				}
+
+				$chars = [];
+				foreach ($finiteTypes as $constantInteger) {
+					$chars[] = new self($this->value[$constantInteger->getValue()]);
+				}
+				if (!$strLenType->isSuperTypeOf($offsetType)->yes()) {
+					$chars[] = new self('');
+				}
+
+				return TypeCombinator::union(...$chars);
+			}
 		}
 
 		return parent::getOffsetValueType($offsetType);

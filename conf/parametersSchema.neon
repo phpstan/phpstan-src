@@ -62,7 +62,6 @@ parametersSchema:
 		disableUnreachableBranchesRules: bool()
 		varTagType: bool()
 		closureDefaultParameterTypeRule: bool()
-		newRuleLevelHelper: bool()
 		instanceofType: bool()
 		paramOutVariance: bool()
 		strictStaticMethodTemplateTypeVariance: bool()

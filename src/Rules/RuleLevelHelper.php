@@ -15,7 +15,6 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\StaticType;
 use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -23,7 +22,6 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
-use function array_merge;
 use function count;
 use function sprintf;
 use function str_contains;
@@ -38,7 +36,6 @@ final class RuleLevelHelper
 		private bool $checkUnionTypes,
 		private bool $checkExplicitMixed,
 		private bool $checkImplicitMixed,
-		private bool $newRuleLevelHelper,
 		private bool $checkBenevolentUnionTypes,
 	)
 	{
@@ -64,10 +61,6 @@ final class RuleLevelHelper
 
 		return TypeTraverser::map($type, function (Type $type, callable $traverse) {
 			if ($type instanceof TemplateMixedType) {
-				if (!$this->newRuleLevelHelper) {
-					return $type->toStrictMixedType();
-				}
-
 				if ($this->checkExplicitMixed) {
 					return $type->toStrictMixedType();
 				}
@@ -154,148 +147,10 @@ final class RuleLevelHelper
 
 	public function acceptsWithReason(Type $acceptingType, Type $acceptedType, bool $strictTypes): RuleLevelHelperAcceptsResult
 	{
-		if ($this->newRuleLevelHelper) {
-			[$acceptedType, $checkForUnion] = $this->transformAcceptedType($acceptingType, $acceptedType);
-			$acceptingType = $this->transformCommonType($acceptingType);
-
-			$accepts = $acceptingType->acceptsWithReason($acceptedType, $strictTypes);
-
-			return new RuleLevelHelperAcceptsResult(
-				$checkForUnion ? $accepts->yes() : !$accepts->no(),
-				$accepts->reasons,
-			);
-		}
-
-		$checkForUnion = $this->checkUnionTypes;
-
-		if ($this->checkBenevolentUnionTypes) {
-			$traverse = static function (Type $type, callable $traverse) use (&$checkForUnion): Type {
-				if ($type instanceof BenevolentUnionType) {
-					$checkForUnion = true;
-					return TypeUtils::toStrictUnion($type);
-				}
-
-				return $traverse($type);
-			};
-
-			$acceptedType = TypeTraverser::map($acceptedType, $traverse);
-		}
-
-		if (
-			$this->checkExplicitMixed
-		) {
-			$traverse = static function (Type $type, callable $traverse): Type {
-				if ($type instanceof TemplateMixedType) {
-					return $type->toStrictMixedType();
-				}
-				if (
-					$type instanceof MixedType
-					&& $type->isExplicitMixed()
-				) {
-					return new StrictMixedType();
-				}
-
-				return $traverse($type);
-			};
-			$acceptingType = TypeTraverser::map($acceptingType, $traverse);
-			$acceptedType = TypeTraverser::map($acceptedType, $traverse);
-		}
-
-		if (
-			$this->checkImplicitMixed
-		) {
-			$traverse = static function (Type $type, callable $traverse): Type {
-				if ($type instanceof TemplateMixedType) {
-					return $type->toStrictMixedType();
-				}
-				if (
-					$type instanceof MixedType
-					&& !$type->isExplicitMixed()
-				) {
-					return new StrictMixedType();
-				}
-
-				return $traverse($type);
-			};
-			$acceptingType = TypeTraverser::map($acceptingType, $traverse);
-			$acceptedType = TypeTraverser::map($acceptedType, $traverse);
-		}
-
-		if (
-			!$this->checkNullables
-			&& !$acceptingType instanceof NullType
-			&& !$acceptedType instanceof NullType
-			&& !$acceptedType instanceof BenevolentUnionType
-		) {
-			$acceptedType = TypeCombinator::removeNull($acceptedType);
-		}
+		[$acceptedType, $checkForUnion] = $this->transformAcceptedType($acceptingType, $acceptedType);
+		$acceptingType = $this->transformCommonType($acceptingType);
 
 		$accepts = $acceptingType->acceptsWithReason($acceptedType, $strictTypes);
-		if ($accepts->yes()) {
-			return new RuleLevelHelperAcceptsResult(true, $accepts->reasons);
-		}
-		if ($acceptingType instanceof UnionType) {
-			$reasons = [];
-			foreach ($acceptingType->getTypes() as $innerType) {
-				$accepts = self::acceptsWithReason($innerType, $acceptedType, $strictTypes);
-				if ($accepts->result) {
-					return $accepts;
-				}
-
-				$reasons = array_merge($reasons, $accepts->reasons);
-			}
-
-			return new RuleLevelHelperAcceptsResult(false, $reasons);
-		}
-
-		if (
-			$acceptedType->isArray()->yes()
-			&& $acceptingType->isArray()->yes()
-			&& (
-				$acceptedType->isConstantArray()->no()
-				|| !$acceptedType->isIterableAtLeastOnce()->no()
-			)
-			&& $acceptingType->isConstantArray()->no()
-		) {
-			if ($acceptingType->isIterableAtLeastOnce()->yes() && !$acceptedType->isIterableAtLeastOnce()->yes()) {
-				$verbosity = VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType);
-				return new RuleLevelHelperAcceptsResult(false, [
-					sprintf(
-						'%s %s empty.',
-						$acceptedType->describe($verbosity),
-						$acceptedType->isIterableAtLeastOnce()->no() ? 'is' : 'might be',
-					),
-				]);
-			}
-
-			if (
-				$acceptingType->isList()->yes()
-				&& !$acceptedType->isList()->yes()
-			) {
-				$report = $checkForUnion || $acceptedType->isList()->no();
-
-				if ($report) {
-					$verbosity = VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType);
-					return new RuleLevelHelperAcceptsResult(false, [
-						sprintf(
-							'%s %s a list.',
-							$acceptedType->describe($verbosity),
-							$acceptedType->isList()->no() ? 'is not' : 'might not be',
-						),
-					]);
-				}
-			}
-
-			return self::acceptsWithReason(
-				$acceptingType->getIterableKeyType(),
-				$acceptedType->getIterableKeyType(),
-				$strictTypes,
-			)->and(self::acceptsWithReason(
-				$acceptingType->getIterableValueType(),
-				$acceptedType->getIterableValueType(),
-				$strictTypes,
-			));
-		}
 
 		return new RuleLevelHelperAcceptsResult(
 			$checkForUnion ? $accepts->yes() : !$accepts->no(),
@@ -336,48 +191,23 @@ final class RuleLevelHelper
 			$type = TypeCombinator::removeNull($type);
 		}
 
-		if ($this->newRuleLevelHelper) {
-			if (
-				($this->checkExplicitMixed || $this->checkImplicitMixed)
-				&& $type instanceof MixedType
-				&& ($type->isExplicitMixed() ? $this->checkExplicitMixed : $this->checkImplicitMixed)
-			) {
-				return new FoundTypeResult(
-					$type instanceof TemplateMixedType
-						? $type->toStrictMixedType()
-						: new StrictMixedType(),
-					[],
-					[],
-					null,
-				);
-			}
-		} else {
-			if (
-				$this->checkExplicitMixed
-				&& $type instanceof MixedType
-				&& !$type instanceof TemplateMixedType
-				&& $type->isExplicitMixed()
-			) {
-				return new FoundTypeResult(new StrictMixedType(), [], [], null);
-			}
-
-			if (
-				$this->checkImplicitMixed
-				&& $type instanceof MixedType
-				&& !$type instanceof TemplateMixedType
-				&& !$type->isExplicitMixed()
-			) {
-				return new FoundTypeResult(new StrictMixedType(), [], [], null);
-			}
+		if (
+			($this->checkExplicitMixed || $this->checkImplicitMixed)
+			&& $type instanceof MixedType
+			&& ($type->isExplicitMixed() ? $this->checkExplicitMixed : $this->checkImplicitMixed)
+		) {
+			return new FoundTypeResult(
+				$type instanceof TemplateMixedType
+					? $type->toStrictMixedType()
+					: new StrictMixedType(),
+				[],
+				[],
+				null,
+			);
 		}
 
 		if ($type instanceof MixedType || $type instanceof NeverType) {
 			return new FoundTypeResult(new ErrorType(), [], [], null);
-		}
-		if (!$this->newRuleLevelHelper) {
-			if ($isTopLevel && $type instanceof StaticType) {
-				$type = $type->getStaticObjectType();
-			}
 		}
 
 		$errors = [];
@@ -415,85 +245,58 @@ final class RuleLevelHelper
 			return new FoundTypeResult(new ErrorType(), [], [], null);
 		}
 
-		if ($this->newRuleLevelHelper) {
-			if ($type instanceof UnionType) {
-				$shouldFilterUnion = (
-					!$this->checkUnionTypes
-					&& !$type instanceof BenevolentUnionType
-				) || (
+		if ($type instanceof UnionType) {
+			$shouldFilterUnion = (
+				!$this->checkUnionTypes
+				&& !$type instanceof BenevolentUnionType
+			) || (
+				!$this->checkBenevolentUnionTypes
+				&& $type instanceof BenevolentUnionType
+			);
+
+			$newTypes = [];
+
+			foreach ($type->getTypes() as $innerType) {
+				if ($shouldFilterUnion && !$unionTypeCriteriaCallback($innerType)) {
+					continue;
+				}
+
+				$newTypes[] = $this->findTypeToCheckImplementation(
+					$scope,
+					$var,
+					$innerType,
+					$unknownClassErrorPattern,
+					$unionTypeCriteriaCallback,
+				)->getType();
+			}
+
+			if (count($newTypes) > 0) {
+				$newUnion = TypeCombinator::union(...$newTypes);
+				if (
 					!$this->checkBenevolentUnionTypes
 					&& $type instanceof BenevolentUnionType
-				);
-
-				$newTypes = [];
-
-				foreach ($type->getTypes() as $innerType) {
-					if ($shouldFilterUnion && !$unionTypeCriteriaCallback($innerType)) {
-						continue;
-					}
-
-					$newTypes[] = $this->findTypeToCheckImplementation(
-						$scope,
-						$var,
-						$innerType,
-						$unknownClassErrorPattern,
-						$unionTypeCriteriaCallback,
-					)->getType();
+				) {
+					$newUnion = TypeUtils::toBenevolentUnion($newUnion);
 				}
 
-				if (count($newTypes) > 0) {
-					$newUnion = TypeCombinator::union(...$newTypes);
-					if (
-						!$this->checkBenevolentUnionTypes
-						&& $type instanceof BenevolentUnionType
-					) {
-						$newUnion = TypeUtils::toBenevolentUnion($newUnion);
-					}
+				return new FoundTypeResult($newUnion, $directClassNames, [], null);
+			}
+		}
 
-					return new FoundTypeResult($newUnion, $directClassNames, [], null);
-				}
+		if ($type instanceof IntersectionType) {
+			$newTypes = [];
+
+			foreach ($type->getTypes() as $innerType) {
+				$newTypes[] = $this->findTypeToCheckImplementation(
+					$scope,
+					$var,
+					$innerType,
+					$unknownClassErrorPattern,
+					$unionTypeCriteriaCallback,
+				)->getType();
 			}
 
-			if ($type instanceof IntersectionType) {
-				$newTypes = [];
-
-				foreach ($type->getTypes() as $innerType) {
-					$newTypes[] = $this->findTypeToCheckImplementation(
-						$scope,
-						$var,
-						$innerType,
-						$unknownClassErrorPattern,
-						$unionTypeCriteriaCallback,
-					)->getType();
-				}
-
-				return new FoundTypeResult(TypeCombinator::intersect(...$newTypes), $directClassNames, [], null);
-			}
-		} else {
-			if (
-				(
-					!$this->checkUnionTypes
-					&& $type instanceof UnionType
-					&& !$type instanceof BenevolentUnionType
-				) || (
-					!$this->checkBenevolentUnionTypes
-					&& $type instanceof BenevolentUnionType
-				)
-			) {
-				$newTypes = [];
-
-				foreach ($type->getTypes() as $innerType) {
-					if (!$unionTypeCriteriaCallback($innerType)) {
-						continue;
-					}
-
-					$newTypes[] = $innerType;
-				}
-
-				if (count($newTypes) > 0) {
-					return new FoundTypeResult(TypeCombinator::union(...$newTypes), $directClassNames, [], null);
-				}
-			}
+			return new FoundTypeResult(TypeCombinator::intersect(...$newTypes), $directClassNames, [], null);
 		}
 
 		$tip = null;

@@ -32,7 +32,6 @@ parameters:
 		disableUnreachableBranchesRules: true
 		varTagType: true
 		closureDefaultParameterTypeRule: true
-		newRuleLevelHelper: true
 		instanceofType: true
 		paramOutVariance: true
 		strictStaticMethodTemplateTypeVariance: true

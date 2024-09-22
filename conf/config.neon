@@ -67,7 +67,6 @@ parameters:
 		disableUnreachableBranchesRules: false
 		varTagType: false
 		closureDefaultParameterTypeRule: false
-		newRuleLevelHelper: false
 		instanceofType: false
 		paramOutVariance: false
 
@@ -1124,7 +1123,6 @@ services:
 			checkUnionTypes: %checkUnionTypes%
 			checkExplicitMixed: %checkExplicitMixed%
 			checkImplicitMixed: %checkImplicitMixed%
-			newRuleLevelHelper: %featureToggles.newRuleLevelHelper%
 			checkBenevolentUnionTypes: %checkBenevolentUnionTypes%
 
 	-

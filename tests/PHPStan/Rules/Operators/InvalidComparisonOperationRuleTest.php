@@ -16,7 +16,7 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new InvalidComparisonOperationRule(
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, true, false),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false),
 		);
 	}
 

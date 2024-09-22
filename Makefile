@@ -3,7 +3,7 @@
 build: cs tests phpstan
 
 tests:
-	php vendor/bin/paratest --runner WrapperRunner --no-coverage
+	XDEBUG_MODE=off php vendor/bin/paratest --runner WrapperRunner --no-coverage
 
 tests-integration:
 	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group exec
@@ -18,7 +18,7 @@ tests-golden-reflection:
 	php vendor/bin/paratest --runner WrapperRunner --no-coverage tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php
 
 lint:
-	php vendor/bin/parallel-lint --colors \
+	XDEBUG_MODE=off php vendor/bin/parallel-lint --colors \
 		--exclude tests/PHPStan/Analyser/data \
 		--exclude tests/PHPStan/Analyser/nsrt \
 		--exclude tests/PHPStan/Rules/Methods/data \
@@ -80,10 +80,10 @@ lint:
 		src tests
 
 cs:
-	composer install --working-dir build-cs && php build-cs/vendor/bin/phpcs
+	composer install --working-dir build-cs && XDEBUG_MODE=off php build-cs/vendor/bin/phpcs
 
 cs-fix:
-	php build-cs/vendor/bin/phpcbf
+	XDEBUG_MODE=off php build-cs/vendor/bin/phpcbf
 
 phpstan:
 	php bin/phpstan clear-result-cache -q && php -d memory_limit=448M bin/phpstan

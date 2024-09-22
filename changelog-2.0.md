@@ -92,7 +92,6 @@ Bleeding edge (TODO move to other sections)
 * More precise types for bcmath function parameters ([#2217](https://github.com/phpstan/phpstan-src/pull/2217)), thanks @Warxcell!
 * Enforce `@no-named-arguments` (https://github.com/phpstan/phpstan-src/commit/74ba8c23696948f2647d880df72f375346f41010), #5968
 * Check too wide private property type (https://github.com/phpstan/phpstan-src/commit/7453f4f75fae3d635063589467842aae29d88b54)
-* Consider implicit throw points when the only explicit one is Throw_ (https://github.com/phpstan/phpstan-src/commit/22eef6d5ab9a4afafb2305258fea273be6cc06e4)
 * Check existing classes in `@param-out` (https://github.com/phpstan/phpstan-src/commit/30c4b9e80f51af8b5f166ba3aae93d8409c9c0ea), #10260
 * Check existing classes in `@param-closure-this` (https://github.com/phpstan/phpstan-src/commit/2fa539a39e06bcc3155b109fd8d246703ceb176d), #10933
 * Check invalid `@param-closure-this` (https://github.com/phpstan/phpstan-src/commit/95c0a5806c65c975201b9d3a464873f75a04c8b8), #10932
@@ -139,6 +138,7 @@ Improvements 🔧
 * New `RuleLevelHelper::accepts()` behaviour (https://github.com/phpstan/phpstan-src/commit/941fc815db49315b8783dc466cf593e0d8a85d23)
 * Infer explicit mixed when instantiating generic class with unknown template types (https://github.com/phpstan/phpstan-src/commit/089d4c6fb6eb709c44123548d33990113d174b86), #6398
 * Use explicit mixed for global array variables ([#1411](https://github.com/phpstan/phpstan-src/pull/1411)), thanks @herndlm!
+* Consider implicit throw points when the only explicit one is `Throw_` (https://github.com/phpstan/phpstan-src/commit/22eef6d5ab9a4afafb2305258fea273be6cc06e4)
 
 Bugfixes 🐛
 =====================

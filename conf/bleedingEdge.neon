@@ -49,6 +49,5 @@ parameters:
 		preciseMissingReturn: true
 		validatePregQuote: true
 		tooWidePropertyType: true
-		explicitThrow: true
 		absentTypeChecks: true
 		requireFileExists: true

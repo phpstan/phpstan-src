@@ -87,7 +87,6 @@ parameters:
 		requireFileExists: false
 		narrowPregMatches: true
 		tooWidePropertyType: false
-		explicitThrow: false
 		absentTypeChecks: false
 	fileExtensions:
 		- php
@@ -534,7 +533,6 @@ services:
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 			paramOutType: %featureToggles.paramOutType%
 			preciseMissingReturn: %featureToggles.preciseMissingReturn%
-			explicitThrow: %featureToggles.explicitThrow%
 
 	-
 		class: PHPStan\Analyser\ConstantResolver

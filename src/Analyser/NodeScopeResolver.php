@@ -262,7 +262,6 @@ final class NodeScopeResolver
 		private readonly bool $detectDeadTypeInMultiCatch,
 		private readonly bool $paramOutType,
 		private readonly bool $preciseMissingReturn,
-		private readonly bool $explicitThrow,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -1565,10 +1564,7 @@ final class NodeScopeResolver
 				}
 
 				// implicit only
-				if (
-					count($matchingThrowPoints) === 0
-					|| ($this->explicitThrow && $onlyExplicitIsThrow)
-				) {
+				if (count($matchingThrowPoints) === 0 || $onlyExplicitIsThrow) {
 					foreach ($throwPoints as $throwPointIndex => $throwPoint) {
 						if ($throwPoint->isExplicit()) {
 							continue;

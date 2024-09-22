@@ -80,7 +80,6 @@ parametersSchema:
 		validatePregQuote: bool()
 		narrowPregMatches: bool()
 		tooWidePropertyType: bool()
-		explicitThrow: bool()
 		absentTypeChecks: bool()
 		requireFileExists: bool()
 	])

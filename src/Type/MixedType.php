@@ -506,7 +506,7 @@ class MixedType implements CompoundType, SubtractableType
 			new ConstantIntegerType(0),
 			new ConstantArrayType([], []),
 			new StringType(),
-			new FloatType(),
+			new FloatType(), // every 0.x float casts to int(0)
 		]);
 		if (
 			$this->subtractedType !== null

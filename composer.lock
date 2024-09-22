@@ -2286,12 +2286,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "0fe292d7fa9deb3a869a4a74363497e1ae527a54"
+                "reference": "cc479c9d72f7af218e54565b5a4af112a9d101d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/0fe292d7fa9deb3a869a4a74363497e1ae527a54",
-                "reference": "0fe292d7fa9deb3a869a4a74363497e1ae527a54",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/cc479c9d72f7af218e54565b5a4af112a9d101d7",
+                "reference": "cc479c9d72f7af218e54565b5a4af112a9d101d7",
                 "shasum": ""
             },
             "require": {
@@ -2326,7 +2326,7 @@
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
                 "source": "https://github.com/phpstan/phpdoc-parser/tree/2.0.x"
             },
-            "time": "2024-09-15T12:53:31+00:00"
+            "time": "2024-09-22T11:35:00+00:00"
         },
         {
             "name": "psr/container",

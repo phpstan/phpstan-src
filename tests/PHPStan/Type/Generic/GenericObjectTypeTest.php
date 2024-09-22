@@ -461,7 +461,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
-	/** @return array<array{TemplateTypeVariance,Type,bool,array<TemplateTypeReference>}> */
+	/** @return array<array{TemplateTypeVariance,Type,array<TemplateTypeReference>}> */
 	public function dataGetReferencedTypeArguments(): array
 	{
 		$templateType = static fn ($name, ?Type $bound = null): Type => TemplateTypeFactory::create(

@@ -20,8 +20,6 @@ use function is_a;
 final class LazyInternalScopeFactory implements InternalScopeFactory
 {
 
-	private bool $explicitMixedInUnknownGenericNew;
-
 	private bool $explicitMixedForGlobalVariables;
 
 	/**
@@ -32,7 +30,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		private Container $container,
 	)
 	{
-		$this->explicitMixedInUnknownGenericNew = $this->container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'];
 		$this->explicitMixedForGlobalVariables = $this->container->getParameter('featureToggles')['explicitMixedForGlobalVariables'];
 	}
 
@@ -97,7 +94,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$afterExtractCall,
 			$parentScope,
 			$nativeTypesPromoted,
-			$this->explicitMixedInUnknownGenericNew,
 			$this->explicitMixedForGlobalVariables,
 		);
 	}

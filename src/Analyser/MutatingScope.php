@@ -220,7 +220,6 @@ final class MutatingScope implements Scope
 		private bool $afterExtractCall = false,
 		private ?Scope $parentScope = null,
 		private bool $nativeTypesPromoted = false,
-		private bool $explicitMixedInUnknownGenericNew = false,
 		private bool $explicitMixedForGlobalVariables = false,
 	)
 	{
@@ -5549,49 +5548,22 @@ final class MutatingScope implements Scope
 			$constructorMethod->getNamedArgumentsVariants(),
 		);
 
-		if ($this->explicitMixedInUnknownGenericNew) {
-			$resolvedTemplateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
-			return TypeTraverser::map(new GenericObjectType(
-				$resolvedClassName,
-				$classReflection->typeMapToList($classReflection->getTemplateTypeMap()),
-			), static function (Type $type, callable $traverse) use ($resolvedTemplateTypeMap): Type {
-				if ($type instanceof TemplateType && !$type->isArgument()) {
-					$newType = $resolvedTemplateTypeMap->getType($type->getName());
-					if ($newType === null || $newType instanceof ErrorType) {
-						return $type->getBound();
-					}
-
-					return TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);
+		$resolvedTemplateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
+		return TypeTraverser::map(new GenericObjectType(
+			$resolvedClassName,
+			$classReflection->typeMapToList($classReflection->getTemplateTypeMap()),
+		), static function (Type $type, callable $traverse) use ($resolvedTemplateTypeMap): Type {
+			if ($type instanceof TemplateType && !$type->isArgument()) {
+				$newType = $resolvedTemplateTypeMap->getType($type->getName());
+				if ($newType === null || $newType instanceof ErrorType) {
+					return $type->getBound();
 				}
 
-				return $traverse($type);
-			});
-		}
-
-		$resolvedPhpDoc = $classReflection->getResolvedPhpDoc();
-		if ($resolvedPhpDoc === null) {
-			return $objectType;
-		}
-
-		$list = [];
-		$typeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
-		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
-			$templateType = $typeMap->getType($tag->getName());
-			if ($templateType !== null) {
-				$list[] = $templateType;
-				continue;
+				return TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);
 			}
-			$bound = $tag->getBound();
-			if ($bound instanceof MixedType && $bound->isExplicitMixed()) {
-				$bound = new MixedType(false);
-			}
-			$list[] = $bound;
-		}
 
-		return new GenericObjectType(
-			$resolvedClassName,
-			$list,
-		);
+			return $traverse($type);
+		});
 	}
 
 	private function filterTypeWithMethod(Type $typeWithMethod, string $methodName): ?Type

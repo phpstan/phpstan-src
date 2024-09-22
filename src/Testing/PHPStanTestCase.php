@@ -188,7 +188,6 @@ abstract class PHPStanTestCase extends TestCase
 				self::getParser(),
 				$container->getByType(NodeScopeResolver::class),
 				$container->getByType(PhpVersion::class),
-				$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
 				$container->getParameter('featureToggles')['explicitMixedForGlobalVariables'],
 				$constantResolver,
 			),

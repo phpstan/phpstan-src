@@ -20,8 +20,6 @@ use function is_a;
 final class LazyInternalScopeFactory implements InternalScopeFactory
 {
 
-	private bool $explicitMixedForGlobalVariables;
-
 	/**
 	 * @param class-string $scopeClass
 	 */
@@ -30,7 +28,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		private Container $container,
 	)
 	{
-		$this->explicitMixedForGlobalVariables = $this->container->getParameter('featureToggles')['explicitMixedForGlobalVariables'];
 	}
 
 	/**
@@ -94,7 +91,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$afterExtractCall,
 			$parentScope,
 			$nativeTypesPromoted,
-			$this->explicitMixedForGlobalVariables,
 		);
 	}
 

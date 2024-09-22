@@ -2,7 +2,6 @@ parameters:
 	featureToggles:
 		bleedingEdge: true
 		skipCheckGenericClasses!: []
-		explicitMixedForGlobalVariables: true
 		explicitMixedViaIsArray: true
 		arrayFilter: true
 		arrayUnpacking: true

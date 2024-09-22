@@ -220,7 +220,6 @@ final class MutatingScope implements Scope
 		private bool $afterExtractCall = false,
 		private ?Scope $parentScope = null,
 		private bool $nativeTypesPromoted = false,
-		private bool $explicitMixedForGlobalVariables = false,
 	)
 	{
 		if ($namespace === '') {
@@ -537,7 +536,7 @@ final class MutatingScope implements Scope
 		}
 
 		if ($this->isGlobalVariable($variableName)) {
-			return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType($this->explicitMixedForGlobalVariables));
+			return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType(true));
 		}
 
 		if ($this->hasVariableType($variableName)->no()) {

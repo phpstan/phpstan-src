@@ -30,7 +30,6 @@ Bleeding edge (TODO move to other sections)
 * ApiInstanceofRule
     * Report `instanceof` of classes not covered by backward compatibility promise (https://github.com/phpstan/phpstan-src/commit/ff4d02d62a7a2e2c4d928d48d31d49246dba7139)
     * Report `instanceof` of classes covered by backward compatibility promise but where the assumption might change (https://github.com/phpstan/phpstan-src/commit/996bc69fa977aa64f601bd82b8a0ae39be0cbeef)
-* Use explicit mixed for global array variables ([#1411](https://github.com/phpstan/phpstan-src/pull/1411)), thanks @herndlm!
 * Add `@readonly` rule that disallows default values ([#1391](https://github.com/phpstan/phpstan-src/pull/1391)), thanks @herndlm!
 * Improve error wording of the NonexistentOffset, BooleanAndConstantConditionRule, and BooleanOrConstantConditionRule ([#1882](https://github.com/phpstan/phpstan-src/pull/1882)), thanks @VincentLanglet!
 * MissingMagicSerializationMethodsRule ([#1711](https://github.com/phpstan/phpstan-src/pull/1711)), #7482, thanks @staabm!
@@ -139,6 +138,7 @@ Improvements 🔧
 * Require identifier in custom rules (https://github.com/phpstan/phpstan-src/commit/969e6fa31d5484d42dab902703cfc6820a983cfd)
 * New `RuleLevelHelper::accepts()` behaviour (https://github.com/phpstan/phpstan-src/commit/941fc815db49315b8783dc466cf593e0d8a85d23)
 * Infer explicit mixed when instantiating generic class with unknown template types (https://github.com/phpstan/phpstan-src/commit/089d4c6fb6eb709c44123548d33990113d174b86), #6398
+* Use explicit mixed for global array variables ([#1411](https://github.com/phpstan/phpstan-src/pull/1411)), thanks @herndlm!
 
 Bugfixes 🐛
 =====================

@@ -35,7 +35,6 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		private Parser $parser,
 		private NodeScopeResolver $nodeScopeResolver,
 		private PhpVersion $phpVersion,
-		private bool $explicitMixedForGlobalVariables,
 		private ConstantResolver $constantResolver,
 	)
 	{
@@ -102,7 +101,6 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$afterExtractCall,
 			$parentScope,
 			$nativeTypesPromoted,
-			$this->explicitMixedForGlobalVariables,
 		);
 	}
 

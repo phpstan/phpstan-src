@@ -2904,7 +2904,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$fooString[4]',
 			],
 			[
-				'non-empty-string',
+				"''|'f'|'o'",
 				'$fooString[$integer]',
 			],
 			[

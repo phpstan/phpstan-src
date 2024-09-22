@@ -818,7 +818,7 @@ final class TypeSpecifier
 								$rootExpr,
 							),
 						);
-					} elseif ($var->dim instanceof Expr\Variable) {
+					} else {
 						$varType = $scope->getType($var->var);
 						if ($varType->isArray()->yes() && !$varType->isIterableAtLeastOnce()->no()) {
 							$varIterableKeyType = $varType->getIterableKeyType();

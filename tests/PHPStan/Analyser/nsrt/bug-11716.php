@@ -174,6 +174,15 @@ function numericString($mixed, int $i, string $s)
 		assertType('string', $s);
 	}
 	assertType('string', $s);
+
+	$arr = ['1' => 1, '2' => 2, 3 => 3];
+	if (isset($arr[substr($s, 10)])) {
+		assertType("string", $s);
+		assertType("'1'|'2'|'3'", substr($s, 10));
+	} else {
+		assertType('string', $s);
+	}
+	assertType('string', $s);
 }
 
 function intKeys($mixed)

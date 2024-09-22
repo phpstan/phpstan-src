@@ -171,4 +171,71 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/loose-comparison-treat-phpdoc-types.php'], $expectedErrors);
 	}
 
+	public function testBug11694(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/bug-11694.php'], [
+			[
+				'Loose comparison using == between 3 and int<10, 20> will always evaluate to false.',
+				17,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between int<10, 20> and 3 will always evaluate to false.',
+				18,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between 23 and int<10, 20> will always evaluate to false.',
+				23,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between int<10, 20> and 23 will always evaluate to false.',
+				24,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between null and int<10, 20> will always evaluate to false.',
+				26,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between int<10, 20> and null will always evaluate to false.',
+				27,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between \' 3\' and int<10, 20> will always evaluate to false.',
+				32,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between int<10, 20> and \' 3\' will always evaluate to false.',
+				33,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between \' 23\' and int<10, 20> will always evaluate to false.',
+				38,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between int<10, 20> and \' 23\' will always evaluate to false.',
+				39,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between false and int<10, 20> will always evaluate to false.',
+				44,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Loose comparison using == between int<10, 20> and false will always evaluate to false.',
+				45,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 }

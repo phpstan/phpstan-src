@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Bug10834;
+
 use function PHPStan\Testing\assertType;
 
 /**

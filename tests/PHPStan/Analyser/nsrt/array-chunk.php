@@ -74,5 +74,26 @@ class Foo
 		assertType('non-empty-list<non-empty-list<0|1|2|3>>', array_chunk($arr, $tooBig));
 	}
 
+	/** @param array<string, string> $map */
+	public function offsets(array $arr, array $map): void
+	{
+		if (array_key_exists('foo', $arr)) {
+			assertType('non-empty-list<non-empty-list<mixed>>', array_chunk($arr, 2));
+			assertType('non-empty-list<non-empty-array>', array_chunk($arr, 2, true));
+		}
+		if (array_key_exists('foo', $arr) && $arr['foo'] === 'bar') {
+			assertType('non-empty-list<non-empty-list<mixed>>', array_chunk($arr, 2));
+			assertType('non-empty-list<non-empty-array>', array_chunk($arr, 2, true));
+		}
+
+		if (array_key_exists('foo', $map)) {
+			assertType('non-empty-list<non-empty-list<string>>', array_chunk($map, 2));
+			assertType('non-empty-list<non-empty-array<string, string>>', array_chunk($map, 2, true));
+		}
+		if (array_key_exists('foo', $map) && $map['foo'] === 'bar') {
+			assertType('non-empty-list<non-empty-list<string>>', array_chunk($map, 2));
+			assertType('non-empty-list<non-empty-array<string, string>>', array_chunk($map, 2, true));
+		}
+	}
 
 }

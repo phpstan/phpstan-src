@@ -73,6 +73,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 {
 
 	private const DESCRIBE_LIMIT = 8;
+	private const CHUNK_FINITE_TYPES_LIMIT = 5;
 
 	private TrinaryLogic $isList;
 
@@ -780,6 +781,36 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $isList);
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		$biggerOne = IntegerRangeType::fromInterval(1, null);
+		$finiteTypes = $lengthType->getFiniteTypes();
+		if ($biggerOne->isSuperTypeOf($lengthType)->yes() && count($finiteTypes) < self::CHUNK_FINITE_TYPES_LIMIT) {
+			$results = [];
+			foreach ($finiteTypes as $finiteType) {
+				if (!$finiteType instanceof ConstantIntegerType || $finiteType->getValue() < 1) {
+					return parent::chunkArray($lengthType, $preserveKeys);
+				}
+
+				$length = $finiteType->getValue();
+
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+
+				$keyTypesCount = count($this->keyTypes);
+				for ($i = 0; $i < $keyTypesCount; $i += $length) {
+					$chunk = $this->slice($i, $length, true);
+					$builder->setOffsetValueType(null, $preserveKeys->yes() ? $chunk : $chunk->getValuesArray());
+				}
+
+				$results[] = $builder->getArray();
+			}
+
+			return TypeCombinator::union(...$results);
+		}
+
+		return parent::chunkArray($lengthType, $preserveKeys);
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
@@ -1185,7 +1216,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->reverseConstantArray(TrinaryLogic::createFromBoolean($preserveKeys));
 	}
 
-	/** @param positive-int $length */
+	/**
+	 * @deprecated Use chunkArray() instead
+	 * @param positive-int $length
+	 */
 	public function chunk(int $length, bool $preserveKeys = false): self
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();

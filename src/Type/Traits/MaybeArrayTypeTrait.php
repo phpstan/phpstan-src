@@ -49,6 +49,11 @@ trait MaybeArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		return new ErrorType();
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		return new ErrorType();

@@ -415,6 +415,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->getValuesArray();
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		return $this->getStaticObjectType()->chunkArray($lengthType, $preserveKeys);
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		return $this->getStaticObjectType()->fillKeysArray($valueType);

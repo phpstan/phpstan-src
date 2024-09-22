@@ -296,6 +296,11 @@ class NeverType implements CompoundType
 		return new NeverType();
 	}
 
+	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		return new NeverType();
+	}
+
 	public function fillKeysArray(Type $valueType): Type
 	{
 		return new NeverType();

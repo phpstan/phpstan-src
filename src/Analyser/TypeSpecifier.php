@@ -832,10 +832,8 @@ final class TypeSpecifier
 									$var->dim,
 									$narrowedKey,
 									$context,
-									false,
 									$scope,
-									$rootExpr,
-								),
+								)->setRootExpr($expr),
 							);
 						}
 					}

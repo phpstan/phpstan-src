@@ -32,6 +32,8 @@ Don't forget to update [3rd party PHPStan extensions](https://phpstan.org/user-g
 
 After changing your `composer.json`, run `composer update 'phpstan/*' -W`.
 
+It's up to you whether you go through the new reported errors or if you just put them all to the [baseline](https://phpstan.org/user-guide/baseline) ;) Everyone who's on PHPStan 1.12 should be able to upgrade to PHPStan 2.0.
+
 ### Removed option `checkMissingIterableValueType`
 
 It's strongly recommended to add the missing array typehints.

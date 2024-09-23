@@ -32,7 +32,6 @@ use function is_int;
 use function octdec;
 use function preg_match;
 use function sprintf;
-use const PHP_FLOAT_EPSILON;
 
 final class FilterFunctionReturnTypeHelper
 {
@@ -293,7 +292,7 @@ final class FilterFunctionReturnTypeHelper
 			}
 
 			if ($in instanceof ConstantFloatType) {
-				return $in->getValue() - (int) $in->getValue() <= PHP_FLOAT_EPSILON
+				return $in->getValue() - (int) $in->getValue() === 0.0
 					? $in->toInteger()
 					: $defaultType;
 			}

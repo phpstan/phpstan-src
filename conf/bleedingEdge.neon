@@ -22,7 +22,6 @@ parameters:
 		nullContextForVoidReturningFunctions: true
 		unescapeStrings: true
 		alwaysCheckTooWideReturnTypeFinalMethods: true
-		duplicateStubs: true
 		logicalXor: true
 		betterNoop: true
 		alwaysTrueAlwaysReported: true

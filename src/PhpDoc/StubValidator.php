@@ -95,7 +95,6 @@ final class StubValidator
 
 	public function __construct(
 		private DerivativeContainerFactory $derivativeContainerFactory,
-		private bool $duplicateStubs,
 	)
 	{
 	}
@@ -188,6 +187,8 @@ final class StubValidator
 		$mixinCheck = $container->getByType(MixinCheck::class);
 		$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
 		$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
+		$reflector = $container->getService('stubReflector');
+		$relativePathHelper = $container->getService('simpleRelativePathHelper');
 
 		$rules = [
 			// level 0
@@ -247,14 +248,11 @@ final class StubValidator
 			new MissingMethodReturnTypehintRule($missingTypehintCheck),
 			new MissingPropertyTypehintRule($missingTypehintCheck),
 			new MissingMethodSelfOutTypeRule($missingTypehintCheck),
-		];
 
-		if ($this->duplicateStubs) {
-			$reflector = $container->getService('stubReflector');
-			$relativePathHelper = $container->getService('simpleRelativePathHelper');
-			$rules[] = new DuplicateClassDeclarationRule($reflector, $relativePathHelper);
-			$rules[] = new DuplicateFunctionDeclarationRule($reflector, $relativePathHelper);
-		}
+			// duplicate stubs
+			new DuplicateClassDeclarationRule($reflector, $relativePathHelper),
+			new DuplicateFunctionDeclarationRule($reflector, $relativePathHelper),
+		];
 
 		return new DirectRuleRegistry($rules);
 	}

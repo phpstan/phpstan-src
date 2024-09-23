@@ -49,7 +49,6 @@ parametersSchema:
 		nullContextForVoidReturningFunctions: bool()
 		unescapeStrings: bool()
 		alwaysCheckTooWideReturnTypeFinalMethods: bool()
-		duplicateStubs: bool()
 		logicalXor: bool()
 		betterNoop: bool()
 		alwaysTrueAlwaysReported: bool()

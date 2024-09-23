@@ -43,7 +43,6 @@ parameters:
 		nullContextForVoidReturningFunctions: false
 		unescapeStrings: false
 		alwaysCheckTooWideReturnTypeFinalMethods: false
-		duplicateStubs: false
 		logicalXor: false
 		betterNoop: false
 		alwaysTrueAlwaysReported: false
@@ -426,8 +425,6 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\StubValidator
-		arguments:
-			duplicateStubs: %featureToggles.duplicateStubs%
 
 	-
 		class: PHPStan\PhpDoc\SocketSelectStubFilesExtension

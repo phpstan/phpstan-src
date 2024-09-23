@@ -21,7 +21,6 @@ class InvalidUnaryOperationRuleTest extends RuleTestCase
 	{
 		return new InvalidUnaryOperationRule(
 			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false),
-			true,
 		);
 	}
 

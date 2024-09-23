@@ -23,7 +23,6 @@ final class InvalidUnaryOperationRule implements Rule
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
-		private bool $bleedingEdge,
 	)
 	{
 	}
@@ -43,38 +42,34 @@ final class InvalidUnaryOperationRule implements Rule
 			return [];
 		}
 
-		if ($this->bleedingEdge) {
-			$varName = '__PHPSTAN__LEFT__';
-			$variable = new Node\Expr\Variable($varName);
-			$newNode = clone $node;
-			$newNode->setAttribute('phpstan_cache_printer', null);
-			$newNode->expr = $variable;
+		$varName = '__PHPSTAN__LEFT__';
+		$variable = new Node\Expr\Variable($varName);
+		$newNode = clone $node;
+		$newNode->setAttribute('phpstan_cache_printer', null);
+		$newNode->expr = $variable;
 
-			if ($node instanceof Node\Expr\BitwiseNot) {
-				$callback = static fn (Type $type): bool => $type->isString()->yes() || $type->isInteger()->yes() || $type->isFloat()->yes();
-			} else {
-				$callback = static fn (Type $type): bool => !$type->toNumber() instanceof ErrorType;
-			}
+		if ($node instanceof Node\Expr\BitwiseNot) {
+			$callback = static fn (Type $type): bool => $type->isString()->yes() || $type->isInteger()->yes() || $type->isFloat()->yes();
+		} else {
+			$callback = static fn (Type $type): bool => !$type->toNumber() instanceof ErrorType;
+		}
 
-			$exprType = $this->ruleLevelHelper->findTypeToCheck(
-				$scope,
-				$node->expr,
-				'',
-				$callback,
-			)->getType();
-			if ($exprType instanceof ErrorType) {
-				return [];
-			}
+		$exprType = $this->ruleLevelHelper->findTypeToCheck(
+			$scope,
+			$node->expr,
+			'',
+			$callback,
+		)->getType();
+		if ($exprType instanceof ErrorType) {
+			return [];
+		}
 
-			if (!$scope instanceof MutatingScope) {
-				throw new ShouldNotHappenException();
-			}
+		if (!$scope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
 
-			$scope = $scope->assignVariable($varName, $exprType, $exprType, TrinaryLogic::createYes());
-			if (!$scope->getType($newNode) instanceof ErrorType) {
-				return [];
-			}
-		} elseif (!$scope->getType($node) instanceof ErrorType) {
+		$scope = $scope->assignVariable($varName, $exprType, $exprType, TrinaryLogic::createYes());
+		if (!$scope->getType($newNode) instanceof ErrorType) {
 			return [];
 		}
 

@@ -27,7 +27,6 @@ final class InvalidBinaryOperationRule implements Rule
 	public function __construct(
 		private ExprPrinter $exprPrinter,
 		private RuleLevelHelper $ruleLevelHelper,
-		private bool $bleedingEdge,
 	)
 	{
 	}
@@ -43,10 +42,6 @@ final class InvalidBinaryOperationRule implements Rule
 			!$node instanceof Node\Expr\BinaryOp
 			&& !$node instanceof Node\Expr\AssignOp
 		) {
-			return [];
-		}
-
-		if (!$scope->getType($node) instanceof ErrorType && !$this->bleedingEdge) {
 			return [];
 		}
 

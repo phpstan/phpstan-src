@@ -465,6 +465,11 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function toString(): Type
 	{
+		$finiteTypes = $this->getFiniteTypes();
+		if ($finiteTypes !== []) {
+			return TypeCombinator::union(...$finiteTypes)->toString();
+		}
+
 		$isZero = (new ConstantIntegerType(0))->isSuperTypeOf($this);
 		if ($isZero->no()) {
 			return new IntersectionType([

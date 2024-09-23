@@ -53,4 +53,9 @@ function subtract(mixed $m, $moreThenFalsy) {
 		assertType('mixed', $m);
 		assertType('bool', (bool) $m); // could be true
 	}
+
+	if ($m != 0 && !is_array($m) && $m != null && !is_object($m)) { // subtract more types then falsy
+		assertType("mixed~(0|0.0|''|'0'|array|object|false|null)", $m);
+		assertType('true', (bool) $m);
+	}
 }

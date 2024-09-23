@@ -17,16 +17,11 @@ rules:
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionParameterOutTypeRule
 	- PHPStan\Rules\TooWideTypehints\TooWideMethodParameterOutTypeRule
+	- PHPStan\Rules\Traits\NotAnalysedTraitRule
 
 conditionalTags:
 	PHPStan\Rules\Comparison\ConstantLooseComparisonRule:
 		phpstan.rules.rule: %featureToggles.looseComparison%
-	PHPStan\Rules\Traits\TraitDeclarationCollector:
-		phpstan.collector: %featureToggles.notAnalysedTrait%
-	PHPStan\Rules\Traits\TraitUseCollector:
-		phpstan.collector: %featureToggles.notAnalysedTrait%
-	PHPStan\Rules\Traits\NotAnalysedTraitRule:
-		phpstan.rules.rule: %featureToggles.notAnalysedTrait%
 	PHPStan\Rules\DeadCode\CallToConstructorStatementWithoutImpurePointsRule:
 		phpstan.rules.rule: %featureToggles.pure%
 	PHPStan\Rules\DeadCode\PossiblyPureNewCollector:
@@ -299,12 +294,13 @@ services:
 
 	-
 		class: PHPStan\Rules\Traits\TraitDeclarationCollector
+		tags:
+			- phpstan.collector
 
 	-
 		class: PHPStan\Rules\Traits\TraitUseCollector
-
-	-
-		class: PHPStan\Rules\Traits\NotAnalysedTraitRule
+		tags:
+			- phpstan.collector
 
 	-
 		class: PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule

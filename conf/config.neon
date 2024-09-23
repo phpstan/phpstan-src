@@ -35,7 +35,6 @@ parameters:
 		checkUnresolvableParameterTypes: false
 		readOnlyByPhpDoc: false
 		runtimeReflectionRules: false
-		notAnalysedTrait: false
 		curlSetOptTypes: false
 		missingMagicSerializationRule: false
 		nullContextForVoidReturningFunctions: false

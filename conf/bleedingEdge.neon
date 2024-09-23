@@ -14,7 +14,6 @@ parameters:
 		checkUnresolvableParameterTypes: true
 		readOnlyByPhpDoc: true
 		runtimeReflectionRules: true
-		notAnalysedTrait: true
 		curlSetOptTypes: true
 		missingMagicSerializationRule: true
 		nullContextForVoidReturningFunctions: true

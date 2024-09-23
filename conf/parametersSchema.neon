@@ -41,7 +41,6 @@ parametersSchema:
 		checkUnresolvableParameterTypes: bool()
 		readOnlyByPhpDoc: bool()
 		runtimeReflectionRules: bool()
-		notAnalysedTrait: bool()
 		curlSetOptTypes: bool()
 		missingMagicSerializationRule: bool()
 		nullContextForVoidReturningFunctions: bool()

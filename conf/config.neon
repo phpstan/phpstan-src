@@ -23,18 +23,7 @@ parameters:
 	featureToggles:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: true
-		skipCheckGenericClasses:
-			- DatePeriod
-			- CallbackFilterIterator
-			- FilterIterator
-			- RecursiveCallbackFilterIterator
-			- AppendIterator
-			- NoRewindIterator
-			- LimitIterator
-			- InfiniteIterator
-			- CachingIterator
-			- RegexIterator
-			- ReflectionEnum
+		skipCheckGenericClasses: []
 		explicitMixedViaIsArray: false
 		arrayFilter: false
 		arrayUnpacking: false

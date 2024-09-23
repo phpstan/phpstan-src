@@ -34,7 +34,6 @@ parameters:
 		consistentConstructor: false
 		checkUnresolvableParameterTypes: false
 		readOnlyByPhpDoc: false
-		runtimeReflectionRules: false
 		curlSetOptTypes: false
 		missingMagicSerializationRule: false
 		alwaysCheckTooWideReturnTypeFinalMethods: false

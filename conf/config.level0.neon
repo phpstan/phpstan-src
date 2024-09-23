@@ -10,14 +10,6 @@ conditionalTags:
 		phpstan.rules.rule: %checkUninitializedProperties%
 	PHPStan\Rules\Methods\ConsistentConstructorRule:
 		phpstan.rules.rule: %featureToggles.consistentConstructor%
-	PHPStan\Rules\Api\ApiClassConstFetchRule:
-		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
-	PHPStan\Rules\Api\ApiInstanceofRule:
-		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
-	PHPStan\Rules\Api\RuntimeReflectionFunctionRule:
-		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
-	PHPStan\Rules\Api\RuntimeReflectionInstantiationRule:
-		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
 	PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule:
 		phpstan.rules.rule: %featureToggles.missingMagicSerializationRule%
 	PHPStan\Rules\Constants\MagicConstantContextRule:
@@ -30,7 +22,9 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.requireFileExists%
 
 rules:
+	- PHPStan\Rules\Api\ApiInstanceofRule
 	- PHPStan\Rules\Api\ApiInstantiationRule
+	- PHPStan\Rules\Api\ApiClassConstFetchRule
 	- PHPStan\Rules\Api\ApiClassExtendsRule
 	- PHPStan\Rules\Api\ApiClassImplementsRule
 	- PHPStan\Rules\Api\ApiInterfaceExtendsRule
@@ -40,6 +34,8 @@ rules:
 	- PHPStan\Rules\Api\GetTemplateTypeRule
 	- PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule
 	- PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
+	- PHPStan\Rules\Api\RuntimeReflectionInstantiationRule
+	- PHPStan\Rules\Api\RuntimeReflectionFunctionRule
 	- PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
 	- PHPStan\Rules\Arrays\EmptyArrayItemRule
 	- PHPStan\Rules\Arrays\OffsetAccessWithoutDimForReadingRule
@@ -121,20 +117,12 @@ rules:
 
 services:
 	-
-		class: PHPStan\Rules\Api\ApiClassConstFetchRule
-	-
-		class: PHPStan\Rules\Api\ApiInstanceofRule
-	-
 		class: PHPStan\Rules\Api\ApiInstanceofTypeRule
 		arguments:
 			enabled: %featureToggles.instanceofType%
 			deprecationRulesInstalled: %deprecationRulesInstalled%
 		tags:
 			- phpstan.rules.rule
-	-
-		class: PHPStan\Rules\Api\RuntimeReflectionFunctionRule
-	-
-		class: PHPStan\Rules\Api\RuntimeReflectionInstantiationRule
 	-
 		class: PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
 		tags:

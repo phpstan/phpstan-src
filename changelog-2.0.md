@@ -33,6 +33,12 @@ Major new features 🚀
   * Check missing types in `@phpstan-self-out` (https://github.com/phpstan/phpstan-src/commit/892b319f25f04bc1b55c3d0063b607909612fe6d)
   * Check missing types in local type aliases (https://github.com/phpstan/phpstan-src/commit/ce7ffaf02d624a7fb9d38f8e5dffc9739f1233fc)
   * Check missing types in `@mixin` (https://github.com/phpstan/phpstan-src/commit/3175c81f26fd5bcb4a161b24e774921870ed2533)
+* Check code in custom PHPStan extensions for runtime reflection concepts like `is_a()` or `class_parents()` (level 0) (https://github.com/phpstan/phpstan-src/commit/c4a662ac6c3ec63f063238880b243b5399c34fcc)
+* Check code in custom PHPStan extensions for runtime reflection concepts like `new ReflectionMethod()` (level 0) (https://github.com/phpstan/phpstan-src/commit/536306611cbb5877b6565755cd07b87f9ccfdf08)
+* ApiInstanceofRule (level 0)
+    * Report `instanceof` of classes not covered by backward compatibility promise (https://github.com/phpstan/phpstan-src/commit/ff4d02d62a7a2e2c4d928d48d31d49246dba7139)
+    * Report `instanceof` of classes covered by backward compatibility promise but where the assumption might change (https://github.com/phpstan/phpstan-src/commit/996bc69fa977aa64f601bd82b8a0ae39be0cbeef)
+* Check that PHPStan class in class constant fetch is covered by backward compatibility promise (level 0) (https://github.com/phpstan/phpstan-src/commit/9e007251ce61788f6a0319a53f1de6cf801ed233)
 
 Bleeding edge (TODO move to other sections)
 =====================
@@ -45,12 +51,6 @@ Bleeding edge (TODO move to other sections)
 * Unresolvable parameters ([#1319](https://github.com/phpstan/phpstan-src/pull/1319)), thanks @rvanvelzen!
 * Support `@readonly` property and `@immutable` class PHPDoc ([#1295](https://github.com/phpstan/phpstan-src/pull/1295), [#1335](https://github.com/phpstan/phpstan-src/pull/1335)), #4082, thanks @herndlm!
 * Move IllegalConstructorMethodCallRule and IllegalConstructorStaticCallRule to phpstan-strict-rules (https://github.com/phpstan/phpstan-src/commit/124b30f98c182193187be0b9c2e151e477429b7a, https://github.com/phpstan/phpstan-strict-rules/commit/0c82c96f2a55d8b91bbc7ee6512c94f68a206b43)
-* Check that PHPStan class in class constant fetch is covered by backward compatibility promise (https://github.com/phpstan/phpstan-src/commit/9e007251ce61788f6a0319a53f1de6cf801ed233)
-* Check code in custom PHPStan extensions for runtime reflection concepts like `is_a()` or `class_parents()` (https://github.com/phpstan/phpstan-src/commit/c4a662ac6c3ec63f063238880b243b5399c34fcc)
-* Check code in custom PHPStan extensions for runtime reflection concepts like `new ReflectionMethod()` (https://github.com/phpstan/phpstan-src/commit/536306611cbb5877b6565755cd07b87f9ccfdf08)
-* ApiInstanceofRule
-    * Report `instanceof` of classes not covered by backward compatibility promise (https://github.com/phpstan/phpstan-src/commit/ff4d02d62a7a2e2c4d928d48d31d49246dba7139)
-    * Report `instanceof` of classes covered by backward compatibility promise but where the assumption might change (https://github.com/phpstan/phpstan-src/commit/996bc69fa977aa64f601bd82b8a0ae39be0cbeef)
 * Add `@readonly` rule that disallows default values ([#1391](https://github.com/phpstan/phpstan-src/pull/1391)), thanks @herndlm!
 * MissingMagicSerializationMethodsRule ([#1711](https://github.com/phpstan/phpstan-src/pull/1711)), #7482, thanks @staabm!
 * Change `curl_setopt` function signature based on 2nd arg ([#1719](https://github.com/phpstan/phpstan-src/pull/1719)), thanks @staabm!

@@ -30,7 +30,6 @@ parameters:
 		paramOutVariance: true
 		strictStaticMethodTemplateTypeVariance: true
 		propertyVariance: true
-		projectServicesNotInAnalysedPaths: true
 		callUserFunc: true
 		magicConstantOutOfContext: true
 		pure: true

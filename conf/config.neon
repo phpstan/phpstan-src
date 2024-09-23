@@ -52,7 +52,6 @@ parameters:
 		strictStaticMethodTemplateTypeVariance: false
 		propertyVariance: false
 		stricterFunctionMap: false
-		projectServicesNotInAnalysedPaths: false
 		callUserFunc: false
 		magicConstantOutOfContext: false
 		pure: false

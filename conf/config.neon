@@ -38,7 +38,6 @@ parameters:
 		curlSetOptTypes: false
 		missingMagicSerializationRule: false
 		nullContextForVoidReturningFunctions: false
-		unescapeStrings: false
 		alwaysCheckTooWideReturnTypeFinalMethods: false
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false

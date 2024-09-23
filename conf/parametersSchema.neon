@@ -44,7 +44,6 @@ parametersSchema:
 		curlSetOptTypes: bool()
 		missingMagicSerializationRule: bool()
 		nullContextForVoidReturningFunctions: bool()
-		unescapeStrings: bool()
 		alwaysCheckTooWideReturnTypeFinalMethods: bool()
 		alwaysTrueAlwaysReported: bool()
 		disableUnreachableBranchesRules: bool()

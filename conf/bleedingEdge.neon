@@ -6,7 +6,6 @@ parameters:
 
 		explicitMixedViaIsArray: true
 		arrayFilter: true
-		arrayUnpacking: true
 		arrayValues: true
 		strictUnnecessaryNullsafePropertyFetch: true
 		looseComparison: true

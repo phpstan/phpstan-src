@@ -32,7 +32,6 @@ parametersSchema:
 		skipCheckGenericClasses: listOf(string()),
 		explicitMixedViaIsArray: bool(),
 		arrayFilter: bool(),
-		arrayUnpacking: bool(),
 		arrayValues: bool(),
 		illegalConstructorMethodCall: bool(),
 		strictUnnecessaryNullsafePropertyFetch: bool(),

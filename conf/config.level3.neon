@@ -2,8 +2,6 @@ includes:
 	- config.level2.neon
 
 conditionalTags:
-	PHPStan\Rules\Arrays\ArrayUnpackingRule:
-		phpstan.rules.rule: %featureToggles.arrayUnpacking%
 	PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRefRule:
 		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
 	PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule:
@@ -11,6 +9,7 @@ conditionalTags:
 
 rules:
 	- PHPStan\Rules\Arrays\ArrayDestructuringRule
+	- PHPStan\Rules\Arrays\ArrayUnpackingRule
 	- PHPStan\Rules\Arrays\IterableInForeachRule
 	- PHPStan\Rules\Arrays\OffsetAccessAssignmentRule
 	- PHPStan\Rules\Arrays\OffsetAccessAssignOpRule
@@ -84,9 +83,6 @@ services:
 			reportMaybes: %reportMaybes%
 		tags:
 			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Arrays\ArrayUnpackingRule
 
 	-
 		class: PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRefRule

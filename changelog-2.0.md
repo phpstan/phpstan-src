@@ -58,7 +58,6 @@ Bleeding edge (TODO move to other sections)
 * More precise `file()` flags args ([#2476](https://github.com/phpstan/phpstan-src/pull/2476), [#2482](https://github.com/phpstan/phpstan-src/pull/2482)), thanks @staabm!
 * More precise `flock()` operation flags ([#2477](https://github.com/phpstan/phpstan-src/pull/2477)), thanks @staabm!
 * Rule for `call_user_func()` ([#2479](https://github.com/phpstan/phpstan-src/pull/2479)), thanks @staabm!
-* Report dead types even in multi-exception catch ([#2399](https://github.com/phpstan/phpstan-src/pull/2399)), thanks @JanTvrdik!
 * `error_log` errors with `message_type=2` ([#2428](https://github.com/phpstan/phpstan-src/pull/2428)), #9380, thanks @staabm!
 * Check `filter_input*` type param type ([#2271](https://github.com/phpstan/phpstan-src/pull/2271)), thanks @herndlm!
 * More precise `stream_socket_client()` signature ([#2519](https://github.com/phpstan/phpstan-src/pull/2519)), thanks @staabm!
@@ -139,6 +138,7 @@ Improvements 🔧
 * Consider implicit throw points when the only explicit one is `Throw_` (https://github.com/phpstan/phpstan-src/commit/22eef6d5ab9a4afafb2305258fea273be6cc06e4), #4912
 * Run missing type check on `@param-out` (https://github.com/phpstan/phpstan-src/commit/56b20024386d983927c64dfa895ff026bed2798c)
 * Report "missing return" error closer to where the return is missing (https://github.com/phpstan/phpstan-src/commit/04f8636e6577cbcaefc944725eed74c0d7865ead)
+* Report dead types even in multi-exception catch ([#2399](https://github.com/phpstan/phpstan-src/pull/2399)), thanks @JanTvrdik!
 
 Bugfixes 🐛
 =====================

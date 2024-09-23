@@ -728,7 +728,6 @@ class AnalyserTest extends PHPStanTestCase
 			[stdClass::class],
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
-			self::getContainer()->getParameter('featureToggles')['detectDeadTypeInMultiCatch'],
 		);
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(

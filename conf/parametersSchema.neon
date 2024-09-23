@@ -65,7 +65,6 @@ parametersSchema:
 		propertyVariance: bool()
 		genericPrototypeMessage: bool()
 		stricterFunctionMap: bool()
-		detectDeadTypeInMultiCatch: bool()
 		zeroFiles: bool()
 		projectServicesNotInAnalysedPaths: bool()
 		callUserFunc: bool()

@@ -259,7 +259,6 @@ final class NodeScopeResolver
 		private readonly array $universalObjectCratesClasses,
 		private readonly bool $implicitThrows,
 		private readonly bool $treatPhpDocTypesAsCertain,
-		private readonly bool $detectDeadTypeInMultiCatch,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -1593,19 +1592,14 @@ final class NodeScopeResolver
 				}
 
 				// emit error
-				if ($this->detectDeadTypeInMultiCatch) {
-					foreach ($matchingCatchTypes as $catchTypeIndex => $matched) {
-						if ($matched) {
-							continue;
-						}
-						$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchTypes[$catchTypeIndex], $originalCatchTypes[$catchTypeIndex]), $scope);
+				foreach ($matchingCatchTypes as $catchTypeIndex => $matched) {
+					if ($matched) {
+						continue;
 					}
+					$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchTypes[$catchTypeIndex], $originalCatchTypes[$catchTypeIndex]), $scope);
 				}
 
 				if (count($matchingThrowPoints) === 0) {
-					if (!$this->detectDeadTypeInMultiCatch) {
-						$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType, $originalCatchType), $scope);
-					}
 					continue;
 				}
 

@@ -35,7 +35,6 @@ parameters:
 		propertyVariance: true
 		genericPrototypeMessage: true
 		stricterFunctionMap: true
-		detectDeadTypeInMultiCatch: true
 		zeroFiles: true
 		projectServicesNotInAnalysedPaths: true
 		callUserFunc: true

@@ -71,7 +71,6 @@ parameters:
 		propertyVariance: false
 		genericPrototypeMessage: false
 		stricterFunctionMap: false
-		detectDeadTypeInMultiCatch: false
 		zeroFiles: false
 		projectServicesNotInAnalysedPaths: false
 		callUserFunc: false
@@ -527,7 +526,6 @@ services:
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
 			implicitThrows: %exceptions.implicitThrows%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			detectDeadTypeInMultiCatch: %featureToggles.detectDeadTypeInMultiCatch%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 
 	-

@@ -25,7 +25,7 @@ final class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements Dynamic
 	/**
 	 * @param string[] $universalObjectCratesClasses
 	 */
-	public function __construct(private ReflectionProvider $reflectionProvider, private bool $treatPhpDocTypesAsCertain, private array $universalObjectCratesClasses, private bool $nullContextForVoidReturningFunctions)
+	public function __construct(private ReflectionProvider $reflectionProvider, private bool $treatPhpDocTypesAsCertain, private array $universalObjectCratesClasses)
 	{
 	}
 
@@ -68,7 +68,7 @@ final class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements Dynamic
 	private function getHelper(): ImpossibleCheckTypeHelper
 	{
 		if ($this->helper === null) {
-			$this->helper = new ImpossibleCheckTypeHelper($this->reflectionProvider, $this->typeSpecifier, $this->universalObjectCratesClasses, $this->treatPhpDocTypesAsCertain, $this->nullContextForVoidReturningFunctions);
+			$this->helper = new ImpossibleCheckTypeHelper($this->reflectionProvider, $this->typeSpecifier, $this->universalObjectCratesClasses, $this->treatPhpDocTypesAsCertain);
 		}
 
 		return $this->helper;

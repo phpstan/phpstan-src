@@ -43,7 +43,6 @@ parametersSchema:
 		runtimeReflectionRules: bool()
 		curlSetOptTypes: bool()
 		missingMagicSerializationRule: bool()
-		nullContextForVoidReturningFunctions: bool()
 		alwaysCheckTooWideReturnTypeFinalMethods: bool()
 		alwaysTrueAlwaysReported: bool()
 		disableUnreachableBranchesRules: bool()

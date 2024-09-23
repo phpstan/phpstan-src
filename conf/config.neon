@@ -37,7 +37,6 @@ parameters:
 		runtimeReflectionRules: false
 		curlSetOptTypes: false
 		missingMagicSerializationRule: false
-		nullContextForVoidReturningFunctions: false
 		alwaysCheckTooWideReturnTypeFinalMethods: false
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false
@@ -895,7 +894,6 @@ services:
 		arguments:
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			nullContextForVoidReturningFunctions: %featureToggles.nullContextForVoidReturningFunctions%
 
 	-
 		class: PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver
@@ -1792,7 +1790,6 @@ services:
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
-			nullContextForVoidReturningFunctions: %featureToggles.nullContextForVoidReturningFunctions%
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 

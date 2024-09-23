@@ -25,7 +25,6 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,
-					true,
 				),
 				$this->treatPhpDocTypesAsCertain,
 				true,

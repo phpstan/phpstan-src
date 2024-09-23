@@ -23,7 +23,6 @@ class IfConstantConditionRuleTest extends RuleTestCase
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,
-					true,
 				),
 				$this->treatPhpDocTypesAsCertain,
 				true,

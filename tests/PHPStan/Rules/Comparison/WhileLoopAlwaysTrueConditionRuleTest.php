@@ -22,7 +22,6 @@ class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,
-					true,
 				),
 				$this->treatPhpDocTypesAsCertain,
 				true,

@@ -126,6 +126,7 @@ Improvements 🔧
 * Check mixed in unary operator ([#3253](https://github.com/phpstan/phpstan-src/pull/3253)), thanks @schlndh!
 * Stub files validation - detect duplicate classes and functions (https://github.com/phpstan/phpstan-src/commit/ddf8d5c3859c2c75c20f525a0e2ca8b99032373a, https://github.com/phpstan/phpstan-src/commit/17e4b74335e5235d7cd6708eb687a774a0eeead4)
 * NoopRule - take advantage of impure points (https://github.com/phpstan/phpstan-src/commit/a6470521b65d7424f552633c1f3827704c6262c3), #10389
+* Improve impossible type checker for void-returning functions ([#1857](https://github.com/phpstan/phpstan-src/pull/1857)), #8169, thanks @rvanvelzen!
 
 Bugfixes 🐛
 =====================

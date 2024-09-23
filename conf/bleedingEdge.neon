@@ -16,7 +16,6 @@ parameters:
 		runtimeReflectionRules: true
 		curlSetOptTypes: true
 		missingMagicSerializationRule: true
-		nullContextForVoidReturningFunctions: true
 		alwaysCheckTooWideReturnTypeFinalMethods: true
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true

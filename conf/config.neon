@@ -34,7 +34,6 @@ parameters:
 		consistentConstructor: false
 		checkUnresolvableParameterTypes: false
 		readOnlyByPhpDoc: false
-		curlSetOptTypes: false
 		missingMagicSerializationRule: false
 		alwaysCheckTooWideReturnTypeFinalMethods: false
 		alwaysTrueAlwaysReported: false
@@ -244,8 +243,6 @@ conditionalTags:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
 	PHPStan\Rules\Exceptions\TooWideMethodThrowTypeRule:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
-	PHPStan\Parser\CurlSetOptArgVisitor:
-		phpstan.parser.richParserNodeVisitor: %featureToggles.curlSetOptTypes%
 
 services:
 	-
@@ -297,6 +294,8 @@ services:
 
 	-
 		class: PHPStan\Parser\CurlSetOptArgVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
 
 	-
 		class: PHPStan\Parser\TypeTraverserInstanceofVisitor

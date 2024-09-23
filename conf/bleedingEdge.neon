@@ -13,7 +13,6 @@ parameters:
 		consistentConstructor: true
 		checkUnresolvableParameterTypes: true
 		readOnlyByPhpDoc: true
-		curlSetOptTypes: true
 		missingMagicSerializationRule: true
 		alwaysCheckTooWideReturnTypeFinalMethods: true
 		alwaysTrueAlwaysReported: true

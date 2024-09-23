@@ -110,7 +110,6 @@ Bleeding edge (TODO move to other sections)
 * Check mixed in binary operator ([#3231](https://github.com/phpstan/phpstan-src/pull/3231)), #7538, #10440, thanks @schlndh!
 * Check vprintf/vsprintf arguments against placeholder count ([#3126](https://github.com/phpstan/phpstan-src/pull/3126)), thanks @staabm!
 * Check mixed in unary operator ([#3253](https://github.com/phpstan/phpstan-src/pull/3253)), thanks @schlndh!
-* Report "missing return" error closer to where the return is missing (https://github.com/phpstan/phpstan-src/commit/04f8636e6577cbcaefc944725eed74c0d7865ead)
 * Stricter ++/-- operator check ([#3255](https://github.com/phpstan/phpstan-src/pull/3255)), thanks @schlndh!
 * Check preg_quote delimiter sanity ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
 * Improved the type of the `$mode` parameter for the `count()` ([#3190](https://github.com/phpstan/phpstan-src/pull/3190)), thanks @kuma3!
@@ -139,6 +138,7 @@ Improvements 🔧
 * Use explicit mixed for global array variables ([#1411](https://github.com/phpstan/phpstan-src/pull/1411)), thanks @herndlm!
 * Consider implicit throw points when the only explicit one is `Throw_` (https://github.com/phpstan/phpstan-src/commit/22eef6d5ab9a4afafb2305258fea273be6cc06e4)
 * Run missing type check on `@param-out` (https://github.com/phpstan/phpstan-src/commit/56b20024386d983927c64dfa895ff026bed2798c)
+* Report "missing return" error closer to where the return is missing (https://github.com/phpstan/phpstan-src/commit/04f8636e6577cbcaefc944725eed74c0d7865ead)
 
 Bugfixes 🐛
 =====================

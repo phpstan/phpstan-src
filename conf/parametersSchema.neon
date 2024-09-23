@@ -75,7 +75,6 @@ parametersSchema:
 		checkParameterCastableToStringFunctions: bool()
 		uselessReturnValue: bool()
 		printfArrayParameters: bool()
-		preciseMissingReturn: bool()
 		validatePregQuote: bool()
 		narrowPregMatches: bool()
 		tooWidePropertyType: bool()

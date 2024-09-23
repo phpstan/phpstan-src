@@ -45,7 +45,6 @@ parameters:
 		checkParameterCastableToStringFunctions: true
 		uselessReturnValue: true
 		printfArrayParameters: true
-		preciseMissingReturn: true
 		validatePregQuote: true
 		tooWidePropertyType: true
 		absentTypeChecks: true

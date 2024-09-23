@@ -260,7 +260,6 @@ final class NodeScopeResolver
 		private readonly bool $implicitThrows,
 		private readonly bool $treatPhpDocTypesAsCertain,
 		private readonly bool $detectDeadTypeInMultiCatch,
-		private readonly bool $preciseMissingReturn,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -359,7 +358,7 @@ final class NodeScopeResolver
 				$parentNode = $parentNode;
 
 				$endStatements = $statementResult->getEndStatements();
-				if ($this->preciseMissingReturn && count($endStatements) > 0) {
+				if (count($endStatements) > 0) {
 					foreach ($endStatements as $endStatement) {
 						$endStatementResult = $endStatement->getResult();
 						$nodeCallback(new ExecutionEndNode(

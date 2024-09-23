@@ -81,7 +81,6 @@ parameters:
 		checkParameterCastableToStringFunctions: false
 		uselessReturnValue: false
 		printfArrayParameters: false
-		preciseMissingReturn: false
 		validatePregQuote: false
 		requireFileExists: false
 		narrowPregMatches: true
@@ -530,7 +529,6 @@ services:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			detectDeadTypeInMultiCatch: %featureToggles.detectDeadTypeInMultiCatch%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
-			preciseMissingReturn: %featureToggles.preciseMissingReturn%
 
 	-
 		class: PHPStan\Analyser\ConstantResolver

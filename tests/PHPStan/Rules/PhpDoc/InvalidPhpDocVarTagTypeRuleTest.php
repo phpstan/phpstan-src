@@ -29,7 +29,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 				new ClassForbiddenNameCheck(self::getContainer()),
 			),
 			new GenericObjectTypeCheck(),
-			new MissingTypehintCheck(true, true, []),
+			new MissingTypehintCheck(true, []),
 			new UnresolvableTypeHelper(),
 			true,
 			true,

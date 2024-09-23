@@ -43,7 +43,6 @@ final class MissingTypehintCheck
 	 * @param string[] $skipCheckGenericClasses
 	 */
 	public function __construct(
-		private bool $checkGenericClassInNonGenericObjectType,
 		private bool $checkMissingCallableSignature,
 		private array $skipCheckGenericClasses,
 	)
@@ -92,10 +91,6 @@ final class MissingTypehintCheck
 	 */
 	public function getNonGenericObjectTypesWithGenericClass(Type $type): array
 	{
-		if (!$this->checkGenericClassInNonGenericObjectType) {
-			return [];
-		}
-
 		$objectTypes = [];
 		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$objectTypes): Type {
 			if ($type instanceof GenericObjectType) {

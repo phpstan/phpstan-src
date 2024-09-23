@@ -1,7 +1,6 @@
 parameters:
 	checkThisOnly: false
 	checkClassCaseSensitivity: true
-	checkGenericClassInNonGenericObjectType: true
 	checkMissingTypehints: true
 	checkMissingCallableSignature: false
 	__validate: false

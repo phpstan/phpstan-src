@@ -21,7 +21,6 @@ class EnumAncestorsRuleTest extends RuleTestCase
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(true, true),
 				new UnresolvableTypeHelper(),
-				true,
 				[],
 			),
 			new CrossCheckInterfacesHelper(),

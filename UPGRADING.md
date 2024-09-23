@@ -45,6 +45,19 @@ parameters:
 			identifier: missingType.iterableValue
 ```
 
+### Removed option `checkGenericClassInNonGenericObjectType`
+
+It's strongly recommended to add the missing generic typehints.
+
+If you want to continue ignoring missing typehints from generics, add `missingType.generics` error identifier to your `ignoreErrors`:
+
+```neon
+parameters:
+	ignoreErrors:
+		-
+			identifier: missingType.generics
+```
+
 ### Paths in `excludePaths` and `ignoreErrors` have to be a valid file path or a fnmatch pattern
 
 If you are excluding a file path that might not exist but you still want to have it in `excludePaths`, append `(?)`:

@@ -93,7 +93,6 @@ parameters:
 	checkImplicitMixed: false
 	checkFunctionArgumentTypes: false
 	checkFunctionNameCase: false
-	checkGenericClassInNonGenericObjectType: false
 	checkInternalClassCaseSensitivity: false
 	checkMissingCallableSignature: false
 	checkMissingVarTagTypehint: false
@@ -990,7 +989,6 @@ services:
 	-
 		class: PHPStan\Rules\Generics\GenericAncestorsCheck
 		arguments:
-			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
 
 	-
@@ -1042,7 +1040,6 @@ services:
 	-
 		class: PHPStan\Rules\MissingTypehintCheck
 		arguments:
-			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			checkMissingCallableSignature: %checkMissingCallableSignature%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
 

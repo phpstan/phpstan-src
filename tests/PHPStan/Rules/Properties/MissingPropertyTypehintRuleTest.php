@@ -14,7 +14,7 @@ class MissingPropertyTypehintRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MissingPropertyTypehintRule(new MissingTypehintCheck(true, true, []));
+		return new MissingPropertyTypehintRule(new MissingTypehintCheck(true, []));
 	}
 
 	public function testRule(): void

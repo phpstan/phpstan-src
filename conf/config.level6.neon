@@ -2,7 +2,6 @@ includes:
 	- config.level5.neon
 
 parameters:
-	checkGenericClassInNonGenericObjectType: true
 	checkMissingVarTagTypehint: true
 	checkMissingTypehints: true
 

@@ -87,7 +87,6 @@ parametersSchema:
 	checkImplicitMixed: bool()
 	checkFunctionArgumentTypes: bool()
 	checkFunctionNameCase: bool()
-	checkGenericClassInNonGenericObjectType: bool()
 	checkInternalClassCaseSensitivity: bool()
 	checkMissingCallableSignature: bool()
 	checkMissingVarTagTypehint: bool()

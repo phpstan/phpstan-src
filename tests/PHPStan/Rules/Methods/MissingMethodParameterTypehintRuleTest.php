@@ -14,7 +14,7 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck(true, true, []));
+		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck(true, []));
 	}
 
 	public function testRule(): void

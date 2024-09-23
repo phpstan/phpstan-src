@@ -58,6 +58,10 @@ parameters:
 			identifier: missingType.generics
 ```
 
+### Removed option `excludes_analyse`
+
+It has been replaced with [`excludePaths`](https://phpstan.org/user-guide/ignoring-errors#excluding-whole-files).
+
 ### Paths in `excludePaths` and `ignoreErrors` have to be a valid file path or a fnmatch pattern
 
 If you are excluding a file path that might not exist but you still want to have it in `excludePaths`, append `(?)`:

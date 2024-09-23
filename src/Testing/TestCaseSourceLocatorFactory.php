@@ -31,7 +31,6 @@ final class TestCaseSourceLocatorFactory
 
 	/**
 	 * @param string[] $fileExtensions
-	 * @param string[] $obsoleteExcludesAnalyse
 	 * @param array{analyse?: array<int, string>, analyseAndScan?: array<int, string>}|null $excludePaths
 	 */
 	public function __construct(
@@ -43,7 +42,6 @@ final class TestCaseSourceLocatorFactory
 		private ReflectionSourceStubber $reflectionSourceStubber,
 		private PhpVersion $phpVersion,
 		private array $fileExtensions,
-		private array $obsoleteExcludesAnalyse,
 		private ?array $excludePaths,
 	)
 	{
@@ -56,7 +54,6 @@ final class TestCaseSourceLocatorFactory
 		$cacheKey = sha1(serialize([
 			$this->phpVersion->getVersionId(),
 			$this->fileExtensions,
-			$this->obsoleteExcludesAnalyse,
 			$this->excludePaths,
 		]));
 		if ($classLoaderReflection->hasProperty('vendorDir') && ! isset(self::$composerSourceLocatorsCache[$cacheKey])) {

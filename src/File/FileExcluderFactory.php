@@ -11,23 +11,17 @@ final class FileExcluderFactory
 {
 
 	/**
-	 * @param string[] $obsoleteExcludesAnalyse
-	 * @param array{analyse?: array<int, string>, analyseAndScan?: array<int, string>}|null $excludePaths
+	 * @param array{analyse?: array<int, string>, analyseAndScan?: array<int, string>} $excludePaths
 	 */
 	public function __construct(
 		private FileExcluderRawFactory $fileExcluderRawFactory,
-		private array $obsoleteExcludesAnalyse,
-		private ?array $excludePaths,
+		private array $excludePaths,
 	)
 	{
 	}
 
 	public function createAnalyseFileExcluder(): FileExcluder
 	{
-		if ($this->excludePaths === null) {
-			return $this->fileExcluderRawFactory->create($this->obsoleteExcludesAnalyse);
-		}
-
 		$paths = [];
 		if (array_key_exists('analyse', $this->excludePaths)) {
 			$paths = $this->excludePaths['analyse'];
@@ -41,10 +35,6 @@ final class FileExcluderFactory
 
 	public function createScanFileExcluder(): FileExcluder
 	{
-		if ($this->excludePaths === null) {
-			return $this->fileExcluderRawFactory->create($this->obsoleteExcludesAnalyse);
-		}
-
 		$paths = [];
 		if (array_key_exists('analyseAndScan', $this->excludePaths)) {
 			$paths = $this->excludePaths['analyseAndScan'];

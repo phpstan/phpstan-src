@@ -524,21 +524,6 @@ final class CommandHelper
 			throw new InceptionNotSuccessfulException();
 		}
 
-		$excludesAnalyse = $container->getParameter('excludes_analyse');
-		$excludePaths = $container->getParameter('excludePaths');
-		if (count($excludesAnalyse) > 0 && $excludePaths !== null) {
-			$errorOutput->writeLineFormatted(sprintf('Configuration parameters <fg=cyan>excludes_analyse</> and <fg=cyan>excludePaths</> cannot be used at the same time.'));
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted(sprintf('Parameter <fg=cyan>excludes_analyse</> has been deprecated so use <fg=cyan>excludePaths</> only from now on.'));
-			$errorOutput->writeLineFormatted('');
-
-			throw new InceptionNotSuccessfulException();
-		} elseif (count($excludesAnalyse) > 0) {
-			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>excludes_analyse</>. ⚠️️');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted(sprintf('Parameter <fg=cyan>excludes_analyse</> has been deprecated so use <fg=cyan>excludePaths</> only from now on.'));
-		}
-
 		if ($container->hasParameter('scopeClass') && $container->getParameter('scopeClass') !== MutatingScope::class) {
 			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>scopeClass</>. ⚠️️');
 			$errorOutput->writeLineFormatted('');

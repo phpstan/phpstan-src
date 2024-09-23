@@ -1,7 +1,6 @@
 parametersSchema:
 	bootstrapFiles: listOf(string())
-	excludes_analyse: listOf(string())
-	excludePaths: schema(anyOf(
+	excludePaths: anyOf(
 		structure([
 			analyse: listOf(string()),
 		]),
@@ -12,7 +11,7 @@ parametersSchema:
 			analyse: listOf(string()),
 			analyseAndScan: listOf(string())
 		])
-	), nullable())
+	)
 	level: schema(anyOf(int(), string()), nullable())
 	paths: listOf(string())
 	exceptions: structure([

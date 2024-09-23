@@ -31,7 +31,7 @@ use function substr;
 final class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v28-ignore-errors';
+	public const CACHE_KEY = 'v29-excludes-analyse';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 
@@ -121,7 +121,6 @@ final class NeonAdapter implements Adapter
 
 			if (in_array($keyToResolve, [
 				'[parameters][paths][]',
-				'[parameters][excludes_analyse][]',
 				'[parameters][excludePaths][]',
 				'[parameters][excludePaths][analyse][]',
 				'[parameters][excludePaths][analyseAndScan][]',

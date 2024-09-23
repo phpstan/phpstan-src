@@ -7,8 +7,7 @@ parameters:
 		- ../stubs/runtime/ReflectionAttribute.php
 		- ../stubs/runtime/Attribute.php
 		- ../stubs/runtime/ReflectionIntersectionType.php
-	excludes_analyse: []
-	excludePaths: null
+	excludePaths: []
 	level: null
 	paths: []
 	exceptions:
@@ -653,7 +652,6 @@ services:
 	-
 		class: PHPStan\File\FileExcluderFactory
 		arguments:
-			obsoleteExcludesAnalyse: %excludes_analyse%
 			excludePaths: %excludePaths%
 
 	-

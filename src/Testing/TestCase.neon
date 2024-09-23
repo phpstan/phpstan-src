@@ -10,7 +10,6 @@ services:
 			phpParser: @phpParserDecorator
 			php8Parser: @php8PhpParser
 			fileExtensions: %fileExtensions%
-			obsoleteExcludesAnalyse: %excludes_analyse%
 			excludePaths: %excludePaths%
 
 	cacheStorage:

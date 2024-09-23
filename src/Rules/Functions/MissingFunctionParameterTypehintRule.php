@@ -25,7 +25,6 @@ final class MissingFunctionParameterTypehintRule implements Rule
 
 	public function __construct(
 		private MissingTypehintCheck $missingTypehintCheck,
-		private bool $paramOut,
 	)
 	{
 	}
@@ -51,9 +50,6 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				}
 			}
 
-			if (!$this->paramOut) {
-				continue;
-			}
 			if ($parameterReflection->getOutType() === null) {
 				continue;
 			}

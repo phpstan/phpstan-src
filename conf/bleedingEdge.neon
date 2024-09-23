@@ -41,7 +41,6 @@ parameters:
 		callUserFunc: true
 		finalByPhpDoc: true
 		magicConstantOutOfContext: true
-		paramOutType: true
 		pure: true
 		checkParameterCastableToStringFunctions: true
 		uselessReturnValue: true

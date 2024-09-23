@@ -9,7 +9,9 @@ parameters:
 
 rules:
 	- PHPStan\Rules\Constants\MissingClassConstantTypehintRule
+	- PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule
 	- PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule
+	- PHPStan\Rules\Methods\MissingMethodParameterTypehintRule
 	- PHPStan\Rules\Methods\MissingMethodReturnTypehintRule
 	- PHPStan\Rules\Properties\MissingPropertyTypehintRule
 
@@ -18,19 +20,5 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 
 services:
-	-
-		class: PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule
-		arguments:
-			paramOut: %featureToggles.paramOutType%
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Methods\MissingMethodParameterTypehintRule
-		arguments:
-			paramOut: %featureToggles.paramOutType%
-		tags:
-			- phpstan.rules.rule
-
 	-
 		class: PHPStan\Rules\Methods\MissingMethodSelfOutTypeRule

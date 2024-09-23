@@ -71,7 +71,6 @@ parametersSchema:
 		callUserFunc: bool()
 		finalByPhpDoc: bool()
 		magicConstantOutOfContext: bool()
-		paramOutType: bool()
 		pure: bool()
 		checkParameterCastableToStringFunctions: bool()
 		uselessReturnValue: bool()

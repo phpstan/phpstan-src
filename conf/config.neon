@@ -77,7 +77,6 @@ parameters:
 		callUserFunc: false
 		finalByPhpDoc: false
 		magicConstantOutOfContext: false
-		paramOutType: false
 		pure: false
 		checkParameterCastableToStringFunctions: false
 		uselessReturnValue: false
@@ -531,7 +530,6 @@ services:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			detectDeadTypeInMultiCatch: %featureToggles.detectDeadTypeInMultiCatch%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
-			paramOutType: %featureToggles.paramOutType%
 			preciseMissingReturn: %featureToggles.preciseMissingReturn%
 
 	-

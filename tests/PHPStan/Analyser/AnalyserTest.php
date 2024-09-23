@@ -729,7 +729,6 @@ class AnalyserTest extends PHPStanTestCase
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			self::getContainer()->getParameter('featureToggles')['detectDeadTypeInMultiCatch'],
-			self::getContainer()->getParameter('featureToggles')['paramOutType'],
 			self::getContainer()->getParameter('featureToggles')['preciseMissingReturn'],
 		);
 		$lexer = new Lexer();

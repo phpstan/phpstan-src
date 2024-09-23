@@ -260,7 +260,6 @@ final class NodeScopeResolver
 		private readonly bool $implicitThrows,
 		private readonly bool $treatPhpDocTypesAsCertain,
 		private readonly bool $detectDeadTypeInMultiCatch,
-		private readonly bool $paramOutType,
 		private readonly bool $preciseMissingReturn,
 	)
 	{
@@ -4748,13 +4747,11 @@ final class NodeScopeResolver
 					} elseif (
 						$calleeReflection instanceof MethodReflection
 						&& !$calleeReflection->getDeclaringClass()->isBuiltin()
-						&& $this->paramOutType
 					) {
 						$byRefType = $currentParameter->getType();
 					} elseif (
 						$calleeReflection instanceof FunctionReflection
 						&& !$calleeReflection->isBuiltin()
-						&& $this->paramOutType
 					) {
 						$byRefType = $currentParameter->getType();
 					}

@@ -7,6 +7,9 @@ Major new features 🚀
 
 * **Array `list` type** ([#1751](https://github.com/phpstan/phpstan-src/pull/1751)), #3311, #8185, #6243, thanks @rvanvelzen!
     * Lists are arrays with sequential integer keys starting at 0
+* **Enhancements in Handling Parameters Passed by Reference**
+    * [Learn more on phpstan.org](https://phpstan.org/blog/enhancements-in-handling-parameters-passed-by-reference)
+    * [#2941](https://github.com/phpstan/phpstan-src/pull/2941), thanks @ljmaskey!
 
 Bleeding edge (TODO move to other sections)
 =====================
@@ -71,9 +74,6 @@ Bleeding edge (TODO move to other sections)
 * Report unused results of `and` and `or` (https://github.com/phpstan/phpstan-src/commit/1d8fff637d70a9e9ed3f11dee5d61b9f796cbf1a)
 * Report unused result of ternary (https://github.com/phpstan/phpstan-src/commit/9664f7a9d2223c07e750f0dfc949c3accfa6b65e)
 * Report unused results of `&&` and `||` (https://github.com/phpstan/phpstan-src/commit/cf2c8bbd9ebd2ebe300dbd310e136ad603d7def3)
-* **Enhancements in Handling Parameters Passed by Reference**
-    * [Learn more on phpstan.org](https://phpstan.org/blog/enhancements-in-handling-parameters-passed-by-reference)
-    * [#2941](https://github.com/phpstan/phpstan-src/pull/2941), thanks @ljmaskey!
 * Add option `reportAnyTypeWideningInVarTag` ([#2840](https://github.com/phpstan/phpstan-src/pull/2840)), thanks @janedbal!
 * `array_values` rule (report when a `list` type is always passed in) ([#2917](https://github.com/phpstan/phpstan-src/pull/2917)), thanks @kamil-zacek!
 * Fix checking generic `mixed` type based on config ([#2885](https://github.com/phpstan/phpstan-src/pull/2885)), thanks @schlndh!
@@ -84,7 +84,6 @@ Bleeding edge (TODO move to other sections)
     * [#3022](https://github.com/phpstan/phpstan-src/pull/3022), thanks @staabm!
     * [#3023](https://github.com/phpstan/phpstan-src/pull/3023), thanks @staabm!
 * BetterNoopRule - take advantage of impure points (https://github.com/phpstan/phpstan-src/commit/a6470521b65d7424f552633c1f3827704c6262c3), #10389
-* Run missing type check on `@param-out` (https://github.com/phpstan/phpstan-src/commit/56b20024386d983927c64dfa895ff026bed2798c)
 * CallToConstructorStatementWithoutSideEffectsRule - report class with no constructor (https://github.com/phpstan/phpstan-src/commit/b116d25a6e4ba6c09f59af6569d9e6f6fd20aff4)
 * Check if required file exists ([#3294](https://github.com/phpstan/phpstan-src/pull/3294)), #3397, thanks @Bellangelo!
 * Check generics `@method` `@template` tags above traits (https://github.com/phpstan/phpstan-src/commit/aadbf62d3ae4517fc7a212b07130bedcef8d13ac)
@@ -139,6 +138,7 @@ Improvements 🔧
 * Infer explicit mixed when instantiating generic class with unknown template types (https://github.com/phpstan/phpstan-src/commit/089d4c6fb6eb709c44123548d33990113d174b86), #6398
 * Use explicit mixed for global array variables ([#1411](https://github.com/phpstan/phpstan-src/pull/1411)), thanks @herndlm!
 * Consider implicit throw points when the only explicit one is `Throw_` (https://github.com/phpstan/phpstan-src/commit/22eef6d5ab9a4afafb2305258fea273be6cc06e4)
+* Run missing type check on `@param-out` (https://github.com/phpstan/phpstan-src/commit/56b20024386d983927c64dfa895ff026bed2798c)
 
 Bugfixes 🐛
 =====================

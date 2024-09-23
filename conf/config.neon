@@ -48,7 +48,6 @@ parameters:
 		uselessReturnValue: false
 		printfArrayParameters: false
 		requireFileExists: false
-		narrowPregMatches: true
 		tooWidePropertyType: false
 	fileExtensions:
 		- php

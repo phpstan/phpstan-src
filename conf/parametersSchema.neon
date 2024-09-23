@@ -53,7 +53,6 @@ parametersSchema:
 		checkParameterCastableToStringFunctions: bool()
 		uselessReturnValue: bool()
 		printfArrayParameters: bool()
-		narrowPregMatches: bool()
 		tooWidePropertyType: bool()
 		requireFileExists: bool()
 	])

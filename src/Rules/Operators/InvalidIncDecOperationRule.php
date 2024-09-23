@@ -29,8 +29,6 @@ final class InvalidIncDecOperationRule implements Rule
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
-		private bool $bleedingEdge,
-		private bool $checkThisOnly,
 	)
 	{
 	}
@@ -87,30 +85,16 @@ final class InvalidIncDecOperationRule implements Rule
 			];
 		}
 
-		if (!$this->bleedingEdge) {
-			if ($this->checkThisOnly) {
-				return [];
-			}
+		$allowedTypes = new UnionType([new BooleanType(), new FloatType(), new IntegerType(), new StringType(), new NullType(), new ObjectType('SimpleXMLElement')]);
+		$varType = $this->ruleLevelHelper->findTypeToCheck(
+			$scope,
+			$node->var,
+			'',
+			static fn (Type $type): bool => $allowedTypes->isSuperTypeOf($type)->yes(),
+		)->getType();
 
-			$varType = $scope->getType($node->var);
-			if (!$varType->toString() instanceof ErrorType) {
-				return [];
-			}
-			if (!$varType->toNumber() instanceof ErrorType) {
-				return [];
-			}
-		} else {
-			$allowedTypes = new UnionType([new BooleanType(), new FloatType(), new IntegerType(), new StringType(), new NullType(), new ObjectType('SimpleXMLElement')]);
-			$varType = $this->ruleLevelHelper->findTypeToCheck(
-				$scope,
-				$node->var,
-				'',
-				static fn (Type $type): bool => $allowedTypes->isSuperTypeOf($type)->yes(),
-			)->getType();
-
-			if ($varType instanceof ErrorType || $allowedTypes->isSuperTypeOf($varType)->yes()) {
-				return [];
-			}
+		if ($varType instanceof ErrorType || $allowedTypes->isSuperTypeOf($varType)->yes()) {
+			return [];
 		}
 
 		return [

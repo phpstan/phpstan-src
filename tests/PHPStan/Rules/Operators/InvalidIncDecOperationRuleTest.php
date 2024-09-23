@@ -21,8 +21,6 @@ class InvalidIncDecOperationRuleTest extends RuleTestCase
 	{
 		return new InvalidIncDecOperationRule(
 			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false),
-			true,
-			false,
 		);
 	}
 

@@ -106,6 +106,7 @@ rules:
 	- PHPStan\Rules\Methods\StaticMethodCallableRule
 	- PHPStan\Rules\Names\UsedNamesRule
 	- PHPStan\Rules\Operators\InvalidAssignVarRule
+	- PHPStan\Rules\Operators\InvalidIncDecOperationRule
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
 	- PHPStan\Rules\Properties\InvalidCallablePropertyTypeRule
@@ -202,14 +203,6 @@ services:
 			- phpstan.rules.rule
 		arguments:
 			checkFunctionNameCase: %checkFunctionNameCase%
-
-	-
-		class: PHPStan\Rules\Operators\InvalidIncDecOperationRule
-		tags:
-			- phpstan.rules.rule
-		arguments:
-			bleedingEdge: %featureToggles.bleedingEdge%
-			checkThisOnly: %checkThisOnly%
 
 	-
 		class: PHPStan\Rules\Properties\AccessPropertiesRule

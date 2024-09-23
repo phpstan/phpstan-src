@@ -107,7 +107,6 @@ Bleeding edge (TODO move to other sections)
 * Check mixed in binary operator ([#3231](https://github.com/phpstan/phpstan-src/pull/3231)), #7538, #10440, thanks @schlndh!
 * Check vprintf/vsprintf arguments against placeholder count ([#3126](https://github.com/phpstan/phpstan-src/pull/3126)), thanks @staabm!
 * Check mixed in unary operator ([#3253](https://github.com/phpstan/phpstan-src/pull/3253)), thanks @schlndh!
-* Stricter ++/-- operator check ([#3255](https://github.com/phpstan/phpstan-src/pull/3255)), thanks @schlndh!
 * Check preg_quote delimiter sanity ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
 * Improved the type of the `$mode` parameter for the `count()` ([#3190](https://github.com/phpstan/phpstan-src/pull/3190)), thanks @kuma3!
 * Check array functions which require stringish values ([#3132](https://github.com/phpstan/phpstan-src/pull/3132)), #11141, #5848, #3694, #11111, thanks @schlndh!
@@ -141,6 +140,7 @@ Improvements 🔧
 * OverridingMethodRule - include template types in prototype declaring class description (https://github.com/phpstan/phpstan-src/commit/ca2c66cc4dff59ba44d52b82cb9e0aa3256240f3)
 * Detect overriding `@final` method in OverridingMethodRule, #9135
 * Improve error wording of the NonexistentOffset, BooleanAndConstantConditionRule, and BooleanOrConstantConditionRule ([#1882](https://github.com/phpstan/phpstan-src/pull/1882)), thanks @VincentLanglet!
+* Stricter ++/-- operator check ([#3255](https://github.com/phpstan/phpstan-src/pull/3255)), thanks @schlndh!
 
 Bugfixes 🐛
 =====================

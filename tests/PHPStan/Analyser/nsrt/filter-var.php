@@ -159,7 +159,7 @@ class FilterVar
 		assertType("'17.1'", filter_var(17.1));
 		assertType("'1.0E-50'", filter_var(1e-50));
 		assertType('numeric-string', filter_var($int));
-		assertType('numeric-string', filter_var($intRange));
+		assertType("'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'", filter_var($intRange));
 		assertType("'17'", filter_var(17));
 		assertType('string', filter_var($string));
 		assertType('non-empty-string', filter_var($nonEmptyString));

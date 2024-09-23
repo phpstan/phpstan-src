@@ -62,7 +62,6 @@ Bleeding edge (TODO move to other sections)
     * Because "always true" is always reported, these are no longer needed
 * IncompatibleDefaultParameterTypeRule for closures (https://github.com/phpstan/phpstan-src/commit/0264f5bc48448c7e02a23b82eef4177d0617a82f)
 * Deprecate various `instanceof *Type` in favour of new methods on `Type` interface, (https://github.com/phpstan/phpstan-src/commit/436e6d3015cbeba4645d38bc7a6a865b9c6d7c74), learn more: [Why Is instanceof *Type Wrong and Getting Deprecated?](https://phpstan.org/blog/why-is-instanceof-type-wrong-and-getting-deprecated)
-* Fix position variance of static method parameters ([#2313](https://github.com/phpstan/phpstan-src/pull/2313)), thanks @jiripudil!
 * Check variance of template types in properties ([#2314](https://github.com/phpstan/phpstan-src/pull/2314)), thanks @jiripudil!
 * Report narrowing `PHPStan\Type\Type` interface via `@var` (https://github.com/phpstan/phpstan-src/commit/713b98fb107213c28e3d8c8b4b43c5f5fc47c144), https://github.com/nunomaduro/larastan/issues/1567#issuecomment-1460445389
 * Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)
@@ -127,6 +126,7 @@ Improvements 🔧
 * NoopRule - take advantage of impure points (https://github.com/phpstan/phpstan-src/commit/a6470521b65d7424f552633c1f3827704c6262c3), #10389
 * Improve impossible type checker for void-returning functions ([#1857](https://github.com/phpstan/phpstan-src/pull/1857)), #8169, thanks @rvanvelzen!
 * Check template type variance in `@param-out` (https://github.com/phpstan/phpstan-src/commit/7ceb19d3b42cf4632d10c2babb0fc5a21b6c8352), https://github.com/phpstan/phpstan/issues/8880#issuecomment-1426971473
+* Fix position variance of static method parameters ([#2313](https://github.com/phpstan/phpstan-src/pull/2313)), thanks @jiripudil!
 
 Bugfixes 🐛
 =====================

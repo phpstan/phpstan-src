@@ -43,7 +43,6 @@ parameters:
 		varTagType: false
 		closureDefaultParameterTypeRule: false
 		instanceofType: false
-		strictStaticMethodTemplateTypeVariance: false
 		propertyVariance: false
 		stricterFunctionMap: false
 		callUserFunc: false
@@ -965,8 +964,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Generics\VarianceCheck
-		arguments:
-			strictStaticVariance: %featureToggles.strictStaticMethodTemplateTypeVariance%
 
 	-
 		class: PHPStan\Rules\IssetCheck

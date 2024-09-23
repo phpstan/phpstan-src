@@ -13,12 +13,6 @@ use function sprintf;
 final class VarianceCheck
 {
 
-	public function __construct(
-		private bool $strictStaticVariance,
-	)
-	{
-	}
-
 	/**
 	 * @param 'function'|'method' $identifier
 	 * @return list<IdentifierRuleError>
@@ -56,9 +50,7 @@ final class VarianceCheck
 		}
 
 		$covariant = TemplateTypeVariance::createCovariant();
-		$parameterVariance = $isStatic && !$this->strictStaticVariance
-			? TemplateTypeVariance::createStatic()
-			: TemplateTypeVariance::createContravariant();
+		$parameterVariance = TemplateTypeVariance::createContravariant();
 
 		foreach ($parametersAcceptor->getParameters() as $parameterReflection) {
 			$type = $parameterReflection->getType();

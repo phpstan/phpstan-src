@@ -22,7 +22,6 @@ parameters:
 		varTagType: true
 		closureDefaultParameterTypeRule: true
 		instanceofType: true
-		strictStaticMethodTemplateTypeVariance: true
 		propertyVariance: true
 		callUserFunc: true
 		magicConstantOutOfContext: true

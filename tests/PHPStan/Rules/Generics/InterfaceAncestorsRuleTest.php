@@ -18,7 +18,7 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 			new GenericAncestorsCheck(
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
-				new VarianceCheck(true),
+				new VarianceCheck(),
 				new UnresolvableTypeHelper(),
 				[],
 			),

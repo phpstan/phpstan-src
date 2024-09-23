@@ -884,7 +884,6 @@ services:
 		class: PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchCheck
 		arguments:
 			reportMaybes: %reportMaybes%
-			bleedingEdge: %featureToggles.bleedingEdge%
 			reportPossiblyNonexistentGeneralArrayOffset: %reportPossiblyNonexistentGeneralArrayOffset%
 			reportPossiblyNonexistentConstantArrayOffset: %reportPossiblyNonexistentConstantArrayOffset%
 

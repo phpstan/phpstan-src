@@ -13,8 +13,6 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
-	private bool $bleedingEdge = false;
-
 	private bool $reportAlwaysTrueInLastCondition = false;
 
 	protected function getRule(): Rule
@@ -32,7 +30,6 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 				true,
 			),
 			$this->treatPhpDocTypesAsCertain,
-			$this->bleedingEdge,
 			$this->reportAlwaysTrueInLastCondition,
 			true,
 		);
@@ -139,90 +136,6 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 	public function testRuleLogicalAnd(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
-		$this->analyse([__DIR__ . '/data/boolean-logical-and.php'], [
-			[
-				'Left side of && is always true.',
-				15,
-			],
-			[
-				'Right side of && is always true.',
-				19,
-			],
-			[
-				'Left side of && is always false.',
-				24,
-			],
-			[
-				'Right side of && is always false.',
-				27,
-			],
-			[
-				'Result of && is always false.',
-				30,
-			],
-			[
-				'Right side of && is always true.',
-				33,
-			],
-			[
-				'Right side of && is always true.',
-				36,
-			],
-			[
-				'Right side of && is always true.',
-				39,
-			],
-			[
-				'Result of && is always false.',
-				50,
-			],
-			[
-				'Result of && is always true.',
-				54,
-				$tipText,
-			],
-			[
-				'Result of && is always false.',
-				60,
-			],
-			[
-				'Result of && is always true.',
-				64,
-				//$tipText,
-			],
-			[
-				'Result of && is always false.',
-				66,
-				//$tipText,
-			],
-			[
-				'Result of && is always false.',
-				125,
-			],
-			[
-				'Left side of && is always false.',
-				139,
-			],
-			[
-				'Right side of && is always false.',
-				141,
-			],
-			[
-				'Left side of && is always true.',
-				145,
-			],
-			[
-				'Right side of && is always true.',
-				147,
-			],
-		]);
-	}
-
-	public function testRuleLogicalAndBleedingEdge(): void
-	{
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->bleedingEdge = true;
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/data/boolean-logical-and.php'], [
 			[

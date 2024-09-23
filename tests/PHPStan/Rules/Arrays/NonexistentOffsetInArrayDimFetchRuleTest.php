@@ -17,8 +17,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	private bool $checkImplicitMixed = false;
 
-	private bool $bleedingEdge = false;
-
 	private bool $reportPossiblyNonexistentGeneralArrayOffset = false;
 
 	private bool $reportPossiblyNonexistentConstantArrayOffset = false;
@@ -29,154 +27,13 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,
-			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->bleedingEdge, $this->reportPossiblyNonexistentGeneralArrayOffset, $this->reportPossiblyNonexistentConstantArrayOffset),
+			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->reportPossiblyNonexistentGeneralArrayOffset, $this->reportPossiblyNonexistentConstantArrayOffset),
 			true,
 		);
 	}
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/nonexistent-offset.php'], [
-			[
-				'Offset \'b\' does not exist on array{a: stdClass, 0: 2}.',
-				17,
-			],
-			[
-				'Offset 1 does not exist on array{a: stdClass, 0: 2}.',
-				18,
-			],
-			[
-				'Offset \'a\' does not exist on array{b: 1}.',
-				55,
-			],
-			[
-				'Access to offset \'bar\' on an unknown class NonexistentOffset\Bar.',
-				101,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
-			[
-				'Access to an offset on an unknown class NonexistentOffset\Bar.',
-				102,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
-			[
-				'Offset 0 does not exist on array<string, string>.',
-				111,
-			],
-			[
-				'Offset \'0\' does not exist on array<string, string>.',
-				112,
-			],
-			[
-				'Offset int does not exist on array<string, string>.',
-				114,
-			],
-			[
-				'Offset \'test\' does not exist on null.',
-				126,
-			],
-			[
-				'Cannot access offset 42 on int.',
-				142,
-			],
-			[
-				'Cannot access offset 42 on float.',
-				143,
-			],
-			[
-				'Cannot access offset 42 on bool.',
-				144,
-			],
-			[
-				'Cannot access offset 42 on resource.',
-				145,
-			],
-			[
-				'Offset \'c\' does not exist on array{c: false}|array{c: true}|array{e: true}.',
-				171,
-			],
-			[
-				'Offset int does not exist on array{}|array{1: 1, 2: 2}|array{3: 3, 4: 4}.',
-				190,
-			],
-			[
-				'Offset int does not exist on array{}|array{1: 1, 2: 2}|array{3: 3, 4: 4}.',
-				193,
-			],
-			[
-				'Offset \'b\' does not exist on array{a: \'blabla\'}.',
-				225,
-			],
-			[
-				'Offset \'b\' does not exist on array{a: \'blabla\'}.',
-				228,
-			],
-			[
-				'Cannot access offset \'a\' on Closure(): void.',
-				253,
-			],
-			[
-				'Cannot access offset \'a\' on array{a: 1, b: 1}|(Closure(): void).',
-				258,
-			],
-			[
-				'Offset null does not exist on array<int, string>.',
-				310,
-			],
-			[
-				'Offset int does not exist on array<string, string>.',
-				312,
-			],
-			[
-				'Offset \'baz\' does not exist on array{bar: 1, baz?: 2}.',
-				344,
-			],
-			[
-				'Offset \'foo\' does not exist on ArrayAccess<int, stdClass>.',
-				411,
-			],
-			[
-				'Cannot access offset \'foo\' on stdClass.',
-				423,
-			],
-			[
-				'Cannot access offset \'foo\' on true.',
-				426,
-			],
-			[
-				'Cannot access offset \'foo\' on false.',
-				429,
-			],
-			[
-				'Cannot access offset \'foo\' on resource.',
-				433,
-			],
-			[
-				'Cannot access offset \'foo\' on 42.',
-				436,
-			],
-			[
-				'Cannot access offset \'foo\' on 4.141.',
-				439,
-			],
-			[
-				'Cannot access offset \'foo\' on array|int.',
-				443,
-			],
-			[
-				'Offset \'feature_pretty…\' does not exist on array{version: non-falsy-string, commit: string|null, pretty_version: string|null, feature_version: non-falsy-string, feature_pretty_version?: string|null}.',
-				504,
-			],
-			[
-				"Cannot access offset 'foo' on bool.",
-				517,
-			],
-		]);
-	}
-
-	public function testRuleBleedingEdge(): void
-	{
-		$this->bleedingEdge = true;
 		$this->analyse([__DIR__ . '/data/nonexistent-offset.php'], [
 			[
 				'Offset \'b\' does not exist on array{a: stdClass, 0: 2}.',
@@ -327,11 +184,11 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Offset \'foo\' does not exist on array|string.',
+				'Offset \'foo\' might not exist on array|string.',
 				24,
 			],
 			[
-				'Offset 12.34 does not exist on array|string.',
+				'Offset 12.34 might not exist on array|string.',
 				28,
 			],
 		]);
@@ -531,7 +388,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-7000.php'], [
 			[
-				"Offset 'require'|'require-dev' does not exist on array{require?: array<string, string>, require-dev?: array<string, string>}.",
+				"Offset 'require'|'require-dev' might not exist on array{require?: array<string, string>, require-dev?: array<string, string>}.",
 				16,
 			],
 		]);
@@ -692,7 +549,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testBug8356(): void
 	{
-		$this->bleedingEdge = true;
 		$this->analyse([__DIR__ . '/data/bug-8356.php'], [
 			[
 				"Offset 'x' might not exist on array|string.",

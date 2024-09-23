@@ -21,7 +21,6 @@ final class BooleanOrConstantConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
-		private bool $bleedingEdge,
 		private bool $reportAlwaysTrueInLastCondition,
 		private bool $treatPhpDocTypesAsCertainTip,
 	)
@@ -39,7 +38,7 @@ final class BooleanOrConstantConditionRule implements Rule
 	): array
 	{
 		$originalNode = $node->getOriginalNode();
-		$nodeText = $this->bleedingEdge ? $originalNode->getOperatorSigil() : '||';
+		$nodeText = $originalNode->getOperatorSigil();
 		$messages = [];
 		$leftType = $this->helper->getBooleanType($scope, $originalNode->left);
 		$identifierType = $originalNode instanceof Node\Expr\BinaryOp\BooleanOr ? 'booleanOr' : 'logicalOr';

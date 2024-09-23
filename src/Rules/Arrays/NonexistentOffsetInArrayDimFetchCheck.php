@@ -22,7 +22,6 @@ final class NonexistentOffsetInArrayDimFetchCheck
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
 		private bool $reportMaybes,
-		private bool $bleedingEdge,
 		private bool $reportPossiblyNonexistentGeneralArrayOffset,
 		private bool $reportPossiblyNonexistentConstantArrayOffset,
 	)
@@ -104,15 +103,8 @@ final class NonexistentOffsetInArrayDimFetchCheck
 			}
 
 			if ($report) {
-				if ($this->bleedingEdge || $this->reportPossiblyNonexistentGeneralArrayOffset || $this->reportPossiblyNonexistentConstantArrayOffset) {
-					return [
-						RuleErrorBuilder::message(sprintf('Offset %s might not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))
-							->identifier('offsetAccess.notFound')
-							->build(),
-					];
-				}
 				return [
-					RuleErrorBuilder::message(sprintf('Offset %s does not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))
+					RuleErrorBuilder::message(sprintf('Offset %s might not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))
 						->identifier('offsetAccess.notFound')
 						->build(),
 				];

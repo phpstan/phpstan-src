@@ -2,6 +2,8 @@ parameters:
 	featureToggles:
 		bleedingEdge: true
 		skipCheckGenericClasses!: []
+		stricterFunctionMap: true
+
 		explicitMixedViaIsArray: true
 		arrayFilter: true
 		arrayUnpacking: true
@@ -31,7 +33,6 @@ parameters:
 		paramOutVariance: true
 		strictStaticMethodTemplateTypeVariance: true
 		propertyVariance: true
-		stricterFunctionMap: true
 		zeroFiles: true
 		projectServicesNotInAnalysedPaths: true
 		callUserFunc: true

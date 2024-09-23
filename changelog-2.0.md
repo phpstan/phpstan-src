@@ -62,23 +62,13 @@ Bleeding edge (TODO move to other sections)
 * IncompatibleDefaultParameterTypeRule for closures (https://github.com/phpstan/phpstan-src/commit/0264f5bc48448c7e02a23b82eef4177d0617a82f)
 * Check template type variance in `@param-out` (https://github.com/phpstan/phpstan-src/commit/7ceb19d3b42cf4632d10c2babb0fc5a21b6c8352), https://github.com/phpstan/phpstan/issues/8880#issuecomment-1426971473
 * Deprecate various `instanceof *Type` in favour of new methods on `Type` interface, (https://github.com/phpstan/phpstan-src/commit/436e6d3015cbeba4645d38bc7a6a865b9c6d7c74), learn more: [Why Is instanceof *Type Wrong and Getting Deprecated?](https://phpstan.org/blog/why-is-instanceof-type-wrong-and-getting-deprecated)
-* Stricter function signature map (https://github.com/phpstan/phpstan-src/commit/06b746d8e72cc0843707896ec161559bb6a81137, [#2163](https://github.com/phpstan/phpstan-src/pull/2163)), #7239, thanks @staabm!
-* Specify `Imagick` parameter types ([#2334](https://github.com/phpstan/phpstan-src/pull/2334)), thanks @zonuexe!
 * Fix position variance of static method parameters ([#2313](https://github.com/phpstan/phpstan-src/pull/2313)), thanks @jiripudil!
 * Check variance of template types in properties ([#2314](https://github.com/phpstan/phpstan-src/pull/2314)), thanks @jiripudil!
 * Report narrowing `PHPStan\Type\Type` interface via `@var` (https://github.com/phpstan/phpstan-src/commit/713b98fb107213c28e3d8c8b4b43c5f5fc47c144), https://github.com/nunomaduro/larastan/issues/1567#issuecomment-1460445389
 * Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)
 * InvalidPHPStanDocTagRule in StubValidator (https://github.com/phpstan/phpstan-src/commit/9c2552b7e744926d1a74c1ba8fd32c64079eed61)
-* More precise `file()` flags args ([#2476](https://github.com/phpstan/phpstan-src/pull/2476), [#2482](https://github.com/phpstan/phpstan-src/pull/2482)), thanks @staabm!
-* More precise `flock()` operation flags ([#2477](https://github.com/phpstan/phpstan-src/pull/2477)), thanks @staabm!
 * Rule for `call_user_func()` ([#2479](https://github.com/phpstan/phpstan-src/pull/2479)), thanks @staabm!
-* `error_log` errors with `message_type=2` ([#2428](https://github.com/phpstan/phpstan-src/pull/2428)), #9380, thanks @staabm!
-* Check `filter_input*` type param type ([#2271](https://github.com/phpstan/phpstan-src/pull/2271)), thanks @herndlm!
-* More precise `stream_socket_client()` signature ([#2519](https://github.com/phpstan/phpstan-src/pull/2519)), thanks @staabm!
-* More precise `scandir()` signature ([#2518](https://github.com/phpstan/phpstan-src/pull/2518)), thanks @staabm!
-* More precise `extract()` signature ([#2517](https://github.com/phpstan/phpstan-src/pull/2517)), thanks @staabm!
 * MagicConstantContextRule ([#2741](https://github.com/phpstan/phpstan-src/pull/2741)), #10099, thanks @staabm!
-* More precise `RecursiveIteratorIterator::__construct()` parameter types ([#2835](https://github.com/phpstan/phpstan-src/pull/2835)), thanks @staabm!
 * TooWideMethodReturnTypehintRule - always report for final methods (https://github.com/phpstan/phpstan-src/commit/c30e9a484c8245b8126cd63444607ca74d2af761)
 * LogicalXorConstantConditionRule (https://github.com/phpstan/phpstan-src/commit/3a12724fd636b1bcf36c22b36e8f765d97150895, https://github.com/phpstan/phpstan-src/commit/3b011f6524254dad0f16840fdcfdbe7421548617), #7539
 * NoopRule - report top-level `xor` because that's probably not what the user intended to do (https://github.com/phpstan/phpstan-src/commit/a1fffb3346e09f1e8e8d987d4282263295a55142), #10267
@@ -97,7 +87,6 @@ Bleeding edge (TODO move to other sections)
 * BetterNoopRule - take advantage of impure points (https://github.com/phpstan/phpstan-src/commit/a6470521b65d7424f552633c1f3827704c6262c3), #10389
 * CallToConstructorStatementWithoutSideEffectsRule - report class with no constructor (https://github.com/phpstan/phpstan-src/commit/b116d25a6e4ba6c09f59af6569d9e6f6fd20aff4)
 * Check if required file exists ([#3294](https://github.com/phpstan/phpstan-src/pull/3294)), #3397, thanks @Bellangelo!
-* More precise types for bcmath function parameters ([#2217](https://github.com/phpstan/phpstan-src/pull/2217)), thanks @Warxcell!
 * Enforce `@no-named-arguments` (https://github.com/phpstan/phpstan-src/commit/74ba8c23696948f2647d880df72f375346f41010), #5968
 * Check too wide private property type (https://github.com/phpstan/phpstan-src/commit/7453f4f75fae3d635063589467842aae29d88b54)
 * Check `@param-immediately-invoked-callable` and `@param-later-invoked-callable` (https://github.com/phpstan/phpstan-src/commit/580a6add422f4e34191df9e7a77ba1655e914bda), #10932
@@ -105,7 +94,6 @@ Bleeding edge (TODO move to other sections)
 * Report useless return values of function calls like `var_export` without `$return=true` ([#3225](https://github.com/phpstan/phpstan-src/pull/3225)), #11320, thanks @staabm!
 * Check vprintf/vsprintf arguments against placeholder count ([#3126](https://github.com/phpstan/phpstan-src/pull/3126)), thanks @staabm!
 * Check preg_quote delimiter sanity ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
-* Improved the type of the `$mode` parameter for the `count()` ([#3190](https://github.com/phpstan/phpstan-src/pull/3190)), thanks @kuma3!
 * Check array functions which require stringish values ([#3132](https://github.com/phpstan/phpstan-src/pull/3132)), #11141, #5848, #3694, #11111, thanks @schlndh!
 
 Improvements 🔧
@@ -150,6 +138,23 @@ Function signature fixes 🤖
 =======================
 
 * Countable stub with `0|positive-int` ([#1027](https://github.com/phpstan/phpstan-src/pull/1027)), thanks @staabm!
+* More precise types for bcmath function parameters ([#2217](https://github.com/phpstan/phpstan-src/pull/2217)), thanks @Warxcell!
+* Specify `Imagick` parameter types ([#2334](https://github.com/phpstan/phpstan-src/pull/2334)), thanks @zonuexe!
+* `max()`/`min()` should expect non-empty-array ([#2163](https://github.com/phpstan/phpstan-src/pull/2163)), thanks @staabm!
+* Narrow `Closure::bind` `$newScope` param ([#2817](https://github.com/phpstan/phpstan-src/pull/2817)), thanks @mvorisek!
+* `error_log` errors with `message_type=2` ([#2428](https://github.com/phpstan/phpstan-src/pull/2428)), #9380, thanks @staabm!
+* Update functionMap ([#2699](https://github.com/phpstan/phpstan-src/pull/2699), [#2783](https://github.com/phpstan/phpstan-src/pull/2783)), thanks @zonuexe!
+* Improve image related functions signature ([#3127](https://github.com/phpstan/phpstan-src/pull/3127)), thanks @thg2k!
+* Support `FILE_NO_DEFAULT_CONTEXT` in `file()` ([#2482](https://github.com/phpstan/phpstan-src/pull/2482)), thanks @staabm!
+* Fix ftp related function signatures ([#2551](https://github.com/phpstan/phpstan-src/pull/2551)), thanks @thg2k!
+* More precise `file()` flags args ([#2476](https://github.com/phpstan/phpstan-src/pull/2476), [#2482](https://github.com/phpstan/phpstan-src/pull/2482)), thanks @staabm!
+* More precise `flock()` operation flags ([#2477](https://github.com/phpstan/phpstan-src/pull/2477)), thanks @staabm!
+* More precise `stream_socket_client()` signature ([#2519](https://github.com/phpstan/phpstan-src/pull/2519)), thanks @staabm!
+* More precise `scandir()` signature ([#2518](https://github.com/phpstan/phpstan-src/pull/2518)), thanks @staabm!
+* More precise `extract()` signature ([#2517](https://github.com/phpstan/phpstan-src/pull/2517)), thanks @staabm!
+* More precise `RecursiveIteratorIterator::__construct()` parameter types ([#2835](https://github.com/phpstan/phpstan-src/pull/2835)), thanks @staabm!
+* Update `Locale` signatures ([#2880](https://github.com/phpstan/phpstan-src/pull/2880)), thanks @devnix!
+* Improved the type of the `$mode` parameter for the `count()` ([#3190](https://github.com/phpstan/phpstan-src/pull/3190)), thanks @kuma3!* Check `filter_input*` type param type ([#2271](https://github.com/phpstan/phpstan-src/pull/2271)), thanks @herndlm!
 
 Internals 🔍
 =====================

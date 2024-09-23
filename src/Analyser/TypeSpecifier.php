@@ -821,7 +821,7 @@ final class TypeSpecifier
 						);
 					} else {
 						$varType = $scope->getType($var->var);
-						$narrowedKey = AllowedArrayKeysTypes::narrowOffsetKeyType($varType);
+						$narrowedKey = AllowedArrayKeysTypes::narrowOffsetKeyType($varType, $dimType);
 						if ($narrowedKey !== null) {
 							$types = $types->unionWith(
 								$this->create(

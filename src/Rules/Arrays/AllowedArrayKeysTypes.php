@@ -32,7 +32,8 @@ final class AllowedArrayKeysTypes
 		]);
 	}
 
-	public static function narrowOffsetKeyType(Type $varType): ?Type {
+	public static function narrowOffsetKeyType(Type $varType, Type $keyType): ?Type
+	{
 		if (!$varType->isArray()->yes() || $varType->isIterableAtLeastOnce()->no()) {
 			return null;
 		}
@@ -66,17 +67,20 @@ final class AllowedArrayKeysTypes
 			if (!$varIterableKeyType->isNumericString()->no() || !$varIterableKeyType->isInteger()->no()) {
 				$narrowedKey = TypeCombinator::union($narrowedKey, new FloatType());
 			}
-		} else {
-			$narrowedKey = new MixedType(
-				false,
-				new UnionType([
-					new ArrayType(new MixedType(), new MixedType()),
-					new ObjectWithoutClassType(),
-					new ResourceType(),
-				]),
-			);
+
+			return $narrowedKey;
+		} elseif ($varIterableKeyType->isInteger()->yes() && $keyType->isString()->yes()) {
+			return TypeCombinator::intersect($varIterableKeyType->toString(), $keyType);
 		}
 
-		return $narrowedKey;
+		return new MixedType(
+			false,
+			new UnionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new ObjectWithoutClassType(),
+				new ResourceType(),
+			]),
+		);
 	}
+
 }

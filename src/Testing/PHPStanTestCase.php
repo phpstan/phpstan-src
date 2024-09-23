@@ -5,7 +5,6 @@ namespace PHPStan\Testing;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\DirectInternalScopeFactory;
 use PHPStan\Analyser\Error;
-use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Analyser\TypeSpecifier;

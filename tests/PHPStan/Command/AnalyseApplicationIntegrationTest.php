@@ -16,12 +16,10 @@ use PHPStan\Testing\PHPStanTestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use function file_exists;
 use function fopen;
 use function rewind;
 use function sprintf;
 use function stream_get_contents;
-use function unlink;
 use const DIRECTORY_SEPARATOR;
 
 class AnalyseApplicationIntegrationTest extends PHPStanTestCase

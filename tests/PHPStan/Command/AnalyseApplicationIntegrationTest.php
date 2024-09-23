@@ -65,8 +65,6 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 			new \PHPStan\Command\Symfony\SymfonyStyle(new SymfonyStyle($this->createMock(InputInterface::class), $output)),
 		);
 
-		$memoryLimitFile = self::getContainer()->getParameter('memoryLimitFile');
-
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), __DIR__, [], DIRECTORY_SEPARATOR);
 		$errorFormatter = new TableErrorFormatter(
 			$relativePathHelper,
@@ -90,9 +88,6 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 			null,
 			$this->createMock(InputInterface::class),
 		);
-		if (file_exists($memoryLimitFile)) {
-			unlink($memoryLimitFile);
-		}
 		$statusCode = $errorFormatter->formatErrors($analysisResult, $symfonyOutput);
 
 		rewind($output->getStream());

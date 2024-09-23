@@ -186,7 +186,6 @@ class CommandHelperTest extends TestCase
 					'paths' => [
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
 					],
-					'memoryLimitFile' => __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . '.memory_limit',
 					'excludePaths' => [
 						'analyseAndScan' => [
 							__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',

@@ -11,7 +11,6 @@ parameters:
 		- %rootDir%/conf
 	paths:
 		- src
-	memoryLimitFile: .memory_limit
 	excludePaths:
 		- src
 		- src/*/data

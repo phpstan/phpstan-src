@@ -185,7 +185,6 @@ parametersSchema:
 	stubFiles: listOf(string())
 	earlyTerminatingMethodCalls: arrayOf(listOf(string()))
 	earlyTerminatingFunctionCalls: listOf(string())
-	memoryLimitFile: string()
 	tempResultCachePath: string()
 	resultCachePath: string()
 	resultCacheChecksProjectExtensionFilesDependencies: bool()

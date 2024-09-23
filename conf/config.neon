@@ -182,7 +182,6 @@ parameters:
 		- ../stubs/Countable.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
-	memoryLimitFile: %tmpDir%/.memory_limit
 	tempResultCachePath: %tmpDir%/resultCaches
 	resultCachePath: %tmpDir%/resultCache.php
 	resultCacheChecksProjectExtensionFilesDependencies: false

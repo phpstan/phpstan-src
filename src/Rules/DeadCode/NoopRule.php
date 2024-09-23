@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<NoopExpressionNode>
  */
-final class BetterNoopRule implements Rule
+final class NoopRule implements Rule
 {
 
 	public function __construct(private ExprPrinter $exprPrinter)

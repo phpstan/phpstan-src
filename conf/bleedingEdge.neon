@@ -22,7 +22,6 @@ parameters:
 		nullContextForVoidReturningFunctions: true
 		unescapeStrings: true
 		alwaysCheckTooWideReturnTypeFinalMethods: true
-		betterNoop: true
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true
 		varTagType: true

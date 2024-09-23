@@ -3,6 +3,7 @@ includes:
 
 rules:
 	- PHPStan\Rules\Arrays\DeadForeachRule
+	- PHPStan\Rules\DeadCode\NoopRule
 	- PHPStan\Rules\DeadCode\UnreachableStatementRule
 	- PHPStan\Rules\DeadCode\UnusedPrivateConstantRule
 	- PHPStan\Rules\DeadCode\UnusedPrivateMethodRule
@@ -26,8 +27,6 @@ conditionalTags:
 		phpstan.collector: %featureToggles.notAnalysedTrait%
 	PHPStan\Rules\Traits\NotAnalysedTraitRule:
 		phpstan.rules.rule: %featureToggles.notAnalysedTrait%
-	PHPStan\Rules\DeadCode\BetterNoopRule:
-		phpstan.rules.rule: %featureToggles.betterNoop%
 	PHPStan\Rules\DeadCode\CallToConstructorStatementWithoutImpurePointsRule:
 		phpstan.rules.rule: %featureToggles.pure%
 	PHPStan\Rules\DeadCode\PossiblyPureNewCollector:
@@ -199,9 +198,6 @@ services:
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\DeadCode\BetterNoopRule
 
 	-
 		class: PHPStan\Rules\Comparison\MatchExpressionRule

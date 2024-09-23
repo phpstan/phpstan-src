@@ -8,14 +8,14 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<BetterNoopRule>
+ * @extends RuleTestCase<NoopRule>
  */
-class BetterNoopRuleTest extends RuleTestCase
+class NoopRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new BetterNoopRule(new ExprPrinter(new Printer()));
+		return new NoopRule(new ExprPrinter(new Printer()));
 	}
 
 	public function testRule(): void

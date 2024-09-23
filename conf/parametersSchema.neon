@@ -49,7 +49,6 @@ parametersSchema:
 		varTagType: bool()
 		closureDefaultParameterTypeRule: bool()
 		instanceofType: bool()
-		paramOutVariance: bool()
 		strictStaticMethodTemplateTypeVariance: bool()
 		propertyVariance: bool()
 		stricterFunctionMap: bool()

@@ -14,7 +14,6 @@ final class VarianceCheck
 {
 
 	public function __construct(
-		private bool $checkParamOutVariance,
 		private bool $strictStaticVariance,
 	)
 	{
@@ -66,10 +65,6 @@ final class VarianceCheck
 			$message = sprintf($parameterTypeMessage, $parameterReflection->getName());
 			foreach ($this->check($parameterVariance, $type, $message) as $error) {
 				$errors[] = $error;
-			}
-
-			if (!$this->checkParamOutVariance) {
-				continue;
 			}
 
 			$paramOutType = $parameterReflection->getOutType();

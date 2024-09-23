@@ -18,7 +18,7 @@ class ClassAncestorsRuleTest extends RuleTestCase
 			new GenericAncestorsCheck(
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
-				new VarianceCheck(true, true),
+				new VarianceCheck(true),
 				new UnresolvableTypeHelper(),
 				[],
 			),

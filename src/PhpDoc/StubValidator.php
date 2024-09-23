@@ -186,6 +186,8 @@ final class StubValidator
 		$genericCallableRuleHelper = $container->getByType(GenericCallableRuleHelper::class);
 		$methodTagTemplateTypeCheck = $container->getByType(MethodTagTemplateTypeCheck::class);
 		$mixinCheck = $container->getByType(MixinCheck::class);
+		$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
+		$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
 
 		$rules = [
 			// level 0
@@ -200,6 +202,7 @@ final class StubValidator
 			new DuplicateDeclarationRule(),
 			new LocalTypeAliasesRule($localTypeAliasesCheck),
 			new LocalTypeTraitAliasesRule($localTypeAliasesCheck, $reflectionProvider),
+			new LocalTypeTraitUseAliasesRule($localTypeAliasesCheck),
 
 			// level 2
 			new ClassAncestorsRule($genericAncestorsCheck, $crossCheckInterfacesHelper),
@@ -226,6 +229,16 @@ final class StubValidator
 				$container->getByType(PhpDocParser::class),
 			),
 			new InvalidThrowsPhpDocValueRule($fileTypeMapper),
+			new MixinTraitRule($mixinCheck, $reflectionProvider),
+			new MixinRule($mixinCheck),
+			new MixinTraitUseRule($mixinCheck),
+			new MethodTagRule($methodTagCheck),
+			new MethodTagTraitRule($methodTagCheck, $reflectionProvider),
+			new MethodTagTraitUseRule($methodTagCheck),
+			new MethodTagTemplateTypeTraitRule($methodTagTemplateTypeCheck, $reflectionProvider),
+			new PropertyTagRule($propertyTagCheck),
+			new PropertyTagTraitRule($propertyTagCheck, $reflectionProvider),
+			new PropertyTagTraitUseRule($propertyTagCheck),
 
 			// level 6
 			new MissingFunctionParameterTypehintRule($missingTypehintCheck),
@@ -233,6 +246,7 @@ final class StubValidator
 			new MissingMethodParameterTypehintRule($missingTypehintCheck),
 			new MissingMethodReturnTypehintRule($missingTypehintCheck),
 			new MissingPropertyTypehintRule($missingTypehintCheck),
+			new MissingMethodSelfOutTypeRule($missingTypehintCheck),
 		];
 
 		if ($this->duplicateStubs) {
@@ -240,25 +254,6 @@ final class StubValidator
 			$relativePathHelper = $container->getService('simpleRelativePathHelper');
 			$rules[] = new DuplicateClassDeclarationRule($reflector, $relativePathHelper);
 			$rules[] = new DuplicateFunctionDeclarationRule($reflector, $relativePathHelper);
-		}
-
-		if ((bool) $container->getParameter('featureToggles')['absentTypeChecks']) {
-			$rules[] = new MissingMethodSelfOutTypeRule($missingTypehintCheck);
-
-			$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
-			$rules[] = new MethodTagRule($methodTagCheck);
-			$rules[] = new MethodTagTraitRule($methodTagCheck, $reflectionProvider);
-			$rules[] = new MethodTagTraitUseRule($methodTagCheck);
-
-			$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
-			$rules[] = new PropertyTagRule($propertyTagCheck);
-			$rules[] = new PropertyTagTraitRule($propertyTagCheck, $reflectionProvider);
-			$rules[] = new PropertyTagTraitUseRule($propertyTagCheck);
-			$rules[] = new MixinRule($mixinCheck);
-			$rules[] = new MixinTraitRule($mixinCheck, $reflectionProvider);
-			$rules[] = new MixinTraitUseRule($mixinCheck);
-			$rules[] = new LocalTypeTraitUseAliasesRule($localTypeAliasesCheck);
-			$rules[] = new MethodTagTemplateTypeTraitRule($methodTagTemplateTypeCheck, $reflectionProvider);
 		}
 
 		return new DirectRuleRegistry($rules);

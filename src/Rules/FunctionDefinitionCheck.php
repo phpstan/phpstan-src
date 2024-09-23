@@ -55,7 +55,6 @@ final class FunctionDefinitionCheck
 		private PhpVersion $phpVersion,
 		private bool $checkClassCaseSensitivity,
 		private bool $checkThisOnly,
-		private bool $absentTypeChecks,
 	)
 	{
 	}
@@ -274,7 +273,7 @@ final class FunctionDefinitionCheck
 		);
 
 		$selfOutType = $methodReflection->getSelfOutType();
-		if ($selfOutType !== null && $this->absentTypeChecks) {
+		if ($selfOutType !== null) {
 			$selfOutTypeReferencedClasses = $selfOutType->getReferencedClasses();
 
 			foreach ($selfOutTypeReferencedClasses as $class) {
@@ -646,13 +645,11 @@ final class FunctionDefinitionCheck
 		}
 
 		$moreClasses = [];
-		if ($this->absentTypeChecks) {
-			if ($parameter->getOutType() !== null) {
-				$moreClasses = array_merge($moreClasses, $parameter->getOutType()->getReferencedClasses());
-			}
-			if ($parameter->getClosureThisType() !== null) {
-				$moreClasses = array_merge($moreClasses, $parameter->getClosureThisType()->getReferencedClasses());
-			}
+		if ($parameter->getOutType() !== null) {
+			$moreClasses = array_merge($moreClasses, $parameter->getOutType()->getReferencedClasses());
+		}
+		if ($parameter->getClosureThisType() !== null) {
+			$moreClasses = array_merge($moreClasses, $parameter->getClosureThisType()->getReferencedClasses());
 		}
 
 		return array_merge(

@@ -10,6 +10,23 @@ Major new features 🚀
 * **Enhancements in Handling Parameters Passed by Reference**
     * [Learn more on phpstan.org](https://phpstan.org/blog/enhancements-in-handling-parameters-passed-by-reference)
     * [#2941](https://github.com/phpstan/phpstan-src/pull/2941), thanks @ljmaskey!
+* Added previously absent type checks (level 0)
+  * Check existing classes in `@phpstan-self-out` (https://github.com/phpstan/phpstan-src/commit/6838669976bf20232abde36ecdd52b1770fa50c9)
+  * Check nonexistent classes in local type aliases (https://github.com/phpstan/phpstan-src/commit/2485b2e9c129e789ec3b2d7db81ca30f87c63911)
+  * Check unresolvable types in local type aliases (https://github.com/phpstan/phpstan-src/commit/5f7d12b2fb2809525ab0e96eeae95093204ea4d3)
+  * Check generics in local type aliases (https://github.com/phpstan/phpstan-src/commit/5a2d4416d94ab77a2a2e7e1bfaba4c5ed2a13c25)
+  * Check existing classes in `@param-out` (https://github.com/phpstan/phpstan-src/commit/30c4b9e80f51af8b5f166ba3aae93d8409c9c0ea), #10260
+  * Check existing classes in `@param-closure-this` (https://github.com/phpstan/phpstan-src/commit/2fa539a39e06bcc3155b109fd8d246703ceb176d), #10933
+* Added previously absent type checks (level 2)
+  * Check `@mixin` PHPDoc tag above traits (https://github.com/phpstan/phpstan-src/commit/0d0de946900adf4eb3c799b1b547567536e23147)
+  * Check `@extends`, `@implements`, `@use` for unresolvable types (https://github.com/phpstan/phpstan-src/commit/2bb528233edb75312614166e282776f279cf2018), #11552
+  * Check types in `@method` tags (https://github.com/phpstan/phpstan-src/commit/5b7e474680eaf33874b7ed6a227677adcbed9ca5)
+  * Check generics `@method` `@template` tags above traits (https://github.com/phpstan/phpstan-src/commit/aadbf62d3ae4517fc7a212b07130bedcef8d13ac)
+  * Check types in `@property` tags (https://github.com/phpstan/phpstan-src/commit/55ea2ae516df22a071ab873fdd6f748a3af0520e), #10752, #9356
+* Added previously absent type checks (level 6)
+  * Check missing types in `@phpstan-self-out` (https://github.com/phpstan/phpstan-src/commit/892b319f25f04bc1b55c3d0063b607909612fe6d)
+  * Check missing types in local type aliases (https://github.com/phpstan/phpstan-src/commit/ce7ffaf02d624a7fb9d38f8e5dffc9739f1233fc)
+  * Check missing types in `@mixin` (https://github.com/phpstan/phpstan-src/commit/3175c81f26fd5bcb4a161b24e774921870ed2533)
 
 Bleeding edge (TODO move to other sections)
 =====================
@@ -82,25 +99,10 @@ Bleeding edge (TODO move to other sections)
 * BetterNoopRule - take advantage of impure points (https://github.com/phpstan/phpstan-src/commit/a6470521b65d7424f552633c1f3827704c6262c3), #10389
 * CallToConstructorStatementWithoutSideEffectsRule - report class with no constructor (https://github.com/phpstan/phpstan-src/commit/b116d25a6e4ba6c09f59af6569d9e6f6fd20aff4)
 * Check if required file exists ([#3294](https://github.com/phpstan/phpstan-src/pull/3294)), #3397, thanks @Bellangelo!
-* Check generics `@method` `@template` tags above traits (https://github.com/phpstan/phpstan-src/commit/aadbf62d3ae4517fc7a212b07130bedcef8d13ac)
-* Check `@mixin` PHPDoc tag above traits (https://github.com/phpstan/phpstan-src/commit/0d0de946900adf4eb3c799b1b547567536e23147)
 * More precise types for bcmath function parameters ([#2217](https://github.com/phpstan/phpstan-src/pull/2217)), thanks @Warxcell!
 * Enforce `@no-named-arguments` (https://github.com/phpstan/phpstan-src/commit/74ba8c23696948f2647d880df72f375346f41010), #5968
 * Check too wide private property type (https://github.com/phpstan/phpstan-src/commit/7453f4f75fae3d635063589467842aae29d88b54)
-* Check existing classes in `@param-out` (https://github.com/phpstan/phpstan-src/commit/30c4b9e80f51af8b5f166ba3aae93d8409c9c0ea), #10260
-* Check existing classes in `@param-closure-this` (https://github.com/phpstan/phpstan-src/commit/2fa539a39e06bcc3155b109fd8d246703ceb176d), #10933
-* Check invalid `@param-closure-this` (https://github.com/phpstan/phpstan-src/commit/95c0a5806c65c975201b9d3a464873f75a04c8b8), #10932
 * Check `@param-immediately-invoked-callable` and `@param-later-invoked-callable` (https://github.com/phpstan/phpstan-src/commit/580a6add422f4e34191df9e7a77ba1655e914bda), #10932
-* Check existing classes in `@phpstan-self-out` (https://github.com/phpstan/phpstan-src/commit/6838669976bf20232abde36ecdd52b1770fa50c9)
-* Check missing types in `@phpstan-self-out` (https://github.com/phpstan/phpstan-src/commit/892b319f25f04bc1b55c3d0063b607909612fe6d)
-* Check missing types in local type aliases (https://github.com/phpstan/phpstan-src/commit/ce7ffaf02d624a7fb9d38f8e5dffc9739f1233fc)
-* Check nonexistent classes in local type aliases (https://github.com/phpstan/phpstan-src/commit/2485b2e9c129e789ec3b2d7db81ca30f87c63911)
-* Check unresolvable types in local type aliases (https://github.com/phpstan/phpstan-src/commit/5f7d12b2fb2809525ab0e96eeae95093204ea4d3)
-* Check generics in local type aliases (https://github.com/phpstan/phpstan-src/commit/5a2d4416d94ab77a2a2e7e1bfaba4c5ed2a13c25)
-* Check missing types in `@mixin` (https://github.com/phpstan/phpstan-src/commit/3175c81f26fd5bcb4a161b24e774921870ed2533)
-* Check types in `@property` tags (https://github.com/phpstan/phpstan-src/commit/55ea2ae516df22a071ab873fdd6f748a3af0520e), #10752, #9356
-* Check types in `@method` tags (https://github.com/phpstan/phpstan-src/commit/5b7e474680eaf33874b7ed6a227677adcbed9ca5)
-* Check `@extends`, `@implements`, `@use` for unresolvable types (https://github.com/phpstan/phpstan-src/commit/2bb528233edb75312614166e282776f279cf2018), #11552
 * RegularExpressionPatternRule: validate preg_quote'd patterns ([#3270](https://github.com/phpstan/phpstan-src/pull/3270)), thanks @staabm!
 * Report useless return values of function calls like `var_export` without `$return=true` ([#3225](https://github.com/phpstan/phpstan-src/pull/3225)), #11320, thanks @staabm!
 * Check mixed in binary operator ([#3231](https://github.com/phpstan/phpstan-src/pull/3231)), #7538, #10440, thanks @schlndh!

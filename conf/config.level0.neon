@@ -32,8 +32,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.validatePregQuote%
 	PHPStan\Rules\Keywords\RequireFileExistsRule:
 		phpstan.rules.rule: %featureToggles.requireFileExists%
-	PHPStan\Rules\Classes\LocalTypeTraitUseAliasesRule:
-		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 
 rules:
 	- PHPStan\Rules\Api\ApiInstantiationRule
@@ -63,6 +61,7 @@ rules:
 	- PHPStan\Rules\Classes\InstantiationCallableRule
 	- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
 	- PHPStan\Rules\Classes\LocalTypeAliasesRule
+	- PHPStan\Rules\Classes\LocalTypeTraitUseAliasesRule
 	- PHPStan\Rules\Classes\LocalTypeTraitAliasesRule
 	- PHPStan\Rules\Classes\NewStaticRule
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
@@ -149,9 +148,6 @@ services:
 			- phpstan.rules.rule
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
-
-	-
-		class: PHPStan\Rules\Classes\LocalTypeTraitUseAliasesRule
 
 	-
 		class: PHPStan\Rules\Exceptions\CaughtExceptionExistenceRule

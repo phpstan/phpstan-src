@@ -35,7 +35,6 @@ final class GenericAncestorsCheck
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkGenericClassInNonGenericObjectType,
 		private array $skipCheckGenericClasses,
-		private bool $absentTypeChecks,
 	)
 	{
 	}
@@ -103,12 +102,10 @@ final class GenericAncestorsCheck
 			);
 			$messages = array_merge($messages, $genericObjectTypeCheckMessages);
 
-			if ($this->absentTypeChecks) {
-				if ($this->unresolvableTypeHelper->containsUnresolvableType($ancestorType)) {
-					$messages[] = RuleErrorBuilder::message($unresolvableTypeMessage)
-						->identifier('generics.unresolvable')
-						->build();
-				}
+			if ($this->unresolvableTypeHelper->containsUnresolvableType($ancestorType)) {
+				$messages[] = RuleErrorBuilder::message($unresolvableTypeMessage)
+					->identifier('generics.unresolvable')
+					->build();
 			}
 
 			foreach ($ancestorType->getReferencedClasses() as $referencedClass) {
@@ -116,10 +113,6 @@ final class GenericAncestorsCheck
 					$messages[] = RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))
 						->identifier('class.notFound')
 						->build();
-					continue;
-				}
-
-				if (!$this->absentTypeChecks) {
 					continue;
 				}
 

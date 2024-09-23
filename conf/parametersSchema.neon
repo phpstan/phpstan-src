@@ -74,7 +74,6 @@ parametersSchema:
 		validatePregQuote: bool()
 		narrowPregMatches: bool()
 		tooWidePropertyType: bool()
-		absentTypeChecks: bool()
 		requireFileExists: bool()
 	])
 	fileExtensions: listOf(string())

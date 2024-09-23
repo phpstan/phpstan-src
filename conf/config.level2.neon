@@ -12,6 +12,14 @@ rules:
 	- PHPStan\Rules\Cast\InvalidPartOfEncapsedStringRule
 	- PHPStan\Rules\Cast\PrintRule
 	- PHPStan\Rules\Classes\AccessPrivateConstantThroughStaticRule
+	- PHPStan\Rules\Classes\MethodTagRule
+	- PHPStan\Rules\Classes\MethodTagTraitRule
+	- PHPStan\Rules\Classes\MethodTagTraitUseRule
+	- PHPStan\Rules\Classes\PropertyTagRule
+	- PHPStan\Rules\Classes\PropertyTagTraitRule
+	- PHPStan\Rules\Classes\PropertyTagTraitUseRule
+	- PHPStan\Rules\Classes\MixinTraitRule
+	- PHPStan\Rules\Classes\MixinTraitUseRule
 	- PHPStan\Rules\Comparison\UsageOfVoidMatchExpressionRule
 	- PHPStan\Rules\Constants\ValueAssignedToClassConstantRule
 	- PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
@@ -25,6 +33,7 @@ rules:
 	- PHPStan\Rules\Generics\InterfaceTemplateTypeRule
 	- PHPStan\Rules\Generics\MethodTemplateTypeRule
 	- PHPStan\Rules\Generics\MethodTagTemplateTypeRule
+	- PHPStan\Rules\Generics\MethodTagTemplateTypeTraitRule
 	- PHPStan\Rules\Generics\MethodSignatureVarianceRule
 	- PHPStan\Rules\Generics\TraitTemplateTypeRule
 	- PHPStan\Rules\Generics\UsedTraitsRule
@@ -49,28 +58,10 @@ rules:
 	- PHPStan\Rules\PhpDoc\RequireExtendsDefinitionTraitRule
 
 conditionalTags:
-	PHPStan\Rules\Classes\MethodTagRule:
-		phpstan.rules.rule: %featureToggles.absentTypeChecks%
-	PHPStan\Rules\Classes\MethodTagTraitRule:
-		phpstan.rules.rule: %featureToggles.absentTypeChecks%
-	PHPStan\Rules\Classes\MethodTagTraitUseRule:
-		phpstan.rules.rule: %featureToggles.absentTypeChecks%
-	PHPStan\Rules\Classes\MixinTraitRule:
-		phpstan.rules.rule: %featureToggles.absentTypeChecks%
-	PHPStan\Rules\Classes\MixinTraitUseRule:
-		phpstan.rules.rule: %featureToggles.absentTypeChecks%
-	PHPStan\Rules\Classes\PropertyTagRule:
-		phpstan.rules.rule: %featureToggles.absentTypeChecks%
-	PHPStan\Rules\Classes\PropertyTagTraitRule:
-		phpstan.rules.rule: %featureToggles.absentTypeChecks%
-	PHPStan\Rules\Classes\PropertyTagTraitUseRule:
-		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule:
 		phpstan.rules.rule: %featureToggles.closureDefaultParameterTypeRule%
 	PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule:
 		phpstan.rules.rule: %featureToggles.closureDefaultParameterTypeRule%
-	PHPStan\Rules\Generics\MethodTagTemplateTypeTraitRule:
-		phpstan.rules.rule: %featureToggles.absentTypeChecks%
 	PHPStan\Rules\Methods\IllegalConstructorMethodCallRule:
 		phpstan.rules.rule: %featureToggles.illegalConstructorMethodCall%
 	PHPStan\Rules\Methods\IllegalConstructorStaticCallRule:
@@ -89,30 +80,6 @@ services:
 		class: PHPStan\Rules\Classes\MixinRule
 		tags:
 			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Classes\MixinTraitRule
-
-	-
-		class: PHPStan\Rules\Classes\MixinTraitUseRule
-
-	-
-		class: PHPStan\Rules\Classes\MethodTagRule
-
-	-
-		class: PHPStan\Rules\Classes\MethodTagTraitRule
-
-	-
-		class: PHPStan\Rules\Classes\MethodTagTraitUseRule
-
-	-
-		class: PHPStan\Rules\Classes\PropertyTagRule
-
-	-
-		class: PHPStan\Rules\Classes\PropertyTagTraitRule
-
-	-
-		class: PHPStan\Rules\Classes\PropertyTagTraitUseRule
 
 	-
 		class: PHPStan\Rules\PhpDoc\RequireExtendsCheck
@@ -137,8 +104,6 @@ services:
 		tags:
 			- phpstan.rules.rule
 
-	-
-		class: PHPStan\Rules\Generics\MethodTagTemplateTypeTraitRule
 	-
 		class: PHPStan\Rules\Methods\IllegalConstructorMethodCallRule
 	-

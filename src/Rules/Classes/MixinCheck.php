@@ -27,7 +27,6 @@ final class MixinCheck
 		private MissingTypehintCheck $missingTypehintCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkClassCaseSensitivity,
-		private bool $absentTypeChecks,
 		private bool $checkMissingTypehints,
 	)
 	{
@@ -62,10 +61,6 @@ final class MixinCheck
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))
 					->identifier('mixin.nonObject')
 					->build();
-				continue;
-			}
-
-			if (!$this->absentTypeChecks) {
 				continue;
 			}
 

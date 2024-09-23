@@ -44,7 +44,6 @@ final class LocalTypeAliasesCheck
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private bool $checkMissingTypehints,
 		private bool $checkClassCaseSensitivity,
-		private bool $absentTypeChecks,
 	)
 	{
 	}
@@ -179,10 +178,6 @@ final class LocalTypeAliasesCheck
 
 			$resolvedType = $typeAliasTag->getTypeAlias()->resolve($this->typeNodeResolver);
 			if ($this->hasErrorType($resolvedType, $aliasName, $errors)) {
-				continue;
-			}
-
-			if (!$this->absentTypeChecks) {
 				continue;
 			}
 

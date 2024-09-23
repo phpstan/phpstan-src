@@ -22,7 +22,6 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				true,
 				[],
-				true,
 			),
 			new CrossCheckInterfacesHelper(),
 		);

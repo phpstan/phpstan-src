@@ -37,7 +37,6 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 				new GenericObjectTypeCheck(),
 				true,
 				true,
-				true,
 			),
 		);
 	}

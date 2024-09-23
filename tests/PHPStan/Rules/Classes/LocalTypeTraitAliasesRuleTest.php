@@ -36,7 +36,6 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 				new GenericObjectTypeCheck(),
 				true,
 				true,
-				true,
 			),
 			$this->createReflectionProvider(),
 		);

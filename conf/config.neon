@@ -81,7 +81,6 @@ parameters:
 		requireFileExists: false
 		narrowPregMatches: true
 		tooWidePropertyType: false
-		absentTypeChecks: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -906,7 +905,6 @@ services:
 			globalTypeAliases: %typeAliases%
 			checkMissingTypehints: %checkMissingTypehints%
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
-			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\Classes\MethodTagCheck
@@ -918,7 +916,6 @@ services:
 		class: PHPStan\Rules\Classes\MixinCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
-			absentTypeChecks: %featureToggles.absentTypeChecks%
 			checkMissingTypehints: %checkMissingTypehints%
 
 	-
@@ -984,7 +981,6 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkThisOnly: %checkThisOnly%
-			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\FunctionReturnTypeCheck
@@ -999,7 +995,6 @@ services:
 		arguments:
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
-			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\Generics\GenericObjectTypeCheck

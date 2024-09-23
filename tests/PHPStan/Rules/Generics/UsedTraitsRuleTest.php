@@ -24,7 +24,6 @@ class UsedTraitsRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				true,
 				[],
-				true,
 			),
 		);
 	}

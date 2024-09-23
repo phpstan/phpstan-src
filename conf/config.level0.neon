@@ -28,8 +28,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.uselessReturnValue%
 	PHPStan\Rules\Functions\PrintfArrayParametersRule:
 		phpstan.rules.rule: %featureToggles.printfArrayParameters%
-	PHPStan\Rules\Regexp\RegularExpressionQuotingRule:
-		phpstan.rules.rule: %featureToggles.validatePregQuote%
 	PHPStan\Rules\Keywords\RequireFileExistsRule:
 		phpstan.rules.rule: %featureToggles.requireFileExists%
 
@@ -114,6 +112,8 @@ rules:
 	- PHPStan\Rules\Properties\PropertiesInInterfaceRule
 	- PHPStan\Rules\Properties\PropertyAttributesRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyRule
+	- PHPStan\Rules\Regexp\RegularExpressionPatternRule
+	- PHPStan\Rules\Regexp\RegularExpressionQuotingRule
 	- PHPStan\Rules\Traits\ConflictingTraitConstantsRule
 	- PHPStan\Rules\Traits\ConstantsInTraitsRule
 	- PHPStan\Rules\Types\InvalidTypesInUnionRule
@@ -280,11 +280,6 @@ services:
 			- phpstan.rules.rule
 
 	-
-		class: PHPStan\Rules\Regexp\RegularExpressionPatternRule
-		tags:
-			- phpstan.rules.rule
-
-	-
 		class: PHPStan\Reflection\ConstructorsHelper
 		arguments:
 			additionalConstructors: %additionalConstructors%
@@ -301,8 +296,6 @@ services:
 	-
 		class: PHPStan\Rules\Functions\PrintfArrayParametersRule
 
-	-
-		class: PHPStan\Rules\Regexp\RegularExpressionQuotingRule
 	-
 		class: PHPStan\Rules\Keywords\RequireFileExistsRule
 		arguments:

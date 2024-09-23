@@ -37,6 +37,5 @@ parameters:
 		checkParameterCastableToStringFunctions: true
 		uselessReturnValue: true
 		printfArrayParameters: true
-		validatePregQuote: true
 		tooWidePropertyType: true
 		requireFileExists: true

@@ -59,7 +59,6 @@ parameters:
 		checkParameterCastableToStringFunctions: false
 		uselessReturnValue: false
 		printfArrayParameters: false
-		validatePregQuote: false
 		requireFileExists: false
 		narrowPregMatches: true
 		tooWidePropertyType: false

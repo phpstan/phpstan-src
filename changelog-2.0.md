@@ -11,6 +11,7 @@ Major new features 🚀
     * [Learn more on phpstan.org](https://phpstan.org/blog/enhancements-in-handling-parameters-passed-by-reference)
     * [#2941](https://github.com/phpstan/phpstan-src/pull/2941), thanks @ljmaskey!
 * LogicalXorConstantConditionRule (level 4) (https://github.com/phpstan/phpstan-src/commit/3a12724fd636b1bcf36c22b36e8f765d97150895, https://github.com/phpstan/phpstan-src/commit/3b011f6524254dad0f16840fdcfdbe7421548617), #7539
+* Check preg_quote delimiter sanity (level 0) ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
 * Added previously absent type checks (level 0)
   * Check existing classes in `@phpstan-self-out` (https://github.com/phpstan/phpstan-src/commit/6838669976bf20232abde36ecdd52b1770fa50c9)
   * Check nonexistent classes in local type aliases (https://github.com/phpstan/phpstan-src/commit/2485b2e9c129e789ec3b2d7db81ca30f87c63911)
@@ -87,10 +88,8 @@ Bleeding edge (TODO move to other sections)
 * Enforce `@no-named-arguments` (https://github.com/phpstan/phpstan-src/commit/74ba8c23696948f2647d880df72f375346f41010), #5968
 * Check too wide private property type (https://github.com/phpstan/phpstan-src/commit/7453f4f75fae3d635063589467842aae29d88b54)
 * Check `@param-immediately-invoked-callable` and `@param-later-invoked-callable` (https://github.com/phpstan/phpstan-src/commit/580a6add422f4e34191df9e7a77ba1655e914bda), #10932
-* RegularExpressionPatternRule: validate preg_quote'd patterns ([#3270](https://github.com/phpstan/phpstan-src/pull/3270)), thanks @staabm!
 * Report useless return values of function calls like `var_export` without `$return=true` ([#3225](https://github.com/phpstan/phpstan-src/pull/3225)), #11320, thanks @staabm!
 * Check vprintf/vsprintf arguments against placeholder count ([#3126](https://github.com/phpstan/phpstan-src/pull/3126)), thanks @staabm!
-* Check preg_quote delimiter sanity ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
 * Check array functions which require stringish values ([#3132](https://github.com/phpstan/phpstan-src/pull/3132)), #11141, #5848, #3694, #11111, thanks @schlndh!
 
 Improvements 🔧

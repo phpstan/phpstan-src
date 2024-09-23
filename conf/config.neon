@@ -43,7 +43,6 @@ parameters:
 		nodeConnectingVisitorCompatibility: true
 		nodeConnectingVisitorRule: false
 		illegalConstructorMethodCall: false
-		disableCheckMissingIterableValueType: false
 		strictUnnecessaryNullsafePropertyFetch: false
 		looseComparison: false
 		consistentConstructor: false
@@ -96,7 +95,6 @@ parameters:
 	checkFunctionNameCase: false
 	checkGenericClassInNonGenericObjectType: false
 	checkInternalClassCaseSensitivity: false
-	checkMissingIterableValueType: false
 	checkMissingCallableSignature: false
 	checkMissingVarTagTypehint: false
 	checkArgumentsPassedByReference: false
@@ -1044,8 +1042,6 @@ services:
 	-
 		class: PHPStan\Rules\MissingTypehintCheck
 		arguments:
-			checkMissingIterableValueType: %checkMissingIterableValueType%
-			disableCheckMissingIterableValueType: %featureToggles.disableCheckMissingIterableValueType%
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			checkMissingCallableSignature: %checkMissingCallableSignature%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%

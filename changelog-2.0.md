@@ -38,7 +38,6 @@ Bleeding edge (TODO move to other sections)
     * In testing the memory consumption was reduced by 50–70 %.
 * ArrayUnpackingRule (level 3) ([#856](https://github.com/phpstan/phpstan-src/pull/856)), thanks @canvural!
 * Rules for checking direct calls to `__construct()` (level 2) ([#1208](https://github.com/phpstan/phpstan-src/pull/1208)), #7022, thanks @muno92!
-* `checkMissingIterableValueType: false` no longer does anything (https://github.com/phpstan/phpstan-src/commit/50d0c8e23ea85da508ab8481f1ff2c89148cc80b)
 * ConstantLooseComparisonRule - level 4 (https://github.com/phpstan/phpstan-src/commit/6ebf2361a3c831dd105a815521889428c295dc9f)
 * Unresolvable parameters ([#1319](https://github.com/phpstan/phpstan-src/pull/1319)), thanks @rvanvelzen!
 * Support `@readonly` property and `@immutable` class PHPDoc ([#1295](https://github.com/phpstan/phpstan-src/pull/1295), [#1335](https://github.com/phpstan/phpstan-src/pull/1335)), #4082, thanks @herndlm!

@@ -38,7 +38,6 @@ parametersSchema:
 		nodeConnectingVisitorCompatibility: bool(),
 		nodeConnectingVisitorRule: bool(),
 		illegalConstructorMethodCall: bool(),
-		disableCheckMissingIterableValueType: bool(),
 		strictUnnecessaryNullsafePropertyFetch: bool(),
 		looseComparison: bool(),
 		consistentConstructor: bool()
@@ -90,7 +89,6 @@ parametersSchema:
 	checkFunctionNameCase: bool()
 	checkGenericClassInNonGenericObjectType: bool()
 	checkInternalClassCaseSensitivity: bool()
-	checkMissingIterableValueType: bool()
 	checkMissingCallableSignature: bool()
 	checkMissingVarTagTypehint: bool()
 	checkArgumentsPassedByReference: bool()

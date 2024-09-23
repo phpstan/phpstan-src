@@ -8,7 +8,6 @@ parameters:
 		arrayValues: true
 		nodeConnectingVisitorCompatibility: false
 		nodeConnectingVisitorRule: true
-		disableCheckMissingIterableValueType: true
 		strictUnnecessaryNullsafePropertyFetch: true
 		looseComparison: true
 		consistentConstructor: true

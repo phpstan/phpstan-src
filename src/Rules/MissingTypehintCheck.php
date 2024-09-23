@@ -43,8 +43,6 @@ final class MissingTypehintCheck
 	 * @param string[] $skipCheckGenericClasses
 	 */
 	public function __construct(
-		private bool $disableCheckMissingIterableValueType,
-		private bool $checkMissingIterableValueType,
 		private bool $checkGenericClassInNonGenericObjectType,
 		private bool $checkMissingCallableSignature,
 		private array $skipCheckGenericClasses,
@@ -57,12 +55,6 @@ final class MissingTypehintCheck
 	 */
 	public function getIterableTypesWithMissingValueTypehint(Type $type): array
 	{
-		if (!$this->checkMissingIterableValueType) {
-			if (!$this->disableCheckMissingIterableValueType) {
-				return [];
-			}
-		}
-
 		$iterablesWithMissingValueTypehint = [];
 		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$iterablesWithMissingValueTypehint): Type {
 			if ($type instanceof TemplateType) {

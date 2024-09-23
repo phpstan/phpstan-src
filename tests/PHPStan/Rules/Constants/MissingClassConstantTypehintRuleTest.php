@@ -15,7 +15,7 @@ class MissingClassConstantTypehintRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MissingClassConstantTypehintRule(new MissingTypehintCheck(true, true, true, true, []));
+		return new MissingClassConstantTypehintRule(new MissingTypehintCheck(true, true, []));
 	}
 
 	public function testRule(): void

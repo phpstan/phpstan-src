@@ -14,7 +14,7 @@ class MissingMethodSelfOutTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		return new MissingMethodSelfOutTypeRule(new MissingTypehintCheck(true, true, true, true, []));
+		return new MissingMethodSelfOutTypeRule(new MissingTypehintCheck(true, true, []));
 	}
 
 	public function testRule(): void

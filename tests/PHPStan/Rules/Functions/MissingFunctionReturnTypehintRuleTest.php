@@ -14,7 +14,7 @@ class MissingFunctionReturnTypehintRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MissingFunctionReturnTypehintRule(new MissingTypehintCheck(true, true, true, true, []));
+		return new MissingFunctionReturnTypehintRule(new MissingTypehintCheck(true, true, []));
 	}
 
 	public function testRule(): void

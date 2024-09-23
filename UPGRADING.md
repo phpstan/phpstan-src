@@ -32,6 +32,19 @@ Don't forget to update [3rd party PHPStan extensions](https://phpstan.org/user-g
 
 After changing your `composer.json`, run `composer update 'phpstan/*' -W`.
 
+### Removed option `checkMissingIterableValueType`
+
+It's strongly recommended to add the missing array typehints.
+
+If you want to continue ignoring missing typehints from arrays, add `missingType.iterableValue` error identifier to your `ignoreErrors`:
+
+```neon
+parameters:
+	ignoreErrors:
+		-
+			identifier: missingType.iterableValue
+```
+
 ### Paths in `excludePaths` and `ignoreErrors` have to be a valid file path or a fnmatch pattern
 
 If you are excluding a file path that might not exist but you still want to have it in `excludePaths`, append `(?)`:

@@ -12,7 +12,6 @@ use Nette\InvalidStateException;
 use Nette\Schema\ValidationException;
 use Nette\Utils\AssertionException;
 use Nette\Utils\Strings;
-use PHPStan\Analyser\MutatingScope;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\Container;
@@ -522,12 +521,6 @@ final class CommandHelper
 			$errorOutput->writeLineFormatted(sprintf('Stub file %s does not exist.', $stubFile));
 
 			throw new InceptionNotSuccessfulException();
-		}
-
-		if ($container->hasParameter('scopeClass') && $container->getParameter('scopeClass') !== MutatingScope::class) {
-			$errorOutput->writeLineFormatted('⚠️  You\'re using a deprecated config option <fg=cyan>scopeClass</>. ⚠️️');
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted(sprintf('Please implement PHPStan\Type\ExpressionTypeResolverExtension interface instead and register it as a service.'));
 		}
 
 		$tempResultCachePath = $container->getParameter('tempResultCachePath');

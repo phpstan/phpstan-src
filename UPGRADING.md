@@ -83,6 +83,12 @@ parameters:
 
 Appending `(?)` in `ignoreErrors` is not supported.
 
+### Minor backward compatibility breaks
+
+* Removed unused config parameter `cache.nodesByFileCountMax`
+* Removed unused config parameter `memoryLimitFile`
+
+
 ## Upgrading guide for extension developers
 
 ### PHPStan now uses nikic/php-parser v5
@@ -142,10 +148,12 @@ If you want to change `$overwrite` or `$rootExpr` (previous parameters also used
 
 This method now longer accepts `Expr $rootExpr`. If you want to change it, call `setRootExpr()` on [`SpecifiedTypes`](https://apiref.phpstan.org/2.0.x/PHPStan.Analyser.SpecifiedTypes.html) (object returned by `TypeSpecifier::specifyTypesInCondition()`). `setRootExpr()` method returns a new object (SpecifiedTypes is immutable).
 
+### Removed config parameter `scopeClass`
+
+As a replacement you can implement [`PHPStan\Type\ExpressionTypeResolverExtension`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.ExpressionTypeResolverExtension.html) interface instead and register it as a service.
+
 ### Minor backward compatibility breaks
 
 * Parameter `$callableParameters` of [`MutatingScope::enterAnonymousFunction()`](https://apiref.phpstan.org/2.0.x/PHPStan.Analyser.MutatingScope.html#_enterAnonymousFunction) and [`enterArrowFunction()`](https://apiref.phpstan.org/2.0.x/PHPStan.Analyser.MutatingScope.html#_enterArrowFunction) made required
 * Parameter `StatementContext $context` of [`NodeScopeResolver::processStmtNodes()`](https://apiref.phpstan.org/2.0.x/PHPStan.Analyser.NodeScopeResolver.html#_processStmtNodes) made required
 * ClassPropertiesNode - remove `$extensions` parameter from [`getUninitializedProperties()`](https://apiref.phpstan.org/2.0.x/PHPStan.Node.ClassPropertiesNode.html#_getUninitializedProperties)
-* Removed unused config parameter `cache.nodesByFileCountMax`
-* Removed unused config parameter `memoryLimitFile`

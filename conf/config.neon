@@ -150,7 +150,6 @@ parameters:
 	cache:
 		nodesByStringCountMax: 256
 	reportUnmatchedIgnoredErrors: true
-	scopeClass: PHPStan\Analyser\MutatingScope
 	typeAliases: []
 	universalObjectCratesClasses:
 		- stdClass
@@ -496,8 +495,6 @@ services:
 
 	-
 		class: PHPStan\Analyser\LazyInternalScopeFactory
-		arguments:
-			scopeClass: %scopeClass%
 		autowired:
 			- PHPStan\Analyser\InternalScopeFactory
 

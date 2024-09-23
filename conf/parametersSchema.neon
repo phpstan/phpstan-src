@@ -179,7 +179,6 @@ parametersSchema:
 		nodesByStringCountMax: int()
 	])
 	reportUnmatchedIgnoredErrors: bool()
-	scopeClass: string()
 	typeAliases: arrayOf(string())
 	universalObjectCratesClasses: listOf(string())
 	stubFiles: listOf(string())

@@ -7,6 +7,7 @@ use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProv
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
@@ -14,17 +15,11 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
-use PHPStan\ShouldNotHappenException;
-use function is_a;
 
 final class DirectInternalScopeFactory implements InternalScopeFactory
 {
 
-	/**
-	 * @param class-string $scopeClass
-	 */
 	public function __construct(
-		private string $scopeClass,
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
@@ -51,7 +46,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
-		FunctionReflection|MethodReflection|null $function = null,
+		FunctionReflection|ExtendedMethodReflection|null $function = null,
 		?string $namespace = null,
 		array $expressionTypes = [],
 		array $nativeExpressionTypes = [],
@@ -67,12 +62,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		bool $nativeTypesPromoted = false,
 	): MutatingScope
 	{
-		$scopeClass = $this->scopeClass;
-		if (!is_a($scopeClass, MutatingScope::class, true)) {
-			throw new ShouldNotHappenException();
-		}
-
-		return new $scopeClass(
+		return new MutatingScope(
 			$this,
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,

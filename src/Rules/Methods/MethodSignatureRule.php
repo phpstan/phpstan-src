@@ -44,7 +44,6 @@ final class MethodSignatureRule implements Rule
 		private PhpClassReflectionExtension $phpClassReflectionExtension,
 		private bool $reportMaybes,
 		private bool $reportStatic,
-		private bool $abstractTraitMethod,
 	)
 	{
 	}
@@ -169,30 +168,28 @@ final class MethodSignatureRule implements Rule
 			$parentMethods[] = [$method, $method->getDeclaringClass()];
 		}
 
-		if ($this->abstractTraitMethod) {
-			foreach ($class->getTraits(true) as $trait) {
-				$nativeTraitReflection = $trait->getNativeReflection();
-				if (!$nativeTraitReflection->hasMethod($methodName)) {
-					continue;
-				}
-
-				$methodReflection = $nativeTraitReflection->getMethod($methodName);
-				$isAbstract = $methodReflection->isAbstract();
-				if (!$isAbstract) {
-					continue;
-				}
-
-				$declaringTrait = $trait->getNativeMethod($methodName)->getDeclaringClass();
-				$parentMethods[] = [
-					$this->phpClassReflectionExtension->createUserlandMethodReflection(
-						$trait,
-						$class,
-						new NativeBuiltinMethodReflection($methodReflection),
-						$declaringTrait->getName(),
-					),
-					$declaringTrait,
-				];
+		foreach ($class->getTraits(true) as $trait) {
+			$nativeTraitReflection = $trait->getNativeReflection();
+			if (!$nativeTraitReflection->hasMethod($methodName)) {
+				continue;
 			}
+
+			$methodReflection = $nativeTraitReflection->getMethod($methodName);
+			$isAbstract = $methodReflection->isAbstract();
+			if (!$isAbstract) {
+				continue;
+			}
+
+			$declaringTrait = $trait->getNativeMethod($methodName)->getDeclaringClass();
+			$parentMethods[] = [
+				$this->phpClassReflectionExtension->createUserlandMethodReflection(
+					$trait,
+					$class,
+					new NativeBuiltinMethodReflection($methodReflection),
+					$declaringTrait->getName(),
+				),
+				$declaringTrait,
+			];
 		}
 
 		return $parentMethods;

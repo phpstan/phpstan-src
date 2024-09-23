@@ -52,7 +52,6 @@ parameters:
 		runtimeReflectionRules: false
 		notAnalysedTrait: false
 		curlSetOptTypes: false
-		abstractTraitMethod: false
 		missingMagicSerializationRule: false
 		nullContextForVoidReturningFunctions: false
 		unescapeStrings: false
@@ -1046,7 +1045,6 @@ services:
 		arguments:
 			reportMaybes: %reportMaybesInMethodSignatures%
 			reportStatic: %reportStaticMethodSignatures%
-			abstractTraitMethod: %featureToggles.abstractTraitMethod%
 
 	-
 		class: PHPStan\Rules\Methods\MethodParameterComparisonHelper

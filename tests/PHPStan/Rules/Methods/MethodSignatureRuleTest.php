@@ -26,7 +26,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 		return new OverridingMethodRule(
 			$phpVersion,
-			new MethodSignatureRule($phpClassReflectionExtension, $this->reportMaybes, $this->reportStatic, true),
+			new MethodSignatureRule($phpClassReflectionExtension, $this->reportMaybes, $this->reportStatic),
 			true,
 			new MethodParameterComparisonHelper($phpVersion, true),
 			$phpClassReflectionExtension,

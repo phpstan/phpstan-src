@@ -16,18 +16,11 @@ use const PATH_SEPARATOR;
 class RequireFileExistsRuleTest extends RuleTestCase
 {
 
-	private RequireFileExistsRule $rule;
-
-	public function setUp(): void
-	{
-		parent::setUp();
-
-		$this->rule = $this->getDefaultRule();
-	}
+	private string $currentWorkingDirectory = __DIR__ . '/../';
 
 	protected function getRule(): Rule
 	{
-		return $this->rule;
+		return new RequireFileExistsRule($this->currentWorkingDirectory);
 	}
 
 	public static function getAdditionalConfigFiles(): array
@@ -35,11 +28,6 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		return [
 			__DIR__ . '/../../Analyser/usePathConstantsAsConstantString.neon',
 		];
-	}
-
-	private function getDefaultRule(): RequireFileExistsRule
-	{
-		return new RequireFileExistsRule(__DIR__ . '/../');
 	}
 
 	public function testBasicCase(): void
@@ -124,13 +112,8 @@ class RequireFileExistsRuleTest extends RuleTestCase
 
 	public function testRelativePathWithSameWorkingDirectory(): void
 	{
-		$this->rule = new RequireFileExistsRule(__DIR__);
-
-		try {
-			$this->analyse([__DIR__ . '/data/require-file-relative-path.php'], []);
-		} finally {
-			$this->rule = $this->getDefaultRule();
-		}
+		$this->currentWorkingDirectory = __DIR__;
+		$this->analyse([__DIR__ . '/data/require-file-relative-path.php'], []);
 	}
 
 }

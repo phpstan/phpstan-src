@@ -41,7 +41,6 @@ parameters:
 		disableUnreachableBranchesRules: false
 		varTagType: false
 		closureDefaultParameterTypeRule: false
-		instanceofType: false
 		propertyVariance: false
 		stricterFunctionMap: false
 		callUserFunc: false
@@ -247,8 +246,6 @@ conditionalTags:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
 	PHPStan\Parser\CurlSetOptArgVisitor:
 		phpstan.parser.richParserNodeVisitor: %featureToggles.curlSetOptTypes%
-	PHPStan\Parser\TypeTraverserInstanceofVisitor:
-		phpstan.parser.richParserNodeVisitor: %featureToggles.instanceofType%
 
 services:
 	-
@@ -336,6 +333,11 @@ services:
 
 	-
 		class: PHPStan\Parser\LastConditionVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
+		class: PHPStan\Parser\TypeTraverserInstanceofVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor
 

@@ -20,7 +20,6 @@ parameters:
 		disableUnreachableBranchesRules: true
 		varTagType: true
 		closureDefaultParameterTypeRule: true
-		instanceofType: true
 		propertyVariance: true
 		callUserFunc: true
 		magicConstantOutOfContext: true

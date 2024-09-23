@@ -47,7 +47,6 @@ parametersSchema:
 		disableUnreachableBranchesRules: bool()
 		varTagType: bool()
 		closureDefaultParameterTypeRule: bool()
-		instanceofType: bool()
 		propertyVariance: bool()
 		stricterFunctionMap: bool()
 		callUserFunc: bool()

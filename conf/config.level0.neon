@@ -23,6 +23,7 @@ conditionalTags:
 
 rules:
 	- PHPStan\Rules\Api\ApiInstanceofRule
+	- PHPStan\Rules\Api\ApiInstanceofTypeRule
 	- PHPStan\Rules\Api\ApiInstantiationRule
 	- PHPStan\Rules\Api\ApiClassConstFetchRule
 	- PHPStan\Rules\Api\ApiClassExtendsRule
@@ -116,13 +117,6 @@ rules:
 	- PHPStan\Rules\Whitespace\FileWhitespaceRule
 
 services:
-	-
-		class: PHPStan\Rules\Api\ApiInstanceofTypeRule
-		arguments:
-			enabled: %featureToggles.instanceofType%
-			deprecationRulesInstalled: %deprecationRulesInstalled%
-		tags:
-			- phpstan.rules.rule
 	-
 		class: PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
 		tags:

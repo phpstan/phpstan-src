@@ -128,6 +128,10 @@ return [
 ];
 ```
 
+### Deprecate various `instanceof *Type` in favour of new methods on `Type` interface
+
+Learn more: [Why Is instanceof *Type Wrong and Getting Deprecated?](https://phpstan.org/blog/why-is-instanceof-type-wrong-and-getting-deprecated)
+
 ### Changed `TypeSpecifier::create()` and `SpecifiedTypes` constructor parameters
 
 [`PHPStan\Analyser\TypeSpecifier::create()`](https://apiref.phpstan.org/2.0.x/PHPStan.Analyser.TypeSpecifier.html#_create) now accepts (all parameters are required):

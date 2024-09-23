@@ -94,8 +94,6 @@ final class ApiInstanceofTypeRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private bool $enabled,
-		private bool $deprecationRulesInstalled,
 	)
 	{
 	}
@@ -107,10 +105,6 @@ final class ApiInstanceofTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$this->enabled && !$this->deprecationRulesInstalled) {
-			return [];
-		}
-
 		if (!$node->class instanceof Node\Name) {
 			return [];
 		}

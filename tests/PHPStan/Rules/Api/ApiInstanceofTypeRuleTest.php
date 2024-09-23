@@ -13,7 +13,7 @@ class ApiInstanceofTypeRuleTest extends RuleTestCase
 
 	public function getRule(): Rule
 	{
-		return new ApiInstanceofTypeRule($this->createReflectionProvider(), true, true);
+		return new ApiInstanceofTypeRule($this->createReflectionProvider());
 	}
 
 	public function testRule(): void

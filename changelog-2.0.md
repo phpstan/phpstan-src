@@ -39,6 +39,7 @@ Major new features 🚀
     * Report `instanceof` of classes not covered by backward compatibility promise (https://github.com/phpstan/phpstan-src/commit/ff4d02d62a7a2e2c4d928d48d31d49246dba7139)
     * Report `instanceof` of classes covered by backward compatibility promise but where the assumption might change (https://github.com/phpstan/phpstan-src/commit/996bc69fa977aa64f601bd82b8a0ae39be0cbeef)
 * Check that PHPStan class in class constant fetch is covered by backward compatibility promise (level 0) (https://github.com/phpstan/phpstan-src/commit/9e007251ce61788f6a0319a53f1de6cf801ed233)
+* Deprecate various `instanceof *Type` in favour of new methods on `Type` interface, (https://github.com/phpstan/phpstan-src/commit/436e6d3015cbeba4645d38bc7a6a865b9c6d7c74), learn more: [Why Is instanceof *Type Wrong and Getting Deprecated?](https://phpstan.org/blog/why-is-instanceof-type-wrong-and-getting-deprecated)
 
 Bleeding edge (TODO move to other sections)
 =====================
@@ -61,7 +62,6 @@ Bleeding edge (TODO move to other sections)
 * Disable "unreachable branches" rules: UnreachableIfBranchesRule, UnreachableTernaryElseBranchRule, unreachable arm error in MatchExpressionRule
     * Because "always true" is always reported, these are no longer needed
 * IncompatibleDefaultParameterTypeRule for closures (https://github.com/phpstan/phpstan-src/commit/0264f5bc48448c7e02a23b82eef4177d0617a82f)
-* Deprecate various `instanceof *Type` in favour of new methods on `Type` interface, (https://github.com/phpstan/phpstan-src/commit/436e6d3015cbeba4645d38bc7a6a865b9c6d7c74), learn more: [Why Is instanceof *Type Wrong and Getting Deprecated?](https://phpstan.org/blog/why-is-instanceof-type-wrong-and-getting-deprecated)
 * Check variance of template types in properties ([#2314](https://github.com/phpstan/phpstan-src/pull/2314)), thanks @jiripudil!
 * Report narrowing `PHPStan\Type\Type` interface via `@var` (https://github.com/phpstan/phpstan-src/commit/713b98fb107213c28e3d8c8b4b43c5f5fc47c144), https://github.com/nunomaduro/larastan/issues/1567#issuecomment-1460445389
 * Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)

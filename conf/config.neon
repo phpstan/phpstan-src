@@ -43,7 +43,6 @@ parameters:
 		nullContextForVoidReturningFunctions: false
 		unescapeStrings: false
 		alwaysCheckTooWideReturnTypeFinalMethods: false
-		logicalXor: false
 		betterNoop: false
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false

@@ -26,8 +26,6 @@ conditionalTags:
 		phpstan.collector: %featureToggles.notAnalysedTrait%
 	PHPStan\Rules\Traits\NotAnalysedTraitRule:
 		phpstan.rules.rule: %featureToggles.notAnalysedTrait%
-	PHPStan\Rules\Comparison\LogicalXorConstantConditionRule:
-		phpstan.rules.rule: %featureToggles.logicalXor%
 	PHPStan\Rules\DeadCode\BetterNoopRule:
 		phpstan.rules.rule: %featureToggles.betterNoop%
 	PHPStan\Rules\DeadCode\CallToConstructorStatementWithoutImpurePointsRule:
@@ -199,6 +197,8 @@ services:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\DeadCode\BetterNoopRule

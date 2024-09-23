@@ -32,7 +32,6 @@ parameters:
 		paramOutVariance: true
 		strictStaticMethodTemplateTypeVariance: true
 		propertyVariance: true
-		genericPrototypeMessage: true
 		stricterFunctionMap: true
 		zeroFiles: true
 		projectServicesNotInAnalysedPaths: true

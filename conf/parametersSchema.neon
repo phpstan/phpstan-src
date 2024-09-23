@@ -62,7 +62,6 @@ parametersSchema:
 		paramOutVariance: bool()
 		strictStaticMethodTemplateTypeVariance: bool()
 		propertyVariance: bool()
-		genericPrototypeMessage: bool()
 		stricterFunctionMap: bool()
 		zeroFiles: bool()
 		projectServicesNotInAnalysedPaths: bool()

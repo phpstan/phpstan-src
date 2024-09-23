@@ -51,7 +51,6 @@ Bleeding edge (TODO move to other sections)
 * Specify `Imagick` parameter types ([#2334](https://github.com/phpstan/phpstan-src/pull/2334)), thanks @zonuexe!
 * Fix position variance of static method parameters ([#2313](https://github.com/phpstan/phpstan-src/pull/2313)), thanks @jiripudil!
 * Check variance of template types in properties ([#2314](https://github.com/phpstan/phpstan-src/pull/2314)), thanks @jiripudil!
-* OverridingMethodRule - include template types in prototype declaring class description (https://github.com/phpstan/phpstan-src/commit/ca2c66cc4dff59ba44d52b82cb9e0aa3256240f3)
 * Report narrowing `PHPStan\Type\Type` interface via `@var` (https://github.com/phpstan/phpstan-src/commit/713b98fb107213c28e3d8c8b4b43c5f5fc47c144), https://github.com/nunomaduro/larastan/issues/1567#issuecomment-1460445389
 * Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)
 * InvalidPHPStanDocTagRule in StubValidator (https://github.com/phpstan/phpstan-src/commit/9c2552b7e744926d1a74c1ba8fd32c64079eed61)
@@ -139,6 +138,7 @@ Improvements 🔧
 * Report "missing return" error closer to where the return is missing (https://github.com/phpstan/phpstan-src/commit/04f8636e6577cbcaefc944725eed74c0d7865ead)
 * Report dead types even in multi-exception catch ([#2399](https://github.com/phpstan/phpstan-src/pull/2399)), thanks @JanTvrdik!
 * MethodSignatureRule - look at abstract trait method (https://github.com/phpstan/phpstan-src/commit/5fd8cee591ce1b07daa5f98a1ddcdfc723f1b5eb)
+* OverridingMethodRule - include template types in prototype declaring class description (https://github.com/phpstan/phpstan-src/commit/ca2c66cc4dff59ba44d52b82cb9e0aa3256240f3)
 
 Bugfixes 🐛
 =====================

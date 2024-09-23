@@ -38,7 +38,6 @@ final class OverridingMethodRule implements Rule
 		private bool $checkPhpDocMethodSignatures,
 		private MethodParameterComparisonHelper $methodParameterComparisonHelper,
 		private PhpClassReflectionExtension $phpClassReflectionExtension,
-		private bool $genericPrototypeMessage,
 		private bool $finalByPhpDoc,
 		private bool $checkMissingOverrideMethodAttribute,
 	)
@@ -65,7 +64,7 @@ final class OverridingMethodRule implements Rule
 								'Method %s::%s() overrides final method %s::%s().',
 								$method->getDeclaringClass()->getDisplayName(),
 								$method->getName(),
-								$parent->getDisplayName($this->genericPrototypeMessage),
+								$parent->getDisplayName(true),
 								$parentConstructor->getName(),
 							))
 								->nonIgnorable()
@@ -79,7 +78,7 @@ final class OverridingMethodRule implements Rule
 								'Method %s::%s() overrides @final method %s::%s().',
 								$method->getDeclaringClass()->getDisplayName(),
 								$method->getName(),
-								$parent->getDisplayName($this->genericPrototypeMessage),
+								$parent->getDisplayName(true),
 								$parentConstructor->getName(),
 							))->identifier('method.parentMethodFinalByPhpDoc')
 								->build(),
@@ -116,7 +115,7 @@ final class OverridingMethodRule implements Rule
 				'Method %s::%s() overrides method %s::%s() but is missing the #[\Override] attribute.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+				$prototypeDeclaringClass->getDisplayName(true),
 				$prototype->getName(),
 			))->identifier('method.missingOverride')->build();
 		}
@@ -125,7 +124,7 @@ final class OverridingMethodRule implements Rule
 				'Method %s::%s() overrides final method %s::%s().',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+				$prototypeDeclaringClass->getDisplayName(true),
 				$prototype->getName(),
 			))
 				->nonIgnorable()
@@ -136,7 +135,7 @@ final class OverridingMethodRule implements Rule
 				'Method %s::%s() overrides @final method %s::%s().',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+				$prototypeDeclaringClass->getDisplayName(true),
 				$prototype->getName(),
 			))->identifier('method.parentMethodFinalByPhpDoc')
 				->build();
@@ -148,7 +147,7 @@ final class OverridingMethodRule implements Rule
 					'Non-static method %s::%s() overrides static method %s::%s().',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName(true),
 					$prototype->getName(),
 				))
 					->nonIgnorable()
@@ -160,7 +159,7 @@ final class OverridingMethodRule implements Rule
 				'Static method %s::%s() overrides non-static method %s::%s().',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+				$prototypeDeclaringClass->getDisplayName(true),
 				$prototype->getName(),
 			))
 				->nonIgnorable()
@@ -176,7 +175,7 @@ final class OverridingMethodRule implements Rule
 						$method->isPrivate() ? 'Private' : 'Protected',
 						$method->getDeclaringClass()->getDisplayName(),
 						$method->getName(),
-						$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+						$prototypeDeclaringClass->getDisplayName(true),
 						$prototype->getName(),
 					))
 						->nonIgnorable()
@@ -188,7 +187,7 @@ final class OverridingMethodRule implements Rule
 					'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName(true),
 					$prototype->getName(),
 				))
 					->nonIgnorable()
@@ -223,7 +222,7 @@ final class OverridingMethodRule implements Rule
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$realPrototype->getTentativeReturnType()->describe(VerbosityLevel::typeOnly()),
-					$realPrototype->getDeclaringClass()->getDisplayName($this->genericPrototypeMessage),
+					$realPrototype->getDeclaringClass()->getDisplayName(true),
 					$realPrototype->getName(),
 				))
 					->tip('Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.')
@@ -273,7 +272,7 @@ final class OverridingMethodRule implements Rule
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
-					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName(true),
 					$prototype->getName(),
 				))
 					->nonIgnorable()
@@ -286,7 +285,7 @@ final class OverridingMethodRule implements Rule
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
-					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName(true),
 					$prototype->getName(),
 				))
 					->nonIgnorable()

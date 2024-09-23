@@ -68,7 +68,6 @@ parameters:
 
 		strictStaticMethodTemplateTypeVariance: false
 		propertyVariance: false
-		genericPrototypeMessage: false
 		stricterFunctionMap: false
 		zeroFiles: false
 		projectServicesNotInAnalysedPaths: false
@@ -1048,8 +1047,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Methods\MethodParameterComparisonHelper
-		arguments:
-			genericPrototypeMessage: %featureToggles.genericPrototypeMessage%
 
 	-
 		class: PHPStan\Rules\MissingTypehintCheck

@@ -178,7 +178,6 @@ services:
 		class: PHPStan\Rules\Methods\OverridingMethodRule
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
-			genericPrototypeMessage: %featureToggles.genericPrototypeMessage%
 			finalByPhpDoc: %featureToggles.finalByPhpDoc%
 			checkMissingOverrideMethodAttribute: %checkMissingOverrideMethodAttribute%
 		tags:

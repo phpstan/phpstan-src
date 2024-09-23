@@ -24,7 +24,7 @@ use function sprintf;
 final class MethodParameterComparisonHelper
 {
 
-	public function __construct(private PhpVersion $phpVersion, private bool $genericPrototypeMessage)
+	public function __construct(private PhpVersion $phpVersion)
 	{
 	}
 
@@ -47,7 +47,7 @@ final class MethodParameterComparisonHelper
 					'Method %s::%s() overrides method %s::%s() but misses parameter #%d $%s.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName(true),
 					$prototype->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
@@ -73,7 +73,7 @@ final class MethodParameterComparisonHelper
 						$method->getName(),
 						$i + 1,
 						$prototypeParameter->getName(),
-						$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+						$prototypeDeclaringClass->getDisplayName(true),
 						$prototype->getName(),
 					))->identifier('parameter.byRef');
 
@@ -92,7 +92,7 @@ final class MethodParameterComparisonHelper
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName(true),
 					$prototype->getName(),
 				))->identifier('parameter.notByRef');
 
@@ -133,7 +133,7 @@ final class MethodParameterComparisonHelper
 							$method->getName(),
 							$i + 1,
 							$prototypeParameter->getName(),
-							$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+							$prototypeDeclaringClass->getDisplayName(true),
 							$prototype->getName(),
 						))->identifier('parameter.notVariadic');
 
@@ -178,7 +178,7 @@ final class MethodParameterComparisonHelper
 							$i + $j + 1,
 							$remainingPrototypeParameter->getName(),
 							$remainingPrototypeParameter->getNativeType()->describe(VerbosityLevel::typeOnly()),
-							$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+							$prototypeDeclaringClass->getDisplayName(true),
 							$prototype->getName(),
 						))->identifier('method.childParameterType');
 
@@ -198,7 +198,7 @@ final class MethodParameterComparisonHelper
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName(true),
 					$prototype->getName(),
 				))->identifier('parameter.variadic');
 
@@ -220,7 +220,7 @@ final class MethodParameterComparisonHelper
 					$method->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName(true),
 					$prototype->getName(),
 				))->identifier('parameter.notOptional');
 
@@ -246,7 +246,7 @@ final class MethodParameterComparisonHelper
 						$i + 1,
 						$prototypeParameter->getName(),
 						$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-						$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+						$prototypeDeclaringClass->getDisplayName(true),
 						$prototype->getName(),
 					))->identifier('method.childParameterType');
 
@@ -274,7 +274,7 @@ final class MethodParameterComparisonHelper
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName(true),
 					$prototype->getName(),
 				))->identifier('method.childParameterType');
 
@@ -294,7 +294,7 @@ final class MethodParameterComparisonHelper
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-					$prototypeDeclaringClass->getDisplayName($this->genericPrototypeMessage),
+					$prototypeDeclaringClass->getDisplayName(true),
 					$prototype->getName(),
 				))->identifier('method.childParameterType');
 

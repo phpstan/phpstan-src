@@ -178,7 +178,6 @@ services:
 		class: PHPStan\Rules\Methods\OverridingMethodRule
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
-			finalByPhpDoc: %featureToggles.finalByPhpDoc%
 			checkMissingOverrideMethodAttribute: %checkMissingOverrideMethodAttribute%
 		tags:
 			- phpstan.rules.rule

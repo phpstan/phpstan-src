@@ -36,7 +36,6 @@ parameters:
 		zeroFiles: true
 		projectServicesNotInAnalysedPaths: true
 		callUserFunc: true
-		finalByPhpDoc: true
 		magicConstantOutOfContext: true
 		pure: true
 		checkParameterCastableToStringFunctions: true

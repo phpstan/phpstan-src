@@ -32,7 +32,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 			false,
 			new MethodParameterComparisonHelper($phpVersion),
 			$phpClassReflectionExtension,
-			true,
 			$this->checkMissingOverrideMethodAttribute,
 		);
 	}

@@ -72,7 +72,6 @@ parameters:
 		zeroFiles: false
 		projectServicesNotInAnalysedPaths: false
 		callUserFunc: false
-		finalByPhpDoc: false
 		magicConstantOutOfContext: false
 		pure: false
 		checkParameterCastableToStringFunctions: false

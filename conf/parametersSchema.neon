@@ -58,7 +58,6 @@ parametersSchema:
 		strictStaticMethodTemplateTypeVariance: bool()
 		propertyVariance: bool()
 		stricterFunctionMap: bool()
-		zeroFiles: bool()
 		projectServicesNotInAnalysedPaths: bool()
 		callUserFunc: bool()
 		magicConstantOutOfContext: bool()

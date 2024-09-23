@@ -56,7 +56,6 @@ Bleeding edge (TODO move to other sections)
 * Move IllegalConstructorMethodCallRule and IllegalConstructorStaticCallRule to phpstan-strict-rules (https://github.com/phpstan/phpstan-src/commit/124b30f98c182193187be0b9c2e151e477429b7a, https://github.com/phpstan/phpstan-strict-rules/commit/0c82c96f2a55d8b91bbc7ee6512c94f68a206b43)
 * Add `@readonly` rule that disallows default values ([#1391](https://github.com/phpstan/phpstan-src/pull/1391)), thanks @herndlm!
 * MissingMagicSerializationMethodsRule ([#1711](https://github.com/phpstan/phpstan-src/pull/1711)), #7482, thanks @staabm!
-* Empty `skipCheckGenericClasses` (https://github.com/phpstan/phpstan-src/commit/28c2c79b16cac6ba6b01f1b4d211541dd49d8a77)
 * Validate inline PHPDoc `@var` tag type against native type (https://github.com/phpstan/phpstan-src/commit/a69e3bc2f1e87f6da1e65d7935f1cc36bd5c42fe)
     * Set [`reportWrongPhpDocTypeInVarTag`](https://phpstan.org/config-reference#reportwrongphpdoctypeinvartag) to `true` to have all types validated, not just native ones
 * Always report always true conditions, except for last elseif and match arm ([#2105](https://github.com/phpstan/phpstan-src/pull/2105)), thanks @staabm!
@@ -126,6 +125,7 @@ Improvements 🔧
 * Improve impossible type checker for void-returning functions ([#1857](https://github.com/phpstan/phpstan-src/pull/1857)), #8169, thanks @rvanvelzen!
 * Check template type variance in `@param-out` (https://github.com/phpstan/phpstan-src/commit/7ceb19d3b42cf4632d10c2babb0fc5a21b6c8352), https://github.com/phpstan/phpstan/issues/8880#issuecomment-1426971473
 * Fix position variance of static method parameters ([#2313](https://github.com/phpstan/phpstan-src/pull/2313)), thanks @jiripudil!
+* Empty `skipCheckGenericClasses` (https://github.com/phpstan/phpstan-src/commit/28c2c79b16cac6ba6b01f1b4d211541dd49d8a77)
 
 Bugfixes 🐛
 =====================

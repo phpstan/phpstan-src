@@ -1782,4 +1782,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9224.php'], []);
 	}
 
+	public function testBug7082(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-7082.php'], [
+			[
+				'Parameter #1 $val of function Bug7082\takesStr expects string, mixed given.',
+				11,
+			],
+		]);
+	}
+
 }

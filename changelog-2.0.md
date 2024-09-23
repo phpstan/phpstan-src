@@ -133,10 +133,10 @@ Improvements 🔧
 * Returning plain strings as errors no longer supported, use RuleErrorBuilder
     * Learn more: [Using RuleErrorBuilder to enrich reported errors in custom rules](https://phpstan.org/blog/using-rule-error-builder)
 * Require identifier in custom rules (https://github.com/phpstan/phpstan-src/commit/969e6fa31d5484d42dab902703cfc6820a983cfd)
-* New `RuleLevelHelper::accepts()` behaviour (https://github.com/phpstan/phpstan-src/commit/941fc815db49315b8783dc466cf593e0d8a85d23)
+* New `RuleLevelHelper::accepts()` behaviour (https://github.com/phpstan/phpstan-src/commit/941fc815db49315b8783dc466cf593e0d8a85d23), #11119, #4174
 * Infer explicit mixed when instantiating generic class with unknown template types (https://github.com/phpstan/phpstan-src/commit/089d4c6fb6eb709c44123548d33990113d174b86), #6398
-* Use explicit mixed for global array variables ([#1411](https://github.com/phpstan/phpstan-src/pull/1411)), thanks @herndlm!
-* Consider implicit throw points when the only explicit one is `Throw_` (https://github.com/phpstan/phpstan-src/commit/22eef6d5ab9a4afafb2305258fea273be6cc06e4)
+* Use explicit mixed for global array variables ([#1411](https://github.com/phpstan/phpstan-src/pull/1411)), #7082, thanks @herndlm!
+* Consider implicit throw points when the only explicit one is `Throw_` (https://github.com/phpstan/phpstan-src/commit/22eef6d5ab9a4afafb2305258fea273be6cc06e4), #4912
 * Run missing type check on `@param-out` (https://github.com/phpstan/phpstan-src/commit/56b20024386d983927c64dfa895ff026bed2798c)
 * Report "missing return" error closer to where the return is missing (https://github.com/phpstan/phpstan-src/commit/04f8636e6577cbcaefc944725eed74c0d7865ead)
 

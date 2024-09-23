@@ -168,4 +168,9 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11119(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11119.php'], []);
+	}
+
 }

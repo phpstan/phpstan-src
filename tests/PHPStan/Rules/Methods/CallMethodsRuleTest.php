@@ -3375,4 +3375,18 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10159.php'], []);
 	}
 
+	public function testBug1953(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-1953.php'], [
+			[
+				'Cannot call method bar() on string.',
+				12,
+			],
+		]);
+	}
+
 }

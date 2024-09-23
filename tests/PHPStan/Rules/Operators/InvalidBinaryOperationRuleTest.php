@@ -801,4 +801,16 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7863(): void
+	{
+		$this->checkImplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-7863.php'], [
+			[
+				'Binary operation "+" between mixed and array results in an error.',
+				10,
+			],
+		]);
+	}
+
 }

@@ -37,7 +37,6 @@ parametersSchema:
 		strictUnnecessaryNullsafePropertyFetch: bool(),
 		looseComparison: bool(),
 		consistentConstructor: bool()
-		checkUnresolvableParameterTypes: bool()
 		readOnlyByPhpDoc: bool()
 		missingMagicSerializationRule: bool()
 		alwaysCheckTooWideReturnTypeFinalMethods: bool()

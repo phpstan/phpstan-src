@@ -54,7 +54,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				true,
 				true,
 				true,
-				true,
 			),
 		);
 	}

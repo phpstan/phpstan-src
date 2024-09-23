@@ -10,7 +10,6 @@ parameters:
 		strictUnnecessaryNullsafePropertyFetch: true
 		looseComparison: true
 		consistentConstructor: true
-		checkUnresolvableParameterTypes: true
 		readOnlyByPhpDoc: true
 		missingMagicSerializationRule: true
 		alwaysCheckTooWideReturnTypeFinalMethods: true

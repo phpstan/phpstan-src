@@ -31,7 +31,6 @@ parameters:
 		strictUnnecessaryNullsafePropertyFetch: false
 		looseComparison: false
 		consistentConstructor: false
-		checkUnresolvableParameterTypes: false
 		readOnlyByPhpDoc: false
 		missingMagicSerializationRule: false
 		alwaysCheckTooWideReturnTypeFinalMethods: false
@@ -927,7 +926,6 @@ services:
 			checkArgumentsPassedByReference: %checkArgumentsPassedByReference%
 			checkExtraArguments: %checkExtraArguments%
 			checkMissingTypehints: %checkMissingTypehints%
-			checkUnresolvableParameterTypes: %featureToggles.checkUnresolvableParameterTypes%
 
 	-
 		class: PHPStan\Rules\FunctionDefinitionCheck

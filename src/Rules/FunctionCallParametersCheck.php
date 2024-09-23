@@ -46,7 +46,6 @@ final class FunctionCallParametersCheck
 		private bool $checkArgumentsPassedByReference,
 		private bool $checkExtraArguments,
 		private bool $checkMissingTypehints,
-		private bool $checkUnresolvableParameterTypes,
 	)
 	{
 	}
@@ -290,7 +289,7 @@ final class FunctionCallParametersCheck
 				}
 			}
 
-			if (!$acceptsNamedArguments && $this->checkUnresolvableParameterTypes && isset($messages[14])) {
+			if (!$acceptsNamedArguments && isset($messages[14])) {
 				if ($argumentName !== null) {
 					$errors[] = RuleErrorBuilder::message(sprintf($messages[14], sprintf('named argument $%s', $argumentName)))
 						->identifier('argument.named')
@@ -311,10 +310,7 @@ final class FunctionCallParametersCheck
 			if ($this->checkArgumentTypes) {
 				$parameterType = TypeUtils::resolveLateResolvableTypes($parameter->getType());
 
-				if (
-					!$parameter->passedByReference()->createsNewVariable()
-					|| (!$isBuiltin && $this->checkUnresolvableParameterTypes) // bleeding edge only
-				) {
+				if (!$parameter->passedByReference()->createsNewVariable() || !$isBuiltin) {
 					$accepts = $this->ruleLevelHelper->acceptsWithReason($parameterType, $argumentValueType, $scope->isDeclareStrictTypes());
 
 					if (!$accepts->result) {
@@ -332,8 +328,8 @@ final class FunctionCallParametersCheck
 					}
 				}
 
-				if ($this->checkUnresolvableParameterTypes
-					&& $originalParameter !== null
+				if (
+					$originalParameter !== null
 					&& isset($messages[13])
 					&& !$this->unresolvableTypeHelper->containsUnresolvableType($originalParameter->getType())
 					&& $this->unresolvableTypeHelper->containsUnresolvableType($parameterType)

@@ -38,7 +38,6 @@ class ClassAttributesRuleTest extends RuleTestCase
 					true,
 					true,
 					true,
-					true,
 				),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, false),

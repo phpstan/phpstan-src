@@ -26,7 +26,7 @@ class Bug9307CallMethodsRuleTest extends RuleTestCase
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, true, false, false);
 		return new CallMethodsRule(
 			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(PHP_VERSION_ID), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(PHP_VERSION_ID), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
 		);
 	}
 

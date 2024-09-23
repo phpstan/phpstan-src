@@ -16,6 +16,7 @@ Major new features 🚀
 * LogicalXorConstantConditionRule (level 4) (https://github.com/phpstan/phpstan-src/commit/3a12724fd636b1bcf36c22b36e8f765d97150895, https://github.com/phpstan/phpstan-src/commit/3b011f6524254dad0f16840fdcfdbe7421548617), #7539
 * Check that each trait is used and analysed at least once (level 4) (https://github.com/phpstan/phpstan-src/commit/c4d05276fb8605d6ac20acbe1cc5df31cd6c10b0)
 * Check preg_quote delimiter sanity (level 0) ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
+* Rule for `call_user_func()` (level 5) ([#2479](https://github.com/phpstan/phpstan-src/pull/2479)), thanks @staabm!
 * Added previously absent type checks (level 0)
   * Check existing classes in `@phpstan-self-out` (https://github.com/phpstan/phpstan-src/commit/6838669976bf20232abde36ecdd52b1770fa50c9)
   * Check nonexistent classes in local type aliases (https://github.com/phpstan/phpstan-src/commit/2485b2e9c129e789ec3b2d7db81ca30f87c63911)
@@ -65,7 +66,6 @@ Bleeding edge (TODO move to other sections)
 * Report narrowing `PHPStan\Type\Type` interface via `@var` (https://github.com/phpstan/phpstan-src/commit/713b98fb107213c28e3d8c8b4b43c5f5fc47c144), https://github.com/nunomaduro/larastan/issues/1567#issuecomment-1460445389
 * Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)
 * InvalidPHPStanDocTagRule in StubValidator (https://github.com/phpstan/phpstan-src/commit/9c2552b7e744926d1a74c1ba8fd32c64079eed61)
-* Rule for `call_user_func()` ([#2479](https://github.com/phpstan/phpstan-src/pull/2479)), thanks @staabm!
 * MagicConstantContextRule ([#2741](https://github.com/phpstan/phpstan-src/pull/2741)), #10099, thanks @staabm!
 * TooWideMethodReturnTypehintRule - always report for final methods (https://github.com/phpstan/phpstan-src/commit/c30e9a484c8245b8126cd63444607ca74d2af761)
 * Report unused results of `and` and `or` (https://github.com/phpstan/phpstan-src/commit/1d8fff637d70a9e9ed3f11dee5d61b9f796cbf1a)

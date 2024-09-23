@@ -10,8 +10,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.arrayFilter%
 	PHPStan\Rules\Functions\ArrayValuesRule:
 		phpstan.rules.rule: %featureToggles.arrayValues%
-	PHPStan\Rules\Functions\CallUserFuncRule:
-		phpstan.rules.rule: %featureToggles.callUserFunc%
 	PHPStan\Rules\Functions\ParameterCastableToStringRule:
 		phpstan.rules.rule: %featureToggles.checkParameterCastableToStringFunctions%
 	PHPStan\Rules\Functions\ImplodeParameterCastableToStringRule:
@@ -21,6 +19,7 @@ conditionalTags:
 
 rules:
 	- PHPStan\Rules\DateTimeInstantiationRule
+	- PHPStan\Rules\Functions\CallUserFuncRule
 
 services:
 	-
@@ -42,8 +41,6 @@ services:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
 
-	-
-		class: PHPStan\Rules\Functions\CallUserFuncRule
 	-
 		class: PHPStan\Rules\Functions\ParameterCastableToStringRule
 	-

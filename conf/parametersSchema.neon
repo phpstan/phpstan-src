@@ -48,7 +48,6 @@ parametersSchema:
 		closureDefaultParameterTypeRule: bool()
 		propertyVariance: bool()
 		stricterFunctionMap: bool()
-		callUserFunc: bool()
 		magicConstantOutOfContext: bool()
 		pure: bool()
 		checkParameterCastableToStringFunctions: bool()

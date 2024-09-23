@@ -77,8 +77,7 @@ final class RequireFileExistsRule implements Rule
 	private function doesFileExistForDirectory(string $path, string $workingDirectory): bool
 	{
 		$fileHelper = new FileHelper($workingDirectory);
-		$normalisedPath = $fileHelper->normalizePath($path);
-		$absolutePath = $fileHelper->absolutizePath($normalisedPath);
+		$absolutePath = $fileHelper->absolutizePath($path);
 
 		return is_file($absolutePath);
 	}

@@ -116,4 +116,9 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/require-file-relative-path.php'], []);
 	}
 
+	public function testBug11738(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11738/bug-11738.php'], []);
+	}
+
 }

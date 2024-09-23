@@ -13,7 +13,7 @@ class NodeConnectingVisitorAttributesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new NodeConnectingVisitorAttributesRule(self::getContainer());
+		return new NodeConnectingVisitorAttributesRule();
 	}
 
 	public function testRule(): void

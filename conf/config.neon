@@ -28,8 +28,6 @@ parameters:
 		arrayFilter: false
 		arrayUnpacking: false
 		arrayValues: false
-		nodeConnectingVisitorCompatibility: true
-		nodeConnectingVisitorRule: false
 		illegalConstructorMethodCall: false
 		strictUnnecessaryNullsafePropertyFetch: false
 		looseComparison: false
@@ -253,8 +251,6 @@ conditionalTags:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
 	PHPStan\Rules\Exceptions\TooWideMethodThrowTypeRule:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
-	PhpParser\NodeVisitor\NodeConnectingVisitor:
-		phpstan.parser.richParserNodeVisitor: %featureToggles.nodeConnectingVisitorCompatibility%
 	PHPStan\Parser\CurlSetOptArgVisitor:
 		phpstan.parser.richParserNodeVisitor: %featureToggles.curlSetOptTypes%
 	PHPStan\Parser\TypeTraverserInstanceofVisitor:
@@ -348,9 +344,6 @@ services:
 		class: PHPStan\Parser\LastConditionVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor
-
-	-
-		class: PhpParser\NodeVisitor\NodeConnectingVisitor
 
 	-
 		class: PHPStan\Node\Printer\ExprPrinter

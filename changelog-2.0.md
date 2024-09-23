@@ -7,6 +7,9 @@ Major new features 🚀
 
 * **Array `list` type** ([#1751](https://github.com/phpstan/phpstan-src/pull/1751)), #3311, #8185, #6243, thanks @rvanvelzen!
     * Lists are arrays with sequential integer keys starting at 0
+* Lower memory consumption thanks to breaking up of reference cycles
+    * [Learn more »](https://phpstan.org/blog/preprocessing-ast-for-custom-rules)
+    * In testing the memory consumption was reduced by 50–70 %.
 * **Enhancements in Handling Parameters Passed by Reference**
     * [Learn more on phpstan.org](https://phpstan.org/blog/enhancements-in-handling-parameters-passed-by-reference)
     * [#2941](https://github.com/phpstan/phpstan-src/pull/2941), thanks @ljmaskey!
@@ -35,9 +38,6 @@ Bleeding edge (TODO move to other sections)
 
 * Report useless `array_filter()` calls ([#1077](https://github.com/phpstan/phpstan-src/pull/1077)), #6840, thanks @leongersen!
 * Specify explicit mixed array type via `is_array` ([#1191](https://github.com/phpstan/phpstan-src/pull/1191)), thanks @herndlm!
-* Lower memory consumption thanks to breaking up of reference cycles
-    * This is a BC break for rules that use `'parent'`, `'next'`, and `'previous'` node attributes. [Learn more »](https://phpstan.org/blog/preprocessing-ast-for-custom-rules)
-    * In testing the memory consumption was reduced by 50–70 %.
 * ArrayUnpackingRule (level 3) ([#856](https://github.com/phpstan/phpstan-src/pull/856)), thanks @canvural!
 * Rules for checking direct calls to `__construct()` (level 2) ([#1208](https://github.com/phpstan/phpstan-src/pull/1208)), #7022, thanks @muno92!
 * ConstantLooseComparisonRule - level 4 (https://github.com/phpstan/phpstan-src/commit/6ebf2361a3c831dd105a815521889428c295dc9f)

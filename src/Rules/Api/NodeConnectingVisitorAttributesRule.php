@@ -4,16 +4,12 @@ namespace PHPStan\Rules\Api;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
-use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\Container;
-use PHPStan\Parser\RichParser;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
 use function array_keys;
-use function get_class;
 use function in_array;
 use function sprintf;
 use function str_starts_with;
@@ -23,10 +19,6 @@ use function str_starts_with;
  */
 final class NodeConnectingVisitorAttributesRule implements Rule
 {
-
-	public function __construct(private Container $container)
-	{
-	}
 
 	public function getNodeType(): string
 	{
@@ -71,20 +63,6 @@ final class NodeConnectingVisitorAttributesRule implements Rule
 		}
 
 		if (!$hasPhpStanInterface) {
-			return [];
-		}
-
-		$isVisitorRegistered = false;
-		foreach ($this->container->getServicesByTag(RichParser::VISITOR_SERVICE_TAG) as $service) {
-			if (get_class($service) !== NodeConnectingVisitor::class) {
-				continue;
-			}
-
-			$isVisitorRegistered = true;
-			break;
-		}
-
-		if ($isVisitorRegistered) {
 			return [];
 		}
 

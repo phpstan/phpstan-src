@@ -2,8 +2,6 @@ parameters:
 	customRulesetUsed: false
 
 conditionalTags:
-	PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule:
-		phpstan.rules.rule: %featureToggles.nodeConnectingVisitorRule%
 	PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule:
 		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
 	PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyRule:
@@ -40,6 +38,7 @@ rules:
 	- PHPStan\Rules\Api\ApiStaticCallRule
 	- PHPStan\Rules\Api\ApiTraitUseRule
 	- PHPStan\Rules\Api\GetTemplateTypeRule
+	- PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule
 	- PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
 	- PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
 	- PHPStan\Rules\Arrays\EmptyArrayItemRule
@@ -132,8 +131,6 @@ services:
 			deprecationRulesInstalled: %deprecationRulesInstalled%
 		tags:
 			- phpstan.rules.rule
-	-
-		class: PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule
 	-
 		class: PHPStan\Rules\Api\RuntimeReflectionFunctionRule
 	-

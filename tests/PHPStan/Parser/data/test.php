@@ -2,7 +2,4 @@
 
 namespace CachedParserBug;
 
-class Foo
-{
-
-}
+$a = new class () {}; $b = new class () {};

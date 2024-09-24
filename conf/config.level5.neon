@@ -10,16 +10,13 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.arrayFilter%
 	PHPStan\Rules\Functions\ArrayValuesRule:
 		phpstan.rules.rule: %featureToggles.arrayValues%
-	PHPStan\Rules\Functions\ParameterCastableToStringRule:
-		phpstan.rules.rule: %featureToggles.checkParameterCastableToStringFunctions%
-	PHPStan\Rules\Functions\ImplodeParameterCastableToStringRule:
-		phpstan.rules.rule: %featureToggles.checkParameterCastableToStringFunctions%
-	PHPStan\Rules\Functions\SortParameterCastableToStringRule:
-		phpstan.rules.rule: %featureToggles.checkParameterCastableToStringFunctions%
 
 rules:
 	- PHPStan\Rules\DateTimeInstantiationRule
 	- PHPStan\Rules\Functions\CallUserFuncRule
+	- PHPStan\Rules\Functions\ParameterCastableToStringRule
+	- PHPStan\Rules\Functions\ImplodeParameterCastableToStringRule
+	- PHPStan\Rules\Functions\SortParameterCastableToStringRule
 
 services:
 	-
@@ -40,10 +37,3 @@ services:
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
-
-	-
-		class: PHPStan\Rules\Functions\ParameterCastableToStringRule
-	-
-		class: PHPStan\Rules\Functions\ImplodeParameterCastableToStringRule
-	-
-		class: PHPStan\Rules\Functions\SortParameterCastableToStringRule

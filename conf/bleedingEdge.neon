@@ -18,7 +18,6 @@ parameters:
 		propertyVariance: true
 		magicConstantOutOfContext: true
 		pure: true
-		checkParameterCastableToStringFunctions: true
 		uselessReturnValue: true
 		printfArrayParameters: true
 		tooWidePropertyType: true

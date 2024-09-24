@@ -19,6 +19,7 @@ Major new features 🚀
 * Check that each trait is used and analysed at least once (level 4) (https://github.com/phpstan/phpstan-src/commit/c4d05276fb8605d6ac20acbe1cc5df31cd6c10b0)
 * Check preg_quote delimiter sanity (level 0) ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
 * Rule for `call_user_func()` (level 5) ([#2479](https://github.com/phpstan/phpstan-src/pull/2479)), thanks @staabm!
+* Check array functions which require stringish values (level 5) ([#3132](https://github.com/phpstan/phpstan-src/pull/3132)), #11141, #5848, #3694, #11111, thanks @schlndh!
 * ArrayUnpackingRule (level 3) ([#856](https://github.com/phpstan/phpstan-src/pull/856)), thanks @canvural!
 * Check unresolvable parameters (level 5) ([#1319](https://github.com/phpstan/phpstan-src/pull/1319)), thanks @rvanvelzen!
 * Enforce `@no-named-arguments` (level 5) (https://github.com/phpstan/phpstan-src/commit/74ba8c23696948f2647d880df72f375346f41010), #5968
@@ -86,7 +87,6 @@ Bleeding edge (TODO move to other sections)
 * Check `@param-immediately-invoked-callable` and `@param-later-invoked-callable` (https://github.com/phpstan/phpstan-src/commit/580a6add422f4e34191df9e7a77ba1655e914bda), #10932
 * Report useless return values of function calls like `var_export` without `$return=true` ([#3225](https://github.com/phpstan/phpstan-src/pull/3225)), #11320, thanks @staabm!
 * Check vprintf/vsprintf arguments against placeholder count ([#3126](https://github.com/phpstan/phpstan-src/pull/3126)), thanks @staabm!
-* Check array functions which require stringish values ([#3132](https://github.com/phpstan/phpstan-src/pull/3132)), #11141, #5848, #3694, #11111, thanks @schlndh!
 
 Improvements 🔧
 =====================

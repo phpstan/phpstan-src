@@ -40,7 +40,6 @@ parameters:
 		stricterFunctionMap: false
 		magicConstantOutOfContext: false
 		pure: false
-		checkParameterCastableToStringFunctions: false
 		uselessReturnValue: false
 		printfArrayParameters: false
 		requireFileExists: false

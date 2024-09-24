@@ -46,7 +46,6 @@ parametersSchema:
 		stricterFunctionMap: bool()
 		magicConstantOutOfContext: bool()
 		pure: bool()
-		checkParameterCastableToStringFunctions: bool()
 		uselessReturnValue: bool()
 		printfArrayParameters: bool()
 		tooWidePropertyType: bool()

@@ -20,10 +20,6 @@ final class IsArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 
 	private TypeSpecifier $typeSpecifier;
 
-	public function __construct(private bool $explicitMixed)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
 		return strtolower($functionReflection->getName()) === 'is_array'
@@ -39,7 +35,7 @@ final class IsArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			throw new ShouldNotHappenException();
 		}
 
-		return $this->typeSpecifier->create($node->getArgs()[0]->value, new ArrayType(new MixedType($this->explicitMixed), new MixedType($this->explicitMixed)), $context, $scope);
+		return $this->typeSpecifier->create($node->getArgs()[0]->value, new ArrayType(new MixedType(true), new MixedType(true)), $context, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

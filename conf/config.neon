@@ -24,7 +24,6 @@ parameters:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: true
 		skipCheckGenericClasses: []
-		explicitMixedViaIsArray: false
 		arrayFilter: false
 		arrayValues: false
 		illegalConstructorMethodCall: false
@@ -1722,8 +1721,6 @@ services:
 		class: PHPStan\Type\Php\IsArrayFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-		arguments:
-			explicitMixed: %featureToggles.explicitMixedViaIsArray%
 
 	-
 		class: PHPStan\Type\Php\IsCallableFunctionTypeSpecifyingExtension

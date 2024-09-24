@@ -4,7 +4,6 @@ parameters:
 		skipCheckGenericClasses!: []
 		stricterFunctionMap: true
 
-		explicitMixedViaIsArray: true
 		arrayFilter: true
 		arrayValues: true
 		looseComparison: true

@@ -22,7 +22,6 @@ parameters:
 			tooWideThrowType: false
 	featureToggles:
 		bleedingEdge: false
-		disableRuntimeReflectionProvider: true
 		skipCheckGenericClasses: []
 		arrayFilter: false
 		arrayValues: false

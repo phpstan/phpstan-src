@@ -28,7 +28,6 @@ parametersSchema:
 	])
 	featureToggles: structure([
 		bleedingEdge: bool(),
-		disableRuntimeReflectionProvider: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		arrayFilter: bool(),
 		arrayValues: bool(),

@@ -41,7 +41,6 @@ parametersSchema:
 		alwaysTrueAlwaysReported: bool()
 		disableUnreachableBranchesRules: bool()
 		stricterFunctionMap: bool()
-		magicConstantOutOfContext: bool()
 		pure: bool()
 		uselessReturnValue: bool()
 		printfArrayParameters: bool()

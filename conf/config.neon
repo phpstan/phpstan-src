@@ -35,7 +35,6 @@ parameters:
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false
 		stricterFunctionMap: false
-		magicConstantOutOfContext: false
 		pure: false
 		uselessReturnValue: false
 		printfArrayParameters: false

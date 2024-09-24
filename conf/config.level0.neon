@@ -10,8 +10,6 @@ conditionalTags:
 		phpstan.rules.rule: %checkUninitializedProperties%
 	PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule:
 		phpstan.rules.rule: %featureToggles.missingMagicSerializationRule%
-	PHPStan\Rules\Constants\MagicConstantContextRule:
-		phpstan.rules.rule: %featureToggles.magicConstantOutOfContext%
 	PHPStan\Rules\Functions\UselessFunctionReturnValueRule:
 		phpstan.rules.rule: %featureToggles.uselessReturnValue%
 	PHPStan\Rules\Functions\PrintfArrayParametersRule:
@@ -61,6 +59,7 @@ rules:
 	- PHPStan\Rules\Classes\TraitAttributeClassRule
 	- PHPStan\Rules\Constants\DynamicClassConstantFetchRule
 	- PHPStan\Rules\Constants\FinalConstantRule
+	- PHPStan\Rules\Constants\MagicConstantContextRule
 	- PHPStan\Rules\Constants\NativeTypedClassConstantRule
 	- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
 	- PHPStan\Rules\Exceptions\NoncapturingCatchRule
@@ -262,9 +261,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule
-
-	-
-		class: PHPStan\Rules\Constants\MagicConstantContextRule
 
 	-
 		class: PHPStan\Rules\Functions\UselessFunctionReturnValueRule

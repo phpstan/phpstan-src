@@ -23,6 +23,8 @@ rules:
 	- PHPStan\Rules\Comparison\UsageOfVoidMatchExpressionRule
 	- PHPStan\Rules\Constants\ValueAssignedToClassConstantRule
 	- PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
+	- PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule
+	- PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule
 	- PHPStan\Rules\Generics\ClassAncestorsRule
 	- PHPStan\Rules\Generics\ClassTemplateTypeRule
 	- PHPStan\Rules\Generics\EnumAncestorsRule
@@ -62,10 +64,6 @@ rules:
 	- PHPStan\Rules\PhpDoc\RequireExtendsDefinitionTraitRule
 
 conditionalTags:
-	PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule:
-		phpstan.rules.rule: %featureToggles.closureDefaultParameterTypeRule%
-	PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule:
-		phpstan.rules.rule: %featureToggles.closureDefaultParameterTypeRule%
 	PHPStan\Rules\Methods\IllegalConstructorMethodCallRule:
 		phpstan.rules.rule: %featureToggles.illegalConstructorMethodCall%
 	PHPStan\Rules\Methods\IllegalConstructorStaticCallRule:
@@ -95,10 +93,6 @@ services:
 		tags:
 			- phpstan.rules.rule
 
-	-
-		class: PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule
-	-
-		class: PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule
 	-
 		class: PHPStan\Rules\Functions\CallCallablesRule
 		arguments:

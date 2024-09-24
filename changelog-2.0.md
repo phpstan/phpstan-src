@@ -23,6 +23,7 @@ Major new features 🚀
 * ArrayUnpackingRule (level 3) ([#856](https://github.com/phpstan/phpstan-src/pull/856)), thanks @canvural!
 * Check unresolvable parameters (level 5) ([#1319](https://github.com/phpstan/phpstan-src/pull/1319)), thanks @rvanvelzen!
 * Enforce `@no-named-arguments` (level 5) (https://github.com/phpstan/phpstan-src/commit/74ba8c23696948f2647d880df72f375346f41010), #5968
+* IncompatibleDefaultParameterTypeRule for closures (level 2) (https://github.com/phpstan/phpstan-src/commit/0264f5bc48448c7e02a23b82eef4177d0617a82f)
 * Added previously absent type checks (level 0)
   * Check existing classes in `@phpstan-self-out` (https://github.com/phpstan/phpstan-src/commit/6838669976bf20232abde36ecdd52b1770fa50c9)
   * Check nonexistent classes in local type aliases (https://github.com/phpstan/phpstan-src/commit/2485b2e9c129e789ec3b2d7db81ca30f87c63911)
@@ -62,7 +63,6 @@ Bleeding edge (TODO move to other sections)
 * Always report always true conditions, except for last elseif and match arm ([#2105](https://github.com/phpstan/phpstan-src/pull/2105)), thanks @staabm!
 * Disable "unreachable branches" rules: UnreachableIfBranchesRule, UnreachableTernaryElseBranchRule, unreachable arm error in MatchExpressionRule
     * Because "always true" is always reported, these are no longer needed
-* IncompatibleDefaultParameterTypeRule for closures (https://github.com/phpstan/phpstan-src/commit/0264f5bc48448c7e02a23b82eef4177d0617a82f)
 * Check variance of template types in properties ([#2314](https://github.com/phpstan/phpstan-src/pull/2314)), thanks @jiripudil!
 * Report narrowing `PHPStan\Type\Type` interface via `@var` (https://github.com/phpstan/phpstan-src/commit/713b98fb107213c28e3d8c8b4b43c5f5fc47c144), https://github.com/nunomaduro/larastan/issues/1567#issuecomment-1460445389
 * Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)

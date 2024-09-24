@@ -27,6 +27,7 @@ Major new features 🚀
 * Check vprintf/vsprintf arguments against placeholder count (level 0) ([#3126](https://github.com/phpstan/phpstan-src/pull/3126)), thanks @staabm!
 * Report useless return values of function calls like `var_export` without `$return=true` (level 0) ([#3225](https://github.com/phpstan/phpstan-src/pull/3225)), #11320, thanks @staabm!
 * Rule for `call_user_func()` (level 5) ([#2479](https://github.com/phpstan/phpstan-src/pull/2479)), thanks @staabm!
+* Report useless `array_filter()` calls (level 5) ([#1077](https://github.com/phpstan/phpstan-src/pull/1077)), #6840, thanks @leongersen!
 * Check if required file exists (level 0) ([#3294](https://github.com/phpstan/phpstan-src/pull/3294)), #3397, thanks @Bellangelo!
 * ConstantLooseComparisonRule - level 4 (https://github.com/phpstan/phpstan-src/commit/6ebf2361a3c831dd105a815521889428c295dc9f)
 * Check array functions which require stringish values (level 5) ([#3132](https://github.com/phpstan/phpstan-src/pull/3132)), #11141, #5848, #3694, #11111, thanks @schlndh!
@@ -64,7 +65,6 @@ Major new features 🚀
 Bleeding edge (TODO move to other sections)
 =====================
 
-* Report useless `array_filter()` calls ([#1077](https://github.com/phpstan/phpstan-src/pull/1077)), #6840, thanks @leongersen!
 * Rules for checking direct calls to `__construct()` (level 2) ([#1208](https://github.com/phpstan/phpstan-src/pull/1208)), #7022, thanks @muno92!
 * Support `@readonly` property and `@immutable` class PHPDoc ([#1295](https://github.com/phpstan/phpstan-src/pull/1295), [#1335](https://github.com/phpstan/phpstan-src/pull/1335)), #4082, thanks @herndlm!
 * Move IllegalConstructorMethodCallRule and IllegalConstructorStaticCallRule to phpstan-strict-rules (https://github.com/phpstan/phpstan-src/commit/124b30f98c182193187be0b9c2e151e477429b7a, https://github.com/phpstan/phpstan-strict-rules/commit/0c82c96f2a55d8b91bbc7ee6512c94f68a206b43)

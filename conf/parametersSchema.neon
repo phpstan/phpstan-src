@@ -29,7 +29,6 @@ parametersSchema:
 	featureToggles: structure([
 		bleedingEdge: bool(),
 		skipCheckGenericClasses: listOf(string()),
-		arrayFilter: bool(),
 		arrayValues: bool(),
 		illegalConstructorMethodCall: bool(),
 		readOnlyByPhpDoc: bool()

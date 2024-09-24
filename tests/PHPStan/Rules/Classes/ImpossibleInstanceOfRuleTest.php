@@ -24,7 +24,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			$this->checkAlwaysTrueInstanceOf,
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
-			true,
 		);
 	}
 

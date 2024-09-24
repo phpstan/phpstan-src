@@ -29,7 +29,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 				$this->treatPhpDocTypesAsCertain,
 				true,
 			),
-			true,
 			$this->reportAlwaysTrueInLastCondition,
 			$this->treatPhpDocTypesAsCertain,
 		);

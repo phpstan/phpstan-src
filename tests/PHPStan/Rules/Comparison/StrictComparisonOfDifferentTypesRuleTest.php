@@ -25,7 +25,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			$this->checkAlwaysTrueStrictComparison,
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
-			true,
 		);
 	}
 

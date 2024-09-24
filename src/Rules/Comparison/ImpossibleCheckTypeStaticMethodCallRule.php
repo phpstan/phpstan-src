@@ -20,7 +20,6 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 
 	public function __construct(
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
-		private bool $checkAlwaysTrueCheckTypeFunctionCall,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $reportAlwaysTrueInLastCondition,
 		private bool $treatPhpDocTypesAsCertainTip,
@@ -71,29 +70,27 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
 				)))->identifier('staticMethod.impossibleType')->build(),
 			];
-		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
-			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
-			if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
-				return [];
-			}
-
-			$method = $this->getMethod($node->class, $node->name->name, $scope);
-			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
-				'Call to static method %s::%s()%s will always evaluate to true.',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
-				$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
-			)));
-			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
-				$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
-			}
-
-			$errorBuilder->identifier('staticMethod.alreadyNarrowedType');
-
-			return [$errorBuilder->build()];
 		}
 
-		return [];
+		$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+		if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
+			return [];
+		}
+
+		$method = $this->getMethod($node->class, $node->name->name, $scope);
+		$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
+			'Call to static method %s::%s()%s will always evaluate to true.',
+			$method->getDeclaringClass()->getDisplayName(),
+			$method->getName(),
+			$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
+		)));
+		if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+			$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+		}
+
+		$errorBuilder->identifier('staticMethod.alreadyNarrowedType');
+
+		return [$errorBuilder->build()];
 	}
 
 	/**

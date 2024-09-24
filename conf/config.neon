@@ -35,10 +35,6 @@ parameters:
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
-	checkAlwaysTrueCheckTypeFunctionCall: true
-	checkAlwaysTrueInstanceof: true
-	checkAlwaysTrueStrictComparison: true
-	checkAlwaysTrueLooseComparison: true
 	reportAlwaysTrueInLastCondition: false
 	checkClassCaseSensitivity: false
 	checkExplicitMixed: false

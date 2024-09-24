@@ -20,7 +20,6 @@ final class ImpossibleCheckTypeMethodCallRule implements Rule
 
 	public function __construct(
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
-		private bool $checkAlwaysTrueCheckTypeFunctionCall,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $reportAlwaysTrueInLastCondition,
 		private bool $treatPhpDocTypesAsCertainTip,
@@ -70,29 +69,27 @@ final class ImpossibleCheckTypeMethodCallRule implements Rule
 					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
 				)))->identifier('method.impossibleType')->build(),
 			];
-		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
-			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
-			if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
-				return [];
-			}
-
-			$method = $this->getMethod($node->var, $node->name->name, $scope);
-			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
-				'Call to method %s::%s()%s will always evaluate to true.',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
-				$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
-			)));
-			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
-				$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
-			}
-
-			$errorBuilder->identifier('method.alreadyNarrowedType');
-
-			return [$errorBuilder->build()];
 		}
 
-		return [];
+		$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+		if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
+			return [];
+		}
+
+		$method = $this->getMethod($node->var, $node->name->name, $scope);
+		$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
+			'Call to method %s::%s()%s will always evaluate to true.',
+			$method->getDeclaringClass()->getDisplayName(),
+			$method->getName(),
+			$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
+		)));
+		if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+			$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+		}
+
+		$errorBuilder->identifier('method.alreadyNarrowedType');
+
+		return [$errorBuilder->build()];
 	}
 
 	private function getMethod(

@@ -18,7 +18,6 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 {
 
 	public function __construct(
-		private bool $checkAlwaysTrueStrictComparison,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $reportAlwaysTrueInLastCondition,
 		private bool $treatPhpDocTypesAsCertainTip,
@@ -70,38 +69,36 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 					$rightType->describe(VerbosityLevel::value()),
 				)))->identifier(sprintf('%s.alwaysFalse', $node instanceof Node\Expr\BinaryOp\Identical ? 'identical' : 'notIdentical'))->build(),
 			];
-		} elseif ($this->checkAlwaysTrueStrictComparison) {
-			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
-			if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
-				return [];
-			}
-
-			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
-				'Strict comparison using %s between %s and %s will always evaluate to true.',
-				$node->getOperatorSigil(),
-				$leftType->describe(VerbosityLevel::value()),
-				$rightType->describe(VerbosityLevel::value()),
-			)));
-			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
-				$errorBuilder->addTip('Remove remaining cases below this one and this error will disappear too.');
-			}
-
-			if (
-				$leftType->isEnum()->yes()
-				&& $rightType->isEnum()->yes()
-				&& $node->getAttribute(LastConditionVisitor::ATTRIBUTE_IS_MATCH_NAME, false) !== true
-			) {
-				$errorBuilder->addTip('Use match expression instead. PHPStan will report unhandled enum cases.');
-			}
-
-			$errorBuilder->identifier(sprintf('%s.alwaysTrue', $node instanceof Node\Expr\BinaryOp\Identical ? 'identical' : 'notIdentical'));
-
-			return [
-				$errorBuilder->build(),
-			];
 		}
 
-		return [];
+		$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+		if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
+			return [];
+		}
+
+		$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
+			'Strict comparison using %s between %s and %s will always evaluate to true.',
+			$node->getOperatorSigil(),
+			$leftType->describe(VerbosityLevel::value()),
+			$rightType->describe(VerbosityLevel::value()),
+		)));
+		if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+			$errorBuilder->addTip('Remove remaining cases below this one and this error will disappear too.');
+		}
+
+		if (
+			$leftType->isEnum()->yes()
+			&& $rightType->isEnum()->yes()
+			&& $node->getAttribute(LastConditionVisitor::ATTRIBUTE_IS_MATCH_NAME, false) !== true
+		) {
+			$errorBuilder->addTip('Use match expression instead. PHPStan will report unhandled enum cases.');
+		}
+
+		$errorBuilder->identifier(sprintf('%s.alwaysTrue', $node instanceof Node\Expr\BinaryOp\Identical ? 'identical' : 'notIdentical'));
+
+		return [
+			$errorBuilder->build(),
+		];
 	}
 
 }

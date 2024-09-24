@@ -18,7 +18,6 @@ final class ConstantLooseComparisonRule implements Rule
 {
 
 	public function __construct(
-		private bool $checkAlwaysTrueLooseComparison,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $reportAlwaysTrueInLastCondition,
 		private bool $treatPhpDocTypesAsCertainTip,
@@ -67,28 +66,26 @@ final class ConstantLooseComparisonRule implements Rule
 					$scope->getType($node->right)->describe(VerbosityLevel::value()),
 				)))->identifier(sprintf('%s.alwaysFalse', $node instanceof Node\Expr\BinaryOp\Equal ? 'equal' : 'notEqual'))->build(),
 			];
-		} elseif ($this->checkAlwaysTrueLooseComparison) {
-			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
-			if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
-				return [];
-			}
-
-			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
-				'Loose comparison using %s between %s and %s will always evaluate to true.',
-				$node->getOperatorSigil(),
-				$scope->getType($node->left)->describe(VerbosityLevel::value()),
-				$scope->getType($node->right)->describe(VerbosityLevel::value()),
-			)));
-			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
-				$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
-			}
-
-			$errorBuilder->identifier(sprintf('%s.alwaysTrue', $node instanceof Node\Expr\BinaryOp\Equal ? 'equal' : 'notEqual'));
-
-			return [$errorBuilder->build()];
 		}
 
-		return [];
+		$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+		if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
+			return [];
+		}
+
+		$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
+			'Loose comparison using %s between %s and %s will always evaluate to true.',
+			$node->getOperatorSigil(),
+			$scope->getType($node->left)->describe(VerbosityLevel::value()),
+			$scope->getType($node->right)->describe(VerbosityLevel::value()),
+		)));
+		if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+			$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+		}
+
+		$errorBuilder->identifier(sprintf('%s.alwaysTrue', $node instanceof Node\Expr\BinaryOp\Equal ? 'equal' : 'notEqual'));
+
+		return [$errorBuilder->build()];
 	}
 
 }

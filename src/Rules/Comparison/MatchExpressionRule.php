@@ -27,7 +27,6 @@ final class MatchExpressionRule implements Rule
 
 	public function __construct(
 		private ConstantConditionRuleHelper $constantConditionRuleHelper,
-		private bool $checkAlwaysTrueStrictComparison,
 		private bool $reportAlwaysTrueInLastCondition,
 		private bool $treatPhpDocTypesAsCertain,
 	)
@@ -98,25 +97,24 @@ final class MatchExpressionRule implements Rule
 						$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
 						$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
 					))->line($armLine)->identifier('match.alwaysFalse')->build();
-				} else {
-					if ($this->checkAlwaysTrueStrictComparison) {
-						if ($i === $armsCount - 1 && !$this->reportAlwaysTrueInLastCondition) {
-							continue;
-						}
-						$errorBuilder = RuleErrorBuilder::message(sprintf(
-							'Match arm comparison between %s and %s is always true.',
-							$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
-							$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
-						))->line($armLine);
-						if ($i !== $armsCount - 1 && !$this->reportAlwaysTrueInLastCondition) {
-							$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
-						}
-
-						$errorBuilder->identifier('match.alwaysTrue');
-
-						$errors[] = $errorBuilder->build();
-					}
+					continue;
 				}
+
+				if ($i === $armsCount - 1 && !$this->reportAlwaysTrueInLastCondition) {
+					continue;
+				}
+				$errorBuilder = RuleErrorBuilder::message(sprintf(
+					'Match arm comparison between %s and %s is always true.',
+					$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
+					$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
+				))->line($armLine);
+				if ($i !== $armsCount - 1 && !$this->reportAlwaysTrueInLastCondition) {
+					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+				}
+
+				$errorBuilder->identifier('match.alwaysTrue');
+
+				$errors[] = $errorBuilder->build();
 			}
 		}
 

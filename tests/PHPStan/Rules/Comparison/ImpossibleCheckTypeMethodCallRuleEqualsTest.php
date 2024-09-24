@@ -23,7 +23,6 @@ class ImpossibleCheckTypeMethodCallRuleEqualsTest extends RuleTestCase
 			true,
 			true,
 			false,
-			true,
 		);
 	}
 

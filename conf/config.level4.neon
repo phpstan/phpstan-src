@@ -53,7 +53,6 @@ services:
 	-
 		class: PHPStan\Rules\Classes\ImpossibleInstanceOfRule
 		arguments:
-			checkAlwaysTrueInstanceof: %checkAlwaysTrueInstanceof%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
@@ -157,7 +156,6 @@ services:
 	-
 		class: PHPStan\Rules\Comparison\ImpossibleCheckTypeFunctionCallRule
 		arguments:
-			checkAlwaysTrueCheckTypeFunctionCall: %checkAlwaysTrueCheckTypeFunctionCall%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
@@ -167,7 +165,6 @@ services:
 	-
 		class: PHPStan\Rules\Comparison\ImpossibleCheckTypeMethodCallRule
 		arguments:
-			checkAlwaysTrueCheckTypeFunctionCall: %checkAlwaysTrueCheckTypeFunctionCall%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
@@ -177,7 +174,6 @@ services:
 	-
 		class: PHPStan\Rules\Comparison\ImpossibleCheckTypeStaticMethodCallRule
 		arguments:
-			checkAlwaysTrueCheckTypeFunctionCall: %checkAlwaysTrueCheckTypeFunctionCall%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
@@ -196,7 +192,6 @@ services:
 	-
 		class: PHPStan\Rules\Comparison\MatchExpressionRule
 		arguments:
-			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
@@ -213,7 +208,6 @@ services:
 	-
 		class: PHPStan\Rules\Comparison\StrictComparisonOfDifferentTypesRule
 		arguments:
-			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
@@ -223,7 +217,6 @@ services:
 	-
 		class: PHPStan\Rules\Comparison\ConstantLooseComparisonRule
 		arguments:
-			checkAlwaysTrueLooseComparison: %checkAlwaysTrueLooseComparison%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%

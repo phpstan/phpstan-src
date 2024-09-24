@@ -24,7 +24,6 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 			$this->checkAlwaysTrueStrictComparison,
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
-			true,
 		);
 	}
 

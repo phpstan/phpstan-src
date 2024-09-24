@@ -39,6 +39,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
+	/** @api */
 	public function __construct()
 	{
 	}

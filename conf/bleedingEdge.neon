@@ -7,7 +7,6 @@ parameters:
 		explicitMixedViaIsArray: true
 		arrayFilter: true
 		arrayValues: true
-		strictUnnecessaryNullsafePropertyFetch: true
 		looseComparison: true
 		consistentConstructor: true
 		readOnlyByPhpDoc: true

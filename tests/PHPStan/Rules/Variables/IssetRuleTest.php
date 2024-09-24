@@ -17,8 +17,6 @@ class IssetRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
-	private bool $strictUnnecessaryNullsafePropertyFetch;
-
 	protected function getRule(): Rule
 	{
 		return new IssetRule(new IssetCheck(
@@ -26,7 +24,6 @@ class IssetRuleTest extends RuleTestCase
 			new PropertyReflectionFinder(),
 			true,
 			$this->treatPhpDocTypesAsCertain,
-			$this->strictUnnecessaryNullsafePropertyFetch,
 		));
 	}
 
@@ -38,7 +35,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testRule(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/isset.php'], [
 			[
 				'Property IssetRule\FooCoalesce::$string (string) in isset() is not nullable.',
@@ -126,7 +122,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testRuleWithoutTreatPhpDocTypesAsCertain(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/isset.php'], [
 			[
 				'Property IssetRule\FooCoalesce::$string (string) in isset() is not nullable.',
@@ -206,7 +201,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testNativePropertyTypes(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/isset-native-property-types.php'], [
 			/*[
 				// no way to achieve this with current PHP Reflection API
@@ -225,14 +219,12 @@ class IssetRuleTest extends RuleTestCase
 	public function testBug4290(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/bug-4290.php'], []);
 	}
 
 	public function testBug4671(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/bug-4671.php'], [[
 			'Offset numeric-string on array<string, string> in isset() does not exist.',
 			13,
@@ -242,7 +234,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testVariableCertaintyInIsset(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/variable-certainty-isset.php'], [
 			[
 				'Variable $alwaysDefinedNotNullable in isset() always exists and is not nullable.',
@@ -318,7 +309,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testIssetInGlobalScope(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/isset-global-scope.php'], [
 			[
 				'Variable $alwaysDefinedNotNullable in isset() always exists and is not nullable.',
@@ -330,8 +320,12 @@ class IssetRuleTest extends RuleTestCase
 	public function testNullsafe(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
-		$this->analyse([__DIR__ . '/data/isset-nullsafe.php'], []);
+		$this->analyse([__DIR__ . '/data/isset-nullsafe.php'], [
+			[
+				'Using nullsafe property access "?->bla" in isset() is unnecessary. Use -> instead.',
+				10,
+			],
+		]);
 	}
 
 	public function testBug7109(): void
@@ -341,24 +335,6 @@ class IssetRuleTest extends RuleTestCase
 		}
 
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
-
-		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
-			[
-				'Expression in isset() is not nullable.',
-				41,
-			],
-		]);
-	}
-
-	public function testBug7109Strict(): void
-	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
@@ -387,7 +363,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testBug7318(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7318.php'], [
 			[
@@ -400,7 +375,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testBug6163(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-6163.php'], []);
 	}
@@ -408,7 +382,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testBug6997(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-6997.php'], []);
 	}
@@ -420,7 +393,6 @@ class IssetRuleTest extends RuleTestCase
 		}
 
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-7776.php'], []);
 	}
@@ -428,7 +400,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testBug6008(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-6008.php'], []);
 	}
@@ -436,7 +407,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testBug7292(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-7292.php'], []);
 	}
@@ -444,7 +414,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testObjectShapes(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		// could be checked but current is not
 		$this->analyse([__DIR__ . '/data/isset-object-shapes.php'], []);
@@ -453,7 +422,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testBug10151(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-10151.php'], []);
 	}
@@ -461,7 +429,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testBug3985(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-3985.php'], [
 			[
@@ -478,7 +445,6 @@ class IssetRuleTest extends RuleTestCase
 	public function testBug10064(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-10064.php'], []);
 	}

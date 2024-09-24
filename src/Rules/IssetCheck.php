@@ -25,7 +25,6 @@ final class IssetCheck
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private bool $checkAdvancedIsset,
 		private bool $treatPhpDocTypesAsCertain,
-		private bool $strictUnnecessaryNullsafePropertyFetch,
 	)
 	{
 	}
@@ -217,10 +216,6 @@ final class IssetCheck
 		}
 
 		if ($expr instanceof Expr\NullsafePropertyFetch) {
-			if (!$this->strictUnnecessaryNullsafePropertyFetch) {
-				return null;
-			}
-
 			if ($expr->name instanceof Node\Identifier) {
 				return RuleErrorBuilder::message(sprintf('Using nullsafe property access "?->%s" %s is unnecessary. Use -> instead.', $expr->name->name, $operatorDescription))
 					->identifier('nullsafe.neverNull')

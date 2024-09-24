@@ -17,8 +17,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
-	private bool $strictUnnecessaryNullsafePropertyFetch;
-
 	protected function getRule(): Rule
 	{
 		return new NullCoalesceRule(new IssetCheck(
@@ -26,7 +24,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 			new PropertyReflectionFinder(),
 			true,
 			$this->treatPhpDocTypesAsCertain,
-			$this->strictUnnecessaryNullsafePropertyFetch,
 		));
 	}
 
@@ -38,7 +35,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testCoalesceRule(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$errors = [
 			[
 				'Property CoalesceRule\FooCoalesce::$string (string) on left side of ?? is not nullable.',
@@ -145,7 +141,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testCoalesceAssignRule(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign.php'], [
 			[
 				'Property CoalesceAssignRule\FooCoalesce::$string (string) on left side of ??= is not nullable.',
@@ -209,14 +204,12 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testNullsafe(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/null-coalesce-nullsafe.php'], []);
 	}
 
 	public function testVariableCertaintyInNullCoalesce(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null.php'], [
 			[
 				'Variable $scalar on left side of ?? always exists and is not nullable.',
@@ -236,7 +229,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testVariableCertaintyInNullCoalesceAssign(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null-assign.php'], [
 			[
 				'Variable $scalar on left side of ??= always exists and is not nullable.',
@@ -256,7 +248,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testNullCoalesceInGlobalScope(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/null-coalesce-global-scope.php'], [
 			[
 				'Variable $bar on left side of ?? always exists and is not nullable.',
@@ -268,7 +259,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testBug5933(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/bug-5933.php'], []);
 	}
 
@@ -279,24 +269,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 		}
 
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
-
-		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
-			[
-				'Expression on left side of ?? is not nullable.',
-				40,
-			],
-		]);
-	}
-
-	public function testBug7109Strict(): void
-	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
@@ -325,7 +297,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testBug7190(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7190.php'], [
 			[
@@ -338,7 +309,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testBug7318(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7318.php'], [
 			[
@@ -351,7 +321,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testBug7968(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-7968.php'], []);
 	}
@@ -359,7 +328,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testBug8084(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-8084.php'], []);
 	}
@@ -367,7 +335,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testBug10577(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-10577.php'], []);
 	}
@@ -375,7 +342,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testBug10610(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-10610.php'], []);
 	}

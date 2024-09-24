@@ -34,7 +34,6 @@ parametersSchema:
 		arrayFilter: bool(),
 		arrayValues: bool(),
 		illegalConstructorMethodCall: bool(),
-		strictUnnecessaryNullsafePropertyFetch: bool(),
 		looseComparison: bool(),
 		consistentConstructor: bool()
 		readOnlyByPhpDoc: bool()

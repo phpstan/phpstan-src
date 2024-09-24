@@ -126,6 +126,7 @@ Improvements 🔧
 * Check template type variance in `@param-out` (https://github.com/phpstan/phpstan-src/commit/7ceb19d3b42cf4632d10c2babb0fc5a21b6c8352), https://github.com/phpstan/phpstan/issues/8880#issuecomment-1426971473
 * Fix position variance of static method parameters ([#2313](https://github.com/phpstan/phpstan-src/pull/2313)), thanks @jiripudil!
 * Empty `skipCheckGenericClasses` (https://github.com/phpstan/phpstan-src/commit/28c2c79b16cac6ba6b01f1b4d211541dd49d8a77)
+* Report unnecessary nullsafe property fetch inside `??` / `isset` / `empty` with different message ([#1253](https://github.com/phpstan/phpstan-src/pull/1253)), thanks @rajyan!
 
 Bugfixes 🐛
 =====================

@@ -28,7 +28,6 @@ parameters:
 		arrayFilter: false
 		arrayValues: false
 		illegalConstructorMethodCall: false
-		strictUnnecessaryNullsafePropertyFetch: false
 		looseComparison: false
 		consistentConstructor: false
 		readOnlyByPhpDoc: false
@@ -964,7 +963,6 @@ services:
 		arguments:
 			checkAdvancedIsset: %checkAdvancedIsset%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			strictUnnecessaryNullsafePropertyFetch: %featureToggles.strictUnnecessaryNullsafePropertyFetch%
 
 	-
 		class: PHPStan\Rules\Methods\MethodCallCheck

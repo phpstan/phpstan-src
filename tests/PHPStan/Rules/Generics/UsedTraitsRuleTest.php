@@ -23,6 +23,7 @@ class UsedTraitsRuleTest extends RuleTestCase
 				new VarianceCheck(),
 				new UnresolvableTypeHelper(),
 				[],
+				true,
 			),
 		);
 	}

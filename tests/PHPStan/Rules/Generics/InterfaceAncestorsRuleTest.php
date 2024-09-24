@@ -21,6 +21,7 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 				new VarianceCheck(),
 				new UnresolvableTypeHelper(),
 				[],
+				true,
 			),
 			new CrossCheckInterfacesHelper(),
 		);

@@ -34,6 +34,7 @@ final class GenericAncestorsCheck
 		private VarianceCheck $varianceCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private array $skipCheckGenericClasses,
+		private bool $checkMissingTypehints,
 	)
 	{
 	}
@@ -151,26 +152,28 @@ final class GenericAncestorsCheck
 			}
 		}
 
-		foreach (array_keys($unusedNames) as $unusedName) {
-			if (!$this->reflectionProvider->hasClass($unusedName)) {
-				continue;
-			}
+		if ($this->checkMissingTypehints) {
+			foreach (array_keys($unusedNames) as $unusedName) {
+				if (!$this->reflectionProvider->hasClass($unusedName)) {
+					continue;
+				}
 
-			$unusedNameClassReflection = $this->reflectionProvider->getClass($unusedName);
-			if (in_array($unusedNameClassReflection->getName(), $this->skipCheckGenericClasses, true)) {
-				continue;
-			}
-			if (!$unusedNameClassReflection->isGeneric()) {
-				continue;
-			}
+				$unusedNameClassReflection = $this->reflectionProvider->getClass($unusedName);
+				if (in_array($unusedNameClassReflection->getName(), $this->skipCheckGenericClasses, true)) {
+					continue;
+				}
+				if (!$unusedNameClassReflection->isGeneric()) {
+					continue;
+				}
 
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				$genericClassInNonGenericObjectType,
-				$unusedName,
-				implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes())),
-			))
-				->identifier('missingType.generics')
-				->build();
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					$genericClassInNonGenericObjectType,
+					$unusedName,
+					implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes())),
+				))
+					->identifier('missingType.generics')
+					->build();
+			}
 		}
 
 		return $messages;

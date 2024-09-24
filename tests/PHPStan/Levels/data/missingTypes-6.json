@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Class MissingTypesLevels\\Foo extends generic class MissingTypesLevels\\Generic but does not specify its types: T",
+        "line": 13,
+        "ignorable": true
+    }
+]

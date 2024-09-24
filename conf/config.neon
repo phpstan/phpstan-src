@@ -917,6 +917,7 @@ services:
 		class: PHPStan\Rules\Generics\GenericAncestorsCheck
 		arguments:
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
+			checkMissingTypehints: %checkMissingTypehints%
 
 	-
 		class: PHPStan\Rules\Generics\GenericObjectTypeCheck

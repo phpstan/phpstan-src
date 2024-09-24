@@ -97,6 +97,17 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 						->identifier('missingType.iterableValue')
 						->build();
 				}
+
+				foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($varTagType) as [$innerName, $genericTypeNames]) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'%s contains generic %s but does not specify its types: %s',
+						$identifier,
+						$innerName,
+						implode(', ', $genericTypeNames),
+					))
+						->identifier('missingType.generics')
+						->build();
+				}
 			}
 
 			$escapedIdentifier = SprintfHelper::escapeFormatString($identifier);
@@ -109,17 +120,6 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 				sprintf('Call-site variance of %%s in generic type %%s in %s is in conflict with %%s template type %%s of %%s %%s.', $escapedIdentifier),
 				sprintf('Call-site variance of %%s in generic type %%s in %s is redundant, template type %%s of %%s %%s has the same variance.', $escapedIdentifier),
 			));
-
-			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($varTagType) as [$innerName, $genericTypeNames]) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'%s contains generic %s but does not specify its types: %s',
-					$identifier,
-					$innerName,
-					implode(', ', $genericTypeNames),
-				))
-					->identifier('missingType.generics')
-					->build();
-			}
 
 			$referencedClasses = $varTagType->getReferencedClasses();
 			foreach ($referencedClasses as $referencedClass) {

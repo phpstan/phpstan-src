@@ -4718,12 +4718,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-nette.git",
-                "reference": "93a4f025a4d11ffcf9523617cb3c620c5373fe56"
+                "reference": "c903386c4e3d1d25a57f66458476bfb6347f1c66"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-nette/zipball/93a4f025a4d11ffcf9523617cb3c620c5373fe56",
-                "reference": "93a4f025a4d11ffcf9523617cb3c620c5373fe56",
+                "url": "https://api.github.com/repos/phpstan/phpstan-nette/zipball/c903386c4e3d1d25a57f66458476bfb6347f1c66",
+                "reference": "c903386c4e3d1d25a57f66458476bfb6347f1c66",
                 "shasum": ""
             },
             "require": {
@@ -4771,7 +4771,7 @@
                 "issues": "https://github.com/phpstan/phpstan-nette/issues",
                 "source": "https://github.com/phpstan/phpstan-nette/tree/2.0.x"
             },
-            "time": "2024-09-04T21:08:28+00:00"
+            "time": "2024-09-24T16:09:34+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -4779,12 +4779,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-phpunit.git",
-                "reference": "4d861e0843cd1f8eccacfac14e24a8629280a887"
+                "reference": "09e2d3b470bdda02824c626735153dfd962e3f29"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/4d861e0843cd1f8eccacfac14e24a8629280a887",
-                "reference": "4d861e0843cd1f8eccacfac14e24a8629280a887",
+                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/09e2d3b470bdda02824c626735153dfd962e3f29",
+                "reference": "09e2d3b470bdda02824c626735153dfd962e3f29",
                 "shasum": ""
             },
             "require": {
@@ -4823,7 +4823,7 @@
                 "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
                 "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.0.x"
             },
-            "time": "2024-09-13T12:47:01+00:00"
+            "time": "2024-09-24T16:07:03+00:00"
         },
         {
             "name": "phpstan/phpstan-strict-rules",

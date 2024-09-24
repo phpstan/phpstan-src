@@ -22,7 +22,6 @@ rules:
 	- PHPStan\Rules\Api\RuntimeReflectionInstantiationRule
 	- PHPStan\Rules\Api\RuntimeReflectionFunctionRule
 	- PHPStan\Rules\Arrays\DuplicateKeysInLiteralArraysRule
-	- PHPStan\Rules\Arrays\EmptyArrayItemRule
 	- PHPStan\Rules\Arrays\OffsetAccessWithoutDimForReadingRule
 	- PHPStan\Rules\Cast\UnsetCastRule
 	- PHPStan\Rules\Classes\AllowedSubTypesRule

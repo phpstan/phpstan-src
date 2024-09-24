@@ -9,6 +9,7 @@ Major new features 🚀
     * Lists are arrays with sequential integer keys starting at 0
 * **Validate inline PHPDoc `@var` tag** type against native type (level 2) (https://github.com/phpstan/phpstan-src/commit/a69e3bc2f1e87f6da1e65d7935f1cc36bd5c42fe)
     * Set [`reportWrongPhpDocTypeInVarTag`](https://phpstan.org/config-reference#reportwrongphpdoctypeinvartag) to `true` to have all types validated, not just native ones
+    * Use config option `reportAnyTypeWideningInVarTag: true` for stricter behaviour ([#2840](https://github.com/phpstan/phpstan-src/pull/2840)), thanks @janedbal!
 * **Lower memory consumption** thanks to breaking up of reference cycles
     * [Learn more »](https://phpstan.org/blog/preprocessing-ast-for-custom-rules)
     * In testing the memory consumption was reduced by 50–70 %.
@@ -70,20 +71,8 @@ Major new features 🚀
     * Report `instanceof` of classes covered by backward compatibility promise but where the assumption might change (https://github.com/phpstan/phpstan-src/commit/996bc69fa977aa64f601bd82b8a0ae39be0cbeef)
 * Check that PHPStan class in class constant fetch is covered by backward compatibility promise (level 0) (https://github.com/phpstan/phpstan-src/commit/9e007251ce61788f6a0319a53f1de6cf801ed233)
 * Deprecate various `instanceof *Type` in favour of new methods on `Type` interface, (https://github.com/phpstan/phpstan-src/commit/436e6d3015cbeba4645d38bc7a6a865b9c6d7c74), learn more: [Why Is instanceof *Type Wrong and Getting Deprecated?](https://phpstan.org/blog/why-is-instanceof-type-wrong-and-getting-deprecated)
-
-Bleeding edge (TODO move to other sections)
-=====================
-
 * Report narrowing `PHPStan\Type\Type` interface via `@var` (https://github.com/phpstan/phpstan-src/commit/713b98fb107213c28e3d8c8b4b43c5f5fc47c144), https://github.com/nunomaduro/larastan/issues/1567#issuecomment-1460445389
-* Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)
-* InvalidPHPStanDocTagRule in StubValidator (https://github.com/phpstan/phpstan-src/commit/9c2552b7e744926d1a74c1ba8fd32c64079eed61)
-* Report unused results of `and` and `or` (https://github.com/phpstan/phpstan-src/commit/1d8fff637d70a9e9ed3f11dee5d61b9f796cbf1a)
-* Report unused result of ternary (https://github.com/phpstan/phpstan-src/commit/9664f7a9d2223c07e750f0dfc949c3accfa6b65e)
-* Report unused results of `&&` and `||` (https://github.com/phpstan/phpstan-src/commit/cf2c8bbd9ebd2ebe300dbd310e136ad603d7def3)
-* Add option `reportAnyTypeWideningInVarTag` ([#2840](https://github.com/phpstan/phpstan-src/pull/2840)), thanks @janedbal!
-* Fix checking generic `mixed` type based on config ([#2885](https://github.com/phpstan/phpstan-src/pull/2885)), thanks @schlndh!
-* CallToConstructorStatementWithoutSideEffectsRule - report class with no constructor (https://github.com/phpstan/phpstan-src/commit/b116d25a6e4ba6c09f59af6569d9e6f6fd20aff4)
-* Check `@param-immediately-invoked-callable` and `@param-later-invoked-callable` (https://github.com/phpstan/phpstan-src/commit/580a6add422f4e34191df9e7a77ba1655e914bda), #10932
+
 
 Improvements 🔧
 =====================
@@ -127,11 +116,17 @@ Improvements 🔧
 * Specify explicit mixed array type via `is_array` ([#1191](https://github.com/phpstan/phpstan-src/pull/1191)), thanks @herndlm!
 * TooWideMethodReturnTypehintRule - always report for final methods (https://github.com/phpstan/phpstan-src/commit/c30e9a484c8245b8126cd63444607ca74d2af761)
 * Move IllegalConstructorMethodCallRule and IllegalConstructorStaticCallRule to phpstan-strict-rules (https://github.com/phpstan/phpstan-src/commit/124b30f98c182193187be0b9c2e151e477429b7a, https://github.com/phpstan/phpstan-strict-rules/commit/0c82c96f2a55d8b91bbc7ee6512c94f68a206b43)
+* Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)
+* InvalidPHPStanDocTagRule in StubValidator (https://github.com/phpstan/phpstan-src/commit/9c2552b7e744926d1a74c1ba8fd32c64079eed61)
+* CallToConstructorStatementWithoutSideEffectsRule - report class with no constructor (https://github.com/phpstan/phpstan-src/commit/b116d25a6e4ba6c09f59af6569d9e6f6fd20aff4)
+
 
 Bugfixes 🐛
 =====================
 
 * Fix invariance composition ([#2054](https://github.com/phpstan/phpstan-src/pull/2054)), thanks @jiripudil!
+* Fix checking generic `mixed` type based on config ([#2885](https://github.com/phpstan/phpstan-src/pull/2885)), thanks @schlndh!
+
 
 Function signature fixes 🤖
 =======================

@@ -37,7 +37,6 @@ final class WrongVariableNameInVarTagRule implements Rule
 	public function __construct(
 		private FileTypeMapper $fileTypeMapper,
 		private VarTagTypeRuleHelper $varTagTypeRuleHelper,
-		private bool $checkTypeAgainstNativeType,
 	)
 	{
 	}
@@ -138,11 +137,6 @@ final class WrongVariableNameInVarTagRule implements Rule
 		$errors = [];
 		$hasMultipleMessage = false;
 		$assignedVariables = $this->getAssignedVariables($var);
-		if ($this->checkTypeAgainstNativeType) {
-			foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $var, $expr, $varTags, $assignedVariables) as $error) {
-				$errors[] = $error;
-			}
-		}
 		foreach (array_keys($varTags) as $key) {
 			if (is_int($key)) {
 				if (count($varTags) !== 1) {
@@ -178,6 +172,12 @@ final class WrongVariableNameInVarTagRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf('Variable $%s in PHPDoc tag @var does not exist.', $key))
 					->identifier('varTag.variableNotFound')
 					->build();
+			}
+		}
+
+		if (count($errors) === 0) {
+			foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $var, $expr, $varTags, $assignedVariables) as $error) {
+				$errors[] = $error;
 			}
 		}
 
@@ -251,18 +251,16 @@ final class WrongVariableNameInVarTagRule implements Rule
 			))->identifier('varTag.differentVariable')->build();
 		}
 
-		if ($this->checkTypeAgainstNativeType) {
-			foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $iterateeExpr, $iterateeExpr, $varTags, $variableNames) as $error) {
+		foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $iterateeExpr, $iterateeExpr, $varTags, $variableNames) as $error) {
+			$errors[] = $error;
+		}
+		if ($keyVar !== null) {
+			foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $keyVar, new GetIterableKeyTypeExpr($iterateeExpr), $varTags, $variableNames) as $error) {
 				$errors[] = $error;
 			}
-			if ($keyVar !== null) {
-				foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $keyVar, new GetIterableKeyTypeExpr($iterateeExpr), $varTags, $variableNames) as $error) {
-					$errors[] = $error;
-				}
-			}
-			foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $valueVar, new GetIterableValueTypeExpr($iterateeExpr), $varTags, $variableNames) as $error) {
-				$errors[] = $error;
-			}
+		}
+		foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $valueVar, new GetIterableValueTypeExpr($iterateeExpr), $varTags, $variableNames) as $error) {
+			$errors[] = $error;
 		}
 
 		return $errors;
@@ -321,14 +319,12 @@ final class WrongVariableNameInVarTagRule implements Rule
 			))->identifier('varTag.differentVariable')->build();
 		}
 
-		if ($this->checkTypeAgainstNativeType) {
-			foreach ($vars as $var) {
-				if ($var->default === null) {
-					continue;
-				}
-				foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $var->var, $var->default, $varTags, $variableNames) as $error) {
-					$errors[] = $error;
-				}
+		foreach ($vars as $var) {
+			if ($var->default === null) {
+				continue;
+			}
+			foreach ($this->varTagTypeRuleHelper->checkVarType($scope, $var->var, $var->default, $varTags, $variableNames) as $error) {
+				$errors[] = $error;
 			}
 		}
 

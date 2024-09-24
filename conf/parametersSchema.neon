@@ -42,7 +42,6 @@ parametersSchema:
 		alwaysCheckTooWideReturnTypeFinalMethods: bool()
 		alwaysTrueAlwaysReported: bool()
 		disableUnreachableBranchesRules: bool()
-		varTagType: bool()
 		closureDefaultParameterTypeRule: bool()
 		propertyVariance: bool()
 		stricterFunctionMap: bool()

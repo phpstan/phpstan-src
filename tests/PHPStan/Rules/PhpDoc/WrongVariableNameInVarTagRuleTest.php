@@ -13,8 +13,6 @@ use const PHP_VERSION_ID;
 class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 {
 
-	private bool $checkTypeAgainstNativeType = false;
-
 	private bool $checkTypeAgainstPhpDocType = false;
 
 	private bool $strictWideningCheck = false;
@@ -24,13 +22,20 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		return new WrongVariableNameInVarTagRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
 			new VarTagTypeRuleHelper($this->checkTypeAgainstPhpDocType, $this->strictWideningCheck),
-			$this->checkTypeAgainstNativeType,
 		);
 	}
 
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/wrong-variable-name-var.php'], [
+			[
+				'PHPDoc tag @var with type int is not subtype of native type void.',
+				11,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type void.',
+				14,
+			],
 			[
 				'Variable $foo in PHPDoc tag @var does not match assigned variable $test.',
 				17,
@@ -70,6 +75,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'Variable $foo in PHPDoc tag @var does not exist.',
 				109,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type void.',
+				120,
 			],
 			[
 				'Multiple PHPDoc @var tags above single variable assignment are not supported.',
@@ -253,12 +262,9 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			],
 		];
 
-		yield [false, false, false, []];
-		yield [true, false, false, $nativeCheckOnly];
-		yield [true, false, true, $nativeCheckOnly];
-		yield [false, true, false, []];
-		yield [false, true, true, []];
-		yield [true, true, false, [
+		yield [false, false, $nativeCheckOnly];
+		yield [false, true, $nativeCheckOnly];
+		yield [true, false, [
 			[
 				'PHPDoc tag @var with type string|null is not subtype of native type string.',
 				14,
@@ -349,7 +355,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				204,
 			],
 		]];
-		yield [true, true, true, [
+		yield [true, true, [
 			[
 				'PHPDoc tag @var with type string|null is not subtype of native type string.',
 				14,
@@ -469,29 +475,21 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	/**
 	 * @dataProvider dataPermutateCheckTypeAgainst
 	 */
-	public function testEmptyArrayInitWithWiderPhpDoc(bool $checkTypeAgainstNativeType, bool $checkTypeAgainstPhpDocType): void
+	public function testEmptyArrayInitWithWiderPhpDoc(bool $checkTypeAgainstPhpDocType): void
 	{
-		$this->checkTypeAgainstNativeType = $checkTypeAgainstNativeType;
 		$this->checkTypeAgainstPhpDocType = $checkTypeAgainstPhpDocType;
-
-		$errors = !$checkTypeAgainstNativeType
-			? []
-			: [
-				[
-					'PHPDoc tag @var with type int is not subtype of native type array{}.',
-					24,
-				],
-			];
-
-		$this->analyse([__DIR__ . '/data/var-above-empty-array-widening.php'], $errors);
+		$this->analyse([__DIR__ . '/data/var-above-empty-array-widening.php'], [
+			[
+				'PHPDoc tag @var with type int is not subtype of native type array{}.',
+				24,
+			],
+		]);
 	}
 
 	public function dataPermutateCheckTypeAgainst(): iterable
 	{
-		yield [true, true];
-		yield [false, true];
-		yield [true, false];
-		yield [false, false];
+		yield [true];
+		yield [false];
 	}
 
 	/**
@@ -499,13 +497,11 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
 	public function testReportWrongType(
-		bool $checkTypeAgainstNativeType,
 		bool $checkTypeAgainstPhpDocType,
 		bool $strictWideningCheck,
 		array $expectedErrors,
 	): void
 	{
-		$this->checkTypeAgainstNativeType = $checkTypeAgainstNativeType;
 		$this->checkTypeAgainstPhpDocType = $checkTypeAgainstPhpDocType;
 		$this->strictWideningCheck = $strictWideningCheck;
 		$this->analyse([__DIR__ . '/data/wrong-var-native-type.php'], $expectedErrors);

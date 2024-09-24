@@ -15,7 +15,6 @@ parameters:
 		alwaysCheckTooWideReturnTypeFinalMethods: true
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true
-		varTagType: true
 		closureDefaultParameterTypeRule: true
 		propertyVariance: true
 		magicConstantOutOfContext: true

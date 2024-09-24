@@ -5,10 +5,6 @@ parameters:
 	checkFunctionArgumentTypes: true
 	checkArgumentsPassedByReference: true
 
-conditionalTags:
-	PHPStan\Rules\Functions\ArrayValuesRule:
-		phpstan.rules.rule: %featureToggles.arrayValues%
-
 rules:
 	- PHPStan\Rules\DateTimeInstantiationRule
 	- PHPStan\Rules\Functions\CallUserFuncRule
@@ -37,3 +33,5 @@ services:
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule

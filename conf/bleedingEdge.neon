@@ -4,6 +4,5 @@ parameters:
 		skipCheckGenericClasses!: []
 		stricterFunctionMap: true
 
-		arrayValues: true
 		readOnlyByPhpDoc: true
 		pure: true

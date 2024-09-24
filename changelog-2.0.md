@@ -28,6 +28,7 @@ Major new features 🚀
 * Report useless return values of function calls like `var_export` without `$return=true` (level 0) ([#3225](https://github.com/phpstan/phpstan-src/pull/3225)), #11320, thanks @staabm!
 * Rule for `call_user_func()` (level 5) ([#2479](https://github.com/phpstan/phpstan-src/pull/2479)), thanks @staabm!
 * Report useless `array_filter()` calls (level 5) ([#1077](https://github.com/phpstan/phpstan-src/pull/1077)), #6840, thanks @leongersen!
+* Report useless `array_values()` calls (level 5) ([#2917](https://github.com/phpstan/phpstan-src/pull/2917)), thanks @kamil-zacek!
 * Check if required file exists (level 0) ([#3294](https://github.com/phpstan/phpstan-src/pull/3294)), #3397, thanks @Bellangelo!
 * ConstantLooseComparisonRule - level 4 (https://github.com/phpstan/phpstan-src/commit/6ebf2361a3c831dd105a815521889428c295dc9f)
 * Check array functions which require stringish values (level 5) ([#3132](https://github.com/phpstan/phpstan-src/pull/3132)), #11141, #5848, #3694, #11111, thanks @schlndh!
@@ -76,7 +77,6 @@ Bleeding edge (TODO move to other sections)
 * Report unused result of ternary (https://github.com/phpstan/phpstan-src/commit/9664f7a9d2223c07e750f0dfc949c3accfa6b65e)
 * Report unused results of `&&` and `||` (https://github.com/phpstan/phpstan-src/commit/cf2c8bbd9ebd2ebe300dbd310e136ad603d7def3)
 * Add option `reportAnyTypeWideningInVarTag` ([#2840](https://github.com/phpstan/phpstan-src/pull/2840)), thanks @janedbal!
-* `array_values` rule (report when a `list` type is always passed in) ([#2917](https://github.com/phpstan/phpstan-src/pull/2917)), thanks @kamil-zacek!
 * Fix checking generic `mixed` type based on config ([#2885](https://github.com/phpstan/phpstan-src/pull/2885)), thanks @schlndh!
 * Checking truthiness of `@phpstan-pure` above functions and methods
 * Check `new`/function call/method call/static method call on a separate line without any side effects even without `@phpstan-pure` PHPDoc tag on the declaration side

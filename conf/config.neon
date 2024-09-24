@@ -23,7 +23,6 @@ parameters:
 	featureToggles:
 		bleedingEdge: false
 		skipCheckGenericClasses: []
-		arrayValues: false
 		illegalConstructorMethodCall: false
 		readOnlyByPhpDoc: false
 		stricterFunctionMap: false

@@ -282,7 +282,6 @@ services:
 		class: PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule
 		arguments:
 			checkProtectedAndPublicMethods: %checkTooWideReturnTypesInProtectedAndPublicMethods%
-			alwaysCheckFinal: %featureToggles.alwaysCheckTooWideReturnTypeFinalMethods%
 		tags:
 			- phpstan.rules.rule
 

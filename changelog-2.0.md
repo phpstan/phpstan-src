@@ -71,7 +71,6 @@ Bleeding edge (TODO move to other sections)
 * Report narrowing `PHPStan\Type\Type` interface via `@var` (https://github.com/phpstan/phpstan-src/commit/713b98fb107213c28e3d8c8b4b43c5f5fc47c144), https://github.com/nunomaduro/larastan/issues/1567#issuecomment-1460445389
 * Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)
 * InvalidPHPStanDocTagRule in StubValidator (https://github.com/phpstan/phpstan-src/commit/9c2552b7e744926d1a74c1ba8fd32c64079eed61)
-* TooWideMethodReturnTypehintRule - always report for final methods (https://github.com/phpstan/phpstan-src/commit/c30e9a484c8245b8126cd63444607ca74d2af761)
 * Report unused results of `and` and `or` (https://github.com/phpstan/phpstan-src/commit/1d8fff637d70a9e9ed3f11dee5d61b9f796cbf1a)
 * Report unused result of ternary (https://github.com/phpstan/phpstan-src/commit/9664f7a9d2223c07e750f0dfc949c3accfa6b65e)
 * Report unused results of `&&` and `||` (https://github.com/phpstan/phpstan-src/commit/cf2c8bbd9ebd2ebe300dbd310e136ad603d7def3)
@@ -128,6 +127,7 @@ Improvements 🔧
 * Empty `skipCheckGenericClasses` (https://github.com/phpstan/phpstan-src/commit/28c2c79b16cac6ba6b01f1b4d211541dd49d8a77)
 * Report unnecessary nullsafe property fetch inside `??` / `isset` / `empty` with different message ([#1253](https://github.com/phpstan/phpstan-src/pull/1253)), thanks @rajyan!
 * Specify explicit mixed array type via `is_array` ([#1191](https://github.com/phpstan/phpstan-src/pull/1191)), thanks @herndlm!
+* TooWideMethodReturnTypehintRule - always report for final methods (https://github.com/phpstan/phpstan-src/commit/c30e9a484c8245b8126cd63444607ca74d2af761)
 
 Bugfixes 🐛
 =====================

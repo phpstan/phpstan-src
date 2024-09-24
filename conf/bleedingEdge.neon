@@ -8,7 +8,6 @@ parameters:
 		arrayValues: true
 		looseComparison: true
 		readOnlyByPhpDoc: true
-		alwaysCheckTooWideReturnTypeFinalMethods: true
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true
 		pure: true

@@ -29,7 +29,6 @@ parameters:
 		illegalConstructorMethodCall: false
 		looseComparison: false
 		readOnlyByPhpDoc: false
-		alwaysCheckTooWideReturnTypeFinalMethods: false
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false
 		stricterFunctionMap: false

@@ -22,7 +22,7 @@ use function sprintf;
 final class TooWideMethodReturnTypehintRule implements Rule
 {
 
-	public function __construct(private bool $checkProtectedAndPublicMethods, private bool $alwaysCheckFinal)
+	public function __construct(private bool $checkProtectedAndPublicMethods)
 	{
 	}
 
@@ -39,20 +39,14 @@ final class TooWideMethodReturnTypehintRule implements Rule
 		$method = $node->getMethodReflection();
 		$isFirstDeclaration = $method->getPrototype()->getDeclaringClass() === $method->getDeclaringClass();
 		if (!$method->isPrivate()) {
-			if ($this->alwaysCheckFinal) {
-				if (!$method->getDeclaringClass()->isFinal() && !$method->isFinal()->yes()) {
-					if (!$this->checkProtectedAndPublicMethods) {
-						return [];
-					}
-
-					if ($isFirstDeclaration) {
-						return [];
-					}
+			if (!$method->getDeclaringClass()->isFinal() && !$method->isFinal()->yes()) {
+				if (!$this->checkProtectedAndPublicMethods) {
+					return [];
 				}
-			} elseif (!$this->checkProtectedAndPublicMethods) {
-				return [];
-			} elseif ($isFirstDeclaration && !$method->getDeclaringClass()->isFinal() && !$method->isFinal()->yes()) {
-				return [];
+
+				if ($isFirstDeclaration) {
+					return [];
+				}
 			}
 		}
 

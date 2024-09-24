@@ -372,9 +372,9 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isSmallerThan($otherType);
 	}
 
-	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
+	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
-		return $this->resolve()->isSmallerThanOrEqual($otherType);
+		return $this->resolve()->isSmallerThanOrEqual($otherType, $phpVersion);
 	}
 
 	public function isNull(): TrinaryLogic
@@ -550,15 +550,15 @@ trait LateResolvableTypeTrait
 		return $otherType->isSmallerThan($result);
 	}
 
-	public function isGreaterThanOrEqual(Type $otherType): TrinaryLogic
+	public function isGreaterThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		$result = $this->resolve();
 
 		if ($result instanceof CompoundType) {
-			return $result->isGreaterThanOrEqual($otherType);
+			return $result->isGreaterThanOrEqual($otherType, $phpVersion);
 		}
 
-		return $otherType->isSmallerThanOrEqual($result);
+		return $otherType->isSmallerThanOrEqual($result, $phpVersion);
 	}
 
 	public function exponentiate(Type $exponent): Type

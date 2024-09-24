@@ -5,6 +5,7 @@ namespace App\ClassImplements;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -252,7 +253,7 @@ class Baz implements Type
 		// TODO: Implement isSmallerThan() method.
 	}
 
-	public function isSmallerThanOrEqual(Type $otherType): \PHPStan\TrinaryLogic
+	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): \PHPStan\TrinaryLogic
 	{
 		// TODO: Implement isSmallerThanOrEqual() method.
 	}

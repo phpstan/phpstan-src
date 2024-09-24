@@ -217,7 +217,7 @@ interface Type
 
 	public function isSmallerThan(Type $otherType): TrinaryLogic;
 
-	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic;
+	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic;
 
 	/**
 	 * Is Type of a known constant value? Includes literal strings, integers, floats, true, false, null, and array shapes.

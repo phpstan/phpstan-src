@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 
 /** @api */
@@ -16,6 +17,6 @@ interface CompoundType extends Type
 
 	public function isGreaterThan(Type $otherType): TrinaryLogic;
 
-	public function isGreaterThanOrEqual(Type $otherType): TrinaryLogic;
+	public function isGreaterThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic;
 
 }

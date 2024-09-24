@@ -3,12 +3,17 @@ includes:
 
 rules:
 	- PHPStan\Rules\Arrays\DeadForeachRule
+	- PHPStan\Rules\DeadCode\CallToConstructorStatementWithoutImpurePointsRule
+	- PHPStan\Rules\DeadCode\CallToFunctionStatementWithoutImpurePointsRule
+	- PHPStan\Rules\DeadCode\CallToMethodStatementWithoutImpurePointsRule
+	- PHPStan\Rules\DeadCode\CallToStaticMethodStatementWithoutImpurePointsRule
 	- PHPStan\Rules\DeadCode\NoopRule
 	- PHPStan\Rules\DeadCode\UnreachableStatementRule
 	- PHPStan\Rules\DeadCode\UnusedPrivateConstantRule
 	- PHPStan\Rules\DeadCode\UnusedPrivateMethodRule
 	- PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
 	- PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule
+	- PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToMethodStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToStaticMethodStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\NullsafeMethodCallRule
@@ -19,30 +24,6 @@ rules:
 	- PHPStan\Rules\TooWideTypehints\TooWideMethodParameterOutTypeRule
 	- PHPStan\Rules\TooWideTypehints\TooWidePropertyTypeRule
 	- PHPStan\Rules\Traits\NotAnalysedTraitRule
-
-conditionalTags:
-	PHPStan\Rules\DeadCode\CallToConstructorStatementWithoutImpurePointsRule:
-		phpstan.rules.rule: %featureToggles.pure%
-	PHPStan\Rules\DeadCode\PossiblyPureNewCollector:
-		phpstan.collector: %featureToggles.pure%
-	PHPStan\Rules\DeadCode\ConstructorWithoutImpurePointsCollector:
-		phpstan.collector: %featureToggles.pure%
-	PHPStan\Rules\DeadCode\CallToFunctionStatementWithoutImpurePointsRule:
-		phpstan.rules.rule: %featureToggles.pure%
-	PHPStan\Rules\DeadCode\PossiblyPureFuncCallCollector:
-		phpstan.collector: %featureToggles.pure%
-	PHPStan\Rules\DeadCode\FunctionWithoutImpurePointsCollector:
-		phpstan.collector: %featureToggles.pure%
-	PHPStan\Rules\DeadCode\CallToMethodStatementWithoutImpurePointsRule:
-		phpstan.rules.rule: %featureToggles.pure%
-	PHPStan\Rules\DeadCode\PossiblyPureMethodCallCollector:
-		phpstan.collector: %featureToggles.pure%
-	PHPStan\Rules\DeadCode\MethodWithoutImpurePointsCollector:
-		phpstan.collector: %featureToggles.pure%
-	PHPStan\Rules\DeadCode\CallToStaticMethodStatementWithoutImpurePointsRule:
-		phpstan.rules.rule: %featureToggles.pure%
-	PHPStan\Rules\DeadCode\PossiblyPureStaticCallCollector:
-		phpstan.collector: %featureToggles.pure%
 
 parameters:
 	checkAdvancedIsset: true
@@ -85,37 +66,39 @@ services:
 			- phpstan.rules.rule
 
 	-
-		class: PHPStan\Rules\DeadCode\CallToConstructorStatementWithoutImpurePointsRule
-
-	-
 		class: PHPStan\Rules\DeadCode\ConstructorWithoutImpurePointsCollector
+		tags:
+			- phpstan.collector
 
 	-
 		class: PHPStan\Rules\DeadCode\PossiblyPureNewCollector
-
-	-
-		class: PHPStan\Rules\DeadCode\CallToFunctionStatementWithoutImpurePointsRule
+		tags:
+			- phpstan.collector
 
 	-
 		class: PHPStan\Rules\DeadCode\FunctionWithoutImpurePointsCollector
+		tags:
+			 - phpstan.collector
 
 	-
 		class: PHPStan\Rules\DeadCode\PossiblyPureFuncCallCollector
-
-	-
-		class: PHPStan\Rules\DeadCode\CallToMethodStatementWithoutImpurePointsRule
+		tags:
+			 - phpstan.collector
 
 	-
 		class: PHPStan\Rules\DeadCode\MethodWithoutImpurePointsCollector
+		tags:
+			 - phpstan.collector
 
 	-
 		class: PHPStan\Rules\DeadCode\PossiblyPureMethodCallCollector
-
-	-
-		class: PHPStan\Rules\DeadCode\CallToStaticMethodStatementWithoutImpurePointsRule
+		tags:
+			 - phpstan.collector
 
 	-
 		class: PHPStan\Rules\DeadCode\PossiblyPureStaticCallCollector
+		tags:
+			 - phpstan.collector
 
 	-
 		class: PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule
@@ -242,13 +225,6 @@ services:
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
-		arguments:
-			reportNoConstructor: %featureToggles.pure%
 		tags:
 			- phpstan.rules.rule
 

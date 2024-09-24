@@ -3,5 +3,3 @@ parameters:
 		bleedingEdge: true
 		skipCheckGenericClasses!: []
 		stricterFunctionMap: true
-
-		pure: true

@@ -13,7 +13,7 @@ class CallToConstructorStatementWithoutSideEffectsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToConstructorStatementWithoutSideEffectsRule($this->createReflectionProvider(), true);
+		return new CallToConstructorStatementWithoutSideEffectsRule($this->createReflectionProvider());
 	}
 
 	public function testRule(): void

@@ -31,7 +31,6 @@ parametersSchema:
 		skipCheckGenericClasses: listOf(string()),
 		illegalConstructorMethodCall: bool(),
 		stricterFunctionMap: bool()
-		pure: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

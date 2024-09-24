@@ -25,7 +25,6 @@ parameters:
 		skipCheckGenericClasses: []
 		illegalConstructorMethodCall: false
 		stricterFunctionMap: false
-		pure: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

@@ -19,6 +19,12 @@ Major new features 🚀
 * Always report always true conditions, except for last elseif and match arm (https://github.com/phpstan/phpstan-src/commit/565fb0f6da9cdc58e8686598015561a848693972)
 * Remove "unreachable branches" rules: UnreachableIfBranchesRule, UnreachableTernaryElseBranchRule, unreachable arm error in MatchExpressionRule
     * Because "always true" is always reported, these are no longer needed
+* Checking truthiness of `@phpstan-pure` above functions and methods
+* Check `new`/function call/method call/static method call on a separate line without any side effects even without `@phpstan-pure` PHPDoc tag on the declaration side
+    * https://github.com/phpstan/phpstan-src/commit/281a87d1ab61809076ecfa6dfc2cc86e3babe235
+    * [#3020](https://github.com/phpstan/phpstan-src/pull/3020), thanks @staabm!
+    * [#3022](https://github.com/phpstan/phpstan-src/pull/3022), thanks @staabm!
+    * [#3023](https://github.com/phpstan/phpstan-src/pull/3023), thanks @staabm!
 * LogicalXorConstantConditionRule (level 4) (https://github.com/phpstan/phpstan-src/commit/3a12724fd636b1bcf36c22b36e8f765d97150895, https://github.com/phpstan/phpstan-src/commit/3b011f6524254dad0f16840fdcfdbe7421548617), #7539
 * Check that each trait is used and analysed at least once (level 4) (https://github.com/phpstan/phpstan-src/commit/c4d05276fb8605d6ac20acbe1cc5df31cd6c10b0)
 * Check preg_quote delimiter sanity (level 0) ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
@@ -78,12 +84,6 @@ Bleeding edge (TODO move to other sections)
 * Report unused results of `&&` and `||` (https://github.com/phpstan/phpstan-src/commit/cf2c8bbd9ebd2ebe300dbd310e136ad603d7def3)
 * Add option `reportAnyTypeWideningInVarTag` ([#2840](https://github.com/phpstan/phpstan-src/pull/2840)), thanks @janedbal!
 * Fix checking generic `mixed` type based on config ([#2885](https://github.com/phpstan/phpstan-src/pull/2885)), thanks @schlndh!
-* Checking truthiness of `@phpstan-pure` above functions and methods
-* Check `new`/function call/method call/static method call on a separate line without any side effects even without `@phpstan-pure` PHPDoc tag on the declaration side
-    * https://github.com/phpstan/phpstan-src/commit/281a87d1ab61809076ecfa6dfc2cc86e3babe235
-    * [#3020](https://github.com/phpstan/phpstan-src/pull/3020), thanks @staabm!
-    * [#3022](https://github.com/phpstan/phpstan-src/pull/3022), thanks @staabm!
-    * [#3023](https://github.com/phpstan/phpstan-src/pull/3023), thanks @staabm!
 * CallToConstructorStatementWithoutSideEffectsRule - report class with no constructor (https://github.com/phpstan/phpstan-src/commit/b116d25a6e4ba6c09f59af6569d9e6f6fd20aff4)
 * Check `@param-immediately-invoked-callable` and `@param-later-invoked-callable` (https://github.com/phpstan/phpstan-src/commit/580a6add422f4e34191df9e7a77ba1655e914bda), #10932
 

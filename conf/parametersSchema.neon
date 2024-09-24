@@ -30,7 +30,6 @@ parametersSchema:
 		bleedingEdge: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		illegalConstructorMethodCall: bool(),
-		readOnlyByPhpDoc: bool()
 		stricterFunctionMap: bool()
 		pure: bool()
 	])

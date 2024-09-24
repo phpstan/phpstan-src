@@ -37,6 +37,7 @@ rules:
 	- PHPStan\Rules\Generics\MethodTagTemplateTypeRule
 	- PHPStan\Rules\Generics\MethodTagTemplateTypeTraitRule
 	- PHPStan\Rules\Generics\MethodSignatureVarianceRule
+	- PHPStan\Rules\Generics\PropertyVarianceRule
 	- PHPStan\Rules\Generics\TraitTemplateTypeRule
 	- PHPStan\Rules\Generics\UsedTraitsRule
 	- PHPStan\Rules\Methods\CallPrivateMethodThroughStaticRule
@@ -115,12 +116,6 @@ services:
 			- phpstan.rules.rule
 	-
 		class: PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
-		tags:
-			- phpstan.rules.rule
-	-
-		class: PHPStan\Rules\Generics\PropertyVarianceRule
-		arguments:
-			readOnlyByPhpDoc: %featureToggles.readOnlyByPhpDoc%
 		tags:
 			- phpstan.rules.rule
 	-

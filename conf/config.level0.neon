@@ -2,10 +2,6 @@ parameters:
 	customRulesetUsed: false
 
 conditionalTags:
-	PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule:
-		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
-	PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyRule:
-		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
 
@@ -98,9 +94,11 @@ rules:
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
 	- PHPStan\Rules\Properties\InvalidCallablePropertyTypeRule
 	- PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
+	- PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule
 	- PHPStan\Rules\Properties\PropertiesInInterfaceRule
 	- PHPStan\Rules\Properties\PropertyAttributesRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyRule
+	- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyRule
 	- PHPStan\Rules\Regexp\RegularExpressionPatternRule
 	- PHPStan\Rules\Regexp\RegularExpressionQuotingRule
 	- PHPStan\Rules\Traits\ConflictingTraitConstantsRule
@@ -204,18 +202,12 @@ services:
 			- phpstan.rules.rule
 
 	-
-		class: PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule
-
-	-
 		class: PHPStan\Rules\Properties\OverridingPropertyRule
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
 			reportMaybes: %reportMaybesInPropertyPhpDocTypes%
 		tags:
 			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyRule
 
 	-
 		class: PHPStan\Rules\Properties\UninitializedPropertyRule

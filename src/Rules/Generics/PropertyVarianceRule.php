@@ -18,7 +18,6 @@ final class PropertyVarianceRule implements Rule
 
 	public function __construct(
 		private VarianceCheck $varianceCheck,
-		private bool $readOnlyByPhpDoc,
 	)
 	{
 	}
@@ -42,7 +41,7 @@ final class PropertyVarianceRule implements Rule
 			return [];
 		}
 
-		$variance = $node->isReadOnly() || ($this->readOnlyByPhpDoc && $node->isReadOnlyByPhpDoc())
+		$variance = $node->isReadOnly() || $node->isReadOnlyByPhpDoc()
 			? TemplateTypeVariance::createCovariant()
 			: TemplateTypeVariance::createInvariant();
 

@@ -1,12 +1,6 @@
 includes:
 	- config.level2.neon
 
-conditionalTags:
-	PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRefRule:
-		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
-	PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule:
-		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
-
 rules:
 	- PHPStan\Rules\Arrays\ArrayDestructuringRule
 	- PHPStan\Rules\Arrays\ArrayUnpackingRule
@@ -23,7 +17,9 @@ rules:
 	- PHPStan\Rules\Methods\ReturnTypeRule
 	- PHPStan\Rules\Properties\DefaultValueTypesAssignedToPropertiesRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRule
+	- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRefRule
+	- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRefRule
 	- PHPStan\Rules\Properties\TypesAssignedToPropertiesRule
 	- PHPStan\Rules\Variables\ParameterOutAssignedTypeRule
 	- PHPStan\Rules\Variables\ParameterOutExecutionEndTypeRule
@@ -83,9 +79,3 @@ services:
 			reportMaybes: %reportMaybes%
 		tags:
 			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRefRule
-
-	-
-		class: PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule

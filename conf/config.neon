@@ -24,7 +24,6 @@ parameters:
 		bleedingEdge: false
 		skipCheckGenericClasses: []
 		illegalConstructorMethodCall: false
-		readOnlyByPhpDoc: false
 		stricterFunctionMap: false
 		pure: false
 	fileExtensions:

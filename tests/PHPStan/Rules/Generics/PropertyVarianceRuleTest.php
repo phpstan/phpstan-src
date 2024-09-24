@@ -16,7 +16,6 @@ class PropertyVarianceRuleTest extends RuleTestCase
 	{
 		return new PropertyVarianceRule(
 			self::getContainer()->getByType(VarianceCheck::class),
-			true,
 		);
 	}
 

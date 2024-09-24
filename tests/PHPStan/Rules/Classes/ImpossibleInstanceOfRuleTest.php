@@ -12,8 +12,6 @@ use const PHP_VERSION_ID;
 class ImpossibleInstanceOfRuleTest extends RuleTestCase
 {
 
-	private bool $checkAlwaysTrueInstanceOf;
-
 	private bool $treatPhpDocTypesAsCertain;
 
 	private bool $reportAlwaysTrueInLastCondition = false;
@@ -21,9 +19,9 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ImpossibleInstanceOfRule(
-			$this->checkAlwaysTrueInstanceOf,
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
+			true,
 		);
 	}
 
@@ -34,7 +32,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testInstanceof(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse(
@@ -195,107 +192,8 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		);
 	}
 
-	public function testInstanceofWithoutAlwaysTrue(): void
-	{
-		$this->checkAlwaysTrueInstanceOf = false;
-		$this->treatPhpDocTypesAsCertain = true;
-
-		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
-		$this->analyse(
-			[__DIR__ . '/data/impossible-instanceof.php'],
-			[
-				[
-					'Instanceof between ImpossibleInstanceOf\Dolor and ImpossibleInstanceOf\Lorem will always evaluate to false.',
-					71,
-				],
-				[
-					'Instanceof between string and ImpossibleInstanceOf\Foo will always evaluate to false.',
-					94,
-				],
-				[
-					'Instanceof between string and \'str\' will always evaluate to false.',
-					98,
-				],
-				[
-					'Instanceof between ImpossibleInstanceOf\Test|null and ImpossibleInstanceOf\Lorem will always evaluate to false.',
-					119,
-				],
-				[
-					'Instanceof between ImpossibleInstanceOf\Test|null and ImpossibleInstanceOf\Lorem will always evaluate to false.',
-					137,
-				],
-				[
-					'Instanceof between ImpossibleInstanceOf\Test|null and ImpossibleInstanceOf\Lorem will always evaluate to false.',
-					155,
-				],
-				[
-					'Instanceof between callable and ImpossibleInstanceOf\FinalClassWithoutInvoke will always evaluate to false.',
-					204,
-				],
-				[
-					'Instanceof between *NEVER* and ImpossibleInstanceOf\Lorem will always evaluate to false.',
-					228,
-				],
-				[
-					'Instanceof between *NEVER* and ImpossibleInstanceOf\Foo will always evaluate to false.',
-					234,
-				],
-				[
-					'Instanceof between *NEVER* and ImpossibleInstanceOf\Bar will always evaluate to false.',
-					240,
-					//$tipText,
-				],
-				[
-					'Instanceof between object and Exception will always evaluate to false.',
-					303,
-				],
-				[
-					'Instanceof between object and InvalidArgumentException will always evaluate to false.',
-					307,
-				],
-				[
-					'Instanceof between ImpossibleInstanceOf\Bar and ImpossibleInstanceOf\BarChild will always evaluate to false.',
-					318,
-				],
-				[
-					'Instanceof between ImpossibleInstanceOf\Bar and ImpossibleInstanceOf\BarGrandChild will always evaluate to false.',
-					322,
-				],
-				/*[
-					'Instanceof between mixed and int results in an error.',
-					353,
-				],
-				[
-					'Instanceof between mixed and ImpossibleInstanceOf\InvalidTypeTest|int results in an error.',
-					362,
-				],*/
-				[
-					'Instanceof between T of Exception and Error will always evaluate to false.',
-					404,
-					$tipText,
-				],
-				[
-					'Instanceof between class-string<DateTimeInterface> and DateTimeInterface will always evaluate to false.',
-					418,
-					$tipText,
-				],
-				[
-					'Instanceof between class-string<DateTimeInterface> and class-string<DateTimeInterface> will always evaluate to false.',
-					419,
-					$tipText,
-				],
-				[
-					'Instanceof between class-string<DateTimeInterface> and \'DateTimeInterface\' will always evaluate to false.',
-					432,
-					$tipText,
-				],
-			],
-		);
-	}
-
 	public function testDoNotReportTypesFromPhpDocs(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/impossible-instanceof-not-phpdoc.php'], [
 			[
@@ -319,7 +217,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testReportTypesFromPhpDocs(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/impossible-instanceof-not-phpdoc.php'], [
 			[
@@ -353,21 +250,18 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testBug3096(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-3096.php'], []);
 	}
 
 	public function testBug6213(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6213.php'], []);
 	}
 
 	public function testBug5333(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-5333.php'], []);
 	}
@@ -378,7 +272,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			$this->markTestSkipped('This test needs PHP 8.0');
 		}
 
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-8042.php'], [
 			[
@@ -400,14 +293,12 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			$this->markTestSkipped('This test needs PHP 8.1');
 		}
 
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-7721.php'], []);
 	}
 
 	public function testUnreachableIfBranches(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-if-branches.php'], [
 			[
@@ -432,7 +323,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testIfBranchesDoNotReportPhpDoc(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-if-branches-not-phpdoc.php'], [
 			[
@@ -454,7 +344,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testIfBranchesReportPhpDoc(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-if-branches-not-phpdoc.php'], [
@@ -492,7 +381,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testUnreachableTernaryElse(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-ternary-else-branch.php'], [
 			[
@@ -508,7 +396,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testTernaryElseDoNotReportPhpDoc(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-ternary-else-branch-not-phpdoc.php'], [
 			[
@@ -528,7 +415,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testTernaryElseReportPhpDoc(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-ternary-else-branch-not-phpdoc.php'], [
@@ -554,7 +440,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testBug4689(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-4689.php'], []);
 	}
@@ -590,7 +475,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 	 */
 	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
 		$this->analyse([__DIR__ . '/data/impossible-instanceof-report-always-true-last-condition.php'], $expectedErrors);
@@ -602,7 +486,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			$this->markTestSkipped('This test needs PHP 8.1');
 		}
 
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10201.php'], [
 			[
@@ -614,7 +497,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testBug3632(): void
 	{
-		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';

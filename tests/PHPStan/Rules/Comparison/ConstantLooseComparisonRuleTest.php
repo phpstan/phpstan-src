@@ -12,8 +12,6 @@ use const PHP_VERSION_ID;
 class ConstantLooseComparisonRuleTest extends RuleTestCase
 {
 
-	private bool $checkAlwaysTrueStrictComparison;
-
 	private bool $treatPhpDocTypesAsCertain = true;
 
 	private bool $reportAlwaysTrueInLastCondition = false;
@@ -21,39 +19,14 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ConstantLooseComparisonRule(
-			$this->checkAlwaysTrueStrictComparison,
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
+			true,
 		);
 	}
 
 	public function testRule(): void
 	{
-		$this->checkAlwaysTrueStrictComparison = false;
-		$this->analyse([__DIR__ . '/data/loose-comparison.php'], [
-			[
-				"Loose comparison using == between 0 and '1' will always evaluate to false.",
-				20,
-			],
-			[
-				"Loose comparison using == between 0 and '1' will always evaluate to false.",
-				27,
-			],
-			[
-				"Loose comparison using == between 0 and '1' will always evaluate to false.",
-				33,
-			],
-			[
-				'Loose comparison using != between 3 and 3 will always evaluate to false.',
-				48,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
-			],
-		]);
-	}
-
-	public function testRuleAlwaysTrue(): void
-	{
-		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/loose-comparison.php'], [
 			[
 				"Loose comparison using == between 0 and '0' will always evaluate to true.",
@@ -90,7 +63,6 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-8485.php'], [
 			[
 				'Loose comparison using == between Bug8485\E::c and Bug8485\E::c will always evaluate to true.',
@@ -142,7 +114,6 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 	 */
 	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
-		$this->checkAlwaysTrueStrictComparison = true;
 		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
 		$this->analyse([__DIR__ . '/data/loose-comparison-report-always-true-last-condition.php'], $expectedErrors);
 	}
@@ -165,14 +136,12 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 	 */
 	public function testTreatPhpDocTypesAsCertain(bool $treatPhpDocTypesAsCertain, array $expectedErrors): void
 	{
-		$this->checkAlwaysTrueStrictComparison = true;
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 		$this->analyse([__DIR__ . '/data/loose-comparison-treat-phpdoc-types.php'], $expectedErrors);
 	}
 
 	public function testBug11694(): void
 	{
-		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-11694.php'], [
 			[
 				'Loose comparison using == between 3 and int<10, 20> will always evaluate to false.',

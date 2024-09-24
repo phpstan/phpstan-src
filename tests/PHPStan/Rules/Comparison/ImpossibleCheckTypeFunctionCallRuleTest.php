@@ -17,8 +17,6 @@ use const PHP_VERSION_ID;
 class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 {
 
-	private bool $checkAlwaysTrueCheckTypeFunctionCall;
-
 	private bool $treatPhpDocTypesAsCertain;
 
 	private bool $reportAlwaysTrueInLastCondition = false;
@@ -32,9 +30,9 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				[stdClass::class],
 				$this->treatPhpDocTypesAsCertain,
 			),
-			$this->checkAlwaysTrueCheckTypeFunctionCall,
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
+			true,
 		);
 	}
 
@@ -49,7 +47,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			self::markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse(
 			[__DIR__ . '/data/check-type-function-call.php'],
@@ -270,121 +267,12 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testBug7898(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-7898.php'], []);
 	}
 
-	public function testImpossibleCheckTypeFunctionCallWithoutAlwaysTrue(): void
-	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
-		$this->checkAlwaysTrueCheckTypeFunctionCall = false;
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse(
-			[__DIR__ . '/data/check-type-function-call.php'],
-			[
-				[
-					'Call to function is_int() with string will always evaluate to false.',
-					31,
-				],
-				[
-					'Call to function is_callable() with array<int> will always evaluate to false.',
-					44,
-					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
-				],
-				[
-					'Call to function assert() with false will always evaluate to false.',
-					48,
-				],
-				[
-					'Call to function is_callable() with \'nonexistentFunction\' will always evaluate to false.',
-					87,
-				],
-				[
-					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
-					105,
-				],
-				[
-					'Call to function method_exists() with $this(CheckTypeFunctionCall\FinalClassWithMethodExists) and \'doBar\' will always evaluate to false.',
-					194,
-				],
-				[
-					'Call to function in_array() with arguments int, array{\'foo\', \'bar\'} and true will always evaluate to false.',
-					236,
-				],
-				[
-					'Call to function in_array() with arguments \'bar\'|\'foo\', array{\'baz\', \'lorem\'} and true will always evaluate to false.',
-					245,
-				],
-				[
-					'Call to function in_array() with arguments \'bar\', array{}|array{\'foo\'} and true will always evaluate to false.',
-					321,
-				],
-				[
-					'Call to function in_array() with arguments \'baz\', array{0: \'bar\', 1?: \'foo\'} and true will always evaluate to false.',
-					337,
-				],
-				[
-					'Call to function in_array() with arguments \'foo\', array{} and true will always evaluate to false.',
-					344,
-				],
-				[
-					'Call to function array_key_exists() with \'c\' and array{a: 1, b?: 2} will always evaluate to false.',
-					367,
-				],
-				[
-					'Call to function is_string() with mixed will always evaluate to false.',
-					561,
-				],
-				[
-					'Call to function is_callable() with mixed will always evaluate to false.',
-					572,
-				],
-				[
-					'Call to function method_exists() with \'UndefinedClass\' and string will always evaluate to false.',
-					595,
-				],
-				[
-					'Call to function method_exists() with \'UndefinedClass\' and \'test\' will always evaluate to false.',
-					598,
-				],
-				[
-					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'unknown\' will always evaluate to false.',
-					631,
-				],
-				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
-					640,
-					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
-				],
-				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
-					649,
-				],
-				[
-					'Call to function assert() with false will always evaluate to false.',
-					694,
-					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
-				],
-				[
-					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
-					694,
-				],
-				[
-					'Call to function in_array() with arguments 1, array<string> and true will always evaluate to false.',
-					927,
-					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
-				],
-			],
-		);
-	}
-
 	public function testDoNotReportTypesFromPhpDocs(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/check-type-function-call-not-phpdoc.php'], [
 			[
@@ -396,7 +284,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testReportTypesFromPhpDocs(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/check-type-function-call-not-phpdoc.php'], [
 			[
@@ -423,42 +310,36 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testBug2550(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-2550.php'], []);
 	}
 
 	public function testBug3994(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-3994.php'], []);
 	}
 
 	public function testBug1613(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-1613.php'], []);
 	}
 
 	public function testBug2714(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-2714.php'], []);
 	}
 
 	public function testBug4657(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-4657.php'], []);
 	}
 
 	public function testBug4999(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-4999.php'], []);
 	}
@@ -469,7 +350,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/array-is-list.php'], [
 			[
@@ -490,14 +370,12 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testBug3766(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-3766.php'], []);
 	}
 
 	public function testBug6305(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6305.php'], [
 			[
@@ -513,21 +391,18 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testBug6698(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6698.php'], []);
 	}
 
 	public function testBug5369(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-5369.php'], []);
 	}
 
 	public function testBugInArrayDateFormat(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/in-array-date-format.php'], [
 			[
@@ -554,63 +429,54 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testBug5496(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-5496.php'], []);
 	}
 
 	public function testBug3892(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-3892.php'], []);
 	}
 
 	public function testBug3314(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-3314.php'], []);
 	}
 
 	public function testBug2870(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-2870.php'], []);
 	}
 
 	public function testBug5354(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-5354.php'], []);
 	}
 
 	public function testSlevomatCsInArrayBug(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/slevomat-cs-in-array.php'], []);
 	}
 
 	public function testNonEmptySpecifiedString(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/non-empty-string-impossible-type.php'], []);
 	}
 
 	public function testBug2755(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-2755.php'], []);
 	}
 
 	public function testBug7079(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-7079.php'], []);
 	}
@@ -621,7 +487,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			self::markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/conditional-types-inference.php'], [
 			[
@@ -649,7 +514,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testBug6697(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6697.php'], []);
 	}
@@ -660,56 +524,48 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			self::markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6443.php'], []);
 	}
 
 	public function testBug7684(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = false;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-7684.php'], []);
 	}
 
 	public function testBug7224(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-7224.php'], []);
 	}
 
 	public function testBug4708(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-4708.php'], []);
 	}
 
 	public function testBug3821(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-3821.php'], []);
 	}
 
 	public function testBug6599(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6599.php'], []);
 	}
 
 	public function testBug7914(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-7914.php'], []);
 	}
 
 	public function testDocblockAssertEquality(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/docblock-assert-equality.php'], [
 			[
@@ -721,63 +577,54 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testBug8076(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-8076.php'], []);
 	}
 
 	public function testBug8562(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-8562.php'], []);
 	}
 
 	public function testBug6938(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-6938.php'], []);
 	}
 
 	public function testBug8727(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-8727.php'], []);
 	}
 
 	public function testBug8474(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-8474.php'], []);
 	}
 
 	public function testBug5695(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-5695.php'], []);
 	}
 
 	public function testBug8752(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8752.php'], []);
 	}
 
 	public function testDiscussion9134(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/discussion-9134.php'], []);
 	}
 
 	public function testImpossibleMethodExistOnGenericClassString(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
@@ -838,7 +685,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	 */
 	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
 		$this->analyse([__DIR__ . '/data/impossible-function-report-always-true-last-condition.php'], $expectedErrors);
@@ -846,7 +692,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testObjectShapes(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/property-exists-object-shapes.php'], [
 			[
@@ -1023,7 +868,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$issues = array_map(
 			static function (array $i): array {
@@ -1040,7 +884,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testNonStrictInArray(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9662.php'], []);
 	}
@@ -1053,7 +896,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9662-enums.php'], [
 			[
@@ -1083,7 +925,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$issues = self::getLooseComparisonAgainsEnumsIssues();
 		$issues = array_values(array_filter($issues, static fn (array $i) => count($i) === 2));
@@ -1094,7 +935,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-10502.php'], [
 			[
@@ -1111,7 +951,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testAlwaysTruePregMatch(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/always-true-preg-match.php'], []);
 	}

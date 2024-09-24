@@ -24,9 +24,9 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 				[],
 				$this->treatPhpDocTypesAsCertain,
 			),
-			true,
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
+			true,
 		);
 	}
 

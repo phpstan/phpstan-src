@@ -26,7 +26,6 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 					$this->treatPhpDocTypesAsCertain,
 				),
 				$this->treatPhpDocTypesAsCertain,
-				true,
 			),
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,

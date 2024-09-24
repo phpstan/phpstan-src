@@ -29,7 +29,6 @@ parameters:
 		arrayValues: false
 		illegalConstructorMethodCall: false
 		looseComparison: false
-		consistentConstructor: false
 		readOnlyByPhpDoc: false
 		missingMagicSerializationRule: false
 		alwaysCheckTooWideReturnTypeFinalMethods: false

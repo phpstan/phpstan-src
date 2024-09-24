@@ -35,7 +35,6 @@ parametersSchema:
 		arrayValues: bool(),
 		illegalConstructorMethodCall: bool(),
 		looseComparison: bool(),
-		consistentConstructor: bool()
 		readOnlyByPhpDoc: bool()
 		missingMagicSerializationRule: bool()
 		alwaysCheckTooWideReturnTypeFinalMethods: bool()

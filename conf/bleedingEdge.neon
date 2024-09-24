@@ -8,7 +8,6 @@ parameters:
 		arrayFilter: true
 		arrayValues: true
 		looseComparison: true
-		consistentConstructor: true
 		readOnlyByPhpDoc: true
 		missingMagicSerializationRule: true
 		alwaysCheckTooWideReturnTypeFinalMethods: true

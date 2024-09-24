@@ -41,6 +41,7 @@ Major new features 🚀
   * Check missing types in `@phpstan-self-out` (https://github.com/phpstan/phpstan-src/commit/892b319f25f04bc1b55c3d0063b607909612fe6d)
   * Check missing types in local type aliases (https://github.com/phpstan/phpstan-src/commit/ce7ffaf02d624a7fb9d38f8e5dffc9739f1233fc)
   * Check missing types in `@mixin` (https://github.com/phpstan/phpstan-src/commit/3175c81f26fd5bcb4a161b24e774921870ed2533)
+* Rule about `@phpstan-consistent-constructor` (level 0) ([#1296](https://github.com/phpstan/phpstan-src/pull/1296)), thanks @canvural!
 * Check code in custom PHPStan extensions for runtime reflection concepts like `is_a()` or `class_parents()` (level 0) (https://github.com/phpstan/phpstan-src/commit/c4a662ac6c3ec63f063238880b243b5399c34fcc)
 * Check code in custom PHPStan extensions for runtime reflection concepts like `new ReflectionMethod()` (level 0) (https://github.com/phpstan/phpstan-src/commit/536306611cbb5877b6565755cd07b87f9ccfdf08)
 * ApiInstanceofRule (level 0)

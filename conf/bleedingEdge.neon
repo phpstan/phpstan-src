@@ -6,7 +6,6 @@ parameters:
 
 		arrayFilter: true
 		arrayValues: true
-		looseComparison: true
 		readOnlyByPhpDoc: true
 		pure: true
 		requireFileExists: true

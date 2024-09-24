@@ -27,7 +27,6 @@ parameters:
 		arrayFilter: false
 		arrayValues: false
 		illegalConstructorMethodCall: false
-		looseComparison: false
 		readOnlyByPhpDoc: false
 		stricterFunctionMap: false
 		pure: false
@@ -862,7 +861,6 @@ services:
 		class: PHPStan\Rules\Comparison\ConstantConditionRuleHelper
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			looseComparisonRuleEnabled: %featureToggles.looseComparison%
 
 	-
 		class: PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper

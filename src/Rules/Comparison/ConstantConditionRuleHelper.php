@@ -14,7 +14,6 @@ final class ConstantConditionRuleHelper
 	public function __construct(
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 		private bool $treatPhpDocTypesAsCertain,
-		private bool $looseComparisonRuleEnabled,
 	)
 	{
 	}
@@ -32,10 +31,8 @@ final class ConstantConditionRuleHelper
 	public function shouldSkip(Scope $scope, Expr $expr): bool
 	{
 		if (
-			$this->looseComparisonRuleEnabled
-			&& ($expr instanceof Expr\BinaryOp\Equal
-				|| $expr instanceof Expr\BinaryOp\NotEqual
-			)
+			$expr instanceof Expr\BinaryOp\Equal
+			|| $expr instanceof Expr\BinaryOp\NotEqual
 		) {
 			return true;
 		}

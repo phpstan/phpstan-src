@@ -21,8 +21,6 @@ rules:
 	- PHPStan\Rules\Traits\NotAnalysedTraitRule
 
 conditionalTags:
-	PHPStan\Rules\Comparison\ConstantLooseComparisonRule:
-		phpstan.rules.rule: %featureToggles.looseComparison%
 	PHPStan\Rules\DeadCode\CallToConstructorStatementWithoutImpurePointsRule:
 		phpstan.rules.rule: %featureToggles.pure%
 	PHPStan\Rules\DeadCode\PossiblyPureNewCollector:
@@ -220,6 +218,8 @@ services:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule

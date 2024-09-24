@@ -33,7 +33,6 @@ parametersSchema:
 		arrayFilter: bool(),
 		arrayValues: bool(),
 		illegalConstructorMethodCall: bool(),
-		looseComparison: bool(),
 		readOnlyByPhpDoc: bool()
 		stricterFunctionMap: bool()
 		pure: bool()

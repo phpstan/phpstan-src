@@ -41,7 +41,6 @@ parametersSchema:
 		disableUnreachableBranchesRules: bool()
 		stricterFunctionMap: bool()
 		pure: bool()
-		printfArrayParameters: bool()
 		requireFileExists: bool()
 	])
 	fileExtensions: listOf(string())

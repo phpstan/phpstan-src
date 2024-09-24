@@ -13,5 +13,4 @@ parameters:
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true
 		pure: true
-		printfArrayParameters: true
 		requireFileExists: true

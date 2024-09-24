@@ -8,8 +8,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
-	PHPStan\Rules\Functions\PrintfArrayParametersRule:
-		phpstan.rules.rule: %featureToggles.printfArrayParameters%
 	PHPStan\Rules\Keywords\RequireFileExistsRule:
 		phpstan.rules.rule: %featureToggles.requireFileExists%
 
@@ -72,6 +70,7 @@ rules:
 	- PHPStan\Rules\Functions\InnerFunctionRule
 	- PHPStan\Rules\Functions\InvalidLexicalVariablesInClosureUseRule
 	- PHPStan\Rules\Functions\ParamAttributesRule
+	- PHPStan\Rules\Functions\PrintfArrayParametersRule
 	- PHPStan\Rules\Functions\PrintfParametersRule
 	- PHPStan\Rules\Functions\RedefinedParametersRule
 	- PHPStan\Rules\Functions\ReturnNullsafeByRefRule
@@ -256,10 +255,6 @@ services:
 		class: PHPStan\Reflection\ConstructorsHelper
 		arguments:
 			additionalConstructors: %additionalConstructors%
-
-
-	-
-		class: PHPStan\Rules\Functions\PrintfArrayParametersRule
 
 	-
 		class: PHPStan\Rules\Keywords\RequireFileExistsRule

@@ -21,6 +21,7 @@ Major new features 🚀
 * Check preg_quote delimiter sanity (level 0) ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
 * MagicConstantContextRule (level 0) ([#2741](https://github.com/phpstan/phpstan-src/pull/2741)), #10099, thanks @staabm!
 * MissingMagicSerializationMethodsRule (level 0) ([#1711](https://github.com/phpstan/phpstan-src/pull/1711)), #7482, thanks @staabm!
+* Report useless return values of function calls like `var_export` without `$return=true` (level 0) ([#3225](https://github.com/phpstan/phpstan-src/pull/3225)), #11320, thanks @staabm!
 * Rule for `call_user_func()` (level 5) ([#2479](https://github.com/phpstan/phpstan-src/pull/2479)), thanks @staabm!
 * Check array functions which require stringish values (level 5) ([#3132](https://github.com/phpstan/phpstan-src/pull/3132)), #11141, #5848, #3694, #11111, thanks @schlndh!
 * Check variance of template types in properties (level 2) ([#2314](https://github.com/phpstan/phpstan-src/pull/2314)), thanks @jiripudil!
@@ -86,7 +87,6 @@ Bleeding edge (TODO move to other sections)
 * CallToConstructorStatementWithoutSideEffectsRule - report class with no constructor (https://github.com/phpstan/phpstan-src/commit/b116d25a6e4ba6c09f59af6569d9e6f6fd20aff4)
 * Check if required file exists ([#3294](https://github.com/phpstan/phpstan-src/pull/3294)), #3397, thanks @Bellangelo!
 * Check `@param-immediately-invoked-callable` and `@param-later-invoked-callable` (https://github.com/phpstan/phpstan-src/commit/580a6add422f4e34191df9e7a77ba1655e914bda), #10932
-* Report useless return values of function calls like `var_export` without `$return=true` ([#3225](https://github.com/phpstan/phpstan-src/pull/3225)), #11320, thanks @staabm!
 * Check vprintf/vsprintf arguments against placeholder count ([#3126](https://github.com/phpstan/phpstan-src/pull/3126)), thanks @staabm!
 
 Improvements 🔧

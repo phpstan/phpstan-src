@@ -35,7 +35,6 @@ parameters:
 		disableUnreachableBranchesRules: false
 		stricterFunctionMap: false
 		pure: false
-		uselessReturnValue: false
 		printfArrayParameters: false
 		requireFileExists: false
 	fileExtensions:

@@ -31,166 +31,6 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 
 	public function testAccessStaticProperties(): void
 	{
-		if (PHP_VERSION_ID >= 80200) {
-			$this->markTestSkipped('Test is not for PHP 8.2.');
-		}
-		$this->analyse([__DIR__ . '/data/access-static-properties.php'], [
-			[
-				'Access to an undefined static property FooAccessStaticProperties::$bar.',
-				23,
-			],
-			[
-				'Access to an undefined static property BarAccessStaticProperties::$bar.',
-				24,
-			],
-			[
-				'Access to an undefined static property FooAccessStaticProperties::$bar.',
-				25,
-			],
-			[
-				'Static access to instance property FooAccessStaticProperties::$loremIpsum.',
-				26,
-			],
-			[
-				'IpsumAccessStaticProperties::ipsum() accesses parent::$lorem but IpsumAccessStaticProperties does not extend any class.',
-				42,
-			],
-			[
-				'Access to protected property $foo of class FooAccessStaticProperties.',
-				44,
-			],
-			[
-				'Access to static property $test on an unknown class UnknownStaticProperties.',
-				47,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
-			[
-				'Access to an undefined static property static(IpsumAccessStaticProperties)::$baz.',
-				53,
-			],
-			[
-				'Access to an undefined static property static(IpsumAccessStaticProperties)::$nonexistent.',
-				55,
-			],
-			[
-				'Access to an undefined static property static(IpsumAccessStaticProperties)::$emptyBaz.',
-				63,
-			],
-			[
-				'Access to an undefined static property static(IpsumAccessStaticProperties)::$emptyNonexistent.',
-				65,
-			],
-			[
-				'Access to an undefined static property static(IpsumAccessStaticProperties)::$anotherNonexistent.',
-				71,
-			],
-			[
-				'Access to an undefined static property static(IpsumAccessStaticProperties)::$anotherNonexistent.',
-				72,
-			],
-			[
-				'Access to an undefined static property static(IpsumAccessStaticProperties)::$anotherEmptyNonexistent.',
-				75,
-			],
-			[
-				'Access to an undefined static property static(IpsumAccessStaticProperties)::$anotherEmptyNonexistent.',
-				78,
-			],
-			[
-				'Accessing self::$staticFooProperty outside of class scope.',
-				84,
-			],
-			[
-				'Accessing static::$staticFooProperty outside of class scope.',
-				85,
-			],
-			[
-				'Accessing parent::$staticFooProperty outside of class scope.',
-				86,
-			],
-			[
-				'Access to protected property $foo of class FooAccessStaticProperties.',
-				89,
-			],
-			[
-				'Static access to instance property FooAccessStaticProperties::$loremIpsum.',
-				90,
-			],
-			[
-				'Access to an undefined static property FooAccessStaticProperties::$nonexistent.',
-				94,
-			],
-			[
-				'Access to static property $test on an unknown class NonexistentClass.',
-				97,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
-			[
-				'Access to an undefined static property FooAccessStaticProperties&SomeInterface::$nonexistent.',
-				108,
-			],
-			[
-				'Cannot access static property $foo on int|string.',
-				113,
-			],
-			[
-				'Class FooAccessStaticProperties referenced with incorrect case: FOOAccessStaticPropertieS.',
-				119,
-			],
-			[
-				'Access to an undefined static property FooAccessStaticProperties::$unknownProperties.',
-				119,
-			],
-			[
-				'Class FooAccessStaticProperties referenced with incorrect case: FOOAccessStaticPropertieS.',
-				120,
-			],
-			[
-				'Static access to instance property FooAccessStaticProperties::$loremIpsum.',
-				120,
-			],
-			[
-				'Class FooAccessStaticProperties referenced with incorrect case: FOOAccessStaticPropertieS.',
-				121,
-			],
-			[
-				'Access to protected property $foo of class FooAccessStaticProperties.',
-				121,
-			],
-			[
-				'Class FooAccessStaticProperties referenced with incorrect case: FOOAccessStaticPropertieS.',
-				122,
-			],
-			[
-				'Access to an undefined static property ClassOrString|string::$unknownProperty.',
-				141,
-			],
-			[
-				'Static access to instance property ClassOrString::$instanceProperty.',
-				152,
-			],
-			[
-				'Access to static property $foo on an unknown class TraitWithStaticProperty.',
-				209,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
-			[
-				'Static access to instance property AccessWithStatic::$bar.',
-				223,
-			],
-			[
-				'Access to an undefined static property static(AccessWithStatic)::$nonexistent.',
-				224,
-			],
-		]);
-	}
-
-	public function testAccessStaticPropertiesPhp82(): void
-	{
-		if (PHP_VERSION_ID < 80200) {
-			$this->markTestSkipped('Test requires PHP 8.2.');
-		}
-
 		$this->analyse([__DIR__ . '/data/access-static-properties.php'], [
 			[
 				'Access to an undefined static property FooAccessStaticProperties::$bar.',
@@ -436,14 +276,12 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 
 	public function testBug6809(): void
 	{
-		$errors = [];
-		if (PHP_VERSION_ID >= 80200) {
-			$errors[] = [
+		$this->analyse([__DIR__ . '/data/bug-6809.php'], [
+			[
 				'Access to an undefined static property static(Bug6809\HelloWorld)::$coolClass.',
 				7,
-			];
-		}
-		$this->analyse([__DIR__ . '/data/bug-6809.php'], $errors);
+			],
+		]);
 	}
 
 	public function testBug8333(): void

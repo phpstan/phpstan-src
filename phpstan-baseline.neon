@@ -494,16 +494,6 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 1
-			path: src/Rules/Comparison/UnreachableIfBranchesRule.php
-
-		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
-			count: 1
-			path: src/Rules/Comparison/UnreachableTernaryElseBranchRule.php
-
-		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
-			count: 1
 			path: src/Rules/Comparison/WhileLoopAlwaysFalseConditionRule.php
 
 		-

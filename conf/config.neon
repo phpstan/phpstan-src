@@ -30,7 +30,6 @@ parameters:
 		looseComparison: false
 		readOnlyByPhpDoc: false
 		alwaysTrueAlwaysReported: false
-		disableUnreachableBranchesRules: false
 		stricterFunctionMap: false
 		pure: false
 		requireFileExists: false

@@ -9,6 +9,5 @@ parameters:
 		looseComparison: true
 		readOnlyByPhpDoc: true
 		alwaysTrueAlwaysReported: true
-		disableUnreachableBranchesRules: true
 		pure: true
 		requireFileExists: true

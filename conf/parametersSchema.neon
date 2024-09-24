@@ -36,7 +36,6 @@ parametersSchema:
 		looseComparison: bool(),
 		readOnlyByPhpDoc: bool()
 		alwaysTrueAlwaysReported: bool()
-		disableUnreachableBranchesRules: bool()
 		stricterFunctionMap: bool()
 		pure: bool()
 		requireFileExists: bool()

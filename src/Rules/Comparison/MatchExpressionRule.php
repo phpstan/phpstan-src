@@ -28,7 +28,6 @@ final class MatchExpressionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $constantConditionRuleHelper,
 		private bool $checkAlwaysTrueStrictComparison,
-		private bool $disableUnreachable,
 		private bool $reportAlwaysTrueInLastCondition,
 		private bool $treatPhpDocTypesAsCertain,
 	)
@@ -54,12 +53,6 @@ final class MatchExpressionRule implements Rule
 				$nextArmIsDeadForNativeType
 				|| ($nextArmIsDeadForType && $this->treatPhpDocTypesAsCertain)
 			) {
-				if (!$this->disableUnreachable) {
-					$errors[] = RuleErrorBuilder::message('Match arm is unreachable because previous comparison is always true.')
-						->identifier('match.unreachable')
-						->line($arm->getLine())
-						->build();
-				}
 				continue;
 			}
 			$armConditions = $arm->getConditions();

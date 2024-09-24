@@ -16,6 +16,8 @@ Major new features 🚀
     * [Learn more on phpstan.org](https://phpstan.org/blog/enhancements-in-handling-parameters-passed-by-reference)
     * [#2941](https://github.com/phpstan/phpstan-src/pull/2941), thanks @ljmaskey!
 * Check too wide private property type (level 4) (https://github.com/phpstan/phpstan-src/commit/7453f4f75fae3d635063589467842aae29d88b54)
+* Remove "unreachable branches" rules: UnreachableIfBranchesRule, UnreachableTernaryElseBranchRule, unreachable arm error in MatchExpressionRule
+    * Because "always true" is always reported, these are no longer needed
 * LogicalXorConstantConditionRule (level 4) (https://github.com/phpstan/phpstan-src/commit/3a12724fd636b1bcf36c22b36e8f765d97150895, https://github.com/phpstan/phpstan-src/commit/3b011f6524254dad0f16840fdcfdbe7421548617), #7539
 * Check that each trait is used and analysed at least once (level 4) (https://github.com/phpstan/phpstan-src/commit/c4d05276fb8605d6ac20acbe1cc5df31cd6c10b0)
 * Check preg_quote delimiter sanity (level 0) ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
@@ -66,8 +68,6 @@ Bleeding edge (TODO move to other sections)
 * Move IllegalConstructorMethodCallRule and IllegalConstructorStaticCallRule to phpstan-strict-rules (https://github.com/phpstan/phpstan-src/commit/124b30f98c182193187be0b9c2e151e477429b7a, https://github.com/phpstan/phpstan-strict-rules/commit/0c82c96f2a55d8b91bbc7ee6512c94f68a206b43)
 * Add `@readonly` rule that disallows default values ([#1391](https://github.com/phpstan/phpstan-src/pull/1391)), thanks @herndlm!
 * Always report always true conditions, except for last elseif and match arm ([#2105](https://github.com/phpstan/phpstan-src/pull/2105)), thanks @staabm!
-* Disable "unreachable branches" rules: UnreachableIfBranchesRule, UnreachableTernaryElseBranchRule, unreachable arm error in MatchExpressionRule
-    * Because "always true" is always reported, these are no longer needed
 * Report narrowing `PHPStan\Type\Type` interface via `@var` (https://github.com/phpstan/phpstan-src/commit/713b98fb107213c28e3d8c8b4b43c5f5fc47c144), https://github.com/nunomaduro/larastan/issues/1567#issuecomment-1460445389
 * Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)
 * InvalidPHPStanDocTagRule in StubValidator (https://github.com/phpstan/phpstan-src/commit/9c2552b7e744926d1a74c1ba8fd32c64079eed61)

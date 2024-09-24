@@ -197,7 +197,6 @@ services:
 		class: PHPStan\Rules\Comparison\MatchExpressionRule
 		arguments:
 			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
-			disableUnreachable: %featureToggles.disableUnreachableBranchesRules%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
@@ -233,24 +232,6 @@ services:
 		class: PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Comparison\UnreachableIfBranchesRule
-		arguments:
-			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			disable: %featureToggles.disableUnreachableBranchesRules%
-			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Comparison\UnreachableTernaryElseBranchRule
-		arguments:
-			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			disable: %featureToggles.disableUnreachableBranchesRules%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule

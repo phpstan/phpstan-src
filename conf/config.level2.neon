@@ -66,12 +66,6 @@ rules:
 	- PHPStan\Rules\Pure\PureFunctionRule
 	- PHPStan\Rules\Pure\PureMethodRule
 
-conditionalTags:
-	PHPStan\Rules\Methods\IllegalConstructorMethodCallRule:
-		phpstan.rules.rule: %featureToggles.illegalConstructorMethodCall%
-	PHPStan\Rules\Methods\IllegalConstructorStaticCallRule:
-		phpstan.rules.rule: %featureToggles.illegalConstructorMethodCall%
-
 services:
 	-
 		class: PHPStan\Rules\Classes\MixinRule
@@ -97,10 +91,6 @@ services:
 		tags:
 			- phpstan.rules.rule
 
-	-
-		class: PHPStan\Rules\Methods\IllegalConstructorMethodCallRule
-	-
-		class: PHPStan\Rules\Methods\IllegalConstructorStaticCallRule
 	-
 		class: PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
 		tags:

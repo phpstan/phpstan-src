@@ -23,7 +23,6 @@ parameters:
 	featureToggles:
 		bleedingEdge: false
 		skipCheckGenericClasses: []
-		illegalConstructorMethodCall: false
 		stricterFunctionMap: false
 	fileExtensions:
 		- php

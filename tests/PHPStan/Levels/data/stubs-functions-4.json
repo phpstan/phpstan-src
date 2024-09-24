@@ -1,0 +1,12 @@
+[
+    {
+        "message": "Call to function StubsIntegrationTest\\foo() on a separate line has no effect.",
+        "line": 11,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function StubsIntegrationTest\\foo() on a separate line has no effect.",
+        "line": 13,
+        "ignorable": true
+    }
+]

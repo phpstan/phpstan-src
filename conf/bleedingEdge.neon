@@ -18,5 +18,4 @@ parameters:
 		pure: true
 		uselessReturnValue: true
 		printfArrayParameters: true
-		tooWidePropertyType: true
 		requireFileExists: true

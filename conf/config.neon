@@ -41,7 +41,6 @@ parameters:
 		uselessReturnValue: false
 		printfArrayParameters: false
 		requireFileExists: false
-		tooWidePropertyType: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

@@ -17,6 +17,7 @@ rules:
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionParameterOutTypeRule
 	- PHPStan\Rules\TooWideTypehints\TooWideMethodParameterOutTypeRule
+	- PHPStan\Rules\TooWideTypehints\TooWidePropertyTypeRule
 	- PHPStan\Rules\Traits\NotAnalysedTraitRule
 
 conditionalTags:
@@ -44,8 +45,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.pure%
 	PHPStan\Rules\DeadCode\PossiblyPureStaticCallCollector:
 		phpstan.collector: %featureToggles.pure%
-	PHPStan\Rules\TooWideTypehints\TooWidePropertyTypeRule:
-		phpstan.rules.rule: %featureToggles.tooWidePropertyType%
 
 parameters:
 	checkAdvancedIsset: true
@@ -309,7 +308,3 @@ services:
 			reportUncheckedExceptionDeadCatch: %exceptions.reportUncheckedExceptionDeadCatch%
 		tags:
 			- phpstan.rules.rule
-
-
-	-
-		class: PHPStan\Rules\TooWideTypehints\TooWidePropertyTypeRule

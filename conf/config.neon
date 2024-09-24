@@ -29,7 +29,6 @@ parameters:
 		readOnlyByPhpDoc: false
 		stricterFunctionMap: false
 		pure: false
-		requireFileExists: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

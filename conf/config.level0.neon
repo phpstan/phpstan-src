@@ -8,8 +8,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
-	PHPStan\Rules\Keywords\RequireFileExistsRule:
-		phpstan.rules.rule: %featureToggles.requireFileExists%
 
 rules:
 	- PHPStan\Rules\Api\ApiInstanceofRule
@@ -260,3 +258,5 @@ services:
 		class: PHPStan\Rules\Keywords\RequireFileExistsRule
 		arguments:
 			currentWorkingDirectory: %currentWorkingDirectory%
+		tags:
+			- phpstan.rules.rule

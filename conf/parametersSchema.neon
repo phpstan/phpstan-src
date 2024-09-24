@@ -35,7 +35,6 @@ parametersSchema:
 		readOnlyByPhpDoc: bool()
 		stricterFunctionMap: bool()
 		pure: bool()
-		requireFileExists: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

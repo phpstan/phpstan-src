@@ -68,8 +68,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.illegalConstructorMethodCall%
 	PHPStan\Rules\Methods\IllegalConstructorStaticCallRule:
 		phpstan.rules.rule: %featureToggles.illegalConstructorMethodCall%
-	PHPStan\Rules\Generics\PropertyVarianceRule:
-		phpstan.rules.rule: %featureToggles.propertyVariance%
 	PHPStan\Rules\Pure\PureFunctionRule:
 		phpstan.rules.rule: %featureToggles.pure%
 	PHPStan\Rules\Pure\PureMethodRule:
@@ -123,6 +121,8 @@ services:
 		class: PHPStan\Rules\Generics\PropertyVarianceRule
 		arguments:
 			readOnlyByPhpDoc: %featureToggles.readOnlyByPhpDoc%
+		tags:
+			- phpstan.rules.rule
 	-
 		class: PHPStan\Rules\Pure\PureFunctionRule
 

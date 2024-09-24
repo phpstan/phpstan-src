@@ -13,7 +13,6 @@ parameters:
 		alwaysCheckTooWideReturnTypeFinalMethods: true
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true
-		propertyVariance: true
 		magicConstantOutOfContext: true
 		pure: true
 		uselessReturnValue: true

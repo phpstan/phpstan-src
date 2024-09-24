@@ -40,7 +40,6 @@ parametersSchema:
 		alwaysCheckTooWideReturnTypeFinalMethods: bool()
 		alwaysTrueAlwaysReported: bool()
 		disableUnreachableBranchesRules: bool()
-		propertyVariance: bool()
 		stricterFunctionMap: bool()
 		magicConstantOutOfContext: bool()
 		pure: bool()

@@ -34,7 +34,6 @@ parameters:
 		alwaysCheckTooWideReturnTypeFinalMethods: false
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false
-		propertyVariance: false
 		stricterFunctionMap: false
 		magicConstantOutOfContext: false
 		pure: false

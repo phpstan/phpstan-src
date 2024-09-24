@@ -29,17 +29,16 @@ parameters:
 		illegalConstructorMethodCall: false
 		looseComparison: false
 		readOnlyByPhpDoc: false
-		alwaysTrueAlwaysReported: false
 		stricterFunctionMap: false
 		pure: false
 		requireFileExists: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
-	checkAlwaysTrueCheckTypeFunctionCall: %featureToggles.alwaysTrueAlwaysReported%
-	checkAlwaysTrueInstanceof: %featureToggles.alwaysTrueAlwaysReported%
-	checkAlwaysTrueStrictComparison: %featureToggles.alwaysTrueAlwaysReported%
-	checkAlwaysTrueLooseComparison: %featureToggles.alwaysTrueAlwaysReported%
+	checkAlwaysTrueCheckTypeFunctionCall: true
+	checkAlwaysTrueInstanceof: true
+	checkAlwaysTrueStrictComparison: true
+	checkAlwaysTrueLooseComparison: true
 	reportAlwaysTrueInLastCondition: false
 	checkClassCaseSensitivity: false
 	checkExplicitMixed: false

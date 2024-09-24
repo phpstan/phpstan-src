@@ -8,6 +8,5 @@ parameters:
 		arrayValues: true
 		looseComparison: true
 		readOnlyByPhpDoc: true
-		alwaysTrueAlwaysReported: true
 		pure: true
 		requireFileExists: true

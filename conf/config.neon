@@ -30,7 +30,6 @@ parameters:
 		illegalConstructorMethodCall: false
 		looseComparison: false
 		readOnlyByPhpDoc: false
-		missingMagicSerializationRule: false
 		alwaysCheckTooWideReturnTypeFinalMethods: false
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false

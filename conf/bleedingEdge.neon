@@ -9,7 +9,6 @@ parameters:
 		arrayValues: true
 		looseComparison: true
 		readOnlyByPhpDoc: true
-		missingMagicSerializationRule: true
 		alwaysCheckTooWideReturnTypeFinalMethods: true
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true

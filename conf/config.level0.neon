@@ -8,8 +8,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
-	PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule:
-		phpstan.rules.rule: %featureToggles.missingMagicSerializationRule%
 	PHPStan\Rules\Functions\UselessFunctionReturnValueRule:
 		phpstan.rules.rule: %featureToggles.uselessReturnValue%
 	PHPStan\Rules\Functions\PrintfArrayParametersRule:
@@ -93,6 +91,7 @@ rules:
 	- PHPStan\Rules\Methods\FinalPrivateMethodRule
 	- PHPStan\Rules\Methods\MethodCallableRule
 	- PHPStan\Rules\Methods\MethodVisibilityInInterfaceRule
+	- PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule
 	- PHPStan\Rules\Methods\MethodAttributesRule
 	- PHPStan\Rules\Methods\StaticMethodCallableRule
@@ -258,9 +257,6 @@ services:
 		class: PHPStan\Reflection\ConstructorsHelper
 		arguments:
 			additionalConstructors: %additionalConstructors%
-
-	-
-		class: PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule
 
 	-
 		class: PHPStan\Rules\Functions\UselessFunctionReturnValueRule

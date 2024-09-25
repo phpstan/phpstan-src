@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Cannot access property $foo on mixed.",
+        "line": 197,
+        "ignorable": true
+    }
+]

@@ -38,5 +38,10 @@
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Bar|Levels\\PropertyAccesses\\Foo::$bar.",
         "line": 170,
         "ignorable": true
+    },
+    {
+        "message": "Access to an undefined property object::$baz.",
+        "line": 200,
+        "ignorable": true
     }
 ]

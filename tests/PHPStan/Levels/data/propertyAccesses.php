@@ -174,3 +174,31 @@ class Ipsum
 	}
 
 }
+
+class ObjectWithIsset
+{
+
+	public function doFoo(): void
+	{
+		$test = new \stdClass;
+
+		if (isset($test->foo)) {
+			echo $test->foo;
+			echo $test->bar;
+			echo $test->baz;
+		}
+	}
+
+	/**
+	 * @param mixed $test
+	 */
+	public function doBar($test): void
+	{
+		if (isset($test->foo) && isset($test->bar)) {
+			echo $test->foo;
+			echo $test->bar;
+			echo $test->baz;
+		}
+	}
+
+}

@@ -215,7 +215,7 @@ interface Type
 
 	public function toArrayKey(): Type;
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic;
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic;
 
 	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic;
 

@@ -367,9 +367,9 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->toArrayKey();
 	}
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
-		return $this->resolve()->isSmallerThan($otherType);
+		return $this->resolve()->isSmallerThan($otherType, $phpVersion);
 	}
 
 	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
@@ -539,15 +539,15 @@ trait LateResolvableTypeTrait
 		return $acceptingType->acceptsWithReason($result, $strictTypes);
 	}
 
-	public function isGreaterThan(Type $otherType): TrinaryLogic
+	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		$result = $this->resolve();
 
 		if ($result instanceof CompoundType) {
-			return $result->isGreaterThan($otherType);
+			return $result->isGreaterThan($otherType, $phpVersion);
 		}
 
-		return $otherType->isSmallerThan($result);
+		return $otherType->isSmallerThan($result, $phpVersion);
 	}
 
 	public function isGreaterThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic

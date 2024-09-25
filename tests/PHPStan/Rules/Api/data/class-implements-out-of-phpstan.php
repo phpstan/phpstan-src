@@ -248,7 +248,7 @@ class Baz implements Type
 		// TODO: Implement toArrayKey() method.
 	}
 
-	public function isSmallerThan(Type $otherType): \PHPStan\TrinaryLogic
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): \PHPStan\TrinaryLogic
 	{
 		// TODO: Implement isSmallerThan() method.
 	}

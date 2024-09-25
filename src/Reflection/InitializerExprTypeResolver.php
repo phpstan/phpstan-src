@@ -316,7 +316,7 @@ final class InitializerExprTypeResolver
 		}
 
 		if ($expr instanceof Expr\BinaryOp\Smaller) {
-			return $this->getType($expr->left, $context)->isSmallerThan($this->getType($expr->right, $context))->toBooleanType();
+			return $this->getType($expr->left, $context)->isSmallerThan($this->getType($expr->right, $context), $this->phpVersion)->toBooleanType();
 		}
 
 		if ($expr instanceof Expr\BinaryOp\SmallerOrEqual) {
@@ -324,7 +324,7 @@ final class InitializerExprTypeResolver
 		}
 
 		if ($expr instanceof Expr\BinaryOp\Greater) {
-			return $this->getType($expr->right, $context)->isSmallerThan($this->getType($expr->left, $context))->toBooleanType();
+			return $this->getType($expr->right, $context)->isSmallerThan($this->getType($expr->left, $context), $this->phpVersion)->toBooleanType();
 		}
 
 		if ($expr instanceof Expr\BinaryOp\GreaterOrEqual) {

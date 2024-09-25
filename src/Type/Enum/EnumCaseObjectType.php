@@ -180,7 +180,7 @@ class EnumCaseObjectType extends ObjectType
 		return new parent($this->getClassName(), null, $this->getClassReflection());
 	}
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

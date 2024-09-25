@@ -78,14 +78,14 @@ trait ConstantScalarTypeTrait
 		return $type instanceof self && $this->value === $type->value;
 	}
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		if ($otherType instanceof ConstantScalarType) {
 			return TrinaryLogic::createFromBoolean($this->value < $otherType->getValue());
 		}
 
 		if ($otherType instanceof CompoundType) {
-			return $otherType->isGreaterThan($this);
+			return $otherType->isGreaterThan($this, $phpVersion);
 		}
 
 		return TrinaryLogic::createMaybe();

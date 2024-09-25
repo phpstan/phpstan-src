@@ -11,7 +11,7 @@ trait UndecidedComparisonCompoundTypeTrait
 
 	use UndecidedComparisonTypeTrait;
 
-	public function isGreaterThan(Type $otherType): TrinaryLogic
+	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
 	}

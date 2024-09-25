@@ -747,7 +747,7 @@ final class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\Smaller) {
-			return $this->getType($node->left)->isSmallerThan($this->getType($node->right))->toBooleanType();
+			return $this->getType($node->left)->isSmallerThan($this->getType($node->right), $this->phpVersion)->toBooleanType();
 		}
 
 		if ($node instanceof Expr\BinaryOp\SmallerOrEqual) {
@@ -755,7 +755,7 @@ final class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\Greater) {
-			return $this->getType($node->right)->isSmallerThan($this->getType($node->left))->toBooleanType();
+			return $this->getType($node->right)->isSmallerThan($this->getType($node->left), $this->phpVersion)->toBooleanType();
 		}
 
 		if ($node instanceof Expr\BinaryOp\GreaterOrEqual) {

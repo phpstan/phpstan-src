@@ -802,9 +802,9 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isCloneable());
 	}
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThan($otherType));
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThan($otherType, $phpVersion));
 	}
 
 	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
@@ -876,9 +876,9 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isInteger());
 	}
 
-	public function isGreaterThan(Type $otherType): TrinaryLogic
+	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThan($type));
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThan($type, $phpVersion));
 	}
 
 	public function isGreaterThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic

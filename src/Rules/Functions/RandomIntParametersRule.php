@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -21,8 +22,11 @@ use function sprintf;
 final class RandomIntParametersRule implements Rule
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider, private bool $reportMaybes)
-	{
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private PhpVersion $phpVersion,
+		private bool $reportMaybes
+	) {
 	}
 
 	public function getNodeType(): string
@@ -55,7 +59,7 @@ final class RandomIntParametersRule implements Rule
 			return [];
 		}
 
-		$isSmaller = $maxType->isSmallerThan($minType);
+		$isSmaller = $maxType->isSmallerThan($minType, $this->phpVersion);
 
 		if ($isSmaller->yes() || $isSmaller->maybe() && $this->reportMaybes) {
 			$message = 'Parameter #1 $min (%s) of function random_int expects lower number than parameter #2 $max (%s).';

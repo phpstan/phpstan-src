@@ -10,7 +10,7 @@ use PHPStan\Type\Type;
 trait UndecidedComparisonTypeTrait
 {
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
 	}

@@ -783,9 +783,9 @@ class UnionType implements CompoundType
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isCloneable());
 	}
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThan($otherType));
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThan($otherType, $phpVersion));
 	}
 
 	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
@@ -863,9 +863,9 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->getGreaterOrEqualType());
 	}
 
-	public function isGreaterThan(Type $otherType): TrinaryLogic
+	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThan($type));
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThan($type, $phpVersion));
 	}
 
 	public function isGreaterThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic

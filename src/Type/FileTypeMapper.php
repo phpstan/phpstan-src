@@ -23,6 +23,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -130,13 +131,7 @@ final class FileTypeMapper
 	{
 		$phpDocNode = $this->phpDocStringResolver->resolve($phpDocString);
 		if ($this->resolvedPhpDocBlockCacheCount >= 2048) {
-			$this->resolvedPhpDocBlockCache = array_slice(
-				$this->resolvedPhpDocBlockCache,
-				1,
-				null,
-				true,
-			);
-
+			unset($this->resolvedPhpDocBlockCache[array_key_first($this->resolvedPhpDocBlockCache)]);
 			$this->resolvedPhpDocBlockCacheCount--;
 		}
 

@@ -168,6 +168,12 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Paramet
 				$closureThisType = null;
 			}
 
+			if (isset($this->pureUnlessCallableIsImpureParameters[$parameter->var->name])) {
+				$pureUnlessCallableIsImpureParameter = $this->pureUnlessCallableIsImpureParameters[$parameter->var->name];
+			} else {
+				$pureUnlessCallableIsImpureParameter = false;
+			}
+
 			$parameters[] = new PhpParameterFromParserNodeReflection(
 				$parameter->var->name,
 				$isOptional,
@@ -181,6 +187,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Paramet
 				$this->parameterOutTypes[$parameter->var->name] ?? null,
 				$immediatelyInvokedCallable,
 				$closureThisType,
+				$pureUnlessCallableIsImpureParameter,
 			);
 		}
 

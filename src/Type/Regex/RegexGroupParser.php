@@ -304,35 +304,25 @@ final class RegexGroupParser
 			return TypeCombinator::union(...$types);
 		}
 
-		$isNonEmpty = TrinaryLogic::createMaybe();
-		$isNonFalsy = TrinaryLogic::createMaybe();
-		$isNumeric = TrinaryLogic::createMaybe();
-		$inOptionalQuantification = false;
-		$onlyLiterals = [];
-
-		$this->walkGroupAst(
+		$walkResult = $this->walkGroupAst(
 			$group,
 			false,
-			$isNonEmpty,
-			$isNonFalsy,
-			$isNumeric,
-			$inOptionalQuantification,
-			$onlyLiterals,
 			false,
 			$patternModifiers,
+			RegexGroupWalkResult::createEmpty(),
 		);
 
-		if ($maybeConstant && $onlyLiterals !== null && $onlyLiterals !== []) {
+		if ($maybeConstant && $walkResult->getOnlyLiterals() !== null && $walkResult->getOnlyLiterals() !== []) {
 			$result = [];
-			foreach ($onlyLiterals as $literal) {
+			foreach ($walkResult->getOnlyLiterals() as $literal) {
 				$result[] = new ConstantStringType($literal);
 
 			}
 			return TypeCombinator::union(...$result);
 		}
 
-		if ($isNumeric->yes()) {
-			if ($isNonFalsy->yes()) {
+		if ($walkResult->isNumeric()->yes()) {
+			if ($walkResult->isNonFalsy()->yes()) {
 				return new IntersectionType([
 					new StringType(),
 					new AccessoryNumericStringType(),
@@ -341,13 +331,13 @@ final class RegexGroupParser
 			}
 
 			$result = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
-			if (!$isNonEmpty->yes()) {
+			if (!$walkResult->isNonEmpty()->yes()) {
 				return TypeCombinator::union(new ConstantStringType(''), $result);
 			}
 			return $result;
-		} elseif ($isNonFalsy->yes()) {
+		} elseif ($walkResult->isNonFalsy()->yes()) {
 			return new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
-		} elseif ($isNonEmpty->yes()) {
+		} elseif ($walkResult->isNonEmpty()->yes()) {
 			return new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
 		}
 
@@ -376,20 +366,13 @@ final class RegexGroupParser
 		return null;
 	}
 
-	/**
-	 * @param array<string>|null $onlyLiterals
-	 */
 	private function walkGroupAst(
 		TreeNode $ast,
 		bool $inAlternation,
-		TrinaryLogic &$isNonEmpty,
-		TrinaryLogic &$isNonFalsy,
-		TrinaryLogic &$isNumeric,
-		bool &$inOptionalQuantification,
-		?array &$onlyLiterals,
 		bool $inClass,
 		string $patternModifiers,
-	): void
+		RegexGroupWalkResult $walkResult,
+	): RegexGroupWalkResult
 	{
 		$children = $ast->getChildren();
 
@@ -411,61 +394,65 @@ final class RegexGroupParser
 				}
 
 				// a single token non-falsy on its own
-				$isNonFalsy = TrinaryLogic::createYes();
+				$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
 				break;
 			}
 
 			if ($meaningfulTokens > 0) {
-				$isNonEmpty = TrinaryLogic::createYes();
+				$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
 
 				// two non-empty tokens concatenated results in a non-falsy string
 				if ($meaningfulTokens > 1 && !$inAlternation) {
-					$isNonFalsy = TrinaryLogic::createYes();
+					$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
 				}
 			}
 		} elseif ($ast->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($ast);
 
 			if ($min === 0) {
-				$inOptionalQuantification = true;
+				$walkResult = $walkResult->inOptionalQuantification(true);
 			}
 			if ($min >= 1) {
-				$isNonEmpty = TrinaryLogic::createYes();
-				$inOptionalQuantification = false;
+				$walkResult = $walkResult
+					->nonEmpty(TrinaryLogic::createYes())
+					->inOptionalQuantification(false);
 			}
 			if ($min >= 2 && !$inAlternation) {
-				$isNonFalsy = TrinaryLogic::createYes();
+				$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
 			}
 
-			$onlyLiterals = null;
-		} elseif ($ast->getId() === '#class' && $onlyLiterals !== null) {
+			$walkResult = $walkResult->onlyLiterals(null);
+		} elseif ($ast->getId() === '#class' && $walkResult->getOnlyLiterals() !== null) {
 			$inClass = true;
 
 			$newLiterals = [];
 			foreach ($children as $child) {
-				$oldLiterals = $onlyLiterals;
+				$oldLiterals = $walkResult->getOnlyLiterals();
 
 				$this->getLiteralValue($child, $oldLiterals, true, $patternModifiers, true);
 				foreach ($oldLiterals ?? [] as $oldLiteral) {
 					$newLiterals[] = $oldLiteral;
 				}
 			}
-			$onlyLiterals = $newLiterals;
+			$walkResult = $walkResult->onlyLiterals($newLiterals);
 		} elseif ($ast->getId() === 'token') {
+			$onlyLiterals = $walkResult->getOnlyLiterals();
 			$literalValue = $this->getLiteralValue($ast, $onlyLiterals, !$inClass, $patternModifiers, false);
+			$walkResult = $walkResult->onlyLiterals($onlyLiterals);
+
 			if ($literalValue !== null) {
 				if (Strings::match($literalValue, '/^\d+$/') === null) {
-					$isNumeric = TrinaryLogic::createNo();
-				} elseif ($isNumeric->maybe()) {
-					$isNumeric = TrinaryLogic::createYes();
+					$walkResult = $walkResult->numeric(TrinaryLogic::createNo());
+				} elseif ($walkResult->isNumeric()->maybe()) {
+					$walkResult = $walkResult->numeric(TrinaryLogic::createYes());
 				}
 
-				if (!$inOptionalQuantification && $literalValue !== '') {
-					$isNonEmpty = TrinaryLogic::createYes();
+				if (!$walkResult->isInOptionalQuantification() && $literalValue !== '') {
+					$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
 				}
 			}
 		} elseif (!in_array($ast->getId(), ['#capturing', '#namedcapturing', '#alternation'], true)) {
-			$onlyLiterals = null;
+			$walkResult = $walkResult->onlyLiterals(null);
 		}
 
 		if ($ast->getId() === '#alternation') {
@@ -476,22 +463,20 @@ final class RegexGroupParser
 		// doable but really silly compared to just \d so we can safely assume the string is not numeric
 		// for negative classes
 		if ($ast->getId() === '#negativeclass') {
-			$isNumeric = TrinaryLogic::createNo();
+			$walkResult = $walkResult->numeric(TrinaryLogic::createNo());
 		}
 
 		foreach ($children as $child) {
-			$this->walkGroupAst(
+			$walkResult = $this->walkGroupAst(
 				$child,
 				$inAlternation,
-				$isNonEmpty,
-				$isNonFalsy,
-				$isNumeric,
-				$inOptionalQuantification,
-				$onlyLiterals,
 				$inClass,
 				$patternModifiers,
+				$walkResult,
 			);
 		}
+
+		return $walkResult;
 	}
 
 	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool

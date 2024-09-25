@@ -308,75 +308,75 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return new IntegerType();
 	}
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		if ($this->min === null) {
 			$minIsSmaller = TrinaryLogic::createYes();
 		} else {
-			$minIsSmaller = (new ConstantIntegerType($this->min))->isSmallerThan($otherType);
+			$minIsSmaller = (new ConstantIntegerType($this->min))->isSmallerThan($otherType, $phpVersion);
 		}
 
 		if ($this->max === null) {
 			$maxIsSmaller = TrinaryLogic::createNo();
 		} else {
-			$maxIsSmaller = (new ConstantIntegerType($this->max))->isSmallerThan($otherType);
+			$maxIsSmaller = (new ConstantIntegerType($this->max))->isSmallerThan($otherType, $phpVersion);
 		}
 
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
 	}
 
-	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
+	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		if ($this->min === null) {
 			$minIsSmaller = TrinaryLogic::createYes();
 		} else {
-			$minIsSmaller = (new ConstantIntegerType($this->min))->isSmallerThanOrEqual($otherType);
+			$minIsSmaller = (new ConstantIntegerType($this->min))->isSmallerThanOrEqual($otherType, $phpVersion);
 		}
 
 		if ($this->max === null) {
 			$maxIsSmaller = TrinaryLogic::createNo();
 		} else {
-			$maxIsSmaller = (new ConstantIntegerType($this->max))->isSmallerThanOrEqual($otherType);
+			$maxIsSmaller = (new ConstantIntegerType($this->max))->isSmallerThanOrEqual($otherType, $phpVersion);
 		}
 
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
 	}
 
-	public function isGreaterThan(Type $otherType): TrinaryLogic
+	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		if ($this->min === null) {
 			$minIsSmaller = TrinaryLogic::createNo();
 		} else {
-			$minIsSmaller = $otherType->isSmallerThan((new ConstantIntegerType($this->min)));
+			$minIsSmaller = $otherType->isSmallerThan((new ConstantIntegerType($this->min)), $phpVersion);
 		}
 
 		if ($this->max === null) {
 			$maxIsSmaller = TrinaryLogic::createYes();
 		} else {
-			$maxIsSmaller = $otherType->isSmallerThan((new ConstantIntegerType($this->max)));
+			$maxIsSmaller = $otherType->isSmallerThan((new ConstantIntegerType($this->max)), $phpVersion);
 		}
 
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
 	}
 
-	public function isGreaterThanOrEqual(Type $otherType): TrinaryLogic
+	public function isGreaterThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		if ($this->min === null) {
 			$minIsSmaller = TrinaryLogic::createNo();
 		} else {
-			$minIsSmaller = $otherType->isSmallerThanOrEqual((new ConstantIntegerType($this->min)));
+			$minIsSmaller = $otherType->isSmallerThanOrEqual((new ConstantIntegerType($this->min)), $phpVersion);
 		}
 
 		if ($this->max === null) {
 			$maxIsSmaller = TrinaryLogic::createYes();
 		} else {
-			$maxIsSmaller = $otherType->isSmallerThanOrEqual((new ConstantIntegerType($this->max)));
+			$maxIsSmaller = $otherType->isSmallerThanOrEqual((new ConstantIntegerType($this->max)), $phpVersion);
 		}
 
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
 	}
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			new ConstantBooleanType(true),
@@ -389,7 +389,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [];
 
@@ -400,7 +400,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			new NullType(),
@@ -418,7 +418,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [];
 
@@ -692,7 +692,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		if ($this->isSmallerThan($type)->yes() || $this->isGreaterThan($type)->yes()) {
+		if ($this->isSmallerThan($type, $phpVersion)->yes() || $this->isGreaterThan($type, $phpVersion)->yes()) {
 			return new ConstantBooleanType(false);
 		}
 

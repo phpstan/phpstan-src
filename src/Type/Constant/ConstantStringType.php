@@ -6,6 +6,7 @@ use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -461,7 +462,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return new StringType();
 	}
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			new ConstantBooleanType(true),
@@ -480,7 +481,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			IntegerRangeType::createAllGreaterThan((float) $this->value),
@@ -493,7 +494,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			new ConstantBooleanType(false),
@@ -507,7 +508,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			IntegerRangeType::createAllSmallerThan((float) $this->value),

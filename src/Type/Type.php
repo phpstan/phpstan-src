@@ -215,9 +215,9 @@ interface Type
 
 	public function toArrayKey(): Type;
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic;
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic;
 
-	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic;
+	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic;
 
 	/**
 	 * Is Type of a known constant value? Includes literal strings, integers, floats, true, false, null, and array shapes.
@@ -269,13 +269,13 @@ interface Type
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType;
 
-	public function getSmallerType(): Type;
+	public function getSmallerType(PhpVersion $phpVersion): Type;
 
-	public function getSmallerOrEqualType(): Type;
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type;
 
-	public function getGreaterType(): Type;
+	public function getGreaterType(PhpVersion $phpVersion): Type;
 
-	public function getGreaterOrEqualType(): Type;
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type;
 
 	/**
 	 * Returns actual template type for a given object.

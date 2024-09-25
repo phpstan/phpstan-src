@@ -108,27 +108,27 @@ class NullType implements ConstantScalarType
 		return $type instanceof self;
 	}
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		if ($otherType instanceof ConstantScalarType) {
 			return TrinaryLogic::createFromBoolean(null < $otherType->getValue());
 		}
 
 		if ($otherType instanceof CompoundType) {
-			return $otherType->isGreaterThan($this);
+			return $otherType->isGreaterThan($this, $phpVersion);
 		}
 
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
+	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		if ($otherType instanceof ConstantScalarType) {
 			return TrinaryLogic::createFromBoolean(null <= $otherType->getValue());
 		}
 
 		if ($otherType instanceof CompoundType) {
-			return $otherType->isGreaterThanOrEqual($this);
+			return $otherType->isGreaterThanOrEqual($this, $phpVersion);
 		}
 
 		return TrinaryLogic::createMaybe();
@@ -338,12 +338,12 @@ class NullType implements ConstantScalarType
 		return new BooleanType();
 	}
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
 		return new NeverType();
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
 		// All falsey types except '0'
 		return new UnionType([
@@ -356,7 +356,7 @@ class NullType implements ConstantScalarType
 		]);
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
 		// All truthy types, but also '0'
 		return new MixedType(false, new UnionType([
@@ -369,7 +369,7 @@ class NullType implements ConstantScalarType
 		]));
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
 		return new MixedType();
 	}

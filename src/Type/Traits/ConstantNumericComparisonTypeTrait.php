@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Traits;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\IntegerRangeType;
@@ -13,7 +14,7 @@ use PHPStan\Type\TypeCombinator;
 trait ConstantNumericComparisonTypeTrait
 {
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			new ConstantBooleanType(true),
@@ -29,7 +30,7 @@ trait ConstantNumericComparisonTypeTrait
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			IntegerRangeType::createAllGreaterThan($this->value),
@@ -43,7 +44,7 @@ trait ConstantNumericComparisonTypeTrait
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			new NullType(),
@@ -59,7 +60,7 @@ trait ConstantNumericComparisonTypeTrait
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			IntegerRangeType::createAllSmallerThan($this->value),

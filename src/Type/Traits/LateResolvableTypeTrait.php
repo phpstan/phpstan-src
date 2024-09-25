@@ -367,14 +367,14 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->toArrayKey();
 	}
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
-		return $this->resolve()->isSmallerThan($otherType);
+		return $this->resolve()->isSmallerThan($otherType, $phpVersion);
 	}
 
-	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
+	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
-		return $this->resolve()->isSmallerThanOrEqual($otherType);
+		return $this->resolve()->isSmallerThanOrEqual($otherType, $phpVersion);
 	}
 
 	public function isNull(): TrinaryLogic
@@ -482,24 +482,24 @@ trait LateResolvableTypeTrait
 		return new BooleanType();
 	}
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
-		return $this->resolve()->getSmallerType();
+		return $this->resolve()->getSmallerType($phpVersion);
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
-		return $this->resolve()->getSmallerOrEqualType();
+		return $this->resolve()->getSmallerOrEqualType($phpVersion);
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
-		return $this->resolve()->getGreaterType();
+		return $this->resolve()->getGreaterType($phpVersion);
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
-		return $this->resolve()->getGreaterOrEqualType();
+		return $this->resolve()->getGreaterOrEqualType($phpVersion);
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
@@ -539,26 +539,26 @@ trait LateResolvableTypeTrait
 		return $acceptingType->acceptsWithReason($result, $strictTypes);
 	}
 
-	public function isGreaterThan(Type $otherType): TrinaryLogic
+	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		$result = $this->resolve();
 
 		if ($result instanceof CompoundType) {
-			return $result->isGreaterThan($otherType);
+			return $result->isGreaterThan($otherType, $phpVersion);
 		}
 
-		return $otherType->isSmallerThan($result);
+		return $otherType->isSmallerThan($result, $phpVersion);
 	}
 
-	public function isGreaterThanOrEqual(Type $otherType): TrinaryLogic
+	public function isGreaterThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		$result = $this->resolve();
 
 		if ($result instanceof CompoundType) {
-			return $result->isGreaterThanOrEqual($otherType);
+			return $result->isGreaterThanOrEqual($otherType, $phpVersion);
 		}
 
-		return $otherType->isSmallerThanOrEqual($result);
+		return $otherType->isSmallerThanOrEqual($result, $phpVersion);
 	}
 
 	public function exponentiate(Type $exponent): Type

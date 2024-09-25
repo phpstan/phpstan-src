@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Enum;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -179,12 +180,12 @@ class EnumCaseObjectType extends ObjectType
 		return new parent($this->getClassName(), null, $this->getClassReflection());
 	}
 
-	public function isSmallerThan(Type $otherType): TrinaryLogic
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}
 
-	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
+	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_merge;
 
@@ -24,6 +25,7 @@ final class TypeSpecifierFactory
 		$typeSpecifier = new TypeSpecifier(
 			$this->container->getByType(ExprPrinter::class),
 			$this->container->getByType(ReflectionProvider::class),
+			$this->container->getByType(PhpVersion::class),
 			$this->container->getServicesByTag(self::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getServicesByTag(self::METHOD_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getServicesByTag(self::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG),

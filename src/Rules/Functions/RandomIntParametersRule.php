@@ -25,8 +25,9 @@ final class RandomIntParametersRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private PhpVersion $phpVersion,
-		private bool $reportMaybes
-	) {
+		private bool $reportMaybes,
+	)
+	{
 	}
 
 	public function getNodeType(): string

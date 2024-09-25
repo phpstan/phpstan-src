@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_INT_SIZE;
@@ -14,7 +15,7 @@ class RandomIntParametersRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new RandomIntParametersRule($this->createReflectionProvider(), true);
+		return new RandomIntParametersRule($this->createReflectionProvider(), new PhpVersion(80000), true);
 	}
 
 	public function testFile(): void

@@ -328,7 +328,10 @@ class NullType implements ConstantScalarType
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		if ($type instanceof ConstantScalarType) {
-			return LooseComparisonHelper::compareConstantScalars($this, $type, $phpVersion);
+			[$leftValue, $rightValue] = LooseComparisonHelper::getConstantScalarValuesForComparison($this, $type, $phpVersion);
+
+			// @phpstan-ignore equal.notAllowed
+			return new ConstantBooleanType($leftValue == $rightValue); // phpcs:ignore
 		}
 
 		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {

@@ -423,3 +423,20 @@ class Bug1884
 	}
 
 }
+
+class OnObjectAfterIsset
+{
+
+	/**
+	 * @param mixed $m
+	 */
+	public function doFoo($m): void
+	{
+		if (isset($m->foo) && isset($m->bar)) {
+			echo $m->foo;
+			echo $m->bar;
+			echo $m->baz;
+		}
+	}
+
+}

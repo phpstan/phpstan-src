@@ -169,6 +169,11 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					'Cannot access property $selfOrNull on TestAccessProperties\RevertNonNullabilityForIsset|null.',
 					407,
 				],
+				[
+					'Access to an undefined property object::$baz.',
+					438,
+					$tipText,
+				],
 			],
 		);
 	}

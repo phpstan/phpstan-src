@@ -14,7 +14,6 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -241,7 +240,7 @@ final class RuleLevelHelper
 			return new FoundTypeResult(new ErrorType(), [], $errors, null);
 		}
 
-		if (!$this->checkUnionTypes && $type instanceof ObjectWithoutClassType) {
+		if (!$this->checkUnionTypes && $type->isObject()->yes() && count($type->getObjectClassNames()) === 0) {
 			return new FoundTypeResult(new ErrorType(), [], [], null);
 		}
 
@@ -286,17 +285,25 @@ final class RuleLevelHelper
 		if ($type instanceof IntersectionType) {
 			$newTypes = [];
 
+			$changed = false;
 			foreach ($type->getTypes() as $innerType) {
-				$newTypes[] = $this->findTypeToCheckImplementation(
-					$scope,
-					$var,
-					$innerType,
-					$unknownClassErrorPattern,
-					$unionTypeCriteriaCallback,
-				)->getType();
+				if ($innerType instanceof TemplateMixedType) {
+					$changed = true;
+					$newTypes[] = $this->findTypeToCheckImplementation(
+						$scope,
+						$var,
+						$innerType->toStrictMixedType(),
+						$unknownClassErrorPattern,
+						$unionTypeCriteriaCallback,
+					)->getType();
+					continue;
+				}
+				$newTypes[] = $innerType;
 			}
 
-			return new FoundTypeResult(TypeCombinator::intersect(...$newTypes), $directClassNames, [], null);
+			if ($changed) {
+				return new FoundTypeResult(TypeCombinator::intersect(...$newTypes), $directClassNames, [], null);
+			}
 		}
 
 		$tip = null;

@@ -20,22 +20,22 @@ trait UndecidedComparisonTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
 		return new MixedType();
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
 		return new MixedType();
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
 		return new MixedType();
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
 		return new MixedType();
 	}

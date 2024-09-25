@@ -886,24 +886,24 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThanOrEqual($type, $phpVersion));
 	}
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getSmallerType());
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getSmallerType($phpVersion));
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getSmallerOrEqualType());
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getSmallerOrEqualType($phpVersion));
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getGreaterType());
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getGreaterType($phpVersion));
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getGreaterOrEqualType());
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getGreaterOrEqualType($phpVersion));
 	}
 
 	public function toBoolean(): BooleanType

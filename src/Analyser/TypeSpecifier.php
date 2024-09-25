@@ -22,6 +22,7 @@ use PhpParser\Node\Name;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -100,6 +101,7 @@ final class TypeSpecifier
 	public function __construct(
 		private ExprPrinter $exprPrinter,
 		private ReflectionProvider $reflectionProvider,
+		private PhpVersion $phpVersion,
 		private array $functionTypeSpecifyingExtensions,
 		private array $methodTypeSpecifyingExtensions,
 		private array $staticMethodTypeSpecifyingExtensions,
@@ -406,7 +408,7 @@ final class TypeSpecifier
 					$result = $result->unionWith(
 						$this->create(
 							$expr->left,
-							$orEqual ? $rightType->getSmallerOrEqualType() : $rightType->getSmallerType(),
+							$orEqual ? $rightType->getSmallerOrEqualType($this->phpVersion) : $rightType->getSmallerType($this->phpVersion),
 							TypeSpecifierContext::createTruthy(),
 							$scope,
 						)->setRootExpr($expr),
@@ -416,7 +418,7 @@ final class TypeSpecifier
 					$result = $result->unionWith(
 						$this->create(
 							$expr->right,
-							$orEqual ? $leftType->getGreaterOrEqualType() : $leftType->getGreaterType(),
+							$orEqual ? $leftType->getGreaterOrEqualType($this->phpVersion) : $leftType->getGreaterType($this->phpVersion),
 							TypeSpecifierContext::createTruthy(),
 							$scope,
 						)->setRootExpr($expr),
@@ -427,7 +429,7 @@ final class TypeSpecifier
 					$result = $result->unionWith(
 						$this->create(
 							$expr->left,
-							$orEqual ? $rightType->getGreaterType() : $rightType->getGreaterOrEqualType(),
+							$orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion),
 							TypeSpecifierContext::createTruthy(),
 							$scope,
 						)->setRootExpr($expr),
@@ -437,7 +439,7 @@ final class TypeSpecifier
 					$result = $result->unionWith(
 						$this->create(
 							$expr->right,
-							$orEqual ? $leftType->getSmallerType() : $leftType->getSmallerOrEqualType(),
+							$orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion),
 							TypeSpecifierContext::createTruthy(),
 							$scope,
 						)->setRootExpr($expr),

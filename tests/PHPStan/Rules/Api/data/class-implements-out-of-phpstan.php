@@ -278,22 +278,22 @@ class Baz implements Type
 		// TODO: Implement isLiteralString() method.
 	}
 
-	public function getSmallerType(): \PHPStan\Type\Type
+	public function getSmallerType(PhpVersion $phpVersion): \PHPStan\Type\Type
 	{
 		// TODO: Implement getSmallerType() method.
 	}
 
-	public function getSmallerOrEqualType(): \PHPStan\Type\Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): \PHPStan\Type\Type
 	{
 		// TODO: Implement getSmallerOrEqualType() method.
 	}
 
-	public function getGreaterType(): \PHPStan\Type\Type
+	public function getGreaterType(PhpVersion $phpVersion): \PHPStan\Type\Type
 	{
 		// TODO: Implement getGreaterType() method.
 	}
 
-	public function getGreaterOrEqualType(): \PHPStan\Type\Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): \PHPStan\Type\Type
 	{
 		// TODO: Implement getGreaterOrEqualType() method.
 	}

@@ -376,7 +376,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
 	}
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			new ConstantBooleanType(true),
@@ -389,7 +389,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [];
 
@@ -400,7 +400,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [
 			new NullType(),
@@ -418,7 +418,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
 		$subtractedTypes = [];
 

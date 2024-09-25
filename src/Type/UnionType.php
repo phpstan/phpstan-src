@@ -843,24 +843,24 @@ class UnionType implements CompoundType
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isInteger());
 	}
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->getSmallerType());
+		return $this->unionTypes(static fn (Type $type): Type => $type->getSmallerType($phpVersion));
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->getSmallerOrEqualType());
+		return $this->unionTypes(static fn (Type $type): Type => $type->getSmallerOrEqualType($phpVersion));
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->getGreaterType());
+		return $this->unionTypes(static fn (Type $type): Type => $type->getGreaterType($phpVersion));
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->getGreaterOrEqualType());
+		return $this->unionTypes(static fn (Type $type): Type => $type->getGreaterOrEqualType($phpVersion));
 	}
 
 	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic

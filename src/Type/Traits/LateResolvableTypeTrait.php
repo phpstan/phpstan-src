@@ -482,24 +482,24 @@ trait LateResolvableTypeTrait
 		return new BooleanType();
 	}
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
-		return $this->resolve()->getSmallerType();
+		return $this->resolve()->getSmallerType($phpVersion);
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
-		return $this->resolve()->getSmallerOrEqualType();
+		return $this->resolve()->getSmallerOrEqualType($phpVersion);
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
-		return $this->resolve()->getGreaterType();
+		return $this->resolve()->getGreaterType($phpVersion);
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
-		return $this->resolve()->getGreaterOrEqualType();
+		return $this->resolve()->getGreaterOrEqualType($phpVersion);
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

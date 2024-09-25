@@ -40,7 +40,7 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 		return $this->value ? 'true' : 'false';
 	}
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
 		if ($this->value) {
 			return StaticTypeFactory::falsey();
@@ -48,7 +48,7 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 		return new NeverType();
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
 		if ($this->value) {
 			return new MixedType();
@@ -56,7 +56,7 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 		return StaticTypeFactory::falsey();
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
 		if ($this->value) {
 			return new NeverType();
@@ -64,7 +64,7 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 		return StaticTypeFactory::truthy();
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
 		if ($this->value) {
 			return StaticTypeFactory::truthy();

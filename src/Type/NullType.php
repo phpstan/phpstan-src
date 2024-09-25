@@ -338,12 +338,12 @@ class NullType implements ConstantScalarType
 		return new BooleanType();
 	}
 
-	public function getSmallerType(): Type
+	public function getSmallerType(PhpVersion $phpVersion): Type
 	{
 		return new NeverType();
 	}
 
-	public function getSmallerOrEqualType(): Type
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
 		// All falsey types except '0'
 		return new UnionType([
@@ -356,7 +356,7 @@ class NullType implements ConstantScalarType
 		]);
 	}
 
-	public function getGreaterType(): Type
+	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
 		// All truthy types, but also '0'
 		return new MixedType(false, new UnionType([
@@ -369,7 +369,7 @@ class NullType implements ConstantScalarType
 		]));
 	}
 
-	public function getGreaterOrEqualType(): Type
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
 		return new MixedType();
 	}

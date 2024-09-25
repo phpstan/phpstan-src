@@ -186,6 +186,7 @@ final class CommandHelper
 				'phpstan.neon.dist',
 				'.phpstan.dist.neon',
 				'phpstan.dist.neon',
+				'phpstan.php',
 			];
 			foreach ($discoverableConfigNames as $discoverableConfigName) {
 				$discoverableConfigFile = $currentWorkingDirectory . DIRECTORY_SEPARATOR . $discoverableConfigName;

@@ -22,7 +22,7 @@ class UnionTypesTest extends PHPStanTestCase
 		$this->assertSame('bool|int', $propertyType->describe(VerbosityLevel::precise()));
 
 		$method = $class->getNativeMethod('doFoo');
-		$methodVariant = ParametersAcceptorSelector::selectSingle($method->getVariants());
+		$methodVariant = $method->getOnlyVariant();
 		$methodReturnType = $methodVariant->getReturnType();
 		$this->assertInstanceOf(UnionType::class, $methodReturnType);
 		$this->assertSame('NativeUnionTypes\\Bar|NativeUnionTypes\\Foo', $methodReturnType->describe(VerbosityLevel::precise()));
@@ -32,7 +32,7 @@ class UnionTypesTest extends PHPStanTestCase
 		$this->assertSame('bool|int', $methodParameterType->describe(VerbosityLevel::precise()));
 
 		$function = $reflectionProvider->getFunction(new Name('NativeUnionTypes\doFoo'), null);
-		$functionVariant = ParametersAcceptorSelector::selectSingle($function->getVariants());
+		$functionVariant = $function->getOnlyVariant();
 		$functionReturnType = $functionVariant->getReturnType();
 		$this->assertInstanceOf(UnionType::class, $functionReturnType);
 		$this->assertSame('NativeUnionTypes\\Bar|NativeUnionTypes\\Foo', $functionReturnType->describe(VerbosityLevel::precise()));

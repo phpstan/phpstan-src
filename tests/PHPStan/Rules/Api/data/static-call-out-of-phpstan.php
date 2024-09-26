@@ -19,7 +19,7 @@ class Foo
 
 	public function doBar(FunctionReflection $f): void
 	{
-		ParametersAcceptorSelector::selectSingle($f->getVariants()); // @api above class
+		ParametersAcceptorSelector::selectFromArgs($f->getVariants()); // @api above class
 		ScopeContext::create(__DIR__ . '/test.php'); // @api above method
 	}
 

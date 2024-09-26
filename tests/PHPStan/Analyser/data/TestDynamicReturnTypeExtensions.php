@@ -41,16 +41,28 @@ class GetByPrimaryDynamicReturnTypeExtension implements DynamicMethodReturnTypeE
 	{
 		$args = $methodCall->args;
 		if (count($args) === 0) {
-			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$methodCall->getArgs(),
+				$methodReflection->getVariants(),
+			)->getReturnType();
 		}
 
 		$arg = $args[0]->value;
 		if (!($arg instanceof \PhpParser\Node\Expr\ClassConstFetch)) {
-			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$methodCall->getArgs(),
+				$methodReflection->getVariants(),
+			)->getReturnType();
 		}
 
 		if (!($arg->class instanceof \PhpParser\Node\Name)) {
-			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$methodCall->getArgs(),
+				$methodReflection->getVariants(),
+			)->getReturnType();
 		}
 
 		return new ObjectType((string) $arg->class);
@@ -75,12 +87,20 @@ class OffsetGetDynamicReturnTypeExtension implements DynamicMethodReturnTypeExte
 	{
 		$args = $methodCall->args;
 		if (count($args) === 0) {
-			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$methodCall->getArgs(),
+				$methodReflection->getVariants(),
+			)->getReturnType();
 		}
 
 		$argType = $scope->getType($args[0]->value);
 		if (!$argType instanceof ConstantStringType) {
-			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$methodCall->getArgs(),
+				$methodReflection->getVariants(),
+			)->getReturnType();
 		}
 
 		return new ObjectType($argType->getValue());
@@ -105,16 +125,28 @@ class CreateManagerForEntityDynamicReturnTypeExtension implements DynamicStaticM
 	{
 		$args = $methodCall->args;
 		if (count($args) === 0) {
-			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$methodCall->getArgs(),
+				$methodReflection->getVariants(),
+			)->getReturnType();
 		}
 
 		$arg = $args[0]->value;
 		if (!($arg instanceof \PhpParser\Node\Expr\ClassConstFetch)) {
-			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$methodCall->getArgs(),
+				$methodReflection->getVariants(),
+			)->getReturnType();
 		}
 
 		if (!($arg->class instanceof \PhpParser\Node\Name)) {
-			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$methodCall->getArgs(),
+				$methodReflection->getVariants(),
+			)->getReturnType();
 		}
 
 		return new ObjectType((string) $arg->class);
@@ -215,7 +247,11 @@ class ConditionalGetSingle implements DynamicMethodReturnTypeExtension {
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
-		return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+		return ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$methodCall->getArgs(),
+			$methodReflection->getVariants(),
+		)->getReturnType();
 	}
 
 }

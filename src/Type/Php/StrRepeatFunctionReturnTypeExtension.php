@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -91,6 +92,10 @@ final class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionRetur
 					$accessoryTypes[] = new AccessoryNumericStringType();
 				}
 			}
+		}
+
+		if ($inputType->isLowercaseString()->yes()) {
+			$accessoryTypes[] = new AccessoryLowercaseStringType();
 		}
 
 		if (count($accessoryTypes) > 0) {

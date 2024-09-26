@@ -75,6 +75,10 @@ class FunctionTemplateTypeRuleTest extends RuleTestCase
 				'Default type bool in PHPDoc tag @template T for function FunctionTemplateType\outOfBoundsDefault() is not subtype of bound type object.',
 				110,
 			],
+			[
+				'PHPDoc tag @template V for function FunctionTemplateType\requiredAfterOptional() does not have a default type but follows an optional @template U.',
+				120,
+			],
 		]);
 	}
 

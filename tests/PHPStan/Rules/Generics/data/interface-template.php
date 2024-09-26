@@ -91,3 +91,13 @@ interface OutOfBoundsDefault
 {
 
 }
+
+/**
+ * @template T
+ * @template U = string
+ * @template V
+ */
+interface RequiredAfterOptional
+{
+
+}

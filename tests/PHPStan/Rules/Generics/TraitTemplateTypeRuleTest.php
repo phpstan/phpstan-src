@@ -77,6 +77,10 @@ class TraitTemplateTypeRuleTest extends RuleTestCase
 				'Default type bool in PHPDoc tag @template T for trait TraitTemplateType\Elit is not subtype of bound type object.',
 				80,
 			],
+			[
+				'PHPDoc tag @template V for trait TraitTemplateType\Consecteur does not have a default type but follows an optional @template U.',
+				90,
+			],
 		]);
 	}
 

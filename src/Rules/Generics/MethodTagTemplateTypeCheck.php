@@ -63,6 +63,7 @@ final class MethodTagTemplateTypeCheck
 				sprintf('PHPDoc tag @method template %%s for method %s::%s() with bound type %%s is not supported.', $escapedClassName, $escapedMethodName),
 				sprintf('PHPDoc tag @method template %%s for method %s::%s() has invalid default type %%s', $escapedClassName, $escapedMethodName),
 				sprintf('Default type %%s in PHPDoc tag @method template %%s for method %s::%s() is not subtype of bound type %%s', $escapedClassName, $escapedMethodName),
+				sprintf('PHPDoc tag @template %%s for method %s::%s() does not have a default type but follows an optional @template %%s.', $escapedClassName, $escapedMethodName),
 			));
 
 			foreach (array_keys($methodTemplateTags) as $name) {

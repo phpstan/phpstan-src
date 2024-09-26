@@ -94,6 +94,10 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				'Default type bool in PHPDoc tag @template T for class ClassTemplateType\Venenatis is not subtype of bound type object.',
 				129,
 			],
+			[
+				'PHPDoc tag @template V for class ClassTemplateType\Mauris does not have a default type but follows an optional @template U.',
+				139,
+			],
 		]);
 	}
 

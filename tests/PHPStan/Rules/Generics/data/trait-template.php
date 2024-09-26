@@ -81,3 +81,13 @@ trait Elit
 {
 
 }
+
+/**
+ * @template T
+ * @template U = string
+ * @template V
+ */
+trait Consecteur
+{
+
+}

@@ -73,6 +73,10 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 				'Default type bool in PHPDoc tag @template T for interface InterfaceTemplateType\OutOfBoundsDefault is not subtype of bound type object.',
 				90,
 			],
+			[
+				'PHPDoc tag @template V for interface InterfaceTemplateType\RequiredAfterOptional does not have a default type but follows an optional @template U.',
+				100,
+			],
 		]);
 	}
 

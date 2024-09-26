@@ -64,9 +64,11 @@ final class TemplateTypeCheck
 		string $notSupportedBoundMessage,
 		string $invalidDefaultTypeMessage,
 		string $defaultNotSubtypeOfBoundMessage,
+		string $requiredTypeAfterOptionalMessage,
 	): array
 	{
 		$messages = [];
+		$templateTagWithDefaultType = null;
 		foreach ($templateTags as $templateTag) {
 			$templateTagName = $scope->resolveName(new Node\Name($templateTag->getName()));
 			if ($this->reflectionProvider->hasClass($templateTagName)) {
@@ -146,8 +148,18 @@ final class TemplateTypeCheck
 
 			$defaultType = $templateTag->getDefault();
 			if ($defaultType === null) {
+				if ($templateTagWithDefaultType !== null) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						$requiredTypeAfterOptionalMessage,
+						$templateTagName,
+						$templateTagWithDefaultType,
+					))->identifier('generics.requiredTypeAfterOptional')->build();
+				}
+
 				continue;
 			}
+
+			$templateTagWithDefaultType = $templateTagName;
 
 			foreach ($defaultType->getReferencedClasses() as $referencedClass) {
 				if (!$this->reflectionProvider->hasClass($referencedClass)) {

@@ -81,6 +81,10 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 				'Default type bool in PHPDoc tag @template T for method MethodTemplateType\InvalidDefault::outOfBounds() is not subtype of bound type object.',
 				130,
 			],
+			[
+				'PHPDoc tag @template V for method MethodTemplateType\InvalidDefault::requiredAfterOptional() does not have a default type but follows an optional @template U.',
+				140,
+			],
 		]);
 	}
 

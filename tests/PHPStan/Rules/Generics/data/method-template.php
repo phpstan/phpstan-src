@@ -132,4 +132,14 @@ class InvalidDefault
 
 	}
 
+	/**
+	 * @template T
+	 * @template U = string
+	 * @template V
+	 */
+	public function requiredAfterOptional()
+	{
+
+	}
+
 }

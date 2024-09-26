@@ -111,3 +111,13 @@ function outOfBoundsDefault()
 {
 
 }
+
+/**
+ * @template T
+ * @template U = string
+ * @template V
+ */
+function requiredAfterOptional()
+{
+
+}

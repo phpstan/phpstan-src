@@ -61,6 +61,8 @@ class ParametersAcceptorSelector
 {
 
 	/**
+	 * @deprecated See https://github.com/phpstan/phpstan-src/blob/2.0.x/UPGRADING.md#removed-deprecated-parametersacceptorselectorselectsingle
+	 *
 	 * @template T of ParametersAcceptor
 	 * @param T[] $parametersAcceptors
 	 * @return T

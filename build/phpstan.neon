@@ -108,6 +108,6 @@ services:
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 	-
-		class: PHPStan\Internal\ContainerDynamicReturnTypeExtension
+		class: PHPStan\Build\ContainerDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension

@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Internal;
+namespace PHPStan\Build;
 
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;

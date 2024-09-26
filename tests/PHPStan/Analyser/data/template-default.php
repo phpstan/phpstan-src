@@ -53,6 +53,22 @@ class Builder
     }
 }
 
+class FormData {}
+class Form
+{
+	/**
+	 * @template Data of object = \stdClass
+	 * @param Data|null $values
+	 * @return Data
+	 */
+	public function mapValues(object|null $values = null): object
+	{
+		$values ??= new \stdClass;
+		// ... map into $values ...
+		return $values;
+	}
+}
+
 function () {
 	$qb = new Builder();
 	assertType('TemplateDefault\\Builder<false, false>', $qb);
@@ -79,4 +95,11 @@ function () {
 	$qb->one();
 	assertType('TemplateDefault\\Builder<true, false>', $qb);
 	assertType('never', $qb->execute());
+};
+
+function () {
+	$form = new Form();
+
+	assertType('TemplateDefault\\FormData', $form->mapValues(new FormData));
+	assertType('stdClass', $form->mapValues());
 };

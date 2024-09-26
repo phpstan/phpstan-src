@@ -105,9 +105,29 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 				$checkArgType = $scope->getType($args[$checkArg]->value);
 				if (
 					$matches['specifier'] === 's'
-					&& ($checkArgType->isConstantValue()->no() || $matches['width'] === '')
 					&& ($checkArgType->isString()->yes() || $checkArgType->isInteger()->yes())
 				) {
+					if ($checkArgType instanceof IntegerRangeType) {
+						$constArgTypes = $checkArgType->getFiniteTypes();
+					} else {
+						$constArgTypes = $checkArgType->getConstantScalarTypes();
+					}
+					if ($constArgTypes !== []) {
+						$result = [];
+						$printfArgs = array_fill(0, count($args) - 1, '');
+						foreach ($constArgTypes as $constArgType) {
+							$printfArgs[$checkArg - 1] = $constArgType->getValue();
+							try {
+								$result[] = new ConstantStringType(@sprintf($constantString->getValue(), ...$printfArgs));
+							} catch (Throwable) {
+								continue 2;
+							}
+						}
+						$singlePlaceholderEarlyReturn = TypeCombinator::union(...$result);
+
+						continue;
+					}
+
 					$singlePlaceholderEarlyReturn = $checkArgType->toString();
 				} elseif ($matches['specifier'] !== 's') {
 					$singlePlaceholderEarlyReturn = new IntersectionType([

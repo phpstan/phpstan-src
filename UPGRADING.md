@@ -233,3 +233,4 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
 * `CompoundType::isGreaterThan()`, `CompoundType::isGreaterThanOrEqual()` now require [`PhpVersion`](https://apiref.phpstan.org/2.0.x/PHPStan.Php.PhpVersion.html) as argument.
 * Removed `ReflectionProvider::supportsAnonymousClasses()` (all reflection providers support anonymous classes)
 * Remove `ArrayType::generalizeKeys()`
+* Remove `ArrayType::count()`

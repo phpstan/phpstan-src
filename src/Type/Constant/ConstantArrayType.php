@@ -1421,12 +1421,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self($keyTypes, $valueTypes, $autoIndexes, $optionalKeys, TrinaryLogic::createYes());
 	}
 
-	/** @deprecated Use getArraySize() instead */
-	public function count(): Type
-	{
-		return $this->getArraySize();
-	}
-
 	public function describe(VerbosityLevel $level): string
 	{
 		$describeValue = function (bool $truncate) use ($level): string {

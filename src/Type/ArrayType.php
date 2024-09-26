@@ -638,12 +638,6 @@ class ArrayType implements Type
 		return new ErrorType();
 	}
 
-	/** @deprecated Use getArraySize() instead */
-	public function count(): Type
-	{
-		return $this->getArraySize();
-	}
-
 	/** @deprecated Use $offsetType->toArrayKey() instead */
 	public static function castToArrayKeyType(Type $offsetType): Type
 	{

@@ -237,3 +237,4 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
 * Remove `ArrayType::castToArrayKeyType()`, `Type::toArrayKey()` instead
 * Remove `UnionType::pickTypes()`, use `pickFromTypes()` instead
 * Remove `RegexArrayShapeMatcher::matchType()`, use `matchExpr()` instead
+* Remove unused `PHPStanTestCase::$useStaticReflectionProvider`

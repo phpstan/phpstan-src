@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -82,17 +83,26 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
 
-		if ($subjectArgumentType->isNonEmptyString()->yes() && array_key_exists($functionReflection->getName(), self::FUNCTIONS_REPLACE_POSITION)) {
+		if (array_key_exists($functionReflection->getName(), self::FUNCTIONS_REPLACE_POSITION)) {
 			$replaceArgumentPosition = self::FUNCTIONS_REPLACE_POSITION[$functionReflection->getName()];
 
 			if (count($functionCall->getArgs()) > $replaceArgumentPosition) {
 				$replaceArgumentType = $scope->getType($functionCall->getArgs()[$replaceArgumentPosition]->value);
 
+				$accessories = [];
 				if ($subjectArgumentType->isNonFalsyString()->yes() && $replaceArgumentType->isNonFalsyString()->yes()) {
-					return new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
+					$accessories[] = new AccessoryNonFalsyStringType();
+				} elseif ($subjectArgumentType->isNonEmptyString()->yes() && $replaceArgumentType->isNonEmptyString()->yes()) {
+					$accessories[] = new AccessoryNonEmptyStringType();
 				}
-				if ($replaceArgumentType->isNonEmptyString()->yes()) {
-					return new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
+
+				if ($subjectArgumentType->isLowercaseString()->yes() && $replaceArgumentType->isLowercaseString()->yes()) {
+					$accessories[] = new AccessoryLowercaseStringType();
+				}
+
+				if (count($accessories) > 0) {
+					$accessories[] = new StringType();
+					return new IntersectionType($accessories);
 				}
 			}
 		}

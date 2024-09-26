@@ -11556,7 +11556,7 @@ return [
 'SplFileInfo::getMTime' => ['__benevolent<int|false>'],
 'SplFileInfo::getOwner' => ['__benevolent<int|false>'],
 'SplFileInfo::getPath' => ['string'],
-'SplFileInfo::getPathInfo' => ['SplFileInfo', 'class_name='=>'string'],
+'SplFileInfo::getPathInfo' => ['SplFileInfo|null', 'class_name='=>'string'],
 'SplFileInfo::getPathname' => ['string'],
 'SplFileInfo::getPerms' => ['__benevolent<int|false>'],
 'SplFileInfo::getRealPath' => ['__benevolent<string|false>'],

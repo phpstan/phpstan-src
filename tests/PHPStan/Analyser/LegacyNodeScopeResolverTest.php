@@ -7414,7 +7414,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'non-falsy-string',
+				'lowercase-string&non-falsy-string',
 				'$expectedString',
 			],
 			[
@@ -7422,7 +7422,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$expectedString2',
 			],
 			[
-				'non-falsy-string|null',
+				'(lowercase-string&non-falsy-string)|null',
 				'$anotherExpectedString',
 			],
 			[

@@ -97,7 +97,7 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		if ($componentType->getValue() === -1) {
 			return TypeCombinator::union(
 				$this->createComponentsArray($urlType->isLowercaseString()->yes()),
-				new ConstantBooleanType(false)
+				new ConstantBooleanType(false),
 			);
 		}
 

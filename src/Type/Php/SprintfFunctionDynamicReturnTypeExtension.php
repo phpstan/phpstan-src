@@ -84,13 +84,13 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 			}
 
 			// The printf format is %[argnum$][flags][width][.precision]specifier.
-			if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1) {
-				if ($matches[1] !== '') {
+			if (preg_match('/^%(?P<argnum>[0-9]*\$)?(?P<width>[0-9]*)\.?[0-9]*(?P<specifier>[sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1) {
+				if ($matches['argnum'] !== '') {
 					// invalid positional argument
-					if ($matches[1] === '0$') {
+					if ($matches['argnum'] === '0$') {
 						return null;
 					}
-					$checkArg = intval(substr($matches[1], 0, -1));
+					$checkArg = intval(substr($matches['argnum'], 0, -1));
 				} else {
 					$checkArg = 1;
 				}
@@ -103,11 +103,13 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 				// if the format string is just a placeholder and specified an argument
 				// of stringy type, then the return value will be of the same type
 				$checkArgType = $scope->getType($args[$checkArg]->value);
-				if ($matches[2] === 's'
+				if (
+					$matches['specifier'] === 's'
+					&& ($checkArgType->isConstantValue()->no() || $matches['width'] === '')
 					&& ($checkArgType->isString()->yes() || $checkArgType->isInteger()->yes())
 				) {
 					$singlePlaceholderEarlyReturn = $checkArgType->toString();
-				} elseif ($matches[2] !== 's') {
+				} elseif ($matches['specifier'] !== 's') {
 					$singlePlaceholderEarlyReturn = new IntersectionType([
 						new StringType(),
 						new AccessoryNumericStringType(),

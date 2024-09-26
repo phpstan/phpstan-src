@@ -1002,3 +1002,18 @@ class ArrayWithLongStrings2
 	}
 
 }
+
+class TestLiteralStringVerbosityFix
+{
+
+	/**
+	 * @param lowercase-string|false $a
+	 */
+	public function doFoo($a): void
+	{
+		if ($a === 'AB') {
+
+		}
+	}
+
+}

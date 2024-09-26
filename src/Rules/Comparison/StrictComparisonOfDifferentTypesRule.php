@@ -65,15 +65,15 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 		if (
 			(
 				$leftType->isConstantScalarValue()->yes()
-				&& $leftType->isString()->yes()
-				&& $rightType->isConstantScalarValue()->no()
-				&& $rightType->isString()->yes()
+				&& !$leftType->isString()->no()
+				&& !$rightType->isConstantScalarValue()->yes()
+				&& !$rightType->isString()->no()
 				&& TrinaryLogic::extremeIdentity($leftType->isLowercaseString(), $rightType->isLowercaseString())->maybe()
 			) || (
 				$rightType->isConstantScalarValue()->yes()
-				&& $rightType->isString()->yes()
-				&& $leftType->isConstantScalarValue()->no()
-				&& $leftType->isString()->yes()
+				&& !$rightType->isString()->no()
+				&& !$leftType->isConstantScalarValue()->yes()
+				&& !$leftType->isString()->no()
 				&& TrinaryLogic::extremeIdentity($leftType->isLowercaseString(), $rightType->isLowercaseString())->maybe()
 			)
 		) {

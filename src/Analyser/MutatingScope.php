@@ -208,7 +208,7 @@ final class MutatingScope implements Scope
 		private ScopeContext $context,
 		private PhpVersion $phpVersion,
 		private bool $declareStrictTypes = false,
-		private FunctionReflection|ExtendedMethodReflection|null $function = null,
+		private PhpFunctionFromParserNodeReflection|null $function = null,
 		?string $namespace = null,
 		private array $expressionTypes = [],
 		private array $nativeExpressionTypes = [],
@@ -310,9 +310,8 @@ final class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @return FunctionReflection|ExtendedMethodReflection|null
 	 */
-	public function getFunction()
+	public function getFunction(): ?PhpFunctionFromParserNodeReflection
 	{
 		return $this->function;
 	}

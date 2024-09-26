@@ -235,3 +235,4 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
 * Remove `ArrayType::generalizeKeys()`
 * Remove `ArrayType::count()`, use `Type::getArraySize()` instead
 * Remove `ArrayType::castToArrayKeyType()`, `Type::toArrayKey()` instead
+* Remove `UnionType::pickTypes()`, use `pickFromTypes()` instead

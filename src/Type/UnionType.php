@@ -1106,18 +1106,6 @@ class UnionType implements CompoundType
 	}
 
 	/**
-	 * @template T of Type
-	 * @param callable(Type $type): list<T> $getTypes
-	 * @return list<T>
-	 *
-	 * @deprecated Use pickFromTypes() instead.
-	 */
-	protected function pickTypes(callable $getTypes): array
-	{
-		return $this->pickFromTypes($getTypes, static fn () => false);
-	}
-
-	/**
 	 * @template T
 	 * @param callable(Type $type): list<T> $getValues
 	 * @param callable(Type $type): bool $criteria

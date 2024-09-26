@@ -60,14 +60,6 @@ final class RegexArrayShapeMatcher
 		return $this->matchPatternType($this->getPatternType($patternExpr, $scope), $flagsType, $wasMatched, false);
 	}
 
-	/**
-	 * @deprecated use matchExpr() instead for a more precise result
-	 */
-	public function matchType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched): ?Type
-	{
-		return $this->matchPatternType($patternType, $flagsType, $wasMatched, false);
-	}
-
 	private function matchPatternType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched, bool $matchesAll): ?Type
 	{
 		if ($wasMatched->no()) {

@@ -17,7 +17,6 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
@@ -31,7 +30,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class AccessoryLiteralStringType implements CompoundType, AccessoryType
+class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 {
 
 	use MaybeCallableTypeTrait;
@@ -74,14 +73,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
 	{
-		if ($type instanceof MixedType) {
-			return AcceptsResult::createNo();
-		}
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($type->isLiteralString(), []);
+		return new AcceptsResult($type->isLowercaseString(), []);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -94,7 +90,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			return TrinaryLogic::createYes();
 		}
 
-		return $type->isLiteralString();
+		return $type->isLowercaseString();
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
@@ -103,7 +99,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return $otherType->isLiteralString()
+		return $otherType->isLowercaseString()
 			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
 	}
 
@@ -124,7 +120,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return 'literal-string';
+		return 'lowercase-string';
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic
@@ -148,7 +144,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			return new ErrorType();
 		}
 
-		return new StringType();
+		return new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]);
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
@@ -159,7 +155,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			return $stringOffset;
 		}
 
-		if ($valueType->isLiteralString()->yes()) {
+		if ($valueType->isLowercaseString()->yes()) {
 			return $this;
 		}
 
@@ -294,12 +290,12 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function isLiteralString(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isLowercaseString(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return TrinaryLogic::createYes();
 	}
 
 	public function isClassStringType(): TrinaryLogic
@@ -372,7 +368,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function toPhpDocNode(): TypeNode
 	{
-		return new IdentifierTypeNode('literal-string');
+		return new IdentifierTypeNode('lowercase-string');
 	}
 
 }

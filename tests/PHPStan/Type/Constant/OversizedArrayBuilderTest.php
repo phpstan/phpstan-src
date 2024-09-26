@@ -28,7 +28,7 @@ class OversizedArrayBuilderTest extends PHPStanTestCase
 
 		yield [
 			'[1, 2, 3, ...[1, \'foo\' => 2, 3]]',
-			'non-empty-array<int|(literal-string&non-falsy-string), int>&oversized-array',
+			'non-empty-array<int|(literal-string&lowercase-string&non-falsy-string), int>&oversized-array',
 		];
 
 		yield [
@@ -49,7 +49,7 @@ class OversizedArrayBuilderTest extends PHPStanTestCase
 		];
 		yield [
 			'[1, \'foo\' => 2, 3]',
-			'non-empty-array<int|(literal-string&non-falsy-string), int>&oversized-array',
+			'non-empty-array<int|(literal-string&lowercase-string&non-falsy-string), int>&oversized-array',
 		];
 	}
 

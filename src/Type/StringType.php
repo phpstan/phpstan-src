@@ -240,6 +240,11 @@ class StringType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isLowercaseString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isClassStringType(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

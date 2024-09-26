@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -86,7 +87,7 @@ final class VerbosityLevel
 	/** @api */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{
-		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$moreVerbose): Type {
+		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$moreVerbose, &$veryVerbose): Type {
 			if ($type->isCallable()->yes()) {
 				$moreVerbose = true;
 				return $type;
@@ -107,6 +108,11 @@ final class VerbosityLevel
 				$moreVerbose = true;
 				return $type;
 			}
+			if ($type instanceof AccessoryLowercaseStringType) {
+				$moreVerbose = true;
+				$veryVerbose = true;
+				return $type;
+			}
 			if ($type instanceof IntegerRangeType) {
 				$moreVerbose = true;
 				return $type;
@@ -116,7 +122,13 @@ final class VerbosityLevel
 
 		/** @var bool $moreVerbose */
 		$moreVerbose = false;
+		/** @var bool $veryVerbose */
+		$veryVerbose = false;
 		TypeTraverser::map($acceptingType, $moreVerboseCallback);
+
+		if ($veryVerbose) {
+			return self::precise();
+		}
 
 		if ($moreVerbose) {
 			return self::value();
@@ -156,7 +168,13 @@ final class VerbosityLevel
 
 		/** @var bool $moreVerbose */
 		$moreVerbose = false;
+		/** @var bool $veryVerbose */
+		$veryVerbose = false;
 		TypeTraverser::map($acceptedType, $moreVerboseCallback);
+
+		if ($veryVerbose) {
+			return self::precise();
+		}
 
 		return $moreVerbose ? self::value() : self::typeOnly();
 	}

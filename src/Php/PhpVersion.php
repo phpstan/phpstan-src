@@ -348,4 +348,9 @@ class PhpVersion
 		return $this->versionId >= 80400;
 	}
 
+	public function substrReturnFalseInsteadOfEmptyString(): bool
+	{
+		return $this->versionId < 80000;
+	}
+
 }

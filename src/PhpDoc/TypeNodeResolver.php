@@ -46,6 +46,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -216,8 +217,10 @@ final class TypeNodeResolver
 				]);
 
 			case 'string':
-			case 'lowercase-string':
 				return new StringType();
+
+			case 'lowercase-string':
+				return new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]);
 
 			case 'literal-string':
 				return new IntersectionType([new StringType(), new AccessoryLiteralStringType()]);
@@ -287,10 +290,16 @@ final class TypeNodeResolver
 				]);
 
 			case 'non-empty-string':
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+				]);
+
 			case 'non-empty-lowercase-string':
 				return new IntersectionType([
 					new StringType(),
 					new AccessoryNonEmptyStringType(),
+					new AccessoryLowercaseStringType(),
 				]);
 
 			case 'truthy-string':

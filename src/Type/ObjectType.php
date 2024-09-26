@@ -1045,6 +1045,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isLowercaseString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isClassStringType(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

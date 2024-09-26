@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -89,6 +90,9 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		// implode is one of the four functions that can produce literal strings as blessed by the original RFC: wiki.php.net/rfc/is_literal
 		if ($arrayType->getIterableValueType()->isLiteralString()->yes() && $separatorType->isLiteralString()->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
+		}
+		if ($arrayType->getIterableValueType()->isLowercaseString()->yes() && $separatorType->isLowercaseString()->yes()) {
+			$accessoryTypes[] = new AccessoryLowercaseStringType();
 		}
 
 		if (count($accessoryTypes) > 0) {

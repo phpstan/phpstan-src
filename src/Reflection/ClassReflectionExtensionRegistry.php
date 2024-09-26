@@ -2,10 +2,8 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExtension;
 use PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension;
-use function array_merge;
 
 final class ClassReflectionExtensionRegistry
 {
@@ -16,7 +14,6 @@ final class ClassReflectionExtensionRegistry
 	 * @param AllowedSubTypesClassReflectionExtension[] $allowedSubTypesClassReflectionExtensions
 	 */
 	public function __construct(
-		Broker $broker,
 		private array $propertiesClassReflectionExtensions,
 		private array $methodsClassReflectionExtensions,
 		private array $allowedSubTypesClassReflectionExtensions,
@@ -24,13 +21,6 @@ final class ClassReflectionExtensionRegistry
 		private RequireExtendsMethodsClassReflectionExtension $requireExtendsMethodsClassReflectionExtension,
 	)
 	{
-		foreach (array_merge($propertiesClassReflectionExtensions, $methodsClassReflectionExtensions, $allowedSubTypesClassReflectionExtensions) as $extension) {
-			if (!($extension instanceof BrokerAwareExtension)) {
-				continue;
-			}
-
-			$extension->setBroker($broker);
-		}
 	}
 
 	/**

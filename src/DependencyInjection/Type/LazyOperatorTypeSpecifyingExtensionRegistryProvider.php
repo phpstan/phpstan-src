@@ -2,7 +2,6 @@
 
 namespace PHPStan\DependencyInjection\Type;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
@@ -20,7 +19,6 @@ final class LazyOperatorTypeSpecifyingExtensionRegistryProvider implements Opera
 	{
 		if ($this->registry === null) {
 			$this->registry = new OperatorTypeSpecifyingExtensionRegistry(
-				$this->container->getByType(Broker::class),
 				$this->container->getServicesByTag(BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG),
 			);
 		}

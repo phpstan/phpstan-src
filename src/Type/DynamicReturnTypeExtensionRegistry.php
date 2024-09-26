@@ -2,8 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Broker\Broker;
-use PHPStan\Reflection\BrokerAwareExtension;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_merge;
 use function strtolower;
@@ -23,20 +21,12 @@ final class DynamicReturnTypeExtensionRegistry
 	 * @param DynamicFunctionReturnTypeExtension[] $dynamicFunctionReturnTypeExtensions
 	 */
 	public function __construct(
-		Broker $broker,
 		private ReflectionProvider $reflectionProvider,
 		private array $dynamicMethodReturnTypeExtensions,
 		private array $dynamicStaticMethodReturnTypeExtensions,
 		private array $dynamicFunctionReturnTypeExtensions,
 	)
 	{
-		foreach (array_merge($dynamicMethodReturnTypeExtensions, $dynamicStaticMethodReturnTypeExtensions, $dynamicFunctionReturnTypeExtensions) as $extension) {
-			if (!($extension instanceof BrokerAwareExtension)) {
-				continue;
-			}
-
-			$extension->setBroker($broker);
-		}
 	}
 
 	/**

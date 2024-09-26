@@ -3,7 +3,6 @@
 namespace PHPStan\Type;
 
 use DependentPhpDocs\Foo;
-use PHPStan\Broker\Broker;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
@@ -161,7 +160,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 
 	public function testFileWithCyclicPhpDocs(): void
 	{
-		self::getContainer()->getByType(Broker::class);
+		$this->createReflectionProvider();
 
 		/** @var FileTypeMapper $fileTypeMapper */
 		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);

@@ -2,7 +2,6 @@
 
 namespace PHPStan\DependencyInjection\Reflection;
 
-use PHPStan\Broker\Broker;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
@@ -35,7 +34,6 @@ final class LazyClassReflectionExtensionRegistryProvider implements ClassReflect
 			$mixinPropertiesClassReflectionExtension = $this->container->getByType(MixinPropertiesClassReflectionExtension::class);
 
 			$this->registry = new ClassReflectionExtensionRegistry(
-				$this->container->getByType(Broker::class),
 				array_merge([$phpClassReflectionExtension], $this->container->getServicesByTag(BrokerFactory::PROPERTIES_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsPropertiesClassReflectionExtension, $mixinPropertiesClassReflectionExtension]),
 				array_merge([$phpClassReflectionExtension], $this->container->getServicesByTag(BrokerFactory::METHODS_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsMethodsClassReflectionExtension, $mixinMethodsClassReflectionExtension]),
 				$this->container->getServicesByTag(BrokerFactory::ALLOWED_SUB_TYPES_CLASS_REFLECTION_EXTENSION_TAG),

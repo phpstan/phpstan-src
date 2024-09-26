@@ -14,7 +14,7 @@ final class UniversalObjectCratesClassReflectionExtension
 {
 
 	/**
-	 * @param string[] $classes
+	 * @param list<string> $classes
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
@@ -26,17 +26,29 @@ final class UniversalObjectCratesClassReflectionExtension
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
 	{
-		return self::isUniversalObjectCrate(
+		return self::isUniversalObjectCrateImplementation(
 			$this->reflectionProvider,
 			$this->classes,
 			$classReflection,
 		);
 	}
 
-	/**
-	 * @param string[] $classes
-	 */
 	public static function isUniversalObjectCrate(
+		ReflectionProvider $reflectionProvider,
+		ClassReflection $classReflection,
+	): bool
+	{
+		return self::isUniversalObjectCrateImplementation(
+			$reflectionProvider,
+			$reflectionProvider->getUniversalObjectCratesClasses(),
+			$classReflection,
+		);
+	}
+
+	/**
+	 * @param list<string> $classes
+	 */
+	private static function isUniversalObjectCrateImplementation(
 		ReflectionProvider $reflectionProvider,
 		array $classes,
 		ClassReflection $classReflection,

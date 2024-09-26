@@ -34,6 +34,11 @@ final class DummyReflectionProvider implements ReflectionProvider
 		throw new ShouldNotHappenException();
 	}
 
+	public function getUniversalObjectCratesClasses(): array
+	{
+		return [];
+	}
+
 	public function hasFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
 	{
 		return false;

@@ -190,14 +190,6 @@ parameters:
 			path: src/PhpDoc/ResolvedPhpDocBlock.php
 
 		-
-			message: """
-				#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-				Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
-			"""
-			count: 1
-			path: src/PhpDoc/StubValidator.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
 			count: 1
 			path: src/PhpDoc/TypeNodeResolver.php
@@ -1162,22 +1154,6 @@ parameters:
 			path: src/Type/NullType.php
 
 		-
-			message: """
-				#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-				Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
-			"""
-			count: 2
-			path: src/Type/ObjectShapeType.php
-
-		-
-			message: """
-				#^Call to deprecated method getUniversalObjectCratesClasses\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-				Inject %%universalObjectCratesClasses%% parameter instead\\.$#
-			"""
-			count: 2
-			path: src/Type/ObjectShapeType.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/ObjectShapeType.php
@@ -1191,22 +1167,6 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ObjectWithoutClassType is error\\-prone and deprecated\\. Use Type\\:\\:isObject\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/ObjectShapeType.php
-
-		-
-			message: """
-				#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-				Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
-			"""
-			count: 1
-			path: src/Type/ObjectType.php
-
-		-
-			message: """
-				#^Call to deprecated method getUniversalObjectCratesClasses\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-				Inject %%universalObjectCratesClasses%% parameter instead\\.$#
-			"""
-			count: 1
-			path: src/Type/ObjectType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Enum\\\\EnumCaseObjectType is error\\-prone and deprecated\\. Use Type\\:\\:getEnumCases\\(\\) instead\\.$#"

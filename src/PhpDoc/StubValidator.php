@@ -6,7 +6,6 @@ use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Broker\Broker;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\DerivativeContainerFactory;
@@ -109,7 +108,6 @@ final class StubValidator
 			return [];
 		}
 
-		$originalBroker = Broker::getInstance();
 		$originalReflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 		$originalPhpVersion = PhpVersionStaticAccessor::getInstance();
 		$container = $this->derivativeContainerFactory->create([
@@ -158,7 +156,6 @@ final class StubValidator
 			}
 		}
 
-		Broker::registerInstance($originalBroker);
 		ReflectionProviderStaticAccessor::registerInstance($originalReflectionProvider);
 		PhpVersionStaticAccessor::registerInstance($originalPhpVersion);
 		ObjectType::resetCaches();

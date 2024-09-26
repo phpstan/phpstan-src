@@ -13,7 +13,6 @@ use Exception;
 use Iterator;
 use IteratorAggregate;
 use PHPStan\Analyser\OutOfClassScope;
-use PHPStan\Broker\Broker;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -619,7 +618,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			!$classReflection->getNativeReflection()->isUserDefined()
 			|| UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
 				$reflectionProvider,
-				Broker::getInstance()->getUniversalObjectCratesClasses(),
 				$classReflection,
 			)
 		) {

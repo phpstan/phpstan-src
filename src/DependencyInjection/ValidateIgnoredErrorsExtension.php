@@ -103,7 +103,7 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 
 						public function getRegistry(): OperatorTypeSpecifyingExtensionRegistry
 						{
-							return new OperatorTypeSpecifyingExtensionRegistry(null, []);
+							return new OperatorTypeSpecifyingExtensionRegistry([]);
 						}
 
 					}, new OversizedArrayBuilder(), true),

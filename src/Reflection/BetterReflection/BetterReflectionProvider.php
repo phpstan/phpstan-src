@@ -75,7 +75,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 	private array $cachedConstants = [];
 
 	/**
-	 * @param string[] $universalObjectCratesClasses
+	 * @param list<string> $universalObjectCratesClasses
 	 */
 	public function __construct(
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
@@ -255,6 +255,11 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$this->classReflections[$className] = self::$anonymousClasses[$className];
 
 		return self::$anonymousClasses[$className];
+	}
+
+	public function getUniversalObjectCratesClasses(): array
+	{
+		return $this->universalObjectCratesClasses;
 	}
 
 	public function hasFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool

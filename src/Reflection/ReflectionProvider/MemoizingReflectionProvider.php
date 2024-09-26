@@ -61,6 +61,11 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 		return $this->provider->getAnonymousClassReflection($classNode, $scope);
 	}
 
+	public function getUniversalObjectCratesClasses(): array
+	{
+		return $this->provider->getUniversalObjectCratesClasses();
+	}
+
 	public function hasFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
 	{
 		return $this->provider->hasFunction($nameNode, $namespaceAnswerer);

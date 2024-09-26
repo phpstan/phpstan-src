@@ -3,7 +3,6 @@
 namespace PHPStan\Type;
 
 use PHPStan\Analyser\OutOfClassScope;
-use PHPStan\Broker\Broker;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -138,7 +137,6 @@ class ObjectShapeType implements Type
 		foreach ($type->getObjectClassReflections() as $classReflection) {
 			if (!UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
 				$reflectionProvider,
-				Broker::getInstance()->getUniversalObjectCratesClasses(),
 				$classReflection,
 			)) {
 				continue;
@@ -251,7 +249,6 @@ class ObjectShapeType implements Type
 		foreach ($type->getObjectClassReflections() as $classReflection) {
 			if (!UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
 				$reflectionProvider,
-				Broker::getInstance()->getUniversalObjectCratesClasses(),
 				$classReflection,
 			)) {
 				continue;

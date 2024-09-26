@@ -409,7 +409,6 @@ final class ClassReflection
 
 		if (UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
 			$this->reflectionProvider,
-			$this->universalObjectCratesClasses,
 			$this,
 		)) {
 			return true;

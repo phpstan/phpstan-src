@@ -22,7 +22,6 @@ use PHPStan\BetterReflection\BetterReflection;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
-use PHPStan\Broker\Broker;
 use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\Printer\Printer;
@@ -181,8 +180,6 @@ final class ContainerFactory
 			$container->getByType(Printer::class),
 		);
 
-		$broker = $container->getByType(Broker::class);
-		Broker::registerInstance($broker);
 		ReflectionProviderStaticAccessor::registerInstance($container->getByType(ReflectionProvider::class));
 		PhpVersionStaticAccessor::registerInstance($container->getByType(PhpVersion::class));
 		ObjectType::resetCaches();

@@ -21,6 +21,9 @@ interface ReflectionProvider
 		Scope $scope,
 	): ClassReflection;
 
+	/** @return list<string> */
+	public function getUniversalObjectCratesClasses(): array;
+
 	public function hasFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool;
 
 	public function getFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): FunctionReflection;

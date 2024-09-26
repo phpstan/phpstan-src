@@ -1881,15 +1881,6 @@ services:
 			parentDirectory: %currentWorkingDirectory%
 		autowired: false
 
-	broker:
-		class: PHPStan\Broker\Broker
-		factory: @brokerFactory::create
-		autowired:
-			- PHPStan\Broker\Broker
-
-	brokerFactory:
-		class: PHPStan\Broker\BrokerFactory
-
 	cacheStorage:
 		class: PHPStan\Cache\FileCacheStorage
 		arguments:

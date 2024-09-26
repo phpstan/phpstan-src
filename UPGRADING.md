@@ -215,6 +215,14 @@ Learn more: https://phpstan.org/blog/preprocessing-ast-for-custom-rules
 
 As a replacement you can implement [`PHPStan\Type\ExpressionTypeResolverExtension`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.ExpressionTypeResolverExtension.html) interface instead and register it as a service.
 
+### Removed `PHPStan\Broker\Broker`
+
+Use [`PHPStan\Reflection\ReflectionProvider`](https://apiref.phpstan.org/2.0.x/PHPStan.Reflection.ReflectionProvider.html) instead.
+
+`BrokerAwareExtension` was also removed. Ask for `ReflectionProvider` in the extension constructor instead.
+
+Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createReflectionProvider()`.
+
 ### Minor backward compatibility breaks
 
 * Classes that were previously `@final` were made `final`

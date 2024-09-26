@@ -4,7 +4,6 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
-use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -30,7 +29,6 @@ class TypeDescriptionTest extends PHPStanTestCase
 		yield ['string', new StringType()];
 		yield ['array', new ArrayType(new MixedType(), new MixedType())];
 		yield ['literal-string', new IntersectionType([new StringType(), new AccessoryLiteralStringType()])];
-		yield ['lowercase-string', new IntersectionType([new StringType(), new AccessoryLowercaseStringType()])];
 		yield ['non-empty-string', new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()])];
 		yield ['numeric-string', new IntersectionType([new StringType(), new AccessoryNumericStringType()])];
 		yield ['literal-string&non-empty-string', new IntersectionType([new StringType(), new AccessoryLiteralStringType(), new AccessoryNonEmptyStringType()])];

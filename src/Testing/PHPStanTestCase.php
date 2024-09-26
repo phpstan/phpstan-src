@@ -8,9 +8,6 @@ use PHPStan\Analyser\Error;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Analyser\TypeSpecifier;
-use PHPStan\BetterReflection\Reflector\ClassReflector;
-use PHPStan\BetterReflection\Reflector\ConstantReflector;
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
@@ -120,19 +117,6 @@ abstract class PHPStanTestCase extends TestCase
 	public static function getReflector(): Reflector
 	{
 		return self::getContainer()->getService('betterReflectionReflector');
-	}
-
-	/**
-	 * @deprecated Use getReflector() instead.
-	 * @return array{ClassReflector, FunctionReflector, ConstantReflector}
-	 */
-	public static function getReflectors(): array
-	{
-		return [
-			self::getContainer()->getService('betterReflectionClassReflector'),
-			self::getContainer()->getService('betterReflectionFunctionReflector'),
-			self::getContainer()->getService('betterReflectionConstantReflector'),
-		];
 	}
 
 	public static function getClassReflectionExtensionRegistryProvider(): ClassReflectionExtensionRegistryProvider

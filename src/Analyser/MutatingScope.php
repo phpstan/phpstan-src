@@ -1716,7 +1716,7 @@ final class MutatingScope implements Scope
 				return new MixedType();
 			}
 
-			$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			$returnType = $functionReflection->getReturnType();
 			$generatorSendType = $returnType->getTemplateType(Generator::class, 'TSend');
 			if ($generatorSendType instanceof ErrorType) {
 				return new MixedType();
@@ -3134,17 +3134,16 @@ final class MutatingScope implements Scope
 		bool $preserveThis,
 	): self
 	{
-		$acceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 		$parametersByName = [];
 
-		foreach ($acceptor->getParameters() as $parameter) {
+		foreach ($functionReflection->getParameters() as $parameter) {
 			$parametersByName[$parameter->getName()] = $parameter;
 		}
 
 		$expressionTypes = [];
 		$nativeExpressionTypes = [];
 		$conditionalTypes = [];
-		foreach ($acceptor->getParameters() as $parameter) {
+		foreach ($functionReflection->getParameters() as $parameter) {
 			$parameterType = $parameter->getType();
 
 			if ($parameterType instanceof ConditionalTypeForParameter) {

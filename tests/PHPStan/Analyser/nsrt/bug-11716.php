@@ -35,9 +35,10 @@ class TypeExpression
 }
 
 /**
- * @param array<int, string> $arr
+ * @param array<int, string> $intKeyedArr
+ * @param array<string, string> $stringKeyedArr
  */
-function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr): void {
+function narrowKey($mixed, string $s, int $i, array $generalArr, array $intKeyedArr, array $stringKeyedArr): void {
 	if (isset($generalArr[$mixed])) {
 		assertType('mixed~(array|object|resource)', $mixed);
 	} else {
@@ -59,21 +60,42 @@ function narrowKey($mixed, string $s, int $i, array $generalArr, array $arr): vo
 	}
 	assertType('string', $s);
 
-	if (isset($arr[$mixed])) {
+	if (isset($intKeyedArr[$mixed])) {
 		assertType('mixed~(array|object|resource)', $mixed);
 	} else {
 		assertType('mixed', $mixed);
 	}
 	assertType('mixed', $mixed);
 
-	if (isset($arr[$i])) {
+	if (isset($intKeyedArr[$i])) {
 		assertType('int', $i);
 	} else {
 		assertType('int', $i);
 	}
 	assertType('int', $i);
 
-	if (isset($arr[$s])) {
+	if (isset($intKeyedArr[$s])) {
+		assertType("numeric-string", $s);
+	} else {
+		assertType('string', $s);
+	}
+	assertType('string', $s);
+
+	if (isset($stringKeyedArr[$mixed])) {
+		assertType('mixed~(array|object|resource)', $mixed);
+	} else {
+		assertType('mixed', $mixed);
+	}
+	assertType('mixed', $mixed);
+
+	if (isset($stringKeyedArr[$i])) {
+		assertType('int', $i);
+	} else {
+		assertType('int', $i);
+	}
+	assertType('int', $i);
+
+	if (isset($stringKeyedArr[$s])) {
 		assertType('string', $s);
 	} else {
 		assertType('string', $s);

@@ -28,6 +28,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ResolvedFunctionVariant;
+use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -820,47 +821,8 @@ final class TypeSpecifier
 						);
 					} else {
 						$varType = $scope->getType($var->var);
-						if ($varType->isArray()->yes() && !$varType->isIterableAtLeastOnce()->no()) {
-							$varIterableKeyType = $varType->getIterableKeyType();
-
-							if ($varIterableKeyType->isConstantScalarValue()->yes()) {
-								$narrowedKey = TypeCombinator::union(
-									$varIterableKeyType,
-									TypeCombinator::remove($varIterableKeyType->toString(), new ConstantStringType('')),
-								);
-
-								if (!$varType->hasOffsetValueType(new ConstantIntegerType(0))->no()) {
-									$narrowedKey = TypeCombinator::union(
-										$narrowedKey,
-										new ConstantBooleanType(false),
-									);
-								}
-
-								if (!$varType->hasOffsetValueType(new ConstantIntegerType(1))->no()) {
-									$narrowedKey = TypeCombinator::union(
-										$narrowedKey,
-										new ConstantBooleanType(true),
-									);
-								}
-
-								if (!$varType->hasOffsetValueType(new ConstantStringType(''))->no()) {
-									$narrowedKey = TypeCombinator::addNull($narrowedKey);
-								}
-
-								if (!$varIterableKeyType->isNumericString()->no() || !$varIterableKeyType->isInteger()->no()) {
-									$narrowedKey = TypeCombinator::union($narrowedKey, new FloatType());
-								}
-							} else {
-								$narrowedKey = new MixedType(
-									false,
-									new UnionType([
-										new ArrayType(new MixedType(), new MixedType()),
-										new ObjectWithoutClassType(),
-										new ResourceType(),
-									]),
-								);
-							}
-
+						$narrowedKey = AllowedArrayKeysTypes::narrowOffsetKeyType($varType, $dimType);
+						if ($narrowedKey !== null) {
 							$types = $types->unionWith(
 								$this->create(
 									$var->dim,

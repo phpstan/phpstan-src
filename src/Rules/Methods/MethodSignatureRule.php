@@ -67,8 +67,6 @@ final class MethodSignatureRule implements Rule
 		if ($method->isPrivate()) {
 			return [];
 		}
-		$parameters = ParametersAcceptorSelector::selectSingle($method->getVariants());
-
 		$errors = [];
 		$declaringClass = $method->getDeclaringClass();
 		foreach ($this->collectParentMethods($methodName, $method->getDeclaringClass()) as [$parentMethod, $parentMethodDeclaringClass]) {
@@ -77,7 +75,7 @@ final class MethodSignatureRule implements Rule
 				continue;
 			}
 			$parentParameters = ParametersAcceptorSelector::selectSingle($parentVariants);
-			[$returnTypeCompatibility, $returnType, $parentReturnType] = $this->checkReturnTypeCompatibility($declaringClass, $parameters, $parentParameters);
+			[$returnTypeCompatibility, $returnType, $parentReturnType] = $this->checkReturnTypeCompatibility($declaringClass, $method, $parentParameters);
 			if ($returnTypeCompatibility->no() || (!$returnTypeCompatibility->yes() && $this->reportMaybes)) {
 				$builder = RuleErrorBuilder::message(sprintf(
 					'Return type (%s) of method %s::%s() should be %s with return type (%s) of method %s::%s()',
@@ -116,7 +114,7 @@ final class MethodSignatureRule implements Rule
 				$errors[] = $builder->build();
 			}
 
-			$parameterResults = $this->checkParameterTypeCompatibility($declaringClass, $parameters->getParameters(), $parentParameters->getParameters());
+			$parameterResults = $this->checkParameterTypeCompatibility($declaringClass, $method->getParameters(), $parentParameters->getParameters());
 			foreach ($parameterResults as $parameterIndex => [$parameterResult, $parameterType, $parentParameterType]) {
 				if ($parameterResult->yes()) {
 					continue;
@@ -124,7 +122,7 @@ final class MethodSignatureRule implements Rule
 				if (!$parameterResult->no() && !$this->reportMaybes) {
 					continue;
 				}
-				$parameter = $parameters->getParameters()[$parameterIndex];
+				$parameter = $method->getParameters()[$parameterIndex];
 				$parentParameter = $parentParameters->getParameters()[$parameterIndex];
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Parameter #%d $%s (%s) of method %s::%s() should be %s with parameter $%s (%s) of method %s::%s()',

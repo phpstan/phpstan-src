@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Generators;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -38,7 +37,7 @@ final class YieldTypeRule implements Rule
 		if ($anonymousFunctionReturnType !== null) {
 			$returnType = $anonymousFunctionReturnType;
 		} elseif ($scopeFunction !== null) {
-			$returnType = ParametersAcceptorSelector::selectSingle($scopeFunction->getVariants())->getReturnType();
+			$returnType = $scopeFunction->getReturnType();
 		} else {
 			return []; // already reported by YieldInGeneratorRule
 		}

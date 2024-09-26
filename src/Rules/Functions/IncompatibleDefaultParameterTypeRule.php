@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InFunctionNode;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -28,8 +27,6 @@ final class IncompatibleDefaultParameterTypeRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$function = $node->getFunctionReflection();
-		$parameters = ParametersAcceptorSelector::selectSingle($function->getVariants());
-
 		$errors = [];
 		foreach ($node->getOriginalNode()->getParams() as $paramI => $param) {
 			if ($param->default === null) {
@@ -43,7 +40,7 @@ final class IncompatibleDefaultParameterTypeRule implements Rule
 			}
 
 			$defaultValueType = $scope->getType($param->default);
-			$parameterType = $parameters->getParameters()[$paramI]->getType();
+			$parameterType = $function->getParameters()[$paramI]->getType();
 			$parameterType = TemplateTypeHelper::resolveToBounds($parameterType);
 
 			$accepts = $parameterType->acceptsWithReason($defaultValueType, true);

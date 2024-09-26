@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -50,8 +49,7 @@ final class ParameterOutAssignedTypeRule implements Rule
 			return [];
 		}
 
-		$variant = ParametersAcceptorSelector::selectSingle($inFunction->getVariants());
-		$parameters = $variant->getParameters();
+		$parameters = $inFunction->getParameters();
 		$foundParameter = null;
 		foreach ($parameters as $parameter) {
 			if (!$parameter->passedByReference()->createsNewVariable()) {

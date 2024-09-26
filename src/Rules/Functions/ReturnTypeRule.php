@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use function sprintf;
@@ -45,7 +44,7 @@ final class ReturnTypeRule implements Rule
 
 		return $this->returnTypeCheck->checkReturnType(
 			$scope,
-			ParametersAcceptorSelector::selectSingle($function->getVariants())->getReturnType(),
+			$function->getReturnType(),
 			$node->expr,
 			$node,
 			sprintf(

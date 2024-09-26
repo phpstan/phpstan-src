@@ -108,7 +108,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Paramet
 					$this->isVariadic(),
 					$this->getReturnType(),
 					$this->getPhpDocReturnType(),
-					$this->realReturnType,
+					$this->getNativeReturnType(),
 				),
 			];
 		}

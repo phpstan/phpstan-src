@@ -638,12 +638,6 @@ class ArrayType implements Type
 		return new ErrorType();
 	}
 
-	/** @deprecated Use $offsetType->toArrayKey() instead */
-	public static function castToArrayKeyType(Type $offsetType): Type
-	{
-		return $offsetType->toArrayKey();
-	}
-
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {

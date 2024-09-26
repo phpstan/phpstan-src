@@ -234,3 +234,4 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
 * Removed `ReflectionProvider::supportsAnonymousClasses()` (all reflection providers support anonymous classes)
 * Remove `ArrayType::generalizeKeys()`
 * Remove `ArrayType::count()`
+* Remove `ArrayType::castToArrayKeyType()`, `Type::toArrayKey()` instead

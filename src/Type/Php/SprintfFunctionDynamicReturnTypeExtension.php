@@ -155,27 +155,13 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		$isNonEmpty = $allPatternsNonEmpty;
-		if (
-			!$isNonEmpty
-			&& $functionReflection->getName() === 'sprintf'
-			&& count($args) >= 2
-			&& $formatType->isNonEmptyString()->yes()
-		) {
-			$allArgsNonEmpty = true;
-			foreach ($args as $key => $arg) {
-				if ($key === 0) {
-					continue;
-				}
-
-				if (!$scope->getType($arg->value)->toString()->isNonEmptyString()->yes()) {
-					$allArgsNonEmpty = false;
-					break;
-				}
-			}
-
-			if ($allArgsNonEmpty) {
-				$isNonEmpty = true;
-			}
+		if (!$isNonEmpty && $formatType->isNonEmptyString()->yes()) {
+			$isNonEmpty = $this->allValuesSatisfies(
+				$functionReflection,
+				$scope,
+				$args,
+				static fn (Type $type): bool => $type->toString()->isNonEmptyString()->yes()
+			);
 		}
 
 		if ($isNonEmpty) {
@@ -186,6 +172,33 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		return new StringType();
+	}
+
+	/**
+	 * @param array<Arg> $args
+	 * @param callable(Type): bool $cb
+	 */
+	private function allValuesSatisfies(FunctionReflection $functionReflection, Scope $scope, array $args, callable $cb): bool
+	{
+		if ($functionReflection->getName() === 'sprintf' && count($args) >= 2) {
+			foreach ($args as $key => $arg) {
+				if ($key === 0) {
+					continue;
+				}
+
+				if (!$cb($scope->getType($arg->value))) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		if ($functionReflection->getName() === 'vsprintf' && count($args) >= 2) {
+			return $cb($scope->getType($args[1]->value)->getIterableValueType());
+		}
+
+		return false;
 	}
 
 	/**

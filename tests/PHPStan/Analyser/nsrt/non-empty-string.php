@@ -364,6 +364,13 @@ class MoreNonEmptyStringFunctions
 		assertType('non-empty-string', sprintf($nonFalsy, $nonFalsy, $nonFalsy));
 		assertType('string', vsprintf($s, []));
 		assertType('string', vsprintf($nonEmpty, []));
+		assertType('non-empty-string', vsprintf($nonEmpty, [$nonEmpty]));
+		assertType('non-empty-string', vsprintf($nonEmpty, [$nonEmpty, $nonEmpty]));
+		assertType('non-empty-string', vsprintf($nonEmpty, [$nonFalsy, $nonFalsy]));
+		assertType('non-empty-string', vsprintf($nonFalsy, [$nonEmpty]));
+		assertType('non-empty-string', vsprintf($nonFalsy, [$nonEmpty, $nonEmpty]));
+		assertType('non-empty-string', vsprintf($nonFalsy, [$nonFalsy, $nonEmpty]));
+		assertType('non-empty-string', vsprintf($nonFalsy, [$nonFalsy, $nonFalsy]));
 
 		assertType('non-empty-string', sprintf("%s0%s", $s, $s));
 		assertType('non-empty-string', sprintf("%s0%s%s%s%s", $s, $s, $s, $s, $s));

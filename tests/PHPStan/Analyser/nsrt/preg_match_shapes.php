@@ -778,3 +778,115 @@ function testLtrimDelimiter (string $string): void {
 		assertType("array{string, 'x'}", $matches);
 	}
 }
+
+function testUnescapeBackslash (string $string): void {
+	if (preg_match(<<<'EOD'
+		~(\[)~
+		EOD, $string, $matches)) {
+		assertType("array{string, '['}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\d)~
+		EOD, $string, $matches)) {
+		assertType("array{string, numeric-string}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\\d)~
+		EOD, $string, $matches)) {
+		assertType("array{string, '\\\d'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\\\d)~
+		EOD, $string, $matches)) {
+		assertType("array{string, non-falsy-string}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\\\\d)~
+		EOD, $string, $matches)) {
+		assertType("array{string, '\\\\\\\d'}", $matches);
+	}
+}
+
+function testEscapedDelimiter (string $string): void {
+	if (preg_match(<<<'EOD'
+		/(\/)/
+		EOD, $string, $matches)) {
+		assertType("array{string, '/'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\~)~
+		EOD, $string, $matches)) {
+		assertType("array{string, '~'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\[2])~
+		EOD, $string, $matches)) {
+		assertType("array{string, '[2]'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		[(\[2\])]
+		EOD, $string, $matches)) {
+		assertType("array{string, '[2]'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\{2})~
+		EOD, $string, $matches)) {
+		assertType("array{string, '{2}'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		{(\{2\})}
+		EOD, $string, $matches)) {
+		assertType("array{string, '{2}'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~([a\]])~
+		EOD, $string, $matches)) {
+		assertType("array{string, 'a'}", $matches); // should be array{string, ']'|'a'}
+	}
+
+	if (preg_match(<<<'EOD'
+		~([a[])~
+		EOD, $string, $matches)) {
+		assertType("array{string, '['|'a'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~([a\]b])~
+		EOD, $string, $matches)) {
+		assertType("array{string, 'a'|'b'}", $matches); // should be array{string, ']'|'a'|'b'}
+	}
+
+	if (preg_match(<<<'EOD'
+		~([a[b])~
+		EOD, $string, $matches)) {
+		assertType("array{string, '['|'a'|'b'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~([a\[b])~
+		EOD, $string, $matches)) {
+		assertType("array{string, '['|'a'|'b'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		[([a\[b])]
+		EOD, $string, $matches)) {
+		assertType("array{string, '['|'a'|'b'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		{(x\\\{)|(y\\\\\})}
+		EOD, $string, $matches)) {
+		assertType("array{string, '', 'y\\\\\\\}'}|array{string, 'x\\\{'}", $matches);
+	}
+}

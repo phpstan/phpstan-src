@@ -42,11 +42,13 @@
 //
 
 // Character classes.
+%token  negative_class_fc_       \[\^(?=\])         -> class_fc
+%token  class_fc_                \[(?=\])           -> class_fc
+%token class_fc:_class           \]                 -> class
 %token  negative_class_          \[\^               -> class
 %token  class_                   \[                 -> class
 %token class:posix_class         \[:\^?[a-z]+:\]
 %token class:class_              \[
-%token class:_class_literal      (?<=[^\\]\[|[^\\]\[\^)\]
 %token class:_class              \]                 -> default
 %token class:range               \-
 %token class:escaped_end_class   \\\]
@@ -177,10 +179,14 @@ quantifier:
 
 #class:
     (
-        ::negative_class_:: #negativeclass
+        ::negative_class_fc_:: #negativeclass
+        <_class>
+      | ::class_fc_::
+        <_class>
+      | ::negative_class_:: #negativeclass
       | ::class_::
     )
-    ( <range> | <_class_literal> )? ( <posix_class> | <class_> | range() | literal() | <escaped_end_class> )* <range>?
+    <range>? ( <posix_class> | <class_> | range() | literal() | <escaped_end_class> )* <range>?
     ::_class::
 
 #range:

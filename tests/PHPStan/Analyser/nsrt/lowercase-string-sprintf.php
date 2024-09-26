@@ -73,7 +73,7 @@ class Foo
 		assertType('lowercase-string&non-empty-string', vsprintf($nonEmptyLowercase, [$nonEmptyLowercase]));
 		assertType('string', vsprintf($string, [$nonEmptyLowercase]));
 
-		assertType('lowercase-string&non-falsy-string', vsprintf('%s', [$nonFalsyLowercase]));
+		assertType('lowercase-string&non-empty-string', vsprintf('%s', [$nonFalsyLowercase]));
 		assertType('numeric-string', vsprintf('%d', [$nonFalsyLowercase]));
 		assertType('non-falsy-string', vsprintf($format, [$nonFalsyLowercase]));
 		assertType('lowercase-string&non-falsy-string', vsprintf($formatLower, [$nonFalsyLowercase]));

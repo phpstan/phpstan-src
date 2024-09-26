@@ -33,7 +33,7 @@ class Foo
 	 */
 	public function tooBigRange(int $a, string $b): void
 	{
-		assertType("non-falsy-string", sprintf('%d %s', $a, $b));
+		assertType("lowercase-string&non-falsy-string", sprintf('%d %s', $a, $b));
 	}
 
 }

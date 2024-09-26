@@ -140,7 +140,6 @@ parametersSchema:
 	tempResultCachePath: string()
 	resultCachePath: string()
 	resultCacheChecksProjectExtensionFilesDependencies: bool()
-	staticReflectionClassNamePatterns: listOf(string())
 	dynamicConstantNames: listOf(string())
 	customRulesetUsed: schema(bool(), nullable())
 	rootDir: string()

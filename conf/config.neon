@@ -125,7 +125,6 @@ parameters:
 	tempResultCachePath: %tmpDir%/resultCaches
 	resultCachePath: %tmpDir%/resultCache.php
 	resultCacheChecksProjectExtensionFilesDependencies: false
-	staticReflectionClassNamePatterns: []
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- LIBXML_VERSION

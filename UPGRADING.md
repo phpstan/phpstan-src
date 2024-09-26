@@ -101,6 +101,7 @@ Appending `(?)` in `ignoreErrors` is not supported.
 * Removed unused config parameter `cache.nodesByFileCountMax`
 * Removed unused config parameter `memoryLimitFile`
 * Removed unused feature toggle `disableRuntimeReflectionProvider`
+* Removed unused config parameter `staticReflectionClassNamePatterns`
 
 ## Upgrading guide for extension developers
 

@@ -270,6 +270,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					996,
 					'Remove remaining cases below this one and this error will disappear too.',
 				],
+				[
+					'Strict comparison using === between lowercase-string|false and \'AB\' will always evaluate to false.',
+					1014,
+					$tipText,
+				],
 			],
 		);
 	}
@@ -422,6 +427,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				[
 					'Strict comparison using !== between INF and INF will always evaluate to false.',
 					982,
+				],
+				[
+					'Strict comparison using === between lowercase-string|false and \'AB\' will always evaluate to false.',
+					1014,
+					$tipText,
 				],
 			],
 		);

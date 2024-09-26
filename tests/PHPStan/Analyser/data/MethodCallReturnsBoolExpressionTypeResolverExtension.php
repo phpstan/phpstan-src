@@ -37,7 +37,7 @@ class MethodCallReturnsBoolExpressionTypeResolverExtension implements Expression
 		$returnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$expr->getArgs(),
-			$methodReflection->getVariants(),
+			$methodReflection->getVariants()
 		)->getReturnType();
 
 		if ($returnType instanceof StringType) {

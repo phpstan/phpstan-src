@@ -42,14 +42,16 @@
 //
 
 // Character classes.
+// tokens suffixed with "fc_" are the same as without such suffix but followed by "class:_class"
+%token  negative_class_fc_       \[\^(?=\])         -> class_fc
+%token  class_fc_                \[(?=\])           -> class_fc
+%token class_fc:_class           \]                 -> class
 %token  negative_class_          \[\^               -> class
 %token  class_                   \[                 -> class
 %token class:posix_class         \[:\^?[a-z]+:\]
 %token class:class_              \[
-%token class:_class_literal      (?<=[^\\]\[|[^\\]\[\^)\]
 %token class:_class              \]                 -> default
 %token class:range               \-
-%token class:escaped_end_class   \\\]
 // taken over from literals but class:character has \b support on top (backspace in character classes)
 %token class:character           \\([aefnrtb]|c[\x00-\x7f])
 %token class:dynamic_character   \\([0-7]{3}|x[0-9a-zA-Z]{2}|x{[0-9a-zA-Z]+})
@@ -58,7 +60,8 @@
 
 // Internal options.
 // See https://www.regular-expressions.info/refmodifiers.html
-%token  internal_option          \(\?([imsxnJUX^]|xx)?-?([imsxnJUX^]|xx)\)
+// and https://www.php.net/manual/en/regexp.reference.internal-options.php
+%token  internal_option          \(\?[imsxnJUX^]*-?[imsxnJUX^]+\)
 
 // Lookahead and lookbehind assertions.
 %token  lookahead_               \(\?=
@@ -88,7 +91,7 @@
 %token  nc:_named_capturing      >                  -> default
 %token  nc:capturing_name        .+?(?=(?<!\\)>)
 %token  non_capturing_           \(\?:
-%token  non_capturing_internal_option \(\?([imsxnJUX^]|xx)?-?([imsxnJUX^]|xx):
+%token  non_capturing_internal_option \(\?[imsxnJUX^]*-?[imsxnJUX^]+:
 %token  non_capturing_reset_     \(\?\|
 %token  atomic_group_            \(\?>
 %token  capturing_               \(
@@ -177,10 +180,14 @@ quantifier:
 
 #class:
     (
-        ::negative_class_:: #negativeclass
+        ::negative_class_fc_:: #negativeclass
+        <_class>
+      | ::class_fc_::
+        <_class>
+      | ::negative_class_:: #negativeclass
       | ::class_::
     )
-    ( <range> | <_class_literal> )? ( <posix_class> | <class_> | range() | literal() | <escaped_end_class> )* <range>?
+    <range>? ( <posix_class> | <class_> | range() <range>? | literal() )* <range>?
     ::_class::
 
 #range:

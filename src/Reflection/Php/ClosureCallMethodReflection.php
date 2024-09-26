@@ -10,6 +10,7 @@ use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
@@ -103,6 +104,11 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 				$this->closureType->getCallSiteVarianceMap(),
 			),
 		];
+	}
+
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	{
+		return $this->getVariants()[0];
 	}
 
 	public function getNamedArgumentsVariants(): ?array

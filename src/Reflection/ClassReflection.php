@@ -1305,7 +1305,7 @@ class ClassReflection
 				return null;
 			}
 			$attributeConstructor = $attributeClass->getConstructor();
-			$attributeConstructorVariant = ParametersAcceptorSelector::selectSingle($attributeConstructor->getVariants());
+			$attributeConstructorVariant = $attributeConstructor->getOnlyVariant();
 
 			if (count($arguments) === 0) {
 				$flagType = $attributeConstructorVariant->getParameters()[0]->getDefaultValue();

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Playground;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FunctionReturnStatementsNode;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;
@@ -34,7 +33,7 @@ final class FunctionNeverRule implements Rule
 
 		$function = $node->getFunctionReflection();
 
-		$returnType = ParametersAcceptorSelector::selectSingle($function->getVariants())->getReturnType();
+		$returnType = $function->getReturnType();
 		$helperResult = $this->helper->shouldReturnNever($node, $returnType);
 		if ($helperResult === false) {
 			return [];

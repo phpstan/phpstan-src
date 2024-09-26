@@ -16,6 +16,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
@@ -49,10 +50,7 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function getTraitReflection(): ?ClassReflection;
 
-	/**
-	 * @return FunctionReflection|ExtendedMethodReflection|null
-	 */
-	public function getFunction();
+	public function getFunction(): ?PhpFunctionFromParserNodeReflection;
 
 	public function getFunctionName(): ?string;
 

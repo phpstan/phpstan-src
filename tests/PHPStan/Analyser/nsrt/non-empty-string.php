@@ -127,7 +127,7 @@ class Foo
 	 */
 	public function doFoo4(string $s): void
 	{
-		assertType('non-empty-list<string>', explode($s, 'foo'));
+		assertType('non-empty-list<lowercase-string>', explode($s, 'foo'));
 	}
 
 	/**
@@ -320,12 +320,12 @@ class MoreNonEmptyStringFunctions
 
 		assertType('string', strtoupper($s));
 		assertType('non-empty-string', strtoupper($nonEmpty));
-		assertType('string', strtolower($s));
-		assertType('non-empty-string', strtolower($nonEmpty));
+		assertType('lowercase-string', strtolower($s));
+		assertType('lowercase-string&non-empty-string', strtolower($nonEmpty));
 		assertType('string', mb_strtoupper($s));
 		assertType('non-empty-string', mb_strtoupper($nonEmpty));
-		assertType('string', mb_strtolower($s));
-		assertType('non-empty-string', mb_strtolower($nonEmpty));
+		assertType('lowercase-string', mb_strtolower($s));
+		assertType('lowercase-string&non-empty-string', mb_strtolower($nonEmpty));
 		assertType('string', lcfirst($s));
 		assertType('non-empty-string', lcfirst($nonEmpty));
 		assertType('string', ucfirst($s));

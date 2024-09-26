@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
@@ -39,7 +38,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 		$functionReflection = $node->getFunctionReflection();
 		$messages = [];
 
-		foreach (ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters() as $parameterReflection) {
+		foreach ($functionReflection->getParameters() as $parameterReflection) {
 			foreach ($this->checkFunctionParameter($functionReflection, sprintf('parameter $%s', $parameterReflection->getName()), $parameterReflection->getType()) as $parameterMessage) {
 				$messages[] = $parameterMessage;
 			}

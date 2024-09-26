@@ -24,7 +24,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$this->assertTrue($propertyType->isExplicitMixed());
 
 		$method = $class->getNativeMethod('doFoo');
-		$methodVariant = ParametersAcceptorSelector::selectSingle($method->getVariants());
+		$methodVariant = $method->getOnlyVariant();
 		$methodReturnType = $methodVariant->getReturnType();
 		$this->assertInstanceOf(MixedType::class, $methodReturnType);
 		$this->assertTrue($methodReturnType->isExplicitMixed());
@@ -34,7 +34,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$this->assertTrue($methodParameterType->isExplicitMixed());
 
 		$function = $reflectionProvider->getFunction(new Name('NativeMixedType\doFoo'), null);
-		$functionVariant = ParametersAcceptorSelector::selectSingle($function->getVariants());
+		$functionVariant = $function->getOnlyVariant();
 		$functionReturnType = $functionVariant->getReturnType();
 		$this->assertInstanceOf(MixedType::class, $functionReturnType);
 		$this->assertTrue($functionReturnType->isExplicitMixed());

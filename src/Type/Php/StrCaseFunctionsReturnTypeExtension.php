@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -15,11 +16,13 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_diff;
 use function array_map;
 use function count;
 use function in_array;
 use function is_callable;
 use function mb_check_encoding;
+use const MB_CASE_LOWER;
 
 final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -65,9 +68,24 @@ final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$modes = [];
+		$keepLowercase = false;
+		$forceLowercase = false;
+
 		if ($fnName === 'mb_convert_case') {
 			$modeType = $scope->getType($args[1]->value);
 			$modes = array_map(static fn ($mode) => $mode->getValue(), TypeUtils::getConstantIntegers($modeType));
+			if (count($modes) > 0) {
+				$forceLowercase = count(array_diff($modes, [
+					MB_CASE_LOWER,
+					5, // MB_CASE_LOWER_SIMPLE
+				])) === 0;
+				$keepLowercase = count(array_diff($modes, [
+					MB_CASE_LOWER,
+					5, // MB_CASE_LOWER_SIMPLE
+					3, // MB_CASE_FOLD,
+					7, // MB_CASE_FOLD_SIMPLE
+				])) === 0;
+			}
 		} elseif (in_array($fnName, ['ucwords', 'mb_convert_kana'], true)) {
 			if (count($args) >= 2) {
 				$modeType = $scope->getType($args[1]->value);
@@ -75,6 +93,10 @@ final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturn
 			} else {
 				$modes = $fnName === 'mb_convert_kana' ? ['KV'] : [" \t\r\n\f\v"];
 			}
+		} elseif (in_array($fnName, ['strtolower', 'mb_strtolower'], true)) {
+			$forceLowercase = true;
+		} elseif (in_array($fnName, ['lcfirst', 'mb_lcfirst'], true)) {
+			$keepLowercase = true;
 		}
 
 		$constantStrings = array_map(static fn ($type) => $type->getValue(), $argType->getConstantStrings());
@@ -101,25 +123,23 @@ final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturn
 			}
 		}
 
+		$accessoryTypes = [];
+		if ($forceLowercase || ($keepLowercase && $argType->isLowercaseString()->yes())) {
+			$accessoryTypes[] = new AccessoryLowercaseStringType();
+		}
+
 		if ($argType->isNumericString()->yes()) {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNumericStringType(),
-			]);
+			$accessoryTypes[] = new AccessoryNumericStringType();
+		} elseif ($argType->isNonFalsyString()->yes()) {
+			$accessoryTypes[] = new AccessoryNonFalsyStringType();
+		} elseif ($argType->isNonEmptyString()->yes()) {
+			$accessoryTypes[] = new AccessoryNonEmptyStringType();
 		}
 
-		if ($argType->isNonFalsyString()->yes()) {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
-		}
+		if (count($accessoryTypes) > 0) {
+			$accessoryTypes[] = new StringType();
 
-		if ($argType->isNonEmptyString()->yes()) {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonEmptyStringType(),
-			]);
+			return new IntersectionType($accessoryTypes);
 		}
 
 		return new StringType();

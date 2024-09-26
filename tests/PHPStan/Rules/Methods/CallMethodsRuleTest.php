@@ -3366,6 +3366,29 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/trait-mixin.php'], []);
 	}
 
+	public function testLowercaseString(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/lowercase-string.php'], [
+			[
+				'Parameter #1 $s of method LowercaseString\Bar::acceptLowercaseString() expects lowercase-string, \'NotLowerCase\' given.',
+				26,
+			],
+			[
+				'Parameter #1 $s of method LowercaseString\Bar::acceptLowercaseString() expects lowercase-string, string given.',
+				28,
+			],
+			[
+				'Parameter #1 $s of method LowercaseString\Bar::acceptLowercaseString() expects lowercase-string, numeric-string given.',
+				30,
+			],
+		]);
+	}
+
 	public function testBug10159(): void
 	{
 		$this->checkThisOnly = false;

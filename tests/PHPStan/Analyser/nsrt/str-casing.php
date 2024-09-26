@@ -8,13 +8,14 @@ class Foo {
 	/**
 	 * @param numeric-string $numericS
 	 * @param non-empty-string $nonE
+	 * @param lowercase-string $lowercaseS
 	 * @param literal-string $literal
 	 * @param 'foo'|'Foo' $edgeUnion
 	 * @param MB_CASE_UPPER|MB_CASE_LOWER|MB_CASE_TITLE|MB_CASE_FOLD|MB_CASE_UPPER_SIMPLE|MB_CASE_LOWER_SIMPLE|MB_CASE_TITLE_SIMPLE|MB_CASE_FOLD_SIMPLE $caseMode
 	 * @param 'aKV'|'hA'|'AH'|'K'|'KV'|'RNKV' $kanaMode
 	 * @param mixed $mixed
 	 */
-	public function bar($numericS, $nonE, $literal, $edgeUnion, $caseMode, $kanaMode, $mixed) {
+	public function bar($numericS, $nonE, $lowercaseS, $literal, $edgeUnion, $caseMode, $kanaMode, $mixed) {
 		assertType("'abc'", strtolower('ABC'));
 		assertType("'ABC'", strtoupper('abc'));
 		assertType("'abc'", mb_strtolower('ABC'));
@@ -37,51 +38,65 @@ class Foo {
 		assertType("'Abc123アガば漢'|'Ａｂｃ１２３あか゛ば漢'|'Ａｂｃ１２３アカ゛ば漢'|'Ａｂｃ１２３アガば漢'|'Ａｂｃ１２３ｱｶﾞﾊﾞ漢'", mb_convert_kana('Ａｂｃ１２３ｱｶﾞば漢', $kanaMode));
 		assertType("non-falsy-string", mb_convert_kana('Ａｂｃ１２３ｱｶﾞば漢', $mixed));
 
-		assertType("numeric-string", strtolower($numericS));
+		assertType("lowercase-string&numeric-string", strtolower($numericS));
 		assertType("numeric-string", strtoupper($numericS));
-		assertType("numeric-string", mb_strtolower($numericS));
+		assertType("lowercase-string&numeric-string", mb_strtolower($numericS));
 		assertType("numeric-string", mb_strtoupper($numericS));
 		assertType("numeric-string", lcfirst($numericS));
 		assertType("numeric-string", ucfirst($numericS));
 		assertType("numeric-string", ucwords($numericS));
 		assertType("numeric-string", mb_convert_case($numericS, MB_CASE_UPPER));
-		assertType("numeric-string", mb_convert_case($numericS, MB_CASE_LOWER));
+		assertType("lowercase-string&numeric-string", mb_convert_case($numericS, MB_CASE_LOWER));
 		assertType("numeric-string", mb_convert_case($numericS, $mixed));
 		assertType("numeric-string", mb_convert_kana($numericS));
 		assertType("numeric-string", mb_convert_kana($numericS, $mixed));
 
-		assertType("non-empty-string", strtolower($nonE));
+		assertType("lowercase-string&non-empty-string", strtolower($nonE));
 		assertType("non-empty-string", strtoupper($nonE));
-		assertType("non-empty-string", mb_strtolower($nonE));
+		assertType("lowercase-string&non-empty-string", mb_strtolower($nonE));
 		assertType("non-empty-string", mb_strtoupper($nonE));
 		assertType("non-empty-string", lcfirst($nonE));
 		assertType("non-empty-string", ucfirst($nonE));
 		assertType("non-empty-string", ucwords($nonE));
 		assertType("non-empty-string", mb_convert_case($nonE, MB_CASE_UPPER));
-		assertType("non-empty-string", mb_convert_case($nonE, MB_CASE_LOWER));
+		assertType("lowercase-string&non-empty-string", mb_convert_case($nonE, MB_CASE_LOWER));
 		assertType("non-empty-string", mb_convert_case($nonE, $mixed));
 		assertType("non-empty-string", mb_convert_kana($nonE));
 		assertType("non-empty-string", mb_convert_kana($nonE, $mixed));
 
-		assertType("string", strtolower($literal));
+		assertType("lowercase-string", strtolower($literal));
 		assertType("string", strtoupper($literal));
-		assertType("string", mb_strtolower($literal));
+		assertType("lowercase-string", mb_strtolower($literal));
 		assertType("string", mb_strtoupper($literal));
 		assertType("string", lcfirst($literal));
 		assertType("string", ucfirst($literal));
 		assertType("string", ucwords($literal));
 		assertType("string", mb_convert_case($literal, MB_CASE_UPPER));
-		assertType("string", mb_convert_case($literal, MB_CASE_LOWER));
+		assertType("lowercase-string", mb_convert_case($literal, MB_CASE_LOWER));
 		assertType("string", mb_convert_case($literal, $mixed));
 		assertType("string", mb_convert_kana($literal));
 		assertType("string", mb_convert_kana($literal, $mixed));
+
+		assertType("lowercase-string", strtolower($lowercaseS));
+		assertType("string", strtoupper($lowercaseS));
+		assertType("lowercase-string", mb_strtolower($lowercaseS));
+		assertType("string", mb_strtoupper($lowercaseS));
+		assertType("lowercase-string", lcfirst($lowercaseS));
+		assertType("string", ucfirst($lowercaseS));
+		assertType("string", ucwords($lowercaseS));
+		assertType("string", mb_convert_case($lowercaseS, MB_CASE_UPPER));
+		assertType("lowercase-string", mb_convert_case($lowercaseS, MB_CASE_LOWER));
+		assertType("string", mb_convert_case($lowercaseS, $mixed));
+		assertType("lowercase-string", mb_convert_case($lowercaseS, rand(0, 1) ? MB_CASE_LOWER : MB_CASE_LOWER_SIMPLE));
+		assertType("string", mb_convert_kana($lowercaseS));
+		assertType("string", mb_convert_kana($lowercaseS, $mixed));
 
 		assertType("'foo'", lcfirst($edgeUnion));
 	}
 
 	public function foo() {
 		// invalid char conversions still lead to non-falsy-string
-		assertType("non-falsy-string", mb_strtolower("\xfe\xff\x65\xe5\x67\x2c\x8a\x9e", 'CP1252'));
+		assertType("lowercase-string&non-falsy-string", mb_strtolower("\xfe\xff\x65\xe5\x67\x2c\x8a\x9e", 'CP1252'));
 		// valid char sequence, but not support non ASCII / UTF-8 encodings
 		assertType("non-falsy-string", mb_convert_kana("\x95\x5c\x8c\xbb", 'SJIS-win'));
 		// invalid UTF-8 sequence

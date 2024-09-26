@@ -11,6 +11,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -84,6 +85,7 @@ final class ApiInstanceofTypeRule implements Rule
 		AccessoryArrayListType::class => 'Type::isList()',
 		AccessoryNumericStringType::class => 'Type::isNumericString()',
 		AccessoryLiteralStringType::class => 'Type::isLiteralString()',
+		AccessoryLowercaseStringType::class => 'Type::isLowercaseString()',
 		AccessoryNonEmptyStringType::class => 'Type::isNonEmptyString()',
 		AccessoryNonFalsyStringType::class => 'Type::isNonFalsyString()',
 		HasMethodType::class => 'Type::hasMethod()',

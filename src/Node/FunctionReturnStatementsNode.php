@@ -9,7 +9,7 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
-use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use function count;
 
 /**
@@ -32,7 +32,7 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 		private StatementResult $statementResult,
 		private array $executionEnds,
 		private array $impurePoints,
-		private FunctionReflection $functionReflection,
+		private PhpFunctionFromParserNodeReflection $functionReflection,
 	)
 	{
 		parent::__construct($function->getAttributes());
@@ -91,7 +91,7 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 		return [];
 	}
 
-	public function getFunctionReflection(): FunctionReflection
+	public function getFunctionReflection(): PhpFunctionFromParserNodeReflection
 	{
 		return $this->functionReflection;
 	}

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InFunctionNode;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -34,7 +33,7 @@ final class MissingFunctionReturnTypehintRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$functionReflection = $node->getFunctionReflection();
-		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		$returnType = $functionReflection->getReturnType();
 
 		if ($returnType instanceof MixedType && !$returnType->isExplicitMixed()) {
 			return [

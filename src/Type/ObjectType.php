@@ -24,7 +24,6 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
@@ -601,7 +600,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($classReflection->hasNativeMethod('__toString')) {
-			return ParametersAcceptorSelector::selectSingle($this->getMethod('__toString', new OutOfClassScope())->getVariants())->getReturnType();
+			return $this->getMethod('__toString', new OutOfClassScope())->getOnlyVariant()->getReturnType();
 		}
 
 		return new ErrorType();
@@ -872,9 +871,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	{
 		$isTraversable = false;
 		if ($this->isInstanceOf(IteratorAggregate::class)->yes()) {
-			$keyType = RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
-				$this->getMethod('getIterator', new OutOfClassScope())->getVariants(),
-			)->getReturnType()->getIterableKeyType());
+			$keyType = RecursionGuard::run($this, fn (): Type => $this->getMethod('getIterator', new OutOfClassScope())->getOnlyVariant()->getReturnType()->getIterableKeyType());
 			$isTraversable = true;
 			if (!$keyType instanceof MixedType || $keyType->isExplicitMixed()) {
 				return $keyType;
@@ -893,9 +890,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(Iterator::class)->yes()) {
-			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
-				$this->getMethod('key', new OutOfClassScope())->getVariants(),
-			)->getReturnType());
+			return RecursionGuard::run($this, fn (): Type => $this->getMethod('key', new OutOfClassScope())->getOnlyVariant()->getReturnType());
 		}
 
 		if ($extraOffsetAccessible) {
@@ -923,9 +918,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	{
 		$isTraversable = false;
 		if ($this->isInstanceOf(IteratorAggregate::class)->yes()) {
-			$valueType = RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
-				$this->getMethod('getIterator', new OutOfClassScope())->getVariants(),
-			)->getReturnType()->getIterableValueType());
+			$valueType = RecursionGuard::run($this, fn (): Type => $this->getMethod('getIterator', new OutOfClassScope())->getOnlyVariant()->getReturnType()->getIterableValueType());
 			$isTraversable = true;
 			if (!$valueType instanceof MixedType || $valueType->isExplicitMixed()) {
 				return $valueType;
@@ -944,9 +937,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(Iterator::class)->yes()) {
-			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
-				$this->getMethod('current', new OutOfClassScope())->getVariants(),
-			)->getReturnType());
+			return RecursionGuard::run($this, fn (): Type => $this->getMethod('current', new OutOfClassScope())->getOnlyVariant()->getReturnType());
 		}
 
 		if ($extraOffsetAccessible) {
@@ -1045,6 +1036,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isLowercaseString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isClassStringType(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -1124,7 +1120,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	{
 		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
 			$acceptedOffsetType = RecursionGuard::run($this, function (): Type {
-				$parameters = ParametersAcceptorSelector::selectSingle($this->getMethod('offsetSet', new OutOfClassScope())->getVariants())->getParameters();
+				$parameters = $this->getMethod('offsetSet', new OutOfClassScope())->getOnlyVariant()->getParameters();
 				if (count($parameters) < 2) {
 					throw new ShouldNotHappenException(sprintf(
 						'Method %s::%s() has less than 2 parameters.',
@@ -1156,7 +1152,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
-			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle($this->getMethod('offsetGet', new OutOfClassScope())->getVariants())->getReturnType());
+			return RecursionGuard::run($this, fn (): Type => $this->getMethod('offsetGet', new OutOfClassScope())->getOnlyVariant()->getReturnType());
 		}
 
 		return new ErrorType();
@@ -1171,7 +1167,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
 			$acceptedValueType = new NeverType();
 			$acceptedOffsetType = RecursionGuard::run($this, function () use (&$acceptedValueType): Type {
-				$parameters = ParametersAcceptorSelector::selectSingle($this->getMethod('offsetSet', new OutOfClassScope())->getVariants())->getParameters();
+				$parameters = $this->getMethod('offsetSet', new OutOfClassScope())->getOnlyVariant()->getParameters();
 				if (count($parameters) < 2) {
 					throw new ShouldNotHappenException(sprintf(
 						'Method %s::%s() has less than 2 parameters.',

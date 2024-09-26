@@ -18,7 +18,6 @@ use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClosureType;
@@ -70,9 +69,8 @@ final class DependencyResolver
 			}
 		} elseif ($node instanceof InClassMethodNode) {
 			$nativeMethod = $node->getMethodReflection();
-			$parametersAcceptor = ParametersAcceptorSelector::selectSingle($nativeMethod->getVariants());
 			$this->extractThrowType($nativeMethod->getThrowType(), $dependenciesReflections);
-			$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
+			$this->extractFromParametersAcceptor($nativeMethod, $dependenciesReflections);
 			foreach ($nativeMethod->getAsserts()->getAll() as $assertTag) {
 				foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
@@ -103,9 +101,8 @@ final class DependencyResolver
 		} elseif ($node instanceof InFunctionNode) {
 			$functionReflection = $node->getFunctionReflection();
 			$this->extractThrowType($functionReflection->getThrowType(), $dependenciesReflections);
-			$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
-			$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
+			$this->extractFromParametersAcceptor($functionReflection, $dependenciesReflections);
 			foreach ($functionReflection->getAsserts()->getAll() as $assertTag) {
 				foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);

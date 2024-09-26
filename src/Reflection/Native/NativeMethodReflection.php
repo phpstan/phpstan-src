@@ -10,10 +10,12 @@ use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\BuiltinMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use ReflectionException;
+use function count;
 use function strtolower;
 
 final class NativeMethodReflection implements ExtendedMethodReflection
@@ -107,6 +109,16 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 	public function getVariants(): array
 	{
 		return $this->variants;
+	}
+
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	{
+		$variants = $this->getVariants();
+		if (count($variants) !== 1) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $variants[0];
 	}
 
 	public function getNamedArgumentsVariants(): ?array

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -37,8 +36,7 @@ final class MethodParameterComparisonHelper
 		$messages = [];
 		$prototypeVariant = $prototype->getVariants()[0];
 
-		$methodVariant = ParametersAcceptorSelector::selectSingle($method->getVariants());
-		$methodParameters = $methodVariant->getParameters();
+		$methodParameters = $method->getParameters();
 
 		$prototypeAfterVariadic = false;
 		foreach ($prototypeVariant->getParameters() as $i => $prototypeParameter) {

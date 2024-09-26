@@ -27,6 +27,7 @@ use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -477,6 +478,9 @@ final class InitializerExprTypeResolver
 
 		if ($leftStringType->isLiteralString()->and($rightStringType->isLiteralString())->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
+		}
+		if ($leftStringType->isLowercaseString()->and($rightStringType->isLowercaseString())->yes()) {
+			$accessoryTypes[] = new AccessoryLowercaseStringType();
 		}
 
 		$leftNumericStringNonEmpty = TypeCombinator::remove($leftStringType, new ConstantStringType(''));

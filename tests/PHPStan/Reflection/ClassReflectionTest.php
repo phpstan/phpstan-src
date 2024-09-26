@@ -115,7 +115,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 		$fooReflection = $reflectionProvider->getClass(Foo::class);
 		$variadicMethod = $fooReflection->getNativeMethod('variadicMethod');
-		$methodVariant = ParametersAcceptorSelector::selectSingle($variadicMethod->getVariants());
+		$methodVariant = $variadicMethod->getOnlyVariant();
 		$this->assertTrue($methodVariant->isVariadic());
 	}
 

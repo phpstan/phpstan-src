@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InFunctionNode;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use function sprintf;
 
@@ -31,7 +30,7 @@ final class FunctionSignatureVarianceRule implements Rule
 		$functionName = $functionReflection->getName();
 
 		return $this->varianceCheck->checkParametersAcceptor(
-			ParametersAcceptorSelector::selectSingle($functionReflection->getVariants()),
+			$functionReflection,
 			sprintf('in parameter %%s of function %s()', SprintfHelper::escapeFormatString($functionName)),
 			sprintf('in param-out type of parameter %%s of function %s()', SprintfHelper::escapeFormatString($functionName)),
 			sprintf('in return type of function %s()', $functionName),

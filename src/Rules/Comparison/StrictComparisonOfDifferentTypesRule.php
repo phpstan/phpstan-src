@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -60,13 +61,32 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 			return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 		};
 
+		$verbosity = VerbosityLevel::value();
+		if (
+			(
+				$leftType->isConstantScalarValue()->yes()
+				&& $leftType->isString()->yes()
+				&& $rightType->isConstantScalarValue()->no()
+				&& $rightType->isString()->yes()
+				&& TrinaryLogic::extremeIdentity($leftType->isLowercaseString(), $rightType->isLowercaseString())->maybe()
+			) || (
+				$rightType->isConstantScalarValue()->yes()
+				&& $rightType->isString()->yes()
+				&& $leftType->isConstantScalarValue()->no()
+				&& $leftType->isString()->yes()
+				&& TrinaryLogic::extremeIdentity($leftType->isLowercaseString(), $rightType->isLowercaseString())->maybe()
+			)
+		) {
+			$verbosity = VerbosityLevel::precise();
+		}
+
 		if (!$nodeType->getValue()) {
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Strict comparison using %s between %s and %s will always evaluate to false.',
 					$node->getOperatorSigil(),
-					$leftType->describe(VerbosityLevel::value()),
-					$rightType->describe(VerbosityLevel::value()),
+					$leftType->describe($verbosity),
+					$rightType->describe($verbosity),
 				)))->identifier(sprintf('%s.alwaysFalse', $node instanceof Node\Expr\BinaryOp\Identical ? 'identical' : 'notIdentical'))->build(),
 			];
 		}
@@ -79,8 +99,8 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 		$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 			'Strict comparison using %s between %s and %s will always evaluate to true.',
 			$node->getOperatorSigil(),
-			$leftType->describe(VerbosityLevel::value()),
-			$rightType->describe(VerbosityLevel::value()),
+			$leftType->describe($verbosity),
+			$rightType->describe($verbosity),
 		)));
 		if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 			$errorBuilder->addTip('Remove remaining cases below this one and this error will disappear too.');

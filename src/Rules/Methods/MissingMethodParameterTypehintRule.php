@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
@@ -39,7 +38,7 @@ final class MissingMethodParameterTypehintRule implements Rule
 		$methodReflection = $node->getMethodReflection();
 		$messages = [];
 
-		foreach (ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getParameters() as $parameterReflection) {
+		foreach ($methodReflection->getParameters() as $parameterReflection) {
 			foreach ($this->checkMethodParameter($methodReflection, sprintf('parameter $%s', $parameterReflection->getName()), $parameterReflection->getType()) as $parameterMessage) {
 				$messages[] = $parameterMessage;
 			}

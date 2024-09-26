@@ -16,6 +16,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
@@ -26,7 +27,7 @@ use function is_string;
 /**
  * @api
  */
-class PhpFunctionFromParserNodeReflection implements FunctionReflection
+class PhpFunctionFromParserNodeReflection implements FunctionReflection, ParametersAcceptorWithPhpDocs
 {
 
 	/** @var Function_|ClassMethod */
@@ -101,13 +102,13 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		if ($this->variants === null) {
 			$this->variants = [
 				new FunctionVariantWithPhpDocs(
-					$this->templateTypeMap,
-					null,
+					$this->getTemplateTypeMap(),
+					$this->getResolvedTemplateTypeMap(),
 					$this->getParameters(),
 					$this->isVariadic(),
 					$this->getReturnType(),
-					$this->phpDocReturnType ?? new MixedType(),
-					$this->realReturnType,
+					$this->getPhpDocReturnType(),
+					$this->getNativeReturnType(),
 				),
 			];
 		}
@@ -115,15 +116,30 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		return $this->variants;
 	}
 
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	{
+		return $this;
+	}
+
 	public function getNamedArgumentsVariants(): ?array
 	{
 		return null;
 	}
 
+	public function getTemplateTypeMap(): TemplateTypeMap
+	{
+		return $this->templateTypeMap;
+	}
+
+	public function getResolvedTemplateTypeMap(): TemplateTypeMap
+	{
+		return TemplateTypeMap::createEmpty();
+	}
+
 	/**
-	 * @return ParameterReflectionWithPhpDocs[]
+	 * @return array<int, ParameterReflectionWithPhpDocs>
 	 */
-	private function getParameters(): array
+	public function getParameters(): array
 	{
 		$parameters = [];
 		$isOptional = true;
@@ -169,7 +185,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		return array_reverse($parameters);
 	}
 
-	private function isVariadic(): bool
+	public function isVariadic(): bool
 	{
 		foreach ($this->functionLike->getParams() as $parameter) {
 			if ($parameter->variadic) {
@@ -180,9 +196,24 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		return false;
 	}
 
-	protected function getReturnType(): Type
+	public function getReturnType(): Type
 	{
 		return TypehintHelper::decideType($this->realReturnType, $this->phpDocReturnType);
+	}
+
+	public function getPhpDocReturnType(): Type
+	{
+		return $this->phpDocReturnType ?? new MixedType();
+	}
+
+	public function getNativeReturnType(): Type
+	{
+		return $this->realReturnType;
+	}
+
+	public function getCallSiteVarianceMap(): TemplateTypeVarianceMap
+	{
+		return TemplateTypeVarianceMap::createEmpty();
 	}
 
 	public function getDeprecatedDescription(): ?string

@@ -19,6 +19,11 @@ interface FunctionReflection
 	public function getVariants(): array;
 
 	/**
+	 * @internal
+	 */
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs;
+
+	/**
 	 * @return ParametersAcceptorWithPhpDocs[]|null
 	 */
 	public function getNamedArgumentsVariants(): ?array;

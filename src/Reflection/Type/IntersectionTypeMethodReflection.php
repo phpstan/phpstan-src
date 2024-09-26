@@ -10,6 +10,7 @@ use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -92,6 +93,16 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 			$nativeReturnType,
 			$acceptor->getCallSiteVarianceMap(),
 		), $this->methods[0]->getVariants());
+	}
+
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	{
+		$variants = $this->getVariants();
+		if (count($variants) !== 1) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $variants[0];
 	}
 
 	public function getNamedArgumentsVariants(): ?array

@@ -7,7 +7,6 @@ use Bug4713\Service;
 use ExtendingKnownClassWithCheck\Foo;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -369,7 +368,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(Service::class);
-		$parameter = ParametersAcceptorSelector::selectSingle($class->getNativeMethod('createInstance')->getVariants())->getParameters()[0];
+		$parameter = $class->getNativeMethod('createInstance')->getOnlyVariant()->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();
 		$this->assertInstanceOf(ConstantStringType::class, $defaultValue);
 		$this->assertSame(Service::class, $defaultValue->getValue());
@@ -382,7 +381,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(MyClass::class);
-		$parameter = ParametersAcceptorSelector::selectSingle($class->getNativeMethod('paginate')->getVariants())->getParameters()[0];
+		$parameter = $class->getNativeMethod('paginate')->getOnlyVariant()->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();
 		$this->assertInstanceOf(ConstantIntegerType::class, $defaultValue);
 		$this->assertSame(10, $defaultValue->getValue());

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\IdentifierRuleError;
@@ -53,7 +52,7 @@ final class ReturnTypeRule implements Rule
 			return [];
 		}
 
-		$returnType = ParametersAcceptorSelector::selectSingle($method->getVariants())->getReturnType();
+		$returnType = $method->getReturnType();
 		$errors = $this->returnTypeCheck->checkReturnType(
 			$scope,
 			$returnType,

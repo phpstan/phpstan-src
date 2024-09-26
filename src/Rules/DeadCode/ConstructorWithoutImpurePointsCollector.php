@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\Node\MethodReturnStatementsNode;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use function count;
 use function strtolower;
 
@@ -40,8 +39,7 @@ final class ConstructorWithoutImpurePointsCollector implements Collector
 			return null;
 		}
 
-		$variant = ParametersAcceptorSelector::selectSingle($method->getVariants());
-		foreach ($variant->getParameters() as $parameter) {
+		foreach ($method->getParameters() as $parameter) {
 			if (!$parameter->passedByReference()->createsNewVariable()) {
 				continue;
 			}

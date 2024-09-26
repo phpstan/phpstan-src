@@ -9,7 +9,6 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
@@ -34,7 +33,7 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		if ($functionReflection === null) {
 			throw new ShouldNotHappenException();
 		}
-		$parameterAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
+		$parameterAcceptor = $functionReflection->getOnlyVariant();
 
 		$args = [
 			new Arg(
@@ -84,7 +83,7 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		if ($functionReflection === null) {
 			throw new ShouldNotHappenException();
 		}
-		$parameterAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
+		$parameterAcceptor = $functionReflection->getOnlyVariant();
 
 		$args = [
 			new Arg(
@@ -137,7 +136,7 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		if ($functionReflection === null) {
 			throw new ShouldNotHappenException();
 		}
-		$parameterAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
+		$parameterAcceptor = $functionReflection->getOnlyVariant();
 
 		$args = [
 			new Arg(
@@ -161,7 +160,7 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		if ($functionReflection === null) {
 			throw new ShouldNotHappenException();
 		}
-		$parameterAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
+		$parameterAcceptor = $functionReflection->getOnlyVariant();
 
 		$args = [
 			new Arg(

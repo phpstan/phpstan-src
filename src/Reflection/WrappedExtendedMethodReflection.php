@@ -87,6 +87,11 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return $variants;
 	}
 
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	{
+		return $this->getVariants()[0];
+	}
+
 	public function getNamedArgumentsVariants(): ?array
 	{
 		return null;

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\TooWideTypehints;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\MethodReturnStatementsNode;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -50,7 +49,7 @@ final class TooWideMethodReturnTypehintRule implements Rule
 			}
 		}
 
-		$methodReturnType = ParametersAcceptorSelector::selectSingle($method->getVariants())->getReturnType();
+		$methodReturnType = $method->getReturnType();
 		$methodReturnType = TypeUtils::resolveLateResolvableTypes($methodReturnType);
 		if (!$methodReturnType instanceof UnionType) {
 			return [];

@@ -10,7 +10,7 @@ use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use function count;
 
 /**
@@ -36,7 +36,7 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		private array $executionEnds,
 		private array $impurePoints,
 		private ClassReflection $classReflection,
-		private ExtendedMethodReflection $methodReflection,
+		private PhpMethodFromParserNodeReflection $methodReflection,
 	)
 	{
 		parent::__construct($method->getAttributes());
@@ -88,7 +88,7 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		return $this->classReflection;
 	}
 
-	public function getMethodReflection(): ExtendedMethodReflection
+	public function getMethodReflection(): PhpMethodFromParserNodeReflection
 	{
 		return $this->methodReflection;
 	}

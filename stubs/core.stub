@@ -69,7 +69,7 @@ function str_shuffle(string $string): string {}
 
 /**
  * @param array<mixed> $result
- * @param-out array<int|string, array<mixed>|string> $result
+ * @param-out ($string is lowercase-string ? array<int|string, array<mixed>|lowercase-string> : array<int|string, array<mixed>|string>) $result
  */
 function parse_str(string $string, array &$result): void {}
 

@@ -10,10 +10,9 @@ use function array_unshift;
 
 /**
  * @api
- * @final
  * @phpstan-type Trace = list<array{file: string|null, line: int|null}>
  */
-class InternalError implements JsonSerializable
+final class InternalError implements JsonSerializable
 {
 
 	public const STACK_TRACE_METADATA_KEY = 'stackTrace';

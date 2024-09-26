@@ -6,9 +6,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class ExtendsTag
+final class ExtendsTag
 {
 
 	public function __construct(private Type $type)

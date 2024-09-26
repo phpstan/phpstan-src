@@ -8,9 +8,8 @@ use ReturnTypeWillChange;
 
 /**
  * @api
- * @final
  */
-class CollectedData implements JsonSerializable
+final class CollectedData implements JsonSerializable
 {
 
 	/**

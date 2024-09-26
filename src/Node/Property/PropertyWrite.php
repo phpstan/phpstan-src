@@ -8,9 +8,8 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @final
  */
-class PropertyWrite
+final class PropertyWrite
 {
 
 	public function __construct(private PropertyFetch|StaticPropertyFetch $fetch, private Scope $scope, private bool $promotedPropertyWrite)

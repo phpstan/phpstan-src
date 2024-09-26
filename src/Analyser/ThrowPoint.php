@@ -10,9 +10,8 @@ use Throwable;
 
 /**
  * @api
- * @final
  */
-class ThrowPoint
+final class ThrowPoint
 {
 
 	/**

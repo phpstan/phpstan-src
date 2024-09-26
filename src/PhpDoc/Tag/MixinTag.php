@@ -6,9 +6,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class MixinTag
+final class MixinTag
 {
 
 	public function __construct(private Type $type)

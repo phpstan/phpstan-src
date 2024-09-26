@@ -71,9 +71,8 @@ use function strtolower;
 
 /**
  * @api
- * @final
  */
-class ClassReflection
+final class ClassReflection
 {
 
 	/** @var ExtendedMethodReflection[] */

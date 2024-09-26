@@ -7,9 +7,8 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @final
  */
-class MatchExpressionArmCondition
+final class MatchExpressionArmCondition
 {
 
 	public function __construct(private Expr $condition, private Scope $scope, private int $line)

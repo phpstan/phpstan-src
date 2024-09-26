@@ -13,9 +13,8 @@ use PHPStan\ShouldNotHappenException;
 
 /**
  * @api
- * @final
  */
-class Broker implements ReflectionProvider
+final class Broker implements ReflectionProvider
 {
 
 	private static ?Broker $instance = null;

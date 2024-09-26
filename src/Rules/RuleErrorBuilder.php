@@ -13,10 +13,9 @@ use function sprintf;
 
 /**
  * @api
- * @final
  * @template-covariant T of RuleError
  */
-class RuleErrorBuilder
+final class RuleErrorBuilder
 {
 
 	private const TYPE_MESSAGE = 1;

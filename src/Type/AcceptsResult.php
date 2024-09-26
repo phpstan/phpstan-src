@@ -11,9 +11,8 @@ use function array_values;
 
 /**
  * @api
- * @final
  */
-class AcceptsResult
+final class AcceptsResult
 {
 
 	/**

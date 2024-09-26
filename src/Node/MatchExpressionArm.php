@@ -4,9 +4,8 @@ namespace PHPStan\Node;
 
 /**
  * @api
- * @final
  */
-class MatchExpressionArm
+final class MatchExpressionArm
 {
 
 	/**

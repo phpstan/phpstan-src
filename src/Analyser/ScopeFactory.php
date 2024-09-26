@@ -4,9 +4,8 @@ namespace PHPStan\Analyser;
 
 /**
  * @api
- * @final
  */
-class ScopeFactory
+final class ScopeFactory
 {
 
 	public function __construct(private InternalScopeFactory $internalScopeFactory)

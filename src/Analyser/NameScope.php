@@ -18,9 +18,8 @@ use function strtolower;
 
 /**
  * @api
- * @final
  */
-class NameScope
+final class NameScope
 {
 
 	private TemplateTypeMap $templateTypeMap;

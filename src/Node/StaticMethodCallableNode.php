@@ -8,9 +8,8 @@ use PhpParser\Node\Name;
 
 /**
  * @api
- * @final
  */
-class StaticMethodCallableNode extends Expr implements VirtualNode
+final class StaticMethodCallableNode extends Expr implements VirtualNode
 {
 
 	public function __construct(

@@ -6,9 +6,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class RequireImplementsTag
+final class RequireImplementsTag
 {
 
 	public function __construct(private Type $type)

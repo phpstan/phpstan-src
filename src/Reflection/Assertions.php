@@ -12,9 +12,8 @@ use function count;
 
 /**
  * @api
- * @final
  */
-class Assertions
+final class Assertions
 {
 
 	private static ?self $empty = null;

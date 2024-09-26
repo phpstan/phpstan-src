@@ -6,9 +6,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class FoundTypeResult
+final class FoundTypeResult
 {
 
 	/**

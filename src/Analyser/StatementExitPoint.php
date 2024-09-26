@@ -6,9 +6,8 @@ use PhpParser\Node\Stmt;
 
 /**
  * @api
- * @final
  */
-class StatementExitPoint
+final class StatementExitPoint
 {
 
 	public function __construct(private Stmt $statement, private MutatingScope $scope)

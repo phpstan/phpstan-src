@@ -14,9 +14,8 @@ use function sprintf;
 
 /**
  * @api
- * @final
  */
-class TemplateTypeVariance
+final class TemplateTypeVariance
 {
 
 	private const INVARIANT = 1;

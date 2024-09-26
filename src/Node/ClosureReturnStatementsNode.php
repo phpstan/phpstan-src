@@ -13,9 +13,8 @@ use function count;
 
 /**
  * @api
- * @final
  */
-class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
+final class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 
 	private Node\Expr\Closure $closureExpr;

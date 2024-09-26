@@ -7,9 +7,8 @@ use PhpParser\Node\Identifier;
 
 /**
  * @api
- * @final
  */
-class MethodCallableNode extends Expr implements VirtualNode
+final class MethodCallableNode extends Expr implements VirtualNode
 {
 
 	public function __construct(

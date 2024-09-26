@@ -8,9 +8,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class CatchWithUnthrownExceptionNode extends NodeAbstract implements VirtualNode
+final class CatchWithUnthrownExceptionNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(private Catch_ $originalNode, private Type $caughtType, private Type $originalCaughtType)

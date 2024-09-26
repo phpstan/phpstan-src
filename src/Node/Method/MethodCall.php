@@ -9,9 +9,8 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @final
  */
-class MethodCall
+final class MethodCall
 {
 
 	public function __construct(

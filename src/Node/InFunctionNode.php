@@ -7,9 +7,8 @@ use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 
 /**
  * @api
- * @final
  */
-class InFunctionNode extends Node\Stmt implements VirtualNode
+final class InFunctionNode extends Node\Stmt implements VirtualNode
 {
 
 	public function __construct(

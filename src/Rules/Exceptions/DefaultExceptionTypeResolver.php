@@ -9,9 +9,8 @@ use function count;
 
 /**
  * @api
- * @final
  */
-class DefaultExceptionTypeResolver implements ExceptionTypeResolver
+final class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 {
 
 	/**

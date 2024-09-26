@@ -6,9 +6,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class PropertyTag
+final class PropertyTag
 {
 
 	public function __construct(

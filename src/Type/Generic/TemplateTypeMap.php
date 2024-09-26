@@ -11,9 +11,8 @@ use function count;
 
 /**
  * @api
- * @final
  */
-class TemplateTypeMap
+final class TemplateTypeMap
 {
 
 	private static ?TemplateTypeMap $empty = null;

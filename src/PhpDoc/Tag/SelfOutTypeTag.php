@@ -6,9 +6,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class SelfOutTypeTag implements TypedTag
+final class SelfOutTypeTag implements TypedTag
 {
 
 	public function __construct(private Type $type)

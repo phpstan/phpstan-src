@@ -22,9 +22,8 @@ use function is_string;
 
 /**
  * @api
- * @final
  */
-class ConstantTypeHelper
+final class ConstantTypeHelper
 {
 
 	/**

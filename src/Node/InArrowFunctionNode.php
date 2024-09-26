@@ -9,9 +9,8 @@ use PHPStan\Type\ClosureType;
 
 /**
  * @api
- * @final
  */
-class InArrowFunctionNode extends NodeAbstract implements VirtualNode
+final class InArrowFunctionNode extends NodeAbstract implements VirtualNode
 {
 
 	private Node\Expr\ArrowFunction $originalNode;

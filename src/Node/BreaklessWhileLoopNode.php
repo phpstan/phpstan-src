@@ -8,9 +8,8 @@ use PHPStan\Analyser\StatementExitPoint;
 
 /**
  * @api
- * @final
  */
-class BreaklessWhileLoopNode extends NodeAbstract implements VirtualNode
+final class BreaklessWhileLoopNode extends NodeAbstract implements VirtualNode
 {
 
 	/**

@@ -6,9 +6,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class ReturnTag implements TypedTag
+final class ReturnTag implements TypedTag
 {
 
 	public function __construct(private Type $type, private bool $isExplicit)

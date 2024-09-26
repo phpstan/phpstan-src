@@ -55,9 +55,8 @@ use const CURLOPT_SSL_VERIFYHOST;
 
 /**
  * @api
- * @final
  */
-class ParametersAcceptorSelector
+final class ParametersAcceptorSelector
 {
 
 	/**

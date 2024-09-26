@@ -55,9 +55,8 @@ use function unlink;
 
 /**
  * @api
- * @final
  */
-class ContainerFactory
+final class ContainerFactory
 {
 
 	private FileHelper $fileHelper;

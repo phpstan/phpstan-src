@@ -9,9 +9,8 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @final
  */
-class BooleanOrNode extends Expr implements VirtualNode
+final class BooleanOrNode extends Expr implements VirtualNode
 {
 
 	public function __construct(private BooleanOr|LogicalOr $originalNode, private Scope $rightScope)

@@ -13,9 +13,8 @@ use function sprintf;
 
 /**
  * @api
- * @final
  */
-class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, CallableParametersAcceptor
+final class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, CallableParametersAcceptor
 {
 
 	/** @api */

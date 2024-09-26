@@ -17,9 +17,8 @@ use function sprintf;
 
 /**
  * @api
- * @final
  */
-class InitializerExprContext implements NamespaceAnswerer
+final class InitializerExprContext implements NamespaceAnswerer
 {
 
 	/**

@@ -9,9 +9,8 @@ use PHPStan\Type\ClosureType;
 
 /**
  * @api
- * @final
  */
-class InClosureNode extends NodeAbstract implements VirtualNode
+final class InClosureNode extends NodeAbstract implements VirtualNode
 {
 
 	private Node\Expr\Closure $originalNode;

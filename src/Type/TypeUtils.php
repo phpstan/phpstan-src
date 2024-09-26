@@ -17,9 +17,8 @@ use function array_values;
 
 /**
  * @api
- * @final
  */
-class TypeUtils
+final class TypeUtils
 {
 
 	/**

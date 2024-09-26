@@ -7,9 +7,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class TemplateTag
+final class TemplateTag
 {
 
 	/**

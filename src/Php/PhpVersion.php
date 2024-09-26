@@ -6,9 +6,8 @@ use function floor;
 
 /**
  * @api
- * @final
  */
-class PhpVersion
+final class PhpVersion
 {
 
 	public const SOURCE_RUNTIME = 1;

@@ -7,9 +7,8 @@ use PHPStan\Reflection\ClassReflection;
 
 /**
  * @api
- * @final
  */
-class InTraitNode extends Node\Stmt implements VirtualNode
+final class InTraitNode extends Node\Stmt implements VirtualNode
 {
 
 	public function __construct(private Node\Stmt\Trait_ $originalNode, private ClassReflection $traitReflection, private ClassReflection $implementingClassReflection)

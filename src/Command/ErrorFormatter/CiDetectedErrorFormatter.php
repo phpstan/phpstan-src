@@ -9,9 +9,8 @@ use PHPStan\Command\Output;
 
 /**
  * @api
- * @final
  */
-class CiDetectedErrorFormatter implements ErrorFormatter
+final class CiDetectedErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(

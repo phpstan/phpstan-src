@@ -10,9 +10,8 @@ use PHPStan\Reflection\ClassReflection;
 
 /**
  * @api
- * @final
  */
-class ClassConstantsNode extends NodeAbstract implements VirtualNode
+final class ClassConstantsNode extends NodeAbstract implements VirtualNode
 {
 
 	/**

@@ -24,9 +24,8 @@ use function range;
 
 /**
  * @api
- * @final
  */
-class ConstantArrayTypeBuilder
+final class ConstantArrayTypeBuilder
 {
 
 	public const ARRAY_COUNT_LIMIT = 256;

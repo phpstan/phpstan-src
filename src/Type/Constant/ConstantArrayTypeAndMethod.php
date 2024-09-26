@@ -8,9 +8,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class ConstantArrayTypeAndMethod
+final class ConstantArrayTypeAndMethod
 {
 
 	private function __construct(

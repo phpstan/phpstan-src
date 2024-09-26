@@ -7,9 +7,8 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @final
  */
-class ClassConstantFetch
+final class ClassConstantFetch
 {
 
 	public function __construct(private ClassConstFetch $node, private Scope $scope)

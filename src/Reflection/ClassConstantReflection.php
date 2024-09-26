@@ -12,9 +12,8 @@ use const NAN;
 
 /**
  * @api
- * @final
  */
-class ClassConstantReflection implements ConstantReflection
+final class ClassConstantReflection implements ConstantReflection
 {
 
 	private ?Type $valueType = null;

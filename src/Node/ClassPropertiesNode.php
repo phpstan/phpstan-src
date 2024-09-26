@@ -30,9 +30,8 @@ use function strtolower;
 
 /**
  * @api
- * @final
  */
-class ClassPropertiesNode extends NodeAbstract implements VirtualNode
+final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 {
 
 	/**

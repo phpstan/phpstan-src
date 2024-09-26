@@ -47,9 +47,8 @@ use const PHP_VERSION_ID;
 
 /**
  * @api
- * @final
  */
-class PhpMethodReflection implements ExtendedMethodReflection
+final class PhpMethodReflection implements ExtendedMethodReflection
 {
 
 	/** @var PhpParameterReflection[]|null */

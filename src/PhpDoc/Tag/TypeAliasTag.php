@@ -8,9 +8,8 @@ use PHPStan\Type\TypeAlias;
 
 /**
  * @api
- * @final
  */
-class TypeAliasTag
+final class TypeAliasTag
 {
 
 	public function __construct(

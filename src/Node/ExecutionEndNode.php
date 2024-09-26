@@ -8,9 +8,8 @@ use PHPStan\Analyser\StatementResult;
 
 /**
  * @api
- * @final
  */
-class ExecutionEndNode extends NodeAbstract implements VirtualNode
+final class ExecutionEndNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(

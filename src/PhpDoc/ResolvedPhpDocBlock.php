@@ -42,9 +42,8 @@ use function substr;
 
 /**
  * @api
- * @final
  */
-class ResolvedPhpDocBlock
+final class ResolvedPhpDocBlock
 {
 
 	public const EMPTY_DOC_STRING = '/** */';

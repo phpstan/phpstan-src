@@ -7,9 +7,8 @@ use PhpParser\NodeAbstract;
 
 /**
  * @api
- * @final
  */
-class InvalidateExprNode extends NodeAbstract implements VirtualNode
+final class InvalidateExprNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(private Expr $expr)

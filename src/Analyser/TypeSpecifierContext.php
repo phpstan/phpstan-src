@@ -6,9 +6,8 @@ use PHPStan\ShouldNotHappenException;
 
 /**
  * @api
- * @final
  */
-class TypeSpecifierContext
+final class TypeSpecifierContext
 {
 
 	public const CONTEXT_TRUE = 0b0001;

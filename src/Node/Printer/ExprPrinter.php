@@ -6,9 +6,8 @@ use PhpParser\Node\Expr;
 
 /**
  * @api
- * @final
  */
-class ExprPrinter
+final class ExprPrinter
 {
 
 	public function __construct(private Printer $printer)

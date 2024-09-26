@@ -6,9 +6,8 @@ use function array_key_exists;
 
 /**
  * @api
- * @final
  */
-class PassedByReference
+final class PassedByReference
 {
 
 	private const NO = 1;

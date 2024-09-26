@@ -6,9 +6,8 @@ use PhpParser\Node\Stmt\ClassMethod as PhpParserClassMethod;
 
 /**
  * @api
- * @final
  */
-class ClassMethod extends PhpParserClassMethod
+final class ClassMethod extends PhpParserClassMethod
 {
 
 	public function __construct(

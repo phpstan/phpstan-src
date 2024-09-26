@@ -15,9 +15,8 @@ use function count;
 
 /**
  * @api
- * @final
  */
-class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
+final class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 
 	private ClassMethod $classMethod;

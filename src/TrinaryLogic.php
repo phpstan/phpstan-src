@@ -10,10 +10,9 @@ use function min;
 
 /**
  * @api
- * @final
  * @see https://phpstan.org/developing-extensions/trinary-logic
  */
-class TrinaryLogic
+final class TrinaryLogic
 {
 
 	private const YES = 1;

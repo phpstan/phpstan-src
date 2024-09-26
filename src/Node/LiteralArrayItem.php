@@ -7,9 +7,8 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @final
  */
-class LiteralArrayItem
+final class LiteralArrayItem
 {
 
 	public function __construct(private Scope $scope, private ?ArrayItem $arrayItem)

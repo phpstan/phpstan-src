@@ -8,9 +8,8 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @final
  */
-class MatchExpressionNode extends NodeAbstract implements VirtualNode
+final class MatchExpressionNode extends NodeAbstract implements VirtualNode
 {
 
 	/**

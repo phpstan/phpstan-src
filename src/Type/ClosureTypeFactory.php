@@ -25,9 +25,8 @@ use function str_replace;
 
 /**
  * @api
- * @final
  */
-class ClosureTypeFactory
+final class ClosureTypeFactory
 {
 
 	public function __construct(

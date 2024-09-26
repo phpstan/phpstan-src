@@ -6,9 +6,8 @@ use function array_key_exists;
 
 /**
  * @api
- * @final
  */
-class TemplateTypeVarianceMap
+final class TemplateTypeVarianceMap
 {
 
 	private static ?TemplateTypeVarianceMap $empty = null;

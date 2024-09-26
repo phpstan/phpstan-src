@@ -8,9 +8,8 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @final
  */
-class PropertyRead
+final class PropertyRead
 {
 
 	public function __construct(

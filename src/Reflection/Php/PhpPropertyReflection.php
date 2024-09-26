@@ -15,9 +15,8 @@ use PHPStan\Type\TypehintHelper;
 
 /**
  * @api
- * @final
  */
-class PhpPropertyReflection implements ExtendedPropertyReflection
+final class PhpPropertyReflection implements ExtendedPropertyReflection
 {
 
 	private ?Type $finalNativeType = null;

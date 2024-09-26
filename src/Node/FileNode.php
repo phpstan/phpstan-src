@@ -7,9 +7,8 @@ use PhpParser\NodeAbstract;
 
 /**
  * @api
- * @final
  */
-class FileNode extends NodeAbstract implements VirtualNode
+final class FileNode extends NodeAbstract implements VirtualNode
 {
 
 	/**

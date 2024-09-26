@@ -7,9 +7,8 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @final
  */
-class MatchExpressionArmBody
+final class MatchExpressionArmBody
 {
 
 	public function __construct(private Scope $scope, private Expr $body)

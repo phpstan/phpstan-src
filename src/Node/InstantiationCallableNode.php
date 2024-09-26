@@ -7,9 +7,8 @@ use PhpParser\Node\Name;
 
 /**
  * @api
- * @final
  */
-class InstantiationCallableNode extends Expr implements VirtualNode
+final class InstantiationCallableNode extends Expr implements VirtualNode
 {
 
 	public function __construct(private Name|Expr $class, private Expr\New_ $originalNode)

@@ -6,9 +6,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class EnumCaseReflection
+final class EnumCaseReflection
 {
 
 	public function __construct(private ClassReflection $declaringEnum, private string $name, private ?Type $backingValueType)

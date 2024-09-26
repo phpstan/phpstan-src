@@ -8,9 +8,8 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @final
  */
-class ReturnStatement
+final class ReturnStatement
 {
 
 	private Node\Stmt\Return_ $returnNode;

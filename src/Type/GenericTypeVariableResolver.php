@@ -6,9 +6,8 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 
 /**
  * @api
- * @final
  */
-class GenericTypeVariableResolver
+final class GenericTypeVariableResolver
 {
 
 	/**

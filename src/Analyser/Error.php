@@ -14,9 +14,8 @@ use function sprintf;
 
 /**
  * @api
- * @final
  */
-class Error implements JsonSerializable
+final class Error implements JsonSerializable
 {
 
 	public const PATTERN_IDENTIFIER = '[a-zA-Z0-9](?:[a-zA-Z0-9\\.]*[a-zA-Z0-9])?';

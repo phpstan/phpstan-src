@@ -4,9 +4,8 @@ namespace PHPStan\PhpDoc\Tag;
 
 /**
  * @api
- * @final
  */
-class DeprecatedTag
+final class DeprecatedTag
 {
 
 	public function __construct(private ?string $message)

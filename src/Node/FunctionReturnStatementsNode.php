@@ -14,9 +14,8 @@ use function count;
 
 /**
  * @api
- * @final
  */
-class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
+final class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 
 	/**

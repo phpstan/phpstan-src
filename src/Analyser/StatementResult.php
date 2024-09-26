@@ -7,9 +7,8 @@ use PhpParser\Node\Stmt;
 
 /**
  * @api
- * @final
  */
-class StatementResult
+final class StatementResult
 {
 
 	/**

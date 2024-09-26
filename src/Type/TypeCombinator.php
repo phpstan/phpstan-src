@@ -38,9 +38,8 @@ use function usort;
 
 /**
  * @api
- * @final
  */
-class TypeCombinator
+final class TypeCombinator
 {
 
 	public static function addNull(Type $type): Type

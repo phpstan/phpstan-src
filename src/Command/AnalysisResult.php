@@ -11,9 +11,8 @@ use function usort;
 
 /**
  * @api
- * @final
  */
-class AnalysisResult
+final class AnalysisResult
 {
 
 	/** @var list<Error> sorted by their file name, line number and message */

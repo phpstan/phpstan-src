@@ -7,9 +7,8 @@ use PHPStan\Analyser\StatementExitPoint;
 
 /**
  * @api
- * @final
  */
-class FinallyExitPointsNode extends NodeAbstract implements VirtualNode
+final class FinallyExitPointsNode extends NodeAbstract implements VirtualNode
 {
 
 	/**

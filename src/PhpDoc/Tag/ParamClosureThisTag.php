@@ -6,7 +6,6 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
 final class ParamClosureThisTag implements TypedTag
 {

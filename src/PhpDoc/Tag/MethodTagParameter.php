@@ -7,9 +7,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class MethodTagParameter
+final class MethodTagParameter
 {
 
 	public function __construct(

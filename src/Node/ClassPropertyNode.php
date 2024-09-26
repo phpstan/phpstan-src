@@ -13,9 +13,8 @@ use PHPStan\Type\Type;
 
 /**
  * @api
- * @final
  */
-class ClassPropertyNode extends NodeAbstract implements VirtualNode
+final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(

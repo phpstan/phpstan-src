@@ -116,6 +116,11 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Paramet
 		return $this->variants;
 	}
 
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	{
+		return $this;
+	}
+
 	public function getNamedArgumentsVariants(): ?array
 	{
 		return null;

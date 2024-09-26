@@ -212,6 +212,11 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		return $this->variants;
 	}
 
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	{
+		return $this->getVariants()[0];
+	}
+
 	public function getNamedArgumentsVariants(): ?array
 	{
 		return null;

@@ -7,8 +7,10 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
+use function count;
 use function is_bool;
 
 final class ChangedTypeMethodReflection implements ExtendedMethodReflection
@@ -60,6 +62,16 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 	public function getVariants(): array
 	{
 		return $this->variants;
+	}
+
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	{
+		$variants = $this->getVariants();
+		if (count($variants) !== 1) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $variants[0];
 	}
 
 	public function getNamedArgumentsVariants(): ?array

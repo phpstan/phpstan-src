@@ -5514,7 +5514,7 @@ final class MutatingScope implements Scope
 
 		$assignedToProperty = $node->getAttribute(NewAssignedToPropertyVisitor::ATTRIBUTE_NAME);
 		if ($assignedToProperty !== null) {
-			$constructorVariant = ParametersAcceptorSelector::selectSingle($constructorMethod->getVariants());
+			$constructorVariant = $constructorMethod->getOnlyVariant();
 			$classTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();
 			$originalClassTemplateTypes = $classTemplateTypes;
 			foreach ($constructorVariant->getParameters() as $parameter) {

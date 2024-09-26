@@ -8,7 +8,6 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\NativeBuiltinMethodReflection;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
@@ -74,8 +73,8 @@ final class MethodSignatureRule implements Rule
 			if (count($parentVariants) !== 1) {
 				continue;
 			}
-			$parentParameters = ParametersAcceptorSelector::selectSingle($parentVariants);
-			[$returnTypeCompatibility, $returnType, $parentReturnType] = $this->checkReturnTypeCompatibility($declaringClass, $method, $parentParameters);
+			$parentVariant = $parentVariants[0];
+			[$returnTypeCompatibility, $returnType, $parentReturnType] = $this->checkReturnTypeCompatibility($declaringClass, $method, $parentVariant);
 			if ($returnTypeCompatibility->no() || (!$returnTypeCompatibility->yes() && $this->reportMaybes)) {
 				$builder = RuleErrorBuilder::message(sprintf(
 					'Return type (%s) of method %s::%s() should be %s with return type (%s) of method %s::%s()',
@@ -114,7 +113,7 @@ final class MethodSignatureRule implements Rule
 				$errors[] = $builder->build();
 			}
 
-			$parameterResults = $this->checkParameterTypeCompatibility($declaringClass, $method->getParameters(), $parentParameters->getParameters());
+			$parameterResults = $this->checkParameterTypeCompatibility($declaringClass, $method->getParameters(), $parentVariant->getParameters());
 			foreach ($parameterResults as $parameterIndex => [$parameterResult, $parameterType, $parentParameterType]) {
 				if ($parameterResult->yes()) {
 					continue;
@@ -123,7 +122,7 @@ final class MethodSignatureRule implements Rule
 					continue;
 				}
 				$parameter = $method->getParameters()[$parameterIndex];
-				$parentParameter = $parentParameters->getParameters()[$parameterIndex];
+				$parentParameter = $parentVariant->getParameters()[$parameterIndex];
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Parameter #%d $%s (%s) of method %s::%s() should be %s with parameter $%s (%s) of method %s::%s()',
 					$parameterIndex + 1,

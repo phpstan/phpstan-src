@@ -8,6 +8,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -80,6 +81,11 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 		$variants = array_merge(...array_map(static fn (MethodReflection $method) => $method->getVariants(), $this->methods));
 
 		return [ParametersAcceptorSelector::combineAcceptors($variants)];
+	}
+
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	{
+		return $this->getVariants()[0];
 	}
 
 	public function getNamedArgumentsVariants(): ?array

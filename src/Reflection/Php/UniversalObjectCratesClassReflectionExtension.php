@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
@@ -66,13 +65,13 @@ final class UniversalObjectCratesClassReflectionExtension
 		}
 
 		if ($classReflection->hasNativeMethod('__get')) {
-			$readableType = ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('__get')->getVariants())->getReturnType();
+			$readableType = $classReflection->getNativeMethod('__get')->getOnlyVariant()->getReturnType();
 		} else {
 			$readableType = new MixedType();
 		}
 
 		if ($classReflection->hasNativeMethod('__set')) {
-			$writableType = ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('__set')->getVariants())->getParameters()[1]->getType();
+			$writableType = $classReflection->getNativeMethod('__set')->getOnlyVariant()->getParameters()[1]->getType();
 		} else {
 			$writableType = new MixedType();
 		}

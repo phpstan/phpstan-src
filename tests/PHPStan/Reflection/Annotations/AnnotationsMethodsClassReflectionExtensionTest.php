@@ -8,7 +8,6 @@ use AnnotationsMethods\BazBaz;
 use AnnotationsMethods\Foo;
 use AnnotationsMethods\FooInterface;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Testing\PHPStanTestCase;
@@ -974,7 +973,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 			$this->assertTrue($class->hasMethod($methodName), sprintf('Method %s() not found in class %s.', $methodName, $className));
 
 			$method = $class->getMethod($methodName, $scope);
-			$selectedParametersAcceptor = ParametersAcceptorSelector::selectSingle($method->getVariants());
+			$selectedParametersAcceptor = $method->getOnlyVariant();
 			$this->assertSame(
 				$expectedMethodData['class'],
 				$method->getDeclaringClass()->getName(),

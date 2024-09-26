@@ -35,7 +35,7 @@ final class OptimizedDirectorySourceLocatorFactory
 		$this->cleaner = new PhpFileCleaner();
 	}
 
-	public function createByDirectory(string $directory): NewOptimizedDirectorySourceLocator
+	public function createByDirectory(string $directory): OptimizedDirectorySourceLocator
 	{
 		$files = $this->fileFinder->findFiles([$directory])->getFiles();
 		$fileHashes = [];
@@ -79,7 +79,7 @@ final class OptimizedDirectorySourceLocatorFactory
 
 		[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($cached);
 
-		return new NewOptimizedDirectorySourceLocator(
+		return new OptimizedDirectorySourceLocator(
 			$this->fileNodesFetcher,
 			$classToFile,
 			$functionToFiles,
@@ -90,7 +90,7 @@ final class OptimizedDirectorySourceLocatorFactory
 	/**
 	 * @param string[] $files
 	 */
-	public function createByFiles(array $files): NewOptimizedDirectorySourceLocator
+	public function createByFiles(array $files): OptimizedDirectorySourceLocator
 	{
 		$symbols = [];
 		foreach ($files as $file) {
@@ -100,7 +100,7 @@ final class OptimizedDirectorySourceLocatorFactory
 
 		[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($symbols);
 
-		return new NewOptimizedDirectorySourceLocator(
+		return new OptimizedDirectorySourceLocator(
 			$this->fileNodesFetcher,
 			$classToFile,
 			$functionToFiles,

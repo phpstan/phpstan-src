@@ -198,14 +198,6 @@ final class ClassReflection
 		return $this->filename = $fileName;
 	}
 
-	/**
-	 * @deprecated Use getFileName()
-	 */
-	public function getFileNameWithPhpDocs(): ?string
-	{
-		return $this->getFileName();
-	}
-
 	public function getParentClass(): ?ClassReflection
 	{
 		if (!is_bool($this->cachedParentClass)) {

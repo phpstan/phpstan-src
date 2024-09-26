@@ -239,3 +239,4 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
 * Remove `RegexArrayShapeMatcher::matchType()`, use `matchExpr()` instead
 * Remove unused `PHPStanTestCase::$useStaticReflectionProvider`
 * Remove `PHPStanTestCase::getReflectors()`, use `getReflector()` instead
+* Remove `ClassReflection::getFileNameWithPhpDocs()`, use `getFileName()` instead

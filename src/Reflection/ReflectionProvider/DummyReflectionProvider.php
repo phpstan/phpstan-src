@@ -29,11 +29,6 @@ final class DummyReflectionProvider implements ReflectionProvider
 		return $className;
 	}
 
-	public function supportsAnonymousClasses(): bool
-	{
-		return false;
-	}
-
 	public function getAnonymousClassReflection(Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
 		throw new ShouldNotHappenException();

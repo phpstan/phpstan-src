@@ -72,14 +72,6 @@ final class Broker implements ReflectionProvider
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function supportsAnonymousClasses(): bool
-	{
-		return $this->reflectionProvider->supportsAnonymousClasses();
-	}
-
-	/**
-	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
-	 */
 	public function getAnonymousClassReflection(Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
 		return $this->reflectionProvider->getAnonymousClassReflection($classNode, $scope);

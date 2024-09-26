@@ -16,8 +16,6 @@ interface ReflectionProvider
 
 	public function getClassName(string $className): string;
 
-	public function supportsAnonymousClasses(): bool;
-
 	public function getAnonymousClassReflection(
 		Node\Stmt\Class_ $classNode,
 		Scope $scope,

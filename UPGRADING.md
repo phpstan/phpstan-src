@@ -223,3 +223,4 @@ As a replacement you can implement [`PHPStan\Type\ExpressionTypeResolverExtensio
 * ClassPropertiesNode - remove `$extensions` parameter from [`getUninitializedProperties()`](https://apiref.phpstan.org/2.0.x/PHPStan.Node.ClassPropertiesNode.html#_getUninitializedProperties)
 * `Type::getSmallerType()`, `Type::getSmallerOrEqualType()`, `Type::getGreaterType()`, `Type::getGreaterOrEqualType()`, `Type::isSmallerThan()`, `Type::isSmallerThanOrEqual()` now require [`PhpVersion`](https://apiref.phpstan.org/2.0.x/PHPStan.Php.PhpVersion.html) as argument.
 * `CompoundType::isGreaterThan()`, `CompoundType::isGreaterThanOrEqual()` now require [`PhpVersion`](https://apiref.phpstan.org/2.0.x/PHPStan.Php.PhpVersion.html) as argument.
+* Removed `ReflectionProvider::supportsAnonymousClasses()` (all reflection providers support anonymous classes)

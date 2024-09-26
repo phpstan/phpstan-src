@@ -56,11 +56,6 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 		return $this->classNames[$lowerClassName] = $this->provider->getClassName($className);
 	}
 
-	public function supportsAnonymousClasses(): bool
-	{
-		return $this->provider->supportsAnonymousClasses();
-	}
-
 	public function getAnonymousClassReflection(Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
 		return $this->provider->getAnonymousClassReflection($classNode, $scope);

@@ -179,11 +179,6 @@ final class BetterReflectionProvider implements ReflectionProvider
 		return $reflectionClass->getName();
 	}
 
-	public function supportsAnonymousClasses(): bool
-	{
-		return true;
-	}
-
 	public function getAnonymousClassReflection(Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
 		if (isset($classNode->namespacedName)) {

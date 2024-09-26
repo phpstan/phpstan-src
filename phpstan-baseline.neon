@@ -1678,38 +1678,6 @@ parameters:
 			path: tests/PHPStan/Reflection/SignatureMap/Php8SignatureMapProviderTest.php
 
 		-
-			message: """
-				#^Instantiation of deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRule\\:
-				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
-			"""
-			count: 1
-			path: tests/PHPStan/Rules/Arrays/AppendedArrayItemTypeRuleTest.php
-
-		-
-			message: """
-				#^Return type of method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRuleTest\\:\\:getRule\\(\\) has typehint with deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRule\\:
-				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
-			"""
-			count: 1
-			path: tests/PHPStan/Rules/Arrays/AppendedArrayItemTypeRuleTest.php
-
-		-
-			message: """
-				#^Instantiation of deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRule\\:
-				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
-			"""
-			count: 1
-			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
-
-		-
-			message: """
-				#^Return type of method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRuleTest\\:\\:getRule\\(\\) has typehint with deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRule\\:
-				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
-			"""
-			count: 1
-			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
-
-		-
 			message: "#^PHPDoc tag @var assumes the expression with type PHPStan\\\\Type\\\\Generic\\\\TemplateType is always PHPStan\\\\Type\\\\Generic\\\\TemplateMixedType but it's error\\-prone and dangerous\\.$#"
 			count: 1
 			path: tests/PHPStan/Type/IterableTypeTest.php

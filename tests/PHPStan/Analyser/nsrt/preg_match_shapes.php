@@ -467,6 +467,9 @@ function bug11323(string $s): void {
 	if (preg_match('{([-\p{L}[\]*|\x03\a\b+?{}(?:)-]+[^[:digit:]?{}a-z0-9#-k]+)(a-z)}', $s, $matches)) {
 		assertType("array{string, non-falsy-string, 'a-z'}", $matches);
 	}
+	if (preg_match('{(\d+)(?i)insensitive((?xs-i)case SENSITIVE here.+and dot matches new lines)}', $s, $matches)) {
+		assertType('array{string, numeric-string, non-falsy-string}', $matches);
+	}
 	if (preg_match('{(\d+)(?i)insensitive((?x-i)case SENSITIVE here(?i:insensitive non-capturing group))}', $s, $matches)) {
 		assertType('array{string, numeric-string, non-falsy-string}', $matches);
 	}

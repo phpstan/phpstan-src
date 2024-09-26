@@ -59,8 +59,8 @@
 %token class:literal             \\.|.|\n
 
 // Internal options.
-// See https://www.regular-expressions.info/refmodifiers.html
-%token  internal_option          \(\?([imsxnJUX^]|xx)?-?([imsxnJUX^]|xx)\)
+// See https://www.php.net/manual/en/regexp.reference.internal-options.php
+%token  internal_option          \(\?[imsxnJUX]*-?[imsxnJUX]+\)
 
 // Lookahead and lookbehind assertions.
 %token  lookahead_               \(\?=
@@ -90,7 +90,7 @@
 %token  nc:_named_capturing      >                  -> default
 %token  nc:capturing_name        .+?(?=(?<!\\)>)
 %token  non_capturing_           \(\?:
-%token  non_capturing_internal_option \(\?([imsxnJUX^]|xx)?-?([imsxnJUX^]|xx):
+%token  non_capturing_internal_option \(\?[imsxnJUX]*-?[imsxnJUX]+:
 %token  non_capturing_reset_     \(\?\|
 %token  atomic_group_            \(\?>
 %token  capturing_               \(

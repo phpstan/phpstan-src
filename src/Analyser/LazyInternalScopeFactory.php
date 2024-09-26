@@ -13,6 +13,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 
@@ -36,7 +37,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
-		FunctionReflection|ExtendedMethodReflection|null $function = null,
+		PhpFunctionFromParserNodeReflection|null $function = null,
 		?string $namespace = null,
 		array $expressionTypes = [],
 		array $nativeExpressionTypes = [],

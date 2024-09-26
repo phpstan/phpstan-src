@@ -893,7 +893,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			];
 		}
 
-		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/lowercase-string.php'], $errors);
 	}
 

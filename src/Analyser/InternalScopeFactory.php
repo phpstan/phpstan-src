@@ -2,11 +2,11 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 
 interface InternalScopeFactory
 {
@@ -23,7 +23,7 @@ interface InternalScopeFactory
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
-		FunctionReflection|ExtendedMethodReflection|null $function = null,
+		PhpFunctionFromParserNodeReflection|null $function = null,
 		?string $namespace = null,
 		array $expressionTypes = [],
 		array $nativeExpressionTypes = [],

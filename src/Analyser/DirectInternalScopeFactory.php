@@ -7,12 +7,12 @@ use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProv
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
-use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 
@@ -46,7 +46,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
-		FunctionReflection|ExtendedMethodReflection|null $function = null,
+		PhpFunctionFromParserNodeReflection|null $function = null,
 		?string $namespace = null,
 		array $expressionTypes = [],
 		array $nativeExpressionTypes = [],

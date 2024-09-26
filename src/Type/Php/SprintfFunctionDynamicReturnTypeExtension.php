@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -147,7 +148,22 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 			return $singlePlaceholderEarlyReturn;
 		}
 
+		$isLowercase = $formatType->isLowercaseString()->yes() && $this->allValuesSatisfies(
+			$functionReflection,
+			$scope,
+			$args,
+			static fn (Type $type): bool => $type->toString()->isLowercaseString()->yes()
+		);
+
 		if ($allPatternsNonFalsy) {
+			if ($isLowercase) {
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryLowercaseStringType(),
+					new AccessoryNonFalsyStringType(),
+				]);
+			}
+
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryNonFalsyStringType(),
@@ -165,9 +181,24 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		if ($isNonEmpty) {
+			if ($isLowercase) {
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryLowercaseStringType(),
+					new AccessoryNonEmptyStringType(),
+				]);
+			}
+
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),
+			]);
+		}
+
+		if ($isLowercase) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryLowercaseStringType(),
 			]);
 		}
 

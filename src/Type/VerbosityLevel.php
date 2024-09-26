@@ -172,6 +172,10 @@ final class VerbosityLevel
 		$veryVerbose = false;
 		TypeTraverser::map($acceptedType, $moreVerboseCallback);
 
+		if ($veryVerbose) {
+			return self::precise();
+		}
+
 		return $moreVerbose ? self::value() : self::typeOnly();
 	}
 

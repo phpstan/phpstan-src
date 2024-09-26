@@ -66,8 +66,8 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Strict comparison using %s between %s and %s will always evaluate to false.',
 					$node->getOperatorSigil(),
-					$leftType->describe(VerbosityLevel::getRecommendedLevelByType($leftType, $rightType)),
-					$rightType->describe(VerbosityLevel::getRecommendedLevelByType($rightType, $leftType)),
+					$leftType->describe(VerbosityLevel::value()),
+					$rightType->describe(VerbosityLevel::value()),
 				)))->identifier(sprintf('%s.alwaysFalse', $node instanceof Node\Expr\BinaryOp\Identical ? 'identical' : 'notIdentical'))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueStrictComparison) {
@@ -79,8 +79,8 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 			$errorBuilder = $addTip(RuleErrorBuilder::message(sprintf(
 				'Strict comparison using %s between %s and %s will always evaluate to true.',
 				$node->getOperatorSigil(),
-				$leftType->describe(VerbosityLevel::getRecommendedLevelByType($leftType, $rightType)),
-				$rightType->describe(VerbosityLevel::getRecommendedLevelByType($rightType, $leftType)),
+				$leftType->describe(VerbosityLevel::value()),
+				$rightType->describe(VerbosityLevel::value()),
 			)));
 			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 				$errorBuilder->addTip('Remove remaining cases below this one and this error will disappear too.');

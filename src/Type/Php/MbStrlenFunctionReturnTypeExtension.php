@@ -147,7 +147,11 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$range = new ConstantIntegerType(0);
 		} else {
 			$range = TypeCombinator::remove(
-				ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType(),
+				ParametersAcceptorSelector::selectFromArgs(
+					$scope,
+					$functionCall->getArgs(),
+					$functionReflection->getVariants(),
+				)->getReturnType(),
 				new ConstantBooleanType(false),
 			);
 		}

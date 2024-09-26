@@ -24,10 +24,10 @@ class Foo {
 
 	function doFoo2() {
 		$subject = 123;
-		assertType('list<string>|string|null', preg_filter('/\d/', '$0', $subject));
+		assertType('string|null', preg_filter('/\d/', '$0', $subject));
 
 		$subject = 123.123;
-		assertType('list<string>|string|null', preg_filter('/\d/', '$0', $subject));
+		assertType('string|null', preg_filter('/\d/', '$0', $subject));
 	}
 
 	public function dooFoo3(string $pattern, string $replace) {

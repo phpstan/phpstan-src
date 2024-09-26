@@ -47,7 +47,11 @@ final class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		$returnType = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$functionCall->getArgs(),
+			$functionReflection->getVariants(),
+		)->getReturnType();
 		$positionEncodingParam = $this->encodingPositionMap[$functionReflection->getName()];
 
 		if (count($functionCall->getArgs()) < $positionEncodingParam) {

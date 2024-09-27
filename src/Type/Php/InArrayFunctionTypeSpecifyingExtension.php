@@ -18,7 +18,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 use function strtolower;
 
@@ -111,10 +110,7 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			$context->true()
 			|| (
 				$context->false()
-				&& (
-					count(TypeUtils::getConstantScalars($arrayValueType)) > 0
-					|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
-				)
+				&& count($arrayValueType->getFiniteTypes()) === 1
 			)
 		) {
 			$specifiedTypes = $this->typeSpecifier->create(
@@ -137,10 +133,7 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			$context->true()
 			|| (
 				$context->false()
-				&& (
-					count(TypeUtils::getConstantScalars($needleType)) === 1
-					|| count(TypeUtils::getEnumCaseObjects($needleType)) === 1
-				)
+				&& count($needleType->getFiniteTypes()) === 1
 			)
 		) {
 			if ($context->true()) {

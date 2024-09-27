@@ -529,7 +529,7 @@ final class RegexGroupParser
 				// literal "-" in front/back of a character class like '[-a-z]' or '[abc-]', not forming a range
 				'range',
 				// literal "[" or "]" inside character classes '[[]' or '[]]'
-				'class_', '_class_literal',
+				'class_', '_class',
 			], true)
 		) {
 			if (str_contains($patternModifiers, 'x') && trim($value) === '') {
@@ -544,7 +544,6 @@ final class RegexGroupParser
 
 			if (
 				$appendLiterals
-				&& in_array($token, ['literal', 'range', 'class_', '_class_literal'], true)
 				&& $onlyLiterals !== null
 				&& (!in_array($value, ['.'], true) || $isEscaped || $inCharacterClass)
 			) {

@@ -854,7 +854,7 @@ function testEscapedDelimiter (string $string): void {
 	if (preg_match(<<<'EOD'
 		~([a\]])~
 		EOD, $string, $matches)) {
-		assertType("array{string, 'a'}", $matches); // should be array{string, ']'|'a'}
+		assertType("array{string, ']'|'a'}", $matches);
 	}
 
 	if (preg_match(<<<'EOD'
@@ -866,7 +866,7 @@ function testEscapedDelimiter (string $string): void {
 	if (preg_match(<<<'EOD'
 		~([a\]b])~
 		EOD, $string, $matches)) {
-		assertType("array{string, 'a'|'b'}", $matches); // should be array{string, ']'|'a'|'b'}
+		assertType("array{string, ']'|'a'|'b'}", $matches);
 	}
 
 	if (preg_match(<<<'EOD'

@@ -246,3 +246,4 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
 * Remove `GenericTypeVariableResolver`, use [`Type::getTemplateType()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getTemplateType) instead
 * Rename `Type::isClassStringType()` to `Type::isClassString()`
 * Remove `Scope::isSpecified()`, use `hasExpressionType()` instead
+* Remove `ConstantArrayType::isEmpty()`, use `isIterableAtLeastOnce()->no()` instead

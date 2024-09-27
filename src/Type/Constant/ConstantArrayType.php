@@ -136,12 +136,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return TrinaryLogic::createYes();
 	}
 
-	/** @deprecated Use isIterableAtLeastOnce()->no() instead */
-	public function isEmpty(): bool
-	{
-		return count($this->keyTypes) === 0;
-	}
-
 	/**
 	 * @return non-empty-list<int>
 	 */

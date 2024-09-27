@@ -69,6 +69,7 @@ final class RegexGroupParser
 		}
 
 		$this->updateAlternationAstRemoveVerticalBarsAndAddEmptyToken($ast);
+		$this->updateCapturingAstAddEmptyToken($ast);
 
 		$captureOnlyNamed = false;
 		$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex) ?? '';
@@ -119,6 +120,21 @@ final class RegexGroupParser
 		}
 
 		$ast->setChildren(array_values($children));
+	}
+
+	private function updateCapturingAstAddEmptyToken(TreeNode $ast): void
+	{
+		foreach ($ast->getChildren() as $child) {
+			$this->updateCapturingAstAddEmptyToken($child);
+		}
+
+		if ($ast->getId() !== '#capturing' || $ast->getChildren() !== []) {
+			return;
+		}
+
+		$emptyAlternationAst = new TreeNode('#alternation', null, [], $ast);
+		$emptyAlternationAst->setChildren([$this->createEmptyTokenTreeNode($emptyAlternationAst)]);
+		$ast->setChildren([$emptyAlternationAst]);
 	}
 
 	private function walkRegexAst(

@@ -29,16 +29,6 @@ final class TypeUtils
 	}
 
 	/**
-	 * @return ArrayType[]
-	 *
-	 * @deprecated Use PHPStan\Type\Type::getArrays() instead.
-	 */
-	public static function getAnyArrays(Type $type): array
-	{
-		return self::map(ArrayType::class, $type, true, false);
-	}
-
-	/**
 	 * @deprecated Use PHPStan\Type\Type::generalize() instead.
 	 */
 	public static function generalizeType(Type $type, GeneralizePrecision $precision): Type

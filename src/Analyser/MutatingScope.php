@@ -5251,11 +5251,11 @@ final class MutatingScope implements Scope
 	private static function getArrayDepth(Type $type): int
 	{
 		$depth = 0;
-		$arrays = TypeUtils::getAnyArrays($type);
+		$arrays = TypeUtils::toBenevolentUnion($type)->getArrays();
 		while (count($arrays) > 0) {
 			$temp = $type->getIterableValueType();
 			$type = $temp;
-			$arrays = TypeUtils::getAnyArrays($type);
+			$arrays = TypeUtils::toBenevolentUnion($type)->getArrays();
 			$depth++;
 		}
 

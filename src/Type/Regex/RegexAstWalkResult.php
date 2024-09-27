@@ -23,6 +23,7 @@ final class RegexAstWalkResult
 	{
 		return new self(
 			-1,
+			// use different start-index for groups to make it easier to distinguish groupids from other ids
 			100,
 			[],
 			[],

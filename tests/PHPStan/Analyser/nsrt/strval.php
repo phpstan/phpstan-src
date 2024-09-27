@@ -17,9 +17,9 @@ function strvalTest(string $string, string $class): void
 	assertType('\'1\'', strval(true));
 	assertType('\'\'|\'1\'', strval(rand(0, 1) === 0));
 	assertType('\'42\'', strval(42));
-	assertType('numeric-string', strval(rand()));
+	assertType('lowercase-string&numeric-string', strval(rand()));
 	assertType('numeric-string', strval(rand() * 0.1));
-	assertType('numeric-string', strval(strval(rand())));
+	assertType('lowercase-string&numeric-string', strval(strval(rand())));
 	assertType('class-string<stdClass>', strval($class));
 	assertType('string', strval(new \Exception()));
 	assertType('*ERROR*', strval(new \stdClass()));

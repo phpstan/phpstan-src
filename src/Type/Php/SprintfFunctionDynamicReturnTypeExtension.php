@@ -23,6 +23,7 @@ use Throwable;
 use function array_fill;
 use function array_key_exists;
 use function array_shift;
+use function array_values;
 use function count;
 use function in_array;
 use function intval;
@@ -95,14 +96,13 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 					$checkArg = 1;
 				}
 
-				// constant string specifies a numbered argument that does not exist
-				if (!array_key_exists($checkArg, $args)) {
+				$checkArgType = $this->getValueType($functionReflection, $scope, $args, $checkArg);
+				if ($checkArgType === null) {
 					return null;
 				}
 
 				// if the format string is just a placeholder and specified an argument
 				// of stringy type, then the return value will be of the same type
-				$checkArgType = $scope->getType($args[$checkArg]->value);
 				if (
 					$matches['specifier'] === 's'
 					&& ($checkArgType->isString()->yes() || $checkArgType->isInteger()->yes())
@@ -199,6 +199,48 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param Arg[] $args
+	 */
+	private function getValueType(FunctionReflection $functionReflection, Scope $scope, array $args, int $argNumber): ?Type
+	{
+		if ($functionReflection->getName() === 'sprintf') {
+			// constant string specifies a numbered argument that does not exist
+			if (!array_key_exists($argNumber, $args)) {
+				return null;
+			}
+
+			return $scope->getType($args[$argNumber]->value);
+		}
+
+		if ($functionReflection->getName() === 'vsprintf') {
+			if (!array_key_exists(1, $args)) {
+				return null;
+			}
+
+			$valuesType = $scope->getType($args[1]->value);
+			$resultTypes = [];
+
+			$valuesConstantArrays = $valuesType->getConstantArrays();
+			foreach ($valuesConstantArrays as $valuesConstantArray) {
+				// vsprintf does not care about the keys of the array, only the order
+				$types = array_values($valuesConstantArray->getValueTypes());
+				if (!array_key_exists($argNumber - 1, $types)) {
+					return null;
+				}
+
+				$resultTypes[] = $types[$argNumber - 1];
+			}
+			if (count($resultTypes) === 0) {
+				return $valuesType->getIterableValueType();
+			}
+
+			return TypeCombinator::union(...$resultTypes);
+		}
+
+		return null;
 	}
 
 	/**

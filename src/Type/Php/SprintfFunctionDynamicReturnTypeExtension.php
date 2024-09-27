@@ -23,6 +23,7 @@ use Throwable;
 use function array_fill;
 use function array_key_exists;
 use function array_shift;
+use function array_values;
 use function count;
 use function in_array;
 use function intval;
@@ -200,6 +201,9 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		return false;
 	}
 
+	/**
+	 * @param Arg[] $args
+	 */
 	private function getValueType(FunctionReflection $functionReflection, Scope $scope, array $args, int $argNumber): ?Type
 	{
 		if ($functionReflection->getName() === 'sprintf') {
@@ -238,7 +242,6 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 
 		return null;
 	}
-
 
 	/**
 	 * Detect constant strings in the format which neither depend on placeholders nor on given value arguments.

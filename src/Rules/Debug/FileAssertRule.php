@@ -171,15 +171,14 @@ final class FileAssertRule implements Rule
 		// @phpstan-ignore staticMethod.dynamicName
 		$expectedCertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
 		$variable = $args[1]->value;
-		if (!$variable instanceof Node\Expr\Variable) {
-			return [
-				RuleErrorBuilder::message('Invalid assertVariableCertainty call.')
-					->nonIgnorable()
-					->identifier('phpstan.unknownExpectation')
-					->build(),
-			];
-		}
-		if (!is_string($variable->name)) {
+		if ($variable instanceof Node\Expr\Variable && is_string($variable->name)) {
+			$actualCertaintyValue = $scope->hasVariableType($variable->name);
+			$variableDescription = sprintf('variable $%s', $variable->name);
+		} elseif ($variable instanceof Node\Expr\ArrayDimFetch && $variable->dim !== null) {
+			$offset = $scope->getType($variable->dim);
+			$actualCertaintyValue = $scope->getType($variable->var)->hasOffsetValueType($offset);
+			$variableDescription = sprintf('offset %s', $offset->describe(VerbosityLevel::precise()));
+		} else {
 			return [
 				RuleErrorBuilder::message('Invalid assertVariableCertainty call.')
 					->nonIgnorable()
@@ -188,13 +187,12 @@ final class FileAssertRule implements Rule
 			];
 		}
 
-		$actualCertaintyValue = $scope->hasVariableType($variable->name);
 		if ($expectedCertaintyValue->equals($actualCertaintyValue)) {
 			return [];
 		}
 
 		return [
-			RuleErrorBuilder::message(sprintf('Expected variable certainty %s, actual: %s', $expectedCertaintyValue->describe(), $actualCertaintyValue->describe()))
+			RuleErrorBuilder::message(sprintf('Expected %s certainty %s, actual: %s', $variableDescription, $expectedCertaintyValue->describe(), $actualCertaintyValue->describe()))
 				->nonIgnorable()
 				->identifier('phpstan.variable')
 				->build(),

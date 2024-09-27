@@ -32,12 +32,16 @@ class FileAssertRuleTest extends RuleTestCase
 				37,
 			],
 			[
-				'Expected variable certainty Yes, actual: No',
+				'Expected variable $b certainty Yes, actual: No',
 				45,
 			],
 			[
-				'Expected variable certainty Maybe, actual: No',
+				'Expected variable $b certainty Maybe, actual: No',
 				46,
+			],
+			[
+				"Expected offset 'firstName' certainty No, actual: Yes",
+				65,
 			],
 		]);
 	}

@@ -135,7 +135,7 @@
     alternation()
 
 alternation:
-    concatenation() ( ::alternation:: concatenation() #alternation )*
+    concatenation()? ( <alternation> concatenation()? #alternation )*
 
 concatenation:
     (   internal_options() | assertion() | quantification() | condition() )
@@ -154,8 +154,8 @@ concatenation:
         <index>
       | ::assertion_reference_:: alternation() #assertioncondition
     )
-    ::_capturing:: concatenation()?
-    ( ::alternation:: concatenation()? )?
+    ::_capturing::
+    alternation()
     ::_capturing::
 
 assertion:
@@ -165,7 +165,8 @@ assertion:
       | ::lookbehind_::          #lookbehind
       | ::negative_lookbehind_:: #negativelookbehind
     )
-    alternation() ::_capturing::
+    alternation()
+    ::_capturing::
 
 quantification:
     ( class() | simple() ) ( quantifier() #quantification )?
@@ -208,7 +209,8 @@ simple:
       | ::atomic_group_:: #atomicgroup
       | ::capturing_::
     )
-    alternation() ::_capturing::
+    alternation()
+    ::_capturing::
 
 non_capturing_internal_options:
     <non_capturing_internal_option>

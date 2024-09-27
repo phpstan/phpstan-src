@@ -42,8 +42,8 @@
 //
 
 // Character classes.
-%token  negative_class_fc_       \[\^(?=\])         -> class_fc
-%token  class_fc_                \[(?=\])           -> class_fc
+%token  negative_class_fc_       \[\^(?=\])         -> class_fc // same as "negative_class_" but followed by "class:_class"
+%token  class_fc_                \[(?=\])           -> class_fc // same as "class_"          but followed by "class:_class"
 %token class_fc:_class           \]                 -> class
 %token  negative_class_          \[\^               -> class
 %token  class_                   \[                 -> class

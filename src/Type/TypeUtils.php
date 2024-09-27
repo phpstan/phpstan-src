@@ -198,24 +198,6 @@ final class TypeUtils
 		return self::map(AccessoryType::class, $type, true, false);
 	}
 
-	/** @deprecated Use PHPStan\Type\Type::isCallable() instead. */
-	public static function containsCallable(Type $type): bool
-	{
-		if ($type->isCallable()->yes()) {
-			return true;
-		}
-
-		if ($type instanceof UnionType) {
-			foreach ($type->getTypes() as $innerType) {
-				if ($innerType->isCallable()->yes()) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
 	public static function containsTemplateType(Type $type): bool
 	{
 		$containsTemplateType = false;

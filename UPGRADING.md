@@ -259,3 +259,4 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
 * Remove `TypeUtils::getDirectClassNames()`, use [`Type::getObjectClassNames()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getObjectClassNames) instead
 * Remove `TypeUtils::getConstantScalars()`, use [`Type::isConstantScalarValue()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_isConstantScalarValue) or [`Type::getConstantScalarTypes()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getConstantScalarTypes) instead
 * Remove `TypeUtils::getEnumCaseObjects()`, use [`Type::getEnumCases()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getEnumCases) instead
+* Remove `TypeUtils::containsCallable()`, use [`Type::isCallable()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_isCallable) instead

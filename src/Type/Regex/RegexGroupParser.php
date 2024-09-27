@@ -525,7 +525,7 @@ final class RegexGroupParser
 
 		if (
 			in_array($token, [
-				'literal', 'escaped_end_class',
+				'literal',
 				// literal "-" in front/back of a character class like '[-a-z]' or '[abc-]', not forming a range
 				'range',
 				// literal "[" or "]" inside character classes '[[]' or '[]]'

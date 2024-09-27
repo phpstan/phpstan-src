@@ -52,7 +52,6 @@
 %token class:class_              \[
 %token class:_class              \]                 -> default
 %token class:range               \-
-%token class:escaped_end_class   \\\]
 // taken over from literals but class:character has \b support on top (backspace in character classes)
 %token class:character           \\([aefnrtb]|c[\x00-\x7f])
 %token class:dynamic_character   \\([0-7]{3}|x[0-9a-zA-Z]{2}|x{[0-9a-zA-Z]+})
@@ -188,7 +187,7 @@ quantifier:
       | ::negative_class_:: #negativeclass
       | ::class_::
     )
-    <range>? ( <posix_class> | <class_> | range() | literal() | <escaped_end_class> )* <range>?
+    <range>? ( <posix_class> | <class_> | range() | literal() )* <range>?
     ::_class::
 
 #range:

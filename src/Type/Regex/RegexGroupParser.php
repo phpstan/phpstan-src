@@ -91,6 +91,11 @@ final class RegexGroupParser
 		return [$astWalkResult->getCapturingGroups(), $astWalkResult->getMarkVerbs()];
 	}
 
+	private function createEmptyTokenTreeNode(TreeNode $parentAst): TreeNode
+	{
+		return new TreeNode('token', ['token' => 'literal', 'value' => '', 'namespace' => 'default'], [], $parentAst);
+	}
+
 	private function updateAlternationAstRemoveVerticalBarsAndAddEmptyToken(TreeNode $ast): void
 	{
 		$children = $ast->getChildren();
@@ -110,7 +115,7 @@ final class RegexGroupParser
 				continue;
 			}
 
-			$children[$i] = new TreeNode('token', ['token' => 'literal', 'value' => '', 'namespace' => 'default'], [], $ast);
+			$children[$i] = $this->createEmptyTokenTreeNode($ast);
 		}
 
 		$ast->setChildren(array_values($children));

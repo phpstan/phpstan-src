@@ -12,6 +12,7 @@ use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -138,18 +139,10 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 
 					$singlePlaceholderEarlyReturn = $checkArgType->toString();
 				} elseif ($matches['specifier'] !== 's') {
-					if ($isLowercase) {
-						$singlePlaceholderEarlyReturn = new IntersectionType([
-							new StringType(),
-							new AccessoryLowercaseStringType(),
-							new AccessoryNumericStringType(),
-						]);
-					} else {
-						$singlePlaceholderEarlyReturn = new IntersectionType([
-							new StringType(),
-							new AccessoryNumericStringType(),
-						]);
-					}
+					$singlePlaceholderEarlyReturn = $this->getStringReturnType(
+						new AccessoryNumericStringType(),
+						$isLowercase
+					);
 				}
 
 				continue;
@@ -164,18 +157,7 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		if ($allPatternsNonFalsy) {
-			if ($isLowercase) {
-				return new IntersectionType([
-					new StringType(),
-					new AccessoryLowercaseStringType(),
-					new AccessoryNonFalsyStringType(),
-				]);
-			}
-
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
+			return $this->getStringReturnType(new AccessoryNonFalsyStringType(), $isLowercase);
 		}
 
 		$isNonEmpty = $allPatternsNonEmpty;
@@ -189,28 +171,10 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		if ($isNonEmpty) {
-			if ($isLowercase) {
-				return new IntersectionType([
-					new StringType(),
-					new AccessoryLowercaseStringType(),
-					new AccessoryNonEmptyStringType(),
-				]);
-			}
-
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonEmptyStringType(),
-			]);
+			return $this->getStringReturnType(new AccessoryNonEmptyStringType(), $isLowercase);
 		}
 
-		if ($isLowercase) {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryLowercaseStringType(),
-			]);
-		}
-
-		return new StringType();
+		return $this->getStringReturnType(null, $isLowercase);
 	}
 
 	/**
@@ -386,4 +350,22 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		return TypeCombinator::union(...$returnTypes);
 	}
 
+	private function getStringReturnType(?AccessoryType $accessoryType, bool $isLowercase): Type
+	{
+		$accessoryTypes = [];
+		if ($accessoryType !== null) {
+			$accessoryTypes[] = $accessoryType;
+		}
+		if ($isLowercase) {
+			$accessoryTypes[] = new AccessoryLowercaseStringType();
+		}
+
+		if (count($accessoryTypes) === 0) {
+			return new StringType();
+		}
+
+		$accessoryTypes[] = new StringType();
+
+		return new IntersectionType($accessoryTypes);
+	}
 }

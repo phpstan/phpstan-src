@@ -1147,12 +1147,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $preserveKeys ? $slice : $slice->reindex();
 	}
 
-	/** @deprecated Use reverseArray() instead */
-	public function reverse(bool $preserveKeys = false): self
-	{
-		return $this->reverseConstantArray(TrinaryLogic::createFromBoolean($preserveKeys));
-	}
-
 	/**
 	 * @deprecated Use chunkArray() instead
 	 * @param positive-int $length

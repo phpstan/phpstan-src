@@ -27,7 +27,6 @@ final class ConstantTypeHelper
 {
 
 	/**
-	 * @deprecated Use PHPStan\Reflection\InitializerExprTypeResolver
 	 * @param mixed $value
 	 */
 	public static function getTypeFromValue($value): Type

@@ -8,3 +8,4 @@ parameters:
 	ignoreErrors:
 		-
 			identifier: instanceof.alwaysTrue
+			reportUnmatched: false

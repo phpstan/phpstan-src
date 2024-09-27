@@ -148,7 +148,7 @@ jobs:
               OUTPUT=$(../../bin/phpstan analyze 2>&1 || true)
               echo "$OUTPUT"
               ../bashunit -a contains 'Result cache might not behave correctly' "$OUTPUT"
-              ../bashunit -a contains 'ResultCache8E2E\\CustomRule' "$OUTPUT"
+              ../bashunit -a contains 'ResultCache8E2E\CustomRule' "$OUTPUT"
           - script: |
               cd e2e/env-int-key
               env 1=1 ../../bin/phpstan analyse test.php

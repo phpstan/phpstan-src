@@ -17,14 +17,6 @@ parameters:
 
 		-
 			message: """
-				#^Call to deprecated method getAnyArrays\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
-				Use PHPStan\\\\Type\\\\Type\\:\\:getArrays\\(\\) instead\\.$#
-			"""
-			count: 2
-			path: src/Analyser/MutatingScope.php
-
-		-
-			message: """
 				#^Call to deprecated method getTypeFromValue\\(\\) of class PHPStan\\\\Type\\\\ConstantTypeHelper\\:
 				Use PHPStan\\\\Reflection\\\\InitializerExprTypeResolver$#
 			"""
@@ -1279,22 +1271,6 @@ parameters:
 			path: src/Type/Php/ImplodeFunctionReturnTypeExtension.php
 
 		-
-			message: """
-				#^Call to deprecated method getConstantScalars\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
-				Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\)$#
-			"""
-			count: 2
-			path: src/Type/Php/InArrayFunctionTypeSpecifyingExtension.php
-
-		-
-			message: """
-				#^Call to deprecated method getEnumCaseObjects\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
-				Use Type\\:\\:getEnumCases\\(\\)$#
-			"""
-			count: 2
-			path: src/Type/Php/InArrayFunctionTypeSpecifyingExtension.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Php/IsAFunctionTypeSpecifyingExtension.php
@@ -1523,23 +1499,13 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\ArrayType is error\\-prone and deprecated\\. Use Type\\:\\:isArray\\(\\) or Type\\:\\:getArrays\\(\\) instead\\.$#"
-			count: 3
-			path: src/Type/TypeUtils.php
-
-		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantArrayType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantArrays\\(\\) instead\\.$#"
-			count: 5
+			count: 2
 			path: src/Type/TypeUtils.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
-			count: 5
-			path: src/Type/TypeUtils.php
-
-		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\TypeWithClassName is error\\-prone and deprecated\\. Use Type\\:\\:getObjectClassNames\\(\\) or Type\\:\\:getObjectClassReflections\\(\\) instead\\.$#"
-			count: 1
+			count: 3
 			path: src/Type/TypeUtils.php
 
 		-

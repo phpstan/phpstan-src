@@ -8,9 +8,12 @@ use Exception;
 use Iterator;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -1637,6 +1640,32 @@ class UnionTypeTest extends PHPStanTestCase
 					'array<int, int|RecursionCallable\Foo|stdClass|string>',
 				],
 			],
+		];
+	}
+
+	/**
+	 * @param Type[] $types
+	 *
+	 * @dataProvider dataUnionThrows
+	 */
+	public function testUnionThrows(array $types, string $message): void
+	{
+		$this->expectException(ShouldNotHappenException::class);
+		$this->expectExceptionMessage($message);
+
+		new UnionType($types);
+	}
+
+	public function dataUnionThrows(): array
+	{
+		return [
+			// union type requires at least 2 types
+			[[new AccessoryNonEmptyStringType()], 'Cannot create PHPStan\\Type\\UnionType with: non-empty-string'],
+			// test invalid combinations
+			[[new AccessoryNonFalsyStringType(), new AccessoryNumericStringType()], 'Cannot create PHPStan\\Type\\UnionType with: non-falsy-string, numeric-string'],
+			[[new IntegerType(), new AccessoryNumericStringType()], 'Cannot create PHPStan\\Type\\UnionType with: int, numeric-string'],
+			[[new ArrayType(new IntegerType(), new StringType()), new AccessoryNonEmptyStringType()], 'Cannot create PHPStan\\Type\\UnionType with: array<int, string>, non-empty-string'],
+			[[new IntegerType(), new NonEmptyArrayType()], 'Cannot create PHPStan\\Type\\UnionType with: int, non-empty-array'],
 		];
 	}
 

@@ -19,6 +19,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
@@ -67,6 +68,10 @@ class UnionType implements CompoundType
 			$throwException();
 		}
 		foreach ($types as $type) {
+			if ($type instanceof AccessoryType) {
+				// accessory types need to be intersected with a main type
+				$throwException();
+			}
 			if (!($type instanceof UnionType)) {
 				continue;
 			}

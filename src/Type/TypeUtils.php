@@ -6,7 +6,6 @@ use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
@@ -20,16 +19,6 @@ use function array_values;
  */
 final class TypeUtils
 {
-
-	/**
-	 * @return ConstantStringType[]
-	 *
-	 * @deprecated Use PHPStan\Type\Type::getConstantStrings() instead
-	 */
-	public static function getConstantStrings(Type $type): array
-	{
-		return self::map(ConstantStringType::class, $type, false);
-	}
 
 	/**
 	 * @return ConstantIntegerType[]

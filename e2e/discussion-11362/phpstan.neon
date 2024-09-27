@@ -1,7 +1,5 @@
 parameters:
   excludePaths:
-    analyseAndScan:
-      - .git
     analyse:
       - vendor
 

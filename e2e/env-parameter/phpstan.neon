@@ -1,2 +1,2 @@
 parameters:
-	scopeClass: %env.PHPSTAN_SCOPE_CLASS%
+	resultCachePath: %env.PHPSTAN_RESULT_CACHE_PATH%

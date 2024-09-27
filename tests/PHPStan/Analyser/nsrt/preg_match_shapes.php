@@ -906,12 +906,15 @@ function bug11744(string $string): void
 	if (!preg_match('~^((/[a-z]+)?)~', $string, $matches)) {
 		return;
 	}
-
 	assertType('array{0: string, 1: string, 2?: non-falsy-string}', $matches);
 
 	if (!preg_match('~^((/[a-z]+)?.*)~', $string, $matches)) {
 		return;
 	}
-
 	assertType('array{0: string, 1: string, 2?: non-falsy-string}', $matches);
+
+	if (!preg_match('~^((/[a-z]+)?.+)~', $string, $matches)) {
+		return;
+	}
+	assertType('array{0: string, 1: non-empty-string, 2?: non-falsy-string}', $matches);
 }

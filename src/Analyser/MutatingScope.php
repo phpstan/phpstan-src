@@ -3748,17 +3748,6 @@ final class MutatingScope implements Scope
 		return $scope;
 	}
 
-	/**
-	 * @deprecated Use enterCatchType
-	 * @param Node\Name[] $classes
-	 */
-	public function enterCatch(array $classes, ?string $variableName): self
-	{
-		$type = TypeCombinator::union(...array_map(static fn (Node\Name $class): ObjectType => new ObjectType((string) $class), $classes));
-
-		return $this->enterCatchType($type, $variableName);
-	}
-
 	public function enterCatchType(Type $catchType, ?string $variableName): self
 	{
 		if ($variableName === null) {

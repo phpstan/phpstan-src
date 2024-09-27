@@ -88,6 +88,8 @@ final class RegexExpressionHelper
 
 	public function removeDelimitersAndModifiers(string $pattern): string
 	{
+		$pattern = ltrim($pattern);
+
 		$endDelimiterPos = $this->getEndDelimiterPos($pattern);
 
 		if ($endDelimiterPos === false) {

@@ -55,12 +55,14 @@ final class RegularExpressionPatternRule implements Rule
 
 			$errorMessage = $this->validatePatternByParserGrammar($pattern);
 
-			if ($errorMessage !== null && $this->reportUnparsedRegexpWhenCompilable) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Regex pattern cannot be parsed: %s', $errorMessage))
-					->identifier('regexp.pattern')
-					->tip(sprintf('Please open an issue for your regex pattern at %s', 'https://github.com/phpstan/phpstan/issues'))
-					->build();
+			if ($errorMessage === null || !$this->reportUnparsedRegexpWhenCompilable) {
+				continue;
 			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf('Regex pattern cannot be parsed: %s', $errorMessage))
+				->identifier('regexp.pattern')
+				->tip(sprintf('Please open an issue for your regex pattern at %s', 'https://github.com/phpstan/phpstan/issues'))
+				->build();
 		}
 
 		return $errors;

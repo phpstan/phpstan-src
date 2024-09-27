@@ -25,8 +25,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	private static function findTestFiles(): iterable
 	{
-		yield __DIR__ . '/nsrt/lowercase-string-sprintf.php';return;
-
 		foreach (self::findTestDataFilesFromDirectory(__DIR__ . '/nsrt') as $testFile) {
 			yield $testFile;
 		}

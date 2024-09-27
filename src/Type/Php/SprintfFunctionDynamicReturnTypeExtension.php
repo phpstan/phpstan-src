@@ -61,6 +61,13 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		$formatType = $scope->getType($args[0]->value);
 		$formatStrings = $formatType->getConstantStrings();
 
+		$isLowercase = $formatType->isLowercaseString()->yes() && $this->allValuesSatisfies(
+			$functionReflection,
+			$scope,
+			$args,
+			static fn (Type $type): bool => $type->toString()->isLowercaseString()->yes()
+		);
+
 		$singlePlaceholderEarlyReturn = null;
 		$allPatternsNonEmpty = count($formatStrings) !== 0;
 		$allPatternsNonFalsy = count($formatStrings) !== 0;
@@ -131,10 +138,18 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 
 					$singlePlaceholderEarlyReturn = $checkArgType->toString();
 				} elseif ($matches['specifier'] !== 's') {
-					$singlePlaceholderEarlyReturn = new IntersectionType([
-						new StringType(),
-						new AccessoryNumericStringType(),
-					]);
+					if ($isLowercase) {
+						$singlePlaceholderEarlyReturn = new IntersectionType([
+							new StringType(),
+							new AccessoryLowercaseStringType(),
+							new AccessoryNumericStringType(),
+						]);
+					} else {
+						$singlePlaceholderEarlyReturn = new IntersectionType([
+							new StringType(),
+							new AccessoryNumericStringType(),
+						]);
+					}
 				}
 
 				continue;
@@ -147,13 +162,6 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		if ($singlePlaceholderEarlyReturn !== null) {
 			return $singlePlaceholderEarlyReturn;
 		}
-
-		$isLowercase = $formatType->isLowercaseString()->yes() && $this->allValuesSatisfies(
-			$functionReflection,
-			$scope,
-			$args,
-			static fn (Type $type): bool => $type->toString()->isLowercaseString()->yes()
-		);
 
 		if ($allPatternsNonFalsy) {
 			if ($isLowercase) {

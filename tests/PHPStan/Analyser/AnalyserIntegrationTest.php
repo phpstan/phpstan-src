@@ -14,6 +14,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use function extension_loaded;
 use function restore_error_handler;
 use function sprintf;
+use function str_replace;
 use const PHP_VERSION_ID;
 
 class AnalyserIntegrationTest extends PHPStanTestCase
@@ -1408,7 +1409,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug11292(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11292.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame(str_replace('\x7f-\xff|$', "\x7f-\xff]|$", <<<'EOD'
+			Regex pattern cannot be parsed: Unrecognized token "\" at line 1 and column 1:
+			\b(https?://)?(?:([^]\\\x00-\x20\"(),:-<>[\x7f-\xff]{1,64})(:[^]\\\x00-\x20\"(),:-<>[\x7f-\xff]{1,64})?@)?((?:[-a-zA-Z0-9\x7f-\xff]{1,63}\.)+[a-zA-Z\x7f-\xff][-a-zA-Z0-9\x7f-\xff]{1,62})((:[0-9]{1,5})?(/[!$-/0-9:;=@_~':;!a-zA-Z\x7f-\xff]*?)?(\?[!$-/0-9:;=@_':;!a-zA-Z\x7f-\xff]+?)?(#[!$-/0-9?:;=@_':;!a-zA-Z\x7f-\xff]+?)?)(?=[)'?.!,;:]*([^-_#$+.!*%'(),;/?:@~=&a-zA-Z0-9\x7f-\xff|$))
+			↑
+			EOD), $errors[0]->getMessage());
 	}
 
 	public function testBug11297(): void

@@ -141,7 +141,7 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 				} elseif ($matches['specifier'] !== 's') {
 					$singlePlaceholderEarlyReturn = $this->getStringReturnType(
 						new AccessoryNumericStringType(),
-						$isLowercase
+						$isLowercase,
 					);
 				}
 
@@ -368,4 +368,5 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 
 		return new IntersectionType($accessoryTypes);
 	}
+
 }

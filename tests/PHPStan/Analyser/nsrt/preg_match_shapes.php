@@ -894,8 +894,24 @@ function testEscapedDelimiter (string $string): void {
 	}
 }
 
-function bugUnescapedDashAfterRange (string $string): void {
+function bugUnescapedDashAfterRange (string $string): void
+{
 	if (preg_match('/([0-1-y])/', $string, $matches)) {
 		assertType("array{string, non-empty-string}", $matches);
 	}
+}
+
+function bug11744(string $string): void
+{
+	if (!preg_match('~^((/[a-z]+)?)~', $string, $matches)) {
+		return;
+	}
+
+	assertType('array{0: string, 1: string, 2?: non-falsy-string}', $matches);
+
+	if (!preg_match('~^((/[a-z]+)?.*)~', $string, $matches)) {
+		return;
+	}
+
+	assertType('array{0: string, 1: string, 2?: non-falsy-string}', $matches);
 }

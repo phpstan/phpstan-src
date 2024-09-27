@@ -377,7 +377,7 @@ final class RegexGroupParser
 
 				$meaningfulTokens++;
 
-				if (!$nonFalsy || $inAlternation) {
+				if (!$nonFalsy || $inAlternation || $walkResult->isInOptionalQuantification()) {
 					continue;
 				}
 
@@ -386,7 +386,7 @@ final class RegexGroupParser
 				break;
 			}
 
-			if ($meaningfulTokens > 0) {
+			if ($meaningfulTokens > 0 && !$walkResult->isInOptionalQuantification()) {
 				$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
 
 				// two non-empty tokens concatenated results in a non-falsy string
@@ -400,13 +400,14 @@ final class RegexGroupParser
 			if ($min === 0) {
 				$walkResult = $walkResult->inOptionalQuantification(true);
 			}
-			if ($min >= 1) {
-				$walkResult = $walkResult
-					->nonEmpty(TrinaryLogic::createYes())
-					->inOptionalQuantification(false);
-			}
-			if ($min >= 2 && !$inAlternation) {
-				$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
+
+			if (!$walkResult->isInOptionalQuantification()) {
+				if ($min >= 1) {
+					$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
+				}
+				if ($min >= 2 && !$inAlternation) {
+					$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
+				}
 			}
 
 			$walkResult = $walkResult->onlyLiterals(null);

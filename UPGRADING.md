@@ -252,3 +252,4 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
   * Use `getFirstIterable*Type` and `getLastIterable*Type` instead
 * Remove `ConstantArrayType::generalizeToArray()`
 * Remove `TypeUtils::getArrays()`, use [`Type::getArrays()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getArrays) instead
+* Remove `TypeUtils::getConstantArrays()`, use [`Type::getConstantArrays()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getConstantArrays) instead

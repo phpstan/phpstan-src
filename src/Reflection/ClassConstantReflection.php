@@ -3,12 +3,10 @@
 namespace PHPStan\Reflection;
 
 use PhpParser\Node\Expr;
-use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
-use const NAN;
 
 /**
  * @api
@@ -39,19 +37,6 @@ final class ClassConstantReflection implements ConstantReflection
 	public function getFileName(): ?string
 	{
 		return $this->declaringClass->getFileName();
-	}
-
-	/**
-	 * @deprecated Use getValueExpr()
-	 * @return mixed
-	 */
-	public function getValue()
-	{
-		try {
-			return $this->reflection->getValue();
-		} catch (UnableToCompileNode) {
-			return NAN;
-		}
 	}
 
 	public function getValueExpr(): Expr

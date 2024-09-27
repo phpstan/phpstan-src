@@ -51,16 +51,6 @@ final class DummyConstantReflection implements ConstantReflection
 		return $this->name;
 	}
 
-	/**
-	 * @deprecated
-	 * @return mixed
-	 */
-	public function getValue()
-	{
-		// so that Scope::getTypeFromValue() returns mixed
-		return new stdClass();
-	}
-
 	public function getValueType(): Type
 	{
 		return new MixedType();

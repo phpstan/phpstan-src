@@ -2639,8 +2639,7 @@ final class MutatingScope implements Scope
 		return !$propertyReflection->getNativeType() instanceof MixedType;
 	}
 
-	/** @api */
-	protected function getTypeFromArrayDimFetch(
+	private function getTypeFromArrayDimFetch(
 		Expr\ArrayDimFetch $arrayDimFetch,
 		Type $offsetType,
 		Type $offsetAccessibleType,
@@ -5574,7 +5573,6 @@ final class MutatingScope implements Scope
 		return $type->getMethod($methodName, $this);
 	}
 
-	/** @api */
 	public function getNakedMethod(Type $typeWithMethod, string $methodName): ?ExtendedMethodReflection
 	{
 		$type = $this->filterTypeWithMethod($typeWithMethod, $methodName);

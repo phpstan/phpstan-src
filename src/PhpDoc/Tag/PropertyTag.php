@@ -11,19 +11,10 @@ final class PropertyTag
 {
 
 	public function __construct(
-		private Type $type,
 		private ?Type $readableType,
 		private ?Type $writableType,
 	)
 	{
-	}
-
-	/**
-	 * @deprecated Use getReadableType() / getWritableType()
-	 */
-	public function getType(): Type
-	{
-		return $this->type;
 	}
 
 	public function getReadableType(): ?Type

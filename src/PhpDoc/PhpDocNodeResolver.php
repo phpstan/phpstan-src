@@ -112,7 +112,6 @@ final class PhpDocNodeResolver
 				$resolved[$propertyName] = new PropertyTag(
 					$propertyType,
 					$propertyType,
-					$propertyType,
 				);
 			}
 		}
@@ -128,7 +127,6 @@ final class PhpDocNodeResolver
 				}
 
 				$resolved[$propertyName] = new PropertyTag(
-					$propertyType,
 					$propertyType,
 					$writableType,
 				);
@@ -146,7 +144,6 @@ final class PhpDocNodeResolver
 				}
 
 				$resolved[$propertyName] = new PropertyTag(
-					$readableType ?? $propertyType,
 					$readableType,
 					$propertyType,
 				);

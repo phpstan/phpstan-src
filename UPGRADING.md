@@ -242,3 +242,4 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
 * Remove `ClassReflection::getFileNameWithPhpDocs()`, use `getFileName()` instead
 * Remove `AnalysisResult::getInternalErrors()`, use `getInternalErrorObjects()` instead
 * Remove `ConstantReflection::getValue()`, use `getValueExpr()` instead. To get `Type` from `Expr`, use `Scope::getType()` or `InitializerExprTypeResolver::getType()`
+* Remove `PropertyTag::getType()`, use `getReadableType()` / `getWritableType()` instead

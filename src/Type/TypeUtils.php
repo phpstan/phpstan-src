@@ -53,17 +53,6 @@ final class TypeUtils
 	}
 
 	/**
-	 * @internal
-	 * @return ConstantArrayType[]
-	 *
-	 * @deprecated Use PHPStan\Type\Type::getConstantArrays().
-	 */
-	public static function getOldConstantArrays(Type $type): array
-	{
-		return self::map(ConstantArrayType::class, $type, false);
-	}
-
-	/**
 	 * @return mixed[]
 	 */
 	private static function map(

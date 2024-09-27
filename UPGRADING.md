@@ -252,7 +252,7 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
   * Use `getFirstIterable*Type` and `getLastIterable*Type` instead
 * Remove `ConstantArrayType::generalizeToArray()`
 * Remove `TypeUtils::getArrays()` and `getAnyArrays()`, use [`Type::getArrays()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getArrays) instead
-* Remove `TypeUtils::getConstantArrays()`, use [`Type::getConstantArrays()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getConstantArrays) instead
+* Remove `TypeUtils::getConstantArrays()` and `getOldConstantArrays()`, use [`Type::getConstantArrays()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getConstantArrays) instead
 * Remove `TypeUtils::getConstantStrings()`, use [`Type::getConstantStrings()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getConstantStrings) instead
 * Remove `TypeUtils::getConstantTypes()` and `getAnyConstantTypes()`, use [`Type::isConstantValue()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_isConstantValue) or [`Type::generalize()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_generalize)
 * Remove `TypeUtils::generalizeType()`, use [`Type::generalize()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_generalize) instead

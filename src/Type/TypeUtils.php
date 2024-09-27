@@ -29,14 +29,6 @@ final class TypeUtils
 	}
 
 	/**
-	 * @deprecated Use PHPStan\Type\Type::generalize() instead.
-	 */
-	public static function generalizeType(Type $type, GeneralizePrecision $precision): Type
-	{
-		return $type->generalize($precision);
-	}
-
-	/**
 	 * @return list<string>
 	 *
 	 * @deprecated Use Type::getObjectClassNames() instead.

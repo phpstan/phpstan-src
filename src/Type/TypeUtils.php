@@ -29,24 +29,6 @@ final class TypeUtils
 	}
 
 	/**
-	 * @deprecated Use Type::isConstantValue() or Type::generalize()
-	 * @return ConstantType[]
-	 */
-	public static function getConstantTypes(Type $type): array
-	{
-		return self::map(ConstantType::class, $type, false);
-	}
-
-	/**
-	 * @deprecated Use Type::isConstantValue() or Type::generalize()
-	 * @return ConstantType[]
-	 */
-	public static function getAnyConstantTypes(Type $type): array
-	{
-		return self::map(ConstantType::class, $type, false, false);
-	}
-
-	/**
 	 * @return ArrayType[]
 	 *
 	 * @deprecated Use PHPStan\Type\Type::getArrays() instead.

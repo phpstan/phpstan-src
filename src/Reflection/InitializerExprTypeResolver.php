@@ -1916,7 +1916,7 @@ final class InitializerExprTypeResolver
 			);
 		}
 
-		if ($constantClassType->isClassStringType()->yes()) {
+		if ($constantClassType->isClassString()->yes()) {
 			if ($constantClassType->isConstantScalarValue()->yes()) {
 				$isObject = false;
 			}

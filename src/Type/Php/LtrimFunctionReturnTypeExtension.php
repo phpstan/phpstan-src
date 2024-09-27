@@ -29,7 +29,7 @@ final class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		$string = $scope->getType($functionCall->getArgs()[0]->value);
 		$trimChars = $scope->getType($functionCall->getArgs()[1]->value);
 
-		if ($trimChars instanceof ConstantStringType && $trimChars->getValue() === '\\' && $string->isClassStringType()->yes()) {
+		if ($trimChars instanceof ConstantStringType && $trimChars->getValue() === '\\' && $string->isClassString()->yes()) {
 			if ($string instanceof ConstantStringType) {
 				return new ConstantStringType(ltrim($string->getValue(), $trimChars->getValue()), true);
 			}

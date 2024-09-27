@@ -598,7 +598,7 @@ class MixedTypeTest extends PHPStanTestCase
 	public function testSubstractedIsClassString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
 	{
 		$subtracted = $mixedType->subtract($typeToSubtract);
-		$actualResult = $subtracted->isClassStringType();
+		$actualResult = $subtracted->isClassString();
 
 		$this->assertSame(
 			$expectedResult->describe(),

@@ -57,7 +57,7 @@ final class ClassImplementsFunctionReturnTypeExtension implements DynamicFunctio
 			return $variant->getReturnType();
 		}
 
-		if ($firstArgType->isClassStringType()->no()) {
+		if ($firstArgType->isClassString()->no()) {
 			return new ConstantBooleanType(false);
 		}
 

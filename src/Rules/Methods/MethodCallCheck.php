@@ -56,7 +56,7 @@ final class MethodCallCheck
 		if ($type instanceof StaticType) {
 			$typeForDescribe = $type->getStaticObjectType();
 		}
-		if (!$type->canCallMethods()->yes() || $type->isClassStringType()->yes()) {
+		if (!$type->canCallMethods()->yes() || $type->isClassString()->yes()) {
 			return [
 				[
 					RuleErrorBuilder::message(sprintf(

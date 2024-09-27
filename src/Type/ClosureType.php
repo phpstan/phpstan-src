@@ -718,7 +718,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return TrinaryLogic::createNo();
 	}
 
-	public function isClassStringType(): TrinaryLogic
+	public function isClassString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

@@ -369,7 +369,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return TrinaryLogic::createNo();
 	}
 
-	public function isClassStringType(): TrinaryLogic
+	public function isClassString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

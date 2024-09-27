@@ -457,9 +457,9 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isLowercaseString();
 	}
 
-	public function isClassStringType(): TrinaryLogic
+	public function isClassString(): TrinaryLogic
 	{
-		return $this->resolve()->isClassStringType();
+		return $this->resolve()->isClassString();
 	}
 
 	public function getClassStringObjectType(): Type

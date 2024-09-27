@@ -377,7 +377,7 @@ class IterableType implements CompoundType
 		return TrinaryLogic::createNo();
 	}
 
-	public function isClassStringType(): TrinaryLogic
+	public function isClassString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

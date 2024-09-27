@@ -245,7 +245,7 @@ class StringType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function isClassStringType(): TrinaryLogic
+	public function isClassString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
 	}
@@ -272,7 +272,7 @@ class StringType implements Type
 
 	public function hasMethod(string $methodName): TrinaryLogic
 	{
-		if ($this->isClassStringType()->yes()) {
+		if ($this->isClassString()->yes()) {
 			return TrinaryLogic::createMaybe();
 		}
 		return TrinaryLogic::createNo();

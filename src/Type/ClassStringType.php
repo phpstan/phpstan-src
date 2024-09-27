@@ -32,7 +32,7 @@ class ClassStringType extends StringType
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($type->isClassStringType(), []);
+		return new AcceptsResult($type->isClassString(), []);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -41,7 +41,7 @@ class ClassStringType extends StringType
 			return $type->isSubTypeOf($this);
 		}
 
-		return $type->isClassStringType();
+		return $type->isClassString();
 	}
 
 	public function isString(): TrinaryLogic
@@ -74,7 +74,7 @@ class ClassStringType extends StringType
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function isClassStringType(): TrinaryLogic
+	public function isClassString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
 	}

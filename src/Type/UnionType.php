@@ -617,9 +617,9 @@ class UnionType implements CompoundType
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isLowercaseString());
 	}
 
-	public function isClassStringType(): TrinaryLogic
+	public function isClassString(): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isClassStringType());
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isClassString());
 	}
 
 	public function getClassStringObjectType(): Type

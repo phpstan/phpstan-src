@@ -907,7 +907,7 @@ function bugEmptySubexpression (string $string): void {
 	}
 
 	if (preg_match('/()/', $string, $matches)) {
-		assertType("array{string, string}", $matches); // could be array{'', ''}
+		assertType("array{string, ''}", $matches); // could be array{'', ''}
 	}
 
 	if (preg_match('/|/', $string, $matches)) {
@@ -939,7 +939,7 @@ function bugEmptySubexpression (string $string): void {
 	}
 
 	if (preg_match('~((a)|()|(b))~', $string, $matches)) {
-		assertType("array{0: string, 1: string, 2?: ''|'a', 3?: string, 4?: 'b'}", $matches);
+		assertType("array{0: string, 1: ''|'a'|'b', 2?: ''|'a', 3?: '', 4?: 'b'}", $matches);
 	}
 }
 

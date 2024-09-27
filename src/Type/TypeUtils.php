@@ -6,7 +6,6 @@ use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateUnionType;
@@ -32,15 +31,6 @@ final class TypeUtils
 	public static function getIntegerRanges(Type $type): array
 	{
 		return self::map(IntegerRangeType::class, $type, false);
-	}
-
-	/**
-	 * @deprecated Use Type::getEnumCases()
-	 * @return EnumCaseObjectType[]
-	 */
-	public static function getEnumCaseObjects(Type $type): array
-	{
-		return self::map(EnumCaseObjectType::class, $type, false);
 	}
 
 	/**

@@ -1305,26 +1305,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 	}
 
-	/** @deprecated */
-	public function generalizeToArray(): Type
-	{
-		$isIterableAtLeastOnce = $this->isIterableAtLeastOnce();
-		if ($isIterableAtLeastOnce->no()) {
-			return $this;
-		}
-
-		$arrayType = new ArrayType($this->getIterableKeyType(), $this->getItemType());
-
-		if ($isIterableAtLeastOnce->yes()) {
-			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
-		}
-		if ($this->isList->yes()) {
-			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
-		}
-
-		return $arrayType;
-	}
-
 	/**
 	 * @return self
 	 */

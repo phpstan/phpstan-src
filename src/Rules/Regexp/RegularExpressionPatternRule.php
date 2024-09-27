@@ -2,6 +2,10 @@
 
 namespace PHPStan\Rules\Regexp;
 
+use Hoa\Compiler\Llk\Llk;
+use Hoa\Compiler\Llk\Parser;
+use Hoa\Exception\Exception as HoaException;
+use Hoa\File\Read;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Node;
@@ -21,8 +25,11 @@ use function strtolower;
 final class RegularExpressionPatternRule implements Rule
 {
 
+	private static ?Parser $parser = null;
+
 	public function __construct(
 		private RegexExpressionHelper $regexExpressionHelper,
+		private bool $reportUnparsedRegexpWhenCompilable,
 	)
 	{
 	}
@@ -38,12 +45,22 @@ final class RegularExpressionPatternRule implements Rule
 
 		$errors = [];
 		foreach ($patterns as $pattern) {
-			$errorMessage = $this->validatePattern($pattern);
-			if ($errorMessage === null) {
+			$errorMessage = $this->validatePatternByPcre($pattern);
+
+			if ($errorMessage !== null) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Regex pattern is invalid: %s', $errorMessage))->identifier('regexp.pattern')->build();
+
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf('Regex pattern is invalid: %s', $errorMessage))->identifier('regexp.pattern')->build();
+			$errorMessage = $this->validatePatternByParserGrammar($pattern);
+
+			if ($errorMessage !== null && $this->reportUnparsedRegexpWhenCompilable) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Regex pattern cannot be parsed: %s', $errorMessage))
+					->identifier('regexp.pattern')
+					->tip(sprintf('Please open an issue for your regex pattern at %s', 'https://github.com/phpstan/phpstan/issues'))
+					->build();
+			}
 		}
 
 		return $errors;
@@ -118,11 +135,28 @@ final class RegularExpressionPatternRule implements Rule
 		return $patternStrings;
 	}
 
-	private function validatePattern(string $pattern): ?string
+	private function validatePatternByPcre(string $pattern): ?string
 	{
 		try {
 			Strings::match('', $pattern);
 		} catch (RegexpException $e) {
+			return $e->getMessage();
+		}
+
+		return null;
+	}
+
+	private function validatePatternByParserGrammar(string $pattern): ?string
+	{
+		if (self::$parser === null) {
+			/** @throws void */
+			self::$parser = Llk::load(new Read(__DIR__ . '/../../../resources/RegexGrammar.pp'));
+		}
+
+		$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($pattern);
+		try {
+			self::$parser->parse($rawRegex);
+		} catch (HoaException $e) {
 			return $e->getMessage();
 		}
 

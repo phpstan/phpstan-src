@@ -18,6 +18,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 	{
 		return new RegularExpressionPatternRule(
 			self::getContainer()->getByType(RegexExpressionHelper::class),
+			true,
 		);
 	}
 

@@ -63,5 +63,6 @@ parameters:
 		explicitThrow: true
 		absentTypeChecks: true
 		requireFileExists: true
+		reportUnparsedRegexpWhenCompilable: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Rule.stub

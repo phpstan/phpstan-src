@@ -294,6 +294,8 @@ services:
 
 	-
 		class: PHPStan\Rules\Regexp\RegularExpressionPatternRule
+		arguments:
+			reportUnparsedRegexpWhenCompilable: %featureToggles.reportUnparsedRegexpWhenCompilable%
 		tags:
 			- phpstan.rules.rule
 

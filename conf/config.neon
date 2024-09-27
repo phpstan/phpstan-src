@@ -95,6 +95,7 @@ parameters:
 		validatePregQuote: false
 		noImplicitWildcard: false
 		requireFileExists: false
+		reportUnparsedRegexpWhenCompilable: false
 		narrowPregMatches: true
 		tooWidePropertyType: false
 		explicitThrow: false

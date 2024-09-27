@@ -94,6 +94,7 @@ parametersSchema:
 		explicitThrow: bool()
 		absentTypeChecks: bool()
 		requireFileExists: bool()
+		reportUnparsedRegexpWhenCompilable: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

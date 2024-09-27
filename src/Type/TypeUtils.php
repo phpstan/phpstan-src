@@ -35,15 +35,6 @@ final class TypeUtils
 	}
 
 	/**
-	 * @deprecated Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues()
-	 * @return ConstantScalarType[]
-	 */
-	public static function getConstantScalars(Type $type): array
-	{
-		return self::map(ConstantScalarType::class, $type, false);
-	}
-
-	/**
 	 * @deprecated Use Type::getEnumCases()
 	 * @return EnumCaseObjectType[]
 	 */

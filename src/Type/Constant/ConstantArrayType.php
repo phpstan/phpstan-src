@@ -144,10 +144,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->nextAutoIndexes;
 	}
 
-	/**
-	 * @deprecated
-	 */
-	public function getNextAutoIndex(): int
+	private function getNextAutoIndex(): int
 	{
 		return $this->nextAutoIndexes[count($this->nextAutoIndexes) - 1];
 	}
@@ -1076,7 +1073,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				array_pop($valueTypes);
 				$nextAutoindex = $removedKeyType instanceof ConstantIntegerType
 					? $removedKeyType->getValue()
-					: $this->getNextAutoIndex(); // @phpstan-ignore method.deprecated
+					: $this->getNextAutoIndex();
 				continue;
 			}
 

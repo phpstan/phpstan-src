@@ -247,3 +247,4 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
 * Rename `Type::isClassStringType()` to `Type::isClassString()`
 * Remove `Scope::isSpecified()`, use `hasExpressionType()` instead
 * Remove `ConstantArrayType::isEmpty()`, use `isIterableAtLeastOnce()->no()` instead
+* Remove `ConstantArrayType::getNextAutoIndex()`

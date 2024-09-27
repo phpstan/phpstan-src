@@ -10,6 +10,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -474,6 +475,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		if ($isZero->no()) {
 			return new IntersectionType([
 				new StringType(),
+				new AccessoryLowercaseStringType(),
 				new AccessoryNumericStringType(),
 				new AccessoryNonFalsyStringType(),
 			]);
@@ -481,6 +483,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 		return new IntersectionType([
 			new StringType(),
+			new AccessoryLowercaseStringType(),
 			new AccessoryNumericStringType(),
 		]);
 	}

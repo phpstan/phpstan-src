@@ -50,16 +50,16 @@ class Foo
 			assertType('int', $key1);
 		}
 		if (array_key_exists($key2, $a)) {
-			assertType('numeric-string', $key2);
+			assertType('lowercase-string&numeric-string', $key2);
 		}
 		if (array_key_exists($key3, $a)) {
-			assertType('int|numeric-string', $key3);
+			assertType('int|(lowercase-string&numeric-string)', $key3);
 		}
 		if (array_key_exists($key4, $a)) {
-			assertType('(int|numeric-string)', $key4);
+			assertType('(int|(lowercase-string&numeric-string))', $key4);
 		}
 		if (array_key_exists($key5, $a)) {
-			assertType('int|numeric-string', $key5);
+			assertType('int|(lowercase-string&numeric-string)', $key5);
 		}
 
 		if (array_key_exists($key1, $b)) {

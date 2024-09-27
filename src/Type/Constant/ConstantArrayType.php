@@ -1034,12 +1034,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		);
 	}
 
-	/** @deprecated Use shiftArray() instead */
-	public function removeFirst(): self
-	{
-		return $this->removeFirstElements(1);
-	}
-
 	/** @param positive-int $length */
 	private function removeFirstElements(int $length, bool $reindex = true): self
 	{

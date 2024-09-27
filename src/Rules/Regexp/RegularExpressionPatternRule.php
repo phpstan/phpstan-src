@@ -59,9 +59,9 @@ final class RegularExpressionPatternRule implements Rule
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf('Regex pattern cannot be parsed: %s', $errorMessage))
+			$errors[] = RuleErrorBuilder::message(sprintf('Regex pattern cannot be parsed by PHPStan: %s', $errorMessage))
 				->identifier('regexp.pattern')
-				->tip(sprintf('Please open an issue for your regex pattern at %s', 'https://github.com/phpstan/phpstan/issues'))
+				->tip(sprintf('Please identify minimal reproducible pattern and report it at %s', 'https://github.com/phpstan/phpstan/issues'))
 				->build();
 		}
 

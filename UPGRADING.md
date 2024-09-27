@@ -240,3 +240,4 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
 * Remove unused `PHPStanTestCase::$useStaticReflectionProvider`
 * Remove `PHPStanTestCase::getReflectors()`, use `getReflector()` instead
 * Remove `ClassReflection::getFileNameWithPhpDocs()`, use `getFileName()` instead
+* Remove `AnalysisResult::getInternalErrors()`, use `getInternalErrorObjects()` instead

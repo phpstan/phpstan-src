@@ -5,7 +5,6 @@ namespace PHPStan\Command;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Collectors\CollectedData;
-use function array_map;
 use function count;
 use function usort;
 
@@ -80,15 +79,6 @@ final class AnalysisResult
 	public function getNotFileSpecificErrors(): array
 	{
 		return $this->notFileSpecificErrors;
-	}
-
-	/**
-	 * @deprecated Use getInternalErrorObjects
-	 * @return list<string>
-	 */
-	public function getInternalErrors(): array
-	{
-		return array_map(static fn (InternalError $internalError) => $internalError->getMessage(), $this->internalErrors);
 	}
 
 	/**

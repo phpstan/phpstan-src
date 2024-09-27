@@ -367,6 +367,7 @@ final class RegexGroupParser
 		if (
 			$ast->getId() === '#concatenation'
 			&& count($children) > 0
+			&& !$walkResult->isInOptionalQuantification()
 		) {
 			$meaningfulTokens = 0;
 			foreach ($children as $child) {
@@ -377,7 +378,7 @@ final class RegexGroupParser
 
 				$meaningfulTokens++;
 
-				if (!$nonFalsy || $inAlternation || $walkResult->isInOptionalQuantification()) {
+				if (!$nonFalsy || $inAlternation) {
 					continue;
 				}
 
@@ -386,7 +387,7 @@ final class RegexGroupParser
 				break;
 			}
 
-			if ($meaningfulTokens > 0 && !$walkResult->isInOptionalQuantification()) {
+			if ($meaningfulTokens > 0) {
 				$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
 
 				// two non-empty tokens concatenated results in a non-falsy string

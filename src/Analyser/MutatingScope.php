@@ -2781,15 +2781,6 @@ final class MutatingScope implements Scope
 		return ConstantTypeHelper::getTypeFromValue($value);
 	}
 
-	/**
-	 * @api
-	 * @deprecated use hasExpressionType instead
-	 */
-	public function isSpecified(Expr $node): bool
-	{
-		return !$node instanceof Variable && $this->hasExpressionType($node)->yes();
-	}
-
 	/** @api */
 	public function hasExpressionType(Expr $node): TrinaryLogic
 	{

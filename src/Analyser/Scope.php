@@ -105,9 +105,6 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	 */
 	public function getTypeFromValue($value): Type;
 
-	/** @deprecated use hasExpressionType instead */
-	public function isSpecified(Expr $node): bool;
-
 	public function hasExpressionType(Expr $node): TrinaryLogic;
 
 	public function isInClassExists(string $className): bool;

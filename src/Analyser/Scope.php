@@ -91,11 +91,6 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function getKeepVoidType(Expr $node): Type;
 
-	/**
-	 * @deprecated Use getNativeType()
-	 */
-	public function doNotTreatPhpDocTypesAsCertain(): self;
-
 	public function resolveName(Name $name): string;
 
 	public function resolveTypeByName(Name $name): TypeWithClassName;

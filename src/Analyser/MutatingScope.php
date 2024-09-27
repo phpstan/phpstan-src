@@ -2587,10 +2587,6 @@ final class MutatingScope implements Scope
 		return $this->getType($clonedNode);
 	}
 
-	/**
-	 * @api
-	 * @deprecated Use getNativeType()
-	 */
 	public function doNotTreatPhpDocTypesAsCertain(): Scope
 	{
 		return $this->promoteNativeTypes();

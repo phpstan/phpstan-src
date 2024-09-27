@@ -12,6 +12,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function count;
 use function sprintf;
 
 /**
@@ -74,7 +75,7 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Cannot access offset %s on %s.',
-							$dimType->describe(VerbosityLevel::value()),
+							$dimType->describe(count($dimType->getConstantStrings()) > 0 ? VerbosityLevel::precise() : VerbosityLevel::value()),
 							$isOffsetAccessibleType->describe(VerbosityLevel::value()),
 						))->identifier('offsetAccess.nonOffsetAccessible')->build(),
 					];

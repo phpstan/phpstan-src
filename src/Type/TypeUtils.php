@@ -11,8 +11,6 @@ use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateUnionType;
 use function array_merge;
-use function array_unique;
-use function array_values;
 
 /**
  * @api
@@ -26,31 +24,6 @@ final class TypeUtils
 	public static function getConstantIntegers(Type $type): array
 	{
 		return self::map(ConstantIntegerType::class, $type, false);
-	}
-
-	/**
-	 * @return list<string>
-	 *
-	 * @deprecated Use Type::getObjectClassNames() instead.
-	 */
-	public static function getDirectClassNames(Type $type): array
-	{
-		if ($type instanceof TypeWithClassName) {
-			return [$type->getClassName()];
-		}
-
-		if ($type instanceof UnionType || $type instanceof IntersectionType) {
-			$classNames = [];
-			foreach ($type->getTypes() as $innerType) {
-				foreach (self::getDirectClassNames($innerType) as $n) {
-					$classNames[] = $n;
-				}
-			}
-
-			return array_values(array_unique($classNames));
-		}
-
-		return [];
 	}
 
 	/**

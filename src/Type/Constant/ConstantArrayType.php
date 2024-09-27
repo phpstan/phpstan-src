@@ -242,36 +242,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->keyTypes;
 	}
 
-	/** @deprecated Use getFirstIterableKeyType() instead */
-	public function getFirstKeyType(): Type
-	{
-		return $this->getFirstIterableKeyType();
-	}
-
-	/** @deprecated Use getLastIterableKeyType() instead */
-	public function getLastKeyType(): Type
-	{
-		return $this->getLastIterableKeyType();
-	}
-
 	/**
 	 * @return array<int, Type>
 	 */
 	public function getValueTypes(): array
 	{
 		return $this->valueTypes;
-	}
-
-	/** @deprecated Use getFirstIterableValueType() instead */
-	public function getFirstValueType(): Type
-	{
-		return $this->getFirstIterableValueType();
-	}
-
-	/** @deprecated Use getLastIterableValueType() instead */
-	public function getLastValueType(): Type
-	{
-		return $this->getLastIterableValueType();
 	}
 
 	public function isOptionalKey(int $i): bool

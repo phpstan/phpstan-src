@@ -252,6 +252,7 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
   * Use `getFirstIterable*Type` and `getLastIterable*Type` instead
 * Remove `ConstantArrayType::generalizeToArray()`
 * Remove `ConstantArrayType::findTypeAndMethodName()`, use `findTypeAndMethodNames()` instead
+* Remove `ConstantArrayType::removeLast()`, use [`Type::popArray()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_popArray) instead
 * Made `TypeUtils` thinner by removing methods:
   * Remove `TypeUtils::getArrays()` and `getAnyArrays()`, use [`Type::getArrays()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getArrays) instead
   * Remove `TypeUtils::getConstantArrays()` and `getOldConstantArrays()`, use [`Type::getConstantArrays()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getConstantArrays) instead

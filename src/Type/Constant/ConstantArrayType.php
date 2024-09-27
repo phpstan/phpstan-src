@@ -489,36 +489,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return [$classOrObject, $method];
 	}
 
-	/** @deprecated Use findTypeAndMethodNames() instead  */
-	public function findTypeAndMethodName(): ?ConstantArrayTypeAndMethod
-	{
-		$callableArray = $this->getClassOrObjectAndMethods();
-		if ($callableArray === []) {
-			return null;
-		}
-
-		[$classOrObject, $method] = $callableArray;
-		if (!$method instanceof ConstantStringType) {
-			return ConstantArrayTypeAndMethod::createUnknown();
-		}
-
-		$type = $classOrObject->getObjectTypeOrClassStringObjectType();
-		if (!$type->isObject()->yes()) {
-			return ConstantArrayTypeAndMethod::createUnknown();
-		}
-
-		$has = $type->hasMethod($method->getValue());
-		if (!$has->no()) {
-			if ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
-				$has = $has->and(TrinaryLogic::createMaybe());
-			}
-
-			return ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
-		}
-
-		return null;
-	}
-
 	/** @return ConstantArrayTypeAndMethod[] */
 	public function findTypeAndMethodNames(): array
 	{
@@ -1008,12 +978,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function isList(): TrinaryLogic
 	{
 		return $this->isList;
-	}
-
-	/** @deprecated Use popArray() instead */
-	public function removeLast(): self
-	{
-		return $this->removeLastElements(1);
 	}
 
 	/** @param positive-int $length */

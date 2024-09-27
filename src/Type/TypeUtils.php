@@ -22,52 +22,6 @@ final class TypeUtils
 {
 
 	/**
-	 * @return ArrayType[]
-	 *
-	 * @deprecated Use PHPStan\Type\Type::getArrays() instead and handle optional ConstantArrayType keys if necessary.
-	 */
-	public static function getArrays(Type $type): array
-	{
-		if ($type instanceof ConstantArrayType) {
-			return $type->getAllArrays();
-		}
-
-		if ($type instanceof ArrayType) {
-			return [$type];
-		}
-
-		if ($type instanceof UnionType) {
-			$matchingTypes = [];
-			foreach ($type->getTypes() as $innerType) {
-				if (!$innerType instanceof ArrayType) {
-					return [];
-				}
-				foreach (self::getArrays($innerType) as $innerInnerType) {
-					$matchingTypes[] = $innerInnerType;
-				}
-			}
-
-			return $matchingTypes;
-		}
-
-		if ($type instanceof IntersectionType) {
-			$matchingTypes = [];
-			foreach ($type->getTypes() as $innerType) {
-				if (!$innerType instanceof ArrayType) {
-					continue;
-				}
-				foreach (self::getArrays($innerType) as $innerInnerType) {
-					$matchingTypes[] = $innerInnerType;
-				}
-			}
-
-			return $matchingTypes;
-		}
-
-		return [];
-	}
-
-	/**
 	 * @return ConstantArrayType[]
 	 *
 	 * @deprecated Use PHPStan\Type\Type::getConstantArrays() instead and handle optional keys if necessary.

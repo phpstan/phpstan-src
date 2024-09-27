@@ -187,7 +187,7 @@ quantifier:
       | ::negative_class_:: #negativeclass
       | ::class_::
     )
-    <range>? ( <posix_class> | <class_> | range() | literal() )* <range>?
+    <range>? ( <posix_class> | <class_> | range() <range>? | literal() )* <range>?
     ::_class::
 
 #range:

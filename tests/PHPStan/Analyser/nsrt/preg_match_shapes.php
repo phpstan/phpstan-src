@@ -893,3 +893,9 @@ function testEscapedDelimiter (string $string): void {
 		assertType("array{string, '', 'y\\\\\\\}'}|array{string, 'x\\\{'}", $matches);
 	}
 }
+
+function bugUnescapedDashAfterRange (string $string): void {
+	if (preg_match('/([0-1-y])/', $string, $matches)) {
+		assertType("array{string, non-empty-string}", $matches);
+	}
+}

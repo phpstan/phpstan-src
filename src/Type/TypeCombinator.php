@@ -807,7 +807,7 @@ final class TypeCombinator
 
 					$innerValueType = $type->getValueTypes()[$i];
 					$generalizedValueType = TypeTraverser::map($innerValueType, static function (Type $type, callable $innerTraverse) use ($traverse): Type {
-						if ($type instanceof ArrayType) {
+						if ($type instanceof ArrayType || $type instanceof ConstantArrayType) {
 							return TypeCombinator::intersect($type, new OversizedArrayType());
 						}
 
@@ -1207,7 +1207,7 @@ final class TypeCombinator
 						continue 2;
 					}
 
-					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof ArrayType) {
+					if ($types[$i] instanceof ConstantArrayType && ($types[$j] instanceof ArrayType || $types[$j] instanceof ConstantArrayType)) {
 						$newArray = ConstantArrayTypeBuilder::createEmpty();
 						$valueTypes = $types[$i]->getValueTypes();
 						foreach ($types[$i]->getKeyTypes() as $k => $keyType) {
@@ -1223,7 +1223,7 @@ final class TypeCombinator
 						continue 2;
 					}
 
-					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof ArrayType) {
+					if ($types[$j] instanceof ConstantArrayType && ($types[$i] instanceof ArrayType || $types[$i] instanceof ConstantArrayType)) {
 						$newArray = ConstantArrayTypeBuilder::createEmpty();
 						$valueTypes = $types[$j]->getValueTypes();
 						foreach ($types[$j]->getKeyTypes() as $k => $keyType) {
@@ -1240,8 +1240,8 @@ final class TypeCombinator
 					}
 
 					if (
-						($types[$i] instanceof ArrayType || $types[$i] instanceof IterableType) &&
-						($types[$j] instanceof ArrayType || $types[$j] instanceof IterableType)
+						($types[$i] instanceof ArrayType || $types[$i] instanceof ConstantArrayType || $types[$i] instanceof IterableType) &&
+						($types[$j] instanceof ArrayType || $types[$j] instanceof ConstantArrayType || $types[$j] instanceof IterableType)
 					) {
 						$keyType = self::intersect($types[$i]->getIterableKeyType(), $types[$j]->getKeyType());
 						$itemType = self::intersect($types[$i]->getItemType(), $types[$j]->getItemType());

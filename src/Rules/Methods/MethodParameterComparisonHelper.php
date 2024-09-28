@@ -9,6 +9,7 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -390,6 +391,9 @@ final class MethodParameterComparisonHelper
 
 			if ($methodParameterType instanceof IterableType) {
 				if ($prototypeParameterType instanceof ArrayType) {
+					return true;
+				}
+				if ($prototypeParameterType instanceof ConstantArrayType) {
 					return true;
 				}
 				if ($prototypeParameterType->isObject()->yes() && $prototypeParameterType->getObjectClassNames() === [Traversable::class]) {

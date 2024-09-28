@@ -56,7 +56,7 @@ interface Type
 
 	public function isEnum(): TrinaryLogic;
 
-	/** @return list<ArrayType> */
+	/** @return list<ArrayType|ConstantArrayType> */
 	public function getArrays(): array;
 
 	/** @return list<ConstantArrayType> */

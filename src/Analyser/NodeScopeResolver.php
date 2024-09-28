@@ -3868,7 +3868,7 @@ final class NodeScopeResolver
 				return $traverse($type);
 			}
 
-			if (!$type instanceof ArrayType) {
+			if (!$type instanceof ArrayType && !$type instanceof ConstantArrayType) {
 				return $type;
 			}
 

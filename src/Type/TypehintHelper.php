@@ -10,6 +10,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use ReflectionType;
 use function array_map;
@@ -30,7 +31,7 @@ final class TypehintHelper
 	): Type
 	{
 		if ($reflectionType === null) {
-			if ($isVariadic && $phpDocType instanceof ArrayType) {
+			if ($isVariadic && ($phpDocType instanceof ArrayType || $phpDocType instanceof ConstantArrayType)) {
 				$phpDocType = $phpDocType->getItemType();
 			}
 			return $phpDocType ?? new MixedType();
@@ -109,7 +110,7 @@ final class TypehintHelper
 				if ($phpDocType instanceof UnionType) {
 					$innerTypes = [];
 					foreach ($phpDocType->getTypes() as $innerType) {
-						if ($innerType instanceof ArrayType) {
+						if ($innerType instanceof ArrayType || $innerType instanceof ConstantArrayType) {
 							$innerTypes[] = new IterableType(
 								$innerType->getIterableKeyType(),
 								$innerType->getItemType(),
@@ -119,7 +120,7 @@ final class TypehintHelper
 						}
 					}
 					$phpDocType = new UnionType($innerTypes);
-				} elseif ($phpDocType instanceof ArrayType) {
+				} elseif ($phpDocType instanceof ArrayType || $phpDocType instanceof ConstantArrayType) {
 					$phpDocType = new IterableType(
 						$phpDocType->getKeyType(),
 						$phpDocType->getItemType(),

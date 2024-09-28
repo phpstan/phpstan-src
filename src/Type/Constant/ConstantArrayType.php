@@ -23,6 +23,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -38,6 +39,9 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\Traits\ArrayTypeTrait;
+use PHPStan\Type\Traits\NonObjectTypeTrait;
+use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -68,8 +72,14 @@ use function str_contains;
 /**
  * @api
  */
-class ConstantArrayType extends ArrayType implements ConstantType
+class ConstantArrayType implements ConstantType
 {
+
+	use ArrayTypeTrait {
+		chunkArray as traitChunkArray;
+	}
+	use NonObjectTypeTrait;
+	use UndecidedComparisonTypeTrait;
 
 	private const DESCRIBE_LIMIT = 8;
 	private const CHUNK_FINITE_TYPES_LIMIT = 5;
@@ -81,6 +91,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	/** @var non-empty-list<int> */
 	private array $nextAutoIndexes;
+
+	private ?Type $iterableKeyType = null;
+
+	private ?Type $iterableValueType = null;
 
 	/**
 	 * @api
@@ -107,28 +121,73 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$keyTypesCount = count($this->keyTypes);
 		if ($keyTypesCount === 0) {
-			$keyType = new NeverType(true);
 			$isList = TrinaryLogic::createYes();
-		} elseif ($keyTypesCount === 1) {
-			$keyType = $this->keyTypes[0];
-		} else {
-			$keyType = new UnionType($this->keyTypes);
 		}
 
 		if (is_bool($isList)) {
 			$isList = TrinaryLogic::createFromBoolean($isList);
 		}
 		$this->isList = $isList;
-
-		parent::__construct(
-			$keyType,
-			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType(true),
-		);
 	}
 
 	public function getConstantArrays(): array
 	{
 		return [$this];
+	}
+
+	public function getReferencedClasses(): array
+	{
+		$referencedClasses = [];
+		foreach ($this->getKeyTypes() as $keyType) {
+			foreach ($keyType->getReferencedClasses() as $referencedClass) {
+				$referencedClasses[] = $referencedClass;
+			}
+		}
+
+		foreach ($this->getValueTypes() as $valueType) {
+			foreach ($valueType->getReferencedClasses() as $referencedClass) {
+				$referencedClasses[] = $referencedClass;
+			}
+		}
+
+		return $referencedClasses;
+	}
+
+	public function getIterableKeyType(): Type
+	{
+		if ($this->iterableKeyType !== null) {
+			return $this->iterableKeyType;
+		}
+
+		$keyTypesCount = count($this->keyTypes);
+		if ($keyTypesCount === 0) {
+			$keyType = new NeverType(true);
+		} elseif ($keyTypesCount === 1) {
+			$keyType = $this->keyTypes[0];
+		} else {
+			$keyType = new UnionType($this->keyTypes);
+		}
+
+		return $this->iterableKeyType = $keyType;
+	}
+
+	public function getIterableValueType(): Type
+	{
+		if ($this->iterableValueType !== null) {
+			return $this->iterableValueType;
+		}
+
+		return $this->iterableValueType = count($this->valueTypes) > 0 ? TypeCombinator::union(...$this->valueTypes) : new NeverType(true);
+	}
+
+	public function getKeyType(): Type
+	{
+		return $this->getIterableKeyType();
+	}
+
+	public function getItemType(): Type
+	{
+		return $this->getIterableValueType();
 	}
 
 	public function isConstantValue(): TrinaryLogic
@@ -363,12 +422,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				return $result;
 			}
 
-			$isKeySuperType = $this->getKeyType()->isSuperTypeOf($type->getKeyType());
+			$isKeySuperType = $this->getIterableKeyType()->isSuperTypeOf($type->getKeyType());
 			if ($isKeySuperType->no()) {
 				return TrinaryLogic::createNo();
 			}
 
-			return $result->and($isKeySuperType, $this->getItemType()->isSuperTypeOf($type->getItemType()));
+			return $result->and($isKeySuperType, $this->getIterableValueType()->isSuperTypeOf($type->getIterableKeyType()));
 		}
 
 		if ($type instanceof CompoundType) {
@@ -738,7 +797,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$results = [];
 			foreach ($finiteTypes as $finiteType) {
 				if (!$finiteType instanceof ConstantIntegerType || $finiteType->getValue() < 1) {
-					return parent::chunkArray($lengthType, $preserveKeys);
+					return $this->traitChunkArray($lengthType, $preserveKeys);
 				}
 
 				$length = $finiteType->getValue();
@@ -757,7 +816,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return TypeCombinator::union(...$results);
 		}
 
-		return parent::chunkArray($lengthType, $preserveKeys);
+		return $this->traitChunkArray($lengthType, $preserveKeys);
 	}
 
 	public function fillKeysArray(Type $valueType): Type
@@ -880,7 +939,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $valuesArray;
 		}
 
-		$generalizedArray = new ArrayType($valuesArray->getIterableKeyType(), $valuesArray->getItemType());
+		$generalizedArray = new ArrayType($valuesArray->getIterableKeyType(), $valuesArray->getIterableValueType());
 
 		if ($isIterableAtLeastOnce->yes()) {
 			$generalizedArray = TypeCombinator::intersect($generalizedArray, new NonEmptyArrayType());
@@ -1192,7 +1251,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$arrayType = new ArrayType(
 			$this->getIterableKeyType()->generalize($precision),
-			$this->getItemType()->generalize($precision),
+			$this->getIterableValueType()->generalize($precision),
 		);
 
 		$keyTypesCount = count($this->keyTypes);
@@ -1222,10 +1281,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $arrayType;
 	}
 
-	/**
-	 * @return self
-	 */
-	public function generalizeValues(): ArrayType
+	public function generalizeValues(): self
 	{
 		$valueTypes = [];
 		foreach ($this->valueTypes as $valueType) {
@@ -1235,18 +1291,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 	}
 
-	/**
-	 * @return self
-	 */
-	public function getKeysArray(): Type
+	public function getKeysArray(): self
 	{
 		return $this->getKeysOrValuesArray($this->keyTypes);
 	}
 
-	/**
-	 * @return self
-	 */
-	public function getValuesArray(): Type
+	public function getValuesArray(): self
 	{
 		return $this->getKeysOrValuesArray($this->valueTypes);
 	}
@@ -1343,7 +1393,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			);
 		};
 		return $level->handle(
-			fn (): string => parent::describe($level),
+			fn (): string => $this->isIterableAtLeastOnce()->no() ? 'array' : sprintf('array<%s, %s>', $this->getIterableKeyType()->describe($level), $this->getIterableValueType()->describe($level)),
 			static fn (): string => $describeValue(true),
 			static fn (): string => $describeValue(false),
 		);
@@ -1369,7 +1419,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $typeMap;
 		}
 
-		return parent::inferTemplateTypes($receivedType);
+		if ($receivedType->isArray()->yes()) {
+			$keyTypeMap = $this->getIterableKeyType()->inferTemplateTypes($receivedType->getIterableKeyType());
+			$itemTypeMap = $this->getIterableValueType()->inferTemplateTypes($receivedType->getIterableValueType());
+
+			return $keyTypeMap->union($itemTypeMap);
+		}
+
+		return TemplateTypeMap::createEmpty();
 	}
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
@@ -1390,6 +1447,27 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return $references;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($typeToRemove->isConstantArray()->yes() && $typeToRemove->isIterableAtLeastOnce()->no()) {
+			return TypeCombinator::intersect($this, new NonEmptyArrayType());
+		}
+
+		if ($typeToRemove instanceof NonEmptyArrayType) {
+			return new ConstantArrayType([], []);
+		}
+
+		if ($typeToRemove instanceof HasOffsetType) {
+			return $this->unsetOffset($typeToRemove->getOffsetType());
+		}
+
+		if ($typeToRemove instanceof HasOffsetValueType) {
+			return $this->unsetOffset($typeToRemove->getOffsetType());
+		}
+
+		return null;
 	}
 
 	public function traverse(callable $cb): Type

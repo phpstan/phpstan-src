@@ -11,7 +11,6 @@ use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
-use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -23,6 +22,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Traits\ArrayTypeTrait;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
@@ -36,6 +36,7 @@ use function sprintf;
 class ArrayType implements Type
 {
 
+	use ArrayTypeTrait;
 	use MaybeCallableTypeTrait;
 	use NonObjectTypeTrait;
 	use UndecidedBooleanTypeTrait;
@@ -72,21 +73,6 @@ class ArrayType implements Type
 			$this->keyType->getReferencedClasses(),
 			$this->getItemType()->getReferencedClasses(),
 		);
-	}
-
-	public function getObjectClassNames(): array
-	{
-		return [];
-	}
-
-	public function getObjectClassReflections(): array
-	{
-		return [];
-	}
-
-	public function getArrays(): array
-	{
-		return [$this];
 	}
 
 	public function getConstantArrays(): array
@@ -129,7 +115,7 @@ class ArrayType implements Type
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		if ($type instanceof self) {
+		if ($type instanceof self || $type instanceof ConstantArrayType) {
 			return $this->getItemType()->isSuperTypeOf($type->getItemType())
 				->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
 		}
@@ -144,7 +130,6 @@ class ArrayType implements Type
 	public function equals(Type $type): bool
 	{
 		return $type instanceof self
-			&& $type->isConstantArray()->no()
 			&& $this->getItemType()->equals($type->getIterableValueType())
 			&& $this->keyType->equals($type->keyType);
 	}
@@ -198,11 +183,6 @@ class ArrayType implements Type
 		return TypeCombinator::intersect(new self(new IntegerType(), $this->itemType), new AccessoryArrayListType());
 	}
 
-	public function isIterable(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
-	}
-
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
@@ -251,19 +231,9 @@ class ArrayType implements Type
 		return $this->getItemType();
 	}
 
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
-	}
-
 	public function isConstantArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
-	}
-
-	public function isOversizedArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
 	}
 
 	public function isList(): TrinaryLogic
@@ -275,107 +245,7 @@ class ArrayType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function isNull(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
 	public function isConstantValue(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isConstantScalarValue(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function getConstantScalarTypes(): array
-	{
-		return [];
-	}
-
-	public function getConstantScalarValues(): array
-	{
-		return [];
-	}
-
-	public function isTrue(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isFalse(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isBoolean(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isFloat(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isInteger(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isString(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isNumericString(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isNonEmptyString(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isNonFalsyString(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isLiteralString(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isLowercaseString(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isClassString(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function getClassStringObjectType(): Type
-	{
-		return new ErrorType();
-	}
-
-	public function getObjectTypeOrClassStringObjectType(): Type
-	{
-		return new ErrorType();
-	}
-
-	public function isVoid(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}
@@ -383,16 +253,6 @@ class ArrayType implements Type
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		return new BooleanType();
-	}
-
-	public function isOffsetAccessible(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
-	}
-
-	public function isOffsetAccessLegal(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
 	}
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
@@ -510,20 +370,6 @@ class ArrayType implements Type
 		return $this;
 	}
 
-	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
-	{
-		$chunkType = $preserveKeys->yes()
-			? $this
-			: TypeCombinator::intersect(new ArrayType(new IntegerType(), $this->getIterableValueType()), new AccessoryArrayListType());
-		$chunkType = TypeCombinator::intersect($chunkType, new NonEmptyArrayType());
-
-		$arrayType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $chunkType), new AccessoryArrayListType());
-
-		return $this->isIterableAtLeastOnce()->yes()
-			? TypeCombinator::intersect($arrayType, new NonEmptyArrayType())
-			: $arrayType;
-	}
-
 	public function fillKeysArray(Type $valueType): Type
 	{
 		$itemType = $this->getItemType();
@@ -597,21 +443,6 @@ class ArrayType implements Type
 		return [new TrivialParametersAcceptor()];
 	}
 
-	public function toNumber(): Type
-	{
-		return new ErrorType();
-	}
-
-	public function toAbsoluteNumber(): Type
-	{
-		return new ErrorType();
-	}
-
-	public function toString(): Type
-	{
-		return new ErrorType();
-	}
-
 	public function toInteger(): Type
 	{
 		return TypeCombinator::union(
@@ -626,16 +457,6 @@ class ArrayType implements Type
 			new ConstantFloatType(0.0),
 			new ConstantFloatType(1.0),
 		);
-	}
-
-	public function toArray(): Type
-	{
-		return $this;
-	}
-
-	public function toArrayKey(): Type
-	{
-		return new ErrorType();
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
@@ -733,20 +554,7 @@ class ArrayType implements Type
 			return new ConstantArrayType([], []);
 		}
 
-		if ($this->isConstantArray()->yes() && $typeToRemove instanceof HasOffsetType) {
-			return $this->unsetOffset($typeToRemove->getOffsetType());
-		}
-
-		if ($this->isConstantArray()->yes() && $typeToRemove instanceof HasOffsetValueType) {
-			return $this->unsetOffset($typeToRemove->getOffsetType());
-		}
-
 		return null;
-	}
-
-	public function exponentiate(Type $exponent): Type
-	{
-		return new ErrorType();
 	}
 
 	public function getFiniteTypes(): array

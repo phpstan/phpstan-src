@@ -59,6 +59,7 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -570,6 +571,8 @@ final class TypeNodeResolver
 				if ($type instanceof ObjectType) {
 					$type = new IntersectionType([$type, new IterableType(new MixedType(), $arrayTypeType)]);
 				} elseif ($type instanceof ArrayType) {
+					$type = new ArrayType(new MixedType(), $arrayTypeType);
+				} elseif ($type instanceof ConstantArrayType) {
 					$type = new ArrayType(new MixedType(), $arrayTypeType);
 				} elseif ($type instanceof IterableType) {
 					$type = new IterableType(new MixedType(), $arrayTypeType);

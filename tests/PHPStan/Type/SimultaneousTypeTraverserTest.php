@@ -22,7 +22,7 @@ class SimultaneousTypeTraverserTest extends PHPStanTestCase
 			new ConstantArrayType(
 				[new ConstantIntegerType(0)],
 				[new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()])],
-				1,
+				[1],
 			),
 			'array<non-empty-string>',
 		];
@@ -31,7 +31,7 @@ class SimultaneousTypeTraverserTest extends PHPStanTestCase
 			new ConstantArrayType(
 				[new ConstantIntegerType(0)],
 				[new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()])],
-				1,
+				[1],
 			),
 			'array<int>',
 		];
@@ -40,7 +40,7 @@ class SimultaneousTypeTraverserTest extends PHPStanTestCase
 			new ConstantArrayType(
 				[new ConstantIntegerType(0)],
 				[new IntegerType()],
-				1,
+				[1],
 			),
 			'array<string>',
 		];

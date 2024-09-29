@@ -1794,7 +1794,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						new ConstantIntegerType(0),
 					], [
 						new StringType(),
-					], 1, [0]),
+					], [1], [0]),
 				],
 				UnionType::class,
 				'array{}|array{0?: string}',
@@ -3766,7 +3766,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					], [
 						new IntegerType(),
 						new IntegerType(),
-					], 2, [0]),
+					], [2], [0]),
 					new HasOffsetType(new ConstantStringType('a')),
 				],
 				ConstantArrayType::class,
@@ -4900,7 +4900,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				], [
 					new StringType(),
 					new StringType(),
-				], 2),
+				], [2]),
 				new HasOffsetType(new ConstantIntegerType(1)),
 				NeverType::class,
 				'*NEVER*=implicit',
@@ -4912,7 +4912,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				], [
 					new StringType(),
 					new StringType(),
-				], 2, [1]),
+				], [2], [1]),
 				new HasOffsetType(new ConstantIntegerType(1)),
 				ConstantArrayType::class,
 				'array{string}',
@@ -4924,7 +4924,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				], [
 					new StringType(),
 					new StringType(),
-				], 2, [1]),
+				], [2], [1]),
 				new HasOffsetType(new ConstantIntegerType(0)),
 				NeverType::class,
 				'*NEVER*=implicit',

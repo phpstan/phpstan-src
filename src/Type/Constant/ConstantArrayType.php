@@ -58,7 +58,6 @@ use function assert;
 use function count;
 use function implode;
 use function in_array;
-use function is_int;
 use function is_string;
 use function min;
 use function pow;
@@ -87,9 +86,6 @@ class ConstantArrayType implements Type
 	/** @var self[]|null */
 	private ?array $allArrays = null;
 
-	/** @var non-empty-list<int> */
-	private array $nextAutoIndexes;
-
 	private ?Type $iterableKeyType = null;
 
 	private ?Type $iterableValueType = null;
@@ -98,24 +94,18 @@ class ConstantArrayType implements Type
 	 * @api
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
-	 * @param non-empty-list<int>|int $nextAutoIndexes
+	 * @param non-empty-list<int> $nextAutoIndexes
 	 * @param int[] $optionalKeys
 	 */
 	public function __construct(
 		private array $keyTypes,
 		private array $valueTypes,
-		int|array $nextAutoIndexes = [0],
+		private array $nextAutoIndexes = [0],
 		private array $optionalKeys = [],
 		?TrinaryLogic $isList = null,
 	)
 	{
 		assert(count($keyTypes) === count($valueTypes));
-
-		if (is_int($nextAutoIndexes)) {
-			$nextAutoIndexes = [$nextAutoIndexes];
-		}
-
-		$this->nextAutoIndexes = $nextAutoIndexes;
 
 		$keyTypesCount = count($this->keyTypes);
 		if ($keyTypesCount === 0) {
@@ -199,11 +189,6 @@ class ConstantArrayType implements Type
 	public function getNextAutoIndexes(): array
 	{
 		return $this->nextAutoIndexes;
-	}
-
-	private function getNextAutoIndex(): int
-	{
-		return $this->nextAutoIndexes[count($this->nextAutoIndexes) - 1];
 	}
 
 	/**
@@ -1048,7 +1033,7 @@ class ConstantArrayType implements Type
 		$keyTypes = $this->keyTypes;
 		$valueTypes = $this->valueTypes;
 		$optionalKeys = $this->optionalKeys;
-		$nextAutoindex = $this->nextAutoIndexes;
+		$nextAutoindexes = $this->nextAutoIndexes;
 
 		$optionalKeysRemoved = 0;
 		$newLength = $keyTypesCount - $length;
@@ -1068,9 +1053,9 @@ class ConstantArrayType implements Type
 
 				$removedKeyType = array_pop($keyTypes);
 				array_pop($valueTypes);
-				$nextAutoindex = $removedKeyType instanceof ConstantIntegerType
-					? $removedKeyType->getValue()
-					: $this->getNextAutoIndex();
+				$nextAutoindexes = $removedKeyType instanceof ConstantIntegerType
+					? [$removedKeyType->getValue()]
+					: $this->nextAutoIndexes;
 				continue;
 			}
 
@@ -1085,7 +1070,7 @@ class ConstantArrayType implements Type
 		return new self(
 			$keyTypes,
 			$valueTypes,
-			$nextAutoindex,
+			$nextAutoindexes,
 			array_values($optionalKeys),
 			$this->isList,
 		);

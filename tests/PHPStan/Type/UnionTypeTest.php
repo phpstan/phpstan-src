@@ -111,7 +111,7 @@ class UnionTypeTest extends PHPStanTestCase
 		yield [new CallableType([$mixedParam, $integerParam], $stringType, false)];
 		yield [new ClassStringType()];
 		yield [new ClosureType([$mixedParam, $integerParam], $stringType, false)];
-		yield [new ConstantArrayType([$constantStringType, $constantIntegerType], [$mixedType, $stringType], 10, [1])];
+		yield [new ConstantArrayType([$constantStringType, $constantIntegerType], [$mixedType, $stringType], [10], [1])];
 		yield [new ConstantBooleanType(true)];
 		yield [new ConstantFloatType(3.14)];
 		yield [$constantIntegerType];
@@ -1418,7 +1418,7 @@ class UnionTypeTest extends PHPStanTestCase
 						new ConstantArrayType(
 							[new ConstantIntegerType(1), new ConstantIntegerType(2)],
 							[new IntegerType(), new StringType()],
-							2,
+							[2],
 							[0, 1],
 						),
 						new NonEmptyArrayType(),
@@ -1426,7 +1426,7 @@ class UnionTypeTest extends PHPStanTestCase
 					new ConstantArrayType(
 						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
 						[new ObjectType(Foo::class), new ObjectType(stdClass::class)],
-						2,
+						[2],
 					),
 				],
 				[
@@ -1440,7 +1440,7 @@ class UnionTypeTest extends PHPStanTestCase
 						new ConstantArrayType(
 							[new ConstantIntegerType(1), new ConstantIntegerType(2)],
 							[new IntegerType(), new StringType()],
-							2,
+							[2],
 							[0, 1],
 						),
 					),
@@ -1602,7 +1602,7 @@ class UnionTypeTest extends PHPStanTestCase
 						new ConstantArrayType(
 							[new ConstantIntegerType(1), new ConstantIntegerType(2)],
 							[new IntegerType(), new StringType()],
-							2,
+							[2],
 							[0, 1],
 						),
 						new NonEmptyArrayType(),
@@ -1610,7 +1610,7 @@ class UnionTypeTest extends PHPStanTestCase
 					new ConstantArrayType(
 						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
 						[new ObjectType(Foo::class), new ObjectType(stdClass::class)],
-						2,
+						[2],
 					),
 				),
 				[
@@ -1624,13 +1624,13 @@ class UnionTypeTest extends PHPStanTestCase
 					new ConstantArrayType(
 						[new ConstantIntegerType(1), new ConstantIntegerType(2)],
 						[new IntegerType(), new StringType()],
-						2,
+						[2],
 						[0, 1],
 					),
 					new ConstantArrayType(
 						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
 						[new ObjectType(Foo::class), new ObjectType(stdClass::class)],
-						2,
+						[2],
 					),
 				),
 				[

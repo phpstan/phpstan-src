@@ -89,7 +89,7 @@ class TypeGetFiniteTypesTest extends PHPStanTestCase
 			], [
 				new BooleanType(),
 				new BooleanType(),
-			], 2),
+			], [2]),
 			[
 				new ConstantArrayType([
 					new ConstantIntegerType(0),
@@ -97,28 +97,28 @@ class TypeGetFiniteTypesTest extends PHPStanTestCase
 				], [
 					new ConstantBooleanType(true),
 					new ConstantBooleanType(true),
-				], 2, [], TrinaryLogic::createYes()),
+				], [2], [], TrinaryLogic::createYes()),
 				new ConstantArrayType([
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
 				], [
 					new ConstantBooleanType(true),
 					new ConstantBooleanType(false),
-				], 2, [], TrinaryLogic::createYes()),
+				], [2], [], TrinaryLogic::createYes()),
 				new ConstantArrayType([
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
 				], [
 					new ConstantBooleanType(false),
 					new ConstantBooleanType(true),
-				], 2, [], TrinaryLogic::createYes()),
+				], [2], [], TrinaryLogic::createYes()),
 				new ConstantArrayType([
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
 				], [
 					new ConstantBooleanType(false),
 					new ConstantBooleanType(false),
-				], 2, [], TrinaryLogic::createYes()),
+				], [2], [], TrinaryLogic::createYes()),
 			],
 		];
 	}

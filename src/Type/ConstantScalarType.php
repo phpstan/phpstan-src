@@ -3,7 +3,7 @@
 namespace PHPStan\Type;
 
 /** @api */
-interface ConstantScalarType extends ConstantType
+interface ConstantScalarType extends Type
 {
 
 	/**

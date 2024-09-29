@@ -30,7 +30,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -71,7 +70,7 @@ use function str_contains;
 /**
  * @api
  */
-class ConstantArrayType implements ConstantType
+class ConstantArrayType implements Type
 {
 
 	use ArrayTypeTrait {

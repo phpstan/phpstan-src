@@ -149,7 +149,7 @@ final class RegexArrayShapeMatcher
 			if (!$this->containsUnmatchedAsNull($flags, $matchesAll)) {
 				// positive match has a subject but not any capturing group
 				$combiType = TypeCombinator::union(
-					new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [1], [], true),
+					new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [1], [], TrinaryLogic::createYes()),
 					$combiType,
 				);
 			}
@@ -214,7 +214,7 @@ final class RegexArrayShapeMatcher
 				)
 			) {
 				// positive match has a subject but not any capturing group
-				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [1], [], true);
+				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($flags, $matchesAll)], [1], [], TrinaryLogic::createYes());
 			}
 
 			return TypeCombinator::union(...$combiTypes);

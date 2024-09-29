@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -96,28 +97,28 @@ class TypeGetFiniteTypesTest extends PHPStanTestCase
 				], [
 					new ConstantBooleanType(true),
 					new ConstantBooleanType(true),
-				], 2, [], true),
+				], 2, [], TrinaryLogic::createYes()),
 				new ConstantArrayType([
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
 				], [
 					new ConstantBooleanType(true),
 					new ConstantBooleanType(false),
-				], 2, [], true),
+				], 2, [], TrinaryLogic::createYes()),
 				new ConstantArrayType([
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
 				], [
 					new ConstantBooleanType(false),
 					new ConstantBooleanType(true),
-				], 2, [], true),
+				], 2, [], TrinaryLogic::createYes()),
 				new ConstantArrayType([
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
 				], [
 					new ConstantBooleanType(false),
 					new ConstantBooleanType(false),
-				], 2, [], true),
+				], 2, [], TrinaryLogic::createYes()),
 			],
 		];
 	}

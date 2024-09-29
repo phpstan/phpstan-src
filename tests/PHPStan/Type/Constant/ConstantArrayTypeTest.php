@@ -886,14 +886,14 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			], [
 				new ConstantStringType('a'),
 				new ConstantStringType('b'),
-			], [20], [], false),
+			], [20], [], TrinaryLogic::createNo()),
 			new ConstantArrayType([
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
 			], [
 				new ConstantStringType('a'),
 				new ConstantStringType('b'),
-			], [2], [], true),
+			], [2], [], TrinaryLogic::createYes()),
 		];
 
 		yield 'optional-1' => [
@@ -909,7 +909,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new ConstantStringType('c'),
 				new ConstantStringType('d'),
 				new ConstantStringType('e'),
-			], [15], [1, 3], false),
+			], [15], [1, 3], TrinaryLogic::createNo()),
 			new ConstantArrayType([
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
@@ -922,7 +922,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new UnionType([new ConstantStringType('c'), new ConstantStringType('d'), new ConstantStringType('e')]),
 				new UnionType([new ConstantStringType('d'), new ConstantStringType('e')]),
 				new ConstantStringType('e'),
-			], [3, 4, 5], [3, 4], true),
+			], [3, 4, 5], [3, 4], TrinaryLogic::createYes()),
 		];
 
 		yield 'optional-2' => [
@@ -938,7 +938,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new ConstantStringType('c'),
 				new ConstantStringType('d'),
 				new ConstantStringType('e'),
-			], [15], [0, 2, 4], false),
+			], [15], [0, 2, 4], TrinaryLogic::createNo()),
 			new ConstantArrayType([
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
@@ -951,7 +951,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new UnionType([new ConstantStringType('c'), new ConstantStringType('d'), new ConstantStringType('e')]),
 				new UnionType([new ConstantStringType('d'), new ConstantStringType('e')]),
 				new ConstantStringType('e'),
-			], [2, 3, 4, 5], [2, 3, 4], true),
+			], [2, 3, 4, 5], [2, 3, 4], TrinaryLogic::createYes()),
 		];
 
 		yield 'optional-at-end-and-list' => [
@@ -963,7 +963,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new ConstantStringType('a'),
 				new ConstantStringType('b'),
 				new ConstantStringType('c'),
-			], [11, 12, 13], [1, 2], true),
+			], [11, 12, 13], [1, 2], TrinaryLogic::createYes()),
 			new ConstantArrayType([
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
@@ -972,7 +972,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new ConstantStringType('a'),
 				new ConstantStringType('b'),
 				new ConstantStringType('c'),
-			], [1, 2, 3], [1, 2], true),
+			], [1, 2, 3], [1, 2], TrinaryLogic::createYes()),
 		];
 
 		yield 'optional-at-end-but-not-list' => [
@@ -984,7 +984,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new ConstantStringType('a'),
 				new ConstantStringType('b'),
 				new ConstantStringType('c'),
-			], [11, 12, 13], [1, 2], false),
+			], [11, 12, 13], [1, 2], TrinaryLogic::createNo()),
 			new ConstantArrayType([
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
@@ -993,7 +993,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new ConstantStringType('a'),
 				new UnionType([new ConstantStringType('b'), new ConstantStringType('c')]),
 				new ConstantStringType('c'),
-			], [1, 2, 3], [1, 2], true),
+			], [1, 2, 3], [1, 2], TrinaryLogic::createYes()),
 		];
 	}
 

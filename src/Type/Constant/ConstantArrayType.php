@@ -59,7 +59,6 @@ use function assert;
 use function count;
 use function implode;
 use function in_array;
-use function is_bool;
 use function is_int;
 use function is_string;
 use function min;
@@ -108,7 +107,7 @@ class ConstantArrayType implements ConstantType
 		private array $valueTypes,
 		int|array $nextAutoIndexes = [0],
 		private array $optionalKeys = [],
-		bool|TrinaryLogic $isList = false,
+		?TrinaryLogic $isList = null,
 	)
 	{
 		assert(count($keyTypes) === count($valueTypes));
@@ -124,8 +123,8 @@ class ConstantArrayType implements ConstantType
 			$isList = TrinaryLogic::createYes();
 		}
 
-		if (is_bool($isList)) {
-			$isList = TrinaryLogic::createFromBoolean($isList);
+		if ($isList === null) {
+			$isList = TrinaryLogic::createNo();
 		}
 		$this->isList = $isList;
 	}

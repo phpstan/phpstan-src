@@ -314,3 +314,20 @@ function doFoo(): void
 {
 
 }
+
+class VarTagAboveLiteralArray
+{
+
+	public function doFoo(): void
+	{
+		/** @var array<int, mixed> */
+		$arr = ['' => 'empty', 1 => '1'];
+	}
+
+	public function doFoo2(): void
+	{
+		/** @var array<int|string, mixed> */
+		$arr = ['' => 'empty', 1 => '1'];
+	}
+
+}

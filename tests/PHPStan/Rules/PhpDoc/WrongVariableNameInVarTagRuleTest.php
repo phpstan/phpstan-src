@@ -140,6 +140,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @var above a function has no effect.',
 				313,
 			],
+			[
+				"PHPDoc tag @var with type array<int, mixed> is not subtype of native type array{: 'empty', 1: '1'}.",
+				324,
+			],
 		]);
 	}
 

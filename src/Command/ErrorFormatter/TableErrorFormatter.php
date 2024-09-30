@@ -9,12 +9,10 @@ use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use Symfony\Component\Console\Formatter\OutputFormatter;
-use function array_key_exists;
 use function array_map;
 use function count;
 use function explode;
 use function getenv;
-use function in_array;
 use function is_string;
 use function ltrim;
 use function sprintf;
@@ -69,36 +67,12 @@ final class TableErrorFormatter implements ErrorFormatter
 
 		/** @var array<string, Error[]> $fileErrors */
 		$fileErrors = [];
-		$outputIdentifiers = $output->isVerbose();
-		$outputIdentifiersInFile = [];
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			if (!isset($fileErrors[$fileSpecificError->getFile()])) {
 				$fileErrors[$fileSpecificError->getFile()] = [];
 			}
 
 			$fileErrors[$fileSpecificError->getFile()][] = $fileSpecificError;
-			if ($outputIdentifiers) {
-				continue;
-			}
-
-			$filePath = $fileSpecificError->getTraitFilePath() ?? $fileSpecificError->getFilePath();
-			if (array_key_exists($filePath, $outputIdentifiersInFile)) {
-				continue;
-			}
-
-			if ($fileSpecificError->getIdentifier() === null) {
-				continue;
-			}
-
-			if (!in_array($fileSpecificError->getIdentifier(), [
-				'ignore.unmatchedIdentifier',
-				'ignore.parseError',
-				'ignore.unmatched',
-			], true)) {
-				continue;
-			}
-
-			$outputIdentifiersInFile[$filePath] = true;
 		}
 
 		foreach ($fileErrors as $file => $errors) {
@@ -106,7 +80,7 @@ final class TableErrorFormatter implements ErrorFormatter
 			foreach ($errors as $error) {
 				$message = $error->getMessage();
 				$filePath = $error->getTraitFilePath() ?? $error->getFilePath();
-				if (($outputIdentifiers || array_key_exists($filePath, $outputIdentifiersInFile)) && $error->getIdentifier() !== null && $error->canBeIgnored()) {
+				if ($error->getIdentifier() !== null && $error->canBeIgnored()) {
 					$message .= "\n";
 					$message .= '🪪  ' . $error->getIdentifier();
 				}

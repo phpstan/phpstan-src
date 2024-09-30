@@ -31,7 +31,7 @@ use function substr;
 final class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v29-excludes-analyse';
+	public const CACHE_KEY = 'v30-no-underscore';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 
@@ -134,9 +134,7 @@ final class NeonAdapter implements Adapter
 				'[parameters][memoryLimitFile]',
 				'[parameters][benchmarkFile]',
 				'[parameters][stubFiles][]',
-				'[parameters][symfony][console_application_loader]',
 				'[parameters][symfony][consoleApplicationLoader]',
-				'[parameters][symfony][container_xml_path]',
 				'[parameters][symfony][containerXmlPath]',
 				'[parameters][doctrine][objectManagerLoader]',
 			], true) && is_string($val) && !str_contains($val, '%') && !str_starts_with($val, '*')) {

@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
-use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 
 /**
  * This is the extension interface to implement if you want to describe
@@ -25,10 +25,10 @@ use PHPStan\Reflection\PropertyReflection;
 interface ReadWritePropertiesExtension
 {
 
-	public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool;
+	public function isAlwaysRead(ExtendedPropertyReflection $property, string $propertyName): bool;
 
-	public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool;
+	public function isAlwaysWritten(ExtendedPropertyReflection $property, string $propertyName): bool;
 
-	public function isInitialized(PropertyReflection $property, string $propertyName): bool;
+	public function isInitialized(ExtendedPropertyReflection $property, string $propertyName): bool;
 
 }

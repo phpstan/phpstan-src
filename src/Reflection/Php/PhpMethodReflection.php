@@ -462,9 +462,11 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		return $this->asserts;
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		return $this->declaringClass->acceptsNamedArguments() && $this->acceptsNamedArguments;
+		return TrinaryLogic::createFromBoolean(
+			$this->declaringClass->acceptsNamedArguments() && $this->acceptsNamedArguments,
+		);
 	}
 
 	public function getSelfOutType(): ?Type

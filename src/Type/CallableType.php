@@ -294,9 +294,9 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return [];
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		return true;
+		return TrinaryLogic::createYes();
 	}
 
 	public function toNumber(): Type

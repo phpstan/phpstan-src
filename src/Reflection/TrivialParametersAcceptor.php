@@ -93,9 +93,9 @@ final class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, 
 		return [];
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		return true;
+		return TrinaryLogic::createYes();
 	}
 
 }

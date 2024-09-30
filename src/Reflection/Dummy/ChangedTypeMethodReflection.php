@@ -119,7 +119,7 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->getAsserts();
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return $this->reflection->acceptsNamedArguments();
 	}

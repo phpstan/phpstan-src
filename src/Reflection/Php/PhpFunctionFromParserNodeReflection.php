@@ -280,9 +280,9 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Paramet
 		return $this->nodeIsOrContainsYield($this->functionLike);
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		return $this->acceptsNamedArguments;
+		return TrinaryLogic::createFromBoolean($this->acceptsNamedArguments);
 	}
 
 	private function nodeIsOrContainsYield(Node $node): bool

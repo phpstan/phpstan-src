@@ -175,14 +175,9 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 		return Assertions::createEmpty();
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		$accepts = true;
-		foreach ($this->methods as $method) {
-			$accepts = $accepts && $method->acceptsNamedArguments();
-		}
-
-		return $accepts;
+		return TrinaryLogic::lazyExtremeIdentity($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->acceptsNamedArguments());
 	}
 
 	public function getSelfOutType(): ?Type

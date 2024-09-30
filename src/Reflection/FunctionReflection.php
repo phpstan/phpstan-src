@@ -28,7 +28,7 @@ interface FunctionReflection
 	 */
 	public function getNamedArgumentsVariants(): ?array;
 
-	public function acceptsNamedArguments(): bool;
+	public function acceptsNamedArguments(): TrinaryLogic;
 
 	public function isDeprecated(): TrinaryLogic;
 

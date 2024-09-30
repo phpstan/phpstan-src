@@ -86,7 +86,7 @@ final class InaccessibleMethod implements CallableParametersAcceptor
 		return [];
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return $this->methodReflection->acceptsNamedArguments();
 	}

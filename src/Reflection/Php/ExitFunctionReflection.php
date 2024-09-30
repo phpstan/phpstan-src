@@ -82,9 +82,9 @@ final class ExitFunctionReflection implements FunctionReflection
 		return $this->getVariants();
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		return true;
+		return TrinaryLogic::createYes();
 	}
 
 	public function isDeprecated(): TrinaryLogic

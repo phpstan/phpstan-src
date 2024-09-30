@@ -35,7 +35,7 @@ final class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDoc
 		private array $impurePoints,
 		private array $invalidateExpressions,
 		private array $usedVariables,
-		private bool $acceptsNamedArguments,
+		private TrinaryLogic $acceptsNamedArguments,
 	)
 	{
 		parent::__construct(
@@ -75,7 +75,7 @@ final class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDoc
 		return $this->usedVariables;
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return $this->acceptsNamedArguments;
 	}

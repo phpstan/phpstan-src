@@ -1357,7 +1357,7 @@ final class MutatingScope implements Scope
 						$cachedClosureData['impurePoints'],
 						$cachedClosureData['invalidateExpressions'],
 						$cachedClosureData['usedVariables'],
-						true,
+						TrinaryLogic::createYes(),
 					);
 				}
 				if (self::$resolveClosureTypeDepth >= 2) {
@@ -1572,7 +1572,7 @@ final class MutatingScope implements Scope
 				$impurePointsForClosureType,
 				$invalidateExpressions,
 				$usedVariables,
-				true,
+				TrinaryLogic::createYes(),
 			);
 		} elseif ($node instanceof New_) {
 			if ($node->class instanceof Name) {
@@ -2521,7 +2521,7 @@ final class MutatingScope implements Scope
 
 			$throwPoints = [];
 			$impurePoints = [];
-			$acceptsNamedArguments = true;
+			$acceptsNamedArguments = TrinaryLogic::createYes();
 			if ($variant instanceof CallableParametersAcceptor) {
 				$throwPoints = $variant->getThrowPoints();
 				$impurePoints = $variant->getImpurePoints();
@@ -3151,7 +3151,7 @@ final class MutatingScope implements Scope
 
 			$paramExprString = '$' . $parameter->getName();
 			if ($parameter->isVariadic()) {
-				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()) {
+				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()->yes()) {
 					$parameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $parameterType);
 				} else {
 					$parameterType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $parameterType), new AccessoryArrayListType());
@@ -3166,7 +3166,7 @@ final class MutatingScope implements Scope
 
 			$nativeParameterType = $parameter->getNativeType();
 			if ($parameter->isVariadic()) {
-				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()) {
+				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()->yes()) {
 					$nativeParameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $nativeParameterType);
 				} else {
 					$nativeParameterType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $nativeParameterType), new AccessoryArrayListType());

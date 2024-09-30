@@ -19,7 +19,7 @@ interface CallableParametersAcceptor extends ParametersAcceptor
 
 	public function isPure(): TrinaryLogic;
 
-	public function acceptsNamedArguments(): bool;
+	public function acceptsNamedArguments(): TrinaryLogic;
 
 	/**
 	 * @return SimpleImpurePoint[]

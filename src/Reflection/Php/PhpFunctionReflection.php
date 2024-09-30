@@ -300,9 +300,9 @@ final class PhpFunctionReflection implements FunctionReflection
 		return TrinaryLogic::createFromBoolean($this->reflection->returnsReference());
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		return $this->acceptsNamedArguments;
+		return TrinaryLogic::createFromBoolean($this->acceptsNamedArguments);
 	}
 
 	private function isFunctionNodeVariadic(Function_ $node): bool

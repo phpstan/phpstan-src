@@ -11,6 +11,7 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use function array_key_exists;
 use function array_keys;
@@ -27,7 +28,7 @@ final class ArgumentsNormalizer
 	public const ORIGINAL_ARG_ATTRIBUTE = 'originalArg';
 
 	/**
-	 * @return array{ParametersAcceptor, FuncCall, bool}|null
+	 * @return array{ParametersAcceptor, FuncCall, TrinaryLogic}|null
 	 */
 	public static function reorderCallUserFuncArguments(
 		FuncCall $callUserFuncCall,
@@ -73,9 +74,9 @@ final class ArgumentsNormalizer
 			null,
 		);
 
-		$acceptsNamedArguments = true;
+		$acceptsNamedArguments = TrinaryLogic::createYes();
 		foreach ($callableParametersAcceptors as $callableParametersAcceptor) {
-			$acceptsNamedArguments = $acceptsNamedArguments && $callableParametersAcceptor->acceptsNamedArguments();
+			$acceptsNamedArguments = $acceptsNamedArguments->and($callableParametersAcceptor->acceptsNamedArguments());
 		}
 
 		return [$parametersAcceptor, new FuncCall(

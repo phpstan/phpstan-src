@@ -12,6 +12,7 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
@@ -79,9 +80,9 @@ final class CallCallablesRule implements Rule
 		$parametersAcceptors = $type->getCallableParametersAcceptors($scope);
 		$messages = [];
 
-		$acceptsNamedArguments = true;
+		$acceptsNamedArguments = TrinaryLogic::createYes();
 		foreach ($parametersAcceptors as $parametersAcceptor) {
-			$acceptsNamedArguments = $acceptsNamedArguments && $parametersAcceptor->acceptsNamedArguments();
+			$acceptsNamedArguments = $acceptsNamedArguments->and($parametersAcceptor->acceptsNamedArguments());
 		}
 
 		if (

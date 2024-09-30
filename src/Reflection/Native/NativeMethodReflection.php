@@ -200,9 +200,9 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 		return $this->assertions;
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		return $this->declaringClass->acceptsNamedArguments() && $this->acceptsNamedArguments;
+		return TrinaryLogic::createFromBoolean($this->declaringClass->acceptsNamedArguments() && $this->acceptsNamedArguments);
 	}
 
 	public function getSelfOutType(): ?Type

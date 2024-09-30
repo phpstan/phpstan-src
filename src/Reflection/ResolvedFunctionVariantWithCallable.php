@@ -27,7 +27,7 @@ final class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVaria
 		private array $impurePoints,
 		private array $invalidateExpressions,
 		private array $usedVariables,
-		private bool $acceptsNamedArguments,
+		private TrinaryLogic $acceptsNamedArguments,
 	)
 	{
 	}
@@ -112,7 +112,7 @@ final class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVaria
 		return $this->usedVariables;
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return $this->acceptsNamedArguments;
 	}

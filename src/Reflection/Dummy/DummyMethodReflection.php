@@ -114,9 +114,9 @@ final class DummyMethodReflection implements ExtendedMethodReflection
 		return Assertions::createEmpty();
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		return true;
+		return TrinaryLogic::createYes();
 	}
 
 	public function getSelfOutType(): ?Type

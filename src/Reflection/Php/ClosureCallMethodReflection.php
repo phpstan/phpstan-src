@@ -156,7 +156,7 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 		return $this->nativeMethodReflection->getAsserts();
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return $this->nativeMethodReflection->acceptsNamedArguments();
 	}

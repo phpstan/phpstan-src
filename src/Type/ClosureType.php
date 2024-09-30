@@ -77,6 +77,8 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	/** @var SimpleImpurePoint[] */
 	private array $impurePoints;
 
+	private TrinaryLogic $acceptsNamedArguments;
+
 	/**
 	 * @api
 	 * @param array<int, ParameterReflection>|null $parameters
@@ -98,9 +100,14 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		?array $impurePoints = null,
 		private array $invalidateExpressions = [],
 		private array $usedVariables = [],
-		private bool $acceptsNamedArguments = true,
+		?TrinaryLogic $acceptsNamedArguments = null,
 	)
 	{
+		if ($acceptsNamedArguments === null) {
+			$acceptsNamedArguments = TrinaryLogic::createYes();
+		}
+		$this->acceptsNamedArguments = $acceptsNamedArguments;
+
 		$this->parameters = $parameters ?? [];
 		$this->returnType = $returnType ?? new MixedType();
 		$this->isCommonCallable = $parameters === null && $returnType === null;
@@ -407,7 +414,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->usedVariables;
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return $this->acceptsNamedArguments;
 	}

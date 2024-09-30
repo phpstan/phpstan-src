@@ -163,7 +163,7 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Param
 		return [];
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return $this->function->acceptsNamedArguments();
 	}

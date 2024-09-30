@@ -14,6 +14,7 @@ use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
@@ -63,7 +64,7 @@ final class FunctionCallParametersCheck
 		$funcCall,
 		array $messages,
 		string $nodeType,
-		bool $acceptsNamedArguments,
+		TrinaryLogic $acceptsNamedArguments,
 	): array
 	{
 		$functionParametersMinCount = 0;
@@ -289,7 +290,7 @@ final class FunctionCallParametersCheck
 				}
 			}
 
-			if (!$acceptsNamedArguments && isset($messages[14])) {
+			if (!$acceptsNamedArguments->yes() && isset($messages[14])) {
 				if ($argumentName !== null) {
 					$errors[] = RuleErrorBuilder::message(sprintf($messages[14], sprintf('named argument $%s', $argumentName)))
 						->identifier('argument.named')

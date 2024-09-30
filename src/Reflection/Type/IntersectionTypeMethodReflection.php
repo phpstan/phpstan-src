@@ -198,14 +198,9 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		return $assertions;
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		$accepts = true;
-		foreach ($this->methods as $method) {
-			$accepts = $accepts && $method->acceptsNamedArguments();
-		}
-
-		return $accepts;
+		return TrinaryLogic::lazyMaxMin($this->methods, static fn (MethodReflection $method): TrinaryLogic => $method->acceptsNamedArguments());
 	}
 
 	public function getSelfOutType(): ?Type

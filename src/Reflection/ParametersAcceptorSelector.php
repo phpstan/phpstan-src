@@ -581,7 +581,7 @@ final class ParametersAcceptorSelector
 		$impurePoints = [];
 		$invalidateExpressions = [];
 		$usedVariables = [];
-		$acceptsNamedArguments = false;
+		$acceptsNamedArguments = TrinaryLogic::createNo();
 
 		foreach ($acceptors as $acceptor) {
 			$returnTypes[] = $acceptor->getReturnType();
@@ -597,7 +597,7 @@ final class ParametersAcceptorSelector
 				$impurePoints = array_merge($impurePoints, $acceptor->getImpurePoints());
 				$invalidateExpressions = array_merge($invalidateExpressions, $acceptor->getInvalidateExpressions());
 				$usedVariables = array_merge($usedVariables, $acceptor->getUsedVariables());
-				$acceptsNamedArguments = $acceptsNamedArguments || $acceptor->acceptsNamedArguments();
+				$acceptsNamedArguments = $acceptsNamedArguments->or($acceptor->acceptsNamedArguments());
 			}
 			$isVariadic = $isVariadic || $acceptor->isVariadic();
 

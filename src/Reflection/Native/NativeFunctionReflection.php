@@ -142,9 +142,9 @@ final class NativeFunctionReflection implements FunctionReflection
 		return $this->returnsByReference;
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		return $this->acceptsNamedArguments;
+		return TrinaryLogic::createFromBoolean($this->acceptsNamedArguments);
 	}
 
 }

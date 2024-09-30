@@ -142,9 +142,9 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return Assertions::createEmpty();
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		return $this->getDeclaringClass()->acceptsNamedArguments();
+		return TrinaryLogic::createFromBoolean($this->getDeclaringClass()->acceptsNamedArguments());
 	}
 
 	public function getSelfOutType(): ?Type

@@ -175,7 +175,7 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 		));
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return $this->reflection->acceptsNamedArguments();
 	}

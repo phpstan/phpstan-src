@@ -147,9 +147,9 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 		return Assertions::createEmpty();
 	}
 
-	public function acceptsNamedArguments(): bool
+	public function acceptsNamedArguments(): TrinaryLogic
 	{
-		return $this->declaringClass->acceptsNamedArguments();
+		return TrinaryLogic::createFromBoolean($this->declaringClass->acceptsNamedArguments());
 	}
 
 	public function getSelfOutType(): ?Type

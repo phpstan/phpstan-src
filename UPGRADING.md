@@ -283,4 +283,5 @@ Instead of `PHPStanTestCase::createBroker()`, call `PHPStanTestCase::createRefle
 * Remove `__set_state()` on objects that should not be serialized in cache
 * Parameter `$selfClass` of [`TypehintHelper::decideTypeFromReflection()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.TypehintHelper.html#_decideTypeFromReflection) no longer accepts string
 * Remove `fixerTmpDir` config parameter, use `pro.tmpDir` instead
+* Remove `tempResultCachePath` config parameter, use `resultCachePath` instead
 * `LevelsTestCase::dataTopics()` data provider made static

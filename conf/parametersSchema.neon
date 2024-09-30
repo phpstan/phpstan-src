@@ -137,7 +137,6 @@ parametersSchema:
 	stubFiles: listOf(string())
 	earlyTerminatingMethodCalls: arrayOf(listOf(string()))
 	earlyTerminatingFunctionCalls: listOf(string())
-	tempResultCachePath: string()
 	resultCachePath: string()
 	resultCacheChecksProjectExtensionFilesDependencies: bool()
 	dynamicConstantNames: listOf(string())

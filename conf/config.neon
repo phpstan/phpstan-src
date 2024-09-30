@@ -121,7 +121,6 @@ parameters:
 		- ../stubs/Countable.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
-	tempResultCachePath: %tmpDir%/resultCaches
 	resultCachePath: %tmpDir%/resultCache.php
 	resultCacheChecksProjectExtensionFilesDependencies: false
 	dynamicConstantNames:

@@ -6,7 +6,6 @@ use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Expr\YieldFrom;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -69,7 +68,7 @@ final class YieldFromTypeRule implements Rule
 		if ($anonymousFunctionReturnType !== null) {
 			$returnType = $anonymousFunctionReturnType;
 		} elseif ($scopeFunction !== null) {
-			$returnType = ParametersAcceptorSelector::selectSingle($scopeFunction->getVariants())->getReturnType();
+			$returnType = $scopeFunction->getReturnType();
 		} else {
 			return []; // already reported by YieldInGeneratorRule
 		}
@@ -112,7 +111,7 @@ final class YieldFromTypeRule implements Rule
 			return $messages;
 		}
 
-		$currentReturnType = ParametersAcceptorSelector::selectSingle($scopeFunction->getVariants())->getReturnType();
+		$currentReturnType = $scopeFunction->getReturnType();
 		$exprSendType = $exprType->getTemplateType(Generator::class, 'TSend');
 		$thisSendType = $currentReturnType->getTemplateType(Generator::class, 'TSend');
 		if ($exprSendType instanceof ErrorType || $thisSendType instanceof ErrorType) {

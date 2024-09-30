@@ -117,7 +117,7 @@ final class UnionTypeHelper
 			}
 
 			if ($a->isString()->yes() && $b->isString()->yes()) {
-				return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
+				return self::compareStrings($a->describe(VerbosityLevel::precise()), $b->describe(VerbosityLevel::precise()));
 			}
 
 			return self::compareStrings($a->describe(VerbosityLevel::typeOnly()), $b->describe(VerbosityLevel::typeOnly()));

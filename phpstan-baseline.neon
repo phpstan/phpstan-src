@@ -29,14 +29,6 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
-			message: """
-				#^Call to deprecated method getTypeFromValue\\(\\) of class PHPStan\\\\Type\\\\ConstantTypeHelper\\:
-				Use PHPStan\\\\Reflection\\\\InitializerExprTypeResolver$#
-			"""
-			count: 1
-			path: src/Analyser/MutatingScope.php
-
-		-
 			message: "#^Casting to string something that's already string\\.$#"
 			count: 3
 			path: src/Analyser/MutatingScope.php
@@ -258,14 +250,6 @@ parameters:
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
 		-
-			message: """
-				#^Call to deprecated method getTypeFromValue\\(\\) of class PHPStan\\\\Type\\\\ConstantTypeHelper\\:
-				Use PHPStan\\\\Reflection\\\\InitializerExprTypeResolver$#
-			"""
-			count: 1
-			path: src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php
-
-		-
 			message: "#^Creating new ReflectionClass is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php
@@ -357,14 +341,6 @@ parameters:
 
 		-
 			message: "#^Binary operation \"\\|\" between bool\\|float\\|int\\|string\\|null and bool\\|float\\|int\\|string\\|null results in an error\\.$#"
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			message: """
-				#^Call to deprecated method getTypeFromValue\\(\\) of class PHPStan\\\\Type\\\\ConstantTypeHelper\\:
-				Use PHPStan\\\\Reflection\\\\InitializerExprTypeResolver$#
-			"""
 			count: 1
 			path: src/Reflection/InitializerExprTypeResolver.php
 
@@ -690,6 +666,11 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 1
 			path: src/Type/Accessory/AccessoryLiteralStringType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Accessory/AccessoryLowercaseStringType.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
@@ -1393,14 +1374,6 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericClassStringType is error\\-prone and deprecated\\. Use Type\\:\\:isClassStringType\\(\\) and Type\\:\\:getClassStringObjectType\\(\\) instead\\.$#"
 			count: 2
 			path: src/Type/Php/IsSubclassOfFunctionTypeSpecifyingExtension.php
-
-		-
-			message: """
-				#^Call to deprecated method getTypeFromValue\\(\\) of class PHPStan\\\\Type\\\\ConstantTypeHelper\\:
-				Use PHPStan\\\\Reflection\\\\InitializerExprTypeResolver$#
-			"""
-			count: 1
-			path: src/Type/Php/JsonThrowOnErrorDynamicReturnTypeExtension.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"

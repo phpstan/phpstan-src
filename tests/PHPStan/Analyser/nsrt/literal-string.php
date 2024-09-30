@@ -36,9 +36,9 @@ class Foo
 			"'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'",
 			str_repeat('a', 99)
 		);
-		assertType('literal-string&non-falsy-string', str_repeat('a', 100));
-		assertType('literal-string&non-empty-string&numeric-string', str_repeat('0', 100)); // could be non-falsy-string
-		assertType('literal-string&non-falsy-string&numeric-string', str_repeat('1', 100));
+		assertType('literal-string&lowercase-string&non-falsy-string', str_repeat('a', 100));
+		assertType('literal-string&lowercase-string&non-empty-string&numeric-string', str_repeat('0', 100)); // could be non-falsy-string
+		assertType('literal-string&lowercase-string&non-falsy-string&numeric-string', str_repeat('1', 100));
 		// Repeating a numeric type multiple times can lead to a non-numeric type: 3v4l.org/aRBdZ
 		assertType('non-empty-string', str_repeat($numericString, 100));
 
@@ -51,13 +51,13 @@ class Foo
 		assertType("non-empty-string", str_repeat($numericString, 2));
 		assertType("literal-string", str_repeat($literalString, 1));
 		$x = rand(1,2);
-		assertType("literal-string&non-falsy-string", str_repeat('    1   ', $x));
-		assertType("literal-string&non-falsy-string", str_repeat('+1', $x));
-		assertType("literal-string&non-falsy-string", str_repeat('1e9', $x));
-		assertType("literal-string&non-falsy-string&numeric-string", str_repeat('19', $x));
+		assertType("literal-string&lowercase-string&non-falsy-string", str_repeat('    1   ', $x));
+		assertType("literal-string&lowercase-string&non-falsy-string", str_repeat('+1', $x));
+		assertType("literal-string&lowercase-string&non-falsy-string", str_repeat('1e9', $x));
+		assertType("literal-string&lowercase-string&non-falsy-string&numeric-string", str_repeat('19', $x));
 
 		$x = rand(0,2);
-		assertType("literal-string", str_repeat('19', $x));
+		assertType("literal-string&lowercase-string", str_repeat('19', $x));
 
 		$x = rand(-10,-1);
 		assertType("*NEVER*", str_repeat('19', $x));

@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -44,15 +45,17 @@ final class StrPadFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			$accessoryTypes[] = new AccessoryNonEmptyStringType();
 		}
 
-		if ($inputType->isLiteralString()->yes()) {
-			if (count($args) < 3) {
-				$accessoryTypes[] = new AccessoryLiteralStringType();
-			} else {
-				$padStringType = $scope->getType($args[2]->value);
-				if ($padStringType->isLiteralString()->yes()) {
-					$accessoryTypes[] = new AccessoryLiteralStringType();
-				}
-			}
+		if (count($args) < 3) {
+			$padStringType = null;
+		} else {
+			$padStringType = $scope->getType($args[2]->value);
+		}
+
+		if ($inputType->isLiteralString()->yes() && ($padStringType === null || $padStringType->isLiteralString()->yes())) {
+			$accessoryTypes[] = new AccessoryLiteralStringType();
+		}
+		if ($inputType->isLowercaseString()->yes() && ($padStringType === null || $padStringType->isLowercaseString()->yes())) {
+			$accessoryTypes[] = new AccessoryLowercaseStringType();
 		}
 
 		if (count($accessoryTypes) > 0) {

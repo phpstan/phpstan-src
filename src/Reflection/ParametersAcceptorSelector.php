@@ -61,6 +61,8 @@ class ParametersAcceptorSelector
 {
 
 	/**
+	 * @deprecated See https://github.com/phpstan/phpstan-src/blob/2.0.x/UPGRADING.md#removed-deprecated-parametersacceptorselectorselectsingle
+	 *
 	 * @template T of ParametersAcceptor
 	 * @param T[] $parametersAcceptors
 	 * @return T
@@ -266,9 +268,8 @@ class ParametersAcceptorSelector
 					if ((new ObjectType(Closure::class))->isSuperTypeOf($varType)->yes()) {
 						$inFunction = $scope->getFunction();
 						if ($inFunction !== null) {
-							$inFunctionVariant = self::selectSingle($inFunction->getVariants());
 							$closureThisParameters = [];
-							foreach ($inFunctionVariant->getParameters() as $parameter) {
+							foreach ($inFunction->getParameters() as $parameter) {
 								if ($parameter->getClosureThisType() === null) {
 									continue;
 								}
@@ -310,9 +311,8 @@ class ParametersAcceptorSelector
 					$closureVarName = $args[0]->value->name;
 					$inFunction = $scope->getFunction();
 					if ($inFunction !== null) {
-						$inFunctionVariant = self::selectSingle($inFunction->getVariants());
 						$closureThisParameters = [];
-						foreach ($inFunctionVariant->getParameters() as $parameter) {
+						foreach ($inFunction->getParameters() as $parameter) {
 							if ($parameter->getClosureThisType() === null) {
 								continue;
 							}

@@ -315,7 +315,7 @@ function testParseStr() {
 	echo $output['arr'][1];//baz
 	*/
 
-	\PHPStan\Testing\assertType('array<int|string, array|string>', $output);
+	\PHPStan\Testing\assertType('array<int|string, array|lowercase-string>', $output);
 }
 
 function fooSimilar() {
@@ -501,4 +501,3 @@ function testMatch() {
 	preg_match('#.*#', 'foo', $matches);
 	assertType('array{0?: string}', $matches);
 }
-

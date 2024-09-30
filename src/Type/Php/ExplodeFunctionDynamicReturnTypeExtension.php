@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -14,6 +15,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
@@ -54,7 +56,15 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 			return new ConstantBooleanType(false);
 		}
 
-		$returnType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
+		$stringType = $scope->getType($args[1]->value);
+		if ($stringType->isLowercaseString()->yes()) {
+			$returnValueType = new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]);
+		} else {
+			$returnValueType = new StringType();
+		}
+
+		$returnType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $returnValueType));
+
 		if (
 			!isset($args[2])
 			|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($args[2]->value))->yes()

@@ -21,6 +21,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -328,7 +329,12 @@ class IntersectionType implements CompoundType
 				|| $type instanceof AccessoryLiteralStringType
 				|| $type instanceof AccessoryNumericStringType
 				|| $type instanceof AccessoryNonFalsyStringType
+				|| $type instanceof AccessoryLowercaseStringType
 			) {
+				if ($type instanceof AccessoryLowercaseStringType && !$level->isPrecise()) {
+					continue;
+				}
+
 				if ($type instanceof AccessoryNonFalsyStringType) {
 					$nonFalsyStr = true;
 				}
@@ -635,6 +641,11 @@ class IntersectionType implements CompoundType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isLiteralString());
+	}
+
+	public function isLowercaseString(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isLowercaseString());
 	}
 
 	public function isClassStringType(): TrinaryLogic
@@ -1114,6 +1125,7 @@ class IntersectionType implements CompoundType
 				|| $type instanceof AccessoryLiteralStringType
 				|| $type instanceof AccessoryNumericStringType
 				|| $type instanceof AccessoryNonFalsyStringType
+				|| $type instanceof AccessoryLowercaseStringType
 			) {
 				if ($type instanceof AccessoryNonFalsyStringType) {
 					$nonFalsyStr = true;

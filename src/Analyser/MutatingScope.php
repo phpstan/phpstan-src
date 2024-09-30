@@ -208,7 +208,7 @@ final class MutatingScope implements Scope
 		private ScopeContext $context,
 		private PhpVersion $phpVersion,
 		private bool $declareStrictTypes = false,
-		private FunctionReflection|ExtendedMethodReflection|null $function = null,
+		private PhpFunctionFromParserNodeReflection|null $function = null,
 		?string $namespace = null,
 		private array $expressionTypes = [],
 		private array $nativeExpressionTypes = [],
@@ -310,9 +310,8 @@ final class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @return FunctionReflection|ExtendedMethodReflection|null
 	 */
-	public function getFunction()
+	public function getFunction(): ?PhpFunctionFromParserNodeReflection
 	{
 		return $this->function;
 	}
@@ -1717,7 +1716,7 @@ final class MutatingScope implements Scope
 				return new MixedType();
 			}
 
-			$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			$returnType = $functionReflection->getReturnType();
 			$generatorSendType = $returnType->getTemplateType(Generator::class, 'TSend');
 			if ($generatorSendType instanceof ErrorType) {
 				return new MixedType();
@@ -3135,17 +3134,16 @@ final class MutatingScope implements Scope
 		bool $preserveThis,
 	): self
 	{
-		$acceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 		$parametersByName = [];
 
-		foreach ($acceptor->getParameters() as $parameter) {
+		foreach ($functionReflection->getParameters() as $parameter) {
 			$parametersByName[$parameter->getName()] = $parameter;
 		}
 
 		$expressionTypes = [];
 		$nativeExpressionTypes = [];
 		$conditionalTypes = [];
-		foreach ($acceptor->getParameters() as $parameter) {
+		foreach ($functionReflection->getParameters() as $parameter) {
 			$parameterType = $parameter->getType();
 
 			if ($parameterType instanceof ConditionalTypeForParameter) {
@@ -5516,7 +5514,7 @@ final class MutatingScope implements Scope
 
 		$assignedToProperty = $node->getAttribute(NewAssignedToPropertyVisitor::ATTRIBUTE_NAME);
 		if ($assignedToProperty !== null) {
-			$constructorVariant = ParametersAcceptorSelector::selectSingle($constructorMethod->getVariants());
+			$constructorVariant = $constructorMethod->getOnlyVariant();
 			$classTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();
 			$originalClassTemplateTypes = $classTemplateTypes;
 			foreach ($constructorVariant->getParameters() as $parameter) {

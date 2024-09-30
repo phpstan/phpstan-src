@@ -84,6 +84,9 @@ final class ApiInstanceofRule implements Rule
 		if ($classReflection->getName() === Type::class || $classReflection->isSubclassOf(Type::class)) {
 			return [];
 		}
+		if ($classReflection->isInterface()) {
+			return [];
+		}
 
 		$instanceofType = $scope->getType($node);
 		if ($instanceofType->isTrue()->or($instanceofType->isFalse())->yes()) {

@@ -7,6 +7,7 @@ use Iterator;
 use ObjectTypeEnums\FooEnum;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -445,6 +446,33 @@ class IntersectionTypeTest extends PHPStanTestCase
 			$expectedEnumCase = $expectedEnumCases[$i];
 			$this->assertTrue($expectedEnumCase->equals($enumCase), sprintf('%s->equals(%s)', $expectedEnumCase->describe(VerbosityLevel::precise()), $enumCase->describe(VerbosityLevel::precise())));
 		}
+	}
+
+	public function dataDescribe(): iterable
+	{
+		yield [
+			new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			VerbosityLevel::typeOnly(),
+			'string',
+		];
+		yield [
+			new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			VerbosityLevel::value(),
+			'string',
+		];
+		yield [
+			new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
+			VerbosityLevel::precise(),
+			'lowercase-string',
+		];
+	}
+
+	/**
+	 * @dataProvider dataDescribe
+	 */
+	public function testDescribe(IntersectionType $type, VerbosityLevel $verbosityLevel, string $expected): void
+	{
+		static::assertSame($expected, $type->describe($verbosityLevel));
 	}
 
 }

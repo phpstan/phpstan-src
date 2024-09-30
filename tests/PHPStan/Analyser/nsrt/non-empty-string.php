@@ -127,7 +127,7 @@ class Foo
 	 */
 	public function doFoo4(string $s): void
 	{
-		assertType('non-empty-list<string>', explode($s, 'foo'));
+		assertType('non-empty-list<lowercase-string>', explode($s, 'foo'));
 	}
 
 	/**
@@ -320,12 +320,12 @@ class MoreNonEmptyStringFunctions
 
 		assertType('string', strtoupper($s));
 		assertType('non-empty-string', strtoupper($nonEmpty));
-		assertType('string', strtolower($s));
-		assertType('non-empty-string', strtolower($nonEmpty));
+		assertType('lowercase-string', strtolower($s));
+		assertType('lowercase-string&non-empty-string', strtolower($nonEmpty));
 		assertType('string', mb_strtoupper($s));
 		assertType('non-empty-string', mb_strtoupper($nonEmpty));
-		assertType('string', mb_strtolower($s));
-		assertType('non-empty-string', mb_strtolower($nonEmpty));
+		assertType('lowercase-string', mb_strtolower($s));
+		assertType('lowercase-string&non-empty-string', mb_strtolower($nonEmpty));
 		assertType('string', lcfirst($s));
 		assertType('non-empty-string', lcfirst($nonEmpty));
 		assertType('string', ucfirst($s));
@@ -364,6 +364,13 @@ class MoreNonEmptyStringFunctions
 		assertType('non-empty-string', sprintf($nonFalsy, $nonFalsy, $nonFalsy));
 		assertType('string', vsprintf($s, []));
 		assertType('string', vsprintf($nonEmpty, []));
+		assertType('non-empty-string', vsprintf($nonEmpty, [$nonEmpty]));
+		assertType('non-empty-string', vsprintf($nonEmpty, [$nonEmpty, $nonEmpty]));
+		assertType('non-empty-string', vsprintf($nonEmpty, [$nonFalsy, $nonFalsy]));
+		assertType('non-empty-string', vsprintf($nonFalsy, [$nonEmpty]));
+		assertType('non-empty-string', vsprintf($nonFalsy, [$nonEmpty, $nonEmpty]));
+		assertType('non-empty-string', vsprintf($nonFalsy, [$nonFalsy, $nonEmpty]));
+		assertType('non-empty-string', vsprintf($nonFalsy, [$nonFalsy, $nonFalsy]));
 
 		assertType('non-empty-string', sprintf("%s0%s", $s, $s));
 		assertType('non-empty-string', sprintf("%s0%s%s%s%s", $s, $s, $s, $s, $s));

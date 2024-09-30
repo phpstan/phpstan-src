@@ -768,3 +768,13 @@ function bug11604b (string $string): void {
 		assertType("array{0: string, 1?: ''|'XX', 2?: ''|'YY', 3?: 'ZZ'}", $matches);
 	}
 }
+
+function testLtrimDelimiter (string $string): void {
+	if (preg_match(' /(x)/', $string, $matches)) {
+		assertType("array{string, 'x'}", $matches);
+	}
+
+	if (preg_match('  /(x)/', $string, $matches)) {
+		assertType("array{string, 'x'}", $matches);
+	}
+}

@@ -1129,11 +1129,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$fourthStringArrayForeachList',
 			],
 			[
-				'string',
+				'lowercase-string',
 				'$dateArray[\'Y\']',
 			],
 			[
-				'string',
+				'lowercase-string',
 				'$dateArray[\'m\']',
 			],
 			[
@@ -1141,7 +1141,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$dateArray[\'d\']',
 			],
 			[
-				'string',
+				'lowercase-string',
 				'$intArrayForRewritingFirstElement[0]',
 			],
 			[
@@ -5492,7 +5492,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$parseUrlConstantUrlWithoutComponent2',
 			],
 			[
-				'array{scheme?: string, host?: string, port?: int<0, 65535>, user?: string, pass?: string, path?: string, query?: string, fragment?: string}|int<0, 65535>|string|false|null',
+				'array{scheme?: lowercase-string, host?: lowercase-string, port?: int<0, 65535>, user?: lowercase-string, pass?: lowercase-string, path?: lowercase-string, query?: lowercase-string, fragment?: lowercase-string}|int<0, 65535>|lowercase-string|false|null',
 				'$parseUrlConstantUrlUnknownComponent',
 			],
 			[
@@ -7414,7 +7414,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'non-falsy-string',
+				'lowercase-string&non-falsy-string',
 				'$expectedString',
 			],
 			[
@@ -7422,7 +7422,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$expectedString2',
 			],
 			[
-				'non-falsy-string|null',
+				'(lowercase-string&non-falsy-string)|null',
 				'$anotherExpectedString',
 			],
 			[
@@ -8093,7 +8093,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrayAppendedInForeach',
 			],
 			[
-				'non-empty-array<int<0, max>, literal-string&non-falsy-string>', // could be 'array<int<0, max>, \'bar\'|\'baz\'|\'foo\'>'
+				'non-empty-array<int<0, max>, literal-string&lowercase-string&non-falsy-string>', // could be 'array<int<0, max>, \'bar\'|\'baz\'|\'foo\'>'
 				'$anotherArrayAppendedInForeach',
 			],
 			[

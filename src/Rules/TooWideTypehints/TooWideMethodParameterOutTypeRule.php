@@ -5,7 +5,6 @@ namespace PHPStan\Rules\TooWideTypehints;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\MethodReturnStatementsNode;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use function sprintf;
 
@@ -33,7 +32,7 @@ final class TooWideMethodParameterOutTypeRule implements Rule
 		return $this->check->check(
 			$node->getExecutionEnds(),
 			$node->getReturnStatements(),
-			ParametersAcceptorSelector::selectSingle($inMethod->getVariants())->getParameters(),
+			$inMethod->getParameters(),
 			sprintf('Method %s::%s()', $inMethod->getDeclaringClass()->getDisplayName(), $inMethod->getName()),
 		);
 	}

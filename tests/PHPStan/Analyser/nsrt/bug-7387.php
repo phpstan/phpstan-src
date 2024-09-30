@@ -6,7 +6,10 @@ use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {
-	public function inputTypes(int $i, float $f, string $s) {
+	/**
+	 * @param int<-1, 5> $intRange
+	 */
+	public function inputTypes(int $i, float $f, string $s, int $intRange) {
 		// https://3v4l.org/iXaDX
 		assertType('numeric-string', sprintf('%.14F', $i));
 		assertType('numeric-string', sprintf('%.14F', $f));
@@ -19,6 +22,9 @@ class HelloWorld
 		assertType('numeric-string', sprintf('%14F', $i));
 		assertType('numeric-string', sprintf('%14F', $f));
 		assertType('numeric-string', sprintf('%14F', $s));
+
+		assertType("'-1'|'0'|'1'|'2'|'3'|'4'|'5'", sprintf('%s', $intRange));
+		assertType("' 0'|' 1'|' 2'|' 3'|' 4'|' 5'|'-1'", sprintf('%2s', $intRange));
 	}
 
 	public function specifiers(int $i) {
@@ -53,18 +59,27 @@ class HelloWorld
 	 */
 	public function positionalArgs($mixed, int $i, float $f, string $s, int $posInt, int $negInt, int $nonZeroIntRange, int $intRange) {
 		// https://3v4l.org/vVL0c
-		assertType('numeric-string', sprintf('%2$14s', $mixed, $i));
-		assertType('non-falsy-string&numeric-string', sprintf('%2$14s', $mixed, $posInt));
-		assertType('non-falsy-string&numeric-string', sprintf('%2$14s', $mixed, $negInt));
-		assertType('numeric-string', sprintf('%2$14s', $mixed, $intRange));
-		assertType('non-falsy-string&numeric-string', sprintf('%2$14s', $mixed, $nonZeroIntRange));
+		assertType('numeric-string', sprintf('%2$6s', $mixed, $i));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$6s', $mixed, $posInt));
+		assertType('non-falsy-string&numeric-string', sprintf('%2$6s', $mixed, $negInt));
+		assertType("'     1'|'     2'|'     3'|'     4'|'     5'", sprintf('%2$6s', $mixed, $nonZeroIntRange));
 
-		assertType("non-falsy-string", sprintf('%2$14s', $mixed, 1));
-		assertType("non-falsy-string", sprintf('%2$14s', $mixed, '1'));
-		assertType("non-falsy-string", sprintf('%2$14s', $mixed, 'abc'));
+		// https://3v4l.org/1ECIq
+		assertType('non-falsy-string', sprintf("%2$'#6s", $mixed, 1));
+		assertType('non-falsy-string', sprintf("%2$'#6s", $mixed, $i));
+		assertType('non-falsy-string', sprintf("%2$'#6s", $mixed, $posInt));
+		assertType('non-falsy-string', sprintf("%2$'#6s", $mixed, $negInt));
+		assertType("'     0'|'     1'|'     2'|'     3'|'     4'|'     5'|'    -1'", sprintf('%2$6s', $mixed, $intRange));
+		assertType('non-falsy-string', sprintf("%2$'#6s", $mixed, $nonZeroIntRange));
+
+		assertType("'     1'", sprintf('%2$6s', $mixed, 1));
+		assertType("'     1'", sprintf('%2$6s', $mixed, '1'));
+		assertType("'   abc'", sprintf('%2$6s', $mixed, 'abc'));
+		assertType("'     0'|'     1'|'     2'|'     3'|'     4'|'     5'|'    -1'", sprintf('%2$6s', $mixed, $intRange));
 		assertType("'1'", sprintf('%2$s', $mixed, 1));
 		assertType("'1'", sprintf('%2$s', $mixed, '1'));
 		assertType("'abc'", sprintf('%2$s', $mixed, 'abc'));
+		assertType("'-1'|'0'|'1'|'2'|'3'|'4'|'5'", sprintf('%2$s', $mixed, $intRange));
 
 		assertType('numeric-string', sprintf('%2$.14F', $mixed, $i));
 		assertType('numeric-string', sprintf('%2$.14F', $mixed, $f));
@@ -95,7 +110,7 @@ class HelloWorld
 		assertType('numeric-string', vsprintf("%4d", explode('-', '1988-8-1')));
 		assertType('numeric-string', vsprintf("%4d", $array));
 		assertType('numeric-string', vsprintf("%4d", ['123']));
-		assertType('string', vsprintf("%s", ['123'])); // could be '123'
+		assertType('\'123\'', vsprintf("%s", ['123']));
 		// too many arguments.. php silently allows it
 		assertType('numeric-string', vsprintf("%4d", ['123', '456']));
 	}

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\TooWideTypehints;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\FunctionReturnStatementsNode;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\TypeCombinator;
@@ -30,7 +29,7 @@ final class TooWideFunctionReturnTypehintRule implements Rule
 	{
 		$function = $node->getFunctionReflection();
 
-		$functionReturnType = ParametersAcceptorSelector::selectSingle($function->getVariants())->getReturnType();
+		$functionReturnType = $function->getReturnType();
 		$functionReturnType = TypeUtils::resolveLateResolvableTypes($functionReturnType);
 		if (!$functionReturnType instanceof UnionType) {
 			return [];

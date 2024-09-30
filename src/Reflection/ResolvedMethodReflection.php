@@ -52,6 +52,11 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 		return $this->variants = $this->resolveVariants($this->reflection->getVariants());
 	}
 
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	{
+		return $this->getVariants()[0];
+	}
+
 	public function getNamedArgumentsVariants(): ?array
 	{
 		$variants = $this->namedArgumentVariants;

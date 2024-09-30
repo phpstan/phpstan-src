@@ -23,6 +23,7 @@ use Throwable;
 use function array_fill;
 use function array_key_exists;
 use function array_shift;
+use function array_values;
 use function count;
 use function in_array;
 use function intval;
@@ -95,19 +96,38 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 					$checkArg = 1;
 				}
 
-				// constant string specifies a numbered argument that does not exist
-				if (!array_key_exists($checkArg, $args)) {
+				$checkArgType = $this->getValueType($functionReflection, $scope, $args, $checkArg);
+				if ($checkArgType === null) {
 					return null;
 				}
 
 				// if the format string is just a placeholder and specified an argument
 				// of stringy type, then the return value will be of the same type
-				$checkArgType = $scope->getType($args[$checkArg]->value);
 				if (
 					$matches['specifier'] === 's'
-					&& ($checkArgType->isConstantValue()->no() || $matches['width'] === '')
 					&& ($checkArgType->isString()->yes() || $checkArgType->isInteger()->yes())
 				) {
+					if ($checkArgType instanceof IntegerRangeType) {
+						$constArgTypes = $checkArgType->getFiniteTypes();
+					} else {
+						$constArgTypes = $checkArgType->getConstantScalarTypes();
+					}
+					if ($constArgTypes !== []) {
+						$result = [];
+						$printfArgs = array_fill(0, count($args) - 1, '');
+						foreach ($constArgTypes as $constArgType) {
+							$printfArgs[$checkArg - 1] = $constArgType->getValue();
+							try {
+								$result[] = new ConstantStringType(@sprintf($constantString->getValue(), ...$printfArgs));
+							} catch (Throwable) {
+								continue 2;
+							}
+						}
+						$singlePlaceholderEarlyReturn = TypeCombinator::union(...$result);
+
+						continue;
+					}
+
 					$singlePlaceholderEarlyReturn = $checkArgType->toString();
 				} elseif ($matches['specifier'] !== 's') {
 					$singlePlaceholderEarlyReturn = new IntersectionType([
@@ -135,27 +155,13 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		$isNonEmpty = $allPatternsNonEmpty;
-		if (
-			!$isNonEmpty
-			&& $functionReflection->getName() === 'sprintf'
-			&& count($args) >= 2
-			&& $formatType->isNonEmptyString()->yes()
-		) {
-			$allArgsNonEmpty = true;
-			foreach ($args as $key => $arg) {
-				if ($key === 0) {
-					continue;
-				}
-
-				if (!$scope->getType($arg->value)->toString()->isNonEmptyString()->yes()) {
-					$allArgsNonEmpty = false;
-					break;
-				}
-			}
-
-			if ($allArgsNonEmpty) {
-				$isNonEmpty = true;
-			}
+		if (!$isNonEmpty && $formatType->isNonEmptyString()->yes()) {
+			$isNonEmpty = $this->allValuesSatisfies(
+				$functionReflection,
+				$scope,
+				$args,
+				static fn (Type $type): bool => $type->toString()->isNonEmptyString()->yes()
+			);
 		}
 
 		if ($isNonEmpty) {
@@ -166,6 +172,75 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		return new StringType();
+	}
+
+	/**
+	 * @param array<Arg> $args
+	 * @param callable(Type): bool $cb
+	 */
+	private function allValuesSatisfies(FunctionReflection $functionReflection, Scope $scope, array $args, callable $cb): bool
+	{
+		if ($functionReflection->getName() === 'sprintf' && count($args) >= 2) {
+			foreach ($args as $key => $arg) {
+				if ($key === 0) {
+					continue;
+				}
+
+				if (!$cb($scope->getType($arg->value))) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		if ($functionReflection->getName() === 'vsprintf' && count($args) >= 2) {
+			return $cb($scope->getType($args[1]->value)->getIterableValueType());
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param Arg[] $args
+	 */
+	private function getValueType(FunctionReflection $functionReflection, Scope $scope, array $args, int $argNumber): ?Type
+	{
+		if ($functionReflection->getName() === 'sprintf') {
+			// constant string specifies a numbered argument that does not exist
+			if (!array_key_exists($argNumber, $args)) {
+				return null;
+			}
+
+			return $scope->getType($args[$argNumber]->value);
+		}
+
+		if ($functionReflection->getName() === 'vsprintf') {
+			if (!array_key_exists(1, $args)) {
+				return null;
+			}
+
+			$valuesType = $scope->getType($args[1]->value);
+			$resultTypes = [];
+
+			$valuesConstantArrays = $valuesType->getConstantArrays();
+			foreach ($valuesConstantArrays as $valuesConstantArray) {
+				// vsprintf does not care about the keys of the array, only the order
+				$types = array_values($valuesConstantArray->getValueTypes());
+				if (!array_key_exists($argNumber - 1, $types)) {
+					return null;
+				}
+
+				$resultTypes[] = $types[$argNumber - 1];
+			}
+			if (count($resultTypes) === 0) {
+				return $valuesType->getIterableValueType();
+			}
+
+			return TypeCombinator::union(...$resultTypes);
+		}
+
+		return null;
 	}
 
 	/**

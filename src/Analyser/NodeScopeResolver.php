@@ -728,7 +728,7 @@ final class NodeScopeResolver
 				$classReflection = $scope->getClassReflection();
 
 				$methodReflection = $methodScope->getFunction();
-				if (!$methodReflection instanceof ExtendedMethodReflection) {
+				if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
 					throw new ShouldNotHappenException();
 				}
 

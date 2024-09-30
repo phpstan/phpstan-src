@@ -69,6 +69,11 @@ final class ExitFunctionReflection implements FunctionReflection
 		];
 	}
 
+	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	{
+		return $this->getVariants()[0];
+	}
+
 	/**
 	 * @return ParametersAcceptorWithPhpDocs[]
 	 */

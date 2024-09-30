@@ -69,7 +69,7 @@ function str_shuffle(string $string): string {}
 
 /**
  * @param array<mixed> $result
- * @param-out array<int|string, array<mixed>|string> $result
+ * @param-out ($string is lowercase-string ? array<int|string, array<mixed>|lowercase-string> : array<int|string, array<mixed>|string>) $result
  */
 function parse_str(string $string, array &$result): void {}
 
@@ -313,3 +313,18 @@ function is_callable(mixed $value, bool $syntax_only = false, ?string &$callable
  * @return ($num is float ? float : $num is int ? non-negative-int : float|non-negative-int)
  */
 function abs($num) {}
+
+/**
+ * @return ($string is lowercase-string ? lowercase-string : string)
+ */
+function trim(string $string, string $characters = " \n\r\t\v\x00"): string {}
+
+/**
+ * @return ($string is lowercase-string ? lowercase-string : string)
+ */
+function ltrim(string $string, string $characters = " \n\r\t\v\x00"): string {}
+
+/**
+ * @return ($string is lowercase-string ? lowercase-string : string)
+ */
+function rtrim(string $string, string $characters = " \n\r\t\v\x00"): string {}

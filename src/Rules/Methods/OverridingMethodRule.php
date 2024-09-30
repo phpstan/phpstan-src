@@ -11,7 +11,6 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\NativeBuiltinMethodReflection;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpMethodReflection;
@@ -204,8 +203,7 @@ final class OverridingMethodRule implements Rule
 
 		$prototypeVariant = $prototypeVariants[0];
 
-		$methodVariant = ParametersAcceptorSelector::selectSingle($method->getVariants());
-		$methodReturnType = $methodVariant->getNativeReturnType();
+		$methodReturnType = $method->getNativeReturnType();
 
 		$realPrototype = $method->getPrototype();
 
@@ -216,7 +214,7 @@ final class OverridingMethodRule implements Rule
 			&& !$this->hasReturnTypeWillChangeAttribute($node->getOriginalNode())
 			&& count($prototypeDeclaringClass->getNativeReflection()->getMethod($prototype->getName())->getAttributes('ReturnTypeWillChange')) === 0
 		) {
-			if (!$this->methodParameterComparisonHelper->isReturnTypeCompatible($realPrototype->getTentativeReturnType(), $methodVariant->getNativeReturnType(), true)) {
+			if (!$this->methodParameterComparisonHelper->isReturnTypeCompatible($realPrototype->getTentativeReturnType(), $method->getNativeReturnType(), true)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Return type %s of method %s::%s() is not covariant with tentative return type %s of method %s::%s().',
 					$methodReturnType->describe(VerbosityLevel::typeOnly()),

@@ -18,12 +18,11 @@ use PhpParser\Node\UnionType;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Printer\NodeTypePrinter;
 use PHPStan\Php\PhpVersion;
-use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -65,7 +64,7 @@ final class FunctionDefinitionCheck
 	 */
 	public function checkFunction(
 		Function_ $function,
-		FunctionReflection $functionReflection,
+		PhpFunctionFromParserNodeReflection $functionReflection,
 		string $parameterMessage,
 		string $returnMessage,
 		string $unionTypesMessage,
@@ -74,10 +73,8 @@ final class FunctionDefinitionCheck
 		string $unresolvableReturnTypeMessage,
 	): array
 	{
-		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
-
 		return $this->checkParametersAcceptor(
-			$parametersAcceptor,
+			$functionReflection,
 			$function,
 			$parameterMessage,
 			$returnMessage,
@@ -259,11 +256,8 @@ final class FunctionDefinitionCheck
 		string $selfOutMessage,
 	): array
 	{
-		/** @var ParametersAcceptorWithPhpDocs $parametersAcceptor */
-		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants());
-
 		$errors = $this->checkParametersAcceptor(
-			$parametersAcceptor,
+			$methodReflection,
 			$methodNode,
 			$parameterMessage,
 			$returnMessage,

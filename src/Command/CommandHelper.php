@@ -523,9 +523,6 @@ final class CommandHelper
 			throw new InceptionNotSuccessfulException();
 		}
 
-		$tempResultCachePath = $container->getParameter('tempResultCachePath');
-		$createDir($tempResultCachePath);
-
 		/** @var FileFinder $fileFinder */
 		$fileFinder = $container->getService('fileFinderAnalyse');
 

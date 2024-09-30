@@ -54,9 +54,8 @@ final class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
-	public static function __set_state(array $properties): ExportedNode
+	public static function __set_state(array $properties): self
 	{
 		return new self(
 			$properties['constants'],
@@ -69,9 +68,8 @@ final class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 
 	/**
 	 * @param mixed[] $data
-	 * @return self
 	 */
-	public static function decode(array $data): ExportedNode
+	public static function decode(array $data): self
 	{
 		return new self(
 			array_map(static function (array $constantData): ExportedClassConstantNode {

@@ -5,7 +5,6 @@ namespace PHPStan\Reflection\Annotations;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
-use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\NeverType;
@@ -29,10 +28,7 @@ final class AnnotationsPropertiesClassReflectionExtension implements PropertiesC
 		return isset($this->properties[$classReflection->getCacheKey()][$propertyName]);
 	}
 
-	/**
-	 * @return ExtendedPropertyReflection
-	 */
-	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
+	public function getProperty(ClassReflection $classReflection, string $propertyName): ExtendedPropertyReflection
 	{
 		return $this->properties[$classReflection->getCacheKey()][$propertyName];
 	}

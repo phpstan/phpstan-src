@@ -6,7 +6,6 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
-use PHPStan\Reflection\PropertyReflection;
 use PHPStan\ShouldNotHappenException;
 
 final class RequireExtendsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
@@ -17,10 +16,7 @@ final class RequireExtendsPropertiesClassReflectionExtension implements Properti
 		return $this->findProperty($classReflection, $propertyName) !== null;
 	}
 
-	/**
-	 * @return ExtendedPropertyReflection
-	 */
-	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
+	public function getProperty(ClassReflection $classReflection, string $propertyName): ExtendedPropertyReflection
 	{
 		$property = $this->findProperty($classReflection, $propertyName);
 		if ($property === null) {

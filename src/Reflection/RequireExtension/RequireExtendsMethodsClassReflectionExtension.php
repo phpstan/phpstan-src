@@ -5,7 +5,6 @@ namespace PHPStan\Reflection\RequireExtension;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\ShouldNotHappenException;
 
@@ -17,10 +16,7 @@ final class RequireExtendsMethodsClassReflectionExtension implements MethodsClas
 		return $this->findMethod($classReflection, $methodName) !== null;
 	}
 
-	/**
-	 * @return ExtendedMethodReflection
-	 */
-	public function getMethod(ClassReflection $classReflection, string $methodName): MethodReflection
+	public function getMethod(ClassReflection $classReflection, string $methodName): ExtendedMethodReflection
 	{
 		$method = $this->findMethod($classReflection, $methodName);
 		if ($method === null) {
@@ -30,10 +26,7 @@ final class RequireExtendsMethodsClassReflectionExtension implements MethodsClas
 		return $method;
 	}
 
-	/**
-	 * @return ExtendedMethodReflection|null
-	 */
-	private function findMethod(ClassReflection $classReflection, string $methodName): ?MethodReflection
+	private function findMethod(ClassReflection $classReflection, string $methodName): ?ExtendedMethodReflection
 	{
 		if (!$classReflection->isInterface()) {
 			return null;

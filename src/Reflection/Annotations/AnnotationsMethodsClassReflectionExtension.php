@@ -5,7 +5,6 @@ namespace PHPStan\Reflection\Annotations;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -35,10 +34,7 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 		return isset($this->methods[$classReflection->getCacheKey()][$methodName]);
 	}
 
-	/**
-	 * @return ExtendedMethodReflection
-	 */
-	public function getMethod(ClassReflection $classReflection, string $methodName): MethodReflection
+	public function getMethod(ClassReflection $classReflection, string $methodName): ExtendedMethodReflection
 	{
 		return $this->methods[$classReflection->getCacheKey()][$methodName];
 	}

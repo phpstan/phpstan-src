@@ -27,10 +27,7 @@ final class ParamTag implements TypedTag
 		return $this->isVariadic;
 	}
 
-	/**
-	 * @return self
-	 */
-	public function withType(Type $type): TypedTag
+	public function withType(Type $type): self
 	{
 		return new self($type, $this->isVariadic);
 	}

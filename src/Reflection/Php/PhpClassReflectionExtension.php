@@ -29,7 +29,6 @@ use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterWithPhpDocsReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
-use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\FunctionSignature;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
@@ -154,10 +153,7 @@ final class PhpClassReflectionExtension
 		return $classReflection->getNativeReflection()->hasProperty($propertyName);
 	}
 
-	/**
-	 * @return ExtendedPropertyReflection
-	 */
-	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
+	public function getProperty(ClassReflection $classReflection, string $propertyName): ExtendedPropertyReflection
 	{
 		if (!isset($this->propertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName])) {
 			$this->propertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName] = $this->createProperty($classReflection, $propertyName, true);
@@ -376,10 +372,7 @@ final class PhpClassReflectionExtension
 		return $classReflection->getNativeReflection()->hasMethod($methodName);
 	}
 
-	/**
-	 * @return ExtendedMethodReflection
-	 */
-	public function getMethod(ClassReflection $classReflection, string $methodName): MethodReflection
+	public function getMethod(ClassReflection $classReflection, string $methodName): ExtendedMethodReflection
 	{
 		if (isset($this->methodsIncludingAnnotations[$classReflection->getCacheKey()][$methodName])) {
 			return $this->methodsIncludingAnnotations[$classReflection->getCacheKey()][$methodName];

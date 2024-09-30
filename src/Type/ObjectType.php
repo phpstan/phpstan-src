@@ -1485,10 +1485,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $classReflection;
 	}
 
-	/**
-	 * @return self|null
-	 */
-	public function getAncestorWithClassName(string $className): ?TypeWithClassName
+	public function getAncestorWithClassName(string $className): ?self
 	{
 		if ($this->className === $className) {
 			return $this;

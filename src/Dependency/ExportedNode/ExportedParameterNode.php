@@ -51,9 +51,8 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
-	public static function __set_state(array $properties): ExportedNode
+	public static function __set_state(array $properties): self
 	{
 		return new self(
 			$properties['name'],
@@ -86,9 +85,8 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 
 	/**
 	 * @param mixed[] $data
-	 * @return self
 	 */
-	public static function decode(array $data): ExportedNode
+	public static function decode(array $data): self
 	{
 		return new self(
 			$data['name'],

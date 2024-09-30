@@ -19,10 +19,7 @@ final class SelfOutTypeTag implements TypedTag
 		return $this->type;
 	}
 
-	/**
-	 * @return self
-	 */
-	public function withType(Type $type): TypedTag
+	public function withType(Type $type): self
 	{
 		return new self($type);
 	}

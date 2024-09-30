@@ -24,10 +24,7 @@ final class ReturnTag implements TypedTag
 		return $this->isExplicit;
 	}
 
-	/**
-	 * @return self
-	 */
-	public function withType(Type $type): TypedTag
+	public function withType(Type $type): self
 	{
 		return new self($type, $this->isExplicit);
 	}

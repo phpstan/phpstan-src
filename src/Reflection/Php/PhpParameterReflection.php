@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
@@ -24,7 +25,7 @@ final class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ReflectionParameter $reflection,
 		private ?Type $phpDocType,
-		private ?string $declaringClassName,
+		private ?ClassReflection $declaringClass,
 		private ?Type $outType,
 		private TrinaryLogic $immediatelyInvokedCallable,
 		private ?Type $closureThisType,
@@ -62,7 +63,7 @@ final class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 			$this->type = TypehintHelper::decideTypeFromReflection(
 				$this->reflection->getType(),
 				$phpDocType,
-				$this->declaringClassName,
+				$this->declaringClass,
 				$this->isVariadic(),
 			);
 		}
@@ -97,7 +98,7 @@ final class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 			$this->nativeType = TypehintHelper::decideTypeFromReflection(
 				$this->reflection->getType(),
 				null,
-				$this->declaringClassName,
+				$this->declaringClass,
 				$this->isVariadic(),
 			);
 		}

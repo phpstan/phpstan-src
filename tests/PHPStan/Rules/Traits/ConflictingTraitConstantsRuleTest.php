@@ -14,7 +14,7 @@ class ConflictingTraitConstantsRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		return new ConflictingTraitConstantsRule(self::getContainer()->getByType(InitializerExprTypeResolver::class));
+		return new ConflictingTraitConstantsRule(self::getContainer()->getByType(InitializerExprTypeResolver::class), $this->createReflectionProvider());
 	}
 
 	public function testRule(): void

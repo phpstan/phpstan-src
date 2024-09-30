@@ -232,7 +232,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 				$this->initializerExprTypeResolver,
 				$reflection,
 				$this->phpDocParameterTypes[$reflection->getName()] ?? null,
-				$this->getDeclaringClass()->getName(),
+				$this->getDeclaringClass(),
 				$this->phpDocParameterOutTypes[$reflection->getName()] ?? null,
 				$this->immediatelyInvokedCallableParameters[$reflection->getName()] ?? TrinaryLogic::createMaybe(),
 				$this->phpDocClosureThisTypeParameters[$reflection->getName()] ?? null,

@@ -8,7 +8,6 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -16,7 +15,6 @@ use ReflectionType;
 use function array_map;
 use function count;
 use function get_class;
-use function is_string;
 use function sprintf;
 
 final class TypehintHelper
@@ -26,7 +24,7 @@ final class TypehintHelper
 	public static function decideTypeFromReflection(
 		?ReflectionType $reflectionType,
 		?Type $phpDocType = null,
-		ClassReflection|string|null $selfClass = null,
+		ClassReflection|null $selfClass = null,
 		bool $isVariadic = false,
 	): Type
 	{
@@ -67,14 +65,6 @@ final class TypehintHelper
 			$typeNode = new FullyQualified($reflectionType->getName());
 		}
 
-		if (is_string($selfClass)) {
-			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-			if ($reflectionProvider->hasClass($selfClass)) {
-				$selfClass = $reflectionProvider->getClass($selfClass);
-			} else {
-				$selfClass = null;
-			}
-		}
 		$type = ParserNodeTypeToPHPStanType::resolve($typeNode, $selfClass);
 		if ($reflectionType->allowsNull()) {
 			$type = TypeCombinator::addNull($type);

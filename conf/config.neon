@@ -76,7 +76,6 @@ parameters:
 	polluteScopeWithBlock: true
 	propertyAlwaysWrittenTags: []
 	propertyAlwaysReadTags: []
-	fixerTmpDir: %pro.tmpDir% #unused
 	additionalConstructors: []
 	treatPhpDocTypesAsCertain: true
 	usePathConstantsAsConstantString: false

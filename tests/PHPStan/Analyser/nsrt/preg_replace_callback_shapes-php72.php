@@ -8,7 +8,7 @@ function (string $s): void {
 	preg_replace_callback(
 		$s,
 		function ($matches) {
-			assertType('array<int|string, string>', $matches);
+			assertType('array<string>', $matches);
 			return '';
 		},
 		$s

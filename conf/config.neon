@@ -19,7 +19,7 @@ parameters:
 		checkedExceptionClasses: []
 		check:
 			missingCheckedExceptionInThrows: false
-			tooWideThrowType: false
+			tooWideThrowType: true
 	featureToggles:
 		bleedingEdge: false
 		skipCheckGenericClasses: []

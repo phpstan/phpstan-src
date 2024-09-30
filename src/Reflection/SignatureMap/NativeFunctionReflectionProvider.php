@@ -88,13 +88,24 @@ final class NativeFunctionReflectionProvider
 			$acceptsNamedArguments = $phpDoc->acceptsNamedArguments();
 		}
 
+		$pureUnlessCallableIsImpureParameters = [];
+		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
+			$functionMetadata = $this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName);
+			if (isset($functionMetadata['pureUnlessCallableIsImpureParameters'])) {
+				$pureUnlessCallableIsImpureParameters = $functionMetadata['pureUnlessCallableIsImpureParameters'];
+			}
+		} else {
+			$functionMetadata = null;
+		}
+
 		$variantsByType = ['positional' => []];
 		foreach ($functionSignaturesResult as $signatureType => $functionSignatures) {
 			foreach ($functionSignatures ?? [] as $functionSignature) {
 				$variantsByType[$signatureType][] = new FunctionVariantWithPhpDocs(
 					TemplateTypeMap::createEmpty(),
 					null,
-					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc): NativeParameterWithPhpDocsReflection {
+					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc, $pureUnlessCallableIsImpureParameters): NativeParameterWithPhpDocsReflection {
+						$name = $parameterSignature->getName();
 						$type = $parameterSignature->getType();
 
 						$phpDocType = null;
@@ -113,7 +124,7 @@ final class NativeFunctionReflectionProvider
 						}
 
 						return new NativeParameterWithPhpDocsReflection(
-							$parameterSignature->getName(),
+							$name,
 							$parameterSignature->isOptional(),
 							TypehintHelper::decideType($type, $phpDocType),
 							$phpDocType ?? new MixedType(),
@@ -124,6 +135,7 @@ final class NativeFunctionReflectionProvider
 							$phpDoc !== null ? NativeFunctionReflectionProvider::getParamOutTypeFromPhpDoc($parameterSignature->getName(), $phpDoc) : null,
 							$immediatelyInvokedCallable,
 							$closureThisType,
+							isset($pureUnlessCallableIsImpureParameters[$name]) && $pureUnlessCallableIsImpureParameters[$name],
 						);
 					}, $functionSignature->getParameters()),
 					$functionSignature->isVariadic(),
@@ -134,8 +146,8 @@ final class NativeFunctionReflectionProvider
 			}
 		}
 
-		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
-			$hasSideEffects = TrinaryLogic::createFromBoolean($this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName)['hasSideEffects']);
+		if (isset($functionMetadata['hasSideEffects'])) {
+			$hasSideEffects = TrinaryLogic::createFromBoolean($functionMetadata['hasSideEffects']);
 		} else {
 			$hasSideEffects = TrinaryLogic::createMaybe();
 		}

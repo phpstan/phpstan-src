@@ -39,11 +39,9 @@ final class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionRetu
 
 		$offsetType = $scope->getType($args[1]->value);
 		$lengthType = isset($args[2]) ? $scope->getType($args[2]->value) : new NullType();
-
 		$preserveKeysType = isset($args[3]) ? $scope->getType($args[3]->value) : new ConstantBooleanType(false);
-		$preserveKeys = (new ConstantBooleanType(true))->isSuperTypeOf($preserveKeysType);
 
-		return $arrayType->sliceArray($offsetType, $lengthType, $preserveKeys);
+		return $arrayType->sliceArray($offsetType, $lengthType, $preserveKeysType->isTrue());
 	}
 
 }

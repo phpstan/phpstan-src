@@ -3,12 +3,14 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_map;
 use function count;
 
 final class ArrayFindFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -30,7 +32,9 @@ final class ArrayFindFunctionReturnTypeExtension implements DynamicFunctionRetur
 			return null;
 		}
 
-		return TypeCombinator::union($arrayType->getIterableValueType(), new NullType());
+		$resultTypes = $scope->getType(new FuncCall(new Name('\array_filter'), $functionCall->getArgs()))->getArrays();
+
+		return TypeCombinator::union(new NullType(), ...array_map(fn ($type) => $type->getIterableValueType(), $resultTypes));
 	}
 
 }

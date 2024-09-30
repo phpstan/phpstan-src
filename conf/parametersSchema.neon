@@ -170,7 +170,7 @@ parametersSchema:
 	__validate: bool()
 
 	# internal parameters only for DerivativeContainerFactory
-	additionalConfigFiles: arrayOf(string())
+	additionalConfigFiles: listOf(string())
 	generateBaselineFile: schema(string(), nullable())
 	analysedPaths: listOf(string())
 	allConfigFiles: listOf(string())

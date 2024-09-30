@@ -11,7 +11,7 @@ use const PHP_VERSION_ID;
 class LevelsIntegrationTest extends LevelsTestCase
 {
 
-	public function dataTopics(): array
+	public static function dataTopics(): array
 	{
 		$topics = [
 			['returnTypes'],

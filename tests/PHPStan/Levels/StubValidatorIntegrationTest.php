@@ -10,7 +10,7 @@ use PHPStan\Testing\LevelsTestCase;
 class StubValidatorIntegrationTest extends LevelsTestCase
 {
 
-	public function dataTopics(): array
+	public static function dataTopics(): array
 	{
 		return [
 			['stubValidator'],

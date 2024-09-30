@@ -30,7 +30,7 @@ abstract class LevelsTestCase extends TestCase
 	/**
 	 * @return array<array<string>>
 	 */
-	abstract public function dataTopics(): array;
+	abstract public static function dataTopics(): array;
 
 	abstract public function getDataPath(): string;
 

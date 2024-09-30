@@ -10,7 +10,7 @@ use PHPStan\Testing\LevelsTestCase;
 class StubsIntegrationTest extends LevelsTestCase
 {
 
-	public function dataTopics(): array
+	public static function dataTopics(): array
 	{
 		require_once __DIR__ . '/data/stubs-functions.php';
 

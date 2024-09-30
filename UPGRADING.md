@@ -96,6 +96,10 @@ parameters:
 
 Appending `(?)` in `ignoreErrors` is not supported.
 
+### Docker images no longer tagged without a PHP version
+
+Tags without a PHP version are no longer published - `nightly`, `2`, `latest` are no longer updated. Instead, use `nightly-php8.3`, `2-php8.3`, `latest-php8.3`. You can replace `8.3` with PHP versions `8.0`-`8.3`.
+
 ### Minor backward compatibility breaks
 
 * Removed unused config parameter `cache.nodesByFileCountMax`

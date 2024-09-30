@@ -19,6 +19,9 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
+/**
+ * @api
+ */
 final class Printer extends Standard
 {
 

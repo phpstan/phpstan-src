@@ -311,6 +311,8 @@ services:
 
 	-
 		class: PHPStan\Node\Printer\Printer
+		autowired:
+			- PHPStan\Node\Printer\Printer
 
 	-
 		class: PHPStan\Broker\AnonymousClassNameHelper

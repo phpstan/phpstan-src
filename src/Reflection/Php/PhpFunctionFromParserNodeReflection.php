@@ -58,7 +58,6 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Paramet
 		private ?string $deprecatedDescription,
 		private bool $isDeprecated,
 		private bool $isInternal,
-		private bool $isFinal,
 		protected ?bool $isPure,
 		private bool $acceptsNamedArguments,
 		private Assertions $assertions,
@@ -233,24 +232,6 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Paramet
 	public function isInternal(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->isInternal);
-	}
-
-	public function isFinal(): TrinaryLogic
-	{
-		$finalMethod = false;
-		if ($this->functionLike instanceof ClassMethod) {
-			$finalMethod = $this->functionLike->isFinal();
-		}
-		return TrinaryLogic::createFromBoolean($finalMethod || $this->isFinal);
-	}
-
-	public function isFinalByKeyword(): TrinaryLogic
-	{
-		$finalMethod = false;
-		if ($this->functionLike instanceof ClassMethod) {
-			$finalMethod = $this->functionLike->isFinal();
-		}
-		return TrinaryLogic::createFromBoolean($finalMethod);
 	}
 
 	public function getThrowType(): ?Type

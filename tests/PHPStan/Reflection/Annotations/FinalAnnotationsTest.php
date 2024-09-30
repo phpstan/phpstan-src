@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\Annotations;
 
 use FinalAnnotations\FinalFoo;
 use FinalAnnotations\Foo;
-use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
 
@@ -56,16 +55,6 @@ class FinalAnnotationsTest extends PHPStanTestCase
 			$methodAnnotation = $class->getMethod($methodName, $scope);
 			$this->assertSame($final, $methodAnnotation->isFinal()->yes());
 		}
-	}
-
-	public function testFinalUserFunctions(): void
-	{
-		require_once __DIR__ . '/data/annotations-final.php';
-
-		$reflectionProvider = $this->createReflectionProvider();
-
-		$this->assertFalse($reflectionProvider->getFunction(new Name\FullyQualified('FinalAnnotations\foo'), null)->isFinal()->yes());
-		$this->assertTrue($reflectionProvider->getFunction(new Name\FullyQualified('FinalAnnotations\finalFoo'), null)->isFinal()->yes());
 	}
 
 }

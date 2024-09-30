@@ -88,11 +88,6 @@ final class NativeFunctionReflection implements FunctionReflection
 		return TrinaryLogic::createNo();
 	}
 
-	public function isFinal(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
 	public function hasSideEffects(): TrinaryLogic
 	{
 		if ($this->isVoid()) {

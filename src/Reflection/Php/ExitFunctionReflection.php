@@ -97,11 +97,6 @@ final class ExitFunctionReflection implements FunctionReflection
 		return null;
 	}
 
-	public function isFinal(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
 	public function isInternal(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

@@ -249,11 +249,6 @@ final class PhpFunctionReflection implements FunctionReflection
 		return TrinaryLogic::createFromBoolean($this->isInternal);
 	}
 
-	public function isFinal(): TrinaryLogic
-	{
-		return TrinaryLogic::createFromBoolean($this->isFinal);
-	}
-
 	public function getThrowType(): ?Type
 	{
 		return $this->phpDocThrowType;

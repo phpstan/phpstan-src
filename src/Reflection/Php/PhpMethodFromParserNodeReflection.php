@@ -38,7 +38,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 	 */
 	public function __construct(
 		private ClassReflection $declaringClass,
-		ClassMethod $classMethod,
+		private ClassMethod $classMethod,
 		string $fileName,
 		TemplateTypeMap $templateTypeMap,
 		array $realParameterTypes,
@@ -50,7 +50,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal,
-		bool $isFinal,
+		private bool $isFinal,
 		?bool $isPure,
 		bool $acceptsNamedArguments,
 		Assertions $assertions,
@@ -107,7 +107,6 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,
-			$isFinal || $classMethod->isFinal(),
 			$isPure,
 			$acceptsNamedArguments,
 			$assertions,
@@ -152,6 +151,16 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 	public function isPublic(): bool
 	{
 		return $this->getClassMethod()->isPublic();
+	}
+
+	public function isFinal(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->classMethod->isFinal() || $this->isFinal);
+	}
+
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->classMethod->isFinal());
 	}
 
 	public function isBuiltin(): bool

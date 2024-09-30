@@ -34,8 +34,6 @@ interface FunctionReflection
 
 	public function getDeprecatedDescription(): ?string;
 
-	public function isFinal(): TrinaryLogic;
-
 	public function isInternal(): TrinaryLogic;
 
 	public function getThrowType(): ?Type;

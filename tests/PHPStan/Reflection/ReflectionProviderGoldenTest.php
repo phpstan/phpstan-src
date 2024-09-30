@@ -341,7 +341,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			$result .= 'Is deprecated: ' . $reflection->isDeprecated()->describe() . "\n";
 		}
 
-		if (! $reflection->isFinal()->no()) {
+		if ($reflection instanceof MethodReflection && ! $reflection->isFinal()->no()) {
 			$result .= 'Is final: ' . $reflection->isFinal()->describe() . "\n";
 		}
 

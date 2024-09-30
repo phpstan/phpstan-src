@@ -513,7 +513,7 @@ final class NodeScopeResolver
 			$throwPoints = [];
 			$impurePoints = [];
 			$this->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $nodeCallback);
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, , $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($stmt, $param, $scope, $nodeCallback);
@@ -532,7 +532,6 @@ final class NodeScopeResolver
 				$deprecatedDescription,
 				$isDeprecated,
 				$isInternal,
-				$isFinal,
 				$isPure,
 				$acceptsNamedArguments,
 				$asserts,

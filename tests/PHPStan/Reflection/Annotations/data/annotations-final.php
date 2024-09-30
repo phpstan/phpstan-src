@@ -2,19 +2,6 @@
 
 namespace FinalAnnotations;
 
-function foo()
-{
-
-}
-
-/**
- * @final
- */
-function finalFoo()
-{
-
-}
-
 class Foo
 {
 

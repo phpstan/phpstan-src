@@ -10,9 +10,9 @@ use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
-use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
@@ -102,7 +102,7 @@ class ObjectShapeType implements Type
 		return TrinaryLogic::createYes();
 	}
 
-	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
+	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
 	{
 		return $this->getUnresolvedPropertyPrototype($propertyName, $scope)->getTransformedProperty();
 	}

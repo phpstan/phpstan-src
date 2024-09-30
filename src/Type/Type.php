@@ -85,10 +85,7 @@ interface Type
 
 	public function hasProperty(string $propertyName): TrinaryLogic;
 
-	/**
-	 * @return ExtendedPropertyReflection
-	 */
-	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection;
+	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection;
 
 	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection;
 

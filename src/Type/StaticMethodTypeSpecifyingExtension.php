@@ -28,6 +28,7 @@ use PHPStan\Reflection\MethodReflection;
 interface StaticMethodTypeSpecifyingExtension
 {
 
+	/** @return class-string */
 	public function getClass(): string;
 
 	public function isStaticMethodSupported(MethodReflection $staticMethodReflection, StaticCall $node, TypeSpecifierContext $context): bool;

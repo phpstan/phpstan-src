@@ -28,7 +28,7 @@ namespace ArrayFind
 	function testMixed(array $array, callable $callback): void
 	{
 		assertType('mixed', array_find($array, $callback));
-		assertType('mixed', array_find($array, 'is_int'));
+		assertType('int|null', array_find($array, 'is_int'));
 	}
 
 	/**
@@ -37,7 +37,7 @@ namespace ArrayFind
 	function testConstant(array $array, callable $callback): void
 	{
 		assertType("1|'foo'|DateTime|null", array_find($array, $callback));
-		assertType("1|'foo'|DateTime|null", array_find($array, 'is_int'));
+		assertType("1|null", array_find($array, 'is_int'));
 	}
 
 }

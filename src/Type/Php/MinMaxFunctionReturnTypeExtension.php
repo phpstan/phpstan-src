@@ -160,6 +160,10 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			}
 
 			$compareResult = $this->compareTypes($resultType, $type);
+			if ($compareResult === null) {
+				return TypeCombinator::union(...$types);
+			}
+
 			if ($functionName === 'min') {
 				if ($compareResult === $type) {
 					$resultType = $type;

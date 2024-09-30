@@ -21,6 +21,9 @@ use function in_array;
 final class AdapterReflectionEnumCaseDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
+	/**
+	 * @param class-string $class
+	 */
 	public function __construct(private PhpVersion $phpVersion, private string $class)
 	{
 	}

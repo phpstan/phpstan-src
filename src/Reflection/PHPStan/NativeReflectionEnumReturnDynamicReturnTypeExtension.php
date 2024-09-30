@@ -14,6 +14,9 @@ use PHPStan\Type\Type;
 final class NativeReflectionEnumReturnDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
+	/**
+	 * @param class-string $className
+	 */
 	public function __construct(private PhpVersion $phpVersion, private string $className, private string $methodName)
 	{
 	}

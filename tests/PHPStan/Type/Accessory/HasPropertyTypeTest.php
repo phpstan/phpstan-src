@@ -62,11 +62,6 @@ class HasPropertyTypeTest extends PHPStanTestCase
 			],
 			[
 				new HasPropertyType('foo'),
-				new HasOffsetType(new MixedType()),
-				TrinaryLogic::createMaybe(),
-			],
-			[
-				new HasPropertyType('foo'),
 				new IterableType(new MixedType(), new MixedType()),
 				TrinaryLogic::createMaybe(),
 			],

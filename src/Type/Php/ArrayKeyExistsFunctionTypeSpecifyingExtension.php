@@ -14,6 +14,7 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -58,10 +59,20 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 		$keyType = $scope->getType($key);
 		$arrayType = $scope->getType($array);
 
-		if (!$keyType instanceof ConstantIntegerType
+		if (
+			!$keyType instanceof ConstantIntegerType
 			&& !$keyType instanceof ConstantStringType
-			&& !$arrayType->isIterableAtLeastOnce()->no()) {
+		) {
 			if ($context->true()) {
+				if ($arrayType->isIterableAtLeastOnce()->no()) {
+					return $this->typeSpecifier->create(
+						$array,
+						new NonEmptyArrayType(),
+						$context,
+						$scope,
+					);
+				}
+
 				$arrayKeyType = $arrayType->getIterableKeyType();
 				if ($keyType->isString()->yes()) {
 					$arrayKeyType = $arrayKeyType->toString();

@@ -8,7 +8,6 @@ use ObjectTypeEnums\FooEnum;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
-use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
@@ -152,52 +151,6 @@ class IntersectionTypeTest extends PHPStanTestCase
 			$intersectionTypeA,
 			new ArrayType(new MixedType(), new ObjectType('Item')),
 			TrinaryLogic::createNo(),
-		];
-
-		yield [
-			new IntersectionType([
-				new ArrayType(new MixedType(), new MixedType()),
-				new HasOffsetType(new StringType()),
-			]),
-			new ConstantArrayType([
-				new ConstantStringType('a'),
-				new ConstantStringType('b'),
-				new ConstantStringType('c'),
-			], [
-				new ConstantIntegerType(1),
-				new ConstantIntegerType(2),
-				new ConstantIntegerType(3),
-			]),
-			TrinaryLogic::createMaybe(),
-		];
-
-		yield [
-			new IntersectionType([
-				new ArrayType(new MixedType(), new MixedType()),
-				new HasOffsetType(new StringType()),
-			]),
-			new ConstantArrayType([
-				new ConstantStringType('a'),
-				new ConstantStringType('b'),
-				new ConstantStringType('c'),
-				new ConstantStringType('d'),
-				new ConstantStringType('e'),
-				new ConstantStringType('f'),
-				new ConstantStringType('g'),
-				new ConstantStringType('h'),
-				new ConstantStringType('i'),
-			], [
-				new ConstantIntegerType(1),
-				new ConstantIntegerType(2),
-				new ConstantIntegerType(3),
-				new ConstantIntegerType(1),
-				new ConstantIntegerType(2),
-				new ConstantIntegerType(3),
-				new ConstantIntegerType(1),
-				new ConstantIntegerType(2),
-				new ConstantIntegerType(3),
-			]),
-			TrinaryLogic::createMaybe(),
 		];
 
 		yield [

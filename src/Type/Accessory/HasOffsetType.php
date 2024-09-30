@@ -44,9 +44,8 @@ class HasOffsetType implements CompoundType, AccessoryType
 
 	/**
 	 * @api
-	 * @param ConstantStringType|ConstantIntegerType $offsetType
 	 */
-	public function __construct(private Type $offsetType)
+	public function __construct(private ConstantStringType|ConstantIntegerType $offsetType)
 	{
 	}
 

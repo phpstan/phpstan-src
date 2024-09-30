@@ -72,11 +72,6 @@ class HasMethodTypeTest extends PHPStanTestCase
 			],
 			[
 				new HasMethodType('foo'),
-				new HasOffsetType(new MixedType()),
-				TrinaryLogic::createMaybe(),
-			],
-			[
-				new HasMethodType('foo'),
 				new IterableType(new MixedType(), new MixedType()),
 				TrinaryLogic::createMaybe(),
 			],

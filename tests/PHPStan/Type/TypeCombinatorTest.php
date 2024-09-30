@@ -876,20 +876,6 @@ class TypeCombinatorTest extends PHPStanTestCase
 			[
 				[
 					new IntersectionType([
-						new ArrayType(new MixedType(), new StringType()),
-						new HasOffsetType(new StringType()),
-					]),
-					new IntersectionType([
-						new ArrayType(new MixedType(), new StringType()),
-						new HasOffsetType(new StringType()),
-					]),
-				],
-				IntersectionType::class,
-				'array<string>&hasOffset(string)',
-			],
-			[
-				[
-					new IntersectionType([
 						new ObjectWithoutClassType(),
 						new HasPropertyType('foo'),
 					]),
@@ -1856,22 +1842,6 @@ class TypeCombinatorTest extends PHPStanTestCase
 				],
 				UnionType::class,
 				'array{a: int, b: int}|array{b: int, c: int}',
-			],
-			[
-				[
-					TypeCombinator::intersect(new StringType(), new HasOffsetType(new IntegerType())),
-					TypeCombinator::intersect(new StringType(), new HasOffsetType(new IntegerType())),
-				],
-				IntersectionType::class,
-				'string&hasOffset(int)',
-			],
-			[
-				[
-					TypeCombinator::intersect(new ConstantStringType('abc'), new HasOffsetType(new IntegerType())),
-					TypeCombinator::intersect(new ConstantStringType('abc'), new HasOffsetType(new IntegerType())),
-				],
-				IntersectionType::class,
-				'\'abc\'&hasOffset(int)',
 			],
 			[
 				[
@@ -3152,24 +3122,6 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			[
 				[
-					new ArrayType(new StringType(), new StringType()),
-					new HasOffsetType(new StringType()),
-					new HasOffsetType(new StringType()),
-				],
-				IntersectionType::class,
-				'array<string, string>&hasOffset(string)',
-			],
-			[
-				[
-					new ArrayType(new MixedType(), new MixedType()),
-					new HasOffsetType(new StringType()),
-					new HasOffsetType(new StringType()),
-				],
-				IntersectionType::class,
-				'array&hasOffset(string)',
-			],
-			[
-				[
 					new ConstantArrayType(
 						[new ConstantStringType('a')],
 						[new ConstantStringType('foo')],
@@ -3252,17 +3204,6 @@ class TypeCombinatorTest extends PHPStanTestCase
 				],
 				ClosureType::class,
 				'Closure(): mixed',
-			],
-			[
-				[
-					new UnionType([
-						new ArrayType(new MixedType(), new StringType()),
-						new NullType(),
-					]),
-					new HasOffsetType(new StringType()),
-				],
-				IntersectionType::class,
-				'array<string>&hasOffset(string)',
 			],
 			[
 				[
@@ -3771,14 +3712,6 @@ class TypeCombinatorTest extends PHPStanTestCase
 				],
 				ConstantArrayType::class,
 				'array{a: int, b: int}',
-			],
-			[
-				[
-					new StringType(),
-					new HasOffsetType(new IntegerType()),
-				],
-				IntersectionType::class,
-				'string&hasOffset(int)',
 			],
 			[
 				[

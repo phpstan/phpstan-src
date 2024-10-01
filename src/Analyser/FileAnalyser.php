@@ -31,6 +31,7 @@ use const E_ERROR;
 use const E_NOTICE;
 use const E_PARSE;
 use const E_STRICT;
+use const E_USER_DEPRECATED;
 use const E_USER_ERROR;
 use const E_USER_NOTICE;
 use const E_USER_WARNING;
@@ -322,7 +323,7 @@ final class FileAnalyser
 
 			$errorMessage = sprintf('%s: %s', $this->getErrorLabel($errno), $errstr);
 
-			$this->allPhpErrors[] = (new Error($errorMessage, $errfile, $errline, true))->withIdentifier('phpstan.php');
+			$this->allPhpErrors[] = (new Error($errorMessage, $errfile, $errline, false))->withIdentifier('phpstan.php');
 
 			if ($errno === E_DEPRECATED) {
 				return true;
@@ -332,7 +333,7 @@ final class FileAnalyser
 				return true;
 			}
 
-			$this->filteredPhpErrors[] = (new Error($errorMessage, $errfile, $errline, true))->withIdentifier('phpstan.php');
+			$this->filteredPhpErrors[] = (new Error($errorMessage, $errfile, $errline, $errno === E_USER_DEPRECATED))->withIdentifier('phpstan.php');
 
 			return true;
 		});
@@ -354,12 +355,16 @@ final class FileAnalyser
 				return 'Parse error';
 			case E_NOTICE:
 				return 'Notice';
+			case E_DEPRECATED:
+				return 'Deprecated';
 			case E_USER_ERROR:
 				return 'User error (E_USER_ERROR)';
 			case E_USER_WARNING:
 				return 'User warning (E_USER_WARNING)';
 			case E_USER_NOTICE:
 				return 'User notice (E_USER_NOTICE)';
+			case E_USER_DEPRECATED:
+				return 'Deprecated (E_USER_DEPRECATED)';
 			case E_STRICT:
 				return 'Strict error (E_STRICT)';
 		}

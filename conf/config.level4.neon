@@ -13,6 +13,7 @@ rules:
 	- PHPStan\Rules\DeadCode\UnusedPrivateMethodRule
 	- PHPStan\Rules\Exceptions\OverwrittenExitPointByFinallyRule
 	- PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule
+	- PHPStan\Rules\Functions\UselessFunctionReturnValueRule
 	- PHPStan\Rules\Methods\CallToConstructorStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToMethodStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToStaticMethodStatementWithoutSideEffectsRule

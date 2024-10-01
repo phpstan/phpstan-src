@@ -32,7 +32,7 @@ Major new features 🚀
 * MagicConstantContextRule (level 0) ([#2741](https://github.com/phpstan/phpstan-src/pull/2741)), #10099, thanks @staabm!
 * MissingMagicSerializationMethodsRule (level 0) ([#1711](https://github.com/phpstan/phpstan-src/pull/1711)), #7482, thanks @staabm!
 * Check vprintf/vsprintf arguments against placeholder count (level 0) ([#3126](https://github.com/phpstan/phpstan-src/pull/3126)), thanks @staabm!
-* Report useless return values of function calls like `var_export` without `$return=true` (level 0) ([#3225](https://github.com/phpstan/phpstan-src/pull/3225)), #11320, thanks @staabm!
+* Report useless return values of function calls like `var_export` without `$return=true` (level 4) ([#3225](https://github.com/phpstan/phpstan-src/pull/3225)), #11320, thanks @staabm!
 * Rule for `call_user_func()` (level 5) ([#2479](https://github.com/phpstan/phpstan-src/pull/2479)), thanks @staabm!
 * Report useless `array_filter()` calls (level 5) ([#1077](https://github.com/phpstan/phpstan-src/pull/1077)), #6840, thanks @leongersen!
 * Report useless `array_values()` calls (level 5) ([#2917](https://github.com/phpstan/phpstan-src/pull/2917)), thanks @kamil-zacek!

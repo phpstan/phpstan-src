@@ -11,6 +11,7 @@ rules:
 	- PHPStan\Rules\Functions\ParameterCastableToStringRule
 	- PHPStan\Rules\Functions\ImplodeParameterCastableToStringRule
 	- PHPStan\Rules\Functions\SortParameterCastableToStringRule
+	- PHPStan\Rules\Regexp\RegularExpressionQuotingRule
 
 services:
 	-

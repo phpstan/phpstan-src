@@ -98,7 +98,6 @@ rules:
 	- PHPStan\Rules\Properties\ReadOnlyPropertyRule
 	- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyRule
 	- PHPStan\Rules\Regexp\RegularExpressionPatternRule
-	- PHPStan\Rules\Regexp\RegularExpressionQuotingRule
 	- PHPStan\Rules\Traits\ConflictingTraitConstantsRule
 	- PHPStan\Rules\Traits\ConstantsInTraitsRule
 	- PHPStan\Rules\Types\InvalidTypesInUnionRule

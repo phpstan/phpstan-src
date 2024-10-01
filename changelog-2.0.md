@@ -28,7 +28,7 @@ Major new features 🚀
     * [#3023](https://github.com/phpstan/phpstan-src/pull/3023), thanks @staabm!
 * LogicalXorConstantConditionRule (level 4) (https://github.com/phpstan/phpstan-src/commit/3a12724fd636b1bcf36c22b36e8f765d97150895, https://github.com/phpstan/phpstan-src/commit/3b011f6524254dad0f16840fdcfdbe7421548617), #7539
 * Check that each trait is used and analysed at least once (level 4) (https://github.com/phpstan/phpstan-src/commit/c4d05276fb8605d6ac20acbe1cc5df31cd6c10b0)
-* Check preg_quote delimiter sanity (level 0) ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
+* Check preg_quote delimiter sanity (level 5) ([#3252](https://github.com/phpstan/phpstan-src/pull/3252)), #11338, thanks @staabm!
 * MagicConstantContextRule (level 0) ([#2741](https://github.com/phpstan/phpstan-src/pull/2741)), #10099, thanks @staabm!
 * MissingMagicSerializationMethodsRule (level 0) ([#1711](https://github.com/phpstan/phpstan-src/pull/1711)), #7482, thanks @staabm!
 * Check vprintf/vsprintf arguments against placeholder count (level 0) ([#3126](https://github.com/phpstan/phpstan-src/pull/3126)), thanks @staabm!

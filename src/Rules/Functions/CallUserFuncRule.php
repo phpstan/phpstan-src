@@ -60,7 +60,13 @@ final class CallUserFuncRule implements Rule
 
 		$callableDescription = 'callable passed to call_user_func()';
 
-		return $this->check->check($parametersAcceptor, $scope, false, $funcCall, [
+		return $this->check->check(
+			$parametersAcceptor,
+			$scope,
+			false,
+			$funcCall,
+			'function',
+			$acceptsNamedArguments,
 			ucfirst($callableDescription) . ' invoked with %d parameter, %d required.',
 			ucfirst($callableDescription) . ' invoked with %d parameters, %d required.',
 			ucfirst($callableDescription) . ' invoked with %d parameter, at least %d required.',
@@ -76,7 +82,7 @@ final class CallUserFuncRule implements Rule
 			'Return type of call to ' . $callableDescription . ' contains unresolvable type.',
 			'Parameter %s of ' . $callableDescription . ' contains unresolvable type.',
 			ucfirst($callableDescription) . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
-		], 'function', $acceptsNamedArguments);
+		);
 	}
 
 }

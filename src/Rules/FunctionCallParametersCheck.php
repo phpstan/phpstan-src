@@ -53,7 +53,6 @@ final class FunctionCallParametersCheck
 
 	/**
 	 * @param Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall
-	 * @param array{0: string, 1: string, 2: string, 3: string, 4: string, 5: string, 6: string, 7: string, 8: string, 9: string, 10: string, 11: string, 12: string, 13?: string, 14?: string} $messages
 	 * @param 'attribute'|'callable'|'method'|'staticMethod'|'function'|'new' $nodeType
 	 * @return list<IdentifierRuleError>
 	 */
@@ -62,9 +61,23 @@ final class FunctionCallParametersCheck
 		Scope $scope,
 		bool $isBuiltin,
 		$funcCall,
-		array $messages,
 		string $nodeType,
 		TrinaryLogic $acceptsNamedArguments,
+		string $singleInsufficientParameterMessage,
+		string $pluralInsufficientParametersMessage,
+		string $singleInsufficientParameterInVariadicFunctionMessage,
+		string $pluralInsufficientParametersInVariadicFunctionMessage,
+		string $singleInsufficientParameterWithOptionalParametersMessage,
+		string $pluralInsufficientParametersWithOptionalParametersMessage,
+		string $wrongArgumentTypeMessage,
+		string $voidReturnTypeUsed,
+		string $parameterPassedByReferenceMessage,
+		string $unresolvableTemplateTypeMessage,
+		string $missingParameterMessage,
+		string $unknownParameterMessage,
+		string $unresolvableReturnTypeMessage,
+		string $unresolvableParameterTypeMessage,
+		string $namedArgumentMessage,
 	): array
 	{
 		$functionParametersMinCount = 0;
@@ -204,7 +217,7 @@ final class FunctionCallParametersCheck
 			) {
 				if ($functionParametersMinCount === $functionParametersMaxCount) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
-						$invokedParametersCount === 1 ? $messages[0] : $messages[1],
+						$invokedParametersCount === 1 ? $singleInsufficientParameterMessage : $pluralInsufficientParametersMessage,
 						$invokedParametersCount,
 						$functionParametersMinCount,
 					))
@@ -213,7 +226,7 @@ final class FunctionCallParametersCheck
 						->build();
 				} elseif ($functionParametersMaxCount === -1 && $invokedParametersCount < $functionParametersMinCount) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
-						$invokedParametersCount === 1 ? $messages[2] : $messages[3],
+						$invokedParametersCount === 1 ? $singleInsufficientParameterInVariadicFunctionMessage : $pluralInsufficientParametersInVariadicFunctionMessage,
 						$invokedParametersCount,
 						$functionParametersMinCount,
 					))
@@ -222,7 +235,7 @@ final class FunctionCallParametersCheck
 						->build();
 				} elseif ($functionParametersMaxCount !== -1) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
-						$invokedParametersCount === 1 ? $messages[4] : $messages[5],
+						$invokedParametersCount === 1 ? $singleInsufficientParameterWithOptionalParametersMessage : $pluralInsufficientParametersWithOptionalParametersMessage,
 						$invokedParametersCount,
 						$functionParametersMinCount,
 						$functionParametersMaxCount,
@@ -239,13 +252,13 @@ final class FunctionCallParametersCheck
 			&& !$scope->isInFirstLevelStatement()
 			&& $scope->getKeepVoidType($funcCall)->isVoid()->yes()
 		) {
-			$errors[] = RuleErrorBuilder::message($messages[7])
+			$errors[] = RuleErrorBuilder::message($voidReturnTypeUsed)
 				->identifier(sprintf('%s.void', $nodeType))
 				->line($funcCall->getStartLine())
 				->build();
 		}
 
-		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCall->getStartLine(), $isBuiltin, $arguments, $hasNamedArguments, $messages[10], $messages[11]);
+		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCall->getStartLine(), $isBuiltin, $arguments, $hasNamedArguments, $missingParameterMessage, $unknownParameterMessage);
 		foreach ($addedErrors as $error) {
 			$errors[] = $error;
 		}
@@ -290,9 +303,9 @@ final class FunctionCallParametersCheck
 				}
 			}
 
-			if (!$acceptsNamedArguments->yes() && isset($messages[14])) {
+			if (!$acceptsNamedArguments->yes()) {
 				if ($argumentName !== null) {
-					$errors[] = RuleErrorBuilder::message(sprintf($messages[14], sprintf('named argument $%s', $argumentName)))
+					$errors[] = RuleErrorBuilder::message(sprintf($namedArgumentMessage, sprintf('named argument $%s', $argumentName)))
 						->identifier('argument.named')
 						->line($argumentLine)
 						->build();
@@ -300,7 +313,7 @@ final class FunctionCallParametersCheck
 					$unpackedArrayType = $scope->getType($argumentValue);
 					$hasStringKey = $unpackedArrayType->getIterableKeyType()->isString();
 					if (!$hasStringKey->no()) {
-						$errors[] = RuleErrorBuilder::message(sprintf($messages[14], sprintf('unpacked array with %s', $hasStringKey->yes() ? 'string key' : 'possibly string key')))
+						$errors[] = RuleErrorBuilder::message(sprintf($namedArgumentMessage, sprintf('unpacked array with %s', $hasStringKey->yes() ? 'string key' : 'possibly string key')))
 							->identifier('argument.named')
 							->line($argumentLine)
 							->build();
@@ -317,7 +330,7 @@ final class FunctionCallParametersCheck
 					if (!$accepts->result) {
 						$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $argumentValueType);
 						$errors[] = RuleErrorBuilder::message(sprintf(
-							$messages[6],
+							$wrongArgumentTypeMessage,
 							$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
 							$parameterType->describe($verbosityLevel),
 							$argumentValueType->describe($verbosityLevel),
@@ -331,12 +344,11 @@ final class FunctionCallParametersCheck
 
 				if (
 					$originalParameter !== null
-					&& isset($messages[13])
 					&& !$this->unresolvableTypeHelper->containsUnresolvableType($originalParameter->getType())
 					&& $this->unresolvableTypeHelper->containsUnresolvableType($parameterType)
 				) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
-						$messages[13],
+						$unresolvableParameterTypeMessage,
 						$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
 					))->identifier('argument.unresolvableType')->line($argumentLine)->build();
 				}
@@ -348,7 +360,7 @@ final class FunctionCallParametersCheck
 					&& $argumentValue->static
 				) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
-						$messages[6],
+						$wrongArgumentTypeMessage,
 						$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
 						'bindable closure',
 						'static closure',
@@ -368,7 +380,7 @@ final class FunctionCallParametersCheck
 
 			if ($this->nullsafeCheck->containsNullSafe($argumentValue)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					$messages[8],
+					$parameterPassedByReferenceMessage,
 					$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
 				))
 					->identifier('argument.byRef')
@@ -412,7 +424,7 @@ final class FunctionCallParametersCheck
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				$messages[8],
+				$parameterPassedByReferenceMessage,
 				$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
 			))->identifier('argument.byRef')->line($argumentLine)->build();
 		}
@@ -469,7 +481,7 @@ final class FunctionCallParametersCheck
 						continue;
 					}
 
-					$errors[] = RuleErrorBuilder::message(sprintf($messages[9], $name))
+					$errors[] = RuleErrorBuilder::message(sprintf($unresolvableTemplateTypeMessage, $name))
 						->identifier('argument.templateType')
 						->line($funcCall->getStartLine())
 						->tip('See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type')
@@ -481,7 +493,7 @@ final class FunctionCallParametersCheck
 				!$this->unresolvableTypeHelper->containsUnresolvableType($originalParametersAcceptor->getReturnType())
 				&& $this->unresolvableTypeHelper->containsUnresolvableType($parametersAcceptor->getReturnType())
 			) {
-				$errors[] = RuleErrorBuilder::message($messages[12])
+				$errors[] = RuleErrorBuilder::message($unresolvableReturnTypeMessage)
 					->identifier(sprintf('%s.unresolvableReturnType', $nodeType))
 					->line($funcCall->getStartLine())
 					->build();

@@ -32,9 +32,10 @@ final class ArrayFindFunctionReturnTypeExtension implements DynamicFunctionRetur
 			return null;
 		}
 
-		$resultTypes = $scope->getType(new FuncCall(new Name('\array_filter'), $functionCall->getArgs()))->getArrays();
+		$resultTypes = $scope->getType(new FuncCall(new Name('\array_filter'), $functionCall->getArgs()));
+		$resultType = TypeCombinator::union(...array_map(fn ($type) => $type->getIterableValueType(), $resultTypes->getArrays()));
 
-		return TypeCombinator::union(new NullType(), ...array_map(fn ($type) => $type->getIterableValueType(), $resultTypes));
+		return $resultTypes->isIterableAtLeastOnce()->yes() ? $resultType : TypeCombinator::addNull($resultType);
 	}
 
 }

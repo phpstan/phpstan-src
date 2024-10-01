@@ -2,11 +2,11 @@
 
 namespace PHPStan\Reflection\Constant;
 
-use PHPStan\Reflection\GlobalConstantReflection;
+use PHPStan\Reflection\ConstantReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-final class RuntimeConstantReflection implements GlobalConstantReflection
+final class RuntimeConstantReflection implements ConstantReflection
 {
 
 	public function __construct(

@@ -5,9 +5,9 @@ namespace PHPStan\Type;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
@@ -309,7 +309,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->hasConstant($constantName);
 	}
 
-	public function getConstant(string $constantName): ConstantReflection
+	public function getConstant(string $constantName): ClassConstantReflection
 	{
 		return $this->getStaticObjectType()->getConstant($constantName);
 	}

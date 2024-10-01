@@ -5,8 +5,8 @@ namespace PHPStan\Reflection\ReflectionProvider;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
@@ -59,7 +59,7 @@ final class DummyReflectionProvider implements ReflectionProvider
 		return false;
 	}
 
-	public function getConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): GlobalConstantReflection
+	public function getConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ConstantReflection
 	{
 		throw new ShouldNotHappenException();
 	}

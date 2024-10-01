@@ -7,8 +7,8 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -532,7 +532,7 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasConstant($constantName));
 	}
 
-	public function getConstant(string $constantName): ConstantReflection
+	public function getConstant(string $constantName): ClassConstantReflection
 	{
 		foreach ($this->types as $type) {
 			if ($type->hasConstant($constantName)->yes()) {

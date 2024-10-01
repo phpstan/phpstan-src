@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Constants;
 
-use PHPStan\Reflection\ConstantReflection;
+use PHPStan\Reflection\ClassConstantReflection;
 
 /**
  * This is the extension interface to implement if you want to describe
@@ -25,6 +25,6 @@ use PHPStan\Reflection\ConstantReflection;
 interface AlwaysUsedClassConstantsExtension
 {
 
-	public function isAlwaysUsed(ConstantReflection $constant): bool;
+	public function isAlwaysUsed(ClassConstantReflection $constant): bool;
 
 }

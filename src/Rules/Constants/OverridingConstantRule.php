@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -53,7 +52,7 @@ final class OverridingConstantRule implements Rule
 	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
 	{
 		$prototype = $this->findPrototype($classReflection, $constantName);
-		if (!$prototype instanceof ClassConstantReflection) {
+		if ($prototype === null) {
 			return [];
 		}
 
@@ -145,7 +144,7 @@ final class OverridingConstantRule implements Rule
 		return $errors;
 	}
 
-	private function findPrototype(ClassReflection $classReflection, string $constantName): ?ConstantReflection
+	private function findPrototype(ClassReflection $classReflection, string $constantName): ?ClassConstantReflection
 	{
 		foreach ($classReflection->getImmediateInterfaces() as $immediateInterface) {
 			if ($immediateInterface->hasConstant($constantName)) {

@@ -5,9 +5,9 @@ namespace PHPStan\Type;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -99,7 +99,7 @@ interface Type
 
 	public function hasConstant(string $constantName): TrinaryLogic;
 
-	public function getConstant(string $constantName): ConstantReflection;
+	public function getConstant(string $constantName): ClassConstantReflection;
 
 	public function isIterable(): TrinaryLogic;
 

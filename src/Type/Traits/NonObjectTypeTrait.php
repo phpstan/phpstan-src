@@ -2,8 +2,8 @@
 
 namespace PHPStan\Type\Traits;
 
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -76,7 +76,7 @@ trait NonObjectTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
-	public function getConstant(string $constantName): ConstantReflection
+	public function getConstant(string $constantName): ClassConstantReflection
 	{
 		throw new ShouldNotHappenException();
 	}

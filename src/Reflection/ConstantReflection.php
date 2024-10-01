@@ -2,12 +2,23 @@
 
 namespace PHPStan\Reflection;
 
-use PhpParser\Node\Expr;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\Type;
 
 /** @api */
-interface ConstantReflection extends ClassMemberReflection, GlobalConstantReflection
+interface ConstantReflection
 {
 
-	public function getValueExpr(): Expr;
+	public function getName(): string;
+
+	public function getValueType(): Type;
+
+	public function isDeprecated(): TrinaryLogic;
+
+	public function getDeprecatedDescription(): ?string;
+
+	public function isInternal(): TrinaryLogic;
+
+	public function getFileName(): ?string;
 
 }

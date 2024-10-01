@@ -16,9 +16,9 @@ use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -349,7 +349,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->objectType->hasConstant($constantName);
 	}
 
-	public function getConstant(string $constantName): ConstantReflection
+	public function getConstant(string $constantName): ClassConstantReflection
 	{
 		return $this->objectType->getConstant($constantName);
 	}

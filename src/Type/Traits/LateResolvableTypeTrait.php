@@ -3,8 +3,8 @@
 namespace PHPStan\Type\Traits;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -142,7 +142,7 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->hasConstant($constantName);
 	}
 
-	public function getConstant(string $constantName): ConstantReflection
+	public function getConstant(string $constantName): ClassConstantReflection
 	{
 		return $this->resolve()->getConstant($constantName);
 	}

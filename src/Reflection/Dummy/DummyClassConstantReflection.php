@@ -4,15 +4,15 @@ namespace PHPStan\Reflection\Dummy;
 
 use PhpParser\Node\Expr;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use stdClass;
 
-final class DummyConstantReflection implements ConstantReflection
+final class DummyClassConstantReflection implements ClassConstantReflection
 {
 
 	public function __construct(private string $name)
@@ -24,6 +24,11 @@ final class DummyConstantReflection implements ConstantReflection
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
 		return $reflectionProvider->getClass(stdClass::class);
+	}
+
+	public function isFinal(): bool
+	{
+		return false;
 	}
 
 	public function getFileName(): ?string
@@ -77,6 +82,26 @@ final class DummyConstantReflection implements ConstantReflection
 	}
 
 	public function getDocComment(): ?string
+	{
+		return null;
+	}
+
+	public function hasPhpDocType(): bool
+	{
+		return false;
+	}
+
+	public function getPhpDocType(): ?Type
+	{
+		return null;
+	}
+
+	public function hasNativeType(): bool
+	{
+		return false;
+	}
+
+	public function getNativeType(): ?Type
 	{
 		return null;
 	}

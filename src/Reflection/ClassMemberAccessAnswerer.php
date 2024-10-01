@@ -17,6 +17,6 @@ interface ClassMemberAccessAnswerer
 
 	public function canCallMethod(MethodReflection $methodReflection): bool;
 
-	public function canAccessConstant(ConstantReflection $constantReflection): bool;
+	public function canAccessConstant(ClassConstantReflection $constantReflection): bool;
 
 }

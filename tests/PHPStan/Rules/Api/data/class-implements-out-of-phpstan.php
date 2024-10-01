@@ -128,7 +128,7 @@ class Baz implements Type
 		// TODO: Implement hasConstant() method.
 	}
 
-	public function getConstant(string $constantName): \PHPStan\Reflection\ConstantReflection
+	public function getConstant(string $constantName): \PHPStan\Reflection\ClassConstantReflection
 	{
 		// TODO: Implement getConstant() method.
 	}

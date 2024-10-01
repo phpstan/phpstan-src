@@ -81,7 +81,7 @@ final class ClassReflection
 	/** @var ExtendedPropertyReflection[] */
 	private array $properties = [];
 
-	/** @var ClassConstantReflection[] */
+	/** @var RealClassClassConstantReflection[] */
 	private array $constants = [];
 
 	/** @var EnumCaseReflection[]|null  */
@@ -1082,7 +1082,7 @@ final class ClassReflection
 				$nativeType = $this->signatureMapProvider->getClassConstantMetadata($declaringClass->getName(), $name)['nativeType'];
 			}
 
-			$this->constants[$name] = new ClassConstantReflection(
+			$this->constants[$name] = new RealClassClassConstantReflection(
 				$this->initializerExprTypeResolver,
 				$declaringClass,
 				$reflectionConstant,

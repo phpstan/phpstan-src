@@ -6,9 +6,9 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Param;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -73,7 +73,7 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?ExtendedMethodReflection;
 
-	public function getConstantReflection(Type $typeWithConstant, string $constantName): ?ConstantReflection;
+	public function getConstantReflection(Type $typeWithConstant, string $constantName): ?ClassConstantReflection;
 
 	public function getIterableKeyType(Type $iteratee): Type;
 

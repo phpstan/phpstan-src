@@ -3,9 +3,9 @@
 namespace PHPStan\Type\Traits;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
-use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\Dummy\DummyConstantReflection;
+use PHPStan\Reflection\Dummy\DummyClassConstantReflection;
 use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -108,9 +108,9 @@ trait ObjectTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function getConstant(string $constantName): ConstantReflection
+	public function getConstant(string $constantName): ClassConstantReflection
 	{
-		return new DummyConstantReflection($constantName);
+		return new DummyClassConstantReflection($constantName);
 	}
 
 	public function getConstantStrings(): array

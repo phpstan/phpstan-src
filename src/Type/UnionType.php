@@ -8,8 +8,8 @@ use DateTimeInterface;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -504,11 +504,11 @@ class UnionType implements CompoundType
 		);
 	}
 
-	public function getConstant(string $constantName): ConstantReflection
+	public function getConstant(string $constantName): ClassConstantReflection
 	{
 		return $this->getInternal(
 			static fn (Type $type): TrinaryLogic => $type->hasConstant($constantName),
-			static fn (Type $type): ConstantReflection => $type->getConstant($constantName),
+			static fn (Type $type): ClassConstantReflection => $type->getConstant($constantName),
 		);
 	}
 

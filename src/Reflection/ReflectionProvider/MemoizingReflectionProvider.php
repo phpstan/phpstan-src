@@ -5,8 +5,8 @@ namespace PHPStan\Reflection\ReflectionProvider;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use function strtolower;
@@ -86,7 +86,7 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 		return $this->provider->hasConstant($nameNode, $namespaceAnswerer);
 	}
 
-	public function getConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): GlobalConstantReflection
+	public function getConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ConstantReflection
 	{
 		return $this->provider->getConstant($nameNode, $namespaceAnswerer);
 	}

@@ -11,8 +11,8 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\Callables\FunctionCallableVariant;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
@@ -534,7 +534,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return $this->getObjectType()->hasConstant($constantName);
 	}
 
-	public function getConstant(string $constantName): ConstantReflection
+	public function getConstant(string $constantName): ClassConstantReflection
 	{
 		return $this->getObjectType()->getConstant($constantName);
 	}

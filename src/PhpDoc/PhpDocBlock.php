@@ -3,8 +3,8 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\PhpDoc\Tag\AssertTagParameter;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
@@ -334,7 +334,7 @@ final class PhpDocBlock
 	): ?self
 	{
 		if ($classReflection->$hasMethodName($name)) {
-			/** @var PropertyReflection|MethodReflection|ConstantReflection $parentReflection */
+			/** @var PropertyReflection|MethodReflection|ClassConstantReflection $parentReflection */
 			$parentReflection = $classReflection->$getMethodName($name);
 			if ($parentReflection->isPrivate()) {
 				return null;

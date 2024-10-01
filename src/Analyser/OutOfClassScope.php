@@ -2,9 +2,9 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 
@@ -36,7 +36,7 @@ final class OutOfClassScope implements ClassMemberAccessAnswerer
 		return $methodReflection->isPublic();
 	}
 
-	public function canAccessConstant(ConstantReflection $constantReflection): bool
+	public function canAccessConstant(ClassConstantReflection $constantReflection): bool
 	{
 		return $constantReflection->isPublic();
 	}

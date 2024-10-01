@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\DeadCode;
 
-use PHPStan\Reflection\ConstantReflection;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtension;
 use PHPStan\Rules\Constants\DirectAlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
@@ -22,7 +22,7 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 			new DirectAlwaysUsedClassConstantsExtensionProvider([
 				new class() implements AlwaysUsedClassConstantsExtension {
 
-					public function isAlwaysUsed(ConstantReflection $constant): bool
+					public function isAlwaysUsed(ClassConstantReflection $constant): bool
 					{
 						return $constant->getDeclaringClass()->getName() === TestExtension::class
 							&& $constant->getName() === 'USED';

@@ -34,9 +34,9 @@ use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassNameHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Constant\RuntimeConstantReflection;
+use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
-use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\NamespaceAnswerer;
@@ -71,7 +71,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 	/** @var ClassReflection[] */
 	private static array $anonymousClasses = [];
 
-	/** @var array<string, GlobalConstantReflection> */
+	/** @var array<string, ConstantReflection> */
 	private array $cachedConstants = [];
 
 	/**
@@ -389,7 +389,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		return $this->resolveConstantName($nameNode, $namespaceAnswerer) !== null;
 	}
 
-	public function getConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): GlobalConstantReflection
+	public function getConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ConstantReflection
 	{
 		$constantName = $this->resolveConstantName($nameNode, $namespaceAnswerer);
 		if ($constantName === null) {

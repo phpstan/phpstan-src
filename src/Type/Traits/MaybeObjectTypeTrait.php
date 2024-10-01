@@ -2,9 +2,9 @@
 
 namespace PHPStan\Type\Traits;
 
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
-use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\Dummy\DummyConstantReflection;
+use PHPStan\Reflection\Dummy\DummyClassConstantReflection;
 use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -97,9 +97,9 @@ trait MaybeObjectTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function getConstant(string $constantName): ConstantReflection
+	public function getConstant(string $constantName): ClassConstantReflection
 	{
-		return new DummyConstantReflection($constantName);
+		return new DummyClassConstantReflection($constantName);
 	}
 
 	public function isCloneable(): TrinaryLogic

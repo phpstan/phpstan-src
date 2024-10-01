@@ -52,9 +52,9 @@ use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
@@ -5326,7 +5326,7 @@ final class MutatingScope implements Scope
 	}
 
 	/** @api */
-	public function canAccessConstant(ConstantReflection $constantReflection): bool
+	public function canAccessConstant(ClassConstantReflection $constantReflection): bool
 	{
 		return $this->canAccessClassMember($constantReflection);
 	}
@@ -5690,7 +5690,7 @@ final class MutatingScope implements Scope
 		return $propertyReflection->getReadableType();
 	}
 
-	public function getConstantReflection(Type $typeWithConstant, string $constantName): ?ConstantReflection
+	public function getConstantReflection(Type $typeWithConstant, string $constantName): ?ClassConstantReflection
 	{
 		if ($typeWithConstant instanceof UnionType) {
 			$newTypes = [];

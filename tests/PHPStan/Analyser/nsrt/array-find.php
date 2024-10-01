@@ -24,11 +24,14 @@ namespace ArrayFind
 
 	/**
 	 * @param array<mixed> $array
+	 * @param non-empty-array<mixed> $non_empty_array
 	 */
-	function testMixed(array $array, callable $callback): void
+	function testMixed(array $array, array $non_empty_array, callable $callback): void
 	{
 		assertType('mixed', array_find($array, $callback));
 		assertType('int|null', array_find($array, 'is_int'));
+		assertType('mixed', array_find($non_empty_array, $callback));
+		assertType('int|null', array_find($non_empty_array, 'is_int'));
 	}
 
 	/**
@@ -37,7 +40,20 @@ namespace ArrayFind
 	function testConstant(array $array, callable $callback): void
 	{
 		assertType("1|'foo'|DateTime|null", array_find($array, $callback));
-		assertType("1|null", array_find($array, 'is_int'));
+		assertType('1', array_find($array, 'is_int'));
+	}
+
+	/**
+	 * @param array<int> $array
+	 * @param non-empty-array<int> $non_empty_array
+	 */
+	function testInt(array $array, array $non_empty_array, callable $callback): void
+	{
+		assertType('int|null', array_find($array, $callback));
+		assertType('int|null', array_find($array, 'is_int'));
+		assertType('int|null', array_find($non_empty_array, $callback));
+		// should be 'int'
+		assertType('int|null', array_find($non_empty_array, 'is_int'));
 	}
 
 }

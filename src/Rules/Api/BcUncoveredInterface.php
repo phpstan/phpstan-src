@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Api;
 use PHPStan\Analyser\Scope;
 use PHPStan\Command\Output;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\ClassConstantReflection;
+use PHPStan\Reflection\ClassMemberReflection;
+use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -41,6 +44,9 @@ final class BcUncoveredInterface
 		RuleError::class,
 		TipRuleError::class,
 		Output::class,
+		ClassMemberReflection::class,
+		ConstantReflection::class,
+		ClassConstantReflection::class,
 	];
 
 }

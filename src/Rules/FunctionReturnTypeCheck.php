@@ -90,7 +90,7 @@ final class FunctionReturnTypeCheck
 			];
 		}
 
-		$accepts = $this->ruleLevelHelper->acceptsWithReason($returnType, $returnValueType, $scope->isDeclareStrictTypes());
+		$accepts = $this->ruleLevelHelper->accepts($returnType, $returnValueType, $scope->isDeclareStrictTypes());
 		if (!$accepts->result) {
 			return [
 				RuleErrorBuilder::message(sprintf(

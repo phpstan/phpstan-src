@@ -68,15 +68,10 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 		return [];
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		return new AcceptsResult($type->isNonFalsyString(), []);
@@ -109,12 +104,7 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
 	}
 
-	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
-	{
-		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
-	}
-
-	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
 		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
 	}

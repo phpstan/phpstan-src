@@ -60,10 +60,10 @@ class GenericClassStringType extends ClassStringType
 		return sprintf('%s<%s>', parent::describe($level), $this->type->describe($level));
 	}
 
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		if ($type instanceof ConstantStringType) {
@@ -82,7 +82,7 @@ class GenericClassStringType extends ClassStringType
 			return AcceptsResult::createNo();
 		}
 
-		return $this->type->acceptsWithReason($objectType, $strictTypes);
+		return $this->type->accepts($objectType, $strictTypes);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

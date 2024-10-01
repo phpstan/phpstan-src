@@ -4,6 +4,9 @@ namespace PHPStan\Rules;
 
 use function array_merge;
 
+/**
+ * @api
+ */
 final class RuleLevelHelperAcceptsResult
 {
 

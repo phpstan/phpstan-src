@@ -312,7 +312,7 @@ final class FunctionCallParametersCheck
 				$parameterType = TypeUtils::resolveLateResolvableTypes($parameter->getType());
 
 				if (!$parameter->passedByReference()->createsNewVariable() || !$isBuiltin) {
-					$accepts = $this->ruleLevelHelper->acceptsWithReason($parameterType, $argumentValueType, $scope->isDeclareStrictTypes());
+					$accepts = $this->ruleLevelHelper->accepts($parameterType, $argumentValueType, $scope->isDeclareStrictTypes());
 
 					if (!$accepts->result) {
 						$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $argumentValueType);

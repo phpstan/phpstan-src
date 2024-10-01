@@ -59,12 +59,7 @@ class EnumCaseObjectType extends ObjectType
 			$this->getClassName() === $type->getClassName();
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		return new AcceptsResult($this->isSuperTypeOf($type), []);
 	}

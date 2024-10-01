@@ -15,10 +15,10 @@ final class TemplateTypeParameterStrategy implements TemplateTypeStrategy
 	public function accepts(TemplateType $left, Type $right, bool $strictTypes): AcceptsResult
 	{
 		if ($right instanceof CompoundType) {
-			return $right->isAcceptedWithReasonBy($left, $strictTypes);
+			return $right->isAcceptedBy($left, $strictTypes);
 		}
 
-		return $left->getBound()->acceptsWithReason($right, $strictTypes);
+		return $left->getBound()->accepts($right, $strictTypes);
 	}
 
 	public function isArgument(): bool

@@ -122,15 +122,10 @@ class ObjectShapeType implements Type
 		);
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
@@ -207,7 +202,7 @@ class ObjectShapeType implements Type
 
 			$otherPropertyType = $otherProperty->getReadableType();
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($propertyType, $otherPropertyType);
-			$acceptsValue = $propertyType->acceptsWithReason($otherPropertyType, $strictTypes)->decorateReasons(
+			$acceptsValue = $propertyType->accepts($otherPropertyType, $strictTypes)->decorateReasons(
 				static fn (string $reason) => sprintf(
 					'Property ($%s) type %s does not accept type %s: %s',
 					$propertyName,

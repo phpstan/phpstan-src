@@ -145,7 +145,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		TrinaryLogic $expectedResult,
 	): void
 	{
-		$actualResult = $acceptingType->accepts($acceptedType, true);
+		$actualResult = $acceptingType->accepts($acceptedType, true)->result;
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),

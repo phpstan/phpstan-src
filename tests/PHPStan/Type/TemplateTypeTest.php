@@ -108,7 +108,7 @@ class TemplateTypeTest extends PHPStanTestCase
 	{
 		assert($type instanceof TemplateType);
 
-		$actualResult = $type->accepts($otherType, true);
+		$actualResult = $type->accepts($otherType, true)->result;
 		$this->assertSame(
 			$expectedAccept->describe(),
 			$actualResult->describe(),
@@ -117,7 +117,7 @@ class TemplateTypeTest extends PHPStanTestCase
 
 		$type = $type->toArgument();
 
-		$actualResult = $type->accepts($otherType, true);
+		$actualResult = $type->accepts($otherType, true)->result;
 		$this->assertSame(
 			$expectedAcceptArg->describe(),
 			$actualResult->describe(),

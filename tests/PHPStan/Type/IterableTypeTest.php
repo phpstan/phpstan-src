@@ -329,7 +329,7 @@ class IterableTypeTest extends PHPStanTestCase
 	 */
 	public function testAccepts(IterableType $iterableType, Type $otherType, TrinaryLogic $expectedResult): void
 	{
-		$actualResult = $iterableType->accepts($otherType, true);
+		$actualResult = $iterableType->accepts($otherType, true)->result;
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),

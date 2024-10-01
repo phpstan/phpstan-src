@@ -413,7 +413,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 	 */
 	public function testAccepts(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
-		$actualResult = $type->accepts($otherType, true);
+		$actualResult = $type->accepts($otherType, true)->result;
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),

@@ -278,19 +278,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return [$classReflection];
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof StaticType) {
 			return $this->checkSubclassAcceptability($type->getClassName());
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		if ($type instanceof ClosureType) {

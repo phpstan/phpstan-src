@@ -63,7 +63,7 @@ final class TypesAssignedToPropertiesRule implements Rule
 		$scope = $propertyReflection->getScope();
 		$assignedValueType = $scope->getType($assignedExpr);
 
-		$accepts = $this->ruleLevelHelper->acceptsWithReason($propertyType, $assignedValueType, $scope->isDeclareStrictTypes());
+		$accepts = $this->ruleLevelHelper->accepts($propertyType, $assignedValueType, $scope->isDeclareStrictTypes());
 		if (!$accepts->result) {
 			$propertyDescription = $this->describePropertyByName($propertyReflection, $propertyReflection->getName());
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType, $assignedValueType);

@@ -63,7 +63,7 @@ final class ValueAssignedToClassConstantRule implements Rule
 				return [];
 			}
 
-			$accepts = $nativeType->acceptsWithReason($valueExprType, true);
+			$accepts = $nativeType->accepts($valueExprType, true);
 			if ($accepts->yes()) {
 				return [];
 			}
@@ -107,7 +107,7 @@ final class ValueAssignedToClassConstantRule implements Rule
 		}
 
 		$type = $constantReflection->getValueType();
-		$accepts = $type->acceptsWithReason($valueExprType, true);
+		$accepts = $type->accepts($valueExprType, true);
 		if ($accepts->yes()) {
 			return [];
 		}

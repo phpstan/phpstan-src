@@ -219,7 +219,7 @@ class EnumCaseObjectTypeTest extends PHPStanTestCase
 
 		$this->assertSame(
 			$expectedResult->describe(),
-			$type->accepts($acceptedType, true)->describe(),
+			$type->accepts($acceptedType, true)->result->describe(),
 			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
 		);
 	}

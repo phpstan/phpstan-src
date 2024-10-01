@@ -11,9 +11,7 @@ interface CompoundType extends Type
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic;
 
-	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic;
-
-	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult;
+	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult;
 
 	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic;
 

@@ -87,14 +87,15 @@ class TemplateTypeVarianceTest extends TestCase
 		TrinaryLogic $expectedInversed,
 	): void
 	{
+		$templateType = TemplateTypeFactory::create(TemplateTypeScope::createWithFunction('foo'), 'T', null, $variance);
 		$this->assertSame(
 			$expected->describe(),
-			$variance->isValidVariance($a, $b)->describe(),
+			$variance->isValidVariance($templateType, $a, $b)->result->describe(),
 			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $a->describe(VerbosityLevel::precise()), $b->describe(VerbosityLevel::precise())),
 		);
 		$this->assertSame(
 			$expectedInversed->describe(),
-			$variance->isValidVariance($b, $a)->describe(),
+			$variance->isValidVariance($templateType, $b, $a)->result->describe(),
 			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $b->describe(VerbosityLevel::precise()), $a->describe(VerbosityLevel::precise())),
 		);
 	}

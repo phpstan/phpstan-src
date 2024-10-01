@@ -53,7 +53,7 @@ final class YieldTypeRule implements Rule
 		}
 
 		$messages = [];
-		$acceptsKey = $this->ruleLevelHelper->acceptsWithReason($returnType->getIterableKeyType(), $keyType, $scope->isDeclareStrictTypes());
+		$acceptsKey = $this->ruleLevelHelper->accepts($returnType->getIterableKeyType(), $keyType, $scope->isDeclareStrictTypes());
 		if (!$acceptsKey->result) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableKeyType(), $keyType);
 			$messages[] = RuleErrorBuilder::message(sprintf(
@@ -72,7 +72,7 @@ final class YieldTypeRule implements Rule
 			$valueType = $scope->getType($node->value);
 		}
 
-		$acceptsValue = $this->ruleLevelHelper->acceptsWithReason($returnType->getIterableValueType(), $valueType, $scope->isDeclareStrictTypes());
+		$acceptsValue = $this->ruleLevelHelper->accepts($returnType->getIterableValueType(), $valueType, $scope->isDeclareStrictTypes());
 		if (!$acceptsValue->result) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableValueType(), $valueType);
 			$messages[] = RuleErrorBuilder::message(sprintf(

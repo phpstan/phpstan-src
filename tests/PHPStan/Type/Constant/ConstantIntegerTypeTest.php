@@ -38,7 +38,7 @@ class ConstantIntegerTypeTest extends PHPStanTestCase
 	 */
 	public function testAccepts(ConstantIntegerType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
-		$actualResult = $type->accepts($otherType, true);
+		$actualResult = $type->accepts($otherType, true)->result;
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),

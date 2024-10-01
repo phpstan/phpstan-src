@@ -188,19 +188,14 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->objectType->getObjectClassReflections();
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		if (!$type instanceof ClosureType) {
-			return $this->objectType->acceptsWithReason($type, $strictTypes);
+			return $this->objectType->accepts($type, $strictTypes);
 		}
 
 		return $this->isSuperTypeOfInternal($type, true);

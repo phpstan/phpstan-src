@@ -64,8 +64,6 @@ interface Type
 	/** @return list<ConstantStringType> */
 	public function getConstantStrings(): array;
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic;
-
 	/**
 	 * This is like accepts() but gives reasons
 	 * why the type was not/might not be accepted in some non-intuitive scenarios.
@@ -73,7 +71,7 @@ interface Type
 	 * In PHPStan 2.0 this method will be removed and the return type of accepts()
 	 * will change to AcceptsResult.
 	 */
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult;
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult;
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic;
 

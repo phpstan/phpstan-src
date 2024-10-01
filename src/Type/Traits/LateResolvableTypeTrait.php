@@ -48,14 +48,9 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->getConstantStrings();
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		return $this->resolve()->accepts($type, $strictTypes);
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
-	{
-		return $this->resolve()->acceptsWithReason($type, $strictTypes);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -528,20 +523,15 @@ trait LateResolvableTypeTrait
 		return $otherType->isSuperTypeOf($result);
 	}
 
-	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
-	{
-		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
-	}
-
-	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
 		$result = $this->resolve();
 
 		if ($result instanceof CompoundType) {
-			return $result->isAcceptedWithReasonBy($acceptingType, $strictTypes);
+			return $result->isAcceptedBy($acceptingType, $strictTypes);
 		}
 
-		return $acceptingType->acceptsWithReason($result, $strictTypes);
+		return $acceptingType->accepts($result, $strictTypes);
 	}
 
 	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic

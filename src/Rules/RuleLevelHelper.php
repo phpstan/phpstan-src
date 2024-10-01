@@ -46,12 +46,6 @@ final class RuleLevelHelper
 		return $expression instanceof Expr\Variable && $expression->name === 'this';
 	}
 
-	/** @api */
-	public function accepts(Type $acceptingType, Type $acceptedType, bool $strictTypes): bool
-	{
-		return $this->acceptsWithReason($acceptingType, $acceptedType, $strictTypes)->result;
-	}
-
 	private function transformCommonType(Type $type): Type
 	{
 		if (!$this->checkExplicitMixed && !$this->checkImplicitMixed) {
@@ -144,12 +138,13 @@ final class RuleLevelHelper
 		return [$acceptedType, $checkForUnion];
 	}
 
-	public function acceptsWithReason(Type $acceptingType, Type $acceptedType, bool $strictTypes): RuleLevelHelperAcceptsResult
+	/** @api */
+	public function accepts(Type $acceptingType, Type $acceptedType, bool $strictTypes): RuleLevelHelperAcceptsResult
 	{
 		[$acceptedType, $checkForUnion] = $this->transformAcceptedType($acceptingType, $acceptedType);
 		$acceptingType = $this->transformCommonType($acceptingType);
 
-		$accepts = $acceptingType->acceptsWithReason($acceptedType, $strictTypes);
+		$accepts = $acceptingType->accepts($acceptedType, $strictTypes);
 
 		return new RuleLevelHelperAcceptsResult(
 			$checkForUnion ? $accepts->yes() : !$accepts->no(),

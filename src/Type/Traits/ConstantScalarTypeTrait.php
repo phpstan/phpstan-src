@@ -16,22 +16,17 @@ use PHPStan\Type\Type;
 trait ConstantScalarTypeTrait
 {
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof self) {
 			return AcceptsResult::createFromBoolean($this->equals($type));
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return parent::acceptsWithReason($type, $strictTypes)->and(AcceptsResult::createMaybe());
+		return parent::accepts($type, $strictTypes)->and(AcceptsResult::createMaybe());
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

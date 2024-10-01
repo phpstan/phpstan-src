@@ -44,7 +44,7 @@ final class IncompatibleArrowFunctionDefaultParameterTypeRule implements Rule
 			$parameterType = $parameters[$paramI]->getType();
 			$parameterType = TemplateTypeHelper::resolveToBounds($parameterType);
 
-			$accepts = $parameterType->acceptsWithReason($defaultValueType, true);
+			$accepts = $parameterType->accepts($defaultValueType, true);
 			if ($accepts->yes()) {
 				continue;
 			}

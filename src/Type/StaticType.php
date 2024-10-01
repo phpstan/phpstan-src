@@ -132,22 +132,17 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->getConstantStrings();
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		if (!$type instanceof static) {
 			return AcceptsResult::createNo();
 		}
 
-		return $this->getStaticObjectType()->acceptsWithReason($type->getStaticObjectType(), $strictTypes);
+		return $this->getStaticObjectType()->accepts($type->getStaticObjectType(), $strictTypes);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

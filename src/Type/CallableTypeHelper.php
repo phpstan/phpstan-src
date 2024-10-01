@@ -72,7 +72,7 @@ final class CallableTypeHelper
 			}
 
 			if ($treatMixedAsAny) {
-				$isSuperType = $theirParameter->getType()->acceptsWithReason($ourParameterType, true);
+				$isSuperType = $theirParameter->getType()->accepts($ourParameterType, true);
 			} else {
 				$isSuperType = new AcceptsResult($theirParameter->getType()->isSuperTypeOf($ourParameterType), []);
 			}
@@ -98,7 +98,7 @@ final class CallableTypeHelper
 
 		$theirReturnType = $theirs->getReturnType();
 		if ($treatMixedAsAny) {
-			$isReturnTypeSuperType = $ours->getReturnType()->acceptsWithReason($theirReturnType, true);
+			$isReturnTypeSuperType = $ours->getReturnType()->accepts($theirReturnType, true);
 		} else {
 			$isReturnTypeSuperType = new AcceptsResult($ours->getReturnType()->isSuperTypeOf($theirReturnType), []);
 		}

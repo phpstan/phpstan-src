@@ -297,15 +297,10 @@ class ConstantArrayType implements Type
 		return in_array($i, $this->optionalKeys, true);
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType && !$type instanceof IntersectionType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		if ($type instanceof self && count($this->keyTypes) === 0) {
@@ -333,7 +328,7 @@ class ConstantArrayType implements Type
 			$result = $result->and($hasOffset);
 			$otherValueType = $type->getOffsetValueType($keyType);
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($valueType, $otherValueType);
-			$acceptsValue = $valueType->acceptsWithReason($otherValueType, $strictTypes)->decorateReasons(
+			$acceptsValue = $valueType->accepts($otherValueType, $strictTypes)->decorateReasons(
 				static fn (string $reason) => sprintf(
 					'Offset %s (%s) does not accept type %s: %s',
 					$keyType->describe(VerbosityLevel::precise()),

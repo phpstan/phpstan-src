@@ -44,7 +44,7 @@ final class DefaultValueTypesAssignedToPropertiesRule implements Rule
 			}
 		}
 		$defaultValueType = $scope->getType($default);
-		$accepts = $this->ruleLevelHelper->acceptsWithReason($propertyType, $defaultValueType, true);
+		$accepts = $this->ruleLevelHelper->accepts($propertyType, $defaultValueType, true);
 		if ($accepts->result) {
 			return [];
 		}

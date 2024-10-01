@@ -33,11 +33,11 @@ class StringAlwaysAcceptingObjectWithToStringType extends StringType
 		return $result;
 	}
 
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		$thatClassNames = $type->getObjectClassNames();
 		if ($thatClassNames === []) {
-			return parent::acceptsWithReason($type, $strictTypes);
+			return parent::accepts($type, $strictTypes);
 		}
 
 		$result = AcceptsResult::createNo();

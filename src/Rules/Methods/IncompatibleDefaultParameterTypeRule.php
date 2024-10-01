@@ -44,7 +44,7 @@ final class IncompatibleDefaultParameterTypeRule implements Rule
 			$parameterType = $parameter->getType();
 			$parameterType = TemplateTypeHelper::resolveToBounds($parameterType);
 
-			$accepts = $parameterType->acceptsWithReason($defaultValueType, true);
+			$accepts = $parameterType->accepts($defaultValueType, true);
 			if ($accepts->yes()) {
 				continue;
 			}

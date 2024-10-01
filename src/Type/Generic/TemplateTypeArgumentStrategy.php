@@ -18,9 +18,9 @@ final class TemplateTypeArgumentStrategy implements TemplateTypeStrategy
 	public function accepts(TemplateType $left, Type $right, bool $strictTypes): AcceptsResult
 	{
 		if ($right instanceof CompoundType) {
-			$accepts = $right->isAcceptedWithReasonBy($left, $strictTypes);
+			$accepts = $right->isAcceptedBy($left, $strictTypes);
 		} else {
-			$accepts = $left->getBound()->acceptsWithReason($right, $strictTypes)
+			$accepts = $left->getBound()->accepts($right, $strictTypes)
 				->and(AcceptsResult::createMaybe());
 			if ($accepts->maybe()) {
 				$verbosity = VerbosityLevel::getRecommendedLevelByType($left, $right);

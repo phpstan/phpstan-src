@@ -161,12 +161,7 @@ class UnionType implements CompoundType
 		);
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if (
 			$type->equals(new ObjectType(DateTimeInterface::class))
@@ -180,24 +175,24 @@ class UnionType implements CompoundType
 
 		$result = AcceptsResult::createNo();
 		foreach ($this->getSortedTypes() as $i => $innerType) {
-			$result = $result->or($innerType->acceptsWithReason($type, $strictTypes)->decorateReasons(static fn (string $reason) => sprintf('Type #%d from the union: %s', $i + 1, $reason)));
+			$result = $result->or($innerType->accepts($type, $strictTypes)->decorateReasons(static fn (string $reason) => sprintf('Type #%d from the union: %s', $i + 1, $reason)));
 		}
 		if ($result->yes()) {
 			return $result;
 		}
 
 		if ($type instanceof CompoundType && !$type instanceof CallableType && !$type instanceof TemplateType && !$type instanceof IntersectionType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		if ($type instanceof TemplateUnionType) {
-			return $result->or($type->isAcceptedWithReasonBy($this, $strictTypes));
+			return $result->or($type->isAcceptedBy($this, $strictTypes));
 		}
 
 		if ($type->isEnum()->yes() && !$this->isEnum()->no()) {
 			$enumCasesUnion = TypeCombinator::union(...$type->getEnumCases());
 			if (!$type->equals($enumCasesUnion)) {
-				return $this->acceptsWithReason($enumCasesUnion, $strictTypes);
+				return $this->accepts($enumCasesUnion, $strictTypes);
 			}
 		}
 
@@ -234,14 +229,9 @@ class UnionType implements CompoundType
 		return TrinaryLogic::lazyExtremeIdentity($this->getTypes(), static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType));
 	}
 
-	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
+	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
-	}
-
-	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
-	{
-		return AcceptsResult::extremeIdentity(...array_map(static fn (Type $innerType) => $acceptingType->acceptsWithReason($innerType, $strictTypes), $this->types));
+		return AcceptsResult::extremeIdentity(...array_map(static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes), $this->types));
 	}
 
 	public function equals(Type $type): bool

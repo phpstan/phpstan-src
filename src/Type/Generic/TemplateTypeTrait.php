@@ -91,14 +91,9 @@ trait TemplateTypeTrait
 		);
 	}
 
-	public function isValidVariance(Type $a, Type $b): TrinaryLogic
+	public function isValidVariance(Type $a, Type $b): AcceptsResult
 	{
-		return $this->isValidVarianceWithReason($a, $b)->result;
-	}
-
-	public function isValidVarianceWithReason(Type $a, Type $b): AcceptsResult
-	{
-		return $this->variance->isValidVarianceWithReason($this, $a, $b);
+		return $this->variance->isValidVariance($this, $a, $b);
 	}
 
 	public function subtract(Type $typeToRemove): Type
@@ -163,12 +158,7 @@ trait TemplateTypeTrait
 			&& $this->bound->equals($type->bound);
 	}
 
-	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
-	{
-		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
-	}
-
-	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
 		/** @var TBound $bound */
 		$bound = $this->getBound();
@@ -178,27 +168,22 @@ trait TemplateTypeTrait
 			&& !$acceptingType instanceof TemplateType
 			&& ($acceptingType instanceof UnionType || $acceptingType instanceof IntersectionType)
 		) {
-			return $acceptingType->acceptsWithReason($this, $strictTypes);
+			return $acceptingType->accepts($this, $strictTypes);
 		}
 
 		if (!$acceptingType instanceof TemplateType) {
-			return $acceptingType->acceptsWithReason($this->getBound(), $strictTypes);
+			return $acceptingType->accepts($this->getBound(), $strictTypes);
 		}
 
 		if ($this->getScope()->equals($acceptingType->getScope()) && $this->getName() === $acceptingType->getName()) {
-			return $acceptingType->getBound()->acceptsWithReason($this->getBound(), $strictTypes);
+			return $acceptingType->getBound()->accepts($this->getBound(), $strictTypes);
 		}
 
-		return $acceptingType->getBound()->acceptsWithReason($this->getBound(), $strictTypes)
+		return $acceptingType->getBound()->accepts($this->getBound(), $strictTypes)
 			->and(new AcceptsResult(TrinaryLogic::createMaybe(), []));
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		return $this->strategy->accepts($this, $type, $strictTypes);
 	}

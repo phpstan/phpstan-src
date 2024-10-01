@@ -72,12 +72,7 @@ class NeverType implements CompoundType
 		return [];
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		return AcceptsResult::createYes();
 	}
@@ -101,12 +96,7 @@ class NeverType implements CompoundType
 		return TrinaryLogic::createYes();
 	}
 
-	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
-	{
-		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
-	}
-
-	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
 		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
 	}

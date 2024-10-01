@@ -126,12 +126,7 @@ final class TemplateTypeVariance
 		return $other;
 	}
 
-	public function isValidVariance(Type $a, Type $b): TrinaryLogic
-	{
-		return $this->isValidVarianceWithReason(null, $a, $b)->result;
-	}
-
-	public function isValidVarianceWithReason(?TemplateType $templateType, Type $a, Type $b): AcceptsResult
+	public function isValidVariance(TemplateType $templateType, Type $a, Type $b): AcceptsResult
 	{
 		if ($b instanceof NeverType) {
 			return AcceptsResult::createYes();
@@ -162,8 +157,7 @@ final class TemplateTypeVariance
 			$reasons = [];
 			if (!$result) {
 				if (
-					$templateType !== null
-					&& $templateType->getScope()->getClassName() !== null
+					$templateType->getScope()->getClassName() !== null
 					&& $a->isSuperTypeOf($b)->yes()
 				) {
 					$reasons[] = sprintf(

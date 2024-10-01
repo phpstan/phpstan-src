@@ -40,12 +40,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		return $this->isSuperTypeOf($type);
 	}
 
-	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
-	{
-		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
-	}
-
-	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
 		$isSuperType = new AcceptsResult($this->isSuperTypeOf($acceptingType), []);
 		if ($isSuperType->no()) {

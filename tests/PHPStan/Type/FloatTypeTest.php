@@ -66,7 +66,7 @@ class FloatTypeTest extends PHPStanTestCase
 	public function testAccepts(Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$type = new FloatType();
-		$actualResult = $type->accepts($otherType, true);
+		$actualResult = $type->accepts($otherType, true)->result;
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),

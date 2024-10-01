@@ -118,15 +118,10 @@ class GenericObjectType extends ObjectType
 		return $this->variances;
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		return $this->isSuperTypeOfInternal($type, true);
@@ -192,9 +187,9 @@ class GenericObjectType extends ObjectType
 			$thisVariance = $this->variances[$i] ?? TemplateTypeVariance::createInvariant();
 			$ancestorVariance = $ancestor->variances[$i] ?? TemplateTypeVariance::createInvariant();
 			if (!$thisVariance->invariant()) {
-				$results[] = $thisVariance->isValidVarianceWithReason($templateType, $this->types[$i], $ancestor->types[$i]);
+				$results[] = $thisVariance->isValidVariance($templateType, $this->types[$i], $ancestor->types[$i]);
 			} else {
-				$results[] = $templateType->isValidVarianceWithReason($this->types[$i], $ancestor->types[$i]);
+				$results[] = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i]);
 			}
 
 			$results[] = AcceptsResult::createFromBoolean($thisVariance->validPosition($ancestorVariance));

@@ -80,15 +80,10 @@ class ArrayType implements Type
 		return [];
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		if ($type instanceof ConstantArrayType) {
@@ -97,8 +92,8 @@ class ArrayType implements Type
 			$itemType = $this->getItemType();
 			foreach ($type->getKeyTypes() as $i => $keyType) {
 				$valueType = $type->getValueTypes()[$i];
-				$acceptsKey = $thisKeyType->acceptsWithReason($keyType, $strictTypes);
-				$acceptsValue = $itemType->acceptsWithReason($valueType, $strictTypes);
+				$acceptsKey = $thisKeyType->accepts($keyType, $strictTypes);
+				$acceptsValue = $itemType->accepts($valueType, $strictTypes);
 				$result = $result->and($acceptsKey)->and($acceptsValue);
 			}
 
@@ -106,8 +101,8 @@ class ArrayType implements Type
 		}
 
 		if ($type instanceof ArrayType) {
-			return $this->getItemType()->acceptsWithReason($type->getItemType(), $strictTypes)
-				->and($this->keyType->acceptsWithReason($type->keyType, $strictTypes));
+			return $this->getItemType()->accepts($type->getItemType(), $strictTypes)
+				->and($this->keyType->accepts($type->keyType, $strictTypes));
 		}
 
 		return AcceptsResult::createNo();

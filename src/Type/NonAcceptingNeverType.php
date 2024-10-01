@@ -26,7 +26,7 @@ class NonAcceptingNeverType extends NeverType
 		return TrinaryLogic::createNo();
 	}
 
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof NeverType) {
 			return AcceptsResult::createYes();

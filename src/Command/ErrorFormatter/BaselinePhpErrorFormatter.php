@@ -8,7 +8,6 @@ use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
 use function array_keys;
 use function count;
-use function implode;
 use function ksort;
 use function preg_quote;
 use function sort;
@@ -74,22 +73,24 @@ final class BaselinePhpErrorFormatter
 			foreach ($fileErrorsByMessage as $message => [$count, $identifiersInKeys]) {
 				$identifiers = array_keys($identifiersInKeys);
 				sort($identifiers);
-				$identifiersComment = '';
 				if (count($identifiers) > 0) {
-					if (count($identifiers) === 1) {
-						$identifiersComment = "\n\t// identifier: " . $identifiers[0];
-					} else {
-						$identifiersComment = "\n\t// identifiers: " . implode(', ', $identifiers);
+					foreach ($identifiers as $identifier) {
+						$php .= sprintf(
+							"\$ignoreErrors[] = [\n\t'message' => %s,\n\t'identifier' => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
+							var_export(Helpers::escape('#^' . preg_quote($message, '#') . '$#'), true),
+							var_export(Helpers::escape($identifier), true),
+							var_export($count, true),
+							var_export(Helpers::escape($file), true),
+						);
 					}
+				} else {
+					$php .= sprintf(
+						"\$ignoreErrors[] = [\n\t'message' => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
+						var_export(Helpers::escape('#^' . preg_quote($message, '#') . '$#'), true),
+						var_export($count, true),
+						var_export(Helpers::escape($file), true),
+					);
 				}
-
-				$php .= sprintf(
-					"\$ignoreErrors[] = [%s\n\t'message' => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
-					$identifiersComment,
-					var_export(Helpers::escape('#^' . preg_quote($message, '#') . '$#'), true),
-					var_export($count, true),
-					var_export(Helpers::escape($file), true),
-				);
 			}
 		}
 

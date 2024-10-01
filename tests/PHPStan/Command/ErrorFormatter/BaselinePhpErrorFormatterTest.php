@@ -80,8 +80,8 @@ return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
 	'path' => __DIR__ . '/Foo.php',
 ];
 \$ignoreErrors[] = [
-	// identifier: argument.type
 	'message' => '#^Foo with identifier$#',
+	'identifier' => 'argument.type',
 	'count' => 2,
 	'path' => __DIR__ . '/Foo.php',
 ];
@@ -127,14 +127,20 @@ return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
 	'path' => __DIR__ . '/Foo.php',
 ];
 \$ignoreErrors[] = [
-	// identifier: argument.type
 	'message' => '#^Foo with another message$#',
+	'identifier' => 'argument.type',
 	'count' => 1,
 	'path' => __DIR__ . '/Foo.php',
 ];
 \$ignoreErrors[] = [
-	// identifiers: argument.byRef, argument.type
 	'message' => '#^Foo with same message, different identifier$#',
+	'identifier' => 'argument.byRef',
+	'count' => 2,
+	'path' => __DIR__ . '/Foo.php',
+];
+\$ignoreErrors[] = [
+	'message' => '#^Foo with same message, different identifier$#',
+	'identifier' => 'argument.type',
 	'count' => 2,
 	'path' => __DIR__ . '/Foo.php',
 ];

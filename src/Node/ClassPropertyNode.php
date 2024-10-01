@@ -5,8 +5,6 @@ namespace PHPStan\Node;
 use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Identifier;
-use PhpParser\Node\Name;
 use PhpParser\NodeAbstract;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\Type;
@@ -20,13 +18,13 @@ final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 	public function __construct(
 		private string $name,
 		private int $flags,
-		private Identifier|Name|Node\ComplexType|null $type,
+		private ?Type $type,
 		private ?Expr $default,
 		private ?string $phpDoc,
 		private ?Type $phpDocType,
 		private bool $isPromoted,
 		private bool $isPromotedFromTrait,
-		Node $originalNode,
+		private Node\Stmt\Property|Node\Param $originalNode,
 		private bool $isReadonlyByPhpDoc,
 		private bool $isDeclaredInTrait,
 		private bool $isReadonlyClass,
@@ -113,12 +111,17 @@ final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		return $this->isAllowedPrivateMutation;
 	}
 
-	/**
-	 * @return Identifier|Name|Node\ComplexType|null
-	 */
-	public function getNativeType()
+	public function getNativeType(): ?Type
 	{
 		return $this->type;
+	}
+
+	/**
+	 * @return Node\Identifier|Node\Name|Node\ComplexType|null
+	 */
+	public function getNativeTypeNode()
+	{
+		return $this->originalNode->type;
 	}
 
 	public function getClassReflection(): ClassReflection

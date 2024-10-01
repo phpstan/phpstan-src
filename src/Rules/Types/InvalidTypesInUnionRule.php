@@ -69,11 +69,11 @@ final class InvalidTypesInUnionRule implements Rule
 	 */
 	private function processClassPropertyNode(ClassPropertyNode $classPropertyNode): array
 	{
-		if (!$classPropertyNode->getNativeType() instanceof Node\ComplexType) {
+		if (!$classPropertyNode->getNativeTypeNode() instanceof Node\ComplexType) {
 			return [];
 		}
 
-		return $this->processComplexType($classPropertyNode->getNativeType());
+		return $this->processComplexType($classPropertyNode->getNativeTypeNode());
 	}
 
 	/**

@@ -10,7 +10,6 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateType;
-use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function sprintf;
@@ -62,33 +61,35 @@ final class IncompatiblePropertyPhpDocTypeRule implements Rule
 			))->identifier('property.unresolvableType')->build();
 		}
 
-		$nativeType = ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $classReflection);
-		$isSuperType = $nativeType->isSuperTypeOf($phpDocType);
-		if ($isSuperType->no()) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'%s for property %s::$%s with type %s is incompatible with native type %s.',
-				$description,
-				$classReflection->getDisplayName(),
-				$propertyName,
-				$phpDocType->describe(VerbosityLevel::typeOnly()),
-				$nativeType->describe(VerbosityLevel::typeOnly()),
-			))->identifier('property.phpDocType')->build();
+		$nativeType = $node->getNativeType();
+		if ($nativeType !== null) {
+			$isSuperType = $nativeType->isSuperTypeOf($phpDocType);
+			if ($isSuperType->no()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'%s for property %s::$%s with type %s is incompatible with native type %s.',
+					$description,
+					$classReflection->getDisplayName(),
+					$propertyName,
+					$phpDocType->describe(VerbosityLevel::typeOnly()),
+					$nativeType->describe(VerbosityLevel::typeOnly()),
+				))->identifier('property.phpDocType')->build();
 
-		} elseif ($isSuperType->maybe()) {
-			$errorBuilder = RuleErrorBuilder::message(sprintf(
-				'%s for property %s::$%s with type %s is not subtype of native type %s.',
-				$description,
-				$classReflection->getDisplayName(),
-				$propertyName,
-				$phpDocType->describe(VerbosityLevel::typeOnly()),
-				$nativeType->describe(VerbosityLevel::typeOnly()),
-			))->identifier('property.phpDocType');
+			} elseif ($isSuperType->maybe()) {
+				$errorBuilder = RuleErrorBuilder::message(sprintf(
+					'%s for property %s::$%s with type %s is not subtype of native type %s.',
+					$description,
+					$classReflection->getDisplayName(),
+					$propertyName,
+					$phpDocType->describe(VerbosityLevel::typeOnly()),
+					$nativeType->describe(VerbosityLevel::typeOnly()),
+				))->identifier('property.phpDocType');
 
-			if ($phpDocType instanceof TemplateType) {
-				$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocType->getName(), $nativeType->describe(VerbosityLevel::typeOnly())));
+				if ($phpDocType instanceof TemplateType) {
+					$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocType->getName(), $nativeType->describe(VerbosityLevel::typeOnly())));
+				}
+
+				$messages[] = $errorBuilder->build();
 			}
-
-			$messages[] = $errorBuilder->build();
 		}
 
 		$className = SprintfHelper::escapeFormatString($classReflection->getDisplayName());

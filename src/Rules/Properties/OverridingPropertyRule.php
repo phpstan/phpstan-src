@@ -9,7 +9,6 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
@@ -104,8 +103,9 @@ final class OverridingPropertyRule implements Rule
 		}
 
 		$typeErrors = [];
+		$nativeType = $node->getNativeType();
 		if ($prototype->hasNativeType()) {
-			if ($node->getNativeType() === null) {
+			if ($nativeType === null) {
 				$typeErrors[] = RuleErrorBuilder::message(sprintf(
 					'Property %s::$%s overriding property %s::$%s (%s) should also have native type %s.',
 					$classReflection->getDisplayName(),
@@ -116,7 +116,6 @@ final class OverridingPropertyRule implements Rule
 					$prototype->getNativeType()->describe(VerbosityLevel::typeOnly()),
 				))->identifier('property.missingNativeType')->nonIgnorable()->build();
 			} else {
-				$nativeType = ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $classReflection);
 				if (!$prototype->getNativeType()->equals($nativeType)) {
 					$typeErrors[] = RuleErrorBuilder::message(sprintf(
 						'Type %s of property %s::$%s is not the same as type %s of overridden property %s::$%s.',
@@ -129,12 +128,12 @@ final class OverridingPropertyRule implements Rule
 					))->identifier('property.nativeType')->nonIgnorable()->build();
 				}
 			}
-		} elseif ($node->getNativeType() !== null) {
+		} elseif ($nativeType !== null) {
 			$typeErrors[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s (%s) overriding property %s::$%s should not have a native type.',
 				$classReflection->getDisplayName(),
 				$node->getName(),
-				ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $classReflection)->describe(VerbosityLevel::typeOnly()),
+				$nativeType->describe(VerbosityLevel::typeOnly()),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 			))->identifier('property.extraNativeType')->nonIgnorable()->build();

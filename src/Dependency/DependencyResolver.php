@@ -22,7 +22,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
 use function array_merge;
 use function count;
@@ -85,9 +84,8 @@ final class DependencyResolver
 				}
 			}
 		} elseif ($node instanceof ClassPropertyNode) {
-			$nativeTypeNode = $node->getNativeType();
-			if ($nativeTypeNode !== null) {
-				$nativeType = ParserNodeTypeToPHPStanType::resolve($nativeTypeNode, $node->getClassReflection());
+			$nativeType = $node->getNativeType();
+			if ($nativeType !== null) {
 				foreach ($nativeType->getReferencedClasses() as $referencedClass) {
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 				}

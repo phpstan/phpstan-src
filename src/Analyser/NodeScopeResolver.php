@@ -170,6 +170,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
@@ -648,7 +649,7 @@ final class NodeScopeResolver
 					$nodeCallback(new ClassPropertyNode(
 						$param->var->name,
 						$param->flags,
-						$param->type,
+						$param->type !== null ? ParserNodeTypeToPHPStanType::resolve($param->type, $scope->getClassReflection()) : null,
 						null,
 						$phpDoc,
 						$phpDocParameterTypes[$param->var->name] ?? null,
@@ -899,13 +900,13 @@ final class NodeScopeResolver
 					new ClassPropertyNode(
 						$propertyName,
 						$stmt->flags,
-						$stmt->type,
+						$stmt->type !== null ? ParserNodeTypeToPHPStanType::resolve($stmt->type, $scope->getClassReflection()) : null,
 						$prop->default,
 						$docComment,
 						$phpDocType,
 						false,
 						false,
-						$prop,
+						$stmt,
 						$isReadOnly,
 						$scope->isInTrait(),
 						$scope->getClassReflection()->isReadOnly(),

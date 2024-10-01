@@ -7,7 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\Reflection\FunctionVariant;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\Rule;
@@ -51,7 +51,7 @@ final class FinalClassRule implements Rule
 		// exceptions
 		if (in_array($classReflection->getName(), [
 			FunctionVariant::class,
-			FunctionVariantWithPhpDocs::class,
+			ExtendedFunctionVariant::class,
 			DummyParameter::class,
 			PhpFunctionFromParserNodeReflection::class,
 		], true)) {

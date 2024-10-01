@@ -7,8 +7,8 @@ use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodPrototypeReflection;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -22,8 +22,8 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**
-	 * @param ParametersAcceptorWithPhpDocs[] $variants
-	 * @param ParametersAcceptorWithPhpDocs[]|null $namedArgumentsVariants
+	 * @param ExtendedParametersAcceptor[] $variants
+	 * @param ExtendedParametersAcceptor[]|null $namedArgumentsVariants
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
@@ -111,7 +111,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 		return $this->variants;
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		$variants = $this->getVariants();
 		if (count($variants) !== 1) {

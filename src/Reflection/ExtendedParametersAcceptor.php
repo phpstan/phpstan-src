@@ -6,11 +6,11 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
 /** @api */
-interface ParametersAcceptorWithPhpDocs extends ParametersAcceptor
+interface ExtendedParametersAcceptor extends ParametersAcceptor
 {
 
 	/**
-	 * @return array<int, ParameterReflectionWithPhpDocs>
+	 * @return array<int, ExtendedParameterReflection>
 	 */
 	public function getParameters(): array;
 

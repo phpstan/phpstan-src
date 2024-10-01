@@ -5,9 +5,9 @@ namespace PHPStan\Reflection\Php;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -64,7 +64,7 @@ final class EnumCasesMethodReflection implements ExtendedMethodReflection
 	public function getVariants(): array
 	{
 		return [
-			new FunctionVariantWithPhpDocs(
+			new ExtendedFunctionVariant(
 				TemplateTypeMap::createEmpty(),
 				TemplateTypeMap::createEmpty(),
 				[],
@@ -76,7 +76,7 @@ final class EnumCasesMethodReflection implements ExtendedMethodReflection
 		];
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		return $this->getVariants()[0];
 	}

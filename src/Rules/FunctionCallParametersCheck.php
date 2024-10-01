@@ -7,8 +7,8 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -342,7 +342,7 @@ final class FunctionCallParametersCheck
 				}
 
 				if (
-					$parameter instanceof ParameterReflectionWithPhpDocs
+					$parameter instanceof ExtendedParameterReflection
 					&& $parameter->getClosureThisType() !== null
 					&& ($argumentValue instanceof Expr\Closure || $argumentValue instanceof Expr\ArrowFunction)
 					&& $argumentValue->static

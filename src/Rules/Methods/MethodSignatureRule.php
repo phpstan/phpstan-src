@@ -7,8 +7,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -196,8 +196,8 @@ final class MethodSignatureRule implements Rule
 	 */
 	private function checkReturnTypeCompatibility(
 		ClassReflection $declaringClass,
-		ParametersAcceptorWithPhpDocs $currentVariant,
-		ParametersAcceptorWithPhpDocs $parentVariant,
+		ExtendedParametersAcceptor $currentVariant,
+		ExtendedParametersAcceptor $parentVariant,
 	): array
 	{
 		$returnType = TypehintHelper::decideType(
@@ -226,8 +226,8 @@ final class MethodSignatureRule implements Rule
 	}
 
 	/**
-	 * @param ParameterReflectionWithPhpDocs[] $parameters
-	 * @param ParameterReflectionWithPhpDocs[] $parentParameters
+	 * @param ExtendedParameterReflection[] $parameters
+	 * @param ExtendedParameterReflection[] $parentParameters
 	 * @return array<int, array{TrinaryLogic, Type, Type}>
 	 */
 	private function checkParameterTypeCompatibility(

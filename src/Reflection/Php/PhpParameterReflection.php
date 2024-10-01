@@ -4,9 +4,9 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
@@ -14,7 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 
-final class PhpParameterReflection implements ParameterReflectionWithPhpDocs
+final class PhpParameterReflection implements ExtendedParameterReflection
 {
 
 	private ?Type $type = null;

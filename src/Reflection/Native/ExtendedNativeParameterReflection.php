@@ -2,12 +2,12 @@
 
 namespace PHPStan\Reflection\Native;
 
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-final class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhpDocs
+final class ExtendedNativeParameterReflection implements ExtendedParameterReflection
 {
 
 	public function __construct(

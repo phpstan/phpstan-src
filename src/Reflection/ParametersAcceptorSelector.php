@@ -17,7 +17,7 @@ use PHPStan\Parser\CurlSetOptArgVisitor;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
-use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
+use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -116,7 +116,7 @@ final class ParametersAcceptorSelector
 						$parameters,
 						$acceptor->isVariadic(),
 						$acceptor->getReturnType(),
-						$acceptor instanceof ParametersAcceptorWithPhpDocs ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 					),
 				];
 			}
@@ -146,7 +146,7 @@ final class ParametersAcceptorSelector
 								$parameters,
 								$acceptor->isVariadic(),
 								$acceptor->getReturnType(),
-								$acceptor instanceof ParametersAcceptorWithPhpDocs ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+								$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 							),
 						];
 					}
@@ -196,7 +196,7 @@ final class ParametersAcceptorSelector
 						$parameters,
 						$acceptor->isVariadic(),
 						$acceptor->getReturnType(),
-						$acceptor instanceof ParametersAcceptorWithPhpDocs ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 					),
 				];
 			}
@@ -227,7 +227,7 @@ final class ParametersAcceptorSelector
 						$parameters,
 						$acceptor->isVariadic(),
 						$acceptor->getReturnType(),
-						$acceptor instanceof ParametersAcceptorWithPhpDocs ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 					),
 				];
 			}
@@ -269,7 +269,7 @@ final class ParametersAcceptorSelector
 											$parameters,
 											$acceptor->isVariadic(),
 											$acceptor->getReturnType(),
-											$acceptor instanceof ParametersAcceptorWithPhpDocs ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+											$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 										),
 									];
 								}
@@ -312,7 +312,7 @@ final class ParametersAcceptorSelector
 										$parameters,
 										$acceptor->isVariadic(),
 										$acceptor->getReturnType(),
-										$acceptor instanceof ParametersAcceptorWithPhpDocs ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+										$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 									),
 								];
 							}
@@ -389,7 +389,7 @@ final class ParametersAcceptorSelector
 
 		foreach ($acceptor->getParameters() as $parameter) {
 			if (
-				$parameter instanceof ParameterReflectionWithPhpDocs
+				$parameter instanceof ExtendedParameterReflection
 				&& $parameter->getOutType() !== null
 				&& self::hasTemplateOrLateResolvableType($parameter->getOutType())
 			) {
@@ -397,7 +397,7 @@ final class ParametersAcceptorSelector
 			}
 
 			if (
-				$parameter instanceof ParameterReflectionWithPhpDocs
+				$parameter instanceof ExtendedParameterReflection
 				&& $parameter->getClosureThisType() !== null
 				&& self::hasTemplateOrLateResolvableType($parameter->getClosureThisType())
 			) {
@@ -541,7 +541,7 @@ final class ParametersAcceptorSelector
 	/**
 	 * @param ParametersAcceptor[] $acceptors
 	 */
-	public static function combineAcceptors(array $acceptors): ParametersAcceptorWithPhpDocs
+	public static function combineAcceptors(array $acceptors): ExtendedParametersAcceptor
 	{
 		if (count($acceptors) === 0) {
 			throw new ShouldNotHappenException(
@@ -586,7 +586,7 @@ final class ParametersAcceptorSelector
 		foreach ($acceptors as $acceptor) {
 			$returnTypes[] = $acceptor->getReturnType();
 
-			if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
+			if ($acceptor instanceof ExtendedParametersAcceptor) {
 				$phpDocReturnTypes[] = $acceptor->getPhpDocReturnType();
 				$nativeReturnTypes[] = $acceptor->getNativeReturnType();
 			}
@@ -603,18 +603,18 @@ final class ParametersAcceptorSelector
 
 			foreach ($acceptor->getParameters() as $i => $parameter) {
 				if (!isset($parameters[$i])) {
-					$parameters[$i] = new DummyParameterWithPhpDocs(
+					$parameters[$i] = new ExtendedDummyParameter(
 						$parameter->getName(),
 						$parameter->getType(),
 						$i + 1 > $minimumNumberOfParameters,
 						$parameter->passedByReference(),
 						$parameter->isVariadic(),
 						$parameter->getDefaultValue(),
-						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getNativeType() : new MixedType(),
-						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getPhpDocType() : new MixedType(),
-						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getOutType() : null,
-						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->isImmediatelyInvokedCallable() : TrinaryLogic::createMaybe(),
-						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getClosureThisType() : null,
+						$parameter instanceof ExtendedParameterReflection ? $parameter->getNativeType() : new MixedType(),
+						$parameter instanceof ExtendedParameterReflection ? $parameter->getPhpDocType() : new MixedType(),
+						$parameter instanceof ExtendedParameterReflection ? $parameter->getOutType() : null,
+						$parameter instanceof ExtendedParameterReflection ? $parameter->isImmediatelyInvokedCallable() : TrinaryLogic::createMaybe(),
+						$parameter instanceof ExtendedParameterReflection ? $parameter->getClosureThisType() : null,
 					);
 					continue;
 				}
@@ -634,7 +634,7 @@ final class ParametersAcceptorSelector
 				$outType = $parameters[$i]->getOutType();
 				$immediatelyInvokedCallable = $parameters[$i]->isImmediatelyInvokedCallable();
 				$closureThisType = $parameters[$i]->getClosureThisType();
-				if ($parameter instanceof ParameterReflectionWithPhpDocs) {
+				if ($parameter instanceof ExtendedParameterReflection) {
 					$nativeType = TypeCombinator::union($nativeType, $parameter->getNativeType());
 					$phpDocType = TypeCombinator::union($phpDocType, $parameter->getPhpDocType());
 
@@ -659,7 +659,7 @@ final class ParametersAcceptorSelector
 					$closureThisType = null;
 				}
 
-				$parameters[$i] = new DummyParameterWithPhpDocs(
+				$parameters[$i] = new ExtendedDummyParameter(
 					$parameters[$i]->getName() !== $parameter->getName() ? sprintf('%s|%s', $parameters[$i]->getName(), $parameter->getName()) : $parameter->getName(),
 					$type,
 					$i + 1 > $minimumNumberOfParameters,
@@ -685,7 +685,7 @@ final class ParametersAcceptorSelector
 		$nativeReturnType = $nativeReturnTypes === [] ? null : TypeCombinator::union(...$nativeReturnTypes);
 
 		if ($callableOccurred) {
-			return new CallableFunctionVariantWithPhpDocs(
+			return new ExtendedCallableFunctionVariant(
 				TemplateTypeMap::createEmpty(),
 				null,
 				$parameters,
@@ -703,7 +703,7 @@ final class ParametersAcceptorSelector
 			);
 		}
 
-		return new FunctionVariantWithPhpDocs(
+		return new ExtendedFunctionVariant(
 			TemplateTypeMap::createEmpty(),
 			null,
 			$parameters,
@@ -714,17 +714,17 @@ final class ParametersAcceptorSelector
 		);
 	}
 
-	private static function wrapAcceptor(ParametersAcceptor $acceptor): ParametersAcceptorWithPhpDocs
+	private static function wrapAcceptor(ParametersAcceptor $acceptor): ExtendedParametersAcceptor
 	{
-		if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
+		if ($acceptor instanceof ExtendedParametersAcceptor) {
 			return $acceptor;
 		}
 
 		if ($acceptor instanceof CallableParametersAcceptor) {
-			return new CallableFunctionVariantWithPhpDocs(
+			return new ExtendedCallableFunctionVariant(
 				$acceptor->getTemplateTypeMap(),
 				$acceptor->getResolvedTemplateTypeMap(),
-				array_map(static fn (ParameterReflection $parameter): ParameterReflectionWithPhpDocs => self::wrapParameter($parameter), $acceptor->getParameters()),
+				array_map(static fn (ParameterReflection $parameter): ExtendedParameterReflection => self::wrapParameter($parameter), $acceptor->getParameters()),
 				$acceptor->isVariadic(),
 				$acceptor->getReturnType(),
 				$acceptor->getReturnType(),
@@ -739,10 +739,10 @@ final class ParametersAcceptorSelector
 			);
 		}
 
-		return new FunctionVariantWithPhpDocs(
+		return new ExtendedFunctionVariant(
 			$acceptor->getTemplateTypeMap(),
 			$acceptor->getResolvedTemplateTypeMap(),
-			array_map(static fn (ParameterReflection $parameter): ParameterReflectionWithPhpDocs => self::wrapParameter($parameter), $acceptor->getParameters()),
+			array_map(static fn (ParameterReflection $parameter): ExtendedParameterReflection => self::wrapParameter($parameter), $acceptor->getParameters()),
 			$acceptor->isVariadic(),
 			$acceptor->getReturnType(),
 			$acceptor->getReturnType(),
@@ -751,9 +751,9 @@ final class ParametersAcceptorSelector
 		);
 	}
 
-	private static function wrapParameter(ParameterReflection $parameter): ParameterReflectionWithPhpDocs
+	private static function wrapParameter(ParameterReflection $parameter): ExtendedParameterReflection
 	{
-		return $parameter instanceof ParameterReflectionWithPhpDocs ? $parameter : new DummyParameterWithPhpDocs(
+		return $parameter instanceof ExtendedParameterReflection ? $parameter : new ExtendedDummyParameter(
 			$parameter->getName(),
 			$parameter->getType(),
 			$parameter->isOptional(),

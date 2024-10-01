@@ -14,10 +14,10 @@ use function is_bool;
 final class ResolvedMethodReflection implements ExtendedMethodReflection
 {
 
-	/** @var ParametersAcceptorWithPhpDocs[]|null */
+	/** @var ExtendedParametersAcceptor[]|null */
 	private ?array $variants = null;
 
-	/** @var ParametersAcceptorWithPhpDocs[]|null */
+	/** @var ExtendedParametersAcceptor[]|null */
 	private ?array $namedArgumentVariants = null;
 
 	private ?Assertions $asserts = null;
@@ -52,7 +52,7 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 		return $this->variants = $this->resolveVariants($this->reflection->getVariants());
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		return $this->getVariants()[0];
 	}
@@ -73,7 +73,7 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 	}
 
 	/**
-	 * @param ParametersAcceptorWithPhpDocs[] $variants
+	 * @param ExtendedParametersAcceptor[] $variants
 	 * @return ResolvedFunctionVariant[]
 	 */
 	private function resolveVariants(array $variants): array

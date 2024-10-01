@@ -5,12 +5,12 @@ namespace PHPStan\Reflection\Php;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
@@ -81,10 +81,10 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 		array_unshift($parameters, $newThis);
 
 		return [
-			new FunctionVariantWithPhpDocs(
+			new ExtendedFunctionVariant(
 				$this->closureType->getTemplateTypeMap(),
 				$this->closureType->getResolvedTemplateTypeMap(),
-				array_map(static fn (ParameterReflection $parameter): ParameterReflectionWithPhpDocs => new DummyParameterWithPhpDocs(
+				array_map(static fn (ParameterReflection $parameter): ExtendedParameterReflection => new ExtendedDummyParameter(
 					$parameter->getName(),
 					$parameter->getType(),
 					$parameter->isOptional(),
@@ -106,7 +106,7 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 		];
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		return $this->getVariants()[0];
 	}

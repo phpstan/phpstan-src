@@ -10,12 +10,12 @@ use PHPStan\Cache\Cache;
 use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\ExtendedFunctionVariant;
+use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
@@ -32,7 +32,7 @@ use function time;
 final class PhpFunctionReflection implements FunctionReflection
 {
 
-	/** @var FunctionVariantWithPhpDocs[]|null */
+	/** @var ExtendedFunctionVariant[]|null */
 	private ?array $variants = null;
 
 	/**
@@ -86,13 +86,13 @@ final class PhpFunctionReflection implements FunctionReflection
 	}
 
 	/**
-	 * @return ParametersAcceptorWithPhpDocs[]
+	 * @return ExtendedParametersAcceptor[]
 	 */
 	public function getVariants(): array
 	{
 		if ($this->variants === null) {
 			$this->variants = [
-				new FunctionVariantWithPhpDocs(
+				new ExtendedFunctionVariant(
 					$this->templateTypeMap,
 					null,
 					$this->getParameters(),
@@ -107,7 +107,7 @@ final class PhpFunctionReflection implements FunctionReflection
 		return $this->variants;
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		return $this->getVariants()[0];
 	}
@@ -118,7 +118,7 @@ final class PhpFunctionReflection implements FunctionReflection
 	}
 
 	/**
-	 * @return ParameterReflectionWithPhpDocs[]
+	 * @return ExtendedParameterReflection[]
 	 */
 	private function getParameters(): array
 	{

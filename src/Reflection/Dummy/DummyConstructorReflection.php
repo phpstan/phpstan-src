@@ -5,9 +5,9 @@ namespace PHPStan\Reflection\Dummy;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
@@ -54,7 +54,7 @@ final class DummyConstructorReflection implements ExtendedMethodReflection
 	public function getVariants(): array
 	{
 		return [
-			new FunctionVariantWithPhpDocs(
+			new ExtendedFunctionVariant(
 				TemplateTypeMap::createEmpty(),
 				null,
 				[],
@@ -67,7 +67,7 @@ final class DummyConstructorReflection implements ExtendedMethodReflection
 		];
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		return $this->getVariants()[0];
 	}

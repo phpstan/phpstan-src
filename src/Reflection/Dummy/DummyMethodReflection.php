@@ -6,7 +6,7 @@ use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
@@ -59,7 +59,7 @@ final class DummyMethodReflection implements ExtendedMethodReflection
 		];
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		return $this->getVariants()[0];
 	}

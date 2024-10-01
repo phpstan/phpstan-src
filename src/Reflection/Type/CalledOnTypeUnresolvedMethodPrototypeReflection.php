@@ -4,11 +4,11 @@ namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
-use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
+use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
+use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
@@ -77,11 +77,11 @@ final class CalledOnTypeUnresolvedMethodPrototypeReflection implements Unresolve
 
 	private function transformMethodWithStaticType(ClassReflection $declaringClass, ExtendedMethodReflection $method): ExtendedMethodReflection
 	{
-		$variantFn = fn (ParametersAcceptorWithPhpDocs $acceptor): ParametersAcceptorWithPhpDocs => new FunctionVariantWithPhpDocs(
+		$variantFn = fn (ExtendedParametersAcceptor $acceptor): ExtendedParametersAcceptor => new ExtendedFunctionVariant(
 			$acceptor->getTemplateTypeMap(),
 			$acceptor->getResolvedTemplateTypeMap(),
 			array_map(
-				fn (ParameterReflectionWithPhpDocs $parameter): ParameterReflectionWithPhpDocs => new DummyParameterWithPhpDocs(
+				fn (ExtendedParameterReflection $parameter): ExtendedParameterReflection => new ExtendedDummyParameter(
 					$parameter->getName(),
 					$this->transformStaticType($parameter->getType()),
 					$parameter->isOptional(),

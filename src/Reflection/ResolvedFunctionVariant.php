@@ -4,7 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Type\Type;
 
-interface ResolvedFunctionVariant extends ParametersAcceptorWithPhpDocs
+interface ResolvedFunctionVariant extends ExtendedParametersAcceptor
 {
 
 	public function getOriginalParametersAcceptor(): ParametersAcceptor;

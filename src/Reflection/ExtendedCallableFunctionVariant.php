@@ -11,11 +11,11 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
-final class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDocs implements CallableParametersAcceptor
+final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant implements CallableParametersAcceptor
 {
 
 	/**
-	 * @param array<int, ParameterReflectionWithPhpDocs> $parameters
+	 * @param array<int, ExtendedParameterReflection> $parameters
 	 * @param SimpleThrowPoint[] $throwPoints
 	 * @param SimpleImpurePoint[] $impurePoints
 	 * @param InvalidateExprNode[] $invalidateExpressions

@@ -3,9 +3,9 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\ExtendedFunctionVariant;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -42,11 +42,11 @@ final class ExitFunctionReflection implements FunctionReflection
 			new IntegerType(),
 		]);
 		return [
-			new FunctionVariantWithPhpDocs(
+			new ExtendedFunctionVariant(
 				TemplateTypeMap::createEmpty(),
 				TemplateTypeMap::createEmpty(),
 				[
-					new DummyParameterWithPhpDocs(
+					new ExtendedDummyParameter(
 						'status',
 						$parameterType,
 						true,
@@ -69,13 +69,13 @@ final class ExitFunctionReflection implements FunctionReflection
 		];
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		return $this->getVariants()[0];
 	}
 
 	/**
-	 * @return ParametersAcceptorWithPhpDocs[]
+	 * @return ExtendedParametersAcceptor[]
 	 */
 	public function getNamedArgumentsVariants(): array
 	{

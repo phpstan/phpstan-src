@@ -2,13 +2,13 @@
 
 namespace PHPStan\Reflection\Annotations;
 
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
-final class AnnotationsMethodParameterReflection implements ParameterReflectionWithPhpDocs
+final class AnnotationsMethodParameterReflection implements ExtendedParameterReflection
 {
 
 	public function __construct(private string $name, private Type $type, private PassedByReference $passedByReference, private bool $isOptional, private bool $isVariadic, private ?Type $defaultValue)

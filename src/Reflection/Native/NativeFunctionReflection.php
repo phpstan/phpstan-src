@@ -3,8 +3,8 @@
 namespace PHPStan\Reflection\Native;
 
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
@@ -18,8 +18,8 @@ final class NativeFunctionReflection implements FunctionReflection
 	private TrinaryLogic $returnsByReference;
 
 	/**
-	 * @param ParametersAcceptorWithPhpDocs[] $variants
-	 * @param ParametersAcceptorWithPhpDocs[]|null $namedArgumentsVariants
+	 * @param ExtendedParametersAcceptor[] $variants
+	 * @param ExtendedParametersAcceptor[]|null $namedArgumentsVariants
 	 */
 	public function __construct(
 		private string $name,
@@ -53,7 +53,7 @@ final class NativeFunctionReflection implements FunctionReflection
 		return $this->variants;
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		$variants = $this->getVariants();
 		if (count($variants) !== 1) {

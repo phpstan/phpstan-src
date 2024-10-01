@@ -9,9 +9,9 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\Assertions;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\ExtendedFunctionVariant;
+use PHPStan\Reflection\Native\ExtendedNativeParameterReflection;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
-use PHPStan\Reflection\Native\NativeParameterWithPhpDocsReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -91,10 +91,10 @@ final class NativeFunctionReflectionProvider
 		$variantsByType = ['positional' => []];
 		foreach ($functionSignaturesResult as $signatureType => $functionSignatures) {
 			foreach ($functionSignatures ?? [] as $functionSignature) {
-				$variantsByType[$signatureType][] = new FunctionVariantWithPhpDocs(
+				$variantsByType[$signatureType][] = new ExtendedFunctionVariant(
 					TemplateTypeMap::createEmpty(),
 					null,
-					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc): NativeParameterWithPhpDocsReflection {
+					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc): ExtendedNativeParameterReflection {
 						$type = $parameterSignature->getType();
 
 						$phpDocType = null;
@@ -112,7 +112,7 @@ final class NativeFunctionReflectionProvider
 							}
 						}
 
-						return new NativeParameterWithPhpDocsReflection(
+						return new ExtendedNativeParameterReflection(
 							$parameterSignature->getName(),
 							$parameterSignature->isOptional(),
 							TypehintHelper::decideType($type, $phpDocType),

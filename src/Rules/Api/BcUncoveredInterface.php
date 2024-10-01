@@ -15,11 +15,11 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\IdentifierRuleError;
@@ -48,8 +48,8 @@ final class BcUncoveredInterface
 		FunctionReflection::class,
 		ExtendedMethodReflection::class,
 		ExtendedPropertyReflection::class,
-		ParametersAcceptorWithPhpDocs::class,
-		ParameterReflectionWithPhpDocs::class,
+		ExtendedParametersAcceptor::class,
+		ExtendedParameterReflection::class,
 		CallableParametersAcceptor::class,
 		FileRuleError::class,
 		IdentifierRuleError::class,

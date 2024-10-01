@@ -130,16 +130,16 @@ use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
@@ -2649,7 +2649,7 @@ final class NodeScopeResolver
 							TemplateTypeHelper::resolveTemplateTypes(
 								$selfOutType,
 								$parametersAcceptor->getResolvedTemplateTypeMap(),
-								$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+								$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 								TemplateTypeVariance::createCovariant(),
 							),
 							$scope->getNativeType($expr->var),
@@ -4545,7 +4545,7 @@ final class NodeScopeResolver
 					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
 					$parameterType = $parameters[$i]->getType();
 
-					if ($parameters[$i] instanceof ParameterReflectionWithPhpDocs) {
+					if ($parameters[$i] instanceof ExtendedParameterReflection) {
 						$parameterNativeType = $parameters[$i]->getNativeType();
 					}
 					$parameter = $parameters[$i];
@@ -4554,7 +4554,7 @@ final class NodeScopeResolver
 					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
 					$parameterType = $lastParameter->getType();
 
-					if ($lastParameter instanceof ParameterReflectionWithPhpDocs) {
+					if ($lastParameter instanceof ExtendedParameterReflection) {
 						$parameterNativeType = $lastParameter->getNativeType();
 					}
 					$parameter = $lastParameter;
@@ -4591,7 +4591,7 @@ final class NodeScopeResolver
 				$scopeToPass = $closureBindScope;
 			}
 
-			if ($parameter instanceof ParameterReflectionWithPhpDocs) {
+			if ($parameter instanceof ExtendedParameterReflection) {
 				$parameterCallImmediately = $parameter->isImmediatelyInvokedCallable();
 				if ($parameterCallImmediately->maybe()) {
 					$callCallbackImmediately = $calleeReflection instanceof FunctionReflection;
@@ -4605,7 +4605,7 @@ final class NodeScopeResolver
 				$restoreThisScope = null;
 				if (
 					$closureBindScope === null
-					&& $parameter instanceof ParameterReflectionWithPhpDocs
+					&& $parameter instanceof ExtendedParameterReflection
 					&& $parameter->getClosureThisType() !== null
 					&& !$arg->value->static
 				) {
@@ -4658,7 +4658,7 @@ final class NodeScopeResolver
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
 				if (
 					$closureBindScope === null
-					&& $parameter instanceof ParameterReflectionWithPhpDocs
+					&& $parameter instanceof ExtendedParameterReflection
 					&& $parameter->getClosureThisType() !== null
 					&& !$arg->value->static
 				) {
@@ -4734,7 +4734,7 @@ final class NodeScopeResolver
 			if ($currentParameter !== null) {
 				$assignByReference = $currentParameter->passedByReference()->createsNewVariable();
 				if ($assignByReference) {
-					if ($currentParameter instanceof ParameterReflectionWithPhpDocs && $currentParameter->getOutType() !== null) {
+					if ($currentParameter instanceof ExtendedParameterReflection && $currentParameter->getOutType() !== null) {
 						$byRefType = $currentParameter->getOutType();
 					} elseif (
 						$calleeReflection instanceof MethodReflection

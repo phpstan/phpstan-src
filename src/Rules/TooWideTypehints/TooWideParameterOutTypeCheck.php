@@ -6,7 +6,7 @@ use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\ReturnStatement;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\TypeUtils;
@@ -20,7 +20,7 @@ final class TooWideParameterOutTypeCheck
 	/**
 	 * @param list<ExecutionEndNode> $executionEnds
 	 * @param list<ReturnStatement> $returnStatements
-	 * @param ParameterReflectionWithPhpDocs[] $parameters
+	 * @param ExtendedParameterReflection[] $parameters
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
@@ -74,7 +74,7 @@ final class TooWideParameterOutTypeCheck
 	private function processSingleParameter(
 		Scope $scope,
 		string $functionDescription,
-		ParameterReflectionWithPhpDocs $parameter,
+		ExtendedParameterReflection $parameter,
 	): array
 	{
 		$isParamOutType = true;

@@ -6,7 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
 /** @api */
-interface ParameterReflectionWithPhpDocs extends ParameterReflection
+interface ExtendedParameterReflection extends ParameterReflection
 {
 
 	public function getPhpDocType(): Type;

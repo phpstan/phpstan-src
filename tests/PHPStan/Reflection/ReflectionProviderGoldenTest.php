@@ -364,7 +364,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		return $result;
 	}
 
-	/** @param ParametersAcceptorWithPhpDocs[] $variants */
+	/** @param ExtendedParametersAcceptor[] $variants */
 	private static function generateVariantsDescription(string $name, array $variants, bool $isNamedArguments): string
 	{
 		$variantCount = count($variants);

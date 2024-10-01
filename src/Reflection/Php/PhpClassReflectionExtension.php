@@ -21,13 +21,13 @@ use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
+use PHPStan\Reflection\Native\ExtendedNativeParameterReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
-use PHPStan\Reflection\Native\NativeParameterWithPhpDocsReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\FunctionSignature;
@@ -822,7 +822,7 @@ final class PhpClassReflectionExtension
 		array $stubClosureThisParameters,
 		array $closureThisParameters,
 		bool $usePhpDocParameterNames,
-	): FunctionVariantWithPhpDocs
+	): ExtendedFunctionVariant
 	{
 		$parameters = [];
 		foreach ($methodSignature->getParameters() as $parameterSignature) {
@@ -860,7 +860,7 @@ final class PhpClassReflectionExtension
 				$closureThisType = $closureThisParameters[$phpDocParameterName];
 			}
 
-			$parameters[] = new NativeParameterWithPhpDocsReflection(
+			$parameters[] = new ExtendedNativeParameterReflection(
 				$usePhpDocParameterNames
 					? $phpDocParameterName
 					: $parameterSignature->getName(),
@@ -884,7 +884,7 @@ final class PhpClassReflectionExtension
 			$returnType = TypehintHelper::decideType($methodSignature->getReturnType(), $phpDocReturnType);
 		}
 
-		return new FunctionVariantWithPhpDocs(
+		return new ExtendedFunctionVariant(
 			TemplateTypeMap::createEmpty(),
 			null,
 			$parameters,

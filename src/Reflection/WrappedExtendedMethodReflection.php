@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
+use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
@@ -55,15 +55,15 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 	{
 		$variants = [];
 		foreach ($this->method->getVariants() as $variant) {
-			if ($variant instanceof ParametersAcceptorWithPhpDocs) {
+			if ($variant instanceof ExtendedParametersAcceptor) {
 				$variants[] = $variant;
 				continue;
 			}
 
-			$variants[] = new FunctionVariantWithPhpDocs(
+			$variants[] = new ExtendedFunctionVariant(
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),
-				array_map(static fn (ParameterReflection $parameter): ParameterReflectionWithPhpDocs => $parameter instanceof ParameterReflectionWithPhpDocs ? $parameter : new DummyParameterWithPhpDocs(
+				array_map(static fn (ParameterReflection $parameter): ExtendedParameterReflection => $parameter instanceof ExtendedParameterReflection ? $parameter : new ExtendedDummyParameter(
 					$parameter->getName(),
 					$parameter->getType(),
 					$parameter->isOptional(),
@@ -87,7 +87,7 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return $variants;
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		return $this->getVariants()[0];
 	}

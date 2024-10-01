@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ConditionalType;
@@ -23,7 +23,7 @@ final class ConditionalReturnTypeRuleHelper
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	public function check(ParametersAcceptorWithPhpDocs $acceptor): array
+	public function check(ExtendedParametersAcceptor $acceptor): array
 	{
 		$conditionalTypes = [];
 		$parametersByName = [];

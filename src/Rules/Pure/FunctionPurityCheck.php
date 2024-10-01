@@ -8,8 +8,8 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\ThrowPoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -25,7 +25,7 @@ final class FunctionPurityCheck
 
 	/**
 	 * @param 'Function'|'Method' $identifier
-	 * @param ParameterReflectionWithPhpDocs[] $parameters
+	 * @param ExtendedParameterReflection[] $parameters
 	 * @param ImpurePoint[] $impurePoints
 	 * @param ThrowPoint[] $throwPoints
 	 * @param Stmt[] $statements

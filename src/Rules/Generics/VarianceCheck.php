@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateType;
@@ -18,7 +18,7 @@ final class VarianceCheck
 	 * @return list<IdentifierRuleError>
 	 */
 	public function checkParametersAcceptor(
-		ParametersAcceptorWithPhpDocs $parametersAcceptor,
+		ExtendedParametersAcceptor $parametersAcceptor,
 		string $parameterTypeMessage,
 		string $parameterOutTypeMessage,
 		string $returnTypeMessage,

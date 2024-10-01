@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
@@ -10,7 +10,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 
-final class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhpDocs
+final class PhpParameterFromParserNodeReflection implements ExtendedParameterReflection
 {
 
 	private ?Type $type = null;

@@ -57,6 +57,7 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
@@ -66,7 +67,6 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
@@ -2503,7 +2503,7 @@ final class MutatingScope implements Scope
 
 		foreach ($variants as $variant) {
 			$returnType = $variant->getReturnType();
-			if ($variant instanceof ParametersAcceptorWithPhpDocs) {
+			if ($variant instanceof ExtendedParametersAcceptor) {
 				$returnType = $this->nativeTypesPromoted ? $variant->getNativeReturnType() : $returnType;
 			}
 
@@ -2560,7 +2560,7 @@ final class MutatingScope implements Scope
 				$variant->isVariadic(),
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),
-				$variant instanceof ParametersAcceptorWithPhpDocs ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+				$variant instanceof ExtendedParametersAcceptor ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 				$templateTags,
 				$throwPoints,
 				$impurePoints,

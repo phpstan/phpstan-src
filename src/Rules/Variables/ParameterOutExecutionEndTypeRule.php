@@ -7,8 +7,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -78,7 +78,7 @@ final class ParameterOutExecutionEndTypeRule implements Rule
 	private function processSingleParameter(
 		Scope $scope,
 		FunctionReflection|ExtendedMethodReflection $inFunction,
-		ParameterReflectionWithPhpDocs $parameter,
+		ExtendedParameterReflection $parameter,
 	): array
 	{
 		$outType = $parameter->getOutType();

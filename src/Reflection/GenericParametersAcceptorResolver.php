@@ -3,7 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
-use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
+use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
@@ -25,7 +25,7 @@ final class GenericParametersAcceptorResolver
 	 * @api
 	 * @param array<int|string, Type> $argTypes
 	 */
-	public static function resolve(array $argTypes, ParametersAcceptor $parametersAcceptor): ParametersAcceptorWithPhpDocs
+	public static function resolve(array $argTypes, ParametersAcceptor $parametersAcceptor): ExtendedParametersAcceptor
 	{
 		$typeMap = TemplateTypeMap::createEmpty();
 		$passedArgs = [];
@@ -87,11 +87,11 @@ final class GenericParametersAcceptorResolver
 
 		$originalParametersAcceptor = $parametersAcceptor;
 
-		if (!$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
-			$parametersAcceptor = new FunctionVariantWithPhpDocs(
+		if (!$parametersAcceptor instanceof ExtendedParametersAcceptor) {
+			$parametersAcceptor = new ExtendedFunctionVariant(
 				$parametersAcceptor->getTemplateTypeMap(),
 				$parametersAcceptor->getResolvedTemplateTypeMap(),
-				array_map(static fn (ParameterReflection $parameter): ParameterReflectionWithPhpDocs => new DummyParameterWithPhpDocs(
+				array_map(static fn (ParameterReflection $parameter): ExtendedParameterReflection => new ExtendedDummyParameter(
 					$parameter->getName(),
 					$parameter->getType(),
 					$parameter->isOptional(),

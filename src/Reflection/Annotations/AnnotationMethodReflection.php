@@ -5,9 +5,9 @@ namespace PHPStan\Reflection\Annotations;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
@@ -17,7 +17,7 @@ use PHPStan\Type\Type;
 final class AnnotationMethodReflection implements ExtendedMethodReflection
 {
 
-	/** @var FunctionVariantWithPhpDocs[]|null */
+	/** @var ExtendedFunctionVariant[]|null */
 	private ?array $variants = null;
 
 	/**
@@ -70,7 +70,7 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 	{
 		if ($this->variants === null) {
 			$this->variants = [
-				new FunctionVariantWithPhpDocs(
+				new ExtendedFunctionVariant(
 					$this->templateTypeMap,
 					null,
 					$this->parameters,
@@ -84,7 +84,7 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 		return $this->variants;
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		return $this->getVariants()[0];
 	}

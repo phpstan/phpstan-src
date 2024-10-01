@@ -16,9 +16,9 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\FileTypeMapper;
@@ -171,7 +171,7 @@ final class DependencyResolver
 						}
 
 						foreach ($variant->getParameters() as $parameter) {
-							if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
+							if (!$parameter instanceof ExtendedParameterReflection) {
 								continue;
 							}
 							if ($parameter->getOutType() !== null) {
@@ -615,7 +615,7 @@ final class DependencyResolver
 	 * @param array<ClassReflection|FunctionReflection> $dependenciesReflections
 	 */
 	private function extractFromParametersAcceptor(
-		ParametersAcceptorWithPhpDocs $parametersAcceptor,
+		ExtendedParametersAcceptor $parametersAcceptor,
 		array &$dependenciesReflections,
 	): void
 	{

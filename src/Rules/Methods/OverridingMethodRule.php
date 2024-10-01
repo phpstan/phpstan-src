@@ -7,8 +7,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
@@ -230,7 +230,7 @@ final class OverridingMethodRule implements Rule
 
 		$messages = array_merge($messages, $this->methodParameterComparisonHelper->compare($prototype, $prototypeDeclaringClass, $method, false));
 
-		if (!$prototypeVariant instanceof FunctionVariantWithPhpDocs) {
+		if (!$prototypeVariant instanceof ExtendedFunctionVariant) {
 			return $this->addErrors($messages, $node, $scope);
 		}
 

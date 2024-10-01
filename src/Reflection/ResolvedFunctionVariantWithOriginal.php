@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
+use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -21,7 +21,7 @@ use function array_map;
 final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVariant
 {
 
-	/** @var ParameterReflectionWithPhpDocs[]|null */
+	/** @var ExtendedParameterReflection[]|null */
 	private ?array $parameters = null;
 
 	private ?Type $returnTypeWithUnresolvableTemplateTypes = null;
@@ -36,7 +36,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	 * @param array<string, Type> $passedArgs
 	 */
 	public function __construct(
-		private ParametersAcceptorWithPhpDocs $parametersAcceptor,
+		private ExtendedParametersAcceptor $parametersAcceptor,
 		private TemplateTypeMap $resolvedTemplateTypeMap,
 		private TemplateTypeVarianceMap $callSiteVarianceMap,
 		private array $passedArgs,
@@ -70,7 +70,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 
 		if ($parameters === null) {
 			$parameters = array_map(
-				function (ParameterReflectionWithPhpDocs $param): ParameterReflectionWithPhpDocs {
+				function (ExtendedParameterReflection $param): ExtendedParameterReflection {
 					$paramType = TypeUtils::resolveLateResolvableTypes(
 						TemplateTypeHelper::resolveTemplateTypes(
 							$this->resolveConditionalTypesForParameter($param->getType()),
@@ -107,7 +107,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 						);
 					}
 
-					return new DummyParameterWithPhpDocs(
+					return new ExtendedDummyParameter(
 						$param->getName(),
 						$paramType,
 						$param->isOptional(),

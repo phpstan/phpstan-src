@@ -14,17 +14,17 @@ interface FunctionReflection
 	public function getFileName(): ?string;
 
 	/**
-	 * @return ParametersAcceptorWithPhpDocs[]
+	 * @return ExtendedParametersAcceptor[]
 	 */
 	public function getVariants(): array;
 
 	/**
 	 * @internal
 	 */
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs;
+	public function getOnlyVariant(): ExtendedParametersAcceptor;
 
 	/**
-	 * @return ParametersAcceptorWithPhpDocs[]|null
+	 * @return ExtendedParametersAcceptor[]|null
 	 */
 	public function getNamedArgumentsVariants(): ?array;
 

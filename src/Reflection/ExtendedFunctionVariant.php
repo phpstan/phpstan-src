@@ -9,12 +9,12 @@ use PHPStan\Type\Type;
 /**
  * @api
  */
-class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAcceptorWithPhpDocs
+class ExtendedFunctionVariant extends FunctionVariant implements ExtendedParametersAcceptor
 {
 
 	/**
+	 * @param array<int, ExtendedParameterReflection> $parameters
 	 * @api
-	 * @param array<int, ParameterReflectionWithPhpDocs> $parameters
 	 */
 	public function __construct(
 		TemplateTypeMap $templateTypeMap,
@@ -38,11 +38,11 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 	}
 
 	/**
-	 * @return array<int, ParameterReflectionWithPhpDocs>
+	 * @return array<int, ExtendedParameterReflection>
 	 */
 	public function getParameters(): array
 	{
-		/** @var array<int, ParameterReflectionWithPhpDocs> $parameters */
+		/** @var array<int, ExtendedParameterReflection> $parameters */
 		$parameters = parent::getParameters();
 
 		return $parameters;

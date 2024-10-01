@@ -2,12 +2,12 @@
 
 namespace PHPStan\Reflection\Php;
 
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-final class DummyParameterWithPhpDocs extends DummyParameter implements ParameterReflectionWithPhpDocs
+final class ExtendedDummyParameter extends DummyParameter implements ExtendedParameterReflection
 {
 
 	public function __construct(

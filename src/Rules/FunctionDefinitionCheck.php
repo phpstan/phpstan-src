@@ -18,10 +18,10 @@ use PhpParser\Node\UnionType;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Printer\NodeTypePrinter;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParameterReflection;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
@@ -368,7 +368,7 @@ final class FunctionDefinitionCheck
 
 				return $parameterNode;
 			};
-			if ($parameter instanceof ParameterReflectionWithPhpDocs) {
+			if ($parameter instanceof ExtendedParameterReflection) {
 				$parameterVar = $parameterNodeCallback()->var;
 				if (!$parameterVar instanceof Variable || !is_string($parameterVar->name)) {
 					throw new ShouldNotHappenException();
@@ -630,7 +630,7 @@ final class FunctionDefinitionCheck
 	 */
 	private function getParameterReferencedClasses(ParameterReflection $parameter): array
 	{
-		if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
+		if (!$parameter instanceof ExtendedParameterReflection) {
 			return $parameter->getType()->getReferencedClasses();
 		}
 
@@ -658,7 +658,7 @@ final class FunctionDefinitionCheck
 	 */
 	private function getReturnTypeReferencedClasses(ParametersAcceptor $parametersAcceptor): array
 	{
-		if (!$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
+		if (!$parametersAcceptor instanceof ExtendedParametersAcceptor) {
 			return $parametersAcceptor->getReturnType()->getReferencedClasses();
 		}
 

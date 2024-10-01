@@ -15,13 +15,13 @@ use PHPStan\Parser\Parser;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodPrototypeReflection;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
@@ -59,7 +59,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	private ?Type $nativeReturnType = null;
 
-	/** @var FunctionVariantWithPhpDocs[]|null */
+	/** @var ExtendedFunctionVariant[]|null */
 	private ?array $variants = null;
 
 	/**
@@ -191,13 +191,13 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	}
 
 	/**
-	 * @return ParametersAcceptorWithPhpDocs[]
+	 * @return ExtendedParametersAcceptor[]
 	 */
 	public function getVariants(): array
 	{
 		if ($this->variants === null) {
 			$this->variants = [
-				new FunctionVariantWithPhpDocs(
+				new ExtendedFunctionVariant(
 					$this->templateTypeMap,
 					null,
 					$this->getParameters(),
@@ -212,7 +212,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		return $this->variants;
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		return $this->getVariants()[0];
 	}
@@ -223,7 +223,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	}
 
 	/**
-	 * @return ParameterReflectionWithPhpDocs[]
+	 * @return ExtendedParameterReflection[]
 	 */
 	private function getParameters(): array
 	{

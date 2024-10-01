@@ -3,9 +3,9 @@
 namespace PHPStan\Reflection\Callables;
 
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -16,7 +16,7 @@ use Throwable;
 use function array_map;
 use function count;
 
-final class FunctionCallableVariant implements CallableParametersAcceptor, ParametersAcceptorWithPhpDocs
+final class FunctionCallableVariant implements CallableParametersAcceptor, ExtendedParametersAcceptor
 {
 
 	/** @var SimpleThrowPoint[]|null  */
@@ -27,18 +27,18 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Param
 
 	public function __construct(
 		private FunctionReflection|ExtendedMethodReflection $function,
-		private ParametersAcceptorWithPhpDocs $variant,
+		private ExtendedParametersAcceptor $variant,
 	)
 	{
 	}
 
 	/**
-	 * @param ParametersAcceptorWithPhpDocs[] $variants
+	 * @param ExtendedParametersAcceptor[] $variants
 	 * @return self[]
 	 */
 	public static function createFromVariants(FunctionReflection|ExtendedMethodReflection $function, array $variants): array
 	{
-		return array_map(static fn (ParametersAcceptorWithPhpDocs $variant) => new self($function, $variant), $variants);
+		return array_map(static fn (ExtendedParametersAcceptor $variant) => new self($function, $variant), $variants);
 	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap
@@ -52,7 +52,7 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Param
 	}
 
 	/**
-	 * @return array<int, ParameterReflectionWithPhpDocs>
+	 * @return array<int, ExtendedParameterReflection>
 	 */
 	public function getParameters(): array
 	{

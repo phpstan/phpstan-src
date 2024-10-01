@@ -5,11 +5,11 @@ namespace PHPStan\Reflection\Type;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
@@ -83,7 +83,7 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		$phpDocReturnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getPhpDocReturnType(), $method->getVariants())), $this->methods));
 		$nativeReturnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getNativeReturnType(), $method->getVariants())), $this->methods));
 
-		return array_map(static fn (ParametersAcceptorWithPhpDocs $acceptor): ParametersAcceptorWithPhpDocs => new FunctionVariantWithPhpDocs(
+		return array_map(static fn (ExtendedParametersAcceptor $acceptor): ExtendedParametersAcceptor => new ExtendedFunctionVariant(
 			$acceptor->getTemplateTypeMap(),
 			$acceptor->getResolvedTemplateTypeMap(),
 			$acceptor->getParameters(),
@@ -95,7 +95,7 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		), $this->methods[0]->getVariants());
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		$variants = $this->getVariants();
 		if (count($variants) !== 1) {

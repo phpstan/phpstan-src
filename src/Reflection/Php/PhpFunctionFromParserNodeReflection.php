@@ -8,10 +8,10 @@ use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\ExtendedFunctionVariant;
+use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\FunctionVariantWithPhpDocs;
-use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -27,13 +27,13 @@ use function is_string;
 /**
  * @api
  */
-class PhpFunctionFromParserNodeReflection implements FunctionReflection, ParametersAcceptorWithPhpDocs
+class PhpFunctionFromParserNodeReflection implements FunctionReflection, ExtendedParametersAcceptor
 {
 
 	/** @var Function_|ClassMethod */
 	private Node\FunctionLike $functionLike;
 
-	/** @var FunctionVariantWithPhpDocs[]|null */
+	/** @var ExtendedFunctionVariant[]|null */
 	private ?array $variants = null;
 
 	/**
@@ -94,13 +94,13 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Paramet
 	}
 
 	/**
-	 * @return ParametersAcceptorWithPhpDocs[]
+	 * @return ExtendedParametersAcceptor[]
 	 */
 	public function getVariants(): array
 	{
 		if ($this->variants === null) {
 			$this->variants = [
-				new FunctionVariantWithPhpDocs(
+				new ExtendedFunctionVariant(
 					$this->getTemplateTypeMap(),
 					$this->getResolvedTemplateTypeMap(),
 					$this->getParameters(),
@@ -115,7 +115,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Paramet
 		return $this->variants;
 	}
 
-	public function getOnlyVariant(): ParametersAcceptorWithPhpDocs
+	public function getOnlyVariant(): ExtendedParametersAcceptor
 	{
 		return $this;
 	}
@@ -136,7 +136,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Paramet
 	}
 
 	/**
-	 * @return array<int, ParameterReflectionWithPhpDocs>
+	 * @return array<int, ExtendedParameterReflection>
 	 */
 	public function getParameters(): array
 	{

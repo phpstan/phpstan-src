@@ -879,6 +879,8 @@ services:
 
 	-
 		class: PHPStan\Rules\Exceptions\TooWideThrowTypeCheck
+		arguments:
+			implicitThrows: %exceptions.implicitThrows%
 
 	-
 		class: PHPStan\Rules\FunctionCallParametersCheck

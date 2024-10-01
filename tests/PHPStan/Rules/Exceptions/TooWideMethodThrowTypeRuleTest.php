@@ -13,9 +13,11 @@ use const PHP_VERSION_ID;
 class TooWideMethodThrowTypeRuleTest extends RuleTestCase
 {
 
+	private bool $implicitThrows = true;
+
 	protected function getRule(): Rule
 	{
-		return new TooWideMethodThrowTypeRule(self::getContainer()->getByType(FileTypeMapper::class), new TooWideThrowTypeCheck());
+		return new TooWideMethodThrowTypeRule(self::getContainer()->getByType(FileTypeMapper::class), new TooWideThrowTypeCheck($this->implicitThrows));
 	}
 
 	public function testRule(): void
@@ -70,6 +72,33 @@ class TooWideMethodThrowTypeRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/immediately-called-fcc.php'], []);
+	}
+
+	public static function dataRuleLookOnlyForExplicitThrowPoints(): iterable
+	{
+		yield [
+			true,
+			[],
+		];
+		yield [
+			false,
+			[
+				[
+					'Method TooWideThrowsExplicit\Foo::doFoo() has Exception in PHPDoc @throws tag but it\'s not thrown.',
+					11,
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataRuleLookOnlyForExplicitThrowPoints
+	 * @param list<array{0: string, 1: int, 2?: string|null}> $errors
+	 */
+	public function testRuleLookOnlyForExplicitThrowPoints(bool $implicitThrows, array $errors): void
+	{
+		$this->implicitThrows = $implicitThrows;
+		$this->analyse([__DIR__ . '/data/too-wide-throws-explicit.php'], $errors);
 	}
 
 }

@@ -13,6 +13,10 @@ use function array_map;
 final class TooWideThrowTypeCheck
 {
 
+	public function __construct(private bool $implicitThrows)
+	{
+	}
+
 	/**
 	 * @param ThrowPoint[] $throwPoints
 	 * @return string[]
@@ -23,8 +27,8 @@ final class TooWideThrowTypeCheck
 			return [];
 		}
 
-		$throwPointType = TypeCombinator::union(...array_map(static function (ThrowPoint $throwPoint): Type {
-			if (!$throwPoint->isExplicit()) {
+		$throwPointType = TypeCombinator::union(...array_map(function (ThrowPoint $throwPoint): Type {
+			if (!$this->implicitThrows && !$throwPoint->isExplicit()) {
 				return new NeverType();
 			}
 

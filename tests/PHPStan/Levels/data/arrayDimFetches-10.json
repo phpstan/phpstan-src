@@ -1,0 +1,22 @@
+[
+    {
+        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
+        "line": 14,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
+        "line": 21,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
+        "line": 27,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
+        "line": 28,
+        "ignorable": true
+    }
+]

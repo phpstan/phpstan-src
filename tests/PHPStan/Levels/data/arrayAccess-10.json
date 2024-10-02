@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Cannot assign offset mixed to SplObjectStorage<object, mixed>.",
+        "line": 43,
+        "ignorable": true
+    }
+]

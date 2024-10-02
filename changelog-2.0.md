@@ -5,6 +5,7 @@ When PHPStan 2.0 gets released, this will turn into [releases notes on GitHub](h
 Major new features 🚀
 =====================
 
+* **Level 10** - level 9 on steroids, treats all `mixed` types strictly, not just explicit `mixed`
 * **Array `list` type** ([#1751](https://github.com/phpstan/phpstan-src/pull/1751)), #3311, #8185, #6243, thanks @rvanvelzen!
     * Lists are arrays with sequential integer keys starting at 0
 * **Validate inline PHPDoc `@var` tag** type against native type (level 2) (https://github.com/phpstan/phpstan-src/commit/a69e3bc2f1e87f6da1e65d7935f1cc36bd5c42fe)

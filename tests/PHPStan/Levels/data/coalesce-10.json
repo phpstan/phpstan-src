@@ -1,0 +1,12 @@
+[
+    {
+        "message": "Cannot access property $bar on mixed.",
+        "line": 6,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
+        "line": 11,
+        "ignorable": true
+    }
+]

@@ -71,7 +71,7 @@ abstract class LevelsTestCase extends TestCase
 
 		putenv('__PHPSTAN_FORCE_VALIDATE_STUB_FILES=1');
 
-		foreach (range(0, 9) as $level) {
+		foreach (range(0, 10) as $level) {
 			unset($outputLines);
 			exec(sprintf('%s %s analyse --no-progress --error-format=prettyJson --level=%d %s %s %s', escapeshellarg(PHP_BINARY), $command, $level, $configPath !== null ? '--configuration ' . escapeshellarg($configPath) : '', $this->shouldAutoloadAnalysedFile() ? sprintf('--autoload-file %s', escapeshellarg($file)) : '', escapeshellarg($file)), $outputLines);
 

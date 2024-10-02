@@ -160,4 +160,22 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/feature-7648.php'], []);
 	}
 
+	public function testFeature11775(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/feature-11775.php'], [
+			[
+				'@readonly property Feature11775\FooImmutable::$i is assigned outside of the constructor.',
+				22,
+			],
+			[
+				'@readonly property Feature11775\FooReadonly::$i is assigned outside of the constructor.',
+				43,
+			],
+		]);
+	}
+
 }

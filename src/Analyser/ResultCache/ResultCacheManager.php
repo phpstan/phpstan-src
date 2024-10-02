@@ -92,13 +92,13 @@ final class ResultCacheManager
 	{
 		$startTime = microtime(true);
 		if ($debug) {
-			if ($output->isVerbose()) {
+			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache not used because of debug mode.');
 			}
 			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], [], [], []);
 		}
 		if ($onlyFiles) {
-			if ($output->isVerbose()) {
+			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache not used because only files were passed as analysed paths.');
 			}
 			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], [], [], []);
@@ -106,7 +106,7 @@ final class ResultCacheManager
 
 		$cacheFilePath = $this->cacheFilePath;
 		if (!is_file($cacheFilePath)) {
-			if ($output->isVerbose()) {
+			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache not used because the cache file does not exist.');
 			}
 			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], [], [], []);
@@ -115,7 +115,7 @@ final class ResultCacheManager
 		try {
 			$data = require $cacheFilePath;
 		} catch (Throwable $e) {
-			if ($output->isVerbose()) {
+			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted(sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()));
 			}
 
@@ -126,7 +126,7 @@ final class ResultCacheManager
 
 		if (!is_array($data)) {
 			@unlink($cacheFilePath);
-			if ($output->isVerbose()) {
+			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache not used because the cache file is corrupted.');
 			}
 
@@ -135,7 +135,7 @@ final class ResultCacheManager
 
 		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
 		if ($this->isMetaDifferent($data['meta'], $meta)) {
-			if ($output->isVerbose()) {
+			if ($output->isVeryVerbose()) {
 				$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
 				$output->writeLineFormatted('Result cache not used because the metadata do not match: ' . implode(', ', $diffs));
 			}
@@ -143,7 +143,7 @@ final class ResultCacheManager
 		}
 
 		if (time() - $data['lastFullAnalysisTime'] >= 60 * 60 * 24 * 7) {
-			if ($output->isVerbose()) {
+			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache not used because it\'s more than 7 days since last full analysis.');
 			}
 			// run full analysis if the result cache is older than 7 days
@@ -412,20 +412,20 @@ final class ResultCacheManager
 		}
 		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, array $exportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
-				if ($output->isVerbose()) {
+				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
 				}
 				return false;
 			}
 			if ($dependencies === null) {
-				if ($output->isVerbose()) {
+				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because of error in dependencies.');
 				}
 				return false;
 			}
 
 			if (count($internalErrors) > 0) {
-				if ($output->isVerbose()) {
+				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because of internal errors.');
 				}
 				return false;
@@ -447,7 +447,7 @@ final class ResultCacheManager
 
 			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $exportedNodes, $projectExtensionFiles, $meta);
 
-			if ($output->isVerbose()) {
+			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
 			}
 
@@ -463,7 +463,7 @@ final class ResultCacheManager
 				}
 				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes(), $projectExtensionFiles);
 			} else {
-				if ($output->isVerbose()) {
+				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
 				}
 			}

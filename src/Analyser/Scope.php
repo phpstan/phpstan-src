@@ -67,6 +67,11 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	 */
 	public function getDefinedVariables(): array;
 
+	/**
+	 * @return array<int, string>
+	 */
+	public function getMaybeDefinedVariables(): array;
+
 	public function hasConstant(Name $name): bool;
 
 	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection;

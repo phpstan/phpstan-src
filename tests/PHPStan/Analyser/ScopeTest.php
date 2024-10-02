@@ -5,16 +5,21 @@ namespace PHPStan\Analyser;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @covers \PHPStan\Analyser\MutatingScope
+ */
 class ScopeTest extends PHPStanTestCase
 {
 
@@ -246,6 +251,28 @@ class ScopeTest extends PHPStanTestCase
 		$node = new ConstFetch(new FullyQualified('__COMPILER_HALT_OFFSET__'));
 		$type = $scope->getType($node);
 		$this->assertSame('int<1, max>', $type->describe(VerbosityLevel::precise()));
+	}
+
+	public function testDefinedVariables(): void
+	{
+		/** @var ScopeFactory $scopeFactory */
+		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
+		$scope = $scopeFactory->create(ScopeContext::create('file.php'))
+			->assignVariable('a', new ConstantStringType('a'), new StringType(), TrinaryLogic::createYes())
+			->assignVariable('b', new ConstantStringType('b'), new StringType(), TrinaryLogic::createMaybe());
+
+		$this->assertSame(['a'], $scope->getDefinedVariables());
+	}
+
+	public function testMaybeDefinedVariables(): void
+	{
+		/** @var ScopeFactory $scopeFactory */
+		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
+		$scope = $scopeFactory->create(ScopeContext::create('file.php'))
+			->assignVariable('a', new ConstantStringType('a'), new StringType(), TrinaryLogic::createYes())
+			->assignVariable('b', new ConstantStringType('b'), new StringType(), TrinaryLogic::createMaybe());
+
+		$this->assertSame(['b'], $scope->getMaybeDefinedVariables());
 	}
 
 }

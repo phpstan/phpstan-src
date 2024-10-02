@@ -571,6 +571,27 @@ final class MutatingScope implements Scope
 		return $variables;
 	}
 
+	/**
+	 * @api
+	 * @return array<int, string>
+	 */
+	public function getMaybeDefinedVariables(): array
+	{
+		$variables = [];
+		foreach ($this->expressionTypes as $exprString => $holder) {
+			if (!$holder->getExpr() instanceof Variable) {
+				continue;
+			}
+			if (!$holder->getCertainty()->maybe()) {
+				continue;
+			}
+
+			$variables[] = substr($exprString, 1);
+		}
+
+		return $variables;
+	}
+
 	private function isGlobalVariable(string $variableName): bool
 	{
 		return in_array($variableName, self::SUPERGLOBAL_VARIABLES, true);

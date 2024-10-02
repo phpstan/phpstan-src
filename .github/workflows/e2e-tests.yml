@@ -162,7 +162,7 @@ jobs:
               patch -b data/TraitOne.php < TraitOne.patch
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
               echo "$OUTPUT"
-              ../bashunit -a line_count 1 "$OUTPUT"
+              ../bashunit -a line_count 2 "$OUTPUT"
               ../bashunit -a contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/trait-caching
@@ -170,7 +170,7 @@ jobs:
               patch -b data/TraitTwo.php < TraitTwo.patch
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
               echo "$OUTPUT"
-              ../bashunit -a line_count 1 "$OUTPUT"
+              ../bashunit -a line_count 2 "$OUTPUT"
               ../bashunit -a contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/trait-caching
@@ -179,7 +179,7 @@ jobs:
               patch -b data/TraitTwo.php < TraitTwo.patch
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
               echo "$OUTPUT"
-              ../bashunit -a line_count 2 "$OUTPUT"
+              ../bashunit -a line_count 3 "$OUTPUT"
               ../bashunit -a contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
               ../bashunit -a contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |

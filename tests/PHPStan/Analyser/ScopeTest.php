@@ -15,6 +15,9 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/**
+ * @covers \PHPStan\Analyser\MutatingScope
+ */
 class ScopeTest extends PHPStanTestCase
 {
 

@@ -17,8 +17,8 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**
-	 * @param ExtendedParametersAcceptor[] $variants
-	 * @param ExtendedParametersAcceptor[]|null $namedArgumentsVariants
+	 * @param list<ExtendedParametersAcceptor> $variants
+	 * @param list<ExtendedParametersAcceptor>|null $namedArgumentsVariants
 	 */
 	public function __construct(private ClassReflection $declaringClass, private ExtendedMethodReflection $reflection, private array $variants, private ?array $namedArgumentsVariants)
 	{

@@ -16,7 +16,7 @@ class FunctionVariant implements ParametersAcceptor
 
 	/**
 	 * @api
-	 * @param array<int, ParameterReflection> $parameters
+	 * @param list<ParameterReflection> $parameters
 	 */
 	public function __construct(
 		private TemplateTypeMap $templateTypeMap,
@@ -46,7 +46,7 @@ class FunctionVariant implements ParametersAcceptor
 	}
 
 	/**
-	 * @return array<int, ParameterReflection>
+	 * @return list<ParameterReflection>
 	 */
 	public function getParameters(): array
 	{

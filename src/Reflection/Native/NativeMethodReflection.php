@@ -22,8 +22,8 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**
-	 * @param ExtendedParametersAcceptor[] $variants
-	 * @param ExtendedParametersAcceptor[]|null $namedArgumentsVariants
+	 * @param list<ExtendedParametersAcceptor> $variants
+	 * @param list<ExtendedParametersAcceptor>|null $namedArgumentsVariants
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,

@@ -252,9 +252,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $classReflection->getProperty($propertyName, $scope);
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return [$this->className];

@@ -64,9 +64,6 @@ class ArrayType implements Type
 		return $this->itemType;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return array_merge(

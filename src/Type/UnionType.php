@@ -106,9 +106,6 @@ class UnionType implements CompoundType
 		return $this->types;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		$classes = [];

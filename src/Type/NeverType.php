@@ -39,9 +39,6 @@ class NeverType implements CompoundType
 		return $this->isExplicit;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return [];

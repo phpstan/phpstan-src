@@ -28,7 +28,7 @@ interface Type
 {
 
 	/**
-	 * @return string[]
+	 * @return list<string>
 	 */
 	public function getReferencedClasses(): array;
 
@@ -313,7 +313,7 @@ interface Type
 	 *                                               which the receiver type was
 	 *                                               found.
 	 *
-	 * @return TemplateTypeReference[]
+	 * @return list<TemplateTypeReference>
 	 */
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array;
 

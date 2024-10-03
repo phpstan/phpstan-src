@@ -130,7 +130,7 @@ final class ClassReflection
 
 	private false|ResolvedPhpDocBlock $traitContextResolvedPhpDocBlock = false;
 
-	/** @var ClassReflection[]|null */
+	/** @var array<string, ClassReflection>|null */
 	private ?array $cachedInterfaces = null;
 
 	private ClassReflection|false|null $cachedParentClass = false;
@@ -360,7 +360,7 @@ final class ClassReflection
 	}
 
 	/**
-	 * @return ReflectionClass[]
+	 * @return list<ReflectionClass>
 	 */
 	private function collectTraits(ReflectionClass|ReflectionEnum $class): array
 	{
@@ -845,7 +845,7 @@ final class ClassReflection
 	}
 
 	/**
-	 * @return ClassReflection[]
+	 * @return list<ClassReflection>
 	 */
 	public function getParents(): array
 	{
@@ -860,7 +860,7 @@ final class ClassReflection
 	}
 
 	/**
-	 * @return ClassReflection[]
+	 * @return array<string, ClassReflection>
 	 */
 	public function getInterfaces(): array
 	{
@@ -894,7 +894,7 @@ final class ClassReflection
 	}
 
 	/**
-	 * @return ClassReflection[]
+	 * @return array<string, ClassReflection>
 	 */
 	private function collectInterfaces(ClassReflection $interface): array
 	{
@@ -910,7 +910,7 @@ final class ClassReflection
 	}
 
 	/**
-	 * @return ClassReflection[]
+	 * @return array<string, ClassReflection>
 	 */
 	public function getImmediateInterfaces(): array
 	{
@@ -1102,7 +1102,7 @@ final class ClassReflection
 	}
 
 	/**
-	 * @return string[]
+	 * @return list<string>
 	 */
 	private function getTraitNames(): array
 	{
@@ -1459,7 +1459,7 @@ final class ClassReflection
 		return new TemplateTypeVarianceMap($map);
 	}
 
-	/** @return array<int, Type> */
+	/** @return list<Type> */
 	public function typeMapToList(TemplateTypeMap $typeMap): array
 	{
 		$resolvedPhpDoc = $this->getResolvedPhpDoc();
@@ -1475,7 +1475,7 @@ final class ClassReflection
 		return $list;
 	}
 
-	/** @return array<int, TemplateTypeVariance> */
+	/** @return list<TemplateTypeVariance> */
 	public function varianceMapToList(TemplateTypeVarianceMap $varianceMap): array
 	{
 		$resolvedPhpDoc = $this->getResolvedPhpDoc();
@@ -1775,7 +1775,7 @@ final class ClassReflection
 	}
 
 	/**
-	 * @return array<Type>
+	 * @return list<Type>
 	 */
 	public function getResolvedMixinTypes(): array
 	{

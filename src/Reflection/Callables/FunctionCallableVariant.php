@@ -52,7 +52,7 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Exten
 	}
 
 	/**
-	 * @return array<int, ExtendedParameterReflection>
+	 * @return list<ExtendedParameterReflection>
 	 */
 	public function getParameters(): array
 	{

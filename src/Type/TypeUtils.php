@@ -18,7 +18,7 @@ final class TypeUtils
 {
 
 	/**
-	 * @return ConstantIntegerType[]
+	 * @return list<ConstantIntegerType>
 	 */
 	public static function getConstantIntegers(Type $type): array
 	{
@@ -26,7 +26,7 @@ final class TypeUtils
 	}
 
 	/**
-	 * @return IntegerRangeType[]
+	 * @return list<IntegerRangeType>
 	 */
 	public static function getIntegerRanges(Type $type): array
 	{
@@ -34,7 +34,7 @@ final class TypeUtils
 	}
 
 	/**
-	 * @return mixed[]
+	 * @return list<mixed>
 	 */
 	private static function map(
 		string $typeClass,

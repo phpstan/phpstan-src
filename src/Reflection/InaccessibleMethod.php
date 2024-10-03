@@ -37,9 +37,6 @@ final class InaccessibleMethod implements CallableParametersAcceptor
 		return TemplateTypeVarianceMap::createEmpty();
 	}
 
-	/**
-	 * @return array<int, ParameterReflection>
-	 */
 	public function getParameters(): array
 	{
 		return [];

@@ -18,8 +18,8 @@ final class NativeFunctionReflection implements FunctionReflection
 	private TrinaryLogic $returnsByReference;
 
 	/**
-	 * @param ExtendedParametersAcceptor[] $variants
-	 * @param ExtendedParametersAcceptor[]|null $namedArgumentsVariants
+	 * @param list<ExtendedParametersAcceptor> $variants
+	 * @param list<ExtendedParametersAcceptor>|null $namedArgumentsVariants
 	 */
 	public function __construct(
 		private string $name,

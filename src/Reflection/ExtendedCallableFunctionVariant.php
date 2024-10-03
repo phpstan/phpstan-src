@@ -15,7 +15,7 @@ final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant impl
 {
 
 	/**
-	 * @param array<int, ExtendedParameterReflection> $parameters
+	 * @param list<ExtendedParameterReflection> $parameters
 	 * @param SimpleThrowPoint[] $throwPoints
 	 * @param SimpleImpurePoint[] $impurePoints
 	 * @param InvalidateExprNode[] $invalidateExpressions

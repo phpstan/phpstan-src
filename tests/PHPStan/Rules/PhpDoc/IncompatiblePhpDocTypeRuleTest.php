@@ -480,4 +480,22 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testParamAssert(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-assert.php'], [
+			[
+				'PHPDoc tag @phpstan-assert for parameter $str contains unresolvable type.',
+				6,
+			],
+			[
+				'PHPDoc tag @phpstan-assert-if-true for parameter $str contains unresolvable type.',
+				14,
+			],
+			[
+				'PHPDoc tag @phpstan-assert-if-false for parameter $str contains unresolvable type.',
+				22,
+			],
+		]);
+	}
+
 }

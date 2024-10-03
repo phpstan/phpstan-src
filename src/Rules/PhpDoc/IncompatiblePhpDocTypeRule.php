@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
@@ -20,6 +21,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function in_array;
 use function is_string;
+use function ltrim;
 use function sprintf;
 use function trim;
 
@@ -70,7 +72,26 @@ final class IncompatiblePhpDocTypeRule implements Rule
 
 		$errors = [];
 
-		foreach (['@param' => $resolvedPhpDoc->getParamTags(), '@param-out' => $resolvedPhpDoc->getParamOutTags(), '@param-closure-this' => $resolvedPhpDoc->getParamClosureThisTags()] as $tagName => $parameters) {
+		$paramTags = [
+			'@param' => $resolvedPhpDoc->getParamTags(),
+			'@param-out' => $resolvedPhpDoc->getParamOutTags(),
+			'@param-closure-this' => $resolvedPhpDoc->getParamClosureThisTags(),
+			'@phpstan-assert' => [],
+			'@phpstan-assert-if-true' => [],
+			'@phpstan-assert-if-false' => [],
+		];
+
+		foreach ($resolvedPhpDoc->getAssertTags() as $assertTag) {
+			$tagName = [
+				AssertTag::NULL => '@phpstan-assert',
+				AssertTag::IF_TRUE => '@phpstan-assert-if-true',
+				AssertTag::IF_FALSE => '@phpstan-assert-if-false',
+			][$assertTag->getIf()];
+			$parameterName = ltrim($assertTag->getParameter()->getParameterName(), '$');
+			$paramTags[$tagName][$parameterName] = $assertTag;
+		}
+
+		foreach ($paramTags as $tagName => $parameters) {
 			foreach ($parameters as $parameterName => $phpDocParamTag) {
 				$phpDocParamType = $phpDocParamTag->getType();
 

@@ -111,6 +111,7 @@ Tags without a PHP version are no longer published - `nightly`, `2`, `latest` ar
 
 > [!NOTE]
 > Please switch to PHPStan 2.0 in a new major version of your extension. It's not feasible to try to support both PHPStan 1.x and PHPStan 2.x with the same extension code.
+>
 > You can definitely get closer to supporting PHPStan 2.0 without increasing major version by solving reported deprecations and other issues by analysing your extension code with PHPStan & phpstan-deprecation-rules & Bleeding Edge, but the final leap and solving backward incompatibilities should be done by requiring `"phpstan/phpstan": "^2.0"` in your `composer.json`, and releasing a new major version.
 
 ### PHPStan now uses nikic/php-parser v5

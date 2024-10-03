@@ -69,6 +69,7 @@ class CleaningParserTest extends PHPStanTestCase
 				new Php7(new Emulative()),
 				new NameResolver(),
 				new VariadicMethodsVisitor(new FunctionCallStatementFinder()),
+				new VariadicFunctionsVisitor(new FunctionCallStatementFinder()),
 			),
 			new PhpVersion($phpVersionId),
 		);

@@ -2,20 +2,16 @@
 
 namespace PHPStan\Reflection\Php;
 
-use PhpParser\Node;
-use PhpParser\Node\Stmt\Function_;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
-use PHPStan\Cache\Cache;
-use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\VariadicFunctionsVisitor;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
@@ -23,17 +19,17 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function array_key_exists;
 use function array_map;
-use function filemtime;
+use function count;
 use function is_array;
 use function is_file;
-use function sprintf;
-use function time;
 
 final class PhpFunctionReflection implements FunctionReflection
 {
 
 	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
+
+	private ?bool $containsVariadicCalls = null;
 
 	/**
 	 * @param array<string, Type> $phpDocParameterTypes
@@ -45,8 +41,6 @@ final class PhpFunctionReflection implements FunctionReflection
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ReflectionFunction $reflection,
 		private Parser $parser,
-		private FunctionCallStatementFinder $functionCallStatementFinder,
-		private Cache $cache,
 		private TemplateTypeMap $templateTypeMap,
 		private array $phpDocParameterTypes,
 		private ?Type $phpDocReturnType,
@@ -139,67 +133,29 @@ final class PhpFunctionReflection implements FunctionReflection
 	private function isVariadic(): bool
 	{
 		$isNativelyVariadic = $this->reflection->isVariadic();
-		if (!$isNativelyVariadic && $this->reflection
-			->getFileName() !== false) {
-			$fileName = $this->reflection->getFileName();
-			if (is_file($fileName)) {
-				$functionName = $this->reflection->getName();
-				$modifiedTime = filemtime($fileName);
-				if ($modifiedTime === false) {
-					$modifiedTime = time();
-				}
-				$variableCacheKey = sprintf('%d-v4', $modifiedTime);
-				$key = sprintf('variadic-function-%s-%s', $functionName, $fileName);
-				$cachedResult = $this->cache->load($key, $variableCacheKey);
-				if ($cachedResult === null) {
-					$nodes = $this->parser->parseFile($fileName);
-					$result = !$this->containsVariadicFunction($nodes)->no();
-					$this->cache->save($key, $variableCacheKey, $result);
-					return $result;
-				}
+		if (!$isNativelyVariadic && $this->reflection->getFileName() !== false) {
+			$filename = $this->reflection->getFileName();
 
-				return $cachedResult;
+			if ($this->containsVariadicCalls !== null) {
+				return $this->containsVariadicCalls;
 			}
+
+			$nodes = $this->parser->parseFile($filename);
+			if (count($nodes) > 0) {
+				$variadicFunctions = $nodes[0]->getAttribute(VariadicFunctionsVisitor::ATTRIBUTE_NAME);
+
+				if (
+					is_array($variadicFunctions)
+					&& array_key_exists($this->reflection->getName(), $variadicFunctions)
+				) {
+					return $this->containsVariadicCalls = !$variadicFunctions[$this->reflection->getName()]->no();
+				}
+			}
+
+			return $this->containsVariadicCalls = false;
 		}
 
 		return $isNativelyVariadic;
-	}
-
-	/**
-	 * @param Node[]|scalar[]|Node $node
-	 */
-	private function containsVariadicFunction(array|Node $node): TrinaryLogic
-	{
-		$result = TrinaryLogic::createMaybe();
-
-		if ($node instanceof Node) {
-			if ($node instanceof Function_) {
-				$functionName = (string) $node->namespacedName;
-
-				if ($functionName === $this->reflection->getName()) {
-					return TrinaryLogic::createFromBoolean($this->isFunctionNodeVariadic($node));
-				}
-			}
-
-			foreach ($node->getSubNodeNames() as $subNodeName) {
-				$innerNode = $node->{$subNodeName};
-				if (!$innerNode instanceof Node && !is_array($innerNode)) {
-					continue;
-				}
-
-				$result = $result->and($this->containsVariadicFunction($innerNode));
-			}
-		} elseif (is_array($node)) {
-			foreach ($node as $subNode) {
-				if (!$subNode instanceof Node) {
-					continue;
-				}
-
-				$result = $result->and($this->containsVariadicFunction($subNode));
-			}
-		}
-
-		return $result;
 	}
 
 	private function getReturnType(): Type
@@ -294,21 +250,6 @@ final class PhpFunctionReflection implements FunctionReflection
 	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->acceptsNamedArguments);
-	}
-
-	private function isFunctionNodeVariadic(Function_ $node): bool
-	{
-		foreach ($node->params as $parameter) {
-			if ($parameter->variadic) {
-				return true;
-			}
-		}
-
-		if ($this->functionCallStatementFinder->findFunctionCallInStatements(ParametersAcceptor::VARIADIC_FUNCTIONS, $node->getStmts()) !== null) {
-			return true;
-		}
-
-		return false;
 	}
 
 }

@@ -185,7 +185,7 @@ $returnType = ParametersAcceptorSelector::selectSingle($function->getVariants())
 
 **After**:
 
-```
+```php
 $returnType = $node->getFunctionReflection()->getReturnType();
 ```
 

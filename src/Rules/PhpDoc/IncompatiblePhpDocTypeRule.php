@@ -95,7 +95,7 @@ final class IncompatiblePhpDocTypeRule implements Rule
 			foreach ($parameters as $parameterName => $phpDocParamTag) {
 				$phpDocParamType = $phpDocParamTag->getType();
 
-				if (!isset($nativeParameterTypes[$parameterName])) {
+				if (!isset($nativeParameterTypes[$parameterName]) || !($parameterName === 'this' && $phpDocParamTag instanceof AssertTag)) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag %s references unknown parameter: $%s',
 						$tagName,

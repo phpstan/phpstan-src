@@ -3168,6 +3168,11 @@ final class NodeScopeResolver
 				$hasYield = $result->hasYield();
 				$throwPoints = $result->getThrowPoints();
 				$impurePoints = $result->getImpurePoints();
+			} else {
+				$hasYield = false;
+				$throwPoints = [];
+				$impurePoints = [];
+				$nodeCallback($expr->class, $scope);
 			}
 		} elseif ($expr instanceof Expr\Empty_) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->expr);

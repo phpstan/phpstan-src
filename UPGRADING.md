@@ -309,5 +309,5 @@ Instead of `AccessoryArrayListType::intersectWith($type)`, do `TypeCombinator::i
   * Added more methods around PHPDoc types and native types to the (new) `ClassConstantReflection`
   * Interface `GlobalConstantReflection` renamed to `ConstantReflection`
 * Renamed interfaces and classes from `*WithPhpDocs` to `Extended*`
-* `ClassPropertyNode::getNativeType()` return type changed from AST node to `Type|null
+* `ClassPropertyNode::getNativeType()` return type changed from AST node to `Type|null`
 * Class `PHPStan\Node\ClassMethod` (accessible from `ClassMethodsNode`) is no longer an AST node

@@ -79,4 +79,26 @@ class Foo
 	public function negate2(int $i): void
 	{
 	}
+
+	/**
+	 * @phpstan-assert empty-str $str
+	 */
+	public function unresolvableAssert(string $str): void
+	{
+	}
+
+	/**
+	 * @phpstan-assert-if-true empty-str $str
+	 */
+	public function unresolvableAssertIfTrue(string $str): void
+	{
+	}
+
+	/**
+	 * @phpstan-assert-if-false empty-str $str
+	 */
+	public function unresolvableAssertIfFalse(string $str): void
+	{
+	}
+
 }

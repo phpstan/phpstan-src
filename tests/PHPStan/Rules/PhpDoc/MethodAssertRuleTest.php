@@ -54,6 +54,18 @@ class MethodAssertRuleTest extends RuleTestCase
 				'Asserted negated type string for $i with type int does not narrow down the type.',
 				72,
 			],
+			[
+				'PHPDoc tag @phpstan-assert for parameter $str contains unresolvable type.',
+				86,
+			],
+			[
+				'PHPDoc tag @phpstan-assert-if-true for parameter $str contains unresolvable type.',
+				93,
+],
+			[
+				'PHPDoc tag @phpstan-assert-if-false for parameter $str contains unresolvable type.',
+				100,
+			],
 		]);
 	}
 

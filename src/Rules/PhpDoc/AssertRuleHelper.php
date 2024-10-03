@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -52,6 +53,22 @@ final class AssertRuleHelper
 			}
 
 			if (!$assert->isExplicit()) {
+				continue;
+			}
+
+			if ($assert->getType() instanceof ErrorType) {
+				$tagName = [
+					AssertTag::NULL => '@phpstan-assert',
+					AssertTag::IF_TRUE => '@phpstan-assert-if-true',
+					AssertTag::IF_FALSE => '@phpstan-assert-if-false',
+				][$assert->getIf()];
+
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'PHPDoc tag %s for parameter $%s contains unresolvable type.',
+					$tagName,
+					$parameterName,
+				))->identifier('parameter.unresolvableType')->build();
+
 				continue;
 			}
 

@@ -18,6 +18,7 @@ rules:
 	- PHPStan\Rules\Api\ApiTraitUseRule
 	- PHPStan\Rules\Api\GetTemplateTypeRule
 	- PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule
+	- PHPStan\Rules\Api\OldPhpParser4ClassRule
 	- PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule
 	- PHPStan\Rules\Api\RuntimeReflectionInstantiationRule
 	- PHPStan\Rules\Api\RuntimeReflectionFunctionRule

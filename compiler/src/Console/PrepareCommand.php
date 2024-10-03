@@ -166,6 +166,8 @@ final class PrepareCommand extends Command
 		$template = <<<'php'
 <?php declare(strict_types = 1);
 
+use PhpParser\Node;
+
 %s
 php;
 		$finder = Finder::create();
@@ -202,6 +204,8 @@ php;
 			$path = substr($realPath, strlen($root));
 			$output .= 'require_once __DIR__ . ' . var_export($path, true) . ';' . "\n";
 		}
+
+		$output .= 'class_alias(Node\\ArrayItem::class, Node\\Expr\\ArrayItem::class);' . "\n";
 
 		file_put_contents($preloadScript, sprintf($template, $output));
 	}

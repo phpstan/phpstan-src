@@ -3159,9 +3159,6 @@ final class NodeScopeResolver
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
 		} elseif ($expr instanceof Expr\ClassConstFetch) {
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
 			if ($expr->class instanceof Expr) {
 				$result = $this->processExprNode($stmt, $expr->class, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
@@ -3173,6 +3170,16 @@ final class NodeScopeResolver
 				$throwPoints = [];
 				$impurePoints = [];
 				$nodeCallback($expr->class, $scope);
+			}
+
+			if ($expr->name instanceof Expr) {
+				$result = $this->processExprNode($stmt, $expr->name, $scope, $nodeCallback, $context->enterDeep());
+				$scope = $result->getScope();
+				$hasYield = $hasYield || $result->hasYield();
+				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			} else {
+				$nodeCallback($expr->name, $scope);
 			}
 		} elseif ($expr instanceof Expr\Empty_) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->expr);

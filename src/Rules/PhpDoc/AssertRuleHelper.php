@@ -21,7 +21,10 @@ use function substr;
 final class AssertRuleHelper
 {
 
-	public function __construct(private InitializerExprTypeResolver $initializerExprTypeResolver)
+	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
+	)
 	{
 	}
 
@@ -56,7 +59,7 @@ final class AssertRuleHelper
 				continue;
 			}
 
-			if ($assert->getType() instanceof ErrorType) {
+			if ($this->unresolvableTypeHelper->containsUnresolvableType($assert->getType())) {
 				$tagName = [
 					AssertTag::NULL => '@phpstan-assert',
 					AssertTag::IF_TRUE => '@phpstan-assert-if-true',
@@ -74,7 +77,7 @@ final class AssertRuleHelper
 
 			$assertedExpr = $assert->getParameter()->getExpr(new TypeExpr($parametersByName[$parameterName]));
 			$assertedExprType = $this->initializerExprTypeResolver->getType($assertedExpr, $context);
-			if ($assertedExprType instanceof ErrorType) {
+			if ($this->unresolvableTypeHelper->containsUnresolvableType($assertedExprType)) {
 				continue;
 			}
 

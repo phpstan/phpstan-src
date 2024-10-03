@@ -201,6 +201,7 @@ parameters:
 		- ../stubs/arrayFunctions.stub
 		- ../stubs/core.stub
 		- ../stubs/typeCheckingFunctions.stub
+		- ../stubs/openssl.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit

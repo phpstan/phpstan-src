@@ -35,9 +35,6 @@ class HasPropertyType implements AccessoryType, CompoundType
 	{
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return [];

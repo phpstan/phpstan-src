@@ -107,6 +107,7 @@ use PHPStan\Type\VoidType;
 use Traversable;
 use function array_key_exists;
 use function array_map;
+use function array_values;
 use function count;
 use function explode;
 use function get_class;
@@ -927,7 +928,7 @@ final class TypeNodeResolver
 		$mainType = $this->resolve($typeNode->identifier, $nameScope);
 
 		$isVariadic = false;
-		$parameters = array_map(
+		$parameters = array_values(array_map(
 			function (CallableTypeParameterNode $parameterNode) use ($nameScope, &$isVariadic): NativeParameterReflection {
 				$isVariadic = $isVariadic || $parameterNode->isVariadic;
 				$parameterName = $parameterNode->parameterName;
@@ -945,7 +946,7 @@ final class TypeNodeResolver
 				);
 			},
 			$typeNode->parameters,
-		);
+		));
 
 		$returnType = $this->resolve($typeNode->returnType, $nameScope);
 
@@ -1196,7 +1197,7 @@ final class TypeNodeResolver
 	/**
 	 * @api
 	 * @param TypeNode[] $typeNodes
-	 * @return Type[]
+	 * @return list<Type>
 	 */
 	public function resolveMultiple(array $typeNodes, NameScope $nameScope): array
 	{

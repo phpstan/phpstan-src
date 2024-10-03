@@ -81,7 +81,7 @@ final class StatementResult
 
 	/**
 	 * @param class-string<Stmt\Continue_>|class-string<Stmt\Break_> $stmtClass
-	 * @return StatementExitPoint[]
+	 * @return list<StatementExitPoint>
 	 */
 	public function getExitPointsByType(string $stmtClass): array
 	{
@@ -115,7 +115,7 @@ final class StatementResult
 	}
 
 	/**
-	 * @return StatementExitPoint[]
+	 * @return list<StatementExitPoint>
 	 */
 	public function getExitPointsForOuterLoop(): array
 	{

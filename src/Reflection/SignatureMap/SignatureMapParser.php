@@ -57,7 +57,7 @@ final class SignatureMapParser
 
 	/**
 	 * @param array<string, string> $parameterMap
-	 * @return array<int, ParameterSignature>
+	 * @return list<ParameterSignature>
 	 */
 	private function getParameters(array $parameterMap): array
 	{

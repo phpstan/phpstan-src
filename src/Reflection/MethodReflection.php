@@ -14,7 +14,7 @@ interface MethodReflection extends ClassMemberReflection
 	public function getPrototype(): ClassMemberReflection;
 
 	/**
-	 * @return ParametersAcceptor[]
+	 * @return list<ParametersAcceptor>
 	 */
 	public function getVariants(): array;
 

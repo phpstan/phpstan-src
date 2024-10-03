@@ -33,7 +33,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 	/** @var Function_|ClassMethod */
 	private Node\FunctionLike $functionLike;
 
-	/** @var ExtendedFunctionVariant[]|null */
+	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
 
 	/**
@@ -93,9 +93,6 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 		return (string) $this->functionLike->namespacedName;
 	}
 
-	/**
-	 * @return ExtendedParametersAcceptor[]
-	 */
 	public function getVariants(): array
 	{
 		if ($this->variants === null) {
@@ -136,7 +133,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 	}
 
 	/**
-	 * @return array<int, ExtendedParameterReflection>
+	 * @return list<ExtendedParameterReflection>
 	 */
 	public function getParameters(): array
 	{

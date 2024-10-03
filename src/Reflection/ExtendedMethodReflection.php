@@ -23,7 +23,7 @@ interface ExtendedMethodReflection extends MethodReflection
 {
 
 	/**
-	 * @return ExtendedParametersAcceptor[]
+	 * @return list<ExtendedParametersAcceptor>
 	 */
 	public function getVariants(): array;
 
@@ -33,7 +33,7 @@ interface ExtendedMethodReflection extends MethodReflection
 	public function getOnlyVariant(): ExtendedParametersAcceptor;
 
 	/**
-	 * @return ExtendedParametersAcceptor[]|null
+	 * @return list<ExtendedParametersAcceptor>|null
 	 */
 	public function getNamedArgumentsVariants(): ?array;
 

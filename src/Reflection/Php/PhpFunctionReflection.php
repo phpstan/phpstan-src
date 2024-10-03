@@ -32,7 +32,7 @@ use function time;
 final class PhpFunctionReflection implements FunctionReflection
 {
 
-	/** @var ExtendedFunctionVariant[]|null */
+	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
 
 	/**
@@ -85,9 +85,6 @@ final class PhpFunctionReflection implements FunctionReflection
 		return $this->filename;
 	}
 
-	/**
-	 * @return ExtendedParametersAcceptor[]
-	 */
 	public function getVariants(): array
 	{
 		if ($this->variants === null) {
@@ -118,7 +115,7 @@ final class PhpFunctionReflection implements FunctionReflection
 	}
 
 	/**
-	 * @return ExtendedParameterReflection[]
+	 * @return list<ExtendedParameterReflection>
 	 */
 	private function getParameters(): array
 	{

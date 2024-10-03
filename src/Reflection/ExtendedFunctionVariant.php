@@ -13,7 +13,7 @@ class ExtendedFunctionVariant extends FunctionVariant implements ExtendedParamet
 {
 
 	/**
-	 * @param array<int, ExtendedParameterReflection> $parameters
+	 * @param list<ExtendedParameterReflection> $parameters
 	 * @api
 	 */
 	public function __construct(
@@ -38,11 +38,11 @@ class ExtendedFunctionVariant extends FunctionVariant implements ExtendedParamet
 	}
 
 	/**
-	 * @return array<int, ExtendedParameterReflection>
+	 * @return list<ExtendedParameterReflection>
 	 */
 	public function getParameters(): array
 	{
-		/** @var array<int, ExtendedParameterReflection> $parameters */
+		/** @var list<ExtendedParameterReflection> $parameters */
 		$parameters = parent::getParameters();
 
 		return $parameters;

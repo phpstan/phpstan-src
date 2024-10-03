@@ -552,7 +552,7 @@ final class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @return array<int, string>
+	 * @return list<string>
 	 */
 	public function getDefinedVariables(): array
 	{
@@ -573,7 +573,7 @@ final class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @return array<int, string>
+	 * @return list<string>
 	 */
 	public function getMaybeDefinedVariables(): array
 	{

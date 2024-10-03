@@ -304,7 +304,6 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$deprecatedTag = null;
 		$isDeprecated = false;
 		$isInternal = false;
-		$isFinal = false;
 		$isPure = null;
 		$asserts = Assertions::createEmpty();
 		$acceptsNamedArguments = true;
@@ -327,7 +326,6 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$deprecatedTag = $resolvedPhpDoc->getDeprecatedTag();
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
 			$isInternal = $resolvedPhpDoc->isInternal();
-			$isFinal = $resolvedPhpDoc->isFinal();
 			$isPure = $resolvedPhpDoc->isPure();
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 			if ($resolvedPhpDoc->hasPhpDocString()) {
@@ -348,7 +346,6 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$deprecatedTag !== null ? $deprecatedTag->getMessage() : null,
 			$isDeprecated,
 			$isInternal,
-			$isFinal,
 			$reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null,
 			$isPure,
 			$asserts,

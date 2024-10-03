@@ -54,7 +54,6 @@ final class PhpFunctionReflection implements FunctionReflection
 		private ?string $deprecatedDescription,
 		private bool $isDeprecated,
 		private bool $isInternal,
-		private bool $isFinal,
 		private ?string $filename,
 		private ?bool $isPure,
 		private Assertions $asserts,

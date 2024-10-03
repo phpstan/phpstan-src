@@ -25,7 +25,6 @@ interface FunctionReflectionFactory
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal,
-		bool $isFinal,
 		?string $filename,
 		?bool $isPure,
 		Assertions $asserts,

@@ -160,49 +160,52 @@ jobs:
               cd e2e/trait-caching
               ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
               patch -b data/TraitOne.php < TraitOne.patch
-              OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
               echo "$OUTPUT"
-              ../bashunit -a line_count 1 "$OUTPUT"
+              ../bashunit -a line_count 2 "$OUTPUT"
+              ../bashunit -a matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
               ../bashunit -a contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/trait-caching
               ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
               patch -b data/TraitTwo.php < TraitTwo.patch
-              OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
               echo "$OUTPUT"
-              ../bashunit -a line_count 1 "$OUTPUT"
+              ../bashunit -a line_count 2 "$OUTPUT"
+              ../bashunit -a matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
               ../bashunit -a contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/trait-caching
               ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
               patch -b data/TraitOne.php < TraitOne.patch
               patch -b data/TraitTwo.php < TraitTwo.patch
-              OUTPUT=$(../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/ || true)
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
               echo "$OUTPUT"
-              ../bashunit -a line_count 2 "$OUTPUT"
+              ../bashunit -a line_count 3 "$OUTPUT"
+              ../bashunit -a matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
               ../bashunit -a contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
               ../bashunit -a contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../../bin/phpstan analyse -c ignore.neon 2>&1 || true)
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c ignore.neon")
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in ignoreErrors' "$OUTPUT"
               ../bashunit -a contains 'tests is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../../bin/phpstan analyse -c phpneon.php 2>&1 || true)
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c phpneon.php")
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in ignoreErrors' "$OUTPUT"
               ../bashunit -a contains 'src/test.php is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../../bin/phpstan analyse -c excludePaths.neon 2>&1 || true)
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c excludePaths.neon")
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in excludePaths' "$OUTPUT"
               ../bashunit -a contains 'tests is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../../bin/phpstan analyse -c phpneon2.php 2>&1 || true)
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c phpneon2.php")
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in excludePaths' "$OUTPUT"
               ../bashunit -a contains 'src/test.php is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
@@ -239,7 +242,7 @@ jobs:
         run: "patch src/Analyser/Error.php < e2e/PHPStanErrorPatch.patch"
 
       - name: "Install bashunit"
-        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ 0.13.0"
+        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ 0.17.0"
 
       - name: "Test"
         run: "${{ matrix.script }}"

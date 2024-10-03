@@ -287,15 +287,15 @@ Instead of `AccessoryArrayListType::intersectWith($type)`, do `TypeCombinator::i
   * Remove `TypeUtils::getEnumCaseObjects()`, use [`Type::getEnumCases()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getEnumCases) instead
   * Remove `TypeUtils::containsCallable()`, use [`Type::isCallable()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_isCallable) instead
 * Removed `Scope::doNotTreatPhpDocTypesAsCertain()`, use `getNativeType()` instead
-* Parameter `$isList` in `ConstantArrayType` constructor can only be `TrinaryLogic`, no longer bool
-* Parameter `$nextAutoIndexes` in `ConstantArrayType` constructor can only be `non-empty-list<int>`, no longer int
+* Parameter `$isList` in `ConstantArrayType` constructor can only be `TrinaryLogic`, no longer `bool`
+* Parameter `$nextAutoIndexes` in `ConstantArrayType` constructor can only be `non-empty-list<int>`, no longer `int`
 * Remove `ConstantType` interface, use [`Type::isConstantValue()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_isConstantValue) instead
 * `acceptsNamedArguments()` in `FunctionReflection`, `ExtendedMethodReflection` and `CallableParametersAcceptor` interfaces returns `TrinaryLogic` instead of `bool`
 * Remove `FunctionReflection::isFinal()`
 * [`Type::getProperty()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getProperty) now returns [`ExtendedPropertyReflection`](https://apiref.phpstan.org/2.0.x/PHPStan.Reflection.ExtendedPropertyReflection.html)
 * `additionalConfigFiles` config parameter must be a list
 * Remove `__set_state()` on objects that should not be serialized in cache
-* Parameter `$selfClass` of [`TypehintHelper::decideTypeFromReflection()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.TypehintHelper.html#_decideTypeFromReflection) no longer accepts string
+* Parameter `$selfClass` of [`TypehintHelper::decideTypeFromReflection()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.TypehintHelper.html#_decideTypeFromReflection) no longer accepts `string`
 * Remove `fixerTmpDir` config parameter, use `pro.tmpDir` instead
 * Remove `tempResultCachePath` config parameter, use `resultCachePath` instead
 * `LevelsTestCase::dataTopics()` data provider made static
@@ -309,5 +309,5 @@ Instead of `AccessoryArrayListType::intersectWith($type)`, do `TypeCombinator::i
   * Added more methods around PHPDoc types and native types to the (new) `ClassConstantReflection`
   * Interface `GlobalConstantReflection` renamed to `ConstantReflection`
 * Renamed interfaces and classes from `*WithPhpDocs` to `Extended*`
-* `ClassPropertyNode::getNativeType()` return type changed from AST node to `Type|null
+* `ClassPropertyNode::getNativeType()` return type changed from AST node to `Type|null`
 * Class `PHPStan\Node\ClassMethod` (accessible from `ClassMethodsNode`) is no longer an AST node

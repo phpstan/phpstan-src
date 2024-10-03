@@ -59,7 +59,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
-	/** @var array<int, ParameterReflection> */
+	/** @var list<ParameterReflection> */
 	private array $parameters;
 
 	private Type $returnType;
@@ -81,7 +81,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	/**
 	 * @api
-	 * @param array<int, ParameterReflection>|null $parameters
+	 * @param list<ParameterReflection>|null $parameters
 	 * @param array<non-empty-string, TemplateTag> $templateTags
 	 * @param SimpleThrowPoint[] $throwPoints
 	 * @param ?SimpleImpurePoint[] $impurePoints
@@ -165,9 +165,6 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->objectType->getAncestorWithClassName($className);
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		$classes = $this->objectType->getReferencedClasses();
@@ -481,7 +478,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	}
 
 	/**
-	 * @return array<int, ParameterReflection>
+	 * @return list<ParameterReflection>
 	 */
 	public function getParameters(): array
 	{

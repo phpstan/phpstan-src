@@ -14,10 +14,10 @@ use function is_bool;
 final class ResolvedMethodReflection implements ExtendedMethodReflection
 {
 
-	/** @var ExtendedParametersAcceptor[]|null */
+	/** @var list<ExtendedParametersAcceptor>|null */
 	private ?array $variants = null;
 
-	/** @var ExtendedParametersAcceptor[]|null */
+	/** @var list<ExtendedParametersAcceptor>|null */
 	private ?array $namedArgumentVariants = null;
 
 	private ?Assertions $asserts = null;
@@ -74,7 +74,7 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 
 	/**
 	 * @param ExtendedParametersAcceptor[] $variants
-	 * @return ResolvedFunctionVariant[]
+	 * @return list<ResolvedFunctionVariant>
 	 */
 	private function resolveVariants(array $variants): array
 	{

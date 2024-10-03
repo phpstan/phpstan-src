@@ -21,7 +21,7 @@ use function array_map;
 final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVariant
 {
 
-	/** @var ExtendedParameterReflection[]|null */
+	/** @var list<ExtendedParameterReflection>|null */
 	private ?array $parameters = null;
 
 	private ?Type $returnTypeWithUnresolvableTemplateTypes = null;

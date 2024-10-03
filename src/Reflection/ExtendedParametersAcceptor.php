@@ -10,7 +10,7 @@ interface ExtendedParametersAcceptor extends ParametersAcceptor
 {
 
 	/**
-	 * @return array<int, ExtendedParameterReflection>
+	 * @return list<ExtendedParameterReflection>
 	 */
 	public function getParameters(): array;
 

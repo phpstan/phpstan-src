@@ -20,7 +20,7 @@ interface ParametersAcceptor
 	public function getResolvedTemplateTypeMap(): TemplateTypeMap;
 
 	/**
-	 * @return array<int, ParameterReflection>
+	 * @return list<ParameterReflection>
 	 */
 	public function getParameters(): array;
 

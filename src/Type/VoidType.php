@@ -37,9 +37,6 @@ class VoidType implements Type
 	{
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		return [];

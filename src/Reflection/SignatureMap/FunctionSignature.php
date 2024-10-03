@@ -8,7 +8,7 @@ final class FunctionSignature
 {
 
 	/**
-	 * @param array<int, ParameterSignature> $parameters
+	 * @param list<ParameterSignature> $parameters
 	 */
 	public function __construct(
 		private array $parameters,
@@ -20,7 +20,7 @@ final class FunctionSignature
 	}
 
 	/**
-	 * @return array<int, ParameterSignature>
+	 * @return list<ParameterSignature>
 	 */
 	public function getParameters(): array
 	{

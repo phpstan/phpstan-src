@@ -75,7 +75,7 @@ final class ExitFunctionReflection implements FunctionReflection
 	}
 
 	/**
-	 * @return ExtendedParametersAcceptor[]
+	 * @return list<ExtendedParametersAcceptor>
 	 */
 	public function getNamedArgumentsVariants(): array
 	{

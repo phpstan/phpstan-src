@@ -17,11 +17,11 @@ use PHPStan\Type\Type;
 final class AnnotationMethodReflection implements ExtendedMethodReflection
 {
 
-	/** @var ExtendedFunctionVariant[]|null */
+	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
 
 	/**
-	 * @param AnnotationsMethodParameterReflection[] $parameters
+	 * @param list<AnnotationsMethodParameterReflection> $parameters
 	 */
 	public function __construct(
 		private string $name,

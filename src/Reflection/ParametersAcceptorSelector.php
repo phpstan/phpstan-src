@@ -44,6 +44,7 @@ use function array_key_last;
 use function array_map;
 use function array_merge;
 use function array_slice;
+use function array_values;
 use function constant;
 use function count;
 use function defined;
@@ -143,7 +144,7 @@ final class ParametersAcceptorSelector
 							new FunctionVariant(
 								$acceptor->getTemplateTypeMap(),
 								$acceptor->getResolvedTemplateTypeMap(),
-								$parameters,
+								array_values($parameters),
 								$acceptor->isVariadic(),
 								$acceptor->getReturnType(),
 								$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
@@ -193,7 +194,7 @@ final class ParametersAcceptorSelector
 					new FunctionVariant(
 						$acceptor->getTemplateTypeMap(),
 						$acceptor->getResolvedTemplateTypeMap(),
-						$parameters,
+						array_values($parameters),
 						$acceptor->isVariadic(),
 						$acceptor->getReturnType(),
 						$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
@@ -224,7 +225,7 @@ final class ParametersAcceptorSelector
 					new FunctionVariant(
 						$acceptor->getTemplateTypeMap(),
 						$acceptor->getResolvedTemplateTypeMap(),
-						$parameters,
+						array_values($parameters),
 						$acceptor->isVariadic(),
 						$acceptor->getReturnType(),
 						$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
@@ -309,7 +310,7 @@ final class ParametersAcceptorSelector
 									new FunctionVariant(
 										$acceptor->getTemplateTypeMap(),
 										$acceptor->getResolvedTemplateTypeMap(),
-										$parameters,
+										array_values($parameters),
 										$acceptor->isVariadic(),
 										$acceptor->getReturnType(),
 										$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
@@ -688,7 +689,7 @@ final class ParametersAcceptorSelector
 			return new ExtendedCallableFunctionVariant(
 				TemplateTypeMap::createEmpty(),
 				null,
-				$parameters,
+				array_values($parameters),
 				$isVariadic,
 				$returnType,
 				$phpDocReturnType ?? $returnType,
@@ -706,7 +707,7 @@ final class ParametersAcceptorSelector
 		return new ExtendedFunctionVariant(
 			TemplateTypeMap::createEmpty(),
 			null,
-			$parameters,
+			array_values($parameters),
 			$isVariadic,
 			$returnType,
 			$phpDocReturnType ?? $returnType,

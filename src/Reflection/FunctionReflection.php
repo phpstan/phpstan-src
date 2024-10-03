@@ -14,7 +14,7 @@ interface FunctionReflection
 	public function getFileName(): ?string;
 
 	/**
-	 * @return ExtendedParametersAcceptor[]
+	 * @return list<ExtendedParametersAcceptor>
 	 */
 	public function getVariants(): array;
 
@@ -24,7 +24,7 @@ interface FunctionReflection
 	public function getOnlyVariant(): ExtendedParametersAcceptor;
 
 	/**
-	 * @return ExtendedParametersAcceptor[]|null
+	 * @return list<ExtendedParametersAcceptor>|null
 	 */
 	public function getNamedArgumentsVariants(): ?array;
 

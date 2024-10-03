@@ -52,14 +52,14 @@ use const PHP_VERSION_ID;
 final class PhpMethodReflection implements ExtendedMethodReflection
 {
 
-	/** @var PhpParameterReflection[]|null */
+	/** @var list<PhpParameterReflection>|null */
 	private ?array $parameters = null;
 
 	private ?Type $returnType = null;
 
 	private ?Type $nativeReturnType = null;
 
-	/** @var ExtendedFunctionVariant[]|null */
+	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
 
 	/**
@@ -191,7 +191,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	}
 
 	/**
-	 * @return ExtendedParametersAcceptor[]
+	 * @return list<ExtendedParametersAcceptor>
 	 */
 	public function getVariants(): array
 	{
@@ -223,7 +223,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	}
 
 	/**
-	 * @return ExtendedParameterReflection[]
+	 * @return list<ExtendedParameterReflection>
 	 */
 	private function getParameters(): array
 	{

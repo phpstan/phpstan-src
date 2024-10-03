@@ -52,7 +52,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
-	/** @var array<int, ParameterReflection> */
+	/** @var list<ParameterReflection> */
 	private array $parameters;
 
 	private Type $returnType;
@@ -67,7 +67,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	/**
 	 * @api
-	 * @param array<int, ParameterReflection>|null $parameters
+	 * @param list<ParameterReflection>|null $parameters
 	 * @param array<non-empty-string, TemplateTag> $templateTags
 	 */
 	public function __construct(
@@ -101,9 +101,6 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return $this->isPure;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		$classes = [];
@@ -345,7 +342,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	}
 
 	/**
-	 * @return array<int, ParameterReflection>
+	 * @return list<ParameterReflection>
 	 */
 	public function getParameters(): array
 	{

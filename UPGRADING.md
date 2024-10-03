@@ -311,3 +311,4 @@ Instead of `AccessoryArrayListType::intersectWith($type)`, do `TypeCombinator::i
 * Renamed interfaces and classes from `*WithPhpDocs` to `Extended*`
 * `ClassPropertyNode::getNativeType()` return type changed from AST node to `Type|null`
 * Class `PHPStan\Node\ClassMethod` (accessible from `ClassMethodsNode`) is no longer an AST node
+  * Call `PHPStan\Node\ClassMethod::getNode()` to access the original AST node

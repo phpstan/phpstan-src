@@ -6,11 +6,9 @@ use Nette\DI\Helpers;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
-use function array_keys;
 use function count;
 use function ksort;
 use function preg_quote;
-use function sort;
 use function sprintf;
 use function var_export;
 use const SORT_STRING;
@@ -53,33 +51,39 @@ final class BaselinePhpErrorFormatter
 			$fileErrorsByMessage = [];
 			foreach ($errors as $error) {
 				$errorMessage = $error->getMessage();
+				$identifier = $error->getIdentifier();
 				if (!isset($fileErrorsByMessage[$errorMessage])) {
 					$fileErrorsByMessage[$errorMessage] = [
 						1,
-						$error->getIdentifier() !== null ? [$error->getIdentifier() => true] : [],
+						$identifier !== null ? [$identifier => 1] : [],
 					];
 					continue;
 				}
 
 				$fileErrorsByMessage[$errorMessage][0]++;
 
-				if ($error->getIdentifier() === null) {
+				if ($identifier === null) {
 					continue;
 				}
-				$fileErrorsByMessage[$errorMessage][1][$error->getIdentifier()] = true;
+
+				if (!isset($fileErrorsByMessage[$errorMessage][1][$identifier])) {
+					$fileErrorsByMessage[$errorMessage][1][$identifier] = 1;
+					continue;
+				}
+
+				$fileErrorsByMessage[$errorMessage][1][$identifier]++;
 			}
 			ksort($fileErrorsByMessage, SORT_STRING);
 
-			foreach ($fileErrorsByMessage as $message => [$count, $identifiersInKeys]) {
-				$identifiers = array_keys($identifiersInKeys);
-				sort($identifiers);
+			foreach ($fileErrorsByMessage as $message => [$totalCount, $identifiers]) {
+				ksort($identifiers, SORT_STRING);
 				if (count($identifiers) > 0) {
-					foreach ($identifiers as $identifier) {
+					foreach ($identifiers as $identifier => $identifierCount) {
 						$php .= sprintf(
 							"\$ignoreErrors[] = [\n\t'message' => %s,\n\t'identifier' => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
 							var_export(Helpers::escape('#^' . preg_quote($message, '#') . '$#'), true),
 							var_export(Helpers::escape($identifier), true),
-							var_export($count, true),
+							var_export($identifierCount, true),
 							var_export(Helpers::escape($file), true),
 						);
 					}
@@ -87,7 +91,7 @@ final class BaselinePhpErrorFormatter
 					$php .= sprintf(
 						"\$ignoreErrors[] = [\n\t'message' => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
 						var_export(Helpers::escape('#^' . preg_quote($message, '#') . '$#'), true),
-						var_export($count, true),
+						var_export($totalCount, true),
 						var_export(Helpers::escape($file), true),
 					);
 				}

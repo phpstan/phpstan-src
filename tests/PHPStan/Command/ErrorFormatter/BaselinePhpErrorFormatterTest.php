@@ -135,13 +135,13 @@ return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
 \$ignoreErrors[] = [
 	'message' => '#^Foo with same message, different identifier$#',
 	'identifier' => 'argument.byRef',
-	'count' => 2,
+	'count' => 1,
 	'path' => __DIR__ . '/Foo.php',
 ];
 \$ignoreErrors[] = [
 	'message' => '#^Foo with same message, different identifier$#',
 	'identifier' => 'argument.type',
-	'count' => 2,
+	'count' => 1,
 	'path' => __DIR__ . '/Foo.php',
 ];
 

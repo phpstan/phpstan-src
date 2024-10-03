@@ -15,6 +15,7 @@ final class SimpleParser implements Parser
 	public function __construct(
 		private \PhpParser\Parser $parser,
 		private NameResolver $nameResolver,
+		private VariadicMethodsVisitor $variadicMethodsVisitor,
 	)
 	{
 	}
@@ -48,6 +49,7 @@ final class SimpleParser implements Parser
 
 		$nodeTraverser = new NodeTraverser();
 		$nodeTraverser->addVisitor($this->nameResolver);
+		$nodeTraverser->addVisitor($this->variadicMethodsVisitor);
 
 		/** @var array<Node\Stmt> */
 		return $nodeTraverser->traverse($nodes);

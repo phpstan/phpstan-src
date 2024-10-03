@@ -303,6 +303,11 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\VariadicMethodsVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Node\Printer\ExprPrinter
 
 	-

@@ -141,7 +141,7 @@ parameters:
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^PHPDoc tag @phpstan\-assert\-if\-true for \$this\-\>reflection contains unknown class PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionEnum\.$#"
+			message: '#^PHPDoc tag @phpstan\-assert\-if\-true for \$this\-\>reflection contains unknown class PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionEnum\.$#'
 			count: 1
 			path: ../src/Reflection/ClassReflection.php
 

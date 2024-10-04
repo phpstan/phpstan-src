@@ -975,7 +975,6 @@ services:
 		arguments:
 			checkMissingTypehints: %checkMissingTypehints%
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
-			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\PhpDoc\UnresolvableTypeHelper

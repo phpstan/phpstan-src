@@ -37,7 +37,6 @@ final class AssertRuleHelper
 		private ClassNameCheck $classCheck,
 		private MissingTypehintCheck $missingTypehintCheck,
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
-		private bool $absentTypeChecks,
 		private bool $checkClassCaseSensitivity,
 		private bool $checkMissingTypehints,
 	)
@@ -83,11 +82,9 @@ final class AssertRuleHelper
 			$assertedExprType = $this->initializerExprTypeResolver->getType($assertedExpr, $context);
 			$assertedExprString = $assert->getParameter()->describe();
 			if ($assertedExprType instanceof ErrorType) {
-				if ($this->absentTypeChecks) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Assert references unknown %s.', $assertedExprString))
-						->identifier('assert.unknownExpr')
-						->build();
-				}
+				$errors[] = RuleErrorBuilder::message(sprintf('Assert references unknown %s.', $assertedExprString))
+					->identifier('assert.unknownExpr')
+					->build();
 				continue;
 			}
 
@@ -99,15 +96,13 @@ final class AssertRuleHelper
 				AssertTag::IF_FALSE => '@phpstan-assert-if-false',
 			][$assert->getIf()];
 
-			if ($this->absentTypeChecks) {
-				if ($this->unresolvableTypeHelper->containsUnresolvableType($assertedType)) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'PHPDoc tag %s for %s contains unresolvable type.',
-						$tagName,
-						$assertedExprString,
-					))->identifier('assert.unresolvableType')->build();
-					continue;
-				}
+			if ($this->unresolvableTypeHelper->containsUnresolvableType($assertedType)) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'PHPDoc tag %s for %s contains unresolvable type.',
+					$tagName,
+					$assertedExprString,
+				))->identifier('assert.unresolvableType')->build();
+				continue;
 			}
 
 			$isSuperType = $assertedType->isSuperTypeOf($assertedExprType);
@@ -129,10 +124,6 @@ final class AssertRuleHelper
 						$assertedExprType->describe(VerbosityLevel::precise()),
 					))->identifier('assert.alreadyNarrowedType')->build();
 				}
-			}
-
-			if (!$this->absentTypeChecks) {
-				continue;
 			}
 
 			foreach ($assertedType->getReferencedClasses() as $class) {

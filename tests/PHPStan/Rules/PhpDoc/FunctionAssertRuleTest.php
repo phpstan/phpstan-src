@@ -26,9 +26,8 @@ class FunctionAssertRuleTest extends RuleTestCase
 			$reflectionProvider,
 			new UnresolvableTypeHelper(),
 			new ClassNameCheck(new ClassCaseSensitivityCheck($reflectionProvider, true), new ClassForbiddenNameCheck(self::getContainer())),
-			new MissingTypehintCheck(true, true, true, true, []),
+			new MissingTypehintCheck(true, []),
 			new GenericObjectTypeCheck(),
-			true,
 			true,
 			true,
 		));

@@ -3,10 +3,12 @@
 namespace PHPStan\Parser;
 
 use PhpParser\Node;
+use PhpParser\Node\Name;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use function array_key_exists;
+use function in_array;
 
 final class VariadicFunctionsVisitor extends NodeVisitorAbstract
 {
@@ -15,22 +17,19 @@ final class VariadicFunctionsVisitor extends NodeVisitorAbstract
 
 	private ?string $inNamespace = null;
 
+	private ?string $inFunction = null;
+
 	/** @var array<string, TrinaryLogic> */
 	private array $variadicFunctions = [];
 
 	public const ATTRIBUTE_NAME = 'variadicFunctions';
-
-	public function __construct(
-		private FunctionCallStatementFinder $functionCallStatementFinder,
-	)
-	{
-	}
 
 	public function beforeTraverse(array $nodes): ?array
 	{
 		$this->topNode = null;
 		$this->variadicFunctions = [];
 		$this->inNamespace = null;
+		$this->inFunction = null;
 
 		return null;
 	}
@@ -46,14 +45,32 @@ final class VariadicFunctionsVisitor extends NodeVisitorAbstract
 		}
 
 		if ($node instanceof Node\Stmt\Function_) {
-			$functionName = $this->inNamespace !== null ? $this->inNamespace . '\\' . $node->name->name : $node->name->name;
+			$this->inFunction = $this->inNamespace !== null ? $this->inNamespace . '\\' . $node->name->name : $node->name->name;
 
-			if (!array_key_exists($functionName, $this->variadicFunctions)) {
-				$this->variadicFunctions[$functionName] = TrinaryLogic::createMaybe();
+			foreach ($node->params as $parameter) {
+				if (!$parameter->variadic) {
+					continue;
+				}
+
+				if (!array_key_exists($this->inFunction, $this->variadicFunctions)) {
+					$this->variadicFunctions[$this->inFunction] = TrinaryLogic::createYes();
+				} else {
+					$this->variadicFunctions[$this->inFunction]->and(TrinaryLogic::createYes());
+				}
 			}
+		}
 
-			$isVariadic = $this->functionCallStatementFinder->findFunctionCallInStatements(ParametersAcceptor::VARIADIC_FUNCTIONS, $node->getStmts()) !== null;
-			$this->variadicFunctions[$functionName] = $this->variadicFunctions[$functionName]->and(TrinaryLogic::createFromBoolean($isVariadic));
+		if (
+			$this->inFunction !== null
+			&& $node instanceof Node\Expr\FuncCall
+			&& $node->name instanceof Name
+			&& in_array((string) $node->name, ParametersAcceptor::VARIADIC_FUNCTIONS, true)
+		) {
+			if (!array_key_exists($this->inFunction, $this->variadicFunctions)) {
+				$this->variadicFunctions[$this->inFunction] = TrinaryLogic::createYes();
+			} else {
+				$this->variadicFunctions[$this->inFunction]->and(TrinaryLogic::createYes());
+			}
 		}
 
 		return null;
@@ -63,6 +80,11 @@ final class VariadicFunctionsVisitor extends NodeVisitorAbstract
 	{
 		if ($node instanceof Node\Stmt\Namespace_ && $node->name !== null) {
 			$this->inNamespace = null;
+		}
+
+		if ($node instanceof Node\Stmt\Function_ && $this->inFunction !== null) {
+			$this->variadicFunctions[$this->inFunction] ??= TrinaryLogic::createNo();
+			$this->inFunction = null;
 		}
 
 		return null;

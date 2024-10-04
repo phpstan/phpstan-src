@@ -256,9 +256,9 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 				if (
 					is_array($variadicMethods)
 					&& array_key_exists($declaringClass->getName(), $variadicMethods)
-					&& in_array($this->reflection->getName(), $variadicMethods[$declaringClass->getName()], true)
+					&& array_key_exists($this->reflection->getName(), $variadicMethods[$declaringClass->getName()])
 				) {
-					return $this->containsVariadicCalls = true;
+					return $this->containsVariadicCalls = !$variadicMethods[$declaringClass->getName()][$this->reflection->getName()]->no();
 				}
 			}
 

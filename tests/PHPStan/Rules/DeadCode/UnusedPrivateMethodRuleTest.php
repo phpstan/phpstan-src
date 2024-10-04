@@ -56,6 +56,10 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 				99,
 			],
 			[
+				'Method UnusedPrivateMethod\Ipsum::doFoo() is unused.',
+				115,
+			],
+			[
 				'Method UnusedPrivateMethod\IgnoredByExtension::bar() is unused.',
 				181,
 			],
@@ -131,6 +135,16 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 	public function testBug9765(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9765.php'], []);
+	}
+
+	public function testBug11802(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11802b.php'], [
+			[
+				'Method Bug11802b\HelloWorld::doBar() is unused.',
+				10,
+			],
+		]);
 	}
 
 }

@@ -84,7 +84,7 @@ final class UnusedPrivateMethodRule implements Rule
 				$methodNameType = $callScope->getType($methodCallNode->name);
 				$strings = $methodNameType->getConstantStrings();
 				if (count($strings) === 0) {
-					return [];
+					continue;
 				}
 
 				$methodNames = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $strings);
@@ -138,10 +138,10 @@ final class UnusedPrivateMethodRule implements Rule
 				foreach ($arrayType->getConstantArrays() as $constantArray) {
 					foreach ($constantArray->findTypeAndMethodNames() as $typeAndMethod) {
 						if ($typeAndMethod->isUnknown()) {
-							return [];
+							continue;
 						}
 						if (!$typeAndMethod->getCertainty()->yes()) {
-							return [];
+							continue;
 						}
 
 						$calledOnType = $typeAndMethod->getType();

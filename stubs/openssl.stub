@@ -10,9 +10,9 @@
  *
  * @return bool
  */
- openssl_sign(
+function openssl_sign(
     string $data,
     string &$signature,
-    #[\SensitiveParameter] OpenSSLAsymmetricKey|OpenSSLCertificate|array|string $private_key,
+    #[\SensitiveParameter] \OpenSSLAsymmetricKey|\OpenSSLCertificate|array|string $private_key,
     string|int $algorithm = OPENSSL_ALGO_SHA1
 ): bool {}

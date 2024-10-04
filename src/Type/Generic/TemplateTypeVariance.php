@@ -5,8 +5,8 @@ namespace PHPStan\Type\Generic;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -134,30 +134,30 @@ class TemplateTypeVariance
 		return $this->isValidVarianceWithReason(null, $a, $b)->result;
 	}
 
-	public function isValidVarianceWithReason(?TemplateType $templateType, Type $a, Type $b): AcceptsResult
+	public function isValidVarianceWithReason(?TemplateType $templateType, Type $a, Type $b): IsSuperTypeOfResult
 	{
 		if ($b instanceof NeverType) {
-			return AcceptsResult::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($a instanceof MixedType && !$a instanceof TemplateType) {
-			return AcceptsResult::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($a instanceof BenevolentUnionType) {
 			if (!$a->isSuperTypeOf($b)->no()) {
-				return AcceptsResult::createYes();
+				return IsSuperTypeOfResult::createYes();
 			}
 		}
 
 		if ($b instanceof BenevolentUnionType) {
 			if (!$b->isSuperTypeOf($a)->no()) {
-				return AcceptsResult::createYes();
+				return IsSuperTypeOfResult::createYes();
 			}
 		}
 
 		if ($b instanceof MixedType && !$b instanceof TemplateType) {
-			return AcceptsResult::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($this->invariant()) {
@@ -177,19 +177,19 @@ class TemplateTypeVariance
 				}
 			}
 
-			return new AcceptsResult(TrinaryLogic::createFromBoolean($result), $reasons);
+			return new IsSuperTypeOfResult(TrinaryLogic::createFromBoolean($result), $reasons);
 		}
 
 		if ($this->covariant()) {
-			return new AcceptsResult($a->isSuperTypeOf($b), []);
+			return $a->isSuperTypeOfWithReason($b);
 		}
 
 		if ($this->contravariant()) {
-			return new AcceptsResult($b->isSuperTypeOf($a), []);
+			return $b->isSuperTypeOfWithReason($a);
 		}
 
 		if ($this->bivariant()) {
-			return AcceptsResult::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		throw new ShouldNotHappenException();

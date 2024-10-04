@@ -38,6 +38,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -364,9 +365,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof self) {
 			if (count($this->keyTypes) === 0) {
-				return $type->isIterableAtLeastOnce()->negate();
+				return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
 			}
 
 			$results = [];
@@ -374,44 +380,44 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$hasOffset = $type->hasOffsetValueType($keyType);
 				if ($hasOffset->no()) {
 					if (!$this->isOptionalKey($i)) {
-						return TrinaryLogic::createNo();
+						return IsSuperTypeOfResult::createNo();
 					}
 
-					$results[] = TrinaryLogic::createYes();
+					$results[] = IsSuperTypeOfResult::createYes();
 					continue;
 				} elseif ($hasOffset->maybe() && !$this->isOptionalKey($i)) {
-					$results[] = TrinaryLogic::createMaybe();
+					$results[] = IsSuperTypeOfResult::createMaybe();
 				}
 
-				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($type->getOffsetValueType($keyType));
+				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOfWithReason($type->getOffsetValueType($keyType));
 				if ($isValueSuperType->no()) {
-					return TrinaryLogic::createNo();
+					return $isValueSuperType;
 				}
 				$results[] = $isValueSuperType;
 			}
 
-			return TrinaryLogic::createYes()->and(...$results);
+			return IsSuperTypeOfResult::createYes()->and(...$results);
 		}
 
 		if ($type instanceof ArrayType) {
-			$result = TrinaryLogic::createMaybe();
+			$result = IsSuperTypeOfResult::createMaybe();
 			if (count($this->keyTypes) === 0) {
 				return $result;
 			}
 
-			$isKeySuperType = $this->getKeyType()->isSuperTypeOf($type->getKeyType());
+			$isKeySuperType = $this->getKeyType()->isSuperTypeOfWithReason($type->getKeyType());
 			if ($isKeySuperType->no()) {
-				return TrinaryLogic::createNo();
+				return $isKeySuperType;
 			}
 
-			return $result->and($isKeySuperType, $this->getItemType()->isSuperTypeOf($type->getItemType()));
+			return $result->and($isKeySuperType, $this->getItemType()->isSuperTypeOfWithReason($type->getItemType()));
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
-		return TrinaryLogic::createNo();
+		return IsSuperTypeOfResult::createNo();
 	}
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType

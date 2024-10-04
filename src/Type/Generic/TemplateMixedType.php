@@ -47,7 +47,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 
 	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		$isSuperType = new AcceptsResult($this->isSuperTypeOf($acceptingType), []);
+		$isSuperType = $this->isSuperTypeOfWithReason($acceptingType)->toAcceptsResult();
 		if ($isSuperType->no()) {
 			return $isSuperType;
 		}

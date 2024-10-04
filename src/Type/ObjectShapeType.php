@@ -239,12 +239,17 @@ class ObjectShapeType implements Type
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
 		if ($type instanceof ObjectWithoutClassType) {
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
@@ -257,13 +262,13 @@ class ObjectShapeType implements Type
 				continue;
 			}
 
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
-		$result = TrinaryLogic::createYes();
+		$result = IsSuperTypeOfResult::createYes();
 		$scope = new OutOfClassScope();
 		foreach ($this->properties as $propertyName => $propertyType) {
-			$hasProperty = $type->hasProperty($propertyName);
+			$hasProperty = new IsSuperTypeOfResult($type->hasProperty($propertyName), []);
 			if ($hasProperty->no()) {
 				if (in_array($propertyName, $this->optionalProperties, true)) {
 					continue;
@@ -271,7 +276,7 @@ class ObjectShapeType implements Type
 				return $hasProperty;
 			}
 			if ($hasProperty->maybe() && in_array($propertyName, $this->optionalProperties, true)) {
-				$hasProperty = TrinaryLogic::createYes();
+				$hasProperty = IsSuperTypeOfResult::createYes();
 			}
 
 			$result = $result->and($hasProperty);
@@ -283,26 +288,26 @@ class ObjectShapeType implements Type
 			}
 
 			if (!$otherProperty->isPublic()) {
-				return TrinaryLogic::createNo();
+				return IsSuperTypeOfResult::createNo();
 			}
 
 			if ($otherProperty->isStatic()) {
-				return TrinaryLogic::createNo();
+				return IsSuperTypeOfResult::createNo();
 			}
 
 			if (!$otherProperty->isReadable()) {
-				return TrinaryLogic::createNo();
+				return IsSuperTypeOfResult::createNo();
 			}
 
 			$otherPropertyType = $otherProperty->getReadableType();
-			$isSuperType = $propertyType->isSuperTypeOf($otherPropertyType);
+			$isSuperType = $propertyType->isSuperTypeOfWithReason($otherPropertyType);
 			if ($isSuperType->no()) {
 				return $isSuperType;
 			}
 			$result = $result->and($isSuperType);
 		}
 
-		return $result->and($type->isObject());
+		return $result->and(new IsSuperTypeOfResult($type->isObject(), []));
 	}
 
 	public function equals(Type $type): bool

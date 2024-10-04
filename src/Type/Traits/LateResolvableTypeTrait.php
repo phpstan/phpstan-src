@@ -14,6 +14,7 @@ use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -60,23 +61,28 @@ trait LateResolvableTypeTrait
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		return $this->isSuperTypeOfDefault($type);
 	}
 
-	private function isSuperTypeOfDefault(Type $type): TrinaryLogic
+	private function isSuperTypeOfDefault(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof NeverType) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($type instanceof LateResolvableType) {
 			$type = $type->resolve();
 		}
 
-		$isSuperType = $this->resolve()->isSuperTypeOf($type);
+		$isSuperType = $this->resolve()->isSuperTypeOfWithReason($type);
 
 		if (!$this->isResolvable()) {
-			$isSuperType = $isSuperType->and(TrinaryLogic::createMaybe());
+			$isSuperType = $isSuperType->and(IsSuperTypeOfResult::createMaybe());
 		}
 
 		return $isSuperType;
@@ -524,13 +530,18 @@ trait LateResolvableTypeTrait
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		$result = $this->resolve();
 
 		if ($result instanceof CompoundType) {
-			return $result->isSubTypeOf($otherType);
+			return $result->isSubTypeOfWithReason($otherType);
 		}
 
-		return $otherType->isSuperTypeOf($result);
+		return $otherType->isSuperTypeOfWithReason($result);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic

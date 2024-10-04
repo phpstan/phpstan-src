@@ -108,6 +108,11 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 				$tip,
 			],
 			[
+				'Property UnusedPrivateProperty\Ipsum::$foo is never read, only written.',
+				136,
+				$tip,
+			],
+			[
 				'Property class@anonymous/tests/PHPStan/Rules/DeadCode/data/unused-private-property.php:152::$bar is unused.',
 				153,
 				$tip,
@@ -334,6 +339,21 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 		$this->analyse([__DIR__ . '/data/bug-7251.php'], []);
+	}
+
+	public function testBug11802(): void
+	{
+		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
+
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+		$this->analyse([__DIR__ . '/data/bug-11802.php'], [
+			[
+				'Property Bug11802\HelloWorld::$isFinal is never read, only written.',
+				8,
+				$tip,
+			],
+		]);
 	}
 
 }

@@ -120,7 +120,7 @@ final class UnusedPrivatePropertyRule implements Rule
 				$propertyNameType = $usage->getScope()->getType($fetch->name);
 				$strings = $propertyNameType->getConstantStrings();
 				if (count($strings) === 0) {
-					return [];
+					continue;
 				}
 
 				$propertyNames = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $strings);

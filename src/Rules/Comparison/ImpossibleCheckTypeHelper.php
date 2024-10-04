@@ -343,7 +343,7 @@ final class ImpossibleCheckTypeHelper
 			return '';
 		}
 
-		$descriptions = array_map(fn (Arg $arg): string => ($this->treatPhpDocTypesAsCertain ? $scope->getType($arg->value) : $scope->getNativeType($arg->value))->describe(VerbosityLevel::value()), $args);
+		$descriptions = array_map(fn (Arg $arg): string => ($this->treatPhpDocTypesAsCertain ? $scope->getType($arg->value) : $scope->getNativeType($arg->value))->describe(VerbosityLevel::precise()), $args);
 
 		if (count($descriptions) < 3) {
 			return sprintf(' with %s', implode(' and ', $descriptions));

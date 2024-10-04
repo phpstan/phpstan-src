@@ -146,15 +146,15 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					367,
 				],
 				[
-					'Call to function is_string() with mixed will always evaluate to false.',
+					'Call to function is_string() with mixed~string will always evaluate to false.',
 					561,
 				],
 				[
-					'Call to function is_callable() with mixed will always evaluate to false.',
+					'Call to function is_callable() with mixed~callable() will always evaluate to false.',
 					572,
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExists\' and \'testWithStringFirst…\' will always evaluate to true.',
+					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExists\' and \'testWithStringFirstArgument\' will always evaluate to true.',
 					586,
 				],
 				[
@@ -330,11 +330,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					367,
 				],
 				[
-					'Call to function is_string() with mixed will always evaluate to false.',
+					'Call to function is_string() with mixed~string will always evaluate to false.',
 					561,
 				],
 				[
-					'Call to function is_callable() with mixed will always evaluate to false.',
+					'Call to function is_callable() with mixed~callable() will always evaluate to false.',
 					572,
 				],
 				[
@@ -1100,6 +1100,18 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/always-true-preg-match.php'], []);
+	}
+
+	public function testBug11799(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-11799.php'], [
+			[
+				"Call to function in_array() with arguments lowercase-string, array{'publishDate', 'approvedAt', 'allowedValues'} and true will always evaluate to false.",
+				11,
+			],
+		]);
 	}
 
 }

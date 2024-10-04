@@ -36,6 +36,12 @@ After changing your `composer.json`, run `composer update 'phpstan/*' -W`.
 
 It's up to you whether you go through the new reported errors or if you just put them all to the [baseline](https://phpstan.org/user-guide/baseline) ;) Everyone who's on PHPStan 1.12 should be able to upgrade to PHPStan 2.0.
 
+### Noteworthy changes to code analysis
+
+* [**Enhancements in handling parameters passed by reference**](https://phpstan.org/blog/enhancements-in-handling-parameters-passed-by-reference)
+* [**Validate inline PHPDoc `@var` tag type**](https://phpstan.org/blog/phpstan-1-10-comes-with-lie-detector#validate-inline-phpdoc-%40var-tag-type)
+* **Always `true` conditions always reported**: previously reported only with phpstan-strict-rules, this is now always reported.
+
 ### Removed option `checkMissingIterableValueType`
 
 It's strongly recommended to add the missing array typehints.

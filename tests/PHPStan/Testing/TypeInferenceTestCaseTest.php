@@ -4,6 +4,7 @@ namespace PHPStan\Testing;
 
 use PHPStan\File\FileHelper;
 use PHPUnit\Framework\AssertionFailedError;
+use function array_values;
 use function sprintf;
 
 final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
@@ -88,6 +89,16 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 		$this->expectExceptionMessage($errorMessage);
 
 		$this->gatherAssertTypes($filePath);
+	}
+
+	public function testVariableOrOffsetDescription(): void
+	{
+		$filePath = __DIR__ . '/data/assert-certainty-variable-or-offset.php';
+
+		[$variableAssert, $offsetAssert] = array_values($this->gatherAssertTypes($filePath));
+
+		$this->assertSame('variable $context', $variableAssert[4]);
+		$this->assertSame("offset 'email'", $offsetAssert[4]);
 	}
 
 }

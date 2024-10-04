@@ -135,7 +135,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$variableName = $args[2];
 			$this->assertTrue(
 				$expectedCertainty->equals($actualCertainty),
-				sprintf('Expected %s, actual certainty of variable $%s is %s in %s on line %d.', $expectedCertainty->describe(), $variableName, $actualCertainty->describe(), $file, $args[3]),
+				sprintf('Expected %s, actual certainty of %s is %s in %s on line %d.', $expectedCertainty->describe(), $variableName, $actualCertainty->describe(), $file, $args[3]),
 			);
 		}
 	}
@@ -216,15 +216,18 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				// @phpstan-ignore staticMethod.dynamicName
 				$expectedertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
 				$variable = $node->getArgs()[1]->value;
-				if (!$variable instanceof Node\Expr\Variable) {
-					self::fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
-				}
-				if (!is_string($variable->name)) {
+				if ($variable instanceof Node\Expr\Variable && is_string($variable->name)) {
+					$actualCertaintyValue = $scope->hasVariableType($variable->name);
+					$variableDescription = sprintf('variable $%s', $variable->name);
+				} elseif ($variable instanceof Node\Expr\ArrayDimFetch && $variable->dim !== null) {
+					$offset = $scope->getType($variable->dim);
+					$actualCertaintyValue = $scope->getType($variable->var)->hasOffsetValueType($offset);
+					$variableDescription = sprintf('offset %s', $offset->describe(VerbosityLevel::precise()));
+				} else {
 					self::fail(sprintf('ERROR: Invalid assertVariableCertainty call.'));
 				}
 
-				$actualCertaintyValue = $scope->hasVariableType($variable->name);
-				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name, $node->getStartLine()];
+				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variableDescription, $node->getStartLine()];
 			} else {
 				$correctFunction = null;
 

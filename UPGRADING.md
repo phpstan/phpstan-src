@@ -113,6 +113,9 @@ Tags without a PHP version are no longer published - `nightly`, `2`, `latest` ar
 * Removed unused config parameter `memoryLimitFile`
 * Removed unused feature toggle `disableRuntimeReflectionProvider`
 * Removed unused config parameter `staticReflectionClassNamePatterns`
+* Remove `fixerTmpDir` config parameter, use `pro.tmpDir` instead
+* Remove `tempResultCachePath` config parameter, use `resultCachePath` instead
+* `additionalConfigFiles` config parameter must be a list
 
 ## Upgrading guide for extension developers
 
@@ -305,11 +308,8 @@ Instead of `AccessoryArrayListType::intersectWith($type)`, do `TypeCombinator::i
 * `acceptsNamedArguments()` in `FunctionReflection`, `ExtendedMethodReflection` and `CallableParametersAcceptor` interfaces returns `TrinaryLogic` instead of `bool`
 * Remove `FunctionReflection::isFinal()`
 * [`Type::getProperty()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.Type.html#_getProperty) now returns [`ExtendedPropertyReflection`](https://apiref.phpstan.org/2.0.x/PHPStan.Reflection.ExtendedPropertyReflection.html)
-* `additionalConfigFiles` config parameter must be a list
 * Remove `__set_state()` on objects that should not be serialized in cache
 * Parameter `$selfClass` of [`TypehintHelper::decideTypeFromReflection()`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.TypehintHelper.html#_decideTypeFromReflection) no longer accepts `string`
-* Remove `fixerTmpDir` config parameter, use `pro.tmpDir` instead
-* Remove `tempResultCachePath` config parameter, use `resultCachePath` instead
 * `LevelsTestCase::dataTopics()` data provider made static
 * `PHPStan\Node\Printer\Printer` no longer autowired as `PhpParser\PrettyPrinter\Standard`, use `PHPStan\Node\Printer\Printer` in the typehint
 * Remove `Type::acceptsWithReason()`, `Type:accepts()` return type changed from `TrinaryLogic` to [`AcceptsResult`](https://apiref.phpstan.org/2.0.x/PHPStan.Type.AcceptsResult.html)

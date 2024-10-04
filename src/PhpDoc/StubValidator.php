@@ -47,6 +47,8 @@ use PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule;
 use PHPStan\Rules\Generics\ClassAncestorsRule;
 use PHPStan\Rules\Generics\ClassTemplateTypeRule;
 use PHPStan\Rules\Generics\CrossCheckInterfacesHelper;
+use PHPStan\Rules\Generics\EnumAncestorsRule;
+use PHPStan\Rules\Generics\EnumTemplateTypeRule;
 use PHPStan\Rules\Generics\FunctionSignatureVarianceRule;
 use PHPStan\Rules\Generics\FunctionTemplateTypeRule;
 use PHPStan\Rules\Generics\GenericAncestorsCheck;
@@ -58,8 +60,10 @@ use PHPStan\Rules\Generics\MethodTagTemplateTypeCheck;
 use PHPStan\Rules\Generics\MethodTagTemplateTypeRule;
 use PHPStan\Rules\Generics\MethodTagTemplateTypeTraitRule;
 use PHPStan\Rules\Generics\MethodTemplateTypeRule;
+use PHPStan\Rules\Generics\PropertyVarianceRule;
 use PHPStan\Rules\Generics\TemplateTypeCheck;
 use PHPStan\Rules\Generics\TraitTemplateTypeRule;
+use PHPStan\Rules\Generics\UsedTraitsRule;
 use PHPStan\Rules\Generics\VarianceCheck;
 use PHPStan\Rules\Methods\ExistingClassesInTypehintsRule;
 use PHPStan\Rules\Methods\MethodParameterComparisonHelper;
@@ -69,6 +73,10 @@ use PHPStan\Rules\Methods\MissingMethodReturnTypehintRule;
 use PHPStan\Rules\Methods\MissingMethodSelfOutTypeRule;
 use PHPStan\Rules\Methods\OverridingMethodRule;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\PhpDoc\AssertRuleHelper;
+use PHPStan\Rules\PhpDoc\ConditionalReturnTypeRuleHelper;
+use PHPStan\Rules\PhpDoc\FunctionAssertRule;
+use PHPStan\Rules\PhpDoc\FunctionConditionalReturnTypeRule;
 use PHPStan\Rules\PhpDoc\GenericCallableRuleHelper;
 use PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatibleParamImmediatelyInvokedCallableRule;
@@ -78,6 +86,8 @@ use PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule;
 use PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule;
 use PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule;
 use PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule;
+use PHPStan\Rules\PhpDoc\MethodAssertRule;
+use PHPStan\Rules\PhpDoc\MethodConditionalReturnTypeRule;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\ExistingClassesInPropertiesRule;
 use PHPStan\Rules\Properties\MissingPropertyTypehintRule;
@@ -186,6 +196,8 @@ final class StubValidator
 		$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
 		$reflector = $container->getService('stubReflector');
 		$relativePathHelper = $container->getService('simpleRelativePathHelper');
+		$assertRuleHelper = $container->getByType(AssertRuleHelper::class);
+		$conditionalReturnTypeRuleHelper = $container->getByType(ConditionalReturnTypeRuleHelper::class);
 
 		$rules = [
 			// level 0
@@ -237,6 +249,14 @@ final class StubValidator
 			new PropertyTagRule($propertyTagCheck),
 			new PropertyTagTraitRule($propertyTagCheck, $reflectionProvider),
 			new PropertyTagTraitUseRule($propertyTagCheck),
+			new EnumAncestorsRule($genericAncestorsCheck, $crossCheckInterfacesHelper),
+			new EnumTemplateTypeRule(),
+			new PropertyVarianceRule($varianceCheck),
+			new UsedTraitsRule($fileTypeMapper, $genericAncestorsCheck),
+			new FunctionAssertRule($assertRuleHelper),
+			new MethodAssertRule($assertRuleHelper),
+			new FunctionConditionalReturnTypeRule($conditionalReturnTypeRuleHelper),
+			new MethodConditionalReturnTypeRule($conditionalReturnTypeRuleHelper),
 
 			// level 6
 			new MissingFunctionParameterTypehintRule($missingTypehintCheck),

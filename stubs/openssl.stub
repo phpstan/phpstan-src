@@ -3,7 +3,7 @@
 /**
  * @param string $data
  * @param string &$signature
- * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|array|string $private_key
+ * @param \OpenSSLAsymmetricKey|\OpenSSLCertificate|string $private_key
  * @param string|int $algorithm
  *
  * @param-out string $signature
@@ -13,6 +13,6 @@
 function openssl_sign(
     string $data,
     string &$signature,
-    \OpenSSLAsymmetricKey|\OpenSSLCertificate|array|string $private_key,
+    \OpenSSLAsymmetricKey|\OpenSSLCertificate|string $private_key,
     string|int $algorithm = OPENSSL_ALGO_SHA1
 ): bool {}

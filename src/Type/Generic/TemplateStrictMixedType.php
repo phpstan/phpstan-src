@@ -45,7 +45,7 @@ final class TemplateStrictMixedType extends StrictMixedType implements TemplateT
 
 	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
+		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
 	}
 
 }

@@ -15,6 +15,7 @@ use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -77,26 +78,36 @@ class HasMethodType implements AccessoryType, CompoundType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		return $type->hasMethod($this->methodName);
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
+		return new IsSuperTypeOfResult($type->hasMethod($this->methodName), []);
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if ($otherType instanceof UnionType || $otherType instanceof IntersectionType) {
-			return $otherType->isSuperTypeOf($this);
+			return $otherType->isSuperTypeOfWithReason($this);
 		}
 
 		if ($this->isCallable()->yes() && $otherType->isCallable()->yes()) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($otherType instanceof self) {
-			$limit = TrinaryLogic::createYes();
+			$limit = IsSuperTypeOfResult::createYes();
 		} else {
-			$limit = TrinaryLogic::createMaybe();
+			$limit = IsSuperTypeOfResult::createMaybe();
 		}
 
-		return $limit->and($otherType->hasMethod($this->methodName));
+		return $limit->and(new IsSuperTypeOfResult($otherType->hasMethod($this->methodName), []));
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
@@ -106,7 +117,7 @@ class HasMethodType implements AccessoryType, CompoundType
 
 	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
+		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
 	}
 
 	public function equals(Type $type): bool

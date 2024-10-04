@@ -10,6 +10,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\Type;
 
@@ -36,19 +37,24 @@ trait ConstantScalarTypeTrait
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof self) {
-			return TrinaryLogic::createFromBoolean($this->equals($type));
+			return IsSuperTypeOfResult::createFromBoolean($this->equals($type));
 		}
 
 		if ($type instanceof parent) {
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
-		return TrinaryLogic::createNo();
+		return IsSuperTypeOfResult::createNo();
 	}
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType

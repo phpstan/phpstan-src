@@ -3,8 +3,8 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Type;
 
 /** @api */
@@ -24,7 +24,7 @@ interface TemplateType extends CompoundType
 
 	public function isValidVariance(Type $a, Type $b): TrinaryLogic;
 
-	public function isValidVarianceWithReason(Type $a, Type $b): AcceptsResult;
+	public function isValidVarianceWithReason(Type $a, Type $b): IsSuperTypeOfResult;
 
 	public function getVariance(): TemplateTypeVariance;
 

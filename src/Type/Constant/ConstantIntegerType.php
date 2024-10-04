@@ -11,6 +11,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
@@ -39,29 +40,34 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof self) {
-			return $this->value === $type->value ? TrinaryLogic::createYes() : TrinaryLogic::createNo();
+			return $this->value === $type->value ? IsSuperTypeOfResult::createYes() : IsSuperTypeOfResult::createNo();
 		}
 
 		if ($type instanceof IntegerRangeType) {
 			$min = $type->getMin();
 			$max = $type->getMax();
 			if (($min === null || $min <= $this->value) && ($max === null || $this->value <= $max)) {
-				return TrinaryLogic::createMaybe();
+				return IsSuperTypeOfResult::createMaybe();
 			}
 
-			return TrinaryLogic::createNo();
+			return IsSuperTypeOfResult::createNo();
 		}
 
 		if ($type instanceof parent) {
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
-		return TrinaryLogic::createNo();
+		return IsSuperTypeOfResult::createNo();
 	}
 
 	public function describe(VerbosityLevel $level): string

@@ -63,9 +63,14 @@ final class ConditionalType implements CompoundType, LateResolvableType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof self) {
-			return $this->if->isSuperTypeOf($type->if)
-				->and($this->else->isSuperTypeOf($type->else));
+			return $this->if->isSuperTypeOfWithReason($type->if)
+				->and($this->else->isSuperTypeOfWithReason($type->else));
 		}
 
 		return $this->isSuperTypeOfDefault($type);

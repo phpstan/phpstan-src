@@ -18,6 +18,7 @@ use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
@@ -129,21 +130,26 @@ class GenericObjectType extends ObjectType
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return $this->isSuperTypeOfInternal($type, true);
+		return $this->isSuperTypeOfInternal($type, true)->toAcceptsResult();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
-		}
-
-		return $this->isSuperTypeOfInternal($type, false)->result;
+		return $this->isSuperTypeOfWithReason($type)->result;
 	}
 
-	private function isSuperTypeOfInternal(Type $type, bool $acceptsContext): AcceptsResult
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
 	{
-		$nakedSuperTypeOf = new AcceptsResult(parent::isSuperTypeOf($type), []);
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOfWithReason($this);
+		}
+
+		return $this->isSuperTypeOfInternal($type, false);
+	}
+
+	private function isSuperTypeOfInternal(Type $type, bool $acceptsContext): IsSuperTypeOfResult
+	{
+		$nakedSuperTypeOf = parent::isSuperTypeOfWithReason($type);
 		if ($nakedSuperTypeOf->no()) {
 			return $nakedSuperTypeOf;
 		}
@@ -161,11 +167,11 @@ class GenericObjectType extends ObjectType
 				return $nakedSuperTypeOf;
 			}
 
-			return $nakedSuperTypeOf->and(AcceptsResult::createMaybe());
+			return $nakedSuperTypeOf->and(IsSuperTypeOfResult::createMaybe());
 		}
 
 		if (count($this->types) !== count($ancestor->types)) {
-			return AcceptsResult::createNo();
+			return IsSuperTypeOfResult::createNo();
 		}
 
 		$classReflection = $this->getClassReflection();
@@ -197,14 +203,14 @@ class GenericObjectType extends ObjectType
 				$results[] = $templateType->isValidVarianceWithReason($this->types[$i], $ancestor->types[$i]);
 			}
 
-			$results[] = AcceptsResult::createFromBoolean($thisVariance->validPosition($ancestorVariance));
+			$results[] = IsSuperTypeOfResult::createFromBoolean($thisVariance->validPosition($ancestorVariance));
 		}
 
 		if (count($results) === 0) {
 			return $nakedSuperTypeOf;
 		}
 
-		$result = AcceptsResult::createYes();
+		$result = IsSuperTypeOfResult::createYes();
 		foreach ($results as $innerResult) {
 			$result = $result->and($innerResult);
 		}

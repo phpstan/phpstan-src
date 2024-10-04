@@ -1083,6 +1083,10 @@ services:
 
 	-
 		class: PHPStan\Rules\PhpDoc\AssertRuleHelper
+		arguments:
+			checkMissingTypehints: %checkMissingTypehints%
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\PhpDoc\UnresolvableTypeHelper

@@ -3,6 +3,11 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\ClassForbiddenNameCheck;
+use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -15,7 +20,18 @@ class FunctionAssertRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
-		return new FunctionAssertRule(new AssertRuleHelper($initializerExprTypeResolver));
+		$reflectionProvider = $this->createReflectionProvider();
+		return new FunctionAssertRule(new AssertRuleHelper(
+			$initializerExprTypeResolver,
+			$reflectionProvider,
+			new UnresolvableTypeHelper(),
+			new ClassNameCheck(new ClassCaseSensitivityCheck($reflectionProvider, true), new ClassForbiddenNameCheck(self::getContainer())),
+			new MissingTypehintCheck(true, true, true, true, []),
+			new GenericObjectTypeCheck(),
+			true,
+			true,
+			true,
+		));
 	}
 
 	public function testRule(): void

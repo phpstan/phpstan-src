@@ -39,7 +39,7 @@ function validateStringOrIntArray(array $arr) : bool {
  * @param mixed[] $arr
  * @phpstan-assert-if-true =string[] $arr
  * @phpstan-assert-if-false =int[] $arr
- * @phpstan-assert-if-false =non-empty-array $arr
+ * @phpstan-assert-if-false =non-empty-array<mixed> $arr
  */
 function validateStringOrNonEmptyIntArray(array $arr) : bool {
 	return false;

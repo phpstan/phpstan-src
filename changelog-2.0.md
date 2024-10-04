@@ -1,5 +1,3 @@
-This document is a work in progress.
-
 When PHPStan 2.0 gets released, this will turn into [releases notes on GitHub](https://github.com/phpstan/phpstan/releases) + a separate [UPGRADING](./UPGRADING.md) document.
 
 Major new features 🚀

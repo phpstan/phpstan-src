@@ -896,6 +896,8 @@ final class NodeScopeResolver
 				} elseif (isset($varTags[$propertyName])) {
 					$phpDocType = $varTags[$propertyName]->getType();
 				}
+				$propStmt = clone $stmt;
+				$propStmt->setAttributes($prop->getAttributes());
 				$nodeCallback(
 					new ClassPropertyNode(
 						$propertyName,
@@ -906,7 +908,7 @@ final class NodeScopeResolver
 						$phpDocType,
 						false,
 						false,
-						$stmt,
+						$propStmt,
 						$isReadOnly,
 						$scope->isInTrait(),
 						$scope->getClassReflection()->isReadOnly(),

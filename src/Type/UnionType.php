@@ -92,12 +92,18 @@ class UnionType implements CompoundType
 	public function filterTypes(callable $filterCb): Type
 	{
 		$newTypes = [];
+		$changed = false;
 		foreach ($this->getTypes() as $innerType) {
 			if (!$filterCb($innerType)) {
+				$changed = true;
 				continue;
 			}
 
 			$newTypes[] = $innerType;
+		}
+
+		if (!$changed) {
+			return $this;
 		}
 
 		return TypeCombinator::union(...$newTypes);

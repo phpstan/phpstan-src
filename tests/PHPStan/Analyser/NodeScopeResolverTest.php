@@ -251,7 +251,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 				$variableName = $args[2];
 
 				if ($expectedCertainty->equals($actualCertainty) !== true) {
-					$failures[] = sprintf("Certainty of variable \$%s on line %d:\nExpected: %s\nActual:   %s\n", $variableName, $args[3], $expectedCertainty->describe(), $actualCertainty->describe());
+					$failures[] = sprintf("Certainty of %s on line %d:\nExpected: %s\nActual:   %s\n", $variableName, $args[3], $expectedCertainty->describe(), $actualCertainty->describe());
 				}
 			}
 		}

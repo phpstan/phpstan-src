@@ -906,7 +906,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTrue(
 			$expectedCertainty->equals($certainty),
 			sprintf(
-				'Certainty of variable $%s is %s, expected %s',
+				'Certainty of %s is %s, expected %s',
 				$variableName,
 				$certainty->describe(),
 				$expectedCertainty->describe(),

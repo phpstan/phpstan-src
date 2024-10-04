@@ -40,6 +40,7 @@ It's up to you whether you go through the new reported errors or if you just put
 
 * [**Enhancements in handling parameters passed by reference**](https://phpstan.org/blog/enhancements-in-handling-parameters-passed-by-reference)
 * [**Validate inline PHPDoc `@var` tag type**](https://phpstan.org/blog/phpstan-1-10-comes-with-lie-detector#validate-inline-phpdoc-%40var-tag-type)
+* [**List type enforced**](https://phpstan.org/blog/phpstan-1-9-0-with-phpdoc-asserts-list-type#list-type)
 * **Always `true` conditions always reported**: previously reported only with phpstan-strict-rules, this is now always reported.
 
 ### Removed option `checkMissingIterableValueType`

@@ -3303,7 +3303,7 @@ return [
 'get_declared_classes' => ['list<class-string>'],
 'get_declared_interfaces' => ['list<interface-string>'],
 'get_declared_traits' => ['list<trait-string>'],
-'get_defined_constants' => ['array', 'categorize='=>'bool'],
+'get_defined_constants' => ['array<string, mixed>', 'categorize='=>'bool'],
 'get_defined_functions' => ['array{internal:non-empty-list<callable-string>,user:list<callable-string>}', 'exclude_disabled='=>'bool'],
 'get_defined_vars' => ['array'],
 'get_extension_funcs' => ['list<callable-string>|false', 'extension_name'=>'string'],

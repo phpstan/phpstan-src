@@ -19,6 +19,7 @@ Major new features 🚀
 * Always report always true conditions, except for last elseif and match arm (https://github.com/phpstan/phpstan-src/commit/565fb0f6da9cdc58e8686598015561a848693972)
 * Remove "unreachable branches" rules: UnreachableIfBranchesRule, UnreachableTernaryElseBranchRule, unreachable arm error in MatchExpressionRule
     * Because "always true" is always reported, these are no longer needed
+* New option: `polluteScopeWithBlock` (defaults to `true`, `false` in `phpstan-strict-rules`) (https://github.com/phpstan/phpstan-src/commit/946cf180c960930c2c42075d0f28ff9090507272)
 * Checking truthiness of `@phpstan-pure` above functions and methods
 * Check `new`/function call/method call/static method call on a separate line without any side effects even without `@phpstan-pure` PHPDoc tag on the declaration side
     * https://github.com/phpstan/phpstan-src/commit/281a87d1ab61809076ecfa6dfc2cc86e3babe235
@@ -76,6 +77,11 @@ Major new features 🚀
 Improvements 🔧
 =====================
 
+* TableErrorFormatter - always output identifiers (https://github.com/phpstan/phpstan-src/commit/fc66c24113e9fe88c3155703224eb03768846fdd)
+* Config option `exceptions.check.tooWideThrowType` made true by default (https://github.com/phpstan/phpstan-src/commit/1b1da3e2ce3acf10dde03d9656638cda4f7389a4)
+* Use `implicitThrows` to only look for explicit throw points in too-wide `@throws` rules when set to `false` (https://github.com/phpstan/phpstan-src/commit/a0e688c1d1e4c5e82f989b26485eb9162f47aa97)
+* Rules about tooWideThrowType moved to level 4 (https://github.com/phpstan/phpstan-src/commit/d7798d7f2c47f426efe91c566e6cafd5a4e2410c)
+* Both .php and .neon baselines now include error identifiers (https://github.com/phpstan/phpstan-src/commit/f38addda2b151b6e41a746a37659c0bbe9e2293b, https://github.com/phpstan/phpstan-src/commit/c8b7ea9e8f51c8bbc38dfa6b04f9a0172f5cfea0)
 * PHPDoc parser: Require whitespace before description with limited start tokens (https://github.com/phpstan/phpdoc-parser/pull/128), https://github.com/phpstan/phpdoc-parser/issues/125, thanks @rvanvelzen!
 * Unescape strings in PHPDoc parser (https://github.com/phpstan/phpstan-src/commit/97786ed8376b478ec541ea9df1c450c1fbfe7461)
 * PHPDoc parser: add config for lines in its AST & enable ignoring errors within PHPDocs ([#2807](https://github.com/phpstan/phpstan-src/pull/2807)), thanks @janedbal!
@@ -118,6 +124,14 @@ Improvements 🔧
 * Check invalid PHPDocs in previously unchecked statement types (https://github.com/phpstan/phpstan-src/commit/9780d352f3264aac09ac7954f691de1877db8e01)
 * InvalidPHPStanDocTagRule in StubValidator (https://github.com/phpstan/phpstan-src/commit/9c2552b7e744926d1a74c1ba8fd32c64079eed61)
 * CallToConstructorStatementWithoutSideEffectsRule - report class with no constructor (https://github.com/phpstan/phpstan-src/commit/b116d25a6e4ba6c09f59af6569d9e6f6fd20aff4)
+* ContainerFactory - always check duplicate files (https://github.com/phpstan/phpstan-src/commit/939a715a0636ed05752659dbe7646c1f1a574765)
+* Display parent class name for anonymous class like native PHP does ([#3362](https://github.com/phpstan/phpstan-src/pull/3362)), thanks @mvorisek!
+* Always report static property fetch in `isset()`, not just on PHP 8.2+ ([#3476](https://github.com/phpstan/phpstan-src/pull/3476)), thanks @ondrejmirtes!
+* Revert "Dumb down parameter types in some recently added stubs" (https://github.com/phpstan/phpstan-src/commit/950a491485c46068074ca3f4f6dc5b970d41465a)
+* Do not apply heuristics of `Collection<...>|Foo[]` being resolved to Collection of Foo (https://github.com/phpstan/phpstan-src/commit/fff8f095988a66f298aa4037fe8e6ba98266063c)
+* Collected PHP errors cannot be ignored (https://github.com/phpstan/phpstan-src/commit/1d3f4313955dc6fa5c6ce60fa58afe765964e5b0)
+* Added missing rules to StubValidator (https://github.com/phpstan/phpstan-src/commit/bf19914cac1682d0eab8bf65a874ba368522311c)
+* Report precise offsets in errors ([#3504](https://github.com/phpstan/phpstan-src/pull/3504)), thanks @ruudk!
 
 
 Bugfixes 🐛
@@ -150,5 +164,31 @@ Function signature fixes 🤖
 * Improved the type of the `$mode` parameter for the `count()` ([#3190](https://github.com/phpstan/phpstan-src/pull/3190)), thanks @kuma3!* Check `filter_input*` type param type ([#2271](https://github.com/phpstan/phpstan-src/pull/2271)), thanks @herndlm!
 * Change `curl_setopt` function signature based on 2nd arg ([#1719](https://github.com/phpstan/phpstan-src/pull/1719)), thanks @staabm!
 
+
 Internals 🔍
 =====================
+
+* Tool to make optional parameters required across the codebase (https://github.com/phpstan/phpstan-src/commit/7e366e08f96e2e4095b3f02b5487e8f9531f37bf)
+* A few more MutatingScope method parameters made required (https://github.com/phpstan/phpstan-src/commit/2c4c0cde75e637ac323e81def57d4a2ace952429)
+* CommandHelper::begin() parameters made required (https://github.com/phpstan/phpstan-src/commit/f17cf9ec43111cb29dd50d620fb6259c0ab0d373)
+* MethodTag - constructor parameter `$templateTags` is required (https://github.com/phpstan/phpstan-src/commit/5b58f83e6d8b5044d742caed9729d00178c4a9de)
+* InitializerExprTypeResolver - constructor parameter `$usePathConstantsAsConstantString` made required (https://github.com/phpstan/phpstan-src/commit/f88d9ba7f56ef6c3b783aee1c909a3422c0ef3c3)
+* `PhpMethodReflectionFactory::create()` - all parameters are required (https://github.com/phpstan/phpstan-src/commit/8bfbf8f254a68e4f1b15419eb950ea677fc2916e)
+* FunctionCallParametersCheck - parameters `$nodeType` and `$acceptsNamedArguments` made required (https://github.com/phpstan/phpstan-src/commit/493752737c32eb878de4dfb91817761b952348e4)
+* MethodParameterComparisonHelper - parameter `$ignorable` of `compare()` method made required (https://github.com/phpstan/phpstan-src/commit/f85a500288b0b8ef9a19d405c0e3d99ab57ce797)
+* Parameter `$dateTimeClass` of DateTimeModifyReturnTypeExtension constructor made required (https://github.com/phpstan/phpstan-src/commit/a8cd423e842deaa7d924580665207a4b1a373115)
+* NativeFunctionReflection construct parameters made required (https://github.com/phpstan/phpstan-src/commit/64ff598cd42268d2178d02efd208afe637060978)
+* Cover AccessoryArrayListType constructor with BC promise (https://github.com/phpstan/phpstan-src/commit/51de9032c6e98bff2d6eb0e5b7295720ec0276b9)
+* Add `PhpVersion` parameter to various `Type` methods ([#3478](https://github.com/phpstan/phpstan-src/pull/3478)), thanks @VincentLanglet!
+* Move ContainerDynamicReturnTypeExtension to build/PHPStan (https://github.com/phpstan/phpstan-src/commit/5651bec661582b2d62de1b4ae9d5f27e69e3c524)
+* Renamed NewOptimizedDirectorySourceLocator to OptimizedDirectorySourceLocator (https://github.com/phpstan/phpstan-src/commit/db02a30ca11c7b9839c30e0321ed403dd14f6c73)
+* Remove unneded abstraction (https://github.com/phpstan/phpstan-src/commit/f302c9069274afa63ec1b4f313ca72340699e9d8)
+* Introduce native return types thanks to PHP 7.4 return type covariance (https://github.com/phpstan/phpstan-src/commit/392f090066bfc9946b4ad524ffecf3d420c23114)
+* ReadWritePropertiesExtension - use ExtendedPropertyReflection in parameter type (https://github.com/phpstan/phpstan-src/commit/f0a629685de2202687b9f92bd0e1a516daf2443e)
+* Declare more precise `getClass()` return types in extension interfaces ([#1754](https://github.com/phpstan/phpstan-src/pull/1754)), thanks @staabm!
+*  (https://github.com/phpstan/phpstan-src/commit/38cb5a315e5573231d8695df343c8ee87a8c3b2e)
+* HasOffsetType - put constructor parameter type natively (https://github.com/phpstan/phpstan-src/commit/b5accb3f6bbcffc8a44934539b88903e09b6a174)
+* Printer is covered by BC promise (https://github.com/phpstan/phpstan-src/commit/b0858332efc7aa2f2fde7544a2a821ba81bde13b)
+* More interfaces that are not supposed to be implemented in userland (https://github.com/phpstan/phpstan-src/commit/778af2ed74ba59bfb2a69fd5b45821ccdb1107c9, https://github.com/phpstan/phpstan-src/commit/cb6ab5544a016c52f931fc390bcdf9c627819d8f)
+* Refactored `FunctionCallParametersCheck::check()` parameters (https://github.com/phpstan/phpstan-src/commit/710e09c41698efb1d8d3ae31791944077dbb9cc1)
+* Spread list usages in Reflection, Scope, Type ([#3530](https://github.com/phpstan/phpstan-src/pull/3530)), thanks @janedbal!

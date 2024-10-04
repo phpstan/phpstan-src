@@ -2,39 +2,63 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Function_;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
+use function array_merge;
+use function implode;
 use function sprintf;
 use function substr;
 
 final class AssertRuleHelper
 {
 
-	public function __construct(private InitializerExprTypeResolver $initializerExprTypeResolver)
+	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private ReflectionProvider $reflectionProvider,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private ClassNameCheck $classCheck,
+		private MissingTypehintCheck $missingTypehintCheck,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private bool $absentTypeChecks,
+		private bool $checkClassCaseSensitivity,
+		private bool $checkMissingTypehints,
+	)
 	{
 	}
 
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	public function check(ExtendedMethodReflection|FunctionReflection $reflection, ParametersAcceptor $acceptor): array
+	public function check(
+		Function_|ClassMethod $node,
+		ExtendedMethodReflection|FunctionReflection $reflection,
+		ParametersAcceptor $acceptor,
+	): array
 	{
 		$parametersByName = [];
 		foreach ($acceptor->getParameters() as $parameter) {
 			$parametersByName[$parameter->getName()] = $parameter->getType();
 		}
 
-		if ($reflection instanceof ExtendedMethodReflection) {
+		if ($reflection instanceof ExtendedMethodReflection && !$reflection->isStatic()) {
 			$class = $reflection->getDeclaringClass();
 			$parametersByName['this'] = new ObjectType($class->getName(), null, $class);
 		}
@@ -57,38 +81,138 @@ final class AssertRuleHelper
 
 			$assertedExpr = $assert->getParameter()->getExpr(new TypeExpr($parametersByName[$parameterName]));
 			$assertedExprType = $this->initializerExprTypeResolver->getType($assertedExpr, $context);
+			$assertedExprString = $assert->getParameter()->describe();
 			if ($assertedExprType instanceof ErrorType) {
+				if ($this->absentTypeChecks) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Assert references unknown %s.', $assertedExprString))
+						->identifier('assert.unknownExpr')
+						->build();
+				}
 				continue;
 			}
 
 			$assertedType = $assert->getType();
 
+			$tagName = [
+				AssertTag::NULL => '@phpstan-assert',
+				AssertTag::IF_TRUE => '@phpstan-assert-if-true',
+				AssertTag::IF_FALSE => '@phpstan-assert-if-false',
+			][$assert->getIf()];
+
+			if ($this->absentTypeChecks) {
+				if ($this->unresolvableTypeHelper->containsUnresolvableType($assertedType)) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'PHPDoc tag %s for %s contains unresolvable type.',
+						$tagName,
+						$assertedExprString,
+					))->identifier('assert.unresolvableType')->build();
+					continue;
+				}
+			}
+
 			$isSuperType = $assertedType->isSuperTypeOf($assertedExprType);
-			if ($isSuperType->maybe()) {
+			if (!$isSuperType->maybe()) {
+				if ($assert->isNegated() ? $isSuperType->yes() : $isSuperType->no()) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Asserted %stype %s for %s with type %s can never happen.',
+						$assert->isNegated() ? 'negated ' : '',
+						$assertedType->describe(VerbosityLevel::precise()),
+						$assertedExprString,
+						$assertedExprType->describe(VerbosityLevel::precise()),
+					))->identifier('assert.impossibleType')->build();
+				} elseif ($assert->isNegated() ? $isSuperType->no() : $isSuperType->yes()) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Asserted %stype %s for %s with type %s does not narrow down the type.',
+						$assert->isNegated() ? 'negated ' : '',
+						$assertedType->describe(VerbosityLevel::precise()),
+						$assertedExprString,
+						$assertedExprType->describe(VerbosityLevel::precise()),
+					))->identifier('assert.alreadyNarrowedType')->build();
+				}
+			}
+
+			if (!$this->absentTypeChecks) {
 				continue;
 			}
 
-			$assertedExprString = $assert->getParameter()->describe();
+			foreach ($assertedType->getReferencedClasses() as $class) {
+				if (!$this->reflectionProvider->hasClass($class)) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'PHPDoc tag %s for %s contains unknown class %s.',
+						$tagName,
+						$assertedExprString,
+						$class,
+					))->identifier('class.notFound')->build();
+					continue;
+				}
 
-			if ($assert->isNegated() ? $isSuperType->yes() : $isSuperType->no()) {
+				$classReflection = $this->reflectionProvider->getClass($class);
+				if ($classReflection->isTrait()) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'PHPDoc tag %s for %s contains invalid type %s.',
+						$tagName,
+						$assertedExprString,
+						$class,
+					))->identifier('assert.trait')->build();
+					continue;
+				}
+
+				$errors = array_merge(
+					$errors,
+					$this->classCheck->checkClassNames([
+						new ClassNameNodePair($class, $node),
+					], $this->checkClassCaseSensitivity),
+				);
+			}
+
+			$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
+				$assertedType,
+				sprintf('PHPDoc tag %s for %s contains generic type %%s but %%s %%s is not generic.', $tagName, $assertedExprString),
+				sprintf('Generic type %%s in PHPDoc tag %s for %s does not specify all template types of %%s %%s: %%s', $tagName, $assertedExprString),
+				sprintf('Generic type %%s in PHPDoc tag %s for %s specifies %%d template types, but %%s %%s supports only %%d: %%s', $tagName, $assertedExprString),
+				sprintf('Type %%s in generic type %%s in PHPDoc tag %s for %s is not subtype of template type %%s of %%s %%s.', $tagName, $assertedExprString),
+				sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag %s for %s is in conflict with %%s template type %%s of %%s %%s.', $tagName, $assertedExprString),
+				sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag %s for %s is redundant, template type %%s of %%s %%s has the same variance.', $tagName, $assertedExprString),
+			));
+
+			if (!$this->checkMissingTypehints) {
+				continue;
+			}
+
+			foreach ($this->missingTypehintCheck->getIterableTypesWithMissingValueTypehint($assertedType) as $iterableType) {
+				$iterableTypeDescription = $iterableType->describe(VerbosityLevel::typeOnly());
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Asserted %stype %s for %s with type %s can never happen.',
-					$assert->isNegated() ? 'negated ' : '',
-					$assertedType->describe(VerbosityLevel::precise()),
+					'PHPDoc tag %s for %s has no value type specified in iterable type %s.',
+					$tagName,
 					$assertedExprString,
-					$assertedExprType->describe(VerbosityLevel::precise()),
-				))->identifier('assert.impossibleType')->build();
-			} elseif ($assert->isNegated() ? $isSuperType->no() : $isSuperType->yes()) {
+					$iterableTypeDescription,
+				))
+					->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)
+					->identifier('missingType.iterableValue')
+					->build();
+			}
+
+			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($assertedType) as [$innerName, $genericTypeNames]) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Asserted %stype %s for %s with type %s does not narrow down the type.',
-					$assert->isNegated() ? 'negated ' : '',
-					$assertedType->describe(VerbosityLevel::precise()),
+					'PHPDoc tag %s for %s contains generic %s but does not specify its types: %s',
+					$tagName,
 					$assertedExprString,
-					$assertedExprType->describe(VerbosityLevel::precise()),
-				))->identifier('assert.alreadyNarrowedType')->build();
+					$innerName,
+					implode(', ', $genericTypeNames),
+				))
+					->identifier('missingType.generics')
+					->build();
+			}
+
+			foreach ($this->missingTypehintCheck->getCallablesWithMissingSignature($assertedType) as $callableType) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'PHPDoc tag %s for %s has no signature specified for %s.',
+					$tagName,
+					$assertedExprString,
+					$callableType->describe(VerbosityLevel::typeOnly()),
+				))->identifier('missingType.callable')->build();
 			}
 		}
-
 		return $errors;
 	}
 

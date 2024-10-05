@@ -74,6 +74,7 @@ final class CallMethodsRule implements Rule
 			],
 			'method',
 			$methodReflection->acceptsNamedArguments(),
+			$methodReflection,
 		));
 	}
 

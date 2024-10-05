@@ -13,6 +13,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\ParameterClosureTypeHelper;
 use function array_merge;
 
 /**
@@ -26,7 +27,19 @@ class ForbiddenNameCheckExtensionRuleTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 		return new InstantiationRule(
 			$reflectionProvider,
-			new FunctionCallParametersCheck(new RuleLevelHelper($reflectionProvider, true, false, true, false, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
+			new FunctionCallParametersCheck(
+				new RuleLevelHelper($reflectionProvider, true, false, true, false, false, true, false),
+				new NullsafeCheck(),
+				new PhpVersion(80000),
+				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
+				self::getContainer()->getByType(ParameterClosureTypeHelper::class),
+				true,
+				true,
+				true,
+				true,
+				true,
+			),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
 				new ClassForbiddenNameCheck(self::getContainer()),

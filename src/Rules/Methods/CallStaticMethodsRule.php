@@ -82,6 +82,7 @@ final class CallStaticMethodsRule implements Rule
 			],
 			'staticMethod',
 			$method->acceptsNamedArguments(),
+			$method,
 		));
 
 		return $errors;

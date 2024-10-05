@@ -675,6 +675,8 @@ services:
 	-
 		class: PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider
 		factory: PHPStan\DependencyInjection\Type\LazyParameterClosureTypeExtensionProvider
+	-
+		class: PHPStan\Type\ParameterClosureTypeHelper
 
 	-
 		class: PHPStan\File\FileHelper

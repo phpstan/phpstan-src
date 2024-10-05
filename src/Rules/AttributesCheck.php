@@ -155,6 +155,7 @@ final class AttributesCheck
 					],
 					'attribute',
 					$attributeConstructor->acceptsNamedArguments(),
+					$attributeConstructor,
 				);
 
 				foreach ($parameterErrors as $error) {

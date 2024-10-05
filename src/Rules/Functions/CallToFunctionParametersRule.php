@@ -68,6 +68,7 @@ final class CallToFunctionParametersRule implements Rule
 			],
 			'function',
 			$function->acceptsNamedArguments(),
+			$function,
 		);
 	}
 

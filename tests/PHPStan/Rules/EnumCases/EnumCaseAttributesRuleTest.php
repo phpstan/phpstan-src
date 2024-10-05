@@ -14,6 +14,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\ParameterClosureTypeHelper;
 
 /**
  * @extends RuleTestCase<EnumCaseAttributesRule>
@@ -33,6 +34,7 @@ class EnumCaseAttributesRuleTest extends RuleTestCase
 					new PhpVersion(80100),
 					new UnresolvableTypeHelper(),
 					new PropertyReflectionFinder(),
+					self::getContainer()->getByType(ParameterClosureTypeHelper::class),
 					true,
 					true,
 					true,
